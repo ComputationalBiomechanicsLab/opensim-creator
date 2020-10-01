@@ -23,8 +23,8 @@ Requires that you have built OpenSim 4.1 according to its manual. Set
 ```bash
 #!/usr/bin/env sh
 
-# ensure you have built + installed opensim 4.1 somewhere
-OPENSIM_INSTALL=~/Desktop/opensim-core/opensim-core-install/lib/cmake
+# CHANGE ME: ensure you have built + installed opensim 4.1 somewhere
+OPENSIM_INSTALL=~/Desktop/osc/master/opensim-core-install/lib/cmake
 
 # get source code
 git clone https://github.com/adamkewley/osmv.git
