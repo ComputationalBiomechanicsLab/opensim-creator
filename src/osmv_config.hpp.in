@@ -2,36 +2,15 @@
 #define OSMV_VERSION_MINOR @osmv_VERSION_MINOR@
 #define OSMV_VERSION_PATCH @osmv_VERSION_PATCH@
 #define OSMV_VERSION_STRING "@osmv_VERSION_MAJOR@.@osmv_VERSION_MINOR@.@osmv_VERSION_PATCH@"
-
-// platform-specific bs
-#ifdef __APPLE__
-#define OSC_GLSL_VERSION "#version 150"
-#define OSC_GL_CTX_FLAGS SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
-#define OSC_GL_CTX_MAJOR_VERSION 3
-#define OSC_GL_CTX_MINOR_VERSION 2
-#else
-#define OSC_GLSL_VERSION "#version 150"
-#define OSC_GL_CTX_FLAGS 0
-#define OSC_GL_CTX_MAJOR_VERSION 3
-#define OSC_GL_CTX_MINOR_VERSION 0
-#endif
+#define OSMV_RESOURCES_DIR "@RESOURCES_DIR@"
+#define OSMV_SHADERS_DIR "@SHADERS_DIR@"
+#define OSMV_GLSL_VERSION "#version 330 core"
 
 // macros for quality-of-life checks
-#define OSC_SDL_GL_SetAttribute_CHECK(attr, value) { \
-        int rv = SDL_GL_SetAttribute((attr), (value)); \
-        if (rv != 0) { \
-            throw std::runtime_error{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "s + SDL_GetError()}; \
-        } \
-    }
 #define OSC_GL_CALL_CHECK(func, ...) { \
         func(__VA_ARGS__); \
         gl::assert_no_errors(#func); \
     }
-#ifdef NDEBUG
-#define DEBUG_PRINT(fmt, ...)
-#else
-#define DEBUG_PRINT(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
-#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable: 26439) // "This kind of function may not throw. Declare it 'noexcept'

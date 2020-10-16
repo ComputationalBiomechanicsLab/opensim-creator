@@ -4,14 +4,20 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
-#include <string_view>
+#include <iosfwd>
 #include <vector>
 #include <variant>
+
+// opensim_wrapper: wrapper code for OpenSim
+//
+// Main motivation for this is to compiler-firewall OpenSim away from the rest
+// of the UI because it has atrocious translation-unit sizes (e.g. it takes
+// 8 sec on my machine to compile one unit)
 
 namespace osim {
     struct Cylinder final {
         glm::mat4 transform;
-        glm::vec3 scale;
+        glm::mat4 normal_xform;
         glm::vec4 rgba;
     };
 
@@ -20,6 +26,7 @@ namespace osim {
         glm::vec3 p2;
         glm::vec4 rgba;
     };
+    std::ostream& operator<<(std::ostream& o, osim::Line const& l);
 
     struct Point final {
     };
@@ -32,9 +39,10 @@ namespace osim {
 
     struct Sphere final {
         glm::mat4 transform;
+        glm::mat4 normal_xform;
         glm::vec4 rgba;
-        float radius;
     };
+    std::ostream& operator<<(std::ostream& o, osim::Sphere const& s);
 
     struct Ellipsoid final {
     };
@@ -53,10 +61,11 @@ namespace osim {
 
     struct Mesh final {
         glm::mat4 transform;
-        glm::vec3 scale;
+        glm::mat4 normal_xform;
         glm::vec4 rgba;
         std::vector<Triangle> triangles;
     };
+    std::ostream& operator<<(std::ostream& o, osim::Mesh const& m);
 
     struct Arrow final {
     };
@@ -73,6 +82,7 @@ namespace osim {
         Sphere,
         Mesh
     >;
+    std::ostream& operator<<(std::ostream& o, osim::Geometry const& g);
 
-    std::vector<Geometry> geometry_in(std::string_view model_path);
+    std::vector<Geometry> geometry_in(char const* model_path);
 }

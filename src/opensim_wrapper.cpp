@@ -3,6 +3,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <OpenSim/OpenSim.h>
+#include <iostream>
+#include "glm_extensions.hpp"
 
 using namespace SimTK;
 using namespace OpenSim;
@@ -145,19 +147,24 @@ namespace {
             s.y *= geom.getHalfHeight();
             s.z *= geom.getRadius();
 
+            auto xform = glm::scale(m, s);
+
             out.push_back(osim::Cylinder{
-                .transform = m,
-                .scale = s,
+                .transform = xform,
+                .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(geom),
             });
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
         }
         void implementSphereGeometry(const DecorativeSphere& geom) override {
+            float r = geom.getRadius();
+            auto xform =
+                glm::scale(transform(geom), glm::vec3{r, r, r});
             out.push_back(osim::Sphere{
-                .transform = transform(geom),
+                .transform = xform,
+                .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(geom),
-                .radius = static_cast<float>(geom.getRadius()),
             });
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
@@ -230,11 +237,13 @@ namespace {
                         center
                     });
                 }
-            }
+            }            
+
+            auto xform = glm::scale(transform(m), scale_factors(m));
 
             out.push_back(osim::Mesh{
-                .transform = transform(m),
-                .scale = scale_factors(m),
+                .transform = xform,
+                .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(m),
                 .triangles = std::move(triangles),
             });
@@ -248,7 +257,30 @@ namespace {
     };
 }
 
-std::vector<osim::Geometry> osim::geometry_in(std::string_view path) {
+std::ostream& osim::operator<<(std::ostream& o, osim::Line const& l) {
+    o << "line:" << std::endl
+      << "     p1 = " << l.p1 << std::endl
+      << "     p2 = " << l.p2 << std::endl
+      << "     rgba = " << l.rgba << std::endl;
+    return o;
+}
+
+std::ostream& osim::operator<<(std::ostream& o, osim::Sphere const& s) {
+    o << "sphere:" << std::endl
+      << "    transform = " << s.transform << std::endl
+      << "    color = " << s.rgba << std::endl;
+    return o;
+}
+
+std::ostream& osim::operator<<(std::ostream& o, osim::Mesh const& m) {
+    o << "mesh:" << std::endl
+      << "    transform = " << m.transform << std::endl
+      << "    rgba = " << m.rgba << std::endl
+      << "    num_triangles = " << m.triangles.size() << std::endl;
+    return o;
+}
+
+std::vector<osim::Geometry> osim::geometry_in(char const* path) {
     Model model{std::string{path}};
     model.finalizeFromProperties();
     model.finalizeConnections();
@@ -271,4 +303,9 @@ std::vector<osim::Geometry> osim::geometry_in(std::string_view path) {
     }
 
     return rv;
+}
+
+std::ostream& osim::operator<<(std::ostream& o, osim::Geometry const& g) {
+    std::visit([&](auto concrete) { o << concrete; }, g);
+    return o;
 }
