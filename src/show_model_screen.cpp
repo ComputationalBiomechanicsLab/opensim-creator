@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 constexpr float pi_f = static_cast<float>(M_PI);
 
@@ -46,8 +47,8 @@ namespace {
         struct Rgb { unsigned char r, g, b; };
         constexpr size_t w = 512;
         constexpr size_t h = 512;
-        constexpr Rgb on_color = {0xff, 0xff, 0xff};
-        constexpr Rgb off_color = {0x00, 0x00, 0x00};
+        constexpr Rgb on_color = {0xee, 0xee, 0xee};
+        constexpr Rgb off_color = {0xaa, 0xaa, 0xaa};
 
         std::array<Rgb, w*h> pixels;
         for (size_t row = 0; row < h; ++row) {
@@ -55,23 +56,59 @@ namespace {
             bool y_on = (row/16) % 2 == 0;
             for (size_t col = 0; col < w; ++col) {
                 bool x_on = (col/16) % 2 == 0;
-
-                if (y_on && x_on) {
-                    pixels[row_start + col] = on_color;
-                } else {
-                    pixels[row_start + col] = off_color;
-                }
+                pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
             }
         }
 
         gl::Texture_2d rv;
         gl::BindTexture(rv);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+        glGenerateMipmap(GL_TEXTURE_2D);
         return rv;
     }
 
     struct Floor_program final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
+            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
+        gl::Texture_2d tex = generate_chequered_floor();
+        gl::UniformMatrix4fv projMat = gl::GetUniformLocation(p, "projMat");
+        gl::UniformMatrix4fv viewMat = gl::GetUniformLocation(p, "viewMat");
+        gl::UniformMatrix4fv modelMat = gl::GetUniformLocation(p, "modelMat");
+        gl::Uniform1i uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+        static constexpr gl::Attribute aPos = 0;
+        static constexpr gl::Attribute aTexCoord = 1;
 
+        // instance stuff
+        gl::Array_buffer quad_buf = []() {
+            static const float vals[] = {
+                // location         // tex coords
+                 1.0f,  1.0f, 0.0f,   1.0f, 1.0f,
+                 1.0f, -1.0f, 0.0f,   1.0f,  0.0f,
+                -1.0f, -1.0f, 0.0f,    0.0f,  0.0f,
+
+                -1.0f, -1.0f, 0.0f,    0.0f, 0.0f,
+                -1.0f,  1.0f, 0.0f,    0.0f, 1.0f,
+                 1.0f,  1.0f, 0.0f,    1.0f, 1.0f,
+            };
+
+            auto buf = gl::Array_buffer{};
+            gl::BindBuffer(buf);
+            gl::BufferData(buf, sizeof(vals), vals, GL_STATIC_DRAW);
+            return buf;
+        }();
+
+        gl::Vertex_array vao = [&]() {
+            auto vao = gl::GenVertexArrays();
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(quad_buf);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), nullptr);
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+            return vao;
+        }();
     };
 
     // represents a vbo containing some verts /w normals
@@ -276,6 +313,8 @@ namespace osmv {
             {pMain, std::make_shared<Vbo_Triangles_with_norms>(osmv::unit_sphere_triangles())};
         Main_program_renderable pNormals_sphere =
             {pMain, pMain_sphere.verts};
+
+        Floor_program pFloor;
 
         bool wireframe_mode = false;
         float radius = 1.0f;
@@ -608,6 +647,25 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
                 gl::BindVertexArray();
             }
         }
+    }
+
+    // draw floor
+    {
+        gl::UseProgram(pFloor.p);
+        gl::Uniform(pFloor.projMat, glm::perspective(fov, aspect_ratio, 0.1f, 100.0f));
+        gl::Uniform(pFloor.viewMat,
+                    glm::lookAt(
+                        glm::vec3(0.0f, 0.0f, radius),
+                        glm::vec3(0.0f, 0.0f, 0.0f),
+                        glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate);
+        gl::Uniform(pFloor.modelMat, glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}));
+        glActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(pFloor.tex);
+        gl::Uniform(pFloor.uSampler0, 0);
+        gl::BindVertexArray(pFloor.vao);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        gl::BindVertexArray();
+        gl::UseProgram();
     }
 
     ImGui_ImplOpenGL3_NewFrame();
