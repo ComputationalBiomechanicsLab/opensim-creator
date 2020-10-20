@@ -22,13 +22,13 @@
 namespace gl {
     // RAII wrapper for glDeleteShader
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteShader.xhtml
-    struct Shader_handle final {
+    struct Shader_handle {
+        friend Shader_handle CreateShader(GLenum);
+
         GLuint handle;
 
-    private:
-        friend Shader_handle CreateShader(GLenum);
-        Shader_handle(GLuint _handle) : handle{_handle} {
-        }
+    protected:
+        Shader_handle(GLenum shaderType);
     public:
         Shader_handle(Shader_handle const&) = delete;
         Shader_handle(Shader_handle&& tmp) : handle{tmp.handle} {
@@ -99,74 +99,17 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glLinkProgram.xhtml
-    void LinkProgram(gl::Program& prog);
+    void LinkProgram(Program& prog);
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetUniformLocation.xhtml
     //     *throws on error
     GLint GetUniformLocation(Program& p, GLchar const* name);
 
-    // type-safe wrapper for glUniform1f
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct Uniform1f final {
-        GLint handle;
-        Uniform1f(GLint _handle) : handle{_handle} {}
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    inline void Uniform(Uniform1f& u, GLfloat value) {
-        glUniform1f(u.handle, value);
-    }
-
-    // type-safe wrapper for glUniform1i
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct Uniform1i final {
-        GLint handle;
-        Uniform1i(GLint _handle) : handle{_handle} {}
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    inline void Uniform(Uniform1i& u, GLint value) {
-        glUniform1i(u.handle, value);
-    }
-
-    // type-safe wrapper for glUniformMatrix4fv
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct UniformMatrix4fv final {
-        GLint handle;
-        UniformMatrix4fv(GLint _handle) : handle{_handle} {}
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    inline void Uniform(UniformMatrix4fv& u, GLfloat const* value) {
-        glUniformMatrix4fv(u.handle, 1, false, value);
-    }
-
-    // type-safe wrapper for glUniformMatrix3fv
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct UniformMatrix3fv final {
-        GLint handle;
-        UniformMatrix3fv(GLint _handle) : handle{_handle} {}
-    };
-
-    // type-safe wrapper for UniformVec4f
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct UniformVec4f final {
-        GLint handle;
-        UniformVec4f(GLint _handle) : handle{_handle} {}
-    };
-
-    // type-safe wrapper for UniformVec3f
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-    struct UniformVec3f final {
-        GLint handle;
-        UniformVec3f(GLint _handle) : handle{_handle} {}
-    };
-
     // type-safe wrapper for an GLSL attribute index
     //     (just prevents accidently handing a GLint to the wrong API)
     struct Attribute final {
-        GLint handle;
-        constexpr Attribute(GLint _handle) : handle{_handle} {}
+        GLuint handle;
+        constexpr Attribute(GLuint _handle) : handle{_handle} {}
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetAttribLocation.xhtml
@@ -195,12 +138,14 @@ namespace gl {
 
     // RAII wrapper for glDeleteBuffers
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteBuffers.xhtml
-    struct Buffer_handle final {
+    struct Buffer_handle {
+        friend Buffer_handle GenBuffers();
+
         GLuint handle;
 
-    private:
-        friend Buffer_handle GenBuffers();
-        Buffer_handle(GLuint _handle) : handle{_handle} {
+    protected:
+        Buffer_handle() {
+            glGenBuffers(1, &handle);
         }
     public:
         Buffer_handle(Buffer_handle const&) = delete;
@@ -218,9 +163,7 @@ namespace gl {
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenBuffers.xhtml
     inline Buffer_handle GenBuffers() {
-        GLuint handle;
-        glGenBuffers(1, &handle);
-        return Buffer_handle{handle};
+        return Buffer_handle{};
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
@@ -230,46 +173,10 @@ namespace gl {
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
     inline void BufferData(GLenum target,
-                           size_t num_bytes,
+                           GLsizeiptr num_bytes,
                            void const* data,
                            GLenum usage) {
         glBufferData(target, num_bytes, data, usage);
-    }
-
-    // type-safe wrapper for GL_ARRAY_BUFFER
-    struct Array_buffer final {
-        Buffer_handle handle = GenBuffers();
-    };
-
-    // type-safe sugar over glBindBuffer
-    inline void BindBuffer(Array_buffer& buffer) {
-        BindBuffer(GL_ARRAY_BUFFER, buffer.handle);
-    }
-
-    // type-safe sugar over glBufferData
-    inline void BufferData(Array_buffer&,
-                           size_t num_bytes,
-                           void const* data,
-                           GLenum usage) {
-        glBufferData(GL_ARRAY_BUFFER, num_bytes, data, usage);
-    }
-
-    // type-safe wrapper for GL_ELEMENT_ARRAY_BUFFER
-    struct Element_array_buffer final {
-        Buffer_handle handle = GenBuffers();
-    };
-
-    // type-safe sugar over glBindBuffer
-    inline void BindBuffer(Element_array_buffer& buffer) {
-        BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.handle);
-    }
-
-    // type-safe sugar over glBufferData
-    inline void BufferData(Element_array_buffer&,
-                           size_t num_bytes,
-                           void const* data,
-                           GLenum usage) {
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes, data, usage);
     }
 
     // RAII wrapper for glDeleteVertexArrays
@@ -296,7 +203,11 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
-    Vertex_array GenVertexArrays();
+    inline Vertex_array GenVertexArrays() {
+        GLuint handle;
+        glGenVertexArrays(1, &handle);
+        return Vertex_array{handle};
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
     inline void BindVertexArray(Vertex_array& vao) {
@@ -308,14 +219,16 @@ namespace gl {
         glBindVertexArray(static_cast<GLuint>(0));
     }
 
-    // RAII wrapper for glDeleteTextures
+    // RAII wrapper for glGenTextures/glDeleteTextures
     //     https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glDeleteTextures.xml
-    struct Texture_handle final {
+    struct Texture_handle {
+        friend Texture_handle GenTextures();
+
         GLuint handle;
 
-    private:
-        friend Texture_handle GenTextures();
-        Texture_handle(GLuint _handle) : handle{_handle} {
+    protected:
+        Texture_handle() {
+            glGenTextures(1, &handle);
         }
     public:
         Texture_handle(Texture_handle const&) = delete;
@@ -332,7 +245,9 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenTextures.xhtml
-    Texture_handle GenTextures();
+    inline Texture_handle GenTextures() {
+        return Texture_handle{};
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     inline void BindTexture(GLenum target, Texture_handle& texture) {
@@ -342,21 +257,6 @@ namespace gl {
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     inline void BindTexture() {
         glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    // type-safe wrapper around GL_TEXTURE_2D
-    struct Texture_2d final {
-        Texture_handle handle = GenTextures();
-
-        // HACK: these should be overloaded properly
-        operator GLuint () const noexcept {
-            return handle.handle;
-        }
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(Texture_2d& t) {
-        BindTexture(GL_TEXTURE_2D, t.handle);
     }
 
     // RAII wrapper for glDeleteFrameBuffers
@@ -383,13 +283,22 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenFramebuffers.xhtml
-    Frame_buffer GenFrameBuffer();
+    inline Frame_buffer GenFrameBuffer() {
+        GLuint handle;
+        glGenFramebuffers(1, &handle);
+        return Frame_buffer{handle};
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    void BindFrameBuffer(GLenum target, Frame_buffer const& fb);
+    inline void BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
+        glBindFramebuffer(target, fb.handle);
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    void BindFrameBuffer();
+    inline void BindFrameBuffer() {
+        // reset to default (monitor) FB
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 
     // RAII wrapper for glDeleteRenderBuffers
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteRenderbuffers.xhtml
@@ -411,11 +320,19 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glGenRenderbuffers.xml
-    Render_buffer GenRenderBuffer();
+    inline Render_buffer GenRenderBuffer() {
+        GLuint handle;
+        glGenRenderbuffers(1, &handle);
+        return Render_buffer{handle};
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    void BindRenderBuffer(Render_buffer& rb);
+    inline void BindRenderBuffer(Render_buffer& rb) {
+        glBindRenderbuffer(GL_RENDERBUFFER, rb.handle);
+    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    void BindRenderBuffer();
+    inline void BindRenderBuffer() {
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
 }

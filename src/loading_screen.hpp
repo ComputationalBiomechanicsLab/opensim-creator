@@ -14,8 +14,7 @@ namespace osmv {
     public:
         Loading_screen(std::string _path);
 
-        virtual void init(Application&) override;
-        Screen_response handle_event(Application&, SDL_Event&) override;
+        Screen_response tick(Application&) override;
         void draw(Application&) override;
     };
 }

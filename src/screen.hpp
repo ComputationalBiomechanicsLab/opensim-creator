@@ -27,8 +27,14 @@ namespace osmv {
     // basic state machine for a screen that may draw itself onto the
     // current window
     struct Screen {
-        virtual void init(Application&) = 0;
-        virtual Screen_response handle_event(Application&, SDL_Event&) = 0;
+        virtual void init(Application&) {
+        }
+        virtual Screen_response handle_event(Application&, SDL_Event&) {
+            return Resp_Ok{};
+        }
+        virtual Screen_response tick(Application&) {
+            return Resp_Ok{};
+        }
         virtual void draw(Application&) = 0;
         virtual ~Screen() noexcept = default;
     };

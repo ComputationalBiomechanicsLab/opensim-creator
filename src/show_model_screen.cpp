@@ -47,23 +47,23 @@ namespace {
         struct Rgb { unsigned char r, g, b; };
         constexpr size_t w = 512;
         constexpr size_t h = 512;
-        constexpr Rgb on_color = {0xee, 0xee, 0xee};
-        constexpr Rgb off_color = {0xaa, 0xaa, 0xaa};
+        constexpr Rgb on_color = {0xfd, 0xfd, 0xfd};
+        constexpr Rgb off_color = {0xeb, 0xeb, 0xeb};
 
         std::array<Rgb, w*h> pixels;
         for (size_t row = 0; row < h; ++row) {
             size_t row_start = row * w;
-            bool y_on = (row/16) % 2 == 0;
+            bool y_on = (row/32) % 2 == 0;
             for (size_t col = 0; col < w; ++col) {
-                bool x_on = (col/16) % 2 == 0;
+                bool x_on = (col/32) % 2 == 0;
                 pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
             }
         }
 
         gl::Texture_2d rv;
-        gl::BindTexture(rv);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-        glGenerateMipmap(GL_TEXTURE_2D);
+        gl::BindTexture(rv.type, rv);
+        glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+        glGenerateMipmap(rv.type);
         return rv;
     }
 
@@ -72,10 +72,10 @@ namespace {
             gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
         gl::Texture_2d tex = generate_chequered_floor();
-        gl::UniformMatrix4fv projMat = gl::GetUniformLocation(p, "projMat");
-        gl::UniformMatrix4fv viewMat = gl::GetUniformLocation(p, "viewMat");
-        gl::UniformMatrix4fv modelMat = gl::GetUniformLocation(p, "modelMat");
-        gl::Uniform1i uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+        gl::Uniform_mat4f projMat = gl::GetUniformLocation(p, "projMat");
+        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(p, "viewMat");
+        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(p, "modelMat");
+        gl::Uniform_1i uSampler0 = gl::GetUniformLocation(p, "uSampler0");
         static constexpr gl::Attribute aPos = 0;
         static constexpr gl::Attribute aTexCoord = 1;
 
@@ -83,25 +83,25 @@ namespace {
         gl::Array_buffer quad_buf = []() {
             static const float vals[] = {
                 // location         // tex coords
-                 1.0f,  1.0f, 0.0f,   1.0f, 1.0f,
-                 1.0f, -1.0f, 0.0f,   1.0f,  0.0f,
+                 1.0f,  1.0f, 0.0f,   100.0f, 100.0f,
+                 1.0f, -1.0f, 0.0f,   100.0f,  0.0f,
                 -1.0f, -1.0f, 0.0f,    0.0f,  0.0f,
 
                 -1.0f, -1.0f, 0.0f,    0.0f, 0.0f,
-                -1.0f,  1.0f, 0.0f,    0.0f, 1.0f,
-                 1.0f,  1.0f, 0.0f,    1.0f, 1.0f,
+                -1.0f,  1.0f, 0.0f,    0.0f, 100.0f,
+                 1.0f,  1.0f, 0.0f,   100.0f, 100.0f,
             };
 
-            auto buf = gl::Array_buffer{};
-            gl::BindBuffer(buf);
-            gl::BufferData(buf, sizeof(vals), vals, GL_STATIC_DRAW);
+            auto buf = gl::GenArrayBuffer();
+            gl::BindBuffer(buf.type, buf);
+            gl::BufferData(buf.type, sizeof(vals), vals, GL_STATIC_DRAW);
             return buf;
         }();
 
         gl::Vertex_array vao = [&]() {
             auto vao = gl::GenVertexArrays();
             gl::BindVertexArray(vao);
-            gl::BindBuffer(quad_buf);
+            gl::BindBuffer(quad_buf.type, quad_buf);
             gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), nullptr);
             gl::EnableVertexAttribArray(aPos);
             gl::VertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(3*sizeof(float)));
@@ -109,18 +109,20 @@ namespace {
             gl::BindVertexArray();
             return vao;
         }();
+
+        glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
     };
 
     // represents a vbo containing some verts /w normals
     struct Vbo_Triangles_with_norms final {
         GLsizei num_verts = 0;
-        gl::Array_buffer vbo = {};
+        gl::Array_buffer vbo = gl::GenArrayBuffer();
 
         Vbo_Triangles_with_norms(std::vector<Mesh_point> const& points)
             : num_verts(static_cast<GLsizei>(points.size())) {
 
-            gl::BindBuffer(vbo);
-            gl::BufferData(vbo, sizeof(Mesh_point) * points.size(), points.data(), GL_STATIC_DRAW);
+            gl::BindBuffer(vbo.type, vbo);
+            gl::BufferData(vbo.type, sizeof(Mesh_point) * points.size(), points.data(), GL_STATIC_DRAW);
         }
     };
 
@@ -131,10 +133,10 @@ namespace {
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
             gl::CompileGeometryShaderFile(OSMV_SHADERS_DIR "normals.geom"));
 
-        gl::UniformMatrix4fv projMat = gl::GetUniformLocation(program, "projMat");
-        gl::UniformMatrix4fv viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::UniformMatrix4fv modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::UniformMatrix4fv normalMat = gl::GetUniformLocation(program, "normalMat");
+        gl::Uniform_mat4f projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4f normalMat = gl::GetUniformLocation(program, "normalMat");
         static constexpr gl::Attribute aPos = 0;
         static constexpr gl::Attribute aNormal = 1;
     };
@@ -150,7 +152,7 @@ namespace {
             vao{[&]() {
                 auto vao = gl::GenVertexArrays();
                 gl::BindVertexArray(vao);
-                gl::BindBuffer(verts->vbo);
+                gl::BindBuffer(verts->vbo.type, verts->vbo);
                 gl::VertexAttribPointer(p.aPos, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), 0);
                 gl::EnableVertexAttribArray(p.aPos);
                 gl::VertexAttribPointer(p.aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), (void*)sizeof(Vec3));
@@ -167,14 +169,14 @@ namespace {
             gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
 
-        gl::UniformMatrix4fv projMat = gl::GetUniformLocation(program, "projMat");
-        gl::UniformMatrix4fv viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::UniformMatrix4fv modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::UniformMatrix4fv normalMat = gl::GetUniformLocation(program, "normalMat");
-        gl::UniformVec4f rgba = gl::GetUniformLocation(program, "rgba");
-        gl::UniformVec3f light_pos = gl::GetUniformLocation(program, "lightPos");
-        gl::UniformVec3f light_color = gl::GetUniformLocation(program, "lightColor");
-        gl::UniformVec3f view_pos = gl::GetUniformLocation(program, "viewPos");
+        gl::Uniform_mat4f projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4f normalMat = gl::GetUniformLocation(program, "normalMat");
+        gl::Uniform_vec4f rgba = gl::GetUniformLocation(program, "rgba");
+        gl::Uniform_vec3f light_pos = gl::GetUniformLocation(program, "lightPos");
+        gl::Uniform_vec3f light_color = gl::GetUniformLocation(program, "lightColor");
+        gl::Uniform_vec3f view_pos = gl::GetUniformLocation(program, "viewPos");
 
         gl::Attribute location = gl::GetAttribLocation(program, "location");
         gl::Attribute in_normal = gl::GetAttribLocation(program, "in_normal");
@@ -192,7 +194,7 @@ namespace {
                 auto vao = gl::GenVertexArrays();
                 gl::BindVertexArray(vao);
                 {
-                    gl::BindBuffer(verts->vbo);
+                    gl::BindBuffer(verts->vbo.type, verts->vbo);
                     gl::VertexAttribPointer(p.location, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), 0);
                     gl::EnableVertexAttribArray(p.location);
                     gl::VertexAttribPointer(p.in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), (void*)sizeof(Vec3));
@@ -330,7 +332,7 @@ namespace osmv {
         bool panning = false;
         glm::vec3 pan = {0.0f, 0.0f, 0.0f};
 
-        glm::vec3 light_pos = {1.0f, 1.0f, 0.0f};
+        glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
         float light_color[3] = {0.9607f, 0.9176f, 0.8863f};
         bool show_light = false;
         bool show_unit_cylinder = false;
@@ -493,15 +495,9 @@ void osmv::Show_model_screen::draw(osmv::Application& ui) {
 }
 
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
-    ImGuiIO& io = ImGui::GetIO();
 
-    sdl::Window_dimensions window_dims = sdl::GetWindowSize(ui.window);
-    auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
-    auto theta_vec = glm::normalize(glm::vec3{ sin(theta), 0.0f, cos(theta) });
-    auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
-    auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
-    auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
-    float aspect_ratio = static_cast<float>(window_dims.w) / static_cast<float>(window_dims.h);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
     if (user_gamma_correction != gamma_correction) {
         if (user_gamma_correction) {
@@ -512,26 +508,46 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         gamma_correction = user_gamma_correction;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
+    // camera: at a fixed position pointing at a fixed origin. The "camera"
+    // works by translating + rotating all objects around that origin. Rotation
+    // is expressed as polar coordinates. Camera panning is represented as a
+    // translation vector.
 
+    glm::mat4 view_mtx = [&]() {
+        auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
+        auto theta_vec = glm::normalize(glm::vec3{ sin(theta), 0.0f, cos(theta) });
+        auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
+        auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
+        auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
+        return glm::lookAt(
+            glm::vec3(0.0f, 0.0f, radius),
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate;
+    }();
+
+    glm::mat4 proj_mtx = [&]() {
+        float aspect_ratio = static_cast<float>(window_dims.w) / static_cast<float>(window_dims.h);
+        return glm::perspective(fov, aspect_ratio, 0.1f, 100.0f);
+    }();
+
+    glm::vec3 view_pos = [&]() {
+        // polar/spherical to cartesian
+        return glm::vec3{
+            radius * sin(theta) * cos(phi),
+            radius * sin(phi),
+            radius * cos(theta) * cos(phi)
+        };
+    }();
+
+
+    // PROGRAM: draw main scene
     gl::UseProgram(pMain.program);
 
-    // camera: at a fixed position pointing at a fixed origin. The "camera" works by translating +
-    // rotating all objects around that origin. Rotation is expressed as polar coordinates. Camera
-    // panning is represented as a translation vector.
-    gl::Uniform(pMain.projMat, glm::perspective(fov, aspect_ratio, 0.1f, 100.0f));
-    gl::Uniform(pMain.viewMat,
-                glm::lookAt(
-                    glm::vec3(0.0f, 0.0f, radius),
-                    glm::vec3(0.0f, 0.0f, 0.0f),
-                    glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate);
+    gl::Uniform(pMain.projMat, proj_mtx);
+    gl::Uniform(pMain.viewMat, view_mtx);
     gl::Uniform(pMain.light_pos, light_pos);
     gl::Uniform(pMain.light_color, glm::vec3(light_color[0], light_color[1], light_color[2]));
-    gl::Uniform(pMain.view_pos, // polar-to-cartesian
-                glm::vec3{radius * sin(theta) * cos(phi),
-                          radius * sin(phi),
-                          radius * cos(theta) * cos(phi)});
+    gl::Uniform(pMain.view_pos, view_pos);
 
     // draw cylinders
     {
@@ -580,7 +596,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         gl::BindVertexArray();
     }
 
-    // draw arbitrary meshes
+    // draw meshes
     for (auto& m : ms.meshes) {
         gl::Uniform(pMain.rgba, m.rgba);
         gl::Uniform(pMain.modelMat, m.transform);
@@ -590,14 +606,11 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         gl::BindVertexArray();
     }
 
+    // PROGRAM: draw scene normals (if required)
     if (show_sphere_normals or show_cylinder_normals or show_mesh_normals) {
         gl::UseProgram(pNormals.program);
-        gl::Uniform(pNormals.projMat, glm::perspective(fov, aspect_ratio, 0.1f, 100.0f));
-        gl::Uniform(pNormals.viewMat,
-                    glm::lookAt(
-                        glm::vec3(0.0f, 0.0f, radius),
-                        glm::vec3(0.0f, 0.0f, 0.0f),
-                        glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate);
+        gl::Uniform(pNormals.projMat, proj_mtx);
+        gl::Uniform(pNormals.viewMat, view_mtx);
 
         if (show_cylinder_normals) {
             auto num_verts = pMain_cylinder.verts->num_verts;
@@ -649,39 +662,36 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         }
     }
 
-    // draw floor
+    // PROGRAM: draw floor
     {
         gl::UseProgram(pFloor.p);
-        gl::Uniform(pFloor.projMat, glm::perspective(fov, aspect_ratio, 0.1f, 100.0f));
-        gl::Uniform(pFloor.viewMat,
-                    glm::lookAt(
-                        glm::vec3(0.0f, 0.0f, radius),
-                        glm::vec3(0.0f, 0.0f, 0.0f),
-                        glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate);
-        gl::Uniform(pFloor.modelMat, glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}));
+        gl::Uniform(pFloor.projMat, proj_mtx);
+        gl::Uniform(pFloor.viewMat, view_mtx);
+        gl::Uniform(pFloor.modelMat, pFloor.model_mtx);
         glActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(pFloor.tex);
+        gl::BindTexture(pFloor.tex.type, pFloor.tex);
         gl::Uniform(pFloor.uSampler0, 0);
         gl::BindVertexArray(pFloor.vao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         gl::BindVertexArray();
-        gl::UseProgram();
     }
 
+    // imgui: draw GUI on top of main scene
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(ui.window);
-
     ImGui::NewFrame();
 
+    // frame: scene
     {
         bool b = true;
         ImGui::Begin("Scene", &b, ImGuiWindowFlags_MenuBar);
     }
 
     {
+        ImGuiIO& io = ImGui::GetIO();
         std::stringstream fps;
         fps << "Fps: " << io.Framerate;
-        ImGui::Text(fps.str().c_str());
+        ImGui::Text(std::move(fps).str().c_str());
     }
     ImGui::NewLine();
 
@@ -760,17 +770,17 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     ImGui::NewLine();
     ImGui::Text("Interaction:");
     {
-        std::stringstream msgs;
+        std::string msgs;
         if (dragging) {
-            msgs << "rotating ";
+            msgs += "rotating ";
         }
         if (panning) {
-            msgs << "panning ";
+            msgs += "panning ";
         }
-        ImGui::Text(msgs.str().c_str());
+        ImGui::Text(msgs.c_str());
     }
-
     ImGui::End();
+
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

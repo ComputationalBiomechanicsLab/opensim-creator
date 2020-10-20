@@ -25,7 +25,8 @@ else()
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-add_executable(osmv
+
+add_library(common STATIC
     third_party/imgui-1.78/imgui.cpp
     third_party/imgui-1.78/imgui_draw.cpp
     third_party/imgui-1.78/imgui_widgets.cpp
@@ -54,9 +55,8 @@ add_executable(osmv
     src/opensim_wrapper.cpp
     src/meshes.hpp
     src/meshes.cpp
-    src/osmv.cpp    
 )
-target_include_directories(osmv PUBLIC
+target_include_directories(common PUBLIC
     # ${OPENGL_INCLUDE_DIR}  // GLEW handles forwarding the OpenGL API
     third_party/SDL2-2.0.12/include
     third_party/glm-0.9.9.8/
@@ -65,7 +65,7 @@ target_include_directories(osmv PUBLIC
     third_party/stb_image/
     ${PROJECT_BINARY_DIR}  # so configure_file config can be #included
 )
-target_link_libraries(osmv
+target_link_libraries(common
     ${OPENGL_LIBRARIES}
     # in release mode, use statically-linked SDL and GLEW with LTO to give the
     # smallest resulting binary and lowest perf cost
@@ -84,18 +84,25 @@ target_link_libraries(osmv
     SimTKmath
     SimTKsimbody
 )
-target_compile_options(osmv PRIVATE
+target_compile_options(common PUBLIC
     # disable MSVC permissiveness. Forces MSVC to obey C++ standard
     # - specifically, this enables the use of 'and', 'not', etc.
     $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
-target_compile_features(osmv PRIVATE
+target_compile_features(common PUBLIC
     cxx_std_20
 )
-set_target_properties(osmv PROPERTIES
+set_target_properties(common PROPERTIES
     CXX_EXTENSIONS OFF
 )
 source_group(TREE third_party/)
+
+
+add_executable(osmv src/osmv.cpp)
+target_link_libraries(osmv common)
+
+add_executable(sbv src/sbv.cpp)
+target_link_libraries(sbv common)
 
 
 # BUILD LIB PATHS:

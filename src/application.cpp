@@ -85,13 +85,15 @@ osmv::Application::Application() :
 
     gl::assert_no_errors("ui::State::constructor::onExit");
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.99f, 0.98f, 0.96f, 1.0f);
     OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
     OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
     OSC_GL_CALL_CHECK(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     OSC_GL_CALL_CHECK(glEnable, GL_MULTISAMPLE);
     OSC_GL_CALL_CHECK(glEnable, GL_CULL_FACE);
     glFrontFace(GL_CCW);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 osmv::Application::~Application() noexcept = default;
@@ -104,7 +106,7 @@ void osmv::Application::show() {
     auto min_delay_between_frames = 14ms;
 
     while (true) {
-        // pump events
+        // screen: handle pumping events into screen's `handle_event`
         for (SDL_Event e; SDL_PollEvent(&e);) {
             ImGui_ImplSDL2_ProcessEvent(&e);
 
@@ -137,8 +139,38 @@ void osmv::Application::show() {
             }
         }
 
-        // have the current screen draw itself
+        // screen: handle `tick`
+        {
+            auto resp = current_screen->tick(*this);
+            bool should_quit = false;
+            bool just_changed_screen = false;
+            std::unique_ptr<Screen> new_screen;
+            std::visit(overloaded {
+                [&](Resp_Please_quit const&) {
+                    should_quit = true;
+                },
+                [&](Resp_Transition_to& tgt) {
+                    current_screen = std::move(tgt.new_screen);
+                    current_screen->init(*this);
+                    just_changed_screen = true;
+                },
+                [&](Resp_Ok const&) {
+                }}, resp);
+
+            if (should_quit) {
+                return;
+            }
+
+            if (just_changed_screen) {
+                continue;
+            }
+        }
+
+        // screen: draw
         current_screen->draw(*this);
+
+
+        // non-screen-specific stuff
 
         if (software_throttle) {
             // software-throttle the framerate: no need to draw at an insane

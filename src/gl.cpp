@@ -5,12 +5,16 @@
 
 using std::literals::operator""s;
 
-gl::Shader_handle gl::CreateShader(GLenum shaderType) {
-    GLuint handle = glCreateShader(shaderType);
+gl::Shader_handle::Shader_handle(GLenum shaderType) :
+    handle{glCreateShader(shaderType)} {
+
     if (handle == 0) {
         throw std::runtime_error{"glCreateShader() failed"};
     }
-    return Shader_handle{handle};
+}
+
+gl::Shader_handle gl::CreateShader(GLenum shaderType) {
+    return Shader_handle{shaderType};
 }
 
 void gl::CompileShader(Shader_handle& sh) {
@@ -82,46 +86,5 @@ gl::Attribute gl::GetAttribLocation(Program& p, char const* name) {
     if (handle == -1) {
         throw std::runtime_error{"glGetAttribLocation() failed: cannot get "s + name};
     }
-    return Attribute{handle};
-}
-
-gl::Vertex_array gl::GenVertexArrays() {
-    GLuint handle;
-    glGenVertexArrays(1, &handle);
-    return Vertex_array{handle};
-}
-
-gl::Texture_handle gl::GenTextures() {
-    GLuint handle;
-    glGenTextures(1, &handle);
-    return Texture_handle{handle};
-}
-
-gl::Frame_buffer gl::GenFrameBuffer() {
-    GLuint handle;
-    glGenFramebuffers(1, &handle);
-    return Frame_buffer{handle};
-}
-
-void gl::BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
-    glBindFramebuffer(target, fb.handle);
-}
-
-void gl::BindFrameBuffer() {
-    // reset to default (monitor) FB
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-gl::Render_buffer gl::GenRenderBuffer() {
-    GLuint handle;
-    glGenRenderbuffers(1, &handle);
-    return Render_buffer{handle};
-}
-
-void gl::BindRenderBuffer(Render_buffer& rb) {
-    glBindRenderbuffer(GL_RENDERBUFFER, rb.handle);
-}
-
-void gl::BindRenderBuffer() {
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    return Attribute{static_cast<GLuint>(handle)};
 }

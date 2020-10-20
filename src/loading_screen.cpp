@@ -16,22 +16,11 @@ using std::chrono_literals::operator""ms;
 osmv::Loading_screen::Loading_screen(std::string _path) :
     path{std::move(_path)},
     result{std::async(std::launch::async, [&]() {
-        auto geom = osim::geometry_in(path.c_str());
-        // push an event so that the UI's event handler bubbles an event through
-        // the stack
-        SDL_Event e;
-        e.type = SDL_USEREVENT;
-        SDL_PushEvent(&e);
-        return geom;
+        return osim::geometry_in(path.c_str());
     })} {
 }
 
-void osmv::Loading_screen::init(Application&) {
-    // load the model on a background thread that is polled for completion
-
-}
-
-osmv::Screen_response osmv::Loading_screen::handle_event(Application&, SDL_Event&) {
+osmv::Screen_response osmv::Loading_screen::tick(Application&) {
     if (result.wait_for(0ms) == std::future_status::ready) {
         return Resp_Transition_to{std::make_unique<Show_model_screen>(result.get())};
     } else {

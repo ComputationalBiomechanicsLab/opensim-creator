@@ -38,23 +38,23 @@ namespace stbi {
 }
 
 gl::Vertex_shader gl::CompileVertexShader(char const* src) {
-    auto s = Vertex_shader{};
-    ShaderSource(s.handle, src);
-    CompileShader(s.handle);
+    auto s = gl::CreateVertexShader();
+    ShaderSource(s, src);
+    CompileShader(s);
     return s;
 }
 
 gl::Fragment_shader gl::CompileFragmentShader(char const* src) {
-    auto s = Fragment_shader{};
-    ShaderSource(s.handle, src);
-    CompileShader(s.handle);
+    auto s = gl::CreateFragmentShader();
+    ShaderSource(s, src);
+    CompileShader(s);
     return s;
 }
 
 gl::Geometry_shader gl::CompileGeometryShader(char const* src) {
-    auto s = Geometry_shader{};
-    ShaderSource(s.handle, src);
-    CompileShader(s.handle);
+    auto s = gl::CreateGeometryShader();
+    ShaderSource(s, src);
+    CompileShader(s);
     return s;
 }
 
@@ -62,8 +62,8 @@ gl::Geometry_shader gl::CompileGeometryShader(char const* src) {
 gl::Program gl::CreateProgramFrom(Vertex_shader const& vs,
                                   Fragment_shader const& fs) {
     auto p = CreateProgram();
-    AttachShader(p, vs.handle);
-    AttachShader(p, fs.handle);
+    AttachShader(p, vs);
+    AttachShader(p, fs);
     LinkProgram(p);
     return p;
 }
@@ -72,16 +72,14 @@ gl::Program gl::CreateProgramFrom(Vertex_shader const& vs,
                                   Fragment_shader const& fs,
                                   Geometry_shader const& gs) {
     auto p = CreateProgram();
-    AttachShader(p, vs.handle);
-    AttachShader(p, gs.handle);
-    AttachShader(p, fs.handle);
+    AttachShader(p, vs);
+    AttachShader(p, gs);
+    AttachShader(p, fs);
     LinkProgram(p);
     return p;
 }
 
-#include <iostream>
 static std::string slurp_file(const char* path) {
-    std::cerr << "slurping: " << path << std::endl;
     std::ifstream f;
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     f.open(path, std::ios::binary | std::ios::in);
@@ -136,25 +134,23 @@ gl::Geometry_shader gl::CompileGeometryShaderFile(char const* path) {
     return CompileGeometryShader(slurp_file(path).c_str());
 }
 
-static void TexImage2D(gl::Texture_2d& t, GLint mipmap_lvl, stbi::Image const& image) {
-    stbi_set_flip_vertically_on_load(true);
-    gl::BindTexture(t);
-    glTexImage2D(GL_TEXTURE_2D,
-                 mipmap_lvl,
-                 image.nrChannels == 3 ? GL_RGB : GL_RGBA,
-                 image.width,
-                 image.height,
-                 0,
-                 image.nrChannels == 3 ? GL_RGB : GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 image.data);
-}
-
 gl::Texture_2d gl::mipmapped_texture(char const* path) {
-    auto t = gl::Texture_2d{};
+    auto t = gl::GenTexture2d();
     auto img = stbi::Image{path};
-    TexImage2D(t, 0, img);
-    gl::BindTexture(t);
-    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_set_flip_vertically_on_load(true);
+
+    gl::BindTexture(t.type, t);
+    glTexImage2D(t.type,
+                 0,
+                 img.nrChannels == 3 ? GL_RGB : GL_RGBA,
+                 img.width,
+                 img.height,
+                 0,
+                 img.nrChannels == 3 ? GL_RGB : GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 img.data);
+    glGenerateMipmap(t.type);
+
     return t;
 }

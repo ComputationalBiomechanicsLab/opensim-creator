@@ -57,9 +57,11 @@ namespace sdl {
         }
     };
 
-    // RAII'ed version of SDL_CreateWindow. The name is a typo because
-    // `CreateWindow` is defined in the preprocessor:
+    // RAII'ed version of SDL_CreateWindow
     //     https://wiki.libsdl.org/SDL_CreateWindow
+    //
+    // CreateWindoww is a typo because `CreateWindow` is defined in the
+    // preprocessor
     Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags);
 
     // RAII wrapper around an SDL_Renderer that calls SDL_DestroyRenderer on dtor

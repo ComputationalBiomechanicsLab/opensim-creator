@@ -28,7 +28,7 @@ namespace osmv {
         bool software_throttle = true;
 
         // must be bootstrapped after init-ing a screen
-        std::unique_ptr<Screen> current_screen = nullptr;
+        std::unique_ptr<Screen> current_screen;
 
         Application();
         ~Application() noexcept;
