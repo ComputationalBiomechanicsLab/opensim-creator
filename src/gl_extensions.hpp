@@ -19,7 +19,8 @@ namespace gl {
     // thin wrapper for GL_ARRAY_BUFFER
     class Array_buffer final : public Buffer_handle {
         friend Array_buffer GenArrayBuffer();
-        using Buffer_handle::Buffer_handle;
+
+        Array_buffer() : Buffer_handle{} {}
     public:
         static constexpr GLenum type = GL_ARRAY_BUFFER;
     };
@@ -29,10 +30,15 @@ namespace gl {
         return Array_buffer{};
     }
 
+    inline void BindBuffer(Array_buffer& buffer) {
+        BindBuffer(buffer.type, buffer);
+    }
+
     // thin wrapper for GL_ELEMENT_ARRAY_BUFFER
     class Element_array_buffer final : public Buffer_handle {
         friend Element_array_buffer GenElementArrayBuffer();
-        using Buffer_handle::Buffer_handle;
+
+        Element_array_buffer() : Buffer_handle{} {}
     public:
         static constexpr GLenum type = GL_ELEMENT_ARRAY_BUFFER;
     };
@@ -42,12 +48,15 @@ namespace gl {
         return Element_array_buffer{};
     }
 
+    inline void BindBuffer(Element_array_buffer& buffer) {
+        BindBuffer(buffer.type, buffer);
+    }
+
     // thin wrapper for GL_VERTEX_SHADER
     class Vertex_shader final : public Shader_handle {
         friend Vertex_shader CreateVertexShader();
 
-        Vertex_shader() : Shader_handle{GL_VERTEX_SHADER} {
-        }
+        Vertex_shader() : Shader_handle{GL_VERTEX_SHADER} {}
     };
 
     // typed GL_VERTEX_SHADER equivalent to CreateShader
@@ -59,8 +68,7 @@ namespace gl {
     struct Fragment_shader final : public Shader_handle {
         friend Fragment_shader CreateFragmentShader();
 
-        Fragment_shader() : Shader_handle{GL_FRAGMENT_SHADER} {
-        }
+        Fragment_shader() : Shader_handle{GL_FRAGMENT_SHADER} {}
     };
 
     // typed GL_FRAGMENT_SHADER equivalent to CreateShader
@@ -72,8 +80,7 @@ namespace gl {
     class Geometry_shader final : public Shader_handle {
         friend Geometry_shader CreateGeometryShader();
 
-        Geometry_shader() : Shader_handle{GL_GEOMETRY_SHADER} {
-        }
+        Geometry_shader() : Shader_handle{GL_GEOMETRY_SHADER} {}
     };
 
     // typed GL_GEOMETRY_SHADER equivalent to CreateShader
@@ -84,7 +91,8 @@ namespace gl {
     // type-safe wrapper around GL_TEXTURE_2D
     class Texture_2d final : public Texture_handle {
         friend Texture_2d GenTexture2d();
-        using Texture_handle::Texture_handle;
+
+        Texture_2d() : Texture_handle{} {}
     public:
         static constexpr GLenum type = GL_TEXTURE_2D;
 
@@ -97,6 +105,10 @@ namespace gl {
     // typed GL_TEXTURE_2D equivalent to GenTexture
     inline Texture_2d GenTexture2d() {
         return Texture_2d{};
+    }
+
+    inline void BindTexture(Texture_2d& texture) {
+        BindTexture(texture.type, texture);
     }
 
 

@@ -408,15 +408,15 @@
 									<!--Name of geometry file .vtp, .stl, .obj-->
 									<geometry_file>r_pelvis.vtp</geometry_file>
 									<!--Color used to display the geometry when visible-->
-									<color> 1 1 1</color>
+                                                                        <color> 1 1 1</color>
 									<!--Name of texture file .jpg, .bmp-->
 									<texture_file />
 									<!--in body transform specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
 									<transform> -0 0 -0 0 0 0</transform>
 									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-									<scale_factors> 1 1 1</scale_factors>
+                                                                        <scale_factors>1 1 1</scale_factors>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-									<display_preference>4</display_preference>
+                                                                        <display_preference>4</display_preference>
 									<!--Display opacity between 0.0 and 1.0-->
 									<opacity>1</opacity>
 								</DisplayGeometry>
@@ -468,7 +468,7 @@
 						<objects>
 							<WrapCylinder name="Gmax1_at_pelvis_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.6 0.45 0</xyz_body_rotation>
 								<translation> -0.077 -0.099 0.061</translation>
 								<active>true</active>
@@ -493,7 +493,7 @@
 							</WrapCylinder>
 							<WrapCylinder name="Gmax2_at_pelvis_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.75 0.39 0</xyz_body_rotation>
 								<translation> -0.08 -0.083 0.068</translation>
 								<active>true</active>
@@ -511,14 +511,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="Gmax3_at_pelvis_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.1 0 0</xyz_body_rotation>
 								<translation> -0.083 -0.088 0.068</translation>
 								<active>true</active>
@@ -536,14 +536,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="Gmax1_at_pelvis_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.6 -0.45 0</xyz_body_rotation>
 								<translation> -0.077 -0.099 -0.061</translation>
 								<active>true</active>
@@ -561,14 +561,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.15</length>
 							</WrapCylinder>
 							<WrapCylinder name="Gmax2_at_pelvis_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.75 -0.39 0</xyz_body_rotation>
 								<translation> -0.08 -0.083 -0.068</translation>
 								<active>true</active>
@@ -586,14 +586,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="Gmax3_at_pelvis_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.1 0 0</xyz_body_rotation>
 								<translation> -0.083 -0.088 -0.068</translation>
 								<active>true</active>
@@ -611,14 +611,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="PS_at_brim_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.25 -0.27 0.1</xyz_body_rotation>
 								<translation> -0.074 -0.06 0.0656</translation>
 								<active>true</active>
@@ -636,14 +636,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.05</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="PS_at_brim_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.25 0.27 0.1</xyz_body_rotation>
 								<translation> -0.074 -0.06 -0.0656</translation>
 								<active>true</active>
@@ -661,14 +661,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.05</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="IL_at_brim_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.32 -0.24 0.9</xyz_body_rotation>
 								<translation> -0.071 -0.065 0.0756</translation>
 								<active>true</active>
@@ -686,14 +686,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0549</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="IL_at_brim_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.32 0.24 0.9</xyz_body_rotation>
 								<translation> -0.071 -0.065 -0.0756</translation>
 								<active>true</active>
@@ -711,7 +711,7 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0549</radius>
 								<length>0.1</length>
@@ -913,13 +913,13 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects>
 							<WrapCylinder name="Gastroc_at_condyles_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
 								<translation> 0.005 -0.41 0</translation>
 								<active>true</active>
@@ -937,14 +937,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.025</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="KnExt_at_fem_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -0.0623366 0.0507601 0</xyz_body_rotation>
 								<translation> 0.00358828 -0.402732 0.00209111</translation>
 								<active>true</active>
@@ -962,14 +962,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.025</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="AB_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.66157 0.186644 0</xyz_body_rotation>
 								<translation> 0.0146434 -0.112595 0.023365</translation>
 								<active>true</active>
@@ -987,14 +987,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0165</radius>
 								<length>0.07</length>
 							</WrapCylinder>
 							<WrapCylinder name="AL_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.77711 0.136489 0</xyz_body_rotation>
 								<translation> 0.0307327 -0.231909 0.0151137</translation>
 								<active>true</active>
@@ -1012,14 +1012,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0201</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMprox_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.61126 0.18656 0</xyz_body_rotation>
 								<translation> 0.00518299 -0.0728948 0.025403</translation>
 								<active>true</active>
@@ -1037,14 +1037,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0211</radius>
 								<length>0.07</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMmid_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.61139 0.13656 0</xyz_body_rotation>
 								<translation> 0.0230125 -0.160711 0.0205842</translation>
 								<active>true</active>
@@ -1062,14 +1062,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0214</radius>
 								<length>0.12</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMdist_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.71188 0.186636 0</xyz_body_rotation>
 								<translation> 0.0316065 -0.260736 0.0093646</translation>
 								<active>true</active>
@@ -1087,14 +1087,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0218</radius>
 								<length>0.2</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMisch_at_condyles_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.71115 -0.463363 0</xyz_body_rotation>
 								<translation> -0.0226511 -0.376831 -0.00315437</translation>
 								<active>true</active>
@@ -1112,14 +1112,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.24</length>
 							</WrapCylinder>
 							<WrapCylinder name="PECT_at_femshaft_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 1.81295 0.276344 0</xyz_body_rotation>
 								<translation> 0.00608573 -0.0845029 0.0304405</translation>
 								<active>true</active>
@@ -1137,7 +1137,7 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.015</radius>
 								<length>0.05</length>
@@ -1323,13 +1323,13 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects>
 							<WrapCylinder name="GasLat_at_shank_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 2.96723 -0.279725 -1.47812</xyz_body_rotation>
 								<translation> -0.0074 -0.074 -0.0033</translation>
 								<active>true</active>
@@ -1347,14 +1347,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.055</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="GasMed_at_shank_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 2.96723 0.0279725 -1.47812</xyz_body_rotation>
 								<translation> -0.0074 -0.074 -0.0033</translation>
 								<active>true</active>
@@ -1372,14 +1372,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.055</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="GR_at_condyles_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 -0.4 0</xyz_body_rotation>
 								<translation> -0.003 -0.02 0</translation>
 								<active>true</active>
@@ -1397,14 +1397,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.036</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="SM_at_condyles_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 -0.1 0</xyz_body_rotation>
 								<translation> -0.001 -0.02 0</translation>
 								<active>true</active>
@@ -1422,14 +1422,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0352</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="ST_at_condyles_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 -0.2 0</xyz_body_rotation>
 								<translation> -0.002 -0.0205 0</translation>
 								<active>true</active>
@@ -1447,14 +1447,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0425</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="BF_at_gastroc_r">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
 								<translation> -0.058 -0.06 0</translation>
 								<active>true</active>
@@ -1472,7 +1472,7 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.03</radius>
 								<length>0.15</length>
@@ -1728,7 +1728,7 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects />
@@ -2102,13 +2102,13 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects>
 							<WrapCylinder name="Gastroc_at_condyles_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
 								<translation> 0.005 -0.41 0</translation>
 								<active>true</active>
@@ -2126,14 +2126,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.025</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="KnExt_at_fem_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0.0623366 -0.0507601 0</xyz_body_rotation>
 								<translation> 0.00358828 -0.402732 -0.00209111</translation>
 								<active>true</active>
@@ -2151,14 +2151,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.025</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="AB_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.66157 -0.186644 0</xyz_body_rotation>
 								<translation> 0.0146434 -0.112595 -0.023365</translation>
 								<active>true</active>
@@ -2176,14 +2176,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0165</radius>
 								<length>0.07</length>
 							</WrapCylinder>
 							<WrapCylinder name="AL_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.77711 -0.136489 0</xyz_body_rotation>
 								<translation> 0.0307327 -0.231909 -0.0151137</translation>
 								<active>true</active>
@@ -2201,14 +2201,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0201</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMprox_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.61126 -0.18656 0</xyz_body_rotation>
 								<translation> 0.00518299 -0.0728948 -0.025403</translation>
 								<active>true</active>
@@ -2226,14 +2226,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0211</radius>
 								<length>0.07</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMmid_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.61139 -0.13656 0</xyz_body_rotation>
 								<translation> 0.0230125 -0.160711 -0.0205842</translation>
 								<active>true</active>
@@ -2251,14 +2251,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0214</radius>
 								<length>0.12</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMdist_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.71188 -0.186636 0</xyz_body_rotation>
 								<translation> 0.0316065 -0.260736 -0.0093646</translation>
 								<active>true</active>
@@ -2276,14 +2276,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0218</radius>
 								<length>0.2</length>
 							</WrapCylinder>
 							<WrapCylinder name="AMisch_at_condyles_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.71115 0.463363 0</xyz_body_rotation>
 								<translation> -0.0226511 -0.376831 0.00315437</translation>
 								<active>true</active>
@@ -2301,14 +2301,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.04</radius>
 								<length>0.24</length>
 							</WrapCylinder>
 							<WrapCylinder name="PECT_at_femshaft_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -1.81295 -0.276344 0</xyz_body_rotation>
 								<translation> 0.00608573 -0.0845029 -0.0304405</translation>
 								<active>true</active>
@@ -2326,7 +2326,7 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.015</radius>
 								<length>0.05</length>
@@ -2512,13 +2512,13 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects>
 							<WrapCylinder name="GasLat_at_shank_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -2.96723 0.279725 -1.47812</xyz_body_rotation>
 								<translation> -0.0074 -0.074 0.0033</translation>
 								<active>true</active>
@@ -2536,14 +2536,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.055</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="GasMed_at_shank_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> -2.96723 -0.0279725 -1.47812</xyz_body_rotation>
 								<translation> -0.0074 -0.074 0.0033</translation>
 								<active>true</active>
@@ -2561,14 +2561,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.055</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="GR_at_condyles_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0.4 0</xyz_body_rotation>
 								<translation> -0.003 -0.02 0</translation>
 								<active>true</active>
@@ -2586,14 +2586,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.036</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="SM_at_condyles_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0.1 0</xyz_body_rotation>
 								<translation> -0.001 -0.02 0</translation>
 								<active>true</active>
@@ -2611,14 +2611,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0352</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="ST_at_condyles_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0.2 0</xyz_body_rotation>
 								<translation> -0.002 -0.0205 0</translation>
 								<active>true</active>
@@ -2636,14 +2636,14 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.0425</radius>
 								<length>0.1</length>
 							</WrapCylinder>
 							<WrapCylinder name="BF_at_gastroc_l">
 								<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
-								<display_preference>0</display_preference>
+								<display_preference>1</display_preference>
 								<xyz_body_rotation> 0 0 0</xyz_body_rotation>
 								<translation> -0.058 -0.06 0</translation>
 								<active>true</active>
@@ -2661,7 +2661,7 @@
 									<!--Whether to show a coordinate frame-->
 									<show_axes>false</show_axes>
 									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-									<display_preference>0</display_preference>
+									<display_preference>1</display_preference>
 								</VisibleObject>
 								<radius>0.03</radius>
 								<length>0.15</length>
@@ -2917,7 +2917,7 @@
 						<!--Whether to show a coordinate frame-->
 						<show_axes>false</show_axes>
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
-						<display_preference>0</display_preference>
+						<display_preference>1</display_preference>
 					</VisibleObject>
 					<WrapObjectSet>
 						<objects />
@@ -5187,7 +5187,7 @@
 						<PathPointSet>
 							<objects>
 								<PathPoint name="addbrev_r-P1">
-									<location> -0.0191 -0.094 0.0154</location>
+                                                                        <location> -0.0191 -0.094 0.0154</location>
 									<body>pelvis</body>
 								</PathPoint>
 								<PathPoint name="addbrev_r-P2">

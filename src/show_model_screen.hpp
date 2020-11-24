@@ -14,7 +14,7 @@ namespace osmv {
     class Show_model_screen final : public Screen {
         std::unique_ptr<Show_model_screen_impl> impl;
     public:
-        Show_model_screen(std::vector<osim::Geometry> const& geometry);
+        Show_model_screen(std::string path, osim::Model_wrapper model);
         Show_model_screen(Show_model_screen const&) = delete;
         Show_model_screen(Show_model_screen&&) = delete;
         Show_model_screen& operator=(Show_model_screen const&) = delete;

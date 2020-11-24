@@ -9,6 +9,14 @@
 using namespace SimTK;
 using namespace OpenSim;
 
+namespace osim {
+    struct Geometry_loader_impl final {
+        Array_<DecorativeGeometry> tmp;
+        std::unordered_map<std::string, int> path_to_id;
+        std::vector<std::string> id_to_path;
+    };
+}
+
 namespace {
     void generateGeometry(Model& model, State const& state, Array_<DecorativeGeometry>& geometry) {
         model.generateDecorations(true, model.getDisplayHints(), state, geometry);
@@ -26,6 +34,9 @@ namespace {
         dg.generateDecorations(state, geometry);
     }
 
+    glm::vec3 to_vec3(Vec3 const& v) {
+        return glm::vec3{v[0], v[1], v[2]};
+    }
 
     // A hacky decoration generator that just always generates all geometry,
     // even if it's static.
@@ -46,14 +57,18 @@ namespace {
 
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
         Model& model;
-        State& state;
-        std::vector<osim::Geometry>& out;
+        State const& state;
+        osim::Geometry_loader_impl& impl;
+        osim::State_geometry& out;
+
 
         Geometry_visitor(Model& _model,
-                         State& _state,
-                         std::vector<osim::Geometry>& _out) :
+                         State const& _state,
+                         osim::Geometry_loader_impl& _impl,
+                         osim::State_geometry& _out) :
             model{_model},
             state{_state},
+            impl{_impl},
             out{_out} {
         }
 
@@ -104,10 +119,6 @@ namespace {
             return m;
         }
 
-        glm::vec3 to_vec3(Vec3 const& v) {
-            return glm::vec3{v[0], v[1], v[2]};
-        }
-
         glm::vec3 scale_factors(DecorativeGeometry const& geom) {
             Vec3 sf = geom.getScaleFactors();
             for (int i = 0; i < 3; ++i) {
@@ -132,7 +143,8 @@ namespace {
             glm::mat4 xform = transform(geom);
             glm::vec4 p1 = xform * to_vec4(geom.getPoint1());
             glm::vec4 p2 = xform * to_vec4(geom.getPoint2());
-            out.push_back(osim::Line{
+
+            out.lines.push_back(osim::Line{
                 .p1 = {p1.x, p1.y, p1.z},
                 .p2 = {p2.x, p2.y, p2.z},
                 .rgba = rgba(geom)
@@ -149,7 +161,7 @@ namespace {
 
             auto xform = glm::scale(m, s);
 
-            out.push_back(osim::Cylinder{
+            out.cylinders.push_back(osim::Cylinder{
                 .transform = xform,
                 .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(geom),
@@ -159,9 +171,9 @@ namespace {
         }
         void implementSphereGeometry(const DecorativeSphere& geom) override {
             float r = geom.getRadius();
-            auto xform =
-                glm::scale(transform(geom), glm::vec3{r, r, r});
-            out.push_back(osim::Sphere{
+            auto xform = glm::scale(transform(geom), glm::vec3{r, r, r});
+
+            out.spheres.push_back(osim::Sphere{
                 .transform = xform,
                 .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(geom),
@@ -176,76 +188,38 @@ namespace {
         void implementMeshGeometry(const DecorativeMesh&) override {
         }
         void implementMeshFileGeometry(const DecorativeMeshFile& m) override {
-            PolygonalMesh const& mesh = m.getMesh();
-
-            // helper function: gets a vertex for a face
-            auto get_face_vert = [&](int face, int vert) {
-                return to_vec3(mesh.getVertexPosition(mesh.getFaceVertex(face, vert)));
-            };
-
-            std::vector<osim::Triangle> triangles;
-
-            for (auto face = 0; face < mesh.getNumFaces(); ++face) {
-                auto num_vertices = mesh.getNumVerticesForFace(face);
-
-                if (num_vertices < 3) {
-                    // do nothing
-                } else if (num_vertices == 3) {
-                    // standard triangle face
-
-                    triangles.push_back(osim::Triangle{
-                        get_face_vert(face, 0),
-                        get_face_vert(face, 1),
-                        get_face_vert(face, 2)
-                    });
-                } else if (num_vertices == 4) {
-                    // rectangle: split into two triangles
-
-                    triangles.push_back(osim::Triangle{
-                        get_face_vert(face, 0),
-                        get_face_vert(face, 1),
-                        get_face_vert(face, 2)
-                    });
-                    triangles.push_back(osim::Triangle{
-                        get_face_vert(face, 2),
-                        get_face_vert(face, 3),
-                        get_face_vert(face, 0)
-                    });
-                } else {
-                    // polygon with >= 4 edges:
-                    //
-                    // create a vertex at the average center point and attach
-                    // every two verices to the center as triangles.
-
-                    auto center = glm::vec3{0.0f, 0.0f, 0.0f};
-                    for (int vert = 0; vert < num_vertices; ++vert) {
-                        center += get_face_vert(face, vert);
-                    }
-                    center /= num_vertices;
-
-                    for (int vert = 0; vert < num_vertices-1; ++vert) {
-                        triangles.push_back(osim::Triangle{
-                            get_face_vert(face, vert),
-                            get_face_vert(face, vert+1),
-                            center
-                        });
-                    }
-                    // loop back
-                    triangles.push_back(osim::Triangle{
-                        get_face_vert(face, num_vertices-1),
-                        get_face_vert(face, 0),
-                        center
-                    });
-                }
-            }            
-
             auto xform = glm::scale(transform(m), scale_factors(m));
 
-            out.push_back(osim::Mesh{
+            auto& p2id = impl.path_to_id;
+            std::string const& path = m.getMeshFile();
+
+            int id = -1;
+            auto it = p2id.find(path);
+            if (it == p2id.end()) {
+                // path wasn't previously encountered, so allocate a new mesh
+                // ID, which requires populating the lookups
+
+                auto& id2p = impl.id_to_path;
+
+                auto maybe_new_id = id2p.size();
+                if (maybe_new_id >= std::numeric_limits<int>::max()) {
+                    throw std::runtime_error{"ran out of IDs when trying to allocate a new mesh ID"};
+                }
+                id = static_cast<int>(maybe_new_id);
+
+                // populate lookups
+                id2p.push_back(path);
+                p2id[path] = id;
+            } else {
+                id = it->second;
+            }
+
+            out.mesh_instances.push_back(osim::Mesh_instance{
                 .transform = xform,
                 .normal_xform = glm::transpose(glm::inverse(xform)),
                 .rgba = rgba(m),
-                .triangles = std::move(triangles),
+
+                .mesh = id,
             });
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
@@ -255,6 +229,72 @@ namespace {
         void implementConeGeometry(const DecorativeCone&) override {
         }
     };
+}
+
+static osim::Mesh load(PolygonalMesh const& mesh) {
+
+    // helper function: gets a vertex for a face
+    auto get_face_vert = [&](int face, int vert) {
+        return to_vec3(mesh.getVertexPosition(mesh.getFaceVertex(face, vert)));
+    };
+
+    std::vector<osim::Triangle> triangles;
+
+    for (auto face = 0; face < mesh.getNumFaces(); ++face) {
+        auto num_vertices = mesh.getNumVerticesForFace(face);
+
+        if (num_vertices < 3) {
+            // do nothing
+        } else if (num_vertices == 3) {
+            // standard triangle face
+
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 0),
+                get_face_vert(face, 1),
+                get_face_vert(face, 2)
+            });
+        } else if (num_vertices == 4) {
+            // rectangle: split into two triangles
+
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 0),
+                get_face_vert(face, 1),
+                get_face_vert(face, 2)
+            });
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 2),
+                get_face_vert(face, 3),
+                get_face_vert(face, 0)
+            });
+        } else {
+            // polygon with >= 4 edges:
+            //
+            // create a vertex at the average center point and attach
+            // every two verices to the center as triangles.
+
+            auto center = glm::vec3{0.0f, 0.0f, 0.0f};
+            for (int vert = 0; vert < num_vertices; ++vert) {
+                center += get_face_vert(face, vert);
+            }
+            center /= num_vertices;
+
+            for (int vert = 0; vert < num_vertices-1; ++vert) {
+                triangles.push_back(osim::Triangle{
+                    get_face_vert(face, vert),
+                    get_face_vert(face, vert+1),
+                    center
+                });
+            }
+            // loop back
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, num_vertices-1),
+                get_face_vert(face, 0),
+                center
+            });
+        }
+    }
+
+    return osim::Mesh{std::move(triangles)};
 }
 
 std::ostream& osim::operator<<(std::ostream& o, osim::Line const& l) {
@@ -272,40 +312,166 @@ std::ostream& osim::operator<<(std::ostream& o, osim::Sphere const& s) {
     return o;
 }
 
-std::ostream& osim::operator<<(std::ostream& o, osim::Mesh const& m) {
+std::ostream& osim::operator<<(std::ostream& o, osim::Mesh_instance const& m) {
     o << "mesh:" << std::endl
       << "    transform = " << m.transform << std::endl
-      << "    rgba = " << m.rgba << std::endl
-      << "    num_triangles = " << m.triangles.size() << std::endl;
+      << "    rgba = " << m.rgba << std::endl;
     return o;
 }
 
-std::vector<osim::Geometry> osim::geometry_in(char const* path) {
-    Model model{std::string{path}};
-    model.finalizeFromProperties();
-    model.finalizeConnections();
+namespace osim {
+    struct Model_handle {
+        Model model;
 
-    // Configure the model.
+        Model_handle(char const* path) : model{path} {
+            model.finalizeFromProperties();
+            model.finalizeConnections();
+            model.buildSystem();
+        }
+    };
+}
 
-    model.buildSystem();
-    State& state = model.initSystem();
-    model.initializeState();
-    model.updMatterSubsystem().setShowDefaultGeometry(false);
+osim::Model_wrapper::~Model_wrapper() noexcept = default;
 
-    DynamicDecorationGenerator dg{&model};
-    Array_<DecorativeGeometry> tmp;
-    dg.generateDecorations(state, tmp);
+osim::Model_wrapper osim::load_osim(char const* path) {
+    return Model_wrapper{std::make_shared<Model_handle>(path)};
+}
 
-    auto rv = std::vector<osim::Geometry>{};
-    auto visitor = Geometry_visitor{model, state, rv};
-    for (DecorativeGeometry& dg : tmp) {
+namespace osim {
+    struct State_handle {
+        std::shared_ptr<Model_handle> model;
+        State state;
+
+        State_handle(std::shared_ptr<Model_handle> _model) :
+            model{std::move(_model)},
+            state{model->model.initializeState()} {
+
+            model->model.equilibrateMuscles(state);
+        }
+    };
+}
+
+osim::State_wrapper::~State_wrapper() noexcept = default;
+
+osim::State_wrapper osim::initial_state(Model_wrapper& mw) {
+    return State_wrapper{std::make_unique<State_handle>(mw.handle)};
+}
+
+osim::Geometry_loader::Geometry_loader() :
+    impl{new Geometry_loader_impl{}}
+{
+}
+
+osim::Geometry_loader::Geometry_loader(Geometry_loader&&) = default;
+
+osim::Geometry_loader& osim::Geometry_loader::operator=(Geometry_loader&&) = default;
+
+void osim::Geometry_loader::geometry_in(const State_wrapper &st, State_geometry &out) {
+    out.lines.clear();
+    out.spheres.clear();
+    out.cylinders.clear();
+    out.mesh_instances.clear();
+    impl->tmp.clear();
+
+    OpenSim::Model& m = st.handle->model->model;
+    SimTK::State& s = st.handle->state;
+
+    DynamicDecorationGenerator dg{&m};
+    dg.generateDecorations(st.handle->state, impl->tmp);
+
+    auto visitor = Geometry_visitor{m, s, *impl, out};
+    for (DecorativeGeometry& dg : impl->tmp) {
         dg.implementGeometry(visitor);
     }
-
-    return rv;
 }
 
-std::ostream& osim::operator<<(std::ostream& o, osim::Geometry const& g) {
-    std::visit([&](auto concrete) { o << concrete; }, g);
-    return o;
+std::string const& osim::Geometry_loader::path_to(Mesh_id mesh) const {
+    assert(impl->id_to_path.size() >= static_cast<size_t>(mesh));
+    return impl->id_to_path[static_cast<size_t>(mesh)];
 }
+
+osim::Geometry_loader::~Geometry_loader() noexcept = default;
+
+namespace osim {
+    // this exists in case the mesh loader impl needs to hold onto some state
+    struct Mesh_loader_impl final {
+        PolygonalMesh mesh;
+    };
+}
+
+osim::Mesh_loader::Mesh_loader() :
+    impl{new Mesh_loader_impl{}}
+{
+}
+osim::Mesh_loader::Mesh_loader(Mesh_loader&&) = default;
+osim::Mesh_loader& osim::Mesh_loader::Mesh_loader::operator=(Mesh_loader&&) = default;
+
+void osim::Mesh_loader::load(std::string const& path, Mesh& out) {
+    PolygonalMesh& mesh = impl->mesh;
+    mesh.clear();
+    mesh.loadFile(path);
+
+    // helper function: gets a vertex for a face
+    auto get_face_vert = [&](int face, int vert) {
+        return to_vec3(mesh.getVertexPosition(mesh.getFaceVertex(face, vert)));
+    };
+
+    std::vector<osim::Triangle>& triangles = out.triangles;
+    triangles.clear();
+
+    for (auto face = 0; face < mesh.getNumFaces(); ++face) {
+        auto num_vertices = mesh.getNumVerticesForFace(face);
+
+        if (num_vertices < 3) {
+            // do nothing
+        } else if (num_vertices == 3) {
+            // standard triangle face
+
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 0),
+                get_face_vert(face, 1),
+                get_face_vert(face, 2)
+            });
+        } else if (num_vertices == 4) {
+            // rectangle: split into two triangles
+
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 0),
+                get_face_vert(face, 1),
+                get_face_vert(face, 2)
+            });
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, 2),
+                get_face_vert(face, 3),
+                get_face_vert(face, 0)
+            });
+        } else {
+            // polygon with >= 4 edges:
+            //
+            // create a vertex at the average center point and attach
+            // every two verices to the center as triangles.
+
+            auto center = glm::vec3{0.0f, 0.0f, 0.0f};
+            for (int vert = 0; vert < num_vertices; ++vert) {
+                center += get_face_vert(face, vert);
+            }
+            center /= num_vertices;
+
+            for (int vert = 0; vert < num_vertices-1; ++vert) {
+                triangles.push_back(osim::Triangle{
+                    get_face_vert(face, vert),
+                    get_face_vert(face, vert+1),
+                    center
+                });
+            }
+            // loop back
+            triangles.push_back(osim::Triangle{
+                get_face_vert(face, num_vertices-1),
+                get_face_vert(face, 0),
+                center
+            });
+        }
+    }
+}
+
+osim::Mesh_loader::~Mesh_loader() noexcept = default;

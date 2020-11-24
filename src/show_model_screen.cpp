@@ -6,6 +6,7 @@
 #include "screen.hpp"
 #include "meshes.hpp"
 #include "opensim_wrapper.hpp"
+#include "loading_screen.hpp"
 
 // OpenGL
 #include "gl.hpp"
@@ -30,6 +31,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
 
 constexpr float pi_f = static_cast<float>(M_PI);
 
@@ -60,7 +62,7 @@ namespace {
             }
         }
 
-        gl::Texture_2d rv;
+        gl::Texture_2d rv = gl::GenTexture2d();
         gl::BindTexture(rv.type, rv);
         glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
         glGenerateMipmap(rv.type);
@@ -208,8 +210,7 @@ namespace {
 
     // create an xform that transforms the unit cylinder into a line between
     // two points
-    glm::mat4 cylinder_to_line_xform(glm::vec4 const& color,
-                                     float line_width,
+    glm::mat4 cylinder_to_line_xform(float line_width,
                                      glm::vec3 const& p1,
                                      glm::vec3 const& p2) {
         glm::vec3 p1_to_p2 = p2 - p1;
@@ -250,59 +251,20 @@ namespace {
 
     // mesh received from OpenSim model and then uploaded into OpenGL
     struct Osim_mesh final {
-        glm::vec4 rgba;
-        glm::mat4 transform;
-        glm::mat4 normal_xform;
         Main_program_renderable main_prog_renderable;
         Normals_program_renderable normals_prog_renderable;
 
         Osim_mesh(Main_program& mp, Normals_program& np, osim::Mesh const& m) :
-            rgba{m.rgba},
-            transform{m.transform},
-            normal_xform{m.normal_xform},
             main_prog_renderable{mp, std::make_shared<Vbo_Triangles_with_norms>(make_mesh(m))},
             normals_prog_renderable{np, main_prog_renderable.verts} {
         }
     };
-
-    // geometry pulled out of an OpenSim model
-    struct Model_geometry final {
-        std::vector<osim::Cylinder> cylinders;
-        std::vector<osim::Sphere> spheres;
-        std::vector<Osim_mesh> meshes;
-    };
-
-    // helper function that visits an OpenSim model and pulls geometry out of
-    // it
-    Model_geometry load_model(Main_program& mp, Normals_program& np, std::vector<osim::Geometry> const & geometry) {
-        Model_geometry rv;
-        for (osim::Geometry const& g : geometry) {
-            std::visit(overloaded {
-                [&](osim::Cylinder const& c) {
-                    rv.cylinders.push_back(c);
-                },
-                [&](osim::Line const& l) {
-                    // HACK: lines are just cylinders, but transformed to look
-                    // like lines. Do not use OpenGL's built-in lines because
-                    // they suck.
-                    float line_width = 0.0045f;
-                    auto xform = cylinder_to_line_xform(l.rgba, line_width, l.p1, l.p2);
-                    rv.cylinders.push_back(osim::Cylinder{xform, glm::transpose(glm::inverse(xform)), l.rgba});
-                },
-                [&](osim::Sphere const& s) {
-                    rv.spheres.push_back(s);
-                },
-                [&](osim::Mesh const& m) {
-                    rv.meshes.push_back(Osim_mesh{mp, np, m});
-                }
-            }, g);
-        }
-        return rv;
-    }
 }
 
 namespace osmv {
     struct Show_model_screen_impl final {
+        std::string path;
+
         Main_program pMain = {};
         Normals_program pNormals = {};
 
@@ -345,9 +307,16 @@ namespace osmv {
 
         sdl::Window_dimensions window_dims;
 
-        Model_geometry ms;  // loaded in ctor
+        osim::Model_wrapper model;
+        osim::State_wrapper state;
+        osim::State_geometry geom;
+        osim::Geometry_loader geom_loader;
 
-        Show_model_screen_impl(std::vector<osim::Geometry> const& geometry);
+        osim::Mesh mesh_swap_space;
+        osim::Mesh_loader mesh_loader;
+        std::unordered_map<osim::Mesh_id, Osim_mesh> meshes;
+
+        Show_model_screen_impl(std::string _path, osim::Model_wrapper model);
 
         void init(Application&);
         osmv::Screen_response handle_event(Application&, SDL_Event&);
@@ -355,17 +324,29 @@ namespace osmv {
     };
 }
 
-osmv::Show_model_screen::Show_model_screen(std::vector<osim::Geometry> const & geometry)
-    : impl{new Show_model_screen_impl{geometry}} {
+osmv::Show_model_screen::Show_model_screen(std::string path, osim::Model_wrapper model) :
+    impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 
-osmv::Show_model_screen_impl::Show_model_screen_impl(std::vector<osim::Geometry> const& geometry) :
-    ms{load_model(pMain, pNormals, geometry)} {
+osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::Model_wrapper _model) :
+    path{std::move(_path)},
+    model{std::move(_model)},
+    state{osim::initial_state(model)} {
 
-    if (gamma_correction) {
-        OSC_GL_CALL_CHECK(glEnable, GL_FRAMEBUFFER_SRGB);
-    } else {
-        OSC_GL_CALL_CHECK(glDisable, GL_FRAMEBUFFER_SRGB);
+    // populate geometry
+    geom_loader.geometry_in(state, geom);
+
+    for (osim::Mesh_instance const& mi : geom.mesh_instances) {
+        std::string const& path = geom_loader.path_to(mi.mesh);
+        mesh_loader.load(path, mesh_swap_space);
+        meshes.emplace(mi.mesh, Osim_mesh{pMain, pNormals, mesh_swap_space});
+    }
+
+    // HACK: xform lines to cylinders
+    for (osim::Line const& l : geom.lines) {
+        glm::mat4 transform = cylinder_to_line_xform(0.005, l.p1, l.p2);
+        osim::Cylinder c{transform, glm::transpose(glm::inverse(transform)), l.rgba};
+        geom.cylinders.emplace_back(c);
     }
 }
 
@@ -376,6 +357,11 @@ void osmv::Show_model_screen::init(osmv::Application& s) {
 }
 
 void osmv::Show_model_screen_impl::init(Application & s) {
+    if (gamma_correction) {
+        glEnable(GL_FRAMEBUFFER_SRGB);
+    } else {
+        glDisable(GL_FRAMEBUFFER_SRGB);
+    }
     window_dims = sdl::GetWindowSize(s.window);
 }
 
@@ -394,6 +380,8 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
         case SDLK_w:
             wireframe_mode = not wireframe_mode;
             break;
+        case SDLK_r:
+            return Resp_Transition_to{std::make_unique<osmv::Loading_screen>(path)};
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
         switch (e.button.button) {
@@ -494,6 +482,17 @@ void osmv::Show_model_screen::draw(osmv::Application& ui) {
     impl->draw(ui);
 }
 
+template<typename K, typename V>
+static V& throwing_find(std::unordered_map<K, V>& m, K const& k) {
+    auto it = m.find(k);
+    if (it != m.end()) {
+        return it->second;
+    }
+    std::stringstream ss;
+    ss << k << ": not found in mesh map lookup: was it loaded?";
+    throw std::runtime_error{ss.str()};
+}
+
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -555,7 +554,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
         gl::BindVertexArray(pMain_cylinder.vao);
 
-        for (auto const& c : ms.cylinders) {
+        for (auto const& c : geom.cylinders) {
             gl::Uniform(pMain.rgba, c.rgba);
             gl::Uniform(pMain.modelMat, c.transform);
             gl::Uniform(pMain.normalMat, c.normal_xform);
@@ -578,7 +577,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
         gl::BindVertexArray(pMain_sphere.vao);
 
-        for (auto const& c : ms.spheres) {
+        for (auto const& c : geom.spheres) {
             gl::Uniform(pMain.rgba, c.rgba);
             gl::Uniform(pMain.modelMat, c.transform);
             gl::Uniform(pMain.normalMat, c.normal_xform);
@@ -597,12 +596,14 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     }
 
     // draw meshes
-    for (auto& m : ms.meshes) {
+    for (auto& m : geom.mesh_instances) {
         gl::Uniform(pMain.rgba, m.rgba);
         gl::Uniform(pMain.modelMat, m.transform);
         gl::Uniform(pMain.normalMat, m.normal_xform);
-        gl::BindVertexArray(m.main_prog_renderable.vao);
-        glDrawArrays(GL_TRIANGLES, 0, m.main_prog_renderable.verts->num_verts);
+
+        Osim_mesh& md = throwing_find(meshes, m.mesh);
+        gl::BindVertexArray(md.main_prog_renderable.vao);
+        glDrawArrays(GL_TRIANGLES, 0, md.main_prog_renderable.verts->num_verts);
         gl::BindVertexArray();
     }
 
@@ -617,7 +618,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
             gl::BindVertexArray(pNormals_cylinder.vao);
 
-            for (auto const& c : ms.cylinders) {
+            for (auto const& c : geom.cylinders) {
                 gl::Uniform(pNormals.modelMat, c.transform);
                 gl::Uniform(pNormals.normalMat, c.normal_xform);
                 glDrawArrays(GL_TRIANGLES, 0, num_verts);
@@ -637,7 +638,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
             gl::BindVertexArray(pNormals_sphere.vao);
 
-            for (auto const& c : ms.spheres) {
+            for (auto const& c : geom.spheres) {
                 gl::Uniform(pNormals.modelMat, c.transform);
                 gl::Uniform(pNormals.normalMat, c.normal_xform);
                 glDrawArrays(GL_TRIANGLES, 0, num_verts);
@@ -652,11 +653,13 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         }
 
         if (show_mesh_normals) {
-            for (auto& m : ms.meshes) {
+            for (auto& m : geom.mesh_instances) {
                 gl::Uniform(pNormals.modelMat, m.transform);
                 gl::Uniform(pNormals.normalMat, m.normal_xform);
-                gl::BindVertexArray(m.normals_prog_renderable.vao);
-                glDrawArrays(GL_TRIANGLES, 0, m.normals_prog_renderable.verts->num_verts);
+
+                Osim_mesh& md = throwing_find(meshes, m.mesh);
+                gl::BindVertexArray(md.normals_prog_renderable.vao);
+                glDrawArrays(GL_TRIANGLES, 0, md.normals_prog_renderable.verts->num_verts);
                 gl::BindVertexArray();
             }
         }

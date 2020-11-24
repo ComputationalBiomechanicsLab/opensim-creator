@@ -214,7 +214,7 @@ namespace gl {
         glBindVertexArray(vao.handle);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml    
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
     inline void BindVertexArray() {
         glBindVertexArray(static_cast<GLuint>(0));
     }
