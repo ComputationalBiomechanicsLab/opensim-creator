@@ -7,6 +7,7 @@
 #include "meshes.hpp"
 #include "opensim_wrapper.hpp"
 #include "loading_screen.hpp"
+#include "globals.hpp"
 
 // OpenGL
 #include "gl.hpp"
@@ -32,6 +33,7 @@
 #include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <algorithm>
 
 constexpr float pi_f = static_cast<float>(M_PI);
 
@@ -40,10 +42,130 @@ template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 // explicit deduction guide (not needed as of C++20)
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-namespace {
-    using osmv::Mesh_point;
-    using osmv::Vec3;
+template<typename K, typename V>
+static V& throwing_find(std::unordered_map<K, V>& m, K const& k) {
+    auto it = m.find(k);
+    if (it != m.end()) {
+        return it->second;
+    }
+    std::stringstream ss;
+    ss << k << ": not found in mesh map lookup: was it loaded?";
+    throw std::runtime_error{ss.str()};
+}
 
+// replace me with C++20's std::stop_token
+class Adams_stop_token final {
+    std::shared_ptr<std::atomic<bool>> shared_state;
+public:
+    Adams_stop_token(std::shared_ptr<std::atomic<bool>> st)
+        : shared_state{std::move(st)} {
+    }
+    // these are deleted to ensure the API is a strict subset of C++20
+    Adams_stop_token(Adams_stop_token const&) = delete;
+    Adams_stop_token(Adams_stop_token&& tmp) :
+        shared_state{tmp.shared_state}  {
+    }
+    Adams_stop_token& operator=(Adams_stop_token const&) = delete;
+    Adams_stop_token& operator=(Adams_stop_token&&) = delete;
+    ~Adams_stop_token() noexcept = default;
+
+    bool stop_requested() const noexcept {
+        return *shared_state;
+    }
+};
+
+// replace me with C++20's std::stop_source
+class Adams_stop_source final {
+    std::shared_ptr<std::atomic<bool>> shared_state;
+public:
+    Adams_stop_source() :
+        shared_state{new std::atomic<bool>{false}} {
+    }
+
+    // copying not needed here, so deleted
+    Adams_stop_source(Adams_stop_source const&) = delete;
+    Adams_stop_source& operator=(Adams_stop_source const&) = delete;
+
+    // move: After the assignment, *this contains the previous stop-state of
+    //       tmp, and tmp has no stop-state
+    Adams_stop_source(Adams_stop_source&& tmp) :
+        shared_state{std::move(tmp.shared_state)} {
+    }
+
+    Adams_stop_source& operator=(Adams_stop_source&& tmp) {
+        shared_state = std::move(tmp.shared_state);
+        return *this;
+    }
+
+    ~Adams_stop_source() = default;
+
+    bool request_stop() noexcept {
+        // as-per the spec, but always true for this impl.
+        bool has_stop_state = shared_state != nullptr;
+        bool already_stopped = shared_state->exchange(true);
+
+        return has_stop_state and (not already_stopped);
+    }
+
+    Adams_stop_token get_token() const noexcept {
+        return Adams_stop_token{shared_state};
+    }
+};
+
+// replace me with C++20's std::jthread
+class Adams_jthread final {
+    Adams_stop_source s;
+    std::thread t;
+public:
+    // Creates new thread object which does not represent a thread
+    Adams_jthread() :
+        s{},
+        t{} {
+    }
+
+    // Creates new thread object and associates it with a thread of execution.
+    // The new thread of execution immediately starts executing
+    template<class Function, class... Args>
+    Adams_jthread(Function&& f, Args&&... args) :
+        s{},
+        t{f, s.get_token(), std::forward<Args>(args)...} {
+    }
+
+    // threads are non-copyable
+    Adams_jthread(Adams_jthread const&) = delete;
+    Adams_jthread& operator=(Adams_jthread const&) = delete;
+
+    // but are moveable: the moved-from value is a non-joinable thread that
+    // does not represent a thread
+    Adams_jthread(Adams_jthread&& tmp) = default;
+    Adams_jthread& operator=(Adams_jthread&&) = default;
+
+    // jthreads (or "joining threads") cancel + join on destruction
+    ~Adams_jthread() noexcept {
+        if (joinable()) {
+            s.request_stop();
+            t.join();
+        }
+    }
+
+    std::thread::id get_id() const noexcept {
+        return t.get_id();
+    }
+
+    bool joinable() const noexcept {
+        return t.joinable();
+    }
+
+    bool request_stop() noexcept {
+        return s.request_stop();
+    }
+
+    void join() {
+        return t.join();
+    }
+};
+
+namespace {
     // returns a procedurally-generated chequered floor texture
     gl::Texture_2d generate_chequered_floor() {
         struct Rgb { unsigned char r, g, b; };
@@ -74,12 +196,12 @@ namespace {
             gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
         gl::Texture_2d tex = generate_chequered_floor();
-        gl::Uniform_mat4f projMat = gl::GetUniformLocation(p, "projMat");
-        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(p, "viewMat");
-        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(p, "modelMat");
-        gl::Uniform_1i uSampler0 = gl::GetUniformLocation(p, "uSampler0");
-        static constexpr gl::Attribute aPos = 0;
-        static constexpr gl::Attribute aTexCoord = 1;
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
+        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
 
         // instance stuff
         gl::Array_buffer quad_buf = []() {
@@ -120,11 +242,13 @@ namespace {
         GLsizei num_verts = 0;
         gl::Array_buffer vbo = gl::GenArrayBuffer();
 
-        Vbo_Triangles_with_norms(std::vector<Mesh_point> const& points)
-            : num_verts(static_cast<GLsizei>(points.size())) {
+        Vbo_Triangles_with_norms(std::vector<osim::Untextured_triangle> const& triangles)
+            : num_verts(static_cast<GLsizei>(3 * triangles.size())) {
+
+            static_assert(sizeof(osim::Untextured_triangle) == 3 * sizeof(osim::Untextured_vert));
 
             gl::BindBuffer(vbo.type, vbo);
-            gl::BufferData(vbo.type, sizeof(Mesh_point) * points.size(), points.data(), GL_STATIC_DRAW);
+            gl::BufferData(vbo.type, sizeof(osim::Untextured_triangle) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
         }
     };
 
@@ -135,12 +259,12 @@ namespace {
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
             gl::CompileGeometryShaderFile(OSMV_SHADERS_DIR "normals.geom"));
 
-        gl::Uniform_mat4f projMat = gl::GetUniformLocation(program, "projMat");
-        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::Uniform_mat4f normalMat = gl::GetUniformLocation(program, "normalMat");
-        static constexpr gl::Attribute aPos = 0;
-        static constexpr gl::Attribute aNormal = 1;
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
     };
 
     // a (potentially shared) mesh that is ready for `Normals_program` to render
@@ -155,9 +279,9 @@ namespace {
                 auto vao = gl::GenVertexArrays();
                 gl::BindVertexArray(vao);
                 gl::BindBuffer(verts->vbo.type, verts->vbo);
-                gl::VertexAttribPointer(p.aPos, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), 0);
+                gl::VertexAttribPointer(p.aPos, 3, GL_FLOAT, GL_FALSE, sizeof(osim::Untextured_vert), reinterpret_cast<void*>(offsetof(osim::Untextured_vert, pos)));
                 gl::EnableVertexAttribArray(p.aPos);
-                gl::VertexAttribPointer(p.aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), (void*)sizeof(Vec3));
+                gl::VertexAttribPointer(p.aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(osim::Untextured_vert), reinterpret_cast<void*>(offsetof(osim::Untextured_vert, normal)));
                 gl::EnableVertexAttribArray(p.aNormal);
                 gl::BindVertexArray();
                 return vao;
@@ -171,14 +295,14 @@ namespace {
             gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
             gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
 
-        gl::Uniform_mat4f projMat = gl::GetUniformLocation(program, "projMat");
-        gl::Uniform_mat4f viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::Uniform_mat4f modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::Uniform_mat4f normalMat = gl::GetUniformLocation(program, "normalMat");
-        gl::Uniform_vec4f rgba = gl::GetUniformLocation(program, "rgba");
-        gl::Uniform_vec3f light_pos = gl::GetUniformLocation(program, "lightPos");
-        gl::Uniform_vec3f light_color = gl::GetUniformLocation(program, "lightColor");
-        gl::Uniform_vec3f view_pos = gl::GetUniformLocation(program, "viewPos");
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
+        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "rgba");
+        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "lightPos");
+        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "lightColor");
+        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "viewPos");
 
         gl::Attribute location = gl::GetAttribLocation(program, "location");
         gl::Attribute in_normal = gl::GetAttribLocation(program, "in_normal");
@@ -197,9 +321,9 @@ namespace {
                 gl::BindVertexArray(vao);
                 {
                     gl::BindBuffer(verts->vbo.type, verts->vbo);
-                    gl::VertexAttribPointer(p.location, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), 0);
+                    gl::VertexAttribPointer(p.location, 3, GL_FLOAT, GL_FALSE, sizeof(osim::Untextured_vert), reinterpret_cast<void*>(offsetof(osim::Untextured_vert, pos)));
                     gl::EnableVertexAttribArray(p.location);
-                    gl::VertexAttribPointer(p.in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh_point), (void*)sizeof(Vec3));
+                    gl::VertexAttribPointer(p.in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(osim::Untextured_vert), reinterpret_cast<void*>(offsetof(osim::Untextured_vert, normal)));
                     gl::EnableVertexAttribArray(p.in_normal);
                     gl::BindVertexArray();
                 }
@@ -225,37 +349,13 @@ namespace {
         return translation * rotation * scale_xform;
     }
 
-    std::tuple<Mesh_point, Mesh_point, Mesh_point> to_mesh_points(osim::Triangle const& t) {
-        glm::vec3 normal = glm::cross((t.p2 - t.p1), (t.p3 - t.p1));
-        Vec3 normal_vec3 = Vec3{normal.x, normal.y, normal.z};
-
-        return {
-            Mesh_point{Vec3{t.p1.x, t.p1.y, t.p1.z}, normal_vec3},
-            Mesh_point{Vec3{t.p2.x, t.p2.y, t.p2.z}, normal_vec3},
-            Mesh_point{Vec3{t.p3.x, t.p3.y, t.p3.z}, normal_vec3}
-        };
-    }
-
-    // TODO: this is hacked together
-    Vbo_Triangles_with_norms make_mesh(osim::Mesh const& data) {
-        std::vector<Mesh_point> triangles;
-        triangles.reserve(3*data.triangles.size());
-        for (osim::Triangle const& t : data.triangles) {
-            auto [p1, p2, p3] = to_mesh_points(t);
-            triangles.emplace_back(p1);
-            triangles.emplace_back(p2);
-            triangles.emplace_back(p3);
-        }
-        return Vbo_Triangles_with_norms{triangles};
-    }
-
     // mesh received from OpenSim model and then uploaded into OpenGL
     struct Osim_mesh final {
         Main_program_renderable main_prog_renderable;
         Normals_program_renderable normals_prog_renderable;
 
-        Osim_mesh(Main_program& mp, Normals_program& np, osim::Mesh const& m) :
-            main_prog_renderable{mp, std::make_shared<Vbo_Triangles_with_norms>(make_mesh(m))},
+        Osim_mesh(Main_program& mp, Normals_program& np, osim::Untextured_mesh const& m) :
+            main_prog_renderable{mp, std::make_shared<Vbo_Triangles_with_norms>(m.triangles)},
             normals_prog_renderable{np, main_prog_renderable.verts} {
         }
     };
@@ -268,15 +368,32 @@ namespace osmv {
         Main_program pMain = {};
         Normals_program pNormals = {};
 
-        Main_program_renderable pMain_cylinder =
-            {pMain, std::make_shared<Vbo_Triangles_with_norms>(osmv::simbody_cylinder_triangles(12))};
+        osim::Untextured_mesh mesh_swap_space;
+
+        Main_program_renderable pMain_cylinder = [&]() {
+            // render triangles into swap space
+            osmv::simbody_cylinder_triangles(12, mesh_swap_space.triangles);
+
+            return Main_program_renderable{
+                pMain,
+                std::make_shared<Vbo_Triangles_with_norms>(mesh_swap_space.triangles)
+            };
+        }();
+
         Normals_program_renderable pNormals_cylinder =
             {pNormals, pMain_cylinder.verts};
 
-        Main_program_renderable pMain_sphere =
-            {pMain, std::make_shared<Vbo_Triangles_with_norms>(osmv::unit_sphere_triangles())};
-        Main_program_renderable pNormals_sphere =
-            {pMain, pMain_sphere.verts};
+        Main_program_renderable pMain_sphere = [&]() {
+            // render triangles into swap space
+            osmv::unit_sphere_triangles(mesh_swap_space.triangles);
+
+            return Main_program_renderable{
+                pMain,
+                std::make_shared<Vbo_Triangles_with_norms>(mesh_swap_space.triangles)
+            };
+        }();
+
+        Main_program_renderable pNormals_sphere = {pMain, pMain_sphere.verts};
 
         Floor_program pFloor;
 
@@ -288,7 +405,7 @@ namespace osmv {
 
         bool dragging = false;
         float theta = 0.0f;
-        float phi = 0.0f;
+        float phi =  0.0f;
         float sensitivity = 1.0f;
 
         bool panning = false;
@@ -300,53 +417,59 @@ namespace osmv {
         bool show_unit_cylinder = false;
 
         bool gamma_correction = false;
-        bool user_gamma_correction = gamma_correction;
         bool show_cylinder_normals = false;
-        bool show_sphere_normals = false;
         bool show_mesh_normals = false;
+        bool show_floor = false;
 
         sdl::Window_dimensions window_dims;
 
-        osim::Model_wrapper model;
-        osim::State_wrapper state;
+        std::mutex simulator_mutex;
+        Adams_jthread simulator_thread;
+        std::atomic<bool> simulator_finished = false;
+        osim::OSMV_State simulator_latest;
+
+        osim::OSMV_Model model;
         osim::State_geometry geom;
         osim::Geometry_loader geom_loader;
-
-        osim::Mesh mesh_swap_space;
-        osim::Mesh_loader mesh_loader;
         std::unordered_map<osim::Mesh_id, Osim_mesh> meshes;
 
-        Show_model_screen_impl(std::string _path, osim::Model_wrapper model);
+        Show_model_screen_impl(std::string _path, osim::OSMV_Model model);
+
+        void update_scene(SimTK::State&);
 
         void init(Application&);
         osmv::Screen_response handle_event(Application&, SDL_Event&);
+        Screen_response tick(Application&);
         void draw(Application&);
+        void draw_model_scene(Application&);
+        void draw_imgui_ui(Application&);
+        void draw_simulation_bar(Application&);
+        void draw_gfx_tab(Application&);
+        void start_simulation(Application&);
     };
 }
 
-osmv::Show_model_screen::Show_model_screen(std::string path, osim::Model_wrapper model) :
+osmv::Show_model_screen::Show_model_screen(std::string path, osim::OSMV_Model model) :
     impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 
-osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::Model_wrapper _model) :
+osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OSMV_Model _model) :
     path{std::move(_path)},
-    model{std::move(_model)},
-    state{osim::initial_state(model)} {
+    model{std::move(_model)} {
 
-    // populate geometry
-    geom_loader.geometry_in(state, geom);
+    SimTK::State& s = osim::init_system(*model);
+    update_scene(s);
+}
 
+void osmv::Show_model_screen_impl::update_scene(SimTK::State& s) {
+    geom_loader.geometry_in(*model, s, geom);
+
+    // populate mesh data, if necessary
     for (osim::Mesh_instance const& mi : geom.mesh_instances) {
-        std::string const& path = geom_loader.path_to(mi.mesh);
-        mesh_loader.load(path, mesh_swap_space);
-        meshes.emplace(mi.mesh, Osim_mesh{pMain, pNormals, mesh_swap_space});
-    }
-
-    // HACK: xform lines to cylinders
-    for (osim::Line const& l : geom.lines) {
-        glm::mat4 transform = cylinder_to_line_xform(0.005, l.p1, l.p2);
-        osim::Cylinder c{transform, glm::transpose(glm::inverse(transform)), l.rgba};
-        geom.cylinders.emplace_back(c);
+        if (meshes.find(mi.mesh) == meshes.end()) {
+            geom_loader.load_mesh(mi.mesh, mesh_swap_space);
+            meshes.emplace(mi.mesh, Osim_mesh{pMain, pNormals, mesh_swap_space});
+        }
     }
 }
 
@@ -357,11 +480,6 @@ void osmv::Show_model_screen::init(osmv::Application& s) {
 }
 
 void osmv::Show_model_screen_impl::init(Application & s) {
-    if (gamma_correction) {
-        glEnable(GL_FRAMEBUFFER_SRGB);
-    } else {
-        glDisable(GL_FRAMEBUFFER_SRGB);
-    }
     window_dims = sdl::GetWindowSize(s.window);
 }
 
@@ -478,35 +596,52 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
     return Resp_Ok{};
 }
 
+osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
+    return impl->tick(a);
+}
+
+osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
+    if (simulator_thread.joinable()) {
+        // the thread is running, or has finished
+        if (simulator_finished) {
+            // clean up the thread
+            simulator_thread.join();
+        }
+
+
+        // check shared state
+        std::unique_lock lock{simulator_mutex};
+        if (simulator_latest) {            
+            osim::OSMV_State s = std::move(simulator_latest);
+            assert(!simulator_latest);
+            lock.unlock();
+            osim::realize_report(*model, *s);
+            update_scene(*s);
+        }
+    }
+
+    return Resp_Ok{};
+}
+
 void osmv::Show_model_screen::draw(osmv::Application& ui) {
     impl->draw(ui);
 }
 
-template<typename K, typename V>
-static V& throwing_find(std::unordered_map<K, V>& m, K const& k) {
-    auto it = m.find(k);
-    if (it != m.end()) {
-        return it->second;
-    }
-    std::stringstream ss;
-    ss << k << ": not found in mesh map lookup: was it loaded?";
-    throw std::runtime_error{ss.str()};
-}
-
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
-    if (user_gamma_correction != gamma_correction) {
-        if (user_gamma_correction) {
-            glEnable(GL_FRAMEBUFFER_SRGB);
-        } else {
-            glDisable(GL_FRAMEBUFFER_SRGB);
-        }
-        gamma_correction = user_gamma_correction;
+    if (gamma_correction) {
+        glEnable(GL_FRAMEBUFFER_SRGB);
+    } else {
+        glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
+    draw_model_scene(ui);
+    draw_imgui_ui(ui);
+}
+
+void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
     // is expressed as polar coordinates. Camera panning is represented as a
@@ -539,7 +674,6 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     }();
 
 
-    // PROGRAM: draw main scene
     gl::UseProgram(pMain.program);
 
     gl::Uniform(pMain.projMat, proj_mtx);
@@ -548,54 +682,33 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     gl::Uniform(pMain.light_color, glm::vec3(light_color[0], light_color[1], light_color[2]));
     gl::Uniform(pMain.view_pos, view_pos);
 
-    // draw cylinders
-    {
-        auto num_verts = pMain_cylinder.verts->num_verts;
-
+    if (show_unit_cylinder) {
         gl::BindVertexArray(pMain_cylinder.vao);
 
-        for (auto const& c : geom.cylinders) {
-            gl::Uniform(pMain.rgba, c.rgba);
-            gl::Uniform(pMain.modelMat, c.transform);
-            gl::Uniform(pMain.normalMat, c.normal_xform);
-            glDrawArrays(GL_TRIANGLES, 0, num_verts);
-        }
+        gl::Uniform(pMain.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
+        gl::Uniform(pMain.modelMat, glm::identity<glm::mat4>());
+        gl::Uniform(pMain.normalMat, glm::identity<glm::mat4>());
 
-        if (show_unit_cylinder) {
-            gl::Uniform(pMain.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
-            gl::Uniform(pMain.modelMat, glm::identity<glm::mat4>());
-            gl::Uniform(pMain.normalMat, glm::identity<glm::mat4>());
-            glDrawArrays(GL_TRIANGLES, 0, num_verts);
-        }
+        auto num_verts = pMain_cylinder.verts->num_verts;
+        glDrawArrays(GL_TRIANGLES, 0, num_verts);
 
         gl::BindVertexArray();
     }
 
-    // draw spheres
-    {
-        auto num_verts = pMain_sphere.verts->num_verts;
-
+    if (show_light) {
         gl::BindVertexArray(pMain_sphere.vao);
 
-        for (auto const& c : geom.spheres) {
-            gl::Uniform(pMain.rgba, c.rgba);
-            gl::Uniform(pMain.modelMat, c.transform);
-            gl::Uniform(pMain.normalMat, c.normal_xform);
-            glDrawArrays(GL_TRIANGLES, 0, num_verts);
-        }
-
-        if (show_light) {
-            gl::Uniform(pMain.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
-            auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
-            gl::Uniform(pMain.modelMat, xform);
-            gl::Uniform(pMain.normalMat, glm::transpose(glm::inverse(xform)));
-            glDrawArrays(GL_TRIANGLES, 0, num_verts);
-        }
+        gl::Uniform(pMain.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
+        auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
+        gl::Uniform(pMain.modelMat, xform);
+        gl::Uniform(pMain.normalMat, glm::transpose(glm::inverse(xform)));
+        auto num_verts = pMain_sphere.verts->num_verts;
+        glDrawArrays(GL_TRIANGLES, 0, num_verts);
 
         gl::BindVertexArray();
     }
 
-    // draw meshes
+    // draw opensim model meshes
     for (auto& m : geom.mesh_instances) {
         gl::Uniform(pMain.rgba, m.rgba);
         gl::Uniform(pMain.modelMat, m.transform);
@@ -607,8 +720,8 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         gl::BindVertexArray();
     }
 
-    // PROGRAM: draw scene normals (if required)
-    if (show_sphere_normals or show_cylinder_normals or show_mesh_normals) {
+    // draw normals (if specified)
+    if (show_cylinder_normals or show_mesh_normals) {
         gl::UseProgram(pNormals.program);
         gl::Uniform(pNormals.projMat, proj_mtx);
         gl::Uniform(pNormals.viewMat, view_mtx);
@@ -618,34 +731,8 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
 
             gl::BindVertexArray(pNormals_cylinder.vao);
 
-            for (auto const& c : geom.cylinders) {
-                gl::Uniform(pNormals.modelMat, c.transform);
-                gl::Uniform(pNormals.normalMat, c.normal_xform);
-                glDrawArrays(GL_TRIANGLES, 0, num_verts);
-            }
-
             if (show_unit_cylinder) {
                 gl::Uniform(pNormals.modelMat, glm::identity<glm::mat4>());
-                glDrawArrays(GL_TRIANGLES, 0, num_verts);
-            }
-
-            gl::BindVertexArray();
-        }
-
-
-        if (show_sphere_normals) {
-            auto num_verts = pNormals_sphere.verts->num_verts;
-
-            gl::BindVertexArray(pNormals_sphere.vao);
-
-            for (auto const& c : geom.spheres) {
-                gl::Uniform(pNormals.modelMat, c.transform);
-                gl::Uniform(pNormals.normalMat, c.normal_xform);
-                glDrawArrays(GL_TRIANGLES, 0, num_verts);
-            }
-
-            if (show_light) {
-                gl::Uniform(pNormals.modelMat, glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05}));
                 glDrawArrays(GL_TRIANGLES, 0, num_verts);
             }
 
@@ -665,8 +752,8 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         }
     }
 
-    // PROGRAM: draw floor
-    {
+    // draw chequered floor
+    if (show_floor) {
         gl::UseProgram(pFloor.p);
         gl::Uniform(pFloor.projMat, proj_mtx);
         gl::Uniform(pFloor.viewMat, view_mtx);
@@ -678,18 +765,92 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         glDrawArrays(GL_TRIANGLES, 0, 6);
         gl::BindVertexArray();
     }
+}
 
+void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
     // imgui: draw GUI on top of main scene
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(ui.window);
     ImGui::NewFrame();
 
-    // frame: scene
+    // lhs window
     {
         bool b = true;
-        ImGui::Begin("Scene", &b, ImGuiWindowFlags_MenuBar);
+        ImGuiWindowFlags flags = 0;
+        ImGui::Begin("Model", &b, flags);
+
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        if (ImGui::BeginTabBar("SomeTabBar", tab_bar_flags)) {
+            if (ImGui::BeginTabItem("Scene")) {
+                draw_gfx_tab(ui);
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
+        ImGui::End();
     }
 
+    // sim bar
+    {
+        bool b = true;
+        ImGuiWindowFlags flags = 0;
+        ImGui::Begin("Simulate", &b, flags);
+
+        if (simulator_thread.joinable()) {
+            // simulation is running
+            if (ImGui::Button("stop")) {
+                simulator_thread.request_stop();
+            }
+        } else {
+            // simulation is not running
+            if (ImGui::Button("start")) {
+                start_simulation(ui);
+            }
+        }
+
+        ImGui::End();
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void osmv::Show_model_screen_impl::start_simulation(Application &) {
+    assert(not simulator_thread.joinable());  // simulation shouldn't already be running
+
+    simulator_finished = false;
+
+    // make an independent copy of the model on the main thread that can be
+    // sent to the simulator thread
+    osim::OSMV_Model copy = osim::copy_model(*model);
+    osim::finalize_properties_from_state(*copy, osim::upd_working_state(*model));
+    osim::init_system(*copy);
+
+    // provide the simulator thread with a
+    simulator_thread = Adams_jthread{[&](Adams_stop_token t, osim::OSMV_Model copy) {
+        try {
+            osim::fd_simulation(
+                *copy,
+                osim::upd_working_state(*copy),
+                0.5,
+                [&](SimTK::State const& s) {
+                    if (t.stop_requested()) {
+                        throw std::runtime_error{"lol stop lol"};
+                    }
+
+                    std::lock_guard g{simulator_mutex};
+                    if (!simulator_latest) {
+                        simulator_latest = osim::copy_state(s);
+                    }
+                }
+            );
+        } catch(...) {} // GOTTA CATCH EM ALL
+
+        simulator_finished = true;
+    }, std::move(copy)};
+}
+
+void osmv::Show_model_screen_impl::draw_gfx_tab(Application& ui) {
     {
         ImGuiIO& io = ImGui::GetIO();
         std::stringstream fps;
@@ -764,10 +925,10 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     ImGui::ColorEdit3("light_color", light_color);
     ImGui::Checkbox("show_light", &show_light);
     ImGui::Checkbox("show_unit_cylinder", &show_unit_cylinder);
-    ImGui::Checkbox("gamma_correction", &user_gamma_correction);
+    ImGui::Checkbox("show_floor", &show_floor);
+    ImGui::Checkbox("gamma_correction", &gamma_correction);
     ImGui::Checkbox("software_throttle", &ui.software_throttle);
     ImGui::Checkbox("show_cylinder_normals", &show_cylinder_normals);
-    ImGui::Checkbox("show_sphere_normals", &show_sphere_normals);
     ImGui::Checkbox("show_mesh_normals", &show_mesh_normals);
 
     ImGui::NewLine();
@@ -782,9 +943,6 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         }
         ImGui::Text(msgs.c_str());
     }
-    ImGui::End();
-
-
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
+

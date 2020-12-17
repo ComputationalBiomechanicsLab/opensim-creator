@@ -16,8 +16,7 @@
 // to have an API that is simple, rather than robustly encapsulated etc.
 //
 // `inline`ing here is alright, provided it just forwards the gl calls and
-//  doesn't do much else (e.g. throw exceptions, which this header doesn't
-//  expose to keep compilation units small)
+//  doesn't do much else
 
 namespace gl {
     // RAII wrapper for glDeleteShader
@@ -107,9 +106,9 @@ namespace gl {
 
     // type-safe wrapper for an GLSL attribute index
     //     (just prevents accidently handing a GLint to the wrong API)
-    struct Attribute final {
+    struct Attribute {
         GLuint handle;
-        constexpr Attribute(GLuint _handle) : handle{_handle} {}
+        explicit constexpr Attribute(GLuint _handle) : handle{_handle} {}
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetAttribLocation.xhtml
@@ -169,6 +168,16 @@ namespace gl {
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
     inline void BindBuffer(GLenum target, Buffer_handle& buffer) {
         glBindBuffer(target, buffer.handle);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
+    //     *overload that unbinds current buffer
+    inline void BindBuffer() {
+        // from docs:
+        // > Instead, buffer set to zero effectively unbinds any buffer object
+        // > previously bound, and restores client memory usage for that buffer
+        // > object target (if supported for that target)
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
@@ -249,14 +258,33 @@ namespace gl {
         return Texture_handle{};
     }
 
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
+    inline void ActiveTexture(GLenum texture) {
+        glActiveTexture(texture);
+    }
+
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(GLenum target, Texture_handle& texture) {
+    inline void BindTexture(GLenum target, Texture_handle const& texture) {
         glBindTexture(target, texture.handle);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     inline void BindTexture() {
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
+    inline void TexImage2D(
+            GLenum target,
+            GLint level,
+            GLint internalformat,
+            GLsizei width,
+            GLsizei height,
+            GLint border,
+            GLenum format,
+            GLenum type,
+            const void * data) {
+        glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
     }
 
     // RAII wrapper for glDeleteFrameBuffers
@@ -290,14 +318,40 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
+    inline void BindFrameBuffer(GLenum target, GLuint handle) {
+        glBindFramebuffer(target, handle);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
     inline void BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
         glBindFramebuffer(target, fb.handle);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFrameBuffer() {
-        // reset to default (monitor) FB
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    static constexpr GLuint window_fbo = 0;
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
+    inline void FramebufferTexture2D(
+            GLenum target,
+            GLenum attachment,
+            GLenum textarget,
+            GLuint texture,
+            GLint level) {
+        glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
+    inline void BlitFramebuffer(
+            GLint srcX0,
+            GLint srcY0,
+            GLint srcX1,
+            GLint srcY1,
+            GLint dstX0,
+            GLint dstY0,
+            GLint dstX1,
+            GLint dstY1,
+            GLbitfield mask,
+            GLenum filter) {
+        glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
     }
 
     // RAII wrapper for glDeleteRenderBuffers
@@ -334,5 +388,38 @@ namespace gl {
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
     inline void BindRenderBuffer() {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glClear.xhtml
+    inline void Clear(GLbitfield mask) {
+        glClear(mask);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
+    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) {
+        glDrawArrays(mode, first, count);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArraysInstanced.xhtml
+    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) {
+        glDrawArraysInstanced(mode, first, count, instancecount);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribDivisor.xhtml
+    inline void VertexAttribDivisor(gl::Attribute const& attr, GLuint divisor) {
+        glVertexAttribDivisor(attr.handle, divisor);
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
+    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void * indices) {
+        glDrawElements(mode, count, type, indices);
+    }
+
+    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+        glClearColor(red, green, blue, alpha);
+    }
+
+    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) {
+        glViewport(x, y, w, h);
     }
 }

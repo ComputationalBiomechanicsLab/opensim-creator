@@ -99,7 +99,7 @@ namespace sdl {
         friend GLContext GL_CreateContext(SDL_Window* w);
         GLContext(SDL_GLContext _ctx) : ctx{ _ctx } {
         }
-    public:        
+    public:
         GLContext(GLContext const&) = delete;
         GLContext(GLContext&&) = delete;
         GLContext& operator=(GLContext const&) = delete;
@@ -166,7 +166,7 @@ namespace sdl {
     //     https://wiki.libsdl.org/SDL_LockSurface
     //     https://wiki.libsdl.org/SDL_UnlockSurface
     class Surface_lock final {
-        SDL_Surface* ptr;        
+        SDL_Surface* ptr;
     public:
         Surface_lock(SDL_Surface* s);
         Surface_lock(Surface_lock const&) = delete;
@@ -191,7 +191,7 @@ namespace sdl {
         friend Texture CreateTextureFromSurface(SDL_Renderer* r, SDL_Surface* s);
         Texture(SDL_Texture* _handle) : handle{_handle} {
         }
-    public:        
+    public:
         Texture(Texture const&) = delete;
         Texture(Texture&&) = delete;
         Texture& operator=(Texture const&) = delete;
@@ -222,6 +222,22 @@ namespace sdl {
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
     Window_dimensions GetWindowSize(SDL_Window* window);
+
+    struct Mouse_state final {
+        int x;
+        int y;
+        Uint32 st;
+    };
+
+    // https://wiki.libsdl.org/SDL_GetMouseState
+    //
+    // mouse state relative to the focus window
+    inline Mouse_state GetMouseState() {
+        Mouse_state rv;
+        Uint32 st = SDL_GetMouseState(&rv.x, &rv.y);
+        rv.st = st;
+        return rv;
+    }
 
     void GL_SetSwapInterval(int interval);
 

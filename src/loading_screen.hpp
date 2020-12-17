@@ -10,7 +10,7 @@
 namespace osmv {
     class Loading_screen final : public Screen {
         std::string path;
-        std::future<osim::Model_wrapper> result;
+        std::future<osim::OSMV_Model> result;
     public:
         Loading_screen(std::string _path);
 

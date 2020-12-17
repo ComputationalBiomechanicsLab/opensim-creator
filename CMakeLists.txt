@@ -5,26 +5,25 @@ project(osmv VERSION 0.0.1)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+# release: use LTO on all vendored libs/code when building (exception: OpenSim)
+if(CMAKE_BUILD_TYPE MATCHES "Rel")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
 
 # libraries: apart from OpenSim, only quickly-compiled C libraries are used, so
 # they are just included in the source tree, rather than fucking around with a
 # package manager etc.
 add_subdirectory(third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/glm-0.9.9.8 EXCLUDE_FROM_ALL)
+set(SDL_AUDIO OFF CACHE BOOL "")
+set(SDL_TEST OFF CACHE BOOL "")
 add_subdirectory(third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
-find_package(OpenGL REQUIRED)
 find_package(OpenSim REQUIRED)
 
 # generate top-level configured file that contains version etc.
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/ RESOURCES_DIR)
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders/ SHADERS_DIR)
 configure_file("${PROJECT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
-
-if (CMAKE_BUILD_TYPE MATCHES Debug)
-else()
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-endif()
-
 
 add_library(common STATIC
     third_party/imgui-1.78/imgui.cpp
@@ -44,6 +43,8 @@ add_library(common STATIC
     src/imgui_extensions.hpp
     src/imgui_extensions.cpp
 
+    src/globals.hpp
+    src/globals.cpp
     src/application.hpp
     src/application.cpp
     src/screen.hpp
@@ -66,19 +67,18 @@ target_include_directories(common PUBLIC
     ${PROJECT_BINARY_DIR}  # so configure_file config can be #included
 )
 target_link_libraries(common
-    ${OPENGL_LIBRARIES}
     # in release mode, use statically-linked SDL and GLEW with LTO to give the
     # smallest resulting binary and lowest perf cost
     $<$<CONFIG:Debug>:SDL2>
     $<$<NOT:$<CONFIG:Debug>>:SDL2-static>
     $<$<CONFIG:Debug>:glew>
-    $<$<NOT:$<CONFIG:Debug>>:glew>
+    $<$<NOT:$<CONFIG:Debug>>:glew_s>
 
-#    osimLepton
+    osimLepton
     osimCommon
     osimSimulation
-#    osimActuators
-#    osimAnalyses
+    osimActuators
+    osimAnalyses
     osimTools
     SimTKcommon
     SimTKmath

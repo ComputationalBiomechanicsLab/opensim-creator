@@ -6,6 +6,7 @@
 #include "examples/imgui_impl_opengl3.h"
 #include "gl.hpp"
 #include "application.hpp"
+#include "globals.hpp"
 #include "show_model_screen.hpp"
 #include <iostream>
 #include <chrono>
@@ -18,10 +19,13 @@ osmv::Loading_screen::Loading_screen(std::string _path) :
     result{std::async(std::launch::async, [&]() {
         return osim::load_osim(path.c_str());
     })} {
+
+    osmv::log_perf_bootup_event("initialized loading screen");
 }
 
 osmv::Screen_response osmv::Loading_screen::tick(Application&) {
     if (result.wait_for(0ms) == std::future_status::ready) {
+        osmv::log_perf_bootup_event("loaded model");
         return Resp_Transition_to{std::make_unique<Show_model_screen>(path, result.get())};
     } else {
         return Resp_Ok{};

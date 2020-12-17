@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<ControlSet name="Control Set">
+		<objects>
+			<ControlLinear name="ActiveAFO">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.00</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.05</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.1</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.15</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.2</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.25</t>
+						<value>0.0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.3</t>
+						<value>0.0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.35</t>
+						<value>0.0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.4</t>
+						<value>0.0</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+		</objects>
+		<groups />
+	</ControlSet>
+</OpenSimDocument>
