@@ -369,7 +369,6 @@ osim::OSMV_Model::OSMV_Model(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model& osim::OSMV_Model::operator=(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model::~OSMV_Model() noexcept = default;
 
-osim::OSMV_State::OSMV_State() = default;
 osim::OSMV_State::OSMV_State(std::unique_ptr<SimTK::State> _s) :
     handle{std::move(_s)} {
 }
@@ -378,14 +377,19 @@ osim::OSMV_State& osim::OSMV_State::operator=(OSMV_State&&) noexcept = default;
 osim::OSMV_State::~OSMV_State() noexcept = default;
 
 osim::OSMV_Model osim::load_osim(char const* path) {
-    auto p = std::make_unique<OpenSim::Model>(path);
-    p->finalizeFromProperties();
-    return OSMV_Model{std::move(p)};
+    return OSMV_Model{std::make_unique<OpenSim::Model>(path)};
+}
+
+void osim::finalize_from_properties(OpenSim::Model& m) {
+    m.finalizeFromProperties();
+}
+
+double osim::simulation_time(SimTK::State const& s) {
+    return s.getTime();
 }
 
 osim::OSMV_Model osim::copy_model(OpenSim::Model const& m) {
-    std::unique_ptr<OpenSim::Model> p = std::make_unique<OpenSim::Model>(m);//.clone()};
-    return OSMV_Model{std::move(p)};
+    return OSMV_Model{std::make_unique<OpenSim::Model>(m)};
 }
 
 SimTK::State& osim::init_system(OpenSim::Model& m) {
@@ -396,21 +400,19 @@ SimTK::State& osim::upd_working_state(OpenSim::Model& m) {
     return m.updWorkingState();
 }
 
-void osim::finalize_properties_from_state(OpenSim::Model& m, SimTK::State& s) {
+void osim::finalize_properties_from_state(OpenSim::Model& m, SimTK::State const& s) {
     m.setPropertiesFromState(s);
-    m.finalizeFromProperties();
 }
 
 osim::OSMV_State osim::copy_state(SimTK::State const& s) {
-    auto p = std::make_unique<SimTK::State>(s);
-    return OSMV_State{std::move(p)};
+    return OSMV_State{std::make_unique<SimTK::State>(s)};
 }
 
-void osim::realize_position(OpenSim::Model& m, SimTK::State& s) {
-    m.realizePosition(s);
+void osim::realize_velocity(OpenSim::Model& m, SimTK::State& s) {
+    m.realizeVelocity(s);
 }
 
-void osim::realize_report(OpenSim::Model& m, SimTK::State& s) {
+void osim::realize_report(OpenSim::Model const& m, SimTK::State& s) {
     m.realizeReport(s);
 }
 
@@ -418,32 +420,43 @@ osim::OSMV_State osim::fd_simulation(
         OpenSim::Model& model,
         SimTK::State const& initial_state,
         double final_time,
-        std::function<void(SimTK::State const&)> reporter) {
+        std::function<void(Simulation_update_event const&)> reporter) {
 
     struct CustomAnalysis final : public Analysis {
-        std::function<void(SimTK::State const&)> f;
+        OpenSim::Model& m;
+        std::function<void(Simulation_update_event const&)> f;
 
-        CustomAnalysis(std::function<void(SimTK::State const&)> _f) :
+        CustomAnalysis(OpenSim::Model& _m,
+                       std::function<void(Simulation_update_event const&)> _f) :
+            m{_m},
             f{std::move(_f)} {
         }
 
+        Simulation_update_event make_event(SimTK::State const& s) {
+            return Simulation_update_event{
+                s,
+                s.getTime(),
+                m.getSystem().getNumPrescribeQCalls()
+            };
+        }
+
         int begin(SimTK::State const& s) override {
-            f(s);
+            f(make_event(s));
             return 0;
         }
 
         int step(SimTK::State const& s, int) override {
-            f(s);
+            f(make_event(s));
             return 0;
         }
 
         int end(SimTK::State const& s) override {
-            f(s);
+            f(make_event(s));
             return 0;
         }
 
         CustomAnalysis* clone() const override {
-            return new CustomAnalysis{f};
+            return new CustomAnalysis{m, f};
         }
 
         const std::string& getConcreteClassName() const override {
@@ -452,13 +465,127 @@ osim::OSMV_State osim::fd_simulation(
         }
     };
 
-    model.addAnalysis(new CustomAnalysis{std::move(reporter)});
+    model.addAnalysis(new CustomAnalysis{model, std::move(reporter)});
 
-    auto p = std::make_unique<SimTK::State>(simulate(model, initial_state, final_time));
+    auto final_state = std::make_unique<SimTK::State>(simulate(model, initial_state, final_time));
 
-    return OSMV_State{std::move(p)};
+    return OSMV_State{std::move(final_state)};
 }
 
+static osim::Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
+    using OpenSim::Coordinate;
+    using osim::Motion_type;
+
+    switch (m) {
+    case Coordinate::MotionType::Undefined:
+        return Motion_type::Undefined;
+    case Coordinate::MotionType::Rotational:
+        return Motion_type::Rotational;
+    case Coordinate::MotionType::Translational:
+        return Motion_type::Translational;
+    case Coordinate::MotionType::Coupled:
+        return Motion_type::Coupled;
+    default:
+        throw std::runtime_error{"convert_to_osim_motiontype: unknown coordinate type encountered"};
+    }
+}
+
+void osim::get_coordinates(OpenSim::Model const& m,
+                           SimTK::State const& st,
+                           std::vector<Coordinate>& out) {
+
+    CoordinateSet const& s = m.getCoordinateSet();
+    int len = s.getSize();
+    out.reserve(out.size() + static_cast<size_t>(len));
+    for (int i = 0; i < len; ++i) {
+        OpenSim::Coordinate const& c = s[i];
+        out.push_back(osim::Coordinate{
+            &c,
+            &c.getName(),
+            static_cast<float>(c.getRangeMin()),
+            static_cast<float>(c.getRangeMax()),
+            static_cast<float>(c.getValue(st)),
+            convert_to_osim_motiontype(c.getMotionType()),
+            c.getLocked(st),
+        });
+    }
+}
+
+void osim::get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
+    for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
+        out.push_back(osim::Muscle_stat{
+            &musc,
+            &musc.getName(),
+            static_cast<float>(musc.getLength(s)),
+        });
+    }
+}
+
+void osim::set_coord_value(
+        OpenSim::Coordinate const& c,
+        SimTK::State& s,
+        double v) {
+    c.setValue(s, v);
+}
+
+void osim::lock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
+    c.setLocked(s, true);
+}
+
+void osim::unlock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
+    c.setLocked(s, false);
+}
+
+void osim::disable_wrapping_surfaces(OpenSim::Model& m) {
+    OpenSim::ComponentList<OpenSim::WrapObjectSet> l =
+            m.updComponentList<OpenSim::WrapObjectSet>();
+    for (OpenSim::WrapObjectSet& wos : l) {
+        for (int i = 0; i < wos.getSize(); ++i) {
+            OpenSim::WrapObject& wo = wos[i];
+            wo.set_active(false);
+        }
+    }
+}
+
+void osim::enable_wrapping_surfaces(OpenSim::Model& m) {
+    OpenSim::ComponentList<OpenSim::WrapObjectSet> l =
+            m.updComponentList<OpenSim::WrapObjectSet>();
+    for (OpenSim::WrapObjectSet& wos : l) {
+        for (int i = 0; i < wos.getSize(); ++i) {
+            OpenSim::WrapObject& wo = wos[i];
+            wo.set_active(true);
+        }
+    }
+}
+
+void osim::compute_moment_arms(
+        OpenSim::Muscle const& muscle,
+        SimTK::State const& st,
+        OpenSim::Coordinate const& c,
+        float* out,
+        size_t steps) {
+
+    SimTK::State state = st;
+    realize_report(muscle.getModel(), state);
+
+    bool prev_locked = c.getLocked(state);
+    double prev_val = c.getValue(state);
+
+    c.setLocked(state, false);
+
+    double start = c.getRangeMin();
+    double end = c.getRangeMax();
+    double step = (end - start) / steps;
+
+    for (size_t i = 0; i < steps; ++i) {
+        double v = start + (i * step);
+        c.setValue(state, v);
+        out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
+    }
+
+    c.setLocked(state, prev_locked);
+    c.setValue(state, prev_val);
+}
 
 osim::Geometry_loader::Geometry_loader() :
     impl{new Geometry_loader_impl{}} {

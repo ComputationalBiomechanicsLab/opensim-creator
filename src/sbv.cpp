@@ -26,20 +26,20 @@ using namespace SimTK;
 // with C++20. Just wait until C++20 comes and nuke this code.
 namespace {
     // replace me with C++20's std::stop_token
-    class Adams_stop_token final {
+    class Stop_token final {
         std::shared_ptr<std::atomic<bool>> shared_state;
     public:
-        Adams_stop_token(std::shared_ptr<std::atomic<bool>> st)
+        Stop_token(std::shared_ptr<std::atomic<bool>> st)
             : shared_state{std::move(st)} {
         }
         // these are deleted to ensure the API is a strict subset of C++20
-        Adams_stop_token(Adams_stop_token const&) = delete;
-        Adams_stop_token(Adams_stop_token&& tmp) :
+        Stop_token(Stop_token const&) = delete;
+        Stop_token(Stop_token&& tmp) :
             shared_state{tmp.shared_state}  {
         }
-        Adams_stop_token& operator=(Adams_stop_token const&) = delete;
-        Adams_stop_token& operator=(Adams_stop_token&&) = delete;
-        ~Adams_stop_token() noexcept = default;
+        Stop_token& operator=(Stop_token const&) = delete;
+        Stop_token& operator=(Stop_token&&) = delete;
+        ~Stop_token() noexcept = default;
 
         bool stop_requested() const noexcept {
             return *shared_state;
@@ -47,18 +47,18 @@ namespace {
     };
 
     // replace me with C++20's std::stop_source
-    class Adams_stop_source final {
+    class Stop_source final {
         std::shared_ptr<std::atomic<bool>> shared_state;
     public:
-        Adams_stop_source() :
+        Stop_source() :
             shared_state{new std::atomic<bool>{false}} {
         }
         // these are deleted to ensure the API is a strict subset of C++20
-        Adams_stop_source(Adams_stop_source const&) = delete;
-        Adams_stop_source(Adams_stop_source&&) = delete;
-        Adams_stop_source& operator=(Adams_stop_source const&) = delete;
-        Adams_stop_source& operator=(Adams_stop_source&&) = delete;
-        ~Adams_stop_source() = default;
+        Stop_source(Stop_source const&) = delete;
+        Stop_source(Stop_source&&) = delete;
+        Stop_source& operator=(Stop_source const&) = delete;
+        Stop_source& operator=(Stop_source&&) = delete;
+        ~Stop_source() = default;
 
         bool request_stop() noexcept {
             // as-per the spec, but always true for this impl.
@@ -68,26 +68,26 @@ namespace {
             return has_stop_state and (not already_stopped);
         }
 
-        Adams_stop_token get_token() const noexcept {
-            return Adams_stop_token{shared_state};
+        Stop_token get_token() const noexcept {
+            return Stop_token{shared_state};
         }
     };
 
     // replace me with C++20's std::jthread
-    class Adams_jthread final {
-        Adams_stop_source s;
+    class Jthread final {
+        Stop_source s;
         std::thread t;
     public:
         template<class Function, class... Args>
-        Adams_jthread(Function&& f, Args&&... args) :
+        Jthread(Function&& f, Args&&... args) :
             s{},
             t{f, s.get_token(), std::forward<Args>(args)...} {
         }
-        Adams_jthread(Adams_jthread const&) = delete;
-        Adams_jthread(Adams_jthread&&) = delete;
-        Adams_jthread& operator=(Adams_jthread const&) = delete;
-        Adams_jthread& operator=(Adams_jthread&&) = delete;
-        ~Adams_jthread() noexcept {
+        Jthread(Jthread const&) = delete;
+        Jthread(Jthread&&) = delete;
+        Jthread& operator=(Jthread const&) = delete;
+        Jthread& operator=(Jthread&&) = delete;
+        ~Jthread() noexcept {
             s.request_stop();
             t.join();
         }
@@ -166,11 +166,11 @@ namespace sbv {
     }
 
     class Visualizer_screen final : public osmv::Screen {
-        Adams_stop_token stopper;
+        Stop_token stopper;
         Visualizer_rx rx;
         std::unique_ptr<Frame> frame;
     public:
-        Visualizer_screen(Adams_stop_token _stopper,
+        Visualizer_screen(Stop_token _stopper,
                           Visualizer_rx _rx,
                           std::unique_ptr<Frame> _frame) :
             stopper{std::move(_stopper)},
@@ -208,10 +208,10 @@ namespace sbv {
     };
 
     class Waiting_screen final : public osmv::Screen {
-        Adams_stop_token stopper;
+        Stop_token stopper;
         Visualizer_rx rx;
     public:
-        Waiting_screen(Adams_stop_token _stopper, Visualizer_rx _rx) :
+        Waiting_screen(Stop_token _stopper, Visualizer_rx _rx) :
             stopper{std::move(_stopper)}, rx{std::move(_rx)} {
         }
 
@@ -253,7 +253,7 @@ namespace sbv {
     };
 
     // main thread for visualizer
-    void visualizer_main(Adams_stop_token stopper, Visualizer_rx frames) {
+    void visualizer_main(Stop_token stopper, Visualizer_rx frames) {
         auto a = osmv::Application{};
         a.current_screen = std::make_unique<Waiting_screen>(std::move(stopper), std::move(frames));
         a.show();
@@ -261,7 +261,7 @@ namespace sbv {
 
     // internal implementation of the visualizer
     class Visualizer_impl final {
-        Adams_jthread thread;
+        Jthread thread;
         Visualizer_tx sender;
     public:
         Visualizer_impl(std::pair<Visualizer_tx, Visualizer_rx> channel) :

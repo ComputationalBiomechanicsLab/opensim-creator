@@ -12,6 +12,8 @@
 
 namespace OpenSim {
     class Model;
+    class Coordinate;
+    class Muscle;
 }
 
 namespace SimTK {
@@ -26,7 +28,7 @@ namespace SimTK {
 namespace osim {
     // initialization + loading
 
-    // RAII wrapper for an OpenSim model
+    // opaque RAII wrapper OpenSim::Model
     struct OSMV_Model final {
         std::unique_ptr<OpenSim::Model> handle;
 
@@ -37,28 +39,19 @@ namespace osim {
         OSMV_Model& operator=(OSMV_Model&&) noexcept;
         ~OSMV_Model() noexcept;
 
-        OpenSim::Model& operator*() noexcept {
+        operator OpenSim::Model const&() const noexcept {
             return *handle;
         }
 
-        OpenSim::Model const& operator*() const noexcept {
+        operator OpenSim::Model&() noexcept {
             return *handle;
-        }
-
-        OpenSim::Model* operator->() noexcept {
-            return handle.get();
-        }
-
-        OpenSim::Model const* operator->() const noexcept {
-            return handle.get();
         }
     };
 
-    // opaque lifetime wrapper for a SimTK state
+    // opaque RAII wrapper for SimTK::State
     struct OSMV_State final {
         std::unique_ptr<SimTK::State> handle;
 
-        OSMV_State();
         OSMV_State(std::unique_ptr<SimTK::State>);
         OSMV_State(OSMV_State const&) = delete;
         OSMV_State(OSMV_State&&) noexcept;
@@ -66,67 +59,84 @@ namespace osim {
         OSMV_State& operator=(OSMV_State&&) noexcept;
         ~OSMV_State() noexcept;
 
-        operator bool() const noexcept {
-            return handle.operator bool();
-        }
-
-        SimTK::State& operator*() noexcept {
+        operator SimTK::State const&() const noexcept {
             return *handle;
         }
 
-        SimTK::State const& operator*() const noexcept {
+        operator SimTK::State&() noexcept {
             return *handle;
-        }
-
-        SimTK::State* operator->() noexcept {
-            return handle.get();
-        }
-
-        SimTK::State const* operator->() const noexcept {
-            return handle.get();
         }
     };
 
+    // emitted by simulations as they run
+    struct Simulation_update_event final {
+        SimTK::State const& state;
+        double simulation_time;
+        int num_prescribe_q_calls;
+    };
 
-    // simplifed loading + simulating API for OpenSim
+    // translation for OpenSim::Coordinate::MotionType that can be ORed easily
+    // for filtering
+    enum Motion_type : int {
+        Undefined = 0,
+        Rotational = 1,
+        Translational = 2,
+        Coupled = 4
+    };
+
+    // coordinates in a model
+    struct Coordinate final {
+        OpenSim::Coordinate const* ptr;
+        std::string const* name;
+        float min;
+        float max;
+        float value;
+        Motion_type type;
+        bool locked;
+    };
+
+    struct Muscle_stat final {
+        OpenSim::Muscle const* ptr;
+        std::string const* name;
+        float length;
+    };
+
+    // simplified API to OpenSim. Users that want something more advanced
+    // should directly #include OpenSim's headers (but eat the compile times)
 
     OSMV_Model load_osim(char const* path);
+    void finalize_from_properties(OpenSim::Model&);
     OSMV_Model copy_model(OpenSim::Model const&);
     SimTK::State& init_system(OpenSim::Model&);
     SimTK::State& upd_working_state(OpenSim::Model&);
-    void finalize_properties_from_state(OpenSim::Model&, SimTK::State&);
+    void finalize_properties_from_state(OpenSim::Model&, SimTK::State const&);
+    double simulation_time(SimTK::State const&);
+    void get_coordinates(OpenSim::Model const&, SimTK::State const&, std::vector<Coordinate>&);
+    void get_muscle_stats(OpenSim::Model const&, SimTK::State const&, std::vector<Muscle_stat>&);
+    void set_coord_value(OpenSim::Coordinate const&, SimTK::State&, double);
+    void lock_coord(OpenSim::Coordinate const&, SimTK::State&);
+    void unlock_coord(OpenSim::Coordinate const&, SimTK::State&);
+    void disable_wrapping_surfaces(OpenSim::Model&);
+    void enable_wrapping_surfaces(OpenSim::Model&);
+
+    void compute_moment_arms(
+            OpenSim::Muscle const&,
+            SimTK::State const&,
+            OpenSim::Coordinate const&,
+            float* out,
+            size_t steps);
 
     OSMV_State copy_state(SimTK::State const&);
-    void realize_position(OpenSim::Model&, SimTK::State&);
-    void realize_report(OpenSim::Model&, SimTK::State&);
+    void realize_report(OpenSim::Model const&, SimTK::State&);
+    void realize_velocity(OpenSim::Model&, SimTK::State&);
     OSMV_State fd_simulation(
             OpenSim::Model& model,
             SimTK::State const& initial_state,
             double final_time,
-            std::function<void(SimTK::State const&)> reporter);
+            std::function<void(Simulation_update_event const&)> reporter);
 
 
-    // rendering API
-    //
-    // main motivation here is to extract renderable geometry from a
-    // model + state pair. Main considerations:
-    //
-    // - must be relatively high-perf because the renderer may call it many
-    //   times per second
-    //
-    //     - so the structs and methods are designed to minimize allocations
-    //       and be easy to perform comparisons/hashing on
-    //
-    // - provide enough information to the renderer for it to link renderable
-    //   geometry to components in the OpenSim model
-    //
-    //     - i.e. when a mouse is over a muscle, the renderer must be able to
-    //       handle that in a useful way
-    //
-    // - provide enough geometric information for extra optimization passes
-    //
-    //     - e.g. bounding boxes, normals, locations in worldspace, deduped
-    //       mesh IDs for mesh instancing, etc. etc.
+    // high-level rendering API
 
     using Mesh_id = int;
 
