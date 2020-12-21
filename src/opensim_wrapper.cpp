@@ -369,6 +369,7 @@ osim::OSMV_Model::OSMV_Model(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model& osim::OSMV_Model::operator=(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model::~OSMV_Model() noexcept = default;
 
+osim::OSMV_State::OSMV_State() = default;
 osim::OSMV_State::OSMV_State(std::unique_ptr<SimTK::State> _s) :
     handle{std::move(_s)} {
 }
@@ -467,7 +468,13 @@ osim::OSMV_State osim::fd_simulation(
 
     model.addAnalysis(new CustomAnalysis{model, std::move(reporter)});
 
-    auto final_state = std::make_unique<SimTK::State>(simulate(model, initial_state, final_time));
+    OpenSim::Manager manager(model);
+    manager.setWriteToStorage(false);
+    SimTK::State copy = initial_state;
+    copy.setTime(0);
+    manager.initialize(copy);
+
+    auto final_state = std::make_unique<SimTK::State>(manager.integrate(final_time));
 
     return OSMV_State{std::move(final_state)};
 }
@@ -543,6 +550,7 @@ void osim::disable_wrapping_surfaces(OpenSim::Model& m) {
         for (int i = 0; i < wos.getSize(); ++i) {
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(false);
+            wo.upd_Appearance().set_visible(false);
         }
     }
 }
@@ -554,6 +562,7 @@ void osim::enable_wrapping_surfaces(OpenSim::Model& m) {
         for (int i = 0; i < wos.getSize(); ++i) {
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(true);
+            wo.upd_Appearance().set_visible(true);
         }
     }
 }

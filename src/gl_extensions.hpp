@@ -323,7 +323,7 @@ namespace gl {
     void assert_no_errors(char const* label);
 
     // read an image file into an OpenGL 2D texture
-    gl::Texture_2d flipped_and_mipmapped_texture(char const* path, bool srgb = false);
+    gl::Texture_2d load_tex(char const* path, bool srgb = false);
 
     gl::Texture_2d nonflipped_and_mipmapped_texture(char const* path);
 

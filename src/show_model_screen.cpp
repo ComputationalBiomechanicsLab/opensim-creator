@@ -50,7 +50,7 @@ static V& asserting_find(std::unordered_map<K, V>& m, K const& k) {
     return it->second;
 }
 
-// replace me with C++20's std::stop_token
+// shim: std::stop_token (C++20)
 class Stop_token final {
     std::shared_ptr<std::atomic<bool>> shared_state;
 public:
@@ -70,7 +70,7 @@ public:
     }
 };
 
-// replace me with C++20's std::stop_source
+// shim: std::stop_source (C++20)
 class Stop_source final {
     std::shared_ptr<std::atomic<bool>> shared_state;
 public:
@@ -101,7 +101,7 @@ public:
     }
 };
 
-// replace me with C++20's std::jthread
+// sim: std::jthread (C++20)
 class Jthread final {
     Stop_source s;
     std::thread t;
@@ -124,7 +124,7 @@ public:
     Jthread(Jthread const&) = delete;
     Jthread& operator=(Jthread const&) = delete;
 
-    // but are moveable: the moved-from value is a non-joinable thread that
+    // threads are moveable: the moved-from value is a non-joinable thread that
     // does not represent a thread
     Jthread(Jthread&& tmp) = default;
     Jthread& operator=(Jthread&&) = default;
@@ -154,14 +154,270 @@ public:
     }
 };
 
-// thrown by the simulator thread to stop execution by that thread
+// thrown mid-simulation to cause the simulator thread to early-exit in a
+// controlled manner (assuming OpenSim is exception-safe...)
 class Stopped_exception final {};
 
-// thin abstraction over a concurrently-running OpenSim forward dynamic
-// simulation
-//
-// this implementation is based on threadsafe polling/getting, rather than
-// callbacks, for threading simplicity (rather than efficiency).
+// status of an OpenSim simulation
+enum class Sim_status {
+    Running = 1,
+    Completed = 2,
+    Cancelled = 4,
+    Error = 8,
+};
+
+static char const* str(Sim_status s) noexcept {
+    switch (s) {
+    case Sim_status::Running:
+        return "running";
+    case Sim_status::Completed:
+        return "completed";
+    case Sim_status::Cancelled:
+        return "cancelled";
+    case Sim_status::Error:
+        return "error";
+    default:
+        return "UNKNOWN STATUS: DEV ERROR";
+    }
+}
+
+// Bounded single producer, single consumer channel with basic data recycling
+template<typename Msg, size_t Capacity = 1>
+class Bounded_spsc_channel final {
+    enum class Holder_st { writeable, writing, readable };
+
+    std::mutex m;
+    std::array<Msg, Capacity> msgs;
+    std::array<Holder_st, Capacity> states = []() {
+        std::array<Holder_st, Capacity> rv;
+        rv.fill(Holder_st::writeable);
+        return rv;
+    }();
+    size_t reader_pos = 0;
+    size_t writer_pos = 0;
+
+public:
+
+    // returned by writing methods
+    class Message_writer final {
+        Bounded_spsc_channel<Msg>& chan;
+        size_t slot;
+
+    public:
+        Message_writer(Bounded_spsc_channel<Msg>& _chan, size_t _slot) :
+            chan{_chan}, slot{_slot} {
+            assert(chan.states[slot] == Holder_st::writing);
+        }
+        Message_writer(Message_writer const&) = delete;
+        Message_writer(Message_writer&&) = delete;
+        Message_writer& operator=(Message_writer const&) = delete;
+        Message_writer& operator=(Message_writer&&) = delete;
+        ~Message_writer() noexcept {
+            std::lock_guard g{chan.m};
+
+            assert(chan.states[slot] == Holder_st::writing);
+            assert(chan.writer_pos == slot);
+
+            chan.states[slot] = Holder_st::readable;
+            chan.writer_pos = (chan.writer_pos + 1) % Capacity;
+        }
+
+        Msg& get() noexcept {
+            return chan.msgs[slot];
+        }
+
+        Msg const& get() const noexcept {
+            return chan.msgs[slot];
+        }
+    };
+
+    // non-blocking: will only create a writer only if a writeable slot is
+    // present.
+    std::optional<Message_writer> try_write() {
+        std::lock_guard g{m};
+
+        if (states[writer_pos] == Holder_st::writeable) {
+            states[writer_pos] = Holder_st::writing;
+            return std::optional<Message_writer>(std::in_place, *this, writer_pos);
+        }
+
+        return std::nullopt;
+    }
+
+    bool try_pop(Msg& dest) {
+        std::lock_guard g{m};
+
+        if (states[reader_pos] == Holder_st::readable) {
+            std::swap(dest, msgs[reader_pos]);
+            states[reader_pos] = Holder_st::writeable;
+            return true;
+        }
+        return false;
+    }
+};
+
+// message from a forward-dynamic simulator thread
+struct FD_simulator_msg final {
+    osim::OSMV_State state;
+    double sim_cur_time = 0.0;
+    int num_prescribeq_calls = 0;
+    float ui_overhead = 0.0;
+};
+
+// returns true if ran to completion, false if cancelled
+static bool run_fd_simulation(
+    Stop_token t,
+    osim::OSMV_Model m,
+    osim::OSMV_State s,
+    double final_time,
+    Bounded_spsc_channel<FD_simulator_msg>& chan) {
+
+    using clock = std::chrono::steady_clock;
+
+    clock::time_point last_report_end = clock::now();
+    float ui_overhead = 0.0f;
+    int ui_overhead_n = 0;
+    float avg_overhead = 0.0f;
+
+    // what happens during an intermittent update
+    auto on_report = [&](osim::Simulation_update_event const& e) {
+        if (t.stop_requested()) {
+            throw Stopped_exception{};
+        }
+
+        clock::time_point report_start = clock::now();
+
+        {
+            auto maybe_writer = chan.try_write();
+            if (maybe_writer) {
+                FD_simulator_msg& msg = maybe_writer->get();
+                msg.state = osim::copy_state(e.state);
+                msg.sim_cur_time = e.simulation_time;
+                msg.num_prescribeq_calls = e.num_prescribe_q_calls;
+                msg.ui_overhead = avg_overhead;
+                // message is auto-committed when writer destructs
+            }
+        }
+
+        clock::time_point report_end = clock::now();
+
+        if (ui_overhead_n > 0) {
+            clock::duration sim_time = report_start - last_report_end;
+            clock::duration ui_time = report_end - report_start;
+            clock::duration total = sim_time + ui_time;
+            float this_overhead = static_cast<float>(ui_time.count()) / static_cast<float>(total.count());
+            float prev_overheads = ui_overhead;
+            avg_overhead = (this_overhead + (ui_overhead_n-1)*prev_overheads) / ui_overhead_n;
+        }
+
+        last_report_end = report_end;
+        ++ui_overhead_n;
+    };
+
+    // run the simulation
+    try {
+        osim::fd_simulation(m, s, final_time, on_report);
+        return true;
+    } catch (Stopped_exception const&) {
+        return false;
+    }
+}
+
+// represents a simulation running on a background thread
+struct FDSim_new final {
+    using clock = std::chrono::steady_clock;
+
+    static constexpr double sim_start_time = 0.0;
+    double _sim_final_time;
+
+    // we hold a "latest" IPC message (defaulted) as a "swap" space for the IPC
+    FD_simulator_msg latest;
+    Bounded_spsc_channel<FD_simulator_msg> ipc;
+    std::atomic<clock::duration> wall_start = clock::now().time_since_epoch();
+    std::atomic<clock::duration> wall_end;
+    std::atomic<Sim_status> status = Sim_status::Running;
+    Jthread worker;
+    int states_popped = 0;
+
+    FDSim_new(OpenSim::Model const& model,
+              SimTK::State const& initial_state,
+              double _final_time) :
+        _sim_final_time{_final_time} {
+
+        osim::OSMV_Model copy = osim::copy_model(model);
+        osim::finalize_properties_from_state(copy, initial_state);
+        osim::init_system(copy);
+
+        auto background_task = [this](Stop_token t, osim::OSMV_Model m, osim::OSMV_State s) {
+            wall_start = clock::now().time_since_epoch();
+            try {
+                bool cancelled = run_fd_simulation(std::move(t), std::move(m), std::move(s), _sim_final_time, ipc);
+                status = cancelled ? Sim_status::Cancelled : Sim_status::Completed;
+            } catch (...) {
+                status = Sim_status::Error;
+                // TODO: not do this shit.
+            }
+            wall_end = clock::now().time_since_epoch();
+        };
+
+        worker = Jthread{std::move(background_task), std::move(copy), osim::copy_state(initial_state)};
+    }
+
+    bool try_pop_latest(osim::OSMV_State& dest) {
+        std::swap(dest, latest.state);
+        bool popped = ipc.try_pop(latest);
+        std::swap(dest, latest.state);
+
+        assert(dest.handle != nullptr);
+
+        if (popped) {
+            ++states_popped;
+        }
+
+        return popped;
+    }
+
+    bool request_stop() noexcept {
+        return worker.request_stop();
+    }
+
+    bool running() const noexcept {
+        return status == Sim_status::Running;
+    }
+
+    clock::duration wall_duration() const noexcept {
+        clock::duration endpoint =
+            running() ? clock::now().time_since_epoch() : wall_end.load();
+
+        return endpoint - wall_start.load();
+    }
+
+    double sim_final_time() const noexcept {
+        return _sim_final_time;
+    }
+
+    double current_sim_time() const noexcept {
+        return latest.sim_cur_time;
+    }
+
+    char const* status_str() const noexcept {
+        return str(status);
+    }
+
+    int prescribeq_calls() const noexcept {
+        return latest.num_prescribeq_calls;
+    }
+
+    float ui_overhead() const noexcept {
+        return latest.ui_overhead;
+    }
+
+    int states_sent_to_ui() const noexcept {
+        return states_popped;
+    }
+};
+
+// represents a running/ran OpenSim forward dynamics simulation
 class FD_Simulation final {
     using clock = std::chrono::steady_clock;
 
@@ -169,8 +425,7 @@ class FD_Simulation final {
     std::mutex mut;
     std::optional<osim::OSMV_State> latest_state;
 
-    enum class Status { Sim_Running, Sim_Completed, Sim_Cancelled, Sim_Error };
-    std::atomic<Status> _status = Status::Sim_Running;
+    std::atomic<Sim_status> _status = Sim_status::Running;
 
     // wall clocks are "time since epoch" of the clock, because C++ does not
     // permit storing a clock::time_point in an `atomic`
@@ -187,20 +442,6 @@ class FD_Simulation final {
     Jthread simulator_thread;
 
 public:
-    static char const* status_str(Status s) noexcept {
-        switch (s) {
-        case Status::Sim_Running:
-            return "running";
-        case Status::Sim_Completed:
-            return "completed";
-        case Status::Sim_Cancelled:
-            return "cancelled";
-        case Status::Sim_Error:
-            return "error";
-        default:
-            return "UNKNOWN STATUS: DEV ERROR";
-        }
-    }
 
     // immediately starts a simulation for `model`
     FD_Simulation(OpenSim::Model const& model,
@@ -267,11 +508,11 @@ public:
                         last_end = end;
                         ++ui_overhead_n;
                 });
-                this->_status = Status::Sim_Completed;
+                this->_status = Sim_status::Completed;
             } catch (Stopped_exception const&) {
-                this->_status = Status::Sim_Cancelled;
+                this->_status = Sim_status::Cancelled;
             } catch (...) {
-                this->_status = Status::Sim_Error;
+                this->_status = Sim_status::Error;
                 throw;
             }
             wall_end_time = clock::now().time_since_epoch();
@@ -285,8 +526,7 @@ public:
         };
     }
 
-    // poll the latest state from the simulator thread
-    std::optional<osim::OSMV_State> poll() {
+    std::optional<osim::OSMV_State> try_take_latest_update() {
         if (not latest_state.has_value()) {
             return std::nullopt;
         }
@@ -300,7 +540,7 @@ public:
     }
 
     bool running() const noexcept {
-        return _status == Status::Sim_Running;
+        return _status == Sim_status::Running;
     }
 
     clock::duration wall_duration() const noexcept {
@@ -319,7 +559,7 @@ public:
     }
 
     char const* status_str() const noexcept {
-        return status_str(_status);
+        return str(_status);
     }
 
     int prescribeq_calls() const noexcept {
@@ -335,8 +575,22 @@ public:
     }
 };
 
-// returns a procedurally-generated chequered floor texture
-static gl::Texture_2d generate_chequered_floor() {
+// represents a vbo containing some verts /w normals
+struct Vbo_Triangles_with_norms final {
+    GLsizei num_verts = 0;
+    gl::Array_buffer vbo = gl::GenArrayBuffer();
+
+    Vbo_Triangles_with_norms(std::vector<osim::Untextured_triangle> const& triangles)
+        : num_verts(static_cast<GLsizei>(3 * triangles.size())) {
+
+        static_assert(sizeof(osim::Untextured_triangle) == 3 * sizeof(osim::Untextured_vert));
+
+        gl::BindBuffer(vbo.type, vbo);
+        gl::BufferData(vbo.type, sizeof(osim::Untextured_triangle) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
+    }
+};
+
+static gl::Texture_2d generate_chequered_floor_texture() {
     struct Rgb { unsigned char r, g, b; };
     constexpr size_t w = 512;
     constexpr size_t h = 512;
@@ -360,11 +614,12 @@ static gl::Texture_2d generate_chequered_floor() {
     return rv;
 }
 
-struct Floor_program final {
+// OpenGL shader for the floor
+struct Floor_shader final {
     gl::Program p = gl::CreateProgramFrom(
         gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
         gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
-    gl::Texture_2d tex = generate_chequered_floor();
+    gl::Texture_2d tex = generate_chequered_floor_texture();
     gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
     gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
     gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
@@ -406,23 +661,10 @@ struct Floor_program final {
     glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
 };
 
-// represents a vbo containing some verts /w normals
-struct Vbo_Triangles_with_norms final {
-    GLsizei num_verts = 0;
-    gl::Array_buffer vbo = gl::GenArrayBuffer();
-
-    Vbo_Triangles_with_norms(std::vector<osim::Untextured_triangle> const& triangles)
-        : num_verts(static_cast<GLsizei>(3 * triangles.size())) {
-
-        static_assert(sizeof(osim::Untextured_triangle) == 3 * sizeof(osim::Untextured_vert));
-
-        gl::BindBuffer(vbo.type, vbo);
-        gl::BufferData(vbo.type, sizeof(osim::Untextured_triangle) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
-    }
-};
-
-// basic GL program that just renders mesh normals: useful for debugging
-struct Normals_program final {
+// OpenGL shader for debugging normals
+//
+// uses geometry shader to draw each scene normal as a red line
+struct Show_normals_shader final {
     gl::Program program = gl::CreateProgramFrom(
         gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "normals.vert"),
         gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
@@ -436,8 +678,8 @@ struct Normals_program final {
     static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
 };
 
-// main program for rendering: basic scene /w no materials
-struct Main_program final {
+// OpenGL shader for rendering colored (not textured) geometry with Gouraud shading
+struct Colored_gouraud_shader final {
     gl::Program program = gl::CreateProgramFrom(
         gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
         gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
@@ -460,7 +702,7 @@ struct Main_program_renderable final {
     std::shared_ptr<Vbo_Triangles_with_norms> verts;
     gl::Vertex_array vao;
 
-    Main_program_renderable(Main_program& p,
+    Main_program_renderable(Colored_gouraud_shader& p,
                             std::shared_ptr<Vbo_Triangles_with_norms> _verts) :
         verts{std::move(_verts)},
         vao{[&]() {
@@ -484,7 +726,7 @@ struct Normals_program_renderable final {
     std::shared_ptr<Vbo_Triangles_with_norms> verts;
     gl::Vertex_array vao;
 
-    Normals_program_renderable(Normals_program& p,
+    Normals_program_renderable(Show_normals_shader& p,
                                std::shared_ptr<Vbo_Triangles_with_norms> _verts) :
         verts{std::move(_verts)},
         vao{[&]() {
@@ -506,7 +748,7 @@ struct Osim_mesh final {
     Main_program_renderable main_prog_renderable;
     Normals_program_renderable normals_prog_renderable;
 
-    Osim_mesh(Main_program& mp, Normals_program& np, osim::Untextured_mesh const& m) :
+    Osim_mesh(Colored_gouraud_shader& mp, Show_normals_shader& np, osim::Untextured_mesh const& m) :
         main_prog_renderable{mp, std::make_shared<Vbo_Triangles_with_norms>(m.triangles)},
         normals_prog_renderable{np, main_prog_renderable.verts} {
     }
@@ -516,8 +758,8 @@ namespace osmv {
     struct Show_model_screen_impl final {
         std::string path;
 
-        Main_program pMain = {};
-        Normals_program pNormals = {};
+        Colored_gouraud_shader pMain = {};
+        Show_normals_shader pNormals = {};
 
         osim::Untextured_mesh mesh_swap_space;
 
@@ -546,7 +788,7 @@ namespace osmv {
 
         Main_program_renderable pNormals_sphere = {pMain, pMain_sphere.verts};
 
-        Floor_program pFloor;
+        Floor_shader pFloor;
 
 
         float radius = 5.0f;
@@ -555,13 +797,13 @@ namespace osmv {
         float fov = 120.0f;
 
         bool dragging = false;
-        float theta = M_PI/4.0f;
-        float phi =  M_PI/4.0f;
+        float theta = 0.88f;
+        float phi =  0.4f;
         float sensitivity = 1.0f;
         float fd_final_time = 0.5f;
 
         bool panning = false;
-        glm::vec3 pan = {0.0f, 0.0f, 0.0f};
+        glm::vec3 pan = {0.3f, -0.5f, 0.0f};
 
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
         float light_color[3] = {0.9607f, 0.9176f, 0.8863f};
@@ -619,7 +861,7 @@ namespace osmv {
         void on_user_edited_model() {
             if (simulator) {
                 simulator->request_stop();
-                simulator->poll();
+                simulator->try_take_latest_update();
             }
 
             SimTK::State& s = osim::init_system(model);
@@ -645,6 +887,7 @@ namespace osmv {
         void draw(Application&);
         void draw_model_scene(Application&);
         void draw_imgui_ui(Application&);
+        void draw_menu_bar();
         void draw_lhs_panel(Application&);
         void draw_simulate_tab();
         void draw_ui_tab(Application&);
@@ -838,7 +1081,7 @@ osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
 
 osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
     if (simulator) {
-        std::optional<osim::OSMV_State> latest = simulator->poll();
+        std::optional<osim::OSMV_State> latest = simulator->try_take_latest_update();
         if (latest) {
             latest_state = std::move(*latest);
             osim::realize_report(model, latest_state);
@@ -988,10 +1231,25 @@ void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
     ImGui_ImplSDL2_NewFrame(ui.window);
     ImGui::NewFrame();
 
+    draw_menu_bar();
     draw_lhs_panel(ui);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void osmv::Show_model_screen_impl::draw_menu_bar() {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginTabBar("MainTabBar")) {
+            if (ImGui::BeginTabItem(path.c_str())) {
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
 }
 
 void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
@@ -999,8 +1257,7 @@ void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
     ImGuiWindowFlags flags = 0;
     ImGui::Begin("Model", &b, flags);
 
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-    if (ImGui::BeginTabBar("SomeTabBar", tab_bar_flags)) {
+    if (ImGui::BeginTabBar("SomeTabBar")) {
 
         if (ImGui::BeginTabItem("Simulate")) {
             ImGui::Dummy(ImVec2{0.0f, 5.0f});

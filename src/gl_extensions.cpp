@@ -159,7 +159,7 @@ gl::Geometry_shader gl::CompileGeometryShaderFile(char const* path) {
     }
 }
 
-gl::Texture_2d gl::flipped_and_mipmapped_texture(char const* path, bool srgb) {
+gl::Texture_2d gl::load_tex(char const* path, bool srgb) {
     auto t = gl::GenTexture2d();
     auto img = stbi::Image{path};
 

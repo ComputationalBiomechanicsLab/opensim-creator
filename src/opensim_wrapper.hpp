@@ -52,6 +52,7 @@ namespace osim {
     struct OSMV_State final {
         std::unique_ptr<SimTK::State> handle;
 
+        OSMV_State();
         OSMV_State(std::unique_ptr<SimTK::State>);
         OSMV_State(OSMV_State const&) = delete;
         OSMV_State(OSMV_State&&) noexcept;
@@ -60,11 +61,17 @@ namespace osim {
         ~OSMV_State() noexcept;
 
         operator SimTK::State const&() const noexcept {
+            assert(handle != nullptr);
             return *handle;
         }
 
         operator SimTK::State&() noexcept {
+            assert(handle != nullptr);
             return *handle;
+        }
+
+        operator bool() const noexcept {
+            return handle != nullptr;
         }
     };
 
