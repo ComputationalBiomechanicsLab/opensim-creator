@@ -8,6 +8,7 @@
 #include "opensim_wrapper.hpp"
 #include "loading_screen.hpp"
 #include "globals.hpp"
+#include "fd_simulation.hpp"
 
 // OpenGL
 #include "gl.hpp"
@@ -40,540 +41,12 @@ static const ImVec4 red{1.0f, 0.0f, 0.0f, 1.0f};
 static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
 static const ImVec4 dark_green{0.0f, 0.6f, 0.0f, 1.0f};
 
-
-// map lookup that assumes the entry is already in the map, asserting (in debug
-// mode) on failure.
 template<typename K, typename V>
 static V& asserting_find(std::unordered_map<K, V>& m, K const& k) {
     auto it = m.find(k);
     assert(it != m.end());
     return it->second;
 }
-
-// shim: std::stop_token (C++20)
-class Stop_token final {
-    std::shared_ptr<std::atomic<bool>> shared_state;
-public:
-    Stop_token(std::shared_ptr<std::atomic<bool>> st)
-        : shared_state{std::move(st)} {
-    }
-    Stop_token(Stop_token const&) = delete;
-    Stop_token(Stop_token&& tmp) :
-        shared_state{tmp.shared_state}  {
-    }
-    Stop_token& operator=(Stop_token const&) = delete;
-    Stop_token& operator=(Stop_token&&) = delete;
-    ~Stop_token() noexcept = default;
-
-    bool stop_requested() const noexcept {
-        return *shared_state;
-    }
-};
-
-// shim: std::stop_source (C++20)
-class Stop_source final {
-    std::shared_ptr<std::atomic<bool>> shared_state;
-public:
-    Stop_source() :
-        shared_state{new std::atomic<bool>{false}} {
-    }
-    Stop_source(Stop_source const&) = delete;
-    Stop_source(Stop_source&& tmp) :
-        shared_state{std::move(tmp.shared_state)} {
-    }
-    Stop_source& operator=(Stop_source const&) = delete;
-    Stop_source& operator=(Stop_source&& tmp) {
-        shared_state = std::move(tmp.shared_state);
-        return *this;
-    }
-    ~Stop_source() = default;
-
-    bool request_stop() noexcept {
-        // as-per the C++20 spec, but always true for this impl.
-        bool has_stop_state = shared_state != nullptr;
-        bool already_stopped = shared_state->exchange(true);
-
-        return has_stop_state and (not already_stopped);
-    }
-
-    Stop_token get_token() const noexcept {
-        return Stop_token{shared_state};
-    }
-};
-
-// sim: std::jthread (C++20)
-class Jthread final {
-    Stop_source s;
-    std::thread t;
-public:
-    // Creates new thread object which does not represent a thread
-    Jthread() :
-        s{},
-        t{} {
-    }
-
-    // Creates new thread object and associates it with a thread of execution.
-    // The new thread of execution immediately starts executing
-    template<class Function, class... Args>
-    Jthread(Function&& f, Args&&... args) :
-        s{},
-        t{f, s.get_token(), std::forward<Args>(args)...} {
-    }
-
-    // threads are non-copyable
-    Jthread(Jthread const&) = delete;
-    Jthread& operator=(Jthread const&) = delete;
-
-    // threads are moveable: the moved-from value is a non-joinable thread that
-    // does not represent a thread
-    Jthread(Jthread&& tmp) = default;
-    Jthread& operator=(Jthread&&) = default;
-
-    // jthreads (or "joining threads") cancel + join on destruction
-    ~Jthread() noexcept {
-        if (joinable()) {
-            s.request_stop();
-            t.join();
-        }
-    }
-
-    std::thread::id get_id() const noexcept {
-        return t.get_id();
-    }
-
-    bool joinable() const noexcept {
-        return t.joinable();
-    }
-
-    bool request_stop() noexcept {
-        return s.request_stop();
-    }
-
-    void join() {
-        return t.join();
-    }
-};
-
-// thrown mid-simulation to cause the simulator thread to early-exit in a
-// controlled manner (assuming OpenSim is exception-safe...)
-class Stopped_exception final {};
-
-// status of an OpenSim simulation
-enum class Sim_status {
-    Running = 1,
-    Completed = 2,
-    Cancelled = 4,
-    Error = 8,
-};
-
-static char const* str(Sim_status s) noexcept {
-    switch (s) {
-    case Sim_status::Running:
-        return "running";
-    case Sim_status::Completed:
-        return "completed";
-    case Sim_status::Cancelled:
-        return "cancelled";
-    case Sim_status::Error:
-        return "error";
-    default:
-        return "UNKNOWN STATUS: DEV ERROR";
-    }
-}
-
-// Bounded single producer, single consumer channel with basic data recycling
-template<typename Msg, size_t Capacity = 1>
-class Bounded_spsc_channel final {
-    enum class Holder_st { writeable, writing, readable };
-
-    std::mutex m;
-    std::array<Msg, Capacity> msgs;
-    std::array<Holder_st, Capacity> states = []() {
-        std::array<Holder_st, Capacity> rv;
-        rv.fill(Holder_st::writeable);
-        return rv;
-    }();
-    size_t reader_pos = 0;
-    size_t writer_pos = 0;
-
-public:
-
-    // returned by writing methods
-    class Message_writer final {
-        Bounded_spsc_channel<Msg>& chan;
-        size_t slot;
-
-    public:
-        Message_writer(Bounded_spsc_channel<Msg>& _chan, size_t _slot) :
-            chan{_chan}, slot{_slot} {
-            assert(chan.states[slot] == Holder_st::writing);
-        }
-        Message_writer(Message_writer const&) = delete;
-        Message_writer(Message_writer&&) = delete;
-        Message_writer& operator=(Message_writer const&) = delete;
-        Message_writer& operator=(Message_writer&&) = delete;
-        ~Message_writer() noexcept {
-            std::lock_guard g{chan.m};
-
-            assert(chan.states[slot] == Holder_st::writing);
-            assert(chan.writer_pos == slot);
-
-            chan.states[slot] = Holder_st::readable;
-            chan.writer_pos = (chan.writer_pos + 1) % Capacity;
-        }
-
-        Msg& get() noexcept {
-            return chan.msgs[slot];
-        }
-
-        Msg const& get() const noexcept {
-            return chan.msgs[slot];
-        }
-    };
-
-    // non-blocking: will only create a writer only if a writeable slot is
-    // present.
-    std::optional<Message_writer> try_write() {
-        std::lock_guard g{m};
-
-        if (states[writer_pos] == Holder_st::writeable) {
-            states[writer_pos] = Holder_st::writing;
-            return std::optional<Message_writer>(std::in_place, *this, writer_pos);
-        }
-
-        return std::nullopt;
-    }
-
-    bool try_pop(Msg& dest) {
-        std::lock_guard g{m};
-
-        if (states[reader_pos] == Holder_st::readable) {
-            std::swap(dest, msgs[reader_pos]);
-            states[reader_pos] = Holder_st::writeable;
-            return true;
-        }
-        return false;
-    }
-};
-
-// message from a forward-dynamic simulator thread
-struct FD_simulator_msg final {
-    osim::OSMV_State state;
-    double sim_cur_time = 0.0;
-    int num_prescribeq_calls = 0;
-    float ui_overhead = 0.0;
-};
-
-// returns true if ran to completion, false if cancelled
-static bool run_fd_simulation(
-    Stop_token t,
-    osim::OSMV_Model m,
-    osim::OSMV_State s,
-    double final_time,
-    Bounded_spsc_channel<FD_simulator_msg>& chan) {
-
-    using clock = std::chrono::steady_clock;
-
-    clock::time_point last_report_end = clock::now();
-    float ui_overhead = 0.0f;
-    int ui_overhead_n = 0;
-    float avg_overhead = 0.0f;
-
-    // what happens during an intermittent update
-    auto on_report = [&](osim::Simulation_update_event const& e) {
-        if (t.stop_requested()) {
-            throw Stopped_exception{};
-        }
-
-        clock::time_point report_start = clock::now();
-
-        {
-            auto maybe_writer = chan.try_write();
-            if (maybe_writer) {
-                FD_simulator_msg& msg = maybe_writer->get();
-                msg.state = osim::copy_state(e.state);
-                msg.sim_cur_time = e.simulation_time;
-                msg.num_prescribeq_calls = e.num_prescribe_q_calls;
-                msg.ui_overhead = avg_overhead;
-                // message is auto-committed when writer destructs
-            }
-        }
-
-        clock::time_point report_end = clock::now();
-
-        if (ui_overhead_n > 0) {
-            clock::duration sim_time = report_start - last_report_end;
-            clock::duration ui_time = report_end - report_start;
-            clock::duration total = sim_time + ui_time;
-            float this_overhead = static_cast<float>(ui_time.count()) / static_cast<float>(total.count());
-            float prev_overheads = ui_overhead;
-            avg_overhead = (this_overhead + (ui_overhead_n-1)*prev_overheads) / ui_overhead_n;
-        }
-
-        last_report_end = report_end;
-        ++ui_overhead_n;
-    };
-
-    // run the simulation
-    try {
-        osim::fd_simulation(m, s, final_time, on_report);
-        return true;
-    } catch (Stopped_exception const&) {
-        return false;
-    }
-}
-
-// represents a simulation running on a background thread
-struct FDSim_new final {
-    using clock = std::chrono::steady_clock;
-
-    static constexpr double sim_start_time = 0.0;
-    double _sim_final_time;
-
-    // we hold a "latest" IPC message (defaulted) as a "swap" space for the IPC
-    FD_simulator_msg latest;
-    Bounded_spsc_channel<FD_simulator_msg> ipc;
-    std::atomic<clock::duration> wall_start = clock::now().time_since_epoch();
-    std::atomic<clock::duration> wall_end;
-    std::atomic<Sim_status> status = Sim_status::Running;
-    Jthread worker;
-    int states_popped = 0;
-
-    FDSim_new(OpenSim::Model const& model,
-              SimTK::State const& initial_state,
-              double _final_time) :
-        _sim_final_time{_final_time} {
-
-        osim::OSMV_Model copy = osim::copy_model(model);
-        osim::finalize_properties_from_state(copy, initial_state);
-        osim::init_system(copy);
-
-        auto background_task = [this](Stop_token t, osim::OSMV_Model m, osim::OSMV_State s) {
-            wall_start = clock::now().time_since_epoch();
-            try {
-                bool cancelled = run_fd_simulation(std::move(t), std::move(m), std::move(s), _sim_final_time, ipc);
-                status = cancelled ? Sim_status::Cancelled : Sim_status::Completed;
-            } catch (...) {
-                status = Sim_status::Error;
-                // TODO: not do this shit.
-            }
-            wall_end = clock::now().time_since_epoch();
-        };
-
-        worker = Jthread{std::move(background_task), std::move(copy), osim::copy_state(initial_state)};
-    }
-
-    bool try_pop_latest(osim::OSMV_State& dest) {
-        std::swap(dest, latest.state);
-        bool popped = ipc.try_pop(latest);
-        std::swap(dest, latest.state);
-
-        assert(dest.handle != nullptr);
-
-        if (popped) {
-            ++states_popped;
-        }
-
-        return popped;
-    }
-
-    bool request_stop() noexcept {
-        return worker.request_stop();
-    }
-
-    bool running() const noexcept {
-        return status == Sim_status::Running;
-    }
-
-    clock::duration wall_duration() const noexcept {
-        clock::duration endpoint =
-            running() ? clock::now().time_since_epoch() : wall_end.load();
-
-        return endpoint - wall_start.load();
-    }
-
-    double sim_final_time() const noexcept {
-        return _sim_final_time;
-    }
-
-    double current_sim_time() const noexcept {
-        return latest.sim_cur_time;
-    }
-
-    char const* status_str() const noexcept {
-        return str(status);
-    }
-
-    int prescribeq_calls() const noexcept {
-        return latest.num_prescribeq_calls;
-    }
-
-    float ui_overhead() const noexcept {
-        return latest.ui_overhead;
-    }
-
-    int states_sent_to_ui() const noexcept {
-        return states_popped;
-    }
-};
-
-// represents a running/ran OpenSim forward dynamics simulation
-class FD_Simulation final {
-    using clock = std::chrono::steady_clock;
-
-    // mutex for latest state
-    std::mutex mut;
-    std::optional<osim::OSMV_State> latest_state;
-
-    std::atomic<Sim_status> _status = Sim_status::Running;
-
-    // wall clocks are "time since epoch" of the clock, because C++ does not
-    // permit storing a clock::time_point in an `atomic`
-    std::atomic<clock::duration> _wall_start_time;
-    std::atomic<clock::duration> wall_end_time;
-
-    static constexpr double sim_start_time = 0.0;
-    std::atomic<double> sim_cur_time = 0.0;
-    double _sim_final_time;
-    std::atomic<int> num_prescribeq_calls = 0;
-    std::atomic<float> _ui_overhead = 0.0;
-    std::atomic<int> _states_sent_to_ui =  0;
-
-    Jthread simulator_thread;
-
-public:
-
-    // immediately starts a simulation for `model`
-    FD_Simulation(OpenSim::Model const& model,
-                  SimTK::State const& initial_state,
-                  double final_time) :
-
-        _sim_final_time{final_time} {
-
-        osim::OSMV_Model copy = osim::copy_model(model);
-        osim::finalize_properties_from_state(copy, initial_state);
-        osim::init_system(copy);
-
-        // there may be a delay between this timepoint and when the thread is
-        // scheduled by the OS, but I want to ensure, as a class invariant,
-        // that class users can ask how long the sim has been running for
-
-        _wall_start_time = clock::now().time_since_epoch();
-
-        // the simulator thread's top-level function
-        auto f = [this](
-            Stop_token t,
-            osim::OSMV_Model m,
-            osim::OSMV_State s,
-            double final_time) {
-
-            _wall_start_time = clock::now().time_since_epoch();
-            try {
-                int ui_overhead_n = 0;
-                clock::time_point last_end;
-
-                osim::fd_simulation(
-                    m,
-                    s,
-                    final_time,
-                    [this, &t, &ui_overhead_n, &last_end](osim::Simulation_update_event const& e) {
-                        clock::time_point start = clock::now();
-
-                        this->sim_cur_time = e.simulation_time;
-                        this->num_prescribeq_calls = e.num_prescribe_q_calls;
-
-                        if (t.stop_requested()) {
-                            throw Stopped_exception{};
-                        }
-
-                        if (not this->latest_state.has_value()) {
-                            std::lock_guard g{this->mut};
-                            this->latest_state = osim::copy_state(e.state);
-                            ++this->_states_sent_to_ui;
-                        }
-
-                        clock::time_point end = clock::now();
-
-                        if (ui_overhead_n) {
-                            clock::duration sim_time = start - last_end;
-                            clock::duration ui_time = end - start;
-                            clock::duration total = sim_time + ui_time;
-                            float this_overhead = static_cast<float>(ui_time.count()) / static_cast<float>(total.count());
-                            float prev_overheads = this->_ui_overhead;
-                            float avg_overhead = (this_overhead + (ui_overhead_n-1)*prev_overheads) / ui_overhead_n;
-
-                            this->_ui_overhead = avg_overhead;
-                        }
-
-                        last_end = end;
-                        ++ui_overhead_n;
-                });
-                this->_status = Sim_status::Completed;
-            } catch (Stopped_exception const&) {
-                this->_status = Sim_status::Cancelled;
-            } catch (...) {
-                this->_status = Sim_status::Error;
-                throw;
-            }
-            wall_end_time = clock::now().time_since_epoch();
-        };
-
-        // start the simulator thread
-        simulator_thread = Jthread{
-            std::move(f),
-            std::move(copy),
-            osim::copy_state(initial_state), final_time
-        };
-    }
-
-    std::optional<osim::OSMV_State> try_take_latest_update() {
-        if (not latest_state.has_value()) {
-            return std::nullopt;
-        }
-
-        std::lock_guard g{mut};
-        return std::exchange(latest_state, std::nullopt);
-    }
-
-    bool request_stop() noexcept {
-        return simulator_thread.request_stop();
-    }
-
-    bool running() const noexcept {
-        return _status == Sim_status::Running;
-    }
-
-    clock::duration wall_duration() const noexcept {
-        clock::duration endpoint =
-            running() ? clock::now().time_since_epoch() : wall_end_time.load();
-
-        return endpoint - _wall_start_time.load();
-    }
-
-    double sim_final_time() const noexcept {
-        return _sim_final_time;
-    }
-
-    double current_sim_time() const noexcept {
-        return sim_cur_time;
-    }
-
-    char const* status_str() const noexcept {
-        return str(_status);
-    }
-
-    int prescribeq_calls() const noexcept {
-        return num_prescribeq_calls;
-    }
-
-    float ui_overhead() const noexcept {
-        return _ui_overhead;
-    }
-
-    int states_sent_to_ui() const noexcept {
-        return _states_sent_to_ui;
-    }
-};
 
 // represents a vbo containing some verts /w normals
 struct Vbo_Triangles_with_norms final {
@@ -590,36 +63,12 @@ struct Vbo_Triangles_with_norms final {
     }
 };
 
-static gl::Texture_2d generate_chequered_floor_texture() {
-    struct Rgb { unsigned char r, g, b; };
-    constexpr size_t w = 512;
-    constexpr size_t h = 512;
-    constexpr Rgb on_color = {0xfd, 0xfd, 0xfd};
-    constexpr Rgb off_color = {0xeb, 0xeb, 0xeb};
-
-    std::array<Rgb, w*h> pixels;
-    for (size_t row = 0; row < h; ++row) {
-        size_t row_start = row * w;
-        bool y_on = (row/32) % 2 == 0;
-        for (size_t col = 0; col < w; ++col) {
-            bool x_on = (col/32) % 2 == 0;
-            pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
-        }
-    }
-
-    gl::Texture_2d rv = gl::GenTexture2d();
-    gl::BindTexture(rv.type, rv);
-    glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-    glGenerateMipmap(rv.type);
-    return rv;
-}
-
 // OpenGL shader for the floor
 struct Floor_shader final {
     gl::Program p = gl::CreateProgramFrom(
         gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
         gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
-    gl::Texture_2d tex = generate_chequered_floor_texture();
+    gl::Texture_2d tex = osmv::generate_chequered_floor_texture();
     gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
     gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
     gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
@@ -844,7 +293,7 @@ namespace osmv {
 
         sdl::Window_dimensions window_dims;
 
-        std::optional<FD_Simulation> simulator;
+        std::optional<Background_fd_simulation> simulator;
 
         osim::OSMV_Model model;
         osim::State_geometry geom;
@@ -861,11 +310,11 @@ namespace osmv {
         void on_user_edited_model() {
             if (simulator) {
                 simulator->request_stop();
-                simulator->try_take_latest_update();
+                simulator->try_pop_latest(latest_state);
             }
 
             SimTK::State& s = osim::init_system(model);
-            latest_state = osim::copy_state(s);
+            latest_state = s;
 
             mas_muscle_selection = nullptr;
             mas_coord_selection = nullptr;
@@ -908,8 +357,7 @@ osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OS
     model{std::move(_model)},
     latest_state{[this]() {
         osim::finalize_from_properties(model);
-        SimTK::State& s = osim::init_system(model);
-        return osim::copy_state(s);
+        return osim::OSMV_State{osim::init_system(model)};
     }()}
 {
     update_scene();
@@ -917,7 +365,8 @@ osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OS
 
 void osmv::Show_model_screen_impl::update_scene() {
     osim::realize_velocity(model, latest_state);
-    geom_loader.geometry_in(model, latest_state, geom);
+    geom.clear();
+    geom_loader.all_geometry_in(model, latest_state, geom);
 
     // populate mesh data, if necessary
     for (osim::Mesh_instance const& mi : geom.mesh_instances) {
@@ -958,7 +407,7 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
                     return Resp_Transition_to{std::make_unique<osmv::Loading_screen>(path)};
                 } else {
-                    latest_state = osim::copy_state(osim::init_system(model));
+                    latest_state = osim::init_system(model);
                     osim::realize_velocity(model, latest_state);
                     update_scene();
                 }
@@ -1080,13 +529,9 @@ osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
 }
 
 osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
-    if (simulator) {
-        std::optional<osim::OSMV_State> latest = simulator->try_take_latest_update();
-        if (latest) {
-            latest_state = std::move(*latest);
-            osim::realize_report(model, latest_state);
-            update_scene();
-        }
+    if (simulator and simulator->try_pop_latest(latest_state)) {
+        osim::realize_report(model, latest_state);
+        update_scene();
     }
 
     return Resp_Ok{};
@@ -1318,7 +763,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
 
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
-        latest_state = osim::copy_state(osim::init_system(model));
+        latest_state = osim::init_system(model);
         osim::realize_velocity(model, latest_state);
         update_scene();
     }
@@ -1349,7 +794,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
         ImGui::Text("prescribeQ calls: %i", simulator->prescribeq_calls());
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::Text("States sent to UI thread: %i", simulator->states_sent_to_ui());
-        ImGui::Text("Avg. UI overhead: %.1f %%", 100.0 * simulator->ui_overhead());
+        ImGui::Text("Avg. UI overhead: %.5f %%", 100.0 * simulator->ui_overhead());
     }
 }
 

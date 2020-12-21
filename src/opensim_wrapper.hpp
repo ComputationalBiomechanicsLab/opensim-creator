@@ -52,11 +52,12 @@ namespace osim {
     struct OSMV_State final {
         std::unique_ptr<SimTK::State> handle;
 
-        OSMV_State();
         OSMV_State(std::unique_ptr<SimTK::State>);
+        OSMV_State(SimTK::State const&);  // copies
         OSMV_State(OSMV_State const&) = delete;
         OSMV_State(OSMV_State&&) noexcept;
         OSMV_State& operator=(OSMV_State const&) = delete;
+        OSMV_State& operator=(SimTK::State const&); // copies
         OSMV_State& operator=(OSMV_State&&) noexcept;
         ~OSMV_State() noexcept;
 
@@ -133,14 +134,13 @@ namespace osim {
             float* out,
             size_t steps);
 
-    OSMV_State copy_state(SimTK::State const&);
     void realize_report(OpenSim::Model const&, SimTK::State&);
     void realize_velocity(OpenSim::Model&, SimTK::State&);
     OSMV_State fd_simulation(
             OpenSim::Model& model,
             SimTK::State const& initial_state,
             double final_time,
-            std::function<void(Simulation_update_event const&)> reporter);
+            std::function<int(Simulation_update_event const&)> reporter);
 
 
     // high-level rendering API
@@ -158,6 +158,10 @@ namespace osim {
 
     struct State_geometry final {
         std::vector<Mesh_instance> mesh_instances;
+
+        void clear() {
+            mesh_instances.clear();
+        }
     };
 
 
@@ -188,7 +192,7 @@ namespace osim {
         Geometry_loader& operator=(Geometry_loader const&) = delete;
         Geometry_loader& operator=(Geometry_loader&&);
 
-        void geometry_in(OpenSim::Model& model, SimTK::State& s, State_geometry& out);
+        void all_geometry_in(OpenSim::Model& model, SimTK::State& s, State_geometry& out);
         void load_mesh(Mesh_id id, Untextured_mesh& out);
 
         ~Geometry_loader() noexcept;

@@ -123,16 +123,6 @@ static void load_mesh_data(PolygonalMesh const& mesh, osim::Untextured_mesh& out
     }
 }
 
-// generate geometry for a particular model+state pair
-static void generateGeometry(
-    Model const& model,
-    State const& state,
-    Array_<DecorativeGeometry>& out) {
-
-    model.generateDecorations(true, model.getDisplayHints(), state, out);
-    model.generateDecorations(false, model.getDisplayHints(), state, out);
-}
-
 // A hacky decoration generator that just always generates all geometry,
 // even if it's static.
 struct DynamicDecorationGenerator : public DecorationGenerator {
@@ -146,7 +136,8 @@ struct DynamicDecorationGenerator : public DecorationGenerator {
     }
 
     void generateDecorations(const State& state, Array_<DecorativeGeometry>& geometry) override {
-        generateGeometry(*_model, state, geometry);
+        _model->generateDecorations(true, _model->getDisplayHints(), state, geometry);
+        _model->generateDecorations(false, _model->getDisplayHints(), state, geometry);
     }
 };
 
@@ -369,9 +360,19 @@ osim::OSMV_Model::OSMV_Model(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model& osim::OSMV_Model::operator=(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model::~OSMV_Model() noexcept = default;
 
-osim::OSMV_State::OSMV_State() = default;
 osim::OSMV_State::OSMV_State(std::unique_ptr<SimTK::State> _s) :
     handle{std::move(_s)} {
+}
+osim::OSMV_State::OSMV_State(SimTK::State const& st) :
+    handle{new SimTK::State(st)} {
+}
+osim::OSMV_State& osim::OSMV_State::operator=(SimTK::State const& st) {
+    if (handle != nullptr) {
+        *handle = st;
+    } else {
+        handle = std::make_unique<SimTK::State>(st);
+    }
+    return *this;
 }
 osim::OSMV_State::OSMV_State(OSMV_State&&) noexcept = default;
 osim::OSMV_State& osim::OSMV_State::operator=(OSMV_State&&) noexcept = default;
@@ -405,10 +406,6 @@ void osim::finalize_properties_from_state(OpenSim::Model& m, SimTK::State const&
     m.setPropertiesFromState(s);
 }
 
-osim::OSMV_State osim::copy_state(SimTK::State const& s) {
-    return OSMV_State{std::make_unique<SimTK::State>(s)};
-}
-
 void osim::realize_velocity(OpenSim::Model& m, SimTK::State& s) {
     m.realizeVelocity(s);
 }
@@ -421,14 +418,14 @@ osim::OSMV_State osim::fd_simulation(
         OpenSim::Model& model,
         SimTK::State const& initial_state,
         double final_time,
-        std::function<void(Simulation_update_event const&)> reporter) {
+        std::function<int(Simulation_update_event const&)> reporter) {
 
     struct CustomAnalysis final : public Analysis {
         OpenSim::Model& m;
-        std::function<void(Simulation_update_event const&)> f;
+        std::function<int(Simulation_update_event const&)> f;
 
         CustomAnalysis(OpenSim::Model& _m,
-                       std::function<void(Simulation_update_event const&)> _f) :
+                       std::function<int(Simulation_update_event const&)> _f) :
             m{_m},
             f{std::move(_f)} {
         }
@@ -442,18 +439,15 @@ osim::OSMV_State osim::fd_simulation(
         }
 
         int begin(SimTK::State const& s) override {
-            f(make_event(s));
-            return 0;
+            return f(make_event(s));
         }
 
         int step(SimTK::State const& s, int) override {
-            f(make_event(s));
-            return 0;
+            return f(make_event(s));
         }
 
         int end(SimTK::State const& s) override {
-            f(make_event(s));
-            return 0;
+            return f(make_event(s));
         }
 
         CustomAnalysis* clone() const override {
@@ -602,12 +596,11 @@ osim::Geometry_loader::Geometry_loader() :
 osim::Geometry_loader::Geometry_loader(Geometry_loader&&) = default;
 osim::Geometry_loader& osim::Geometry_loader::operator=(Geometry_loader&&) = default;
 
-void osim::Geometry_loader::geometry_in(
+void osim::Geometry_loader::all_geometry_in(
     OpenSim::Model& m,
     SimTK::State& s,
     State_geometry& out) {
 
-    out.mesh_instances.clear();
     impl->pm_swap.clear();
 
     Array_<DecorativeGeometry> swp;

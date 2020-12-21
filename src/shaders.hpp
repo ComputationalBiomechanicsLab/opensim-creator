@@ -20,28 +20,6 @@ struct Colored_vert final {
 };
 static_assert(sizeof(Colored_vert) == 6*sizeof(float));
 
-// shader that renders geometry with Blinn-Phong shading. Requires the geometry
-// to have surface normals and textures
-//
-// only supports one light and one diffuse texture
-struct Blinn_phong_textured_shader final {
-    gl::Program p = gl::CreateProgramFrom(
-        gl::CompileVertexShaderResource("selectable.vert"),
-        gl::CompileFragmentShaderResource("selectable.frag"));
-
-    static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-    static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
-    static constexpr gl::Attribute aTexCoords = gl::AttributeAtLocation(2);
-
-    gl::Uniform_mat4 uModel = gl::GetUniformLocation(p, "model");
-    gl::Uniform_mat4 uView = gl::GetUniformLocation(p, "view");
-    gl::Uniform_mat4 uProjection = gl::GetUniformLocation(p, "projection");
-    gl::Uniform_mat3 uNormalMatrix = gl::GetUniformLocation(p, "normalMatrix");
-
-    gl::Uniform_sampler2d uTexture1 = gl::GetUniformLocation(p, "texture1");
-    gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(p, "lightPos");
-    gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(p, "viewPos");
-};
 
 static gl::Vertex_array create_vao(
         Blinn_phong_textured_shader& s,

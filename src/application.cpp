@@ -54,7 +54,7 @@ osmv::Application::Application() :
            SDL_WINDOWPOS_CENTERED,
            1024,
            768,
-           SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS);
+           SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     }()},
     gl{sdl::GL_CreateContext(window)},
     imgui_ctx{igx::Context{}},

@@ -286,3 +286,27 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
         }
     }
 }
+
+gl::Texture_2d osmv::generate_chequered_floor_texture() {
+    struct Rgb { unsigned char r, g, b; };
+    constexpr size_t w = 512;
+    constexpr size_t h = 512;
+    constexpr Rgb on_color = {0xfd, 0xfd, 0xfd};
+    constexpr Rgb off_color = {0xeb, 0xeb, 0xeb};
+
+    std::array<Rgb, w*h> pixels;
+    for (size_t row = 0; row < h; ++row) {
+        size_t row_start = row * w;
+        bool y_on = (row/32) % 2 == 0;
+        for (size_t col = 0; col < w; ++col) {
+            bool x_on = (col/32) % 2 == 0;
+            pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
+        }
+    }
+
+    gl::Texture_2d rv = gl::GenTexture2d();
+    gl::BindTexture(rv.type, rv);
+    glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    glGenerateMipmap(rv.type);
+    return rv;
+}

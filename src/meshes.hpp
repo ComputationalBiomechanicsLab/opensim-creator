@@ -1,6 +1,7 @@
 #pragma once
 
 #include "opensim_wrapper.hpp"
+#include "gl_extensions.hpp"
 
 #include <vector>
 
@@ -34,4 +35,6 @@ namespace osmv {
     //
     // see simbody-visualizer.cpp::makeCylinder for my source material
     void simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untextured_triangle>& out);
+
+    gl::Texture_2d generate_chequered_floor_texture();
 }

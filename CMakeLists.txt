@@ -56,6 +56,7 @@ add_library(common STATIC
     src/opensim_wrapper.cpp
     src/meshes.hpp
     src/meshes.cpp
+    src/fd_simulation.hpp
 )
 target_include_directories(common PUBLIC
     # ${OPENGL_INCLUDE_DIR}  // GLEW handles forwarding the OpenGL API
