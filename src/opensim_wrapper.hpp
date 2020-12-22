@@ -8,7 +8,6 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <atomic>
 
 namespace OpenSim {
     class Model;
@@ -53,11 +52,11 @@ namespace osim {
         std::unique_ptr<SimTK::State> handle;
 
         OSMV_State(std::unique_ptr<SimTK::State>);
-        OSMV_State(SimTK::State const&);  // copies
+        OSMV_State(SimTK::State const&);
         OSMV_State(OSMV_State const&) = delete;
         OSMV_State(OSMV_State&&) noexcept;
         OSMV_State& operator=(OSMV_State const&) = delete;
-        OSMV_State& operator=(SimTK::State const&); // copies
+        OSMV_State& operator=(SimTK::State const&);
         OSMV_State& operator=(OSMV_State&&) noexcept;
         ~OSMV_State() noexcept;
 
@@ -134,6 +133,16 @@ namespace osim {
             float* out,
             size_t steps);
 
+    struct Output_val final {
+        std::string const* name;
+        std::string val_as_str;
+    };
+
+    void get_output_vals(
+            OpenSim::Model const&,
+            SimTK::State const&,
+            std::vector<std::string const*>&);
+
     void realize_report(OpenSim::Model const&, SimTK::State&);
     void realize_velocity(OpenSim::Model&, SimTK::State&);
     OSMV_State fd_simulation(
@@ -154,7 +163,6 @@ namespace osim {
 
         Mesh_id mesh;
     };
-    std::ostream& operator<<(std::ostream& o, osim::Mesh_instance const& m);
 
     struct State_geometry final {
         std::vector<Mesh_instance> mesh_instances;
@@ -169,12 +177,14 @@ namespace osim {
         glm::vec3 pos;
         glm::vec3 normal;
     };
+    static_assert(sizeof(Untextured_vert) == 6*sizeof(float));
 
     struct Untextured_triangle final {
         Untextured_vert p1;
         Untextured_vert p2;
         Untextured_vert p3;
     };
+    static_assert(sizeof(Untextured_triangle) == 3*sizeof(Untextured_vert));
 
     struct Untextured_mesh final {
         std::vector<Untextured_triangle> triangles;

@@ -2,40 +2,11 @@
 
 #include "gl.hpp"
 
-// glm
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <stdexcept>
-
-
-// gl extensions: useful extension/helper methods over base OpenGL API
-//
-// these are helpful sugar methods over the base OpenGL API. Anything that is
-// OpenGL-ey, but not "pure" OpenGL, goes here.
-
-// MACROS: usually for sanity-checking during debugging
-
-#define AKGL_STRINGIZE(x) AKGL_STRINGIZE2(x)
-#define AKGL_STRINGIZE2(x) #x
-
-#ifndef NDEBUG
-#define AKGL_ENABLE(capability) { \
-    glEnable(capability); \
-    gl::assert_no_errors(__FILE__ ":" AKGL_STRINGIZE(__LINE__) ": glEnable: " #capability); \
-}
-#else
-#define AKGL_ENABLE(capability) { \
-    glEnable(capability); \
-}
-#endif
-
-#define AKGL_ASSERT_NO_ERRORS() { \
-    gl::assert_no_errors(__FILE__ ":" AKGL_STRINGIZE(__LINE__)); \
-}
 
 namespace gl {
     [[nodiscard]] constexpr Attribute AttributeAtLocation(GLuint loc) noexcept {
@@ -351,28 +322,19 @@ namespace gl {
         size_t _size = 0;
         gl::Array_buffer _vbo = gl::GenArrayBuffer();
 
-    public:     
-        template<typename Collection>
-        Sized_array_buffer(Collection const& c) :
-            Sized_array_buffer{c.begin(), c.end()} {
-        }
-
-        Sized_array_buffer(std::initializer_list<T> const& els) :
-            Sized_array_buffer{els.begin(), els.end()} {
-        }
-
-        Sized_array_buffer(T const* begin, T const* end) :
+    public:
+        Sized_array_buffer(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) :
             _size{static_cast<size_t>(std::distance(begin, end))} {
 
             gl::BindBuffer(_vbo);
-            gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, GL_STATIC_DRAW);
+            gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
         }
 
-        gl::Array_buffer& data() noexcept {
+        operator gl::Array_buffer& () noexcept {
             return _vbo;
         }
 
-        gl::Array_buffer const& data() const noexcept {
+        operator gl::Array_buffer const& () const noexcept {
             return _vbo;
         }
 
@@ -382,6 +344,35 @@ namespace gl {
 
         GLsizei sizei() const noexcept {
             return static_cast<GLsizei>(_size);
+        }
+    };
+
+    template<typename T, size_t Capacity>
+    class Static_array_buffer final {
+        gl::Array_buffer _vbo = gl::GenArrayBuffer();
+
+    public:
+        Static_array_buffer(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) {
+            assert(std::distance(begin, end) == Capacity);
+
+            gl::BindBuffer(_vbo);
+            gl::BufferData(_vbo.type, static_cast<long>(Capacity * sizeof(T)), begin, usage);
+        }
+
+        operator gl::Array_buffer& () noexcept {
+            return _vbo;
+        }
+
+        operator gl::Array_buffer const& () const noexcept {
+            return _vbo;
+        }
+
+        size_t size() const noexcept {
+            return Capacity;
+        }
+
+        GLsizei sizei() const noexcept {
+            return static_cast<GLsizei>(Capacity);
         }
     };
 }

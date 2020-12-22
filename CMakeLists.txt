@@ -25,7 +25,7 @@ file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/ RESOURCES_DIR)
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders/ SHADERS_DIR)
 configure_file("${PROJECT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
 
-add_library(common STATIC
+add_executable(osmv
     third_party/imgui-1.78/imgui.cpp
     third_party/imgui-1.78/imgui_draw.cpp
     third_party/imgui-1.78/imgui_widgets.cpp
@@ -36,15 +36,11 @@ add_library(common STATIC
     src/gl.cpp
     src/gl_extensions.hpp
     src/gl_extensions.cpp
-    src/glm_extensions.hpp
-    src/glm_extensions.cpp
     src/sdl.hpp
     src/sdl.cpp
     src/imgui_extensions.hpp
     src/imgui_extensions.cpp
 
-    src/globals.hpp
-    src/globals.cpp
     src/application.hpp
     src/application.cpp
     src/screen.hpp
@@ -57,8 +53,10 @@ add_library(common STATIC
     src/meshes.hpp
     src/meshes.cpp
     src/fd_simulation.hpp
+
+    src/osmv.cpp
 )
-target_include_directories(common PUBLIC
+target_include_directories(osmv PUBLIC
     # ${OPENGL_INCLUDE_DIR}  // GLEW handles forwarding the OpenGL API
     third_party/SDL2-2.0.12/include
     third_party/glm-0.9.9.8/
@@ -67,7 +65,7 @@ target_include_directories(common PUBLIC
     third_party/stb_image/
     ${PROJECT_BINARY_DIR}  # so configure_file config can be #included
 )
-target_link_libraries(common
+target_link_libraries(osmv
     # in release mode, use statically-linked SDL and GLEW with LTO to give the
     # smallest resulting binary and lowest perf cost
     $<$<CONFIG:Debug>:SDL2>
@@ -85,25 +83,18 @@ target_link_libraries(common
     SimTKmath
     SimTKsimbody
 )
-target_compile_options(common PUBLIC
+target_compile_options(osmv PUBLIC
     # disable MSVC permissiveness. Forces MSVC to obey C++ standard
     # - specifically, this enables the use of 'and', 'not', etc.
     $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
-target_compile_features(common PUBLIC
+target_compile_features(osmv PUBLIC
     cxx_std_20
 )
-set_target_properties(common PROPERTIES
+set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
 )
 source_group(TREE third_party/)
-
-
-add_executable(osmv src/osmv.cpp)
-target_link_libraries(osmv common)
-
-add_executable(sbv src/sbv.cpp)
-target_link_libraries(sbv common)
 
 
 # BUILD LIB PATHS:

@@ -96,10 +96,11 @@ osmv::Application::Application() :
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-osmv::Application::~Application() noexcept = default;
+
 
 // top-level event pipeline for showing a "screen" to the user
-void osmv::Application::show() {
+void osmv::Application::show(std::unique_ptr<osmv::Screen> first_screen) {
+    current_screen = std::move(first_screen);
     current_screen->init(*this);
 
     auto last_render_timepoint = std::chrono::high_resolution_clock::now();
@@ -167,7 +168,12 @@ void osmv::Application::show() {
         }
 
         // screen: draw
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
         current_screen->draw(*this);
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 
         // non-screen-specific stuff

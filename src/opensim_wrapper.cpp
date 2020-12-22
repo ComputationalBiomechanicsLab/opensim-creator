@@ -4,8 +4,6 @@
 
 #include <OpenSim/OpenSim.h>
 #include <iostream>
-#include "glm_extensions.hpp"
-#include "globals.hpp"
 #include "meshes.hpp"
 
 using namespace SimTK;
@@ -346,12 +344,6 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
     }
 };
 
-std::ostream& osim::operator<<(std::ostream& o, osim::Mesh_instance const& m) {
-    o << "mesh:" << std::endl
-      << "    transform = " << m.transform << std::endl
-      << "    rgba = " << m.rgba << std::endl;
-    return o;
-}
 
 osim::OSMV_Model::OSMV_Model(std::unique_ptr<OpenSim::Model> _m) :
     handle{std::move(_m)} {
@@ -588,6 +580,16 @@ void osim::compute_moment_arms(
 
     c.setLocked(state, prev_locked);
     c.setValue(state, prev_val);
+}
+
+void osim::get_output_vals(
+        OpenSim::Model const& model,
+        SimTK::State const& state,
+        std::vector<std::string const*>& out) {
+
+    for (auto const& [name, output] : model.getOutputs()) {
+        out.push_back(&name);
+    }
 }
 
 osim::Geometry_loader::Geometry_loader() :

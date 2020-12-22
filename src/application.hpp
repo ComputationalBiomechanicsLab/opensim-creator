@@ -8,31 +8,51 @@
 // application: top-level application state
 //
 // this top-level class is responsible for initializing a bare-minimum subset
-// of the UI's functionality (e.g. OpenGL, imgui, SDL), and handling
+// of the UI's functionality (e.g. OpenGL, SDL, ImGui), and handling
 // application-level upkeep (event pumping, throttling, etc.) while deferring
-// actual per-screen rendering work to a `Screen`
+// actual per-screen rendering work to a (changing) `Screen` instance
 
 namespace osmv {
     struct Screen;
 
-    struct Application final {
+    class Application final {
         sdl::Context context;
         sdl::Window window;
         sdl::GLContext gl;
         igx::Context imgui_ctx;
         igx::SDL2_Context imgui_sdl2_ctx;
         igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
-
-        // true if the framerate should be throttled to a reasonable-ish rate
-        // (e.g. ~60 FPS) by `sleep`ing
-        bool software_throttle = true;
-
-        // must be bootstrapped after init-ing a screen
+        bool software_throttle = true;        
         std::unique_ptr<Screen> current_screen;
 
+    public:
         Application();
-        ~Application() noexcept;
+        ~Application() noexcept = default;
 
-        void show();
+        // start showing application window with an initial screen
+        void show(std::unique_ptr<osmv::Screen>);
+
+        // true if FPS is being throttled (e.g. with software (sleeps) or vsync)
+        bool is_fps_throttling() const noexcept {
+            return software_throttle;
+        }
+
+        void enable_fps_throttling() noexcept {
+            software_throttle = true;
+        }
+
+        void disable_fps_throttling() noexcept {
+            software_throttle = false;
+        }
+
+        // dimensions of the main application window in pixels
+        sdl::Window_dimensions window_size() const noexcept {
+            return sdl::GetWindowSize(window);
+        }
+
+        // move mouse relative to the window (origin in top-left)
+        void move_mouse_to(int x, int y) {
+            SDL_WarpMouseInWindow(window, x, y);
+        }
     };
 }
