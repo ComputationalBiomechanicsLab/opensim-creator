@@ -22,6 +22,8 @@ namespace osim {
         //Array_<DecorativeGeometry> decorative_geom_swap;
         PolygonalMesh pm_swap;
 
+        Array_<DecorativeGeometry> dg_swp;
+
         // two-way lookup to establish a meshid-to-path mappings. This is so
         // that the renderer can just opaquely handle ID ints
         std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshids);
@@ -352,9 +354,6 @@ osim::OSMV_Model::OSMV_Model(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model& osim::OSMV_Model::operator=(OSMV_Model&&) noexcept = default;
 osim::OSMV_Model::~OSMV_Model() noexcept = default;
 
-osim::OSMV_State::OSMV_State(std::unique_ptr<SimTK::State> _s) :
-    handle{std::move(_s)} {
-}
 osim::OSMV_State::OSMV_State(SimTK::State const& st) :
     handle{new SimTK::State(st)} {
 }
@@ -399,7 +398,7 @@ void osim::finalize_properties_from_state(OpenSim::Model& m, SimTK::State const&
 }
 
 void osim::realize_velocity(OpenSim::Model& m, SimTK::State& s) {
-    m.realizeVelocity(s);
+    m.realizeAcceleration(s);
 }
 
 void osim::realize_report(OpenSim::Model const& m, SimTK::State& s) {
@@ -460,9 +459,7 @@ osim::OSMV_State osim::fd_simulation(
     copy.setTime(0);
     manager.initialize(copy);
 
-    auto final_state = std::make_unique<SimTK::State>(manager.integrate(final_time));
-
-    return OSMV_State{std::move(final_state)};
+    return OSMV_State{manager.integrate(final_time)};
 }
 
 static osim::Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
@@ -582,14 +579,33 @@ void osim::compute_moment_arms(
     c.setValue(state, prev_val);
 }
 
-void osim::get_output_vals(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        std::vector<std::string const*>& out) {
+void osim::get_available_outputs(
+        OpenSim::Model const& m,
+        std::vector<Available_output>& out) {
 
-    for (auto const& [name, output] : model.getOutputs()) {
-        out.push_back(&name);
+    for (auto const& p : m.getOutputs()) {
+        out.push_back(Available_output{
+            &m.getName(),
+            &p.second->getName(),
+            p.second.get(),
+        });
     }
+
+    for (auto const& musc : m.getComponentList<OpenSim::Muscle>()) {
+        for (auto const& p : musc.getOutputs()) {
+            out.push_back(Available_output{
+                &musc.getName(),
+                &p.second->getName(),
+                p.second.get(),
+            });
+        }
+    }
+}
+
+std::string osim::get_output_val(
+        OpenSim::AbstractOutput const& ao,
+        SimTK::State const& s) {
+    return ao.getValueAsString(s);
 }
 
 osim::Geometry_loader::Geometry_loader() :
@@ -604,14 +620,13 @@ void osim::Geometry_loader::all_geometry_in(
     State_geometry& out) {
 
     impl->pm_swap.clear();
-
-    Array_<DecorativeGeometry> swp;
+    impl->dg_swp.clear();
 
     DynamicDecorationGenerator dg{&m};
-    dg.generateDecorations(s, swp);
+    dg.generateDecorations(s, impl->dg_swp);
 
     auto visitor = Geometry_visitor{m, s, *impl, out};
-    for (DecorativeGeometry& dg : swp) {
+    for (DecorativeGeometry& dg : impl->dg_swp) {
         dg.implementGeometry(visitor);
     }
 }

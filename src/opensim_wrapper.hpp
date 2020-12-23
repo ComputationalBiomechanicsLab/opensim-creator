@@ -13,6 +13,7 @@ namespace OpenSim {
     class Model;
     class Coordinate;
     class Muscle;
+    class AbstractOutput;
 }
 
 namespace SimTK {
@@ -25,9 +26,7 @@ namespace SimTK {
 // the rest of the codebase because OpenSim.h is massive and can increase
 // compile times by *a lot*
 namespace osim {
-    // initialization + loading
 
-    // opaque RAII wrapper OpenSim::Model
     struct OSMV_Model final {
         std::unique_ptr<OpenSim::Model> handle;
 
@@ -47,11 +46,9 @@ namespace osim {
         }
     };
 
-    // opaque RAII wrapper for SimTK::State
     struct OSMV_State final {
         std::unique_ptr<SimTK::State> handle;
 
-        OSMV_State(std::unique_ptr<SimTK::State>);
         OSMV_State(SimTK::State const&);
         OSMV_State(OSMV_State const&) = delete;
         OSMV_State(OSMV_State&&) noexcept;
@@ -61,17 +58,11 @@ namespace osim {
         ~OSMV_State() noexcept;
 
         operator SimTK::State const&() const noexcept {
-            assert(handle != nullptr);
             return *handle;
         }
 
         operator SimTK::State&() noexcept {
-            assert(handle != nullptr);
             return *handle;
-        }
-
-        operator bool() const noexcept {
-            return handle != nullptr;
         }
     };
 
@@ -102,11 +93,24 @@ namespace osim {
         bool locked;
     };
 
+    // top-level muscle statistics
     struct Muscle_stat final {
         OpenSim::Muscle const* ptr;
         std::string const* name;
         float length;
     };
+
+    // output available in the model
+    struct Available_output final {
+        std::string const* owner_name;
+        std::string const* output_name;
+        OpenSim::AbstractOutput const* handle;
+    };
+
+    inline bool operator==(Available_output const& a, Available_output const& b) {
+        return a.handle == b.handle;
+    }
+
 
     // simplified API to OpenSim. Users that want something more advanced
     // should directly #include OpenSim's headers (but eat the compile times)
@@ -133,15 +137,8 @@ namespace osim {
             float* out,
             size_t steps);
 
-    struct Output_val final {
-        std::string const* name;
-        std::string val_as_str;
-    };
-
-    void get_output_vals(
-            OpenSim::Model const&,
-            SimTK::State const&,
-            std::vector<std::string const*>&);
+    void get_available_outputs(OpenSim::Model const&, std::vector<Available_output>&);
+    std::string get_output_val(OpenSim::AbstractOutput const&, SimTK::State const&);
 
     void realize_report(OpenSim::Model const&, SimTK::State&);
     void realize_velocity(OpenSim::Model&, SimTK::State&);
@@ -152,7 +149,8 @@ namespace osim {
             std::function<int(Simulation_update_event const&)> reporter);
 
 
-    // high-level rendering API
+
+    // RENDERING
 
     using Mesh_id = int;
 

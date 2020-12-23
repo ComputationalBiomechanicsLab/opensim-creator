@@ -1,4 +1,4 @@
-﻿#include "show_model_screen.hpp"
+#include "show_model_screen.hpp"
 
 #include "osmv_config.hpp"
 
@@ -299,6 +299,14 @@ namespace osmv {
         };
         std::vector<std::unique_ptr<MA_plot>> mas_plots;
 
+
+        // outputs tab state
+        char ao_filter[64]{};
+        std::vector<osim::Available_output> ao_swap;
+        std::optional<osim::Available_output> ao_selected;
+        std::vector<osim::Available_output> ao_wanted;
+
+
         sdl::Window_dimensions window_dims;
 
         std::optional<Background_fd_simulation> simulator;
@@ -326,6 +334,8 @@ namespace osmv {
 
             mas_muscle_selection = nullptr;
             mas_coord_selection = nullptr;
+            ao_selected = std::nullopt;
+            ao_wanted.clear();
 
             update_scene();
         }
@@ -373,7 +383,7 @@ osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OS
 }
 
 void osmv::Show_model_screen_impl::update_scene() {
-    osim::realize_velocity(model, latest_state);
+    osim::realize_report(model, latest_state);
     geom.clear();
     geom_loader.all_geometry_in(model, latest_state, geom);
 
@@ -418,7 +428,6 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
                     return Resp_Transition_to{std::make_unique<osmv::Loading_screen>(path)};
                 } else {
                     latest_state = osim::init_system(model);
-                    osim::realize_velocity(model, latest_state);
                     update_scene();
                 }
                 break;
@@ -540,7 +549,6 @@ osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
 
 osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
     if (simulator and simulator->try_pop_latest(latest_state)) {
-        osim::realize_report(model, latest_state);
         update_scene();
     }
 
@@ -671,15 +679,8 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
 }
 
 void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
-    //ImGui_ImplOpenGL3_NewFrame();
-    //ImGui_ImplSDL2_NewFrame(ui.window);
-    //ImGui::NewFrame();
-
     draw_menu_bar();
     draw_lhs_panel(ui);
-
-    //ImGui::Render();
-    //ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void osmv::Show_model_screen_impl::draw_menu_bar() {
@@ -698,56 +699,57 @@ void osmv::Show_model_screen_impl::draw_menu_bar() {
 
 void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
     bool b = true;
-    ImGuiWindowFlags flags = 0;
-    ImGui::Begin("Model", &b, flags);
+    ImGuiWindowFlags flags = ImGuiWindowFlags_Modal;
 
-    if (ImGui::BeginTabBar("SomeTabBar")) {
+    if (ImGui::Begin("Model", &b, flags)) {
+        if (ImGui::BeginTabBar("SomeTabBar")) {
 
-        if (ImGui::BeginTabItem("Outputs")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_outputs_tab();
-            ImGui::EndTabItem();
+            if (ImGui::BeginTabItem("Outputs")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_outputs_tab();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Simulate")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_simulate_tab();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("UI")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_ui_tab(ui);
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Muscles")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_muscles_tab();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Coords")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_coords_tab();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Utils")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_utils_tab();
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("MAs")) {
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                draw_mas_tab();
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
         }
-
-        if (ImGui::BeginTabItem("Simulate")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_simulate_tab();
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("UI")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_ui_tab(ui);
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Muscles")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_muscles_tab();
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Coords")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_coords_tab();
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("Utils")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_utils_tab();
-            ImGui::EndTabItem();
-        }
-
-        if (ImGui::BeginTabItem("MAs")) {
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            draw_mas_tab();
-            ImGui::EndTabItem();
-        }
-
-        ImGui::EndTabBar();
+        ImGui::End();
     }
-    ImGui::End();
 }
 
 void osmv::Show_model_screen_impl::draw_simulate_tab() {
@@ -769,7 +771,6 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
         latest_state = osim::init_system(model);
-        osim::realize_velocity(model, latest_state);
         update_scene();
     }
 
@@ -1172,10 +1173,60 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 }
 
 void osmv::Show_model_screen_impl::draw_outputs_tab() {
-    static std::vector<std::string const*> swap;
-    swap.clear();
-    osim::get_output_vals(model, latest_state, swap);
-    for (std::string const* name : swap) {
-        ImGui::Text("%s", name->c_str());//
+    ao_swap.clear();
+    osim::get_available_outputs(model, ao_swap);
+
+    char buf[1024 + 1];
+
+    // apply filters
+    {
+        auto it = std::remove_if(
+                    ao_swap.begin(),
+                    ao_swap.end(),
+                    [&](osim::Available_output const& ao) {
+                snprintf(buf, sizeof(buf), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+                return std::strstr(buf, ao_filter) == nullptr;
+        });
+        ao_swap.erase(it, ao_swap.end());
+    }
+
+
+    ImGui::InputText("filter", ao_filter, sizeof(ao_filter));
+    ImGui::Text("%zu available outputs", ao_swap.size());
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+    if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
+        for (auto const& ao : ao_swap) {
+            snprintf(buf, sizeof(buf), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+            if (ImGui::Selectable(buf, ao == ao_selected)) {
+                ao_selected = ao;
+            }
+        }
+    }
+    ImGui::EndChild();
+
+    if (ao_selected) {
+        snprintf(buf, sizeof(buf), "plot %s", ao_selected.value().output_name->c_str());
+        if (ImGui::Button(buf)) {
+            ao_wanted.push_back(ao_selected.value());
+        }
+    }
+
+
+    if (not ao_swap.empty()) {
+        snprintf(buf, sizeof(buf), "plot all (%zu)", ao_swap.size());
+        if (ImGui::Button(buf)) {
+            for (auto const& ao : ao_swap) {
+                ao_wanted.push_back(ao);
+            }
+        }
+    }
+
+    int i = 0;
+    for (osim::Available_output const& ao : ao_wanted) {
+        std::string val = osim::get_output_val(*ao.handle, latest_state);
+        ImGui::PushID(++i);
+        ImGui::Text("%s/%s: %s", ao.owner_name->c_str(), ao.output_name->c_str(), val.c_str());
+        ImGui::PopID();
     }
 }
