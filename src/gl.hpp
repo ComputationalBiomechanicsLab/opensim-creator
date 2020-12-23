@@ -152,7 +152,12 @@ namespace gl {
             tmp.handle = static_cast<GLuint>(-1);
         }
         Buffer_handle& operator=(Buffer_handle const&) = delete;
-        Buffer_handle& operator=(Buffer_handle&&) = delete;
+        Buffer_handle& operator=(Buffer_handle&& tmp) {
+            GLuint h = handle;
+            handle = tmp.handle;
+            tmp.handle = h;
+            return *this;
+        }
         ~Buffer_handle() noexcept {
             if (handle != static_cast<GLuint>(-1)) {
                 glDeleteBuffers(1, &handle);
@@ -203,7 +208,12 @@ namespace gl {
             tmp.handle = static_cast<GLuint>(-1);
         }
         Vertex_array& operator=(Vertex_array const&) = delete;
-        Vertex_array& operator=(Vertex_array&&) = delete;
+        Vertex_array& operator=(Vertex_array&& tmp) {
+            GLuint h = handle;
+            handle = tmp.handle;
+            tmp.handle = h;
+            return *this;
+        }
         ~Vertex_array() noexcept {
             if (handle == static_cast<GLuint>(-1)) {
                 glDeleteVertexArrays(1, &handle);

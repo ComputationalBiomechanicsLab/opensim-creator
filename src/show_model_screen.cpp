@@ -31,11 +31,11 @@ static const ImVec4 red{1.0f, 0.0f, 0.0f, 1.0f};
 static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
 static const ImVec4 dark_green{0.0f, 0.6f, 0.0f, 1.0f};
 
-template<typename K, typename V>
-static V& asserting_find(std::unordered_map<K, V>& m, K const& k) {
-    auto it = m.find(k);
-    assert(it != m.end());
-    return it->second;
+template<typename V>
+static V& asserting_find(std::vector<std::optional<V>>& meshes, osim::Mesh_id id) {
+    assert(id + 1 <= meshes.size());
+    assert(meshes[id]);
+    return meshes[id].value();
 }
 
 struct Shaded_plain_vert final {
@@ -159,7 +159,7 @@ struct Floor_renderer final {
 };
 
 // renders normals using a geometry shader
-struct Show_normals_shader final {
+struct Normals_shader final {
     gl::Program program = gl::CreateProgramFrom(
         gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "normals.vert"),
         gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
@@ -176,7 +176,7 @@ struct Show_normals_shader final {
 
 template<typename T>
 static gl::Vertex_array create_vao(
-        Show_normals_shader& shader,
+        Normals_shader& shader,
         gl::Sized_array_buffer<T>& vbo) {
 
     gl::Vertex_array vao = gl::GenVertexArrays();
@@ -201,7 +201,7 @@ struct Scene_mesh final {
 // upload OpenSim mesh to the GPU
 Scene_mesh upload_to_gpu(
         Uniform_color_gouraud_shader& ucgs,
-        Show_normals_shader& sns,
+        Normals_shader& sns,
         osim::Untextured_mesh const& m) {
     std::vector<Shaded_plain_vert> v;
     v.reserve(3 * m.triangles.size());
@@ -217,147 +217,149 @@ Scene_mesh upload_to_gpu(
     return Scene_mesh{std::move(vbo), std::move(main), std::move(norms)};
 }
 
-static Scene_mesh upload_cylinder_to_gpu(
-        Uniform_color_gouraud_shader& ucgs,
-        Show_normals_shader& sns,
-        osim::Untextured_mesh& swap) {
-    swap.triangles.clear();
-    osmv::simbody_cylinder_triangles(12, swap.triangles);
-
-    return upload_to_gpu(ucgs, sns, swap);
-}
-
-static Scene_mesh upload_sphere_to_gpu(
-        Uniform_color_gouraud_shader& ucgs,
-        Show_normals_shader& sns,
-        osim::Untextured_mesh& swap) {
-    swap.triangles.clear();
-    osmv::unit_sphere_triangles(swap.triangles);
-
-    return upload_to_gpu(ucgs, sns, swap);
-}
-
 namespace osmv {
     struct Show_model_screen_impl final {
+        // scratch: shared space that has no content guarantees
+        //
+        // enables memory recycling, which is important in a low-latency UI
+        struct {
+            char text[1024 + 1];
+            std::vector<osim::Coordinate> coords;
+            std::vector<osim::Muscle_stat> muscles;
+            osim::Untextured_mesh mesh;
+        } scratch;
+
+        // model
         std::string path;
-        osim::Untextured_mesh mesh_swap_space;
-        Uniform_color_gouraud_shader ucgs;
-        Show_normals_shader sns;
+        osim::OSMV_Model model;
+        osim::OSMV_State latest_state;
 
-        Scene_mesh cylinder = upload_cylinder_to_gpu(ucgs, sns, mesh_swap_space);
-        Scene_mesh sphere = upload_sphere_to_gpu(ucgs, sns, mesh_swap_space);
+        // 3D rendering
+        Uniform_color_gouraud_shader color_shader;
+        Normals_shader normals_shader;
         Floor_renderer floor_renderer;
+        std::vector<std::optional<Scene_mesh>> meshes;  // indexed by meshid
+        osim::State_geometry geom;
+        osim::Geometry_loader geom_loader;
+        Scene_mesh sphere = [&]() {
+            scratch.mesh.triangles.clear();
+            osmv::unit_sphere_triangles(scratch.mesh.triangles);
+            return upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+        }();
+        Scene_mesh cylinder = [&]() {
+            scratch.mesh.triangles.clear();
+            osmv::simbody_cylinder_triangles(12, scratch.mesh.triangles);
+            return upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+        }();
 
+        // gui (camera, lighting, etc.)
         float radius = 5.0f;
-        float wheel_sensitivity = 0.9f;
-
-        float fov = 120.0f;
-
-        bool dragging = false;
         float theta = 0.88f;
         float phi =  0.4f;
-        float sensitivity = 1.0f;
-        float fd_final_time = 0.5f;
-
-        bool panning = false;
         glm::vec3 pan = {0.3f, -0.5f, 0.0f};
-
+        float fov = 120.0f;
+        bool dragging = false;
+        bool panning = false;
+        float sensitivity = 1.0f;
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
-        float light_color[3] = {0.9607f, 0.9176f, 0.8863f};
+        glm::vec3 light_color = {0.9607f, 0.9176f, 0.8863f};
         bool wireframe_mode = false;
         bool show_light = false;
         bool show_unit_cylinder = false;
-
         bool gamma_correction = false;
         bool show_mesh_normals = false;
         bool show_floor = true;
+        float wheel_sensitivity = 0.9f;
 
-        // coordinates tab state
-        char coords_tab_filter[64]{};
-        std::vector<osim::Coordinate> model_coords_swap;
-        bool sort_coords_by_name = true;
-        bool show_rotational_coords = true;
-        bool show_translational_coords = true;
-        bool show_coupled_coords = true;
+        // simulator
+        float fd_final_time = 0.5f;
+        std::optional<Background_fd_simulation> simulator;
 
-        // model tab stuff
-        std::vector<osim::Muscle_stat> model_muscs_swap;
-        char model_tab_filter[64]{};
+        // tab: coords
+        struct {
+            char filter[64]{};
+            bool sort_by_name = true;
+            bool show_rotational = true;
+            bool show_translational = true;
+            bool show_coupled = true;
+        } t_coords;
 
-        // MAs tab state
-        std::string const* mas_muscle_selection = nullptr;
-        std::string const* mas_coord_selection = nullptr;
-        static constexpr unsigned num_steps = 50;
         struct MA_plot final {
             std::string muscle_name;
             std::string coord_name;
             float x_begin;
             float x_end;
-            std::array<float, num_steps> y_vals;
+            std::array<float, 50> y_vals;
             float min;
             float max;
         };
-        std::vector<std::unique_ptr<MA_plot>> mas_plots;
 
+        // tab: moment arms
+        struct {
+            std::string const* selected_musc = nullptr;
+            std::string const* selected_coord = nullptr;
+            std::vector<std::unique_ptr<MA_plot>> plots;
+        } t_mas;
 
-        // outputs tab state
-        char ao_filter[64]{};
-        std::vector<osim::Available_output> ao_swap;
-        std::optional<osim::Available_output> ao_selected;
-        std::vector<osim::Available_output> ao_wanted;
+        // tab: muscles
+        struct {
+            char filter[64]{};
+        } t_muscs;
 
+        // tab: outputs
+        struct Hacky_output_sparkline final {
+            // TODO: this is a hacky implementation that just samples an output
+            // whenever the state is updated and stops when the buffer is full
+            //
+            // a robust solution would install the sampler into the simulator
+            // so that sampling isn't FPS-dependent, and so that the appropriate
+            // event triggers can be installed into SimTK for regular sampling.
 
-        sdl::Window_dimensions window_dims;
+            osim::Available_output ao;
+            std::vector<float> y_vals;
+            float last_x = 0.0f;
+            float min_x_step = 0.005f;  // effectively: 5 ms
+            float min = std::numeric_limits<float>::max();
+            float max = std::numeric_limits<float>::min();
 
-        std::optional<Background_fd_simulation> simulator;
+            Hacky_output_sparkline(osim::Available_output _ao) :
+                ao{std::move(_ao)} {
+            }
+        };
 
-        osim::OSMV_Model model;
-        osim::State_geometry geom;
-        osim::Geometry_loader geom_loader;
-        osim::OSMV_State latest_state;
-        std::unordered_map<osim::Mesh_id, Scene_mesh> meshes;
+        struct {
+            char filter[64]{};
+            std::vector<osim::Available_output> available;
+            std::optional<osim::Available_output> selected;
+            std::vector<osim::Available_output> watches;
+            std::vector<std::unique_ptr<Hacky_output_sparkline>> plots;
+        } t_outputs;
+
 
         Show_model_screen_impl(std::string _path, osim::OSMV_Model model);
-
-        void init(Application&);
-        osmv::Screen_response handle_event(Application&, SDL_Event&);
+        Screen_response handle_event(Application&, SDL_Event&);
         Screen_response tick(Application&);
 
-        void on_user_edited_model() {
-            if (simulator) {
-                simulator->request_stop();
-                simulator->try_pop_latest(latest_state);
-            }
+        void on_user_edited_model();
+        void on_user_edited_state();
 
-            SimTK::State& s = osim::init_system(model);
-            latest_state = s;
+        void clear_anything_dependent_on_model();
+        void clear_anything_dependent_on_state();
 
-            mas_muscle_selection = nullptr;
-            mas_coord_selection = nullptr;
-            ao_selected = std::nullopt;
-            ao_wanted.clear();
+        void update_outputs_from_latest_state();
 
-            update_scene();
-        }
-
-        void on_user_edited_state() {
-            simulator and simulator->request_stop();
-            update_scene();
-        }
-
-        void update_scene();
-
-        [[nodiscard]] bool simulator_running() const noexcept {
-            return simulator and simulator->running();
-        }
+        bool simulator_running();
 
         void draw(Application&);
-        void draw_model_scene(Application&);
+        void draw_3d_scene(Application&);
         void draw_imgui_ui(Application&);
         void draw_menu_bar();
-        void draw_lhs_panel(Application&);
-        void draw_simulate_tab();
+
+        void draw_ui_panel(Application&);
         void draw_ui_tab(Application&);
+
+        void draw_lhs_panel();
+        void draw_simulate_tab();
         void draw_coords_tab();
         void draw_coordinate_slider(osim::Coordinate const&);
         void draw_utils_tab();
@@ -367,52 +369,94 @@ namespace osmv {
     };
 }
 
+
+
+// screen PIMPL forwarding
+
 osmv::Show_model_screen::Show_model_screen(std::string path, osim::OSMV_Model model) :
     impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
+osmv::Show_model_screen::~Show_model_screen() noexcept = default;
+osmv::Screen_response osmv::Show_model_screen::handle_event(Application& s, SDL_Event& e) {
+    return impl->handle_event(s, e);
+}
+osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
+    return impl->tick(a);
+}
+void osmv::Show_model_screen::draw(osmv::Application& ui) {
+    impl->draw(ui);
+}
+
+
+
+// screen implementation
 
 osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OSMV_Model _model) :
     path{std::move(_path)},
     model{std::move(_model)},
     latest_state{[this]() {
         osim::finalize_from_properties(model);
-        return osim::OSMV_State{osim::init_system(model)};
+        osim::OSMV_State s = osim::init_system(model);
+        osim::realize_report(model, s);
+        return s;
     }()}
 {
-    update_scene();
 }
 
-void osmv::Show_model_screen_impl::update_scene() {
+
+void osmv::Show_model_screen_impl::on_user_edited_model() {
+    // these might be invalidated by changing the model because they might
+    // contain (e.g.) pointers into the model
+    simulator.reset();
+    t_mas.selected_musc = nullptr;
+    t_mas.selected_coord = nullptr;
+    t_outputs.selected = std::nullopt;
+    t_outputs.plots.clear();
+
+    latest_state = osim::init_system(model);
     osim::realize_report(model, latest_state);
-    geom.clear();
-    geom_loader.all_geometry_in(model, latest_state, geom);
+}
 
-    // populate mesh data, if necessary
-    for (osim::Mesh_instance const& mi : geom.mesh_instances) {
-        if (meshes.find(mi.mesh) == meshes.end()) {
-            geom_loader.load_mesh(mi.mesh, mesh_swap_space);
-            Scene_mesh m = upload_to_gpu(ucgs, sns, mesh_swap_space);
-            meshes.emplace(mi.mesh, std::move(m));
-        }
+void osmv::Show_model_screen_impl::on_user_edited_state() {
+    // stop the simulator whenever a user-initiated state change happens
+    if (simulator) {
+        simulator->request_stop();
     }
+    osim::realize_report(model, latest_state);
 }
 
-osmv::Show_model_screen::~Show_model_screen() noexcept = default;
+void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
+    // update currently-recording outputs after the state has been updated
 
-void osmv::Show_model_screen::init(osmv::Application& s) {
-    impl->init(s);
-}
+    float sim_millis = 1000.0f * static_cast<float>(osim::simulation_time(latest_state));
 
-void osmv::Show_model_screen_impl::init(Application & s) {
-    window_dims = s.window_size();
-}
+    for (std::unique_ptr<Hacky_output_sparkline>& p : t_outputs.plots) {
+        Hacky_output_sparkline& hos = *p;
 
-osmv::Screen_response osmv::Show_model_screen::handle_event(Application& s, SDL_Event& e) {
-    return impl->handle_event(s, e);
+        if (sim_millis < hos.last_x + hos.min_x_step) {
+            // latest state is too close to the last datapoint that was plotted
+            // so just skip this datapoint
+            continue;
+        }
+
+        // only certain types of output are plottable at the moment
+        assert(hos.ao.is_single_double_val);
+
+        // output val casted to `float` because that's what ImGui uses and we
+        // don't need an insane amount of accuracy
+        double v = osim::get_single_double_output_val(*hos.ao.handle, latest_state);
+        float fv = static_cast<float>(v);
+
+        hos.y_vals.push_back(fv);
+        hos.last_x = sim_millis;
+        hos.min = std::min(hos.min, fv);
+        hos.max = std::max(hos.max, fv);
+    }
 }
 
 osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui, SDL_Event& e) {
     ImGuiIO& io = ImGui::GetIO();
+    sdl::Window_dimensions window_dims = ui.window_size();
     float aspect_ratio = static_cast<float>(window_dims.w) / static_cast<float>(window_dims.h);
 
     if (e.type == SDL_KEYDOWN) {
@@ -428,12 +472,12 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
                     return Resp_Transition_to{std::make_unique<osmv::Loading_screen>(path)};
                 } else {
                     latest_state = osim::init_system(model);
-                    update_scene();
+                    osim::realize_report(model, latest_state);
                 }
                 break;
             }
             case SDLK_SPACE: {
-                if (simulator and simulator->running()) {
+                if (simulator and simulator->is_running()) {
                     simulator->request_stop();
                 } else {
                     simulator.emplace(model, latest_state, fd_final_time);
@@ -543,23 +587,39 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
     return Resp_Ok{};
 }
 
-osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
-    return impl->tick(a);
-}
-
 osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
-    if (simulator and simulator->try_pop_latest(latest_state)) {
-        update_scene();
+    if (simulator and simulator->try_pop_latest_state(latest_state)) {
+        osim::realize_report(model, latest_state);
+        update_outputs_from_latest_state();
     }
 
     return Resp_Ok{};
 }
 
-void osmv::Show_model_screen::draw(osmv::Application& ui) {
-    impl->draw(ui);
+bool osmv::Show_model_screen_impl::simulator_running() {
+    return simulator and simulator->is_running();
 }
 
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
+    // OpenSim: load all geometry in the current state
+    geom.clear();
+    geom_loader.all_geometry_in(model, latest_state, geom);
+
+    // OpenSim: load any meshes used by the geometry (if necessary)
+    for (osim::Mesh_instance const& mi : geom.mesh_instances) {
+        if (meshes.size() >= (mi.mesh + 1) and meshes[mi.mesh].has_value()) {
+            // it's already loaded
+            continue;
+        }
+
+        geom_loader.load_mesh(mi.mesh, scratch.mesh);
+        meshes.resize(std::max(meshes.size(), mi.mesh + 1));
+        meshes[mi.mesh] = upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+    }
+
+
+    // draw everything
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
@@ -569,12 +629,12 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         glDisable(GL_FRAMEBUFFER_SRGB);
     }
 
-    draw_model_scene(ui);
+    draw_3d_scene(ui);
     draw_imgui_ui(ui);
 }
 
 // draw main 3D scene
-void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
+void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
     // is expressed as polar coordinates. Camera panning is represented as a
@@ -593,8 +653,7 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
     }();
 
     glm::mat4 proj_mtx = [&]() {
-        float aspect_ratio = static_cast<float>(window_dims.w) / static_cast<float>(window_dims.h);
-        return glm::perspective(fov, aspect_ratio, 0.1f, 100.0f);
+        return glm::perspective(fov, ui.aspect_ratio(), 0.1f, 100.0f);
     }();
 
     glm::vec3 view_pos = [&]() {
@@ -608,19 +667,19 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
 
     // render elements that have a solid color
     {
-        gl::UseProgram(ucgs.program);
+        gl::UseProgram(color_shader.program);
 
-        gl::Uniform(ucgs.projMat, proj_mtx);
-        gl::Uniform(ucgs.viewMat, view_mtx);
-        gl::Uniform(ucgs.light_pos, light_pos);
-        gl::Uniform(ucgs.light_color, glm::vec3(light_color[0], light_color[1], light_color[2]));
-        gl::Uniform(ucgs.view_pos, view_pos);
+        gl::Uniform(color_shader.projMat, proj_mtx);
+        gl::Uniform(color_shader.viewMat, view_mtx);
+        gl::Uniform(color_shader.light_pos, light_pos);
+        gl::Uniform(color_shader.light_color, light_color);
+        gl::Uniform(color_shader.view_pos, view_pos);
 
         // draw model meshes
         for (auto& m : geom.mesh_instances) {
-            gl::Uniform(ucgs.rgba, m.rgba);
-            gl::Uniform(ucgs.modelMat, m.transform);
-            gl::Uniform(ucgs.normalMat, m.normal_xform);
+            gl::Uniform(color_shader.rgba, m.rgba);
+            gl::Uniform(color_shader.modelMat, m.transform);
+            gl::Uniform(color_shader.normalMat, m.normal_xform);
 
             Scene_mesh& md = asserting_find(meshes, m.mesh);
             gl::BindVertexArray(md.main_vao);
@@ -632,9 +691,9 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
         if (show_unit_cylinder) {
             gl::BindVertexArray(cylinder.main_vao);
 
-            gl::Uniform(ucgs.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
-            gl::Uniform(ucgs.modelMat, glm::identity<glm::mat4>());
-            gl::Uniform(ucgs.normalMat, glm::identity<glm::mat4>());
+            gl::Uniform(color_shader.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
+            gl::Uniform(color_shader.modelMat, glm::identity<glm::mat4>());
+            gl::Uniform(color_shader.normalMat, glm::identity<glm::mat4>());
 
             gl::DrawArrays(GL_TRIANGLES, 0, cylinder.vbo.sizei());
 
@@ -645,10 +704,10 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
         if (show_light) {
             gl::BindVertexArray(sphere.main_vao);
 
-            gl::Uniform(ucgs.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
+            gl::Uniform(color_shader.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
             auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
-            gl::Uniform(ucgs.modelMat, xform);
-            gl::Uniform(ucgs.normalMat, glm::transpose(glm::inverse(xform)));
+            gl::Uniform(color_shader.modelMat, xform);
+            gl::Uniform(color_shader.normalMat, glm::transpose(glm::inverse(xform)));
             gl::DrawArrays(GL_TRIANGLES, 0, sphere.vbo.sizei());
 
             gl::BindVertexArray();
@@ -662,13 +721,13 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
 
     // debugging: draw mesh normals
     if (show_mesh_normals) {
-        gl::UseProgram(sns.program);
-        gl::Uniform(sns.projMat, proj_mtx);
-        gl::Uniform(sns.viewMat, view_mtx);
+        gl::UseProgram(normals_shader.program);
+        gl::Uniform(normals_shader.projMat, proj_mtx);
+        gl::Uniform(normals_shader.viewMat, view_mtx);
 
         for (auto& m : geom.mesh_instances) {
-            gl::Uniform(sns.modelMat, m.transform);
-            gl::Uniform(sns.normalMat, m.normal_xform);
+            gl::Uniform(normals_shader.modelMat, m.transform);
+            gl::Uniform(normals_shader.normalMat, m.normal_xform);
 
             Scene_mesh& md = asserting_find(meshes, m.mesh);
             gl::BindVertexArray(md.normal_vao);
@@ -680,7 +739,8 @@ void osmv::Show_model_screen_impl::draw_model_scene(Application& ui) {
 
 void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
     draw_menu_bar();
-    draw_lhs_panel(ui);
+    draw_ui_panel(ui);
+    draw_lhs_panel();
 }
 
 void osmv::Show_model_screen_impl::draw_menu_bar() {
@@ -697,7 +757,17 @@ void osmv::Show_model_screen_impl::draw_menu_bar() {
     }
 }
 
-void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
+void osmv::Show_model_screen_impl::draw_ui_panel(Application & ui) {
+    bool b = true;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_Modal;
+
+    if (ImGui::Begin("UI", &b, flags)) {
+        draw_ui_tab(ui);
+    }
+    ImGui::End();
+}
+
+void osmv::Show_model_screen_impl::draw_lhs_panel() {
     bool b = true;
     ImGuiWindowFlags flags = ImGuiWindowFlags_Modal;
 
@@ -713,12 +783,6 @@ void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
             if (ImGui::BeginTabItem("Simulate")) {
                 ImGui::Dummy(ImVec2{0.0f, 5.0f});
                 draw_simulate_tab();
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("UI")) {
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                draw_ui_tab(ui);
                 ImGui::EndTabItem();
             }
 
@@ -748,8 +812,8 @@ void osmv::Show_model_screen_impl::draw_lhs_panel(Application& ui) {
 
             ImGui::EndTabBar();
         }
-        ImGui::End();
     }
+    ImGui::End();
 }
 
 void osmv::Show_model_screen_impl::draw_simulate_tab() {
@@ -771,7 +835,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
         latest_state = osim::init_system(model);
-        update_scene();
+        osim::realize_report(model, latest_state);
     }
 
     ImGui::Dummy(ImVec2{0.0f, 20.0f});
@@ -784,23 +848,23 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
         std::chrono::milliseconds wall_ms =
             std::chrono::duration_cast<std::chrono::milliseconds>(simulator->wall_duration());
         double wall_secs = static_cast<double>(wall_ms.count())/1000.0;
-        double sim_secs = simulator->current_sim_time();
+        double sim_secs = simulator->sim_current_time();
         double pct_completed = sim_secs/simulator->sim_final_time() * 100.0;
 
         ImGui::Dummy(ImVec2{0.0f, 20.0f});
         ImGui::Text("simulator stats");
         ImGui::Separator();
-        ImGui::Text("status: %s", simulator->status_str());
+        ImGui::Text("status: %s", simulator->status_description());
         ImGui::Text("progress: %.2f %%", pct_completed);
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::Text("simulation time: %.2f", sim_secs);
         ImGui::Text("wall time: %.2f secs", wall_secs);
         ImGui::Text("sim_time/wall_time: %.4f", sim_secs/wall_secs);
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
-        ImGui::Text("prescribeQ calls: %i", simulator->prescribeq_calls());
+        ImGui::Text("prescribeQ calls: %i", simulator->num_prescribeq_calls());
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
-        ImGui::Text("States sent to UI thread: %i", simulator->states_sent_to_ui());
-        ImGui::Text("Avg. UI overhead: %.5f %%", 100.0 * simulator->ui_overhead());
+        ImGui::Text("States sent to UI thread: %i", simulator->num_states_popped());
+        ImGui::Text("Avg. UI overhead: %.5f %%", 100.0 * simulator->avg_ui_overhead());
     }
 }
 
@@ -871,7 +935,7 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     ImGui::SliderFloat("light_x", &light_pos.x, -30.0f, 30.0f);
     ImGui::SliderFloat("light_y", &light_pos.y, -30.0f, 30.0f);
     ImGui::SliderFloat("light_z", &light_pos.z, -30.0f, 30.0f);
-    ImGui::ColorEdit3("light_color", light_color);
+    ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&light_color));
     ImGui::Checkbox("show_light", &show_light);
     ImGui::Checkbox("show_unit_cylinder", &show_unit_cylinder);
     ImGui::Checkbox("show_floor", &show_floor);
@@ -901,56 +965,56 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
 }
 
 void osmv::Show_model_screen_impl::draw_coords_tab() {
-    ImGui::InputText("search", coords_tab_filter, sizeof(coords_tab_filter));
+    ImGui::InputText("search", t_coords.filter, sizeof(t_coords.filter));
     ImGui::SameLine();
-    if (std::strlen(coords_tab_filter) > 0 and ImGui::Button("clear")) {
-        coords_tab_filter[0] = '\0';
+    if (std::strlen(t_coords.filter) > 0 and ImGui::Button("clear")) {
+        t_coords.filter[0] = '\0';
     }
 
     ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
-    ImGui::Checkbox("sort", &sort_coords_by_name);
+    ImGui::Checkbox("sort", &t_coords.sort_by_name);
     ImGui::SameLine();
-    ImGui::Checkbox("rotational", &show_rotational_coords);
+    ImGui::Checkbox("rotational", &t_coords.show_rotational);
     ImGui::SameLine();
-    ImGui::Checkbox("translational", &show_translational_coords);
+    ImGui::Checkbox("translational", &t_coords.show_translational);
 
-    ImGui::Checkbox("coupled", &show_coupled_coords);
+    ImGui::Checkbox("coupled", &t_coords.show_coupled);
 
     // get coords
 
-    model_coords_swap.clear();
-    osim::get_coordinates(model, latest_state, model_coords_swap);
+    scratch.coords.clear();
+    osim::get_coordinates(model, latest_state, scratch.coords);
 
 
     // apply filters etc.
 
     int coordtypes_to_filter_out = 0;
-    if (not show_rotational_coords) {
+    if (not t_coords.show_rotational) {
         coordtypes_to_filter_out |= osim::Rotational;
     }
-    if (not show_translational_coords) {
+    if (not t_coords.show_translational) {
         coordtypes_to_filter_out |= osim::Translational;
     }
-    if (not show_coupled_coords) {
+    if (not t_coords.show_coupled) {
         coordtypes_to_filter_out |= osim::Coupled;
     }
 
-    auto it = std::remove_if(model_coords_swap.begin(), model_coords_swap.end(), [&](osim::Coordinate const& c) {
+    auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), [&](osim::Coordinate const& c) {
         if (c.type & coordtypes_to_filter_out) {
             return true;
         }
 
-        if (c.name->find(coords_tab_filter) == c.name->npos) {
+        if (c.name->find(t_coords.filter) == c.name->npos) {
             return true;
         }
 
         return false;
     });
-    model_coords_swap.erase(it, model_coords_swap.end());
+    scratch.coords.erase(it, scratch.coords.end());
 
-    if (sort_coords_by_name) {
-        std::sort(model_coords_swap.begin(), model_coords_swap.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
+    if (t_coords.sort_by_name) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
     }
@@ -959,11 +1023,11 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     // render sliders
 
     ImGui::Dummy(ImVec2{0.0f, 10.0f});
-    ImGui::Text("Coordinates (%i)", static_cast<int>(model_coords_swap.size()));
+    ImGui::Text("Coordinates (%i)", static_cast<int>(scratch.coords.size()));
     ImGui::Separator();
 
     int i = 0;
-    for (osim::Coordinate const& c : model_coords_swap) {
+    for (osim::Coordinate const& c : scratch.coords) {
         ImGui::PushID(i++);
         draw_coordinate_slider(c);
         ImGui::PopID();
@@ -1018,22 +1082,22 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
 
 void osmv::Show_model_screen_impl::draw_muscles_tab() {
     // extract muscles details from model
-    model_muscs_swap.clear();
-    osim::get_muscle_stats(model, latest_state, model_muscs_swap);
+    scratch.muscles.clear();
+    osim::get_muscle_stats(model, latest_state, scratch.muscles);
 
     // sort muscles alphabetically by name
-    std::sort(model_muscs_swap.begin(), model_muscs_swap.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
+    std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
         return *m1.name < *m2.name;
     });
 
     // allow user filtering
-    ImGui::InputText("filter muscles", model_tab_filter, sizeof(model_tab_filter));
+    ImGui::InputText("filter muscles", t_muscs.filter, sizeof(t_muscs.filter));
     ImGui::Separator();
 
     // draw muscle list
-    for (osim::Muscle_stat const& musc : model_muscs_swap) {
-        if (musc.name->find(model_tab_filter) != musc.name->npos) {
-            ImGui::Text("%s (len = %.2f)", musc.name->c_str(), musc.length);
+    for (osim::Muscle_stat const& musc : scratch.muscles) {
+        if (musc.name->find(t_muscs.filter) != musc.name->npos) {
+            ImGui::Text("%s (len = %.3f)", musc.name->c_str(), musc.length);
         }
     }
 }
@@ -1045,19 +1109,19 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     ImGui::Columns(2);
     // lhs: muscle selection
     {
-        model_muscs_swap.clear();
-        osim::get_muscle_stats(model, latest_state, model_muscs_swap);
+        scratch.muscles.clear();
+        osim::get_muscle_stats(model, latest_state, scratch.muscles);
 
         // usability: sort by name
-        std::sort(model_muscs_swap.begin(), model_muscs_swap.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
+        std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
             return *m1.name < *m2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotMuscleSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osim::Muscle_stat const& m : model_muscs_swap) {
-            if (ImGui::Selectable(m.name->c_str(), m.name == mas_muscle_selection)) {
-                mas_muscle_selection = m.name;
+        for (osim::Muscle_stat const& m : scratch.muscles) {
+            if (ImGui::Selectable(m.name->c_str(), m.name == t_mas.selected_musc)) {
+                t_mas.selected_musc = m.name;
             }
         }
         ImGui::EndChild();
@@ -1065,19 +1129,19 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     }
     // rhs: coord selection
     {
-        model_coords_swap.clear();
-        osim::get_coordinates(model, latest_state, model_coords_swap);
+        scratch.coords.clear();
+        osim::get_coordinates(model, latest_state, scratch.coords);
 
         // usability: sort by name
-        std::sort(model_coords_swap.begin(), model_coords_swap.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotCoordSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osim::Coordinate const& c : model_coords_swap) {
-            if (ImGui::Selectable(c.name->c_str(), c.name == mas_coord_selection)) {
-                mas_coord_selection = c.name;
+        for (osim::Coordinate const& c : scratch.coords) {
+            if (ImGui::Selectable(c.name->c_str(), c.name == t_mas.selected_coord)) {
+                t_mas.selected_coord = c.name;
             }
         }
         ImGui::EndChild();
@@ -1085,25 +1149,25 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     }
     ImGui::Columns();
 
-    if (mas_muscle_selection and mas_coord_selection) {
+    if (t_mas.selected_musc and t_mas.selected_coord) {
         if (ImGui::Button("+ add plot")) {
-            auto it = std::find_if(model_muscs_swap.begin(),
-                                   model_muscs_swap.end(),
+            auto it = std::find_if(scratch.muscles.begin(),
+                                   scratch.muscles.end(),
                                    [this](osim::Muscle_stat const& ms) {
-                    return ms.name == mas_muscle_selection;
+                    return ms.name == t_mas.selected_musc;
             });
-            assert(it != model_muscs_swap.end());
+            assert(it != scratch.muscles.end());
 
-            auto it2 = std::find_if(model_coords_swap.begin(),
-                                    model_coords_swap.end(),
+            auto it2 = std::find_if(scratch.coords.begin(),
+                                    scratch.coords.end(),
                                     [this](osim::Coordinate const& c) {
-                    return c.name == mas_coord_selection;
+                    return c.name == t_mas.selected_coord;
             });
-            assert(it2 != model_coords_swap.end());
+            assert(it2 != scratch.coords.end());
 
             auto p = std::make_unique<MA_plot>();
-            p->muscle_name = *mas_muscle_selection;
-            p->coord_name = *mas_coord_selection;
+            p->muscle_name = *t_mas.selected_musc;
+            p->coord_name = *t_mas.selected_coord;
             p->x_begin = it2->min;
             p->x_end = it2->max;
 
@@ -1127,9 +1191,9 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
             // clicking plot by accident *but* don't clear muscle because it's
             // feasible that a user will want to plot other coords against the
             // same muscle
-            mas_coord_selection = nullptr;
+            t_mas.selected_coord = nullptr;
 
-            mas_plots.push_back(std::move(p));
+            t_mas.plots.push_back(std::move(p));
         }
     }
 
@@ -1139,15 +1203,15 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         throw std::runtime_error{"refreshing moment arm plots NYI"};
     }
 
-    if (not mas_plots.empty() and ImGui::Button("clear all")) {
-        mas_plots.clear();
+    if (not t_mas.plots.empty() and ImGui::Button("clear all")) {
+        t_mas.plots.clear();
     }
 
     ImGui::Separator();
 
     ImGui::Columns(2);
-    for (size_t i = 0; i < mas_plots.size(); ++i) {
-        MA_plot const& p = *mas_plots[i];
+    for (size_t i = 0; i < t_mas.plots.size(); ++i) {
+        MA_plot const& p = *t_mas.plots[i];
         ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
         ImGui::PlotLines(
             "",
@@ -1164,8 +1228,8 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         ImGui::Text("min   : %f", static_cast<double>(p.min));
         ImGui::Text("max   : %f", static_cast<double>(p.max));
         if (ImGui::Button("delete")) {
-            auto it = mas_plots.begin() + i;
-            mas_plots.erase(it, it + 1);
+            auto it = t_mas.plots.begin() + i;
+            t_mas.plots.erase(it, it + 1);
         }
         ImGui::NextColumn();
     }
@@ -1173,60 +1237,93 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 }
 
 void osmv::Show_model_screen_impl::draw_outputs_tab() {
-    ao_swap.clear();
-    osim::get_available_outputs(model, ao_swap);
-
-    char buf[1024 + 1];
+    t_outputs.available.clear();
+    osim::get_available_outputs(model, t_outputs.available);
 
     // apply filters
     {
         auto it = std::remove_if(
-                    ao_swap.begin(),
-                    ao_swap.end(),
+                    t_outputs.available.begin(),
+                    t_outputs.available.end(),
                     [&](osim::Available_output const& ao) {
-                snprintf(buf, sizeof(buf), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
-                return std::strstr(buf, ao_filter) == nullptr;
+                snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+                return std::strstr(scratch.text, t_outputs.filter) == nullptr;
         });
-        ao_swap.erase(it, ao_swap.end());
+        t_outputs.available.erase(it, t_outputs.available.end());
     }
 
 
-    ImGui::InputText("filter", ao_filter, sizeof(ao_filter));
-    ImGui::Text("%zu available outputs", ao_swap.size());
+    ImGui::InputText("filter", t_outputs.filter, sizeof(t_outputs.filter));
+    ImGui::Text("%zu available outputs", t_outputs.available.size());
 
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
     if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
-        for (auto const& ao : ao_swap) {
-            snprintf(buf, sizeof(buf), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
-            if (ImGui::Selectable(buf, ao == ao_selected)) {
-                ao_selected = ao;
+        for (auto const& ao : t_outputs.available) {
+            snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+            if (ImGui::Selectable(scratch.text, ao == t_outputs.selected)) {
+                t_outputs.selected = ao;
             }
         }
     }
     ImGui::EndChild();
 
-    if (ao_selected) {
-        snprintf(buf, sizeof(buf), "plot %s", ao_selected.value().output_name->c_str());
-        if (ImGui::Button(buf)) {
-            ao_wanted.push_back(ao_selected.value());
+    if (t_outputs.selected) {
+        osim::Available_output const& selected = t_outputs.selected.value();
+
+        // can watch any output because there's a string method in OpenSim
+        if (ImGui::Button("watch selected")) {
+            t_outputs.watches.push_back(selected);
+            t_outputs.selected = std::nullopt;
         }
-    }
 
-
-    if (not ao_swap.empty()) {
-        snprintf(buf, sizeof(buf), "plot all (%zu)", ao_swap.size());
-        if (ImGui::Button(buf)) {
-            for (auto const& ao : ao_swap) {
-                ao_wanted.push_back(ao);
+        // can only plot single-value double outputs
+        if (selected.is_single_double_val) {
+            ImGui::SameLine();
+            if (ImGui::Button("plot selected")) {
+                auto p = std::make_unique<Hacky_output_sparkline>(selected);
+                t_outputs.plots.push_back(std::move(p));
+                t_outputs.selected = std::nullopt;
             }
         }
     }
 
-    int i = 0;
-    for (osim::Available_output const& ao : ao_wanted) {
-        std::string val = osim::get_output_val(*ao.handle, latest_state);
-        ImGui::PushID(++i);
-        ImGui::Text("%s/%s: %s", ao.owner_name->c_str(), ao.output_name->c_str(), val.c_str());
-        ImGui::PopID();
+    // draw watches
+    if (not t_outputs.watches.empty()) {
+        ImGui::Text("watches:");
+        ImGui::Separator();
+        for (osim::Available_output const& ao : t_outputs.watches) {
+            std::string v = osim::get_output_val(*ao.handle, latest_state);
+            ImGui::Text("    %s/%s: %s", ao.owner_name->c_str(), ao.output_name->c_str(), v.c_str());
+        }
+    }
+
+    // draw plots
+    if (not t_outputs.plots.empty()) {
+        ImGui::Text("plots:");
+        ImGui::Separator();
+
+        ImGui::Columns(2);
+        for (std::unique_ptr<Hacky_output_sparkline> const& p : t_outputs.plots) {
+            Hacky_output_sparkline const& hos = *p;
+
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
+            ImGui::PlotLines(
+                "",
+                hos.y_vals.data(),
+                static_cast<int>(hos.y_vals.size()),
+                0,
+                nullptr,
+                std::numeric_limits<float>::min(),
+                std::numeric_limits<float>::max(),
+                ImVec2(0, 100.0f));
+            ImGui::NextColumn();
+            ImGui::Text("%s/%s", hos.ao.owner_name->c_str(), hos.ao.output_name->c_str());
+            ImGui::Text("n = %zu", hos.y_vals.size());
+            ImGui::Text("t = %f", static_cast<double>(hos.last_x));
+            ImGui::Text("min: %.3f", static_cast<double>(hos.min));
+            ImGui::Text("max: %.2f", static_cast<double>(hos.max));
+            ImGui::NextColumn();
+        }
+        ImGui::Columns(1);
     }
 }

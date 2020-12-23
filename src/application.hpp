@@ -54,6 +54,11 @@ namespace osmv {
             return sdl::GetWindowSize(window);
         }
 
+        float aspect_ratio() const noexcept {
+            auto [w, h] = window_size();
+            return static_cast<float>(w) / static_cast<float>(h);
+        }
+
         // move mouse relative to the window (origin in top-left)
         void move_mouse_to(int x, int y) {
             SDL_WarpMouseInWindow(window, x, y);

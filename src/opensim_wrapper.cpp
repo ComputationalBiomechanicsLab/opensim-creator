@@ -27,7 +27,7 @@ namespace osim {
         // two-way lookup to establish a meshid-to-path mappings. This is so
         // that the renderer can just opaquely handle ID ints
         std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshids);
-        std::unordered_map<std::string, int> str_to_meshid;
+        std::unordered_map<std::string, osim::Mesh_id> str_to_meshid;
     };
 }
 
@@ -310,7 +310,7 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         }
 
         // load the path into the model-to-path mapping lookup
-        int meshid = [this, &path]() {
+        osim::Mesh_id meshid = [this, &path]() {
             auto [it, inserted] = impl.str_to_meshid.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(path),
@@ -322,8 +322,8 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
                 // populate lookups
 
                 size_t meshid_s = impl.meshid_to_str.size();
-                assert(meshid_s < std::numeric_limits<int>::max());
-                int meshid = static_cast<int>(meshid_s);
+                assert(meshid_s < std::numeric_limits<osim::Mesh_id>::max());
+                auto meshid = static_cast<osim::Mesh_id>(meshid_s);
                 impl.meshid_to_str.push_back(path);
                 it->second = meshid;
                 return meshid;
@@ -456,7 +456,6 @@ osim::OSMV_State osim::fd_simulation(
     OpenSim::Manager manager(model);
     manager.setWriteToStorage(false);
     SimTK::State copy = initial_state;
-    copy.setTime(0);
     manager.initialize(copy);
 
     return OSMV_State{manager.integrate(final_time)};
@@ -583,11 +582,16 @@ void osim::get_available_outputs(
         OpenSim::Model const& m,
         std::vector<Available_output>& out) {
 
+    auto is_single_double_val = [](OpenSim::AbstractOutput const* ao) {
+        return (not ao->isListOutput()) and dynamic_cast<OpenSim::Output<double> const*>(ao) != nullptr;
+    };
+
     for (auto const& p : m.getOutputs()) {
         out.push_back(Available_output{
             &m.getName(),
             &p.second->getName(),
             p.second.get(),
+            is_single_double_val(p.second.get()),
         });
     }
 
@@ -597,6 +601,7 @@ void osim::get_available_outputs(
                 &musc.getName(),
                 &p.second->getName(),
                 p.second.get(),
+                is_single_double_val(p.second.get()),
             });
         }
     }
@@ -606,6 +611,11 @@ std::string osim::get_output_val(
         OpenSim::AbstractOutput const& ao,
         SimTK::State const& s) {
     return ao.getValueAsString(s);
+}
+
+double osim::get_single_double_output_val(OpenSim::AbstractOutput const& ao, SimTK::State const& s) {
+    auto* o = dynamic_cast<OpenSim::Output<double> const*>(&ao);
+    return o->getValue(s);
 }
 
 osim::Geometry_loader::Geometry_loader() :

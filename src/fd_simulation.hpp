@@ -258,9 +258,10 @@ struct Background_fd_simulation final {
     Jthread worker;
     int states_popped = 0;
 
-    Background_fd_simulation(OpenSim::Model const& model,
-          SimTK::State const& initial_state,
-          double _final_time) :
+    Background_fd_simulation(
+            OpenSim::Model const& model,
+            SimTK::State const& initial_state,
+            double _final_time) :
 
         _sim_final_time{_final_time},
         shared{initial_state}
@@ -278,7 +279,7 @@ struct Background_fd_simulation final {
         };
     }
 
-    bool try_pop_latest(osim::OSMV_State& dest) {
+    bool try_pop_latest_state(osim::OSMV_State& dest) {
         return shared.state.try_apply_b([&](osim::OSMV_State& latest) {
             std::swap(dest, latest);
             ++states_popped;
@@ -289,38 +290,38 @@ struct Background_fd_simulation final {
         return worker.request_stop();
     }
 
-    bool running() const noexcept {
+    bool is_running() const noexcept {
         return shared.status == Sim_status::Running;
     }
 
     clock::duration wall_duration() const noexcept {
         clock::duration endpoint =
-            running() ? clock::now().time_since_epoch() : shared.wall_end.load();
+            is_running() ? clock::now().time_since_epoch() : shared.wall_end.load();
 
         return endpoint - shared.wall_start.load();
+    }
+
+    double sim_current_time() const noexcept {
+        return shared.sim_cur_time;
     }
 
     double sim_final_time() const noexcept {
         return _sim_final_time;
     }
 
-    double current_sim_time() const noexcept {
-        return shared.sim_cur_time;
-    }
-
-    char const* status_str() const noexcept {
+    char const* status_description() const noexcept {
         return str(shared.status);
     }
 
-    int prescribeq_calls() const noexcept {
+    int num_prescribeq_calls() const noexcept {
         return shared.num_pq_calls;
     }
 
-    double ui_overhead() const noexcept {
+    double avg_ui_overhead() const noexcept {
         return shared.ui_overhead_acc / shared.ui_overhead_n;
     }
 
-    int states_sent_to_ui() const noexcept {
+    int num_states_popped() const noexcept {
         return states_popped;
     }
 };

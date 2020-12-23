@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.13)
 
 project(osmv VERSION 0.0.1)
 
@@ -101,7 +101,7 @@ target_compile_options(osmv PUBLIC
 )
 target_compile_features(osmv PUBLIC
     # osmv is a GUI project, so doesn't need to worry about downstream API users
-    cxx_std_20
+    cxx_std_17
 )
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF

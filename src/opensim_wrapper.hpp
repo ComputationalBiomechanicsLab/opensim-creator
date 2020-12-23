@@ -105,6 +105,7 @@ namespace osim {
         std::string const* owner_name;
         std::string const* output_name;
         OpenSim::AbstractOutput const* handle;
+        bool is_single_double_val;
     };
 
     inline bool operator==(Available_output const& a, Available_output const& b) {
@@ -139,6 +140,7 @@ namespace osim {
 
     void get_available_outputs(OpenSim::Model const&, std::vector<Available_output>&);
     std::string get_output_val(OpenSim::AbstractOutput const&, SimTK::State const&);
+    double get_single_double_output_val(OpenSim::AbstractOutput const&, SimTK::State const&);
 
     void realize_report(OpenSim::Model const&, SimTK::State&);
     void realize_velocity(OpenSim::Model&, SimTK::State&);
@@ -152,7 +154,7 @@ namespace osim {
 
     // RENDERING
 
-    using Mesh_id = int;
+    using Mesh_id = size_t;  // increases from 1 monotonically
 
     struct Mesh_instance final {
         glm::mat4 transform;
