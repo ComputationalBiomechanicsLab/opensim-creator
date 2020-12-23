@@ -1,29 +1,40 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 project(osmv VERSION 0.0.1)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-# release: use LTO on all vendored libs/code when building (exception: OpenSim)
-if(CMAKE_BUILD_TYPE MATCHES "Rel")
+
+if(CMAKE_BUILD_TYPE MATCHES "Rel")  # e.g. RelWithDebInfo or Release
+
+    # use LTO on all vendored libs/code when building a release
+    # - note: this makes builds *much* slower
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-# libraries: apart from OpenSim, only quickly-compiled C libraries are used, so
-# they are just included in the source tree, rather than fucking around with a
-# package manager etc.
-add_subdirectory(third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
-add_subdirectory(third_party/glm-0.9.9.8 EXCLUDE_FROM_ALL)
+# vendored dependencies
+# - this project deliberately uses C libraries that only transitively depend on
+#   OS-level libs. They're copied in-tree to reduce the amount of fucking around
+#   required to build osmv
 set(SDL_AUDIO OFF CACHE BOOL "")
 set(SDL_TEST OFF CACHE BOOL "")
+add_subdirectory(third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/glm-0.9.9.8 EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
+
+# opensim: linked separately
+# - located via CMAKE_PREFIX_PATH. Builders should set their CMAKE_PREFIX_PATH
+#   to the `lib/cmake` dir of an OpenSim install
+# - e.g: -DCMAKE_PREFIX_PATH=/home/adam/opensim-install/lib/cmake
 find_package(OpenSim REQUIRED)
 
-# generate top-level configured file that contains version etc.
+# configuration: generate osmv_config.hpp
+# - contains any per-config info (e.g. version, build type)
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/ RESOURCES_DIR)
 file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders/ SHADERS_DIR)
 configure_file("${PROJECT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
+
 
 add_executable(osmv
     third_party/imgui-1.78/imgui.cpp
@@ -57,23 +68,20 @@ add_executable(osmv
     src/osmv.cpp
 )
 target_include_directories(osmv PUBLIC
-    # ${OPENGL_INCLUDE_DIR}  // GLEW handles forwarding the OpenGL API
     third_party/SDL2-2.0.12/include
     third_party/glm-0.9.9.8/
     third_party/glew-2.1.0/include
     third_party/imgui-1.78/
     third_party/stb_image/
-    ${PROJECT_BINARY_DIR}  # so configure_file config can be #included
+    ${PROJECT_BINARY_DIR}  # for osmv_config.hpp
 )
 target_link_libraries(osmv
-    # in release mode, use statically-linked SDL and GLEW with LTO to give the
-    # smallest resulting binary and lowest perf cost
+    # use static libraries if not in debug mode
     $<$<CONFIG:Debug>:SDL2>
     $<$<NOT:$<CONFIG:Debug>>:SDL2-static>
     $<$<CONFIG:Debug>:glew>
     $<$<NOT:$<CONFIG:Debug>>:glew_s>
 
-    osimLepton
     osimCommon
     osimSimulation
     osimActuators
@@ -82,18 +90,24 @@ target_link_libraries(osmv
     SimTKcommon
     SimTKmath
     SimTKsimbody
+
+    # osimLepton  doesn't seem necessary
 )
 target_compile_options(osmv PUBLIC
-    # disable MSVC permissiveness. Forces MSVC to obey C++ standard
-    # - specifically, this enables the use of 'and', 'not', etc.
+    # disable MSVC's (default) permissive mode
+    # - This forces MSVC to obey ISO C++
+    # - I do this mostly because I like the logic keywords (e.g. `x or b`)
     $<$<CXX_COMPILER_ID:MSVC>:/permissive->
 )
 target_compile_features(osmv PUBLIC
+    # osmv is a GUI project, so doesn't need to worry about downstream API users
     cxx_std_20
 )
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
 )
+
+# tell IDEs to put vendored code into a separate tree
 source_group(TREE third_party/)
 
 
