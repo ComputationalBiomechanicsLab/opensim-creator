@@ -240,14 +240,10 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
 
         glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005, p1, p2);
+        glm::mat4 normal_mtx = glm::transpose(glm::inverse(cylinder_xform));
 
-        out.mesh_instances.push_back(osmv::Mesh_instance{
-            .transform = cylinder_xform,
-            .normal_xform = glm::transpose(glm::inverse(cylinder_xform)),
-            .rgba = rgba(geom),
 
-            .mesh_id = cylinder_meshid,
-        });
+        out.mesh_instances.push_back({ cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid });
     }
     void implementBrickGeometry(const DecorativeBrick&) override {
     }
@@ -258,29 +254,20 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         s.y *= geom.getHalfHeight();
         s.z *= geom.getRadius();
 
-        auto xform = glm::scale(m, s);
+        glm::mat4 xform = glm::scale(m, s);
+        glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-        out.mesh_instances.push_back(osmv::Mesh_instance{
-            .transform = xform,
-            .normal_xform = glm::transpose(glm::inverse(xform)),
-            .rgba = rgba(geom),
-
-            .mesh_id = cylinder_meshid,
-        });
+        out.mesh_instances.push_back({ xform, normal_mtx, rgba(geom), cylinder_meshid });
     }
     void implementCircleGeometry(const DecorativeCircle&) override {
     }
     void implementSphereGeometry(const DecorativeSphere& geom) override {
         float r = geom.getRadius();
-        auto xform = glm::scale(transform(geom), glm::vec3{r, r, r});
+        glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
+        glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-        out.mesh_instances.push_back(osmv::Mesh_instance{
-            .transform = xform,
-            .normal_xform = glm::transpose(glm::inverse(xform)),
-            .rgba = rgba(geom),
 
-            .mesh_id = sphere_meshid
-        });
+        out.mesh_instances.push_back({ xform, normal_mtx, rgba(geom), sphere_meshid });
     }
     void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
     }
@@ -336,13 +323,9 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
             }
         }();
 
-        out.mesh_instances.push_back(osmv::Mesh_instance{
-            .transform = xform,
-            .normal_xform = glm::transpose(glm::inverse(xform)),
-            .rgba = rgba(m),
+        glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            .mesh_id = meshid,
-        });
+        out.mesh_instances.push_back({ xform, normal_mtx, rgba(m), meshid });
     }
     void implementArrowGeometry(const DecorativeArrow&) override {
     }

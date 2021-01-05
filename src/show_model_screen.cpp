@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 namespace osmv {
     // renders uniformly colored geometry with Gouraud shading
@@ -461,7 +462,7 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    return Resp_transition{std::make_unique<osmv::Loading_screen>(path)};
+                    return Resp_transition{std::make_unique<osmv::Loading_screen>(path.c_str())};
                 } else {
                     latest_state = osmv::init_system(model);
                     on_user_edited_state();

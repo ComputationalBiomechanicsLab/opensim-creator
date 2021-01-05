@@ -17,8 +17,6 @@ endif()
 # - this project deliberately uses C libraries that only transitively depend on
 #   OS-level libs. They're copied in-tree to reduce the amount of fucking around
 #   required to build osmv
-set(SDL_AUDIO OFF CACHE BOOL "")
-set(SDL_TEST OFF CACHE BOOL "")
 add_subdirectory(third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/glm-0.9.9.8 EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
@@ -102,6 +100,12 @@ target_compile_options(osmv PUBLIC
 target_compile_features(osmv PUBLIC
     # osmv is a GUI project, so doesn't need to worry about downstream API users
     cxx_std_17
+)
+target_compile_definitions(osmv PUBLIC
+    # required to enable M_PI in MSVC
+    #
+    # see: https://cmake.org/cmake/help/latest/command/target_compile_definitions.html
+    $<$<CXX_COMPILER_ID:MSVC>:_USE_MATH_DEFINES>
 )
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF

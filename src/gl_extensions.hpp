@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iterator>  // std::distance
 
 namespace gl {
     [[nodiscard]] constexpr Attribute AttributeAtLocation(GLuint loc) noexcept {

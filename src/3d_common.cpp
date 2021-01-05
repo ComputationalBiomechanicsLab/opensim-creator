@@ -50,10 +50,9 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
             float theta = sector * theta_step;
             float x = sin(theta) * cos(phi);
             float z = -cos(theta) * cos(phi);
-            points.push_back(osmv::Untextured_vert{
-                .pos = {x, y, z},
-                .normal = {x, y, z},  // sphere is at the origin, so nothing fancy needed
-            });
+            glm::vec3 pos{ x, y, z };
+            glm::vec3 normal{ pos };
+            points.push_back({ pos, normal });
         }
     }
 
@@ -200,10 +199,7 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untext
     // top
     {
         glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        osmv::Untextured_vert top_middle = {
-            .pos = {0.0f, top_y, 0.0f},
-            .normal = normal,
-        };
+        osmv::Untextured_vert top_middle{ {0.0f, top_y, 0.0f}, normal };
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i*step_angle;
             float theta_end = (i+1)*step_angle;
@@ -224,10 +220,7 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untext
     // bottom
     {
         glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
-        osmv::Untextured_vert top_middle = {
-            .pos = {0.0f, bottom_y, 0.0f},
-            .normal = bottom_normal,
-        };
+        osmv::Untextured_vert top_middle{ {0.0f, bottom_y, 0.0f}, bottom_normal };
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i*step_angle;
             float theta_end = (i+1)*step_angle;
