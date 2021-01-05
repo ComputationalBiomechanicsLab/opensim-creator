@@ -1,6 +1,6 @@
 #pragma once
 
-// forward-declare this so that this header isn't dependent on SDL
+// forward-declare these so that this header isn't dependent on SDL/imgui
 class SDL_Window;
 class ImGuiContext;
 

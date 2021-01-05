@@ -1,4 +1,4 @@
-#include "meshes.hpp"
+#include "3d_common.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -19,7 +19,7 @@ static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 con
 
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
-void osmv::unit_sphere_triangles(std::vector<osim::Untextured_triangle>& out) {
+void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
     out.clear();
 
     // this is a shitty alg that produces a shitty UV sphere. I don't have
@@ -37,7 +37,7 @@ void osmv::unit_sphere_triangles(std::vector<osim::Untextured_triangle>& out) {
     // polar coords, with [0, 0, -1] pointing towards the screen with polar
     // coords theta = 0, phi = 0. The coordinate [0, 1, 0] is theta = (any)
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
-    std::vector<osim::Untextured_vert> points;
+    std::vector<osmv::Untextured_vert> points;
 
     float theta_step = 2.0f*pi_f / sectors;
     float phi_step = pi_f / stacks;
@@ -50,7 +50,7 @@ void osmv::unit_sphere_triangles(std::vector<osim::Untextured_triangle>& out) {
             float theta = sector * theta_step;
             float x = sin(theta) * cos(phi);
             float z = -cos(theta) * cos(phi);
-            points.push_back(osim::Untextured_vert{
+            points.push_back(osmv::Untextured_vert{
                 .pos = {x, y, z},
                 .normal = {x, y, z},  // sphere is at the origin, so nothing fancy needed
             });
@@ -67,17 +67,21 @@ void osmv::unit_sphere_triangles(std::vector<osim::Untextured_triangle>& out) {
         for (size_t sector = 0; sector < sectors; ++sector, ++k1, ++k2) {
             // 2 triangles per sector - excluding the first and last stacks
             // (which contain one triangle, at the poles)
-            osim::Untextured_vert p1 = points.at(k1);
-            osim::Untextured_vert p2 = points.at(k2);
-            osim::Untextured_vert p1_plus1 = points.at(k1+1u);
-            osim::Untextured_vert p2_plus1 = points.at(k2+1u);
+            osmv::Untextured_vert p1 = points.at(k1);
+            osmv::Untextured_vert p2 = points.at(k2);
+            osmv::Untextured_vert p1_plus1 = points.at(k1+1u);
+            osmv::Untextured_vert p2_plus1 = points.at(k2+1u);
 
             if (stack != 0) {
-                out.push_back(osim::Untextured_triangle{p1, p1_plus1, p2});
+                out.push_back(p1);
+                out.push_back(p1_plus1);
+                out.push_back(p2);
             }
 
             if (stack != (stacks-1)) {
-                out.push_back(osim::Untextured_triangle{p1_plus1, p2_plus1, p2});
+                out.push_back(p1_plus1);
+                out.push_back(p2_plus1);
+                out.push_back(p2);
             }
         }
     }
@@ -91,7 +95,7 @@ void osmv::unit_sphere_triangles(std::vector<osim::Untextured_triangle>& out) {
 // - top == [0.0f, 0.0f, -1.0f]
 // - bottom == [0.0f, 0.0f, +1.0f]
 // - (so the height is 2.0f, not 1.0f)
-void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osim::Untextured_triangle>& out) {
+void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
     // TODO: this is dumb because a cylinder can be EBO-ed quite easily, which
     //       would reduce the amount of vertices needed
     if (num_sides < 3) {
@@ -115,11 +119,9 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osim::Untexture
             glm::vec3 p3(sin(theta_end), cos(theta_end), top_z);
             glm::vec3 normal = normals(p1, p2, p3);
 
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {p1, normal},
-                .p2 = {p2, normal},
-                .p3 = {p3, normal},
-            });
+            out.push_back({p1, normal});
+            out.push_back({p2, normal});
+            out.push_back({p3, normal});
         }
     }
 
@@ -134,11 +136,9 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osim::Untexture
             glm::vec3 p3(sin(theta_end), cos(theta_end), bottom_z);
             glm::vec3 normal = normals(p1, p2, p3);
 
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {p1, normal},
-                .p2 = {p3, normal},
-                .p3 = {p3, normal},
-            });
+            out.push_back({p1, normal});
+            out.push_back({p2, normal});
+            out.push_back({p3, normal});
         }
     }
 
@@ -157,19 +157,15 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osim::Untexture
 
             // triangle 1
             glm::vec3 n1 = normals(p1, p2, p3);
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {p1, n1},
-                .p2 = {p2, n1},
-                .p3 = {p3, n1},
-            });
+            out.push_back({p1, n1});
+            out.push_back({p2, n1});
+            out.push_back({p3, n1});
 
             // triangle 2
             glm::vec3 n2 = normals(p3, p4, p2);
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {p3, n2},
-                .p2 = {p4, n2},
-                .p3 = {p2, n2},
-            });
+            out.push_back({p3, n2});
+            out.push_back({p4, n2});
+            out.push_back({p2, n2});
         }
     }
 }
@@ -187,7 +183,7 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osim::Untexture
 //     [0.0f, -1.0f, 0.0f]
 //
 // see simbody-visualizer.cpp::makeCylinder for my source material
-void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untextured_triangle>& out) {
+void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
     // TODO: this is dumb because a cylinder can be EBO-ed quite easily, which
     //       would reduce the amount of vertices needed
     if (num_sides < 3) {
@@ -204,7 +200,7 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
     // top
     {
         glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        osim::Untextured_vert top_middle = {
+        osmv::Untextured_vert top_middle = {
             .pos = {0.0f, top_y, 0.0f},
             .normal = normal,
         };
@@ -213,16 +209,14 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
             float theta_end = (i+1)*step_angle;
 
             // note: these are wound CCW for backface culling
-            out.push_back(osim::Untextured_triangle{
-                .p1 = top_middle,
-                .p2 = osim::Untextured_vert {
-                     .pos = glm::vec3(cos(theta_end), top_y, sin(theta_end)),
-                     .normal = normal,
-                 },
-                .p3 = osim::Untextured_vert {
-                     .pos = glm::vec3(cos(theta_start), top_y, sin(theta_start)),
-                     .normal = normal,
-                 },
+            out.push_back(top_middle);
+            out.push_back({
+                glm::vec3(cos(theta_end), top_y, sin(theta_end)),
+                normal
+            });
+            out.push_back({
+                glm::vec3(cos(theta_start), top_y, sin(theta_start)),
+                normal
             });
         }
     }
@@ -230,7 +224,7 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
     // bottom
     {
         glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
-        osim::Untextured_vert top_middle = {
+        osmv::Untextured_vert top_middle = {
             .pos = {0.0f, bottom_y, 0.0f},
             .normal = bottom_normal,
         };
@@ -239,16 +233,14 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
             float theta_end = (i+1)*step_angle;
 
             // note: these are wound CCW for backface culling
-            out.push_back(osim::Untextured_triangle{
-                .p1 = top_middle,
-                .p2 = osim::Untextured_vert {
-                     .pos = glm::vec3(cos(theta_start), bottom_y, sin(theta_start)),
-                     .normal = bottom_normal,
-                 },
-                .p3 = osim::Untextured_vert {
-                     .pos = glm::vec3(cos(theta_end), bottom_y, sin(theta_end)),
-                     .normal = bottom_normal,
-                 },
+            out.push_back(top_middle);
+            out.push_back({
+                glm::vec3(cos(theta_start), bottom_y, sin(theta_start)),
+                bottom_normal,
+            });
+            out.push_back({
+                glm::vec3(cos(theta_end), bottom_y, sin(theta_end)),
+                bottom_normal,
             });
         }
     }
@@ -273,16 +265,13 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osim::Untext
             // draw 2 triangles per quad cylinder side
             //
             // note: these are wound CCW for backface culling
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {top1, normal},
-                .p2 = {top2, normal},
-                .p3 = {bottom1, normal},
-            });
-            out.push_back(osim::Untextured_triangle{
-                .p1 = {bottom2, normal},
-                .p2 = {bottom1, normal},
-                .p3 = {top2, normal},
-            });
+            out.push_back({top1, normal});
+            out.push_back({top2, normal});
+            out.push_back({bottom1, normal});
+
+            out.push_back({bottom2, normal});
+            out.push_back({bottom1, normal});
+            out.push_back({top2, normal});
         }
     }
 }

@@ -13,15 +13,15 @@ using std::chrono_literals::operator""ms;
 osmv::Loading_screen::Loading_screen(std::string _path) :
     path{std::move(_path)},
     result{std::async(std::launch::async, [&]() {
-        return osim::load_osim(path.c_str());
+        return osmv::load_osim(path.c_str());
     })} {
 }
 
 osmv::Screen_response osmv::Loading_screen::tick(Application&) {
     if (result.wait_for(0ms) == std::future_status::ready) {
-        return Resp_Transition_to{std::make_unique<Show_model_screen>(path, result.get())};
+        return Resp_transition{std::make_unique<Show_model_screen>(path, result.get())};
     } else {
-        return Resp_Ok{};
+        return Resp_ok{};
     }
 }
 

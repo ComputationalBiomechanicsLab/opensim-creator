@@ -172,7 +172,7 @@ struct Passed_parcel final {
 struct Threadsafe_fdsim_state {
     using clock = std::chrono::high_resolution_clock;
 
-    Passed_parcel<osim::OSMV_State> state;
+    Passed_parcel<osmv::State> state;
     std::atomic<double> sim_cur_time = 0.0;
     std::atomic<double> ui_overhead_acc = 0.0;
     std::atomic<clock::duration> wall_start = clock::now().time_since_epoch();
@@ -181,7 +181,7 @@ struct Threadsafe_fdsim_state {
     std::atomic<int> ui_overhead_n = 0;
     std::atomic<Sim_status> status = Sim_status::Running;
 
-    Threadsafe_fdsim_state(osim::OSMV_State initial_state) :
+    Threadsafe_fdsim_state(osmv::State initial_state) :
         state{std::move(initial_state)} {
     }
 };
@@ -189,12 +189,14 @@ struct Threadsafe_fdsim_state {
 // runs a forward dynamic simuation, updating `shared` (which is designed to
 // be thread-safe) as it runs
 int run_fd_simulation(
-        Stop_token t,
-        osim::OSMV_Model m,
-        osim::OSMV_State s,
+        Stop_token stop_tok,
+        osmv::Model model,
+        osmv::State initial_state,
         double final_time,
         Threadsafe_fdsim_state& shared) {
-    class Stopped_exception final {};
+
+    class Stopped_exception final {};  // thrown to interrupt the simulation
+
     using clock = std::chrono::steady_clock;
 
     shared.wall_start = clock::now().time_since_epoch();
@@ -202,19 +204,24 @@ int run_fd_simulation(
 
     clock::time_point last_report_end = clock::now();
 
-    // what happens during an intermittent update
-    auto on_report = [&](osim::Simulation_update_event const& e) {
-        if (t.stop_requested()) {
+    osmv::Fd_sim_config config;
+    config.final_time = final_time;
+    config.on_integration_step = [&shared, &stop_tok, &model, &last_report_end](SimTK::State const& s) {
+        // if a stop was requested, throw an exception to interrupt the simulation
+        //
+        // this (hacky) approach is because the simulation is black-boxed at the moment - a better
+        // solution would evaluate the token mid-simulation and interrupt it gracefully.
+        if (stop_tok.stop_requested()) {
             throw Stopped_exception{};
         }
 
         clock::time_point report_start = clock::now();
 
-        shared.state.try_apply_a([&e](osim::OSMV_State& s) {
-            s = e.state;
+        shared.state.try_apply_a([&s](osmv::State& s_other) {
+            s_other = s;
         });
-        shared.num_pq_calls = e.num_prescribe_q_calls;
-        shared.sim_cur_time = e.simulation_time;
+        shared.num_pq_calls = osmv::num_prescribeq_calls(model);
+        shared.sim_cur_time = osmv::simulation_time(s);
 
         clock::time_point report_end = clock::now();
 
@@ -231,9 +238,10 @@ int run_fd_simulation(
         return 0;
     };
 
+
     // run the simulation
     try {
-        osim::fd_simulation(m, s, final_time, std::move(on_report));
+        osmv::fd_simulation(model, std::move(initial_state), std::move(config));
         shared.wall_end = clock::now().time_since_epoch();
         shared.status = Sim_status::Completed;
     } catch (Stopped_exception const&) {
@@ -244,6 +252,7 @@ int run_fd_simulation(
         shared.status = Sim_status::Error;
         throw;
     }
+
     return 0;
 }
 
@@ -264,23 +273,23 @@ struct Background_fd_simulation final {
             double _final_time) :
 
         _sim_final_time{_final_time},
-        shared{initial_state}
+        shared{osmv::State{initial_state}}
     {
-        osim::OSMV_Model copy = osim::copy_model(model);
-        osim::finalize_properties_from_state(copy, initial_state);
-        osim::init_system(copy);
+        osmv::Model copy{model};
+        osmv::finalize_properties_from_state(copy, initial_state);
+        osmv::init_system(copy);
 
         worker = Jthread{
             run_fd_simulation,
             std::move(copy),
-            osim::OSMV_State{initial_state},
+            osmv::State{initial_state},
             _sim_final_time,
             std::ref(shared),
         };
     }
 
-    bool try_pop_latest_state(osim::OSMV_State& dest) {
-        return shared.state.try_apply_b([&](osim::OSMV_State& latest) {
+    bool try_pop_latest_state(osmv::State& dest) {
+        return shared.state.try_apply_b([&](osmv::State& latest) {
             std::swap(dest, latest);
             ++states_popped;
         });

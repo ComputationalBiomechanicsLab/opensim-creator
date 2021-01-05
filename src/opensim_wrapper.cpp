@@ -4,18 +4,17 @@
 
 #include <OpenSim/OpenSim.h>
 #include <iostream>
-#include "meshes.hpp"
 
 using namespace SimTK;
 using namespace OpenSim;
 
-static constexpr osim::Mesh_id sphere_meshid = 0;
-static constexpr osim::Mesh_id cylinder_meshid = 1;
+static constexpr osmv::Mesh_id sphere_meshid = 0;
+static constexpr osmv::Mesh_id cylinder_meshid = 1;
 static constexpr size_t num_reserved_meshids = 2;  // count of above
 static std::mutex g_mesh_cache_mutex;
-static std::unordered_map<std::string, osim::Untextured_mesh> g_mesh_cache;
+static std::unordered_map<std::string, std::vector<osmv::Untextured_vert>> g_mesh_cache;
 
-namespace osim {
+namespace osmv {
     struct Geometry_loader_impl final {
         // this swap space prevents the geometry loader from having to allocate
         // space every time geometry is requested
@@ -27,7 +26,7 @@ namespace osim {
         // two-way lookup to establish a meshid-to-path mappings. This is so
         // that the renderer can just opaquely handle ID ints
         std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshids);
-        std::unordered_map<std::string, osim::Mesh_id> str_to_meshid;
+        std::unordered_map<std::string, osmv::Mesh_id> str_to_meshid;
     };
 }
 
@@ -48,56 +47,56 @@ static glm::mat4 cylinder_to_line_xform(float line_width,
     return translation * rotation * scale_xform;
 }
 
-static glm::vec3 to_vec3(Vec3 const& v) {
-    return glm::vec3{v[0], v[1], v[2]};
-}
-
 // load a SimTK PolygonalMesh into a more generic Untextured_mesh struct
-static void load_mesh_data(PolygonalMesh const& mesh, osim::Untextured_mesh& out) {
+static void load_mesh_data(PolygonalMesh const& mesh, std::vector<osmv::Untextured_vert>& triangles) {
 
     // helper function: gets a vertex for a face
     auto get_face_vert_pos = [&](int face, int vert) {
-        return to_vec3(mesh.getVertexPosition(mesh.getFaceVertex(face, vert)));
+        SimTK::Vec3 pos = mesh.getVertexPosition(mesh.getFaceVertex(face, vert));
+        return glm::vec3{pos[0], pos[1], pos[2]};
     };
 
-    auto make_triangle = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
-        glm::vec3 normal = glm::cross(p2 - p1, p3 - p1);
-
-        return osim::Untextured_triangle{
-            .p1 = {p1, normal},
-            .p2 = {p2, normal},
-            .p3 = {p3, normal},
-        };
+    auto make_normal = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
+        return glm::cross(p2 - p1, p3 - p1);
     };
 
-    std::vector<osim::Untextured_triangle>& triangles = out.triangles;
     triangles.clear();
 
     for (auto face = 0; face < mesh.getNumFaces(); ++face) {
         auto num_vertices = mesh.getNumVerticesForFace(face);
 
         if (num_vertices < 3) {
-            // do nothing
+            // line?: ignore
         } else if (num_vertices == 3) {
-            // standard triangle face
+            // triangle: use as-is
+            glm::vec3 p1 = get_face_vert_pos(face, 0);
+            glm::vec3 p2 = get_face_vert_pos(face, 1);
+            glm::vec3 p3 = get_face_vert_pos(face, 2);
+            glm::vec3 normal = make_normal(p1, p2, p3);
 
-
-            triangles.push_back(make_triangle(
-                get_face_vert_pos(face, 0),
-                get_face_vert_pos(face, 1),
-                get_face_vert_pos(face, 2)
-            ));
+            triangles.push_back({p1, normal});
+            triangles.push_back({p2, normal});
+            triangles.push_back({p3, normal});
         } else if (num_vertices == 4) {
-            // rectangle: split into two triangles
+            // quad: split into two triangles
+
             glm::vec3 p1 = get_face_vert_pos(face, 0);
             glm::vec3 p2 = get_face_vert_pos(face, 1);
             glm::vec3 p3 = get_face_vert_pos(face, 2);
             glm::vec3 p4 = get_face_vert_pos(face, 3);
 
-            triangles.push_back(make_triangle(p1, p2, p3));
-            triangles.push_back(make_triangle(p3, p4, p1));
+            glm::vec3 t1_norm = make_normal(p1, p2, p3);
+            glm::vec3 t2_norm = make_normal(p3, p4, p1);
+
+            triangles.push_back({p1, t1_norm});
+            triangles.push_back({p2, t1_norm});
+            triangles.push_back({p3, t1_norm});
+
+            triangles.push_back({p3, t2_norm});
+            triangles.push_back({p4, t2_norm});
+            triangles.push_back({p1, t2_norm});
         } else {
-            // polygon with >= 4 edges:
+            // polygon (>3 edges):
             //
             // create a vertex at the average center point and attach
             // every two verices to the center as triangles.
@@ -111,14 +110,21 @@ static void load_mesh_data(PolygonalMesh const& mesh, osim::Untextured_mesh& out
             for (int vert = 0; vert < num_vertices-1; ++vert) {
                 glm::vec3 p1 = get_face_vert_pos(face, vert);
                 glm::vec3 p2 = get_face_vert_pos(face, vert+1);
-                triangles.push_back(make_triangle(p1, p2, center));
+                glm::vec3 normal = make_normal(p1, p2, center);
+
+                triangles.push_back({p1, normal});
+                triangles.push_back({p2, normal});
+                triangles.push_back({center, normal});
             }
-            // loop back
-            {
-                glm::vec3 p1 = get_face_vert_pos(face, num_vertices-1);
-                glm::vec3 p2 = get_face_vert_pos(face, 0);
-                triangles.push_back(make_triangle(p1, p2, center));
-            }
+
+            // complete the polygon loop
+            glm::vec3 p1 = get_face_vert_pos(face, num_vertices-1);
+            glm::vec3 p2 = get_face_vert_pos(face, 0);
+            glm::vec3 normal = make_normal(p1, p2, center);
+
+            triangles.push_back({p1, normal});
+            triangles.push_back({p2, normal});
+            triangles.push_back({center, normal});
         }
     }
 }
@@ -144,14 +150,14 @@ struct DynamicDecorationGenerator : public DecorationGenerator {
 struct Geometry_visitor final : public DecorativeGeometryImplementation {
     Model& model;
     State const& state;
-    osim::Geometry_loader_impl& impl;
-    osim::State_geometry& out;
+    osmv::Geometry_loader_impl& impl;
+    osmv::State_geometry& out;
 
 
     Geometry_visitor(Model& _model,
                      State const& _state,
-                     osim::Geometry_loader_impl& _impl,
-                     osim::State_geometry& _out) :
+                     osmv::Geometry_loader_impl& _impl,
+                     osmv::State_geometry& _out) :
         model{_model},
         state{_state},
         impl{_impl},
@@ -210,7 +216,7 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         for (int i = 0; i < 3; ++i) {
             sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
         }
-        return to_vec3(sf);
+        return glm::vec3{sf[0], sf[1], sf[2]};
     }
 
     glm::vec4 rgba(DecorativeGeometry const& geom) {
@@ -235,12 +241,12 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
 
         glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005, p1, p2);
 
-        out.mesh_instances.push_back(osim::Mesh_instance{
+        out.mesh_instances.push_back(osmv::Mesh_instance{
             .transform = cylinder_xform,
             .normal_xform = glm::transpose(glm::inverse(cylinder_xform)),
             .rgba = rgba(geom),
 
-            .mesh = cylinder_meshid,
+            .mesh_id = cylinder_meshid,
         });
     }
     void implementBrickGeometry(const DecorativeBrick&) override {
@@ -254,12 +260,12 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
 
         auto xform = glm::scale(m, s);
 
-        out.mesh_instances.push_back(osim::Mesh_instance{
+        out.mesh_instances.push_back(osmv::Mesh_instance{
             .transform = xform,
             .normal_xform = glm::transpose(glm::inverse(xform)),
             .rgba = rgba(geom),
 
-            .mesh = cylinder_meshid,
+            .mesh_id = cylinder_meshid,
         });
     }
     void implementCircleGeometry(const DecorativeCircle&) override {
@@ -268,12 +274,12 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         float r = geom.getRadius();
         auto xform = glm::scale(transform(geom), glm::vec3{r, r, r});
 
-        out.mesh_instances.push_back(osim::Mesh_instance{
+        out.mesh_instances.push_back(osmv::Mesh_instance{
             .transform = xform,
             .normal_xform = glm::transpose(glm::inverse(xform)),
             .rgba = rgba(geom),
 
-            .mesh = sphere_meshid
+            .mesh_id = sphere_meshid
         });
     }
     void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
@@ -310,7 +316,7 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
         }
 
         // load the path into the model-to-path mapping lookup
-        osim::Mesh_id meshid = [this, &path]() {
+        osmv::Mesh_id meshid = [this, &path]() {
             auto [it, inserted] = impl.str_to_meshid.emplace(
                 std::piecewise_construct,
                 std::forward_as_tuple(path),
@@ -322,20 +328,20 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
                 // populate lookups
 
                 size_t meshid_s = impl.meshid_to_str.size();
-                assert(meshid_s < std::numeric_limits<osim::Mesh_id>::max());
-                auto meshid = static_cast<osim::Mesh_id>(meshid_s);
+                assert(meshid_s < std::numeric_limits<osmv::Mesh_id>::max());
+                auto meshid = static_cast<osmv::Mesh_id>(meshid_s);
                 impl.meshid_to_str.push_back(path);
                 it->second = meshid;
                 return meshid;
             }
         }();
 
-        out.mesh_instances.push_back(osim::Mesh_instance{
+        out.mesh_instances.push_back(osmv::Mesh_instance{
             .transform = xform,
             .normal_xform = glm::transpose(glm::inverse(xform)),
             .rgba = rgba(m),
 
-            .mesh = meshid,
+            .mesh_id = meshid,
         });
     }
     void implementArrowGeometry(const DecorativeArrow&) override {
@@ -347,17 +353,18 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
 };
 
 
-osim::OSMV_Model::OSMV_Model(std::unique_ptr<OpenSim::Model> _m) :
-    handle{std::move(_m)} {
+osmv::Model::Model(std::unique_ptr<OpenSim::Model> _m) noexcept : handle{std::move(_m)} {
 }
-osim::OSMV_Model::OSMV_Model(OSMV_Model&&) noexcept = default;
-osim::OSMV_Model& osim::OSMV_Model::operator=(OSMV_Model&&) noexcept = default;
-osim::OSMV_Model::~OSMV_Model() noexcept = default;
+osmv::Model::Model(OpenSim::Model const& m) : handle{new OpenSim::Model{m}} {
+}
+osmv::Model::Model(Model&&) noexcept = default;
+osmv::Model& osmv::Model::operator=(Model&&) noexcept = default;
+osmv::Model::~Model() noexcept = default;
 
-osim::OSMV_State::OSMV_State(SimTK::State const& st) :
+osmv::State::State(SimTK::State const& st) :
     handle{new SimTK::State(st)} {
 }
-osim::OSMV_State& osim::OSMV_State::operator=(SimTK::State const& st) {
+osmv::State& osmv::State::operator=(SimTK::State const& st) {
     if (handle != nullptr) {
         *handle = st;
     } else {
@@ -365,105 +372,103 @@ osim::OSMV_State& osim::OSMV_State::operator=(SimTK::State const& st) {
     }
     return *this;
 }
-osim::OSMV_State::OSMV_State(OSMV_State&&) noexcept = default;
-osim::OSMV_State& osim::OSMV_State::operator=(OSMV_State&&) noexcept = default;
-osim::OSMV_State::~OSMV_State() noexcept = default;
+osmv::State::State(State&&) noexcept = default;
+osmv::State& osmv::State::operator=(State&&) noexcept = default;
+osmv::State::~State() noexcept = default;
 
-osim::OSMV_Model osim::load_osim(char const* path) {
-    return OSMV_Model{std::make_unique<OpenSim::Model>(path)};
+osmv::Model osmv::load_osim(char const* path) {
+    return Model{std::make_unique<OpenSim::Model>(path)};
 }
 
-void osim::finalize_from_properties(OpenSim::Model& m) {
+void osmv::finalize_from_properties(OpenSim::Model& m) {
     m.finalizeFromProperties();
 }
 
-double osim::simulation_time(SimTK::State const& s) {
+double osmv::simulation_time(SimTK::State const& s) {
     return s.getTime();
 }
 
-osim::OSMV_Model osim::copy_model(OpenSim::Model const& m) {
-    return OSMV_Model{std::make_unique<OpenSim::Model>(m)};
+int osmv::num_prescribeq_calls(OpenSim::Model const& m) {
+    return m.getSystem().getNumPrescribeQCalls();
 }
 
-SimTK::State& osim::init_system(OpenSim::Model& m) {
+SimTK::State& osmv::init_system(OpenSim::Model& m) {
     return m.initSystem();
 }
 
-SimTK::State& osim::upd_working_state(OpenSim::Model& m) {
+SimTK::State& osmv::upd_working_state(OpenSim::Model& m) {
     return m.updWorkingState();
 }
 
-void osim::finalize_properties_from_state(OpenSim::Model& m, SimTK::State const& s) {
+void osmv::finalize_properties_from_state(OpenSim::Model& m, SimTK::State const& s) {
     m.setPropertiesFromState(s);
 }
 
-void osim::realize_velocity(OpenSim::Model& m, SimTK::State& s) {
-    m.realizeAcceleration(s);
+void osmv::realize_velocity(OpenSim::Model const& m, SimTK::State& s) {
+    m.realizeVelocity(s);
 }
 
-void osim::realize_report(OpenSim::Model const& m, SimTK::State& s) {
+void osmv::realize_report(OpenSim::Model const& m, SimTK::State& s) {
     m.realizeReport(s);
 }
 
-osim::OSMV_State osim::fd_simulation(
-        OpenSim::Model& model,
-        SimTK::State const& initial_state,
-        double final_time,
-        std::function<int(Simulation_update_event const&)> reporter) {
-
+osmv::State osmv::fd_simulation(OpenSim::Model& model, State initial_state, Fd_sim_config const& config) {
     struct CustomAnalysis final : public Analysis {
-        OpenSim::Model& m;
-        std::function<int(Simulation_update_event const&)> f;
+        std::function<void(SimTK::State const&)> f;
 
-        CustomAnalysis(OpenSim::Model& _m,
-                       std::function<int(Simulation_update_event const&)> _f) :
-            m{_m},
-            f{std::move(_f)} {
-        }
-
-        Simulation_update_event make_event(SimTK::State const& s) {
-            return Simulation_update_event{
-                s,
-                s.getTime(),
-                m.getSystem().getNumPrescribeQCalls()
-            };
+        CustomAnalysis(std::function<void(SimTK::State const&)> _f) : f{std::move(_f)} {
         }
 
         int begin(SimTK::State const& s) override {
-            return f(make_event(s));
+            f(s);
+            return 0;
         }
 
         int step(SimTK::State const& s, int) override {
-            return f(make_event(s));
+            f(s);
+            return 0;
         }
 
         int end(SimTK::State const& s) override {
-            return f(make_event(s));
+            f(s);
+            return 0;
         }
 
         CustomAnalysis* clone() const override {
-            return new CustomAnalysis{m, f};
+            return new CustomAnalysis{f};
         }
 
-        const std::string& getConcreteClassName() const override {
-            static std::string name = "CustomAnalysis";
+        std::string const& getConcreteClassName() const override {
+            static std::string const name = "CustomAnalysis";
             return name;
         }
     };
 
-    model.addAnalysis(new CustomAnalysis{model, std::move(reporter)});
+    if (config.on_integration_step) {
+        model.addAnalysis(new CustomAnalysis{*config.on_integration_step});
+    }
 
-    OpenSim::Manager manager(model);
+    OpenSim::Manager manager{model};
     manager.setWriteToStorage(false);
-    SimTK::State copy = initial_state;
-    manager.initialize(copy);
+    manager.setIntegratorInternalStepLimit(config.max_steps);
+    manager.setIntegratorMaximumStepSize(config.max_step_size);
+    manager.setIntegratorMinimumStepSize(config.min_step_size);
+    manager.setIntegratorAccuracy(config.integrator_accuracy);
 
-    return OSMV_State{manager.integrate(final_time)};
+    model.getMultibodySystem().realize(initial_state, Stage::Position);
+    model.equilibrateMuscles(initial_state);
+
+    manager.initialize(initial_state);
+    return State{manager.integrate(config.final_time)};
 }
 
-static osim::Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
+osmv::State osmv::fd_simulation(OpenSim::Model& model) {
+    return fd_simulation(model, State{osmv::init_system(model)}, Fd_sim_config{});
+}
+
+static osmv::Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
     using OpenSim::Coordinate;
-    using osim::Motion_type;
+    using osmv::Motion_type;
 
     switch (m) {
     case Coordinate::MotionType::Undefined:
@@ -479,7 +484,7 @@ static osim::Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionT
     }
 }
 
-void osim::get_coordinates(OpenSim::Model const& m,
+void osmv::get_coordinates(OpenSim::Model const& m,
                            SimTK::State const& st,
                            std::vector<Coordinate>& out) {
 
@@ -488,7 +493,7 @@ void osim::get_coordinates(OpenSim::Model const& m,
     out.reserve(out.size() + static_cast<size_t>(len));
     for (int i = 0; i < len; ++i) {
         OpenSim::Coordinate const& c = s[i];
-        out.push_back(osim::Coordinate{
+        out.push_back(osmv::Coordinate{
             &c,
             &c.getName(),
             static_cast<float>(c.getRangeMin()),
@@ -500,9 +505,9 @@ void osim::get_coordinates(OpenSim::Model const& m,
     }
 }
 
-void osim::get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
+void osmv::get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
     for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
-        out.push_back(osim::Muscle_stat{
+        out.push_back(osmv::Muscle_stat{
             &musc,
             &musc.getName(),
             static_cast<float>(musc.getLength(s)),
@@ -510,22 +515,22 @@ void osim::get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std:
     }
 }
 
-void osim::set_coord_value(
+void osmv::set_coord_value(
         OpenSim::Coordinate const& c,
         SimTK::State& s,
         double v) {
     c.setValue(s, v);
 }
 
-void osim::lock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
+void osmv::lock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
     c.setLocked(s, true);
 }
 
-void osim::unlock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
+void osmv::unlock_coord(OpenSim::Coordinate const& c, SimTK::State& s) {
     c.setLocked(s, false);
 }
 
-void osim::disable_wrapping_surfaces(OpenSim::Model& m) {
+void osmv::disable_wrapping_surfaces(OpenSim::Model& m) {
     OpenSim::ComponentList<OpenSim::WrapObjectSet> l =
             m.updComponentList<OpenSim::WrapObjectSet>();
     for (OpenSim::WrapObjectSet& wos : l) {
@@ -537,7 +542,7 @@ void osim::disable_wrapping_surfaces(OpenSim::Model& m) {
     }
 }
 
-void osim::enable_wrapping_surfaces(OpenSim::Model& m) {
+void osmv::enable_wrapping_surfaces(OpenSim::Model& m) {
     OpenSim::ComponentList<OpenSim::WrapObjectSet> l =
             m.updComponentList<OpenSim::WrapObjectSet>();
     for (OpenSim::WrapObjectSet& wos : l) {
@@ -549,7 +554,7 @@ void osim::enable_wrapping_surfaces(OpenSim::Model& m) {
     }
 }
 
-void osim::compute_moment_arms(
+void osmv::compute_moment_arms(
         OpenSim::Muscle const& muscle,
         SimTK::State const& st,
         OpenSim::Coordinate const& c,
@@ -578,9 +583,7 @@ void osim::compute_moment_arms(
     c.setValue(state, prev_val);
 }
 
-void osim::get_available_outputs(
-        OpenSim::Model const& m,
-        std::vector<Available_output>& out) {
+void osmv::get_available_outputs(OpenSim::Model const& m, std::vector<Available_output>& out) {
 
     auto is_single_double_val = [](OpenSim::AbstractOutput const* ao) {
         return (not ao->isListOutput()) and dynamic_cast<OpenSim::Output<double> const*>(ao) != nullptr;
@@ -607,24 +610,23 @@ void osim::get_available_outputs(
     }
 }
 
-std::string osim::get_output_val(
-        OpenSim::AbstractOutput const& ao,
-        SimTK::State const& s) {
+std::string osmv::get_output_val_any(OpenSim::AbstractOutput const& ao, SimTK::State const& s) {
     return ao.getValueAsString(s);
 }
 
-double osim::get_single_double_output_val(OpenSim::AbstractOutput const& ao, SimTK::State const& s) {
+double osmv::get_output_val_double(OpenSim::AbstractOutput const& ao, SimTK::State const& s) {
     auto* o = dynamic_cast<OpenSim::Output<double> const*>(&ao);
+    assert(o);
     return o->getValue(s);
 }
 
-osim::Geometry_loader::Geometry_loader() :
+osmv::Geometry_loader::Geometry_loader() :
     impl{new Geometry_loader_impl{}} {
 }
-osim::Geometry_loader::Geometry_loader(Geometry_loader&&) = default;
-osim::Geometry_loader& osim::Geometry_loader::operator=(Geometry_loader&&) = default;
+osmv::Geometry_loader::Geometry_loader(Geometry_loader&&) = default;
+osmv::Geometry_loader& osmv::Geometry_loader::operator=(Geometry_loader&&) = default;
 
-void osim::Geometry_loader::all_geometry_in(
+void osmv::Geometry_loader::all_geometry_in(
     OpenSim::Model& m,
     SimTK::State& s,
     State_geometry& out) {
@@ -641,14 +643,14 @@ void osim::Geometry_loader::all_geometry_in(
     }
 }
 
-void osim::Geometry_loader::load_mesh(Mesh_id id, Untextured_mesh &out) {
-    // handle reserved meshes
+void osmv::Geometry_loader::load_mesh(Mesh_id id, std::vector<Untextured_vert>& out) {
+    // handle reserved mesh IDs
     switch (id) {
     case sphere_meshid:
-        osmv::unit_sphere_triangles(out.triangles);
+        osmv::unit_sphere_triangles(out);
         return;
     case cylinder_meshid:
-        osmv::simbody_cylinder_triangles(12, out.triangles);
+        osmv::simbody_cylinder_triangles(12, out);
         return;
     }
 
@@ -674,4 +676,4 @@ void osim::Geometry_loader::load_mesh(Mesh_id id, Untextured_mesh &out) {
     out = it->second;
 }
 
-osim::Geometry_loader::~Geometry_loader() noexcept = default;
+osmv::Geometry_loader::~Geometry_loader() noexcept = default;

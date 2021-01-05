@@ -4,7 +4,7 @@
 
 #include "application.hpp"
 #include "screen.hpp"
-#include "meshes.hpp"
+#include "3d_common.hpp"
 #include "opensim_wrapper.hpp"
 #include "loading_screen.hpp"
 #include "fd_simulation.hpp"
@@ -26,230 +26,256 @@
 #include <vector>
 #include <unordered_map>
 
-static constexpr float pi_f = static_cast<float>(M_PI);
-static const ImVec4 red{1.0f, 0.0f, 0.0f, 1.0f};
-static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
-static const ImVec4 dark_green{0.0f, 0.6f, 0.0f, 1.0f};
-
-template<typename V>
-static V& asserting_find(std::vector<std::optional<V>>& meshes, osim::Mesh_id id) {
-    assert(id + 1 <= meshes.size());
-    assert(meshes[id]);
-    return meshes[id].value();
-}
-
-struct Shaded_plain_vert final {
-    glm::vec3 pos;
-    glm::vec3 norm;
-};
-static_assert(sizeof(Shaded_plain_vert) == 6*sizeof(float));
-
-// renders uniformly colored geometry with gouraud light shading
-struct Uniform_color_gouraud_shader final {
-    gl::Program program = gl::CreateProgramFrom(
-        gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
-        gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
-
-    static constexpr gl::Attribute location = gl::AttributeAtLocation(0);
-    static constexpr gl::Attribute in_normal = gl::AttributeAtLocation(1);
-
-    gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
-    gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
-    gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
-    gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
-    gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "rgba");
-    gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "lightPos");
-    gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "lightColor");
-    gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "viewPos");
-};
-
-template<typename T>
-static gl::Vertex_array create_vao(Uniform_color_gouraud_shader& shader, gl::Sized_array_buffer<T>& vbo) {
-    gl::Vertex_array vao = gl::GenVertexArrays();
-
-    gl::BindVertexArray(vao);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(shader.location, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-    gl::EnableVertexAttribArray(shader.location);
-    gl::VertexAttribPointer(shader.in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, norm)));
-    gl::EnableVertexAttribArray(shader.in_normal);
-    gl::BindVertexArray();
-
-    return vao;
-}
-
-// renders textured geometry with no lighting shading
-struct Plain_texture_shader final {
-    gl::Program p = gl::CreateProgramFrom(
-        gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
-        gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
-
-    static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-    static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
-
-    gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
-    gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
-    gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
-    gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
-};
-
-template<typename T>
-static gl::Vertex_array create_vao(
-        Plain_texture_shader& shader,
-        gl::Sized_array_buffer<T>& vbo) {
-
-    gl::Vertex_array vao = gl::GenVertexArrays();
-
-    gl::BindVertexArray(vao);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(shader.aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-    gl::EnableVertexAttribArray(shader.aPos);
-    gl::VertexAttribPointer(shader.aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, uv)));
-    gl::EnableVertexAttribArray(shader.aTexCoord);
-    gl::BindVertexArray();
-
-    return vao;
-}
-
-struct Shaded_textured_vert final {
-    glm::vec3 pos;
-    glm::vec3 norm;
-    glm::vec2 uv;
-};
-static_assert(sizeof(Shaded_textured_vert) == 8*sizeof(float));
-
-// standard textured quad
-// - dimensions [-1, +1] in xy and [0, 0] in z
-// - uv coords are (0, 0) bottom-left, (1, 1) top-right
-// - normal is +1 in Z, meaning that it faces toward the camera
-static constexpr std::array<Shaded_textured_vert, 6> shaded_textured_quad_verts = {{
-    {{-1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}}, // bottom-left
-    {{ 1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}}, // top-right
-    {{ 1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}}, // bottom-right
-    {{ 1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}}, // top-right
-    {{-1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}}, // bottom-left
-    {{-1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}}  // top-left
-}};
-
-struct Floor_renderer final {
-    Plain_texture_shader s;
-    gl::Sized_array_buffer<Shaded_textured_vert> vbo = []() {
-        auto copy = shaded_textured_quad_verts;
-        for (Shaded_textured_vert& st : copy) {
-            st.uv *= 50.0f;  // make chequers smaller
-        }
-        return gl::Sized_array_buffer<Shaded_textured_vert>{copy.data(), copy.data() + copy.size()};
-    }();
-    gl::Vertex_array vao = create_vao(s, vbo);
-    gl::Texture_2d tex = osmv::generate_chequered_floor_texture();
-    glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
-
-    void draw(glm::mat4 const& proj, glm::mat4 const& view) {
-        gl::UseProgram(s.p);
-        gl::Uniform(s.projMat, proj);
-        gl::Uniform(s.viewMat, view);
-        gl::Uniform(s.modelMat, model_mtx);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(tex);
-        gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
-        gl::BindVertexArray();
-    }
-};
-
-// renders normals using a geometry shader
-struct Normals_shader final {
-    gl::Program program = gl::CreateProgramFrom(
-        gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "normals.vert"),
-        gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
-        gl::CompileGeometryShaderFile(OSMV_SHADERS_DIR "normals.geom"));
-
-    static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-    static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
-
-    gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
-    gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
-    gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
-    gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
-};
-
-template<typename T>
-static gl::Vertex_array create_vao(
-        Normals_shader& shader,
-        gl::Sized_array_buffer<T>& vbo) {
-
-    gl::Vertex_array vao = gl::GenVertexArrays();
-    gl::BindVertexArray(vao);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(shader.aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-    gl::EnableVertexAttribArray(shader.aPos);
-    gl::VertexAttribPointer(shader.aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, norm)));
-    gl::EnableVertexAttribArray(shader.aNormal);
-    gl::BindVertexArray();
-    return vao;
-}
-
-
-// OpenSim mesh shown in main window
-struct Scene_mesh final {
-    gl::Sized_array_buffer<Shaded_plain_vert> vbo;
-    gl::Vertex_array main_vao;
-    gl::Vertex_array normal_vao;
-};
-
-// upload OpenSim mesh to the GPU
-Scene_mesh upload_to_gpu(
-        Uniform_color_gouraud_shader& ucgs,
-        Normals_shader& sns,
-        osim::Untextured_mesh const& m) {
-    std::vector<Shaded_plain_vert> v;
-    v.reserve(3 * m.triangles.size());
-    for (osim::Untextured_triangle const& t : m.triangles) {
-        v.push_back(Shaded_plain_vert{t.p1.pos, t.p1.normal});
-        v.push_back(Shaded_plain_vert{t.p2.pos, t.p2.normal});
-        v.push_back(Shaded_plain_vert{t.p3.pos, t.p3.normal});
-    }
-    gl::Sized_array_buffer<Shaded_plain_vert> vbo(v.data(), v.data() + v.size());
-    gl::Vertex_array main = create_vao(ucgs, vbo);
-    gl::Vertex_array norms = create_vao(sns, vbo);
-
-    return Scene_mesh{std::move(vbo), std::move(main), std::move(norms)};
-}
-
 namespace osmv {
+    // renders uniformly colored geometry with Gouraud shading
+    struct Uniform_color_gouraud_shader final {
+        gl::Program program = gl::CreateProgramFrom(
+            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
+            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
+
+        static constexpr gl::Attribute location = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute in_normal = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
+        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "rgba");
+        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "lightPos");
+        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "lightColor");
+        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "viewPos");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(location);
+            gl::VertexAttribPointer(in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::EnableVertexAttribArray(in_normal);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    // renders textured geometry with no shading
+    struct Plain_texture_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
+            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
+        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    // renders normals using a geometry shader
+    struct Normals_shader final {
+        gl::Program program = gl::CreateProgramFrom(
+            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "normals.vert"),
+            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
+            gl::CompileGeometryShaderFile(OSMV_SHADERS_DIR "normals.geom"));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
+        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::EnableVertexAttribArray(aNormal);
+            gl::BindVertexArray();
+            return vao;
+        }
+    };
+
+    // uses the floor shader to render the scene's chequered floor
+    struct Floor_renderer final {
+        Plain_texture_shader s;
+
+        gl::Array_bufferT<Shaded_textured_vert> vbo = []() {
+            auto copy = shaded_textured_quad_verts;
+            for (Shaded_textured_vert& st : copy) {
+                st.texcoord *= 50.0f;  // make chequers smaller
+            }
+            return gl::Array_bufferT<Shaded_textured_vert>{copy};
+        }();
+
+        gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
+        gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
+        glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
+
+        void draw(glm::mat4 const& proj, glm::mat4 const& view) {
+            gl::UseProgram(s.p);
+
+            gl::Uniform(s.projMat, proj);
+            gl::Uniform(s.viewMat, view);
+            gl::Uniform(s.modelMat, model_mtx);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(floor_texture);
+            gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
+
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
+            gl::BindVertexArray();
+        }
+    };
+
+    // OpenSim mesh shown in main window
+    class Mesh_on_gpu final {
+        gl::Array_bufferT<osmv::Untextured_vert> vbo;
+        gl::Vertex_array main_vao;
+        gl::Vertex_array normal_vao;
+
+    public:
+        Mesh_on_gpu(std::vector<Untextured_vert> const& m) :
+            vbo{m},
+            main_vao{Uniform_color_gouraud_shader::create_vao(vbo)},
+            normal_vao{Normals_shader::create_vao(vbo)} {
+        }
+
+        template<typename T>
+        gl::Vertex_array& vao_for() noexcept;
+
+        int sizei() const noexcept {
+            return vbo.sizei();
+        }
+    };
+
+    template<>
+    gl::Vertex_array& Mesh_on_gpu::vao_for<Uniform_color_gouraud_shader>() noexcept {
+        return main_vao;
+    }
+
+    template<>
+    gl::Vertex_array& Mesh_on_gpu::vao_for<Normals_shader>() noexcept {
+        return normal_vao;
+    }
+
+    // holds a fixed number of Y datapoints that are assumed to be evenly spaced in X
+    //
+    // if the number of datapoints "pushed" onto the sparkline exceeds the (fixed) capacity then
+    // the datapoints will be halved (reducing resolution) to make room for more
+    struct Hacky_output_sparkline final {
+        static constexpr float min_x_step = 0.005f;
+        static constexpr size_t max_datapoints = 256;
+        static_assert(max_datapoints % 2 == 0, "num datapoints must be even because the impl uses integer division");
+
+        osmv::Available_output ao;
+        std::array<float, max_datapoints> data;
+        size_t n = 0;
+        float x_step = min_x_step;
+        float latest_x = -min_x_step;
+        float min = std::numeric_limits<float>::max();
+        float max = std::numeric_limits<float>::min();
+
+        Hacky_output_sparkline(osmv::Available_output _ao) :
+            ao{std::move(_ao)} {
+        }
+
+        // reset the data, but not the output being monitored
+        void clear() {
+            n = 0;
+            x_step = min_x_step;
+            latest_x = -min_x_step;
+            min = std::numeric_limits<float>::max();
+            max = std::numeric_limits<float>::min();
+        }
+
+        void push_datapoint(float x, float y) {
+            if (x < latest_x + x_step) {
+                return;  // too close to previous datapoint: do not record
+            }
+
+            if (n == max_datapoints) {
+                // too many datapoints recorded: half the resolution of the
+                // sparkline to accomodate more datapoints being added
+                size_t halfway = n/2;
+                for (size_t i = 0; i < halfway; ++i) {
+                    data[i] = data[2*i];
+                }
+                n = halfway;
+                x_step *= 2.0f;
+            }
+
+            data[n++] = y;
+            latest_x = x;
+            min = std::min(min, y);
+            max = std::max(max, y);
+        }
+    };
+
+    struct Moment_arm_plot final {
+        std::string muscle_name;
+        std::string coord_name;
+        float x_begin;
+        float x_end;
+        std::array<float, 50> y_vals;
+        float min;
+        float max;
+    };
+
     struct Show_model_screen_impl final {
         // scratch: shared space that has no content guarantees
-        //
-        // enables memory recycling, which is important in a low-latency UI
         struct {
             char text[1024 + 1];
-            std::vector<osim::Coordinate> coords;
-            std::vector<osim::Muscle_stat> muscles;
-            osim::Untextured_mesh mesh;
+            std::vector<Coordinate> coords;
+            std::vector<Muscle_stat> muscles;
+            std::vector<Untextured_vert> mesh;
         } scratch;
 
         // model
         std::string path;
-        osim::OSMV_Model model;
-        osim::OSMV_State latest_state;
+        osmv::Model model;
+        osmv::State latest_state;
 
         // 3D rendering
         Uniform_color_gouraud_shader color_shader;
         Normals_shader normals_shader;
         Floor_renderer floor_renderer;
-        std::vector<std::optional<Scene_mesh>> meshes;  // indexed by meshid
-        osim::State_geometry geom;
-        osim::Geometry_loader geom_loader;
-        Scene_mesh sphere = [&]() {
-            scratch.mesh.triangles.clear();
-            osmv::unit_sphere_triangles(scratch.mesh.triangles);
-            return upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+        std::vector<std::optional<Mesh_on_gpu>> meshes;  // indexed by meshid
+        osmv::State_geometry geom;
+        osmv::Geometry_loader geom_loader;
+        Mesh_on_gpu sphere = [&]() {
+            scratch.mesh.clear();
+            osmv::unit_sphere_triangles(scratch.mesh);
+            return Mesh_on_gpu{scratch.mesh};
         }();
-        Scene_mesh cylinder = [&]() {
-            scratch.mesh.triangles.clear();
-            osmv::simbody_cylinder_triangles(12, scratch.mesh.triangles);
-            return upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+        Mesh_on_gpu cylinder = [&]() {
+            scratch.mesh.clear();
+            osmv::simbody_cylinder_triangles(12, scratch.mesh);
+            return Mesh_on_gpu{scratch.mesh};
         }();
 
         // gui (camera, lighting, etc.)
@@ -272,7 +298,7 @@ namespace osmv {
         float wheel_sensitivity = 0.9f;
 
         // simulator
-        float fd_final_time = 0.5f;
+        float fd_final_time = 0.4f;
         std::optional<Background_fd_simulation> simulator;
 
         // tab: coords
@@ -284,21 +310,11 @@ namespace osmv {
             bool show_coupled = true;
         } t_coords;
 
-        struct MA_plot final {
-            std::string muscle_name;
-            std::string coord_name;
-            float x_begin;
-            float x_end;
-            std::array<float, 50> y_vals;
-            float min;
-            float max;
-        };
-
         // tab: moment arms
         struct {
             std::string const* selected_musc = nullptr;
             std::string const* selected_coord = nullptr;
-            std::vector<std::unique_ptr<MA_plot>> plots;
+            std::vector<std::unique_ptr<Moment_arm_plot>> plots;
         } t_mas;
 
         // tab: muscles
@@ -307,44 +323,21 @@ namespace osmv {
         } t_muscs;
 
         // tab: outputs
-        struct Hacky_output_sparkline final {
-            // TODO: this is a hacky implementation that just samples an output
-            // whenever the state is updated and stops when the buffer is full
-            //
-            // a robust solution would install the sampler into the simulator
-            // so that sampling isn't FPS-dependent, and so that the appropriate
-            // event triggers can be installed into SimTK for regular sampling.
-
-            osim::Available_output ao;
-            std::vector<float> y_vals;
-            float last_x = 0.0f;
-            float min_x_step = 0.005f;  // effectively: 5 ms
-            float min = std::numeric_limits<float>::max();
-            float max = std::numeric_limits<float>::min();
-
-            Hacky_output_sparkline(osim::Available_output _ao) :
-                ao{std::move(_ao)} {
-            }
-        };
-
         struct {
             char filter[64]{};
-            std::vector<osim::Available_output> available;
-            std::optional<osim::Available_output> selected;
-            std::vector<osim::Available_output> watches;
+            std::vector<osmv::Available_output> available;
+            std::optional<osmv::Available_output> selected;
+            std::vector<osmv::Available_output> watches;
             std::vector<std::unique_ptr<Hacky_output_sparkline>> plots;
         } t_outputs;
 
 
-        Show_model_screen_impl(std::string _path, osim::OSMV_Model model);
+        Show_model_screen_impl(std::string _path, osmv::Model model);
         Screen_response handle_event(Application&, SDL_Event&);
         Screen_response tick(Application&);
 
         void on_user_edited_model();
         void on_user_edited_state();
-
-        void clear_anything_dependent_on_model();
-        void clear_anything_dependent_on_state();
 
         void update_outputs_from_latest_state();
 
@@ -361,7 +354,7 @@ namespace osmv {
         void draw_lhs_panel();
         void draw_simulate_tab();
         void draw_coords_tab();
-        void draw_coordinate_slider(osim::Coordinate const&);
+        void draw_coordinate_slider(osmv::Coordinate const&);
         void draw_utils_tab();
         void draw_muscles_tab();
         void draw_mas_tab();
@@ -373,7 +366,7 @@ namespace osmv {
 
 // screen PIMPL forwarding
 
-osmv::Show_model_screen::Show_model_screen(std::string path, osim::OSMV_Model model) :
+osmv::Show_model_screen::Show_model_screen(std::string path, osmv::Model model) :
     impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 osmv::Show_model_screen::~Show_model_screen() noexcept = default;
@@ -391,30 +384,32 @@ void osmv::Show_model_screen::draw(osmv::Application& ui) {
 
 // screen implementation
 
-osmv::Show_model_screen_impl::Show_model_screen_impl(std::string _path, osim::OSMV_Model _model) :
+osmv::Show_model_screen_impl::Show_model_screen_impl(
+        std::string _path,
+        osmv::Model _model) :
+
     path{std::move(_path)},
     model{std::move(_model)},
     latest_state{[this]() {
-        osim::finalize_from_properties(model);
-        osim::OSMV_State s = osim::init_system(model);
-        osim::realize_report(model, s);
+        osmv::finalize_from_properties(model);
+        osmv::State s{osmv::init_system(model)};
+        osmv::realize_report(model, s);
         return s;
     }()}
 {
 }
 
-
 void osmv::Show_model_screen_impl::on_user_edited_model() {
     // these might be invalidated by changing the model because they might
     // contain (e.g.) pointers into the model
-    simulator.reset();
+    simulator = std::nullopt;
     t_mas.selected_musc = nullptr;
     t_mas.selected_coord = nullptr;
     t_outputs.selected = std::nullopt;
     t_outputs.plots.clear();
 
-    latest_state = osim::init_system(model);
-    osim::realize_report(model, latest_state);
+    latest_state = osmv::init_system(model);
+    osmv::realize_report(model, latest_state);
 }
 
 void osmv::Show_model_screen_impl::on_user_edited_state() {
@@ -422,57 +417,54 @@ void osmv::Show_model_screen_impl::on_user_edited_state() {
     if (simulator) {
         simulator->request_stop();
     }
-    osim::realize_report(model, latest_state);
+
+    osmv::realize_report(model, latest_state);
+
+    // clear all output plots, because the user *probably* wants to see fresh
+    // data after resetting the state
+    for (std::unique_ptr<Hacky_output_sparkline> const& p : t_outputs.plots) {
+        p->clear();
+    }
 }
 
+// update currently-recording outputs after the state has been updated
 void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
-    // update currently-recording outputs after the state has been updated
-
-    float sim_millis = 1000.0f * static_cast<float>(osim::simulation_time(latest_state));
+    float sim_millis = 1000.0f * static_cast<float>(osmv::simulation_time(latest_state));
 
     for (std::unique_ptr<Hacky_output_sparkline>& p : t_outputs.plots) {
         Hacky_output_sparkline& hos = *p;
 
-        if (sim_millis < hos.last_x + hos.min_x_step) {
-            // latest state is too close to the last datapoint that was plotted
-            // so just skip this datapoint
-            continue;
-        }
-
         // only certain types of output are plottable at the moment
         assert(hos.ao.is_single_double_val);
 
-        // output val casted to `float` because that's what ImGui uses and we
-        // don't need an insane amount of accuracy
-        double v = osim::get_single_double_output_val(*hos.ao.handle, latest_state);
+        double v = osmv::get_output_val_double(*hos.ao.handle, latest_state);
         float fv = static_cast<float>(v);
 
-        hos.y_vals.push_back(fv);
-        hos.last_x = sim_millis;
-        hos.min = std::min(hos.min, fv);
-        hos.max = std::max(hos.max, fv);
+        hos.push_datapoint(sim_millis, fv);
     }
 }
 
+// handle top-level UI event (user click, user drag, etc.)
 osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui, SDL_Event& e) {
+
     ImGuiIO& io = ImGui::GetIO();
     sdl::Window_dimensions window_dims = ui.window_size();
-    float aspect_ratio = static_cast<float>(window_dims.w) / static_cast<float>(window_dims.h);
+    float aspect_ratio = ui.aspect_ratio();
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
             case SDLK_ESCAPE:
-                return Resp_Please_quit{};
+                return Resp_quit{};
             case SDLK_w:
                 wireframe_mode = not wireframe_mode;
                 break;
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    return Resp_Transition_to{std::make_unique<osmv::Loading_screen>(path)};
+                    return Resp_transition{std::make_unique<osmv::Loading_screen>(path)};
                 } else {
-                    latest_state = osim::init_system(model);
-                    osim::realize_report(model, latest_state);
+                    latest_state = osmv::init_system(model);
+                    on_user_edited_state();
                 }
                 break;
             }
@@ -508,13 +500,13 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             // if ImGUI wants to capture the mouse, then the mouse
             // is probably interacting with an ImGUI panel and,
             // therefore, the dragging/panning shouldn't be handled
-            return Resp_Ok{};
+            return Resp_ok{};
         }
 
         if (abs(e.motion.xrel) > 200 or abs(e.motion.yrel) > 200) {
             // probably a frameskip or the mouse was forcibly teleported
             // because it hit the edge of the screen
-            return Resp_Ok{};
+            return Resp_ok{};
         }
 
         if (dragging) {
@@ -572,7 +564,7 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             // if ImGUI wants to capture the mouse, then the mouse
             // is probably interacting with an ImGUI panel and,
             // therefore, the dragging/panning shouldn't be handled
-            return Resp_Ok{};
+            return Resp_ok{};
         }
 
         if (e.wheel.y > 0 and radius >= 0.1f) {
@@ -584,43 +576,48 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
         }
     }
 
-    return Resp_Ok{};
+    return Resp_ok{};
 }
 
+// "tick" the UI state (usually, used for updating animations etc.)
 osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
+
+    // grab the latest state (if any) from the simulator and (if updated)
+    // update the UI to reflect the latest state
     if (simulator and simulator->try_pop_latest_state(latest_state)) {
-        osim::realize_report(model, latest_state);
+        osmv::realize_report(model, latest_state);
         update_outputs_from_latest_state();
     }
 
-    return Resp_Ok{};
+    return Resp_ok{};
 }
 
 bool osmv::Show_model_screen_impl::simulator_running() {
     return simulator and simulator->is_running();
 }
 
+// draw a frame of the UI
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
+
     // OpenSim: load all geometry in the current state
+    //
+    // this is a fairly slow thing to put into the draw loop, but means that
+    // we can be lazier about monitoring where/when the rendered state changes
     geom.clear();
     geom_loader.all_geometry_in(model, latest_state, geom);
-
-    // OpenSim: load any meshes used by the geometry (if necessary)
-    for (osim::Mesh_instance const& mi : geom.mesh_instances) {
-        if (meshes.size() >= (mi.mesh + 1) and meshes[mi.mesh].has_value()) {
-            // it's already loaded
+    for (osmv::Mesh_instance const& mi : geom.mesh_instances) {
+        if (meshes.size() >= (mi.mesh_id + 1) and meshes[mi.mesh_id].has_value()) {
+            // the mesh is already loaded
             continue;
         }
 
-        geom_loader.load_mesh(mi.mesh, scratch.mesh);
-        meshes.resize(std::max(meshes.size(), mi.mesh + 1));
-        meshes[mi.mesh] = upload_to_gpu(color_shader, normals_shader, scratch.mesh);
+        geom_loader.load_mesh(mi.mesh_id, scratch.mesh);
+        meshes.resize(std::max(meshes.size(), mi.mesh_id + 1));
+        meshes[mi.mesh_id] = Mesh_on_gpu{scratch.mesh};
     }
 
-
-    // draw everything
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // draw
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
     if (gamma_correction) {
@@ -633,7 +630,13 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     draw_imgui_ui(ui);
 }
 
-// draw main 3D scene
+template<typename V>
+static V& asserting_find(std::vector<std::optional<V>>& meshes, osmv::Mesh_id id) {
+    assert(id + 1 <= meshes.size());
+    assert(meshes[id]);
+    return meshes[id].value();
+}
+
 void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
@@ -681,34 +684,34 @@ void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
             gl::Uniform(color_shader.modelMat, m.transform);
             gl::Uniform(color_shader.normalMat, m.normal_xform);
 
-            Scene_mesh& md = asserting_find(meshes, m.mesh);
-            gl::BindVertexArray(md.main_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.vbo.sizei());
+            Mesh_on_gpu& md = asserting_find(meshes, m.mesh_id);
+            gl::BindVertexArray(md.vao_for<Uniform_color_gouraud_shader>());
+            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
             gl::BindVertexArray();
         }
 
         // debugging: draw unit cylinder
         if (show_unit_cylinder) {
-            gl::BindVertexArray(cylinder.main_vao);
+            gl::BindVertexArray(cylinder.vao_for<Uniform_color_gouraud_shader>());
 
             gl::Uniform(color_shader.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
             gl::Uniform(color_shader.modelMat, glm::identity<glm::mat4>());
             gl::Uniform(color_shader.normalMat, glm::identity<glm::mat4>());
 
-            gl::DrawArrays(GL_TRIANGLES, 0, cylinder.vbo.sizei());
+            gl::DrawArrays(GL_TRIANGLES, 0, cylinder.sizei());
 
             gl::BindVertexArray();
         }
 
         // debugging: draw light location
         if (show_light) {
-            gl::BindVertexArray(sphere.main_vao);
+            gl::BindVertexArray(sphere.vao_for<Uniform_color_gouraud_shader>());
 
             gl::Uniform(color_shader.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
             auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
             gl::Uniform(color_shader.modelMat, xform);
             gl::Uniform(color_shader.normalMat, glm::transpose(glm::inverse(xform)));
-            gl::DrawArrays(GL_TRIANGLES, 0, sphere.vbo.sizei());
+            gl::DrawArrays(GL_TRIANGLES, 0, sphere.sizei());
 
             gl::BindVertexArray();
         }
@@ -729,9 +732,9 @@ void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
             gl::Uniform(normals_shader.modelMat, m.transform);
             gl::Uniform(normals_shader.normalMat, m.normal_xform);
 
-            Scene_mesh& md = asserting_find(meshes, m.mesh);
-            gl::BindVertexArray(md.normal_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.vbo.sizei());
+            Mesh_on_gpu& md = asserting_find(meshes, m.mesh_id);
+            gl::BindVertexArray(md.vao_for<Normals_shader>());
+            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
             gl::BindVertexArray();
         }
     }
@@ -816,6 +819,9 @@ void osmv::Show_model_screen_impl::draw_lhs_panel() {
     ImGui::End();
 }
 
+static const ImVec4 red{1.0f, 0.0f, 0.0f, 1.0f};
+static const ImVec4 dark_green{0.0f, 0.6f, 0.0f, 1.0f};
+
 void osmv::Show_model_screen_impl::draw_simulate_tab() {
     // start/stop button
     if (simulator_running()) {
@@ -834,8 +840,8 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
 
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
-        latest_state = osim::init_system(model);
-        osim::realize_report(model, latest_state);
+        latest_state = osmv::init_system(model);
+        on_user_edited_state();
     }
 
     ImGui::Dummy(ImVec2{0.0f, 20.0f});
@@ -984,23 +990,23 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     // get coords
 
     scratch.coords.clear();
-    osim::get_coordinates(model, latest_state, scratch.coords);
+    osmv::get_coordinates(model, latest_state, scratch.coords);
 
 
     // apply filters etc.
 
     int coordtypes_to_filter_out = 0;
     if (not t_coords.show_rotational) {
-        coordtypes_to_filter_out |= osim::Rotational;
+        coordtypes_to_filter_out |= osmv::Rotational;
     }
     if (not t_coords.show_translational) {
-        coordtypes_to_filter_out |= osim::Translational;
+        coordtypes_to_filter_out |= osmv::Translational;
     }
     if (not t_coords.show_coupled) {
-        coordtypes_to_filter_out |= osim::Coupled;
+        coordtypes_to_filter_out |= osmv::Coupled;
     }
 
-    auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), [&](osim::Coordinate const& c) {
+    auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), [&](osmv::Coordinate const& c) {
         if (c.type & coordtypes_to_filter_out) {
             return true;
         }
@@ -1014,7 +1020,7 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     scratch.coords.erase(it, scratch.coords.end());
 
     if (t_coords.sort_by_name) {
-        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osmv::Coordinate const& c1, osmv::Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
     }
@@ -1027,14 +1033,16 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     ImGui::Separator();
 
     int i = 0;
-    for (osim::Coordinate const& c : scratch.coords) {
+    for (osmv::Coordinate const& c : scratch.coords) {
         ImGui::PushID(i++);
         draw_coordinate_slider(c);
         ImGui::PopID();
     }
 }
 
-void osmv::Show_model_screen_impl::draw_coordinate_slider(osim::Coordinate const& c) {
+static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
+
+void osmv::Show_model_screen_impl::draw_coordinate_slider(osmv::Coordinate const& c) {
     // lock button
     if (c.locked) {
         ImGui::PushStyleColor(ImGuiCol_FrameBg, dark_red);
@@ -1043,9 +1051,9 @@ void osmv::Show_model_screen_impl::draw_coordinate_slider(osim::Coordinate const
     char const* btn_label = c.locked ? "u" : "l";
     if (ImGui::Button(btn_label)) {
         if (c.locked) {
-            osim::unlock_coord(*c.ptr, latest_state);
+            osmv::unlock_coord(*c.ptr, latest_state);
         } else {
-            osim::lock_coord(*c.ptr, latest_state);
+            osmv::lock_coord(*c.ptr, latest_state);
         }
         on_user_edited_state();
     }
@@ -1055,7 +1063,7 @@ void osmv::Show_model_screen_impl::draw_coordinate_slider(osim::Coordinate const
 
     float v = c.value;
     if (ImGui::SliderFloat(c.name->c_str(), &v, c.min, c.max)) {
-        osim::set_coord_value(*c.ptr, latest_state, static_cast<double>(v));
+        osmv::set_coord_value(*c.ptr, latest_state, static_cast<double>(v));
         on_user_edited_state();
     }
 
@@ -1070,12 +1078,12 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
     ImGui::Text("wrapping surfaces: ");
     ImGui::SameLine();
     if (ImGui::Button("disable")) {
-        osim::disable_wrapping_surfaces(model);
+        osmv::disable_wrapping_surfaces(model);
         on_user_edited_model();
     }
     ImGui::SameLine();
     if (ImGui::Button("enable")) {
-        osim::enable_wrapping_surfaces(model);
+        osmv::enable_wrapping_surfaces(model);
         on_user_edited_model();
     }
 }
@@ -1083,10 +1091,10 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
 void osmv::Show_model_screen_impl::draw_muscles_tab() {
     // extract muscles details from model
     scratch.muscles.clear();
-    osim::get_muscle_stats(model, latest_state, scratch.muscles);
+    osmv::get_muscle_stats(model, latest_state, scratch.muscles);
 
     // sort muscles alphabetically by name
-    std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
+    std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osmv::Muscle_stat const& m1, osmv::Muscle_stat const& m2) {
         return *m1.name < *m2.name;
     });
 
@@ -1095,7 +1103,7 @@ void osmv::Show_model_screen_impl::draw_muscles_tab() {
     ImGui::Separator();
 
     // draw muscle list
-    for (osim::Muscle_stat const& musc : scratch.muscles) {
+    for (osmv::Muscle_stat const& musc : scratch.muscles) {
         if (musc.name->find(t_muscs.filter) != musc.name->npos) {
             ImGui::Text("%s (len = %.3f)", musc.name->c_str(), musc.length);
         }
@@ -1110,16 +1118,16 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     // lhs: muscle selection
     {
         scratch.muscles.clear();
-        osim::get_muscle_stats(model, latest_state, scratch.muscles);
+        osmv::get_muscle_stats(model, latest_state, scratch.muscles);
 
         // usability: sort by name
-        std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osim::Muscle_stat const& m1, osim::Muscle_stat const& m2) {
+        std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osmv::Muscle_stat const& m1, osmv::Muscle_stat const& m2) {
             return *m1.name < *m2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotMuscleSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osim::Muscle_stat const& m : scratch.muscles) {
+        for (osmv::Muscle_stat const& m : scratch.muscles) {
             if (ImGui::Selectable(m.name->c_str(), m.name == t_mas.selected_musc)) {
                 t_mas.selected_musc = m.name;
             }
@@ -1130,16 +1138,16 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     // rhs: coord selection
     {
         scratch.coords.clear();
-        osim::get_coordinates(model, latest_state, scratch.coords);
+        osmv::get_coordinates(model, latest_state, scratch.coords);
 
         // usability: sort by name
-        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osim::Coordinate const& c1, osim::Coordinate const& c2) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osmv::Coordinate const& c1, osmv::Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotCoordSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osim::Coordinate const& c : scratch.coords) {
+        for (osmv::Coordinate const& c : scratch.coords) {
             if (ImGui::Selectable(c.name->c_str(), c.name == t_mas.selected_coord)) {
                 t_mas.selected_coord = c.name;
             }
@@ -1153,26 +1161,26 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         if (ImGui::Button("+ add plot")) {
             auto it = std::find_if(scratch.muscles.begin(),
                                    scratch.muscles.end(),
-                                   [this](osim::Muscle_stat const& ms) {
+                                   [this](osmv::Muscle_stat const& ms) {
                     return ms.name == t_mas.selected_musc;
             });
             assert(it != scratch.muscles.end());
 
             auto it2 = std::find_if(scratch.coords.begin(),
                                     scratch.coords.end(),
-                                    [this](osim::Coordinate const& c) {
+                                    [this](osmv::Coordinate const& c) {
                     return c.name == t_mas.selected_coord;
             });
             assert(it2 != scratch.coords.end());
 
-            auto p = std::make_unique<MA_plot>();
+            auto p = std::make_unique<Moment_arm_plot>();
             p->muscle_name = *t_mas.selected_musc;
             p->coord_name = *t_mas.selected_coord;
             p->x_begin = it2->min;
             p->x_end = it2->max;
 
             // populate y values
-            osim::compute_moment_arms(
+            osmv::compute_moment_arms(
                 *it->ptr,
                 latest_state,
                 *it2->ptr,
@@ -1211,7 +1219,7 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 
     ImGui::Columns(2);
     for (size_t i = 0; i < t_mas.plots.size(); ++i) {
-        MA_plot const& p = *t_mas.plots[i];
+        Moment_arm_plot const& p = *t_mas.plots[i];
         ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
         ImGui::PlotLines(
             "",
@@ -1238,14 +1246,14 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 
 void osmv::Show_model_screen_impl::draw_outputs_tab() {
     t_outputs.available.clear();
-    osim::get_available_outputs(model, t_outputs.available);
+    osmv::get_available_outputs(model, t_outputs.available);
 
-    // apply filters
+    // apply user filters
     {
         auto it = std::remove_if(
                     t_outputs.available.begin(),
                     t_outputs.available.end(),
-                    [&](osim::Available_output const& ao) {
+                    [&](osmv::Available_output const& ao) {
                 snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
                 return std::strstr(scratch.text, t_outputs.filter) == nullptr;
         });
@@ -1253,9 +1261,11 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     }
 
 
+    // input: filter selectable outputs
     ImGui::InputText("filter", t_outputs.filter, sizeof(t_outputs.filter));
     ImGui::Text("%zu available outputs", t_outputs.available.size());
 
+    // list of selectable outputs
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
     if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
         for (auto const& ao : t_outputs.available) {
@@ -1267,16 +1277,17 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     }
     ImGui::EndChild();
 
+    // buttons: "watch" and "plot"
     if (t_outputs.selected) {
-        osim::Available_output const& selected = t_outputs.selected.value();
+        osmv::Available_output const& selected = t_outputs.selected.value();
 
-        // can watch any output because there's a string method in OpenSim
+        // all outputs can be "watch"ed
         if (ImGui::Button("watch selected")) {
             t_outputs.watches.push_back(selected);
             t_outputs.selected = std::nullopt;
         }
 
-        // can only plot single-value double outputs
+        // only some outputs can be plotted
         if (selected.is_single_double_val) {
             ImGui::SameLine();
             if (ImGui::Button("plot selected")) {
@@ -1291,8 +1302,8 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     if (not t_outputs.watches.empty()) {
         ImGui::Text("watches:");
         ImGui::Separator();
-        for (osim::Available_output const& ao : t_outputs.watches) {
-            std::string v = osim::get_output_val(*ao.handle, latest_state);
+        for (osmv::Available_output const& ao : t_outputs.watches) {
+            std::string v = osmv::get_output_val_any(*ao.handle, latest_state);
             ImGui::Text("    %s/%s: %s", ao.owner_name->c_str(), ao.output_name->c_str(), v.c_str());
         }
     }
@@ -1309,8 +1320,8 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
             ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
             ImGui::PlotLines(
                 "",
-                hos.y_vals.data(),
-                static_cast<int>(hos.y_vals.size()),
+                hos.data.data(),
+                static_cast<int>(hos.n),
                 0,
                 nullptr,
                 std::numeric_limits<float>::min(),
@@ -1318,10 +1329,10 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
                 ImVec2(0, 100.0f));
             ImGui::NextColumn();
             ImGui::Text("%s/%s", hos.ao.owner_name->c_str(), hos.ao.output_name->c_str());
-            ImGui::Text("n = %zu", hos.y_vals.size());
-            ImGui::Text("t = %f", static_cast<double>(hos.last_x));
+            ImGui::Text("n = %zu", hos.n);
+            ImGui::Text("t = %f", static_cast<double>(hos.latest_x));
             ImGui::Text("min: %.3f", static_cast<double>(hos.min));
-            ImGui::Text("max: %.2f", static_cast<double>(hos.max));
+            ImGui::Text("max: %.3f", static_cast<double>(hos.max));
             ImGui::NextColumn();
         }
         ImGui::Columns(1);

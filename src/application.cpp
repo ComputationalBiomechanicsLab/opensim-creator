@@ -101,7 +101,6 @@ osmv::Application::Application() :
 // top-level event pipeline for showing a "screen" to the user
 void osmv::Application::show(std::unique_ptr<osmv::Screen> first_screen) {
     current_screen = std::move(first_screen);
-    current_screen->init(*this);
 
     auto last_render_timepoint = std::chrono::high_resolution_clock::now();
     auto min_delay_between_frames = 14ms;
@@ -120,15 +119,14 @@ void osmv::Application::show(std::unique_ptr<osmv::Screen> first_screen) {
             bool just_changed_screen = false;
             std::unique_ptr<Screen> new_screen;
             std::visit(overloaded {
-                [&](Resp_Please_quit const&) {
+                [&](Resp_quit const&) {
                     should_quit = true;
                 },
-                [&](Resp_Transition_to& tgt) {
+                [&](Resp_transition& tgt) {
                     current_screen = std::move(tgt.new_screen);
-                    current_screen->init(*this);
                     just_changed_screen = true;
                 },
-                [&](Resp_Ok const&) {
+                [&](Resp_ok const&) {
                 }}, resp);
 
             if (should_quit) {
@@ -147,15 +145,14 @@ void osmv::Application::show(std::unique_ptr<osmv::Screen> first_screen) {
             bool just_changed_screen = false;
             std::unique_ptr<Screen> new_screen;
             std::visit(overloaded {
-                [&](Resp_Please_quit const&) {
+                [&](Resp_quit const&) {
                     should_quit = true;
                 },
-                [&](Resp_Transition_to& tgt) {
+                [&](Resp_transition& tgt) {
                     current_screen = std::move(tgt.new_screen);
-                    current_screen->init(*this);
                     just_changed_screen = true;
                 },
-                [&](Resp_Ok const&) {
+                [&](Resp_ok const&) {
                 }}, resp);
 
             if (should_quit) {

@@ -6,15 +6,14 @@
 #include <string>
 #include <memory>
 
-// show_model_screen: main UI screen for showing an OpenSim model
-
+// show model screen: main UI screen that shows a loaded OpenSim model /w UX, manipulators, etc.
 namespace osmv {
     struct Show_model_screen_impl;
 
     class Show_model_screen final : public Screen {
         std::unique_ptr<Show_model_screen_impl> impl;
     public:
-        Show_model_screen(std::string path, osim::OSMV_Model model);
+        Show_model_screen(std::string path, osmv::Model model);
         Show_model_screen(Show_model_screen const&) = delete;
         Show_model_screen(Show_model_screen&&) = delete;
         Show_model_screen& operator=(Show_model_screen const&) = delete;

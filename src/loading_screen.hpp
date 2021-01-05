@@ -8,9 +8,10 @@
 #include <vector>
 
 namespace osmv {
+    // loading screen: screen shown when UI has just booted and is loading (e.g.) an osim file
     class Loading_screen final : public Screen {
         std::string path;
-        std::future<osim::OSMV_Model> result;
+        std::future<osmv::Model> result;
     public:
         Loading_screen(std::string _path);
 

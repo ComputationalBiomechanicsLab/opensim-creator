@@ -318,16 +318,23 @@ namespace gl {
     }
 
     template<typename T>
-    class Sized_array_buffer final {
+    class Array_bufferT final {
         size_t _size = 0;
         gl::Array_buffer _vbo = gl::GenArrayBuffer();
 
     public:
-        Sized_array_buffer(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) :
+        using value_type = T;
+
+        Array_bufferT(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) :
             _size{static_cast<size_t>(std::distance(begin, end))} {
 
             gl::BindBuffer(_vbo);
             gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
+        }
+
+        template<typename Container>
+        Array_bufferT(Container const& c) :
+            Array_bufferT{c.data(), c.data() + c.size()} {
         }
 
         operator gl::Array_buffer& () noexcept {
@@ -344,35 +351,6 @@ namespace gl {
 
         GLsizei sizei() const noexcept {
             return static_cast<GLsizei>(_size);
-        }
-    };
-
-    template<typename T, size_t Capacity>
-    class Static_array_buffer final {
-        gl::Array_buffer _vbo = gl::GenArrayBuffer();
-
-    public:
-        Static_array_buffer(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) {
-            assert(std::distance(begin, end) == Capacity);
-
-            gl::BindBuffer(_vbo);
-            gl::BufferData(_vbo.type, static_cast<long>(Capacity * sizeof(T)), begin, usage);
-        }
-
-        operator gl::Array_buffer& () noexcept {
-            return _vbo;
-        }
-
-        operator gl::Array_buffer const& () const noexcept {
-            return _vbo;
-        }
-
-        size_t size() const noexcept {
-            return Capacity;
-        }
-
-        GLsizei sizei() const noexcept {
-            return static_cast<GLsizei>(Capacity);
         }
     };
 }

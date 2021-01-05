@@ -61,8 +61,8 @@ add_executable(osmv
     src/loading_screen.cpp
     src/opensim_wrapper.hpp
     src/opensim_wrapper.cpp
-    src/meshes.hpp
-    src/meshes.cpp
+    src/3d_common.hpp
+    src/3d_common.cpp
     src/fd_simulation.hpp
 
     src/osmv.cpp
