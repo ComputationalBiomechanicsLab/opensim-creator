@@ -43,4 +43,11 @@ cmake --build .
 
 ## Windows
 
-TODO
+You can either use the CMake GUI to configure a visual studio
+project or run this in a terminal:
+
+```
+
+cmake -S . -B build/
+cmake --build build/ --config Release --target package
+```
