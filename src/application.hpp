@@ -22,7 +22,7 @@ namespace osmv {
         igx::Context imgui_ctx;
         igx::SDL2_Context imgui_sdl2_ctx;
         igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
-        bool software_throttle = true;        
+        bool software_throttle = true;
         std::unique_ptr<Screen> current_screen;
 
     public:

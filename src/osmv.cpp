@@ -1,6 +1,7 @@
 ﻿#include "application.hpp"
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
+#include "os.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -58,9 +59,11 @@ int main(int argc, char** argv) {
         --argc;
     }
 
+    // no args: boot an example file
     if (argc <= 0) {
-        std::cerr << usage << '\n' << help << '\n';
-        return EXIT_FAILURE;
+        auto application = osmv::Application{};
+        application.show(std::make_unique<osmv::Loading_screen>(osmv::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim")));
+        return EXIT_SUCCESS;
     }
 
     // 'fd' command:

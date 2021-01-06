@@ -359,8 +359,8 @@ osmv::State::State(State&&) noexcept = default;
 osmv::State& osmv::State::operator=(State&&) noexcept = default;
 osmv::State::~State() noexcept = default;
 
-osmv::Model osmv::load_osim(char const* path) {
-    return Model{std::make_unique<OpenSim::Model>(path)};
+osmv::Model osmv::load_osim(std::filesystem::path const& path) {
+    return Model{std::make_unique<OpenSim::Model>(path.string())};
 }
 
 void osmv::finalize_from_properties(OpenSim::Model& m) {

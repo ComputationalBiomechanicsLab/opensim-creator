@@ -8,6 +8,7 @@
 #include "opensim_wrapper.hpp"
 #include "loading_screen.hpp"
 #include "fd_simulation.hpp"
+#include "os.hpp"
 
 // OpenGL
 #include "gl.hpp"
@@ -28,11 +29,13 @@
 #include <stdexcept>
 
 namespace osmv {
+    static const std::filesystem::path shaders_dir = resource_path("shaders");
+
     // renders uniformly colored geometry with Gouraud shading
     struct Uniform_color_gouraud_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "main.vert"),
-            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "main.frag"));
+            gl::CompileVertexShaderFile(shaders_dir / "main.vert"),
+            gl::CompileFragmentShaderFile(shaders_dir / "main.frag"));
 
         static constexpr gl::Attribute location = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute in_normal = gl::AttributeAtLocation(1);
@@ -65,8 +68,8 @@ namespace osmv {
     // renders textured geometry with no shading
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "floor.vert"),
-            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "floor.frag"));
+            gl::CompileVertexShaderFile(shaders_dir / "floor.vert"),
+            gl::CompileFragmentShaderFile(shaders_dir / "floor.frag"));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -95,9 +98,9 @@ namespace osmv {
     // renders normals using a geometry shader
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(OSMV_SHADERS_DIR "normals.vert"),
-            gl::CompileFragmentShaderFile(OSMV_SHADERS_DIR "normals.frag"),
-            gl::CompileGeometryShaderFile(OSMV_SHADERS_DIR "normals.geom"));
+            gl::CompileVertexShaderFile(shaders_dir / "normals.vert"),
+            gl::CompileFragmentShaderFile(shaders_dir / "normals.frag"),
+            gl::CompileGeometryShaderFile(shaders_dir / "normals.geom"));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
@@ -257,7 +260,7 @@ namespace osmv {
         } scratch;
 
         // model
-        std::string path;
+        std::filesystem::path path;
         osmv::Model model;
         osmv::State latest_state;
 
@@ -333,7 +336,7 @@ namespace osmv {
         } t_outputs;
 
 
-        Show_model_screen_impl(std::string _path, osmv::Model model);
+        Show_model_screen_impl(std::filesystem::path, osmv::Model);
         Screen_response handle_event(Application&, SDL_Event&);
         Screen_response tick(Application&);
 
@@ -367,7 +370,7 @@ namespace osmv {
 
 // screen PIMPL forwarding
 
-osmv::Show_model_screen::Show_model_screen(std::string path, osmv::Model model) :
+osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Model model) :
     impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 osmv::Show_model_screen::~Show_model_screen() noexcept = default;
@@ -386,7 +389,7 @@ void osmv::Show_model_screen::draw(osmv::Application& ui) {
 // screen implementation
 
 osmv::Show_model_screen_impl::Show_model_screen_impl(
-        std::string _path,
+        std::filesystem::path _path,
         osmv::Model _model) :
 
     path{std::move(_path)},
@@ -750,7 +753,7 @@ void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
 void osmv::Show_model_screen_impl::draw_menu_bar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginTabBar("MainTabBar")) {
-            if (ImGui::BeginTabItem(path.c_str())) {
+            if (ImGui::BeginTabItem(path.string().c_str())) {
                 ImGui::EndTabItem();
             }
 

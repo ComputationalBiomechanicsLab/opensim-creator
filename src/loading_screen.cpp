@@ -11,30 +11,34 @@
 #include <future>
 #include <vector>
 #include <optional>
+#include <iostream>
+
+#include "OpenSim.h"
 
 
 using std::chrono_literals::operator""ms;
 
 namespace osmv {
     struct Loading_screen_impl final {
-        std::string path;
+        std::filesystem::path path;
         std::future<std::optional<osmv::Model>> result;
 
-        Loading_screen_impl(const char* _path) : 
+        Loading_screen_impl(std::filesystem::path const& _path) :
             path{ _path },
             result{ std::async(std::launch::async, [&]() {
-                return std::optional<osmv::Model>{osmv::load_osim(path.c_str())};
-            }) }
+                // TODO: OpenSim might throw here, so the loading screen should
+                //       also have an error state.
+                return std::optional<osmv::Model>{osmv::load_osim(path)};
+            })}
         {
         }
 
         osmv::Screen_response tick() {
             if (result.wait_for(0ms) == std::future_status::ready) {
-                return Resp_transition{ std::make_unique<Show_model_screen>(path, *result.get()) };
+                return Resp_transition{ std::make_unique<Show_model_screen>(path, result.get().value()) };
             }
-            else {
-                return Resp_ok{};
-            }
+
+            return Resp_ok{};
         }
 
         void draw() {
@@ -49,7 +53,7 @@ namespace osmv {
     };
 }
 
-osmv::Loading_screen::Loading_screen(const char* _path) :
+osmv::Loading_screen::Loading_screen(std::filesystem::path const& _path) :
     impl{ new Loading_screen_impl{_path} }
 {
 }

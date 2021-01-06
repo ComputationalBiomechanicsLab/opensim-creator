@@ -2,6 +2,10 @@
 
 #include "screen.hpp"
 
+namespace std::filesystem {
+    class path;
+}
+
 namespace osmv {
     struct Loading_screen_impl;
 
@@ -9,7 +13,7 @@ namespace osmv {
     class Loading_screen final : public Screen {
         Loading_screen_impl* impl;
     public:
-        Loading_screen(char const* _path);
+        Loading_screen(std::filesystem::path const&);
         Loading_screen(Loading_screen const&) = delete;
         Loading_screen& operator=(Loading_screen const&) = delete;
         Loading_screen& operator=(Loading_screen&&) = delete;

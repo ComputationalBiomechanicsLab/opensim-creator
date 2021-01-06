@@ -1,8 +1,8 @@
 #pragma once
 
 // forward-declare these so that this header isn't dependent on SDL/imgui
-class SDL_Window;
-class ImGuiContext;
+struct SDL_Window;
+struct ImGuiContext;
 
 namespace igx {
     class Context final {

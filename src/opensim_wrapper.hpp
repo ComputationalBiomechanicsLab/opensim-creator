@@ -10,6 +10,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <filesystem>
 
 namespace OpenSim {
     class Model;
@@ -146,7 +147,7 @@ namespace osmv {
     //   OpenSim API (e.g. OSMV_Model implicitly converts into OpenSim::Model&)
 
 
-    Model load_osim(char const* path);
+    Model load_osim(std::filesystem::path const&);
     void finalize_from_properties(OpenSim::Model&);
     SimTK::State& init_system(OpenSim::Model&);
     SimTK::State& upd_working_state(OpenSim::Model&);

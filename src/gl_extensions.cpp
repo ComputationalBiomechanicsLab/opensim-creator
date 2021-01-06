@@ -80,7 +80,7 @@ gl::Program gl::CreateProgramFrom(Vertex_shader const& vs,
     return p;
 }
 
-static std::string slurp_file(const char* path) {
+static std::string slurp_file(std::filesystem::path const& path) {
     std::ifstream f;
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     f.open(path, std::ios::binary | std::ios::in);
@@ -123,7 +123,7 @@ void gl::assert_no_errors(char const* label) {
     throw std::runtime_error{msg.str()};
 }
 
-gl::Vertex_shader gl::CompileVertexShaderFile(char const* path) {
+gl::Vertex_shader gl::CompileVertexShaderFile(std::filesystem::path const& path) {
     try {
         return CompileVertexShader(slurp_file(path).c_str());
     } catch (std::exception const& e) {
@@ -135,7 +135,7 @@ gl::Vertex_shader gl::CompileVertexShaderFile(char const* path) {
     }
 }
 
-gl::Fragment_shader gl::CompileFragmentShaderFile(char const* path) {
+gl::Fragment_shader gl::CompileFragmentShaderFile(std::filesystem::path const& path) {
     try {
         return CompileFragmentShader(slurp_file(path).c_str());
     } catch (std::exception const& e) {
@@ -147,7 +147,7 @@ gl::Fragment_shader gl::CompileFragmentShaderFile(char const* path) {
     }
 }
 
-gl::Geometry_shader gl::CompileGeometryShaderFile(char const* path) {
+gl::Geometry_shader gl::CompileGeometryShaderFile(std::filesystem::path const& path) {
     try {
         return CompileGeometryShader(slurp_file(path).c_str());
     } catch (std::exception const& e) {

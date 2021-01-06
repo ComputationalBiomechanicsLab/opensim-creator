@@ -2,110 +2,8 @@
 
 #include "opensim_wrapper.hpp"
 
-#include <memory>
-#include <atomic>
-#include <thread>
+#include "shims.hpp"
 
-
-// shim: std::stop_token (C++20)
-class Stop_token final {
-    std::shared_ptr<std::atomic<bool>> shared_state;
-public:
-    Stop_token(std::shared_ptr<std::atomic<bool>> st)
-        : shared_state{std::move(st)} {
-    }
-    Stop_token(Stop_token const&) = delete;
-    Stop_token(Stop_token&& tmp) :
-        shared_state{tmp.shared_state}  {
-    }
-    Stop_token& operator=(Stop_token const&) = delete;
-    Stop_token& operator=(Stop_token&&) = delete;
-    ~Stop_token() noexcept = default;
-
-    bool stop_requested() const noexcept {
-        return *shared_state;
-    }
-};
-
-// shim: std::stop_source (C++20)
-class Stop_source final {
-    std::shared_ptr<std::atomic<bool>> shared_state;
-public:
-    Stop_source() :
-        shared_state{new std::atomic<bool>{false}} {
-    }
-    Stop_source(Stop_source const&) = delete;
-    Stop_source(Stop_source&& tmp) :
-        shared_state{std::move(tmp.shared_state)} {
-    }
-    Stop_source& operator=(Stop_source const&) = delete;
-    Stop_source& operator=(Stop_source&& tmp) {
-        shared_state = std::move(tmp.shared_state);
-        return *this;
-    }
-    ~Stop_source() = default;
-
-    bool request_stop() noexcept {
-        // as-per the C++20 spec, but always true for this impl.
-        bool has_stop_state = shared_state != nullptr;
-        bool already_stopped = shared_state->exchange(true);
-
-        return has_stop_state and (not already_stopped);
-    }
-
-    Stop_token get_token() const noexcept {
-        return Stop_token{shared_state};
-    }
-};
-
-// sim: std::jthread (C++20)
-class Jthread final {
-    Stop_source s;
-    std::thread t;
-public:
-    // Creates new thread object which does not represent a thread
-    Jthread() :
-        s{},
-        t{} {
-    }
-
-    // Creates new thread object and associates it with a thread of execution.
-    // The new thread of execution immediately starts executing
-    template<class Function, class... Args>
-    Jthread(Function&& f, Args&&... args) :
-        s{},
-        t{f, s.get_token(), std::forward<Args>(args)...} {
-    }
-
-    // threads are non-copyable
-    Jthread(Jthread const&) = delete;
-    Jthread& operator=(Jthread const&) = delete;
-
-    // threads are moveable: the moved-from value is a non-joinable thread that
-    // does not represent a thread
-    Jthread(Jthread&& tmp) = default;
-    Jthread& operator=(Jthread&&) = default;
-
-    // jthreads (or "joining threads") cancel + join on destruction
-    ~Jthread() noexcept {
-        if (joinable()) {
-            s.request_stop();
-            t.join();
-        }
-    }
-
-    bool joinable() const noexcept {
-        return t.joinable();
-    }
-
-    bool request_stop() noexcept {
-        return s.request_stop();
-    }
-
-    void join() {
-        return t.join();
-    }
-};
 
 // status of an OpenSim simulation
 enum class Sim_status {
@@ -189,7 +87,7 @@ struct Threadsafe_fdsim_state {
 // runs a forward dynamic simuation, updating `shared` (which is designed to
 // be thread-safe) as it runs
 int run_fd_simulation(
-        Stop_token stop_tok,
+        shims::stop_token stop_tok,
         osmv::Model model,
         osmv::State initial_state,
         double final_time,
@@ -264,7 +162,7 @@ struct Background_fd_simulation final {
     double _sim_final_time = -1337.0;
 
     Threadsafe_fdsim_state shared;
-    Jthread worker;
+    shims::jthread worker;
     int states_popped = 0;
 
     Background_fd_simulation(
@@ -279,7 +177,7 @@ struct Background_fd_simulation final {
         osmv::finalize_properties_from_state(copy, initial_state);
         osmv::init_system(copy);
 
-        worker = Jthread{
+        worker = shims::jthread{
             run_fd_simulation,
             std::move(copy),
             osmv::State{initial_state},

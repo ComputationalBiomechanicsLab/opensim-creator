@@ -7,7 +7,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iterator>  // std::distance
+#include <iterator>
+#include <filesystem>
 
 namespace gl {
     [[nodiscard]] constexpr Attribute AttributeAtLocation(GLuint loc) noexcept {
@@ -276,11 +277,11 @@ namespace gl {
     // COMPILE + LINK PROGRAMS:
 
     Vertex_shader CompileVertexShader(char const* src);
-    Vertex_shader CompileVertexShaderFile(char const* path);
+    Vertex_shader CompileVertexShaderFile(std::filesystem::path const&);
     Fragment_shader CompileFragmentShader(char const* src);
-    Fragment_shader CompileFragmentShaderFile(char const* path);
+    Fragment_shader CompileFragmentShaderFile(std::filesystem::path const&);
     Geometry_shader CompileGeometryShader(char const* src);
-    Geometry_shader CompileGeometryShaderFile(char const* path);
+    Geometry_shader CompileGeometryShaderFile(std::filesystem::path const&);
 
     Program CreateProgramFrom(Vertex_shader const& vs,
                               Fragment_shader const& fs);

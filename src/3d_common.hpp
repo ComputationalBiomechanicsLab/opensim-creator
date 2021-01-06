@@ -7,19 +7,18 @@
 
 #include <vector>
 #include <array>
-#include <cmath>
 
-// meshes: basic methods for generating triangle meshes of primitives
+// 3d common: common primitives/structs used for mesh generation/rendering
 
 namespace osmv {
-    static constexpr float pi_f = static_cast<float>(M_PI);
+    static constexpr float pi_f = static_cast<float>(3.14159265358979323846);
 
     struct Shaded_textured_vert final {
         glm::vec3 pos;
         glm::vec3 normal;
         glm::vec2 texcoord;
     };
-    static_assert(sizeof(Shaded_textured_vert) == 8*sizeof(float));
+    static_assert(sizeof(Shaded_textured_vert) == 8*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
     // standard textured quad
     // - dimensions [-1, +1] in xy and [0, 0] in z
@@ -41,8 +40,8 @@ namespace osmv {
         glm::vec3 pos;
         glm::vec3 normal;
     };
-    static_assert(sizeof(glm::vec3) == 3*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU");
-    static_assert(sizeof(Untextured_vert) == 6*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU");
+    static_assert(sizeof(glm::vec3) == 3*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
+    static_assert(sizeof(Untextured_vert) == 6*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
     // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
     void unit_sphere_triangles(std::vector<Untextured_vert>& out);

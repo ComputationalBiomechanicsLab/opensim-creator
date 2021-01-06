@@ -103,7 +103,7 @@ void osmv::Application::show(std::unique_ptr<osmv::Screen> first_screen) {
     current_screen = std::move(first_screen);
 
     auto last_render_timepoint = std::chrono::high_resolution_clock::now();
-    auto min_delay_between_frames = 14ms;
+    auto min_delay_between_frames = 10ms;
 
     while (true) {
         // screen: handle pumping events into screen's `handle_event`

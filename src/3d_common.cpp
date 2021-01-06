@@ -1,9 +1,6 @@
 #include "3d_common.hpp"
 
-#include <cmath>
 #include <stdexcept>
-
-constexpr float pi_f = static_cast<float>(M_PI);
 
 static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
     //https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352

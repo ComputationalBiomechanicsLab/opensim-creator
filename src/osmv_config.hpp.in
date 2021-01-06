@@ -2,8 +2,6 @@
 #define OSMV_VERSION_MINOR @osmv_VERSION_MINOR@
 #define OSMV_VERSION_PATCH @osmv_VERSION_PATCH@
 #define OSMV_VERSION_STRING "@osmv_VERSION_MAJOR@.@osmv_VERSION_MINOR@.@osmv_VERSION_PATCH@"
-#define OSMV_RESOURCES_DIR R"(@RESOURCES_DIR@)"
-#define OSMV_SHADERS_DIR R"(@SHADERS_DIR@)"
 #define OSMV_GLSL_VERSION "#version 330 core"
 
 // macros for quality-of-life checks
