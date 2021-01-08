@@ -9,6 +9,7 @@
 #include "loading_screen.hpp"
 #include "fd_simulation.hpp"
 #include "os.hpp"
+#include "globals.hpp"
 
 // OpenGL
 #include "gl.hpp"
@@ -527,14 +528,14 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
 
             // how much panning is done depends on how far the camera is from the
             // origin (easy, with polar coordinates) *and* the FoV of the camera.
-            float x_amt = dx * aspect_ratio * (2.0f * tan(fov / 2.0f) * radius);
-            float y_amt = dy * (1.0f / aspect_ratio) * (2.0f * tan(fov / 2.0f) * radius);
+            float x_amt = dx * aspect_ratio * (2.0f * tanf(fov / 2.0f) * radius);
+            float y_amt = dy * (1.0f / aspect_ratio) * (2.0f * tanf(fov / 2.0f) * radius);
 
             // this assumes the scene is not rotated, so we need to rotate these
             // axes to match the scene's rotation
             glm::vec4 default_panning_axis = { x_amt, y_amt, 0.0f, 1.0f };
             auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
-            auto theta_vec = glm::normalize(glm::vec3{ sin(theta), 0.0f, cos(theta) });
+            auto theta_vec = glm::normalize(glm::vec3{ sinf(theta), 0.0f, cosf(theta) });
             auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
             auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), phi, phi_axis);
 
@@ -649,7 +650,7 @@ void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
 
     glm::mat4 view_mtx = [&]() {
         auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
-        auto theta_vec = glm::normalize(glm::vec3{ sin(theta), 0.0f, cos(theta) });
+        auto theta_vec = glm::normalize(glm::vec3{ sinf(theta), 0.0f, cosf(theta) });
         auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
         auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
         auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
@@ -666,9 +667,9 @@ void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
     glm::vec3 view_pos = [&]() {
         // polar/spherical to cartesian
         return glm::vec3{
-            radius * sin(theta) * cos(phi),
-            radius * sin(phi),
-            radius * cos(theta) * cos(phi)
+            radius * sinf(theta) * cosf(phi),
+            radius * sinf(phi),
+            radius * cosf(theta) * cosf(phi)
         };
     }();
 
@@ -1109,7 +1110,7 @@ void osmv::Show_model_screen_impl::draw_muscles_tab() {
     // draw muscle list
     for (osmv::Muscle_stat const& musc : scratch.muscles) {
         if (musc.name->find(t_muscs.filter) != musc.name->npos) {
-            ImGui::Text("%s (len = %.3f)", musc.name->c_str(), musc.length);
+            ImGui::Text("%s (len = %.3f)", musc.name->c_str(), static_cast<double>(musc.length));
         }
     }
 }
@@ -1240,7 +1241,7 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         ImGui::Text("min   : %f", static_cast<double>(p.min));
         ImGui::Text("max   : %f", static_cast<double>(p.max));
         if (ImGui::Button("delete")) {
-            auto it = t_mas.plots.begin() + i;
+            auto it = t_mas.plots.begin() + static_cast<int>(i);
             t_mas.plots.erase(it, it + 1);
         }
         ImGui::NextColumn();

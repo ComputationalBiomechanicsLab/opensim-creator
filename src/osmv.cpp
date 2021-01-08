@@ -2,6 +2,7 @@
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "os.hpp"
+#include "globals.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -30,7 +31,7 @@ static bool safe_parse_double(char const* s, double* out) {
     char* end;
     double v = strtod(s, &end);
 
-    if (*end != '\0' or v == HUGE_VAL or v == -HUGE_VAL) {
+    if (*end != '\0' or v >= HUGE_VAL or v <= -HUGE_VAL) {
         return false;  // not a number
     }
 
@@ -62,7 +63,8 @@ int main(int argc, char** argv) {
     // no args: boot an example file
     if (argc <= 0) {
         auto application = osmv::Application{};
-        application.show(std::make_unique<osmv::Loading_screen>(osmv::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim")));
+        std::filesystem::path demo_model = osmv::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim");
+        application.show(std::make_unique<osmv::Loading_screen>(demo_model));
         return EXIT_SUCCESS;
     }
 

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=OSMV
+Comment=OSMV GUI booter
+TryExec=/opt/osmv/bin/osmv
+Exec=/opt/osmv/bin/osmv
+Icon=/opt/osmv/resources/icon.ico
+Type=Application
+Keywords=OpenSim
