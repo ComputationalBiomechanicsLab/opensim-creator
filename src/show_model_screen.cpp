@@ -625,12 +625,6 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
-    if (gamma_correction) {
-        glEnable(GL_FRAMEBUFFER_SRGB);
-    } else {
-        glDisable(GL_FRAMEBUFFER_SRGB);
-    }
-
     draw_3d_scene(ui);
     draw_imgui_ui(ui);
 }
@@ -697,27 +691,24 @@ void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
 
         // debugging: draw unit cylinder
         if (show_unit_cylinder) {
-            gl::BindVertexArray(cylinder.vao_for<Uniform_color_gouraud_shader>());
-
             gl::Uniform(color_shader.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
             gl::Uniform(color_shader.modelMat, glm::identity<glm::mat4>());
             gl::Uniform(color_shader.normalMat, glm::identity<glm::mat4>());
 
+            gl::BindVertexArray(cylinder.vao_for<Uniform_color_gouraud_shader>());
             gl::DrawArrays(GL_TRIANGLES, 0, cylinder.sizei());
-
             gl::BindVertexArray();
         }
 
         // debugging: draw light location
         if (show_light) {
-            gl::BindVertexArray(sphere.vao_for<Uniform_color_gouraud_shader>());
-
             gl::Uniform(color_shader.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
             auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
             gl::Uniform(color_shader.modelMat, xform);
             gl::Uniform(color_shader.normalMat, glm::transpose(glm::inverse(xform)));
-            gl::DrawArrays(GL_TRIANGLES, 0, sphere.sizei());
 
+            gl::BindVertexArray(sphere.vao_for<Uniform_color_gouraud_shader>());
+            gl::DrawArrays(GL_TRIANGLES, 0, sphere.sizei());
             gl::BindVertexArray();
         }
     }

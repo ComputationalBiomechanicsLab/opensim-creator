@@ -46,11 +46,15 @@ namespace sdl {
         }
     public:
         Window(Window const&) = delete;
-        Window(Window&&) = delete;
+        Window(Window&& tmp) : ptr{tmp.ptr} {
+            tmp.ptr = nullptr;
+        }
         Window& operator=(Window const&) = delete;
-        Window& operator=(Window&&) = delete;
+        Window& operator=(Window&& tmp) = delete;
         ~Window() noexcept {
-            SDL_DestroyWindow(ptr);
+            if (ptr) {
+                SDL_DestroyWindow(ptr);
+            }
         }
         operator SDL_Window* () const noexcept {
             return ptr;
@@ -101,11 +105,15 @@ namespace sdl {
         }
     public:
         GLContext(GLContext const&) = delete;
-        GLContext(GLContext&&) = delete;
+        GLContext(GLContext&& tmp) : ctx{tmp.ctx} {
+            tmp.ctx = nullptr;
+        }
         GLContext& operator=(GLContext const&) = delete;
         GLContext& operator=(GLContext&&) = delete;
         ~GLContext() noexcept {
-            SDL_GL_DeleteContext(ctx);
+            if (ctx) {
+                SDL_GL_DeleteContext(ctx);
+            }
         }
 
         operator SDL_GLContext () noexcept {
@@ -219,6 +227,14 @@ namespace sdl {
         int w;
         int h;
     };
+
+    inline bool operator==(Window_dimensions const& a, Window_dimensions const& b) noexcept {
+        return a.w == b.w and a.h == b.h;
+    }
+
+    inline bool operator!=(Window_dimensions const& a, Window_dimensions const& b) noexcept {
+        return not (a == b);
+    }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
     Window_dimensions GetWindowSize(SDL_Window* window);

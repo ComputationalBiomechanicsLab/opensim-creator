@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <cassert>
 
 // gl: thin C++ wrappers around OpenGL
 //
@@ -300,21 +301,29 @@ namespace gl {
     // RAII wrapper for glDeleteFrameBuffers
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteFramebuffers.xhtml
     struct Frame_buffer final {
+        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
+
         GLuint handle;
 
     private:
         friend Frame_buffer GenFrameBuffer();
         Frame_buffer(GLuint _handle) : handle{_handle} {
+            assert(handle != senteniel);
         }
     public:
         Frame_buffer(Frame_buffer const&) = delete;
         Frame_buffer(Frame_buffer&& tmp) : handle{tmp.handle} {
-            tmp.handle = static_cast<GLuint>(-1);
+            tmp.handle = senteniel;
         }
         Frame_buffer& operator=(Frame_buffer const&) = delete;
-        Frame_buffer& operator=(Frame_buffer&&) = delete;
+        Frame_buffer& operator=(Frame_buffer&& tmp) {
+            GLuint h = tmp.handle;
+            tmp.handle = handle;
+            handle = h;
+            return *this;
+        }
         ~Frame_buffer() noexcept {
-            if (handle != static_cast<GLuint>(-1)) {
+            if (handle != senteniel) {
                 glDeleteFramebuffers(1, &handle);
             }
         }
@@ -329,11 +338,13 @@ namespace gl {
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
     inline void BindFrameBuffer(GLenum target, GLuint handle) {
+        assert(handle != Frame_buffer::senteniel);
         glBindFramebuffer(target, handle);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
     inline void BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
+        assert(fb.handle != Frame_buffer::senteniel);
         glBindFramebuffer(target, fb.handle);
     }
 
@@ -367,19 +378,29 @@ namespace gl {
     // RAII wrapper for glDeleteRenderBuffers
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteRenderbuffers.xhtml
     struct Render_buffer final {
-        GLuint handle;
+        GLuint handle = 0;
 
     private:
         friend Render_buffer GenRenderBuffer();
+
         Render_buffer(GLuint _handle) : handle{_handle} {
         }
     public:
+        Render_buffer() {
+        }
         Render_buffer(Render_buffer const&) = delete;
         Render_buffer(Render_buffer&&) = delete;
         Render_buffer& operator=(Render_buffer const&) = delete;
-        Render_buffer& operator=(Render_buffer&&) = delete;
+        Render_buffer& operator=(Render_buffer&& tmp) {
+            GLuint h = tmp.handle;
+            tmp.handle = handle;
+            handle = h;
+            return *this;
+        }
         ~Render_buffer() noexcept {
-            glDeleteRenderbuffers(1, &handle);
+            if (handle != 0) {
+                glDeleteRenderbuffers(1, &handle);
+            }
         }
     };
 
