@@ -26,12 +26,16 @@ namespace osmv {
 
         void show(std::unique_ptr<osmv::Screen>);
 
+        // experimental feature: the UI's event loop waits for events, rather than polling
+        //
+        // this is currently very buggy, because parts of the UI depend on polling
+        bool waiting_event_loop() const noexcept;
+        void waiting_event_loop(bool);
+        void request_redraw();
+
         // true if FPS is being throttled (e.g. with software (sleeps) or vsync)
-        bool is_fps_throttling() const noexcept;
-
-        void enable_fps_throttling() noexcept;
-
-        void disable_fps_throttling() noexcept;
+        bool fps_throttling() const noexcept;
+        void fps_throttling(bool);
 
         // dimensions of the main application window in pixels
         sdl::Window_dimensions window_size() const noexcept;

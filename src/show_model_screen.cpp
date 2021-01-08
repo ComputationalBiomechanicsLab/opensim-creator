@@ -458,15 +458,13 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
-            case SDLK_ESCAPE:
-                return Resp_quit{};
             case SDLK_w:
                 wireframe_mode = not wireframe_mode;
                 break;
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    return Resp_transition{std::make_unique<osmv::Loading_screen>(path.c_str())};
+                    return Resp_transition{std::make_unique<osmv::Loading_screen>(ui, path.c_str())};
                 } else {
                     latest_state = osmv::init_system(model);
                     on_user_edited_state();
@@ -943,13 +941,15 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     ImGui::Checkbox("show_floor", &show_floor);
     ImGui::Checkbox("gamma_correction", &gamma_correction);
     {
-        bool throttling = ui.is_fps_throttling();
+        bool throttling = ui.fps_throttling();
         if (ImGui::Checkbox("fps_throttle", &throttling)) {
-            if (throttling) {
-                ui.enable_fps_throttling();
-            } else {
-                ui.disable_fps_throttling();
-            }
+            ui.fps_throttling(throttling);
+        }
+    }
+    {
+        bool waiting = ui.waiting_event_loop();
+        if (ImGui::Checkbox("waiting loop", &waiting)) {
+            ui.waiting_event_loop(waiting);
         }
     }
     ImGui::Checkbox("show_mesh_normals", &show_mesh_normals);

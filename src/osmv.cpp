@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     if (argc <= 0) {
         auto application = osmv::Application{};
         std::filesystem::path demo_model = osmv::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim");
-        application.show(std::make_unique<osmv::Loading_screen>(demo_model));
+        application.show(std::make_unique<osmv::Loading_screen>(application, demo_model));
         return EXIT_SUCCESS;
     }
 
@@ -103,6 +103,6 @@ int main(int argc, char** argv) {
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
     auto application = osmv::Application{};
-    application.show(std::make_unique<osmv::Loading_screen>(argv[0]));
+    application.show(std::make_unique<osmv::Loading_screen>(application, argv[0]));
     return EXIT_SUCCESS;
 }

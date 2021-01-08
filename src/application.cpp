@@ -104,7 +104,7 @@ public:
 static GLsizei get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
-    v = std::min(v, 16);
+    // v = std::min(v, 16); cap at 16x
     return v;
 }
 
@@ -118,6 +118,12 @@ namespace osmv {
 
         // SDL OpenGL context
         sdl::GLContext gl;
+
+        // *highest* refresh rate display on user's machine
+        int refresh_rate = 60;
+
+        // milliseconds between frames - for software throttling
+        std::chrono::milliseconds millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))};
 
         // the (potentially multisampled) framebuffer that screens draws into
         Screen_framebuffer sfbo;
@@ -134,6 +140,11 @@ namespace osmv {
         // whether the application should sleep the CPU when the FPS exceeds some
         // amount (ideally, close to the screen refresh rate)
         bool software_throttle = true;
+
+        // whether the application should wait for events, rather than polling
+        //
+        // experimental feature
+        bool has_waiting_event_loop = false;
 
         // the current screen being drawn by the application
         std::unique_ptr<Screen> current_screen;
@@ -207,6 +218,30 @@ namespace osmv {
                 return ctx;
             }()},
 
+            // initialize refresh rate as the highest refresh-rate display mode on the computer
+            refresh_rate{[]() {
+                int num_displays = SDL_GetNumVideoDisplays();
+
+                if (num_displays < 1) {
+                    // this should be impossible but, you know, coding.
+                    return 60;
+                }
+
+                int highest_refresh_rate = 30;
+                SDL_DisplayMode mode_struct{};
+                for (int display = 0; display < num_displays; ++display) {
+                    int num_modes = SDL_GetNumDisplayModes(display);
+                    for (int mode = 0; mode < num_modes; ++mode) {
+                        SDL_GetDisplayMode(display, mode, &mode_struct);
+                        highest_refresh_rate = std::max(highest_refresh_rate, mode_struct.refresh_rate);
+                    }
+                }
+                return highest_refresh_rate;
+            }()},
+
+            // millis between frames (for throttling) is based on the highest refresh rate
+            millis_between_frames{static_cast<int>(1000.0 * (1.0/refresh_rate))},
+
             // initialize the non-window FBO that the application writes into
             sfbo{sdl::GetWindowSize(window), get_max_multisamples()},
 
@@ -219,15 +254,20 @@ namespace osmv {
         void show(Application& app, std::unique_ptr<osmv::Screen> first_screen) {
             current_screen = std::move(first_screen);
 
-            auto last_render_timepoint = std::chrono::high_resolution_clock::now();
-            auto min_delay_between_frames = 10ms;
-
+            auto frame_start = std::chrono::high_resolution_clock::now();
             while (true) {
-                // screen: handle pumping events into screen's `handle_event`
-                for (SDL_Event e; SDL_PollEvent(&e);) {
+                if (software_throttle) {
+                    frame_start = std::chrono::high_resolution_clock::now();
+                }
 
-                    // edge-case: the event is a screen resize, which means that the
-                    // screen buffers must be resized
+                // pump events
+                bool poll = not has_waiting_event_loop;
+                for (SDL_Event e; poll ? SDL_PollEvent(&e) : SDL_WaitEvent(&e);) {
+                    // always poll after (potentially) waiting for the first event because events
+                    // can come in batches
+                    poll = true;
+
+                    // SCREEN RESIZED: update relevant FBOs
                     if (e.type == SDL_WINDOWEVENT and
                         e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 
@@ -237,12 +277,20 @@ namespace osmv {
                         }
                     }
 
-                    ImGui_ImplSDL2_ProcessEvent(&e);
+                    // PRESSED ESCAPE: quit application
+                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+                        return;
+                    }
 
+                    // QUIT: quit application
                     if (e.type == SDL_QUIT) {
                         return;
                     }
 
+                    // ImGui: feed event
+                    ImGui_ImplSDL2_ProcessEvent(&e);
+
+                    // screen: handle event
                     auto resp = current_screen->handle_event(app, e);
                     bool should_quit = false;
                     bool just_changed_screen = false;
@@ -293,11 +341,6 @@ namespace osmv {
                     }
                 }
 
-                // draw call:
-                //
-                // - application draws into a separate screen buffer
-                // - that buffer is blitted to the window's buffer
-
                 // bind the screen buffer
                 gl::BindFrameBuffer(GL_FRAMEBUFFER, sfbo);
 
@@ -309,29 +352,28 @@ namespace osmv {
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                // screen buffer now populated: blit it to the window
+                // blit screen buffer to window buffer
                 gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, sfbo);
                 gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, gl::window_fbo);
                 assert(sfbo.dimensions() == sdl::GetWindowSize(window));
                 gl::BlitFramebuffer(0, 0, sfbo.width(), sfbo.height(), 0, 0, sfbo.width(), sfbo.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-
-                // non-screen-specific stuff
+                // swap the blitted window onto the user's screen
+                SDL_GL_SwapWindow(window);
 
                 if (software_throttle) {
-                    // software-throttle the framerate: no need to draw at an insane
-                    // (e.g. 2000 FPS, on my machine) FPS, but do not use VSYNC because
-                    // it makes the entire application feel *very* laggy.
-                    auto now = std::chrono::high_resolution_clock::now();
-                    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_render_timepoint);
-                    if (dt < min_delay_between_frames) {
-                        SDL_Delay(static_cast<Uint32>((min_delay_between_frames - dt).count()));
+                    // APPROXIMATION: rendering **the next frame** will take roughly as long as it
+                    // took to render this frame. Assume worst case is 30 % longer (also, the thread
+                    // might wake up a little late).
+                    auto frame_end = std::chrono::high_resolution_clock::now();
+                    auto this_frame_dur = frame_end - frame_start;
+                    auto next_frame_estimation = 1.3 * this_frame_dur;
+                    if (next_frame_estimation < millis_between_frames) {
+                        auto dt = millis_between_frames - next_frame_estimation;
+                        auto dt_millis = std::chrono::duration_cast<std::chrono::milliseconds>(dt);
+                        SDL_Delay(static_cast<Uint32>(dt_millis.count()));
                     }
                 }
-
-                // swap the draw buffers
-                SDL_GL_SwapWindow(window);
-                last_render_timepoint = std::chrono::high_resolution_clock::now();
             }
         }
     };
@@ -345,16 +387,12 @@ void osmv::Application::show(std::unique_ptr<osmv::Screen> s) {
    impl->show(*this, std::move(s));
 }
 
-bool osmv::Application::is_fps_throttling() const noexcept {
+bool osmv::Application::fps_throttling() const noexcept {
     return impl->software_throttle;
 }
 
-void osmv::Application::enable_fps_throttling() noexcept {
-    impl->software_throttle = true;
-}
-
-void osmv::Application::disable_fps_throttling() noexcept {
-    impl->software_throttle = false;
+void osmv::Application::fps_throttling(bool throttle) {
+    impl->software_throttle = throttle;
 }
 
 // dimensions of the main application window in pixels
@@ -370,4 +408,18 @@ float osmv::Application::aspect_ratio() const noexcept {
 // move mouse relative to the window (origin in top-left)
 void osmv::Application::move_mouse_to(int x, int y) {
     SDL_WarpMouseInWindow(impl->window, x, y);
+}
+
+bool osmv::Application::waiting_event_loop() const noexcept {
+    return impl->has_waiting_event_loop;
+}
+
+void osmv::Application::waiting_event_loop(bool should_wait) {
+    impl->has_waiting_event_loop = should_wait;
+}
+
+void osmv::Application::request_redraw() {
+    SDL_Event e;
+    e.type = SDL_USEREVENT;
+    SDL_PushEvent(&e);  // causes the application's event loop to spring to life
 }
