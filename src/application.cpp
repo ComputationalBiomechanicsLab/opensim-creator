@@ -43,10 +43,21 @@ osmv::Application::Application() :
        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-       OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_DEPTH_SIZE, 24);
-       OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_STENCIL_SIZE, 8);
-       OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_MULTISAMPLEBUFFERS, 1);
-       OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_MULTISAMPLESAMPLES, 16);
+
+       // TODO: broken in Wayland? Might need to do feature detection
+       //
+       // Joris reports error: "SDL_CreateWindow failed: Couldn't find matching GLX visual", seems
+       // to be related to anti-aliasing
+       //
+       // see:
+       //     https://www.reddit.com/r/OpenMW/comments/i1xroo/failed_to_create_sdl_window_couldnt_find_matching/
+       //     https://github.com/gnif/LookingGlass/issues/281
+       //     https://github.com/NixOS/nixpkgs/pull/84162
+       //
+       //OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_DEPTH_SIZE, 24);
+       //OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_STENCIL_SIZE, 8);
+       //OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_MULTISAMPLEBUFFERS, 1);
+       //OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_MULTISAMPLESAMPLES, 16);
 
        return sdl::CreateWindoww(
            "osmv " OSMV_VERSION_STRING,
