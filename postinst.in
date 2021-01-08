@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+ln -s "/opt/osmv/bin/osmv" "/usr/local/bin/osmv"
+if [ -d "/usr/share/applications/" ]; then
+    ln -s "/opt/osmv/resources/osmv.desktop" "/usr/share/applications/osmv.desktop"
+fi

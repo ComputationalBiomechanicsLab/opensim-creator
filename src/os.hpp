@@ -2,10 +2,8 @@
 
 #include <filesystem>
 
-// os: where all the icky os-specific stuff is hidden
-//
-// - e.g. resource paths, configuration loading, current exe location
+// os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osmv {
-	std::filesystem::path resource_path(std::filesystem::path const&);
-
+    // returns the full path to the currently-executing application
+    std::filesystem::path current_exe_path();
 }

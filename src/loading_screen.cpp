@@ -12,6 +12,7 @@
 #include <vector>
 #include <optional>
 #include <iostream>
+#include <filesystem>
 
 #include "OpenSim.h"
 
@@ -57,10 +58,8 @@ osmv::Loading_screen::Loading_screen(std::filesystem::path const& _path) :
     impl{ new Loading_screen_impl{_path} }
 {
 }
+osmv::Loading_screen::~Loading_screen() noexcept = default;
 
-osmv::Loading_screen::~Loading_screen() noexcept {
-    delete impl;
-}
 
 osmv::Screen_response osmv::Loading_screen::tick(Application&) {
     return impl->tick();

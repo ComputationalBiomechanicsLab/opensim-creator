@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+rm -f "/usr/local/bin/osmv"
+rm -f "/usr/share/applications/osmv.desktop"
