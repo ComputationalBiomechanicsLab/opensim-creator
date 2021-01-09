@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
 
 project(osmv VERSION 0.0.1)
 
@@ -14,7 +14,7 @@ endif()
 # glew: build from source and statically link: works on all platforms
 #       without introducing potentially breaking dependencies into the
 #       runtime
-add_subdirectory(third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
 
 if (LINUX)
     # on Linux specifically, use a system-provided SDL2
@@ -43,9 +43,9 @@ else()
     # be able to build on OSX but the packages produced by static
     # linking might be unstable. Needs investigation.
 
-    add_subdirectory(third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
     set(SDL2_LIB SDL2-static)
-    set(SDL2_INCLUDE third_party/SDL2-2.0.12/include/)
+    set(SDL2_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL2-2.0.12/include/)
 endif()
 
 # opensim: linked as a separate dependency
@@ -65,7 +65,7 @@ find_package(OpenSim REQUIRED)
 #
 # - generate `osmv_config.hpp` using this particular build's parameters.
 #   Contains per-config info (e.g. version number, build type)
-configure_file("${PROJECT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
 
 if(LINUX)
     # linux installs are arranged like this:
@@ -151,12 +151,15 @@ target_compile_options(osmv PUBLIC
 target_compile_features(osmv PUBLIC
     cxx_std_17
 )
-target_link_options(osmv PUBLIC
-    # on Windows, open the application as a desktop application, rather than as
-    # a CLI application
-    $<$<CXX_COMPILER_ID:MSVC>:/SUBSYSTEM:windows>
-    $<$<CXX_COMPILER_ID:MSVC>:/ENTRY:mainCRTStartup>
-)
+if (WIN32)
+    # the IF above is because CMake <= 3.10 doesn't have target_link_options?
+    target_link_options(osmv PUBLIC
+        # on Windows, open the application as a desktop application, rather than as
+        # a CLI application
+        $<$<CXX_COMPILER_ID:MSVC>:/SUBSYSTEM:windows>
+        $<$<CXX_COMPILER_ID:MSVC>:/ENTRY:mainCRTStartup>
+    )
+endif()
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED YES

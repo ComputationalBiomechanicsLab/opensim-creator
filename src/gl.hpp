@@ -91,7 +91,6 @@ namespace gl {
         }
     }
 
-
     // RAII for glDeleteProgram
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteProgram.xhtml
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glCreateProgram.xhtml
