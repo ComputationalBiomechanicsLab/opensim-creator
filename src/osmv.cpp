@@ -2,7 +2,7 @@
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "os.hpp"
-#include "globals.hpp"
+#include "cfg.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     // no args: boot an example file
     if (argc <= 0) {
         auto application = osmv::Application{};
-        std::filesystem::path demo_model = osmv::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim");
+        std::filesystem::path demo_model = osmv::cfg::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim");
         application.show(std::make_unique<osmv::Loading_screen>(application, demo_model));
         return EXIT_SUCCESS;
     }

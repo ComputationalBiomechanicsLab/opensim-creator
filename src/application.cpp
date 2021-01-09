@@ -2,7 +2,6 @@
 
 #include "osmv_config.hpp"
 #include "gl.hpp"
-#include "gl_extensions.hpp"
 #include "imgui.h"
 #include "screen.hpp"
 #include "imgui_extensions.hpp"
@@ -67,12 +66,12 @@ public:
         // bind, allocate, and link color0's RBO to the FBO
         gl::BindRenderBuffer(color0_rbo);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA, dims.w, dims.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color0_rbo.handle);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color0_rbo);
 
         // bind, allocate, and link depth+stencil RBOs to the FBO
         gl::BindRenderBuffer(depth24stencil8_rbo);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, dims.w, dims.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8_rbo.handle);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8_rbo);
 
         assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
@@ -140,11 +139,6 @@ namespace osmv {
         // whether the application should sleep the CPU when the FPS exceeds some
         // amount (ideally, close to the screen refresh rate)
         bool software_throttle = true;
-
-        // whether the application should wait for events, rather than polling
-        //
-        // experimental feature
-        bool has_waiting_event_loop = false;
 
         // the current screen being drawn by the application
         std::unique_ptr<Screen> current_screen;
@@ -261,15 +255,10 @@ namespace osmv {
                 }
 
                 // pump events
-                bool poll = not has_waiting_event_loop;
-                for (SDL_Event e; poll ? SDL_PollEvent(&e) : SDL_WaitEvent(&e);) {
-                    // always poll after (potentially) waiting for the first event because events
-                    // can come in batches
-                    poll = true;
+                for (SDL_Event e; SDL_PollEvent(&e);) {
 
                     // SCREEN RESIZED: update relevant FBOs
-                    if (e.type == SDL_WINDOWEVENT and
-                        e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 
                         sdl::Window_dimensions new_dims{e.window.data1, e.window.data2};
                         if (new_dims != sfbo.dimensions()) {
@@ -387,11 +376,11 @@ void osmv::Application::show(std::unique_ptr<osmv::Screen> s) {
    impl->show(*this, std::move(s));
 }
 
-bool osmv::Application::fps_throttling() const noexcept {
+bool osmv::Application::is_throttling_fps() const noexcept {
     return impl->software_throttle;
 }
 
-void osmv::Application::fps_throttling(bool throttle) {
+void osmv::Application::is_throttling_fps(bool throttle) {
     impl->software_throttle = throttle;
 }
 
@@ -408,18 +397,4 @@ float osmv::Application::aspect_ratio() const noexcept {
 // move mouse relative to the window (origin in top-left)
 void osmv::Application::move_mouse_to(int x, int y) {
     SDL_WarpMouseInWindow(impl->window, x, y);
-}
-
-bool osmv::Application::waiting_event_loop() const noexcept {
-    return impl->has_waiting_event_loop;
-}
-
-void osmv::Application::waiting_event_loop(bool should_wait) {
-    impl->has_waiting_event_loop = should_wait;
-}
-
-void osmv::Application::request_redraw() {
-    SDL_Event e;
-    e.type = SDL_USEREVENT;
-    SDL_PushEvent(&e);  // causes the application's event loop to spring to life
 }

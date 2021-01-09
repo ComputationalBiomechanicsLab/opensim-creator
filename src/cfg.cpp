@@ -1,4 +1,4 @@
-#include "globals.hpp"
+#include "cfg.hpp"
 
 #include "os.hpp"
 
@@ -25,7 +25,7 @@ static App_config load_application_config() {
     //       absolute path to the developer's resource dir into the config file
     //       so that devs don't have to copy things around while developing
 
-    fs::path p = osmv::current_exe_path().parent_path();
+    fs::path p = osmv::current_exe_dir();
     bool exists = false;
     while (p.has_filename()) {
         fs::path maybe_config = p / "osmv.toml";
@@ -59,6 +59,11 @@ struct App_config config() {
     return config;
 }
 
-std::filesystem::path osmv::resource_path(std::filesystem::path const& subpath) {
-    return  config().resource_dir / subpath;
+std::filesystem::path osmv::cfg::resource_path(std::filesystem::path const& subpath) {
+    return config().resource_dir / subpath;
+}
+
+static std::filesystem::path const shaders_dir = "shaders";
+std::filesystem::path osmv::cfg::shader_path(char const* shader_name) {
+    return resource_path(shaders_dir / shader_name);
 }

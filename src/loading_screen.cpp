@@ -27,7 +27,6 @@ namespace osmv {
         Loading_screen_impl(Application& app, std::filesystem::path const& _path) :
             path{ _path },
             result{std::async(std::launch::async, [&]() {
-                //app.request_redraw();
                 return std::optional<osmv::Model>{osmv::load_osim(path)};
             })}
         {

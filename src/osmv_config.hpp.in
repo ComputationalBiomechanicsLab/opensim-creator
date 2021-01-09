@@ -4,12 +4,6 @@
 #define OSMV_VERSION_STRING "@osmv_VERSION_MAJOR@.@osmv_VERSION_MINOR@.@osmv_VERSION_PATCH@"
 #define OSMV_GLSL_VERSION "#version 330 core"
 
-// macros for quality-of-life checks
-#define OSC_GL_CALL_CHECK(func, ...) { \
-        func(__VA_ARGS__); \
-        gl::assert_no_errors(#func); \
-    }
-
 #ifdef _MSC_VER
 #pragma warning(disable: 26439) // "This kind of function may not throw. Declare it 'noexcept'
 #pragma warning(disable: 4455) // "This kind of function may not throw. Declare it 'noexcept'

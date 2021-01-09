@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl_extensions.hpp"
+#include "gl.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>

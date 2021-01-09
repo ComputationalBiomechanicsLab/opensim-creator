@@ -1,7 +1,5 @@
 #include "3d_common.hpp"
 
-#include <stdexcept>
-
 static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
     //https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352
     glm::vec3 a{p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
@@ -17,8 +15,6 @@ static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 con
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
 void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
-    out.clear();
-
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
     // something like a patched sphere:
@@ -92,13 +88,8 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
 // - bottom == [0.0f, 0.0f, +1.0f]
 // - (so the height is 2.0f, not 1.0f)
 void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
-    // TODO: this is dumb because a cylinder can be EBO-ed quite easily, which
-    //       would reduce the amount of vertices needed
-    if (num_sides < 3) {
-        throw std::runtime_error{"cannot create a cylinder with fewer than 3 sides"};
-    }
+    assert(num_sides >= 3);
 
-    out.clear();
     out.reserve(4*num_sides);  // side quad, top triangle, bottom triangle
 
     float step_angle = (2.0f*pi_f)/num_sides;
@@ -180,13 +171,8 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
 //
 // see simbody-visualizer.cpp::makeCylinder for my source material
 void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
-    // TODO: this is dumb because a cylinder can be EBO-ed quite easily, which
-    //       would reduce the amount of vertices needed
-    if (num_sides < 3) {
-        throw std::runtime_error{"cannot create a cylinder with fewer than 3 sides"};
-    }
+    assert(num_sides >= 3);
 
-    out.clear();
     out.reserve(2*num_sides + 2*num_sides);
 
     float step_angle = (2.0f*pi_f)/num_sides;
@@ -283,7 +269,7 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
         }
     }
 
-    gl::Texture_2d rv = gl::GenTexture2d();
+    gl::Texture_2d rv;
     gl::BindTexture(rv.type, rv);
     glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     glGenerateMipmap(rv.type);

@@ -9,46 +9,37 @@
 #include "loading_screen.hpp"
 #include "fd_simulation.hpp"
 #include "os.hpp"
-#include "globals.hpp"
-
-// OpenGL
+#include "cfg.hpp"
 #include "gl.hpp"
-#include "gl_extensions.hpp"
 
-// glm
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-// imgui
 #include "imgui.h"
 
-// c++
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <stdexcept>
 
 namespace osmv {
-    static const std::filesystem::path shaders_dir = resource_path("shaders");
-
     // renders uniformly colored geometry with Gouraud shading
     struct Uniform_color_gouraud_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(shaders_dir / "main.vert"),
-            gl::CompileFragmentShaderFile(shaders_dir / "main.frag"));
+            gl::Compile<gl::Vertex_shader>(cfg::shader_path("main.vert")),
+            gl::Compile<gl::Fragment_shader>(cfg::shader_path("main.frag")));
 
-        static constexpr gl::Attribute location = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute in_normal = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute location{0};
+        static constexpr gl::Attribute in_normal{1};
 
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
-        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "rgba");
-        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "lightPos");
-        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "lightColor");
-        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "viewPos");
+        gl::Uniform_mat4 projMat = {program, "projMat"};
+        gl::Uniform_mat4 viewMat = {program, "viewMat"};
+        gl::Uniform_mat4 modelMat = {program, "modelMat"};
+        gl::Uniform_mat4 normalMat = {program, "normalMat"};
+        gl::Uniform_vec4 rgba = {program, "rgba"};
+        gl::Uniform_vec3 light_pos = {program, "lightPos"};
+        gl::Uniform_vec3 light_color = {program, "lightColor"};
+        gl::Uniform_vec3 view_pos = {program, "viewPos"};
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -69,16 +60,16 @@ namespace osmv {
     // renders textured geometry with no shading
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(shaders_dir / "floor.vert"),
-            gl::CompileFragmentShaderFile(shaders_dir / "floor.frag"));
+            gl::Compile<gl::Vertex_shader>(cfg::shader_path("floor.vert")),
+            gl::Compile<gl::Fragment_shader>(cfg::shader_path("floor.frag")));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute aPos{0};
+        static constexpr gl::Attribute aTexCoord{1};
 
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
-        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+        gl::Uniform_mat4 projMat = {p, "projMat"};
+        gl::Uniform_mat4 viewMat = {p, "viewMat"};
+        gl::Uniform_mat4 modelMat = {p, "modelMat"};
+        gl::Uniform_sampler2d uSampler0 = {p, "uSampler0"};
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -99,17 +90,17 @@ namespace osmv {
     // renders normals using a geometry shader
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileVertexShaderFile(shaders_dir / "normals.vert"),
-            gl::CompileFragmentShaderFile(shaders_dir / "normals.frag"),
-            gl::CompileGeometryShaderFile(shaders_dir / "normals.geom"));
+            gl::Compile<gl::Vertex_shader>(cfg::shader_path("normals.vert")),
+            gl::Compile<gl::Fragment_shader>(cfg::shader_path("normals.frag")),
+            gl::Compile<gl::Geometry_shader>(cfg::shader_path("normals.geom")));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute aPos{0};
+        static constexpr gl::Attribute aNormal{1};
 
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
+        gl::Uniform_mat4 projMat = {program, "projMat"};
+        gl::Uniform_mat4 viewMat = {program, "viewMat"};
+        gl::Uniform_mat4 modelMat = {program, "modelMat"};
+        gl::Uniform_mat4 normalMat = {program, "normalMat"};
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -941,15 +932,9 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     ImGui::Checkbox("show_floor", &show_floor);
     ImGui::Checkbox("gamma_correction", &gamma_correction);
     {
-        bool throttling = ui.fps_throttling();
+        bool throttling = ui.is_throttling_fps();
         if (ImGui::Checkbox("fps_throttle", &throttling)) {
-            ui.fps_throttling(throttling);
-        }
-    }
-    {
-        bool waiting = ui.waiting_event_loop();
-        if (ImGui::Checkbox("waiting loop", &waiting)) {
-            ui.waiting_event_loop(waiting);
+            ui.is_throttling_fps(throttling);
         }
     }
     ImGui::Checkbox("show_mesh_normals", &show_mesh_normals);

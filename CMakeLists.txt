@@ -88,20 +88,16 @@ add_executable(osmv
     third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
 
     src/os.hpp
-    $<$<BOOL:${WIN32}>:src/os_win32.cpp>
-    $<$<BOOL:${LINUX}>:src/os_linux.cpp>
-
-    src/gl.hpp
-    src/gl.cpp
-    src/gl_extensions.hpp
-    src/gl_extensions.cpp
+    src/os.cpp
     src/sdl.hpp
     src/sdl.cpp
+    src/gl.hpp
+    src/gl.cpp
     src/imgui_extensions.hpp
     src/imgui_extensions.cpp
     src/shims.hpp
-    src/globals.hpp
-    src/globals.cpp
+    src/cfg.hpp
+    src/cfg.cpp
 
     src/application.hpp
     src/application.cpp
