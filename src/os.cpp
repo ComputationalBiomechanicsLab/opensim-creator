@@ -1,17 +1,14 @@
 #include "os.hpp"
 
 #include <sstream>
-
-#include <unistd.h>
-#include <string.h>
 #include <SDL.h>
-#include <iostream>
 #include <cstring>
+#include <memory>
 
 using std::literals::string_literals::operator""s;
 
 std::filesystem::path get_current_exe_dir() {
-    std::unique_ptr<char, decltype(*SDL_free)> p{SDL_GetBasePath(), *SDL_free};
+    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
 
     if (not p) {
         throw std::runtime_error{"SDL_GetBasePath: returned null: "s + SDL_GetError()};
