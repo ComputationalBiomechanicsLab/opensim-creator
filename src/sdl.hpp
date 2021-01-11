@@ -3,6 +3,9 @@
 #include <SDL.h>
 #undef main
 
+#include <stdexcept>
+#include <string>
+
 // sdl: thin C++ wrappers around SDL
 //
 // Code in here should:
@@ -20,9 +23,12 @@ namespace sdl {
     // RAII wrapper for SDL_Quit()
     //     https://wiki.libsdl.org/SDL_Quit
     class [[nodiscard]] Context final {
-        friend Context Init(Uint32);
-        Context() {}
     public:
+		Context(Uint32 flags) {
+			if (SDL_Init(flags) != 0) {
+				throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
+			}
+		}
         Context(Context const&) = delete;
         Context(Context&&) = delete;
         Context& operator=(Context const&) = delete;
@@ -33,7 +39,9 @@ namespace sdl {
     };
 
     // https://wiki.libsdl.org/SDL_Init
-    Context Init(Uint32 flags);
+	inline Context Init(Uint32 flags) {
+		return Context{flags};
+	}
 
     // RAII wrapper around SDL_Window that calls SDL_DestroyWindow on dtor
     //     https://wiki.libsdl.org/SDL_CreateWindow

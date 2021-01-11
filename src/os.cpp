@@ -7,7 +7,7 @@
 
 using std::literals::string_literals::operator""s;
 
-std::filesystem::path get_current_exe_dir() {
+static std::filesystem::path get_current_exe_dir() {
     std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
 
     if (not p) {
@@ -30,5 +30,6 @@ std::filesystem::path get_current_exe_dir() {
 std::filesystem::path osmv::current_exe_dir() {
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = get_current_exe_dir();
+
     return d;
 }

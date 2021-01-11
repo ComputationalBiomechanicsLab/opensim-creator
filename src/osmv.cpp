@@ -61,17 +61,23 @@ int main(int argc, char** argv) {
     }
 
     // no args: boot an example file
-    if (argc <= 0) {
-        auto application = osmv::Application{};
-        std::filesystem::path demo_model = osmv::cfg::resource_path(std::filesystem::path{ "models" } / "ToyLandingModel.osim");
-        application.show(std::make_unique<osmv::Loading_screen>(application, demo_model));
+	if (argc <= 0) {
+		osmv::Application application{};
+
+		std::filesystem::path models_dir{"models"};
+        std::filesystem::path demo_model = osmv::cfg::resource_path(models_dir / "ToyLandingModel.osim");
+
+		auto loading_screen = std::make_unique<osmv::Loading_screen>(application, demo_model);
+
+		application.show(std::move(loading_screen));
+
         return EXIT_SUCCESS;
     }
 
     // 'fd' command:
     //
     // if the first unnamed argument to osmv is 'fd' then the caller wants to run an fd simulation
-    // using the same parameters as the visualizer
+    // using the same parameters as the visualizer. This is currently here for debugging
     if (not std::strcmp(argv[0], "fd")) {
 
         if (argc != 3) {
@@ -97,12 +103,15 @@ int main(int argc, char** argv) {
         return EXIT_SUCCESS;
     }
 
-    // no command: show the UI
+    // no subcommand command (but args): show the UI
     //
     // the reason the subcommands are designed this way (rather than having a separate 'gui'
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
-    auto application = osmv::Application{};
-    application.show(std::make_unique<osmv::Loading_screen>(application, argv[0]));
+	osmv::Application application{};
+	auto loading_screen = std::make_unique<osmv::Loading_screen>(application, argv[0]);
+
+    application.show(std::move(loading_screen));
+
     return EXIT_SUCCESS;
 }

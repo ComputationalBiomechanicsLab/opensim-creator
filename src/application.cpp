@@ -52,7 +52,6 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 // application window without having to reboot the entire application
 //
 // it also enables screen-wide post-processing (e.g. blurring), but that isn't exercised here.
-
 class Screen_framebuffer final {
     sdl::Window_dimensions dims;
     gl::Render_buffer color0_rbo = gl::GenRenderBuffer();
@@ -145,7 +144,7 @@ namespace osmv {
 
         Application_impl() :
             // initialize SDL library
-            context{sdl::Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)},
+            context{SDL_INIT_VIDEO | SDL_INIT_TIMER},
 
             // initialize minimal SDL Window with OpenGL 3.2 support
             window{[]() {
@@ -240,7 +239,7 @@ namespace osmv {
             sfbo{sdl::GetWindowSize(window), get_max_multisamples()},
 
             // initialize ImGui
-            imgui_ctx{igx::Context{}},
+            imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
             imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
         }
@@ -248,11 +247,12 @@ namespace osmv {
         void show(Application& app, std::unique_ptr<osmv::Screen> first_screen) {
             current_screen = std::move(first_screen);
 
-            auto frame_start = std::chrono::high_resolution_clock::now();
+			// main application draw loop (i.e. the "game loop" of this app)
+			//
+			// implemented an immediate GUI, rather than retained, which is
+			// inefficient but makes it easier to add new UI features.
             while (true) {
-                if (software_throttle) {
-                    frame_start = std::chrono::high_resolution_clock::now();
-                }
+				auto frame_start = std::chrono::high_resolution_clock::now();
 
                 // pump events
                 for (SDL_Event e; SDL_PollEvent(&e);) {
@@ -276,10 +276,10 @@ namespace osmv {
                         return;
                     }
 
-                    // ImGui: feed event
+                    // ImGui: feed event into ImGui
                     ImGui_ImplSDL2_ProcessEvent(&e);
 
-                    // screen: handle event
+                    // screen: feed event into currently-showing screen
                     auto resp = current_screen->handle_event(app, e);
                     bool should_quit = false;
                     bool just_changed_screen = false;
@@ -333,27 +333,33 @@ namespace osmv {
                 // bind the screen buffer
                 gl::BindFrameBuffer(GL_FRAMEBUFFER, sfbo);
 
-                // draw into the screen buffer
+				// setup for draw calls
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
+
+				// screen: draw into the fbo
                 current_screen->draw(app);
+
+				// ImGui: draw any deferred draws into the fbo
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                // blit screen buffer to window buffer
+                // blit screen fbo to window fbo
                 gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, sfbo);
                 gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, gl::window_fbo);
                 assert(sfbo.dimensions() == sdl::GetWindowSize(window));
                 gl::BlitFramebuffer(0, 0, sfbo.width(), sfbo.height(), 0, 0, sfbo.width(), sfbo.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-                // swap the blitted window onto the user's screen
+                // swap the blitted window onto the user's screen: user can see update at
+				// this point
                 SDL_GL_SwapWindow(window);
 
                 if (software_throttle) {
                     // APPROXIMATION: rendering **the next frame** will take roughly as long as it
                     // took to render this frame. Assume worst case is 30 % longer (also, the thread
                     // might wake up a little late).
+
                     auto frame_end = std::chrono::high_resolution_clock::now();
                     auto this_frame_dur = frame_end - frame_start;
                     auto next_frame_estimation = 1.3 * this_frame_dur;

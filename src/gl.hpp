@@ -622,7 +622,9 @@ namespace gl {
             }
         }
         Render_buffer(Render_buffer const&) = delete;
-        Render_buffer(Render_buffer&&) = delete;
+		Render_buffer(Render_buffer&& tmp) : handle{tmp.handle} {
+			tmp.handle = empty_handle;
+		}
         Render_buffer& operator=(Render_buffer const&) = delete;
         Render_buffer& operator=(Render_buffer&& tmp) {
             GLuint h = tmp.handle;

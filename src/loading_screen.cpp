@@ -25,7 +25,10 @@ namespace osmv {
         std::string error;
 
         Loading_screen_impl(Application& app, std::filesystem::path const& _path) :
+			// save the path
             path{ _path },
+
+			// immediately start loading the model file on a background thread
             result{std::async(std::launch::async, [&]() {
                 return std::optional<osmv::Model>{osmv::load_osim(path)};
             })}
@@ -33,10 +36,15 @@ namespace osmv {
         }
 
         osmv::Screen_response tick() {
+			// if there's an error, then the result came through (it's an error)
+			// and this screen will just continuously show the error with no
+			// recourse
             if (not error.empty()) {
                 return Resp_ok{};
             }
 
+			// otherwise, there's no error, so the background thread is still
+			// loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
                     osmv::Model m = result.get().value();

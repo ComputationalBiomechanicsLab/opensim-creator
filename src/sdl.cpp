@@ -1,15 +1,9 @@
 #include "sdl.hpp"
 
 #include <stdexcept>
+#include <string>
 
 using std::literals::string_literals::operator""s;
-
-sdl::Context sdl::Init(Uint32 flags) {
-    if (SDL_Init(flags) != 0) {
-        throw std::runtime_error{"SDL_Init: failed: "s + SDL_GetError()};
-    }
-    return Context{};
-}
 
 sdl::Window sdl::CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags) {
     SDL_Window* win = SDL_CreateWindow(title, x, y, w, h, flags);
