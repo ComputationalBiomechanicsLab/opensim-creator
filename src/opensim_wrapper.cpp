@@ -397,28 +397,37 @@ void osmv::realize_report(OpenSim::Model const& m, SimTK::State& s) {
 
 osmv::State osmv::fd_simulation(OpenSim::Model& model, State initial_state, Fd_sim_config const& config) {
     struct CustomAnalysis final : public Analysis {
-        std::function<void(SimTK::State const&)> f;
+        OpenSim::Manager& manager;
+        std::function<Callback_response(SimTK::State const&)> on_integration_step;
 
-        CustomAnalysis(std::function<void(SimTK::State const&)> _f) : f{std::move(_f)} {
+        CustomAnalysis(OpenSim::Manager& _m, std::function<Callback_response(SimTK::State const&)> _f) :
+            manager{_m},
+            on_integration_step{std::move(_f)} {
         }
 
         int begin(SimTK::State const& s) override {
-            f(s);
+            if (on_integration_step(s) == Callback_response::Please_halt) {
+                manager.halt();
+            }
             return 0;
         }
 
         int step(SimTK::State const& s, int) override {
-            f(s);
+            if (on_integration_step(s) == Callback_response::Please_halt) {
+                manager.halt();
+            }
             return 0;
         }
 
         int end(SimTK::State const& s) override {
-            f(s);
+            if (on_integration_step(s) == Callback_response::Please_halt) {
+                manager.halt();
+            }
             return 0;
         }
 
         CustomAnalysis* clone() const override {
-            return new CustomAnalysis{f};
+            return new CustomAnalysis{manager, on_integration_step};
         }
 
         std::string const& getConcreteClassName() const override {
@@ -427,11 +436,12 @@ osmv::State osmv::fd_simulation(OpenSim::Model& model, State initial_state, Fd_s
         }
     };
 
+    OpenSim::Manager manager{model};
+
     if (config.on_integration_step) {
-        model.addAnalysis(new CustomAnalysis{*config.on_integration_step});
+        model.addAnalysis(new CustomAnalysis{manager, *config.on_integration_step});
     }
 
-    OpenSim::Manager manager{model};
     manager.setWriteToStorage(false);
     manager.setIntegratorInternalStepLimit(config.max_steps);
     manager.setIntegratorMaximumStepSize(config.max_step_size);

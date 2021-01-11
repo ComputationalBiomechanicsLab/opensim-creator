@@ -110,7 +110,7 @@ int run_fd_simulation(
         // this (hacky) approach is because the simulation is black-boxed at the moment - a better
         // solution would evaluate the token mid-simulation and interrupt it gracefully.
         if (stop_tok.stop_requested()) {
-            throw Stopped_exception{};
+            return osmv::Callback_response::Please_halt;
         }
 
         clock::time_point report_start = clock::now();
@@ -133,9 +133,8 @@ int run_fd_simulation(
         last_report_end = report_end;
         ++shared.ui_overhead_n;
 
-        return 0;
+        return osmv::Callback_response::Ok;
     };
-
 
     // run the simulation
     try {

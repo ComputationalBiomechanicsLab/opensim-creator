@@ -72,6 +72,12 @@ namespace osmv {
         }
     };
 
+    // response from integration step callback
+    enum class Callback_response {
+        Ok,               // callback executed ok
+        Please_halt       // callback wants the simulator to halt
+    };
+
     // top-level configuration for a basic forward-dynamic sim
     struct Fd_sim_config final {
         double final_time = 0.4;
@@ -79,7 +85,7 @@ namespace osmv {
         double min_step_size = 1.0e-8;
         double max_step_size = 1.0;
         double integrator_accuracy = 1.0e-5;
-        std::optional<std::function<void(SimTK::State const&)>> on_integration_step = std::nullopt;
+        std::optional<std::function<Callback_response(SimTK::State const&)>> on_integration_step = std::nullopt;
     };
 
     // flag-ified version of OpenSim::Coordinate::MotionType (easier ORing for filtering)
