@@ -1,9 +1,10 @@
 #include "3d_common.hpp"
 
-
 // stbi for image loading
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#include <sstream>
 
 using std::literals::operator""s;
 
