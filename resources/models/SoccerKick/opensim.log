@@ -1,0 +1,369 @@
+[2021-01-13 11:12:26.518] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:12:26.519] [warning] Model name 'Soccer Ball Kicking Model' contains whitespace.
+[2021-01-13 11:12:26.519] [warning] It was renamed to 'SoccerBallKickingModel'.
+[2021-01-13 11:12:26.560] [info] Loaded model SoccerBallKickingModel from file /home/adam/Desktop/osmv/resources/opensim-models/Models/SoccerKick/SoccerKickingModel.osim
+[2021-01-13 11:12:46.319] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:12:46.320] [warning] Model name 'Soccer Ball Kicking Model' contains whitespace.
+[2021-01-13 11:12:46.320] [warning] It was renamed to 'SoccerBallKickingModel'.
+[2021-01-13 11:12:46.360] [info] Loaded model SoccerBallKickingModel from file /home/adam/Desktop/osmv/resources/opensim-models/Models/SoccerKick/SoccerKickingModel.osim
+[2021-01-13 11:14:12.456] [info] Updating Model file from 20303 to latest format...
+[2021-01-13 11:14:12.538] [info] Loaded model Wrist_Model from file /home/adam/Desktop/osmv/resources/opensim-models/Models/WristModel/wrist.osim
+[2021-01-13 11:14:12.540] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 11:14:12.540] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 11:14:17.382] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:17.396] [info] Loaded model WalkerModelTerrain from file /home/adam/Desktop/osmv/resources/opensim-models/Models/WalkerModel/WalkerModelTerrain.osim
+[2021-01-13 11:14:17.397] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 11:14:17.397] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 11:14:21.587] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:21.592] [info] Loaded model Tug_of_War_Millard from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Tug_of_War/Tug_of_War_Millard.osim
+[2021-01-13 11:14:21.592] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 11:14:21.592] [info] 'RightMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:21.593] [info] 'RightMuscle' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 11:14:21.594] [info] 'LeftMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:21.594] [info] 'LeftMuscle' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 11:14:21.595] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 11:14:21.598] [info] 'RightMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:21.598] [info] 'LeftMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:21.599] [info] 'RightMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:21.600] [info] 'LeftMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:22.186] [info] 'RightMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:22.186] [info] 'LeftMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:22.726] [info] 'RightMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:22.727] [info] 'LeftMuscle': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:25.347] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:25.354] [info] Loaded model Tug_of_War from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Tug_of_War/Tug_of_War.osim
+[2021-01-13 11:14:25.354] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 11:14:25.354] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 11:14:28.162] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:28.179] [error] Object::newInstanceOfType(): object type 'ToyReflexController' is not a registered Object! It will be ignored.
+[2021-01-13 11:14:30.026] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:30.042] [error] Object::newInstanceOfType(): object type 'ToyReflexController' is not a registered Object! It will be ignored.
+[2021-01-13 11:14:31.047] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:31.062] [error] Object::newInstanceOfType(): object type 'ToyReflexController' is not a registered Object! It will be ignored.
+[2021-01-13 11:14:32.263] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:32.263] [warning] Model name 'Soccer Ball Kicking Model' contains whitespace.
+[2021-01-13 11:14:32.263] [warning] It was renamed to 'SoccerBallKickingModel'.
+[2021-01-13 11:14:32.304] [info] Loaded model SoccerBallKickingModel from file /home/adam/Desktop/osmv/resources/opensim-models/Models/SoccerKick/SoccerKickingModel.osim
+[2021-01-13 11:14:37.776] [info] Loaded model OpenSense_Subject from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Rajagopal_OpenSense/Rajagopal2015_opensense.osim
+[2021-01-13 11:14:41.453] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 11:14:41.554] [info] Loaded model FullBodyModel_MuscleActuatedLowerLimb_TorqueActuatedUpperBody from file /home/adam/Desktop/osmv/resources/opensim-models/Models/RajagopalModel/Rajagopal2015.osim
+[2021-01-13 11:14:41.558] [info] 'addbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.558] [info] 'addlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.559] [info] 'addmagDist_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.560] [info] 'addmagIsch_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.561] [info] 'addmagMid_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.561] [info] 'addmagProx_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.562] [info] 'bflh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.563] [info] 'bfsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.563] [info] 'edl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.564] [info] 'ehl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.565] [info] 'fdl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.566] [info] 'fhl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.566] [info] 'gaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.567] [info] 'gasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.568] [info] 'glmax1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.569] [info] 'glmax2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.569] [info] 'glmax3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.570] [info] 'glmed1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.571] [info] 'glmed2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.572] [info] 'glmed3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.572] [info] 'glmin1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.573] [info] 'glmin2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.574] [info] 'glmin3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.575] [info] 'grac_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.575] [info] 'iliacus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.576] [info] 'perbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.577] [info] 'perlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.577] [info] 'piri_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.578] [info] 'psoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.579] [info] 'recfem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.580] [info] 'sart_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.580] [info] 'semimem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.581] [info] 'semiten_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.582] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.583] [info] 'tfl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.583] [info] 'tibant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.584] [info] 'tibpost_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.585] [info] 'vasint_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.586] [info] 'vaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.586] [info] 'vasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.587] [info] 'addbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.588] [info] 'addlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.588] [info] 'addmagDist_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.589] [info] 'addmagIsch_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.590] [info] 'addmagMid_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.591] [info] 'addmagProx_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.591] [info] 'bflh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.592] [info] 'bfsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.593] [info] 'edl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.594] [info] 'ehl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.594] [info] 'fdl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.595] [info] 'fhl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.596] [info] 'gaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.597] [info] 'gasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.597] [info] 'glmax1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.598] [info] 'glmax2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.599] [info] 'glmax3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.599] [info] 'glmed1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.600] [info] 'glmed2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.601] [info] 'glmed3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.602] [info] 'glmin1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.602] [info] 'glmin2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.603] [info] 'glmin3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.604] [info] 'grac_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.604] [info] 'iliacus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.605] [info] 'perbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.606] [info] 'perlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.607] [info] 'piri_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.607] [info] 'psoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.608] [info] 'recfem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.609] [info] 'sart_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.610] [info] 'semimem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.610] [info] 'semiten_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.611] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.612] [info] 'tfl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.612] [info] 'tibant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.613] [info] 'tibpost_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.614] [info] 'vasint_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.615] [info] 'vaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.615] [info] 'vasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.621] [info] 'addbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.622] [info] 'addlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.623] [info] 'addmagDist_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.623] [info] 'addmagIsch_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.624] [info] 'addmagMid_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.625] [info] 'addmagProx_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.625] [info] 'bflh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.626] [info] 'bfsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.627] [info] 'edl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.627] [info] 'ehl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.628] [info] 'fdl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.628] [info] 'fhl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.629] [info] 'gaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.630] [info] 'gasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.630] [info] 'glmax1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.631] [info] 'glmax2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.632] [info] 'glmax3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.632] [info] 'glmed1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.633] [info] 'glmed2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.633] [info] 'glmed3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.634] [info] 'glmin1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.635] [info] 'glmin2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.635] [info] 'glmin3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.636] [info] 'grac_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.636] [info] 'iliacus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.637] [info] 'perbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.638] [info] 'perlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.638] [info] 'piri_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.639] [info] 'psoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.640] [info] 'recfem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.640] [info] 'sart_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.641] [info] 'semimem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.641] [info] 'semiten_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.642] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.643] [info] 'tfl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.643] [info] 'tibant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.644] [info] 'tibpost_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.644] [info] 'vasint_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.645] [info] 'vaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.646] [info] 'vasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.646] [info] 'addbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.647] [info] 'addlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.647] [info] 'addmagDist_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.648] [info] 'addmagIsch_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.649] [info] 'addmagMid_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.649] [info] 'addmagProx_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.650] [info] 'bflh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.650] [info] 'bfsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.651] [info] 'edl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.652] [info] 'ehl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.652] [info] 'fdl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.653] [info] 'fhl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.653] [info] 'gaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.654] [info] 'gasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.655] [info] 'glmax1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.655] [info] 'glmax2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.656] [info] 'glmax3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.657] [info] 'glmed1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.657] [info] 'glmed2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.658] [info] 'glmed3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.658] [info] 'glmin1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.659] [info] 'glmin2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.660] [info] 'glmin3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.660] [info] 'grac_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.661] [info] 'iliacus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.661] [info] 'perbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.662] [info] 'perlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.663] [info] 'piri_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.663] [info] 'psoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.664] [info] 'recfem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.664] [info] 'sart_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.665] [info] 'semimem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.666] [info] 'semiten_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.666] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.667] [info] 'tfl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.667] [info] 'tibant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.668] [info] 'tibpost_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.669] [info] 'vasint_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.669] [info] 'vaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.670] [info] 'vasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.675] [info] 'addbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.675] [info] 'addlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.676] [info] 'addmagDist_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.677] [info] 'addmagIsch_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.677] [info] 'addmagMid_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.678] [info] 'addmagProx_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.679] [info] 'bflh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.679] [info] 'bfsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.680] [info] 'edl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.680] [info] 'ehl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.681] [info] 'fdl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.682] [info] 'fhl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.682] [info] 'gaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.683] [info] 'gasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.684] [info] 'glmax1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.684] [info] 'glmax2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.685] [info] 'glmax3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.685] [info] 'glmed1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.686] [info] 'glmed2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.687] [info] 'glmed3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.687] [info] 'glmin1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.688] [info] 'glmin2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.688] [info] 'glmin3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.689] [info] 'grac_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.690] [info] 'iliacus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.690] [info] 'perbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.691] [info] 'perlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.692] [info] 'piri_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.692] [info] 'psoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.693] [info] 'recfem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.693] [info] 'sart_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.694] [info] 'semimem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.695] [info] 'semiten_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.695] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.696] [info] 'tfl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.696] [info] 'tibant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.697] [info] 'tibpost_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.698] [info] 'vasint_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.698] [info] 'vaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.699] [info] 'vasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.700] [info] 'addbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.700] [info] 'addlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.701] [info] 'addmagDist_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.701] [info] 'addmagIsch_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.702] [info] 'addmagMid_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.703] [info] 'addmagProx_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.703] [info] 'bflh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.704] [info] 'bfsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.704] [info] 'edl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.705] [info] 'ehl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.706] [info] 'fdl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.706] [info] 'fhl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.707] [info] 'gaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.707] [info] 'gasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.708] [info] 'glmax1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.709] [info] 'glmax2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.709] [info] 'glmax3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.710] [info] 'glmed1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.710] [info] 'glmed2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.711] [info] 'glmed3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.712] [info] 'glmin1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.712] [info] 'glmin2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.713] [info] 'glmin3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.713] [info] 'grac_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.714] [info] 'iliacus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.715] [info] 'perbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.715] [info] 'perlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.716] [info] 'piri_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.716] [info] 'psoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.717] [info] 'recfem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.718] [info] 'sart_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.718] [info] 'semimem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.719] [info] 'semiten_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.720] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.720] [info] 'tfl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.721] [info] 'tibant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.721] [info] 'tibpost_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.722] [info] 'vasint_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.723] [info] 'vaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:41.723] [info] 'vasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.860] [info] 'addbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.860] [info] 'addlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.861] [info] 'addmagDist_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.862] [info] 'addmagIsch_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.862] [info] 'addmagMid_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.863] [info] 'addmagProx_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.863] [info] 'bflh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.864] [info] 'bfsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.865] [info] 'edl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.865] [info] 'ehl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.866] [info] 'fdl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.867] [info] 'fhl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.867] [info] 'gaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.868] [info] 'gasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.868] [info] 'glmax1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.869] [info] 'glmax2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.870] [info] 'glmax3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.870] [info] 'glmed1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.871] [info] 'glmed2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.872] [info] 'glmed3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.872] [info] 'glmin1_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.873] [info] 'glmin2_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.873] [info] 'glmin3_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.874] [info] 'grac_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.875] [info] 'iliacus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.875] [info] 'perbrev_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.876] [info] 'perlong_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.877] [info] 'piri_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.877] [info] 'psoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.878] [info] 'recfem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.878] [info] 'sart_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.879] [info] 'semimem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.880] [info] 'semiten_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.880] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.881] [info] 'tfl_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.882] [info] 'tibant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.882] [info] 'tibpost_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.883] [info] 'vasint_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.883] [info] 'vaslat_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.884] [info] 'vasmed_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.885] [info] 'addbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.885] [info] 'addlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.886] [info] 'addmagDist_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.887] [info] 'addmagIsch_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.887] [info] 'addmagMid_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.888] [info] 'addmagProx_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.888] [info] 'bflh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.889] [info] 'bfsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.890] [info] 'edl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.890] [info] 'ehl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.891] [info] 'fdl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.891] [info] 'fhl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.892] [info] 'gaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.893] [info] 'gasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.893] [info] 'glmax1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.894] [info] 'glmax2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.895] [info] 'glmax3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.895] [info] 'glmed1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.896] [info] 'glmed2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.896] [info] 'glmed3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.897] [info] 'glmin1_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.898] [info] 'glmin2_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.898] [info] 'glmin3_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.899] [info] 'grac_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.899] [info] 'iliacus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.900] [info] 'perbrev_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.901] [info] 'perlong_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.901] [info] 'piri_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.902] [info] 'psoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.903] [info] 'recfem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.903] [info] 'sart_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.904] [info] 'semimem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.904] [info] 'semiten_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.905] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.906] [info] 'tfl_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.906] [info] 'tibant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.907] [info] 'tibpost_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.907] [info] 'vasint_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.908] [info] 'vaslat_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 11:14:45.909] [info] 'vasmed_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01

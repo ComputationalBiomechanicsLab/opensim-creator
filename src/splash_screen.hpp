@@ -17,8 +17,7 @@ namespace osmv {
         Splash_screen& operator=(Splash_screen&&) = delete;
         ~Splash_screen() noexcept override;
 
-        Screen_response handle_event(Application&, SDL_Event&) override;
-        Screen_response tick(Application&) override;
-        void draw(Application&) override;
+        void on_event(SDL_Event&) override;
+        void draw() override;
     };
 }

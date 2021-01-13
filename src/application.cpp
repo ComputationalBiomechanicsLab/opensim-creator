@@ -140,7 +140,12 @@ namespace osmv {
         bool software_throttle = true;
 
         // the current screen being drawn by the application
-        std::unique_ptr<Screen> current_screen;
+        std::unique_ptr<Screen> current_screen = nullptr;
+
+        // screen requested by `request_transition`
+        std::unique_ptr<Screen> requested_screen = nullptr;
+
+        bool should_quit = false;
 
         Application_impl() :
             // initialize SDL library
@@ -240,11 +245,13 @@ namespace osmv {
             // initialize ImGui
             imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
-            imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
+            imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION}
+        {
         }
 
-        void show(Application& app, std::unique_ptr<osmv::Screen> first_screen) {
-            current_screen = std::move(first_screen);
+        void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+            current_screen = std::move(s);
+            current_screen->on_application_mount(&app);
 
 			// main application draw loop (i.e. the "game loop" of this app)
 			//
@@ -265,11 +272,6 @@ namespace osmv {
                         }
                     }
 
-                    // PRESSED ESCAPE: quit application
-                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-                        return;
-                    }
-
                     // QUIT: quit application
                     if (e.type == SDL_QUIT) {
                         return;
@@ -279,54 +281,30 @@ namespace osmv {
                     ImGui_ImplSDL2_ProcessEvent(&e);
 
                     // screen: feed event into currently-showing screen
-                    auto resp = current_screen->handle_event(app, e);
-                    bool should_quit = false;
-                    bool just_changed_screen = false;
-                    std::unique_ptr<Screen> new_screen;
-                    std::visit(overloaded {
-                        [&](Resp_quit const&) {
-                            should_quit = true;
-                        },
-                        [&](Resp_transition& tgt) {
-                            current_screen = std::move(tgt.new_screen);
-                            just_changed_screen = true;
-                        },
-                        [&](Resp_ok const&) {
-                        }}, resp);
+                    current_screen->on_event(e);
 
+                    // screen: `handle_event`: side-effects
+                    if (requested_screen) {
+                        current_screen = std::move(requested_screen);
+                        current_screen->on_application_mount(&app);
+                        continue;
+                    }
                     if (should_quit) {
                         return;
-                    }
-
-                    if (just_changed_screen) {
-                        continue;
                     }
                 }
 
-                // screen: handle `tick`
-                {
-                    auto resp = current_screen->tick(app);
-                    bool should_quit = false;
-                    bool just_changed_screen = false;
-                    std::unique_ptr<Screen> new_screen;
-                    std::visit(overloaded {
-                        [&](Resp_quit const&) {
-                            should_quit = true;
-                        },
-                        [&](Resp_transition& tgt) {
-                            current_screen = std::move(tgt.new_screen);
-                            just_changed_screen = true;
-                        },
-                        [&](Resp_ok const&) {
-                        }}, resp);
+                // screen: `tick`
+                current_screen->tick();
 
-                    if (should_quit) {
-                        return;
-                    }
-
-                    if (just_changed_screen) {
-                        continue;
-                    }
+                // screen: `tick` side-effects
+                if (requested_screen) {
+                    current_screen = std::move(requested_screen);
+                    current_screen->on_application_mount(&app);
+                    continue;
+                }
+                if (should_quit) {
+                    return;
                 }
 
                 // bind the screen buffer + clear it for the next frame
@@ -339,7 +317,12 @@ namespace osmv {
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
 
-                current_screen->draw(app);
+                // screen: `draw`
+                current_screen->draw();
+
+                // screen: `draw`: side effects: wait until the frame is completely
+                // rendered before handling side-effects because rendering affects
+                // globals (e.g. ImGui state, OpenGL state)
 
 				// ImGui: draw any deferred draws into the fbo
                 ImGui::Render();
@@ -354,6 +337,16 @@ namespace osmv {
                 // swap the blitted window onto the user's screen: user can see update at
 				// this point
                 SDL_GL_SwapWindow(window);
+
+                // screen: `draw` side-effects
+                if (requested_screen) {
+                    current_screen = std::move(requested_screen);
+                    current_screen->on_application_mount(&app);
+                    continue;
+                }
+                if (should_quit) {
+                    return;
+                }
 
                 if (software_throttle) {
                     // APPROXIMATION: rendering **the next frame** will take roughly as long as it
@@ -371,15 +364,32 @@ namespace osmv {
                 }
             }
         }
+
+        void request_transition(std::unique_ptr<osmv::Screen> s) {
+            requested_screen = std::move(s);
+        }
+
+        void request_quit() {
+            should_quit = true;
+        }
     };
 }
 
 osmv::Application::Application() : impl{new Application_impl{}} {
 }
+
 osmv::Application::~Application() noexcept = default;
 
-void osmv::Application::show(std::unique_ptr<osmv::Screen> s) {
-   impl->show(*this, std::move(s));
+void osmv::Application::start_render_loop(std::unique_ptr<Screen> s) {
+    impl->start_render_loop(*this, std::move(s));
+}
+
+void osmv::Application::request_transition(std::unique_ptr<osmv::Screen> s) {
+    impl->request_transition(std::move(s));
+}
+
+void osmv::Application::request_quit() {
+    impl->request_quit();
 }
 
 bool osmv::Application::is_throttling_fps() const noexcept {

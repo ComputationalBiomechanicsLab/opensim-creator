@@ -18,7 +18,8 @@ namespace osmv {
         Loading_screen& operator=(Loading_screen&&) = delete;
         ~Loading_screen() noexcept override;
 
-        Screen_response tick(Application&) override;
-        void draw(Application&) override;
+        void on_event(SDL_Event&) override;
+        void tick() override;
+        void draw() override;
     };
 }

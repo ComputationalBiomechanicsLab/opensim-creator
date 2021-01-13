@@ -1,0 +1,294 @@
+[2021-01-13 10:35:18.292] [info] Updating Model file from 20303 to latest format...
+[2021-01-13 10:35:18.352] [info] Loaded model 3DGaitModel2354 from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Gait2354_Simbody/gait2354_simbody.osim
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'femur_r.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'tibia_r.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'fibula.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'talus.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'foot.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'femur_l.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'tibia_l.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'l_fibula.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'l_talus.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'l_foot.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'l_bofoot.vtp'.
+[2021-01-13 10:35:18.353] [warning] Couldn't find file 'hat_spine.vtp'.
+[2021-01-13 10:35:18.354] [warning] Couldn't find file 'hat_jaw.vtp'.
+[2021-01-13 10:35:18.354] [warning] Couldn't find file 'hat_skull.vtp'.
+[2021-01-13 10:35:18.354] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2021-01-13 10:35:18.354] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:18.356] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 10:35:20.976] [info] Updating Model file from 20303 to latest format...
+[2021-01-13 10:35:20.994] [info] Loaded model leg6dof9musc from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Leg6Dof9Musc/leg6dof9musc.osim
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'femur_r.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'tibia_r.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'fibula_r.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'pat.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'talus.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'foot.vtp'.
+[2021-01-13 10:35:20.995] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-01-13 10:35:20.995] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:20.995] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 10:35:23.294] [info] Updating Model file from 20303 to latest format...
+[2021-01-13 10:35:23.307] [info] Loaded model arm26 from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Arm26/arm26.osim
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_ribs.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_spine.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_skull.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_jaw.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_r_clavicle.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'ground_r_scapula.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_humerus.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_ulna.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_radius.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_lunate.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_scaphoid.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_pisiform.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_triquetrum.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_capitate.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_trapezium.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_trapezoid.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_hamate.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_1mc.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_2mc.vtp'.
+[2021-01-13 10:35:23.307] [warning] Couldn't find file 'arm_r_3mc.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_4mc.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_5mc.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_thumbprox.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_thumbdist.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_2proxph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_2midph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_2distph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_3proxph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_3midph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_3distph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_4proxph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_4midph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_4distph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_5proxph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_5midph.vtp'.
+[2021-01-13 10:35:23.308] [warning] Couldn't find file 'arm_r_5distph.vtp'.
+[2021-01-13 10:35:23.308] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:23.308] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 10:35:24.770] [info] Updating Model file from 20303 to latest format...
+[2021-01-13 10:35:24.780] [info] Loaded model toy_with_forces from file /home/adam/Desktop/osmv/resources/opensim-models/Models/BouncingBlock/bouncing_block_weak_spring.osim
+[2021-01-13 10:35:24.780] [warning] Couldn't find file 'checkered_floor.vtp'.
+[2021-01-13 10:35:24.780] [warning] Couldn't find file 'block.vtp'.
+[2021-01-13 10:35:24.780] [warning] Couldn't find file 'block.vtp'.
+[2021-01-13 10:35:24.780] [warning] Couldn't find file 'sphere.vtp'.
+[2021-01-13 10:35:24.780] [warning] Couldn't find file 'block.vtp'.
+[2021-01-13 10:35:24.780] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:25.640] [info] Loaded model double_pendulum from file /home/adam/Desktop/osmv/resources/opensim-models/Models/DoublePendulum/double_pendulum.osim
+[2021-01-13 10:35:25.640] [warning] Couldn't find file 'cylinder.vtp'.
+[2021-01-13 10:35:25.640] [warning] Couldn't find file 'sphere.vtp'.
+[2021-01-13 10:35:25.641] [warning] Couldn't find file 'cylinder.vtp'.
+[2021-01-13 10:35:25.641] [warning] Couldn't find file 'sphere.vtp'.
+[2021-01-13 10:35:26.335] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 10:35:26.363] [info] Loaded model gait10dof18musc.osim from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Gait10dof18musc/gait10dof18musc.osim
+[2021-01-13 10:35:26.363] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-01-13 10:35:26.363] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-01-13 10:35:26.363] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-01-13 10:35:26.363] [warning] Couldn't find file 'femur_r.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'tibia_r.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'fibula.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'talus.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'foot.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'femur_l.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'tibia_l.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'l_fibula.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'l_talus.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'l_foot.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'l_bofoot.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'hat_spine.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'hat_jaw.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'hat_skull.vtp'.
+[2021-01-13 10:35:26.364] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2021-01-13 10:35:26.364] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:26.364] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.364] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.365] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.365] [info] 'bifemsh_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.366] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.366] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.366] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.366] [info] 'iliopsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.367] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.367] [info] 'rect_fem_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.368] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.368] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.369] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.369] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.369] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.369] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.370] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.370] [info] 'tib_ant_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.371] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.371] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.372] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.372] [info] 'bifemsh_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.372] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.372] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.373] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.373] [info] 'iliopsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.374] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.374] [info] 'rect_fem_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.374] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.374] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.375] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.375] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.376] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.376] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.377] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.377] [info] 'tib_ant_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:26.377] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 10:35:26.385] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.386] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.388] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.389] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.391] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.392] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.393] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.394] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.395] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.396] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.396] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.397] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.398] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.399] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.400] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.400] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.401] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.402] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.404] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.405] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.405] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.406] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.407] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.407] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.408] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.409] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.409] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.410] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.410] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.411] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.412] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.412] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.413] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.413] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.414] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:26.415] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.337] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 10:35:27.368] [info] Loaded model walk_subject01 from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Gait10dof18musc/subject01_metabolics.osim
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'femur_r.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'tibia_r.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'fibula.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'talus.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'foot.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'femur_l.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'tibia_l.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'l_fibula.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'l_talus.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'l_foot.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'l_bofoot.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'hat_spine.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'hat_jaw.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'hat_skull.vtp'.
+[2021-01-13 10:35:27.368] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2021-01-13 10:35:27.369] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:27.369] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.369] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.369] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.369] [info] 'bifemsh_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.370] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.370] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.371] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.371] [info] 'iliopsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.372] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.372] [info] 'rect_fem_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.372] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.372] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.373] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.373] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.374] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.374] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.374] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.375] [info] 'tib_ant_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.375] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.375] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.376] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.376] [info] 'bifemsh_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.377] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.377] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.377] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.377] [info] 'iliopsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.378] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.378] [info] 'rect_fem_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.379] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.379] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.380] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.380] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.380] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.380] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.381] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.381] [info] 'tib_ant_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2021-01-13 10:35:27.382] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.
+[2021-01-13 10:35:27.386] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.387] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.389] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.391] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.392] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.395] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.397] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.399] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.400] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.401] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.402] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.403] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.404] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.404] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.405] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.406] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.407] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.408] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.410] [info] 'hamstrings_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.411] [info] 'bifemsh_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.411] [info] 'glut_max_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.412] [info] 'iliopsoas_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.413] [info] 'rect_fem_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.413] [info] 'vasti_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.414] [info] 'gastroc_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.414] [info] 'soleus_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.415] [info] 'tib_ant_r': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.416] [info] 'hamstrings_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.416] [info] 'bifemsh_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.417] [info] 'glut_max_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.417] [info] 'iliopsoas_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.418] [info] 'rect_fem_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.419] [info] 'vasti_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.419] [info] 'gastroc_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.420] [info] 'soleus_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:27.421] [info] 'tib_ant_l': Parameter update for the damped-model: minimum_activation was 0.01 but is now 0.01
+[2021-01-13 10:35:33.873] [info] Updating Model file from 30000 to latest format...
+[2021-01-13 10:35:33.890] [info] Loaded model leg39 from file /home/adam/Desktop/osmv/resources/opensim-models/Models/Leg39/leg39.osim
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'femur_r.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'tibia_r.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'fibula_R.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'pat.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'talus.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'foot.vtp'.
+[2021-01-13 10:35:33.891] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-01-13 10:35:33.891] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-01-13 10:35:33.891] [info] ComponentSet 'MiscComponents' was renamed and is being reset to 'componentset'.

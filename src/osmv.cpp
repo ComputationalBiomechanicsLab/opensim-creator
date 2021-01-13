@@ -64,9 +64,9 @@ int main(int argc, char** argv) {
 
     // no args: show splash screen
 	if (argc <= 0) {
-		osmv::Application application{};
+        osmv::Application application{};
         auto splash_screen = std::make_unique<osmv::Splash_screen>();
-        application.show(std::move(splash_screen));
+        application.start_render_loop(std::move(splash_screen));
 
         return EXIT_SUCCESS;
     }
@@ -107,8 +107,7 @@ int main(int argc, char** argv) {
     // a file in the OS's file explorer
 	osmv::Application application{};
 	auto loading_screen = std::make_unique<osmv::Loading_screen>(application, argv[0]);
-
-    application.show(std::move(loading_screen));
+    application.start_render_loop(std::move(loading_screen));
 
     return EXIT_SUCCESS;
 }

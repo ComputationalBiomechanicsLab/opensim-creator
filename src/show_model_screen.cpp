@@ -7,6 +7,7 @@
 #include "3d_common.hpp"
 #include "opensim_wrapper.hpp"
 #include "loading_screen.hpp"
+#include "splash_screen.hpp"
 #include "fd_simulation.hpp"
 #include "os.hpp"
 #include "cfg.hpp"
@@ -328,8 +329,8 @@ namespace osmv {
 
 
         Show_model_screen_impl(std::filesystem::path, osmv::Model);
-        Screen_response handle_event(Application&, SDL_Event&);
-        Screen_response tick(Application&);
+        void handle_event(Application&, SDL_Event&);
+        void tick();
         void draw(Application&);
 
         void on_user_edited_model();
@@ -365,14 +366,17 @@ osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Mod
     impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 osmv::Show_model_screen::~Show_model_screen() noexcept = default;
-osmv::Screen_response osmv::Show_model_screen::handle_event(Application& s, SDL_Event& e) {
-    return impl->handle_event(s, e);
+
+void osmv::Show_model_screen::on_event(SDL_Event& e) {
+    return impl->handle_event(application(), e);
 }
-osmv::Screen_response osmv::Show_model_screen::tick(Application& a) {
-    return impl->tick(a);
+
+void osmv::Show_model_screen::tick() {
+    return impl->tick();
 }
-void osmv::Show_model_screen::draw(osmv::Application& ui) {
-    impl->draw(ui);
+
+void osmv::Show_model_screen::draw() {
+    impl->draw(application());
 }
 
 
@@ -440,11 +444,11 @@ void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
 }
 
 // handle top-level UI event (user click, user drag, etc.)
-osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui, SDL_Event& e) {
+void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) {
 
     ImGuiIO& io = ImGui::GetIO();
-    sdl::Window_dimensions window_dims = ui.window_size();
-    float aspect_ratio = ui.aspect_ratio();
+    sdl::Window_dimensions window_dims = app.window_size();
+    float aspect_ratio = app.aspect_ratio();
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
@@ -454,7 +458,9 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    return Resp_transition{std::make_unique<osmv::Loading_screen>(ui, path.c_str())};
+                    auto loading_scr = std::make_unique<osmv::Loading_screen>(app, path.c_str());
+                    app.request_transition(std::move(loading_scr));
+                    return;
                 } else {
                     latest_state = osmv::init_system(model);
                     on_user_edited_state();
@@ -468,6 +474,10 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
                     simulator.emplace(model, latest_state, fd_final_time);
                 }
                 break;
+            case SDLK_ESCAPE:
+                auto splash_screen = std::make_unique<osmv::Splash_screen>();
+                app.request_transition(std::move(splash_screen));
+                return;
             }
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -493,13 +503,13 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             // if ImGUI wants to capture the mouse, then the mouse
             // is probably interacting with an ImGUI panel and,
             // therefore, the dragging/panning shouldn't be handled
-            return Resp_ok{};
+            return;
         }
 
         if (abs(e.motion.xrel) > 200 or abs(e.motion.yrel) > 200) {
             // probably a frameskip or the mouse was forcibly teleported
             // because it hit the edge of the screen
-            return Resp_ok{};
+            return;
         }
 
         if (dragging) {
@@ -537,27 +547,27 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
         if (dragging or panning) {
             constexpr int edge_width = 5;
             if (e.motion.x + edge_width > window_dims.w) {
-                ui.move_mouse_to(edge_width, e.motion.y);
+                app.move_mouse_to(edge_width, e.motion.y);
             }
             if (e.motion.x - edge_width < 0) {
-                ui.move_mouse_to(window_dims.w - edge_width, e.motion.y);
+                app.move_mouse_to(window_dims.w - edge_width, e.motion.y);
             }
             if (e.motion.y + edge_width > window_dims.h) {
-                ui.move_mouse_to(e.motion.x, edge_width);
+                app.move_mouse_to(e.motion.x, edge_width);
             }
             if (e.motion.y - edge_width < 0) {
-                ui.move_mouse_to(e.motion.x, window_dims.h - edge_width);
+                app.move_mouse_to(e.motion.x, window_dims.h - edge_width);
             }
         }
     } else if (e.type == SDL_WINDOWEVENT) {
-        window_dims = ui.window_size();
+        window_dims = app.window_size();
         glViewport(0, 0, window_dims.w, window_dims.h);
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (io.WantCaptureMouse) {
             // if ImGUI wants to capture the mouse, then the mouse
             // is probably interacting with an ImGUI panel and,
             // therefore, the dragging/panning shouldn't be handled
-            return Resp_ok{};
+            return;
         }
 
         if (e.wheel.y > 0 and radius >= 0.1f) {
@@ -568,21 +578,16 @@ osmv::Screen_response osmv::Show_model_screen_impl::handle_event(Application& ui
             radius /= wheel_sensitivity;
         }
     }
-
-    return Resp_ok{};
 }
 
 // "tick" the UI state (usually, used for updating animations etc.)
-osmv::Screen_response osmv::Show_model_screen_impl::tick(Application &) {
-
+void osmv::Show_model_screen_impl::tick() {
     // grab the latest state (if any) from the simulator and (if updated)
     // update the UI to reflect the latest state
     if (simulator and simulator->try_pop_latest_state(latest_state)) {
         osmv::realize_report(model, latest_state);
         update_outputs_from_latest_state();
     }
-
-    return Resp_ok{};
 }
 
 bool osmv::Show_model_screen_impl::simulator_running() {
@@ -608,6 +613,14 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
         meshes.resize(std::max(meshes.size(), mi.mesh_id + 1));
         meshes[mi.mesh_id] = Mesh_on_gpu{scratch.mesh};
     }
+
+    // HACK: the scene might contain blended (alpha < 1.0f) elements. These must
+    // be drawn last, ideally back-to-front (not yet implemented); otherwise,
+    // OpenGL will early-discard after the vertex shader when they fail a
+    // depth test
+    std::sort(geom.mesh_instances.begin(), geom.mesh_instances.end(), [](Mesh_instance const& a, Mesh_instance const& b) {
+        return a.rgba.a > b.rgba.a;
+    });
 
     // draw
     gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);

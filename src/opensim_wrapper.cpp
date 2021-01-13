@@ -1,6 +1,7 @@
 #include "opensim_wrapper.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include "cfg.hpp"
 
 #include <OpenSim/OpenSim.h>
 #include <iostream>
@@ -360,6 +361,16 @@ osmv::State& osmv::State::operator=(State&&) noexcept = default;
 osmv::State::~State() noexcept = default;
 
 osmv::Model osmv::load_osim(std::filesystem::path const& path) {
+    // HACK: osmv has a `geometry/` dir packaged with it, which OpenSim
+    //       should search in
+    //
+    //       this sets a global in OpenSim, so only needs to be called once
+    static bool _ = []() {
+        std::filesystem::path geometry_dir = cfg::resource_path("geometry");
+        ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir);
+        return true;
+    }();
+
     return Model{std::make_unique<OpenSim::Model>(path.string())};
 }
 

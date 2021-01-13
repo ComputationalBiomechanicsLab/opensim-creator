@@ -3,6 +3,7 @@
 #include "show_model_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "application.hpp"
+#include "splash_screen.hpp"
 
 #include "gl.hpp"
 #include "imgui.h"
@@ -35,12 +36,21 @@ namespace osmv {
         {
         }
 
-        osmv::Screen_response tick() {
+        void on_event(Application& app, SDL_Event& e) {
+            // ESCAPE: go to splash screen
+            if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+                auto splash_screen = std::make_unique<osmv::Splash_screen>();
+                app.request_transition(std::move(splash_screen));
+                return;
+            }
+        }
+
+        void tick(Application& app) {
 			// if there's an error, then the result came through (it's an error)
 			// and this screen will just continuously show the error with no
 			// recourse
             if (not error.empty()) {
-                return Resp_ok{};
+                return;
             }
 
 			// otherwise, there's no error, so the background thread is still
@@ -49,12 +59,12 @@ namespace osmv {
                 if (result.wait_for(0ms) == std::future_status::ready) {
                     osmv::Model m = result.get().value();
                     auto show_model_screen = std::make_unique<Show_model_screen>(path, std::move(m));
-                    return Resp_transition{std::move(show_model_screen)};
+                    app.request_transition(std::move(show_model_screen));
+                    return;
                 }
             } catch (std::exception const& ex) {
                 error = ex.what();
             }
-            return Resp_ok{};
         }
 
         void draw() {
@@ -84,11 +94,14 @@ osmv::Loading_screen::Loading_screen(Application& app, std::filesystem::path con
 }
 osmv::Loading_screen::~Loading_screen() noexcept = default;
 
-
-osmv::Screen_response osmv::Loading_screen::tick(Application&) {
-    return impl->tick();
+void osmv::Loading_screen::on_event(SDL_Event& e) {
+    impl->on_event(application(), e);
 }
 
-void osmv::Loading_screen::draw(Application&) {
+void osmv::Loading_screen::tick() {
+    return impl->tick(application());
+}
+
+void osmv::Loading_screen::draw() {
     impl->draw();
 }

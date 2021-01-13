@@ -24,7 +24,9 @@ namespace osmv {
         Application& operator=(Application&&) = delete;
         ~Application() noexcept;
 
-        void show(std::unique_ptr<osmv::Screen>);
+        void start_render_loop(std::unique_ptr<Screen>);
+        void request_transition(std::unique_ptr<osmv::Screen>);
+        void request_quit();
 
         // true if FPS is being throttled (e.g. with software (sleeps) or vsync)
         bool is_throttling_fps() const noexcept;
