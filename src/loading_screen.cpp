@@ -31,7 +31,7 @@ namespace osmv {
 
 			// immediately start loading the model file on a background thread
             result{std::async(std::launch::async, [&]() {
-                return std::optional<osmv::Model>{osmv::load_osim(path)};
+                return std::optional<osmv::Model>{path};
             })}
         {
         }

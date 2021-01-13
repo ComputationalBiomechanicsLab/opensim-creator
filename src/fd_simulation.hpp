@@ -28,7 +28,6 @@ namespace osmv {
     };
 
     struct Fd_simulation_impl;
-
     class Fd_simulation final {
         std::unique_ptr<Fd_simulation_impl> impl;
 
@@ -59,4 +58,7 @@ namespace osmv {
         double avg_ui_overhead() const;
         int num_states_popped() const;
     };
+
+	// just run a forward dynamics sim with default settings
+	osmv::State run_fd_simulation(OpenSim::Model& model);
 }

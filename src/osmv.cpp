@@ -3,8 +3,12 @@
 #include "os.hpp"
 #include "cfg.hpp"
 #include "opensim_wrapper.hpp"
+#include "fd_simulation.hpp"
+
 #include "loading_screen.hpp"
 #include "splash_screen.hpp"
+
+#include <OpenSim.h>
 
 #include <iostream>
 #include <cstring>
@@ -92,9 +96,9 @@ int main(int argc, char** argv) {
             return EXIT_FAILURE;
         }
 
-        osmv::Model m = osmv::load_osim(osim_path);
-        osmv::finalize_from_properties(m);
-        osmv::fd_simulation(m);
+		osmv::Model m{osim_path};
+		m->finalizeFromProperties();
+        osmv::run_fd_simulation(m);
 
         return EXIT_SUCCESS;
     }

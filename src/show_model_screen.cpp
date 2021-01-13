@@ -12,6 +12,7 @@
 #include "os.hpp"
 #include "cfg.hpp"
 #include "gl.hpp"
+#include "renderer.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
@@ -21,6 +22,132 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+
+#include "OpenSim.h"
+
+// info for a (data) output declared by the model
+//
+// pointers in this struct are dependent on the model: only use this in short-lived contexts
+// and don't let it survive during a model edit or model destruction
+struct Available_output final {
+	OpenSim::AbstractOutput const* handle;
+};
+
+static void snprintf(Available_output const& ao, char* buf, size_t n) {
+	std::snprintf(buf, n, "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
+}
+
+static bool produces_doubles(Available_output const& ao) noexcept {
+	return (not ao.handle->isListOutput()) and dynamic_cast<OpenSim::Output<double> const*>(ao.handle) != nullptr;
+}
+
+// flag-ified version of OpenSim::Coordinate::MotionType (easier ORing for filtering)
+enum Motion_type : int {
+	Undefined = 0,
+	Rotational = 1,
+	Translational = 2,
+	Coupled = 4,
+};
+static_assert(Motion_type::Undefined == 0);
+
+// info for a coordinate in a model
+//
+// pointers in this struct are dependent on the model: only use this in short-lived contexts
+// and don't let it survive during a model edit or model destruction
+struct Coordinate final {
+	OpenSim::Coordinate const* ptr;
+	std::string const* name;
+	float min;
+	float max;
+	float value;
+	Motion_type type;
+	bool locked;
+};
+
+// info for a muscle in a model
+//
+// pointers in this struct are dependent on the model: only use this in short-lived contexts
+// and don't let it survive during a model edit or model destruction
+struct Muscle_stat final {
+	OpenSim::Muscle const* ptr;
+	std::string const* name;
+	float length;
+};
+
+static Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
+	using OpenSim::Coordinate;
+
+	switch (m) {
+	case Coordinate::MotionType::Undefined:
+		return Motion_type::Undefined;
+	case Coordinate::MotionType::Rotational:
+		return Motion_type::Rotational;
+	case Coordinate::MotionType::Translational:
+		return Motion_type::Translational;
+	case Coordinate::MotionType::Coupled:
+		return Motion_type::Coupled;
+	default:
+		throw std::runtime_error{ "convert_to_osim_motiontype: unknown coordinate type encountered" };
+	}
+}
+
+static void get_coordinates(OpenSim::Model const& m, SimTK::State const& st, std::vector<Coordinate>& out) {
+	OpenSim::CoordinateSet const& s = m.getCoordinateSet();
+	int len = s.getSize();
+	out.reserve(out.size() + static_cast<size_t>(len));
+	for (int i = 0; i < len; ++i) {
+		OpenSim::Coordinate const& c = s[i];
+		out.push_back(Coordinate{
+			&c,
+			&c.getName(),
+			static_cast<float>(c.getRangeMin()),
+			static_cast<float>(c.getRangeMax()),
+			static_cast<float>(c.getValue(st)),
+			convert_to_osim_motiontype(c.getMotionType()),
+			c.getLocked(st),
+			});
+	}
+}
+
+static void get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
+	for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
+		out.push_back(Muscle_stat{
+			&musc,
+			&musc.getName(),
+			static_cast<float>(musc.getLength(s)),
+			});
+	}
+}
+
+static void compute_moment_arms(
+	OpenSim::Muscle const& muscle,
+	SimTK::State const& st,
+	OpenSim::Coordinate const& c,
+	float* out,
+	size_t steps) {
+
+	SimTK::State state = st;
+	muscle.getModel().realizeReport(state);
+
+	bool prev_locked = c.getLocked(state);
+	double prev_val = c.getValue(state);
+
+	c.setLocked(state, false);
+
+	double start = c.getRangeMin();
+	double end = c.getRangeMax();
+	double step = (end - start) / steps;
+
+	for (size_t i = 0; i < steps; ++i) {
+		double v = start + (i * step);
+		c.setValue(state, v);
+		out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
+	}
+
+	c.setLocked(state, prev_locked);
+	c.setValue(state, prev_val);
+}
+
 
 namespace osmv {
     // renders uniformly colored geometry with Gouraud shading
@@ -188,7 +315,7 @@ namespace osmv {
         static constexpr size_t max_datapoints = 256;
         static_assert(max_datapoints % 2 == 0, "num datapoints must be even because the impl uses integer division");
 
-        osmv::Available_output ao;
+        Available_output ao;
         std::array<float, max_datapoints> data;
         size_t n = 0;
         float x_step = min_x_step;
@@ -196,7 +323,7 @@ namespace osmv {
         float min = std::numeric_limits<float>::max();
         float max = std::numeric_limits<float>::min();
 
-        Hacky_output_sparkline(osmv::Available_output _ao) :
+        Hacky_output_sparkline(Available_output _ao) :
             ao{std::move(_ao)} {
         }
 
@@ -321,9 +448,9 @@ namespace osmv {
         // tab: outputs
         struct {
             char filter[64]{};
-            std::vector<osmv::Available_output> available;
-            std::optional<osmv::Available_output> selected;
-            std::vector<osmv::Available_output> watches;
+            std::vector<Available_output> available;
+            std::optional<Available_output> selected;
+            std::vector<Available_output> watches;
             std::vector<std::unique_ptr<Hacky_output_sparkline>> plots;
         } t_outputs;
 
@@ -350,7 +477,7 @@ namespace osmv {
         void draw_lhs_panel();
         void draw_simulate_tab();
         void draw_coords_tab();
-        void draw_coordinate_slider(osmv::Coordinate const&);
+        void draw_coordinate_slider(Coordinate const&);
         void draw_utils_tab();
         void draw_muscles_tab();
         void draw_mas_tab();
@@ -390,9 +517,9 @@ osmv::Show_model_screen_impl::Show_model_screen_impl(
     path{std::move(_path)},
     model{std::move(_model)},
     latest_state{[this]() {
-        osmv::finalize_from_properties(model);
-        osmv::State s{osmv::init_system(model)};
-        osmv::realize_report(model, s);
+		model->finalizeFromProperties();
+        osmv::State s{model->initSystem()};
+		model->realizeReport(s);
         return s;
     }()}
 {
@@ -407,8 +534,8 @@ void osmv::Show_model_screen_impl::on_user_edited_model() {
     t_outputs.selected = std::nullopt;
     t_outputs.plots.clear();
 
-    latest_state = osmv::init_system(model);
-    osmv::realize_report(model, latest_state);
+	latest_state = model->initSystem();
+	model->realizeReport(latest_state);
 }
 
 void osmv::Show_model_screen_impl::on_user_edited_state() {
@@ -417,7 +544,7 @@ void osmv::Show_model_screen_impl::on_user_edited_state() {
         simulator->request_stop();
     }
 
-    osmv::realize_report(model, latest_state);
+	model->realizeReport(latest_state);
 
     // clear all output plots, because the user *probably* wants to see fresh
     // data after resetting the state
@@ -428,7 +555,7 @@ void osmv::Show_model_screen_impl::on_user_edited_state() {
 
 // update currently-recording outputs after the state has been updated
 void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
-    float sim_millis = 1000.0f * static_cast<float>(osmv::simulation_time(latest_state));
+    float sim_millis = 1000.0f * static_cast<float>(latest_state->getTime());
 
     for (std::unique_ptr<Hacky_output_sparkline>& p : t_outputs.plots) {
         Hacky_output_sparkline& hos = *p;
@@ -436,7 +563,9 @@ void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
         // only certain types of output are plottable at the moment
         assert(hos.ao.is_single_double_val);
 
-        double v = osmv::get_output_val_double(*hos.ao.handle, latest_state);
+		auto* o = dynamic_cast<OpenSim::Output<double> const*>(hos.ao.handle);
+		assert(o);
+        double v = o->getValue(latest_state);
         float fv = static_cast<float>(v);
 
         hos.push_datapoint(sim_millis, fv);
@@ -461,7 +590,7 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
                     app.request_transition<Loading_screen>(path);
                     return;
                 } else {
-                    latest_state = osmv::init_system(model);
+					latest_state = model->initSystem();
                     on_user_edited_state();
                 }
                 break;
@@ -583,7 +712,7 @@ void osmv::Show_model_screen_impl::tick() {
     // grab the latest state (if any) from the simulator and (if updated)
     // update the UI to reflect the latest state
     if (simulator and simulator->try_pop_latest_state(latest_state)) {
-        osmv::realize_report(model, latest_state);
+		model->realizeReport(latest_state);
         update_outputs_from_latest_state();
     }
 }
@@ -841,7 +970,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
 
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
-        latest_state = osmv::init_system(model);
+		latest_state = model->initSystem();
         on_user_edited_state();
     }
 
@@ -987,23 +1116,23 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     // get coords
 
     scratch.coords.clear();
-    osmv::get_coordinates(model, latest_state, scratch.coords);
+    get_coordinates(model, latest_state, scratch.coords);
 
 
     // apply filters etc.
 
     int coordtypes_to_filter_out = 0;
     if (not t_coords.show_rotational) {
-        coordtypes_to_filter_out |= osmv::Rotational;
+        coordtypes_to_filter_out |= Rotational;
     }
     if (not t_coords.show_translational) {
-        coordtypes_to_filter_out |= osmv::Translational;
+        coordtypes_to_filter_out |= Translational;
     }
     if (not t_coords.show_coupled) {
-        coordtypes_to_filter_out |= osmv::Coupled;
+        coordtypes_to_filter_out |= Coupled;
     }
 
-    auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), [&](osmv::Coordinate const& c) {
+    auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), [&](Coordinate const& c) {
         if (c.type & coordtypes_to_filter_out) {
             return true;
         }
@@ -1017,7 +1146,7 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     scratch.coords.erase(it, scratch.coords.end());
 
     if (t_coords.sort_by_name) {
-        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osmv::Coordinate const& c1, osmv::Coordinate const& c2) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](Coordinate const& c1, Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
     }
@@ -1030,7 +1159,7 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     ImGui::Separator();
 
     int i = 0;
-    for (osmv::Coordinate const& c : scratch.coords) {
+    for (Coordinate const& c : scratch.coords) {
         ImGui::PushID(i++);
         draw_coordinate_slider(c);
         ImGui::PopID();
@@ -1039,19 +1168,14 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
 
 static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
 
-void osmv::Show_model_screen_impl::draw_coordinate_slider(osmv::Coordinate const& c) {
+void osmv::Show_model_screen_impl::draw_coordinate_slider(Coordinate const& c) {
     // lock button
     if (c.locked) {
         ImGui::PushStyleColor(ImGuiCol_FrameBg, dark_red);
     }
 
-    char const* btn_label = c.locked ? "u" : "l";
-    if (ImGui::Button(btn_label)) {
-        if (c.locked) {
-            osmv::unlock_coord(*c.ptr, latest_state);
-        } else {
-            osmv::lock_coord(*c.ptr, latest_state);
-        }
+    if (ImGui::Button(c.locked ? "u" : "l")) {
+		c.ptr->setLocked(latest_state, not false);
         on_user_edited_state();
     }
 
@@ -1060,7 +1184,7 @@ void osmv::Show_model_screen_impl::draw_coordinate_slider(osmv::Coordinate const
 
     float v = c.value;
     if (ImGui::SliderFloat(c.name->c_str(), &v, c.min, c.max)) {
-        osmv::set_coord_value(*c.ptr, latest_state, static_cast<double>(v));
+		c.ptr->setValue(latest_state, static_cast<double>(v));
         on_user_edited_state();
     }
 
@@ -1075,23 +1199,52 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
     ImGui::Text("wrapping surfaces: ");
     ImGui::SameLine();
     if (ImGui::Button("disable")) {
-        osmv::disable_wrapping_surfaces(model);
+		OpenSim::Model& m = model;
+		for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+			for (int i = 0; i < wos.getSize(); ++i) {
+				OpenSim::WrapObject& wo = wos[i];
+				wo.set_active(false);
+				wo.upd_Appearance().set_visible(false);
+			}
+		}
         on_user_edited_model();
     }
     ImGui::SameLine();
     if (ImGui::Button("enable")) {
-        osmv::enable_wrapping_surfaces(model);
+		OpenSim::Model& m = model;
+		for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+			for (int i = 0; i < wos.getSize(); ++i) {
+				OpenSim::WrapObject& wo = wos[i];
+				wo.set_active(true);
+				wo.upd_Appearance().set_visible(true);
+			}
+		}
         on_user_edited_model();
     }
+
+	if (ImGui::Button("redify")) {
+		OpenSim::Model& m = model;
+		for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
+			g.setColor({ 1.0, 0.0, 0.0 });
+		}
+	}
+
+	thread_local float red = 0.0f;
+	if (ImGui::SliderFloat("red", &red, 0.0f, 1.0f)) {
+		OpenSim::Model& m = model;
+		for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
+			g.setColor({ red, 0.0, 0.0 });
+		}
+	}
 }
 
 void osmv::Show_model_screen_impl::draw_muscles_tab() {
     // extract muscles details from model
     scratch.muscles.clear();
-    osmv::get_muscle_stats(model, latest_state, scratch.muscles);
+    get_muscle_stats(model, latest_state, scratch.muscles);
 
     // sort muscles alphabetically by name
-    std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osmv::Muscle_stat const& m1, osmv::Muscle_stat const& m2) {
+    std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
         return *m1.name < *m2.name;
     });
 
@@ -1100,10 +1253,12 @@ void osmv::Show_model_screen_impl::draw_muscles_tab() {
     ImGui::Separator();
 
     // draw muscle list
-    for (osmv::Muscle_stat const& musc : scratch.muscles) {
-        if (musc.name->find(t_muscs.filter) != musc.name->npos) {
-            ImGui::Text("%s (len = %.3f)", musc.name->c_str(), static_cast<double>(musc.length));
-        }
+    for (Muscle_stat const& musc : scratch.muscles) {
+		if (musc.length > 0.5) {
+			if (musc.name->find(t_muscs.filter) != musc.name->npos) {
+				ImGui::Text("%s (len = %.3f)", musc.name->c_str(), static_cast<double>(musc.length));
+			}
+		}
     }
 }
 
@@ -1115,16 +1270,16 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     // lhs: muscle selection
     {
         scratch.muscles.clear();
-        osmv::get_muscle_stats(model, latest_state, scratch.muscles);
+        get_muscle_stats(model, latest_state, scratch.muscles);
 
         // usability: sort by name
-        std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](osmv::Muscle_stat const& m1, osmv::Muscle_stat const& m2) {
+        std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
             return *m1.name < *m2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotMuscleSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osmv::Muscle_stat const& m : scratch.muscles) {
+        for (Muscle_stat const& m : scratch.muscles) {
             if (ImGui::Selectable(m.name->c_str(), m.name == t_mas.selected_musc)) {
                 t_mas.selected_musc = m.name;
             }
@@ -1135,16 +1290,16 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     // rhs: coord selection
     {
         scratch.coords.clear();
-        osmv::get_coordinates(model, latest_state, scratch.coords);
+        get_coordinates(model, latest_state, scratch.coords);
 
         // usability: sort by name
-        std::sort(scratch.coords.begin(), scratch.coords.end(), [](osmv::Coordinate const& c1, osmv::Coordinate const& c2) {
+        std::sort(scratch.coords.begin(), scratch.coords.end(), [](Coordinate const& c1, Coordinate const& c2) {
             return *c1.name < *c2.name;
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild("MomentArmPlotCoordSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
-        for (osmv::Coordinate const& c : scratch.coords) {
+        for (Coordinate const& c : scratch.coords) {
             if (ImGui::Selectable(c.name->c_str(), c.name == t_mas.selected_coord)) {
                 t_mas.selected_coord = c.name;
             }
@@ -1158,14 +1313,14 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         if (ImGui::Button("+ add plot")) {
             auto it = std::find_if(scratch.muscles.begin(),
                                    scratch.muscles.end(),
-                                   [this](osmv::Muscle_stat const& ms) {
+                                   [this](Muscle_stat const& ms) {
                     return ms.name == t_mas.selected_musc;
             });
             assert(it != scratch.muscles.end());
 
             auto it2 = std::find_if(scratch.coords.begin(),
                                     scratch.coords.end(),
-                                    [this](osmv::Coordinate const& c) {
+                                    [this](Coordinate const& c) {
                     return c.name == t_mas.selected_coord;
             });
             assert(it2 != scratch.coords.end());
@@ -1177,7 +1332,7 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
             p->x_end = it2->max;
 
             // populate y values
-            osmv::compute_moment_arms(
+            compute_moment_arms(
                 *it->ptr,
                 latest_state,
                 *it2->ptr,
@@ -1241,17 +1396,35 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     ImGui::Columns();
 }
 
+inline bool operator==(Available_output const& a, Available_output const& b) {
+	return a.handle == b.handle;
+}
+
+static void get_available_outputs(OpenSim::Model const& m, std::vector<Available_output>& out) {
+	// model-level outputs (e.g. kinetic energy)
+	for (auto const& p : m.getOutputs()) {
+		out.push_back(Available_output{p.second.get()});
+	}
+
+	// muscle outputs
+	for (auto const& musc : m.getComponentList<OpenSim::Muscle>()) {
+		for (auto const& p : musc.getOutputs()) {
+			out.push_back(Available_output{p.second.get()});
+		}
+	}
+}
+
 void osmv::Show_model_screen_impl::draw_outputs_tab() {
     t_outputs.available.clear();
-    osmv::get_available_outputs(model, t_outputs.available);
+	get_available_outputs(model, t_outputs.available);
 
     // apply user filters
     {
         auto it = std::remove_if(
                     t_outputs.available.begin(),
                     t_outputs.available.end(),
-                    [&](osmv::Available_output const& ao) {
-                snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+                    [&](Available_output const& ao) {
+                snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
                 return std::strstr(scratch.text, t_outputs.filter) == nullptr;
         });
         t_outputs.available.erase(it, t_outputs.available.end());
@@ -1266,7 +1439,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
     if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
         for (auto const& ao : t_outputs.available) {
-            snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.owner_name->c_str(), ao.output_name->c_str());
+            snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
             if (ImGui::Selectable(scratch.text, ao == t_outputs.selected)) {
                 t_outputs.selected = ao;
             }
@@ -1276,7 +1449,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
 
     // buttons: "watch" and "plot"
     if (t_outputs.selected) {
-        osmv::Available_output const& selected = t_outputs.selected.value();
+        Available_output const& selected = t_outputs.selected.value();
 
         // all outputs can be "watch"ed
         if (ImGui::Button("watch selected")) {
@@ -1285,7 +1458,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
         }
 
         // only some outputs can be plotted
-        if (selected.is_single_double_val) {
+        if (produces_doubles(selected)) {
             ImGui::SameLine();
             if (ImGui::Button("plot selected")) {
                 auto p = std::make_unique<Hacky_output_sparkline>(selected);
@@ -1299,9 +1472,9 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     if (not t_outputs.watches.empty()) {
         ImGui::Text("watches:");
         ImGui::Separator();
-        for (osmv::Available_output const& ao : t_outputs.watches) {
-            std::string v = osmv::get_output_val_any(*ao.handle, latest_state);
-            ImGui::Text("    %s/%s: %s", ao.owner_name->c_str(), ao.output_name->c_str(), v.c_str());
+        for (Available_output const& ao : t_outputs.watches) {
+            std::string v = ao.handle->getValueAsString(latest_state);
+            ImGui::Text("    %s/%s: %s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
         }
     }
 
@@ -1325,7 +1498,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
                 std::numeric_limits<float>::max(),
                 ImVec2(0, 100.0f));
             ImGui::NextColumn();
-            ImGui::Text("%s/%s", hos.ao.owner_name->c_str(), hos.ao.output_name->c_str());
+            ImGui::Text("%s/%s", hos.ao.handle->getOwner().getName().c_str(), hos.ao.handle->getName().c_str());
             ImGui::Text("n = %zu", hos.n);
             ImGui::Text("t = %f", static_cast<double>(hos.latest_x));
             ImGui::Text("min: %.3f", static_cast<double>(hos.min));

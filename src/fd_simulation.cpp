@@ -3,6 +3,9 @@
 #include "opensim_wrapper.hpp"
 #include "shims.hpp"
 
+#include <OpenSim.h>
+#include <optional>
+
 // status of an OpenSim simulation
 enum class Sim_status {
     Running = 1,
@@ -82,15 +85,97 @@ struct Threadsafe_fdsim_state {
     }
 };
 
+
+// response from integration step callback
+enum class Callback_response {
+	Ok,               // callback executed ok
+	Please_halt       // callback wants the simulator to halt
+};
+
+// top-level configuration for a basic forward-dynamic sim
+struct Fd_sim_config final {
+	double final_time = 0.4;
+	int max_steps = 20000;
+	double min_step_size = 1.0e-8;
+	double max_step_size = 1.0;
+	double integrator_accuracy = 1.0e-5;
+	std::optional<std::function<Callback_response(SimTK::State const&)>> on_integration_step = std::nullopt;
+};
+
+// analysis: per integration step
+struct CustomAnalysis final : public OpenSim::Analysis {
+	OpenSim::Manager& manager;
+	std::function<Callback_response(SimTK::State const&)> on_integration_step;
+
+	CustomAnalysis(OpenSim::Manager& _m, std::function<Callback_response(SimTK::State const&)> _f) :
+		manager{ _m },
+		on_integration_step{ std::move(_f) } {
+	}
+
+	int begin(SimTK::State const& s) override {
+		if (on_integration_step(s) == Callback_response::Please_halt) {
+			manager.halt();
+		}
+		return 0;
+	}
+
+	int step(SimTK::State const& s, int) override {
+		if (on_integration_step(s) == Callback_response::Please_halt) {
+			manager.halt();
+		}
+		return 0;
+	}
+
+	int end(SimTK::State const& s) override {
+		if (on_integration_step(s) == Callback_response::Please_halt) {
+			manager.halt();
+		}
+		return 0;
+	}
+
+	CustomAnalysis* clone() const override {
+		return new CustomAnalysis{ manager, on_integration_step };
+	}
+
+	std::string const& getConcreteClassName() const override {
+		static std::string const name = "CustomAnalysis";
+		return name;
+	}
+};
+
+static osmv::State fd_simulation(OpenSim::Model& model, osmv::State initial_state, Fd_sim_config const& config) {
+	OpenSim::Manager manager{model};
+
+	if (config.on_integration_step) {
+		model.addAnalysis(new CustomAnalysis{ manager, *config.on_integration_step });
+	}
+
+	manager.setWriteToStorage(false);
+	manager.setIntegratorInternalStepLimit(config.max_steps);
+	manager.setIntegratorMaximumStepSize(config.max_step_size);
+	manager.setIntegratorMinimumStepSize(config.min_step_size);
+	manager.setIntegratorAccuracy(config.integrator_accuracy);
+
+	model.getMultibodySystem().realize(initial_state, SimTK::Stage::Position);
+	model.equilibrateMuscles(initial_state);
+
+	manager.initialize(initial_state);
+	return osmv::State{manager.integrate(config.final_time)};
+}
+
+osmv::State osmv::run_fd_simulation(OpenSim::Model& model) {
+	return fd_simulation(model, osmv::State{model.initSystem()}, Fd_sim_config{});
+}
+
 // runs a forward dynamic simuation, updating `shared` (which is designed to
 // be thread-safe) as it runs
-static int run_fd_simulation(
+static int _run_fd_simulation(
         shims::stop_token stop_tok,
         osmv::Fd_simulation_params params,
         Threadsafe_fdsim_state& shared) {
 
-    osmv::finalize_properties_from_state(params.model, shared.state.v);
-    osmv::init_system(params.model);
+	params.model->setPropertiesFromState(shared.state.v);
+	params.model->initSystem();
 
     using clock = std::chrono::steady_clock;
 
@@ -100,7 +185,7 @@ static int run_fd_simulation(
     clock::time_point simulation_thread_started = clock::now();
     clock::time_point last_report_end = clock::now();
 
-    osmv::Fd_sim_config config;
+    Fd_sim_config config;
     config.final_time = params.final_time;
     config.on_integration_step = [&shared, &stop_tok, &params, &last_report_end, &simulation_thread_started](SimTK::State const& s) {
         // if a stop was requested, throw an exception to interrupt the simulation
@@ -109,7 +194,7 @@ static int run_fd_simulation(
         // solution would evaluate the token mid-simulation and interrupt it gracefully.
         if (stop_tok.stop_requested()) {
             shared.status = Sim_status::Cancelled;
-            return osmv::Callback_response::Please_halt;
+            return Callback_response::Please_halt;
         }
 
         clock::time_point report_start = clock::now();
@@ -120,7 +205,7 @@ static int run_fd_simulation(
             //
             // this is important in very cheap simulations that run *much* faster
             // than wall time, where the user won't be able to see each state
-            double sim_secs = osmv::simulation_time(s);
+            double sim_secs = s.getTime();
             std::chrono::microseconds sim_micros{static_cast<long>(1000000.0 * sim_secs)};
             std::chrono::microseconds real_micros = std::chrono::duration_cast<std::chrono::microseconds>(report_start - simulation_thread_started);
             if (sim_micros > real_micros) {
@@ -131,8 +216,9 @@ static int run_fd_simulation(
         shared.state.try_apply_a([&s](osmv::State& s_other) {
             s_other = s;
         });
-        shared.num_pq_calls = osmv::num_prescribeq_calls(params.model);
-        shared.sim_cur_time = osmv::simulation_time(s);
+
+        shared.num_pq_calls = params.model->getSystem().getNumPrescribeQCalls();
+		shared.sim_cur_time = s.getTime();
 
         clock::time_point report_end = clock::now();
 
@@ -146,12 +232,12 @@ static int run_fd_simulation(
         last_report_end = report_end;
         ++shared.ui_overhead_n;
 
-        return osmv::Callback_response::Ok;
+        return Callback_response::Ok;
     };
 
     // run the simulation
     try {
-        osmv::fd_simulation(params.model, std::move(params.initial_state), std::move(config));
+        fd_simulation(params.model, std::move(params.initial_state), std::move(config));
         shared.wall_end = clock::now().time_since_epoch();
         shared.status = Sim_status::Completed;
     } catch (...) {
@@ -184,7 +270,7 @@ namespace osmv {
             shared{State{p.initial_state}},
 
             // start the simulation
-            worker{run_fd_simulation, std::move(p), std::ref(shared)}
+            worker{_run_fd_simulation, std::move(p), std::ref(shared)}
         {
         }
     };

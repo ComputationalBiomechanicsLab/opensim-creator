@@ -350,12 +350,12 @@ namespace osmv {
 
                 if (software_throttle) {
                     // APPROXIMATION: rendering **the next frame** will take roughly as long as it
-                    // took to render this frame. Assume worst case is 30 % longer (also, the thread
+                    // took to render this frame. Assume worst case is 2x longer (also, the thread
                     // might wake up a little late).
 
                     auto frame_end = std::chrono::high_resolution_clock::now();
                     auto this_frame_dur = frame_end - frame_start;
-                    auto next_frame_estimation = 1.3 * this_frame_dur;
+                    auto next_frame_estimation = 4 * this_frame_dur;
                     if (next_frame_estimation < millis_between_frames) {
                         auto dt = millis_between_frames - next_frame_estimation;
                         auto dt_millis = std::chrono::duration_cast<std::chrono::milliseconds>(dt);
