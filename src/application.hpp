@@ -25,7 +25,19 @@ namespace osmv {
         ~Application() noexcept;
 
         void start_render_loop(std::unique_ptr<Screen>);
+
+        template<typename T, typename ...Args>
+        void start_render_loop(Args&&... args) {
+            start_render_loop(std::make_unique<T>(std::forward<Args>(args)...));
+        }
+
         void request_transition(std::unique_ptr<osmv::Screen>);
+
+        template<typename T, typename ...Args>
+        void request_transition(Args&&... args) {
+            request_transition(std::make_unique<T>(std::forward<Args>(args)...));
+        }
+
         void request_quit();
 
         // true if FPS is being throttled (e.g. with software (sleeps) or vsync)

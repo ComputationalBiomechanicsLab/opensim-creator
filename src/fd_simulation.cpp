@@ -97,11 +97,12 @@ static int run_fd_simulation(
     shared.wall_start = clock::now().time_since_epoch();
     shared.status = Sim_status::Running;
 
+    clock::time_point simulation_thread_started = clock::now();
     clock::time_point last_report_end = clock::now();
 
     osmv::Fd_sim_config config;
     config.final_time = params.final_time;
-    config.on_integration_step = [&shared, &stop_tok, &params, &last_report_end](SimTK::State const& s) {
+    config.on_integration_step = [&shared, &stop_tok, &params, &last_report_end, &simulation_thread_started](SimTK::State const& s) {
         // if a stop was requested, throw an exception to interrupt the simulation
         //
         // this (hacky) approach is because the simulation is black-boxed at the moment - a better
@@ -112,6 +113,20 @@ static int run_fd_simulation(
         }
 
         clock::time_point report_start = clock::now();
+
+        if (params.throttle_to_wall_time) {
+            // caller requests that the simulation thread tries to run roughly as
+            // fast as wall time
+            //
+            // this is important in very cheap simulations that run *much* faster
+            // than wall time, where the user won't be able to see each state
+            double sim_secs = osmv::simulation_time(s);
+            std::chrono::microseconds sim_micros{static_cast<long>(1000000.0 * sim_secs)};
+            std::chrono::microseconds real_micros = std::chrono::duration_cast<std::chrono::microseconds>(report_start - simulation_thread_started);
+            if (sim_micros > real_micros) {
+                std::this_thread::sleep_for(sim_micros - real_micros);
+            }
+        }
 
         shared.state.try_apply_a([&s](osmv::State& s_other) {
             s_other = s;

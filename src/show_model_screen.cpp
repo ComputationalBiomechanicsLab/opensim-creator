@@ -458,8 +458,7 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    auto loading_scr = std::make_unique<osmv::Loading_screen>(path);
-                    app.request_transition(std::move(loading_scr));
+                    app.request_transition<Loading_screen>(path);
                     return;
                 } else {
                     latest_state = osmv::init_system(model);
@@ -475,8 +474,7 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
                 }
                 break;
             case SDLK_ESCAPE:
-                auto splash_screen = std::make_unique<osmv::Splash_screen>();
-                app.request_transition(std::move(splash_screen));
+                app.request_transition<Splash_screen>();
                 return;
             }
         }

@@ -53,9 +53,7 @@ namespace osmv {
                 if (SDLK_1 <= sym and sym <= SDLK_9) {
                     size_t idx = static_cast<size_t>(sym - SDLK_1);
                     if (idx < example_osims.size()) {
-                        fs::path const& p = example_osims[idx];
-                        auto s = std::make_unique<osmv::Loading_screen>(p);
-                        app.request_transition(std::move(s));
+                        app.request_transition<Loading_screen>(example_osims[idx]);
                         return;
                     }
                 }

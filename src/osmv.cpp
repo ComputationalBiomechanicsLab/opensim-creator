@@ -64,9 +64,8 @@ int main(int argc, char** argv) {
 
     // no args: show splash screen
 	if (argc <= 0) {
-        osmv::Application application{};
-        auto splash_screen = std::make_unique<osmv::Splash_screen>();
-        application.start_render_loop(std::move(splash_screen));
+        osmv::Application application;
+        application.start_render_loop<osmv::Splash_screen>();
 
         return EXIT_SUCCESS;
     }
@@ -105,9 +104,8 @@ int main(int argc, char** argv) {
     // the reason the subcommands are designed this way (rather than having a separate 'gui'
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
-	osmv::Application application{};
-    auto loading_screen = std::make_unique<osmv::Loading_screen>(argv[0]);
-    application.start_render_loop(std::move(loading_screen));
+    osmv::Application application;
+    application.start_render_loop<osmv::Loading_screen>(argv[0]);
 
     return EXIT_SUCCESS;
 }

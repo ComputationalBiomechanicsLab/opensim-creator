@@ -39,8 +39,7 @@ namespace osmv {
         void on_event(Application& app, SDL_Event& e) {
             // ESCAPE: go to splash screen
             if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-                auto splash_screen = std::make_unique<osmv::Splash_screen>();
-                app.request_transition(std::move(splash_screen));
+                app.request_transition<osmv::Splash_screen>();
                 return;
             }
         }
@@ -57,9 +56,7 @@ namespace osmv {
 			// loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
-                    osmv::Model m = result.get().value();
-                    auto show_model_screen = std::make_unique<Show_model_screen>(path, std::move(m));
-                    app.request_transition(std::move(show_model_screen));
+                    app.request_transition<Show_model_screen>(path, result.get().value());
                     return;
                 }
             } catch (std::exception const& ex) {
