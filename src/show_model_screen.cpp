@@ -18,12 +18,12 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "imgui.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 #include <string>
 #include <vector>
 #include <stdexcept>
-
-#include "OpenSim.h"
+#include <optional>
 
 // info for a (data) output declared by the model
 //
@@ -150,161 +150,6 @@ static void compute_moment_arms(
 
 
 namespace osmv {
-    // renders uniformly colored geometry with Gouraud shading
-    struct Uniform_color_gouraud_shader final {
-        gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(cfg::shader_path("main.vert")),
-            gl::Compile<gl::Fragment_shader>(cfg::shader_path("main.frag")));
-
-        static constexpr gl::Attribute location{0};
-        static constexpr gl::Attribute in_normal{1};
-
-        gl::Uniform_mat4 projMat = {program, "projMat"};
-        gl::Uniform_mat4 viewMat = {program, "viewMat"};
-        gl::Uniform_mat4 modelMat = {program, "modelMat"};
-        gl::Uniform_mat4 normalMat = {program, "normalMat"};
-        gl::Uniform_vec4 rgba = {program, "rgba"};
-        gl::Uniform_vec3 light_pos = {program, "lightPos"};
-        gl::Uniform_vec3 light_color = {program, "lightColor"};
-        gl::Uniform_vec3 view_pos = {program, "viewPos"};
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(location);
-            gl::VertexAttribPointer(in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
-            gl::EnableVertexAttribArray(in_normal);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
-
-    // renders textured geometry with no shading
-    struct Plain_texture_shader final {
-        gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(cfg::shader_path("floor.vert")),
-            gl::Compile<gl::Fragment_shader>(cfg::shader_path("floor.frag")));
-
-        static constexpr gl::Attribute aPos{0};
-        static constexpr gl::Attribute aTexCoord{1};
-
-        gl::Uniform_mat4 projMat = {p, "projMat"};
-        gl::Uniform_mat4 viewMat = {p, "viewMat"};
-        gl::Uniform_mat4 modelMat = {p, "modelMat"};
-        gl::Uniform_sampler2d uSampler0 = {p, "uSampler0"};
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
-            gl::EnableVertexAttribArray(aTexCoord);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
-
-    // renders normals using a geometry shader
-    struct Normals_shader final {
-        gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(cfg::shader_path("normals.vert")),
-            gl::Compile<gl::Fragment_shader>(cfg::shader_path("normals.frag")),
-            gl::Compile<gl::Geometry_shader>(cfg::shader_path("normals.geom")));
-
-        static constexpr gl::Attribute aPos{0};
-        static constexpr gl::Attribute aNormal{1};
-
-        gl::Uniform_mat4 projMat = {program, "projMat"};
-        gl::Uniform_mat4 viewMat = {program, "viewMat"};
-        gl::Uniform_mat4 modelMat = {program, "modelMat"};
-        gl::Uniform_mat4 normalMat = {program, "normalMat"};
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
-            gl::EnableVertexAttribArray(aNormal);
-            gl::BindVertexArray();
-            return vao;
-        }
-    };
-
-    // uses the floor shader to render the scene's chequered floor
-    struct Floor_renderer final {
-        Plain_texture_shader s;
-
-        gl::Array_bufferT<Shaded_textured_vert> vbo = []() {
-            auto copy = shaded_textured_quad_verts;
-            for (Shaded_textured_vert& st : copy) {
-                st.texcoord *= 50.0f;  // make chequers smaller
-            }
-            return gl::Array_bufferT<Shaded_textured_vert>{copy};
-        }();
-
-        gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
-        gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
-        glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), pi_f/2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
-
-        void draw(glm::mat4 const& proj, glm::mat4 const& view) {
-            gl::UseProgram(s.p);
-
-            gl::Uniform(s.projMat, proj);
-            gl::Uniform(s.viewMat, view);
-            gl::Uniform(s.modelMat, model_mtx);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(floor_texture);
-            gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
-            gl::BindVertexArray();
-        }
-    };
-
-    // OpenSim mesh shown in main window
-    class Mesh_on_gpu final {
-        gl::Array_bufferT<osmv::Untextured_vert> vbo;
-        gl::Vertex_array main_vao;
-        gl::Vertex_array normal_vao;
-
-    public:
-        Mesh_on_gpu(std::vector<Untextured_vert> const& m) :
-            vbo{m},
-            main_vao{Uniform_color_gouraud_shader::create_vao(vbo)},
-            normal_vao{Normals_shader::create_vao(vbo)} {
-        }
-
-        template<typename T>
-        gl::Vertex_array& vao_for() noexcept;
-
-        int sizei() const noexcept {
-            return vbo.sizei();
-        }
-    };
-
-    template<>
-    gl::Vertex_array& Mesh_on_gpu::vao_for<Uniform_color_gouraud_shader>() noexcept {
-        return main_vao;
-    }
-
-    template<>
-    gl::Vertex_array& Mesh_on_gpu::vao_for<Normals_shader>() noexcept {
-        return normal_vao;
-    }
 
     // holds a fixed number of Y datapoints that are assumed to be evenly spaced in X
     //
@@ -375,7 +220,6 @@ namespace osmv {
             char text[1024 + 1];
             std::vector<Coordinate> coords;
             std::vector<Muscle_stat> muscles;
-            std::vector<Untextured_vert> mesh;
         } scratch;
 
         // model
@@ -383,42 +227,8 @@ namespace osmv {
         osmv::Model model;
         osmv::State latest_state;
 
-        // 3D rendering
-        Uniform_color_gouraud_shader color_shader;
-        Normals_shader normals_shader;
-        Floor_renderer floor_renderer;
-        std::vector<std::optional<Mesh_on_gpu>> meshes;  // indexed by meshid
-        osmv::State_geometry geom;
-        osmv::Geometry_loader geom_loader;
-        Mesh_on_gpu sphere = [&]() {
-            scratch.mesh.clear();
-            osmv::unit_sphere_triangles(scratch.mesh);
-            return Mesh_on_gpu{scratch.mesh};
-        }();
-        Mesh_on_gpu cylinder = [&]() {
-            scratch.mesh.clear();
-            osmv::simbody_cylinder_triangles(12, scratch.mesh);
-            return Mesh_on_gpu{scratch.mesh};
-        }();
-
         // gui (camera, lighting, etc.)
-        float radius = 5.0f;
-        float theta = 0.88f;
-        float phi =  0.4f;
-        glm::vec3 pan = {0.3f, -0.5f, 0.0f};
-        float fov = 120.0f;
-        bool dragging = false;
-        bool panning = false;
-        float sensitivity = 1.0f;
-        glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
-        glm::vec3 light_color = {0.9607f, 0.9176f, 0.8863f};
-        bool wireframe_mode = false;
-        bool show_light = false;
-        bool show_unit_cylinder = false;
-        bool gamma_correction = false;
-        bool show_mesh_normals = false;
-        bool show_floor = true;
-        float wheel_sensitivity = 0.9f;
+		Renderer renderer;
 
         // simulator
         float fd_final_time = 0.4f;
@@ -468,9 +278,8 @@ namespace osmv {
         bool simulator_running();
 
         void draw_3d_scene(Application&);
-        void draw_imgui_ui(Application&);
-        void draw_menu_bar();
 
+        void draw_menu_bar();
         void draw_ui_panel(Application&);
         void draw_ui_tab(Application&);
 
@@ -581,9 +390,6 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
-            case SDLK_w:
-                wireframe_mode = not wireframe_mode;
-                break;
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
@@ -607,84 +413,12 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
                 return;
             }
         }
-    } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-        switch (e.button.button) {
-        case SDL_BUTTON_LEFT:
-            dragging = true;
-            break;
-        case SDL_BUTTON_RIGHT:
-            panning = true;
-            break;
-        }
-    } else if (e.type == SDL_MOUSEBUTTONUP) {
-        switch (e.button.button) {
-        case SDL_BUTTON_LEFT:
-            dragging = false;
-            break;
-        case SDL_BUTTON_RIGHT:
-            panning = false;
-            break;
-        }
     } else if (e.type == SDL_MOUSEMOTION) {
         if (io.WantCaptureMouse) {
             // if ImGUI wants to capture the mouse, then the mouse
             // is probably interacting with an ImGUI panel and,
             // therefore, the dragging/panning shouldn't be handled
             return;
-        }
-
-        if (abs(e.motion.xrel) > 200 or abs(e.motion.yrel) > 200) {
-            // probably a frameskip or the mouse was forcibly teleported
-            // because it hit the edge of the screen
-            return;
-        }
-
-        if (dragging) {
-            // alter camera position while dragging
-            float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
-            float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
-            theta += 2.0f * static_cast<float>(M_PI) * sensitivity * dx;
-            phi += 2.0f * static_cast<float>(M_PI) * sensitivity * dy;
-        }
-
-        if (panning) {
-            float dx = static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
-            float dy = -static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
-
-            // how much panning is done depends on how far the camera is from the
-            // origin (easy, with polar coordinates) *and* the FoV of the camera.
-            float x_amt = dx * aspect_ratio * (2.0f * tanf(fov / 2.0f) * radius);
-            float y_amt = dy * (1.0f / aspect_ratio) * (2.0f * tanf(fov / 2.0f) * radius);
-
-            // this assumes the scene is not rotated, so we need to rotate these
-            // axes to match the scene's rotation
-            glm::vec4 default_panning_axis = { x_amt, y_amt, 0.0f, 1.0f };
-            auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
-            auto theta_vec = glm::normalize(glm::vec3{ sinf(theta), 0.0f, cosf(theta) });
-            auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
-            auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), phi, phi_axis);
-
-            glm::vec4 panning_axes = rot_phi * rot_theta * default_panning_axis;
-            pan.x += panning_axes.x;
-            pan.y += panning_axes.y;
-            pan.z += panning_axes.z;
-        }
-
-        // wrap mouse if it hits edges
-        if (dragging or panning) {
-            constexpr int edge_width = 5;
-            if (e.motion.x + edge_width > window_dims.w) {
-                app.move_mouse_to(edge_width, e.motion.y);
-            }
-            if (e.motion.x - edge_width < 0) {
-                app.move_mouse_to(window_dims.w - edge_width, e.motion.y);
-            }
-            if (e.motion.y + edge_width > window_dims.h) {
-                app.move_mouse_to(e.motion.x, edge_width);
-            }
-            if (e.motion.y - edge_width < 0) {
-                app.move_mouse_to(e.motion.x, window_dims.h - edge_width);
-            }
         }
     } else if (e.type == SDL_WINDOWEVENT) {
         window_dims = app.window_size();
@@ -696,15 +430,11 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
             // therefore, the dragging/panning shouldn't be handled
             return;
         }
-
-        if (e.wheel.y > 0 and radius >= 0.1f) {
-            radius *= wheel_sensitivity;
-        }
-
-        if (e.wheel.y <= 0 and radius < 100.0f) {
-            radius /= wheel_sensitivity;
-        }
     }
+
+	if (renderer.on_event(app, e)) {
+		return;
+	}
 }
 
 // "tick" the UI state (usually, used for updating animations etc.)
@@ -723,152 +453,11 @@ bool osmv::Show_model_screen_impl::simulator_running() {
 
 // draw a frame of the UI
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
+	renderer.draw(ui, model, latest_state);
 
-    // OpenSim: load all geometry in the current state
-    //
-    // this is a fairly slow thing to put into the draw loop, but means that
-    // we can be lazier about monitoring where/when the rendered state changes
-    geom.clear();
-    geom_loader.all_geometry_in(model, latest_state, geom);
-    for (osmv::Mesh_instance const& mi : geom.mesh_instances) {
-        if (meshes.size() >= (mi.mesh_id + 1) and meshes[mi.mesh_id].has_value()) {
-            // the mesh is already loaded
-            continue;
-        }
-
-        geom_loader.load_mesh(mi.mesh_id, scratch.mesh);
-        meshes.resize(std::max(meshes.size(), mi.mesh_id + 1));
-        meshes[mi.mesh_id] = Mesh_on_gpu{scratch.mesh};
-    }
-
-    // HACK: the scene might contain blended (alpha < 1.0f) elements. These must
-    // be drawn last, ideally back-to-front (not yet implemented); otherwise,
-    // OpenGL will early-discard after the vertex shader when they fail a
-    // depth test
-    std::sort(geom.mesh_instances.begin(), geom.mesh_instances.end(), [](Mesh_instance const& a, Mesh_instance const& b) {
-        return a.rgba.a > b.rgba.a;
-    });
-
-    // draw
-    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
-
-    draw_3d_scene(ui);
-    draw_imgui_ui(ui);
-}
-
-template<typename V>
-static V& asserting_find(std::vector<std::optional<V>>& meshes, osmv::Mesh_id id) {
-    assert(id + 1 <= meshes.size());
-    assert(meshes[id]);
-    return meshes[id].value();
-}
-
-void osmv::Show_model_screen_impl::draw_3d_scene(Application& ui) {
-    // camera: at a fixed position pointing at a fixed origin. The "camera"
-    // works by translating + rotating all objects around that origin. Rotation
-    // is expressed as polar coordinates. Camera panning is represented as a
-    // translation vector.
-
-    glm::mat4 view_mtx = [&]() {
-        auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{ 0.0f, 1.0f, 0.0f });
-        auto theta_vec = glm::normalize(glm::vec3{ sinf(theta), 0.0f, cosf(theta) });
-        auto phi_axis = glm::cross(theta_vec, glm::vec3{ 0.0, 1.0f, 0.0f });
-        auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
-        auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
-        return glm::lookAt(
-            glm::vec3(0.0f, 0.0f, radius),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            glm::vec3{0.0f, 1.0f, 0.0f}) * rot_theta * rot_phi * pan_translate;
-    }();
-
-    glm::mat4 proj_mtx = [&]() {
-        return glm::perspective(fov, ui.aspect_ratio(), 0.1f, 100.0f);
-    }();
-
-    glm::vec3 view_pos = [&]() {
-        // polar/spherical to cartesian
-        return glm::vec3{
-            radius * sinf(theta) * cosf(phi),
-            radius * sinf(phi),
-            radius * cosf(theta) * cosf(phi)
-        };
-    }();
-
-    // render elements that have a solid color
-    {
-        gl::UseProgram(color_shader.program);
-
-        gl::Uniform(color_shader.projMat, proj_mtx);
-        gl::Uniform(color_shader.viewMat, view_mtx);
-        gl::Uniform(color_shader.light_pos, light_pos);
-        gl::Uniform(color_shader.light_color, light_color);
-        gl::Uniform(color_shader.view_pos, view_pos);
-
-        // draw model meshes
-        for (auto& m : geom.mesh_instances) {
-            gl::Uniform(color_shader.rgba, m.rgba);
-            gl::Uniform(color_shader.modelMat, m.transform);
-            gl::Uniform(color_shader.normalMat, m.normal_xform);
-
-            Mesh_on_gpu& md = asserting_find(meshes, m.mesh_id);
-            gl::BindVertexArray(md.vao_for<Uniform_color_gouraud_shader>());
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-            gl::BindVertexArray();
-        }
-
-        // debugging: draw unit cylinder
-        if (show_unit_cylinder) {
-            gl::Uniform(color_shader.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
-            gl::Uniform(color_shader.modelMat, glm::identity<glm::mat4>());
-            gl::Uniform(color_shader.normalMat, glm::identity<glm::mat4>());
-
-            gl::BindVertexArray(cylinder.vao_for<Uniform_color_gouraud_shader>());
-            gl::DrawArrays(GL_TRIANGLES, 0, cylinder.sizei());
-            gl::BindVertexArray();
-        }
-
-        // debugging: draw light location
-        if (show_light) {
-            gl::Uniform(color_shader.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
-            auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
-            gl::Uniform(color_shader.modelMat, xform);
-            gl::Uniform(color_shader.normalMat, glm::transpose(glm::inverse(xform)));
-
-            gl::BindVertexArray(sphere.vao_for<Uniform_color_gouraud_shader>());
-            gl::DrawArrays(GL_TRIANGLES, 0, sphere.sizei());
-            gl::BindVertexArray();
-        }
-    }
-
-    // floor is rendered with a texturing program
-    if (show_floor) {
-        floor_renderer.draw(proj_mtx, view_mtx);
-    }
-
-    // debugging: draw mesh normals
-    if (show_mesh_normals) {
-        gl::UseProgram(normals_shader.program);
-        gl::Uniform(normals_shader.projMat, proj_mtx);
-        gl::Uniform(normals_shader.viewMat, view_mtx);
-
-        for (auto& m : geom.mesh_instances) {
-            gl::Uniform(normals_shader.modelMat, m.transform);
-            gl::Uniform(normals_shader.normalMat, m.normal_xform);
-
-            Mesh_on_gpu& md = asserting_find(meshes, m.mesh_id);
-            gl::BindVertexArray(md.vao_for<Normals_shader>());
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-            gl::BindVertexArray();
-        }
-    }
-}
-
-void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
-    draw_menu_bar();
-    draw_ui_panel(ui);
-    draw_lhs_panel();
+	draw_menu_bar();
+	draw_ui_panel(ui);
+	draw_lhs_panel();
 }
 
 void osmv::Show_model_screen_impl::draw_menu_bar() {
@@ -1014,14 +603,14 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
 
     if (ImGui::Button("Front")) {
         // assumes models tend to point upwards in Y and forwards in +X
-        theta = pi_f/2.0f;
-        phi = 0.0f;
+		renderer.theta = pi_f/2.0f;
+		renderer.phi = 0.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Back")) {
         // assumes models tend to point upwards in Y and forwards in +X
-        theta = 3.0f * (pi_f/2.0f);
-        phi = 0.0f;
+		renderer.theta = 3.0f * (pi_f/2.0f);
+		renderer.phi = 0.0f;
     }
 
     ImGui::SameLine();
@@ -1031,15 +620,15 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     if (ImGui::Button("Left")) {
         // assumes models tend to point upwards in Y and forwards in +X
         // (so sidewards is theta == 0 or PI)
-        theta = pi_f;
-        phi = 0.0f;
+		renderer.theta = pi_f;
+		renderer.phi = 0.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Right")) {
         // assumes models tend to point upwards in Y and forwards in +X
         // (so sidewards is theta == 0 or PI)
-        theta = 0.0f;
-        phi = 0.0f;
+		renderer.theta = 0.0f;
+		renderer.phi = 0.0f;
     }
 
     ImGui::SameLine();
@@ -1047,50 +636,50 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     ImGui::SameLine();
 
     if (ImGui::Button("Top")) {
-        theta = 0.0f;
-        phi = pi_f/2.0f;
+		renderer.theta = 0.0f;
+		renderer.phi = pi_f/2.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Bottom")) {
-        theta = 0.0f;
-        phi = 3.0f * (pi_f/2.0f);
+		renderer.theta = 0.0f;
+		renderer.phi = 3.0f * (pi_f/2.0f);
     }
 
     ImGui::NewLine();
 
-    ImGui::SliderFloat("radius", &radius, 0.0f, 10.0f);
-    ImGui::SliderFloat("theta", &theta, 0.0f, 2.0f*pi_f);
-    ImGui::SliderFloat("phi", &phi, 0.0f, 2.0f*pi_f);
+    ImGui::SliderFloat("radius", &renderer.radius, 0.0f, 10.0f);
+    ImGui::SliderFloat("theta", &renderer.theta, 0.0f, 2.0f*pi_f);
+    ImGui::SliderFloat("phi", &renderer.phi, 0.0f, 2.0f*pi_f);
     ImGui::NewLine();
-    ImGui::SliderFloat("pan_x", &pan.x, -100.0f, 100.0f);
-    ImGui::SliderFloat("pan_y", &pan.y, -100.0f, 100.0f);
-    ImGui::SliderFloat("pan_z", &pan.z, -100.0f, 100.0f);
+    ImGui::SliderFloat("pan_x", &renderer.pan.x, -100.0f, 100.0f);
+    ImGui::SliderFloat("pan_y", &renderer.pan.y, -100.0f, 100.0f);
+    ImGui::SliderFloat("pan_z", &renderer.pan.z, -100.0f, 100.0f);
 
     ImGui::NewLine();
     ImGui::Text("Lighting:");
-    ImGui::SliderFloat("light_x", &light_pos.x, -30.0f, 30.0f);
-    ImGui::SliderFloat("light_y", &light_pos.y, -30.0f, 30.0f);
-    ImGui::SliderFloat("light_z", &light_pos.z, -30.0f, 30.0f);
-    ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&light_color));
-    ImGui::Checkbox("show_light", &show_light);
-    ImGui::Checkbox("show_unit_cylinder", &show_unit_cylinder);
-    ImGui::Checkbox("show_floor", &show_floor);
-    ImGui::Checkbox("gamma_correction", &gamma_correction);
+    ImGui::SliderFloat("light_x", &renderer.light_pos.x, -30.0f, 30.0f);
+    ImGui::SliderFloat("light_y", &renderer.light_pos.y, -30.0f, 30.0f);
+    ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
+    ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_color));
+    ImGui::Checkbox("show_light", &renderer.show_light);
+    ImGui::Checkbox("show_unit_cylinder", &renderer.show_unit_cylinder);
+    ImGui::Checkbox("show_floor", &renderer.show_floor);
+    ImGui::Checkbox("gamma_correction", &renderer.gamma_correction);
     {
         bool throttling = ui.is_throttling_fps();
         if (ImGui::Checkbox("fps_throttle", &throttling)) {
             ui.is_throttling_fps(throttling);
         }
     }
-    ImGui::Checkbox("show_mesh_normals", &show_mesh_normals);
+    ImGui::Checkbox("show_mesh_normals", &renderer.show_mesh_normals);
 
     ImGui::NewLine();
     ImGui::Text("Interaction: ");
-    if (dragging) {
+    if (renderer.dragging) {
         ImGui::SameLine();
         ImGui::Text("rotating ");
     }
-    if (panning) {
+    if (renderer.panning) {
         ImGui::SameLine();
         ImGui::Text("panning ");
     }
