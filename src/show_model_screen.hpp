@@ -22,7 +22,6 @@ namespace osmv {
 
         Screen_response tick(Application&) override;
         Screen_response handle_event(Application&, SDL_Event&) override;
-
         void draw(Application&) override;
     };
 }

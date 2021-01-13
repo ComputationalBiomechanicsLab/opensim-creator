@@ -330,6 +330,7 @@ namespace osmv {
         Show_model_screen_impl(std::filesystem::path, osmv::Model);
         Screen_response handle_event(Application&, SDL_Event&);
         Screen_response tick(Application&);
+        void draw(Application&);
 
         void on_user_edited_model();
         void on_user_edited_state();
@@ -338,7 +339,6 @@ namespace osmv {
 
         bool simulator_running();
 
-        void draw(Application&);
         void draw_3d_scene(Application&);
         void draw_imgui_ui(Application&);
         void draw_menu_bar();
@@ -610,6 +610,7 @@ void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
     }
 
     // draw
+    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 

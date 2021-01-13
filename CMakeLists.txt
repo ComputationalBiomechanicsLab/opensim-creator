@@ -98,19 +98,22 @@ add_executable(osmv
     src/shims.hpp
     src/cfg.hpp
     src/cfg.cpp
-
-    src/application.hpp
-    src/application.cpp
-    src/screen.hpp
-    src/show_model_screen.hpp
-    src/show_model_screen.cpp
-    src/loading_screen.hpp
-    src/loading_screen.cpp
     src/opensim_wrapper.hpp
     src/opensim_wrapper.cpp
     src/3d_common.hpp
     src/3d_common.cpp
     src/fd_simulation.hpp
+
+    src/application.hpp
+    src/application.cpp
+
+    src/screen.hpp
+    src/show_model_screen.hpp
+    src/show_model_screen.cpp
+    src/loading_screen.hpp
+    src/loading_screen.cpp
+    src/splash_screen.hpp
+    src/splash_screen.cpp
 
     src/osmv.cpp
 )
@@ -165,7 +168,8 @@ set_target_properties(osmv PROPERTIES
     CXX_STANDARD_REQUIRED YES
 )
 
-source_group(TREE third_party/)  # IDE hint: group third_party code together
+# TODO: wrap in CMake version check: doesn't work in 3.10
+# source_group(TREE third_party/)  # IDE hint: group third_party code together
 
 # development configuration: generate a configuration that loads resources from the
 # developer's source tree

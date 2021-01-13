@@ -58,7 +58,8 @@ namespace osmv {
         }
 
         void draw() {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
+            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             if (error.empty()) {
                 bool b = true;

@@ -195,7 +195,6 @@ namespace osmv {
                             glGetString(GL_SHADING_LANGUAGE_VERSION));
 
                 // initialize any top-level OpenGL vars
-                glClearColor(0.99f, 0.98f, 0.96f, 1.0f);
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
                 OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
                 OSC_GL_CALL_CHECK(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -330,15 +329,16 @@ namespace osmv {
                     }
                 }
 
-                // bind the screen buffer
+                // bind the screen buffer + clear it for the next frame
                 gl::BindFrameBuffer(GL_FRAMEBUFFER, sfbo);
+                gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				// setup for draw calls
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
 
-				// screen: draw into the fbo
                 current_screen->draw(app);
 
 				// ImGui: draw any deferred draws into the fbo

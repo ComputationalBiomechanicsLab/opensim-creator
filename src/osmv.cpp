@@ -1,8 +1,10 @@
 ﻿#include "application.hpp"
-#include "loading_screen.hpp"
-#include "opensim_wrapper.hpp"
+
 #include "os.hpp"
 #include "cfg.hpp"
+#include "opensim_wrapper.hpp"
+#include "loading_screen.hpp"
+#include "splash_screen.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -60,16 +62,11 @@ int main(int argc, char** argv) {
         --argc;
     }
 
-    // no args: boot an example file
+    // no args: show splash screen
 	if (argc <= 0) {
 		osmv::Application application{};
-
-		std::filesystem::path models_dir{"models"};
-        std::filesystem::path demo_model = osmv::cfg::resource_path(models_dir / "ToyLandingModel.osim");
-
-		auto loading_screen = std::make_unique<osmv::Loading_screen>(application, demo_model);
-
-		application.show(std::move(loading_screen));
+        auto splash_screen = std::make_unique<osmv::Splash_screen>();
+        application.show(std::move(splash_screen));
 
         return EXIT_SUCCESS;
     }

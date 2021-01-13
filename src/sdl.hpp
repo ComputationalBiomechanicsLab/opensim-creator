@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #undef main
+#include "glm/vec2.hpp"
 
 #include <stdexcept>
 #include <string>
@@ -234,6 +235,10 @@ namespace sdl {
     struct Window_dimensions {
         int w;
         int h;
+
+        operator glm::vec2() const noexcept {
+            return {w, h};
+        }
     };
 
     inline bool operator==(Window_dimensions const& a, Window_dimensions const& b) noexcept {
