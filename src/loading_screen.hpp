@@ -12,7 +12,7 @@ namespace osmv {
     class Loading_screen final : public Screen {
         std::unique_ptr<Loading_screen_impl> impl;
     public:
-        Loading_screen(Application&, std::filesystem::path const&);
+        Loading_screen(std::filesystem::path);
         Loading_screen(Loading_screen const&) = delete;
         Loading_screen& operator=(Loading_screen const&) = delete;
         Loading_screen& operator=(Loading_screen&&) = delete;

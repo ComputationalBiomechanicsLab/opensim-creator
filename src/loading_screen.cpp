@@ -25,9 +25,9 @@ namespace osmv {
         std::future<std::optional<osmv::Model>> result;
         std::string error;
 
-        Loading_screen_impl(Application& app, std::filesystem::path const& _path) :
+        Loading_screen_impl(std::filesystem::path _path) :
 			// save the path
-            path{ _path },
+            path{std::move(_path)},
 
 			// immediately start loading the model file on a background thread
             result{std::async(std::launch::async, [&]() {
@@ -86,22 +86,25 @@ namespace osmv {
             }
         }
     };
-}
 
-osmv::Loading_screen::Loading_screen(Application& app, std::filesystem::path const& _path) :
-    impl{ new Loading_screen_impl{app, _path} }
-{
-}
-osmv::Loading_screen::~Loading_screen() noexcept = default;
+    // PIMPL forwarding
 
-void osmv::Loading_screen::on_event(SDL_Event& e) {
-    impl->on_event(application(), e);
-}
+    Loading_screen::Loading_screen(std::filesystem::path _path) :
+        impl{new Loading_screen_impl{std::move(_path)}}
+    {
+    }
 
-void osmv::Loading_screen::tick() {
-    return impl->tick(application());
-}
+    osmv::Loading_screen::~Loading_screen() noexcept = default;
 
-void osmv::Loading_screen::draw() {
-    impl->draw();
+    void Loading_screen::on_event(SDL_Event& e) {
+        impl->on_event(application(), e);
+    }
+
+    void Loading_screen::tick() {
+        return impl->tick(application());
+    }
+
+    void Loading_screen::draw() {
+        impl->draw();
+    }
 }

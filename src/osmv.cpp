@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
 	osmv::Application application{};
-	auto loading_screen = std::make_unique<osmv::Loading_screen>(application, argv[0]);
+    auto loading_screen = std::make_unique<osmv::Loading_screen>(argv[0]);
     application.start_render_loop(std::move(loading_screen));
 
     return EXIT_SUCCESS;

@@ -295,7 +295,7 @@ namespace osmv {
 
         // simulator
         float fd_final_time = 0.4f;
-        std::optional<Background_fd_simulation> simulator;
+        std::optional<Fd_simulation> simulator;
 
         // tab: coords
         struct {
@@ -458,7 +458,7 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
             case SDLK_r: {
                 auto km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    auto loading_scr = std::make_unique<osmv::Loading_screen>(app, path.c_str());
+                    auto loading_scr = std::make_unique<osmv::Loading_screen>(path);
                     app.request_transition(std::move(loading_scr));
                     return;
                 } else {
@@ -471,7 +471,7 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
                 if (simulator and simulator->is_running()) {
                     simulator->request_stop();
                 } else {
-                    simulator.emplace(model, latest_state, fd_final_time);
+                    simulator.emplace(Fd_simulation_params{Model{model}, State{latest_state}, fd_final_time});
                 }
                 break;
             case SDLK_ESCAPE:
@@ -747,7 +747,7 @@ void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
 void osmv::Show_model_screen_impl::draw_menu_bar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginTabBar("MainTabBar")) {
-            if (ImGui::BeginTabItem(path.string().c_str())) {
+            if (ImGui::BeginTabItem(path.filename().c_str())) {
                 ImGui::EndTabItem();
             }
 
@@ -831,7 +831,12 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
     } else {
         ImGui::PushStyleColor(ImGuiCol_Button, dark_green);
         if (ImGui::Button("start [SPC]")) {
-            simulator.emplace(model, latest_state, fd_final_time);
+            Fd_simulation_params params{
+                Model{model},
+                State{latest_state},
+                fd_final_time
+            };
+            simulator.emplace(std::move(params));
         }
         ImGui::PopStyleColor();
     }

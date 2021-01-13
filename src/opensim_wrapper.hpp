@@ -36,7 +36,8 @@ namespace osmv {
 
         explicit Model(std::unique_ptr<OpenSim::Model>) noexcept;
         explicit Model(OpenSim::Model const&);
-        Model(Model const&) = delete;
+        explicit Model(Model const& m) : Model{static_cast<OpenSim::Model const&>(m)} {
+        }
         Model(Model&&) noexcept;
         Model& operator=(Model const&) = delete;
         Model& operator=(Model&&) noexcept;
@@ -56,7 +57,8 @@ namespace osmv {
         std::unique_ptr<SimTK::State> handle;
 
         explicit State(SimTK::State const&);
-        State(State const&) = delete;
+        explicit State(State const& s) : State{static_cast<SimTK::State const&>(s)} {
+        }
         State(State&&) noexcept;
         State& operator=(State const&) = delete;
         State& operator=(SimTK::State const&);

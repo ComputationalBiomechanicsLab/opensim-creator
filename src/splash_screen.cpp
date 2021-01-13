@@ -14,6 +14,7 @@ namespace osmv {
     struct Splash_screen_impl final {
         std::vector<fs::path> example_osims = []() {
             fs::path models_dir = osmv::cfg::resource_path("models");
+
             std::vector<fs::path> rv;
 
             if (not fs::exists(models_dir)) {
@@ -52,7 +53,8 @@ namespace osmv {
                 if (SDLK_1 <= sym and sym <= SDLK_9) {
                     size_t idx = static_cast<size_t>(sym - SDLK_1);
                     if (idx < example_osims.size()) {
-                        auto s = std::make_unique<osmv::Loading_screen>(app, example_osims[idx]);
+                        fs::path const& p = example_osims[idx];
+                        auto s = std::make_unique<osmv::Loading_screen>(p);
                         app.request_transition(std::move(s));
                         return;
                     }
@@ -61,7 +63,6 @@ namespace osmv {
         }
 
         void draw(Application& ui) {
-
             bool b = true;
             std::unique_ptr<osmv::Screen> should_transition_to = nullptr;
             bool should_exit = false;
@@ -97,7 +98,7 @@ namespace osmv {
                     fs::path const& p = example_osims[i];
                     std::snprintf(buf, sizeof(buf), "%zu: %s", i + 1, p.filename().c_str());
                     if (ImGui::Button(buf)) {
-                        should_transition_to = std::make_unique<osmv::Loading_screen>(ui, p);
+                        should_transition_to = std::make_unique<osmv::Loading_screen>(p);
                     }
                 }
 
@@ -123,17 +124,20 @@ namespace osmv {
             }
         }
     };
-}
 
-osmv::Splash_screen::Splash_screen() : impl{new Splash_screen_impl{}} {
-}
 
-osmv::Splash_screen::~Splash_screen() noexcept = default;
+    // PIMPL forwarding
 
-void osmv::Splash_screen::on_event(SDL_Event& e) {
-    impl->on_event(application(), e);
-}
+    Splash_screen::Splash_screen() : impl{new Splash_screen_impl{}} {
+    }
 
-void osmv::Splash_screen::draw() {
-    impl->draw(application());
+    Splash_screen::~Splash_screen() noexcept = default;
+
+    void Splash_screen::on_event(SDL_Event& e) {
+        impl->on_event(application(), e);
+    }
+
+    void Splash_screen::draw() {
+        impl->draw(application());
+    }
 }

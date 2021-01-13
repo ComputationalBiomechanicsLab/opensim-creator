@@ -103,6 +103,7 @@ add_executable(osmv
     src/3d_common.hpp
     src/3d_common.cpp
     src/fd_simulation.hpp
+    src/fd_simulation.cpp
 
     src/application.hpp
     src/application.cpp
