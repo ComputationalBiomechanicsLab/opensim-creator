@@ -94,7 +94,7 @@ namespace osmv {
                 // list of examples with buttons
                 for (size_t i = 0; i < example_osims.size(); ++i) {
                     fs::path const& p = example_osims[i];
-                    std::snprintf(buf, sizeof(buf), "%zu: %s", i + 1, p.filename().c_str());
+                    std::snprintf(buf, sizeof(buf), "%zu: %s", i + 1, p.filename().string().c_str());
                     if (ImGui::Button(buf)) {
                         should_transition_to = std::make_unique<osmv::Loading_screen>(p);
                     }

@@ -745,7 +745,7 @@ void osmv::Show_model_screen_impl::draw_imgui_ui(Application& ui) {
 void osmv::Show_model_screen_impl::draw_menu_bar() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginTabBar("MainTabBar")) {
-            if (ImGui::BeginTabItem(path.filename().c_str())) {
+            if (ImGui::BeginTabItem(path.filename().string().c_str())) {
                 ImGui::EndTabItem();
             }
 

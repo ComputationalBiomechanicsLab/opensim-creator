@@ -10,7 +10,7 @@
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
 namespace osmv {
-    struct Screen;
+    class Screen;
     struct Application_impl;
 
     class Application final {

@@ -367,7 +367,7 @@ osmv::Model osmv::load_osim(std::filesystem::path const& path) {
     //       this sets a global in OpenSim, so only needs to be called once
     static bool _ = []() {
         std::filesystem::path geometry_dir = cfg::resource_path("geometry");
-        ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir);
+        ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         return true;
     }();
 
