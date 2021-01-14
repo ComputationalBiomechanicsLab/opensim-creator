@@ -5,47 +5,32 @@ project(osmv VERSION 0.0.1)
 if(UNIX AND NOT APPLE)
     if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
         set(LINUX TRUE)
+    else()
+        message(WARNING "you are building on a system that may not be supported yet - beware!")
     endif()
-
-    # if it's a unix variant that is non-Linux, it isn't (currently)
-    # supported. It *might* compile + work, though
 endif()
 
-# glew: build from source and statically link: works on all platforms
-#       without introducing potentially breaking dependencies into the
-#       runtime
+# GLEW (OpenGL): build from source
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
 
 if (LINUX)
     # on Linux specifically, use a system-provided SDL2
     #
     # SDL2 handles *a lot* of distro-specific bs (e.g. X vs Wayland), so
-    # it's advantageous to just link to whatever build of SDL2 that distro
+    # it's advantageous to dynamically link to whatever build of SDL2 that distro
     # provides.
-    #
-    # I'd prefer to just statically build + link SDL2, because that would
-    # result in a uniform build across all platforms, but SDL2 itself links
-    # to potentially volatile OS libraries and statically linking it would
-    # cause osmv to be dependent on libraries that change between distros.
 
-    set(SDL2_LIB SDL2)
-    set(SDL2_INCLUDE /usr/include/SDL2)
+    set(OSMV_SDL2_LIB SDL2)
+    set(OSMV_SDL2_INCLUDE /usr/include/SDL2)
 else()
-    # on non-Linux, just build SDL2 from source and statically link
-    # it
+    # on non-Linux, just build SDL2 from source and statically link it.
     #
-    # on Windows, this is more convenient because it's a PITA to tell
-    # every developer how to setup SDL2 on their system. The dependency
-    # brittleness problem (that Linux has) is less of a problem under
-    # Windows, which has a mostly stable OS API for GUIs.
-    #
-    # other Unixes (e.g. Apple) aren't (yet) packaged for. Users will
-    # be able to build on OSX but the packages produced by static
-    # linking might be unstable. Needs investigation.
+    # this results in a more brittle binary, but is easier to onboard developers
+    # with, which is prio #1 for this (new) project
 
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL2-2.0.12 EXCLUDE_FROM_ALL)
-    set(SDL2_LIB SDL2-static)
-    set(SDL2_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL2-2.0.12/include/)
+    set(OSMV_SDL2_LIB SDL2-static)
+    set(OSMV_SDL2_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/SDL2-2.0.12/include/)
 endif()
 
 # opensim: linked as a separate dependency
@@ -61,32 +46,23 @@ endif()
 #   OpenSim on your system
 find_package(OpenSim REQUIRED)
 
-# source-code configuration
-#
-# - generate `osmv_config.hpp` using this particular build's parameters.
-#   Contains per-config info (e.g. version number, build type)
+# generate osmv_config.hpp: used by the codebase (e.g.) for the version string
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
 
-if(LINUX)
-    # linux installs are arranged like this:
-    #
-    # <install_dir>/
-    #     bin/
-    #         osmv
-    #     lib/
-    #         *.so
-    #
-    # so set the installed RPATH to search in "../lib" for bundled libraries
-    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-endif()
-
-add_executable(osmv
+# imgui: build only the parts osmv needs as a static library
+add_library(osmv-imgui_s STATIC
     third_party/imgui-1.78/imgui.cpp
     third_party/imgui-1.78/imgui_draw.cpp
     third_party/imgui-1.78/imgui_widgets.cpp
     third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
     third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
+)
+target_include_directories(osmv-imgui_s PRIVATE
+    ${OSMV_SDL2_INCLUDE}
+    third_party/imgui-1.78/
+)
 
+add_executable(osmv
     src/os.hpp
     src/os.cpp
     src/sdl.hpp
@@ -120,8 +96,8 @@ add_executable(osmv
 
     src/osmv.cpp
 )
-target_include_directories(osmv PUBLIC
-    ${SDL2_INCLUDE}
+target_include_directories(osmv PRIVATE
+    ${OSMV_SDL2_INCLUDE}
     third_party/glm-0.9.9.8/
     third_party/glew-2.1.0/include/
     third_party/imgui-1.78/
@@ -143,8 +119,9 @@ set(OSMV_OPENSIM_LIBS
 target_link_libraries(osmv
     # in gcc, the <filesystem> implementation must be explicitly linked separately
     $<$<CXX_COMPILER_ID:GNU>:stdc++fs>
-    ${SDL2_LIB}
+    ${OSMV_SDL2_LIB}
     glew_s
+    osmv-imgui_s
     ${OSMV_OPENSIM_LIBS}
 )
 target_compile_options(osmv PUBLIC
@@ -153,26 +130,68 @@ target_compile_options(osmv PUBLIC
     # - This forces MSVC to obey ISO C++
     # - I do this mostly because I like the logic keywords (e.g. `x or b`)
     $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+
+    # turn on warnings / errors
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -Wall
+        -Wextra
+        -pedantic
+        -Werror
+        -Wuninitialized
+        -Winit-self
+        -Wmaybe-uninitialized
+        -Wshadow
+        -Wcast-align
+        -Wcast-function-type
+        -Wwrite-strings
+        -Wdangling-else
+        -Wdate-time
+        -Wlogical-op
+        -Wmissing-declarations
+        -Wno-multichar
+        -Wnormalized
+        -Wredundant-decls
+        -Winline
+        -Wint-in-bool-context
+        -Wvla
+        -Wdisabled-optimization
+        -Wpacked
+        -Wmissing-noreturn
+        -Wsuggest-attribute=noreturn
+        -Wno-unused  # PITA to debug a prototype with this enabled
+        -Wno-sign-compare  # broken in STB headers
+
+        # things I would like to enable:
+        #
+        # -Wcast-qual : broken by STB headers
+        # -Wconversion : hits shitloads of lines
+    >
 )
 target_compile_features(osmv PUBLIC
     cxx_std_17
 )
-if (WIN32)
-    # the IF above is because CMake <= 3.10 doesn't have target_link_options?
+set_target_properties(osmv PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED YES
+
+    # at install, Linux install dir is:
+    #
+    #     bin/osmv
+    #     lib/*.so
+    INSTALL_RPATH $<LINUX:"\$ORIGIN/../lib">
+)
+
+# these features only work in newer CMakes' than some devs have, so
+# they might break on newer systems
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.11)
     target_link_options(osmv PUBLIC
         # on Windows, open the application as a desktop application, rather than as
         # a CLI application
         $<$<CXX_COMPILER_ID:MSVC>:/SUBSYSTEM:windows>
         $<$<CXX_COMPILER_ID:MSVC>:/ENTRY:mainCRTStartup>
     )
+    source_group(TREE third_party/)  # IDE hint: group third_party source together
 endif()
-set_target_properties(osmv PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED YES
-)
-
-# TODO: wrap in CMake version check: doesn't work in 3.10
-# source_group(TREE third_party/)  # IDE hint: group third_party code together
 
 # development configuration: generate a configuration that loads resources from the
 # developer's source tree

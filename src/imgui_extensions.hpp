@@ -33,4 +33,4 @@ namespace igx {
         OpenGL3_Context& operator=(OpenGL3_Context&&) = delete;
         ~OpenGL3_Context() noexcept;
     };
-};
+}

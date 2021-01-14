@@ -200,15 +200,15 @@ struct Floor_renderer final {
 	gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
 	glm::mat4 model_mtx = glm::scale(glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, { 1.0, 0.0, 0.0 }), { 100.0f, 100.0f, 0.0f });
 
-	void draw(glm::mat4 const& proj, glm::mat4 const& view) {
-		gl::UseProgram(s.p);
+    void draw(glm::mat4 const& proj, glm::mat4 const& view) {
+        gl::UseProgram(s.p);
 
-		gl::Uniform(s.projMat, proj);
-		gl::Uniform(s.viewMat, view);
-		gl::Uniform(s.modelMat, model_mtx);
+        gl::Uniform(s.projMat, proj);
+        gl::Uniform(s.viewMat, view);
+        gl::Uniform(s.modelMat, model_mtx);
 		gl::ActiveTexture(GL_TEXTURE0);
 		gl::BindTexture(floor_texture);
-		gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
 
 		gl::BindVertexArray(vao);
 		gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
@@ -525,10 +525,10 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
 
 				size_t meshid_s = impl.meshid_to_str.size();
                 assert(meshid_s < std::numeric_limits<Mesh_id>::max());
-				auto meshid = static_cast<Mesh_id>(meshid_s);
+                Mesh_id rv = static_cast<Mesh_id>(meshid_s);
 				impl.meshid_to_str.push_back(path);
-				it->second = meshid;
-				return meshid;
+                it->second = rv;
+                return rv;
 			}
 		}();
 
@@ -558,8 +558,8 @@ void Geometry_loader::all_geometry_in(OpenSim::Model& m, SimTK::State& s, State_
 	dg.generateDecorations(s, impl->dg_swp);
 
 	auto visitor = Geometry_visitor{ m, s, *impl, out };
-	for (SimTK::DecorativeGeometry& dg : impl->dg_swp) {
-		dg.implementGeometry(visitor);
+    for (SimTK::DecorativeGeometry& geom : impl->dg_swp) {
+        geom.implementGeometry(visitor);
 	}
 }
 
@@ -803,17 +803,17 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::S
 	{
 		gl::UseProgram(state->color_shader.program);
 
-		gl::Uniform(state->color_shader.projMat, proj_mtx);
-		gl::Uniform(state->color_shader.viewMat, view_mtx);
-		gl::Uniform(state->color_shader.light_pos, light_pos);
-		gl::Uniform(state->color_shader.light_color, light_color);
-		gl::Uniform(state->color_shader.view_pos, view_pos);
+        gl::Uniform(state->color_shader.projMat, proj_mtx);
+        gl::Uniform(state->color_shader.viewMat, view_mtx);
+        gl::Uniform(state->color_shader.light_pos, light_pos);
+        gl::Uniform(state->color_shader.light_color, light_color);
+        gl::Uniform(state->color_shader.view_pos, view_pos);
 
 		// draw model meshes
 		for (auto& m : state->geom.mesh_instances) {
-			gl::Uniform(state->color_shader.rgba, m.rgba);
-			gl::Uniform(state->color_shader.modelMat, m.transform);
-			gl::Uniform(state->color_shader.normalMat, m.normal_xform);
+            gl::Uniform(state->color_shader.rgba, m.rgba);
+            gl::Uniform(state->color_shader.modelMat, m.transform);
+            gl::Uniform(state->color_shader.normalMat, m.normal_xform);
 
 			Mesh_on_gpu& md = asserting_find(state->meshes, m.mesh_id);
 			gl::BindVertexArray(md.main_vao);
@@ -823,9 +823,9 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::S
 
 		// debugging: draw unit cylinder
 		if (show_unit_cylinder) {
-			gl::Uniform(state->color_shader.rgba, glm::vec4{ 0.9f, 0.9f, 0.9f, 1.0f });
-			gl::Uniform(state->color_shader.modelMat, glm::identity<glm::mat4>());
-			gl::Uniform(state->color_shader.normalMat, glm::identity<glm::mat4>());
+            gl::Uniform(state->color_shader.rgba, glm::vec4{ 0.9f, 0.9f, 0.9f, 1.0f });
+            gl::Uniform(state->color_shader.modelMat, glm::identity<glm::mat4>());
+            gl::Uniform(state->color_shader.normalMat, glm::identity<glm::mat4>());
 
 			gl::BindVertexArray(state->cylinder.main_vao);
 			gl::DrawArrays(GL_TRIANGLES, 0, state->cylinder.sizei());
@@ -834,10 +834,10 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::S
 
 		// debugging: draw light location
 		if (show_light) {
-			gl::Uniform(state->color_shader.rgba, glm::vec4{ 1.0f, 1.0f, 0.0f, 0.3f });
+            gl::Uniform(state->color_shader.rgba, glm::vec4{ 1.0f, 1.0f, 0.0f, 0.3f });
 			auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), { 0.05, 0.05, 0.05 });
-			gl::Uniform(state->color_shader.modelMat, xform);
-			gl::Uniform(state->color_shader.normalMat, glm::transpose(glm::inverse(xform)));
+            gl::Uniform(state->color_shader.modelMat, xform);
+            gl::Uniform(state->color_shader.normalMat, glm::transpose(glm::inverse(xform)));
 
 			gl::BindVertexArray(state->sphere.main_vao);
 			gl::DrawArrays(GL_TRIANGLES, 0, state->sphere.sizei());
@@ -853,12 +853,12 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::S
 	// debugging: draw mesh normals
 	if (show_mesh_normals) {
 		gl::UseProgram(state->normals_shader.program);
-		gl::Uniform(state->normals_shader.projMat, proj_mtx);
-		gl::Uniform(state->normals_shader.viewMat, view_mtx);
+        gl::Uniform(state->normals_shader.projMat, proj_mtx);
+        gl::Uniform(state->normals_shader.viewMat, view_mtx);
 
 		for (auto& m : state->geom.mesh_instances) {
-			gl::Uniform(state->normals_shader.modelMat, m.transform);
-			gl::Uniform(state->normals_shader.normalMat, m.normal_xform);
+            gl::Uniform(state->normals_shader.modelMat, m.transform);
+            gl::Uniform(state->normals_shader.normalMat, m.normal_xform);
 
 			Mesh_on_gpu& md = asserting_find(state->meshes, m.mesh_id);
 			gl::BindVertexArray(md.normal_vao);

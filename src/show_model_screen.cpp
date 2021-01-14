@@ -816,11 +816,11 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
 		}
 	}
 
-	thread_local float red = 0.0f;
-	if (ImGui::SliderFloat("red", &red, 0.0f, 1.0f)) {
+    thread_local float color = 0.0f;
+    if (ImGui::SliderFloat("red", &color, 0.0f, 1.0f)) {
 		OpenSim::Model& m = model;
 		for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
-			g.setColor({ red, 0.0, 0.0 });
+            g.setColor({ static_cast<double>(color), 0.0, 0.0 });
 		}
 	}
 }
@@ -1061,7 +1061,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
         ImGui::Separator();
         for (Available_output const& ao : t_outputs.watches) {
             std::string v = ao.handle->getValueAsString(latest_state);
-            ImGui::Text("    %s/%s: %s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
+            ImGui::Text("    %s/%s: %s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str(), v.c_str());
         }
     }
 

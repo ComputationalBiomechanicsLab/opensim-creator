@@ -54,13 +54,13 @@ static App_config load_application_config() {
     return App_config{ resource_dir_path };
 }
 
-struct App_config config() {
+static App_config load_config() {
     static const App_config config = load_application_config();
     return config;
 }
 
 std::filesystem::path osmv::cfg::resource_path(std::filesystem::path const& subpath) {
-    return config().resource_dir / subpath;
+    return load_config().resource_dir / subpath;
 }
 
 static std::filesystem::path const shaders_dir = "shaders";

@@ -211,10 +211,10 @@ namespace gl {
         return handle;
     }
 
-    class Uniform {
+    class Uniform_handle {
         GLint location;
     public:
-        Uniform(Program& p, char const* name) : location{GetUniformLocation(p, name)} {
+        Uniform_handle(Program& p, char const* name) : location{GetUniformLocation(p, name)} {
         }
 
         operator GLint() noexcept {
@@ -222,29 +222,29 @@ namespace gl {
         }
     };
 
-    class Uniform_float final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_float final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
-    class Uniform_int final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_int final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
     using Uniform_bool = Uniform_int;
     using Uniform_sampler2d = Uniform_int;
     using Uniform_samplerCube = Uniform_int;
-    class Uniform_mat4 final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_mat4 final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
-    class Uniform_mat3 final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_mat3 final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
-    class Uniform_vec4 final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_vec4 final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
-    class Uniform_vec3 final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_vec3 final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
-    class Uniform_vec2 final : public Uniform {
-        using Uniform::Uniform;
+    class Uniform_vec2 final : public Uniform_handle {
+        using Uniform_handle::Uniform_handle;
     };
 
     struct Uniform_identity_val_tag {};
