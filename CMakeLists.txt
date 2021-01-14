@@ -6,6 +6,8 @@ project(osmv
     LANGUAGES CXX
 )
 
+set(OSMV_USE_LINTER OFF CACHE BOOL "enable/disable running clang-tidy while building")
+
 if(UNIX AND NOT APPLE)
     if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
         set(LINUX TRUE)
@@ -188,8 +190,7 @@ set_target_properties(osmv PROPERTIES
     #     lib/*.so
     INSTALL_RPATH $<LINUX:"\$ORIGIN/../lib">
 
-    # try to use clang-tidy if building with clang on linux
-    CLANG_TIDY $<$<CXX_COMPILER_ID:Clang>: "clang-tidy">
+    CLANG_TIDY $<OSMV_USE_LINTER: "clang-tidy">
 )
 
 # these features only work in newer CMakes' than some devs have, so
