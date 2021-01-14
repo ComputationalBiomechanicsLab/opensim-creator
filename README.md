@@ -12,33 +12,77 @@ OpenGL.
 
 # Building
 
-Built with CMake and a suitable C++ compiler (I tried it with g++,
-clang, and MSVC).
+## Ubuntu (Xenial, /w `gcc-9` from toolchain test repo)
 
-Requires that you have built OpenSim 4.1 according to its manual. Set
-`CMAKE_PREFIX_PATH` to point to the *install* created by that build.
-
-## Linux/Mac
+This builds everything (incl. OpenSim) from scratch. Skip to `BUILD
+OSMV` if you already have `gcc-9` and an OpenSim install (specify with
+`CMAKE_PREFIX_PATH`, like below).
 
 ```bash
-#!/usr/bin/env sh
+# DEPENDENCIES: get gcc-9
+apt-get update
+apt-get install -y build-essential software-properties-common
+add-apt-repository -y ppa:ubuntu-toolchain-r/test
+apt-get update
+apt-get install -y gcc-snapshot
+apt-get install -y gcc-9 g++-9
+# note: this installs a newer libstdc++: you *should* be able to run OSMVs
+#       compiled with gcc9+ at this point
 
-# CHANGE ME: ensure you have built + installed opensim 4.1 somewhere
-OPENSIM_INSTALL=~/Desktop/osc/master/opensim-core-install/lib/cmake
+# OPTIONAL: build OpenSim from source
 
-# get source code
-git clone https://github.com/adamkewley/osmv.git
+# OpenSim: acquire binary dependencies
+apt-get install git cmake freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
 
-# configure
-mkdir osmv/RelWithDebInfo-build
-cd osmv/RelWithDebInfo-build
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=${OPENSIM_INSTALL}
+# OpenSim: get 4.1 release source
+#     - note: 4.2 has *a lot* more dependencies, and doesn't seem to
+#             build as easily on Xenial
+git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
 
-# build
-cmake --build .
+# OpenSim: build OpenSim's source dependencies
+mkdir -p opensim-dependencies-build/
+cd opensim-dependencies-build/
+CC=gcc-9 CXX=g++-9 cmake ../opensim-core/dependencies -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install
+cmake --build . -- -j$(nproc)
+cd -
 
-# run
-./osmv ../resources/Rajagopal2015.osim
+# OpenSim: build OpenSim
+mkdir -p opensim-build/
+cd opensim-build/
+CC=gcc-9 CXX=g++-9 cmake ../opensim-core/ -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ -DCMAKE_INSTALL_PREFIX=../opensim-install/ -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build . --target install -- -j$(nproc)
+cd -
+
+
+# BUILD OSMV
+
+# OSMV OPTIONAL DEPENDENCIES (only do this on headless servers):
+#
+#     - install a OpenGL software renderer
+apt-get install libgl1-mesa-dev libglu1-mesa-dev
+
+# osmv: acquire binary dependencies
+apt-get install cmake make libsdl2-dev
+
+# osmv: get source
+git clone https://github.com/adamkewley/osmv
+
+# osmv: build
+mkdir osmv-build/
+cd osmv2-build/
+CC=gcc-9 CXX=g++-9 cmake ../osmv -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
+cmake --build . --target osmv -- -j$(nproc)
+
+# (optional): package build into a standalone .deb for
+# distribution to end-users
+# cmake --build . --target package
+
+# (optional #2): install the package
+# apt-get install -yf ./osmv-0.0.1-Linux.deb
+
+# (optional #3): boot osmv
+# ./osmv  # boot from the build dir
+# osmv    # boot installed package
 ```
 
 ## Windows

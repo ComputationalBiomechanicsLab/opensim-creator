@@ -1,10 +1,6 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
-project(osmv
-    VERSION 0.0.1
-    HOMEPAGE_URL https://github.com/adamkewley/osmv
-    LANGUAGES CXX
-)
+project(osmv VERSION 0.0.1 LANGUAGES CXX)
 
 set(OSMV_USE_LINTER OFF CACHE BOOL "enable/disable running clang-tidy while building")
 
@@ -69,6 +65,8 @@ add_library(osmv-imgui_s STATIC
 target_include_directories(osmv-imgui_s PRIVATE
     ${OSMV_SDL2_INCLUDE}
     third_party/imgui-1.78/
+    third_party/glm-0.9.9.8/
+    third_party/glew-2.1.0/include/
 )
 
 add_executable(osmv
@@ -176,26 +174,36 @@ target_compile_options(osmv PUBLIC
     $<$<CXX_COMPILER_ID:Clang>:
         -Wno-cast-align
     >
+
+    # C++17 is set here for GNU/Clang because older versions of CMake
+    # don't support `target_compile_features` and older versions again
+    # don't support CXX_STANDARD 17, whereas quite old versions blindly
+    # accept compiler flags
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -std=c++17
+    >
 )
-target_compile_features(osmv PUBLIC
-    cxx_std_17
-)
+
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED YES
 
+    CLANG_TIDY $<OSMV_USE_LINTER:"clang-tidy">
+)
+if(LINUX)
     # at install, Linux install dir is:
     #
     #     bin/osmv
     #     lib/*.so
-    INSTALL_RPATH $<LINUX:"\$ORIGIN/../lib">
-
-    CLANG_TIDY $<OSMV_USE_LINTER: "clang-tidy">
-)
+    set_target_properties(osmv PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+endif()
 
 # these features only work in newer CMakes' than some devs have, so
 # they might break on newer systems
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.11)
+if(MSVC)  # HACK: "newer systems" is Windows for now, where devs can install whatever
+    target_compile_features(osmv PUBLIC
+        cxx_std_17
+    )
     target_link_options(osmv PUBLIC
         # on Windows, open the application as a desktop application, rather than as
         # a CLI application
