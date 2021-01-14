@@ -25,13 +25,13 @@ namespace sdl {
     //     https://wiki.libsdl.org/SDL_Quit
     class [[nodiscard]] Context final {
     public:
-		Context(Uint32 flags) {
-			if (SDL_Init(flags) != 0) {
-				throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
-			}
-		}
+        Context(Uint32 flags) {
+            if (SDL_Init(flags) != 0) {
+                throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
+            }
+        }
         Context(Context const&) = delete;
-        Context(Context&&) = delete;
+        Context(Context &&) = delete;
         Context& operator=(Context const&) = delete;
         Context& operator=(Context&&) = delete;
         ~Context() noexcept {
@@ -40,9 +40,9 @@ namespace sdl {
     };
 
     // https://wiki.libsdl.org/SDL_Init
-	inline Context Init(Uint32 flags) {
-		return Context{flags};
-	}
+    inline Context Init(Uint32 flags) {
+        return Context{flags};
+    }
 
     // RAII wrapper around SDL_Window that calls SDL_DestroyWindow on dtor
     //     https://wiki.libsdl.org/SDL_CreateWindow
@@ -51,11 +51,12 @@ namespace sdl {
         SDL_Window* ptr;
 
         friend Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags);
-        Window(SDL_Window* _ptr) : ptr{_ptr} {
+        Window(SDL_Window * _ptr) : ptr{_ptr} {
         }
+
     public:
         Window(Window const&) = delete;
-        Window(Window&& tmp) : ptr{tmp.ptr} {
+        Window(Window && tmp) : ptr{tmp.ptr} {
             tmp.ptr = nullptr;
         }
         Window& operator=(Window const&) = delete;
@@ -65,7 +66,7 @@ namespace sdl {
                 SDL_DestroyWindow(ptr);
             }
         }
-        operator SDL_Window* () const noexcept {
+        operator SDL_Window*() const noexcept {
             return ptr;
         }
     };
@@ -83,19 +84,20 @@ namespace sdl {
     class [[nodiscard]] Renderer final {
         SDL_Renderer* ptr;
 
-        friend Renderer CreateRenderer(SDL_Window* w, int index, Uint32 flags);
-        Renderer(SDL_Renderer* _ptr) : ptr{ _ptr } {
+        friend Renderer CreateRenderer(SDL_Window * w, int index, Uint32 flags);
+        Renderer(SDL_Renderer * _ptr) : ptr{_ptr} {
         }
+
     public:
         Renderer(Renderer const&) = delete;
-        Renderer(Renderer&&) = delete;
+        Renderer(Renderer &&) = delete;
         Renderer& operator=(Renderer const&) = delete;
         Renderer& operator=(Renderer&&) = delete;
         ~Renderer() noexcept {
             SDL_DestroyRenderer(ptr);
         }
 
-        operator SDL_Renderer* () noexcept {
+        operator SDL_Renderer*() noexcept {
             return ptr;
         }
     };
@@ -110,8 +112,9 @@ namespace sdl {
         SDL_GLContext ctx;
 
         friend GLContext GL_CreateContext(SDL_Window* w);
-        GLContext(SDL_GLContext _ctx) : ctx{ _ctx } {
+        GLContext(SDL_GLContext _ctx) : ctx{_ctx} {
         }
+
     public:
         GLContext(GLContext const&) = delete;
         GLContext(GLContext&& tmp) : ctx{tmp.ctx} {
@@ -125,7 +128,7 @@ namespace sdl {
             }
         }
 
-        operator SDL_GLContext () noexcept {
+        operator SDL_GLContext() noexcept {
             return ctx;
         }
     };
@@ -140,16 +143,10 @@ namespace sdl {
         SDL_Surface* handle;
 
         friend Surface CreateRGBSurface(
-            Uint32 flags,
-            int    width,
-            int    height,
-            int    depth,
-            Uint32 Rmask,
-            Uint32 Gmask,
-            Uint32 Bmask,
-            Uint32 Amask);
+            Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
         Surface(SDL_Surface* _handle) : handle{_handle} {
         }
+
     public:
         Surface(Surface const&) = delete;
         Surface(Surface&&) = delete;
@@ -170,20 +167,14 @@ namespace sdl {
     // RAII'ed version of SDL_CreateRGBSurface:
     //     https://wiki.libsdl.org/SDL_CreateRGBSurface
     Surface CreateRGBSurface(
-        Uint32 flags,
-        int    width,
-        int    height,
-        int    depth,
-        Uint32 Rmask,
-        Uint32 Gmask,
-        Uint32 Bmask,
-        Uint32 Amask);
+        Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 
     // RAII wrapper around SDL_LockSurface/SDL_UnlockSurface:
     //     https://wiki.libsdl.org/SDL_LockSurface
     //     https://wiki.libsdl.org/SDL_UnlockSurface
     class Surface_lock final {
         SDL_Surface* ptr;
+
     public:
         Surface_lock(SDL_Surface* s);
         Surface_lock(Surface_lock const&) = delete;
@@ -208,6 +199,7 @@ namespace sdl {
         friend Texture CreateTextureFromSurface(SDL_Renderer* r, SDL_Surface* s);
         Texture(SDL_Texture* _handle) : handle{_handle} {
         }
+
     public:
         Texture(Texture const&) = delete;
         Texture(Texture&&) = delete;
@@ -246,7 +238,7 @@ namespace sdl {
     }
 
     inline bool operator!=(Window_dimensions const& a, Window_dimensions const& b) noexcept {
-        return not (a == b);
+        return not(a == b);
     }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
@@ -279,6 +271,7 @@ namespace sdl {
         friend Timer AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param);
         Timer(SDL_TimerID _handle) : handle{_handle} {
         }
+
     public:
         Timer(Timer const&) = delete;
         Timer(Timer&&) = delete;

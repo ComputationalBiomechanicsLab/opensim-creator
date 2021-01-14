@@ -1,21 +1,20 @@
 #include "loading_screen.hpp"
 
-#include "show_model_screen.hpp"
-#include "opensim_wrapper.hpp"
 #include "application.hpp"
+#include "opensim_wrapper.hpp"
+#include "show_model_screen.hpp"
 #include "splash_screen.hpp"
 
 #include "gl.hpp"
 #include "imgui.h"
 
 #include <chrono>
-#include <string>
-#include <future>
-#include <vector>
-#include <optional>
-#include <iostream>
 #include <filesystem>
-
+#include <future>
+#include <iostream>
+#include <optional>
+#include <string>
+#include <vector>
 
 using std::chrono_literals::operator""ms;
 
@@ -26,14 +25,11 @@ namespace osmv {
         std::string error;
 
         Loading_screen_impl(std::filesystem::path _path) :
-			// save the path
+            // save the path
             path{std::move(_path)},
 
-			// immediately start loading the model file on a background thread
-            result{std::async(std::launch::async, [&]() {
-                return std::optional<osmv::Model>{path};
-            })}
-        {
+            // immediately start loading the model file on a background thread
+            result{std::async(std::launch::async, [&]() { return std::optional<osmv::Model>{path}; })} {
         }
 
         void on_event(Application& app, SDL_Event& e) {
@@ -45,15 +41,15 @@ namespace osmv {
         }
 
         void tick(Application& app) {
-			// if there's an error, then the result came through (it's an error)
-			// and this screen will just continuously show the error with no
-			// recourse
+            // if there's an error, then the result came through (it's an error)
+            // and this screen will just continuously show the error with no
+            // recourse
             if (not error.empty()) {
                 return;
             }
 
-			// otherwise, there's no error, so the background thread is still
-			// loading the osim file.
+            // otherwise, there's no error, so the background thread is still
+            // loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
                     app.request_transition<Show_model_screen>(path, result.get().value());
@@ -86,9 +82,7 @@ namespace osmv {
 
     // PIMPL forwarding
 
-    Loading_screen::Loading_screen(std::filesystem::path _path) :
-        impl{new Loading_screen_impl{std::move(_path)}}
-    {
+    Loading_screen::Loading_screen(std::filesystem::path _path) : impl{new Loading_screen_impl{std::move(_path)}} {
     }
 
     osmv::Loading_screen::~Loading_screen() noexcept = default;

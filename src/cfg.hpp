@@ -5,7 +5,7 @@
 namespace osmv::cfg {
     std::filesystem::path resource_path(std::filesystem::path const&);
 
-    template<typename ...Els>
+    template<typename... Els>
     std::filesystem::path resource_path(Els... els) {
         std::filesystem::path p;
         (p /= ... /= els);

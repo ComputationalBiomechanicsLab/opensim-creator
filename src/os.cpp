@@ -1,9 +1,10 @@
 #include "os.hpp"
 
-#include <sstream>
 #include <SDL.h>
+
 #include <cstring>
 #include <memory>
+#include <sstream>
 
 using std::literals::string_literals::operator""s;
 
@@ -21,11 +22,10 @@ static std::filesystem::path get_current_exe_dir() {
     }
 
     // remove trailing slash: it interferes with std::filesystem::path
-    p.get()[l-1] = '\0';
+    p.get()[l - 1] = '\0';
 
     return std::filesystem::path{p.get()};
 }
-
 
 std::filesystem::path osmv::current_exe_dir() {
     // can be expensive to compute: cache after first retrieval

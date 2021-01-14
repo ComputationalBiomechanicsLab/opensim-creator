@@ -1,11 +1,9 @@
 #include "gl.hpp"
 
-#include <sstream>
-#include <vector>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <filesystem>
 
 using std::literals::operator""s;
 
@@ -92,7 +90,7 @@ void gl::assert_no_errors(char const* label) {
     } else {
         msg << " with " << errors.size() << " errors: ";
     }
-    for (auto it = errors.begin(); it != errors.end()-1; ++it) {
+    for (auto it = errors.begin(); it != errors.end() - 1; ++it) {
         msg << to_string(gluErrorString(*it)) << ", ";
     }
     msg << to_string(gluErrorString(errors.back()));

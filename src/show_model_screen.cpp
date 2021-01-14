@@ -2,51 +2,51 @@
 
 #include "osmv_config.hpp"
 
-#include "application.hpp"
-#include "screen.hpp"
 #include "3d_common.hpp"
-#include "opensim_wrapper.hpp"
-#include "loading_screen.hpp"
-#include "splash_screen.hpp"
-#include "fd_simulation.hpp"
-#include "os.hpp"
+#include "application.hpp"
 #include "cfg.hpp"
+#include "fd_simulation.hpp"
 #include "gl.hpp"
+#include "loading_screen.hpp"
+#include "opensim_wrapper.hpp"
+#include "os.hpp"
 #include "renderer.hpp"
+#include "screen.hpp"
+#include "splash_screen.hpp"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include "imgui.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/mat4x4.hpp>
 
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <optional>
 
 // info for a (data) output declared by the model
 //
 // pointers in this struct are dependent on the model: only use this in short-lived contexts
 // and don't let it survive during a model edit or model destruction
 struct Available_output final {
-	OpenSim::AbstractOutput const* handle;
+    OpenSim::AbstractOutput const* handle;
 };
 
 static void snprintf(Available_output const& ao, char* buf, size_t n) {
-	std::snprintf(buf, n, "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
+    std::snprintf(buf, n, "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
 }
 
 static bool produces_doubles(Available_output const& ao) noexcept {
-	return (not ao.handle->isListOutput()) and dynamic_cast<OpenSim::Output<double> const*>(ao.handle) != nullptr;
+    return (not ao.handle->isListOutput()) and dynamic_cast<OpenSim::Output<double> const*>(ao.handle) != nullptr;
 }
 
 // flag-ified version of OpenSim::Coordinate::MotionType (easier ORing for filtering)
 enum Motion_type : int {
-	Undefined = 0,
-	Rotational = 1,
-	Translational = 2,
-	Coupled = 4,
+    Undefined = 0,
+    Rotational = 1,
+    Translational = 2,
+    Coupled = 4,
 };
 static_assert(Motion_type::Undefined == 0);
 
@@ -55,13 +55,13 @@ static_assert(Motion_type::Undefined == 0);
 // pointers in this struct are dependent on the model: only use this in short-lived contexts
 // and don't let it survive during a model edit or model destruction
 struct Coordinate final {
-	OpenSim::Coordinate const* ptr;
-	std::string const* name;
-	float min;
-	float max;
-	float value;
-	Motion_type type;
-	bool locked;
+    OpenSim::Coordinate const* ptr;
+    std::string const* name;
+    float min;
+    float max;
+    float value;
+    Motion_type type;
+    bool locked;
 };
 
 // info for a muscle in a model
@@ -69,85 +69,80 @@ struct Coordinate final {
 // pointers in this struct are dependent on the model: only use this in short-lived contexts
 // and don't let it survive during a model edit or model destruction
 struct Muscle_stat final {
-	OpenSim::Muscle const* ptr;
-	std::string const* name;
-	float length;
+    OpenSim::Muscle const* ptr;
+    std::string const* name;
+    float length;
 };
 
 static Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
-	using OpenSim::Coordinate;
+    using OpenSim::Coordinate;
 
-	switch (m) {
-	case Coordinate::MotionType::Undefined:
-		return Motion_type::Undefined;
-	case Coordinate::MotionType::Rotational:
-		return Motion_type::Rotational;
-	case Coordinate::MotionType::Translational:
-		return Motion_type::Translational;
-	case Coordinate::MotionType::Coupled:
-		return Motion_type::Coupled;
-	default:
-		throw std::runtime_error{ "convert_to_osim_motiontype: unknown coordinate type encountered" };
-	}
+    switch (m) {
+    case Coordinate::MotionType::Undefined:
+        return Motion_type::Undefined;
+    case Coordinate::MotionType::Rotational:
+        return Motion_type::Rotational;
+    case Coordinate::MotionType::Translational:
+        return Motion_type::Translational;
+    case Coordinate::MotionType::Coupled:
+        return Motion_type::Coupled;
+    default:
+        throw std::runtime_error{"convert_to_osim_motiontype: unknown coordinate type encountered"};
+    }
 }
 
 static void get_coordinates(OpenSim::Model const& m, SimTK::State const& st, std::vector<Coordinate>& out) {
-	OpenSim::CoordinateSet const& s = m.getCoordinateSet();
-	int len = s.getSize();
-	out.reserve(out.size() + static_cast<size_t>(len));
-	for (int i = 0; i < len; ++i) {
-		OpenSim::Coordinate const& c = s[i];
-		out.push_back(Coordinate{
-			&c,
-			&c.getName(),
-			static_cast<float>(c.getRangeMin()),
-			static_cast<float>(c.getRangeMax()),
-			static_cast<float>(c.getValue(st)),
-			convert_to_osim_motiontype(c.getMotionType()),
-			c.getLocked(st),
-			});
-	}
+    OpenSim::CoordinateSet const& s = m.getCoordinateSet();
+    int len = s.getSize();
+    out.reserve(out.size() + static_cast<size_t>(len));
+    for (int i = 0; i < len; ++i) {
+        OpenSim::Coordinate const& c = s[i];
+        out.push_back(Coordinate{
+            &c,
+            &c.getName(),
+            static_cast<float>(c.getRangeMin()),
+            static_cast<float>(c.getRangeMax()),
+            static_cast<float>(c.getValue(st)),
+            convert_to_osim_motiontype(c.getMotionType()),
+            c.getLocked(st),
+        });
+    }
 }
 
 static void get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
-	for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
-		out.push_back(Muscle_stat{
-			&musc,
-			&musc.getName(),
-			static_cast<float>(musc.getLength(s)),
-			});
-	}
+    for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
+        out.push_back(Muscle_stat{
+            &musc,
+            &musc.getName(),
+            static_cast<float>(musc.getLength(s)),
+        });
+    }
 }
 
 static void compute_moment_arms(
-	OpenSim::Muscle const& muscle,
-	SimTK::State const& st,
-	OpenSim::Coordinate const& c,
-	float* out,
-	size_t steps) {
+    OpenSim::Muscle const& muscle, SimTK::State const& st, OpenSim::Coordinate const& c, float* out, size_t steps) {
 
-	SimTK::State state = st;
-	muscle.getModel().realizeReport(state);
+    SimTK::State state = st;
+    muscle.getModel().realizeReport(state);
 
-	bool prev_locked = c.getLocked(state);
-	double prev_val = c.getValue(state);
+    bool prev_locked = c.getLocked(state);
+    double prev_val = c.getValue(state);
 
-	c.setLocked(state, false);
+    c.setLocked(state, false);
 
-	double start = c.getRangeMin();
-	double end = c.getRangeMax();
-	double step = (end - start) / steps;
+    double start = c.getRangeMin();
+    double end = c.getRangeMax();
+    double step = (end - start) / steps;
 
-	for (size_t i = 0; i < steps; ++i) {
-		double v = start + (i * step);
-		c.setValue(state, v);
-		out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
-	}
+    for (size_t i = 0; i < steps; ++i) {
+        double v = start + (i * step);
+        c.setValue(state, v);
+        out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
+    }
 
-	c.setLocked(state, prev_locked);
-	c.setValue(state, prev_val);
+    c.setLocked(state, prev_locked);
+    c.setValue(state, prev_val);
 }
-
 
 namespace osmv {
 
@@ -168,8 +163,7 @@ namespace osmv {
         float min = std::numeric_limits<float>::max();
         float max = std::numeric_limits<float>::min();
 
-        Hacky_output_sparkline(Available_output _ao) :
-            ao{std::move(_ao)} {
+        Hacky_output_sparkline(Available_output _ao) : ao{std::move(_ao)} {
         }
 
         // reset the data, but not the output being monitored
@@ -189,9 +183,9 @@ namespace osmv {
             if (n == max_datapoints) {
                 // too many datapoints recorded: half the resolution of the
                 // sparkline to accomodate more datapoints being added
-                size_t halfway = n/2;
+                size_t halfway = n / 2;
                 for (size_t i = 0; i < halfway; ++i) {
-                    data[i] = data[2*i];
+                    data[i] = data[2 * i];
                 }
                 n = halfway;
                 x_step *= 2.0f;
@@ -228,7 +222,7 @@ namespace osmv {
         osmv::State latest_state;
 
         // gui (camera, lighting, etc.)
-		Renderer renderer;
+        Renderer renderer;
 
         // simulator
         float fd_final_time = 0.4f;
@@ -264,7 +258,6 @@ namespace osmv {
             std::vector<std::unique_ptr<Hacky_output_sparkline>> plots;
         } t_outputs;
 
-
         Show_model_screen_impl(std::filesystem::path, osmv::Model);
         void handle_event(Application&, SDL_Event&);
         void tick();
@@ -294,8 +287,6 @@ namespace osmv {
     };
 }
 
-
-
 // screen PIMPL forwarding
 
 osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Model model) :
@@ -315,23 +306,18 @@ void osmv::Show_model_screen::draw() {
     impl->draw(application());
 }
 
-
-
 // screen implementation
 
-osmv::Show_model_screen_impl::Show_model_screen_impl(
-        std::filesystem::path _path,
-        osmv::Model _model) :
+osmv::Show_model_screen_impl::Show_model_screen_impl(std::filesystem::path _path, osmv::Model _model) :
 
     path{std::move(_path)},
     model{std::move(_model)},
     latest_state{[this]() {
-		model->finalizeFromProperties();
+        model->finalizeFromProperties();
         osmv::State s{model->initSystem()};
-		model->realizeReport(s);
+        model->realizeReport(s);
         return s;
-    }()}
-{
+    }()} {
 }
 
 void osmv::Show_model_screen_impl::on_user_edited_model() {
@@ -343,8 +329,8 @@ void osmv::Show_model_screen_impl::on_user_edited_model() {
     t_outputs.selected = std::nullopt;
     t_outputs.plots.clear();
 
-	latest_state = model->initSystem();
-	model->realizeReport(latest_state);
+    latest_state = model->initSystem();
+    model->realizeReport(latest_state);
 }
 
 void osmv::Show_model_screen_impl::on_user_edited_state() {
@@ -353,7 +339,7 @@ void osmv::Show_model_screen_impl::on_user_edited_state() {
         simulator->request_stop();
     }
 
-	model->realizeReport(latest_state);
+    model->realizeReport(latest_state);
 
     // clear all output plots, because the user *probably* wants to see fresh
     // data after resetting the state
@@ -370,8 +356,8 @@ void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
         Hacky_output_sparkline& hos = *p;
 
         // only certain types of output are plottable at the moment
-		auto* o = dynamic_cast<OpenSim::Output<double> const*>(hos.ao.handle);
-		assert(o);
+        auto* o = dynamic_cast<OpenSim::Output<double> const*>(hos.ao.handle);
+        assert(o);
         double v = o->getValue(latest_state);
         float fv = static_cast<float>(v);
 
@@ -387,28 +373,28 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
-            case SDLK_r: {
-                auto km = SDL_GetModState();
-                if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    app.request_transition<Loading_screen>(path);
-                    return;
-                } else {
-					latest_state = model->initSystem();
-                    on_user_edited_state();
-                }
-                break;
-            }
-            case SDLK_SPACE: {
-                if (simulator and simulator->is_running()) {
-                    simulator->request_stop();
-                } else {
-                    simulator.emplace(Fd_simulation_params{Model{model}, State{latest_state}, fd_final_time});
-                }
-                break;
-            case SDLK_ESCAPE:
-                app.request_transition<Splash_screen>();
+        case SDLK_r: {
+            auto km = SDL_GetModState();
+            if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
+                app.request_transition<Loading_screen>(path);
                 return;
+            } else {
+                latest_state = model->initSystem();
+                on_user_edited_state();
             }
+            break;
+        }
+        case SDLK_SPACE: {
+            if (simulator and simulator->is_running()) {
+                simulator->request_stop();
+            } else {
+                simulator.emplace(Fd_simulation_params{Model{model}, State{latest_state}, fd_final_time});
+            }
+            break;
+        case SDLK_ESCAPE:
+            app.request_transition<Splash_screen>();
+            return;
+        }
         }
     } else if (e.type == SDL_MOUSEMOTION) {
         if (io.WantCaptureMouse) {
@@ -429,9 +415,9 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
         }
     }
 
-	if (renderer.on_event(app, e)) {
-		return;
-	}
+    if (renderer.on_event(app, e)) {
+        return;
+    }
 }
 
 // "tick" the UI state (usually, used for updating animations etc.)
@@ -439,7 +425,7 @@ void osmv::Show_model_screen_impl::tick() {
     // grab the latest state (if any) from the simulator and (if updated)
     // update the UI to reflect the latest state
     if (simulator and simulator->try_pop_latest_state(latest_state)) {
-		model->realizeReport(latest_state);
+        model->realizeReport(latest_state);
         update_outputs_from_latest_state();
     }
 }
@@ -450,11 +436,11 @@ bool osmv::Show_model_screen_impl::simulator_running() {
 
 // draw a frame of the UI
 void osmv::Show_model_screen_impl::draw(osmv::Application& ui) {
-	renderer.draw(ui, model, latest_state);
+    renderer.draw(ui, model, latest_state);
 
-	draw_menu_bar();
-	draw_ui_panel(ui);
-	draw_lhs_panel();
+    draw_menu_bar();
+    draw_ui_panel(ui);
+    draw_lhs_panel();
 }
 
 void osmv::Show_model_screen_impl::draw_menu_bar() {
@@ -471,7 +457,7 @@ void osmv::Show_model_screen_impl::draw_menu_bar() {
     }
 }
 
-void osmv::Show_model_screen_impl::draw_ui_panel(Application & ui) {
+void osmv::Show_model_screen_impl::draw_ui_panel(Application& ui) {
     bool b = true;
     ImGuiWindowFlags flags = ImGuiWindowFlags_Modal;
 
@@ -544,11 +530,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
     } else {
         ImGui::PushStyleColor(ImGuiCol_Button, dark_green);
         if (ImGui::Button("start [SPC]")) {
-            Fd_simulation_params params{
-                Model{model},
-                State{latest_state},
-                fd_final_time
-            };
+            Fd_simulation_params params{Model{model}, State{latest_state}, fd_final_time};
             simulator.emplace(std::move(params));
         }
         ImGui::PopStyleColor();
@@ -556,7 +538,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
 
     ImGui::SameLine();
     if (ImGui::Button("reset [r]")) {
-		latest_state = model->initSystem();
+        latest_state = model->initSystem();
         on_user_edited_state();
     }
 
@@ -569,9 +551,9 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
     if (simulator) {
         std::chrono::milliseconds wall_ms =
             std::chrono::duration_cast<std::chrono::milliseconds>(simulator->wall_duration());
-        double wall_secs = static_cast<double>(wall_ms.count())/1000.0;
+        double wall_secs = static_cast<double>(wall_ms.count()) / 1000.0;
         double sim_secs = simulator->sim_current_time();
-        double pct_completed = sim_secs/simulator->sim_final_time() * 100.0;
+        double pct_completed = sim_secs / simulator->sim_final_time() * 100.0;
 
         ImGui::Dummy(ImVec2{0.0f, 20.0f});
         ImGui::Text("simulator stats");
@@ -581,7 +563,7 @@ void osmv::Show_model_screen_impl::draw_simulate_tab() {
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::Text("simulation time: %.2f", sim_secs);
         ImGui::Text("wall time: %.2f secs", wall_secs);
-        ImGui::Text("sim_time/wall_time: %.4f", sim_secs/wall_secs);
+        ImGui::Text("sim_time/wall_time: %.4f", sim_secs / wall_secs);
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::Text("prescribeQ calls: %i", simulator->num_prescribeq_calls());
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
@@ -600,14 +582,14 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
 
     if (ImGui::Button("Front")) {
         // assumes models tend to point upwards in Y and forwards in +X
-		renderer.theta = pi_f/2.0f;
-		renderer.phi = 0.0f;
+        renderer.theta = pi_f / 2.0f;
+        renderer.phi = 0.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Back")) {
         // assumes models tend to point upwards in Y and forwards in +X
-		renderer.theta = 3.0f * (pi_f/2.0f);
-		renderer.phi = 0.0f;
+        renderer.theta = 3.0f * (pi_f / 2.0f);
+        renderer.phi = 0.0f;
     }
 
     ImGui::SameLine();
@@ -617,15 +599,15 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     if (ImGui::Button("Left")) {
         // assumes models tend to point upwards in Y and forwards in +X
         // (so sidewards is theta == 0 or PI)
-		renderer.theta = pi_f;
-		renderer.phi = 0.0f;
+        renderer.theta = pi_f;
+        renderer.phi = 0.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Right")) {
         // assumes models tend to point upwards in Y and forwards in +X
         // (so sidewards is theta == 0 or PI)
-		renderer.theta = 0.0f;
-		renderer.phi = 0.0f;
+        renderer.theta = 0.0f;
+        renderer.phi = 0.0f;
     }
 
     ImGui::SameLine();
@@ -633,20 +615,20 @@ void osmv::Show_model_screen_impl::draw_ui_tab(Application& ui) {
     ImGui::SameLine();
 
     if (ImGui::Button("Top")) {
-		renderer.theta = 0.0f;
-		renderer.phi = pi_f/2.0f;
+        renderer.theta = 0.0f;
+        renderer.phi = pi_f / 2.0f;
     }
     ImGui::SameLine();
     if (ImGui::Button("Bottom")) {
-		renderer.theta = 0.0f;
-		renderer.phi = 3.0f * (pi_f/2.0f);
+        renderer.theta = 0.0f;
+        renderer.phi = 3.0f * (pi_f / 2.0f);
     }
 
     ImGui::NewLine();
 
     ImGui::SliderFloat("radius", &renderer.radius, 0.0f, 10.0f);
-    ImGui::SliderFloat("theta", &renderer.theta, 0.0f, 2.0f*pi_f);
-    ImGui::SliderFloat("phi", &renderer.phi, 0.0f, 2.0f*pi_f);
+    ImGui::SliderFloat("theta", &renderer.theta, 0.0f, 2.0f * pi_f);
+    ImGui::SliderFloat("phi", &renderer.phi, 0.0f, 2.0f * pi_f);
     ImGui::NewLine();
     ImGui::SliderFloat("pan_x", &renderer.pan.x, -100.0f, 100.0f);
     ImGui::SliderFloat("pan_y", &renderer.pan.y, -100.0f, 100.0f);
@@ -704,7 +686,6 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
     scratch.coords.clear();
     get_coordinates(model, latest_state, scratch.coords);
 
-
     // apply filters etc.
 
     int coordtypes_to_filter_out = 0;
@@ -737,7 +718,6 @@ void osmv::Show_model_screen_impl::draw_coords_tab() {
         });
     }
 
-
     // render sliders
 
     ImGui::Dummy(ImVec2{0.0f, 10.0f});
@@ -761,7 +741,7 @@ void osmv::Show_model_screen_impl::draw_coordinate_slider(Coordinate const& c) {
     }
 
     if (ImGui::Button(c.locked ? "u" : "l")) {
-		c.ptr->setLocked(latest_state, not false);
+        c.ptr->setLocked(latest_state, not false);
         on_user_edited_state();
     }
 
@@ -770,7 +750,7 @@ void osmv::Show_model_screen_impl::draw_coordinate_slider(Coordinate const& c) {
 
     float v = c.value;
     if (ImGui::SliderFloat(c.name->c_str(), &v, c.min, c.max)) {
-		c.ptr->setValue(latest_state, static_cast<double>(v));
+        c.ptr->setValue(latest_state, static_cast<double>(v));
         on_user_edited_state();
     }
 
@@ -785,43 +765,43 @@ void osmv::Show_model_screen_impl::draw_utils_tab() {
     ImGui::Text("wrapping surfaces: ");
     ImGui::SameLine();
     if (ImGui::Button("disable")) {
-		OpenSim::Model& m = model;
-		for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-			for (int i = 0; i < wos.getSize(); ++i) {
-				OpenSim::WrapObject& wo = wos[i];
-				wo.set_active(false);
-				wo.upd_Appearance().set_visible(false);
-			}
-		}
+        OpenSim::Model& m = model;
+        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+            for (int i = 0; i < wos.getSize(); ++i) {
+                OpenSim::WrapObject& wo = wos[i];
+                wo.set_active(false);
+                wo.upd_Appearance().set_visible(false);
+            }
+        }
         on_user_edited_model();
     }
     ImGui::SameLine();
     if (ImGui::Button("enable")) {
-		OpenSim::Model& m = model;
-		for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-			for (int i = 0; i < wos.getSize(); ++i) {
-				OpenSim::WrapObject& wo = wos[i];
-				wo.set_active(true);
-				wo.upd_Appearance().set_visible(true);
-			}
-		}
+        OpenSim::Model& m = model;
+        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+            for (int i = 0; i < wos.getSize(); ++i) {
+                OpenSim::WrapObject& wo = wos[i];
+                wo.set_active(true);
+                wo.upd_Appearance().set_visible(true);
+            }
+        }
         on_user_edited_model();
     }
 
-	if (ImGui::Button("redify")) {
-		OpenSim::Model& m = model;
-		for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
-			g.setColor({ 1.0, 0.0, 0.0 });
-		}
-	}
+    if (ImGui::Button("redify")) {
+        OpenSim::Model& m = model;
+        for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
+            g.setColor({1.0, 0.0, 0.0});
+        }
+    }
 
     thread_local float color = 0.0f;
     if (ImGui::SliderFloat("red", &color, 0.0f, 1.0f)) {
-		OpenSim::Model& m = model;
-		for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
-            g.setColor({ static_cast<double>(color), 0.0, 0.0 });
-		}
-	}
+        OpenSim::Model& m = model;
+        for (OpenSim::Geometry& g : m.updComponentList<OpenSim::Geometry>()) {
+            g.setColor({static_cast<double>(color), 0.0, 0.0});
+        }
+    }
 }
 
 void osmv::Show_model_screen_impl::draw_muscles_tab() {
@@ -840,11 +820,11 @@ void osmv::Show_model_screen_impl::draw_muscles_tab() {
 
     // draw muscle list
     for (Muscle_stat const& musc : scratch.muscles) {
-		if (musc.length > 0.5) {
-			if (musc.name->find(t_muscs.filter) != musc.name->npos) {
-				ImGui::Text("%s (len = %.3f)", musc.name->c_str(), static_cast<double>(musc.length));
-			}
-		}
+        if (musc.length > 0.5) {
+            if (musc.name->find(t_muscs.filter) != musc.name->npos) {
+                ImGui::Text("%s (len = %.3f)", musc.name->c_str(), static_cast<double>(musc.length));
+            }
+        }
     }
 }
 
@@ -864,7 +844,11 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-        ImGui::BeginChild("MomentArmPlotMuscleSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
+        ImGui::BeginChild(
+            "MomentArmPlotMuscleSelection",
+            ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260),
+            false,
+            window_flags);
         for (Muscle_stat const& m : scratch.muscles) {
             if (ImGui::Selectable(m.name->c_str(), m.name == t_mas.selected_musc)) {
                 t_mas.selected_musc = m.name;
@@ -884,7 +868,11 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
         });
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-        ImGui::BeginChild("MomentArmPlotCoordSelection", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260), false, window_flags);
+        ImGui::BeginChild(
+            "MomentArmPlotCoordSelection",
+            ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, 260),
+            false,
+            window_flags);
         for (Coordinate const& c : scratch.coords) {
             if (ImGui::Selectable(c.name->c_str(), c.name == t_mas.selected_coord)) {
                 t_mas.selected_coord = c.name;
@@ -897,17 +885,13 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 
     if (t_mas.selected_musc and t_mas.selected_coord) {
         if (ImGui::Button("+ add plot")) {
-            auto it = std::find_if(scratch.muscles.begin(),
-                                   scratch.muscles.end(),
-                                   [this](Muscle_stat const& ms) {
-                    return ms.name == t_mas.selected_musc;
+            auto it = std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](Muscle_stat const& ms) {
+                return ms.name == t_mas.selected_musc;
             });
             assert(it != scratch.muscles.end());
 
-            auto it2 = std::find_if(scratch.coords.begin(),
-                                    scratch.coords.end(),
-                                    [this](Coordinate const& c) {
-                    return c.name == t_mas.selected_coord;
+            auto it2 = std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](Coordinate const& c) {
+                return c.name == t_mas.selected_coord;
             });
             assert(it2 != scratch.coords.end());
 
@@ -918,12 +902,7 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
             p->x_end = it2->max;
 
             // populate y values
-            compute_moment_arms(
-                *it->ptr,
-                latest_state,
-                *it2->ptr,
-                p->y_vals.data(),
-                p->y_vals.size());
+            compute_moment_arms(*it->ptr, latest_state, *it2->ptr, p->y_vals.data(), p->y_vals.size());
             float min = std::numeric_limits<float>::max();
             float max = std::numeric_limits<float>::min();
             for (float v : p->y_vals) {
@@ -958,7 +937,7 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
     ImGui::Columns(2);
     for (size_t i = 0; i < t_mas.plots.size(); ++i) {
         Moment_arm_plot const& p = *t_mas.plots[i];
-        ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
+        ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
         ImGui::PlotLines(
             "",
             p.y_vals.data(),
@@ -983,39 +962,41 @@ void osmv::Show_model_screen_impl::draw_mas_tab() {
 }
 
 inline bool operator==(Available_output const& a, Available_output const& b) {
-	return a.handle == b.handle;
+    return a.handle == b.handle;
 }
 
 static void get_available_outputs(OpenSim::Model const& m, std::vector<Available_output>& out) {
-	// model-level outputs (e.g. kinetic energy)
-	for (auto const& p : m.getOutputs()) {
-		out.push_back(Available_output{p.second.get()});
-	}
+    // model-level outputs (e.g. kinetic energy)
+    for (auto const& p : m.getOutputs()) {
+        out.push_back(Available_output{p.second.get()});
+    }
 
-	// muscle outputs
-	for (auto const& musc : m.getComponentList<OpenSim::Muscle>()) {
-		for (auto const& p : musc.getOutputs()) {
-			out.push_back(Available_output{p.second.get()});
-		}
-	}
+    // muscle outputs
+    for (auto const& musc : m.getComponentList<OpenSim::Muscle>()) {
+        for (auto const& p : musc.getOutputs()) {
+            out.push_back(Available_output{p.second.get()});
+        }
+    }
 }
 
 void osmv::Show_model_screen_impl::draw_outputs_tab() {
     t_outputs.available.clear();
-	get_available_outputs(model, t_outputs.available);
+    get_available_outputs(model, t_outputs.available);
 
     // apply user filters
     {
-        auto it = std::remove_if(
-                    t_outputs.available.begin(),
-                    t_outputs.available.end(),
-                    [&](Available_output const& ao) {
-                snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
+        auto it =
+            std::remove_if(t_outputs.available.begin(), t_outputs.available.end(), [&](Available_output const& ao) {
+                snprintf(
+                    scratch.text,
+                    sizeof(scratch.text),
+                    "%s/%s",
+                    ao.handle->getOwner().getName().c_str(),
+                    ao.handle->getName().c_str());
                 return std::strstr(scratch.text, t_outputs.filter) == nullptr;
-        });
+            });
         t_outputs.available.erase(it, t_outputs.available.end());
     }
-
 
     // input: filter selectable outputs
     ImGui::InputText("filter", t_outputs.filter, sizeof(t_outputs.filter));
@@ -1025,7 +1006,12 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
     if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
         for (auto const& ao : t_outputs.available) {
-            snprintf(scratch.text, sizeof(scratch.text), "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
+            snprintf(
+                scratch.text,
+                sizeof(scratch.text),
+                "%s/%s",
+                ao.handle->getOwner().getName().c_str(),
+                ao.handle->getName().c_str());
             if (ImGui::Selectable(scratch.text, ao == t_outputs.selected)) {
                 t_outputs.selected = ao;
             }
@@ -1060,7 +1046,8 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
         ImGui::Separator();
         for (Available_output const& ao : t_outputs.watches) {
             std::string v = ao.handle->getValueAsString(latest_state);
-            ImGui::Text("    %s/%s: %s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str(), v.c_str());
+            ImGui::Text(
+                "    %s/%s: %s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str(), v.c_str());
         }
     }
 
@@ -1073,7 +1060,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
         for (std::unique_ptr<Hacky_output_sparkline> const& p : t_outputs.plots) {
             Hacky_output_sparkline const& hos = *p;
 
-            ImGui::SetNextItemWidth(ImGui::GetWindowWidth()/2.0f);
+            ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
             ImGui::PlotLines(
                 "",
                 hos.data.data(),

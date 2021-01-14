@@ -2,11 +2,11 @@
 
 #include "gl.hpp"
 
-#include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
-#include <vector>
 #include <array>
+#include <vector>
 
 // 3d common: common primitives/structs used for mesh generation/rendering
 
@@ -18,19 +18,21 @@ namespace osmv {
         glm::vec3 normal;
         glm::vec2 texcoord;
     };
-    static_assert(sizeof(Shaded_textured_vert) == 8*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
+    static_assert(
+        sizeof(Shaded_textured_vert) == 8 * sizeof(float),
+        "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
     // standard textured quad
     // - dimensions [-1, +1] in xy and [0, 0] in z
     // - uv coords are (0, 0) bottom-left, (1, 1) top-right
     // - normal is +1 in Z, meaning that it faces toward the camera
     static constexpr std::array<Shaded_textured_vert, 6> shaded_textured_quad_verts = {{
-        {{-1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}}, // bottom-left
-        {{ 1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}}, // top-right
-        {{ 1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}}, // bottom-right
-        {{ 1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}}, // top-right
-        {{-1.0f, -1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}}, // bottom-left
-        {{-1.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}}  // top-left
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}  // top-left
     }};
 
     // one vertex of a mesh
@@ -40,8 +42,12 @@ namespace osmv {
         glm::vec3 pos;
         glm::vec3 normal;
     };
-    static_assert(sizeof(glm::vec3) == 3*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
-    static_assert(sizeof(Untextured_vert) == 6*sizeof(float), "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
+    static_assert(
+        sizeof(glm::vec3) == 3 * sizeof(float),
+        "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
+    static_assert(
+        sizeof(Untextured_vert) == 6 * sizeof(float),
+        "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
     // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
     void unit_sphere_triangles(std::vector<Untextured_vert>& out);
@@ -89,10 +95,10 @@ namespace osmv {
 
     // read 6 image files into a single OpenGL cubemap (GL_TEXTURE_CUBE_MAP)
     gl::Texture_cubemap load_cubemap(
-            char const* path_pos_x,
-            char const* path_neg_x,
-            char const* path_pos_y,
-            char const* path_neg_y,
-            char const* path_pos_z,
-            char const* path_neg_z);
+        char const* path_pos_x,
+        char const* path_neg_x,
+        char const* path_pos_y,
+        char const* path_neg_y,
+        char const* path_pos_z,
+        char const* path_neg_z);
 }

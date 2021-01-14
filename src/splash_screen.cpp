@@ -1,7 +1,7 @@
 #include "splash_screen.hpp"
 
-#include "cfg.hpp"
 #include "application.hpp"
+#include "cfg.hpp"
 #include "loading_screen.hpp"
 
 #include "imgui.h"
@@ -122,7 +122,6 @@ namespace osmv {
             }
         }
     };
-
 
     // PIMPL forwarding
 

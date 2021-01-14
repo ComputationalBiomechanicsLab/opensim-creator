@@ -125,7 +125,7 @@ set(OSMV_OPENSIM_LIBS
 )
 target_link_libraries(osmv
     # in gcc, the <filesystem> implementation must be explicitly linked separately
-    $<$<CXX_COMPILER_ID:GNU>:stdc++fs>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
     ${OSMV_SDL2_LIB}
     glew_s
     osmv-imgui_s
@@ -171,6 +171,9 @@ target_compile_options(osmv PUBLIC
         # -Wcast-qual  broken by STB
         # -Wconversion  broken by STB
     >
+    $<$<CXX_COMPILER_ID:Clang>:
+        -Wno-cast-align
+    >
 )
 target_compile_features(osmv PUBLIC
     cxx_std_17
@@ -184,6 +187,9 @@ set_target_properties(osmv PROPERTIES
     #     bin/osmv
     #     lib/*.so
     INSTALL_RPATH $<LINUX:"\$ORIGIN/../lib">
+
+    # try to use clang-tidy if building with clang on linux
+    CLANG_TIDY $<$<CXX_COMPILER_ID:Clang>: "clang-tidy">
 )
 
 # these features only work in newer CMakes' than some devs have, so

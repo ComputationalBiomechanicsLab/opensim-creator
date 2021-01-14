@@ -22,8 +22,7 @@ namespace osmv {
         Fd_simulation_params(osmv::Model m, osmv::State s, double t) :
             model{std::move(m)},
             initial_state{std::move(s)},
-            final_time{t}
-        {
+            final_time{t} {
         }
     };
 
@@ -59,6 +58,6 @@ namespace osmv {
         int num_states_popped() const;
     };
 
-	// just run a forward dynamics sim with default settings
-	osmv::State run_fd_simulation(OpenSim::Model& model);
+    // just run a forward dynamics sim with default settings
+    osmv::State run_fd_simulation(OpenSim::Model& model);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "screen.hpp"
 #include "opensim_wrapper.hpp"
+#include "screen.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -12,6 +12,7 @@ namespace osmv {
 
     class Show_model_screen final : public Screen {
         std::unique_ptr<Show_model_screen_impl> impl;
+
     public:
         Show_model_screen(std::filesystem::path, osmv::Model);
         Show_model_screen(Show_model_screen const&) = delete;

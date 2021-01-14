@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <fstream>
 
-
 namespace fs = std::filesystem;
 
 struct App_config final {
@@ -39,8 +38,8 @@ static App_config load_application_config() {
 
     // no config: return an in-memory config that has reasonable defaults
     if (not exists) {
-        fs::path default_resource_dir = fs::path{ ".." } / "resources";
-        return App_config{ default_resource_dir };
+        fs::path default_resource_dir = fs::path{".."} / "resources";
+        return App_config{default_resource_dir};
     }
 
     // warning: can throw
@@ -51,7 +50,7 @@ static App_config load_application_config() {
     fs::path config_file_dir = p.parent_path();
     fs::path resource_dir_path = config_file_dir / resource_dir;
 
-    return App_config{ resource_dir_path };
+    return App_config{resource_dir_path};
 }
 
 static App_config load_config() {

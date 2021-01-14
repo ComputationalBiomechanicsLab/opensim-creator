@@ -9,6 +9,7 @@ namespace osmv {
 
     class Splash_screen final : public Screen {
         std::unique_ptr<Splash_screen_impl> impl;
+
     public:
         Splash_screen();
         Splash_screen(Splash_screen const&) = delete;

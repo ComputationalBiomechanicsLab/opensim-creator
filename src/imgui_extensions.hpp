@@ -7,6 +7,7 @@ struct ImGuiContext;
 namespace igx {
     class Context final {
         ImGuiContext* handle;
+
     public:
         Context();
         Context(Context const&) = delete;

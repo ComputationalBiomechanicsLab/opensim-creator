@@ -1,6 +1,5 @@
 #include "3d_common.hpp"
 
-// stbi for image loading
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -9,7 +8,7 @@
 using std::literals::operator""s;
 
 static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
-    //https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352
+    // https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352
     glm::vec3 a{p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
     glm::vec3 b{p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
 
@@ -17,9 +16,8 @@ static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 con
     float y = a.z * b.x - a.x * b.z;
     float z = a.x * b.y - a.y * b.x;
 
-    return glm::vec3{x,y,z};
+    return glm::vec3{x, y, z};
 }
-
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
 void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
@@ -40,20 +38,20 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
     // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
     std::vector<osmv::Untextured_vert> points;
 
-    float theta_step = 2.0f*pi_f / sectors;
+    float theta_step = 2.0f * pi_f / sectors;
     float phi_step = pi_f / stacks;
 
     for (size_t stack = 0; stack <= stacks; ++stack) {
-        float phi = pi_f/2.0f - static_cast<float>(stack)*phi_step;
+        float phi = pi_f / 2.0f - static_cast<float>(stack) * phi_step;
         float y = sin(phi);
 
         for (unsigned sector = 0; sector <= sectors; ++sector) {
             float theta = sector * theta_step;
             float x = sin(theta) * cos(phi);
             float z = -cos(theta) * cos(phi);
-            glm::vec3 pos{ x, y, z };
-            glm::vec3 normal{ pos };
-            points.push_back({ pos, normal });
+            glm::vec3 pos{x, y, z};
+            glm::vec3 normal{pos};
+            points.push_back({pos, normal});
         }
     }
 
@@ -69,8 +67,8 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
             // (which contain one triangle, at the poles)
             osmv::Untextured_vert p1 = points.at(k1);
             osmv::Untextured_vert p2 = points.at(k2);
-            osmv::Untextured_vert p1_plus1 = points.at(k1+1u);
-            osmv::Untextured_vert p2_plus1 = points.at(k2+1u);
+            osmv::Untextured_vert p1_plus1 = points.at(k1 + 1u);
+            osmv::Untextured_vert p2_plus1 = points.at(k2 + 1u);
 
             if (stack != 0) {
                 out.push_back(p1);
@@ -78,7 +76,7 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
                 out.push_back(p2);
             }
 
-            if (stack != (stacks-1)) {
+            if (stack != (stacks - 1)) {
                 out.push_back(p1_plus1);
                 out.push_back(p2_plus1);
                 out.push_back(p2);
@@ -98,9 +96,9 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
 void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
     assert(num_sides >= 3);
 
-    out.reserve(4*num_sides);  // side quad, top triangle, bottom triangle
+    out.reserve(4 * num_sides);  // side quad, top triangle, bottom triangle
 
-    float step_angle = (2.0f*pi_f)/num_sides;
+    float step_angle = (2.0f * pi_f) / num_sides;
     float top_z = -1.0f;
     float bottom_z = +1.0f;
 
@@ -108,8 +106,8 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
     {
         glm::vec3 p1{0.0f, 0.0f, top_z};  // middle
         for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i*step_angle;
-            float theta_end = (i+1)*step_angle;
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
             glm::vec3 p2(sin(theta_start), cos(theta_start), top_z);
             glm::vec3 p3(sin(theta_end), cos(theta_end), top_z);
             glm::vec3 normal = normals(p1, p2, p3);
@@ -124,8 +122,8 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
     {
         glm::vec3 p1{0.0f, 0.0f, -1.0f};  // middle
         for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i*step_angle;
-            float theta_end = (i+1)*step_angle;
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
 
             glm::vec3 p2(sin(theta_start), cos(theta_start), bottom_z);
             glm::vec3 p3(sin(theta_end), cos(theta_end), bottom_z);
@@ -179,40 +177,34 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
 void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out) {
     assert(num_sides >= 3);
 
-    out.reserve(2*num_sides + 2*num_sides);
+    out.reserve(2 * num_sides + 2 * num_sides);
 
-    float step_angle = (2.0f*pi_f)/num_sides;
+    float step_angle = (2.0f * pi_f) / num_sides;
     float top_y = +1.0f;
     float bottom_y = -1.0f;
 
     // top
     {
         glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        osmv::Untextured_vert top_middle{ {0.0f, top_y, 0.0f}, normal };
+        osmv::Untextured_vert top_middle{{0.0f, top_y, 0.0f}, normal};
         for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i*step_angle;
-            float theta_end = (i+1)*step_angle;
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
 
             // note: these are wound CCW for backface culling
             out.push_back(top_middle);
-            out.push_back({
-                glm::vec3(cos(theta_end), top_y, sin(theta_end)),
-                normal
-            });
-            out.push_back({
-                glm::vec3(cos(theta_start), top_y, sin(theta_start)),
-                normal
-            });
+            out.push_back({glm::vec3(cos(theta_end), top_y, sin(theta_end)), normal});
+            out.push_back({glm::vec3(cos(theta_start), top_y, sin(theta_start)), normal});
         }
     }
 
     // bottom
     {
         glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
-        osmv::Untextured_vert top_middle{ {0.0f, bottom_y, 0.0f}, bottom_normal };
+        osmv::Untextured_vert top_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
         for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i*step_angle;
-            float theta_end = (i+1)*step_angle;
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
 
             // note: these are wound CCW for backface culling
             out.push_back(top_middle);
@@ -229,7 +221,7 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untext
 
     // sides
     {
-        float norm_start = step_angle/2.0f;
+        float norm_start = step_angle / 2.0f;
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i * step_angle;
             float theta_end = theta_start + step_angle;
@@ -259,18 +251,20 @@ void osmv::simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untext
 }
 
 gl::Texture_2d osmv::generate_chequered_floor_texture() {
-    struct Rgb { unsigned char r, g, b; };
+    struct Rgb {
+        unsigned char r, g, b;
+    };
     constexpr size_t w = 512;
     constexpr size_t h = 512;
     constexpr Rgb on_color = {0xfd, 0xfd, 0xfd};
     constexpr Rgb off_color = {0xeb, 0xeb, 0xeb};
 
-    std::array<Rgb, w*h> pixels;
+    std::array<Rgb, w * h> pixels;
     for (size_t row = 0; row < h; ++row) {
         size_t row_start = row * w;
-        bool y_on = (row/32) % 2 == 0;
+        bool y_on = (row / 32) % 2 == 0;
         for (size_t col = 0; col < w; ++col) {
-            bool x_on = (col/32) % 2 == 0;
+            bool x_on = (col / 32) % 2 == 0;
             pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
         }
     }
@@ -289,8 +283,7 @@ namespace stbi {
         int nrChannels;
         unsigned char* data;
 
-        Image(char const* path) :
-            data{stbi_load(path, &width, &height, &nrChannels, 0)} {
+        Image(char const* path) : data{stbi_load(path, &width, &height, &nrChannels, 0)} {
             if (data == nullptr) {
                 throw std::runtime_error{"stbi_load failed for '"s + path + "' : " + stbi_failure_reason()};
             }
@@ -329,25 +322,17 @@ gl::Texture_2d osmv::load_tex(char const* path, Tex_flags flags) {
         format = GL_RGBA;
     } else {
         std::stringstream msg;
-        msg << path << ": error: contains " << img.nrChannels << " color channels (the implementation doesn't know how to handle this)";
+        msg << path << ": error: contains " << img.nrChannels
+            << " color channels (the implementation doesn't know how to handle this)";
         throw std::runtime_error{std::move(msg).str()};
     }
 
     gl::BindTexture(t.type, t);
-    gl::TexImage2D(t.type,
-                 0,
-                 internalFormat,
-                 img.width,
-                 img.height,
-                 0,
-                 format,
-                 GL_UNSIGNED_BYTE,
-                 img.data);
+    gl::TexImage2D(t.type, 0, internalFormat, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.data);
     glGenerateMipmap(t.type);
 
     return t;
 }
-
 
 // helper method: load a file into an image and send it to OpenGL
 static void load_cubemap_surface(char const* path, GLenum target) {
@@ -362,7 +347,8 @@ static void load_cubemap_surface(char const* path, GLenum target) {
         format = GL_RGBA;
     } else {
         std::stringstream msg;
-        msg << path << ": error: contains " << img.nrChannels << " color channels (the implementation doesn't know how to handle this)";
+        msg << path << ": error: contains " << img.nrChannels
+            << " color channels (the implementation doesn't know how to handle this)";
         throw std::runtime_error{std::move(msg).str()};
     }
 
@@ -370,12 +356,13 @@ static void load_cubemap_surface(char const* path, GLenum target) {
 }
 
 gl::Texture_cubemap osmv::load_cubemap(
-        char const* path_pos_x,
-        char const* path_neg_x,
-        char const* path_pos_y,
-        char const* path_neg_y,
-        char const* path_pos_z,
-        char const* path_neg_z) {
+    char const* path_pos_x,
+    char const* path_neg_x,
+    char const* path_pos_y,
+    char const* path_neg_y,
+    char const* path_pos_z,
+    char const* path_neg_z) {
+
     stbi_set_flip_vertically_on_load(false);
 
     gl::Texture_cubemap rv;
@@ -407,4 +394,3 @@ gl::Texture_cubemap osmv::load_cubemap(
 
     return rv;
 }
-

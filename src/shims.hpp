@@ -1,7 +1,7 @@
 #pragma once
 
-#include <memory>
 #include <atomic>
+#include <memory>
 #include <thread>
 
 // shims: *roughly* compatible shims to features available in newer C++es
@@ -10,13 +10,12 @@ namespace shims {
     // C++20: std::stop_token
     class stop_token final {
         std::shared_ptr<std::atomic<bool>> shared_state;
+
     public:
-        stop_token(std::shared_ptr<std::atomic<bool>> st)
-            : shared_state{ std::move(st) } {
+        stop_token(std::shared_ptr<std::atomic<bool>> st) : shared_state{std::move(st)} {
         }
         stop_token(stop_token const&) = delete;
-        stop_token(stop_token&& tmp) :
-            shared_state{ tmp.shared_state } {
+        stop_token(stop_token&& tmp) : shared_state{tmp.shared_state} {
         }
         stop_token& operator=(stop_token const&) = delete;
         stop_token& operator=(stop_token&&) = delete;
@@ -30,13 +29,12 @@ namespace shims {
     // C++20: std::stop_source
     class stop_source final {
         std::shared_ptr<std::atomic<bool>> shared_state;
+
     public:
-        stop_source() :
-            shared_state{ new std::atomic<bool>{false} } {
+        stop_source() : shared_state{new std::atomic<bool>{false}} {
         }
         stop_source(stop_source const&) = delete;
-        stop_source(stop_source&& tmp) :
-            shared_state{ std::move(tmp.shared_state) } {
+        stop_source(stop_source&& tmp) : shared_state{std::move(tmp.shared_state)} {
         }
         stop_source& operator=(stop_source const&) = delete;
         stop_source& operator=(stop_source&& tmp) {
@@ -54,7 +52,7 @@ namespace shims {
         }
 
         stop_token get_token() const noexcept {
-            return stop_token{ shared_state };
+            return stop_token{shared_state};
         }
     };
 
@@ -62,19 +60,16 @@ namespace shims {
     class jthread final {
         stop_source s;
         std::thread t;
+
     public:
         // Creates new thread object which does not represent a thread
-        jthread() :
-            s{},
-            t{} {
+        jthread() : s{}, t{} {
         }
 
         // Creates new thread object and associates it with a thread of execution.
         // The new thread of execution immediately starts executing
         template<class Function, class... Args>
-        jthread(Function&& f, Args&&... args) :
-            s{},
-            t{ f, s.get_token(), std::forward<Args>(args)... } {
+        jthread(Function&& f, Args&&... args) : s{}, t{f, s.get_token(), std::forward<Args>(args)...} {
         }
 
         // threads are non-copyable

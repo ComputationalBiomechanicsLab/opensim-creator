@@ -1,40 +1,37 @@
 #include "application.hpp"
 
-#include "osmv_config.hpp"
 #include "gl.hpp"
 #include "imgui.h"
-#include "screen.hpp"
 #include "imgui_extensions.hpp"
+#include "osmv_config.hpp"
+#include "screen.hpp"
 
-#include "examples/imgui_impl_sdl.h"
 #include "examples/imgui_impl_opengl3.h"
+#include "examples/imgui_impl_sdl.h"
 
+#include <cassert>
+#include <chrono>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
-#include <chrono>
-#include <cassert>
-
 
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
 
-// helper type for the visitor #4
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-// explicit deduction guide (not needed as of C++20)
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-#define OSC_SDL_GL_SetAttribute_CHECK(attr, value) { \
-        int rv = SDL_GL_SetAttribute((attr), (value)); \
-        if (rv != 0) { \
-            throw std::runtime_error{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "s + SDL_GetError()}; \
-        } \
+#define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
+    {                                                                                                                  \
+        int rv = SDL_GL_SetAttribute((attr), (value));                                                                 \
+        if (rv != 0) {                                                                                                 \
+            throw std::runtime_error{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "s +            \
+                                     SDL_GetError()};                                                                  \
+        }                                                                                                              \
     }
 
 // macros for quality-of-life checks
-#define OSC_GL_CALL_CHECK(func, ...) { \
-        func(__VA_ARGS__); \
-        gl::assert_no_errors(#func); \
+#define OSC_GL_CALL_CHECK(func, ...)                                                                                   \
+    {                                                                                                                  \
+        func(__VA_ARGS__);                                                                                             \
+        gl::assert_no_errors(#func);                                                                                   \
     }
 
 #ifdef NDEBUG
@@ -78,11 +75,11 @@ public:
         gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
     }
 
-    operator gl::Frame_buffer const& () const noexcept {
+    operator gl::Frame_buffer const&() const noexcept {
         return fbo;
     }
 
-    operator gl::Frame_buffer& () noexcept {
+    operator gl::Frame_buffer&() noexcept {
         return fbo;
     }
 
@@ -174,7 +171,7 @@ namespace osmv {
 
                 // enable the context
                 if (SDL_GL_MakeCurrent(window, gl) != 0) {
-                    throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s  + SDL_GetError()};
+                    throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
                 }
 
                 // disable VSync
@@ -193,11 +190,12 @@ namespace osmv {
                 }
 
                 // print OpenGL driver info
-                DEBUG_PRINT("OpenGL info: %s: %s (%s) /w GLSL: %s\n",
-                            glGetString(GL_VENDOR),
-                            glGetString(GL_RENDERER),
-                            glGetString(GL_VERSION),
-                            glGetString(GL_SHADING_LANGUAGE_VERSION));
+                DEBUG_PRINT(
+                    "OpenGL info: %s: %s (%s) /w GLSL: %s\n",
+                    glGetString(GL_VENDOR),
+                    glGetString(GL_RENDERER),
+                    glGetString(GL_VERSION),
+                    glGetString(GL_SHADING_LANGUAGE_VERSION));
 
                 // initialize any top-level OpenGL vars
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
@@ -237,7 +235,7 @@ namespace osmv {
             }()},
 
             // millis between frames (for throttling) is based on the highest refresh rate
-            millis_between_frames{static_cast<int>(1000.0 * (1.0/refresh_rate))},
+            millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))},
 
             // initialize the non-window FBO that the application writes into
             sfbo{sdl::GetWindowSize(window), get_max_multisamples()},
@@ -245,20 +243,19 @@ namespace osmv {
             // initialize ImGui
             imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
-            imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION}
-        {
+            imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
         }
 
         void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
             current_screen = std::move(s);
             current_screen->on_application_mount(&app);
 
-			// main application draw loop (i.e. the "game loop" of this app)
-			//
-			// implemented an immediate GUI, rather than retained, which is
-			// inefficient but makes it easier to add new UI features.
+            // main application draw loop (i.e. the "game loop" of this app)
+            //
+            // implemented an immediate GUI, rather than retained, which is
+            // inefficient but makes it easier to add new UI features.
             while (true) {
-				auto frame_start = std::chrono::high_resolution_clock::now();
+                auto frame_start = std::chrono::high_resolution_clock::now();
 
                 // pump events
                 for (SDL_Event e; SDL_PollEvent(&e);) {
@@ -312,7 +309,7 @@ namespace osmv {
                 gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-				// setup for draw calls
+                // setup for draw calls
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
@@ -324,7 +321,7 @@ namespace osmv {
                 // rendered before handling side-effects because rendering affects
                 // globals (e.g. ImGui state, OpenGL state)
 
-				// ImGui: draw any deferred draws into the fbo
+                // ImGui: draw any deferred draws into the fbo
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -332,10 +329,20 @@ namespace osmv {
                 gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, sfbo);
                 gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, gl::window_fbo);
                 assert(sfbo.dimensions() == sdl::GetWindowSize(window));
-                gl::BlitFramebuffer(0, 0, sfbo.width(), sfbo.height(), 0, 0, sfbo.width(), sfbo.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                gl::BlitFramebuffer(
+                    0,
+                    0,
+                    sfbo.width(),
+                    sfbo.height(),
+                    0,
+                    0,
+                    sfbo.width(),
+                    sfbo.height(),
+                    GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
 
                 // swap the blitted window onto the user's screen: user can see update at
-				// this point
+                // this point
                 SDL_GL_SwapWindow(window);
 
                 // screen: `draw` side-effects

@@ -36,24 +36,9 @@ sdl::GLContext sdl::GL_CreateContext(SDL_Window* w) {
 }
 
 sdl::Surface sdl::CreateRGBSurface(
-    Uint32 flags,
-    int    width,
-    int    height,
-    int    depth,
-    Uint32 Rmask,
-    Uint32 Gmask,
-    Uint32 Bmask,
-    Uint32 Amask) {
+    Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask) {
 
-    SDL_Surface* handle = SDL_CreateRGBSurface(
-        flags,
-        width,
-        height,
-        depth,
-        Rmask,
-        Gmask,
-        Bmask,
-        Amask);
+    SDL_Surface* handle = SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
 
     if (handle == nullptr) {
         throw std::runtime_error{"SDL_CreateRGBSurface: "s + SDL_GetError()};
@@ -107,9 +92,7 @@ void sdl::GL_SetSwapInterval(int interval) {
     }
 }
 
-sdl::Timer sdl::AddTimer(Uint32 interval,
-                     SDL_TimerCallback callback,
-                     void* param) {
+sdl::Timer sdl::AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param) {
     SDL_TimerID handle = SDL_AddTimer(interval, callback, param);
     if (handle == 0) {
         throw std::runtime_error{"SDL_AddTimer failed: "s + SDL_GetError()};

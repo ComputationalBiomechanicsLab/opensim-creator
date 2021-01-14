@@ -1,15 +1,15 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <cassert>
-#include <stdexcept>
 #include <filesystem>
+#include <stdexcept>
 
 namespace gl {
     std::string slurp(std::filesystem::path const& path);
@@ -18,6 +18,7 @@ namespace gl {
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteShader.xhtml
     class Shader {
         GLuint handle;
+
     public:
         static constexpr GLuint empty_handle = 0;
 
@@ -48,15 +49,18 @@ namespace gl {
     };
 
     struct Vertex_shader final : public Shader {
-        Vertex_shader() : Shader{GL_VERTEX_SHADER} {}
+        Vertex_shader() : Shader{GL_VERTEX_SHADER} {
+        }
     };
 
     struct Fragment_shader final : public Shader {
-        Fragment_shader() : Shader{GL_FRAGMENT_SHADER} {}
+        Fragment_shader() : Shader{GL_FRAGMENT_SHADER} {
+        }
     };
 
     struct Geometry_shader final : public Shader {
-        Geometry_shader() : Shader{GL_GEOMETRY_SHADER} {}
+        Geometry_shader() : Shader{GL_GEOMETRY_SHADER} {
+        }
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glShaderSource.xhtml
@@ -165,6 +169,7 @@ namespace gl {
     // basic wrapper around an attribute
     class Attribute {
         GLuint location;
+
     public:
         explicit constexpr Attribute(GLuint _handle) : location{_handle} {
         }
@@ -186,13 +191,13 @@ namespace gl {
         }
     };
 
+    constexpr Attribute AttributeAtLocation(GLuint loc) {
+        return Attribute{loc};
+    }
+
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml
-    inline void VertexAttribPointer(Attribute const& a,
-                                    GLint size,
-                                    GLenum type,
-                                    GLboolean normalized,
-                                    GLsizei stride,
-                                    const void * pointer) {
+    inline void VertexAttribPointer(
+        Attribute const& a, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer) {
         glVertexAttribPointer(a, size, type, normalized, stride, pointer);
     }
 
@@ -213,8 +218,11 @@ namespace gl {
 
     class Uniform_handle {
         GLint location;
+
     public:
         Uniform_handle(Program& p, char const* name) : location{GetUniformLocation(p, name)} {
+        }
+        Uniform_handle(GLint _location) : location{_location} {
         }
 
         operator GLint() noexcept {
@@ -287,7 +295,7 @@ namespace gl {
     }
 
     inline void Uniform(Uniform_mat4& u, GLsizei n, glm::mat4 const* first) {
-        static_assert(sizeof(glm::mat4) == 16*sizeof(GLfloat));
+        static_assert(sizeof(glm::mat4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(u, n, false, glm::value_ptr(*first));
     }
 
@@ -300,7 +308,7 @@ namespace gl {
     }
 
     inline void Uniform(Uniform_vec2& u, GLsizei n, glm::vec2 const* vs) {
-        static_assert(sizeof(glm::vec2) == 2*sizeof(float));
+        static_assert(sizeof(glm::vec2) == 2 * sizeof(float));
         glUniform2fv(u, n, glm::value_ptr(*vs));
     }
 
@@ -377,19 +385,15 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
-    inline void BufferData(GLenum target,
-                           GLsizeiptr num_bytes,
-                           void const* data,
-                           GLenum usage) {
+    inline void BufferData(GLenum target, GLsizeiptr num_bytes, void const* data, GLenum usage) {
         glBufferData(target, num_bytes, data, usage);
     }
-
-
 
     // RAII wrapper for glDeleteVertexArrays
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
     class Vertex_array final {
         GLuint handle;
+
     public:
         static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
 
@@ -440,6 +444,7 @@ namespace gl {
     //     https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glDeleteTextures.xml
     class Texture {
         GLuint handle;
+
     public:
         static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
 
@@ -512,15 +517,15 @@ namespace gl {
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
     inline void TexImage2D(
-            GLenum target,
-            GLint level,
-            GLint internalformat,
-            GLsizei width,
-            GLsizei height,
-            GLint border,
-            GLenum format,
-            GLenum type,
-            const void * data) {
+        GLenum target,
+        GLint level,
+        GLint internalformat,
+        GLsizei width,
+        GLsizei height,
+        GLint border,
+        GLenum format,
+        GLenum type,
+        const void* data) {
         glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
     }
 
@@ -534,6 +539,7 @@ namespace gl {
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteFramebuffers.xhtml
     class Frame_buffer final {
         GLuint handle;
+
     public:
         static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
 
@@ -584,27 +590,22 @@ namespace gl {
     static constexpr GLuint window_fbo = 0;
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
-    inline void FramebufferTexture2D(
-            GLenum target,
-            GLenum attachment,
-            GLenum textarget,
-            GLuint texture,
-            GLint level) {
+    inline void FramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
         glFramebufferTexture2D(target, attachment, textarget, texture, level);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
     inline void BlitFramebuffer(
-            GLint srcX0,
-            GLint srcY0,
-            GLint srcX1,
-            GLint srcY1,
-            GLint dstX0,
-            GLint dstY0,
-            GLint dstX1,
-            GLint dstY1,
-            GLbitfield mask,
-            GLenum filter) {
+        GLint srcX0,
+        GLint srcY0,
+        GLint srcX1,
+        GLint srcY1,
+        GLint dstX0,
+        GLint dstY0,
+        GLint dstX1,
+        GLint dstY1,
+        GLbitfield mask,
+        GLenum filter) {
         glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
     }
 
@@ -612,6 +613,7 @@ namespace gl {
     //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteRenderbuffers.xhtml
     class Render_buffer final {
         GLuint handle;
+
     public:
         static constexpr GLuint empty_handle = 0;
 
@@ -622,9 +624,9 @@ namespace gl {
             }
         }
         Render_buffer(Render_buffer const&) = delete;
-		Render_buffer(Render_buffer&& tmp) : handle{tmp.handle} {
-			tmp.handle = empty_handle;
-		}
+        Render_buffer(Render_buffer&& tmp) : handle{tmp.handle} {
+            tmp.handle = empty_handle;
+        }
         Render_buffer& operator=(Render_buffer const&) = delete;
         Render_buffer& operator=(Render_buffer&& tmp) {
             GLuint h = tmp.handle;
@@ -679,7 +681,7 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
-    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void * indices) {
+    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) {
         glDrawElements(mode, count, type, indices);
     }
 
@@ -691,7 +693,8 @@ namespace gl {
         glViewport(x, y, w, h);
     }
 
-    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) {
+    inline void
+        FramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) {
         glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
     }
 
@@ -711,12 +714,11 @@ namespace gl {
     }
 
     inline glm::mat3 normal_matrix(glm::mat4 const& m) {
-         return glm::transpose(glm::inverse(m));
+        return glm::transpose(glm::inverse(m));
     }
 
     // asserts there are no current OpenGL errors (globally)
     void assert_no_errors(char const* label);
-
 
     template<typename T>
     class Array_bufferT final {
@@ -734,15 +736,14 @@ namespace gl {
         }
 
         template<typename Container>
-        Array_bufferT(Container const& c) :
-            Array_bufferT{c.data(), c.data() + c.size()} {
+        Array_bufferT(Container const& c) : Array_bufferT{c.data(), c.data() + c.size()} {
         }
 
-        operator gl::Array_buffer& () noexcept {
+        operator gl::Array_buffer&() noexcept {
             return _vbo;
         }
 
-        operator gl::Array_buffer const& () const noexcept {
+        operator gl::Array_buffer const&() const noexcept {
             return _vbo;
         }
 
@@ -757,7 +758,7 @@ namespace gl {
 
     template<typename... T>
     inline void DrawBuffers(T... vs) {
-        GLenum attachments[sizeof...(vs)] = { static_cast<GLenum>(vs)... };
+        GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
         glDrawBuffers(sizeof...(vs), attachments);
     }
 

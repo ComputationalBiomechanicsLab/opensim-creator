@@ -1,23 +1,21 @@
 ﻿#include "application.hpp"
 
-#include "os.hpp"
 #include "cfg.hpp"
-#include "opensim_wrapper.hpp"
 #include "fd_simulation.hpp"
+#include "opensim_wrapper.hpp"
+#include "os.hpp"
 
 #include "loading_screen.hpp"
 #include "splash_screen.hpp"
 
 #include <OpenSim.h>
 
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
-static const char usage[] =
-R"(usage: osmv [--help] [fd] MODEL.osim
+static const char usage[] = R"(usage: osmv [--help] [fd] MODEL.osim
 )";
-static const char help[] =
-R"(OPTIONS
+static const char help[] = R"(OPTIONS
     --help
         Show this help
 )";
@@ -67,7 +65,7 @@ int main(int argc, char** argv) {
     }
 
     // no args: show splash screen
-	if (argc <= 0) {
+    if (argc <= 0) {
         osmv::Application application;
         application.start_render_loop<osmv::Splash_screen>();
 
@@ -96,8 +94,8 @@ int main(int argc, char** argv) {
             return EXIT_FAILURE;
         }
 
-		osmv::Model m{osim_path};
-		m->finalizeFromProperties();
+        osmv::Model m{osim_path};
+        m->finalizeFromProperties();
         osmv::run_fd_simulation(m);
 
         return EXIT_SUCCESS;
