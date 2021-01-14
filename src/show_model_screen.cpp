@@ -384,7 +384,6 @@ void osmv::Show_model_screen_impl::handle_event(Application& app, SDL_Event& e) 
 
     ImGuiIO& io = ImGui::GetIO();
     sdl::Window_dimensions window_dims = app.window_size();
-    float aspect_ratio = app.aspect_ratio();
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {

@@ -139,11 +139,9 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
 
     // sides
     {
-        float norm_start = step_angle/2.0f;
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i * step_angle;
             float theta_end = theta_start + step_angle;
-            float norm_theta = theta_start + norm_start;
 
             glm::vec3 p1(sin(theta_start), cos(theta_start), top_z);
             glm::vec3 p2(sin(theta_end), cos(theta_end), top_z);

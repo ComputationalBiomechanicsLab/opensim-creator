@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(osmv VERSION 0.0.1)
+project(osmv
+    VERSION 0.0.1
+    HOMEPAGE_URL https://github.com/adamkewley/osmv
+    LANGUAGES CXX
+)
 
 if(UNIX AND NOT APPLE)
     if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
@@ -9,6 +13,9 @@ if(UNIX AND NOT APPLE)
         message(WARNING "you are building on a system that may not be supported yet - beware!")
     endif()
 endif()
+
+# needed by external linters (e.g. clang-tidy)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # GLEW (OpenGL): build from source
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew-2.1.0/build/cmake/ EXCLUDE_FROM_ALL)
@@ -139,32 +146,30 @@ target_compile_options(osmv PUBLIC
         -Werror
         -Wuninitialized
         -Winit-self
-        -Wmaybe-uninitialized
         -Wshadow
         -Wcast-align
-        -Wcast-function-type
         -Wwrite-strings
         -Wdangling-else
         -Wdate-time
-        -Wlogical-op
         -Wmissing-declarations
         -Wno-multichar
-        -Wnormalized
         -Wredundant-decls
         -Winline
-        -Wint-in-bool-context
         -Wvla
         -Wdisabled-optimization
         -Wpacked
         -Wmissing-noreturn
-        -Wsuggest-attribute=noreturn
         -Wno-unused  # PITA to debug a prototype with this enabled
-        -Wno-sign-compare  # broken in STB headers
-
-        # things I would like to enable:
-        #
-        # -Wcast-qual : broken by STB headers
-        # -Wconversion : hits shitloads of lines
+        -Wno-sign-compare  # broken by STB
+    >
+    $<$<CXX_COMPILER_ID:GNU>:
+        #-Wcast-function-type
+        #-Wint-in-bool-context
+        #-Wlogical-op
+        #-Wmaybe-uninitialized
+        #-Wnormalized
+        # -Wcast-qual  broken by STB
+        # -Wconversion  broken by STB
     >
 )
 target_compile_features(osmv PUBLIC
