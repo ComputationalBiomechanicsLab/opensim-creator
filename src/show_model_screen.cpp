@@ -370,8 +370,6 @@ void osmv::Show_model_screen_impl::update_outputs_from_latest_state() {
         Hacky_output_sparkline& hos = *p;
 
         // only certain types of output are plottable at the moment
-        assert(hos.ao.is_single_double_val);
-
 		auto* o = dynamic_cast<OpenSim::Output<double> const*>(hos.ao.handle);
 		assert(o);
         double v = o->getValue(latest_state);

@@ -524,7 +524,7 @@ struct Geometry_visitor final : public DecorativeGeometryImplementation {
 				// populate lookups
 
 				size_t meshid_s = impl.meshid_to_str.size();
-				assert(meshid_s < std::numeric_limits<osmv::Mesh_id>::max());
+                assert(meshid_s < std::numeric_limits<Mesh_id>::max());
 				auto meshid = static_cast<Mesh_id>(meshid_s);
 				impl.meshid_to_str.push_back(path);
 				it->second = meshid;

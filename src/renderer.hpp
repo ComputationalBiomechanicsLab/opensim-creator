@@ -4,6 +4,8 @@
 
 #include <glm/vec3.hpp>
 
+#include <memory>
+
 namespace SimTK {
 	class State;
 }
