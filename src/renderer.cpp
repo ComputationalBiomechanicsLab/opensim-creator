@@ -377,27 +377,27 @@ namespace osmv {
             // sourcecode for `SimTK::Transform`.
 
             // x
-            m[0][0] = t.R().row(0)[0];
-            m[0][1] = t.R().row(1)[0];
-            m[0][2] = t.R().row(2)[0];
+            m[0][0] = static_cast<float>(t.R().row(0)[0]);
+            m[0][1] = static_cast<float>(t.R().row(1)[0]);
+            m[0][2] = static_cast<float>(t.R().row(2)[0]);
             m[0][3] = 0.0f;
 
             // y
-            m[1][0] = t.R().row(0)[1];
-            m[1][1] = t.R().row(1)[1];
-            m[1][2] = t.R().row(2)[1];
+            m[1][0] = static_cast<float>(t.R().row(0)[1]);
+            m[1][1] = static_cast<float>(t.R().row(1)[1]);
+            m[1][2] = static_cast<float>(t.R().row(2)[1]);
             m[1][3] = 0.0f;
 
             // z
-            m[2][0] = t.R().row(0)[2];
-            m[2][1] = t.R().row(1)[2];
-            m[2][2] = t.R().row(2)[2];
+            m[2][0] = static_cast<float>(t.R().row(0)[2]);
+            m[2][1] = static_cast<float>(t.R().row(1)[2]);
+            m[2][2] = static_cast<float>(t.R().row(2)[2]);
             m[2][3] = 0.0f;
 
             // w
-            m[3][0] = t.p()[0];
-            m[3][1] = t.p()[1];
-            m[3][2] = t.p()[2];
+            m[3][0] = static_cast<float>(t.p()[0]);
+            m[3][1] = static_cast<float>(t.p()[1]);
+            m[3][2] = static_cast<float>(t.p()[2]);
             m[3][3] = 1.0f;
 
             return m;
@@ -431,7 +431,7 @@ namespace osmv {
             glm::vec3 p1 = xform * to_vec4(geom.getPoint1());
             glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
 
-            glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005, p1, p2);
+            glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(cylinder_xform));
 
             out.mesh_instances.push_back({cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid});
@@ -441,9 +441,9 @@ namespace osmv {
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
             glm::vec3 s = scale_factors(geom);
-            s.x *= geom.getRadius();
-            s.y *= geom.getHalfHeight();
-            s.z *= geom.getRadius();
+            s.x *= static_cast<float>(geom.getRadius());
+            s.y *= static_cast<float>(geom.getHalfHeight());
+            s.z *= static_cast<float>(geom.getRadius());
 
             glm::mat4 xform = glm::scale(m, s);
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
@@ -453,7 +453,7 @@ namespace osmv {
         void implementCircleGeometry(const DecorativeCircle&) override {
         }
         void implementSphereGeometry(const DecorativeSphere& geom) override {
-            float r = geom.getRadius();
+            float r = static_cast<float>(geom.getRadius());
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 

@@ -93,9 +93,9 @@ SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
-SpaceBeforeCpp11BracedList: false
-SpaceBeforeCtorInitializerColon: true
-SpaceBeforeInheritanceColon: true
+# SpaceBeforeCpp11BracedList: false  # broke in VS2017
+# SpaceBeforeCtorInitializerColon: true  # broke in VS2017
+# SpaceBeforeInheritanceColon: true  # broke in VS2017
 SpaceBeforeParens: ControlStatements
 #SpaceBeforeRangeBasedLoopColon: true
 #SpaceBeforeSquareBrackets: false

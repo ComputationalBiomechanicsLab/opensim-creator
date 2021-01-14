@@ -55,14 +55,14 @@ find_package(OpenSim REQUIRED)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
 
 # imgui: build only the parts osmv needs as a static library
-add_library(osmv-imgui_s STATIC
+add_library(osmvimgui STATIC
     third_party/imgui-1.78/imgui.cpp
     third_party/imgui-1.78/imgui_draw.cpp
     third_party/imgui-1.78/imgui_widgets.cpp
     third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
     third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
 )
-target_include_directories(osmv-imgui_s PRIVATE
+target_include_directories(osmvimgui PRIVATE
     ${OSMV_SDL2_INCLUDE}
     third_party/imgui-1.78/
     third_party/glm-0.9.9.8/
@@ -70,6 +70,8 @@ target_include_directories(osmv-imgui_s PRIVATE
 )
 
 add_executable(osmv
+	${CMAKE_BINARY_DIR}/osmv_config.hpp
+
     src/os.hpp
     src/os.cpp
     src/sdl.hpp
@@ -128,15 +130,18 @@ target_link_libraries(osmv
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
     ${OSMV_SDL2_LIB}
     glew_s
-    osmv-imgui_s
+    osmvimgui
     ${OSMV_OPENSIM_LIBS}
 )
 target_compile_options(osmv PUBLIC
-    # disable MSVC's (default) permissive mode
-    #
-    # - This forces MSVC to obey ISO C++
-    # - I do this mostly because I like the logic keywords (e.g. `x or b`)
-    $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+    $<$<CXX_COMPILER_ID:MSVC>:
+		/permissive-  # I like `and` and `not` keywords: sue me
+		/wd4996  # simbody uses a deprecated iterator class
+		/wd4455  # 's' is an allowed literal suffix because it's from the STL
+		/MP  # parallelize MSVC builds
+		/W3  # production-grade warnings (W4 explodes because of Simbody)
+		/WX  # treat warnings like errors
+	>
 
     # turn on warnings / errors
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
@@ -202,13 +207,16 @@ endif()
 # they might break on newer systems
 if(MSVC)  # HACK: "newer systems" is Windows for now, where devs can install whatever
     target_compile_features(osmv PUBLIC
-        cxx_std_17
+        cxx_std_17  # note: this is redundantly set above
     )
     target_link_options(osmv PUBLIC
         # on Windows, open the application as a desktop application, rather than as
         # a CLI application
-        $<$<CXX_COMPILER_ID:MSVC>:/SUBSYSTEM:windows>
-        $<$<CXX_COMPILER_ID:MSVC>:/ENTRY:mainCRTStartup>
+        $<$<CXX_COMPILER_ID:MSVC>:
+			/SUBSYSTEM:windows  # open as a desktop app, not CLI
+			/ENTRY:mainCRTStartup  # as above
+			/ignore:4217  # ImGui uses locally defined symbols
+		>
     )
     source_group(TREE third_party/)  # IDE hint: group third_party source together
 endif()
