@@ -33,7 +33,7 @@ struct Available_output final {
     OpenSim::AbstractOutput const* handle;
 };
 
-static void snprintf(Available_output const& ao, char* buf, size_t n) {
+static void append_name(Available_output const& ao, char* buf, size_t n) {
     std::snprintf(buf, n, "%s/%s", ao.handle->getOwner().getName().c_str(), ao.handle->getName().c_str());
 }
 
@@ -987,12 +987,7 @@ void osmv::Show_model_screen_impl::draw_outputs_tab() {
     {
         auto it =
             std::remove_if(t_outputs.available.begin(), t_outputs.available.end(), [&](Available_output const& ao) {
-                snprintf(
-                    scratch.text,
-                    sizeof(scratch.text),
-                    "%s/%s",
-                    ao.handle->getOwner().getName().c_str(),
-                    ao.handle->getName().c_str());
+                append_name(ao, scratch.text, sizeof(scratch.text));
                 return std::strstr(scratch.text, t_outputs.filter) == nullptr;
             });
         t_outputs.available.erase(it, t_outputs.available.end());

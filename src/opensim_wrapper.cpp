@@ -21,6 +21,7 @@ osmv::Model::Model(std::filesystem::path const& p) : handle{nullptr} {
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         return true;
     }();
+    (void)_;  // we don't actually use the boolean, we just want its side-effect
 
     handle = std::make_unique<OpenSim::Model>(p.string());
 }

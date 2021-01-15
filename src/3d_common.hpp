@@ -9,7 +9,6 @@
 #include <vector>
 
 // 3d common: common primitives/structs used for mesh generation/rendering
-
 namespace osmv {
     static constexpr float pi_f = static_cast<float>(3.14159265358979323846);
 

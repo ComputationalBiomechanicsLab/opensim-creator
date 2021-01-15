@@ -6,10 +6,7 @@ namespace osmv {
     struct Fd_simulation_params final {
         Model model;
 
-        // an initial state for the model
-        //
-        // if none is provided, the implementation will get the model's default
-        // initial state
+        // initial state of the model when the simulation starts
         State initial_state;
 
         // final time for the simulation. Assumed to be seconds
