@@ -152,7 +152,7 @@ set_target_properties(osmv-imgui PROPERTIES
 #     header-only library, used to read/write images
 add_library(osmv-stb-image INTERFACE)
 set_target_properties(osmv-stb-image PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image/
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image-b42009/
 )
 
 # DEPENDENCY: tomlplusplus
