@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
+# postinst: ran by the Debian package manager (dpkg) after osmv is
+# installed.
+
+# create a symlink in /usr/local/bin to the installed osmv, so that
+# users can write 'osmv' at the command line
 ln -s "/opt/osmv/bin/osmv" "/usr/local/bin/osmv"
+
+# if the user has an application's dir, they're probably using a
+# desktop Linux, so add a desktop icon
 if [ -d "/usr/share/applications/" ]; then
     ln -s "/opt/osmv/resources/osmv.desktop" "/usr/share/applications/osmv.desktop"
 fi
