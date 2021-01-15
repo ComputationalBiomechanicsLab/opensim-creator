@@ -109,7 +109,7 @@ else()
     add_library(osmv-sdl2 STATIC IMPORTED)
     add_dependencies(osmv-sdl2 sdl-project-build)
     # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project-build/include/)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project/include/)
     set_target_properties(osmv-sdl2 PROPERTIES
         IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project-build/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}
         INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project/include/
