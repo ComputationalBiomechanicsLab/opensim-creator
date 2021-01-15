@@ -8,8 +8,6 @@ project(osmv VERSION 0.0.1 LANGUAGES CXX)
 # shim CMake for older versions:
 #
 #     - all shimming should be close to the variables set by this, for easier debugging
-#     -
-#
 if((${CMAKE_MAJOR_VERSION} LESS 3) OR (${CMAKE_MINOR_VERSION} LESS 13))
     message(WARNING "you are using an older version of CMake. This is fine (for now), but you should upgrade")
     set(OSMV_USING_MODERN_CMAKE 0)
