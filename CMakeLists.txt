@@ -236,8 +236,7 @@ target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
 
-    ${OPENGL_gl_LIBRARY}  # OSMV_USING_MODERN_CMAKE == OpenGL::GLU
-    ${OPENGL_glu_LIBRARY}  # OSMV_USING_MODERN_CMAKE == OpenGL::GLU
+    ${OPENGL_LIBRARIES}  # OSMV_USING_MODERN_CMAKE == OpenGL::GLU
 
     osmv-glew
     osmv-sdl2
