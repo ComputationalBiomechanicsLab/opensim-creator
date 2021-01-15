@@ -1,0 +1,9 @@
+on: [push]
+
+jobs:
+  linux:
+    name: Build on Ubuntu 16.04 (Xenial)
+    runs-on: ubuntu-16.04
+    steps:
+    - name: run build script
+      run: cd $GITHUB_WORKSPACE && ./scripts/ubuntu-xenial_e2e-build.sh
