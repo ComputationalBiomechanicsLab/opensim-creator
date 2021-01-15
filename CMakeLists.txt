@@ -45,27 +45,13 @@ find_package(OpenGL REQUIRED)
 #     used to bootstrap the OpenGL API, load extensions, etc.
 #
 #     - built into a static library that is linked into osmv
-include(ExternalProject)
-ExternalProject_Add(glew-project
-    PREFIX 3rd_party
-    URL "https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip"
-    URL_HASH SHA256=a9046a913774395a095edcc0b0ac2d81c3aacca61787b39839b941e9be14e0d4
-    CONFIGURE_COMMAND cmake ../glew-project/build/cmake  # NOT: OSMV_USING_MODERN_CMAKE
-    # SOURCE_SUBDIR "build/cmake"  # OSMV_USING_MODERN_CMAKE
-    BUILD_COMMAND cmake --build . --target glew_s
-    INSTALL_COMMAND ""
-    BUILD_BYPRODUCTS "lib/{CMAKE_STATIC_LIBRARY_PREFIX}GLEW${CMAKE_STATIC_LIBRARY_SUFFIX}"
-    EXCLUDE_FROM_ALL TRUE
-    STEP_TARGETS build
+add_subdirectory(third_party/glew-2.2.0/build/cmake EXCLUDE_FROM_ALL)
+add_library(osmv-glew INTERFACE)
+target_link_libraries(osmv-glew INTERFACE
+    ${OPENGL_LIBRARIES}  # OSMV_USING_MODERN_CMAKE == OpenGL::GLU
+    glew_s
 )
-add_library(osmv-glew STATIC IMPORTED)
-add_dependencies(osmv-glew glew-project-build)
-# HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/3rd_party/src/glew-project/include)
-set_target_properties(osmv-glew PROPERTIES
-    IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/3rd_party/src/glew-project-build/lib/${CMAKE_STATIC_LIBRARY_PREFIX}GLEW${CMAKE_STATIC_LIBRARY_SUFFIX}
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/3rd_party/src/glew-project/include
-)
+target_include_directories(osmv-glew INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew-2.2.0/include)
 
 # DEPENDENCY: SDL
 #     used to provide a cross-platform API to the OS (window management, sound, clipboard, etc.)
@@ -75,7 +61,7 @@ set_target_properties(osmv-glew PROPERTIES
 #         - because each Linux distro can use *slightly* different implementations
 #           (e.g. X vs Wayland, dbus, pulseaudio)
 #         - so developer's *MUST* install libsdl2-dev to build
-#         - and user's *MUST* install libsdl2-2.0-0
+#         - and users *MUST* install libsdl2-2.0-0
 #
 #     WINDOWS:
 #         - built from source
@@ -90,38 +76,17 @@ set_target_properties(osmv-glew PROPERTIES
 #         - built from source
 if (LINUX)
     find_library(OSMV_SDL2_LOCATION SDL2 REQUIRED)
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    set_target_properties(osmv-sdl2 PROPERTIES
-        IMPORTED_LOCATION ${OSMV_SDL2_LOCATION}
-        INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
-    )
+    add_library(SDL2 IMPORTED)
+    target_link_libraries(SDL2 PUBLIC ${OSMV_SDL2_LOCATION})
+    target_include_directories(SDL2 INTERFACE /usr/include/SDL2)
 else()
-    ExternalProject_Add(sdl-project
-        PREFIX 3rd_party
-        URL "https://www.libsdl.org/release/SDL2-2.0.14.zip"
-        URL_HASH "SHA256=2c1e870d74e13dfdae870600bfcb6862a5eab4ea5b915144aff8d75a0f9bf046"
-        BUILD_COMMAND cmake --build . --target SDL2-static
-        INSTALL_COMMAND ""
-        BUILD_BYPRODUCTS "lib/{CMAKE_STATIC_LIBRARY_PREFIX}GLEW${CMAKE_STATIC_LIBRARY_SUFFIX}"
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    add_library(osmv-sdl2 STATIC IMPORTED)
-    add_dependencies(osmv-sdl2 sdl-project-build)
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project/include/)
-    set_target_properties(osmv-sdl2 PROPERTIES
-        IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project-build/${CMAKE_STATIC_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/3rd_party/src/sdl-project/include/
-    )
+    add_subdirectory(third_party/SDL2-2.0.14 EXCLUDE_FROM_ALL)
 endif()
 
 # DEPENDENCY: glm
 #     header-only library, used for OpenGL-friendly vector maths
 add_library(osmv-glm INTERFACE)
-set_target_properties(osmv-glm PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm-0.9.9.8/
-)
+target_include_directories(osmv-glm INTERFACE third_party/glm-0.9.9.8/)
 
 # DEPENDENCY: imgui
 #     used to render interactive panels (buttons, sliders, etc)
@@ -134,31 +99,18 @@ add_library(osmv-imgui STATIC
     third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
     third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
 )
-target_link_libraries(osmv-imgui PUBLIC
-    osmv-sdl2
-    osmv-glew
-    osmv-glm
-)
-target_include_directories(osmv-imgui PUBLIC
-    third_party/imgui-1.78/
-)
-set_target_properties(osmv-imgui PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui-1.78/
-)
+target_link_libraries(osmv-imgui PUBLIC SDL2 osmv-glew osmv-glm)
+target_include_directories(osmv-imgui PUBLIC third_party/imgui-1.78/)
 
 # DEPENDENCY: stb_image
 #     header-only library, used to read/write images
 add_library(osmv-stb-image INTERFACE)
-set_target_properties(osmv-stb-image PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb_image-b42009/
-)
+target_include_directories(osmv-stb-image INTERFACE third_party/stb_image-b42009/)
 
 # DEPENDENCY: tomlplusplus
 #     header-only library, used to parse toml configuration files
 add_library(osmv-tomlplusplus INTERFACE)
-set_target_properties(osmv-tomlplusplus PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus-2.3.0/
-)
+target_include_directories(osmv-tomlplusplus INTERFACE third_party/tomlplusplus-2.3.0/)
 
 # DEPENDENCY: OpenSim
 #     primary dependency for performing musculoskeletal simulations
@@ -234,10 +186,8 @@ target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
 
-    ${OPENGL_LIBRARIES}  # OSMV_USING_MODERN_CMAKE == OpenGL::GLU
-
     osmv-glew
-    osmv-sdl2
+    SDL2
     osmv-glm
     osmv-imgui
     osmv-stb-image
@@ -340,11 +290,10 @@ endif()
 # osmv
 set(OSMV_LIB_TARGETS_TO_COPY ${OSMV_OPENSIM_LIBS})
 if (NOT LINUX)  # on non-Linux, also copy SDL2
-    list(APPEND OSMV_LIB_TARGETS_TO_COPY osmv-sdl2)
+    list(APPEND OSMV_LIB_TARGETS_TO_COPY SDL2)
 endif()
 foreach(LIB_TARGET_TO_COPY ${OSMV_LIB_TARGETS_TO_COPY})
-    get_target_property(LIB_FILE_TO_COPY ${LIB_TARGET_TO_COPY} LOCATION)
-    list(APPEND OSMV_LIB_FILES_TO_COPY ${LIB_FILE_TO_COPY})
+    list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${LIB_TARGET_TO_COPY}>)
 endforeach()
 
 
