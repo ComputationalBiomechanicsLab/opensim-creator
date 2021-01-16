@@ -20,6 +20,7 @@ get_property(OSMV_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_C
 set(OSMV_USE_LINTER OFF CACHE BOOL "enable/disable running `clang-tidy` (linter) while building")
 set(OSMV_USE_IWYU OFF CACHE BOOL "enable/disable running `iwyu` (include-what-you-use) while building")
 set(OSMV_IWYU_PATH "iwyu" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
+set(OSMV_REPO_PROVIDER "https://github.com" CACHE STRING "URL (or local path, if you setup your mirrors properly) to a git repo provider for external projects")
 
 if(${OSMV_USING_MODERN_CMAKE})
     cmake_policy(SET CMP0072 NEW)  # use newer OpenGL linking strategy
@@ -50,9 +51,9 @@ find_package(OpenGL REQUIRED)
 #     - always built from source and linked statically
 if(TRUE)
     ExternalProject_Add(glew-project
+        URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip"
+        URL_HASH "SHA256=a9046a913774395a095edcc0b0ac2d81c3aacca61787b39839b941e9be14e0d4"
         PREFIX ""
-        URL "https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip"
-        URL_HASH SHA256=a9046a913774395a095edcc0b0ac2d81c3aacca61787b39839b941e9be14e0d4
         CONFIGURE_COMMAND cmake ../glew-project/build/cmake
         BUILD_COMMAND cmake --build . --target glew_s
         INSTALL_COMMAND ""
@@ -98,6 +99,8 @@ endif()
 # DEPENDENCY: SDL
 #     used to provide a cross-platform API to the OS (window management, sound, clipboard, etc.)
 if(LINUX)
+    # on Linux, dynamically link to system-provided SDL library
+
     find_library(OSMV_SDL2_LOCATION SDL2 REQUIRED)
     add_library(osmv-sdl2 SHARED IMPORTED)
     set_target_properties(osmv-sdl2 PROPERTIES
@@ -105,9 +108,12 @@ if(LINUX)
         INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
     )
 else()
+    # on non-Linux, build SDL from source and package it with the install
+
     ExternalProject_Add(sdl2-project
-        URL "https://www.libsdl.org/release/SDL2-2.0.14.zip"
-        URL_HASH "SHA256=2c1e870d74e13dfdae870600bfcb6862a5eab4ea5b915144aff8d75a0f9bf046"
+        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/adamkewley/SDL2"
+        GIT_TAG "0330c566b6d9d5fdf1d9bb6d0a8bd2ba2b4f9407"  # tag: SDL2-2.0.14
+        GIT_SUBMODULES ""
         BUILD_COMMAND cmake --build . --target SDL2
         INSTALL_COMMAND ""
         EXCLUDE_FROM_ALL TRUE
@@ -148,8 +154,9 @@ endif()
 #     header-only library, used for OpenGL-friendly vector maths
 if(TRUE)
     ExternalProject_Add(glm-project
-        URL "https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip"
-        URL_HASH "SHA256=37e2a3d62ea3322e43593c34bae29f57e3e251ea89f4067506c94043769ade4c"
+        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/g-truc/glm"
+        GIT_TAG "bf71a834948186f4097caa076cd2663c69a10e1e"  # tag: 0.9.9.8
+        GIT_SUBMODULES ""
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
@@ -192,8 +199,9 @@ endif()
 #     header-only library, used to read/write images
 if(TRUE)
     ExternalProject_Add(stb-project
-        GIT_REPOSITORY "https://github.com/nothings/stb"
+        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/nothings/stb"
         GIT_TAG "b42009b3b9d4ca35bc703f5310eedc74f584be58"
+        GIT_SUBMODULES ""
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
         INSTALL_COMMAND ""
@@ -216,7 +224,7 @@ endif()
 #     header-only library, used to parse toml config files
 if(TRUE)
     ExternalProject_Add(tomlplusplus-project
-        GIT_REPOSITORY "https://github.com/marzer/tomlplusplus"
+        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/marzer/tomlplusplus"
         GIT_TAG "4face4d5bf16326aca0da1fb33876dbca63b6e2f"  # tag: v2.3.0
         GIT_SUBMODULES ""  # don't care about the submodules
         CONFIGURE_COMMAND ""
@@ -251,7 +259,7 @@ endif()
 #
 #     - by default, this `find_package` call will typically just find the installed
 #       OpenSim on your system
-find_package(OpenSim)
+find_package(OpenSim REQUIRED)
 set(OSMV_OPENSIM_LIBS
     osimCommon
     osimSimulation
