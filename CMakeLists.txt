@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 project(osmv VERSION 0.0.1 LANGUAGES CXX)
 
 
+
 # -------------- top-level configuration ---------------- #
 
 # shim CMake for older versions:
@@ -39,243 +40,14 @@ endif()
 
 # --------------- dependency management ----------------- #
 
-include(ExternalProject)
+# (all handled from a single CMake file that declares targets etc.)
+include(OSMV_GetDependencies.cmake)
 
-# DEPENDENCY: OpenGL
-#     transitively used by GLEW to load the OpenGL API
-find_package(OpenGL REQUIRED)
-
-# DEPENDENCY: GLEW
-#     used to bootstrap the OpenGL API, load extensions, etc.
-#
-#     - always built from source and linked statically
-if(TRUE)
-    ExternalProject_Add(glew-project
-        URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip"
-        URL_HASH "SHA256=a9046a913774395a095edcc0b0ac2d81c3aacca61787b39839b941e9be14e0d4"
-        PREFIX ""
-        CONFIGURE_COMMAND cmake ../glew-project/build/cmake
-        BUILD_COMMAND cmake --build . --target glew_s
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    ExternalProject_Get_Property(glew-project SOURCE_DIR)
-    ExternalProject_Get_Property(glew-project BINARY_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
-
-    add_library(osmv-glew STATIC IMPORTED)
-    add_dependencies(osmv-glew glew-project-build)
-
-    if(WIN32)
-        set(LIBNAME "libglew32${CMAKE_STATIC_LIBRARY_SUFFIX}")
-        set(DEBUG_LIBNAME "libglew32d${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    else()
-        set(LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}GLEW${CMAKE_STATIC_LIBRARY_SUFFIX}")
-        set(DEBUG_LIGNAME "${CMAKE_STATIC_LIBRARY_PREFIX}GLEWd${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    endif()
-
-    set_target_properties(osmv-glew PROPERTIES
-        IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
-    )
-    if(${OSMV_GENERATOR_IS_MULTI_CONFIG})
-        set_target_properties(osmv-glew PROPERTIES
-            IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/lib/Debug/${DEBUG_LIBNAME}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/lib/RelWithDebInfo/${LIBNAME}
-            IMPORTED_LOCATION_MINSIZEREL ${BINARY_DIR}/lib/MinSizeRel/${LIBNAME}
-            IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
-        )
-    endif()
-
-    unset(SOURCE_DIR)
-    unset(BINARY_DIR)
-    unset(LIBNAME)
-    unset(DEBUG_LIBNAME)
-endif()
-
-# DEPENDENCY: SDL
-#     used to provide a cross-platform API to the OS (window management, sound, clipboard, etc.)
-if(LINUX)
-    # on Linux, dynamically link to system-provided SDL library
-
-    find_library(OSMV_SDL2_LOCATION SDL2 REQUIRED)
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    set_target_properties(osmv-sdl2 PROPERTIES
-        IMPORTED_LOCATION ${OSMV_SDL2_LOCATION}
-        INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
-    )
-else()
-    # on non-Linux, build SDL from source and package it with the install
-
-    ExternalProject_Add(sdl2-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/adamkewley/SDL2"
-        GIT_TAG "0330c566b6d9d5fdf1d9bb6d0a8bd2ba2b4f9407"  # tag: SDL2-2.0.14
-        GIT_SUBMODULES ""
-        BUILD_COMMAND cmake --build . --target SDL2
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
-    ExternalProject_Get_Property(sdl2-project BINARY_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
-
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    add_dependencies(osmv-sdl2 sdl2-project-build)
-
-    set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d${CMAKE_SHARED_LIBRARY_SUFFIX})
-
-    set_target_properties(osmv-sdl2 PROPERTIES
-        IMPORTED_LOCATION ${BINARY_DIR}/${LIBNAME}
-        INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
-    )
-    if(${OSMV_GENERATOR_IS_MULTI_CONFIG})
-        set_target_properties(osmv-glew PROPERTIES
-            IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/Debug/${DEBUG_LIBNAME}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/RelWithDebInfo/${LIBNAME}
-            IMPORTED_LOCATION_MINSIZEREL ${BINARY_DIR}/MinSizeRel/${LIBNAME}
-            IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/Release/${LIBNAME}
-        )
-    endif()
-
-    unset(SOURCE_DIR)
-    unset(BINARY_DIR)
-    unset(LIBNAME)
-    unset(DEBUG_LIBNAME)
-endif()
-
-# DEPENDENCY: glm
-#     header-only library, used for OpenGL-friendly vector maths
-if(TRUE)
-    ExternalProject_Add(glm-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/g-truc/glm"
-        GIT_TAG "bf71a834948186f4097caa076cd2663c69a10e1e"  # tag: 0.9.9.8
-        GIT_SUBMODULES ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    ExternalProject_Get_Property(glm-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
-    add_library(osmv-glm INTERFACE)
-    add_dependencies(osmv-glm glm-project-build)  # so the headers are populated
-    target_include_directories(osmv-glm INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
-endif()
-
-# DEPENDENCY: imgui
-#     small low-dependency library for rendering interactive panels (buttons, sliders, etc.)
-#
-#     - built from source with SDL2 + OpenGL backend
-#     - in tree, to reduce some of the faffing around to deal with CMake3.5 bugs
-if(TRUE)
-    add_custom_target(imgui-configured
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h third_party/imgui-1.78/imconfig.h
-    )
-    add_library(osmv-imgui STATIC
-        third_party/imgui-1.78/imgui.cpp
-        third_party/imgui-1.78/imgui_draw.cpp
-        third_party/imgui-1.78/imgui_widgets.cpp
-        third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
-        third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
-    )
-    target_link_libraries(osmv-imgui PUBLIC osmv-sdl2 osmv-glew osmv-glm)
-    target_include_directories(osmv-imgui PUBLIC third_party/imgui-1.78/)
-endif()
-
-# DEPENDENCY: stb_image
-#     header-only library, used to read/write images
-if(TRUE)
-    ExternalProject_Add(stb-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/nothings/stb"
-        GIT_TAG "b42009b3b9d4ca35bc703f5310eedc74f584be58"
-        GIT_SUBMODULES ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    ExternalProject_Get_Property(stb-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
-    add_library(osmv-stb-image INTERFACE)
-    add_dependencies(osmv-stb-image stb-project-build)  # so the headers are populated
-    target_include_directories(osmv-stb-image INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
-endif()
-
-# DEPENDENCY: tomlplusplus
-#     header-only library, used to parse toml config files
-if(TRUE)
-    ExternalProject_Add(tomlplusplus-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/marzer/tomlplusplus"
-        GIT_TAG "4face4d5bf16326aca0da1fb33876dbca63b6e2f"  # tag: v2.3.0
-        GIT_SUBMODULES ""  # don't care about the submodules
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-    )
-    ExternalProject_Get_Property(tomlplusplus-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
-    add_library(osmv-tomlplusplus INTERFACE)
-    add_dependencies(osmv-tomlplusplus tomlplusplus-project-build)  # so the headers are populated
-    target_include_directories(osmv-tomlplusplus INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
-endif()
-
-# DEPENDENCY: OpenSim
-#     primary dependency for performing musculoskeletal simulations
-#
-#     - linked as a separate CMake dependency
-#
-#     - to customize this, set CMAKE_PREFIX_PATH to the appropriate cmake/ dir in
-#       an OpenSim install (e.g. OpenSim4.1/cmake/, OpenSim4.1/lib/cmake/)
-#
-#     - you can build your own OpenSim install dir from source by checking out
-#       OpenSim, building it (follow their instructions) and building the `install`
-#       target
-#
-#     - by default, this `find_package` call will typically just find the installed
-#       OpenSim on your system
-find_package(OpenSim REQUIRED)
-set(OSMV_OPENSIM_LIBS
-    osimCommon
-    osimSimulation
-    osimActuators
-    osimAnalyses
-    osimTools
-    osimLepton
-    SimTKcommon
-    SimTKmath
-    SimTKsimbody
-)
 
 
 # ------------ osmv build target configuration ---------- #
 
-# OSMV: osmv_config.hpp
+# osmv_config.hpp:
 #     configuration file that contains configuration-time vals (e.g. version, libs)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config.hpp")
 
@@ -319,20 +91,10 @@ target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
 
-    ${OPENGL_LIBRARIES}
-
-    osmv-glew
-    osmv-sdl2
-    osmv-glm
-    osmv-imgui
-    osmv-stb-image
-    osmv-tomlplusplus
-
-    ${OSMV_OPENSIM_LIBS}
+    osmv-all-dependencies  # see: OSMV_GetDependencies.cmake
 )
 target_include_directories(osmv PRIVATE
-    # so that "osmv_config.hpp" can be #included
-    ${PROJECT_BINARY_DIR}
+    ${PROJECT_BINARY_DIR}  # for osmv_config.hpp
 )
 target_compile_options(osmv PRIVATE
 
@@ -341,7 +103,6 @@ target_compile_options(osmv PRIVATE
         /permissive-  # I like `and` and `not` keywords: sue me
         /wd4996  # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4455  # disable warning 4455: incorrectly flags std::string::literals::"s"
-        /MP  # parallel-build
         /W3  # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
         /WX  # treat all warnings as errors
     >
@@ -367,7 +128,7 @@ target_compile_options(osmv PRIVATE
         -Wdisabled-optimization
         -Wpacked
         -Wmissing-noreturn
-        -Wno-sign-compare  # disable sign comparison warning: broken by STB headers
+        -Wno-sign-compare  # disable: broken by STB headers
     >
 
     # clang-only
@@ -377,7 +138,7 @@ target_compile_options(osmv PRIVATE
 
     # gcc-only
     $<$<CXX_COMPILER_ID:GNU>:
-        -Wno-unused  # disable no unused variable warning: broken by STB headers
+        -Wno-unused  # disable: broken by STB headers
     >
 
     # older CMakes do not support C++17 config
@@ -389,7 +150,7 @@ set_target_properties(osmv PROPERTIES
     EXPORT_COMPILE_COMMANDS ON  # needed by clang-tidy
     CLANG_TIDY $<${OSMV_USE_LINTER}:"clang-tidy">
 )
-if(OSMV_USE_ISYU)
+if(OSMV_USE_IWYU)
     set_target_properties(osmv PROPERTIES INCLUDE_WHAT_YOU_USE "${OSMV_IWYU_PATH}")
 endif()
 if(LINUX)
@@ -402,9 +163,8 @@ if(LINUX)
 endif()
 
 if(${OSMV_USING_MODERN_CMAKE})
-    target_compile_features(osmv PUBLIC
-        cxx_std_17
-    )
+    # this is the "modern" way to explain CXX conformance
+    target_compile_features(osmv PUBLIC cxx_std_17)
 endif()
 
 if(MSVC)
@@ -419,17 +179,8 @@ if(MSVC)
     )
 endif()
 
-# collect a list of all the libraries that need to be copied when developing/installing
-# osmv
-foreach(OPENSIM_LIB ${OSMV_OPENSIM_LIBS})
-    list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
-endforeach()
-if(NOT LINUX)
-    list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:osmv-sdl2>)
-endif()
 
-
-# ------------ osmv development nice-to-haves ----------- #
+# -------------- development nice-to-haves ------------- #
 
 # generate a dev-centric `osmv.toml`
 #
