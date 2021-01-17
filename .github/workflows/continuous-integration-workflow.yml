@@ -1,10 +1,18 @@
 on: [push]
 
 jobs:
-  linux:
+  ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
     runs-on: ubuntu-16.04
     steps:
     - uses: actions/checkout@v1
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ubuntu-xenial_e2e-build.sh
+
+  ubuntu2004:
+    name: Build on Ubuntu 20.04
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: run build script
+      run: cd $GITHUB_WORKSPACE && ./scripts/debian-buster_e2e-build.sh
