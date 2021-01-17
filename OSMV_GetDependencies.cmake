@@ -93,15 +93,29 @@ find_package(OpenGL REQUIRED)
 #
 #     - always built from source and linked statically
 if(TRUE)
-    ExternalProject_Add(glew-project
-        URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
-        PREFIX ""
-        CMAKE_ARGS ${CMAKE_BINARY_DIR}/glew-project-prefix/src/glew-project/build/cmake
-        CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        UPDATE_DISCONNECTED ON
-    )
+    if((${CMAKE_MAJOR_VERSION} LESS 3) OR (${CMAKE_MINOR_VERSION} LESS 7))
+        # HACK: if the CMake is < 3.7, then SOURCE_DIR isn't supported, so
+        # we have to use an ExternalProject_Add that *may* forward fewer args
+        #
+        # older CMake also seems to break with UPDATE_DISCONNECTED *shrug*
+        ExternalProject_Add(glew-project
+            URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
+            PREFIX ""
+            CONFIGURE_COMMAND cmake ${CMAKE_BINARY_DIR}/glew-project-prefix/src/glew-project/build/cmake ${OSMV_DEPENDENCY_CMAKE_ARGS} -G ${CMAKE_GENERATOR}
+            INSTALL_COMMAND ""
+            EXCLUDE_FROM_ALL TRUE
+        )
+    else()
+        ExternalProject_Add(glew-project
+            URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
+            PREFIX ""
+            SOURCE_DIR build/cmake
+            CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
+            INSTALL_COMMAND ""
+            EXCLUDE_FROM_ALL TRUE
+            UPDATE_DISCONNECTED ON
+        )
+    endif()
     ExternalProject_Get_Property(glew-project SOURCE_DIR)
     ExternalProject_Get_Property(glew-project BINARY_DIR)
 
@@ -127,19 +141,16 @@ if(TRUE)
             IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
 
             INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
+            INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
         )
     else()
         set_target_properties(osmv-glew PROPERTIES
-            IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
+          IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
+
             INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
+            INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
         )
     endif()
-
-    # This must be defined on Windows, because the GLEW headers try to link to
-    # GLEW's dynamic API
-    #
-    # see: https://github.com/nigels-com/glew/issues/161
-    target_compile_definitions(osmv-glew INTERFACE GLEW_STATIC)
 
     unset(SOURCE_DIR)
     unset(BINARY_DIR)

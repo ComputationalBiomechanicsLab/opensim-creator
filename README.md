@@ -12,32 +12,24 @@ OpenGL.
 
 # Building
 
-- `osmv` depends on a fully-built-and-installed OpenSim:
+## Newer Linux's (/w gcc >= 8, CMake >= 3.5)
 
-  - **Linux**: this usually means building + installing OpenSim yourself
-  - **Windows**: you can download a release of OpenSim from [here](https://simtk.org/frs/?group_id=91)
-  - **OSX**: Not tested yet-  you *might* be able to build `osmv` but no guarantees
+```bash
+git clone https://github.com/adamkewley/osmv.git
+mkdir build/
+cd build/
 
-- `osmv` is written in C++17 and uses the `<filesystem>` standard library. Only modern compilers
-  (e.g. g++ >= 8, VS2017) will be able to compile it
+cmake ../osmv -DCMAKE_PREFIX_PATH=/path/to/opensim/install
+cmake --build . --target osmv
 
+# if you have to use a not-main-system compiler, like `gcc-9`
+# from apt:
+#
+# CC=gcc-9 CXX=g++-9 cmake ../osmv -DCMAKE_PREFIX_PATH=/path/to/opensim/install
+# cmake --build . --target osmv
 
-## Older Ubuntu's (16/18/Xenial/Bionic, /w `gcc-9` from toolchain test repo)
-
-Older Ubuntu's dont provide all the necessary dependencies via `apt`, so you'll have to build/get
-some components the long way. [This](scripts/ubuntu-xenial_e2e-build.sh) script shows how to build
-`osmv` on a clean install of Xenial. The script:
-
-- Installs `g++-9`, because `osmv` is made with C++17 and uses `<filesystem>`
-
-- (optional) Builds OpenSim 4.1 from source, because the OpenSim team do not publish formal
-  Linux releases (if you don't need this, then I'm assuming you have already built + installed
-  OpenSim yourself on Linux)
-
-- Builds `osmv`
-
-You should read [the script](scripts/ubuntu-xenial_e2e-build.sh) for more info.
-
+# run: ./osmv
+```
 
 ## Windows
 
@@ -49,7 +41,26 @@ For Windows, you will need:
 - Or to have built your own OpenSim install (see project [README](https://github.com/opensim-org/opensim-core/)
 - (if you want to build self-extracting installers): have NSIS ([download](https://nsis.sourceforge.io/Download))
 
-### GUI Guide
+### On the Command-Line
+
+```batch
+git clone https://github.com/adamkewley/osmv.git
+mkdir build
+cd build/
+
+REM set -DCMAKE_PREFIX_PATH to your OpenSim install if it can't
+REM find OpenSim
+REM
+REM Generator (-G) list:
+REM     - https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+
+cmake ../osmv -G "Visual Studio 15 2017" -A "x64"
+cmake --build . --target osmv
+
+REM run: .\osmv
+```
+
+### In CMake + Visual Studio GUI
 
 - Download `osmv` from this repository
 - Open the CMake GUI
@@ -64,15 +75,3 @@ For Windows, you will need:
 - Click `Open Project`
 - Set `osmv` as the active project (right click it `set as active project`)
 - CTRL+F5 (or Build -> Run) should boot `osmv`
-
-### Command-line Guide
-
-```batch
-git clone https://github.com/adamkewley/osmv
-
-mkdir osmv-build
-cd osmv-build
-cmake ../osmv
-cmake --build . --config Release --target osmv
-./osmv
-```
