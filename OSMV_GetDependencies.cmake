@@ -125,7 +125,6 @@ if(TRUE)
             IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/lib/RelWithDebInfo/${LIBNAME}
             IMPORTED_LOCATION_MINSIZEREL ${BINARY_DIR}/lib/MinSizeRel/${LIBNAME}
             IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
-            IMPORTED_IMPLIB_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
 
             INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
         )
@@ -244,9 +243,6 @@ endif()
 #     - built from source with SDL2 + OpenGL backend
 #     - in tree, to reduce some of the faffing around to deal with CMake3.5 bugs
 if(TRUE)
-    add_custom_target(imgui-configured
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/imconfig.h third_party/imgui-1.78/imconfig.h
-    )
     add_library(osmv-imgui STATIC
         third_party/imgui-1.78/imgui.cpp
         third_party/imgui-1.78/imgui_draw.cpp
@@ -323,18 +319,20 @@ endif()
 #
 #     - by default, this `find_package` call will typically just find the installed
 #       OpenSim on your system
-find_package(OpenSim REQUIRED)
-set(OSMV_OPENSIM_LIBS
-    osimCommon
-    osimSimulation
-    osimActuators
-    osimAnalyses
-    osimTools
-    osimLepton
-    SimTKcommon
-    SimTKmath
-    SimTKsimbody
-)
+if(TRUE)
+    find_package(OpenSim REQUIRED)
+    set(OSMV_OPENSIM_LIBS 
+        osimCommon
+        osimSimulation
+        osimActuators
+        osimAnalyses
+        osimTools
+        osimLepton
+        SimTKcommon
+        SimTKmath
+        SimTKsimbody
+    )
+endif()
 
 # `osmv-all-dependencies`: all libraries osmv should link to
 add_library(osmv-all-dependencies INTERFACE)
