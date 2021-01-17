@@ -109,8 +109,8 @@ if(TRUE)
         ExternalProject_Add(glew-project
             URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
             PREFIX ""
-            SOURCE_DIR build/cmake
             CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
+            SOURCE_SUBDIR build/cmake
             INSTALL_COMMAND ""
             EXCLUDE_FROM_ALL TRUE
             UPDATE_DISCONNECTED ON
