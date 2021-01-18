@@ -61,7 +61,7 @@ namespace osmv {
     // - (so the height is 2.0f, not 1.0f)
     void unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out);
 
-    // Returns triangles for a "simbody" cylinder with `num_sides` sides.
+    // Returns triangles for a standard "simbody" cylinder
     //
     // This matches simbody-visualizer.cpp's definition of a cylinder, which
     // is:
@@ -74,7 +74,13 @@ namespace osmv {
     //     [0.0f, -1.0f, 0.0f]
     //
     // see simbody-visualizer.cpp::makeCylinder for my source material
-    void simbody_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out);
+    void simbody_cylinder_triangles(std::vector<osmv::Untextured_vert>& out);
+
+    // Returns triangles for a standard "Simbody" cube
+    //
+    // TODO: I have no idea what a Simbody cube is, the verts returned by this are
+    // a pure guess
+    void simbody_brick_triangles(std::vector<osmv::Untextured_vert>& out);
 
     gl::Texture_2d generate_chequered_floor_texture();
 

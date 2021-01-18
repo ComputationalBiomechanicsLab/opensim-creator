@@ -302,10 +302,19 @@ namespace {
     };
 
     struct Muscles_tab_data final {
+        // name filtering
         char filter[64]{};
+
+        // length filtering
         float min_len = std::numeric_limits<float>::min();
         float max_len = std::numeric_limits<float>::max();
         bool inverse_range = false;
+
+        // sorting
+        static constexpr std::array<char const*, 2> sorting_choices{"length", "strain"};
+        size_t current_sort_choice = 0;
+
+        bool reverse_results = false;
     };
 
     struct Outputs_tab_data final {
@@ -854,10 +863,52 @@ namespace osmv {
             ImGui::Separator();
             ImGui::Spacing();
 
-            // sort muscles by length
-            std::sort(scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
-                return m1.length > m2.length;
-            });
+            ImGui::Separator();
+
+            if (ImGui::BeginCombo(
+                    "sort by", t_muscs.sorting_choices[t_muscs.current_sort_choice], ImGuiComboFlags_None)) {
+                for (size_t n = 0; n < t_muscs.sorting_choices.size(); n++) {
+                    bool is_selected = (t_muscs.current_sort_choice == n);
+                    if (ImGui::Selectable(t_muscs.sorting_choices[n], is_selected)) {
+                        t_muscs.current_sort_choice = n;
+                    }
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::Checkbox("reverse results", &t_muscs.reverse_results);
+
+            // apply muscle sorting
+            assert(not choices.empty());
+            assert(item_current_idx < choices.size());
+
+            switch (t_muscs.current_sort_choice) {
+            case 0: {  // sort muscles by length
+                std::sort(
+                    scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
+                        return m1.length > m2.length;
+                    });
+                break;
+            }
+            case 1: {  // sort muscles by tendon strain
+                std::sort(
+                    scratch.muscles.begin(), scratch.muscles.end(), [&](Muscle_stat const& m1, Muscle_stat const& m2) {
+                        return m1.ptr->getTendonStrain(latest_state) > m2.ptr->getTendonStrain(latest_state);
+                    });
+                break;
+            }
+            default:
+                break;  // skip sorting
+            }
+
+            if (t_muscs.reverse_results) {
+                std::reverse(scratch.muscles.begin(), scratch.muscles.end());
+            }
 
             // draw muscle list
             for (Muscle_stat const& musc : scratch.muscles) {
@@ -1088,8 +1139,7 @@ namespace osmv {
                     p.plot.draw();
                     ImGui::NextColumn();
                     ImGui::Text("%s/%s", p.getOwnerName().c_str(), p.getName().c_str());
-                    ImGui::Text("n = %zu", p.plot.n);
-                    ImGui::Text("t = %f", static_cast<double>(p.plot.latest_x));
+                    ImGui::Text("t = %f ms", static_cast<double>(p.plot.latest_x));
                     ImGui::Text("min: %.3f", static_cast<double>(p.plot.min));
                     ImGui::Text("max: %.3f", static_cast<double>(p.plot.max));
                     ImGui::NextColumn();

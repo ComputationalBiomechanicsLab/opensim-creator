@@ -31,10 +31,17 @@ using namespace OpenSim;
 // integer index lookups, rather than having to rely on (e.g.) a runtime
 // hashtable
 using Mesh_id = size_t;
-
+using Mesh_ctor_fn = void(std::vector<osmv::Untextured_vert>&);
+static constexpr std::array<Mesh_ctor_fn*, 3> reserved_mesh_ctors = {
+    osmv::unit_sphere_triangles, osmv::simbody_cylinder_triangles, osmv::simbody_brick_triangles};
 static constexpr Mesh_id sphere_meshid = 0;
 static constexpr Mesh_id cylinder_meshid = 1;
-static constexpr size_t num_reserved_meshids = 2;  // count of above
+static constexpr Mesh_id cube_meshid = 2;
+static constexpr size_t num_reserved_meshes = 3;
+static_assert(
+    num_reserved_meshes == reserved_mesh_ctors.size(),
+    "if this fails, you might be missing a constructor function for a reserved mesh");
+
 static std::mutex g_mesh_cache_mutex;
 static std::unordered_map<std::string, std::vector<osmv::Untextured_vert>> g_mesh_cache;
 
@@ -69,7 +76,7 @@ namespace osmv {
 
         // two-way lookup to establish a meshid-to-path mappings. This is so
         // that the renderer can just opaquely handle ID ints
-        std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshids);
+        std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshes);
         std::unordered_map<std::string, Mesh_id> str_to_meshid;
 
         void all_geometry_in(OpenSim::Model& model, SimTK::State& s, State_geometry& out);
@@ -436,7 +443,12 @@ namespace osmv {
 
             out.mesh_instances.push_back({cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid});
         }
-        void implementBrickGeometry(const DecorativeBrick&) override {
+        void implementBrickGeometry(const DecorativeBrick& geom) override {
+            SimTK::Vec3 dims = geom.getHalfLengths();
+            glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
+            glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
+
+            out.mesh_instances.push_back({xform, normal_mtx, rgba(geom), cube_meshid});
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -535,13 +547,10 @@ namespace osmv {
     }
 
     void Geometry_loader::load_mesh(Mesh_id id, std::vector<osmv::Untextured_vert>& out) {
-        // handle reserved mesh IDs
-        switch (id) {
-        case sphere_meshid:
-            osmv::unit_sphere_triangles(out);
-            return;
-        case cylinder_meshid:
-            osmv::simbody_cylinder_triangles(12, out);
+        // handle reserved mesh IDs: they are generated from a constructor function populated
+        // above
+        if (id < num_reserved_meshes) {
+            reserved_mesh_ctors[id](out);
             return;
         }
 
@@ -584,7 +593,7 @@ namespace osmv {
         }();
         Mesh_on_gpu cylinder = [&]() {
             mesh.clear();
-            osmv::simbody_cylinder_triangles(12, mesh);
+            osmv::simbody_cylinder_triangles(mesh);
             return Mesh_on_gpu{mesh};
         }();
     };
