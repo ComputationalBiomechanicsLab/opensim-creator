@@ -22,6 +22,9 @@ ${sudo} apt-get update
 # osmv: main dependencies
 ${sudo} apt-get install build-essential cmake libsdl2-dev
 
+# osmv: (if CI) also install a software renderer for OpenGL
+${sudo} apt-get install libgl1-mesa-dev
+
 # osmv: transitive dependencies from OpenSim4.1
 ${sudo} apt-get install -y git freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
 
