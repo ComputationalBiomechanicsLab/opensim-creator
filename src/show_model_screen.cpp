@@ -884,8 +884,8 @@ namespace osmv {
             ImGui::Checkbox("reverse results", &t_muscs.reverse_results);
 
             // apply muscle sorting
-            assert(not choices.empty());
-            assert(item_current_idx < choices.size());
+            assert(not t_muscs.sorting_choices.empty());
+            assert(t_muscs.current_sort_choice < t_muscs.sorting_choices.size());
 
             switch (t_muscs.current_sort_choice) {
             case 0: {  // sort muscles by length
