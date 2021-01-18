@@ -56,13 +56,14 @@ add_executable(osmv
 
     src/os.hpp
     src/os.cpp
-    src/sdl.hpp
-    src/sdl.cpp
+    src/sdl_wrapper.hpp
+    src/sdl_wrapper.cpp
+    src/imgui_wrapper.hpp
+    src/imgui_wrapper.cpp
     src/gl.hpp
     src/gl.cpp
-    src/imgui_extensions.hpp
-    src/imgui_extensions.cpp
     src/shims.hpp
+
     src/cfg.hpp
     src/cfg.cpp
     src/opensim_wrapper.hpp
@@ -73,7 +74,6 @@ add_executable(osmv
     src/fd_simulation.cpp
     src/renderer.hpp
     src/renderer.cpp
-
     src/application.hpp
     src/application.cpp
 
@@ -82,6 +82,8 @@ add_executable(osmv
     src/show_model_screen.cpp
     src/loading_screen.hpp
     src/loading_screen.cpp
+    src/imgui_demo_screen.hpp
+    src/imgui_demo_screen.cpp
     src/splash_screen.hpp
     src/splash_screen.cpp
 
@@ -294,7 +296,7 @@ if (LINUX)
     # set up DEB packaging
     set(CPACK_GENERATOR DEB)
     set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osmv)
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0, libblas3, liblapack3, libstdc++6")  # TODO: this doesn't handle OSMV_USE_SYSTEM_SDL
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0, libblas3, liblapack3, libstdc++6")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
     configure_file("${PROJECT_SOURCE_DIR}/postinst.in" "postinst" @ONLY)  # create symlink /usr/local/bin/osmv --> /opt/osmv/bin/osmv
     configure_file("${PROJECT_SOURCE_DIR}/postrm.in" "postrm" @ONLY)  # destroy symlink created during install

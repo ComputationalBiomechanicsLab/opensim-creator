@@ -5,7 +5,7 @@
 #include "cfg.hpp"
 #include "gl.hpp"
 #include "opensim_wrapper.hpp"
-#include "sdl.hpp"
+#include "sdl_wrapper.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -605,39 +605,39 @@ osmv::Renderer::Renderer() : state(new Renderer_private_state()) {
 
 osmv::Renderer::~Renderer() noexcept = default;
 
-bool osmv::Renderer::on_event(Application& app, SDL_Event const& e) {
-    float aspect_ratio = app.aspect_ratio();
-    auto window_dims = app.window_size();
+osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const& e) {
+    float aspect_ratio = app.window_aspect_ratio();
+    auto window_dims = app.window_dimensions();
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
         case SDLK_w:
             wireframe_mode = not wireframe_mode;
-            return true;
+            return Event_response::handled;
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT:
             dragging = true;
-            return true;
+            return Event_response::handled;
         case SDL_BUTTON_RIGHT:
             panning = true;
-            return true;
+            return Event_response::handled;
         }
     } else if (e.type == SDL_MOUSEBUTTONUP) {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT:
             dragging = false;
-            return true;
+            return Event_response::handled;
         case SDL_BUTTON_RIGHT:
             panning = false;
-            return true;
+            return Event_response::handled;
         }
     } else if (e.type == SDL_MOUSEMOTION) {
         if (abs(e.motion.xrel) > 200 or abs(e.motion.yrel) > 200) {
             // probably a frameskip or the mouse was forcibly teleported
             // because it hit the edge of the screen
-            return false;
+            return Event_response::ignored;
         }
 
         if (dragging) {
@@ -687,9 +687,8 @@ bool osmv::Renderer::on_event(Application& app, SDL_Event const& e) {
                 app.move_mouse_to(e.motion.x, window_dims.h - edge_width);
             }
 
-            return true;
+            return Event_response::handled;
         }
-        return false;
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (e.wheel.y > 0 and radius >= 0.1f) {
             radius *= wheel_sensitivity;
@@ -699,10 +698,10 @@ bool osmv::Renderer::on_event(Application& app, SDL_Event const& e) {
             radius /= wheel_sensitivity;
         }
 
-        return true;
+        return Event_response::handled;
     }
 
-    return false;
+    return Event_response::ignored;
 }
 
 template<typename V>
@@ -760,7 +759,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::S
                rot_theta * rot_phi * pan_translate;
     }();
 
-    glm::mat4 proj_mtx = [&]() { return glm::perspective(fov, ui.aspect_ratio(), 0.1f, 100.0f); }();
+    glm::mat4 proj_mtx = [&]() { return glm::perspective(fov, ui.window_aspect_ratio(), 0.1f, 100.0f); }();
 
     glm::vec3 view_pos = [&]() {
         // polar/spherical to cartesian

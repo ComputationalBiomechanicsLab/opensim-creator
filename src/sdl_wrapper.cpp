@@ -1,4 +1,4 @@
-#include "sdl.hpp"
+#include "sdl_wrapper.hpp"
 
 #include <stdexcept>
 #include <string>

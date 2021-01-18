@@ -2,9 +2,10 @@
 
 #include "gl.hpp"
 #include "imgui.h"
-#include "imgui_extensions.hpp"
+#include "imgui_wrapper.hpp"
 #include "osmv_config.hpp"
 #include "screen.hpp"
+#include "sdl_wrapper.hpp"
 
 #include "examples/imgui_impl_opengl3.h"
 #include "examples/imgui_impl_sdl.h"
@@ -391,11 +392,11 @@ void osmv::Application::start_render_loop(std::unique_ptr<Screen> s) {
     impl->start_render_loop(*this, std::move(s));
 }
 
-void osmv::Application::request_transition(std::unique_ptr<osmv::Screen> s) {
+void osmv::Application::request_screen_transition(std::unique_ptr<osmv::Screen> s) {
     impl->request_transition(std::move(s));
 }
 
-void osmv::Application::request_quit() {
+void osmv::Application::request_quit_application() {
     impl->request_quit();
 }
 
@@ -408,13 +409,8 @@ void osmv::Application::is_throttling_fps(bool throttle) {
 }
 
 // dimensions of the main application window in pixels
-sdl::Window_dimensions osmv::Application::window_size() const noexcept {
+sdl::Window_dimensions osmv::Application::window_dimensions() const noexcept {
     return sdl::GetWindowSize(impl->window);
-}
-
-float osmv::Application::aspect_ratio() const noexcept {
-    auto [w, h] = window_size();
-    return static_cast<float>(w) / static_cast<float>(h);
 }
 
 // move mouse relative to the window (origin in top-left)

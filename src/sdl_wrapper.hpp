@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string>
 
-// sdl: thin C++ wrappers around SDL
+// sdl wrapper: thin C++ wrappers around SDL
 //
 // Code in here should:
 //

@@ -21,7 +21,7 @@ namespace osmv {
         Show_model_screen& operator=(Show_model_screen&&) = delete;
         ~Show_model_screen() noexcept override;
 
-        void on_event(SDL_Event&) override;
+        Event_response on_event(SDL_Event const&) override;
         void tick() override;
         void draw() override;
     };

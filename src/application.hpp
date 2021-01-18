@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sdl.hpp"
+#include "sdl_wrapper.hpp"
 
 #include <memory>
 
@@ -32,23 +32,26 @@ namespace osmv {
             start_render_loop(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        void request_transition(std::unique_ptr<osmv::Screen>);
+        void request_screen_transition(std::unique_ptr<osmv::Screen>);
 
         template<typename T, typename... Args>
-        void request_transition(Args&&... args) {
-            request_transition(std::make_unique<T>(std::forward<Args>(args)...));
+        void request_screen_transition(Args&&... args) {
+            request_screen_transition(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        void request_quit();
+        void request_quit_application();
 
         // true if FPS is being throttled (e.g. with software (sleeps) or vsync)
         bool is_throttling_fps() const noexcept;
         void is_throttling_fps(bool);
 
         // dimensions of the main application window in pixels
-        sdl::Window_dimensions window_size() const noexcept;
+        sdl::Window_dimensions window_dimensions() const noexcept;
 
-        float aspect_ratio() const noexcept;
+        float window_aspect_ratio() const noexcept {
+            auto [w, h] = window_dimensions();
+            return static_cast<float>(w) / static_cast<float>(h);
+        }
 
         // move mouse relative to the window (origin in top-left)
         void move_mouse_to(int x, int y);

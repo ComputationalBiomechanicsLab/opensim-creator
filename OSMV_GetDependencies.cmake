@@ -258,6 +258,7 @@ if(TRUE)
         third_party/imgui-1.78/imgui.cpp
         third_party/imgui-1.78/imgui_draw.cpp
         third_party/imgui-1.78/imgui_widgets.cpp
+        third_party/imgui-1.78/imgui_demo.cpp  # useful for osmv devs to see what's available
         third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
         third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
     )

@@ -32,12 +32,14 @@ namespace osmv {
             result{std::async(std::launch::async, [&]() { return std::optional<osmv::Model>{path}; })} {
         }
 
-        void on_event(Application& app, SDL_Event& e) {
+        Event_response on_event(Application& app, SDL_Event const& e) {
             // ESCAPE: go to splash screen
             if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-                app.request_transition<osmv::Splash_screen>();
-                return;
+                app.request_screen_transition<osmv::Splash_screen>();
+                return Event_response::handled;
             }
+
+            return Event_response::ignored;
         }
 
         void tick(Application& app) {
@@ -52,7 +54,7 @@ namespace osmv {
             // loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
-                    app.request_transition<Show_model_screen>(path, result.get().value());
+                    app.request_screen_transition<Show_model_screen>(path, result.get().value());
                     return;
                 }
             } catch (std::exception const& ex) {
@@ -79,23 +81,23 @@ namespace osmv {
             }
         }
     };
+}
 
-    // PIMPL forwarding
+// PIMPL forwarding
 
-    Loading_screen::Loading_screen(std::filesystem::path _path) : impl{new Loading_screen_impl{std::move(_path)}} {
-    }
+osmv::Loading_screen::Loading_screen(std::filesystem::path _path) : impl{new Loading_screen_impl{std::move(_path)}} {
+}
 
-    osmv::Loading_screen::~Loading_screen() noexcept = default;
+osmv::Loading_screen::~Loading_screen() noexcept = default;
 
-    void Loading_screen::on_event(SDL_Event& e) {
-        impl->on_event(application(), e);
-    }
+osmv::Event_response osmv::Loading_screen::on_event(SDL_Event const& e) {
+    return impl->on_event(application(), e);
+}
 
-    void Loading_screen::tick() {
-        return impl->tick(application());
-    }
+void osmv::Loading_screen::tick() {
+    return impl->tick(application());
+}
 
-    void Loading_screen::draw() {
-        impl->draw();
-    }
+void osmv::Loading_screen::draw() {
+    impl->draw();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sdl.hpp"
+#include "screen.hpp"
+#include "sdl_wrapper.hpp"
 
 #include <glm/vec3.hpp>
 
@@ -46,7 +47,7 @@ namespace osmv {
         Renderer& operator=(Renderer&&) = delete;
         ~Renderer() noexcept;
 
-        bool on_event(Application&, SDL_Event const&);
+        Event_response on_event(Application&, SDL_Event const&);
         void draw(Application const&, OpenSim::Model&, SimTK::State&);
     };
 }
