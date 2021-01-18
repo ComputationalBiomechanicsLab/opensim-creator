@@ -34,9 +34,6 @@ ${sudo} apt-get install -y git cmake freeglut3-dev libxi-dev libxmu-dev liblapac
 # (if building OpenSim): get OpenSim 4.1 source
 git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
 
-# get osmv source
-git clone --single-branch --branch master --depth=1 https://github.com/adamkewley/osmv
-
 
 # ----- build: build OpenSim (optional) then build osmv ----- #
 

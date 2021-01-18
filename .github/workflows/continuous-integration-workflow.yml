@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
     - uses: actions/checkout@v1
+      with:
+        path: osmv
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/ubuntu-xenial_e2e-build.sh
 
@@ -14,5 +16,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
+      with:
+        path: osmv
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./scripts/debian-buster_e2e-build.sh
