@@ -1,3 +1,6 @@
+# opensim logs
+**/opensim.log
+
 # C++ objects and libs
 *.slo
 *.lo
