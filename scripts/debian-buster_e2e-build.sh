@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-# Debian Buster: end-2-end build
+# Ubuntu 20 (Groovy) / Debian Buster: end-2-end build
 #
-#     - this should build on a clean install of Debian Buster/Ubuntu 20
+#     - this script should run to completion on a clean install of the
+#       OSes and produce a ready-to-use osmv binary
+
 
 # error out of this script if it fails for any reason
 set -xeuo pipefail
@@ -20,18 +22,19 @@ fi
 ${sudo} apt-get update
 
 # osmv: main dependencies
-${sudo} apt-get install build-essential cmake libsdl2-dev
-
-# osmv: (if CI) also install a software renderer for OpenGL
-if [[ -v CI ]]; then
-    ${sudo} apt-get install libgl1-mesa-dev libgl1-mesa-glx libopengl0 libglx0 libglu1-mesa  freeglut3-dev
-fi
+${sudo} apt-get install -y build-essential cmake libsdl2-dev
 
 # osmv: transitive dependencies from OpenSim4.1
 ${sudo} apt-get install -y git freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
 
-# (if building OpenSim): get OpenSim 4.1 source
-git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
+# get OpenSim 4.1 source
+#
+#    this can be skipped, along with the opensim build steps, if
+#    you're linking osmv to your own custom install via
+#    CMAKE_PREFIX_PATH)
+if [[ ! -d opensim-core/ ]]; then
+    git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
+fi
 
 
 # ----- build: build OpenSim (optional) then build osmv ----- #
@@ -50,9 +53,14 @@ cmake ../opensim-core/ -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-instal
 cmake --build . --target install -- -j$(nproc)
 cd -
 
-# note: set CMAKE_PREFIX_PATH to your OpenSim install if you aren't building OpenSim
-#       from source (above)
-mkdir osmv-build/
+# build osmv DEB package
+#
+#     note #1: if you're providing your own OpenSim install, set
+#     CMAKE_PREFIX_PATH to that install path
+#
+#     note #2: if you just want to build osmv, switch `--target
+#     package` for `--target osmv`
+mkdir -p osmv-build/
 cd osmv-build/
 cmake ../osmv -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
 cmake --build . --target package -- -j$(nproc)

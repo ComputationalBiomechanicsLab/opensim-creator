@@ -139,18 +139,17 @@ if(TRUE)
             IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/lib/RelWithDebInfo/${LIBNAME}
             IMPORTED_LOCATION_MINSIZEREL ${BINARY_DIR}/lib/MinSizeRel/${LIBNAME}
             IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
-
-            INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
-            INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
         )
     else()
         set_target_properties(osmv-glew PROPERTIES
-          IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
-
-            INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
-            INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
+            IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
         )
     endif()
+
+    set_target_properties(osmv-glew PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
+        INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
+    )
 
     unset(SOURCE_DIR)
     unset(BINARY_DIR)
@@ -349,7 +348,6 @@ endif()
 # `osmv-all-dependencies`: all libraries osmv should link to
 add_library(osmv-all-dependencies INTERFACE)
 target_link_libraries(osmv-all-dependencies INTERFACE
-    ${OPENGL_LIBRARIES}
 
     osmv-glew
     osmv-sdl2
@@ -359,6 +357,7 @@ target_link_libraries(osmv-all-dependencies INTERFACE
     osmv-tomlplusplus
 
     ${OSMV_OPENSIM_LIBS}
+    ${OPENGL_LIBRARIES}
 )
 
 # `OSMV_LIB_FILES_TO_COPY`: all lib *files* that osmv should copy
