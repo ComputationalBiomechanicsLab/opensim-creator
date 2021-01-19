@@ -1,3 +1,0 @@
-[2021-01-13 11:18:49.157] [info] Updating Model file from 20303 to latest format...
-[2021-01-13 11:18:49.169] [info] Loaded model toy_with_forces from file /home/adam/Desktop/osmv/resources/opensim-models/Models/BouncingBlock/bouncing_block.osim
-[2021-01-13 11:18:49.169] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
