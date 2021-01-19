@@ -12,7 +12,7 @@
 namespace fs = std::filesystem;
 
 // helper that searches for example .osim files in the resources/ directory
-static std::vector<fs::path> get_example_osims() {
+static std::vector<fs::path> find_example_osims() {
     fs::path models_dir = osmv::cfg::resource_path("models");
 
     std::vector<fs::path> rv;
@@ -41,7 +41,7 @@ static std::vector<fs::path> get_example_osims() {
 
 namespace osmv {
     struct Splash_screen_impl final {
-        std::vector<fs::path> example_osims = get_example_osims();
+        std::vector<fs::path> example_osims = find_example_osims();
 
         Event_response on_event(Application& app, SDL_Event const& e) {
             if (e.type == SDL_KEYDOWN) {

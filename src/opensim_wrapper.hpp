@@ -55,9 +55,11 @@ namespace osmv {
         explicit State(SimTK::State const&);
         explicit State(State const& s) : State{static_cast<SimTK::State const&>(s)} {
         }
+        explicit State(std::unique_ptr<SimTK::State>) noexcept;
         State(State&&) noexcept;
         State& operator=(State const&) = delete;
         State& operator=(SimTK::State const&);
+        State& operator=(std::unique_ptr<SimTK::State>) noexcept;
         State& operator=(State&&) noexcept;
         ~State() noexcept;
 

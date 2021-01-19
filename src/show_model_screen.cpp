@@ -27,24 +27,6 @@
 #include <vector>
 
 namespace {
-    // returns interesting `AbstractOutput`s in the Model
-    //
-    // pointers in this struct are dependent on the model: only use this in short-lived contexts
-    // and don't let it survive during a model edit or model destruction
-    static void get_available_outputs(OpenSim::Model const& m, std::vector<OpenSim::AbstractOutput const*>& out) {
-        // model-level outputs (e.g. kinetic energy)
-        for (auto const& p : m.getOutputs()) {
-            out.push_back(p.second.get());
-        }
-
-        // muscle outputs
-        for (auto const& musc : m.getComponentList<OpenSim::Muscle>()) {
-            for (auto const& p : musc.getOutputs()) {
-                out.push_back(p.second.get());
-            }
-        }
-    }
-
     static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
         std::snprintf(buf, n, "%s/%s", ao->getOwner().getName().c_str(), ao->getName().c_str());
     }
@@ -209,7 +191,7 @@ namespace {
             max = std::max(max, y);
         }
 
-        void draw() const {
+        void draw(float height = 100.0f) const {
             ImGui::PlotLines(
                 "",
                 data.data(),
@@ -218,7 +200,7 @@ namespace {
                 nullptr,
                 std::numeric_limits<float>::min(),
                 std::numeric_limits<float>::max(),
-                ImVec2(0, 100.0f));
+                ImVec2(0, height));
         }
     };
 
@@ -271,11 +253,17 @@ namespace {
     struct Simulator_tab_data final {
         Evenly_spaced_sparkline<256> prescribeQcalls;
         Evenly_spaced_sparkline<256> simTimeDividedByWallTime;
+        Evenly_spaced_sparkline<256> numIntegrationSteps;
+        Evenly_spaced_sparkline<256> integrationStepsAttempted;
+        Evenly_spaced_sparkline<256> stepsOverAttempts;
+
         float fd_final_time = 0.4f;
 
         void clear() {
             prescribeQcalls.clear();
             simTimeDividedByWallTime.clear();
+            numIntegrationSteps.clear();
+            integrationStepsAttempted.clear();
         }
 
         void on_user_edited_model() {
@@ -286,12 +274,17 @@ namespace {
             clear();
         }
 
-        void on_ui_state_update(osmv::Fd_simulation const& sim, SimTK::State const& st) {
-            std::chrono::duration<float> sim_time{st.getTime()};
-            std::chrono::duration<float> wall_time{sim.wall_duration()};
+        void on_ui_state_update(osmv::Fd_simulator const& sim, SimTK::State const& st) {
+            float sim_time = static_cast<float>(st.getTime());
+            float wall_time = std::chrono::duration<float>{sim.wall_duration()}.count();
+            float num_integration_steps = static_cast<float>(sim.num_integration_steps());
+            float num_step_attempts = static_cast<float>(sim.num_integration_step_attempts());
 
-            prescribeQcalls.push_datapoint(sim_time.count(), sim.num_prescribeq_calls());
-            simTimeDividedByWallTime.push_datapoint(sim_time.count(), sim_time / wall_time);
+            prescribeQcalls.push_datapoint(sim_time, sim.num_prescribeq_calls());
+            simTimeDividedByWallTime.push_datapoint(sim_time, sim_time / wall_time);
+            numIntegrationSteps.push_datapoint(sim_time, num_integration_steps);
+            integrationStepsAttempted.push_datapoint(sim_time, num_step_attempts);
+            stepsOverAttempts.push_datapoint(sim_time, num_integration_steps / num_step_attempts);
         }
     };
 
@@ -367,7 +360,7 @@ namespace osmv {
         osmv::State latest_state;
 
         Renderer renderer;
-        std::optional<Fd_simulation> simulator;
+        std::optional<Fd_simulator> simulator;
 
         Coordinates_tab_data t_coords;
         Simulator_tab_data t_simulator;
@@ -693,29 +686,37 @@ namespace osmv {
                 std::chrono::milliseconds wall_ms =
                     std::chrono::duration_cast<std::chrono::milliseconds>(simulator->wall_duration());
                 double wall_secs = static_cast<double>(wall_ms.count()) / 1000.0;
-                double sim_secs = simulator->sim_current_time();
+                std::chrono::duration<double> sim_secs = simulator->sim_current_time();
                 double pct_completed = sim_secs / simulator->sim_final_time() * 100.0;
 
                 ImGui::Dummy(ImVec2{0.0f, 20.0f});
                 ImGui::Text("simulator stats");
                 ImGui::Separator();
                 ImGui::Text("status: %s", simulator->status_description());
-                ImGui::Text("progress: %.2f %%", pct_completed);
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                ImGui::Text("simulation time: %.2f", sim_secs);
+                ImGui::Text("progress: %.1f %%", pct_completed);
+                ImGui::Text("simulation time: %.2f", sim_secs.count());
                 ImGui::Text("wall time: %.2f secs", wall_secs);
-                ImGui::Text("avg. sim_time/wall_time: %.4f", sim_secs / wall_secs);
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                ImGui::Text("avg. sim_time/wall_time: %.4f", (sim_secs / wall_secs).count());
                 ImGui::Text("total prescribeQ calls: %i", simulator->num_prescribeq_calls());
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                ImGui::Text("States sent to UI thread: %i", simulator->num_states_popped());
-                ImGui::Text("Avg. UI overhead: %.5f %%", 100.0 * simulator->avg_ui_overhead());
+                ImGui::Text("total SimTK::States copied to UI thread: %i", simulator->num_states_popped());
+                ImGui::Text("avg. UI overhead in sim thread %.2f %%", 100.0 * simulator->avg_ui_overhead_pct());
+
+                ImGui::Separator();
 
                 ImGui::Text("prescribeQcalls");
-                t_simulator.prescribeQcalls.draw();
+                t_simulator.prescribeQcalls.draw(50.0f);
 
                 ImGui::Text("sim time / wall time");
-                t_simulator.simTimeDividedByWallTime.draw();
+                t_simulator.simTimeDividedByWallTime.draw(50.0f);
+
+                ImGui::Text("integration steps");
+                t_simulator.numIntegrationSteps.draw(50.0f);
+
+                ImGui::Text("integration step attempts");
+                t_simulator.integrationStepsAttempted.draw(50.0f);
+
+                ImGui::Text("integration steps / integration step attempts");
+                t_simulator.stepsOverAttempts.draw(50.0f);
             }
         }
 
@@ -919,10 +920,11 @@ namespace osmv {
                     }
                     if (in_range) {
                         ImGui::Text(
-                            "%s    l = %.3f, strain =  %.3f",
+                            "%s    l = %.3f, strain =  %.3f %%, force = %.3f",
                             musc.name->c_str(),
                             static_cast<double>(musc.length),
-                            musc.ptr->getTendonStrain(latest_state));
+                            100.0 * musc.ptr->getTendonStrain(latest_state),
+                            musc.ptr->getTendonForce(latest_state));
                     }
                 }
             }
@@ -1065,7 +1067,21 @@ namespace osmv {
 
         void draw_outputs_tab() {
             t_outputs.available.clear();
-            get_available_outputs(model, t_outputs.available);
+
+            // get available outputs from model
+            {
+                // model-level outputs (e.g. kinetic energy)
+                for (auto const& p : model->getOutputs()) {
+                    t_outputs.available.push_back(p.second.get());
+                }
+
+                // muscle outputs
+                for (auto const& musc : model->getComponentList<OpenSim::Muscle>()) {
+                    for (auto const& p : musc.getOutputs()) {
+                        t_outputs.available.push_back(p.second.get());
+                    }
+                }
+            }
 
             // apply user filters
             {

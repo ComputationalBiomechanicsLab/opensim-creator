@@ -3,6 +3,7 @@
 #include "opensim_wrapper.hpp"
 
 namespace osmv {
+    // parameters for a forward-dynamic simulation
     struct Fd_simulation_params final {
         Model model;
 
@@ -23,19 +24,17 @@ namespace osmv {
         }
     };
 
-    struct Fd_simulation_impl;
-    class Fd_simulation final {
-        std::unique_ptr<Fd_simulation_impl> impl;
+    struct Fd_simulator_impl;
+    class Fd_simulator final {
+        std::unique_ptr<Fd_simulator_impl> impl;
 
     public:
-        using clock = std::chrono::steady_clock;
-
-        Fd_simulation(Fd_simulation_params);
-        Fd_simulation(Fd_simulation const&) = delete;
-        Fd_simulation(Fd_simulation&&) = delete;
-        Fd_simulation& operator=(Fd_simulation const&) = delete;
-        Fd_simulation& operator=(Fd_simulation&&) = delete;
-        ~Fd_simulation() noexcept;  // cancels the simulation + cleans up
+        Fd_simulator(Fd_simulation_params);
+        Fd_simulator(Fd_simulator const&) = delete;
+        Fd_simulator(Fd_simulator&&) = delete;
+        Fd_simulator& operator=(Fd_simulator const&) = delete;
+        Fd_simulator& operator=(Fd_simulator&&) = delete;
+        ~Fd_simulator() noexcept;  // cancels the simulation + cleans up
 
         // returns `true` if the simulator has a new latest state, with `dest`
         // being updated to match the latest state
@@ -46,15 +45,17 @@ namespace osmv {
         void request_stop();
 
         bool is_running() const;
-        clock::duration wall_duration() const;
-        double sim_current_time() const;
-        double sim_final_time() const;
+        std::chrono::duration<double> wall_duration() const;
+        std::chrono::duration<double> sim_current_time() const;
+        std::chrono::duration<double> sim_final_time() const;
         char const* status_description() const;
         int num_prescribeq_calls() const;
-        double avg_ui_overhead() const;
+        double avg_ui_overhead_pct() const;
         int num_states_popped() const;
+        int num_integration_steps() const;
+        int num_integration_step_attempts() const;
     };
 
-    // just run a forward dynamics sim with default settings
+    // run a forward-dynamic simulation on the current thread
     osmv::State run_fd_simulation(OpenSim::Model& model);
 }

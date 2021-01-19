@@ -4,194 +4,152 @@
 #include "shims.hpp"
 
 #include <OpenSim.h>
-#include <optional>
 
-// status of an OpenSim simulation
-enum class Sim_status {
-    Running = 1,
-    Completed = 2,
-    Cancelled = 4,
-    Error = 8,
-};
-
-static char const* str(Sim_status s) noexcept {
-    switch (s) {
-    case Sim_status::Running:
-        return "running";
-    case Sim_status::Completed:
-        return "completed";
-    case Sim_status::Cancelled:
-        return "cancelled";
-    case Sim_status::Error:
-        return "error";
-    default:
-        return "UNKNOWN STATUS: DEV ERROR";
-    }
-}
-
-// share a value between exactly two threads such that thread A can access the
-// value, followed by thread B, followed by A again
-//
-// effectively, just a slightly more robust abstraction over having a shared
-// value + flag (/w mutex or atomics)
-template<typename T>
-struct Passed_parcel final {
-    enum class State { a, b, locked };
-
-    T v;
-    std::atomic<State> st = State::a;
-
-    Passed_parcel(T _v) : v{std::move(_v)} {
-    }
-
-    template<typename Mutator>
-    bool try_apply_a(Mutator f) {
-        State expected = State::a;
-        if (st.compare_exchange_strong(expected, State::locked)) {
-            f(v);
-            st = State::b;
-            return true;
-        }
-        return false;
-    }
-
-    template<typename Mutator>
-    bool try_apply_b(Mutator f) {
-        State expected = State::b;
-        if (st.compare_exchange_strong(expected, State::locked)) {
-            f(v);
-            st = State::a;
-            return true;
-        }
-        return false;
-    }
-};
-
-// state that is shared between a running simulator thread and
-struct Threadsafe_fdsim_state {
-    using clock = std::chrono::high_resolution_clock;
-
-    Passed_parcel<osmv::State> state;
-    std::atomic<double> sim_cur_time = 0.0;
-    std::atomic<double> ui_overhead_acc = 0.0;
-    std::atomic<clock::duration> wall_start = clock::now().time_since_epoch();
-    std::atomic<clock::duration> wall_end = clock::now().time_since_epoch();
-    std::atomic<int> num_pq_calls = 0;
-    std::atomic<int> ui_overhead_n = 0;
-    std::atomic<Sim_status> status = Sim_status::Running;
-
-    Threadsafe_fdsim_state(osmv::State initial_state) : state{std::move(initial_state)} {
-    }
-};
-
-// response from integration step callback
-enum class Callback_response {
-    Ok,  // callback executed ok
-    Please_halt  // callback wants the simulator to halt
-};
-
-// top-level configuration for a basic forward-dynamic sim
-struct Fd_sim_config final {
-    double final_time = 0.4;
-    int max_steps = 20000;
-    double min_step_size = 1.0e-8;
-    double max_step_size = 1.0;
-    double integrator_accuracy = 1.0e-5;
-    std::optional<std::function<Callback_response(SimTK::State const&)>> on_integration_step = std::nullopt;
-};
-
-// analysis: per integration step
-struct CustomAnalysis final : public OpenSim::Analysis {
-    OpenSim::Manager& manager;
-    std::function<Callback_response(SimTK::State const&)> on_integration_step;
-
-    CustomAnalysis(OpenSim::Manager& _m, std::function<Callback_response(SimTK::State const&)> _f) :
-        manager{_m},
-        on_integration_step{std::move(_f)} {
-    }
-
-    int begin(SimTK::State const& s) override {
-        if (on_integration_step(s) == Callback_response::Please_halt) {
-            manager.halt();
-        }
-        return 0;
-    }
-
-    int step(SimTK::State const& s, int) override {
-        if (on_integration_step(s) == Callback_response::Please_halt) {
-            manager.halt();
-        }
-        return 0;
-    }
-
-    int end(SimTK::State const& s) override {
-        if (on_integration_step(s) == Callback_response::Please_halt) {
-            manager.halt();
-        }
-        return 0;
-    }
-
-    CustomAnalysis* clone() const override {
-        return new CustomAnalysis{manager, on_integration_step};
-    }
-
-    std::string const& getConcreteClassName() const override {
-        static std::string const name = "CustomAnalysis";
-        return name;
-    }
-};
-
-static osmv::State fd_simulation(OpenSim::Model& model, osmv::State initial_state, Fd_sim_config const& config) {
-    OpenSim::Manager manager{model};
-
-    if (config.on_integration_step) {
-        model.addAnalysis(new CustomAnalysis{manager, *config.on_integration_step});
-    }
-
-    manager.setWriteToStorage(false);
-    manager.setIntegratorInternalStepLimit(config.max_steps);
-    manager.setIntegratorMaximumStepSize(config.max_step_size);
-    manager.setIntegratorMinimumStepSize(config.min_step_size);
-    manager.setIntegratorAccuracy(config.integrator_accuracy);
-
-    model.getMultibodySystem().realize(initial_state, SimTK::Stage::Position);
-    model.equilibrateMuscles(initial_state);
-
-    manager.initialize(initial_state);
-    return osmv::State{manager.integrate(config.final_time)};
-}
-
-osmv::State osmv::run_fd_simulation(OpenSim::Model& model) {
-    return fd_simulation(model, osmv::State{model.initSystem()}, Fd_sim_config{});
-}
-
-// runs a forward dynamic simuation, updating `shared` (which is designed to
-// be thread-safe) as it runs
-static int
-    _run_fd_simulation(shims::stop_token stop_tok, osmv::Fd_simulation_params params, Threadsafe_fdsim_state& shared) {
-
-    params.model->setPropertiesFromState(shared.state.v);
-    params.model->initSystem();
-
+namespace {
     using clock = std::chrono::steady_clock;
 
-    shared.wall_start = clock::now().time_since_epoch();
-    shared.status = Sim_status::Running;
+    // status of an OpenSim simulation
+    enum class Sim_status {
+        Running = 1,
+        Completed = 2,
+        Cancelled = 4,
+        Error = 8,
+    };
 
-    clock::time_point simulation_thread_started = clock::now();
-    clock::time_point last_report_end = clock::now();
+    // a mutex guard over a reference to `T`
+    template<typename T>
+    class Mutex_guard final {
+        std::lock_guard<std::mutex> guard;
+        T& ref;
 
-    Fd_sim_config config;
-    config.final_time = params.final_time;
-    config.on_integration_step =
-        [&shared, &stop_tok, &params, &last_report_end, &simulation_thread_started](SimTK::State const& s) {
-            // if a stop was requested, throw an exception to interrupt the simulation
-            //
-            // this (hacky) approach is because the simulation is black-boxed at the moment - a better
-            // solution would evaluate the token mid-simulation and interrupt it gracefully.
-            if (stop_tok.stop_requested()) {
-                shared.status = Sim_status::Cancelled;
-                return Callback_response::Please_halt;
+    public:
+        explicit Mutex_guard(std::mutex& mutex, T& _ref) : guard{mutex}, ref{_ref} {
+        }
+
+        T& operator*() noexcept {
+            return ref;
+        }
+
+        T const& operator*() const noexcept {
+            return ref;
+        }
+
+        T* operator->() noexcept {
+            return &ref;
+        }
+
+        T const* operator->() const noexcept {
+            return &ref;
+        }
+    };
+
+    // represents a `T` value that can only be accessed via a mutex guard
+    template<typename T>
+    class Mutexed {
+        std::mutex mutex;
+        T value;
+
+    public:
+        explicit Mutexed(T _value) : value{std::move(_value)} {
+        }
+
+        // in-place constructor for T
+        template<typename... Args>
+        explicit Mutexed(Args... args) : value{std::forward<Args...>(args)...} {
+        }
+
+        Mutex_guard<T> lock() {
+            return Mutex_guard<T>{mutex, value};
+        }
+    };
+
+    // state that is shared between the simulator owner (i.e. the UI thread) and the simulation
+    // thread
+    //
+    // the contract here is that the simulator thread will try to update these values often so that
+    // the owner can monitor simulation progress.
+    struct Shared_fdsim_state final {
+
+        // the simulator thread will *copy* its latest state into here if it sees that it is
+        // a nullptr
+        //
+        // this means that the UI thread can occasionally poll for the latest state by exchanging
+        // it out for a nullptr (which will make the simulator thread write a new update on the
+        // next go-round)
+        std::unique_ptr<SimTK::State> latest_state = nullptr;
+
+        double sim_cur_time = 0.0;
+        double ui_overhead_acc = 0.0;
+        clock::duration wall_start = clock::now().time_since_epoch();
+        clock::duration wall_end = clock::now().time_since_epoch();
+        int num_pq_calls = 0;
+        int ui_overhead_n = 0;
+        int num_integration_steps = 0;
+        int num_integration_step_attempts = 0;
+        Sim_status status = Sim_status::Running;
+    };
+
+    // an OpenSim::Analysis that calls an arbitrary callback function with the latest SimTK::State
+    template<typename Callback>
+    struct Lambda_analysis final : public OpenSim::Analysis {
+        Callback callback;
+
+        Lambda_analysis(Callback _callback) : callback{std::move(_callback)} {
+        }
+
+        int begin(SimTK::State const& s) override {
+            callback(std::ref(s));
+            return 0;
+        }
+
+        int step(SimTK::State const& s, int) override {
+            callback(std::ref(s));
+            return 0;
+        }
+
+        int end(SimTK::State const& s) override {
+            callback(std::ref(s));
+            return 0;
+        }
+
+        Lambda_analysis* clone() const override {
+            return new Lambda_analysis{callback};
+        }
+
+        std::string const& getConcreteClassName() const override {
+            static std::string const name = "LambdaAnalysis";
+            return name;
+        }
+    };
+
+    void config_manager_with_params_similar_to_forwardtool(OpenSim::Manager& manager) {
+        manager.setWriteToStorage(false);
+        manager.setIntegratorInternalStepLimit(20000);
+        manager.setIntegratorMinimumStepSize(1.0e-8);
+        manager.setIntegratorMaximumStepSize(1.0);
+        manager.setIntegratorAccuracy(1.0e-5);
+    }
+
+    // MAIN: simulator thread: this is the top-level function that the simulator thread executes
+    // in the background.
+    int simulation_thread_main(
+        shims::stop_token stop_token,
+        osmv::Fd_simulation_params params,
+        std::shared_ptr<Mutexed<Shared_fdsim_state>> thread_shared) {
+
+        clock::time_point simulation_thread_started = clock::now();
+        clock::time_point last_report_end = clock::now();
+
+        params.model->setPropertiesFromState(params.initial_state);
+        params.model->initSystem();
+        OpenSim::Manager manager{params.model};
+
+        // add an analysis that calls on each integration step
+        params.model->addAnalysis(new Lambda_analysis([&](SimTK::State const& s) {
+            // propagate stop_token signal to the OpenSim::Manager running this sim, which enables
+            // cancellation behavior
+            if (stop_token.stop_requested()) {
+                manager.halt();
             }
 
             clock::time_point report_start = clock::now();
@@ -211,112 +169,169 @@ static int
                 }
             }
 
-            shared.state.try_apply_a([&s](osmv::State& s_other) { s_other = s; });
+            auto mutex_guard = thread_shared->lock();
+            Shared_fdsim_state& shared_st = *mutex_guard;
 
-            shared.num_pq_calls = params.model->getSystem().getNumPrescribeQCalls();
-            shared.sim_cur_time = s.getTime();
+            if (shared_st.latest_state == nullptr) {
+                // the UI thread probably "stole" the latest state, so copy the new (later) one
+                // so that the UI thread may take it
+                shared_st.latest_state = std::make_unique<SimTK::State>(s);
+            }
+
+            shared_st.num_pq_calls = params.model->getSystem().getNumPrescribeQCalls();
+            shared_st.num_integration_steps++;
+            shared_st.num_integration_step_attempts = manager.getIntegrator().getNumStepsAttempted();
+            shared_st.sim_cur_time = s.getTime();
 
             clock::time_point report_end = clock::now();
 
-            if (shared.ui_overhead_n > 0) {
+            if (shared_st.ui_overhead_n > 0) {
                 clock::duration ui_time = report_end - report_start;
                 clock::duration total = report_end - last_report_end;
                 double this_overhead = static_cast<double>(ui_time.count()) / static_cast<double>(total.count());
-                shared.ui_overhead_acc = shared.ui_overhead_acc.load() + this_overhead;
+                shared_st.ui_overhead_acc = shared_st.ui_overhead_acc + this_overhead;
             }
 
             last_report_end = report_end;
-            ++shared.ui_overhead_n;
+            shared_st.ui_overhead_n++;
+        }));
 
-            return Callback_response::Ok;
-        };
+        config_manager_with_params_similar_to_forwardtool(manager);
 
-    // run the simulation
-    try {
-        fd_simulation(params.model, std::move(params.initial_state), std::move(config));
-        shared.wall_end = clock::now().time_since_epoch();
-        shared.status = Sim_status::Completed;
-    } catch (...) {
-        shared.wall_end = clock::now().time_since_epoch();
-        shared.status = Sim_status::Error;
-        throw;
+        params.model->getMultibodySystem().realize(params.initial_state, SimTK::Stage::Position);
+        params.model->equilibrateMuscles(params.initial_state);
+
+        // start the simulation
+        try {
+            manager.initialize(params.initial_state);
+            manager.integrate(params.final_time);
+
+            auto guard = thread_shared->lock();
+            guard->wall_end = clock::now().time_since_epoch();
+            guard->status = Sim_status::Completed;
+        } catch (...) {
+            auto guard = thread_shared->lock();
+            guard->wall_end = clock::now().time_since_epoch();
+            guard->status = Sim_status::Error;
+            throw;
+        }
+
+        return 0;
     }
-
-    return 0;
 }
 
 namespace osmv {
-    using clock = Fd_simulation::clock;
-
-    struct Fd_simulation_impl final {
+    struct Fd_simulator_impl final {
         double final_time = -1337.0;
         int states_popped = 0;
 
-        // state that can be safely shared between the simulator thread and
-        // the UI thread
-        Threadsafe_fdsim_state shared;
+        // state that is accessible by both the main (probably, UI) thread
+        // and the background simulator thread
+        std::shared_ptr<Mutexed<Shared_fdsim_state>> shared = std::make_shared<Mutexed<Shared_fdsim_state>>();
 
-        // the thread that's actually running OpenSim
-        shims::jthread worker;
+        // the simulator thread. Jthreads automatically send a cancellation request
+        // and join on destruction, so destroying a simulator *should* automatically
+        // cancel + wait
+        shims::jthread simulator_thread;
 
-        Fd_simulation_impl(Fd_simulation_params p) :
+        Fd_simulator_impl(Fd_simulation_params p) :
             final_time{p.final_time},
 
-            // copy the state into the shared passed-parcel (implementation detail)
-            shared{State{p.initial_state}},
-
             // start the simulation
-            worker{_run_fd_simulation, std::move(p), std::ref(shared)} {
+            simulator_thread{simulation_thread_main, std::move(p), shared} {
         }
     };
+}
 
-    Fd_simulation::Fd_simulation(Fd_simulation_params p) : impl{new Fd_simulation_impl{std::move(p)}} {
+// osmv::Fd_simulator interface implementation
+
+osmv::Fd_simulator::Fd_simulator(Fd_simulation_params p) : impl{new Fd_simulator_impl{std::move(p)}} {
+}
+
+osmv::Fd_simulator::~Fd_simulator() noexcept = default;
+
+bool osmv::Fd_simulator::try_pop_latest_state(osmv::State& dest) {
+    std::unique_ptr<SimTK::State> maybe_latest = std::move(impl->shared->lock()->latest_state);
+    if (maybe_latest) {
+        dest = std::move(maybe_latest);
+
+        ++impl->states_popped;
+        return true;
     }
 
-    Fd_simulation::~Fd_simulation() noexcept = default;
+    return false;
+}
 
-    bool Fd_simulation::try_pop_latest_state(osmv::State& dest) {
-        return impl->shared.state.try_apply_b([&](osmv::State& latest) {
-            std::swap(dest, latest);
-            ++impl->states_popped;
-        });
+void osmv::Fd_simulator::request_stop() {
+    impl->simulator_thread.request_stop();
+}
+
+bool osmv::Fd_simulator::is_running() const {
+    return impl->shared->lock()->status == Sim_status::Running;
+}
+
+std::chrono::duration<double> osmv::Fd_simulator::wall_duration() const {
+    clock::duration endpoint = is_running() ? clock::now().time_since_epoch() : impl->shared->lock()->wall_end;
+
+    return endpoint - impl->shared->lock()->wall_start;
+}
+
+std::chrono::duration<double> osmv::Fd_simulator::sim_current_time() const {
+    return std::chrono::duration<double>{impl->shared->lock()->sim_cur_time};
+}
+
+std::chrono::duration<double> osmv::Fd_simulator::sim_final_time() const {
+    return std::chrono::duration<double>{impl->final_time};
+}
+
+char const* osmv::Fd_simulator::status_description() const {
+    switch (impl->shared->lock()->status) {
+    case Sim_status::Running:
+        return "running";
+    case Sim_status::Completed:
+        return "completed";
+    case Sim_status::Cancelled:
+        return "cancelled";
+    case Sim_status::Error:
+        return "error";
+    default:
+        return "UNKNOWN STATUS: DEV ERROR";
     }
+}
 
-    void Fd_simulation::request_stop() {
-        impl->worker.request_stop();
-    }
+int osmv::Fd_simulator::num_prescribeq_calls() const {
+    return impl->shared->lock()->num_pq_calls;
+}
 
-    bool Fd_simulation::is_running() const {
-        return impl->shared.status == Sim_status::Running;
-    }
+int osmv::Fd_simulator::num_integration_steps() const {
+    return impl->shared->lock()->num_integration_steps;
+}
 
-    clock::duration Fd_simulation::wall_duration() const {
-        clock::duration endpoint = is_running() ? clock::now().time_since_epoch() : impl->shared.wall_end.load();
+int osmv::Fd_simulator::num_integration_step_attempts() const {
+    return impl->shared->lock()->num_integration_step_attempts;
+}
 
-        return endpoint - impl->shared.wall_start.load();
-    }
+double osmv::Fd_simulator::avg_ui_overhead_pct() const {
+    auto guard = impl->shared->lock();
+    return guard->ui_overhead_acc / guard->ui_overhead_n;
+}
 
-    double Fd_simulation::sim_current_time() const {
-        return impl->shared.sim_cur_time;
-    }
+int osmv::Fd_simulator::num_states_popped() const {
+    return impl->states_popped;
+}
 
-    double Fd_simulation::sim_final_time() const {
-        return impl->final_time;
-    }
+// other method implementations
 
-    char const* Fd_simulation::status_description() const {
-        return str(impl->shared.status);
-    }
+osmv::State osmv::run_fd_simulation(OpenSim::Model& model) {
+    SimTK::State initial_state{model.initSystem()};
+    OpenSim::Manager manager{model};
 
-    int Fd_simulation::num_prescribeq_calls() const {
-        return impl->shared.num_pq_calls;
-    }
+    config_manager_with_params_similar_to_forwardtool(manager);
 
-    double Fd_simulation::avg_ui_overhead() const {
-        return impl->shared.ui_overhead_acc / impl->shared.ui_overhead_n;
-    }
+    model.getMultibodySystem().realize(initial_state, SimTK::Stage::Position);
+    model.equilibrateMuscles(initial_state);
 
-    int Fd_simulation::num_states_popped() const {
-        return impl->states_popped;
-    }
+    manager.initialize(initial_state);
+
+    return osmv::State{manager.integrate(0.4)};
 }

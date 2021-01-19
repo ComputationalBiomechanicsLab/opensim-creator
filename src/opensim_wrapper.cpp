@@ -33,12 +33,18 @@ osmv::Model::~Model() noexcept = default;
 
 osmv::State::State(SimTK::State const& st) : handle{new SimTK::State(st)} {
 }
+osmv::State::State(std::unique_ptr<SimTK::State> _handle) noexcept : handle{std::move(_handle)} {
+}
 osmv::State& osmv::State::operator=(SimTK::State const& st) {
     if (handle != nullptr) {
         *handle = st;
     } else {
         handle = std::make_unique<SimTK::State>(st);
     }
+    return *this;
+}
+osmv::State& osmv::State::operator=(std::unique_ptr<SimTK::State> _handle) noexcept {
+    handle = std::move(_handle);
     return *this;
 }
 osmv::State::State(State&&) noexcept = default;
