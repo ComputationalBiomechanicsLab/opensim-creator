@@ -23,23 +23,27 @@
 
 // OpenGL stuff (shaders, whatever else)
 namespace {
-    // renders uniform-colored geometry with Gouraud shading
-    struct Gouraud_shader final {
+    // renders to two render targets:
+    //
+    // - COLOR0: uniform-colored geometry with Gouraud shading
+    // - COLOR1: whatever uRgba2 is set to, with no modification
+    struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud.frag")));
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud_mrt.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud_mrt.frag")));
 
         static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
 
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "uProjMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "uViewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "uModelMat");
-        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "uNormalMat");
-        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "uRgba");
-        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "uLightPos");
-        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "uLightColor");
-        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "uViewPos");
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
+        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(program, "uModelMat");
+        gl::Uniform_mat4 uNormalMat = gl::GetUniformLocation(program, "uNormalMat");
+        gl::Uniform_vec4 uRgba = gl::GetUniformLocation(program, "uRgba");
+        gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
+        gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
+        gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
+        gl::Uniform_vec4 uRgba2 = gl::GetUniformLocation(program, "uRgba2");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -117,8 +121,69 @@ namespace {
         }
     };
 
-    // OpenGL: normals shader
-    //
+    struct Edge_detection_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("edge_detect.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("edge_detect.frag")));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(p, "uProjMat");
+        gl::Uniform_vec4 uBackgroundColor = gl::GetUniformLocation(p, "uBackgroundColor");
+        gl::Uniform_sampler2DMS uSamplerSceneColors = gl::GetUniformLocation(p, "uSamplerSceneColors");
+        gl::Uniform_sampler2DMS uSamplerSelectionEdges = gl::GetUniformLocation(p, "uSamplerSelectionEdges");
+        gl::Uniform_int uNumMultisamples = gl::GetUniformLocation(p, "uNumMultisamples");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(
+                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    struct Skip_msxaa_blitter_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("skip_msxaa_blitter.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("skip_msxaa_blitter.frag")));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(p, "uProjMat");
+        gl::Uniform_sampler2DMS uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(
+                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
     // uses a geometry shader to render normals as lines
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
@@ -223,7 +288,7 @@ namespace {
     public:
         Mesh_on_gpu(std::vector<osmv::Untextured_vert> const& m) :
             vbo{m},
-            main_vao{Gouraud_shader::create_vao(vbo)},
+            main_vao{Gouraud_mrt_shader::create_vao(vbo)},
             normal_vao{Normals_shader::create_vao(vbo)},
             plain_color_vao{Plain_color_shader::create_vao(vbo)} {
         }
@@ -612,14 +677,104 @@ namespace {
 // osmv::Renderer implementation
 
 namespace osmv {
+    // renderer MRT FBO:
+    //
+    // - COLOR0: multisampled texture containing scene geometry
+    // - DEPTH_STENCIL_ATTACHMENT: depth+stencil buffers
+    //
+    // this renderer first draws into these textures, which are used for
+    // runtime calulations (e.g. selection logic) and then blitted onto
+    // the screen via a quad.
+
+    struct Renderer_buffers {
+        sdl::Window_dimensions dims;
+        int samples;
+
+        // stores rendered scenery
+        gl::Texture_2d_multisample gColor0_mstex;
+
+        // stores selected item index and selection rim alphas
+        gl::Texture_2d_multisample gColor1_mstex;
+
+        // depth + stencil RBO: needed to "complete" the FBO
+        gl::Render_buffer gDepth24Stencil8_rbo;
+
+        // MRT FBO that writes scenery + selection info in one pass
+        gl::Frame_buffer gMRT_fbo;
+
+        gl::Texture_2d gNoMsxaa_screen_tex;
+
+        gl::Frame_buffer gNoMsxaa_fbo;
+
+        // gl::Render_buffer gSelectionPixel_rbo; todo
+
+        // gl::Frame_buffer gSelectionPixel_fbo;*/
+
+        // TODO: the renderer may not necessarily be drawing into the application screen
+        //       and may, instead, be drawing into an arbitrary FBO (e.g. for a panel, or
+        //       video recording), so the renderer shouldn't assume much about the app
+        Renderer_buffers(Application const& app) : dims{app.window_dimensions()}, samples{app.samples()} {
+            // allocate COLOR0: multisampled RGBA texture
+            gl::BindTexture(gColor0_mstex);
+            glTexImage2DMultisample(gColor0_mstex.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+
+            // allocate COLOR1: multisampled UNSIGNED_INT (integer) texture
+            gl::BindTexture(gColor1_mstex);
+            glTexImage2DMultisample(gColor1_mstex.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+
+            // allocate DEPTH+STENCIL: multisampled depth/stencil buffer
+            gl::BindRenderBuffer(gDepth24Stencil8_rbo);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, dims.w, dims.h);
+
+            // save original FBO
+            GLint original_draw_fbo;
+            GLint original_read_fbo;
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
+            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+
+            // configure main FBO
+            gl::BindFrameBuffer(GL_FRAMEBUFFER, gMRT_fbo);
+            gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gColor0_mstex.type, gColor0_mstex, 0);
+            gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, gColor1_mstex.type, gColor1_mstex, 0);
+            gl::FramebufferRenderbuffer(
+                GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gDepth24Stencil8_rbo);
+
+            // main FBO allocated, check it's OK
+            assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+            // allocate non-MSXAA texture for non-blended sampling
+            gl::BindTexture(gNoMsxaa_screen_tex);
+            gl::TexImage2D(gNoMsxaa_screen_tex.type, 0, GL_RGBA, dims.w, dims.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+            // configure non-MSXAA fbo
+            gl::BindFrameBuffer(GL_FRAMEBUFFER, gNoMsxaa_fbo);
+            gl::FramebufferTexture2D(
+                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gNoMsxaa_screen_tex.type, gNoMsxaa_screen_tex, 0);
+
+            // check non-MSXAA OK
+            assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+            // restore original FBO
+            gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+            gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+        }
+    };
+
     struct Renderer_private_state final {
         // OpenGL shaders
         struct {
-            Gouraud_shader gouraud;
+            Gouraud_mrt_shader gouraud;
             Normals_shader normals;
             Plain_color_shader plain_color;
             Plain_texture_shader plain_texture;
+            Edge_detection_shader edge_detection_shader;
+            Skip_msxaa_blitter_shader skip_msxaa_shader;
         } shaders;
+
+        // debug quad
+        gl::Array_bufferT<osmv::Shaded_textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
+        gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
+        gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
 
         // floor texture details
         struct {
@@ -634,7 +789,7 @@ namespace osmv {
             gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
             gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
             glm::mat4 model_mtx = glm::scale(
-                glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
+                glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {-1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
         } floor;
 
         // temporary scratch space
@@ -643,12 +798,20 @@ namespace osmv {
             State_geometry geom;
         } scratch;
 
+        // opensim geometry loading
         struct {
             Geometry_loader geom_loader;
 
             // indexed by meshid
             std::vector<std::optional<Mesh_on_gpu>> meshes;
         } osim;
+
+        size_t selected_index = 0;
+
+        Renderer_buffers buffers;
+
+        Renderer_private_state(Application& app) : buffers{app} {
+        }
 
         void load_geom_from_model(OpenSim::Model const& model, SimTK::State const& s) {
             // TODO: this step should be exposed to callers, ideally, because it's quite
@@ -690,12 +853,26 @@ namespace osmv {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Renderer::Renderer() : state(new Renderer_private_state()) {
+osmv::Renderer::Renderer(osmv::Application& app) : state(new Renderer_private_state(app)) {
 }
 
 osmv::Renderer::~Renderer() noexcept = default;
 
 osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const& e) {
+    // edge-case: the event is a resize event, which might invalidate some buffers
+    // the renderer is using
+    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        sdl::Window_dimensions new_dims{e.window.data1, e.window.data2};
+
+        if (state->buffers.dims != new_dims) {
+            // don't try and do anything fancy like reallocate or resize the existing
+            // buffers, just allocate new ones and assign over
+            state->buffers = Renderer_buffers{app};
+        }
+
+        return Event_response::handled;
+    }
+
     float aspect_ratio = app.window_aspect_ratio();
     auto window_dims = app.window_dimensions();
 
@@ -826,26 +1003,52 @@ static glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
 void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, SimTK::State const& s) {
     glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
+    // load model geometry
     state->load_geom_from_model(model, s);
 
     glm::mat4 view_mtx = compute_view_matrix(theta, phi, radius, pan);
     glm::mat4 proj_mtx = glm::perspective(fov, ui.window_aspect_ratio(), znear, zfar);
     glm::vec3 view_pos = spherical_2_cartesian(theta, phi, radius);
 
-    // step 1: draw the background
+    // overview:
     //
-    // it's infinitely far away and contributes to no depth or stencil calcs at all
-    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT);
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // this is a forward (as opposed to deferred) renderer that borrows some ideas from deferred
+    // rendering techniques
+    //
+    // main motivator here is to render all scene geometry in a single pass, then to use the data
+    // produced by that pass in later calculations.
 
-    // step 2: render the scene as normal
+    // step 1: bind to an off-screen FBO
     //
-    // standard forward-rendering strategy. Set the shader's uniforms/VAOs and draw. The only
-    // thing to keep in mind is that we're using the stencil buffer for rim highlights (later)
-    {
+    // - this FBO writes to textures that can be sampled downstream
+    GLint original_draw_fbo;
+    GLint original_read_fbo;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
+    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+
+    // clear the offscreen FBO of any data (from last frame draw)
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // step 1: render the scene to the off-screen textures using a multiple-render-target
+    //         (MRT) shader
+    //
+    // - COLOR0: main target: multisampled scene geometry
+    //
+    //     - contains OpenSim geometry rendered /w Gouraud shading
+    //
+    // - COLOR1: selection logic target: single-sampled ID encodings
+    //
+    //     - 8 bit unsigned byte per channel, 32-bit buffer (rgba)
+    //     - RGB: 24-bit (little-endian) ID of the drawn element
+    //     - A: current selection state, where:
+    //         - 0.0f: not selected
+    //         - 1.0f: selected
+    if (true) {
         if (show_floor) {
             Plain_texture_shader& shader = state->shaders.plain_texture;
+            gl::DrawBuffers(GL_COLOR_ATTACHMENT0);
             gl::UseProgram(shader.p);
 
             gl::Uniform(shader.projMat, proj_mtx);
@@ -858,89 +1061,153 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
             gl::BindVertexArray(state->floor.vao);
             gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
             gl::BindVertexArray();
-
-            gl::Clear(GL_STENCIL_BUFFER_BIT);  // floor isn't considered for rim highlighting
         }
 
-        Gouraud_shader& shader = state->shaders.gouraud;
+        Gouraud_mrt_shader& shader = state->shaders.gouraud;
+        gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
         gl::UseProgram(shader.program);
 
-        gl::Uniform(shader.projMat, proj_mtx);
-        gl::Uniform(shader.viewMat, view_mtx);
-        gl::Uniform(shader.light_pos, light_pos);
-        gl::Uniform(shader.light_color, light_color);
-        gl::Uniform(shader.view_pos, view_pos);
+        gl::Uniform(shader.uProjMat, proj_mtx);
+        gl::Uniform(shader.uViewMat, view_mtx);
+        gl::Uniform(shader.uLightPos, light_pos);
+        gl::Uniform(shader.uLightColor, light_color);
+        gl::Uniform(shader.uViewPos, view_pos);
 
-        // draw scene meshes
-        for (auto& m : state->scratch.geom.mesh_instances) {
-            gl::Uniform(shader.rgba, m.rgba);
-            gl::Uniform(shader.modelMat, m.transform);
-            gl::Uniform(shader.normalMat, m.normal_xform);
+        std::vector<Mesh_instance> const& instances = state->scratch.geom.mesh_instances;
+        for (size_t i = 0; i < instances.size(); ++i) {
+            Mesh_instance const& m = instances[i];
+
+            // RGB: encoded form of index+1 into the mesh
+            uint32_t color_id = static_cast<uint32_t>(i + 1);
+            float r = static_cast<float>(color_id & 0xff) / 255.0f;
+            float g = static_cast<float>((color_id >> 8) & 0xff) / 255.0f;
+            float b = static_cast<float>((color_id >> 16) & 0xff) / 255.0f;
+
+            // A: set to 1.0f if element is selected
+
+            // TODO: selected_index should change with clicking etc.
+            float a = (i + 1) == state->selected_index ? 1.0f : 0.0f;
+
+            gl::Uniform(shader.uRgba2, glm::vec4{r, g, b, a});
+            gl::Uniform(shader.uRgba, m.rgba);
+            gl::Uniform(shader.uModelMat, m.transform);
+            gl::Uniform(shader.uNormalMat, m.normal_xform);
 
             Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
             gl::BindVertexArray(md.main_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
         }
         gl::BindVertexArray();
+
+        // (optional): render scene normals
+        //
+        // if the caller wants to view normals, pump the scene through a specialized shader
+        // that draws normals to COLOR0
+        if (show_mesh_normals) {
+            Normals_shader& ns = state->shaders.normals;
+            gl::UseProgram(ns.program);
+            gl::Uniform(ns.uProjMat, proj_mtx);
+            gl::Uniform(ns.uViewMat, view_mtx);
+
+            for (auto& m : state->scratch.geom.mesh_instances) {
+                gl::Uniform(ns.uModelMat, m.transform);
+                gl::Uniform(ns.uNormalMat, m.normal_xform);
+
+                Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
+                gl::BindVertexArray(md.normal_vao);
+                gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
+            }
+            gl::BindVertexArray();
+        }
     }
 
-    // step 3: render rim highlights
+    // step 2: figure out what the mouse is currently moused over
     //
-    // the stencil buffer is now populated wherever scene elements were drawn. If we now re-draw
-    // the scene, but with *slightly* enlarged elements that are constant-colored (rim color) then
-    // the renderer will only draw wherever the scene elements weren't (i.e. around the edges)
-    {
-        static constexpr glm::vec3 selected_rim_color{1.0f, 0.0f, 0.0f};
+    // the MRT encoded object IDs into COLOR2, which can be sampled to figure out what
+    // element is under it
+    if (true) {
+        // bind to a non-MSXAAed texture
+        gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gNoMsxaa_fbo);
 
-        Plain_color_shader& shader = state->shaders.plain_color;
+        // blit the selection texture to the non-MSXAAed FBO
+        Skip_msxaa_blitter_shader& shader = state->shaders.skip_msxaa_shader;
 
         gl::UseProgram(shader.p);
-        glStencilFunc(GL_NOTEQUAL, 1, 0xff);
-        glStencilMask(0x00);
-        glDisable(GL_DEPTH_TEST);
+        gl::Uniform(shader.uModelMat, gl::identity_val);
+        gl::Uniform(shader.uViewMat, gl::identity_val);
+        gl::Uniform(shader.uProjMat, gl::identity_val);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(state->buffers.gColor1_mstex);
+        gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
 
-        gl::Uniform(shader.uProjMat, proj_mtx);
-        gl::Uniform(shader.uViewMat, view_mtx);
-        gl::Uniform(shader.uRgb, selected_rim_color);
-
-        // draw scene meshes
-        for (auto& m : state->scratch.geom.mesh_instances) {
-            // HACK: the transform matrices that drop out of Simbody's DecorationGenerator
-            //       may be transformed, which can screw with rim highlighting because it
-            //       assumes geometry is origin-centered
-
-            auto scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{1.2f});
-            gl::Uniform(shader.uModelMat, m.transform * scaler);
-
-            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
-            gl::BindVertexArray(md.plain_color_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-        }
+        // blit
+        gl::BindVertexArray(state->skip_msxaa_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
 
-        glEnable(GL_DEPTH_TEST);
-        glStencilMask(0xff);
-        glStencilFunc(GL_ALWAYS, 1, 0xff);
+        // the FBO's backing texture, which is a non-MSXAAed texture, now contains
+        // single-sample non-blended values which can be safely read + decoded, so now
+        // all we need to do is sample the pixel under the mouse.
+
+        // these coordinates are in traditional screen space (X,Y top-left going down)
+        sdl::Mouse_state m = sdl::GetMouseState();
+
+        // these coordinates are in OpenGL screen space (X,Y bottom-left, going up)
+        sdl::Window_dimensions d = ui.window_dimensions();
+        GLsizei xbl = m.x;
+        GLsizei ybl = d.h - m.y;
+
+        // read pixel under mouse
+        GLubyte rgba[4]{};
+        glReadPixels(xbl, ybl, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+
+        // decode in the opposite way from how it was encoded above
+        uint32_t decoded = rgba[0];
+        decoded |= static_cast<uint32_t>(rgba[1]) << 8;
+        decoded |= static_cast<uint32_t>(rgba[2]) << 16;
+
+        // HACK: the ID is the index + 1
+        state->selected_index = decoded;
     }
 
-    // (optional) step 4: render scene normals
+    // step 3: compose the two textures together with a specialized shader and write
+    //         to the output FBO
     //
-    // if the caller wants to view normals, pump the scene through a specialized shader that draws
-    // normals on the screen
-    if (show_mesh_normals) {
-        Normals_shader& shader = state->shaders.normals;
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjMat, proj_mtx);
-        gl::Uniform(shader.uViewMat, view_mtx);
+    // - COLOR1: sampled as-is
+    //
+    // - COLOR2: passed through an edge-detection kernel to find the edges of all selected
+    //           geometry in the scene
+    //
+    // - COMPOSITION: blend COLOR2 over COLOR1 over background
+    {
+        // ensure the output is written to the output FBO
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
 
-        for (auto& m : state->scratch.geom.mesh_instances) {
-            gl::Uniform(shader.uModelMat, m.transform);
-            gl::Uniform(shader.uNormalMat, m.normal_xform);
+        // draw the edges over the rendered scene
+        Edge_detection_shader& shader = state->shaders.edge_detection_shader;
+        gl::UseProgram(shader.p);
 
-            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
-            gl::BindVertexArray(md.normal_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-        }
+        // screen-space quad
+        gl::Uniform(shader.uProjMat, gl::identity_val);
+        gl::Uniform(shader.uViewMat, gl::identity_val);
+        gl::Uniform(shader.uModelMat, gl::identity_val);
+        gl::Uniform(shader.uBackgroundColor, glm::vec4{0.99f, 0.98f, 0.96f, 1.0f});
+
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(state->buffers.gColor0_mstex);
+        gl::Uniform(shader.uSamplerSceneColors, gl::texture_index<GL_TEXTURE0>());
+
+        gl::ActiveTexture(GL_TEXTURE1);
+        gl::BindTexture(state->buffers.gColor1_mstex);
+        gl::Uniform(shader.uSamplerSelectionEdges, gl::texture_index<GL_TEXTURE1>());
+
+        gl::Uniform(shader.uNumMultisamples, ui.samples());
+
+        glDisable(GL_DEPTH_TEST);
+        gl::BindVertexArray(state->edge_detection_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
+        glEnable(GL_DEPTH_TEST);
     }
 }

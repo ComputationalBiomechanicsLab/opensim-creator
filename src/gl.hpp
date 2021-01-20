@@ -238,6 +238,7 @@ namespace gl {
     };
     using Uniform_bool = Uniform_int;
     using Uniform_sampler2d = Uniform_int;
+    using Uniform_sampler2DMS = Uniform_int;
     using Uniform_samplerCube = Uniform_int;
     class Uniform_mat4 final : public Uniform_handle {
         using Uniform_handle::Uniform_handle;
@@ -454,12 +455,17 @@ namespace gl {
                 throw std::runtime_error{"glGenTextures: returned an empty handle"};
             }
         }
-        Texture(Texture const&) = delete;
+        Texture(Texture const& src) = delete;
         Texture(Texture&& tmp) : handle{tmp.handle} {
             tmp.handle = empty_handle;
         }
         Texture& operator=(Texture const&) = delete;
-        Texture& operator=(Texture&&) = delete;
+        Texture& operator=(Texture&& tmp) {
+            GLuint h = tmp.handle;
+            tmp.handle = handle;
+            handle = h;
+            return *this;
+        }
         ~Texture() noexcept {
             if (handle != empty_handle) {
                 glDeleteTextures(1, &handle);
@@ -567,7 +573,7 @@ namespace gl {
             }
         }
 
-        operator GLuint() noexcept {
+        operator GLuint() const noexcept {
             return handle;
         }
     };
@@ -583,7 +589,7 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFrameBuffer(GLenum target, Frame_buffer& fb) {
+    inline void BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
         glBindFramebuffer(target, fb);
     }
 

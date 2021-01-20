@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -41,6 +42,89 @@ using std::literals::chrono_literals::operator""ms;
 #define DEBUG_PRINT(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 #endif
 
+// callback function suitable for glDebugMessageCallback
+static void glOnDebugMessage(
+    GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei, const char* message, const void*) {
+
+    // ignore non-significant error/warning codes
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return;
+
+    std::cerr << "---------------" << std::endl;
+    std::cerr << "Debug message (" << id << "): " << message << std::endl;
+
+    switch (source) {
+    case GL_DEBUG_SOURCE_API:
+        std::cerr << "Source: API";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        std::cerr << "Source: Window System";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        std::cerr << "Source: Shader Compiler";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        std::cerr << "Source: Third Party";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        std::cerr << "Source: Application";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        std::cerr << "Source: Other";
+        break;
+    }
+    std::cerr << std::endl;
+
+    switch (type) {
+    case GL_DEBUG_TYPE_ERROR:
+        std::cerr << "Type: Error";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        std::cerr << "Type: Deprecated Behaviour";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        std::cerr << "Type: Undefined Behaviour";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        std::cerr << "Type: Portability";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        std::cerr << "Type: Performance";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        std::cerr << "Type: Marker";
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        std::cerr << "Type: Push Group";
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        std::cerr << "Type: Pop Group";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        std::cerr << "Type: Other";
+        break;
+    }
+    std::cerr << std::endl;
+
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        std::cerr << "Severity: high";
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        std::cerr << "Severity: medium";
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        std::cerr << "Severity: low";
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        std::cerr << "Severity: notification";
+        break;
+    }
+    std::cerr << std::endl;
+
+    std::cerr << std::endl;
+}
+
 // top-level screenbuffer: potentially-multisampled framebuffer that is separate from
 // the window's framebuffer
 //
@@ -52,12 +136,13 @@ using std::literals::chrono_literals::operator""ms;
 // it also enables screen-wide post-processing (e.g. blurring), but that isn't exercised here.
 class Screen_framebuffer final {
     sdl::Window_dimensions dims;
+    GLsizei multisamples;
     gl::Render_buffer color0_rbo = gl::GenRenderBuffer();
     gl::Render_buffer depth24stencil8_rbo = gl::GenRenderBuffer();
     gl::Frame_buffer fbo = gl::GenFrameBuffer();
 
 public:
-    Screen_framebuffer(sdl::Window_dimensions const& _dims, GLsizei samples) : dims{_dims} {
+    Screen_framebuffer(sdl::Window_dimensions const& _dims, GLsizei samples) : dims{_dims}, multisamples{samples} {
         gl::BindFrameBuffer(GL_FRAMEBUFFER, fbo);
 
         // bind, allocate, and link color0's RBO to the FBO
@@ -84,23 +169,27 @@ public:
         return fbo;
     }
 
-    [[nodiscard]] sdl::Window_dimensions dimensions() const noexcept {
+    sdl::Window_dimensions dimensions() const noexcept {
         return dims;
     }
 
-    [[nodiscard]] int width() const noexcept {
+    int width() const noexcept {
         return dims.w;
     }
 
-    [[nodiscard]] int height() const noexcept {
+    int height() const noexcept {
         return dims.h;
+    }
+
+    int samples() const noexcept {
+        return multisamples;
     }
 };
 
 static GLsizei get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
-    // v = std::min(v, 16); cap at 16x
+    v = std::min(v, 8);  // cap at 8x
     return v;
 }
 
@@ -190,6 +279,19 @@ namespace osmv {
                     throw std::runtime_error{ss.str()};
                 }
 
+#ifndef NDEBUG
+                // enable debug-mode OpenGL
+                {
+                    int flags;
+                    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+                    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+                        glEnable(GL_DEBUG_OUTPUT);
+                        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+                        glDebugMessageCallback(glOnDebugMessage, nullptr);
+                        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+                    }
+                }
+
                 // print OpenGL driver info
                 DEBUG_PRINT(
                     "OpenGL info: %s: %s (%s) /w GLSL: %s\n",
@@ -197,12 +299,13 @@ namespace osmv {
                     glGetString(GL_RENDERER),
                     glGetString(GL_VERSION),
                     glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
 
                 // depth testing used to ensure geometry overlaps correctly
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
 
                 // some elements in the scene can be alpha-blended (e.g. wrapping surfaces)
-                OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
+                // OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
                 OSC_GL_CALL_CHECK(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 // MSXAA is used to smooth out the model
@@ -211,12 +314,6 @@ namespace osmv {
                 // meshes are backface-culled
                 OSC_GL_CALL_CHECK(glEnable, GL_CULL_FACE);
                 glFrontFace(GL_CCW);
-
-                // selection logic: uses the main stencil buffer to "rim highlight" things
-                OSC_GL_CALL_CHECK(glEnable, GL_STENCIL_TEST);
-                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-                glStencilFunc(GL_ALWAYS, 1, 0xff);
-                glStencilMask(0xff);
 
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -432,4 +529,8 @@ sdl::Window_dimensions osmv::Application::window_dimensions() const noexcept {
 // move mouse relative to the window (origin in top-left)
 void osmv::Application::move_mouse_to(int x, int y) {
     SDL_WarpMouseInWindow(impl->window, x, y);
+}
+
+int osmv::Application::samples() const noexcept {
+    return impl->sfbo.samples();
 }

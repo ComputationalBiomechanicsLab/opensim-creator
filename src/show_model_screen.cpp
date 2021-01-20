@@ -191,7 +191,7 @@ namespace {
             max = std::max(max, y);
         }
 
-        void draw(float height = 100.0f) const {
+        void draw(float height = 60.0f) const {
             ImGui::PlotLines(
                 "",
                 data.data(),
@@ -368,7 +368,7 @@ namespace osmv {
         Muscles_tab_data t_muscs;
         Outputs_tab_data t_outputs;
 
-        Show_model_screen_impl(std::filesystem::path _path, osmv::Model _model) :
+        Show_model_screen_impl(Application& app, std::filesystem::path _path, osmv::Model _model) :
             path{std::move(_path)},
             model{std::move(_model)},
             latest_state{[this]() {
@@ -376,7 +376,8 @@ namespace osmv {
                 osmv::State s{model->initSystem()};
                 model->realizeReport(s);
                 return s;
-            }()} {
+            }()},
+            renderer{app} {
         }
 
         // handle top-level UI event (user click, user drag, etc.)
@@ -1153,7 +1154,6 @@ namespace osmv {
                     p.plot.draw();
                     ImGui::NextColumn();
                     ImGui::Text("%s/%s", p.getOwnerName().c_str(), p.getName().c_str());
-                    ImGui::Text("t = %f ms", static_cast<double>(p.plot.latest_x));
                     ImGui::Text("min: %.3f", static_cast<double>(p.plot.min));
                     ImGui::Text("max: %.3f", static_cast<double>(p.plot.max));
                     ImGui::NextColumn();
@@ -1166,8 +1166,8 @@ namespace osmv {
 
 // screen PIMPL forwarding
 
-osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Model model) :
-    impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
+osmv::Show_model_screen::Show_model_screen(Application& app, std::filesystem::path path, osmv::Model model) :
+    impl{new Show_model_screen_impl{app, std::move(path), std::move(model)}} {
 }
 osmv::Show_model_screen::~Show_model_screen() noexcept = default;
 

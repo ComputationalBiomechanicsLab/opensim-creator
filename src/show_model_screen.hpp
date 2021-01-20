@@ -14,7 +14,7 @@ namespace osmv {
         std::unique_ptr<Show_model_screen_impl> impl;
 
     public:
-        Show_model_screen(std::filesystem::path, osmv::Model);
+        Show_model_screen(Application& app, std::filesystem::path, osmv::Model);
         Show_model_screen(Show_model_screen const&) = delete;
         Show_model_screen(Show_model_screen&&) = delete;
         Show_model_screen& operator=(Show_model_screen const&) = delete;

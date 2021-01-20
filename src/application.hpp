@@ -4,6 +4,11 @@
 
 #include <memory>
 
+namespace gl {
+    class Render_buffer;
+    class Frame_buffer;
+}
+
 // application: top-level application state
 //
 // this top-level class is responsible for initializing a bare-minimum subset
@@ -55,5 +60,8 @@ namespace osmv {
 
         // move mouse relative to the window (origin in top-left)
         void move_mouse_to(int x, int y);
+
+        // returns the number of samples (MSXAA) the application is using
+        int samples() const noexcept;
     };
 }

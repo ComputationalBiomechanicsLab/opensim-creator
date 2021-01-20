@@ -54,7 +54,7 @@ namespace osmv {
             // loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
-                    app.request_screen_transition<Show_model_screen>(path, result.get().value());
+                    app.request_screen_transition<Show_model_screen>(app, path, result.get().value());
                     return;
                 }
             } catch (std::exception const& ex) {

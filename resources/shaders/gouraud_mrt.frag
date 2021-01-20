@@ -5,8 +5,13 @@
 // which is per-fragment).
 
 in vec4 FragColor;
-out vec4 FragColorOut;
+
+layout (location = 0) out vec4 FragColorOut;
+layout (location = 1) out vec4 Rgba2Out;
+
+uniform vec4 uRgba2;
 
 void main() {
     FragColorOut = FragColor;
+    Rgba2Out = uRgba2;
 }

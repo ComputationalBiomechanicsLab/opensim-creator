@@ -40,7 +40,7 @@ namespace osmv {
         bool show_floor = true;
         float wheel_sensitivity = 0.9f;
 
-        Renderer();
+        Renderer(Application&);
         Renderer(Renderer const&) = delete;
         Renderer(Renderer&&) = delete;
         Renderer& operator=(Renderer const&) = delete;
