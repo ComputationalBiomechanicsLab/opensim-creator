@@ -21,31 +21,161 @@
 #include <optional>
 #include <vector>
 
+// OpenGL stuff (shaders, whatever else)
+namespace {
+    // renders uniform-colored geometry with Gouraud shading
+    struct Gouraud_shader final {
+        gl::Program program = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud.frag")));
+
+        static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "uProjMat");
+        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "uViewMat");
+        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "uModelMat");
+        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "uNormalMat");
+        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "uRgba");
+        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "uLightPos");
+        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "uLightColor");
+        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "uViewPos");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(
+                aLocation, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aLocation);
+            gl::VertexAttribPointer(
+                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::EnableVertexAttribArray(aNormal);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    // renders textured geometry with no shading at all
+    struct Plain_texture_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("plain_texture.frag")));
+
+        static constexpr gl::Attribute aPos{0};
+        static constexpr gl::Attribute aTexCoord{1};
+
+        gl::Uniform_mat4 projMat = {p, "projMat"};
+        gl::Uniform_mat4 viewMat = {p, "viewMat"};
+        gl::Uniform_mat4 modelMat = {p, "modelMat"};
+        gl::Uniform_sampler2d uSampler0 = {p, "uSampler0"};
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(
+                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    // renders uniform-colored geometry with no shading at all
+    struct Plain_color_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("plain_color.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("plain_color.frag")));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+
+        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(p, "uProjMat");
+        gl::Uniform_vec3 uRgb = gl::GetUniformLocation(p, "uRgb");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::BindVertexArray();
+
+            return vao;
+        }
+    };
+
+    // OpenGL: normals shader
+    //
+    // uses a geometry shader to render normals as lines
+    struct Normals_shader final {
+        gl::Program program = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("draw_normals.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("draw_normals.frag")),
+            gl::Compile<gl::Geometry_shader>(osmv::cfg::shader_path("draw_normals.geom")));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(program, "uModelMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
+        gl::Uniform_mat4 uNormalMat = gl::GetUniformLocation(program, "uNormalMat");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(
+                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::EnableVertexAttribArray(aNormal);
+            gl::BindVertexArray();
+            return vao;
+        }
+    };
+}
+
 using namespace SimTK;
 using namespace OpenSim;
 
-// mesh IDs are guaranteed to be globally unique and monotonically increase from
-// 1
-//
-// this guarantee is important because it means that calling code can use direct
-// integer index lookups, rather than having to rely on (e.g.) a runtime
-// hashtable
-using Mesh_id = size_t;
-using Mesh_ctor_fn = void(std::vector<osmv::Untextured_vert>&);
-static constexpr std::array<Mesh_ctor_fn*, 3> reserved_mesh_ctors = {
-    osmv::unit_sphere_triangles, osmv::simbody_cylinder_triangles, osmv::simbody_brick_triangles};
-static constexpr Mesh_id sphere_meshid = 0;
-static constexpr Mesh_id cylinder_meshid = 1;
-static constexpr Mesh_id cube_meshid = 2;
-static constexpr size_t num_reserved_meshes = 3;
-static_assert(
-    num_reserved_meshes == reserved_mesh_ctors.size(),
-    "if this fails, you might be missing a constructor function for a reserved mesh");
+// OpenSim rendering specifics
+namespace {
+    // mesh IDs are guaranteed to be globally unique and monotonically increase from
+    // 1
+    //
+    // this guarantee is important because it means that calling code can use direct
+    // integer index lookups, rather than having to rely on (e.g.) a runtime
+    // hashtable
+    using Mesh_id = size_t;
+    using Mesh_ctor_fn = void(std::vector<osmv::Untextured_vert>&);
+    static constexpr std::array<Mesh_ctor_fn*, 3> reserved_mesh_ctors = {
+        osmv::unit_sphere_triangles, osmv::simbody_cylinder_triangles, osmv::simbody_brick_triangles};
+    static constexpr Mesh_id sphere_meshid = 0;
+    static constexpr Mesh_id cylinder_meshid = 1;
+    static constexpr Mesh_id cube_meshid = 2;
+    static constexpr size_t num_reserved_meshes = 3;
+    static_assert(
+        num_reserved_meshes == reserved_mesh_ctors.size(),
+        "if this fails, you might be missing a constructor function for a reserved mesh");
 
-static std::mutex g_mesh_cache_mutex;
-static std::unordered_map<std::string, std::vector<osmv::Untextured_vert>> g_mesh_cache;
+    static std::mutex g_mesh_cache_mutex;
+    static std::unordered_map<std::string, std::vector<osmv::Untextured_vert>> g_mesh_cache;
 
-namespace osmv {
     // one instance of a mesh
     //
     // a model may contain multiple instances of the same mesh
@@ -79,139 +209,8 @@ namespace osmv {
         std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshes);
         std::unordered_map<std::string, Mesh_id> str_to_meshid;
 
-        void all_geometry_in(OpenSim::Model& model, SimTK::State& s, State_geometry& out);
+        void all_geometry_in(OpenSim::Model const& model, SimTK::State const& s, State_geometry& out);
         void load_mesh(Mesh_id id, std::vector<osmv::Untextured_vert>& out);
-    };
-
-    // renders uniformly colored geometry with Gouraud shading
-    struct Uniform_color_gouraud_shader final {
-
-        gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("main.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("main.frag")));
-
-        static constexpr gl::Attribute location = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute in_normal = gl::AttributeAtLocation(1);
-
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(program, "projMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(program, "viewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(program, "modelMat");
-        gl::Uniform_mat4 normalMat = gl::GetUniformLocation(program, "normalMat");
-        gl::Uniform_vec4 rgba = gl::GetUniformLocation(program, "rgba");
-        gl::Uniform_vec3 light_pos = gl::GetUniformLocation(program, "lightPos");
-        gl::Uniform_vec3 light_color = gl::GetUniformLocation(program, "lightColor");
-        gl::Uniform_vec3 view_pos = gl::GetUniformLocation(program, "viewPos");
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(
-                location, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(location);
-            gl::VertexAttribPointer(
-                in_normal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
-            gl::EnableVertexAttribArray(in_normal);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
-
-    // renders textured geometry with no shading
-    struct Plain_texture_shader final {
-        gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("floor.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("floor.frag")));
-
-        static constexpr gl::Attribute aPos{0};
-        static constexpr gl::Attribute aTexCoord{1};
-
-        gl::Uniform_mat4 projMat = {p, "projMat"};
-        gl::Uniform_mat4 viewMat = {p, "viewMat"};
-        gl::Uniform_mat4 modelMat = {p, "modelMat"};
-        gl::Uniform_sampler2d uSampler0 = {p, "uSampler0"};
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
-            gl::EnableVertexAttribArray(aTexCoord);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
-
-    // renders normals using a geometry shader
-    struct Normals_shader final {
-        gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("normals.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("normals.frag")),
-            gl::Compile<gl::Geometry_shader>(osmv::cfg::shader_path("normals.geom")));
-
-        static constexpr gl::Attribute aPos{0};
-        static constexpr gl::Attribute aNormal{1};
-
-        gl::Uniform_mat4 projMat = {program, "projMat"};
-        gl::Uniform_mat4 viewMat = {program, "viewMat"};
-        gl::Uniform_mat4 modelMat = {program, "modelMat"};
-        gl::Uniform_mat4 normalMat = {program, "normalMat"};
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
-            gl::EnableVertexAttribArray(aNormal);
-            gl::BindVertexArray();
-            return vao;
-        }
-    };
-
-    // uses the floor shader to render the scene's chequered floor
-    struct Floor_renderer final {
-        Plain_texture_shader s;
-
-        gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
-            auto copy = osmv::shaded_textured_quad_verts;
-            for (osmv::Shaded_textured_vert& st : copy) {
-                st.texcoord *= 50.0f;  // make chequers smaller
-            }
-            return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
-        }();
-
-        gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
-        gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
-        glm::mat4 model_mtx = glm::scale(
-            glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
-
-        void draw(glm::mat4 const& proj, glm::mat4 const& view) {
-            gl::UseProgram(s.p);
-
-            gl::Uniform(s.projMat, proj);
-            gl::Uniform(s.viewMat, view);
-            gl::Uniform(s.modelMat, model_mtx);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(floor_texture);
-            gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
-            gl::BindVertexArray();
-        }
     };
 
     // OpenSim mesh shown in main window
@@ -219,12 +218,14 @@ namespace osmv {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
+        gl::Vertex_array plain_color_vao;
 
     public:
         Mesh_on_gpu(std::vector<osmv::Untextured_vert> const& m) :
             vbo{m},
-            main_vao{Uniform_color_gouraud_shader::create_vao(vbo)},
-            normal_vao{Normals_shader::create_vao(vbo)} {
+            main_vao{Gouraud_shader::create_vao(vbo)},
+            normal_vao{Normals_shader::create_vao(vbo)},
+            plain_color_vao{Plain_color_shader::create_vao(vbo)} {
         }
 
         int sizei() const noexcept {
@@ -332,11 +333,11 @@ namespace osmv {
     // A hacky decoration generator that just always generates all geometry,
     // even if it's static.
     struct DynamicDecorationGenerator : public SimTK::DecorationGenerator {
-        OpenSim::Model* _model;
-        DynamicDecorationGenerator(OpenSim::Model* model) : _model{model} {
+        OpenSim::Model const* _model;
+        DynamicDecorationGenerator(OpenSim::Model const* model) : _model{model} {
             assert(_model != nullptr);
         }
-        void useModel(OpenSim::Model* newModel) {
+        void useModel(OpenSim::Model const* newModel) {
             assert(newModel != nullptr);
             _model = newModel;
         }
@@ -350,13 +351,13 @@ namespace osmv {
     };
 
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
-        OpenSim::Model& model;
+        OpenSim::Model const& model;
         SimTK::State const& state;
         Geometry_loader& impl;
         State_geometry& out;
 
         Geometry_visitor(
-            OpenSim::Model& _model, SimTK::State const& _state, Geometry_loader& _impl, State_geometry& _out) :
+            OpenSim::Model const& _model, SimTK::State const& _state, Geometry_loader& _impl, State_geometry& _out) :
             model{_model},
             state{_state},
             impl{_impl},
@@ -533,7 +534,7 @@ namespace osmv {
         }
     };
 
-    void Geometry_loader::all_geometry_in(OpenSim::Model& m, SimTK::State& s, State_geometry& out) {
+    void Geometry_loader::all_geometry_in(OpenSim::Model const& m, SimTK::State const& s, State_geometry& out) {
         pm_swap.clear();
         dg_swp.clear();
 
@@ -573,29 +574,109 @@ namespace osmv {
 
         out = it->second;
     }
+
+    // uses the floor shader to render the scene's chequered floor
+    struct Floor_renderer final {
+        Plain_texture_shader s;
+
+        gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
+            auto copy = osmv::shaded_textured_quad_verts;
+            for (osmv::Shaded_textured_vert& st : copy) {
+                st.texcoord *= 50.0f;  // make chequers smaller
+            }
+            return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
+        }();
+
+        gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
+        gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
+        glm::mat4 model_mtx = glm::scale(
+            glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
+
+        void draw(glm::mat4 const& proj, glm::mat4 const& view) {
+            gl::UseProgram(s.p);
+
+            gl::Uniform(s.projMat, proj);
+            gl::Uniform(s.viewMat, view);
+            gl::Uniform(s.modelMat, model_mtx);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(floor_texture);
+            gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
+
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
+            gl::BindVertexArray();
+        }
+    };
 }
+
+// osmv::Renderer implementation
 
 namespace osmv {
     struct Renderer_private_state final {
-        std::vector<Untextured_vert> mesh;
+        // OpenGL shaders
+        struct {
+            Gouraud_shader gouraud;
+            Normals_shader normals;
+            Plain_color_shader plain_color;
+            Plain_texture_shader plain_texture;
+        } shaders;
 
-        // 3D rendering;
-        Uniform_color_gouraud_shader color_shader;
-        Normals_shader normals_shader;
-        Floor_renderer floor_renderer;
-        std::vector<std::optional<Mesh_on_gpu>> meshes;  // indexed by meshid
-        State_geometry geom;
-        Geometry_loader geom_loader;
-        Mesh_on_gpu sphere = [&]() {
-            mesh.clear();
-            osmv::unit_sphere_triangles(mesh);
-            return Mesh_on_gpu{mesh};  //
-        }();
-        Mesh_on_gpu cylinder = [&]() {
-            mesh.clear();
-            osmv::simbody_cylinder_triangles(mesh);
-            return Mesh_on_gpu{mesh};
-        }();
+        // floor texture details
+        struct {
+            gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
+                auto copy = osmv::shaded_textured_quad_verts;
+                for (osmv::Shaded_textured_vert& st : copy) {
+                    st.texcoord *= 50.0f;  // make chequers smaller
+                }
+                return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
+            }();
+
+            gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
+            gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
+            glm::mat4 model_mtx = glm::scale(
+                glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
+        } floor;
+
+        // temporary scratch space
+        struct {
+            std::vector<Untextured_vert> mesh;
+            State_geometry geom;
+        } scratch;
+
+        struct {
+            Geometry_loader geom_loader;
+
+            // indexed by meshid
+            std::vector<std::optional<Mesh_on_gpu>> meshes;
+        } osim;
+
+        void load_geom_from_model(OpenSim::Model const& model, SimTK::State const& s) {
+            // TODO: this step should be exposed to callers, ideally, because it's quite
+            // slow
+
+            scratch.geom.clear();
+            osim.geom_loader.all_geometry_in(model, s, scratch.geom);
+
+            for (Mesh_instance const& mi : scratch.geom.mesh_instances) {
+                if (osim.meshes.size() >= (mi.mesh_id + 1) and osim.meshes[mi.mesh_id].has_value()) {
+                    // the mesh is already loaded
+                    continue;
+                }
+
+                osim.geom_loader.load_mesh(mi.mesh_id, scratch.mesh);
+                osim.meshes.resize(std::max(osim.meshes.size(), mi.mesh_id + 1));
+                osim.meshes[mi.mesh_id] = Mesh_on_gpu{scratch.mesh};
+            }
+
+            // HACK: the scene might contain blended (alpha < 1.0f) elements. These must
+            // be drawn last, ideally back-to-front (not yet implemented); otherwise,
+            // OpenGL will early-discard after the vertex shader when they fail a
+            // depth test
+            std::sort(
+                scratch.geom.mesh_instances.begin(),
+                scratch.geom.mesh_instances.end(),
+                [](Mesh_instance const& a, Mesh_instance const& b) { return a.rgba.a > b.rgba.a; });
+        }
     };
 }
 
@@ -720,126 +801,146 @@ static V& asserting_find(std::vector<std::optional<V>>& meshes, Mesh_id id) {
     return meshes[id].value();
 }
 
-void osmv::Renderer::draw(Application const& ui, OpenSim::Model& model, SimTK::State& s) {
-
-    // OpenSim: load all geometry in the current state
-    //
-    // this is a fairly slow thing to put into the draw loop, but means that
-    // we can be lazier about monitoring where/when the rendered state changes
-    state->geom.clear();
-    state->geom_loader.all_geometry_in(model, s, state->geom);
-    for (Mesh_instance const& mi : state->geom.mesh_instances) {
-        if (state->meshes.size() >= (mi.mesh_id + 1) and state->meshes[mi.mesh_id].has_value()) {
-            // the mesh is already loaded
-            continue;
-        }
-
-        state->geom_loader.load_mesh(mi.mesh_id, state->mesh);
-        state->meshes.resize(std::max(state->meshes.size(), mi.mesh_id + 1));
-        state->meshes[mi.mesh_id] = Mesh_on_gpu{state->mesh};
-    }
-
-    // HACK: the scene might contain blended (alpha < 1.0f) elements. These must
-    // be drawn last, ideally back-to-front (not yet implemented); otherwise,
-    // OpenGL will early-discard after the vertex shader when they fail a
-    // depth test
-    std::sort(
-        state->geom.mesh_instances.begin(),
-        state->geom.mesh_instances.end(),
-        [](Mesh_instance const& a, Mesh_instance const& b) { return a.rgba.a > b.rgba.a; });
-
-    // draw
-    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
-
+static glm::mat4 compute_view_matrix(float theta, float phi, float radius, glm::vec3 pan) {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
     // is expressed as polar coordinates. Camera panning is represented as a
     // translation vector.
 
-    glm::mat4 view_mtx = [&]() {
-        auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{0.0f, 1.0f, 0.0f});
-        auto theta_vec = glm::normalize(glm::vec3{sinf(theta), 0.0f, cosf(theta)});
-        auto phi_axis = glm::cross(theta_vec, glm::vec3{0.0, 1.0f, 0.0f});
-        auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
-        auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
-        return glm::lookAt(glm::vec3(0.0f, 0.0f, radius), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3{0.0f, 1.0f, 0.0f}) *
-               rot_theta * rot_phi * pan_translate;
-    }();
+    // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
+    // system that shifts the world based on the camera pan
 
-    glm::mat4 proj_mtx = [&]() { return glm::perspective(fov, ui.window_aspect_ratio(), 0.1f, 100.0f); }();
+    auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{0.0f, 1.0f, 0.0f});
+    auto theta_vec = glm::normalize(glm::vec3{sinf(theta), 0.0f, cosf(theta)});
+    auto phi_axis = glm::cross(theta_vec, glm::vec3{0.0, 1.0f, 0.0f});
+    auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
+    auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
+    return glm::lookAt(glm::vec3(0.0f, 0.0f, radius), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3{0.0f, 1.0f, 0.0f}) *
+           rot_theta * rot_phi * pan_translate;
+}
 
-    glm::vec3 view_pos = [&]() {
-        // polar/spherical to cartesian
-        return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
-    }();
+static glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
+    return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
+}
 
-    // render elements that have a solid color
+void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, SimTK::State const& s) {
+    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
+
+    state->load_geom_from_model(model, s);
+
+    glm::mat4 view_mtx = compute_view_matrix(theta, phi, radius, pan);
+    glm::mat4 proj_mtx = glm::perspective(fov, ui.window_aspect_ratio(), znear, zfar);
+    glm::vec3 view_pos = spherical_2_cartesian(theta, phi, radius);
+
+    // step 1: draw the background
+    //
+    // it's infinitely far away and contributes to no depth or stencil calcs at all
+    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT);
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+    // step 2: render the scene as normal
+    //
+    // standard forward-rendering strategy. Set the shader's uniforms/VAOs and draw. The only
+    // thing to keep in mind is that we're using the stencil buffer for rim highlights (later)
     {
-        gl::UseProgram(state->color_shader.program);
+        if (show_floor) {
+            Plain_texture_shader& shader = state->shaders.plain_texture;
+            gl::UseProgram(shader.p);
 
-        gl::Uniform(state->color_shader.projMat, proj_mtx);
-        gl::Uniform(state->color_shader.viewMat, view_mtx);
-        gl::Uniform(state->color_shader.light_pos, light_pos);
-        gl::Uniform(state->color_shader.light_color, light_color);
-        gl::Uniform(state->color_shader.view_pos, view_pos);
+            gl::Uniform(shader.projMat, proj_mtx);
+            gl::Uniform(shader.viewMat, view_mtx);
+            gl::Uniform(shader.modelMat, state->floor.model_mtx);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(state->floor.floor_texture);
+            gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
 
-        // draw model meshes
-        for (auto& m : state->geom.mesh_instances) {
-            gl::Uniform(state->color_shader.rgba, m.rgba);
-            gl::Uniform(state->color_shader.modelMat, m.transform);
-            gl::Uniform(state->color_shader.normalMat, m.normal_xform);
+            gl::BindVertexArray(state->floor.vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
+            gl::BindVertexArray();
 
-            Mesh_on_gpu& md = asserting_find(state->meshes, m.mesh_id);
+            gl::Clear(GL_STENCIL_BUFFER_BIT);  // floor isn't considered for rim highlighting
+        }
+
+        Gouraud_shader& shader = state->shaders.gouraud;
+        gl::UseProgram(shader.program);
+
+        gl::Uniform(shader.projMat, proj_mtx);
+        gl::Uniform(shader.viewMat, view_mtx);
+        gl::Uniform(shader.light_pos, light_pos);
+        gl::Uniform(shader.light_color, light_color);
+        gl::Uniform(shader.view_pos, view_pos);
+
+        // draw scene meshes
+        for (auto& m : state->scratch.geom.mesh_instances) {
+            gl::Uniform(shader.rgba, m.rgba);
+            gl::Uniform(shader.modelMat, m.transform);
+            gl::Uniform(shader.normalMat, m.normal_xform);
+
+            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
             gl::BindVertexArray(md.main_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-            gl::BindVertexArray();
         }
-
-        // debugging: draw unit cylinder
-        if (show_unit_cylinder) {
-            gl::Uniform(state->color_shader.rgba, glm::vec4{0.9f, 0.9f, 0.9f, 1.0f});
-            gl::Uniform(state->color_shader.modelMat, glm::identity<glm::mat4>());
-            gl::Uniform(state->color_shader.normalMat, glm::identity<glm::mat4>());
-
-            gl::BindVertexArray(state->cylinder.main_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->cylinder.sizei());
-            gl::BindVertexArray();
-        }
-
-        // debugging: draw light location
-        if (show_light) {
-            gl::Uniform(state->color_shader.rgba, glm::vec4{1.0f, 1.0f, 0.0f, 0.3f});
-            auto xform = glm::scale(glm::translate(glm::identity<glm::mat4>(), light_pos), {0.05, 0.05, 0.05});
-            gl::Uniform(state->color_shader.modelMat, xform);
-            gl::Uniform(state->color_shader.normalMat, glm::transpose(glm::inverse(xform)));
-
-            gl::BindVertexArray(state->sphere.main_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->sphere.sizei());
-            gl::BindVertexArray();
-        }
+        gl::BindVertexArray();
     }
 
-    // floor is rendered with a texturing program
-    if (show_floor) {
-        state->floor_renderer.draw(proj_mtx, view_mtx);
+    // step 3: render rim highlights
+    //
+    // the stencil buffer is now populated wherever scene elements were drawn. If we now re-draw
+    // the scene, but with *slightly* enlarged elements that are constant-colored (rim color) then
+    // the renderer will only draw wherever the scene elements weren't (i.e. around the edges)
+    {
+        static constexpr glm::vec3 selected_rim_color{1.0f, 0.0f, 0.0f};
+
+        Plain_color_shader& shader = state->shaders.plain_color;
+
+        gl::UseProgram(shader.p);
+        glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+
+        gl::Uniform(shader.uProjMat, proj_mtx);
+        gl::Uniform(shader.uViewMat, view_mtx);
+        gl::Uniform(shader.uRgb, selected_rim_color);
+
+        // draw scene meshes
+        for (auto& m : state->scratch.geom.mesh_instances) {
+            // HACK: the transform matrices that drop out of Simbody's DecorationGenerator
+            //       may be transformed, which can screw with rim highlighting because it
+            //       assumes geometry is origin-centered
+
+            auto scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{1.2f});
+            gl::Uniform(shader.uModelMat, m.transform * scaler);
+
+            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
+            gl::BindVertexArray(md.plain_color_vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
+        }
+        gl::BindVertexArray();
+
+        glEnable(GL_DEPTH_TEST);
+        glStencilMask(0xff);
+        glStencilFunc(GL_ALWAYS, 1, 0xff);
     }
 
-    // debugging: draw mesh normals
+    // (optional) step 4: render scene normals
+    //
+    // if the caller wants to view normals, pump the scene through a specialized shader that draws
+    // normals on the screen
     if (show_mesh_normals) {
-        gl::UseProgram(state->normals_shader.program);
-        gl::Uniform(state->normals_shader.projMat, proj_mtx);
-        gl::Uniform(state->normals_shader.viewMat, view_mtx);
+        Normals_shader& shader = state->shaders.normals;
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uProjMat, proj_mtx);
+        gl::Uniform(shader.uViewMat, view_mtx);
 
-        for (auto& m : state->geom.mesh_instances) {
-            gl::Uniform(state->normals_shader.modelMat, m.transform);
-            gl::Uniform(state->normals_shader.normalMat, m.normal_xform);
+        for (auto& m : state->scratch.geom.mesh_instances) {
+            gl::Uniform(shader.uModelMat, m.transform);
+            gl::Uniform(shader.uNormalMat, m.normal_xform);
 
-            Mesh_on_gpu& md = asserting_find(state->meshes, m.mesh_id);
+            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
             gl::BindVertexArray(md.normal_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-            gl::BindVertexArray();
         }
+        gl::BindVertexArray();
     }
 }

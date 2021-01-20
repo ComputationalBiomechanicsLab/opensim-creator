@@ -580,8 +580,6 @@ namespace osmv {
             ImGui::SliderFloat("light_y", &renderer.light_pos.y, -30.0f, 30.0f);
             ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
             ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_color));
-            ImGui::Checkbox("show_light", &renderer.show_light);
-            ImGui::Checkbox("show_unit_cylinder", &renderer.show_unit_cylinder);
             ImGui::Checkbox("show_floor", &renderer.show_floor);
             ImGui::Checkbox("gamma_correction", &renderer.gamma_correction);
             {

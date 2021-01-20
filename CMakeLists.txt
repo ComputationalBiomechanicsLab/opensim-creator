@@ -125,7 +125,6 @@ target_compile_options(osmv PRIVATE
         -Wmissing-declarations
         -Wno-multichar
         -Wredundant-decls
-        -Winline
         -Wvla
         -Wdisabled-optimization
         -Wpacked

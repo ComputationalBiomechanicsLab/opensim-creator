@@ -27,14 +27,14 @@ namespace osmv {
         float phi = 0.4f;
         glm::vec3 pan = {0.3f, -0.5f, 0.0f};
         float fov = 120.0f;
+        static constexpr float znear = 0.1f;
+        static constexpr float zfar = 100.0f;
         bool dragging = false;
         bool panning = false;
         float sensitivity = 1.0f;
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
-        glm::vec3 light_color = {0.9607f, 0.9176f, 0.8863f};
+        glm::vec3 light_color = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         bool wireframe_mode = false;
-        bool show_light = false;
-        bool show_unit_cylinder = false;
         bool gamma_correction = false;
         bool show_mesh_normals = false;
         bool show_floor = true;
@@ -48,6 +48,6 @@ namespace osmv {
         ~Renderer() noexcept;
 
         Event_response on_event(Application&, SDL_Event const&);
-        void draw(Application const&, OpenSim::Model&, SimTK::State&);
+        void draw(Application const&, OpenSim::Model const&, SimTK::State const&);
     };
 }

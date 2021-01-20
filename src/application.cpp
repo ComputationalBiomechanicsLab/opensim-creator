@@ -198,13 +198,26 @@ namespace osmv {
                     glGetString(GL_VERSION),
                     glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-                // initialize any top-level OpenGL vars
+                // depth testing used to ensure geometry overlaps correctly
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
+
+                // some elements in the scene can be alpha-blended (e.g. wrapping surfaces)
                 OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
                 OSC_GL_CALL_CHECK(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                // MSXAA is used to smooth out the model
                 OSC_GL_CALL_CHECK(glEnable, GL_MULTISAMPLE);
+
+                // meshes are backface-culled
                 OSC_GL_CALL_CHECK(glEnable, GL_CULL_FACE);
                 glFrontFace(GL_CCW);
+
+                // selection logic: uses the main stencil buffer to "rim highlight" things
+                OSC_GL_CALL_CHECK(glEnable, GL_STENCIL_TEST);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+                glStencilFunc(GL_ALWAYS, 1, 0xff);
+                glStencilMask(0xff);
+
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -261,7 +274,15 @@ namespace osmv {
                 // pump events
                 for (SDL_Event e; SDL_PollEvent(&e);) {
 
-                    // SCREEN RESIZED: update relevant FBOs
+                    // QUIT: quit application
+                    if (e.type == SDL_QUIT) {
+                        return;
+                    }
+
+                    // SCREEN RESIZED: update relevant application-level FBOs
+                    //
+                    // note: this should *also* be pumped into ImGui and any osmv::Screens because
+                    // they might internally contain FBOs/textures that depend on the screen size
                     if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
 
                         sdl::Window_dimensions new_dims{e.window.data1, e.window.data2};
@@ -270,18 +291,13 @@ namespace osmv {
                         }
                     }
 
-                    // QUIT: quit application
-                    if (e.type == SDL_QUIT) {
-                        return;
-                    }
-
                     // ImGui: feed event into ImGui
                     ImGui_ImplSDL2_ProcessEvent(&e);
 
-                    // screen: feed event into currently-showing screen
+                    // osmv::Screen: feed event into currently-showing screen
                     current_screen->on_event(e);
 
-                    // screen: `handle_event`: side-effects
+                    // osmv::Screen: handle any possible side-effects the Screen may have had
                     if (requested_screen) {
                         current_screen = std::move(requested_screen);
                         current_screen->on_application_mount(&app);
@@ -292,10 +308,10 @@ namespace osmv {
                     }
                 }
 
-                // screen: `tick`
+                // osmv::Screen: run `tick`
                 current_screen->tick();
 
-                // screen: `tick` side-effects
+                // osmv::Screen: handle any possible side-effects `tick`ing may have had
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
                     current_screen->on_application_mount(&app);
@@ -308,19 +324,19 @@ namespace osmv {
                 // bind the screen buffer + clear it for the next frame
                 gl::BindFrameBuffer(GL_FRAMEBUFFER, sfbo);
                 gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
                 // setup for draw calls
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
 
-                // screen: `draw`
+                // osmv::Screen: `draw`
                 current_screen->draw();
 
                 // screen: `draw`: side effects: wait until the frame is completely
                 // rendered before handling side-effects because rendering affects
-                // globals (e.g. ImGui state, OpenGL state)
+                // globals that need to be finalized (e.g. ImGui state, OpenGL state)
 
                 // ImGui: draw any deferred draws into the fbo
                 ImGui::Render();
@@ -346,7 +362,7 @@ namespace osmv {
                 // this point
                 SDL_GL_SwapWindow(window);
 
-                // screen: `draw` side-effects
+                // osmv::Screen: *now* handle any possible side-effects from osmv::Screen::draw
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
                     current_screen->on_application_mount(&app);
@@ -358,12 +374,12 @@ namespace osmv {
 
                 if (software_throttle) {
                     // APPROXIMATION: rendering **the next frame** will take roughly as long as it
-                    // took to render this frame. Assume worst case is 2x longer (also, the thread
+                    // took to render this frame. Assume worst case is 3x longer (also, the thread
                     // might wake up a little late).
 
                     auto frame_end = std::chrono::high_resolution_clock::now();
                     auto this_frame_dur = frame_end - frame_start;
-                    auto next_frame_estimation = 4 * this_frame_dur;
+                    auto next_frame_estimation = 3 * this_frame_dur;
                     if (next_frame_estimation < millis_between_frames) {
                         auto dt = millis_between_frames - next_frame_estimation;
                         auto dt_millis = std::chrono::duration_cast<std::chrono::milliseconds>(dt);

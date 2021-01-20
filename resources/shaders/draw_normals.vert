@@ -1,5 +1,10 @@
 #version 330 core
 
+// draw_normals: program that draws mesh normals
+//
+// This vertex shader just passes each vertex/normal to the geometry shader, which
+// then uses that information to draw lines for each normal.
+
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 

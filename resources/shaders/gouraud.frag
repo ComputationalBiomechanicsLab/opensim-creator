@@ -4,9 +4,9 @@
 // using a "good enough" Gouraud shader (rather than a Phong shader,
 // which is per-fragment).
 
-in vec4 frag_color;
-out vec4 color;
+in vec4 FragColor;
+out vec4 FragColorOut;
 
 void main() {
-    color = frag_color;
+    FragColorOut = FragColor;
 }
