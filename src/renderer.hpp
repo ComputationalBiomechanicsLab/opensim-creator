@@ -13,6 +13,7 @@ namespace SimTK {
 
 namespace OpenSim {
     class Model;
+    class Component;
 }
 
 namespace osmv {
@@ -40,6 +41,10 @@ namespace osmv {
         bool show_floor = true;
         float wheel_sensitivity = 0.9f;
 
+        // the renderer reads this when drawing the scene + rim highlights, but also
+        // updates it after each draw with what it thinks the mouse is currently over
+        OpenSim::Component const* hovered_component = nullptr;
+
         Renderer(Application&);
         Renderer(Renderer const&) = delete;
         Renderer(Renderer&&) = delete;
@@ -48,6 +53,10 @@ namespace osmv {
         ~Renderer() noexcept;
 
         Event_response on_event(Application&, SDL_Event const&);
-        void draw(Application const&, OpenSim::Model const&, SimTK::State const&);
+        void draw(
+            Application const&,
+            OpenSim::Model const&,
+            SimTK::State const&,
+            OpenSim::Component const* selected = nullptr);
     };
 }

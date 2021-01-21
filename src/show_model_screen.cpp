@@ -343,6 +343,87 @@ namespace {
             }
         }
     };
+
+    class Selected_component final {
+        OpenSim::Component const* ptr = nullptr;
+
+    public:
+        // TODO: make private
+        std::vector<Evenly_spaced_sparkline<512>> output_sinks;
+
+        Selected_component& operator=(OpenSim::Component const* _ptr) {
+            if (_ptr == ptr) {
+                return *this;
+            }
+
+            ptr = _ptr;
+            output_sinks.clear();
+
+            if (ptr == nullptr) {
+                return *this;
+            }
+
+            // if the user selects something, preallocate some output
+            // sparklines for the selection
+
+            size_t n_outputs = 0;
+            for (auto const& p : ptr->getOutputs()) {
+                if (dynamic_cast<OpenSim::Output<double> const*>(p.second.get())) {
+                    ++n_outputs;
+                }
+            }
+
+            output_sinks.resize(n_outputs);
+
+            return *this;
+        }
+
+        operator bool() const noexcept {
+            return ptr != nullptr;
+        }
+
+        operator OpenSim::Component const*() const noexcept {
+            return ptr;
+        }
+
+        OpenSim::Component const* operator->() const noexcept {
+            return ptr;
+        }
+
+        OpenSim::Component const& operator*() const noexcept {
+            return *ptr;
+        }
+
+        void on_ui_state_update(SimTK::State const& st) {
+            // if the user currently has something selected, live-update
+            // all outputs
+
+            if (ptr == nullptr) {
+                return;
+            }
+
+            float sim_time = static_cast<float>(st.getTime());
+
+            size_t i = 0;
+            for (auto const& p : ptr->getOutputs()) {
+                OpenSim::AbstractOutput const* ao = p.second.get();
+
+                // only certain types of output are plottable at the moment
+                auto* o = dynamic_cast<OpenSim::Output<double> const*>(ao);
+                if (o) {
+                    double v = o->getValue(st);
+                    float fv = static_cast<float>(v);
+                    output_sinks[i++].push_datapoint(sim_time, fv);
+                }
+            }
+        }
+
+        void on_user_edited_state() {
+            for (auto& pl : output_sinks) {
+                pl.clear();
+            }
+        }
+    };
 }
 
 namespace osmv {
@@ -358,6 +439,8 @@ namespace osmv {
         std::filesystem::path path;
         osmv::Model model;
         osmv::State latest_state;
+
+        Selected_component selected_component;
 
         Renderer renderer;
         std::optional<Fd_simulator> simulator;
@@ -409,6 +492,10 @@ namespace osmv {
                 case SDLK_ESCAPE:
                     app.request_screen_transition<Splash_screen>();
                     return Event_response::handled;
+                case SDLK_c:
+                    // clear selection
+                    selected_component = nullptr;
+                    return Event_response::handled;
                 }
                 }
             } else if (e.type == SDL_MOUSEMOTION) {
@@ -417,6 +504,27 @@ namespace osmv {
                     // is probably interacting with an ImGUI panel and,
                     // therefore, the dragging/panning shouldn't be handled
                     return Event_response::ignored;
+                }
+            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                if (io.WantCaptureMouse) {
+                    // if ImGUI wants to capture the mouse, then the mouse
+                    // is probably interacting with an ImGUI panel and,
+                    // therefore, the dragging/panning shouldn't be handled
+                    return Event_response::ignored;
+                }
+
+            } else if (e.type == SDL_MOUSEBUTTONUP) {
+                if (io.WantCaptureMouse) {
+                    // if ImGUI wants to capture the mouse, then the mouse
+                    // is probably interacting with an ImGUI panel and,
+                    // therefore, the dragging/panning shouldn't be handled
+                    return Event_response::ignored;
+                }
+
+                // otherwise, maybe they're trying to select something in the viewport, so
+                // check if they are hovered over a component and select it if they are
+                if (e.button.button == SDL_BUTTON_RIGHT and renderer.hovered_component) {
+                    selected_component = renderer.hovered_component;
                 }
             } else if (e.type == SDL_WINDOWEVENT) {
                 window_dims = app.window_dimensions();
@@ -444,6 +552,7 @@ namespace osmv {
 
                 t_outputs.on_ui_state_update(latest_state);
                 t_simulator.on_ui_state_update(*simulator, latest_state);
+                selected_component.on_ui_state_update(latest_state);
             }
         }
 
@@ -453,6 +562,7 @@ namespace osmv {
             simulator = std::nullopt;
             t_momentarms.selected_musc = nullptr;
             t_momentarms.selected_coord = nullptr;
+            selected_component = nullptr;
 
             t_outputs.on_user_edited_model();
             t_simulator.on_user_edited_model();
@@ -471,6 +581,7 @@ namespace osmv {
 
             t_outputs.on_user_edited_state();
             t_simulator.on_user_edited_state();
+            selected_component.on_user_edited_state();
         }
 
         bool simulator_running() {
@@ -481,7 +592,14 @@ namespace osmv {
         void draw(Application& app) {
 
             // draw OpenSim 3D model using renderer
-            renderer.draw(app, model, latest_state);
+            renderer.draw(app, model, latest_state, selected_component);
+
+            if (renderer.hovered_component) {
+                OpenSim::Component const& c = *renderer.hovered_component;
+                sdl::Mouse_state m = sdl::GetMouseState();
+                ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
+                ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
+            }
 
             // draw ImGui panels on top of 3D scene
             draw_menu_bar();
@@ -643,6 +761,12 @@ namespace osmv {
                     if (ImGui::BeginTabItem("MAs")) {
                         ImGui::Dummy(ImVec2{0.0f, 5.0f});
                         draw_moment_arms_tab();
+                        ImGui::EndTabItem();
+                    }
+
+                    if (ImGui::BeginTabItem("Selection")) {
+                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                        draw_selection_tab();
                         ImGui::EndTabItem();
                     }
 
@@ -1160,6 +1284,34 @@ namespace osmv {
                 }
                 ImGui::Columns(1);
             }
+        }
+
+        void draw_selection_tab() {
+            if (not selected_component) {
+                ImGui::Text("nothing selected");
+                return;
+            }
+
+            OpenSim::Component const& c = *selected_component;
+
+            ImGui::Text("name: %s", c.getName().c_str());
+
+            ImGui::Separator();
+
+            ImGui::Columns(2);
+            size_t i = 0;
+            for (auto const& ptr : c.getOutputs()) {
+                OpenSim::AbstractOutput const* ao = ptr.second.get();
+                if (dynamic_cast<OpenSim::Output<double> const*>(ao)) {
+                    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
+                    selected_component.output_sinks[i++].draw(20.0f);
+                }
+                ImGui::NextColumn();
+
+                ImGui::Text("%s", ao->getName().c_str());
+                ImGui::NextColumn();
+            }
+            ImGui::Columns(1);
         }
     };
 }

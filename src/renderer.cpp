@@ -245,6 +245,8 @@ namespace {
     //
     // a model may contain multiple instances of the same mesh
     struct Mesh_instance final {
+        Component const* owner;
+
         glm::mat4 transform;
         glm::mat4 normal_xform;
         glm::vec4 rgba;
@@ -395,31 +397,12 @@ namespace {
         }
     }
 
-    // A hacky decoration generator that just always generates all geometry,
-    // even if it's static.
-    struct DynamicDecorationGenerator : public SimTK::DecorationGenerator {
-        OpenSim::Model const* _model;
-        DynamicDecorationGenerator(OpenSim::Model const* model) : _model{model} {
-            assert(_model != nullptr);
-        }
-        void useModel(OpenSim::Model const* newModel) {
-            assert(newModel != nullptr);
-            _model = newModel;
-        }
-
-        void generateDecorations(const SimTK::State& state, Array_<DecorativeGeometry>& geometry) override {
-            _model->generateDecorations(true, _model->getDisplayHints(), state, geometry);
-            _model->generateDecorations(false, _model->getDisplayHints(), state, geometry);
-        }
-
-        ~DynamicDecorationGenerator() noexcept override = default;
-    };
-
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
         OpenSim::Model const& model;
         SimTK::State const& state;
         Geometry_loader& impl;
         State_geometry& out;
+        Component const* current_component = nullptr;
 
         Geometry_visitor(
             OpenSim::Model const& _model, SimTK::State const& _state, Geometry_loader& _impl, State_geometry& _out) :
@@ -427,6 +410,10 @@ namespace {
             state{_state},
             impl{_impl},
             out{_out} {
+        }
+
+        void set_current_component(Component const* component) {
+            current_component = component;
         }
 
         Transform ground_to_decoration_xform(DecorativeGeometry const& geom) {
@@ -507,14 +494,14 @@ namespace {
             glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(cylinder_xform));
 
-            out.mesh_instances.push_back({cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid});
+            out.mesh_instances.push_back({current_component, cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid});
         }
         void implementBrickGeometry(const DecorativeBrick& geom) override {
             SimTK::Vec3 dims = geom.getHalfLengths();
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({xform, normal_mtx, rgba(geom), cube_meshid});
+            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), cube_meshid});
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -526,7 +513,7 @@ namespace {
             glm::mat4 xform = glm::scale(m, s);
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({xform, normal_mtx, rgba(geom), cylinder_meshid});
+            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), cylinder_meshid});
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
         }
@@ -535,7 +522,7 @@ namespace {
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({xform, normal_mtx, rgba(geom), sphere_meshid});
+            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), sphere_meshid});
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
         }
@@ -589,7 +576,7 @@ namespace {
 
             glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({xform, normal_mtx, rgba(m), meshid});
+            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(m), meshid});
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
         }
@@ -600,15 +587,45 @@ namespace {
     };
 
     void Geometry_loader::all_geometry_in(OpenSim::Model const& m, SimTK::State const& s, State_geometry& out) {
-        pm_swap.clear();
-        dg_swp.clear();
-
-        DynamicDecorationGenerator dg{&m};
-        dg.generateDecorations(s, dg_swp);
+        // iterate over all components in the OpenSim model, keeping a few things in mind:
+        //
+        // - Anything in the component tree *might* render geometry
+        //
+        // - For selection logic, we only (currently) care about certain high-level components,
+        //   like muscles
+        //
+        // - Pretend the component tree traversal is implementation-defined because it's a bit of
+        //   a mess. At the moment it looks like it's a breadth-first recursive descent
+        //
+        // - Components of interest, like muscles, might not render their geometry - it might be
+        //   delegated to a subcomponent
+        //
+        // So this algorithm assumes that the list iterator is arbitrary, but always returns
+        // *something* in a tree that has the current model as a root. So, for each component that
+        // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
+        // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
+        // than the component that is rendering.
 
         auto visitor = Geometry_visitor{m, s, *this, out};
-        for (SimTK::DecorativeGeometry& geom : dg_swp) {
-            geom.implementGeometry(visitor);
+        for (Component const& c : m.getComponentList()) {
+
+            Component const* owner = nullptr;
+            for (Component const* p = &c; p != &m; p = &p->getOwner()) {
+                if (dynamic_cast<OpenSim::Muscle const*>(p)) {
+                    owner = p;
+                    break;
+                }
+            }
+
+            dg_swp.clear();
+            visitor.set_current_component(nullptr);
+            c.generateDecorations(true, m.getDisplayHints(), s, dg_swp);
+            visitor.set_current_component(owner);
+            c.generateDecorations(false, m.getDisplayHints(), s, dg_swp);
+
+            for (SimTK::DecorativeGeometry const& geom : dg_swp) {
+                geom.implementGeometry(visitor);
+            }
         }
     }
 
@@ -639,39 +656,6 @@ namespace {
 
         out = it->second;
     }
-
-    // uses the floor shader to render the scene's chequered floor
-    struct Floor_renderer final {
-        Plain_texture_shader s;
-
-        gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
-            auto copy = osmv::shaded_textured_quad_verts;
-            for (osmv::Shaded_textured_vert& st : copy) {
-                st.texcoord *= 50.0f;  // make chequers smaller
-            }
-            return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
-        }();
-
-        gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
-        gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
-        glm::mat4 model_mtx = glm::scale(
-            glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
-
-        void draw(glm::mat4 const& proj, glm::mat4 const& view) {
-            gl::UseProgram(s.p);
-
-            gl::Uniform(s.projMat, proj);
-            gl::Uniform(s.viewMat, view);
-            gl::Uniform(s.modelMat, model_mtx);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(floor_texture);
-            gl::Uniform(s.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
-            gl::BindVertexArray();
-        }
-    };
 
     static gl::Pixel_pack_buffer make_single_pixel_PBO() {
         gl::Pixel_pack_buffer rv;
@@ -862,8 +846,6 @@ namespace osmv {
             // indexed by meshid
             std::vector<std::optional<Mesh_on_gpu>> meshes;
         } osim;
-
-        size_t selected_index = 0;
 
         Renderer_buffers buffers;
 
@@ -1057,7 +1039,9 @@ static glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
     return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
 }
 
-void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, SimTK::State const& s) {
+void osmv::Renderer::draw(
+    Application const& ui, OpenSim::Model const& model, SimTK::State const& s, OpenSim::Component const* selected) {
+
     // load model geometry
     state->load_geom_from_model(model, s);
 
@@ -1153,7 +1137,14 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
             float g = static_cast<float>((color_id >> 8) & 0xff) / 255.0f;
             float b = static_cast<float>((color_id >> 16) & 0xff) / 255.0f;
 
-            float a = (i + 1) == state->selected_index ? 1.0f : 0.0;
+            float a = 0.0f;
+            if (m.owner != nullptr) {
+                if (m.owner == selected) {
+                    a = 1.0f;
+                } else if (m.owner == hovered_component) {
+                    a = 0.25f;
+                }
+            }
 
             gl::Uniform(shader.uRgba2, glm::vec4{r, g, b, a});
             gl::Uniform(shader.uRgba, m.rgba);
@@ -1289,8 +1280,12 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         }
 
         // the decoded value is the index + 1, which we hold as the selected value because
-        // +1 has the handy property of 0 being a senteniel for "nothing selected"
-        state->selected_index = decoded;
+        // +1 has the handy property of making 0 into a senteniel for "nothing selected"
+        if (decoded == 0) {
+            hovered_component = nullptr;
+        } else {
+            hovered_component = state->scratch.geom.mesh_instances[decoded - 1].owner;
+        }
     }
 
     // note: the scene geometry is now "done": COLOR0 is linked to an MSXAAed texture that can

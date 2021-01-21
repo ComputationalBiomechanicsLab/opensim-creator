@@ -128,7 +128,6 @@ target_compile_options(osmv PRIVATE
         -Wvla
         -Wdisabled-optimization
         -Wpacked
-        -Wmissing-noreturn
         -Wno-sign-compare  # disable: broken by STB headers
     >
 
