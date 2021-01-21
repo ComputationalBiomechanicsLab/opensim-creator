@@ -1,10 +1,6 @@
 #version 330 core
 
 // edge detect: sample a texture with edge detection
-//
-// this fragment shader samples the incoming texture with a very specific alg. that
-// detects edges in the texture, where edges are defined very specifically (TODO:
-// a wiser programmer would be more specific about this BS)
 
 in vec2 TexCoord;
 layout (location = 0) out vec4 FragColor;
@@ -14,7 +10,9 @@ uniform sampler2DMS uSamplerSceneColors;
 uniform sampler2DMS uSamplerSelectionEdges;
 uniform int uNumMultisamples;
 
-const float offset = 2.0;
+// sampling offsets to use when retrieving samples to feed
+// into the kernel
+const float offset = 1.5;
 vec2 offsets[9] = vec2[](
     vec2(-offset,  offset), // top-left
     vec2( 0.0f,    offset), // top-center
@@ -27,6 +25,7 @@ vec2 offsets[9] = vec2[](
     vec2( offset, -offset)  // bottom-right
 );
 
+// simple edge-detection kernel
 const float kernel[9] = float[](
     1.0,  1.0, 1.0,
     1.0, -8.0, 1.0,
@@ -34,33 +33,44 @@ const float kernel[9] = float[](
 );
 
 void main(void) {
-    // ignoring MSXAA for now
-    // average 0-15 if you want smoothing
-    // vec4 texel = texelFetch(uSampler0, ivec2(gl_FragCoord.xy), 0);
 
-    // perform MSXAA here, so that we don't need auxiliary buffers
+    // compute scene color by resolving its MSXAA samples
     vec4 sceneColor = vec4(0.0);
     for (int i = 0; i < uNumMultisamples; ++i) {
+        // TODO: don't use gl_FragCoord
         sceneColor += texelFetch(uSamplerSceneColors, ivec2(gl_FragCoord.xy), i);
     }
     sceneColor /= uNumMultisamples;
 
-    // compute rim highlights
+    // compute rim highlights by resolving each selection selection texel with
+    // MSXAA
     float rimStrength = 0.0;
-    for(int i = 0; i < 9; i++) {
-        float ms = 0.0;
+    for (int i = 0; i < 9; ++i) {
+
+        // TODO: don't use gl_FragCoord
+        ivec2 offset = ivec2(gl_FragCoord.xy + offsets[i]);
+
+        float val = 0.0;
         for (int j = 0; j < uNumMultisamples; ++j) {
-            ms += kernel[i] * texelFetch(uSamplerSelectionEdges, ivec2(gl_FragCoord.xy + offsets[i]), j).a;
+            val += texelFetch(uSamplerSelectionEdges, offset, j).a;
         }
-        rimStrength += ms/uNumMultisamples;
+        val /= uNumMultisamples;
+
+        rimStrength += kernel[i] * val;
     }
 
-    // only want outer rim
-    rimStrength = max(rimStrength, 0.0);
+    // the kernel:
+    //
+    // - produces positive strength for fragments on the outer rim
+    // - produces negative strength for fragments on inner rim
+
+    // rimStrength = abs(rimStrength);  // if you want inner edge, but it's buggy
+
+    rimStrength = clamp(rimStrength, 0.0, 1.0);
 
     // alpha-over the scene on top of the solid background color
     vec4 color = sceneColor.a * sceneColor + (1.0 - sceneColor.a) * uBackgroundColor;
-    color = rimStrength * vec4(1.0, 0.0, 0.0, 1.0) + (1.0 - rimStrength) * color;
+    color = rimStrength * vec4(1.0, 0.3, 0.0, 1.0) + (1.0 - rimStrength) * color;
 
     FragColor = color;
 }

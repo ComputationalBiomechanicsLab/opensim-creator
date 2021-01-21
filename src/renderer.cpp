@@ -672,11 +672,16 @@ namespace {
             gl::BindVertexArray();
         }
     };
-}
 
-// osmv::Renderer implementation
+    static gl::Pixel_pack_buffer make_single_pixel_PBO() {
+        gl::Pixel_pack_buffer rv;
+        gl::BindBuffer(rv);
+        GLubyte rgba[4]{};  // initialize to zeroed values
+        gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
+        gl::UnbindBuffer(rv);
+        return rv;
+    }
 
-namespace osmv {
     // renderer MRT FBO:
     //
     // - COLOR0: multisampled texture containing scene geometry
@@ -702,72 +707,116 @@ namespace osmv {
         // MRT FBO that writes scenery + selection info in one pass
         gl::Frame_buffer gMRT_fbo;
 
-        gl::Texture_2d gNoMsxaa_screen_tex;
+        // texture+fbo for sampling non-MSXAAed version of the scene
+        //
+        // used to sample out the currently-moused-over target
+        gl::Texture_2d gSkipMSXAA_tex;
+        gl::Frame_buffer gSkipMSXAA_fbo;
 
-        gl::Frame_buffer gNoMsxaa_fbo;
-
-        static gl::Pixel_pack_buffer mk_pbo() {
-            gl::Pixel_pack_buffer rv;
-            gl::BindBuffer(rv);
-            GLubyte rgba[4]{};  // initialize to zeroed values
-            gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
-            gl::UnbindBuffer(rv);
-            return rv;
-        }
-
-        std::array<gl::Pixel_pack_buffer, 2> pbos{mk_pbo(), mk_pbo()};
+        // PBOs for asynchronously reading the non-MSXAAed value for
+        // the mouseover target
+        std::array<gl::Pixel_pack_buffer, 2> pbos{make_single_pixel_PBO(), make_single_pixel_PBO()};
         int pbo_idx = 0;  // 0 or 1
 
         // TODO: the renderer may not necessarily be drawing into the application screen
         //       and may, instead, be drawing into an arbitrary FBO (e.g. for a panel, or
         //       video recording), so the renderer shouldn't assume much about the app
-        Renderer_buffers(Application const& app) : dims{app.window_dimensions()}, samples{app.samples()} {
-            // allocate COLOR0: multisampled RGBA texture
-            gl::BindTexture(gColor0_mstex);
-            glTexImage2DMultisample(gColor0_mstex.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+        Renderer_buffers(sdl::Window_dimensions _dims, int _samples) :
+            dims{_dims},
+            samples{_samples},
 
-            // allocate COLOR1: multisampled UNSIGNED_INT (integer) texture
-            gl::BindTexture(gColor1_mstex);
-            glTexImage2DMultisample(gColor1_mstex.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+            // allocate COLOR0: multisampled RGBA texture for scene
+            gColor0_mstex{[this]() {
+                gl::Texture_2d_multisample rv;
+                gl::BindTexture(rv);
+                glTexImage2DMultisample(rv.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+                return rv;
+            }()},
 
-            // allocate DEPTH+STENCIL: multisampled depth/stencil buffer
-            gl::BindRenderBuffer(gDepth24Stencil8_rbo);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, dims.w, dims.h);
+            // allocate COLOR1: multisampled RGBA texture for selection logic
+            gColor1_mstex{[this]() {
+                gl::Texture_2d_multisample rv;
+                gl::BindTexture(rv);
+                glTexImage2DMultisample(rv.type, samples, GL_RGBA, dims.w, dims.h, GL_TRUE);
+                return rv;
+            }()},
 
-            // save original FBO
-            GLint original_draw_fbo;
-            GLint original_read_fbo;
-            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
-            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+            // allocate DEPTH+STENCIL: multisampled RBOs needed to "complete" the MRT FBO
+            gDepth24Stencil8_rbo{[this]() {
+                gl::Render_buffer rv;
+                gl::BindRenderBuffer(rv);
+                glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, dims.w, dims.h);
+                return rv;
+            }()},
 
-            // configure main FBO
-            gl::BindFrameBuffer(GL_FRAMEBUFFER, gMRT_fbo);
-            gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gColor0_mstex.type, gColor0_mstex, 0);
-            gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, gColor1_mstex.type, gColor1_mstex, 0);
-            gl::FramebufferRenderbuffer(
-                GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gDepth24Stencil8_rbo);
+            // allocate MRT FBO that scene draws into
+            gMRT_fbo{[this]() {
+                // save original FBO
+                GLint original_draw_fbo;
+                GLint original_read_fbo;
+                glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
+                glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
 
-            // main FBO allocated, check it's OK
-            assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+                gl::Frame_buffer rv;
 
-            // allocate non-MSXAA texture for non-blended sampling
-            gl::BindTexture(gNoMsxaa_screen_tex);
-            gl::TexImage2D(gNoMsxaa_screen_tex.type, 0, GL_RGBA, dims.w, dims.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                // configure main FBO
+                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gColor0_mstex.type, gColor0_mstex, 0);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, gColor1_mstex.type, gColor1_mstex, 0);
+                gl::FramebufferRenderbuffer(
+                    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gDepth24Stencil8_rbo);
 
-            // configure non-MSXAA fbo
-            gl::BindFrameBuffer(GL_FRAMEBUFFER, gNoMsxaa_fbo);
-            gl::FramebufferTexture2D(
-                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gNoMsxaa_screen_tex.type, gNoMsxaa_screen_tex, 0);
+                // main FBO allocated, check it's OK
+                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-            // check non-MSXAA OK
-            assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+                // restore original FBO
+                gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+                gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
 
-            // restore original FBO
-            gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-            gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+                return rv;
+            }()},
+
+            // allocate non-MSXAAed texture for non-blended hover detection
+            gSkipMSXAA_tex{[this]() {
+                gl::Texture_2d rv;
+
+                // allocate non-MSXAA texture for non-blended sampling
+                gl::BindTexture(rv);
+                gl::TexImage2D(rv.type, 0, GL_RGBA, dims.w, dims.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+                return rv;
+            }()},
+
+            // allocate non-MSXAAed FBO for the non-blended write
+            gSkipMSXAA_fbo{[this]() {
+                // save original FBO
+                GLint original_draw_fbo;
+                GLint original_read_fbo;
+                glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
+                glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+
+                gl::Frame_buffer rv;
+
+                // configure non-MSXAA fbo
+                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gSkipMSXAA_tex.type, gSkipMSXAA_tex, 0);
+
+                // check non-MSXAA OK
+                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+                // restore original FBO
+                gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+                gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+
+                return rv;
+            }()} {
         }
     };
+}
 
+// osmv::Renderer implementation
+
+namespace osmv {
     struct Renderer_private_state final {
         // OpenGL shaders
         struct {
@@ -818,7 +867,7 @@ namespace osmv {
 
         Renderer_buffers buffers;
 
-        Renderer_private_state(Application& app) : buffers{app} {
+        Renderer_private_state(Application& app) : buffers{app.window_dimensions(), app.samples()} {
         }
 
         void load_geom_from_model(OpenSim::Model const& model, SimTK::State const& s) {
@@ -875,7 +924,7 @@ osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const&
         if (state->buffers.dims != new_dims) {
             // don't try and do anything fancy like reallocate or resize the existing
             // buffers, just allocate new ones and assign over
-            state->buffers = Renderer_buffers{app};
+            state->buffers = Renderer_buffers{app.window_dimensions(), app.samples()};
         }
 
         return Event_response::handled;
@@ -1009,8 +1058,6 @@ static glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
 }
 
 void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, SimTK::State const& s) {
-    glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
-
     // load model geometry
     state->load_geom_from_model(model, s);
 
@@ -1035,14 +1082,13 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     GLint original_read_fbo;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
 
-    // clear the offscreen FBO of any data (from last frame draw)
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // step 1: render the scene to the off-screen textures using a multiple-render-target
-    //         (MRT) shader
+    //         (MRT) multisampled (MSXAAed) shader
     //
     // - COLOR0: main target: multisampled scene geometry
     //
@@ -1052,7 +1098,9 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     // - COLOR1: selection logic target: single-sampled ID encodings
     //
     //     - 8 bit unsigned byte per channel, 32-bit buffer (rgba)
+    //
     //     - RGB: 24-bit (little-endian) ID of the drawn element
+    //
     //     - A: current selection state, where:
     //         - 0.0f: not selected
     //         - 1.0f: selected
@@ -1061,6 +1109,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     //       rim-highlight geometry and figure out what element the mouse is over without
     //       needing to do any work in the CPU (e.g. bounding box checks, ray traces)
     if (true) {
+        glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
         // draw the floor
         if (show_floor) {
@@ -1104,7 +1153,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
             float g = static_cast<float>((color_id >> 8) & 0xff) / 255.0f;
             float b = static_cast<float>((color_id >> 16) & 0xff) / 255.0f;
 
-            float a = (i + 1) == state->selected_index ? 1.0f : 0.0f;
+            float a = (i + 1) == state->selected_index ? 1.0f : 0.0;
 
             gl::Uniform(shader.uRgba2, glm::vec4{r, g, b, a});
             gl::Uniform(shader.uRgba, m.rgba);
@@ -1117,12 +1166,16 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         }
         gl::BindVertexArray();
 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
         // (optional): render scene normals
         //
         // if the caller wants to view normals, pump the scene through a specialized shader
         // that draws normals as lines in COLOR0
         if (show_mesh_normals) {
             Normals_shader& ns = state->shaders.normals;
+            gl::DrawBuffers(GL_COLOR_ATTACHMENT0);
+
             gl::UseProgram(ns.program);
             gl::Uniform(ns.uProjMat, proj_mtx);
             gl::Uniform(ns.uViewMat, view_mtx);
@@ -1139,15 +1192,15 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         }
     }
 
-    // step 2: figure out if the mouse is over anything
+    // step 2: figure out if the mouse is hovering over anything
     //
     // COLOR1's RGB channels encode the index of the mesh instance. Extracting that pixel value
     // (without MSXAA blending) and decoding it back into an index makes it possible to figure
-    // out what the mouse is over in a pixel-perfect way.
+    // out what the mouse is over
     if (true) {
 
         // bind to a non-MSXAAed texture
-        gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gNoMsxaa_fbo);
+        gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gSkipMSXAA_fbo);
 
         // blit COLOR1 to the non-MSXAAed FBO
         //
@@ -1240,6 +1293,12 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         state->selected_index = decoded;
     }
 
+    // note: the scene geometry is now "done": COLOR0 is linked to an MSXAAed texture that can
+    //       be blitted to the output
+
+    // TODO: the MSXAAed textures should be pre-blitted, rather than running a funky custom
+    // shader that handles it
+
     // step 3: compose the two textures together with a specialized shader and write
     //         to the output FBO
     //
@@ -1253,6 +1312,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         // ensure the output is written to the output FBO
         glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw the edges over the rendered scene
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;

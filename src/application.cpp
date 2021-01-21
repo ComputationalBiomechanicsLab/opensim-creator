@@ -125,67 +125,6 @@ static void glOnDebugMessage(
     std::cerr << std::endl;
 }
 
-// top-level screenbuffer: potentially-multisampled framebuffer that is separate from
-// the window's framebuffer
-//
-// the screen's FBO is separate from the window's because there are post-window-initialization
-// checks that need to be performed (e.g. does the user's computer support MSXAA?) and because
-// architecting it this way enables the user to change top-level graphics settings inside the
-// application window without having to reboot the entire application
-//
-// it also enables screen-wide post-processing (e.g. blurring), but that isn't exercised here.
-class Screen_framebuffer final {
-    sdl::Window_dimensions dims;
-    GLsizei multisamples;
-    gl::Render_buffer color0_rbo = gl::GenRenderBuffer();
-    gl::Render_buffer depth24stencil8_rbo = gl::GenRenderBuffer();
-    gl::Frame_buffer fbo = gl::GenFrameBuffer();
-
-public:
-    Screen_framebuffer(sdl::Window_dimensions const& _dims, GLsizei samples) : dims{_dims}, multisamples{samples} {
-        gl::BindFrameBuffer(GL_FRAMEBUFFER, fbo);
-
-        // bind, allocate, and link color0's RBO to the FBO
-        gl::BindRenderBuffer(color0_rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA, dims.w, dims.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color0_rbo);
-
-        // bind, allocate, and link depth+stencil RBOs to the FBO
-        gl::BindRenderBuffer(depth24stencil8_rbo);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, dims.w, dims.h);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8_rbo);
-
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-        // reset FBO back to default window FBO
-        gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
-    }
-
-    operator gl::Frame_buffer const&() const noexcept {
-        return fbo;
-    }
-
-    operator gl::Frame_buffer&() noexcept {
-        return fbo;
-    }
-
-    sdl::Window_dimensions dimensions() const noexcept {
-        return dims;
-    }
-
-    int width() const noexcept {
-        return dims.w;
-    }
-
-    int height() const noexcept {
-        return dims.h;
-    }
-
-    int samples() const noexcept {
-        return multisamples;
-    }
-};
-
 static GLsizei get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
@@ -210,8 +149,8 @@ namespace osmv {
         // milliseconds between frames - for software throttling
         std::chrono::milliseconds millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))};
 
-        // the (potentially multisampled) framebuffer that screens draws into
-        Screen_framebuffer sfbo;
+        // num multisamples that multisampled renderers should use
+        int samples;
 
         // ImGui application-wide context
         igx::Context imgui_ctx;
@@ -348,8 +287,8 @@ namespace osmv {
             // millis between frames (for throttling) is based on the highest refresh rate
             millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))},
 
-            // initialize the non-window FBO that the application writes into
-            sfbo{sdl::GetWindowSize(window), get_max_multisamples()},
+            // just set multisamples to max for now
+            samples{get_max_multisamples()},
 
             // initialize ImGui
             imgui_ctx{},
@@ -374,18 +313,6 @@ namespace osmv {
                     // QUIT: quit application
                     if (e.type == SDL_QUIT) {
                         return;
-                    }
-
-                    // SCREEN RESIZED: update relevant application-level FBOs
-                    //
-                    // note: this should *also* be pumped into ImGui and any osmv::Screens because
-                    // they might internally contain FBOs/textures that depend on the screen size
-                    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-
-                        sdl::Window_dimensions new_dims{e.window.data1, e.window.data2};
-                        if (new_dims != sfbo.dimensions()) {
-                            sfbo = Screen_framebuffer{new_dims, get_max_multisamples()};
-                        }
                     }
 
                     // ImGui: feed event into ImGui
@@ -419,9 +346,8 @@ namespace osmv {
                 }
 
                 // bind the screen buffer + clear it for the next frame
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, sfbo);
                 gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 // setup for draw calls
                 ImGui_ImplOpenGL3_NewFrame();
@@ -438,22 +364,6 @@ namespace osmv {
                 // ImGui: draw any deferred draws into the fbo
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-                // blit screen fbo to window fbo
-                gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, sfbo);
-                gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, gl::window_fbo);
-                assert(sfbo.dimensions() == sdl::GetWindowSize(window));
-                gl::BlitFramebuffer(
-                    0,
-                    0,
-                    sfbo.width(),
-                    sfbo.height(),
-                    0,
-                    0,
-                    sfbo.width(),
-                    sfbo.height(),
-                    GL_COLOR_BUFFER_BIT,
-                    GL_NEAREST);
 
                 // swap the blitted window onto the user's screen: user can see update at
                 // this point
@@ -532,5 +442,5 @@ void osmv::Application::move_mouse_to(int x, int y) {
 }
 
 int osmv::Application::samples() const noexcept {
-    return impl->sfbo.samples();
+    return impl->samples;
 }
