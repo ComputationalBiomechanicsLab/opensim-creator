@@ -706,9 +706,17 @@ namespace osmv {
 
         gl::Frame_buffer gNoMsxaa_fbo;
 
-        // gl::Render_buffer gSelectionPixel_rbo; todo
+        static gl::Pixel_pack_buffer mk_pbo() {
+            gl::Pixel_pack_buffer rv;
+            gl::BindBuffer(rv);
+            GLubyte rgba[4]{};  // initialize to zeroed values
+            gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
+            gl::UnbindBuffer(rv);
+            return rv;
+        }
 
-        // gl::Frame_buffer gSelectionPixel_fbo;*/
+        std::array<gl::Pixel_pack_buffer, 2> pbos{mk_pbo(), mk_pbo()};
+        int pbo_idx = 0;  // 0 or 1
 
         // TODO: the renderer may not necessarily be drawing into the application screen
         //       and may, instead, be drawing into an arbitrary FBO (e.g. for a panel, or
@@ -1015,8 +1023,10 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     // this is a forward (as opposed to deferred) renderer that borrows some ideas from deferred
     // rendering techniques
     //
-    // main motivator here is to render all scene geometry in a single pass, then to use the data
-    // produced by that pass in later calculations.
+    // main motivator here is to render all scene geometry in a single pass, followed by using data
+    // produced in that pass in subsequent shaders. This means that some things are over-calculated
+    // (e.g. edge-detection for rim highlights are screen-wide), but all computation happens in
+    // parallel on the GPU, rather than stalling on the CPU
 
     // step 1: bind to an off-screen FBO
     //
@@ -1025,9 +1035,9 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     GLint original_read_fbo;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
 
     // clear the offscreen FBO of any data (from last frame draw)
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1036,7 +1046,8 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     //
     // - COLOR0: main target: multisampled scene geometry
     //
-    //     - contains OpenSim geometry rendered /w Gouraud shading
+    //     - contains OpenSim geometry rendered /w Gouraud shading this is *mostly* what the
+    //       user actually sees
     //
     // - COLOR1: selection logic target: single-sampled ID encodings
     //
@@ -1045,7 +1056,13 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     //     - A: current selection state, where:
     //         - 0.0f: not selected
     //         - 1.0f: selected
+    //
+    //     - The user does not directly see this buffer. It's used in subsequent steps to
+    //       rim-highlight geometry and figure out what element the mouse is over without
+    //       needing to do any work in the CPU (e.g. bounding box checks, ray traces)
     if (true) {
+
+        // draw the floor
         if (show_floor) {
             Plain_texture_shader& shader = state->shaders.plain_texture;
             gl::DrawBuffers(GL_COLOR_ATTACHMENT0);
@@ -1063,6 +1080,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
             gl::BindVertexArray();
         }
 
+        // draw scene geometry
         Gouraud_mrt_shader& shader = state->shaders.gouraud;
         gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
         gl::UseProgram(shader.program);
@@ -1077,15 +1095,15 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         for (size_t i = 0; i < instances.size(); ++i) {
             Mesh_instance const& m = instances[i];
 
-            // RGB: encoded form of index+1 into the mesh
+            // COLOR1: will receive selection logic via the RGBA channels
+            //
+            //     - RGB (24 bits): little-endian encoded index+1 of the geometry instance
+            //     - A   (8 bits): whether the geometry instance is currently selected or not
             uint32_t color_id = static_cast<uint32_t>(i + 1);
             float r = static_cast<float>(color_id & 0xff) / 255.0f;
             float g = static_cast<float>((color_id >> 8) & 0xff) / 255.0f;
             float b = static_cast<float>((color_id >> 16) & 0xff) / 255.0f;
 
-            // A: set to 1.0f if element is selected
-
-            // TODO: selected_index should change with clicking etc.
             float a = (i + 1) == state->selected_index ? 1.0f : 0.0f;
 
             gl::Uniform(shader.uRgba2, glm::vec4{r, g, b, a});
@@ -1102,7 +1120,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         // (optional): render scene normals
         //
         // if the caller wants to view normals, pump the scene through a specialized shader
-        // that draws normals to COLOR0
+        // that draws normals as lines in COLOR0
         if (show_mesh_normals) {
             Normals_shader& ns = state->shaders.normals;
             gl::UseProgram(ns.program);
@@ -1121,17 +1139,22 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         }
     }
 
-    // step 2: figure out what the mouse is currently moused over
+    // step 2: figure out if the mouse is over anything
     //
-    // the MRT encoded object IDs into COLOR2, which can be sampled to figure out what
-    // element is under it
+    // COLOR1's RGB channels encode the index of the mesh instance. Extracting that pixel value
+    // (without MSXAA blending) and decoding it back into an index makes it possible to figure
+    // out what the mouse is over in a pixel-perfect way.
     if (true) {
+
         // bind to a non-MSXAAed texture
         gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gNoMsxaa_fbo);
 
-        // blit the selection texture to the non-MSXAAed FBO
+        // blit COLOR1 to the non-MSXAAed FBO
+        //
+        // by skipping MSXAA, every value in this output should to be exactly the same as the
+        // value provided during drawing. Sampling the color with MSXAA could potentially blend
+        // adjacent values together, resulting in junk.
         Skip_msxaa_blitter_shader& shader = state->shaders.skip_msxaa_shader;
-
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
@@ -1139,34 +1162,81 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(state->buffers.gColor1_mstex);
         gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-        // blit
         gl::BindVertexArray(state->skip_msxaa_quad_vao);
         gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
 
-        // the FBO's backing texture, which is a non-MSXAAed texture, now contains
-        // single-sample non-blended values which can be safely read + decoded, so now
-        // all we need to do is sample the pixel under the mouse.
-
-        // these coordinates are in traditional screen space (X,Y top-left going down)
+        // figure out where the mouse is
+        //
+        // - SDL screen coords are traditional screen coords. Origin top-left, Y goes down
+        // - OpenGL screen coords are mathematical coords. Origin bottom-left, Y goes up
         sdl::Mouse_state m = sdl::GetMouseState();
-
-        // these coordinates are in OpenGL screen space (X,Y bottom-left, going up)
         sdl::Window_dimensions d = ui.window_dimensions();
         GLsizei xbl = m.x;
         GLsizei ybl = d.h - m.y;
 
-        // read pixel under mouse
-        GLubyte rgba[4]{};
-        glReadPixels(xbl, ybl, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+        // read the pixel under the mouse
+        //
+        // - you *could* just read the value directly from the FBO with `glReadPixels`, which is
+        //   what the first iteration of this alg. did
+        //
+        // - However, that glReadPixels call will cost *A LOT*. On my machine (Ryzen1600 /w
+        //   Geforce 1060), it costs around 30 % FPS (300 FPS --> 200 FPS)
+        //
+        // - This isn't because the transfer is expensive--it's just a single pixel, after all--but
+        //   because reading the pixel forces the OpenGL driver to flush all pending rendering
+        //   operations to the FBO (known as a "pipeline stall")
+        //
+        // - If you don't believe me, set `fast_mode` to `false` below
+        //
+        // - So this algorithm uses a crafty trick, which is to use two pixel buffer objects (PBOs)
+        //   to asynchronously transfer the pixel *from the previous frame* into CPU memory using
+        //   asynchronous DMA. The trick uses two PBOs, which each of which are either:
+        //
+        //   1. Requesting the pixel value (via glReadPixel). The OpenGL spec does *not* require
+        //      that the PBO is populated once `glReadPixel` returns, so this does not cause a
+        //      pipeline stall
+        //
+        //   2. Mapping the PBO that requested a pixel value **on the last frame**. The OpenGL spec
+        //      requires that this PBO is populated once the mapping is enabled, so this will
+        //      stall the pipeline. However, that pipeline stall will be on the *previous* frame
+        //      which is less costly to stall on
 
-        // decode in the opposite way from how it was encoded above
-        uint32_t decoded = rgba[0];
-        decoded |= static_cast<uint32_t>(rgba[1]) << 8;
-        decoded |= static_cast<uint32_t>(rgba[2]) << 16;
+        static constexpr bool fast_mode = true;
 
-        // HACK: the ID is the index + 1
+        uint32_t decoded = 0;
+        if (fast_mode) {
+            int reader = state->buffers.pbo_idx % 2;
+            int mapper = (state->buffers.pbo_idx + 1) % 2;
+
+            // launch asynchronous request for this frame's pixel
+            gl::BindBuffer(state->buffers.pbos[static_cast<size_t>(reader)]);
+            glReadPixels(xbl, ybl, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+            // synchrnously read last frame's pixel
+            gl::BindBuffer(state->buffers.pbos[static_cast<size_t>(mapper)]);
+            GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+
+            decoded = src[0];
+            decoded |= static_cast<uint32_t>(src[1]) << 8;
+            decoded |= static_cast<uint32_t>(src[2]) << 16;
+
+            glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+            // flip buffers
+            state->buffers.pbo_idx = (state->buffers.pbo_idx + 1) % 2;
+        } else {
+            // slow mode: synchronously read the current frame's pixel under the cursor
+
+            GLubyte rgba[4]{};
+            glReadPixels(xbl, ybl, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+            decoded = rgba[0];
+            decoded |= static_cast<uint32_t>(rgba[1]) << 8;
+            decoded |= static_cast<uint32_t>(rgba[2]) << 16;
+        }
+
+        // the decoded value is the index + 1, which we hold as the selected value because
+        // +1 has the handy property of 0 being a senteniel for "nothing selected"
         state->selected_index = decoded;
     }
 
@@ -1178,7 +1248,7 @@ void osmv::Renderer::draw(Application const& ui, OpenSim::Model const& model, Si
     // - COLOR2: passed through an edge-detection kernel to find the edges of all selected
     //           geometry in the scene
     //
-    // - COMPOSITION: blend COLOR2 over COLOR1 over background
+    // - COMPOSITION: alpha-over blend COLOR2 over COLOR1 over background
     {
         // ensure the output is written to the output FBO
         glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);

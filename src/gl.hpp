@@ -357,6 +357,10 @@ namespace gl {
         static constexpr GLenum type = GL_ELEMENT_ARRAY_BUFFER;
     };
 
+    struct Pixel_pack_buffer final : public Buffer {
+        static constexpr GLenum type = GL_PIXEL_PACK_BUFFER;
+    };
+
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenBuffers.xhtml
     inline Buffer GenBuffers() {
         return Buffer{};
@@ -367,12 +371,24 @@ namespace gl {
         glBindBuffer(target, buffer);
     }
 
+    inline void UnbindBuffer(GLenum target) {
+        glBindBuffer(target, 0);
+    }
+
     inline void BindBuffer(Array_buffer& buffer) {
         BindBuffer(buffer.type, buffer);
     }
 
     inline void BindBuffer(Element_array_buffer& buffer) {
         BindBuffer(buffer.type, buffer);
+    }
+
+    inline void BindBuffer(Pixel_pack_buffer& buffer) {
+        BindBuffer(buffer.type, buffer);
+    }
+
+    inline void UnbindBuffer(Pixel_pack_buffer& buffer) {
+        UnbindBuffer(buffer.type);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
