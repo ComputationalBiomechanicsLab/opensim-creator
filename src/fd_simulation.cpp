@@ -82,10 +82,9 @@ namespace {
         double ui_overhead_acc = 0.0;
         clock::duration wall_start = clock::now().time_since_epoch();
         clock::duration wall_end = clock::now().time_since_epoch();
-        int num_pq_calls = 0;
+        int num_prescribeq_calls = 0;
         int ui_overhead_n = 0;
-        int num_integration_steps = 0;
-        int num_integration_step_attempts = 0;
+        osmv::Integrator_stats istats;
         Sim_status status = Sim_status::Running;
     };
 
@@ -137,67 +136,81 @@ namespace {
         osmv::Fd_simulation_params params,
         std::shared_ptr<Mutexed<Shared_fdsim_state>> thread_shared) {
 
-        clock::time_point simulation_thread_started = clock::now();
-        clock::time_point last_report_end = clock::now();
-
+        // setup model + manager
         params.model->setPropertiesFromState(params.initial_state);
         params.model->initSystem();
         OpenSim::Manager manager{params.model};
 
         // add an analysis that calls on each integration step
+        clock::time_point simulation_thread_started = clock::now();
+        clock::time_point last_report_start = clock::now();
+        clock::time_point last_report_end = clock::now();
+        int steps = 0;
+
         params.model->addAnalysis(new Lambda_analysis([&](SimTK::State const& s) {
-            // propagate stop_token signal to the OpenSim::Manager running this sim, which enables
-            // cancellation behavior
+            // simulation cancellation
+            //
+            // if the stop token (inter-thread cancellation request token) is set, halt the
+            // simulation
             if (stop_token.stop_requested()) {
                 manager.halt();
             }
 
+            // meta: report how long it's taking to perform these per-integration-step steps
             clock::time_point report_start = clock::now();
 
+            // throttling: slow down the simulation thread if requested
+            //
+            // if the simulation is running faster than wall time and the caller requested that
+            // it runs slower than wall time then sleep the simulation thread
             if (params.throttle_to_wall_time) {
-                // caller requests that the simulation thread tries to run roughly as
-                // fast as wall time
-                //
-                // this is important in very cheap simulations that run *much* faster
-                // than wall time, where the user won't be able to see each state
-                double sim_secs = s.getTime();
-                std::chrono::microseconds sim_micros{static_cast<long>(1000000.0 * sim_secs)};
-                std::chrono::microseconds real_micros =
-                    std::chrono::duration_cast<std::chrono::microseconds>(report_start - simulation_thread_started);
-                if (sim_micros > real_micros) {
-                    std::this_thread::sleep_for(sim_micros - real_micros);
+                std::chrono::microseconds sim_time{static_cast<long>(1000000.0 * s.getTime())};
+                std::chrono::microseconds wall_time{
+                    std::chrono::duration_cast<std::chrono::microseconds>(report_start - simulation_thread_started)};
+
+                if (sim_time > wall_time) {
+                    std::this_thread::sleep_for(sim_time - wall_time);
                 }
             }
 
-            auto mutex_guard = thread_shared->lock();
-            Shared_fdsim_state& shared_st = *mutex_guard;
+            // inter-thread reporting
+            //
+            // copy any relevant information out in a threadsafe way
 
+            Mutex_guard<Shared_fdsim_state> guard{thread_shared->lock()};
+            Shared_fdsim_state& shared_st = *guard;
+
+            // state reporting
+            //
+            // only copy a state if the "message space" is empty
+            //
+            // this is because copying a state is potentially quite expensive, so should only be
+            // performed when necessary
             if (shared_st.latest_state == nullptr) {
-                // the UI thread probably "stole" the latest state, so copy the new (later) one
-                // so that the UI thread may take it
                 shared_st.latest_state = std::make_unique<SimTK::State>(s);
             }
 
-            shared_st.num_pq_calls = params.model->getSystem().getNumPrescribeQCalls();
-            shared_st.num_integration_steps++;
-            shared_st.num_integration_step_attempts = manager.getIntegrator().getNumStepsAttempted();
+            // other reporting: copy relevant values out to threadsafe location
+
             shared_st.sim_cur_time = s.getTime();
+            shared_st.num_prescribeq_calls = params.model->getSystem().getNumPrescribeQCalls();
+            shared_st.istats = manager.getIntegrator();
 
-            clock::time_point report_end = clock::now();
-
-            if (shared_st.ui_overhead_n > 0) {
-                clock::duration ui_time = report_end - report_start;
-                clock::duration total = report_end - last_report_end;
-                double this_overhead = static_cast<double>(ui_time.count()) / static_cast<double>(total.count());
-                shared_st.ui_overhead_acc = shared_st.ui_overhead_acc + this_overhead;
+            if (steps++ > 0) {
+                clock::duration total = report_start - last_report_start;
+                clock::duration overhead = last_report_end - last_report_start;
+                double overhead_fraction = static_cast<double>(overhead.count()) / static_cast<double>(total.count());
+                shared_st.ui_overhead_acc = shared_st.ui_overhead_acc + overhead_fraction;
+                ++shared_st.ui_overhead_n;
             }
 
-            last_report_end = report_end;
-            shared_st.ui_overhead_n++;
+            // loop invariants
+            last_report_start = report_start;
+            last_report_end = clock::now();
         }));
 
+        // finish configuring manager + model etc.
         config_manager_with_params_similar_to_forwardtool(manager);
-
         params.model->getMultibodySystem().realize(params.initial_state, SimTK::Stage::Position);
         params.model->equilibrateMuscles(params.initial_state);
 
@@ -243,6 +256,30 @@ namespace osmv {
     };
 }
 
+// osmv::Integrator_stats implementation
+
+osmv::Integrator_stats& osmv::Integrator_stats::operator=(SimTK::Integrator const& integrator) {
+    accuracyInUse = static_cast<float>(integrator.getAccuracyInUse());
+    predictedNextStepSize = static_cast<float>(integrator.getPredictedNextStepSize());
+
+    numStepsAttempted = integrator.getNumStepsAttempted();
+    numStepsTaken = integrator.getNumStepsTaken();
+    numRealizations = integrator.getNumRealizations();
+    numQProjections = integrator.getNumQProjections();
+    numUProjections = integrator.getNumUProjections();
+    numErrorTestFailures = integrator.getNumErrorTestFailures();
+    numConvergenceTestFailures = integrator.getNumConvergenceTestFailures();
+    numRealizationFailures = integrator.getNumRealizationFailures();
+    numQProjectionFailures = integrator.getNumQProjectionFailures();
+    numUProjectionFailures = integrator.getNumUProjectionFailures();
+    numProjectionFailures = integrator.getNumProjectionFailures();
+    numConvergentIterations = integrator.getNumConvergentIterations();
+    numDivergentIterations = integrator.getNumDivergentIterations();
+    numIterations = integrator.getNumIterations();
+
+    return *this;
+}
+
 // osmv::Fd_simulator interface implementation
 
 osmv::Fd_simulator::Fd_simulator(Fd_simulation_params p) : impl{new Fd_simulator_impl{std::move(p)}} {
@@ -250,7 +287,7 @@ osmv::Fd_simulator::Fd_simulator(Fd_simulation_params p) : impl{new Fd_simulator
 
 osmv::Fd_simulator::~Fd_simulator() noexcept = default;
 
-bool osmv::Fd_simulator::try_pop_latest_state(osmv::State& dest) {
+bool osmv::Fd_simulator::try_pop_state(osmv::State& dest) {
     std::unique_ptr<SimTK::State> maybe_latest = std::move(impl->shared->lock()->latest_state);
     if (maybe_latest) {
         dest = std::move(maybe_latest);
@@ -264,6 +301,11 @@ bool osmv::Fd_simulator::try_pop_latest_state(osmv::State& dest) {
 
 void osmv::Fd_simulator::request_stop() {
     impl->simulator_thread.request_stop();
+}
+
+void osmv::Fd_simulator::stop() {
+    impl->simulator_thread.request_stop();
+    impl->simulator_thread.join();
 }
 
 bool osmv::Fd_simulator::is_running() const {
@@ -300,18 +342,14 @@ char const* osmv::Fd_simulator::status_description() const {
 }
 
 int osmv::Fd_simulator::num_prescribeq_calls() const {
-    return impl->shared->lock()->num_pq_calls;
+    return impl->shared->lock()->num_prescribeq_calls;
 }
 
-int osmv::Fd_simulator::num_integration_steps() const {
-    return impl->shared->lock()->num_integration_steps;
+osmv::Integrator_stats osmv::Fd_simulator::integrator_stats() const noexcept {
+    return impl->shared->lock()->istats;
 }
 
-int osmv::Fd_simulator::num_integration_step_attempts() const {
-    return impl->shared->lock()->num_integration_step_attempts;
-}
-
-double osmv::Fd_simulator::avg_ui_overhead_pct() const {
+double osmv::Fd_simulator::avg_simulator_overhead() const {
     auto guard = impl->shared->lock();
     return guard->ui_overhead_acc / guard->ui_overhead_n;
 }

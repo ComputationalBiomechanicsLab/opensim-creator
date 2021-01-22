@@ -162,16 +162,24 @@ namespace osmv {
         igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
 
         // whether the application should sleep the CPU when the FPS exceeds some
-        // amount (ideally, close to the screen refresh rate)
+        // amount (ideally, throttling should keep the UI refresh rate close to the
+        // screen refresh rate)
         bool software_throttle = true;
 
         // the current screen being drawn by the application
         std::unique_ptr<Screen> current_screen = nullptr;
 
-        // screen requested by `request_transition`
+        // the next screen that the application should show
+        //
+        // this is typically set when a screen calls `request_transition`
         std::unique_ptr<Screen> requested_screen = nullptr;
 
+        // flag that is set whenever a screen requests that the application should quit
         bool should_quit = false;
+
+        // flag indicating whether the UI should draw certain debug UI elements (e.g. FPS counter,
+        // debug overlays)
+        bool is_drawing_debug_ui = true;
 
         Application_impl() :
             // initialize SDL library
@@ -315,70 +323,99 @@ namespace osmv {
                         return;
                     }
 
+                    // WINDOW EVENT: if it's a resize event, adjust the OpenGL viewport
+                    //               to reflect the new dimensions
+                    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                        int w = e.window.data1;
+                        int h = e.window.data2;
+                        glViewport(0, 0, w, h);
+                    }
+
                     // ImGui: feed event into ImGui
                     ImGui_ImplSDL2_ProcessEvent(&e);
 
-                    // osmv::Screen: feed event into currently-showing screen
+                    // osmv::Screen: feed event into the currently-showing osmv screen
                     current_screen->on_event(e);
 
-                    // osmv::Screen: handle any possible side-effects the Screen may have had
+                    // osmv::Screen: handle any possible indirect side-effects the Screen's
+                    //               `on_event` handler may have had on the application state
+                    if (should_quit) {
+                        return;
+                    }
                     if (requested_screen) {
                         current_screen = std::move(requested_screen);
                         current_screen->on_application_mount(&app);
                         continue;
-                    }
-                    if (should_quit) {
-                        return;
                     }
                 }
 
                 // osmv::Screen: run `tick`
                 current_screen->tick();
 
-                // osmv::Screen: handle any possible side-effects `tick`ing may have had
+                // osmv::Screen: handle any possible indirect side-effects the Screen's
+                //               `on_event` handler may have had on the application state
+                if (should_quit) {
+                    return;
+                }
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
                     current_screen->on_application_mount(&app);
                     continue;
                 }
-                if (should_quit) {
-                    return;
-                }
 
-                // bind the screen buffer + clear it for the next frame
+                // clear the window's framebuffer ready for a new frame to be drawn
                 gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
                 gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                // setup for draw calls
+                // prepare ImGui for a new draw call (an implementation detail of ImGui)
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
 
-                // osmv::Screen: `draw`
+                // osmv::Screen: call current screen's `draw` method
                 current_screen->draw();
 
-                // screen: `draw`: side effects: wait until the frame is completely
-                // rendered before handling side-effects because rendering affects
-                // globals that need to be finalized (e.g. ImGui state, OpenGL state)
+                // NOTE: osmv::Screen side-effects:
+                //
+                // - The screen's `draw` method *may* have had indirect side-effects on the
+                //   application state
+                //
+                // - However, we finish rendering + swapping the full frame before handling those
+                //   side-effects, because ImGui might be in an intermediate state (e.g. it needs
+                //   finalizing) and because it might be handy to see the screen *just* before
+                //   some kind of transition
 
-                // ImGui: draw any deferred draws into the fbo
+                // draw FPS overlay in bottom-right: handy for dev
+                if (is_drawing_debug_ui) {
+                    char buf[16];
+                    double fps = static_cast<double>(ImGui::GetIO().Framerate);
+                    std::snprintf(buf, sizeof(buf), "%.0f", fps);
+                    sdl::Window_dimensions d = sdl::GetWindowSize(window);
+                    ImVec2 window_sims = {static_cast<float>(d.w), static_cast<float>(d.h)};
+                    ImVec2 font_dims = ImGui::CalcTextSize(buf);
+                    ImVec2 fps_pos = {window_sims.x - font_dims.x, window_sims.y - font_dims.y};
+                    ImGui::GetBackgroundDrawList()->AddText(fps_pos, 0xff0000ff, buf);
+                }
+
+                // ImGui: finalize ImGui rendering
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-                // swap the blitted window onto the user's screen: user can see update at
-                // this point
+                // swap the framebuffer frame onto the window, showing it to the user
                 SDL_GL_SwapWindow(window);
 
-                // osmv::Screen: *now* handle any possible side-effects from osmv::Screen::draw
+                // osmv::Screen: handle any possible indirect side-effects the Screen's
+                //               `on_event` handler may have had on the application state
+                if (should_quit) {
+                    return;
+                }
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
                     current_screen->on_application_mount(&app);
                     continue;
                 }
-                if (should_quit) {
-                    return;
-                }
 
+                // throttle the framerate, if requested
                 if (software_throttle) {
                     // APPROXIMATION: rendering **the next frame** will take roughly as long as it
                     // took to render this frame. Assume worst case is 3x longer (also, the thread

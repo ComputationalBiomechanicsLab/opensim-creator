@@ -822,15 +822,19 @@ namespace osmv {
             gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
                 auto copy = osmv::shaded_textured_quad_verts;
                 for (osmv::Shaded_textured_vert& st : copy) {
-                    st.texcoord *= 50.0f;  // make chequers smaller
+                    st.texcoord *= 25.0f;  // make chequers smaller
                 }
                 return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
             }();
 
             gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
             gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
-            glm::mat4 model_mtx = glm::scale(
-                glm::rotate(glm::identity<glm::mat4>(), osmv::pi_f / 2, {-1.0, 0.0, 0.0}), {100.0f, 100.0f, 0.0f});
+            glm::mat4 model_mtx = []() {
+                glm::mat4 rv = glm::identity<glm::mat4>();
+                rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+                return rv;
+            }();
         } floor;
 
         // temporary scratch space
@@ -1317,7 +1321,7 @@ void osmv::Renderer::draw(
         gl::Uniform(shader.uProjMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
         gl::Uniform(shader.uModelMat, gl::identity_val);
-        gl::Uniform(shader.uBackgroundColor, glm::vec4{0.99f, 0.98f, 0.96f, 1.0f});
+        gl::Uniform(shader.uBackgroundColor, glm::vec4{0.89f, 0.89f, 0.89f, 1.0f});
 
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(state->buffers.gColor0_mstex);
