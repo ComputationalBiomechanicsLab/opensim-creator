@@ -1,13 +1,8 @@
 ![logo with title](resources/logo_with_title.svg)
 
-Lightweight UI for OpenSim
+A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensim-core)
 
-**Unstable WIP: do not use**
-
-`osmv` is a lightweight OpenSim model viewer, coded in C++20, that is
-only externally dependent on
-[opensim-core](https://github.com/opensim-org/opensim-core) (v4.1) and
-OpenGL.
+`osmv` is a lightweight GUI for the OpenSim C++ API. It is designed to be easy to build and only depends on OpenSim and a few easy-to-aquire GUI libraries (SDL2, GLEW, and ImGui). `osmv` was developed to make it easy to create prototype GUIs on top of the OpenSim API. It is not designed as a production-ready user-facing GUI for OpenSim. For that, you should use the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
 
 
 # Building
