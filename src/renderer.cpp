@@ -1146,7 +1146,7 @@ void osmv::Renderer::draw(
                 if (m.owner == selected) {
                     a = 1.0f;
                 } else if (m.owner == hovered_component) {
-                    a = 0.25f;
+                    a = 0.4f;
                 }
             }
 

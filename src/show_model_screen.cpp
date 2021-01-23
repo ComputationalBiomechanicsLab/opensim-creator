@@ -367,12 +367,6 @@ namespace {
                 ImGui::PopStyleColor();
             }
 
-            ImGui::SameLine();
-            if (ImGui::Button("reset [r]")) {
-                shown_state = shown_model.initSystem();
-                on_user_edited_state();
-            }
-
             ImGui::Dummy({0.0f, 20.0f});
             ImGui::Text("simulation config:");
             ImGui::Dummy({0.0f, 2.5f});
@@ -807,7 +801,7 @@ namespace osmv {
 
         void draw_main_panel(Application& app) {
             bool b = true;
-            ImGuiWindowFlags flags = ImGuiWindowFlags_Modal;
+            ImGuiWindowFlags flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoTitleBar;
 
             if (ImGui::Begin("Main Panel", &b, flags)) {
                 if (ImGui::BeginTabBar("SomeTabBar")) {
@@ -1287,6 +1281,7 @@ namespace osmv {
 
         void draw_moment_arms_tab() {
             ImGui::Columns(2);
+
             // lhs: muscle selection
             {
                 ImGui::Text("muscles:");
@@ -1393,7 +1388,7 @@ namespace osmv {
             ImGui::Columns(2);
             for (size_t i = 0; i < mas_tab.plots.size(); ++i) {
                 Moment_arm_plot const& p = *mas_tab.plots[i];
-                ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::PlotLines(
                     "",
                     p.y_vals.data(),
@@ -1408,10 +1403,12 @@ namespace osmv {
                 ImGui::Text("coord : %s", p.coord_name.c_str());
                 ImGui::Text("min   : %f", static_cast<double>(p.min));
                 ImGui::Text("max   : %f", static_cast<double>(p.max));
+                ImGui::PushID(i);
                 if (ImGui::Button("delete")) {
                     auto it = mas_tab.plots.begin() + static_cast<int>(i);
                     mas_tab.plots.erase(it, it + 1);
                 }
+                ImGui::PopID();
                 ImGui::NextColumn();
             }
             ImGui::Columns();
@@ -1503,7 +1500,7 @@ namespace osmv {
 
                 ImGui::Columns(2);
                 for (Output_plot const& p : outputs_tab.plots) {
-                    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
+                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
                     p.plot.draw();
                     ImGui::NextColumn();
                     ImGui::Text("%s/%s", p.getOwnerName().c_str(), p.getName().c_str());
@@ -1534,7 +1531,7 @@ namespace osmv {
                 OpenSim::AbstractOutput const* ao = ptr.second.get();
                 OpenSim::Output<double> const* od = dynamic_cast<OpenSim::Output<double> const*>(ao);
                 if (od) {
-                    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 2.0f);
+                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
                     selected_component.output_sinks[i++].draw(20.0f);
 
                     if (ImGui::BeginPopupContextItem(od->getName().c_str())) {

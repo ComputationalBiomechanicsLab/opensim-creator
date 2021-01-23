@@ -74,13 +74,13 @@ namespace osmv {
             // center the menu
             {
                 glm::vec2 app_window_dims = app.window_dimensions();
-                glm::vec2 rough_menu_dims = {250, 250};
+                glm::vec2 rough_menu_dims = {500, 500};
                 glm::vec2 menu_pos = 0.5f * (app_window_dims - rough_menu_dims);
                 menu_pos.y = 100;
 
                 ImGui::SetNextWindowPos(menu_pos);
-                ImGui::SetNextWindowSize(ImVec2{250, -1});
-                ImGui::SetNextWindowSizeConstraints({250, 250}, {500, 500});
+                ImGui::SetNextWindowSize(ImVec2{500, -1});
+                ImGui::SetNextWindowSizeConstraints({500, 500}, {500, 500});
             }
 
             if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {

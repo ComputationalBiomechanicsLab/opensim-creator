@@ -192,7 +192,7 @@ namespace osmv {
                 OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
                 OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-                static constexpr char const* title = "osmv " OSMV_VERSION_STRING;
+                static constexpr char const* title = "osmv";
                 static constexpr int x = SDL_WINDOWPOS_CENTERED;
                 static constexpr int y = SDL_WINDOWPOS_CENTERED;
                 static constexpr int width = 1024;
