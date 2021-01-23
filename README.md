@@ -1,4 +1,4 @@
-# osmv
+![logo with title](resources/logo_with_title.svg)
 
 Lightweight UI for OpenSim
 
