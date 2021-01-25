@@ -3,7 +3,7 @@ REM
 REM     - this should build on a clean Windows 2019 Server PC
 
 REM checkout OpenSim 4.1
-git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
+git clone --single-branch --branch master --depth=1 https://github.com/opensim-org/opensim-core
 
 REM build OpenSim dependencies
 dir .
