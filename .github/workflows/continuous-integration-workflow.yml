@@ -1,6 +1,16 @@
 on: [push]
 
 jobs:
+  windows:
+    name: Build on Windows
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - name: TODO build
+      run: |
+        cd $env:GITHUB_WORKSPACE
+        scripts\\windows_e2e-build.bat
+
   ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
     runs-on: ubuntu-16.04
