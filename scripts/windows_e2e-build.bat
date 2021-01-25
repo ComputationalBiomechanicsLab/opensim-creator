@@ -9,7 +9,7 @@ REM build OpenSim dependencies
 dir .
 mkdir opensim-dependencies-build
 cd opensim-dependencies-build
-cmake ../opensim-core/dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=../dependencies-install
+cmake ../opensim-core/dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=../dependencies-install
 cmake --build . --config Release
 dir .
 cd ..
@@ -17,6 +17,6 @@ cd ..
 REM build OpenSim
 mkdir opensim-build
 cd opensim-build
-cmake ../opensim-core -G"Visual Studio 15 2017" -A x64 -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install
+cmake ../opensim-core -G"Visual Studio 16 2019" -A x64 -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install
 cmake --build . --config Release --target install
 cd ..
