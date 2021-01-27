@@ -1,4 +1,4 @@
-#include "renderer.hpp"
+﻿#include "renderer.hpp"
 
 #include "3d_common.hpp"
 #include "application.hpp"
@@ -21,7 +21,6 @@
 #include <optional>
 #include <vector>
 
-// OpenGL stuff (shaders, whatever else)
 namespace {
     // renders to two render targets:
     //
@@ -133,9 +132,8 @@ namespace {
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(p, "uProjMat");
         gl::Uniform_vec4 uBackgroundColor = gl::GetUniformLocation(p, "uBackgroundColor");
-        gl::Uniform_sampler2DMS uSamplerSceneColors = gl::GetUniformLocation(p, "uSamplerSceneColors");
-        gl::Uniform_sampler2DMS uSamplerSelectionEdges = gl::GetUniformLocation(p, "uSamplerSelectionEdges");
-        gl::Uniform_int uNumMultisamples = gl::GetUniformLocation(p, "uNumMultisamples");
+        gl::Uniform_sampler2d uSamplerSceneColors = gl::GetUniformLocation(p, "uSamplerSceneColors");
+        gl::Uniform_sampler2d uSamplerSelectionEdges = gl::GetUniformLocation(p, "uSamplerSelectionEdges");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -213,74 +211,8 @@ namespace {
             return vao;
         }
     };
-}
 
-using namespace SimTK;
-using namespace OpenSim;
-
-// OpenSim rendering specifics
-namespace {
-    // mesh IDs are guaranteed to be globally unique and monotonically increase from
-    // 1
-    //
-    // this guarantee is important because it means that calling code can use direct
-    // integer index lookups, rather than having to rely on (e.g.) a runtime
-    // hashtable
-    using Mesh_id = size_t;
-    using Mesh_ctor_fn = void(std::vector<osmv::Untextured_vert>&);
-    static constexpr std::array<Mesh_ctor_fn*, 3> reserved_mesh_ctors = {
-        osmv::unit_sphere_triangles, osmv::simbody_cylinder_triangles, osmv::simbody_brick_triangles};
-    static constexpr Mesh_id sphere_meshid = 0;
-    static constexpr Mesh_id cylinder_meshid = 1;
-    static constexpr Mesh_id cube_meshid = 2;
-    static constexpr size_t num_reserved_meshes = 3;
-    static_assert(
-        num_reserved_meshes == reserved_mesh_ctors.size(),
-        "if this fails, you might be missing a constructor function for a reserved mesh");
-
-    static std::mutex g_mesh_cache_mutex;
-    static std::unordered_map<std::string, std::vector<osmv::Untextured_vert>> g_mesh_cache;
-
-    // one instance of a mesh
-    //
-    // a model may contain multiple instances of the same mesh
-    struct Mesh_instance final {
-        Component const* owner;
-
-        glm::mat4 transform;
-        glm::mat4 normal_xform;
-        glm::vec4 rgba;
-
-        Mesh_id mesh_id;
-    };
-
-    // for this API, an OpenSim model's geometry is described as a sequence of
-    // rgba-colored mesh instances that are transformed into world coordinates
-    struct State_geometry final {
-        std::vector<Mesh_instance> mesh_instances;
-
-        void clear() {
-            mesh_instances.clear();
-        }
-    };
-
-    struct Geometry_loader final {
-        // this swap space prevents the geometry loader from having to allocate
-        // space every time geometry is requested
-        // Array_<DecorativeGeometry> decorative_geom_swap;
-        SimTK::PolygonalMesh pm_swap;
-        Array_<SimTK::DecorativeGeometry> dg_swp;
-
-        // two-way lookup to establish a meshid-to-path mappings. This is so
-        // that the renderer can just opaquely handle ID ints
-        std::vector<std::string> meshid_to_str = std::vector<std::string>(num_reserved_meshes);
-        std::unordered_map<std::string, Mesh_id> str_to_meshid;
-
-        void all_geometry_in(OpenSim::Model const& model, SimTK::State const& s, State_geometry& out);
-        void load_mesh(Mesh_id id, std::vector<osmv::Untextured_vert>& out);
-    };
-
-    // OpenSim mesh shown in main window
+    // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
         gl::Vertex_array main_vao;
@@ -300,9 +232,130 @@ namespace {
         }
     };
 
+    // global mesh loader state
+    //
+    // mesh IDs are guaranteed to be globally unique application-wide and monotonically
+    // increase from 1, mesh loading is designed to minimize runtime allocations.
+    //
+    // although globals are evil, there's good reasons for doing this in osmv:
+    //
+    // - It means that draw calls for different OpenSim models/states, different geometries,
+    //   etc. can share exactly the same GPU-stored mesh data, which means that loading+rendering
+    //   a bunch of different OpenSim model files can be fast
+    //
+    // - Global uniqueness also means that instanced rendering is possible. All instances with
+    //   the same meshid *definitely* have the same vertices GPU-side, so draw calls can be
+    //   performed in an instanced fashion, rather than step-by-step (fast)
+    //
+    // - Monotonically increasing means that mesh lookups can use a global LUT that's contiguous
+    //   in memory without having to use (e.g.) a hashtable. Effectively, looking up a GPU-side
+    //   mesh costs however much it costs to lookup an item in an array (fast)
+    //
+    // - We're using OpenGL for GPU interaction, so it's unlikely we need a threadsafe renderer
+    //
+    // Disadvantages:
+    //
+    // - No way to deallocate the mesh once it's on the GPU. However, OpenSim meshes are very
+    //   simple and low-memory (e.g. they're not heavy game assets /w many textures spanning
+    //   multiple levels)
+    //
+    // - Need to be careful with initialization (must happen *after* OpenGL is initialized).
+    //   That's handled with a function-local static that's called when the global LUT is
+    //   first needed (after OpenGL initialization)
+    //
+    // - Need to be careful with multithreading. This isn't handled, because this LUT relies on
+    //   OpenGL, which *definitely* requires a well-understood thread model.
+    //
+    // most of the b.s. in this datastructure exists because OpenSim/Simbody aggressively
+    // (badly) preload mesh data and attach it to model instances etc. This is exactly the
+    // opposite of what's necessary to implement a high-perf content-addressible geometry
+    // freewheel, but *shrug*.
+    struct Global_mesh_loader_state final {
+
+        // this is *never* a valid meshid, so if any datastructure contains one, then
+        // something has screwed up somewhere (e.g. the implementation threw when using
+        // this senteniel for an intermediate state)
+        static constexpr int invalid_meshid = -1;
+
+        // reserved mesh IDs:
+        //
+        // these are meshes that aren't actually loaded from a file, but generated. Things like
+        // spheres and planes fall into this category. They are typically generated on the CPU
+        // once and then uploaded onto the GPU. Then, whenever OpenSim/Simbody want one they can
+        // just use the meshid to automatically freewheel it from the GPU.
+        static constexpr int sphere_meshid = 0;
+        static constexpr int cylinder_meshid = 1;
+        static constexpr int cube_meshid = 2;
+
+        // Handles for alread-uploaded meshes, indexed by meshid
+        //
+        // all optimal runtime paths should try to use this. It's a straight lookup
+        // into a GPU-side mesh
+        std::vector<Mesh_on_gpu> meshes;
+
+        // path-to-meshid lookup
+        //
+        // allows decoration generators to lookup whether a mesh file (e.g. pelvis.vtp)
+        // has already been uploaded to the GPU or not and, if it has, what meshid it
+        // was assigned
+        //
+        // this is necessary because SimTK will emit mesh information as paths on the
+        // filesystem
+        std::unordered_map<std::string, int> path2meshid;
+
+        // swap space for Simbody's generateDecorations append target
+        //
+        // generateDecorations requires an Array_ outparam
+        SimTK::Array_<SimTK::DecorativeGeometry> dg_swap;
+
+        // swap space for osmv::Untextured_vert
+        //
+        // this is generally the format needed for GPU uploads
+        std::vector<osmv::Untextured_vert> vert_swap;
+
+        Global_mesh_loader_state() {
+            // allocate reserved meshes
+            static_assert(sphere_meshid == 0);
+            osmv::unit_sphere_triangles(vert_swap);
+            meshes.emplace_back(vert_swap);
+
+            static_assert(cylinder_meshid == 1);
+            osmv::simbody_cylinder_triangles(vert_swap);
+            meshes.emplace_back(vert_swap);
+
+            static_assert(cube_meshid == 2);
+            osmv::simbody_brick_triangles(vert_swap);
+            meshes.emplace_back(vert_swap);
+        }
+    };
+
+    // getter for the global mesh loader instance
+    //
+    // must only be called after OpenGL is initialized.
+    Global_mesh_loader_state& global_meshes() {
+        static Global_mesh_loader_state st;
+        return st;
+    }
+
+    Mesh_on_gpu& global_mesh_lookup(int meshid) {
+        std::vector<Mesh_on_gpu>& meshes = global_meshes().meshes;
+
+        assert(meshid != Global_mesh_loader_state::invalid_meshid);
+        assert(meshid >= 0);
+        assert(static_cast<size_t>(meshid) < meshes.size());
+
+        return meshes[static_cast<size_t>(meshid)];
+    }
+}
+
+using namespace SimTK;
+using namespace OpenSim;
+
+// OpenSim rendering specifics
+namespace {
     // create an xform that transforms the unit cylinder into a line between
     // two points
-    static glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {
+    glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {
         glm::vec3 p1_to_p2 = p2 - p1;
         glm::vec3 c1_to_c2 = glm::vec3{0.0f, 2.0f, 0.0f};
         auto rotation = glm::rotate(
@@ -315,8 +368,8 @@ namespace {
         return translation * rotation * scale_xform;
     }
 
-    // load a SimTK PolygonalMesh into a more generic Untextured_mesh struct
-    static void load_mesh_data(PolygonalMesh const& mesh, std::vector<osmv::Untextured_vert>& triangles) {
+    // load a SimTK::PolygonalMesh into an osmv::Untextured_vert mesh ready for GPU upload
+    void load_mesh_data(PolygonalMesh const& mesh, std::vector<osmv::Untextured_vert>& triangles) {
 
         // helper function: gets a vertex for a face
         auto get_face_vert_pos = [&](int face, int vert) {
@@ -324,17 +377,20 @@ namespace {
             return glm::vec3{pos[0], pos[1], pos[2]};
         };
 
+        // helper function: compute the normal of the triangle p1, p2, p3
         auto make_normal = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
             return glm::cross(p2 - p1, p3 - p1);
         };
 
         triangles.clear();
 
+        // iterate over each face in the PolygonalMesh and transform each into a sequence of
+        // GPU-friendly triangle verts
         for (auto face = 0; face < mesh.getNumFaces(); ++face) {
             auto num_vertices = mesh.getNumVerticesForFace(face);
 
             if (num_vertices < 3) {
-                // line?: ignore
+                // line?: ignore for now
             } else if (num_vertices == 3) {
                 // triangle: use as-is
                 glm::vec3 p1 = get_face_vert_pos(face, 0);
@@ -397,18 +453,20 @@ namespace {
         }
     }
 
+    // a visitor that can be used with SimTK's `implementGeometry` method
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
         OpenSim::Model const& model;
         SimTK::State const& state;
-        Geometry_loader& impl;
-        State_geometry& out;
+        std::vector<osmv::Mesh_instance>& out;
+
+        // set by `set_current_component`, used by other steps of the process to "label" each
+        // piece of geometry
         Component const* current_component = nullptr;
 
         Geometry_visitor(
-            OpenSim::Model const& _model, SimTK::State const& _state, Geometry_loader& _impl, State_geometry& _out) :
+            OpenSim::Model const& _model, SimTK::State const& _state, std::vector<osmv::Mesh_instance>& _out) :
             model{_model},
             state{_state},
-            impl{_impl},
             out{_out} {
         }
 
@@ -482,7 +540,9 @@ namespace {
         }
 
         void implementPointGeometry(const DecorativePoint&) override {
+            // nyi: should be implemented as a sphere as a quick hack (rather than GL_POINTS)
         }
+
         void implementLineGeometry(const DecorativeLine& geom) override {
             // a line is essentially a thin cylinder that connects two points
             // in space. This code eagerly performs that transformation
@@ -492,16 +552,14 @@ namespace {
             glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
 
             glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
-            glm::mat4 normal_mtx = glm::transpose(glm::inverse(cylinder_xform));
 
-            out.mesh_instances.push_back({current_component, cylinder_xform, normal_mtx, rgba(geom), cylinder_meshid});
+            out.emplace_back(current_component, cylinder_xform, rgba(geom), Global_mesh_loader_state::cylinder_meshid);
         }
         void implementBrickGeometry(const DecorativeBrick& geom) override {
             SimTK::Vec3 dims = geom.getHalfLengths();
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
-            glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), cube_meshid});
+            out.emplace_back(current_component, xform, rgba(geom), Global_mesh_loader_state::cube_meshid);
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -511,194 +569,175 @@ namespace {
             s.z *= static_cast<float>(geom.getRadius());
 
             glm::mat4 xform = glm::scale(m, s);
-            glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), cylinder_meshid});
+            out.emplace_back(current_component, xform, rgba(geom), Global_mesh_loader_state::cylinder_meshid);
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
+            // nyi
         }
         void implementSphereGeometry(const DecorativeSphere& geom) override {
             float r = static_cast<float>(geom.getRadius());
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
-            glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
 
-            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(geom), sphere_meshid});
+            out.emplace_back(current_component, xform, rgba(geom), Global_mesh_loader_state::sphere_meshid);
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
+            // nyi
         }
         void implementFrameGeometry(const DecorativeFrame&) override {
+            // nyi
         }
         void implementTextGeometry(const DecorativeText&) override {
+            // nyi
         }
         void implementMeshGeometry(const DecorativeMesh&) override {
+            // nyi
         }
         void implementMeshFileGeometry(const DecorativeMeshFile& m) override {
-            auto xform = glm::scale(transform(m), scale_factors(m));
-            std::string const& path = m.getMeshFile();
+            Global_mesh_loader_state& gmls = global_meshes();
 
-            // HACK: globally cache the loaded meshes
-            //
-            // this is here because OpenSim "helpfully" pre-loads the fucking
-            // meshes in the main thread, so the loading code is currently
-            // redundantly re-loading the meshes that OpenSim loads
-            //
-            // this will be fixed once the Model crawling is customized to step
-            // around OpenSim's shitty implementation (which can't be easily
-            // multithreaded)
+            // perform a cache search for the mesh
+            int meshid = Global_mesh_loader_state::invalid_meshid;
             {
-                std::lock_guard l{g_mesh_cache_mutex};
-                auto [it, inserted] =
-                    g_mesh_cache.emplace(std::piecewise_construct, std::forward_as_tuple(path), std::make_tuple());
+                auto [it, inserted] = gmls.path2meshid.emplace(
+                    std::piecewise_construct,
+                    std::forward_as_tuple(std::ref(m.getMeshFile())),
+                    std::forward_as_tuple(Global_mesh_loader_state::invalid_meshid));
 
-                if (inserted) {
-                    load_mesh_data(m.getMesh(), it->second);
+                if (not inserted) {
+                    // it wasn't inserted, so the path has already been loaded and the entry
+                    // contains a meshid for the fully-loaded mesh
+                    meshid = it->second;
+                } else {
+                    // it was inserted, and is currently a junk meshid because we haven't loaded
+                    // a mesh yet. Load the mesh from the file onto the GPU and allocate a new
+                    // meshid for it. Assign that meshid to the path2meshid lookup.
+                    load_mesh_data(m.getMesh(), gmls.vert_swap);
+
+                    // ensure there's enough space in the meshid space for an extra entry
+                    assert(gmls.meshes.size() < std::numeric_limits<int>::max());
+
+                    meshid = static_cast<int>(gmls.meshes.size());
+                    it->second = meshid;
+                    gmls.meshes.emplace_back(gmls.vert_swap);
                 }
             }
 
-            // load the path into the model-to-path mapping lookup
-            Mesh_id meshid = [this, &path]() {
-                auto [it, inserted] = impl.str_to_meshid.emplace(
-                    std::piecewise_construct, std::forward_as_tuple(path), std::make_tuple());
-
-                if (not inserted) {
-                    return it->second;
-                } else {
-                    // populate lookups
-
-                    size_t meshid_s = impl.meshid_to_str.size();
-                    assert(meshid_s < std::numeric_limits<Mesh_id>::max());
-                    Mesh_id rv = static_cast<Mesh_id>(meshid_s);
-                    impl.meshid_to_str.push_back(path);
-                    it->second = rv;
-                    return rv;
-                }
-            }();
-
-            glm::mat4 normal_mtx = glm::transpose(glm::inverse(xform));
-
-            out.mesh_instances.push_back({current_component, xform, normal_mtx, rgba(m), meshid});
+            glm::mat4 xform = glm::scale(transform(m), scale_factors(m));
+            out.emplace_back(current_component, xform, rgba(m), meshid);
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
+            // nyi
         }
         void implementTorusGeometry(const DecorativeTorus&) override {
+            // nyi
         }
         void implementConeGeometry(const DecorativeCone&) override {
+            // nyi
         }
     };
 
-    void Geometry_loader::all_geometry_in(OpenSim::Model const& m, SimTK::State const& s, State_geometry& out) {
-        // iterate over all components in the OpenSim model, keeping a few things in mind:
-        //
-        // - Anything in the component tree *might* render geometry
-        //
-        // - For selection logic, we only (currently) care about certain high-level components,
-        //   like muscles
-        //
-        // - Pretend the component tree traversal is implementation-defined because it's a bit of
-        //   a mess. At the moment it looks like it's a breadth-first recursive descent
-        //
-        // - Components of interest, like muscles, might not render their geometry - it might be
-        //   delegated to a subcomponent
-        //
-        // So this algorithm assumes that the list iterator is arbitrary, but always returns
-        // *something* in a tree that has the current model as a root. So, for each component that
-        // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
-        // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
-        // than the component that is rendering.
-
-        auto visitor = Geometry_visitor{m, s, *this, out};
-        for (Component const& c : m.getComponentList()) {
-
-            Component const* owner = nullptr;
-            for (Component const* p = &c; p != &m; p = &p->getOwner()) {
-                if (dynamic_cast<OpenSim::Muscle const*>(p)) {
-                    owner = p;
-                    break;
-                }
-            }
-
-            dg_swp.clear();
-            visitor.set_current_component(nullptr);
-            c.generateDecorations(true, m.getDisplayHints(), s, dg_swp);
-            visitor.set_current_component(owner);
-            c.generateDecorations(false, m.getDisplayHints(), s, dg_swp);
-
-            for (SimTK::DecorativeGeometry const& geom : dg_swp) {
-                geom.implementGeometry(visitor);
-            }
-        }
-    }
-
-    void Geometry_loader::load_mesh(Mesh_id id, std::vector<osmv::Untextured_vert>& out) {
-        // handle reserved mesh IDs: they are generated from a constructor function populated
-        // above
-        if (id < num_reserved_meshes) {
-            reserved_mesh_ctors[id](out);
-            return;
-        }
-
-        std::string const& path = meshid_to_str.at(id);
-
-        std::lock_guard l{g_mesh_cache_mutex};
-
-        auto [it, inserted] =
-            g_mesh_cache.emplace(std::piecewise_construct, std::forward_as_tuple(path), std::make_tuple());
-
-        if (inserted) {
-            // wasn't cached: load the mesh
-
-            PolygonalMesh& mesh = pm_swap;
-            mesh.clear();
-            mesh.loadFile(path);
-
-            load_mesh_data(mesh, it->second);
-        }
-
-        out = it->second;
-    }
-
-    static gl::Pixel_pack_buffer make_single_pixel_PBO() {
+    // create an OpenGL Pixel Buffer Object (PBO) that holds exactly one pixel
+    gl::Pixel_pack_buffer make_single_pixel_PBO() {
         gl::Pixel_pack_buffer rv;
         gl::BindBuffer(rv);
-        GLubyte rgba[4]{};  // initialize to zeroed values
+        GLubyte rgba[4]{};  // initialize PBO's content to zeroed values
         gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
         gl::UnbindBuffer(rv);
         return rv;
     }
 
-    // renderer MRT FBO:
-    //
-    // - COLOR0: multisampled texture containing scene geometry
-    // - DEPTH_STENCIL_ATTACHMENT: depth+stencil buffers
-    //
-    // this renderer first draws into these textures, which are used for
-    // runtime calulations (e.g. selection logic) and then blitted onto
-    // the screen via a quad.
+    glm::mat4 compute_view_matrix(float theta, float phi, float radius, glm::vec3 pan) {
+        // camera: at a fixed position pointing at a fixed origin. The "camera"
+        // works by translating + rotating all objects around that origin. Rotation
+        // is expressed as polar coordinates. Camera panning is represented as a
+        // translation vector.
 
+        // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
+        // system that shifts the world based on the camera pan
+
+        auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{0.0f, 1.0f, 0.0f});
+        auto theta_vec = glm::normalize(glm::vec3{sinf(theta), 0.0f, cosf(theta)});
+        auto phi_axis = glm::cross(theta_vec, glm::vec3{0.0, 1.0f, 0.0f});
+        auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
+        auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
+        return glm::lookAt(glm::vec3(0.0f, 0.0f, radius), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3{0.0f, 1.0f, 0.0f}) *
+               rot_theta * rot_phi * pan_translate;
+    }
+
+    glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
+        return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
+    }
+}
+
+namespace osmv {
+    struct Restore_original_framebuffer_on_destruction final {
+        GLint original_draw_fbo;
+        GLint original_read_fbo;
+
+        Restore_original_framebuffer_on_destruction() {
+            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
+            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+        }
+        Restore_original_framebuffer_on_destruction(Restore_original_framebuffer_on_destruction const&) = delete;
+        Restore_original_framebuffer_on_destruction(Restore_original_framebuffer_on_destruction&&) = delete;
+        Restore_original_framebuffer_on_destruction&
+            operator=(Restore_original_framebuffer_on_destruction const&) = delete;
+        Restore_original_framebuffer_on_destruction& operator=(Restore_original_framebuffer_on_destruction&&) = delete;
+        ~Restore_original_framebuffer_on_destruction() noexcept {
+            gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+            gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+        }
+    };
+
+    // OpenGL buffers used by the renderer
+    //
+    // designed with move + assignment semantics in-mind, so that users can just
+    // reassign new Render_buffers over these ones (e.g. if window dimensions
+    // change)
     struct Renderer_buffers {
+
+        // dimensions that these buffers were initialized with
         sdl::Window_dimensions dims;
+
+        // num multisamples these buffers were initialized with
         int samples;
 
-        // stores rendered scenery
+        // stores multisampled OpenSim scene
         gl::Texture_2d_multisample gColor0_mstex;
 
-        // stores selected item index and selection rim alphas
+        // stores multisampled item index and selection rim alphas
         gl::Texture_2d_multisample gColor1_mstex;
 
-        // depth + stencil RBO: needed to "complete" the FBO
+        // stores multisampled depth + stencil values for the main MRT framebuffer
         gl::Render_buffer gDepth24Stencil8_rbo;
 
-        // MRT FBO that writes scenery + selection info in one pass
+        // main MRT framebuffer
         gl::Frame_buffer gMRT_fbo;
 
-        // texture+fbo for sampling non-MSXAAed version of the scene
-        //
-        // used to sample out the currently-moused-over target
+        // stores non-MSXAAed version of the index and selection data (COLOR1)
         gl::Texture_2d gSkipMSXAA_tex;
+
+        // framebuffer for non-MSXAAed index+selection render
         gl::Frame_buffer gSkipMSXAA_fbo;
 
-        // PBOs for asynchronously reading the non-MSXAAed value for
-        // the mouseover target
+        // stores resolved (post-MSXAA) OpenSim scene
+        gl::Texture_2d gColor0_resolved;
+
+        // fbo for resolved (post-MSXAA) OpenSim scene
+        gl::Frame_buffer gColor0_resolved_fbo;
+
+        // stores resolved (post-MSXAA) index + selection rim alphas
+        gl::Texture_2d gColor1_resolved;
+
+        // fbo for resolving color1 via a framebuffer blit
+        gl::Frame_buffer gColor1_resolved_fbo;
+
+        // pixel buffer objects (PBOs) for storing pixel color values
+        //
+        // these are used to asychronously request the pixel under the user's mouse
+        // such that the renderer can decode that pixel value *on the next frame*
+        // without stalling the GPU pipeline
         std::array<gl::Pixel_pack_buffer, 2> pbos{make_single_pixel_PBO(), make_single_pixel_PBO()};
         int pbo_idx = 0;  // 0 or 1
 
@@ -735,11 +774,7 @@ namespace {
 
             // allocate MRT FBO that scene draws into
             gMRT_fbo{[this]() {
-                // save original FBO
-                GLint original_draw_fbo;
-                GLint original_read_fbo;
-                glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
-                glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+                Restore_original_framebuffer_on_destruction restore_fbos;
 
                 gl::Frame_buffer rv;
 
@@ -752,10 +787,6 @@ namespace {
 
                 // main FBO allocated, check it's OK
                 assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-
-                // restore original FBO
-                gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-                gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
 
                 return rv;
             }()},
@@ -773,11 +804,7 @@ namespace {
 
             // allocate non-MSXAAed FBO for the non-blended write
             gSkipMSXAA_fbo{[this]() {
-                // save original FBO
-                GLint original_draw_fbo;
-                GLint original_read_fbo;
-                glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
-                glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
+                Restore_original_framebuffer_on_destruction restore_fbos;
 
                 gl::Frame_buffer rv;
 
@@ -788,21 +815,61 @@ namespace {
                 // check non-MSXAA OK
                 assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-                // restore original FBO
-                gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-                gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+                return rv;
+            }()},
+
+            // allocate resolved (post-MSXAA) COLOR0 (OpenSim scene) texture
+            gColor0_resolved{[this]() {
+                gl::Texture_2d rv;
+                gl::BindTexture(rv);
+                gl::TexImage2D(rv.type, 0, GL_RGBA, dims.w, dims.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                gl::TextureParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+                gl::TextureParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+                return rv;
+            }()},
+
+            // allocate FBO for resolved (post-MSXAA) COLOR0 (OpenSim scene) texture
+            gColor0_resolved_fbo{[this]() {
+                Restore_original_framebuffer_on_destruction restore_fbos;
+
+                gl::Frame_buffer rv;
+                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::FramebufferTexture2D(
+                    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gColor0_resolved.type, gColor0_resolved, 0);
+
+                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+                return rv;
+            }()},
+
+            // allocate resolved (post-MSXAA) COLOR1 (selection logic) texture
+            gColor1_resolved{[this]() {
+                gl::Texture_2d rv;
+                gl::BindTexture(rv);
+                gl::TexImage2D(rv.type, 0, GL_RGBA, dims.w, dims.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                gl::TextureParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+                gl::TextureParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+                return rv;
+            }()},
+
+            gColor1_resolved_fbo{[this]() {
+                Restore_original_framebuffer_on_destruction restore_fbos;
+
+                gl::Frame_buffer rv;
+                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::FramebufferTexture2D(
+                    GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gColor1_resolved.type, gColor1_resolved, 0);
+
+                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
                 return rv;
             }()} {
         }
     };
-}
 
-// osmv::Renderer implementation
+    // internal renderer implementation details
+    struct Renderer_impl final {
 
-namespace osmv {
-    struct Renderer_private_state final {
-        // OpenGL shaders
         struct {
             Gouraud_mrt_shader gouraud;
             Normals_shader normals;
@@ -816,8 +883,9 @@ namespace osmv {
         gl::Array_bufferT<osmv::Shaded_textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
         gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
         gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
+        gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
 
-        // floor texture details
+        // floor texture
         struct {
             gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
                 auto copy = osmv::shaded_textured_quad_verts;
@@ -837,51 +905,10 @@ namespace osmv {
             }();
         } floor;
 
-        // temporary scratch space
-        struct {
-            std::vector<Untextured_vert> mesh;
-            State_geometry geom;
-        } scratch;
-
-        // opensim geometry loading
-        struct {
-            Geometry_loader geom_loader;
-
-            // indexed by meshid
-            std::vector<std::optional<Mesh_on_gpu>> meshes;
-        } osim;
-
+        // other OpenGL (GPU) buffers used by the renderer
         Renderer_buffers buffers;
 
-        Renderer_private_state(Application& app) : buffers{app.window_dimensions(), app.samples()} {
-        }
-
-        void load_geom_from_model(OpenSim::Model const& model, SimTK::State const& s) {
-            // TODO: this step should be exposed to callers, ideally, because it's quite
-            // slow
-
-            scratch.geom.clear();
-            osim.geom_loader.all_geometry_in(model, s, scratch.geom);
-
-            for (Mesh_instance const& mi : scratch.geom.mesh_instances) {
-                if (osim.meshes.size() >= (mi.mesh_id + 1) and osim.meshes[mi.mesh_id].has_value()) {
-                    // the mesh is already loaded
-                    continue;
-                }
-
-                osim.geom_loader.load_mesh(mi.mesh_id, scratch.mesh);
-                osim.meshes.resize(std::max(osim.meshes.size(), mi.mesh_id + 1));
-                osim.meshes[mi.mesh_id] = Mesh_on_gpu{scratch.mesh};
-            }
-
-            // HACK: the scene might contain blended (alpha < 1.0f) elements. These must
-            // be drawn last, ideally back-to-front (not yet implemented); otherwise,
-            // OpenGL will early-discard after the vertex shader when they fail a
-            // depth test
-            std::sort(
-                scratch.geom.mesh_instances.begin(),
-                scratch.geom.mesh_instances.end(),
-                [](Mesh_instance const& a, Mesh_instance const& b) { return a.rgba.a > b.rgba.a; });
+        Renderer_impl(Application const& app) : buffers{app.window_dimensions(), app.samples()} {
         }
     };
 }
@@ -896,7 +923,7 @@ namespace osmv {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Renderer::Renderer(osmv::Application& app) : state(new Renderer_private_state(app)) {
+osmv::Renderer::Renderer(osmv::Application const& app) : state(new Renderer_impl(app)) {
 }
 
 osmv::Renderer::~Renderer() noexcept = default;
@@ -954,8 +981,8 @@ osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const&
             // alter camera position while dragging
             float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
             float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
-            theta += 2.0f * static_cast<float>(M_PI) * sensitivity * dx;
-            phi += 2.0f * static_cast<float>(M_PI) * sensitivity * dy;
+            theta += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dx;
+            phi += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dy;
         }
 
         if (panning) {
@@ -1001,11 +1028,11 @@ osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const&
         }
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (e.wheel.y > 0 and radius >= 0.1f) {
-            radius *= wheel_sensitivity;
+            radius *= mouse_wheel_sensitivity;
         }
 
         if (e.wheel.y <= 0 and radius < 100.0f) {
-            radius /= wheel_sensitivity;
+            radius /= mouse_wheel_sensitivity;
         }
 
         return Event_response::handled;
@@ -1014,69 +1041,121 @@ osmv::Event_response osmv::Renderer::on_event(Application& app, SDL_Event const&
     return Event_response::ignored;
 }
 
-template<typename V>
-static V& asserting_find(std::vector<std::optional<V>>& meshes, Mesh_id id) {
-    assert(id + 1 <= meshes.size());
-    assert(meshes[id]);
-    return meshes[id].value();
+void osmv::Renderer::generate_geometry(
+    OpenSim::Model const& model, SimTK::State const& st, State_geometry& out, GeometryGeneratorFlags flags) {
+
+    // iterate over all components in the OpenSim model, keeping a few things in mind:
+    //
+    // - Anything in the component tree *might* render geometry
+    //
+    // - For selection logic, we only (currently) care about certain high-level components,
+    //   like muscles
+    //
+    // - Pretend the component tree traversal is implementation-defined because OpenSim's
+    //   implementation of component-tree walking is a bit of a clusterfuck. At time of
+    //   writing, it's a breadth-first recursive descent
+    //
+    // - Components of interest, like muscles, might not render their geometry - it might be
+    //   delegated to a subcomponent
+    //
+    // So this algorithm assumes that the list iterator is arbitrary, but always returns
+    // *something* in a tree that has the current model as a root. So, for each component that
+    // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
+    // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
+    // than the component that is rendering.
+
+    out.clear();
+
+    SimTK::Array_<SimTK::DecorativeGeometry>& dg_swap = global_meshes().dg_swap;
+    Geometry_visitor visitor{model, st, out.meshes};
+    OpenSim::ModelDisplayHints const& hints = model.getDisplayHints();
+
+    for (OpenSim::Component const& c : model.getComponentList()) {
+        // HACK: traverse up the component tree until a muscle or the root is hit
+        Component const* owner = nullptr;
+        for (Component const* p = &c; p != &model; p = &p->getOwner()) {
+            if (dynamic_cast<OpenSim::Muscle const*>(p)) {
+                owner = p;
+                break;
+            }
+        }
+
+        dg_swap.clear();
+
+        if (flags & GeometryGeneratorFlags_Static) {
+            visitor.set_current_component(nullptr);  // static geometry has no owner
+            c.generateDecorations(true, hints, st, dg_swap);
+        }
+
+        if (flags & GeometryGeneratorFlags_Dynamic) {
+            visitor.set_current_component(owner);
+            c.generateDecorations(false, hints, st, dg_swap);
+        }
+
+        for (SimTK::DecorativeGeometry const& geom : dg_swap) {
+            // this step populates the outparam with concerete geometry instances
+            geom.implementGeometry(visitor);
+        }
+    }
 }
 
-static glm::mat4 compute_view_matrix(float theta, float phi, float radius, glm::vec3 pan) {
-    // camera: at a fixed position pointing at a fixed origin. The "camera"
-    // works by translating + rotating all objects around that origin. Rotation
-    // is expressed as polar coordinates. Camera panning is represented as a
-    // translation vector.
+void osmv::Renderer::draw(Application const& ui, State_geometry& geometry) {
+    // overview:
+    //
+    // drawing the scene efficiently is a fairly involved process. I apologize for that, but
+    // rendering scenes efficiently with OpenGL requires an appreciation of OpenGL, GPUs,
+    // and designing APIs that are flexible (because devs inevitably will want to customize
+    // draw calls) and compatible with OpenSim.
+    //
+    // this is a forward (as opposed to deferred) renderer that borrows some ideas from deferred
+    // rendering techniques. It *mostly* draws the entire scene in one pass (forward rending) but
+    // the rendering step *also* writes to a multi-render-target (MRT) FBO that extra information
+    // such as what's currently selected, and it uses that information in downstream sampling steps
+    // (kind of like how deferred rendering puts everything into information-dense buffers). The
+    // reason this rendering pipeline isn't fully deferred (gbuffers, albeido, etc.) is because
+    // the scene is lit by a single directional light and the shading is fairly simple - there's
+    // no perf upside to deferred shading in that particular scenario.
 
-    // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
-    // system that shifts the world based on the camera pan
+    std::vector<Mesh_instance>& meshes = geometry.meshes;
 
-    auto rot_theta = glm::rotate(glm::identity<glm::mat4>(), -theta, glm::vec3{0.0f, 1.0f, 0.0f});
-    auto theta_vec = glm::normalize(glm::vec3{sinf(theta), 0.0f, cosf(theta)});
-    auto phi_axis = glm::cross(theta_vec, glm::vec3{0.0, 1.0f, 0.0f});
-    auto rot_phi = glm::rotate(glm::identity<glm::mat4>(), -phi, phi_axis);
-    auto pan_translate = glm::translate(glm::identity<glm::mat4>(), pan);
-    return glm::lookAt(glm::vec3(0.0f, 0.0f, radius), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3{0.0f, 1.0f, 0.0f}) *
-           rot_theta * rot_phi * pan_translate;
-}
+    // step 1: partition the mesh instances into those that are solid and those that require
+    //         alpha blending
+    //
+    // ideally, rendering would follow the `painter's algorithm` and draw everything back-to-front.
+    // We don't do that here, because constructing the various octrees, bsp's etc. to do that would
+    // add a bunch of complexity CPU-side that's entirely unnecessary for such basic scenes. Also,
+    // OpenGL benefits from the entirely opposite algorithm (render front-to-back) because it
+    // uses depth testing as part of the "early fragment test" phase. Isn't low-level fun? :)
+    //
+    // so the hack here is to indiscriminately render all solid geometry first followed by
+    // indiscriminately rendering all alpha-blended geometry. The edge-case failure here is that
+    // alpha blended geometry, itself, should be rendered back-to-front because alpha-blended
+    // geometry can be intercalated or occluding other alpha-blended geometry.
+    auto has_solid_color = [](Mesh_instance const& a) { return a.rgba.a >= 1.0f; };
+    std::partition(meshes.begin(), meshes.end(), has_solid_color);
 
-static glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
-    return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
-}
-
-void osmv::Renderer::draw(
-    Application const& ui, OpenSim::Model const& model, SimTK::State const& s, OpenSim::Component const* selected) {
-
-    // load model geometry
-    state->load_geom_from_model(model, s);
-
+    // step 2: precompute any matrices
     glm::mat4 view_mtx = compute_view_matrix(theta, phi, radius, pan);
     glm::mat4 proj_mtx = glm::perspective(fov, ui.window_aspect_ratio(), znear, zfar);
     glm::vec3 view_pos = spherical_2_cartesian(theta, phi, radius);
 
-    // overview:
+    // step 3: bind to an off-screen framebuffer object (FBO)
     //
-    // this is a forward (as opposed to deferred) renderer that borrows some ideas from deferred
-    // rendering techniques
-    //
-    // main motivator here is to render all scene geometry in a single pass, followed by using data
-    // produced in that pass in subsequent shaders. This means that some things are over-calculated
-    // (e.g. edge-detection for rim highlights are screen-wide), but all computation happens in
-    // parallel on the GPU, rather than stalling on the CPU
-
-    // step 1: bind to an off-screen FBO
-    //
-    // - this FBO writes to textures that can be sampled downstream
+    // drawing into this FBO writes to textures that the user can't see, but that can
+    // be sampled by downstream shaders
     GLint original_draw_fbo;
     GLint original_read_fbo;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
-
     gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gMRT_fbo);
+
+    // step 4: clear the FBO for a new draw call
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // step 1: render the scene to the off-screen textures using a multiple-render-target
-    //         (MRT) multisampled (MSXAAed) shader
+    // step 5: render the scene to the FBO using a multiple-render-target (MRT)
+    //         multisampled (MSXAAed) shader. FBO outputs are:
     //
     // - COLOR0: main target: multisampled scene geometry
     //
@@ -1099,67 +1178,60 @@ void osmv::Renderer::draw(
     if (true) {
         glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
 
-        // draw the floor
-        if (show_floor) {
-            Plain_texture_shader& shader = state->shaders.plain_texture;
-            gl::DrawBuffers(GL_COLOR_ATTACHMENT0);
-            gl::UseProgram(shader.p);
-
-            gl::Uniform(shader.projMat, proj_mtx);
-            gl::Uniform(shader.viewMat, view_mtx);
-            gl::Uniform(shader.modelMat, state->floor.model_mtx);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(state->floor.floor_texture);
-            gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-            gl::BindVertexArray(state->floor.vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
-            gl::BindVertexArray();
-        }
-
-        // draw scene geometry
+        // draw state geometry
         Gouraud_mrt_shader& shader = state->shaders.gouraud;
-        gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
         gl::UseProgram(shader.program);
 
         gl::Uniform(shader.uProjMat, proj_mtx);
         gl::Uniform(shader.uViewMat, view_mtx);
         gl::Uniform(shader.uLightPos, light_pos);
-        gl::Uniform(shader.uLightColor, light_color);
+        gl::Uniform(shader.uLightColor, light_rgb);
         gl::Uniform(shader.uViewPos, view_pos);
 
-        std::vector<Mesh_instance> const& instances = state->scratch.geom.mesh_instances;
-        for (size_t i = 0; i < instances.size(); ++i) {
-            Mesh_instance const& m = instances[i];
+        for (size_t instance_idx = 0; instance_idx < meshes.size(); ++instance_idx) {
+            Mesh_instance const& m = meshes[instance_idx];
 
             // COLOR1: will receive selection logic via the RGBA channels
             //
             //     - RGB (24 bits): little-endian encoded index+1 of the geometry instance
             //     - A   (8 bits): whether the geometry instance is currently selected or not
-            uint32_t color_id = static_cast<uint32_t>(i + 1);
+            assert(instance_idx < std::numeric_limits<uint32_t>::max());
+            uint32_t color_id = static_cast<uint32_t>(instance_idx + 1);
             float r = static_cast<float>(color_id & 0xff) / 255.0f;
             float g = static_cast<float>((color_id >> 8) & 0xff) / 255.0f;
             float b = static_cast<float>((color_id >> 16) & 0xff) / 255.0f;
-
-            float a = 0.0f;
-            if (m.owner != nullptr) {
-                if (m.owner == selected) {
-                    a = 1.0f;
-                } else if (m.owner == hovered_component) {
-                    a = 0.4f;
-                }
-            }
+            float a = m._rim_alpha;
 
             gl::Uniform(shader.uRgba2, glm::vec4{r, g, b, a});
             gl::Uniform(shader.uRgba, m.rgba);
             gl::Uniform(shader.uModelMat, m.transform);
             gl::Uniform(shader.uNormalMat, m.normal_xform);
 
-            Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
+            Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
             gl::BindVertexArray(md.main_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
         }
         gl::BindVertexArray();
+
+        // (optional): draw a chequered floor
+        //
+        // only drawn to COLOR0, because it doesn't contribute to selection logic etc.
+        if (show_floor) {
+            Plain_texture_shader& pts = state->shaders.plain_texture;
+            gl::DrawBuffers(GL_COLOR_ATTACHMENT0);
+            gl::UseProgram(pts.p);
+
+            gl::Uniform(pts.projMat, proj_mtx);
+            gl::Uniform(pts.viewMat, view_mtx);
+            gl::Uniform(pts.modelMat, state->floor.model_mtx);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(state->floor.floor_texture);
+            gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+
+            gl::BindVertexArray(state->floor.vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
+            gl::BindVertexArray();
+        }
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -1175,11 +1247,11 @@ void osmv::Renderer::draw(
             gl::Uniform(ns.uProjMat, proj_mtx);
             gl::Uniform(ns.uViewMat, view_mtx);
 
-            for (auto& m : state->scratch.geom.mesh_instances) {
+            for (Mesh_instance const& m : meshes) {
                 gl::Uniform(ns.uModelMat, m.transform);
                 gl::Uniform(ns.uNormalMat, m.normal_xform);
 
-                Mesh_on_gpu& md = asserting_find(state->osim.meshes, m.mesh_id);
+                Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
                 gl::BindVertexArray(md.normal_vao);
                 gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
             }
@@ -1187,13 +1259,13 @@ void osmv::Renderer::draw(
         }
     }
 
-    // step 2: figure out if the mouse is hovering over anything
+    // step 6: figure out if the mouse is hovering over anything
     //
-    // COLOR1's RGB channels encode the index of the mesh instance. Extracting that pixel value
-    // (without MSXAA blending) and decoding it back into an index makes it possible to figure
-    // out what the mouse is over
+    // in the previous draw call, COLOR1's RGB channels encoded the index of the mesh instance.
+    // Extracting that pixel value (without MSXAA blending) and decoding it back into an index
+    // makes it possible to figure out what OpenSim::Component the mouse is over without requiring
+    // complex spatial algorithms
     if (true) {
-
         // bind to a non-MSXAAed texture
         gl::BindFrameBuffer(GL_FRAMEBUFFER, state->buffers.gSkipMSXAA_fbo);
 
@@ -1252,7 +1324,7 @@ void osmv::Renderer::draw(
 
         static constexpr bool fast_mode = true;
 
-        uint32_t decoded = 0;
+        uint32_t color_id = 0;
         if (fast_mode) {
             int reader = state->buffers.pbo_idx % 2;
             int mapper = (state->buffers.pbo_idx + 1) % 2;
@@ -1265,9 +1337,9 @@ void osmv::Renderer::draw(
             gl::BindBuffer(state->buffers.pbos[static_cast<size_t>(mapper)]);
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
-            decoded = src[0];
-            decoded |= static_cast<uint32_t>(src[1]) << 8;
-            decoded |= static_cast<uint32_t>(src[2]) << 16;
+            color_id = src[0];
+            color_id |= static_cast<uint32_t>(src[1]) << 8;
+            color_id |= static_cast<uint32_t>(src[2]) << 16;
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -1278,65 +1350,115 @@ void osmv::Renderer::draw(
 
             GLubyte rgba[4]{};
             glReadPixels(xbl, ybl, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
-            decoded = rgba[0];
-            decoded |= static_cast<uint32_t>(rgba[1]) << 8;
-            decoded |= static_cast<uint32_t>(rgba[2]) << 16;
+            color_id = rgba[0];
+            color_id |= static_cast<uint32_t>(rgba[1]) << 8;
+            color_id |= static_cast<uint32_t>(rgba[2]) << 16;
         }
 
         // the decoded value is the index + 1, which we hold as the selected value because
         // +1 has the handy property of making 0 into a senteniel for "nothing selected"
-        if (decoded == 0) {
+        if (color_id == 0) {
             hovered_component = nullptr;
         } else {
-            hovered_component = state->scratch.geom.mesh_instances[decoded - 1].owner;
+            size_t instance_idx = color_id - 1;
+            OpenSim::Component const* hovered = meshes[instance_idx].owner;
+            hovered_component = hovered;
         }
     }
 
-    // note: the scene geometry is now "done": COLOR0 is linked to an MSXAAed texture that can
-    //       be blitted to the output
+    // step 7: resolve MSXAA
+    //
+    // Resolve the MSXAA samples in COLOR0 and COLOR1 non-MSXAAed textures. This is done separately
+    // because an intermediate step (decoding pixel colors into Component indices) cannot work with
+    // post-resolved data (we need to *guarantee* that colors in the buffers are not blended if
+    // they contain non-blendable information, like indices).
+    {
+        auto d = state->buffers.dims;
+        int w = d.w;
+        int h = d.h;
 
-    // TODO: the MSXAAed textures should be pre-blitted, rather than running a funky custom
-    // shader that handles it
+        // blit COLOR0
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, state->buffers.gMRT_fbo);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, state->buffers.gColor0_resolved_fbo);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-    // step 3: compose the two textures together with a specialized shader and write
-    //         to the output FBO
-    //
-    // - COLOR1: sampled as-is
-    //
-    // - COLOR2: passed through an edge-detection kernel to find the edges of all selected
-    //           geometry in the scene
-    //
-    // - COMPOSITION: alpha-over blend COLOR2 over COLOR1 over background
+        // blit COLOR1
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, state->buffers.gMRT_fbo);
+        glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, state->buffers.gColor1_resolved_fbo);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
+    // step 8: compose final render and write it to the output FBO
     {
         // ensure the output is written to the output FBO
         glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw the edges over the rendered scene
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
 
-        // screen-space quad
+        // setup draw call to draw a quad accross the entire screen
         gl::Uniform(shader.uProjMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
         gl::Uniform(shader.uModelMat, gl::identity_val);
-        gl::Uniform(shader.uBackgroundColor, glm::vec4{0.89f, 0.89f, 0.89f, 1.0f});
+        gl::Uniform(shader.uBackgroundColor, background_rgba);
 
         gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(state->buffers.gColor0_mstex);
+        gl::BindTexture(state->buffers.gColor0_resolved);
         gl::Uniform(shader.uSamplerSceneColors, gl::texture_index<GL_TEXTURE0>());
 
         gl::ActiveTexture(GL_TEXTURE1);
-        gl::BindTexture(state->buffers.gColor1_mstex);
+        gl::BindTexture(state->buffers.gColor1_resolved);
         gl::Uniform(shader.uSamplerSelectionEdges, gl::texture_index<GL_TEXTURE1>());
 
-        gl::Uniform(shader.uNumMultisamples, ui.samples());
-
-        glDisable(GL_DEPTH_TEST);
         gl::BindVertexArray(state->edge_detection_quad_vao);
         gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
-        glEnable(GL_DEPTH_TEST);
+    }
+
+    // (optional): render debug quads
+    //
+    // if the application is rendering in debug mode, then render quads for the intermediate
+    // buffers (selection etc.) because it's handy for debugging
+    if (ui.is_in_debug_mode()) {
+        Plain_texture_shader& pts = state->shaders.plain_texture;
+        gl::UseProgram(pts.p);
+
+        gl::Uniform(pts.projMat, gl::identity_val);
+        gl::Uniform(pts.viewMat, gl::identity_val);
+        gl::BindVertexArray(state->pts_quad_vao);
+
+        glm::mat4 row1 = []() {
+            glm::mat4 m = glm::identity<glm::mat4>();
+            m = glm::translate(m, glm::vec3{0.80f, 0.80f, -1.0f});  // move to [+0.6, +1.0]
+            m = glm::scale(m, glm::vec3{0.20f});  // so it becomes [-0.2, +0.2]
+            return m;
+        }();
+
+        gl::Uniform(pts.modelMat, row1);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(state->buffers.gColor0_resolved);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+
+        glm::mat4 row2 = []() {
+            glm::mat4 m = glm::identity<glm::mat4>();
+            m = glm::translate(m, glm::vec3{0.80f, 0.40f, -1.0f});  // move to [+0.6, +1.0] in x
+            m = glm::scale(m, glm::vec3{0.20f});  // so it becomes [-0.2, +0.2]
+            return m;
+        }();
+
+        gl::Uniform(pts.modelMat, row2);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(state->buffers.gColor1_resolved);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+
+        gl::BindVertexArray();
     }
 }

@@ -200,6 +200,11 @@ namespace {
                 std::numeric_limits<float>::max(),
                 ImVec2(0, height));
         }
+
+        float last_datapoint() const {
+            assert(n > 0);
+            return data[n - 1];
+        }
     };
 
     struct Output_plot final {
@@ -273,6 +278,87 @@ namespace {
         }
     };
 
+    class Selected_component final {
+        OpenSim::Component const* ptr = nullptr;
+
+    public:
+        // TODO: make private
+        std::vector<Evenly_spaced_sparkline<512>> output_sinks;
+
+        Selected_component& operator=(OpenSim::Component const* _ptr) {
+            if (_ptr == ptr) {
+                return *this;
+            }
+
+            ptr = _ptr;
+            output_sinks.clear();
+
+            if (ptr == nullptr) {
+                return *this;
+            }
+
+            // if the user selects something, preallocate some output
+            // sparklines for the selection
+
+            size_t n_outputs = 0;
+            for (auto const& p : ptr->getOutputs()) {
+                if (dynamic_cast<OpenSim::Output<double> const*>(p.second.get())) {
+                    ++n_outputs;
+                }
+            }
+
+            output_sinks.resize(n_outputs);
+
+            return *this;
+        }
+
+        operator bool() const noexcept {
+            return ptr != nullptr;
+        }
+
+        operator OpenSim::Component const*() const noexcept {
+            return ptr;
+        }
+
+        OpenSim::Component const* operator->() const noexcept {
+            return ptr;
+        }
+
+        OpenSim::Component const& operator*() const noexcept {
+            return *ptr;
+        }
+
+        void on_ui_state_update(SimTK::State const& st) {
+            // if the user currently has something selected, live-update
+            // all outputs
+
+            if (ptr == nullptr) {
+                return;
+            }
+
+            float sim_time = static_cast<float>(st.getTime());
+
+            size_t i = 0;
+            for (auto const& p : ptr->getOutputs()) {
+                OpenSim::AbstractOutput const* ao = p.second.get();
+
+                // only certain types of output are plottable at the moment
+                auto* o = dynamic_cast<OpenSim::Output<double> const*>(ao);
+                if (o) {
+                    double v = o->getValue(st);
+                    float fv = static_cast<float>(v);
+                    output_sinks[i++].push_datapoint(sim_time, fv);
+                }
+            }
+        }
+
+        void on_user_edited_state() {
+            for (auto& pl : output_sinks) {
+                pl.clear();
+            }
+        }
+    };
+
     struct Simulator_tab final {
         std::optional<osmv::Fd_simulator> simulator;
 
@@ -310,6 +396,8 @@ namespace {
 
         float fd_final_time = 0.4f;
 
+        osmv::Integrator_stats istats;
+
         void clear() {
             prescribeQcalls.clear();
             simTimeDividedByWallTime.clear();
@@ -331,7 +419,7 @@ namespace {
             clear();
         }
 
-        void on_ui_state_update(SimTK::State const& st) {
+        void on_ui_state_update(OpenSim::Model const& model, SimTK::State const& st) {
             if (not simulator) {
                 return;
             }
@@ -343,13 +431,20 @@ namespace {
             prescribeQcalls.push_datapoint(sim_time, sim.num_prescribeq_calls());
             simTimeDividedByWallTime.push_datapoint(sim_time, sim_time / wall_time);
 
-            osmv::Integrator_stats istats = sim.integrator_stats();
+            // get latest integrator stats
+            sim.integrator_stats(istats);
+
+            // push 0d integrator stats onto sparklines
             for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
                 integrator_plot.push_datapoint(sim_time, istats);
             }
         }
 
-        void draw(OpenSim::Model& shown_model, SimTK::State& shown_state) {
+        void draw(
+            osmv::Renderer& renderer,
+            Selected_component& selected_component,
+            OpenSim::Model& shown_model,
+            SimTK::State& shown_state) {
             // start/stop button
             if (simulator and simulator->is_running()) {
                 ImGui::PushStyleColor(ImGuiCol_Button, red);
@@ -520,87 +615,6 @@ namespace {
             }
         }
     };
-
-    class Selected_component final {
-        OpenSim::Component const* ptr = nullptr;
-
-    public:
-        // TODO: make private
-        std::vector<Evenly_spaced_sparkline<512>> output_sinks;
-
-        Selected_component& operator=(OpenSim::Component const* _ptr) {
-            if (_ptr == ptr) {
-                return *this;
-            }
-
-            ptr = _ptr;
-            output_sinks.clear();
-
-            if (ptr == nullptr) {
-                return *this;
-            }
-
-            // if the user selects something, preallocate some output
-            // sparklines for the selection
-
-            size_t n_outputs = 0;
-            for (auto const& p : ptr->getOutputs()) {
-                if (dynamic_cast<OpenSim::Output<double> const*>(p.second.get())) {
-                    ++n_outputs;
-                }
-            }
-
-            output_sinks.resize(n_outputs);
-
-            return *this;
-        }
-
-        operator bool() const noexcept {
-            return ptr != nullptr;
-        }
-
-        operator OpenSim::Component const*() const noexcept {
-            return ptr;
-        }
-
-        OpenSim::Component const* operator->() const noexcept {
-            return ptr;
-        }
-
-        OpenSim::Component const& operator*() const noexcept {
-            return *ptr;
-        }
-
-        void on_ui_state_update(SimTK::State const& st) {
-            // if the user currently has something selected, live-update
-            // all outputs
-
-            if (ptr == nullptr) {
-                return;
-            }
-
-            float sim_time = static_cast<float>(st.getTime());
-
-            size_t i = 0;
-            for (auto const& p : ptr->getOutputs()) {
-                OpenSim::AbstractOutput const* ao = p.second.get();
-
-                // only certain types of output are plottable at the moment
-                auto* o = dynamic_cast<OpenSim::Output<double> const*>(ao);
-                if (o) {
-                    double v = o->getValue(st);
-                    float fv = static_cast<float>(v);
-                    output_sinks[i++].push_datapoint(sim_time, fv);
-                }
-            }
-        }
-
-        void on_user_edited_state() {
-            for (auto& pl : output_sinks) {
-                pl.clear();
-            }
-        }
-    };
 }
 
 namespace osmv {
@@ -641,7 +655,6 @@ namespace osmv {
         // handle top-level UI event (user click, user drag, etc.)
         Event_response handle_event(Application& app, SDL_Event const& e) {
             ImGuiIO& io = ImGui::GetIO();
-            sdl::Window_dimensions window_dims = app.window_dimensions();
 
             if (e.type == SDL_KEYDOWN) {
                 if (io.WantCaptureKeyboard) {
@@ -733,7 +746,7 @@ namespace osmv {
                 model->realizeReport(latest_state);
 
                 outputs_tab.on_ui_state_update(latest_state);
-                simulator_tab.on_ui_state_update(latest_state);
+                simulator_tab.on_ui_state_update(model, latest_state);
                 selected_component.on_ui_state_update(latest_state);
             }
         }
@@ -927,9 +940,8 @@ namespace osmv {
             ImGui::SliderFloat("light_x", &renderer.light_pos.x, -30.0f, 30.0f);
             ImGui::SliderFloat("light_y", &renderer.light_pos.y, -30.0f, 30.0f);
             ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
-            ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_color));
+            ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_rgb));
             ImGui::Checkbox("show_floor", &renderer.show_floor);
-            ImGui::Checkbox("gamma_correction", &renderer.gamma_correction);
             {
                 bool throttling = app.is_throttling_fps();
                 if (ImGui::Checkbox("fps_throttle", &throttling)) {
@@ -951,7 +963,7 @@ namespace osmv {
         }
 
         void draw_simulate_tab() {
-            simulator_tab.draw(model, latest_state);
+            simulator_tab.draw(renderer, selected_component, model, latest_state);
         }
 
         void draw_coords_tab() {

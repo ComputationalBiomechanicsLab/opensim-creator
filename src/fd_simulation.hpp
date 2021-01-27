@@ -47,6 +47,8 @@ namespace osmv {
         int numDivergentIterations = 0;
         int numIterations = 0;
 
+        std::vector<double> yErrorEstimates;
+
         Integrator_stats& operator=(SimTK::Integrator const&);
     };
 
@@ -105,7 +107,7 @@ namespace osmv {
         std::chrono::duration<double> sim_final_time() const;
         char const* status_description() const;
         int num_prescribeq_calls() const;
-        Integrator_stats integrator_stats() const noexcept;
+        void integrator_stats(Integrator_stats&) const noexcept;
 
         // an estimate of what percentage of time the simulator thread is spending
         // upholding the simulator's requirements (e.g. copying states, reporting

@@ -277,6 +277,16 @@ osmv::Integrator_stats& osmv::Integrator_stats::operator=(SimTK::Integrator cons
     numDivergentIterations = integrator.getNumDivergentIterations();
     numIterations = integrator.getNumIterations();
 
+    // copy-assign the y error estimates
+    {
+        SimTK::Vector const& yErrEst = integrator.getPreviousStepYErrorEstimates();
+        yErrorEstimates.clear();
+        yErrorEstimates.reserve(static_cast<size_t>(yErrEst.size()));
+        for (int i = 0; i < yErrEst.size(); ++i) {
+            yErrorEstimates.push_back(yErrEst[i]);
+        }
+    }
+
     return *this;
 }
 
@@ -345,8 +355,9 @@ int osmv::Fd_simulator::num_prescribeq_calls() const {
     return impl->shared->lock()->num_prescribeq_calls;
 }
 
-osmv::Integrator_stats osmv::Fd_simulator::integrator_stats() const noexcept {
-    return impl->shared->lock()->istats;
+void osmv::Fd_simulator::integrator_stats(Integrator_stats& out) const noexcept {
+    auto guard = impl->shared->lock();
+    out = guard->istats;
 }
 
 double osmv::Fd_simulator::avg_simulator_overhead() const {

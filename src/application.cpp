@@ -128,7 +128,7 @@ static void glOnDebugMessage(
 static GLsizei get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
-    v = std::min(v, 8);  // cap at 8x
+    v = std::min(v, 8);
     return v;
 }
 
@@ -331,6 +331,11 @@ namespace osmv {
                         glViewport(0, 0, w, h);
                     }
 
+                    // DEBUG MODE: toggled with F1
+                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {
+                        is_drawing_debug_ui = not is_drawing_debug_ui;
+                    }
+
                     // ImGui: feed event into ImGui
                     ImGui_ImplSDL2_ProcessEvent(&e);
 
@@ -480,4 +485,8 @@ void osmv::Application::move_mouse_to(int x, int y) {
 
 int osmv::Application::samples() const noexcept {
     return impl->samples;
+}
+
+bool osmv::Application::is_in_debug_mode() const noexcept {
+    return impl->is_drawing_debug_ui;
 }

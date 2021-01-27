@@ -61,7 +61,12 @@ namespace osmv {
         // move mouse relative to the window (origin in top-left)
         void move_mouse_to(int x, int y);
 
-        // returns the number of samples (MSXAA) the application is using
+        // returns the number of samples (MSXAA) that multisampled renderers should
+        // use
         int samples() const noexcept;
+
+        // returns true if the application is rendering in debug mode (i.e. whether
+        // downstream rendererers should also render debug info)
+        bool is_in_debug_mode() const noexcept;
     };
 }
