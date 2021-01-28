@@ -754,12 +754,17 @@ namespace gl {
     class Array_bufferT final {
         size_t _size = 0;
         gl::Array_buffer _vbo = {};
+        GLenum usage;
 
     public:
         using value_type = T;
 
-        Array_bufferT(T const* begin, T const* end, GLenum usage = GL_STATIC_DRAW) :
-            _size{static_cast<size_t>(end - begin)} {
+        Array_bufferT(GLenum _usage = GL_STATIC_DRAW) : usage{_usage} {
+        }
+
+        Array_bufferT(T const* begin, T const* end, GLenum _usage = GL_STATIC_DRAW) :
+            _size{static_cast<size_t>(end - begin)},
+            usage{_usage} {
 
             gl::BindBuffer(_vbo);
             gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
@@ -783,6 +788,12 @@ namespace gl {
 
         GLsizei sizei() const noexcept {
             return static_cast<GLsizei>(_size);
+        }
+
+        void assign(T const* begin, T const* end) {
+            _size = end - begin;
+            gl::BindBuffer(_vbo);
+            gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
         }
     };
 

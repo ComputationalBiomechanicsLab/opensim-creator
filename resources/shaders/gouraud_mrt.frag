@@ -1,20 +1,15 @@
 #version 330 core
 
-// passthrough frag shader: rendering does not use textures and we're
-// using a "good enough" Gouraud shader (rather than a Phong shader,
-// which is per-fragment).
-
-in vec4 FragColor;
+in vec4 Color0in;
+in vec4 Color1in;
 
 layout (location = 0) out vec4 Color0Out;
 layout (location = 1) out vec4 Color1Out;
 
-uniform vec4 uRgba1;
-
 void main() {
     // write shaded geometry color
-    Color0Out = FragColor;
+    Color0Out = Color0in;
 
     // write passthrough colors
-    Color1Out = uRgba1;
+    Color1Out = Color1in;
 }

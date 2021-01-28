@@ -5,6 +5,7 @@
 #include "gl.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 namespace {
@@ -22,19 +23,21 @@ namespace {
             gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud_mrt.vert")),
             gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud_mrt.frag")));
 
+        // vertex attrs
         static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
 
+        // instancing attrs
+        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(2);
+        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(6);
+        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
+        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
+
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
-        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(program, "uModelMat");
-        gl::Uniform_mat4 uNormalMat = gl::GetUniformLocation(program, "uNormalMat");
         gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
         gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
         gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
-
-        gl::Uniform_vec4 uRgba0 = gl::GetUniformLocation(program, "uRgba0");
-        gl::Uniform_vec4 uRgba1 = gl::GetUniformLocation(program, "uRgba1");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -53,6 +56,34 @@ namespace {
             return vao;
         }
     };
+
+    void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
+        GLuint loc = static_cast<GLuint>(mat4loc);
+        for (unsigned i = 0; i < 4; ++i) {
+            // HACK: from LearnOpenGL: mat4's must be set in this way because
+            //       of OpenGL not allowing more than 4 or so floats to be set
+            //       in a single call
+            //
+            // see:
+            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
+            glVertexAttribPointer(
+                loc + i,
+                4,
+                GL_FLOAT,
+                GL_FALSE,
+                sizeof(osmv::Mesh_instance),
+                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec4)));
+            glEnableVertexAttribArray(loc + i);
+            glVertexAttribDivisor(loc + i, 1);
+        }
+    }
+
+    void Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
+        glVertexAttribPointer(
+            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+        glEnableVertexAttribArray(vec4log);
+        glVertexAttribDivisor(vec4log, 1);
+    }
 
     // A basic shader that just samples a texture onto the provided geometry
     //
@@ -207,6 +238,11 @@ namespace {
         gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
         gl::UnbindBuffer(rv);
         return rv;
+    }
+
+    gl::Array_bufferT<osmv::Mesh_instance>& get_mi_storage() {
+        static gl::Array_bufferT<osmv::Mesh_instance> data;
+        return data;
     }
 
     // this global exists because it makes handling mesh allocations between
@@ -540,8 +576,10 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
     // indiscriminately rendering all alpha-blended geometry. The edge-case failure mode is that
     // alpha blended geometry, itself, should be rendered back-to-front because alpha-blended
     // geometry can be intercalated or occluding other alpha-blended geometry.
-    auto has_solid_color = [](Mesh_instance const& a) { return a.rgba.a >= 1.0f; };
-    std::partition(meshes.begin(), meshes.end(), has_solid_color);
+    auto sort_by_alpha_then_meshid = [](Mesh_instance const& a, Mesh_instance const& b) {
+        return a.rgba.a < b.rgba.a or a._meshid < b._meshid;
+    };
+    std::sort(meshes.begin(), meshes.end(), sort_by_alpha_then_meshid);
 
     // step 3: bind to an off-screen framebuffer object (FBO)
     //
@@ -600,19 +638,34 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
         gl::Uniform(shader.uLightColor, light_rgb);
         gl::Uniform(shader.uViewPos, view_pos);
 
-        for (size_t instance_idx = 0; instance_idx < meshes.size(); ++instance_idx) {
-            Mesh_instance const& m = meshes[instance_idx];
+        // upload instances
+        gl::Array_bufferT<osmv::Mesh_instance>& mis = get_mi_storage();
+        mis.assign(meshes.data(), meshes.data() + meshes.size());
 
-            gl::Uniform(shader.uModelMat, m.transform);
-            gl::Uniform(shader.uNormalMat, m._normal_xform);
-            gl::Uniform(shader.uRgba0, m.rgba);
-            gl::Uniform(shader.uRgba1, m._passthrough);
+        // batch drawcalls by meshid
+        size_t pos = 0;
+        while (pos < meshes.size()) {
+            int id = meshes[pos]._meshid;
+            size_t end = pos + 1;
 
-            Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
+            while (end < meshes.size() and meshes[end]._meshid == id) {
+                ++end;
+            }
+
+            Mesh_on_gpu& md = global_mesh_lookup(id);
             gl::BindVertexArray(md.main_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
+            gl::BindBuffer(mis);
+            Mat4Pointer(shader.aModelMat, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, transform));
+            Mat4Pointer(
+                shader.aNormalMat, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, _normal_xform));
+            Vec4Pointer(shader.aRgba0, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, rgba));
+            Vec4Pointer(shader.aRgba1, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, _passthrough));
+            gl::BindBuffer(md.vbo);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), end - pos);
+            gl::BindVertexArray();
+
+            pos = end;
         }
-        gl::BindVertexArray();
 
         // nothing else in the scene uses blending
         glDisable(GL_BLEND);
