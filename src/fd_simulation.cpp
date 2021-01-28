@@ -277,16 +277,6 @@ osmv::Integrator_stats& osmv::Integrator_stats::operator=(SimTK::Integrator cons
     numDivergentIterations = integrator.getNumDivergentIterations();
     numIterations = integrator.getNumIterations();
 
-    // copy-assign the y error estimates
-    {
-        SimTK::Vector const& yErrEst = integrator.getPreviousStepYErrorEstimates();
-        yErrorEstimates.clear();
-        yErrorEstimates.reserve(static_cast<size_t>(yErrEst.size()));
-        for (int i = 0; i < yErrEst.size(); ++i) {
-            yErrorEstimates.push_back(yErrEst[i]);
-        }
-    }
-
     return *this;
 }
 

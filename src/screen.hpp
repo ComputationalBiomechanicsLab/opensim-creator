@@ -11,6 +11,7 @@
 // concerns (e.g. drawing stuff, handling screen-specific events, etc.)
 
 namespace osmv {
+    class Application;
 
     enum class Event_response {
         handled,

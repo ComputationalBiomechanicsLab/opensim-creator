@@ -6,12 +6,15 @@
 
 in vec4 FragColor;
 
-layout (location = 0) out vec4 FragColorOut;
-layout (location = 1) out vec4 Rgba2Out;
+layout (location = 0) out vec4 Color0Out;
+layout (location = 1) out vec4 Color1Out;
 
-uniform vec4 uRgba2;
+uniform vec4 uRgba1;
 
 void main() {
-    FragColorOut = FragColor;
-    Rgba2Out = uRgba2;
+    // write shaded geometry color
+    Color0Out = FragColor;
+
+    // write passthrough colors
+    Color1Out = uRgba1;
 }

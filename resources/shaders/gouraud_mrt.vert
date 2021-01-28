@@ -12,7 +12,7 @@ uniform mat4 uProjMat;
 uniform mat4 uViewMat;
 uniform mat4 uModelMat;
 uniform mat4 uNormalMat;
-uniform vec4 uRgba;
+uniform vec4 uRgba0;
 uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
@@ -44,5 +44,5 @@ void main() {
     vec3 lightStrength = ambientComponent + diffuseComponent + specularComponent;
     vec3 lightRgb = uLightColor * lightStrength;
 
-    FragColor = vec4(lightRgb, 1.0) * uRgba;
+    FragColor = vec4(lightRgb, 1.0) * uRgba0;
 }

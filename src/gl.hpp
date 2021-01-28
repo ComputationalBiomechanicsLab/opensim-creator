@@ -287,6 +287,10 @@ namespace gl {
         glUniform3fv(u, 1, glm::value_ptr(v));
     }
 
+    inline void Uniform(Uniform_vec4& u, float x, float y, float z, float a) {
+        Uniform(u, glm::vec4{x, y, z, a});
+    }
+
     inline void Uniform(Uniform_vec3& u, float x, float y, float z) {
         glUniform3f(u, x, y, z);
     }
@@ -711,6 +715,10 @@ namespace gl {
         glClearColor(red, green, blue, alpha);
     }
 
+    inline void ClearColor(glm::vec4 const& rgba) {
+        glClearColor(rgba.r, rgba.g, rgba.b, rgba.a);
+    }
+
     inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) {
         glViewport(x, y, w, h);
     }
@@ -778,6 +786,10 @@ namespace gl {
         }
     };
 
+    inline void DrawBuffer(GLenum mode) {
+        glDrawBuffer(mode);
+    }
+
     template<typename... T>
     inline void DrawBuffers(T... vs) {
         GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
@@ -786,5 +798,15 @@ namespace gl {
 
     inline void assert_current_fbo_complete() {
         assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    }
+
+    inline int GetInteger(GLenum pname) {
+        GLint out;
+        glGetIntegerv(pname, &out);
+        return out;
+    }
+
+    inline GLenum GetEnum(GLenum pname) {
+        return static_cast<GLenum>(GetInteger(pname));
     }
 }

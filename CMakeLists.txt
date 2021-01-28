@@ -72,8 +72,10 @@ add_executable(osmv
     src/3d_common.cpp
     src/fd_simulation.hpp
     src/fd_simulation.cpp
-    src/renderer.hpp
-    src/renderer.cpp
+    src/raw_renderer.hpp
+    src/raw_renderer.cpp
+    src/simple_model_renderer.hpp
+    src/simple_model_renderer.cpp
     src/application.hpp
     src/application.cpp
 

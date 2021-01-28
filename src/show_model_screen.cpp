@@ -10,8 +10,8 @@
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "os.hpp"
-#include "renderer.hpp"
 #include "screen.hpp"
+#include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
 
 #include "imgui.h"
@@ -419,7 +419,7 @@ namespace {
             clear();
         }
 
-        void on_ui_state_update(OpenSim::Model const& model, SimTK::State const& st) {
+        void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st) {
             if (not simulator) {
                 return;
             }
@@ -441,10 +441,7 @@ namespace {
         }
 
         void draw(
-            osmv::Renderer& renderer,
-            Selected_component& selected_component,
-            OpenSim::Model& shown_model,
-            SimTK::State& shown_state) {
+            osmv::Simple_model_renderer&, Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
             // start/stop button
             if (simulator and simulator->is_running()) {
                 ImGui::PushStyleColor(ImGuiCol_Button, red);
@@ -632,7 +629,7 @@ namespace osmv {
 
         Selected_component selected_component;
 
-        Renderer renderer;
+        Simple_model_renderer renderer;
 
         Coordinates_tab_data coords_tab;
         Simulator_tab simulator_tab;
@@ -649,7 +646,7 @@ namespace osmv {
                 model->realizeReport(s);
                 return s;
             }()},
-            renderer{app} {
+            renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
         }
 
         // handle top-level UI event (user click, user drag, etc.)
@@ -735,7 +732,7 @@ namespace osmv {
 
             // if no events were captured above, let the model viewer handle
             // the event
-            return renderer.on_event(app, e);
+            return renderer.on_event(app, e) ? Event_response::handled : Event_response::ignored;
         }
 
         // "tick" the UI state (usually, used for updating animations etc.)
@@ -941,6 +938,8 @@ namespace osmv {
             ImGui::SliderFloat("light_y", &renderer.light_pos.y, -30.0f, 30.0f);
             ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
             ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_rgb));
+            ImGui::SliderFloat("rim thickness", &renderer.rim_thickness, 0.0f, 0.1f);
+            ImGui::Checkbox("draw rims", &renderer.draw_rims);
             ImGui::Checkbox("show_floor", &renderer.show_floor);
             {
                 bool throttling = app.is_throttling_fps();

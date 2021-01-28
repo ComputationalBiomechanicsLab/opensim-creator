@@ -47,8 +47,6 @@ namespace osmv {
         int numDivergentIterations = 0;
         int numIterations = 0;
 
-        std::vector<double> yErrorEstimates;
-
         Integrator_stats& operator=(SimTK::Integrator const&);
     };
 

@@ -251,19 +251,12 @@ namespace osmv {
                 // depth testing used to ensure geometry overlaps correctly
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
 
-                // some elements in the scene can be alpha-blended (e.g. wrapping surfaces)
-                // OSC_GL_CALL_CHECK(glEnable, GL_BLEND);
-                OSC_GL_CALL_CHECK(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
                 // MSXAA is used to smooth out the model
                 OSC_GL_CALL_CHECK(glEnable, GL_MULTISAMPLE);
 
-                // meshes are backface-culled
+                // all vertices in the render are backface-culled
                 OSC_GL_CALL_CHECK(glEnable, GL_CULL_FACE);
                 glFrontFace(GL_CCW);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
                 // ensure none of the above triggered a global OpenGL error
                 gl::assert_no_errors("Application::constructor");

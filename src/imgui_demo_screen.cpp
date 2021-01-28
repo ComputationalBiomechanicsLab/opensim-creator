@@ -12,6 +12,8 @@ osmv::Event_response osmv::Imgui_demo_screen::on_event(SDL_Event const& e) {
         return Event_response::handled;
     }
 
+    // osmv::Application already pumps the event into ImGui
+
     return Event_response::ignored;
 }
 
