@@ -483,3 +483,11 @@ int osmv::Application::samples() const noexcept {
 bool osmv::Application::is_in_debug_mode() const noexcept {
     return impl->is_drawing_debug_ui;
 }
+
+void osmv::Application::make_fullscreen() {
+    SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN);
+}
+
+void osmv::Application::make_windowed() {
+    SDL_SetWindowFullscreen(impl->window, 0);
+}

@@ -68,5 +68,9 @@ namespace osmv {
         // returns true if the application is rendering in debug mode (i.e. whether
         // downstream rendererers should also render debug info)
         bool is_in_debug_mode() const noexcept;
+
+        void make_fullscreen();
+
+        void make_windowed();
     };
 }

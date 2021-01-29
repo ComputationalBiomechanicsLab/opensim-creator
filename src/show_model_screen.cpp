@@ -949,6 +949,14 @@ namespace osmv {
             }
             ImGui::Checkbox("show_mesh_normals", &renderer.show_mesh_normals);
 
+            if (ImGui::Button("fullscreen")) {
+                app.make_fullscreen();
+            }
+
+            if (ImGui::Button("windowed")) {
+                app.make_windowed();
+            }
+
             ImGui::NewLine();
             ImGui::Text("Interaction: ");
             if (renderer.dragging) {
