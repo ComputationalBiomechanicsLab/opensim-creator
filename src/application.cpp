@@ -7,8 +7,8 @@
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
 
-#include "examples/imgui_impl_opengl3.h"
-#include "examples/imgui_impl_sdl.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_sdl.h"
 
 #include <cassert>
 #include <chrono>
@@ -295,6 +295,8 @@ namespace osmv {
             imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
             imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
+
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
 
         void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
@@ -369,6 +371,8 @@ namespace osmv {
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
+
+                ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
                 // osmv::Screen: call current screen's `draw` method
                 current_screen->draw();

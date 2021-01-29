@@ -254,15 +254,16 @@ endif()
 #     - in tree, to reduce some of the faffing around to deal with CMake3.5 bugs
 if(TRUE)
     add_library(osmv-imgui STATIC
-        third_party/imgui-1.78/imgui.cpp
-        third_party/imgui-1.78/imgui_draw.cpp
-        third_party/imgui-1.78/imgui_widgets.cpp
-        third_party/imgui-1.78/imgui_demo.cpp  # useful for osmv devs to see what's available
-        third_party/imgui-1.78/examples/imgui_impl_opengl3.cpp
-        third_party/imgui-1.78/examples/imgui_impl_sdl.cpp
+        third_party/imgui/imgui.cpp
+        third_party/imgui/imgui_draw.cpp
+        third_party/imgui/imgui_widgets.cpp
+        third_party/imgui/imgui_tables.cpp
+        third_party/imgui/imgui_demo.cpp  # useful for osmv devs to see what's available
+        third_party/imgui/backends/imgui_impl_opengl3.cpp
+        third_party/imgui/backends/imgui_impl_sdl.cpp
     )
     target_link_libraries(osmv-imgui PUBLIC osmv-sdl2 osmv-glew osmv-glm)
-    target_include_directories(osmv-imgui PUBLIC third_party/imgui-1.78/)
+    target_include_directories(osmv-imgui PUBLIC third_party/imgui/)
 endif()
 
 # DEPENDENCY: stb_image
