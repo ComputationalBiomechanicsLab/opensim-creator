@@ -10,54 +10,14 @@
 
 namespace {
     static_assert(
-        std::is_trivially_copyable<osmv::Mesh_instance>::value == true,
+        std::is_trivially_copyable<osmv::Mesh_instance>::value,
         "a mesh instance should ideally be trivially copyable, because it is potentially used *a lot* in draw calls. You can remove this assert if you disagree");
-
-    // A multi-render-target (MRT) shader that performed Gouraud shading for
-    // COLOR0 and RGBA passthrough for COLOR1
-    //
-    // - COLOR0: geometry colored with Gouraud shading: i.e. "the scene"
-    // - COLOR1: RGBA passthrough (selection logic + rim alphas)
-    struct Gouraud_mrt_shader final {
-        gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud_mrt.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud_mrt.frag")));
-
-        // vertex attrs
-        static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
-
-        // instancing attrs
-        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(2);
-        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(6);
-        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
-        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
-
-        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
-        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
-        gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
-        gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
-        gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(
-                aLocation, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
-            gl::EnableVertexAttribArray(aLocation);
-            gl::VertexAttribPointer(
-                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
-            gl::EnableVertexAttribArray(aNormal);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
+    static_assert(
+        std::is_standard_layout<osmv::Mesh_instance>::value,
+        "this is required for offsetof macro usage, which is used for setting up OpenGL attribute pointers. See: https://en.cppreference.com/w/cpp/types/is_standard_layout");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
+
         GLuint loc = static_cast<GLuint>(mat4loc);
         for (unsigned i = 0; i < 4; ++i) {
             // HACK: from LearnOpenGL: mat4's must be set in this way because
@@ -84,6 +44,58 @@ namespace {
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
+
+    // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
+    // COLOR0 and RGBA passthrough for COLOR1
+    //
+    // - COLOR0: geometry colored with Gouraud shading: i.e. "the scene"
+    // - COLOR1: RGBA passthrough (selection logic + rim alphas)
+    struct Gouraud_mrt_shader final {
+        gl::Program program = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud_mrt.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud_mrt.frag")));
+
+        // vertex attrs
+        static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+
+        // instancing attrs
+        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(2);
+        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(6);
+        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
+        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
+
+        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
+        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
+        gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
+        gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
+        gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo, gl::Array_bufferT<osmv::Mesh_instance>& instance_vbo) {
+            static_assert(std::is_standard_layout<T>::value, "this is required for offsetof macro usage");
+
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(
+                aLocation, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aLocation);
+            gl::VertexAttribPointer(
+                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::EnableVertexAttribArray(aNormal);
+
+            gl::BindBuffer(instance_vbo);
+            Mat4Pointer(aModelMat, offsetof(osmv::Mesh_instance, transform));
+            Mat4Pointer(aNormalMat, offsetof(osmv::Mesh_instance, _normal_xform));
+            Vec4Pointer(aRgba0, offsetof(osmv::Mesh_instance, rgba));
+            Vec4Pointer(aRgba1, offsetof(osmv::Mesh_instance, _passthrough));
+
+            gl::BindVertexArray();
+            return vao;
+        }
+    };
 
     // A basic shader that just samples a texture onto the provided geometry
     //
@@ -215,13 +227,15 @@ namespace {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
+        size_t instance_hash = 0;  // cache VBO assignments
+        gl::Array_bufferT<osmv::Mesh_instance> instance_vbo;
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
     public:
         Mesh_on_gpu(osmv::Untextured_vert const* verts, size_t n) :
             vbo{verts, verts + n},
-            main_vao{Gouraud_mrt_shader::create_vao(vbo)},
+            main_vao{Gouraud_mrt_shader::create_vao(vbo, instance_vbo)},
             normal_vao{Normals_shader::create_vao(vbo)} {
         }
 
@@ -238,11 +252,6 @@ namespace {
         gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
         gl::UnbindBuffer(rv);
         return rv;
-    }
-
-    gl::Array_bufferT<osmv::Mesh_instance>& get_mi_storage() {
-        static gl::Array_bufferT<osmv::Mesh_instance> data;
-        return data;
     }
 
     // this global exists because it makes handling mesh allocations between
@@ -459,6 +468,26 @@ namespace {
             color1_resolved{w, h, GL_RGBA} {
         }
     };
+
+    struct Instance_batch final {
+        int meshid;
+        osmv::Mesh_instance const* instances;
+        size_t ninstances;
+        size_t hash;
+    };
+
+    size_t hash_instances(osmv::Mesh_instance const* first, size_t n) {
+        static constexpr size_t expected_instance_size =
+            sizeof(glm::mat4) + sizeof(glm::vec4) + sizeof(glm::vec4) + sizeof(glm::mat4) + sizeof(int);
+        static_assert(
+            sizeof(osmv::Mesh_instance) == expected_instance_size,
+            "unexpected mesh instance size: might contain padding, which would cause undefined behavior when hashing its bytes: review struct layout");
+
+        char const* p = reinterpret_cast<char const*>(first);
+        size_t nbytes = n * sizeof(osmv::Mesh_instance);
+
+        return std::hash<std::string_view>{}(std::string_view{p, nbytes});
+    }
 }
 
 namespace osmv {
@@ -484,7 +513,7 @@ namespace osmv {
             gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
                 auto copy = osmv::shaded_textured_quad_verts;
                 for (osmv::Shaded_textured_vert& st : copy) {
-                    st.texcoord *= 25.0f;  // make chequers smaller
+                    st.texcoord *= 200.0f;  // make chequers smaller
                 }
                 return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
             }();
@@ -502,8 +531,8 @@ namespace osmv {
         // other OpenGL (GPU) buffers used by the renderer
         Renderer_buffers buffers;
 
-        // internal (mutable) copy of the meshes being drawn
-        std::vector<Mesh_instance> meshes_copy;
+        // batches of instances to be rendered (changes per draw call)
+        std::vector<Instance_batch> instance_batches;
 
         Renderer_impl(int w, int h, int samples) : buffers{w, h, samples} {
         }
@@ -534,14 +563,41 @@ osmv::Raw_renderer::~Raw_renderer() noexcept {
     delete state;
 }
 
-void osmv::Raw_renderer::resize(int w, int h, int samples) {
+void osmv::Raw_renderer::reallocate_buffers(int w, int h, int samples) {
     Renderer_buffers& b = state->buffers;
     if (w != b.w or h != b.h or samples != b.samples) {
-        b = Renderer_buffers{w, h, samples};
+        state->buffers = Renderer_buffers{w, h, samples};
     }
 }
 
-void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
+void osmv::Raw_renderer::sort_meshes_for_drawing(Mesh_instance* meshes, size_t n) {
+    // the renderer is an instanced renderer that batches adjacent meshes that have
+    // the same mesh ID
+    //
+    // an extra consideration is blending: blended elements should always be drawn
+    // last, because they are blended "over" the other elements in the scene
+
+    // first, partition by blending to put blended elements at the end
+    auto it1 = std::partition(meshes, meshes + n, [](Mesh_instance const& a) { return a.rgba.a >= 1.0f; });
+
+    // subpartition non-blended elements by meshid to group meshids together
+    Mesh_instance* it = meshes;
+    Mesh_instance* end = it1;
+    while (it != end) {
+        int id = it->_meshid;
+        it = std::partition(it, end, [id](Mesh_instance const& a) { return a._meshid == id; });
+    }
+
+    // do the same for blended elements
+    it = it1;
+    end = meshes + n;
+    while (it != end) {
+        int id = it->_meshid;
+        it = std::partition(it, end, [id](Mesh_instance const& a) { return a._meshid == id; });
+    }
+}
+
+void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -556,46 +612,46 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
     // reason this rendering pipeline isn't fully deferred (gbuffers, albeido, etc.) is because
     // the scene is lit by a single directional light and the shading is fairly simple.
 
-    // copy the provided geometry, because this implementation will need to reorganize the
-    // geometry list
-    state->meshes_copy.assign(ms, ms + n);
-    std::vector<Mesh_instance>& meshes = state->meshes_copy;
     Renderer_buffers& buffers = state->buffers;
+    std::vector<Instance_batch>& instance_batches = state->instance_batches;
 
-    // step 1: partition the mesh instances into those that are solid colored and those that
-    //         require alpha blending
+    // compute instance batches for supplied meshes
     //
-    // ideally, rendering would follow the `painter's algorithm` and draw each pixel back-to-front.
-    // We don't do that here, because constructing the various octrees, bsp's etc. to do that would
-    // add a bunch of complexity CPU-side that's entirely unnecessary for such basic scenes. Also,
-    // OpenGL benefits from the entirely opposite algorithm (render front-to-back) because it
-    // uses depth testing as part of the "early fragment test" phase. Isn't low-level rendering
-    // fun? :)
-    //
-    // so the hack here is to indiscriminately render all solid geometry first followed by
-    // indiscriminately rendering all alpha-blended geometry. The edge-case failure mode is that
-    // alpha blended geometry, itself, should be rendered back-to-front because alpha-blended
-    // geometry can be intercalated or occluding other alpha-blended geometry.
-    auto sort_by_alpha_then_meshid = [](Mesh_instance const& a, Mesh_instance const& b) {
-        return a.rgba.a < b.rgba.a or a._meshid < b._meshid;
-    };
-    std::sort(meshes.begin(), meshes.end(), sort_by_alpha_then_meshid);
+    // this figures out the minimum number of draw calls + VBO assignments required to draw
+    // everything
+    {
+        instance_batches.clear();
 
-    // step 3: bind to an off-screen framebuffer object (FBO)
+        size_t pos = 0;
+        while (pos < nmeshes) {
+            int meshid = meshes[pos]._meshid;
+            size_t end = pos + 1;
+
+            while (end < nmeshes and meshes[end]._meshid == meshid) {
+                ++end;
+            }
+
+            // [pos, end) contains a batch of instances with the same meshid
+            Mesh_instance const* instances = meshes + pos;
+            size_t ninstances = end - pos;
+            size_t hash = hash_instances(instances, ninstances);
+            instance_batches.push_back(Instance_batch{meshid, instances, ninstances, hash});
+
+            pos = end;
+        }
+    }
+
+    // bind to an off-screen framebuffer object (FBO)
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    //
-    // this draw call shouldn't affect which FBO was bound to before the call was made,
-    // so save the original (input/output) FBOs
     GLint original_draw_fbo;
     GLint original_read_fbo;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
-
     gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
 
-    // step 4: clear the scene FBO's draw buffers for a new draw call
+    // clear the scene FBO's draw buffers for a new draw call
     //
     //   - COLOR0: main scene render: fill in background
     //   - COLOR1: RGBA passthrough (selection logic + rim alpa): blank out all channels
@@ -607,140 +663,126 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT);
 
-    // step 5: render the scene to the FBO using a multiple-render-target (MRT)
-    //         multisampled (MSXAAed) shader. FBO outputs are:
+    // handle wireframe mode: should only be enabled for scene + floor render: the other
+    // renders will render to a screen-sized quad
+    GLenum original_poly_mode = gl::GetEnum(GL_POLYGON_MODE);
+    if (flags & RawRendererFlags_WireframeMode) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    // render the scene to the FBO using a multiple-render-target (MRT) multisampled
+    // (MSXAAed) shader.
+    //
+    // FBO outputs are:
     //
     // - COLOR0: main target: multisampled scene geometry
     //     - the input color is Gouraud-shaded based on light parameters etc.
     // - COLOR1: RGBA passthrough: written to output as-is
     //     - the input color encodes the selected component index (RGB) and the rim
     //       alpha (A). It's used in downstream steps
-    if (true) {
-        GLenum original_poly_mode = gl::GetEnum(GL_POLYGON_MODE);
-        glPolygonMode(GL_FRONT_AND_BACK, wireframe_mode ? GL_LINE : GL_FILL);
-
-        // draw state geometry with MRT shader
-        gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
-
-        // blending:
-        // COLOR0 should be blended: OpenSim scenes can contain blending
-        // COLOR1 should not be blended: it's a value for the top-most fragment
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnablei(GL_BLEND, 0);
-        glDisablei(GL_BLEND, 1);
-
+    if (flags & RawRendererFlags_DrawSceneGeometry) {
         Gouraud_mrt_shader& shader = state->shaders.gouraud;
-        gl::UseProgram(shader.program);
 
+        gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
+        gl::UseProgram(shader.program);
         gl::Uniform(shader.uProjMat, projection_matrix);
         gl::Uniform(shader.uViewMat, view_matrix);
         gl::Uniform(shader.uLightPos, light_pos);
         gl::Uniform(shader.uLightColor, light_rgb);
         gl::Uniform(shader.uViewPos, view_pos);
 
-        // upload instances
-        gl::Array_bufferT<osmv::Mesh_instance>& mis = get_mi_storage();
-        mis.assign(meshes.data(), meshes.data() + meshes.size());
+        // blending:
+        //     COLOR0 should be blended because OpenSim scenes can contain blending
+        //     COLOR1 should never be blended: it's a value for the top-most fragment
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisablei(GL_BLEND, 1);
+        glEnablei(GL_BLEND, 0);
 
-        // batch drawcalls by meshid
-        size_t pos = 0;
-        while (pos < meshes.size()) {
-            int id = meshes[pos]._meshid;
-            size_t end = pos + 1;
+        for (Instance_batch const& ib : instance_batches) {
+            Mesh_on_gpu& md = global_mesh_lookup(ib.meshid);
 
-            while (end < meshes.size() and meshes[end]._meshid == id) {
-                ++end;
+            // if the data on the GPU doesn't match the instance data, assign it
+            if (md.instance_hash != ib.hash) {
+                md.instance_vbo.assign(ib.instances, ib.instances + ib.ninstances);
+                md.instance_hash = ib.hash;
             }
 
-            Mesh_on_gpu& md = global_mesh_lookup(id);
             gl::BindVertexArray(md.main_vao);
-            gl::BindBuffer(mis);
-            Mat4Pointer(shader.aModelMat, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, transform));
-            Mat4Pointer(
-                shader.aNormalMat, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, _normal_xform));
-            Vec4Pointer(shader.aRgba0, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, rgba));
-            Vec4Pointer(shader.aRgba1, pos * sizeof(osmv::Mesh_instance) + offsetof(osmv::Mesh_instance, _passthrough));
-            gl::BindBuffer(md.vbo);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), end - pos);
-            gl::BindVertexArray();
-
-            pos = end;
+            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), ib.ninstances);
         }
-
-        // nothing else in the scene uses blending
-        glDisable(GL_BLEND);
-
-        // (optional): draw a chequered floor
-        if (show_floor) {
-            // only drawn to COLOR0, doesn't contain any passthrough info
-            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-            Plain_texture_shader& pts = state->shaders.plain_texture;
-            gl::UseProgram(pts.p);
-
-            gl::Uniform(pts.projMat, projection_matrix);
-            gl::Uniform(pts.viewMat, view_matrix);
-            gl::Uniform(pts.modelMat, state->floor.model_mtx);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(state->floor.floor_texture);
-            gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-            gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
-
-            gl::BindVertexArray(state->floor.vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
-            gl::BindVertexArray();
-        }
-
-        glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
-
-        // (optional): render scene normals
-        //
-        // if the caller wants to view normals, pump the scene through a specialized shader
-        // that draws normals as lines in COLOR0
-        if (show_mesh_normals) {
-            // only drawn to COLOR0, doesn't contain any passthrough info
-            gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-            Normals_shader& ns = state->shaders.normals;
-            gl::UseProgram(ns.program);
-
-            gl::Uniform(ns.uProjMat, projection_matrix);
-            gl::Uniform(ns.uViewMat, view_matrix);
-
-            for (Mesh_instance const& m : meshes) {
-                gl::Uniform(ns.uModelMat, m.transform);
-                gl::Uniform(ns.uNormalMat, m._normal_xform);
-
-                Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
-                gl::BindVertexArray(md.normal_vao);
-                gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
-            }
-            gl::BindVertexArray();
-        }
+        gl::BindVertexArray();
+        glDisablei(GL_BLEND, 0);
     }
 
-    // step 6: figure out if the mouse is hovering over anything
+    // (optional): draw a textured floor into COLOR0
+    if (flags & RawRendererFlags_ShowFloor) {
+        Plain_texture_shader& pts = state->shaders.plain_texture;
+
+        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.projMat, projection_matrix);
+        gl::Uniform(pts.viewMat, view_matrix);
+        gl::Uniform(pts.modelMat, state->floor.model_mtx);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(state->floor.floor_texture);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
+
+        gl::BindVertexArray(state->floor.vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
+        gl::BindVertexArray();
+    }
+
+    glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
+
+    // (optional): render scene normals into COLOR0
+    if (flags & RawRendererFlags_ShowMeshNormals) {
+        Normals_shader& shader = state->shaders.normals;
+        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::UseProgram(shader.program);
+        gl::Uniform(shader.uProjMat, projection_matrix);
+        gl::Uniform(shader.uViewMat, view_matrix);
+
+        for (size_t i = 0; i < nmeshes; ++i) {
+            Mesh_instance const& m = meshes[i];
+
+            gl::Uniform(shader.uModelMat, m.transform);
+            gl::Uniform(shader.uNormalMat, m._normal_xform);
+
+            Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
+            gl::BindVertexArray(md.normal_vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
+        }
+        gl::BindVertexArray();
+    }
+
+    // perform passthrough hit testing
     //
-    // in the previous draw call, COLOR1's RGB channels encoded the index of the mesh instance.
-    // Extracting that pixel value (without MSXAA blending) and decoding it back into an index
-    // makes it possible to figure out what OpenSim::Component the mouse is over without requiring
-    // complex spatial algorithms
-    if (passthrough_hittest.enabled) {
+    // in the previous draw call, COLOR1's RGB channels encoded arbitrary passthrough data
+    // Extracting that pixel value (without MSXAA blending) and decoding it yields the
+    // user-supplied data
+    //
+    // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
+    // model information (e.g. "a component index") into screenspace
+    if (flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
         //
         // this causes the subsequent draw call to only run the fragment shader around where
         // we actually care about
-        glViewport(passthrough_hittest.x - 1, passthrough_hittest.y - 1, 3, 3);
+        glViewport(passthrough_hittest_x - 1, passthrough_hittest_y - 1, 3, 3);
 
         // bind to a non-MSXAAed FBO
         gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.skip_msxaa.fbo);
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
-        // use a specialized (multisampling) shader to blit exactly one non-blended AA sample from
-        // COLOR1 to the non-MSXAAed output
+        // use a specialized shader that is MSXAA-aware to blit exactly one non-blended AA
+        // sample from COLOR1 to the output
         //
-        // by skipping MSXAA, every value in this output should to be exactly the same as the
-        // value provided during drawing. Resolving MSXAA could potentially blend adjacent
-        // values together, resulting in junk.
+        // by deliberately avoiding MSXAA, every value in this output should be exactly the
+        // same as the passthrough value provided by the caller
         Skip_msxaa_blitter_shader& shader = state->shaders.skip_msxaa_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
@@ -782,24 +824,24 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
         //      requires that this PBO is populated once the mapping is enabled, so this will
         //      stall the pipeline. However, that pipeline stall will be on the *previous* frame
         //      which is less costly to stall on
-        if (passthrough_hittest.optimized) {
+        if (flags & RawRendererFlags_UseOptimizedButDelayed1FrameHitTest) {
             int reader = buffers.pbo_idx % static_cast<int>(buffers.pbos.size());
             int mapper = (buffers.pbo_idx + 1) % static_cast<int>(buffers.pbos.size());
 
             // launch asynchronous request for this frame's pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(reader)]);
-            glReadPixels(passthrough_hittest.x, passthrough_hittest.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glReadPixels(passthrough_hittest_x, passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
             // synchrnously read *last frame's* pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(mapper)]);
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
             // these aren't applicable if using delayed hit testing
-            passthrough_hittest.cur_frame_passthrough[0] = 0x00;
-            passthrough_hittest.cur_frame_passthrough[1] = 0x00;
+            passthrough_result_this_frame[0] = 0x00;
+            passthrough_result_this_frame[1] = 0x00;
 
-            passthrough_hittest.prev_frame_passthrough[0] = src[0];
-            passthrough_hittest.prev_frame_passthrough[1] = src[1];
+            passthrough_result_prev_frame[0] = src[0];
+            passthrough_result_prev_frame[1] = src[1];
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -812,24 +854,20 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
             // bizzarely (e.g. because it is delayed one frame)
 
             GLubyte rgba[4]{};
-            glReadPixels(passthrough_hittest.x, passthrough_hittest.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+            glReadPixels(passthrough_hittest_x, passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
 
-            passthrough_hittest.prev_frame_passthrough[0] = passthrough_hittest.cur_frame_passthrough[0];
-            passthrough_hittest.prev_frame_passthrough[1] = passthrough_hittest.cur_frame_passthrough[1];
+            passthrough_result_prev_frame[0] = passthrough_result_this_frame[0];
+            passthrough_result_prev_frame[1] = passthrough_result_this_frame[1];
 
-            passthrough_hittest.cur_frame_passthrough[0] = rgba[0];
-            passthrough_hittest.cur_frame_passthrough[1] = rgba[1];
+            passthrough_result_this_frame[0] = rgba[0];
+            passthrough_result_this_frame[1] = rgba[1];
         }
     }
 
-    // step 8: resolve MSXAA in COLOR1
+    // resolve MSXAA in COLOR1
     //
-    // "resolve" (i.e. blend) the MSXAA samples from the scene render into non-MSXAAed textures
-    // that downstream shaders can sample normally.
-    //
-    // This is done separately because an intermediate step (decoding pixel colors into Component
-    // indices) has to be MSXAA-aware (i.e. using a multisampling sampler) because it's performing
-    // pixel decoding steps
+    // "resolve" (i.e. blend) the MSXAA samples in COLOR1 into non-MSXAAed textures
+    // that the edge-detection shader can sample normally
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
@@ -838,9 +876,9 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    // step 9: blit COLOR0 to output
+    // blit COLOR0 to output
     //
-    // COLOR0 is now "done", so can be written to the output
+    // COLOR0 is now "done", so it can be written to the output
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -849,9 +887,9 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    // step 10: blend rims over the output (if necessary)
+    // draw rims highlights over the output
     //
-    // COLOR0's alpha channel contains *filled in shapes* for each element in the scene that
+    // COLOR1's alpha channel contains *filled in shapes* for each element in the scene that
     // should be rim-shaded. Those shapes are exactly the same as the scene geometry, so showing
     // them as-is would be pointless (they'd either entirely occlude, or be occluded by, the scene)
     //
@@ -864,19 +902,14 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
     // this technique performs rim highlighting in screen-space using a standard edge-detection
     // kernel. The drawback of this is that every single pixel in the screen has to be
     // edge-detected, and the rims are in screen-space, rather than world space (so they don't
-    // "zoom out" as if they were "in the scene"). However, GPUs are *very* efficient at running
-    // branchless algorithms over a screen, so it isn't as expensive as you think, and the utility
-    // of having rims in worldspace is limited.
-    //
-    // composition is also done here because this single draw call has all the information
-    // necessary to do it
-    if (draw_rims) {
+    // "zoom out" as if they were "in the scene"). However, GPUs are fairly efficient at running
+    // branchless kernel lookups over a screen, so it isn't as expensive as you think
+    if (flags & RawRendererFlags_DrawRims) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
-
         gl::Uniform(shader.uModelMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
         gl::Uniform(shader.uProjMat, gl::identity_val);
@@ -893,11 +926,8 @@ void osmv::Raw_renderer::draw(Mesh_instance const* ms, size_t n) {
         glDisable(GL_BLEND);
     }
 
-    // (optional): render debug quads
-    //
-    // if the application is rendering in debug mode, then render quads for the intermediate
-    // buffers (selection etc.) because it's handy for debugging
-    if (draw_debug_quads) {
+    // render debug quads
+    if (flags & RawRendererFlags_DrawDebugQuads) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
 
         Plain_texture_shader& pts = state->shaders.plain_texture;

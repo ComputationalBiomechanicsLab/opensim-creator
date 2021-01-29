@@ -752,8 +752,9 @@ namespace gl {
 
     template<typename T>
     class Array_bufferT final {
+        size_t _capacity = 0;
         size_t _size = 0;
-        gl::Array_buffer _vbo = {};
+        gl::Array_buffer _vbo{};
         GLenum usage;
 
     public:
@@ -763,11 +764,12 @@ namespace gl {
         }
 
         Array_bufferT(T const* begin, T const* end, GLenum _usage = GL_STATIC_DRAW) :
-            _size{static_cast<size_t>(end - begin)},
+            _capacity{static_cast<size_t>(end - begin)},
+            _size{_capacity},
             usage{_usage} {
 
             gl::BindBuffer(_vbo);
-            gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
+            gl::BufferData(_vbo.type, static_cast<long>(_capacity * sizeof(T)), begin, usage);
         }
 
         template<typename Container>
@@ -791,9 +793,18 @@ namespace gl {
         }
 
         void assign(T const* begin, T const* end) {
-            _size = end - begin;
+            size_t new_size = end - begin;
             gl::BindBuffer(_vbo);
-            gl::BufferData(_vbo.type, static_cast<long>(_size * sizeof(T)), begin, usage);
+
+            if (new_size <= _capacity) {
+                glBufferSubData(_vbo.type, 0, static_cast<long>(new_size * sizeof(T)), begin);
+                _size = new_size;
+            } else {
+                // reallocate
+                gl::BufferData(_vbo.type, static_cast<long>(new_size * sizeof(T)), begin, usage);
+                _capacity = new_size;
+                _size = new_size;
+            }
         }
     };
 

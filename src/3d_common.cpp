@@ -309,17 +309,19 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     struct Rgb {
         unsigned char r, g, b;
     };
-    constexpr size_t w = 512;
-    constexpr size_t h = 512;
+    constexpr size_t chequer_width = 32;
+    constexpr size_t chequer_height = 32;
+    constexpr size_t w = 2 * chequer_width;
+    constexpr size_t h = 2 * chequer_height;
     constexpr Rgb on_color = {0xe5, 0xe5, 0xe5};
     constexpr Rgb off_color = {0xde, 0xde, 0xde};
 
     std::array<Rgb, w * h> pixels;
     for (size_t row = 0; row < h; ++row) {
         size_t row_start = row * w;
-        bool y_on = (row / 32) % 2 == 0;
+        bool y_on = (row / chequer_height) % 2 == 0;
         for (size_t col = 0; col < w; ++col) {
-            bool x_on = (col / 32) % 2 == 0;
+            bool x_on = (col / chequer_width) % 2 == 0;
             pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
         }
     }

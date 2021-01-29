@@ -3,11 +3,10 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 
-// raw renderer: an OpenGL renderer that tries to be Application, Screen, and OpenSim agnostic
+// raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
 //
 // this API is designed with performance and power in mind, not convenience. Use a downstream
-// renderer if you need something more convenient.
-
+// renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
 namespace osmv {
     constexpr int invalid_meshid = -1;
 
@@ -41,23 +40,26 @@ namespace osmv {
 
         // INTERNAL: passthrough RGBA color
         //
-        // this color is guaranteed to be drawn "as-is" to the output with no shading, which
-        // enables downstream screen-space calculations (selection logic, rim highlights)
+        // this color is guaranteed to be drawn "as-is" to the COLOR1 output with no shading,
+        // which enables downstream screen-space calculations (selection logic, rim highlights)
         //
         // currently used for:
         //
-        //     - RGB: raw passthrough data, used to handle selection logic. Downstream renderers
-        //            use these channels to encode logical information (e.g. "an OpenSim component")
-        //            into screen-space (e.g. "A pixel from an OpenSim component")
+        //     - RG: raw passthrough data, used to handle selection logic. Downstream renderers
+        //           use these channels to encode logical information (e.g. "an OpenSim component")
+        //           into screen-space (e.g. "A pixel from an OpenSim component")
         //
-        //     - A  : rim alpha. Used to calculate how strongly (if any) rims should be drawn
-        //            around the geometry. Used for highlighting elements in the scene
+        //     - B : currently unused
+        //
+        //     - A : rim alpha. Used to calculate how strongly (if any) rims should be drawn
+        //           around the geometry. Used for highlighting elements in the scene
         glm::vec4 _passthrough = glm::vec4{0.0f, 0.0f, 0.0f, 0.0f};
 
         // INTERNAL: normal transform: transforms mesh normals into scene worldspace
         //
         // this is mostly here as a draw-time optimization because it is redundant to compute
-        // it every draw call (and because instanced rendering requires this to be available)
+        // it every draw call (and because instanced rendering requires this to be available
+        // in this struct)
         //
         // you can regenerate this with:
         //     glm::transpose(glm::inverse(transform));
@@ -84,9 +86,8 @@ namespace osmv {
 
         // set passthrough data
         //
-        // note: wherever the scene isn't rendered, the passthrough data will decode
-        //       the passthrough background (usually, black, so you should treat 0x0000
-        //       as reserved)
+        // note: wherever the scene *isn't* rendered, black (0x000000) is encoded, so users of
+        //       this should treat 0x000000 as "reserved"
         void set_passthrough_data(unsigned char b0, unsigned char b1) {
             // map a byte range (0 - 255) onto an OpenGL color range (0.0f - 1.0f)
             _passthrough.r = static_cast<float>(b0) / 255.0f;
@@ -94,8 +95,24 @@ namespace osmv {
         }
     };
 
-    // low-level implementation of a renderer that is window, screen, and OpenSim
-    // agnostic
+    using Raw_renderer_flags = int;
+    enum Raw_renderer_flags_ {
+        RawRendererFlags_None = 0 << 0,
+        RawRendererFlags_WireframeMode = 1 << 0,
+        RawRendererFlags_ShowMeshNormals = 1 << 1,
+        RawRendererFlags_ShowFloor = 1 << 2,
+        RawRendererFlags_DrawRims = 1 << 3,
+        RawRendererFlags_DrawDebugQuads = 1 << 4,
+        RawRendererFlags_PerformPassthroughHitTest = 1 << 5,
+        RawRendererFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 6,
+        RawRendererFlags_DrawSceneGeometry = 1 << 7,
+
+        RawRendererFlags_Default = RawRendererFlags_ShowFloor | RawRendererFlags_DrawRims |
+                                   RawRendererFlags_DrawDebugQuads | RawRendererFlags_PerformPassthroughHitTest |
+                                   RawRendererFlags_UseOptimizedButDelayed1FrameHitTest |
+                                   RawRendererFlags_DrawSceneGeometry
+    };
+
     struct Renderer_impl;
     struct Raw_renderer final {
         glm::mat4 view_matrix{};
@@ -104,26 +121,13 @@ namespace osmv {
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
         glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
-        bool wireframe_mode = false;
-        bool show_mesh_normals = false;
-        bool show_floor = true;
-        bool draw_rims = true;
         glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
         float rim_thickness = 0.002f;
-        bool draw_debug_quads = false;
-
-        // passthrough data: callers can read passthrough data provided in the
-        // Mesh_instance after a frame is drawn
-        struct {
-            // OpenGL screen coordinates. Origin bottom-left, X increases rightwards
-            // Y increases upwards.
-            int x = 0;
-            int y = 0;
-            bool enabled = true;
-            bool optimized = true;  // however, they are one frame late
-            unsigned char prev_frame_passthrough[2];
-            unsigned char cur_frame_passthrough[2];
-        } passthrough_hittest;
+        Raw_renderer_flags flags = RawRendererFlags_Default;
+        int passthrough_hittest_x = 0;
+        int passthrough_hittest_y = 0;
+        unsigned char passthrough_result_prev_frame[2];
+        unsigned char passthrough_result_this_frame[2];
 
     private:
         Renderer_impl* state;
@@ -136,7 +140,24 @@ namespace osmv {
         Raw_renderer& operator=(Raw_renderer&&) = delete;
         ~Raw_renderer() noexcept;
 
-        void resize(int w, int h, int samples);
+        void reallocate_buffers(int w, int h, int samples);
+
+        // sort the provided meshes ready for a draw call
+        //
+        // if you skip this step, drawing might perform *extremely* sub-optimally and
+        // blended components might be drawn in the wrong order
+        void sort_meshes_for_drawing(Mesh_instance* meshes, size_t n);
+
+        template<typename Container>
+        void sort_meshes_for_drawing(Container& c) {
+            sort_meshes_for_drawing(c.data(), c.size());
+        }
+
         void draw(Mesh_instance const* meshes, size_t n);
+
+        template<typename Container>
+        void draw(Container const& c) {
+            draw(c.data(), c.size());
+        }
     };
 }

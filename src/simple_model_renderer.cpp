@@ -514,7 +514,7 @@ bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e)
         int w = e.window.data1;
         int h = e.window.data2;
         int samples = app.samples();
-        impl->renderer.resize(w, h, samples);
+        impl->renderer.reallocate_buffers(w, h, samples);
         return true;
     }
 
@@ -628,18 +628,16 @@ void osmv::Simple_model_renderer::draw(
     assert(geom.meshes.size() == geom.associated_components.size());
 
     // perform any necessary fixups on the geometry instances
+
     for (size_t i = 0; i < geom.meshes.size(); ++i) {
         Mesh_instance& mi = geom.meshes[i];
 
-        // if hit testing, encode the geometry index in the passthrough data
-        // for selection hit testing
-        if (renderer.passthrough_hittest.enabled) {
-            size_t id = i + 1;  // +1 because 0x0000 is reserved
-            assert(id < (1 << 16) - 1);
-            unsigned char b0 = id & 0xff;
-            unsigned char b1 = (id >> 8) & 0xff;
-            mi.set_passthrough_data(b0, b1);
-        }
+        // set passthrough data for hit-testing
+        size_t id = i + 1;  // +1 because 0x0000 is reserved
+        assert(id < (1 << 16) - 1);
+        unsigned char b0 = id & 0xff;
+        unsigned char b1 = (id >> 8) & 0xff;
+        mi.set_passthrough_data(b0, b1);
 
         // if drawing selection rims, set the rims of selected/hovered components
         // accordingly
@@ -655,17 +653,18 @@ void osmv::Simple_model_renderer::draw(
         }
     }
 
-    // if hit testing, tell the raw renderer which location it should hit-test
+    // we can sort the mesh list now because we have encoded the index into `associated_components`
+    // into each mesh instance
+    renderer.sort_meshes_for_drawing(geom.meshes);
+
+    // set hit-testing location based on mouse position
     //
-    // (i.e. mouse cursor location)
-    if (renderer.passthrough_hittest.enabled) {
-        // - SDL screen coords are traditional screen coords. Origin top-left, Y goes down
-        // - OpenGL screen coords are mathematical coords. Origin bottom-left, Y goes up
-        sdl::Mouse_state m = sdl::GetMouseState();
-        sdl::Window_dimensions d = app.window_dimensions();
-        renderer.passthrough_hittest.x = m.x;
-        renderer.passthrough_hittest.y = d.h - m.y;
-    }
+    // - SDL screen coords are traditional screen coords. Origin top-left, Y goes down
+    // - OpenGL screen coords are mathematical coords. Origin bottom-left, Y goes up
+    sdl::Mouse_state m = sdl::GetMouseState();
+    sdl::Window_dimensions d = app.window_dimensions();
+    renderer.passthrough_hittest_x = m.x;
+    renderer.passthrough_hittest_y = d.h - m.y;
 
     // set any other parameters that the raw renderer depends on
     renderer.view_matrix = compute_view_matrix(theta, phi, radius, pan);
@@ -674,34 +673,44 @@ void osmv::Simple_model_renderer::draw(
     renderer.light_pos = light_pos;
     renderer.light_rgb = light_rgb;
     renderer.background_rgba = background_rgba;
-    renderer.wireframe_mode = wireframe_mode;
-    renderer.show_mesh_normals = show_mesh_normals;
-    renderer.show_floor = show_floor;
-    renderer.draw_rims = draw_rims;
     renderer.rim_rgba = rim_rgba;
     renderer.rim_thickness = rim_thickness;
-    renderer.draw_debug_quads = app.is_in_debug_mode();
+    renderer.flags = RawRendererFlags_None;
+    renderer.flags |= RawRendererFlags_PerformPassthroughHitTest;
+    renderer.flags |= RawRendererFlags_UseOptimizedButDelayed1FrameHitTest;
+    renderer.flags |= RawRendererFlags_DrawSceneGeometry;
+    if (wireframe_mode) {
+        renderer.flags |= RawRendererFlags_WireframeMode;
+    }
+    if (show_mesh_normals) {
+        renderer.flags |= RawRendererFlags_ShowMeshNormals;
+    }
+    if (show_floor) {
+        renderer.flags |= RawRendererFlags_ShowFloor;
+    }
+    if (draw_rims) {
+        renderer.flags |= RawRendererFlags_DrawRims;
+    }
+    if (app.is_in_debug_mode()) {
+        renderer.flags |= RawRendererFlags_DrawDebugQuads;
+    }
 
     // perform draw call
-    renderer.draw(geom.meshes.data(), geom.meshes.size());
+    renderer.draw(geom.meshes);
 
     // post-draw: check if the hit-test passed
-    if (renderer.passthrough_hittest.enabled) {
-        // TODO:: optimized indices are from the previous frame, which might
-        //        contain now-stale components
-        unsigned char* bytes = renderer.passthrough_hittest.optimized
-                                   ? renderer.passthrough_hittest.prev_frame_passthrough
-                                   : renderer.passthrough_hittest.cur_frame_passthrough;
-        unsigned char b0 = bytes[0];
-        unsigned char b1 = bytes[1];
+    // TODO:: optimized indices are from the previous frame, which might
+    //        contain now-stale components
+    unsigned char* bytes = renderer.passthrough_result_prev_frame;
+    unsigned char b0 = bytes[0];
+    unsigned char b1 = bytes[1];
 
-        size_t id = static_cast<size_t>(b0);
-        id |= static_cast<size_t>(b1) << 8;
+    size_t id = static_cast<size_t>(b0);
+    id |= static_cast<size_t>(b1) << 8;
 
-        if (id == 0) {
-            hovered_component = nullptr;
-        } else {
-            hovered_component = geom.associated_components[id - 1];
-        }
+    if (id == 0) {
+        hovered_component = nullptr;
+    } else {
+        hovered_component = geom.associated_components[id - 1];
     }
 }
