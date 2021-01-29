@@ -1,7 +1,7 @@
 #include "imgui_wrapper.hpp"
 
-#include "examples/imgui_impl_opengl3.h"
-#include "examples/imgui_impl_sdl.h"
+#include "backends/imgui_impl_opengl3.h"
+#include "backends/imgui_impl_sdl.h"
 
 igx::Context::Context() : handle{ImGui::CreateContext()} {
 }

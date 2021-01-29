@@ -14,12 +14,13 @@
 #include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
 
-#include "imgui.h"
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <imgui.h>
 
 #include <optional>
 #include <stdexcept>
