@@ -20,3 +20,9 @@ cd opensim-build
 cmake ../opensim-core -G"Visual Studio 16 2019" -A x64 -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install
 cmake --build . --config Release --target install
 cd ..
+
+mkdir osmv-build
+cd osmv-build
+cmake ../ -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=../opensim-install
+cmake --build . --config Release --target osmv
+cd ..
