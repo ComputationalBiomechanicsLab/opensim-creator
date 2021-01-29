@@ -794,7 +794,7 @@ namespace osmv {
             }
 
             // menu bar
-            if (ImGui::BeginMainMenuBar()) {
+            if (false && ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginTabBar("MainTabBar")) {
                     if (ImGui::BeginTabItem(model_path.filename().string().c_str())) {
                         ImGui::EndTabItem();
@@ -812,61 +812,44 @@ namespace osmv {
 
         void draw_main_panel(Application& app) {
             bool b = true;
-            ImGuiWindowFlags flags = ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoTitleBar;
 
-            if (ImGui::Begin("Main Panel", &b, flags)) {
-                if (ImGui::BeginTabBar("SomeTabBar")) {
+            if (ImGui::Begin("Coordinates", &b)) {
+                draw_coords_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Coordinates")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_coords_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Simulate", &b)) {
+                draw_simulate_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Simulate")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_simulate_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Muscles")) {
+                draw_muscles_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Muscles")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_muscles_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Outputs")) {
+                draw_outputs_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Outputs")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_outputs_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Utils")) {
+                draw_utils_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Utils")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_utils_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Moment Arms")) {
+                draw_moment_arms_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Moment Arms")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_moment_arms_tab();
-                        ImGui::EndTabItem();
-                    }
+            if (ImGui::Begin("Selection")) {
+                draw_selection_tab();
+            }
+            ImGui::End();
 
-                    if (ImGui::BeginTabItem("Selection")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_selection_tab();
-                        ImGui::EndTabItem();
-                    }
-
-                    if (ImGui::BeginTabItem("UI")) {
-                        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-                        draw_ui_tab(app);
-                        ImGui::EndTabItem();
-                    }
-
-                    ImGui::EndTabBar();
-                }
+            if (ImGui::Begin("UI")) {
+                draw_ui_tab(app);
             }
             ImGui::End();
         }
