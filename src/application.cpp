@@ -425,7 +425,7 @@ namespace osmv {
 
                     auto frame_end = std::chrono::high_resolution_clock::now();
                     auto this_frame_dur = frame_end - frame_start;
-                    auto next_frame_estimation = 3 * this_frame_dur;
+                    auto next_frame_estimation = 4 * this_frame_dur;
                     if (next_frame_estimation < millis_between_frames) {
                         auto dt = millis_between_frames - next_frame_estimation;
                         auto dt_millis = std::chrono::duration_cast<std::chrono::milliseconds>(dt);
