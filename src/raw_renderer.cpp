@@ -710,7 +710,7 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
             }
 
             gl::BindVertexArray(md.main_vao);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), ib.ninstances);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(ib.ninstances));
         }
         gl::BindVertexArray();
         glDisablei(GL_BLEND, 0);

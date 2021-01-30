@@ -429,7 +429,7 @@ namespace {
             float sim_time = static_cast<float>(st.getTime());
             float wall_time = std::chrono::duration<float>{sim.wall_duration()}.count();
 
-            prescribeQcalls.push_datapoint(sim_time, sim.num_prescribeq_calls());
+            prescribeQcalls.push_datapoint(sim_time, static_cast<float>(sim.num_prescribeq_calls()));
             simTimeDividedByWallTime.push_datapoint(sim_time, sim_time / wall_time);
 
             // get latest integrator stats
@@ -1406,7 +1406,7 @@ namespace osmv {
                 ImGui::Text("coord : %s", p.coord_name.c_str());
                 ImGui::Text("min   : %f", static_cast<double>(p.min));
                 ImGui::Text("max   : %f", static_cast<double>(p.max));
-                ImGui::PushID(i);
+                ImGui::PushID(static_cast<int>(i));
                 if (ImGui::Button("delete")) {
                     auto it = mas_tab.plots.begin() + static_cast<int>(i);
                     mas_tab.plots.erase(it, it + 1);

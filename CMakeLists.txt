@@ -255,7 +255,7 @@ if (WIN32)
 
     # set up NSIS packaging
     set(CPACK_GENERATOR NSIS)
-    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/social_youtube_icon_177144.ico")
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
     set(CPACK_NSIS_UNINSTALL_NAME "uninstall-osmv")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_HELP_LINK "https://github.com/adamkewley/osmv")
