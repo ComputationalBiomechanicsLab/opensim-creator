@@ -517,7 +517,10 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
     sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : SDL_WINDOW_RESIZABLE;
 #if !defined(_WIN32)
     // See SDL hack in ImGui_ImplSDL2_ShowWindow().
-    sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon) ? SDL_WINDOW_SKIP_TASKBAR : 0;
+    // ADAM: SDL_WINDOW_SKIP_TASKBAR isn't defined in Ubuntu16 but i'm assuming SDL is
+    //       ABI-compatible enough for me to hard-code the value as a quick hack until
+    //       Ubuntu 16 use is phased out
+    sdl_flags |= (viewport->Flags & ImGuiViewportFlags_NoTaskBarIcon) ? 0x00010000 : 0;
 #endif
 #if SDL_HAS_ALWAYS_ON_TOP
     sdl_flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? SDL_WINDOW_ALWAYS_ON_TOP : 0;
