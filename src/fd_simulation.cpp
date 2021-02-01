@@ -141,6 +141,38 @@ namespace {
         params.model->initSystem();
         OpenSim::Manager manager{params.model};
 
+        // select integrator
+        {
+            switch (params.integrator_method) {
+            case osmv::IntegratorMethod_OpenSimManagerDefault:
+                // just use whatever Manager is already using
+                break;
+            case osmv::IntegratorMethod_ExplicitEuler:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::ExplicitEuler);
+                break;
+            case osmv::IntegratorMethod_RungeKutta2:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKutta2);
+                break;
+            case osmv::IntegratorMethod_RungeKutta3:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKutta3);
+                break;
+            case osmv::IntegratorMethod_RungeKuttaFeldberg:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKuttaFeldberg);
+                break;
+            case osmv::IntegratorMethod_RungeKuttaMerson:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKuttaMerson);
+                break;
+            case osmv::IntegratorMethod_SemiExplicitEuler2:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::SemiExplicitEuler2);
+                break;
+            case osmv::IntegratorMethod_Verlet:
+                manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::Verlet);
+                break;
+            default:
+                throw std::runtime_error{"unknown integrator method passed to simulation_thread_main"};
+            }
+        }
+
         // add an analysis that calls on each integration step
         clock::time_point simulation_thread_started = clock::now();
         clock::time_point last_report_start = clock::now();
@@ -194,7 +226,29 @@ namespace {
 
             shared_st.sim_cur_time = s.getTime();
             shared_st.num_prescribeq_calls = params.model->getSystem().getNumPrescribeQCalls();
-            shared_st.istats = manager.getIntegrator();
+
+            // assign stats
+            {
+                SimTK::Integrator const& integrator = manager.getIntegrator();
+
+                osmv::Integrator_stats& is = shared_st.istats;
+                is.accuracyInUse = static_cast<float>(integrator.getAccuracyInUse());
+                is.predictedNextStepSize = static_cast<float>(integrator.getPredictedNextStepSize());
+                is.numStepsAttempted = integrator.getNumStepsAttempted();
+                is.numStepsTaken = integrator.getNumStepsTaken();
+                is.numRealizations = integrator.getNumRealizations();
+                is.numQProjections = integrator.getNumQProjections();
+                is.numUProjections = integrator.getNumUProjections();
+                is.numErrorTestFailures = integrator.getNumErrorTestFailures();
+                is.numConvergenceTestFailures = integrator.getNumConvergenceTestFailures();
+                is.numRealizationFailures = integrator.getNumRealizationFailures();
+                is.numQProjectionFailures = integrator.getNumQProjectionFailures();
+                is.numUProjectionFailures = integrator.getNumUProjectionFailures();
+                is.numProjectionFailures = integrator.getNumProjectionFailures();
+                is.numConvergentIterations = integrator.getNumConvergentIterations();
+                is.numDivergentIterations = integrator.getNumDivergentIterations();
+                is.numIterations = integrator.getNumIterations();
+            }
 
             if (steps++ > 0) {
                 clock::duration total = report_start - last_report_start;
@@ -256,31 +310,27 @@ namespace osmv {
     };
 }
 
-// osmv::Integrator_stats implementation
+osmv::IntegratorMethod const osmv::integrator_methods[IntegratorMethod_NumIntegratorMethods] = {
+    IntegratorMethod_OpenSimManagerDefault,
+    IntegratorMethod_ExplicitEuler,
+    IntegratorMethod_RungeKutta2,
+    IntegratorMethod_RungeKutta3,
+    IntegratorMethod_RungeKuttaFeldberg,
+    IntegratorMethod_RungeKuttaMerson,
+    IntegratorMethod_SemiExplicitEuler2,
+    IntegratorMethod_Verlet,
+};
 
-osmv::Integrator_stats& osmv::Integrator_stats::operator=(SimTK::Integrator const& integrator) {
-    accuracyInUse = static_cast<float>(integrator.getAccuracyInUse());
-    predictedNextStepSize = static_cast<float>(integrator.getPredictedNextStepSize());
-
-    numStepsAttempted = integrator.getNumStepsAttempted();
-    numStepsTaken = integrator.getNumStepsTaken();
-    numRealizations = integrator.getNumRealizations();
-    numQProjections = integrator.getNumQProjections();
-    numUProjections = integrator.getNumUProjections();
-    numErrorTestFailures = integrator.getNumErrorTestFailures();
-    numConvergenceTestFailures = integrator.getNumConvergenceTestFailures();
-    numRealizationFailures = integrator.getNumRealizationFailures();
-    numQProjectionFailures = integrator.getNumQProjectionFailures();
-    numUProjectionFailures = integrator.getNumUProjectionFailures();
-    numProjectionFailures = integrator.getNumProjectionFailures();
-    numConvergentIterations = integrator.getNumConvergentIterations();
-    numDivergentIterations = integrator.getNumDivergentIterations();
-    numIterations = integrator.getNumIterations();
-
-    return *this;
-}
-
-// osmv::Fd_simulator interface implementation
+char const * const osmv::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
+    "OpenSim::Manager Default",
+    "Explicit Euler",
+    "Runge Kutta 2",
+    "Runge Kutta 3",
+    "Runge Kutta Feldberg",
+    "Runge Kutta Merson",
+    "Semi Explicit Euler 2",
+    "Verlet",
+};
 
 osmv::Fd_simulator::Fd_simulator(Fd_simulation_params p) : impl{new Fd_simulator_impl{std::move(p)}} {
 }

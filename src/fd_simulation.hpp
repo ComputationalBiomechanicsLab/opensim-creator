@@ -2,11 +2,28 @@
 
 #include "opensim_wrapper.hpp"
 
+#include <chrono>
+
 namespace SimTK {
     class Integrator;
 }
 
 namespace osmv {
+    enum IntegratorMethod {
+        IntegratorMethod_OpenSimManagerDefault = 0,
+        IntegratorMethod_ExplicitEuler,
+        IntegratorMethod_RungeKutta2,
+        IntegratorMethod_RungeKutta3,
+        IntegratorMethod_RungeKuttaFeldberg,
+        IntegratorMethod_RungeKuttaMerson,
+        IntegratorMethod_SemiExplicitEuler2,
+        IntegratorMethod_Verlet,
+
+        IntegratorMethod_NumIntegratorMethods,
+    };
+    extern IntegratorMethod const integrator_methods[IntegratorMethod_NumIntegratorMethods];
+    extern char const * const integrator_method_names[IntegratorMethod_NumIntegratorMethods];
+
     // input parameters for a forward-dynamic simulation
     struct Fd_simulation_params final {
         Model model;
@@ -20,10 +37,14 @@ namespace osmv {
         // true if the simulation should slow down whenever it runs faster than wall-time
         bool throttle_to_wall_time = true;
 
-        Fd_simulation_params(osmv::Model m, osmv::State s, double t) :
-            model{std::move(m)},
-            initial_state{std::move(s)},
-            final_time{t} {
+        // which integration method to use for the simulation
+        IntegratorMethod integrator_method = IntegratorMethod_OpenSimManagerDefault;
+
+        Fd_simulation_params(osmv::Model _model, osmv::State _state, double _final_time, IntegratorMethod _method) :
+            model{std::move(_model)},
+            initial_state{std::move(_state)},
+            final_time{static_cast<double>(_final_time)},
+            integrator_method{_method} {
         }
     };
 
@@ -46,13 +67,10 @@ namespace osmv {
         int numConvergentIterations = 0;
         int numDivergentIterations = 0;
         int numIterations = 0;
-
-        Integrator_stats& operator=(SimTK::Integrator const&);
     };
 
-    struct Fd_simulator_impl;
-
     // a simulator that runs a forward-dynamic simulation on a background thread
+    struct Fd_simulator_impl;
     class Fd_simulator final {
         std::unique_ptr<Fd_simulator_impl> impl;
 

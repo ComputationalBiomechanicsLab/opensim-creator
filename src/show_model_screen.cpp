@@ -396,6 +396,7 @@ namespace {
              {"numIterations", [](osmv::Integrator_stats const& is) { return static_cast<float>(is.numIterations); }}}};
 
         float fd_final_time = 0.4f;
+        osmv::IntegratorMethod integrator_method = osmv::IntegratorMethod_OpenSimManagerDefault;
 
         osmv::Integrator_stats istats;
 
@@ -454,7 +455,7 @@ namespace {
                 ImGui::PushStyleColor(ImGuiCol_Button, dark_green);
                 if (ImGui::Button("start [SPC]")) {
                     osmv::Fd_simulation_params params{
-                        osmv::Model{shown_model}, osmv::State{shown_state}, fd_final_time};
+                        osmv::Model{shown_model}, osmv::State{shown_state}, static_cast<double>(fd_final_time), integrator_method};
                     simulator.emplace(std::move(params));
                 }
                 ImGui::PopStyleColor();
@@ -466,11 +467,21 @@ namespace {
             ImGui::Separator();
 
             ImGui::Columns(2);
+
             ImGui::Text("final time");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::SliderFloat(" ", &fd_final_time, 0.01f, 20.0f);
             ImGui::NextColumn();
+
+            ImGui::Text("integration method");
+            ImGui::NextColumn();
+            {
+                int method = integrator_method;
+                if (ImGui::Combo("  ", &method, osmv::integrator_method_names, osmv::IntegratorMethod_NumIntegratorMethods)) {
+                    integrator_method = static_cast<osmv::IntegratorMethod>(method);
+                }
+            }
             ImGui::Columns();
 
             // ImGui::SliderFloat("final time", &fd_final_time, 0.01f, 20.0f);
@@ -682,7 +693,7 @@ namespace osmv {
                         simulator_tab.simulator->request_stop();
                     } else {
                         simulator_tab.simulator.emplace(
-                            Fd_simulation_params{Model{model}, State{latest_state}, simulator_tab.fd_final_time});
+                            Fd_simulation_params{Model{model}, State{latest_state}, static_cast<double>(simulator_tab.fd_final_time), simulator_tab.integrator_method});
                     }
                     break;
                 case SDLK_ESCAPE:
