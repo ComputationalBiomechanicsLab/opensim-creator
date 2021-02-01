@@ -2,7 +2,6 @@
 
 #include "gl.hpp"
 #include "imgui.h"
-#include "imgui_wrapper.hpp"
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
@@ -16,6 +15,54 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+
+// forward-declare these so that this header isn't dependent on SDL/imgui
+struct SDL_Window;
+struct ImGuiContext;
+
+namespace igx {
+    class Context final {
+        ImGuiContext* handle;
+
+    public:
+        Context() : handle{ImGui::CreateContext()} {
+        }
+        Context(Context const&) = delete;
+        Context(Context&&) = delete;
+        Context& operator=(Context const&) = delete;
+        Context& operator=(Context&&) = delete;
+        ~Context() noexcept {
+            ImGui::DestroyContext(handle);
+        }
+    };
+
+    struct SDL2_Context final {
+        SDL2_Context(SDL_Window* w, void* gl) {
+            ImGui_ImplSDL2_InitForOpenGL(w, gl);
+        }
+        SDL2_Context(SDL2_Context const&) = delete;
+        SDL2_Context(SDL2_Context&&) = delete;
+        SDL2_Context& operator=(SDL2_Context const&) = delete;
+        SDL2_Context& operator=(SDL2_Context&&) = delete;
+        ~SDL2_Context() noexcept {
+            ImGui_ImplSDL2_Shutdown();
+        }
+    };
+
+    struct OpenGL3_Context final {
+        OpenGL3_Context(char const* version) {
+            ImGui_ImplOpenGL3_Init(version);
+        }
+        OpenGL3_Context(OpenGL3_Context const&) = delete;
+        OpenGL3_Context(OpenGL3_Context&&) = delete;
+        OpenGL3_Context& operator=(OpenGL3_Context const&) = delete;
+        OpenGL3_Context& operator=(OpenGL3_Context&&) = delete;
+        ~OpenGL3_Context() noexcept {
+            ImGui_ImplOpenGL3_Shutdown();
+        }
+    };
+}
+
 
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
@@ -471,8 +518,9 @@ void osmv::Application::is_throttling_fps(bool throttle) {
 }
 
 // dimensions of the main application window in pixels
-sdl::Window_dimensions osmv::Application::window_dimensions() const noexcept {
-    return sdl::GetWindowSize(impl->window);
+osmv::Window_dimensions osmv::Application::window_dimensions() const noexcept {
+    auto [w, h] = sdl::GetWindowSize(impl->window);
+    return Window_dimensions{w, h};
 }
 
 // move mouse relative to the window (origin in top-left)

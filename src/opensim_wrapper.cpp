@@ -1,6 +1,6 @@
 #include "opensim_wrapper.hpp"
 
-#include "cfg.hpp"
+#include "config.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -17,7 +17,7 @@ osmv::Model::Model(std::filesystem::path const& p) : handle{nullptr} {
     //
     // this sets a global in OpenSim, so only needs to be called once
     static bool _ = []() {
-        std::filesystem::path geometry_dir = cfg::resource_path("geometry");
+        std::filesystem::path geometry_dir = config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         return true;
     }();

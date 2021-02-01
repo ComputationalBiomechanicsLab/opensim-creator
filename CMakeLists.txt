@@ -58,14 +58,12 @@ add_executable(osmv
     src/os.cpp
     src/sdl_wrapper.hpp
     src/sdl_wrapper.cpp
-    src/imgui_wrapper.hpp
-    src/imgui_wrapper.cpp
     src/gl.hpp
     src/gl.cpp
     src/shims.hpp
 
-    src/cfg.hpp
-    src/cfg.cpp
+    src/config.hpp
+    src/config.cpp
     src/opensim_wrapper.hpp
     src/opensim_wrapper.cpp
     src/3d_common.hpp
@@ -80,6 +78,7 @@ add_executable(osmv
     src/application.cpp
 
     src/screen.hpp
+    src/screen.cpp
     src/show_model_screen.hpp
     src/show_model_screen.cpp
     src/loading_screen.hpp

@@ -1,6 +1,6 @@
 ﻿#include "application.hpp"
 
-#include "cfg.hpp"
+#include "config.hpp"
 #include "fd_simulation.hpp"
 #include "opensim_wrapper.hpp"
 #include "os.hpp"

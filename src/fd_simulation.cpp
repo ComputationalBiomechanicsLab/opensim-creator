@@ -132,7 +132,7 @@ namespace {
     // MAIN: simulator thread: this is the top-level function that the simulator thread executes
     // in the background.
     int simulation_thread_main(
-        shims::stop_token stop_token,
+        osmv::stop_token stop_token,
         osmv::Fd_simulation_params params,
         std::shared_ptr<Mutexed<Shared_fdsim_state>> thread_shared) {
 
@@ -299,7 +299,7 @@ namespace osmv {
         // the simulator thread. Jthreads automatically send a cancellation request
         // and join on destruction, so destroying a simulator *should* automatically
         // cancel + wait
-        shims::jthread simulator_thread;
+        jthread simulator_thread;
 
         Fd_simulator_impl(Fd_simulation_params p) :
             final_time{p.final_time},

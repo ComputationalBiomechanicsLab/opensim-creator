@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace osmv::cfg {
+namespace osmv::config {
     std::filesystem::path resource_path(std::filesystem::path const&);
 
     template<typename... Els>

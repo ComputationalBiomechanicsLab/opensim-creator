@@ -1,4 +1,4 @@
-#include "cfg.hpp"
+#include "config.hpp"
 
 #include "os.hpp"
 
@@ -58,11 +58,11 @@ static App_config load_config() {
     return config;
 }
 
-std::filesystem::path osmv::cfg::resource_path(std::filesystem::path const& subpath) {
+std::filesystem::path osmv::config::resource_path(std::filesystem::path const& subpath) {
     return load_config().resource_dir / subpath;
 }
 
 static std::filesystem::path const shaders_dir = "shaders";
-std::filesystem::path osmv::cfg::shader_path(char const* shader_name) {
+std::filesystem::path osmv::config::shader_path(char const* shader_name) {
     return resource_path(shaders_dir / shader_name);
 }

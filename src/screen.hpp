@@ -1,8 +1,7 @@
 #pragma once
 
-#include "application.hpp"
-
-#include <cassert>
+#include "SDL_events.h"
+#include <memory>
 
 // screen: thin abstraction over an application screen
 //
@@ -12,6 +11,7 @@
 
 namespace osmv {
     class Application;
+    struct Application_impl;
 
     enum class Event_response {
         handled,
@@ -22,19 +22,12 @@ namespace osmv {
     // current window
     class Screen {
         Application* parent = nullptr;
+        friend class Application;
+        friend struct Application_impl;
 
     public:
-        // called by the owning (parent) application just before it mounts the screen
-        void on_application_mount(Application* a) {
-            assert(a != nullptr);
-            parent = a;
-        }
-
         // application instance that owns this screen
-        Application& application() const noexcept {
-            assert(parent != nullptr);
-            return *parent;
-        }
+        Application& application() const noexcept;
 
         // request that the application transitions to a different screen
         //
@@ -42,8 +35,7 @@ namespace osmv {
         // after a screen's `on_event`, `tick`, or `draw` function returns.
         template<typename T, typename... Args>
         void request_screen_transition(Args&&... args) {
-            assert(parent != nullptr);
-            parent->request_screen_transition<T>(std::forward<Args>(args)...);
+            request_screen_transition(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
         // called by the application whenever an external event is received (e.g. mousemove)
@@ -61,5 +53,11 @@ namespace osmv {
         virtual void draw() = 0;
 
         virtual ~Screen() noexcept = default;
+
+    private:
+        // called by the owning (parent) application just before it mounts the screen
+        void on_application_mount(Application* a);
+
+        void request_screen_transition(std::unique_ptr<Screen>);
     };
 }

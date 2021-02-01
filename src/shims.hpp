@@ -5,7 +5,7 @@
 #include <thread>
 
 // shims: *roughly* compatible shims to features available in newer C++es
-namespace shims {
+namespace osmv {
 
     // C++20: std::stop_token
     class stop_token final {

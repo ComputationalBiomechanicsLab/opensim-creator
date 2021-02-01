@@ -1,7 +1,7 @@
 #include "raw_renderer.hpp"
 
 #include "3d_common.hpp"
-#include "cfg.hpp"
+#include "config.hpp"
 #include "gl.hpp"
 
 #include <algorithm>
@@ -52,8 +52,8 @@ namespace {
     // - COLOR1: RGBA passthrough (selection logic + rim alphas)
     struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("gouraud_mrt.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("gouraud_mrt.frag")));
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("gouraud_mrt.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("gouraud_mrt.frag")));
 
         // vertex attrs
         static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
@@ -102,8 +102,8 @@ namespace {
     // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("plain_texture.frag")));
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("plain_texture.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -134,8 +134,8 @@ namespace {
     // A specialized edge-detection shader for rim highlighting
     struct Edge_detection_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("edge_detect.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("edge_detect.frag")));
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("edge_detect.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("edge_detect.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -166,8 +166,8 @@ namespace {
 
     struct Skip_msxaa_blitter_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("skip_msxaa_blitter.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("skip_msxaa_blitter.frag")));
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("skip_msxaa_blitter.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("skip_msxaa_blitter.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -197,9 +197,9 @@ namespace {
     // uses a geometry shader to render normals as lines
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::cfg::shader_path("draw_normals.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::cfg::shader_path("draw_normals.frag")),
-            gl::Compile<gl::Geometry_shader>(osmv::cfg::shader_path("draw_normals.geom")));
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("draw_normals.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("draw_normals.frag")),
+            gl::Compile<gl::Geometry_shader>(osmv::config::shader_path("draw_normals.geom")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);

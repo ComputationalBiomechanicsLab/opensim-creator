@@ -1,7 +1,7 @@
 #include "splash_screen.hpp"
 
 #include "application.hpp"
-#include "cfg.hpp"
+#include "config.hpp"
 #include "imgui_demo_screen.hpp"
 #include "loading_screen.hpp"
 
@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 
 // helper that searches for example .osim files in the resources/ directory
 static std::vector<fs::path> find_example_osims() {
-    fs::path models_dir = osmv::cfg::resource_path("models");
+    fs::path models_dir = osmv::config::resource_path("models");
 
     std::vector<fs::path> rv;
 
@@ -73,7 +73,8 @@ namespace osmv {
 
             // center the menu
             {
-                glm::vec2 app_window_dims = app.window_dimensions();
+                auto [w, h] = app.window_dimensions();
+                glm::vec2 app_window_dims{w, h};
                 glm::vec2 rough_menu_dims = {500, 500};
                 glm::vec2 menu_pos = 0.5f * (app_window_dims - rough_menu_dims);
                 menu_pos.y = 100;

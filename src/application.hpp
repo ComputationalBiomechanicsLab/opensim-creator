@@ -1,13 +1,6 @@
 #pragma once
 
-#include "sdl_wrapper.hpp"
-
 #include <memory>
-
-namespace gl {
-    class Render_buffer;
-    class Frame_buffer;
-}
 
 // application: top-level application state
 //
@@ -16,6 +9,11 @@ namespace gl {
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
 namespace osmv {
+    struct Window_dimensions final {
+        int w;
+        int h;
+    };
+
     class Screen;
     struct Application_impl;
 
@@ -51,7 +49,7 @@ namespace osmv {
         void is_throttling_fps(bool);
 
         // dimensions of the main application window in pixels
-        sdl::Window_dimensions window_dimensions() const noexcept;
+        Window_dimensions window_dimensions() const noexcept;
 
         float window_aspect_ratio() const noexcept {
             auto [w, h] = window_dimensions();
@@ -69,8 +67,10 @@ namespace osmv {
         // downstream rendererers should also render debug info)
         bool is_in_debug_mode() const noexcept;
 
+        // makes the application window fullscreen
         void make_fullscreen();
 
+        // makes the application window windowed (as opposed to fullscreen)
         void make_windowed();
     };
 }

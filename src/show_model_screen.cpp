@@ -2,9 +2,10 @@
 
 #include "osmv_config.hpp"
 
+#include "sdl_wrapper.hpp"
 #include "3d_common.hpp"
 #include "application.hpp"
-#include "cfg.hpp"
+#include "config.hpp"
 #include "fd_simulation.hpp"
 #include "gl.hpp"
 #include "loading_screen.hpp"
