@@ -33,81 +33,12 @@ namespace {
         std::snprintf(buf, n, "%s/%s", ao->getOwner().getName().c_str(), ao->getName().c_str());
     }
 
-    // flag-ified version of OpenSim::Coordinate::MotionType (easier ORing for filtering)
-    enum Motion_type : int {
-        Undefined = 0,
-        Rotational = 1,
-        Translational = 2,
-        Coupled = 4,
-    };
-    static_assert(Motion_type::Undefined == 0);
-
-    // info for a coordinate in a model
-    //
-    // pointers in this struct are dependent on the model: only use this in short-lived contexts
-    // and don't let it survive during a model edit or model destruction
-    struct Coordinate final {
-        OpenSim::Coordinate const* ptr;
-        std::string const* name;
-        float min;
-        float max;
-        float value;
-        Motion_type type;
-        bool locked;
-    };
-
-    // info for a muscle in a model
-    //
-    // pointers in this struct are dependent on the model: only use this in short-lived contexts
-    // and don't let it survive during a model edit or model destruction
-    struct Muscle_stat final {
-        OpenSim::Muscle const* ptr;
-        std::string const* name;
-        float length;
-    };
-
-    static Motion_type convert_to_osim_motiontype(OpenSim::Coordinate::MotionType m) {
-        using OpenSim::Coordinate;
-
-        switch (m) {
-        case Coordinate::MotionType::Undefined:
-            return Motion_type::Undefined;
-        case Coordinate::MotionType::Rotational:
-            return Motion_type::Rotational;
-        case Coordinate::MotionType::Translational:
-            return Motion_type::Translational;
-        case Coordinate::MotionType::Coupled:
-            return Motion_type::Coupled;
-        default:
-            throw std::runtime_error{"convert_to_osim_motiontype: unknown coordinate type encountered"};
-        }
-    }
-
-    static void get_coordinates(OpenSim::Model const& m, SimTK::State const& st, std::vector<Coordinate>& out) {
+    static void get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordinate const*>& out) {
         OpenSim::CoordinateSet const& s = m.getCoordinateSet();
         int len = s.getSize();
         out.reserve(out.size() + static_cast<size_t>(len));
         for (int i = 0; i < len; ++i) {
-            OpenSim::Coordinate const& c = s[i];
-            out.push_back(Coordinate{
-                &c,
-                &c.getName(),
-                static_cast<float>(c.getRangeMin()),
-                static_cast<float>(c.getRangeMax()),
-                static_cast<float>(c.getValue(st)),
-                convert_to_osim_motiontype(c.getMotionType()),
-                c.getLocked(st),
-            });
-        }
-    }
-
-    static void get_muscle_stats(OpenSim::Model const& m, SimTK::State const& s, std::vector<Muscle_stat>& out) {
-        for (OpenSim::Muscle const& musc : m.getComponentList<OpenSim::Muscle>()) {
-            out.push_back(Muscle_stat{
-                &musc,
-                &musc.getName(),
-                static_cast<float>(musc.getLength(s)),
-            });
+            out.push_back(&s[i]);
         }
     }
 
@@ -135,10 +66,6 @@ namespace {
         c.setLocked(state, prev_locked);
         c.setValue(state, prev_val);
     }
-
-    static const ImVec4 red{1.0f, 0.0f, 0.0f, 1.0f};
-    static const ImVec4 dark_green{0.0f, 0.6f, 0.0f, 1.0f};
-    static const ImVec4 dark_red{0.6f, 0.0f, 0.0f, 1.0f};
 
     // holds a fixed number of Y datapoints that are assumed to be roughly evenly spaced in X
     //
@@ -447,13 +374,13 @@ namespace {
             osmv::Simple_model_renderer&, Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
             // start/stop button
             if (simulator and simulator->is_running()) {
-                ImGui::PushStyleColor(ImGuiCol_Button, red);
+                ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
                 if (ImGui::Button("stop [SPC]")) {
                     simulator->request_stop();
                 }
                 ImGui::PopStyleColor();
             } else {
-                ImGui::PushStyleColor(ImGuiCol_Button, dark_green);
+                ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
                 if (ImGui::Button("start [SPC]")) {
                     osmv::Fd_simulation_params params{
                         osmv::Model{shown_model}, osmv::State{shown_state}, static_cast<double>(fd_final_time), integrator_method};
@@ -472,20 +399,18 @@ namespace {
             ImGui::Text("final time");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::SliderFloat(" ", &fd_final_time, 0.01f, 20.0f);
+            ImGui::SliderFloat("##final time float", &fd_final_time, 0.01f, 20.0f);
             ImGui::NextColumn();
 
             ImGui::Text("integration method");
             ImGui::NextColumn();
             {
                 int method = integrator_method;
-                if (ImGui::Combo("  ", &method, osmv::integrator_method_names, osmv::IntegratorMethod_NumIntegratorMethods)) {
+                if (ImGui::Combo("##integration method combo", &method, osmv::integrator_method_names, osmv::IntegratorMethod_NumIntegratorMethods)) {
                     integrator_method = static_cast<osmv::IntegratorMethod>(method);
                 }
             }
             ImGui::Columns();
-
-            // ImGui::SliderFloat("final time", &fd_final_time, 0.01f, 20.0f);
 
             if (simulator) {
                 std::chrono::milliseconds wall_ms =
@@ -632,8 +557,8 @@ namespace osmv {
         // scratch: shared space that has no content guarantees
         struct {
             char text[1024 + 1];
-            std::vector<Coordinate> coords;
-            std::vector<Muscle_stat> muscles;
+            std::vector<OpenSim::Coordinate const*> coords;
+            std::vector<OpenSim::Muscle const*> muscles;
         } scratch;
 
         std::filesystem::path model_path;
@@ -970,78 +895,68 @@ namespace osmv {
         }
 
         void draw_coords_tab() {
-            // render filters section
-            ImGui::Text("filters:");
-            ImGui::Dummy({0.0f, 2.5f});
-            ImGui::Separator();
+            // render coordinate filters
+            {
+                ImGui::Text("filters:");
+                ImGui::Dummy({0.0f, 2.5f});
+                ImGui::Separator();
 
-            ImGui::Columns(2);
+                ImGui::Columns(2);
 
-            ImGui::Text("search");
-            ImGui::NextColumn();
-            ImGui::PushID("coords search filter");
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputText(" ", coords_tab.filter, sizeof(coords_tab.filter));
-            ImGui::PopID();
-            ImGui::NextColumn();
+                ImGui::Text("search");
+                ImGui::NextColumn();
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                ImGui::InputText("##coords search filter", coords_tab.filter, sizeof(coords_tab.filter));
+                ImGui::NextColumn();
 
-            ImGui::Text("sort alphabetically");
-            ImGui::NextColumn();
-            ImGui::PushID("coords alphabetical sort");
-            ImGui::Checkbox(" ", &coords_tab.sort_by_name);
-            ImGui::PopID();
-            ImGui::NextColumn();
+                ImGui::Text("sort alphabetically");
+                ImGui::NextColumn();
+                ImGui::Checkbox("##coords alphabetical sort", &coords_tab.sort_by_name);
+                ImGui::NextColumn();
 
-            ImGui::Text("show rotational");
-            ImGui::NextColumn();
-            ImGui::PushID("rotational coordinates checkbox");
-            ImGui::Checkbox(" ", &coords_tab.show_rotational);
-            ImGui::PopID();
-            ImGui::NextColumn();
+                ImGui::Text("show rotational");
+                ImGui::NextColumn();
+                ImGui::Checkbox("##rotational coordinates checkbox", &coords_tab.show_rotational);
+                ImGui::NextColumn();
 
-            ImGui::Text("show translational");
-            ImGui::NextColumn();
-            ImGui::PushID("translational coordinates checkbox");
-            ImGui::Checkbox(" ", &coords_tab.show_rotational);
-            ImGui::PopID();
-            ImGui::NextColumn();
+                ImGui::Text("show translational");
+                ImGui::NextColumn();
+                ImGui::Checkbox("##translational coordinates checkbox", &coords_tab.show_translational);
+                ImGui::NextColumn();
 
-            ImGui::Text("show coupled");
-            ImGui::NextColumn();
-            ImGui::PushID("coupled coordinates checkbox");
-            ImGui::Checkbox(" ", &coords_tab.show_coupled);
-            ImGui::PopID();
-            ImGui::NextColumn();
+                ImGui::Text("show coupled");
+                ImGui::NextColumn();
+                ImGui::Checkbox("##coupled coordinates checkbox", &coords_tab.show_coupled);
+                ImGui::NextColumn();
 
-            ImGui::Columns();
+                ImGui::Columns();
+            }
 
             // load coords
             scratch.coords.clear();
-            get_coordinates(model, latest_state, scratch.coords);
+            get_coordinates(model, scratch.coords);
 
-            // filter coords
+            // sort coords
             {
-                int coordtypes_to_filter_out = 0;
-                if (not coords_tab.show_rotational) {
-                    coordtypes_to_filter_out |= Rotational;
-                }
-                if (not coords_tab.show_translational) {
-                    coordtypes_to_filter_out |= Translational;
-                }
-                if (not coords_tab.show_coupled) {
-                    coordtypes_to_filter_out |= Coupled;
-                }
-
-                auto should_remove = [&](Coordinate const& c) {
-                    if (c.type & coordtypes_to_filter_out) {
+                auto should_remove = [&](OpenSim::Coordinate const* c) {
+                    if (c->getName().find(coords_tab.filter) == c->getName().npos) {
                         return true;
                     }
 
-                    if (c.name->find(coords_tab.filter) == c.name->npos) {
-                        return true;
+                    OpenSim::Coordinate::MotionType mt = c->getMotionType();
+                    if (coords_tab.show_rotational and mt == OpenSim::Coordinate::MotionType::Rotational) {
+                        return false;
                     }
 
-                    return false;
+                    if (coords_tab.show_translational and mt == OpenSim::Coordinate::MotionType::Translational) {
+                        return false;
+                    }
+
+                    if (coords_tab.show_coupled and mt == OpenSim::Coordinate::MotionType::Coupled) {
+                        return false;
+                    }
+
+                    return true;
                 };
 
                 auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), should_remove);
@@ -1050,9 +965,9 @@ namespace osmv {
 
             // sort coords
             if (coords_tab.sort_by_name) {
-                auto sort_coord = [](Coordinate const& c1, Coordinate const& c2) { return *c1.name < *c2.name; };
+                auto by_name = [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) { return c1->getName() < c2->getName(); };
 
-                std::sort(scratch.coords.begin(), scratch.coords.end(), sort_coord);
+                std::sort(scratch.coords.begin(), scratch.coords.end(), by_name);
             }
 
             // render coordinates list
@@ -1063,32 +978,32 @@ namespace osmv {
 
             ImGui::Columns(2);
             int i = 0;
-            for (Coordinate const& c : scratch.coords) {
+            for (OpenSim::Coordinate const* c : scratch.coords) {
                 ImGui::PushID(i++);
 
-                ImGui::Text("%s", c.name->c_str());
+                ImGui::Text("%s", c->getName().c_str());
                 ImGui::NextColumn();
 
                 // if locked, color everything red
-                if (c.locked) {
-                    ImGui::PushStyleColor(ImGuiCol_FrameBg, dark_red);
+                if (c->getLocked(latest_state)) {
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
                 }
 
-                if (ImGui::Button(c.locked ? "u" : "l")) {
-                    c.ptr->setLocked(latest_state, not false);
+                if (ImGui::Button(c->getLocked(latest_state) ? "u" : "l")) {
+                    c->setLocked(latest_state, not false);
                     on_user_edited_state();
                 }
 
                 ImGui::SameLine();
 
-                float v = c.value;
+                float v = static_cast<float>(c->getValue(latest_state));
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::SliderFloat(" ", &v, c.min, c.max)) {
-                    c.ptr->setValue(latest_state, static_cast<double>(v));
+                if (ImGui::SliderFloat(" ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
+                    c->setValue(latest_state, static_cast<double>(v));
                     on_user_edited_state();
                 }
 
-                if (c.locked) {
+                if (c->getLocked(latest_state)) {
                     ImGui::PopStyleColor();
                 }
                 ImGui::NextColumn();
@@ -1134,7 +1049,9 @@ namespace osmv {
         void draw_muscles_tab() {
             // extract muscles details from model
             scratch.muscles.clear();
-            get_muscle_stats(model, latest_state, scratch.muscles);
+            for (OpenSim::Muscle const& musc : model->getComponentList<OpenSim::Muscle>()) {
+                scratch.muscles.push_back(&musc);
+            }
 
             ImGui::Text("filters:");
             ImGui::Dummy({0.0f, 2.5f});
@@ -1144,33 +1061,25 @@ namespace osmv {
 
             ImGui::Text("search");
             ImGui::NextColumn();
-            ImGui::PushID("muscles search filter");
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputText(" ", muscles_tab.filter, sizeof(muscles_tab.filter));
-            ImGui::PopID();
+            ImGui::InputText("##muscles search filter", muscles_tab.filter, sizeof(muscles_tab.filter));
             ImGui::NextColumn();
 
             ImGui::Text("min length");
             ImGui::NextColumn();
-            ImGui::PushID("muscles min filter");
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputFloat(" ", &muscles_tab.min_len);
-            ImGui::PopID();
+            ImGui::InputFloat("##muscles min filter", &muscles_tab.min_len);
             ImGui::NextColumn();
 
             ImGui::Text("max length");
             ImGui::NextColumn();
-            ImGui::PushID("muscles max filter");
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputFloat(" ", &muscles_tab.max_len);
-            ImGui::PopID();
+            ImGui::InputFloat("##muscles max filter", &muscles_tab.max_len);
             ImGui::NextColumn();
 
             ImGui::Text("inverse length range");
             ImGui::NextColumn();
-            ImGui::PushID("muscles inverse range filter");
-            ImGui::Checkbox(" ", &muscles_tab.inverse_range);
-            ImGui::PopID();
+            ImGui::Checkbox("##muscles inverse range filter", &muscles_tab.inverse_range);
             ImGui::NextColumn();
 
             ImGui::Text("sort by");
@@ -1197,9 +1106,7 @@ namespace osmv {
 
             ImGui::Text("reverse results");
             ImGui::NextColumn();
-            ImGui::PushID("muscles reverse results chechbox");
-            ImGui::Checkbox(" ", &muscles_tab.reverse_results);
-            ImGui::PopID();
+            ImGui::Checkbox("##muscles reverse results chechbox", &muscles_tab.reverse_results);
             ImGui::NextColumn();
 
             ImGui::Columns();
@@ -1208,8 +1115,8 @@ namespace osmv {
 
             // filter muscle list
             {
-                auto filter_fn = [&](Muscle_stat const& m) {
-                    bool in_range = muscles_tab.min_len <= m.length and m.length <= muscles_tab.max_len;
+                auto filter_fn = [&](OpenSim::Muscle const* m) {
+                    bool in_range = muscles_tab.min_len <= static_cast<float>(m->getLength(latest_state)) and static_cast<float>(m->getLength(latest_state)) <= muscles_tab.max_len;
 
                     if (muscles_tab.inverse_range) {
                         in_range = not in_range;
@@ -1219,7 +1126,7 @@ namespace osmv {
                         return true;
                     }
 
-                    bool matches_filter = m.name->find(muscles_tab.filter) != m.name->npos;
+                    bool matches_filter = m->getName().find(muscles_tab.filter) != m->getName().npos;
 
                     return not matches_filter;
                 };
@@ -1234,15 +1141,15 @@ namespace osmv {
             switch (muscles_tab.current_sort_choice) {
             case 0: {  // sort muscles by length
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
-                        return m1.length > m2.length;
+                    scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
+                        return m1->getLength(latest_state) > m2->getLength(latest_state);
                     });
                 break;
             }
             case 1: {  // sort muscles by tendon strain
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [&](Muscle_stat const& m1, Muscle_stat const& m2) {
-                        return m1.ptr->getTendonStrain(latest_state) > m2.ptr->getTendonStrain(latest_state);
+                    scratch.muscles.begin(), scratch.muscles.end(), [&](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
+                        return m1->getTendonStrain(latest_state) > m2->getTendonStrain(latest_state);
                     });
                 break;
             }
@@ -1275,20 +1182,20 @@ namespace osmv {
 
             // muscle table rows
             ImGui::Columns(4);
-            for (Muscle_stat const& musc : scratch.muscles) {
-                ImGui::Text("%s", musc.name->c_str());
+            for (OpenSim::Muscle const* musc : scratch.muscles) {
+                ImGui::Text("%s", musc->getName().c_str());
                 if (ImGui::IsItemHovered()) {
-                    renderer.hovered_component = musc.ptr;
+                    renderer.hovered_component = musc;
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    selected_component = musc.ptr;
+                    selected_component = musc;
                 }
                 ImGui::NextColumn();
-                ImGui::Text("%.3f", static_cast<double>(musc.length));
+                ImGui::Text("%.3f", static_cast<double>(musc->getLength(latest_state)));
                 ImGui::NextColumn();
-                ImGui::Text("%.3f", 100.0 * musc.ptr->getTendonStrain(latest_state));
+                ImGui::Text("%.3f", 100.0 * musc->getTendonStrain(latest_state));
                 ImGui::NextColumn();
-                ImGui::Text("%.3f", musc.ptr->getTendonForce(latest_state));
+                ImGui::Text("%.3f", musc->getTendonForce(latest_state));
                 ImGui::NextColumn();
             }
             ImGui::Columns();
@@ -1303,20 +1210,22 @@ namespace osmv {
                 ImGui::Dummy({0.0f, 5.0f});
 
                 scratch.muscles.clear();
-                get_muscle_stats(model, latest_state, scratch.muscles);
+                for (OpenSim::Muscle const& musc : model->getComponentList<OpenSim::Muscle>()) {
+                    scratch.muscles.push_back(&musc);
+                }
 
                 // usability: sort by name
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [](Muscle_stat const& m1, Muscle_stat const& m2) {
-                        return *m1.name < *m2.name;
+                    scratch.muscles.begin(), scratch.muscles.end(), [](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
+                        return m1->getName() < m2->getName();
                     });
 
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
                 ImGui::BeginChild(
                     "MomentArmPlotMuscleSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
-                for (Muscle_stat const& m : scratch.muscles) {
-                    if (ImGui::Selectable(m.name->c_str(), m.name == mas_tab.selected_musc)) {
-                        mas_tab.selected_musc = m.name;
+                for (OpenSim::Muscle const* m : scratch.muscles) {
+                    if (ImGui::Selectable(m->getName().c_str(), &m->getName() == mas_tab.selected_musc)) {
+                        mas_tab.selected_musc = &m->getName();
                     }
                 }
                 ImGui::EndChild();
@@ -1328,19 +1237,19 @@ namespace osmv {
                 ImGui::Dummy({0.0f, 5.0f});
 
                 scratch.coords.clear();
-                get_coordinates(model, latest_state, scratch.coords);
+                get_coordinates(model, scratch.coords);
 
                 // usability: sort by name
-                std::sort(scratch.coords.begin(), scratch.coords.end(), [](Coordinate const& c1, Coordinate const& c2) {
-                    return *c1.name < *c2.name;
+                std::sort(scratch.coords.begin(), scratch.coords.end(), [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
+                    return c1->getName() < c2->getName();
                 });
 
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
                 ImGui::BeginChild(
                     "MomentArmPlotCoordSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
-                for (Coordinate const& c : scratch.coords) {
-                    if (ImGui::Selectable(c.name->c_str(), c.name == mas_tab.selected_coord)) {
-                        mas_tab.selected_coord = c.name;
+                for (OpenSim::Coordinate const* c : scratch.coords) {
+                    if (ImGui::Selectable(c->getName().c_str(), &c->getName() == mas_tab.selected_coord)) {
+                        mas_tab.selected_coord = &c->getName();
                     }
                 }
                 ImGui::EndChild();
@@ -1351,24 +1260,24 @@ namespace osmv {
             if (mas_tab.selected_musc and mas_tab.selected_coord) {
                 if (ImGui::Button("+ add plot")) {
                     auto it =
-                        std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](Muscle_stat const& ms) {
-                            return ms.name == mas_tab.selected_musc;
+                        std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* ms) {
+                            return &ms->getName() == mas_tab.selected_musc;
                         });
                     assert(it != scratch.muscles.end());
 
-                    auto it2 = std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](Coordinate const& c) {
-                        return c.name == mas_tab.selected_coord;
+                    auto it2 = std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](OpenSim::Coordinate const* c) {
+                        return &c->getName() == mas_tab.selected_coord;
                     });
                     assert(it2 != scratch.coords.end());
 
                     auto p = std::make_unique<Moment_arm_plot>();
                     p->muscle_name = *mas_tab.selected_musc;
                     p->coord_name = *mas_tab.selected_coord;
-                    p->x_begin = it2->min;
-                    p->x_end = it2->max;
+                    p->x_begin = static_cast<float>((*it2)->getRangeMin());
+                    p->x_end = static_cast<float>((*it2)->getRangeMax());
 
                     // populate y values
-                    compute_moment_arms(*it->ptr, latest_state, *it2->ptr, p->y_vals.data(), p->y_vals.size());
+                    compute_moment_arms(**it, latest_state, **it2, p->y_vals.data(), p->y_vals.size());
                     float min = std::numeric_limits<float>::max();
                     float max = std::numeric_limits<float>::min();
                     for (float v : p->y_vals) {
@@ -1529,40 +1438,128 @@ namespace osmv {
 
         void draw_selection_tab() {
             if (not selected_component) {
-                ImGui::Text("nothing selected");
+                ImGui::Text("nothing selected: right click a muscle");
                 return;
             }
 
             OpenSim::Component const& c = *selected_component;
 
-            ImGui::Text("name: %s", c.getName().c_str());
+            // top-level info
+            {
+                ImGui::Text("top-level information:");
+                ImGui::Dummy(ImVec2{0.0, 2.5f});
+                ImGui::Separator();
 
-            ImGui::Separator();
+                ImGui::Columns(2);
 
-            size_t i = 0;
-            ImGui::Columns(2);
-            for (auto const& ptr : c.getOutputs()) {
-
-                OpenSim::AbstractOutput const* ao = ptr.second.get();
-                OpenSim::Output<double> const* od = dynamic_cast<OpenSim::Output<double> const*>(ao);
-                if (od) {
-                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-                    selected_component.output_sinks[i++].draw(20.0f);
-
-                    if (ImGui::BeginPopupContextItem(od->getName().c_str())) {
-                        if (ImGui::MenuItem("Add to outputs tab")) {
-                            outputs_tab.plots.emplace_back(ao);
-                        }
-
-                        ImGui::EndPopup();
-                    }
-                }
+                ImGui::Text("getName()");
+                ImGui::NextColumn();
+                ImGui::Text("%s", c.getName().c_str());
                 ImGui::NextColumn();
 
-                ImGui::Text("%s", ao->getName().c_str());
+                ImGui::Text("getOwner().getName()");
                 ImGui::NextColumn();
+                ImGui::Text("%s", c.getOwner().getName().c_str());
+                ImGui::NextColumn();
+
+                ImGui::Text("getAbsolutePath()");
+                ImGui::NextColumn();
+                ImGui::Text("%s", c.getAbsolutePath().toString().c_str());
+                ImGui::NextColumn();
+
+                ImGui::Text("getConcreteClassName()");
+                ImGui::NextColumn();
+                ImGui::Text("%s", c.getConcreteClassName().c_str());
+                ImGui::NextColumn();
+
+                ImGui::Text("getNumInputs()");
+                ImGui::NextColumn();
+                ImGui::Text("%i", c.getNumInputs());
+                ImGui::NextColumn();
+
+                ImGui::Text("getNumOutputs()");
+                ImGui::NextColumn();
+                ImGui::Text("%i", c.getNumOutputs());
+                ImGui::NextColumn();
+
+                ImGui::Text("getNumSockets()");
+                ImGui::NextColumn();
+                ImGui::Text("%i", c.getNumSockets());
+                ImGui::NextColumn();
+
+                ImGui::Text("getNumStateVariables()");
+                ImGui::NextColumn();
+                ImGui::Text("%i", c.getNumStateVariables());
+                ImGui::NextColumn();
+
+                ImGui::Text("getNumProperties()");
+                ImGui::NextColumn();
+                ImGui::Text("%i", c.getNumProperties());
+                ImGui::NextColumn();
+
+                ImGui::Columns();
             }
-            ImGui::Columns();
+
+            // properties
+            if (ImGui::CollapsingHeader("properties")) {
+                ImGui::Columns(2);
+                for (int i = 0; i < c.getNumProperties(); ++i) {
+                    OpenSim::AbstractProperty const& p = c.getPropertyByIndex(i);
+                    ImGui::Text("%s", p.getName().c_str());
+                    ImGui::NextColumn();
+                    ImGui::Text("%s", p.toString().c_str());
+                    ImGui::NextColumn();
+                }
+                ImGui::Columns();
+            }
+
+            // state variables
+            if (ImGui::CollapsingHeader("state variables")) {
+                OpenSim::Array<std::string> names = c.getStateVariableNames();
+                ImGui::Columns(2);
+                for (int i = 0; i < names.size(); ++i) {
+                    std::string const& name = names[i];
+
+                    ImGui::Text("%s", name.c_str());
+                    ImGui::NextColumn();
+                    ImGui::Text("%f",  c.getStateVariableValue(latest_state, name));
+                    ImGui::NextColumn();
+
+                    ImGui::Text("%s (deriv)", name.c_str());
+                    ImGui::NextColumn();
+                    ImGui::Text("%f",  c.getStateVariableDerivativeValue(latest_state, name));
+                    ImGui::NextColumn();
+                }
+                ImGui::Columns();
+            }
+
+            // outputs
+            if (ImGui::CollapsingHeader("outputs")) {
+                size_t i = 0;
+                ImGui::Columns(2);
+                for (auto const& ptr : c.getOutputs()) {
+
+                    OpenSim::AbstractOutput const* ao = ptr.second.get();
+                    OpenSim::Output<double> const* od = dynamic_cast<OpenSim::Output<double> const*>(ao);
+                    if (od) {
+                        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+                        selected_component.output_sinks[i++].draw(20.0f);
+
+                        if (ImGui::BeginPopupContextItem(od->getName().c_str())) {
+                            if (ImGui::MenuItem("Add to outputs tab")) {
+                                outputs_tab.plots.emplace_back(ao);
+                            }
+
+                            ImGui::EndPopup();
+                        }
+                    }
+                    ImGui::NextColumn();
+
+                    ImGui::Text("%s", ao->getName().c_str());
+                    ImGui::NextColumn();
+                }
+                ImGui::Columns();
+            }
         }
     };
 }
