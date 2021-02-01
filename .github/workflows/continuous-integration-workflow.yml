@@ -9,7 +9,7 @@ jobs:
     - name: TODO build
       run: |
         cd $env:GITHUB_WORKSPACE
-        scripts\\windows_e2e-build.bat
+        scripts\\windows_e2e-build.bat || exit /b
 
   ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
