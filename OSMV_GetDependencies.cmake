@@ -93,69 +93,54 @@ find_package(OpenGL REQUIRED)
 #
 #     - always built from source and linked statically
 if(TRUE)
-    if((${CMAKE_MAJOR_VERSION} LESS 3) OR (${CMAKE_MINOR_VERSION} LESS 7))
-        # HACK: if the CMake is < 3.7, then SOURCE_DIR isn't supported, so
-        # we have to use an ExternalProject_Add that *may* forward fewer args
-        #
-        # older CMake also seems to break with UPDATE_DISCONNECTED *shrug*
-        ExternalProject_Add(glew-project
-            URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
-            PREFIX ""
-            CONFIGURE_COMMAND cmake ${CMAKE_BINARY_DIR}/glew-project-prefix/src/glew-project/build/cmake ${OSMV_DEPENDENCY_CMAKE_ARGS} -G ${CMAKE_GENERATOR}
-            INSTALL_COMMAND ""
-            EXCLUDE_FROM_ALL TRUE
-        )
-    else()
-        ExternalProject_Add(glew-project
-            URL "${OSMV_REPO_PROVIDER}/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.zip"
-            PREFIX ""
-            CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
-            SOURCE_SUBDIR build/cmake
-            BUILD_COMMAND ${CMAKE_COMMAND} --build . --target glew_s
-            INSTALL_COMMAND ""
-            EXCLUDE_FROM_ALL TRUE
-            UPDATE_DISCONNECTED ON
-        )
-    endif()
-    ExternalProject_Get_Property(glew-project SOURCE_DIR)
-    ExternalProject_Get_Property(glew-project BINARY_DIR)
+    # note: this is a heavily edited version of the CMake file that ships with GLEW
+    #
+    #    - see build/cmake/CMakeLists.txt
 
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
+    set(GLEW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew)
 
-    add_library(osmv-glew STATIC IMPORTED)
-    add_dependencies(osmv-glew glew-project)
+    # get version from config/version
+    file(STRINGS ${GLEW_DIR}/config/version _VERSION_MAJOR_STRING REGEX "GLEW_MAJOR[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MAJOR[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_MAJOR ${_VERSION_MAJOR_STRING})
+    file(STRINGS ${GLEW_DIR}/config/version  _VERSION_MINOR_STRING REGEX "GLEW_MINOR[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MINOR[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_MINOR ${_VERSION_MINOR_STRING})
+    file(STRINGS ${GLEW_DIR}/config/version  _VERSION_PATCH_STRING REGEX "GLEW_MICRO[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MICRO[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_PATCH ${_VERSION_PATCH_STRING})
+    set(GLEW_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 
+    set(GLEW_SRC_FILES ${GLEW_DIR}/src/glew.c)
+    set(GLEW_PUBLIC_HEADER_FILES
+        ${GLEW_DIR}/include/GL/wglew.h
+        ${GLEW_DIR}/include/GL/glew.h
+        ${GLEW_DIR}/include/GL/glxew.h
+    )
     if(WIN32)
-        set(LIBNAME "libglew32${CMAKE_STATIC_LIBRARY_SUFFIX}")
-        set(DEBUG_LIBNAME "libglew32d${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    else()
-        set(LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}GLEW${CMAKE_STATIC_LIBRARY_SUFFIX}")
-        set(DEBUG_LIBNAME "${CMAKE_STATIC_LIBRARY_PREFIX}GLEWd${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        list(APPEND GLEW_SRC_FILES ${GLEW_DIR}/build/glew.rc)
     endif()
 
-    if(${OSMV_GENERATOR_IS_MULTI_CONFIG})
-        set_target_properties(osmv-glew PROPERTIES
-            IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/lib/Debug/${DEBUG_LIBNAME}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/lib/RelWithDebInfo/${LIBNAME}
-            IMPORTED_LOCATION_MINSIZEREL ${BINARY_DIR}/lib/MinSizeRel/${LIBNAME}
-            IMPORTED_LOCATION_RELEASE ${BINARY_DIR}/lib/Release/${LIBNAME}
-        )
-    else()
-        set_target_properties(osmv-glew PROPERTIES
-            IMPORTED_LOCATION ${BINARY_DIR}/lib/${LIBNAME}
-        )
-    endif()
-
+    add_library(osmv-glew STATIC ${GLEW_PUBLIC_HEADER_FILES} ${GLEW_SRC_FILES})
+    target_include_directories(osmv-glew PUBLIC ${GLEW_DIR}/glew/include/)
+    target_compile_definitions(osmv-glew PRIVATE -DGLEW_NO_GLU)
+    target_link_libraries(osmv-glew PUBLIC ${OPENGL_LIBRARIES})
     set_target_properties(osmv-glew PROPERTIES
+        VERSION ${GLEW_VERSION}
+        COMPILE_DEFINITIONS "GLEW_STATIC"
         INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
-        INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC  # https://github.com/nigels-com/glew/issues/161
+        INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC
     )
 
-    unset(SOURCE_DIR)
-    unset(BINARY_DIR)
-    unset(LIBNAME)
-    unset(DEBUG_LIBNAME)
+    # kill security checks which are dependent on stdlib
+    if(MSVC)
+        target_compile_definitions(osmv-glew PRIVATE "GLEW_STATIC;VC_EXTRALEAN")
+        target_compile_options(osmv-glew PRIVATE -GS-)
+    elseif (WIN32 AND ((CMAKE_C_COMPILER_ID MATCHES "GNU") OR (CMAKE_C_COMPILER_ID MATCHES "Clang")))
+        target_compile_options (glew_s PRIVATE -fno-builtin -fno-stack-protector)
+    endif()
+
+    unset(GLEW_VERSION)
+    unset(GLEW_DIR)
+    unset(GLEW_SRC_FILES)
+    unset(GLEW_PUBLIC_HEADER_FILES)
 endif()
 
 # DEPENDENCY: SDL

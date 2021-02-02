@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(osmv VERSION 0.0.1 LANGUAGES CXX)
+project(osmv VERSION 0.0.1 LANGUAGES C CXX)
 
 
 
