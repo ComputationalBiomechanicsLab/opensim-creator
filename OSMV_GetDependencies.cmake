@@ -226,26 +226,8 @@ endif()
 # DEPENDENCY: glm
 #     header-only library, used for OpenGL-friendly vector maths
 if(TRUE)
-    ExternalProject_Add(glm-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/g-truc/glm"
-        GIT_TAG "bf71a834948186f4097caa076cd2663c69a10e1e"  # tag: 0.9.9.8
-        GIT_SUBMODULES ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        UPDATE_DISCONNECTED ON
-    )
-    ExternalProject_Get_Property(glm-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
     add_library(osmv-glm INTERFACE)
-    add_dependencies(osmv-glm glm-project)  # so the headers are populated
-    target_include_directories(osmv-glm INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
+    target_include_directories(osmv-glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm)
 endif()
 
 # DEPENDENCY: imgui
@@ -270,52 +252,16 @@ endif()
 # DEPENDENCY: stb_image
 #     header-only library, used to read/write images
 if(TRUE)
-    ExternalProject_Add(stb-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/nothings/stb"
-        GIT_TAG "b42009b3b9d4ca35bc703f5310eedc74f584be58"
-        GIT_SUBMODULES ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        STEP_TARGETS build
-        UPDATE_DISCONNECTED ON
-    )
-    ExternalProject_Get_Property(stb-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
     add_library(osmv-stb-image INTERFACE)
-    add_dependencies(osmv-stb-image stb-project-build)  # so the headers are populated
-    target_include_directories(osmv-stb-image INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
+    target_include_directories(osmv-stb-image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
 endif()
 
 # DEPENDENCY: tomlplusplus
 #     header-only library, used to parse toml config files
 if(TRUE)
-    ExternalProject_Add(tomlplusplus-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/marzer/tomlplusplus"
-        GIT_TAG "4face4d5bf16326aca0da1fb33876dbca63b6e2f"  # tag: v2.3.0
-        GIT_SUBMODULES ""
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        UPDATE_DISCONNECTED ON
-    )
-    ExternalProject_Get_Property(tomlplusplus-project SOURCE_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR})
-
     add_library(osmv-tomlplusplus INTERFACE)
     add_dependencies(osmv-tomlplusplus tomlplusplus-project)  # so the headers are populated
-    target_include_directories(osmv-tomlplusplus INTERFACE ${SOURCE_DIR})
-
-    unset(SOURCE_DIR)
+    target_include_directories(osmv-tomlplusplus INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)
 endif()
 
 # DEPENDENCY: OpenSim
