@@ -4,7 +4,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <simbody/SimTKcommon.h>
+#include <SimTKcommon.h>
 
 #include <utility>
 

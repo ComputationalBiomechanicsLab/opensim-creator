@@ -431,8 +431,8 @@ namespace {
                     gl::Texture_2d rv;
                     gl::BindTexture(rv);
                     gl::TexImage2D(rv.type, 0, static_cast<int>(format), w, h, 0, format, GL_UNSIGNED_BYTE, nullptr);
-                    gl::TextureParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-                    gl::TextureParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+                    gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+                    gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
                     return rv;
                 }()},
                 fbo{[this]() {

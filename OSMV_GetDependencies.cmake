@@ -122,13 +122,13 @@ if(TRUE)
     endif()
 
     add_library(osmv-glew STATIC ${GLEW_PUBLIC_HEADER_FILES} ${GLEW_SRC_FILES})
-    target_include_directories(osmv-glew PUBLIC ${GLEW_DIR}/glew/include/)
+    target_include_directories(osmv-glew PUBLIC ${GLEW_DIR}/include/)
     target_compile_definitions(osmv-glew PRIVATE -DGLEW_NO_GLU)
     target_link_libraries(osmv-glew PUBLIC ${OPENGL_LIBRARIES})
     set_target_properties(osmv-glew PROPERTIES
         VERSION ${GLEW_VERSION}
         COMPILE_DEFINITIONS "GLEW_STATIC"
-        INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
+        INTERFACE_INCLUDE_DIRECTORIES ${GLEW_DIR}/include
         INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC
     )
 
@@ -188,6 +188,9 @@ else()
     if(WIN32)
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2d)
+    elseif(APPLE)
+        set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0)
+        set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2)
     else()
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d)

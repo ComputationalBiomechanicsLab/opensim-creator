@@ -337,10 +337,10 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     gl::BindTexture(rv.type, rv);
     glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     glGenerateMipmap(rv.type);
-    gl::TextureParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    gl::TextureParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl::TextureParameteri(rv, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    gl::TextureParameteri(rv, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    gl::TexParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    gl::TexParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl::TexParameteri(rv, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    gl::TexParameteri(rv, GL_TEXTURE_WRAP_T, GL_REPEAT);
     return rv;
 }
 

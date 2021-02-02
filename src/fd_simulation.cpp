@@ -7,8 +7,8 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <simbody/SimTKsimbody.h>
-#include <simbody/simmath/Integrator.h>
+#include <SimTKsimbody.h>
+#include <simmath/Integrator.h>
 
 #include <functional>
 #include <mutex>

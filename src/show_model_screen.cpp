@@ -32,7 +32,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
-#include <simbody/SimTKcommon/basics.h>
+#include <SimTKcommon/basics.h>
 
 #include <algorithm>
 #include <array>

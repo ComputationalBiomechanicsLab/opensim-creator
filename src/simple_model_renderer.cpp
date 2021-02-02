@@ -18,9 +18,9 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <simbody/SimTKcommon.h>
-#include <simbody/SimTKcommon/Orientation.h>
-#include <simbody/SimTKsimbody.h>
+#include <SimTKcommon.h>
+#include <SimTKcommon/Orientation.h>
+#include <SimTKsimbody.h>
 
 #include <cassert>
 #include <cmath>

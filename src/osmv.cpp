@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <vector>
 
 static const char usage[] = R"(usage: osmv [--help] [fd] MODEL.osim
 )";

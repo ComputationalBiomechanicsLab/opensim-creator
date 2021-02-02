@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <vector>
+#include <sstream>
 
 using std::literals::operator""s;
 

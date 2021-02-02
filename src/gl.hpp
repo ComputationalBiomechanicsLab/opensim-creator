@@ -736,11 +736,6 @@ namespace gl {
         glTexParameteri(target, pname, param);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-    inline void TextureParameteri(GLuint texture, GLenum pname, GLint param) {
-        glTextureParameteri(texture, pname, param);
-    }
-
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
     inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
         glRenderbufferStorage(target, internalformat, width, height);
