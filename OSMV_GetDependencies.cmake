@@ -100,13 +100,16 @@ if(TRUE)
     set(GLEW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glew)
 
     # get version from config/version
-    file(STRINGS ${GLEW_DIR}/config/version _VERSION_MAJOR_STRING REGEX "GLEW_MAJOR[ ]*=[ ]*[0-9]+.*")
-    string(REGEX REPLACE "GLEW_MAJOR[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_MAJOR ${_VERSION_MAJOR_STRING})
-    file(STRINGS ${GLEW_DIR}/config/version  _VERSION_MINOR_STRING REGEX "GLEW_MINOR[ ]*=[ ]*[0-9]+.*")
-    string(REGEX REPLACE "GLEW_MINOR[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_MINOR ${_VERSION_MINOR_STRING})
-    file(STRINGS ${GLEW_DIR}/config/version  _VERSION_PATCH_STRING REGEX "GLEW_MICRO[ ]*=[ ]*[0-9]+.*")
-    string(REGEX REPLACE "GLEW_MICRO[ ]*=[ ]*([0-9]+)" "\\1" CPACK_PACKAGE_VERSION_PATCH ${_VERSION_PATCH_STRING})
-    set(GLEW_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+    file(STRINGS ${GLEW_DIR}/config/version GLEW_VERSION_MAJOR_STR REGEX "GLEW_MAJOR[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MAJOR[ ]*=[ ]*([0-9]+)" "\\1" GLEW_VERSION_MAJOR ${GLEW_VERSION_MAJOR_STR})
+
+    file(STRINGS ${GLEW_DIR}/config/version GLEW_VERSION_MINOR_STRING REGEX "GLEW_MINOR[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MINOR[ ]*=[ ]*([0-9]+)" "\\1" GLEW_VERSION_MINOR ${GLEW_VERSION_MINOR_STRING})
+
+    file(STRINGS ${GLEW_DIR}/config/version GLEW_VERSION_PATCH_STRING REGEX "GLEW_MICRO[ ]*=[ ]*[0-9]+.*")
+    string(REGEX REPLACE "GLEW_MICRO[ ]*=[ ]*([0-9]+)" "\\1" GLEW_VERSION_PATCH ${GLEW_VERSION_PATCH_STRING})
+
+    set(GLEW_VERSION ${GLEW_VERSION_MAJOR}.${GLEW_VERSION_MINOR}.${GLEW_VERSION_PATCH})
 
     set(GLEW_SRC_FILES ${GLEW_DIR}/src/glew.c)
     set(GLEW_PUBLIC_HEADER_FILES
@@ -138,6 +141,12 @@ if(TRUE)
     endif()
 
     unset(GLEW_VERSION)
+    unset(GLEW_VERSION_MAJOR_STR)
+    unset(GLEW_VERSION_MAJOR)
+    unset(GLEW_VERSION_MINOR_STR)
+    unset(GLEW_VERSION_MINOR)
+    unset(GLEW_VERSION_PATCH_STR)
+    unset(GLEW_VERSION_PATCH)
     unset(GLEW_DIR)
     unset(GLEW_SRC_FILES)
     unset(GLEW_PUBLIC_HEADER_FILES)
@@ -158,13 +167,14 @@ else()
     # on non-Linux, build SDL from source and package it with the install
 
     ExternalProject_Add(sdl2-project
-        GIT_REPOSITORY "${OSMV_REPO_PROVIDER}/adamkewley/SDL2"
-        GIT_TAG "0330c566b6d9d5fdf1d9bb6d0a8bd2ba2b4f9407"  # tag: SDL2-2.0.14
-        GIT_SUBMODULES ""
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
         CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
         INSTALL_COMMAND ""
         EXCLUDE_FROM_ALL TRUE
         UPDATE_DISCONNECTED ON
+        # HACK: this is specifically required by Ninja, because it
+        # needs to know the side-effects of external build steps
+        BUILD_BYPRODUCTS sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0.so
     )
     ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
     ExternalProject_Get_Property(sdl2-project BINARY_DIR)
