@@ -165,7 +165,6 @@ if(LINUX)
     )
 else()
     # on non-Linux, build SDL from source and package it with the install
-
     ExternalProject_Add(sdl2-project
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
         CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
@@ -174,7 +173,8 @@ else()
         UPDATE_DISCONNECTED ON
         # HACK: this is specifically required by Ninja, because it
         # needs to know the side-effects of external build steps
-        BUILD_BYPRODUCTS sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0.so
+        BUILD_BYPRODUCTS
+        "sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0${CMAKE_SHARED_LIBRARY_SUFFIX};sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0d${CMAKE_SHARED_LIBRARY_SUFFIX}"
     )
     ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
     ExternalProject_Get_Property(sdl2-project BINARY_DIR)
@@ -196,6 +196,12 @@ else()
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d)
     endif()
 
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
+        set(SDL2_LIB_SUFFIX "d")
+    else()
+        set(SDL2_LIB_SUFFIX "")
+    endif()
+
     set_target_properties(osmv-sdl2 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
     )
@@ -213,10 +219,11 @@ else()
         )
     else()
         set_target_properties(osmv-sdl2 PROPERTIES
-            IMPORTED_LOCATION ${BINARY_DIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION ${BINARY_DIR}/${LIBNAME}${SDL2_LIB_SUFFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}
         )
     endif()
 
+    unset(SDL2_LIB_SUFFIX)
     unset(SOURCE_DIR)
     unset(BINARY_DIR)
     unset(LIBNAME)
