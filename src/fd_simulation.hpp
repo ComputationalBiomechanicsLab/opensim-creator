@@ -3,9 +3,14 @@
 #include "opensim_wrapper.hpp"
 
 #include <chrono>
+#include <memory>
+#include <utility>
 
-namespace SimTK {
-    class Integrator;
+namespace OpenSim {
+    class Model;
+}
+namespace osmv {
+    struct Fd_simulator_impl;
 }
 
 namespace osmv {
@@ -22,7 +27,7 @@ namespace osmv {
         IntegratorMethod_NumIntegratorMethods,
     };
     extern IntegratorMethod const integrator_methods[IntegratorMethod_NumIntegratorMethods];
-    extern char const * const integrator_method_names[IntegratorMethod_NumIntegratorMethods];
+    extern char const* const integrator_method_names[IntegratorMethod_NumIntegratorMethods];
 
     // input parameters for a forward-dynamic simulation
     struct Fd_simulation_params final {
@@ -70,7 +75,6 @@ namespace osmv {
     };
 
     // a simulator that runs a forward-dynamic simulation on a background thread
-    struct Fd_simulator_impl;
     class Fd_simulator final {
         std::unique_ptr<Fd_simulator_impl> impl;
 

@@ -1,31 +1,49 @@
 #include "show_model_screen.hpp"
 
-#include "osmv_config.hpp"
-
-#include "sdl_wrapper.hpp"
 #include "3d_common.hpp"
 #include "application.hpp"
-#include "config.hpp"
 #include "fd_simulation.hpp"
-#include "gl.hpp"
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
-#include "os.hpp"
 #include "screen.hpp"
+#include "sdl_wrapper.hpp"
 #include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
 
-#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Common/AbstractProperty.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <imgui.h>
+#include <simbody/SimTKcommon/basics.h>
 
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <chrono>
+#include <cstdio>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -382,8 +400,10 @@ namespace {
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
                 if (ImGui::Button("start [SPC]")) {
-                    osmv::Fd_simulation_params params{
-                        osmv::Model{shown_model}, osmv::State{shown_state}, static_cast<double>(fd_final_time), integrator_method};
+                    osmv::Fd_simulation_params params{osmv::Model{shown_model},
+                                                      osmv::State{shown_state},
+                                                      static_cast<double>(fd_final_time),
+                                                      integrator_method};
                     simulator.emplace(std::move(params));
                 }
                 ImGui::PopStyleColor();
@@ -406,7 +426,11 @@ namespace {
             ImGui::NextColumn();
             {
                 int method = integrator_method;
-                if (ImGui::Combo("##integration method combo", &method, osmv::integrator_method_names, osmv::IntegratorMethod_NumIntegratorMethods)) {
+                if (ImGui::Combo(
+                        "##integration method combo",
+                        &method,
+                        osmv::integrator_method_names,
+                        osmv::IntegratorMethod_NumIntegratorMethods)) {
                     integrator_method = static_cast<osmv::IntegratorMethod>(method);
                 }
             }
@@ -619,7 +643,10 @@ namespace osmv {
                         simulator_tab.simulator->request_stop();
                     } else {
                         simulator_tab.simulator.emplace(
-                            Fd_simulation_params{Model{model}, State{latest_state}, static_cast<double>(simulator_tab.fd_final_time), simulator_tab.integrator_method});
+                            Fd_simulation_params{Model{model},
+                                                 State{latest_state},
+                                                 static_cast<double>(simulator_tab.fd_final_time),
+                                                 simulator_tab.integrator_method});
                     }
                     break;
                 case SDLK_ESCAPE:
@@ -965,7 +992,9 @@ namespace osmv {
 
             // sort coords
             if (coords_tab.sort_by_name) {
-                auto by_name = [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) { return c1->getName() < c2->getName(); };
+                auto by_name = [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
+                    return c1->getName() < c2->getName();
+                };
 
                 std::sort(scratch.coords.begin(), scratch.coords.end(), by_name);
             }
@@ -998,7 +1027,8 @@ namespace osmv {
 
                 float v = static_cast<float>(c->getValue(latest_state));
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::SliderFloat(" ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
+                if (ImGui::SliderFloat(
+                        " ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
                     c->setValue(latest_state, static_cast<double>(v));
                     on_user_edited_state();
                 }
@@ -1116,7 +1146,8 @@ namespace osmv {
             // filter muscle list
             {
                 auto filter_fn = [&](OpenSim::Muscle const* m) {
-                    bool in_range = muscles_tab.min_len <= static_cast<float>(m->getLength(latest_state)) and static_cast<float>(m->getLength(latest_state)) <= muscles_tab.max_len;
+                    bool in_range = muscles_tab.min_len <= static_cast<float>(m->getLength(latest_state)) and
+                                    static_cast<float>(m->getLength(latest_state)) <= muscles_tab.max_len;
 
                     if (muscles_tab.inverse_range) {
                         in_range = not in_range;
@@ -1141,14 +1172,18 @@ namespace osmv {
             switch (muscles_tab.current_sort_choice) {
             case 0: {  // sort muscles by length
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
+                    scratch.muscles.begin(),
+                    scratch.muscles.end(),
+                    [this](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
                         return m1->getLength(latest_state) > m2->getLength(latest_state);
                     });
                 break;
             }
             case 1: {  // sort muscles by tendon strain
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [&](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
+                    scratch.muscles.begin(),
+                    scratch.muscles.end(),
+                    [&](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
                         return m1->getTendonStrain(latest_state) > m2->getTendonStrain(latest_state);
                     });
                 break;
@@ -1216,9 +1251,9 @@ namespace osmv {
 
                 // usability: sort by name
                 std::sort(
-                    scratch.muscles.begin(), scratch.muscles.end(), [](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
-                        return m1->getName() < m2->getName();
-                    });
+                    scratch.muscles.begin(),
+                    scratch.muscles.end(),
+                    [](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) { return m1->getName() < m2->getName(); });
 
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
                 ImGui::BeginChild(
@@ -1240,9 +1275,12 @@ namespace osmv {
                 get_coordinates(model, scratch.coords);
 
                 // usability: sort by name
-                std::sort(scratch.coords.begin(), scratch.coords.end(), [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
-                    return c1->getName() < c2->getName();
-                });
+                std::sort(
+                    scratch.coords.begin(),
+                    scratch.coords.end(),
+                    [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
+                        return c1->getName() < c2->getName();
+                    });
 
                 ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
                 ImGui::BeginChild(
@@ -1265,9 +1303,10 @@ namespace osmv {
                         });
                     assert(it != scratch.muscles.end());
 
-                    auto it2 = std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](OpenSim::Coordinate const* c) {
-                        return &c->getName() == mas_tab.selected_coord;
-                    });
+                    auto it2 = std::find_if(
+                        scratch.coords.begin(), scratch.coords.end(), [this](OpenSim::Coordinate const* c) {
+                            return &c->getName() == mas_tab.selected_coord;
+                        });
                     assert(it2 != scratch.coords.end());
 
                     auto p = std::make_unique<Moment_arm_plot>();
@@ -1522,12 +1561,12 @@ namespace osmv {
 
                     ImGui::Text("%s", name.c_str());
                     ImGui::NextColumn();
-                    ImGui::Text("%f",  c.getStateVariableValue(latest_state, name));
+                    ImGui::Text("%f", c.getStateVariableValue(latest_state, name));
                     ImGui::NextColumn();
 
                     ImGui::Text("%s (deriv)", name.c_str());
                     ImGui::NextColumn();
-                    ImGui::Text("%f",  c.getStateVariableDerivativeValue(latest_state, name));
+                    ImGui::Text("%f", c.getStateVariableDerivativeValue(latest_state, name));
                     ImGui::NextColumn();
                 }
                 ImGui::Columns();

@@ -1,20 +1,23 @@
 #include "loading_screen.hpp"
 
 #include "application.hpp"
+#include "gl.hpp"
 #include "opensim_wrapper.hpp"
 #include "show_model_screen.hpp"
 #include "splash_screen.hpp"
 
-#include "gl.hpp"
-#include "imgui.h"
+#include <GL/glew.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <imgui/imgui.h>
 
 #include <chrono>
+#include <exception>
 #include <filesystem>
 #include <future>
-#include <iostream>
 #include <optional>
 #include <string>
-#include <vector>
+#include <utility>
 
 using std::chrono_literals::operator""ms;
 

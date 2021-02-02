@@ -1,15 +1,14 @@
 ﻿#include "application.hpp"
 
-#include "config.hpp"
 #include "fd_simulation.hpp"
-#include "opensim_wrapper.hpp"
-#include "os.hpp"
-
 #include "loading_screen.hpp"
+#include "opensim_wrapper.hpp"
 #include "splash_screen.hpp"
 
-#include <OpenSim.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
+#include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 

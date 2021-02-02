@@ -4,8 +4,15 @@
 #include "config.hpp"
 #include "gl.hpp"
 
+#include <GL/glew.h>
+
 #include <algorithm>
-#include <iostream>
+#include <array>
+#include <cassert>
+#include <exception>
+#include <limits>
+#include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace {

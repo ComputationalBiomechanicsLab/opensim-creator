@@ -2,11 +2,14 @@
 
 #include "screen.hpp"
 
+#include <SDL_events.h>
 #include <memory>
 
 namespace osmv {
     struct Splash_screen_impl;
+}
 
+namespace osmv {
     class Splash_screen final : public Screen {
         std::unique_ptr<Splash_screen_impl> impl;
 

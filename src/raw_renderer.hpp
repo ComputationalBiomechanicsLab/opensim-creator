@@ -3,6 +3,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 
+#include <cstddef>
+
 // raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
 //
 // this API is designed with performance and power in mind, not convenience. Use a downstream

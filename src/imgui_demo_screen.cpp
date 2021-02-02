@@ -1,10 +1,10 @@
 #include "imgui_demo_screen.hpp"
 
-#include "application.hpp"
 #include "splash_screen.hpp"
 
-#include "imgui.h"
-#include <SDL.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <imgui.h>
 
 osmv::Event_response osmv::Imgui_demo_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {

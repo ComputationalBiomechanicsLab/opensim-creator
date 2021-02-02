@@ -1,7 +1,13 @@
 #pragma once
 
-#include "SDL_events.h"
+#include <SDL_events.h>
+
 #include <memory>
+#include <utility>
+
+namespace osmv {
+    class Application;
+}
 
 // screen: thin abstraction over an application screen
 //
@@ -10,9 +16,6 @@
 // concerns (e.g. drawing stuff, handling screen-specific events, etc.)
 
 namespace osmv {
-    class Application;
-    struct Application_impl;
-
     enum class Event_response {
         handled,
         ignored,

@@ -6,6 +6,7 @@
 #include <glm/vec3.hpp>
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
 // 3d common: common primitives/structs used for mesh generation/rendering

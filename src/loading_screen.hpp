@@ -2,12 +2,15 @@
 
 #include "screen.hpp"
 
+#include <SDL_events.h>
 #include <filesystem>
 #include <memory>
 
 namespace osmv {
     struct Loading_screen_impl;
+}
 
+namespace osmv {
     // loading screen: screen shown when UI has just booted and is loading (e.g.) an osim file
     class Loading_screen final : public Screen {
         std::unique_ptr<Loading_screen_impl> impl;

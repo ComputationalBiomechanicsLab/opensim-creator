@@ -4,6 +4,9 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
+#include <simbody/SimTKcommon.h>
+
+#include <utility>
 
 osmv::Model::Model(std::unique_ptr<OpenSim::Model> _m) noexcept : handle{std::move(_m)} {
 }

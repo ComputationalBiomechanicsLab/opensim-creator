@@ -5,9 +5,16 @@
 #include "imgui_demo_screen.hpp"
 #include "loading_screen.hpp"
 
-#include "imgui.h"
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <imgui.h>
 
 #include <algorithm>
+#include <cstdio>
+#include <filesystem>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace fs = std::filesystem;
 

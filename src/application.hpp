@@ -1,6 +1,14 @@
 #pragma once
 
 #include <memory>
+#include <utility>
+
+namespace osmv {
+    class Screen;
+}
+namespace osmv {
+    struct Application_impl;
+}
 
 // application: top-level application state
 //
@@ -13,9 +21,6 @@ namespace osmv {
         int w;
         int h;
     };
-
-    class Screen;
-    struct Application_impl;
 
     class Application final {
         std::unique_ptr<Application_impl> impl;

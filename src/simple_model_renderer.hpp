@@ -1,24 +1,28 @@
 #pragma once
 
-#include "SDL_events.h"
+#include <SDL_events.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+namespace OpenSim {
+    class Component;
+}
+namespace OpenSim {
+    class Model;
+}
 namespace SimTK {
     class State;
 }
-
-namespace OpenSim {
-    class Model;
-    class Component;
+namespace osmv {
+    class Application;
+}
+namespace osmv {
+    struct Simple_model_renderer_impl;
 }
 
 namespace osmv {
-    class Application;
-
     // a renderer that draws an OpenSim::Model + SimTK::State pair into the current
     // framebuffer using a basic polar camera that can swivel around the model
-    struct Simple_model_renderer_impl;
     struct Simple_model_renderer final {
         // camera parameters
         //

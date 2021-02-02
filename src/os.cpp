@@ -1,10 +1,13 @@
 #include "os.hpp"
 
-#include <SDL.h>
+#include <SDL_error.h>
+#include <SDL_filesystem.h>
+#include <SDL_stdinc.h>
 
 #include <cstring>
 #include <memory>
-#include <sstream>
+#include <stdexcept>
+#include <string>
 
 using std::literals::string_literals::operator""s;
 

@@ -264,7 +264,7 @@ if(TRUE)
         third_party/imgui/backends/imgui_impl_sdl.cpp
     )
     target_link_libraries(osmv-imgui PUBLIC osmv-sdl2 osmv-glew osmv-glm)
-    target_include_directories(osmv-imgui PUBLIC third_party/imgui/)
+    target_include_directories(osmv-imgui PUBLIC third_party/ third_party/imgui/)
 endif()
 
 # DEPENDENCY: stb_image

@@ -4,28 +4,39 @@
 
 #include "3d_common.hpp"
 #include "application.hpp"
-#include "config.hpp"
-#include "gl.hpp"
-#include "opensim_wrapper.hpp"
 #include "sdl_wrapper.hpp"
 
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <SDL_events.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
+#include <SDL_video.h>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <simbody/SimTKcommon.h>
+#include <simbody/SimTKcommon/Orientation.h>
+#include <simbody/SimTKsimbody.h>
 
-#include <OpenSim/OpenSim.h>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <filesystem>
+#include <cassert>
+#include <cmath>
+#include <cstdlib>
 #include <functional>
-#include <iostream>
-#include <memory>
-#include <optional>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
-namespace {
-    class Application;
+namespace OpenSim {
+    class ModelDisplayHints;
+}
 
+namespace {
     // this is global-ed because renderers + meshes might be duped between
     // the various screens in OSMV and it's efficient to have everything
     // freewheeled

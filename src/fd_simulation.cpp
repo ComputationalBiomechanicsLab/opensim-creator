@@ -3,7 +3,19 @@
 #include "opensim_wrapper.hpp"
 #include "shims.hpp"
 
-#include <OpenSim.h>
+#include <OpenSim/Common/ComponentOutput.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <simbody/SimTKsimbody.h>
+#include <simbody/simmath/Integrator.h>
+
+#include <functional>
+#include <mutex>
+#include <ratio>
+#include <stdexcept>
+#include <string>
+#include <thread>
 
 namespace {
     using clock = std::chrono::steady_clock;
@@ -321,7 +333,7 @@ osmv::IntegratorMethod const osmv::integrator_methods[IntegratorMethod_NumIntegr
     IntegratorMethod_Verlet,
 };
 
-char const * const osmv::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
+char const* const osmv::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
     "OpenSim::Manager Default",
     "Explicit Euler",
     "Runge Kutta 2",

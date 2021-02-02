@@ -1,23 +1,31 @@
 #include "application.hpp"
 
 #include "gl.hpp"
-#include "imgui.h"
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
 
-#include "backends/imgui_impl_opengl3.h"
-#include "backends/imgui_impl_sdl.h"
+#include <GL/glew.h>
+#include <SDL.h>
+#include <SDL_error.h>
+#include <SDL_events.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
+#include <SDL_stdinc.h>
+#include <SDL_timer.h>
+#include <SDL_video.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_sdl.h>
+#include <imgui/imgui.h>
 
-#include <cassert>
+#include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 
-// forward-declare these so that this header isn't dependent on SDL/imgui
-struct SDL_Window;
 struct ImGuiContext;
 
 namespace igx {
@@ -62,7 +70,6 @@ namespace igx {
         }
     };
 }
-
 
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;

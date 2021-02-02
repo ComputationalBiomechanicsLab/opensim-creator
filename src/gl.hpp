@@ -8,8 +8,11 @@
 #include <glm/vec4.hpp>
 
 #include <cassert>
+#include <cstddef>
+#include <exception>
 #include <filesystem>
 #include <stdexcept>
+#include <string>
 
 namespace gl {
     std::string slurp(std::filesystem::path const& path);

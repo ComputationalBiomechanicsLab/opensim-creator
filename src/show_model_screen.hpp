@@ -3,13 +3,19 @@
 #include "opensim_wrapper.hpp"
 #include "screen.hpp"
 
+#include <SDL_events.h>
 #include <filesystem>
 #include <memory>
 
-// show model screen: main UI screen that shows a loaded OpenSim model /w UX, manipulators, etc.
+namespace osmv {
+    class Application;
+}
 namespace osmv {
     struct Show_model_screen_impl;
+}
 
+// show model screen: main UI screen that shows a loaded OpenSim model /w UX, manipulators, etc.
+namespace osmv {
     class Show_model_screen final : public Screen {
         std::unique_ptr<Show_model_screen_impl> impl;
 

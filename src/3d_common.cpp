@@ -1,9 +1,16 @@
 #include "3d_common.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <GL/glew.h>
+#include <stb_image.h>
 
+#include <cassert>
+#include <cmath>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
 
 using std::literals::operator""s;
 

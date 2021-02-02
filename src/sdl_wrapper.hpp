@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 #undef main
-#include "glm/vec2.hpp"
+#include <glm/vec2.hpp>
 
 #include <stdexcept>
 #include <string>
