@@ -205,7 +205,7 @@ namespace osmv {
         std::chrono::milliseconds millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))};
 
         // num multisamples that multisampled renderers should use
-        int samples;
+        int samples = 1;
 
         // ImGui application-wide context
         igx::Context imgui_ctx;
@@ -459,6 +459,9 @@ namespace osmv {
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
                 // swap the framebuffer frame onto the window, showing it to the user
+                //
+                // note: this can block on VSYNC, which will affect the timings
+                //       for software throttling
                 SDL_GL_SwapWindow(window);
 
                 // osmv::Screen: handle any possible indirect side-effects the Screen's
@@ -550,4 +553,16 @@ void osmv::Application::make_fullscreen() {
 
 void osmv::Application::make_windowed() {
     SDL_SetWindowFullscreen(impl->window, 0);
+}
+
+bool osmv::Application::is_vsync_enabled() const noexcept {
+    return SDL_GL_GetSwapInterval() == 1;
+}
+
+void osmv::Application::enable_vsync() {
+    SDL_GL_SetSwapInterval(1);
+}
+
+void osmv::Application::disable_vsync() {
+    SDL_GL_SetSwapInterval(0);
 }

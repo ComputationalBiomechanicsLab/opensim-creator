@@ -905,6 +905,16 @@ namespace osmv {
                 app.make_windowed();
             }
 
+            if (not app.is_vsync_enabled()) {
+                if (ImGui::Button("enable vsync")) {
+                    app.enable_vsync();
+                }
+            } else {
+                if (ImGui::Button("disable vsync")) {
+                    app.disable_vsync();
+                }
+            }
+
             ImGui::NewLine();
             ImGui::Text("Interaction: ");
             if (renderer.dragging) {

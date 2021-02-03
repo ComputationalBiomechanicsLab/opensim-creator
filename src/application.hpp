@@ -77,5 +77,11 @@ namespace osmv {
 
         // makes the application window windowed (as opposed to fullscreen)
         void make_windowed();
+
+        bool is_vsync_enabled() const noexcept;
+
+        void enable_vsync();
+
+        void disable_vsync();
     };
 }
