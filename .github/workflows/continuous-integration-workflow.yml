@@ -31,9 +31,17 @@ jobs:
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./osmv/scripts/debian-buster_e2e-build.sh
 
-  mac:
+  macCatalina:
     name: Build on Mac (catalina)
     runs-on: macos-10.15
+    steps:
+    - uses: actions/checkout@v2
+    - name: run build script
+      run: cd $GITHUB_WORKSPACE && ./scripts/mac_catalina_10-15_build.sh
+
+  macBigSur:
+    name: Build on Mac (big sur)
+    runs-on: macos-11.0
     steps:
     - uses: actions/checkout@v2
     - name: run build script
