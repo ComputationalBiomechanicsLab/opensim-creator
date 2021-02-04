@@ -71,7 +71,7 @@ cd -
 #     side-effects on loading)
 mkdir osmv-build/
 cd osmv-build/
-CC=gcc-8 CXX=g++-8 cmake .. \
+CC=gcc-8 CXX=g++-8 cmake ../osmv \
   -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -Wl,--no-as-needed"
