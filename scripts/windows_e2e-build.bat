@@ -24,7 +24,7 @@ cd ..
 mkdir osmv-build
 cd osmv-build
 cmake ../ -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
-cmake --build . --config Release --target osmv || exit /b
+cmake --build . --config Release --target package || exit /b
 cd ..
 
 if %errorlevel% neq 0 exit /b %errorlevel%
