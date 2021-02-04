@@ -10,6 +10,8 @@
   <string>software.osmv</string>
   <key>CFBundleName</key>
   <string>osmv</string>
+  <key>CFBundleIconFile</key>
+  <string>osmv.icns</string>
   <key>CFBundleShortVersionString</key>
   <string>0.01</string>
   <key>CFBundleInfoDictionaryVersion</key>

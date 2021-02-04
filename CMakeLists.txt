@@ -347,7 +347,10 @@ if (APPLE)
     install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist" DESTINATION osmv.app/Contents/)
 
     # install `resources/`
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION osmv.app/Contents/MacOS)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION osmv.app/Contents/MacOS/)
+
+    # install desktop icon (.icns)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/osmv.icns" DESTINATION osmv.app/Contents/Resources/)
 
     set(CPACK_GENERATOR DragNDrop)
 endif()
