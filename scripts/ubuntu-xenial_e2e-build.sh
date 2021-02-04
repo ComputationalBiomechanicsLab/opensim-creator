@@ -17,13 +17,13 @@ fi
 
 # ----- setup: get dependencies: you will need root/sudo for some of this ----- #
 
-# osmv: get gcc-9/g++17 - needed for C++17 compilation
+# osmv: get gcc-8/g++-8 - needed for C++17 compilation
 ${sudo} apt-get update
 ${sudo} apt-get install -y build-essential software-properties-common
 ${sudo} add-apt-repository -y ppa:ubuntu-toolchain-r/test
 ${sudo} apt-get update
 ${sudo} apt-get install -y gcc-snapshot
-${sudo} apt-get install -y gcc-9 g++-9
+${sudo} apt-get install -y gcc-8 g++-8
 
 # osmv: get other tools/libraries used by osmv
 ${sudo} apt-get install -y cmake make libsdl2-dev
@@ -51,13 +51,30 @@ cmake ../opensim-core/ -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-instal
 cmake --build . --target install -- -j$(nproc)
 cd -
 
-# build osmv /w gcc9
+# build osmv /w gcc8
 #
 # note: set CMAKE_PREFIX_PATH to your OpenSim install if you aren't building OpenSim
 #       from source (above)
+#
+# -static-libstdc++
+#
+#     statically compile libstdc++, because we are building osmv with
+#     a not-standardized-in-xenial gcc (8), which will make the output
+#     binary dependent on a libstdc++ that doesn't come with typical
+#
+# -Wl,--no-as-needed
+#
+#     the Xenial linker will only link libraries if their symbols are
+#     NEEDED by the binary. OSMV doesn't *directly* use symbols in
+#     (e.g.) libosimActuators.so, but it does indirectly depend on
+#     libosimActuators.so being loaded (because the library has
+#     side-effects on loading)
 mkdir osmv-build/
 cd osmv-build/
-CC=gcc-9 CXX=g++-9 cmake ../osmv -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
+CC=gcc-8 CXX=g++-8 cmake .. \
+  -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -Wl,--no-as-needed"
 cmake --build . --target osmv -- -j$(nproc)
 
 # (if you want a .deb)
