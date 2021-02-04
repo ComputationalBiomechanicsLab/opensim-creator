@@ -29,5 +29,5 @@ cd -
 mkdir -p osmv-build/
 cd osmv-build/
 cmake .. -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target osmv -- -j ${num_workers}
+cmake --build . --target package -- -j ${num_workers}
 
