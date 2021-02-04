@@ -162,6 +162,16 @@ if(LINUX)
     #     - so set the install RPATH to reflect this
     set_target_properties(osmv PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
 endif()
+if(APPLE)
+    # Apple RPATH:
+    #     - at installation time, Apple install dir is something like:
+    #
+    #           lib/*.dylib
+    #           resources/*
+    #           osmv (exe)
+    #           osmv.toml
+    set_target_properties(osmv PROPERTIES INSTALL_RPATH "@executable_path/lib")
+endif()
 
 if(${OSMV_USING_MODERN_CMAKE})
     # this is the "modern" way to explain CXX conformance
@@ -224,15 +234,6 @@ set(CPACK_PACKAGE_VERSION_MINOR "${osmv_VERSION_MINOR}")
 set(CPACK_PACKAGE_CONTACT "Adam Kewley <contact@adamkewley.com>")
 set(CPACK_PACKAGE_DESCRIPTION "A thin GUI for OpenSim - primarily for development use")
 
-# install a user-centric `osmv.toml`
-#
-#     - in contrast to the dev-centric one, this loads resources from the installation dir,
-#       which has a known path relative to the osmv executable (../resources)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
-
-# install `resources/`
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
-
 # Windows install/packaging:
 #
 #     - copy osmv.exe + all DLLs into the bin/ dir
@@ -251,6 +252,15 @@ if (WIN32)
     foreach(LIB_FILE_TO_COPY ${OSMV_LIB_FILES_TO_COPY})
         install(FILES "${LIB_FILE_TO_COPY}" DESTINATION bin)
     endforeach()
+
+    # install a user-centric `osmv.toml`
+    #
+    #     - in contrast to the dev-centric one, this loads resources from the installation dir,
+    #       which has a known path relative to the osmv executable (../resources)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
+
+    # install `resources/`
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
 
     # set up NSIS packaging
     set(CPACK_GENERATOR NSIS)
@@ -292,6 +302,15 @@ if (LINUX)
         install(FILES "${LIB_FILE_TO_COPY}" DESTINATION lib/)
     endforeach()
 
+    # install a user-centric `osmv.toml`
+    #
+    #     - in contrast to the dev-centric one, this loads resources from the installation dir,
+    #       which has a known path relative to the osmv executable (../resources)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
+
+    # install `resources/`
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
+
     # set up DEB packaging
     set(CPACK_GENERATOR DEB)
     set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osmv)
@@ -300,6 +319,37 @@ if (LINUX)
     configure_file("${PROJECT_SOURCE_DIR}/postinst.in" "postinst" @ONLY)  # create symlink /usr/local/bin/osmv --> /opt/osmv/bin/osmv
     configure_file("${PROJECT_SOURCE_DIR}/postrm.in" "postrm" @ONLY)  # destroy symlink created during install
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")
+endif()
+
+# Apple OSX packaging:
+#
+# - Create a DMG (archive) installer that packages the whole application +
+#   libraries into a single directory tree that can be copied to
+#   /Applications/osmv
+if (APPLE)
+    # install main executable into package root (Application/ dir requirement)
+    install(TARGETS osmv DESTINATION osmv.app/Contents/MacOS/)
+
+    # install bundled libraries into lib/
+    foreach(LIB_FILE_TO_COPY ${OSMV_LIB_FILES_TO_COPY})
+        install(FILES "${LIB_FILE_TO_COPY}" DESTINATION osmv.app/Contents/MacOS/lib/)
+    endforeach()
+
+    # install a user-centric `osmv.toml`
+    #
+    #     - in contrast to the dev-centric one, this loads resources from the installation dir,
+    #       which has a known path relative to the osmv executable (../resources)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION osmv.app/Contents/MacOS/)
+
+    # install an Info.plist file for this particular app
+    #
+    # this is a mac-specific XML file
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist" DESTINATION osmv.app/Contents/)
+
+    # install `resources/`
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION osmv.app/Contents/MacOS)
+
+    set(CPACK_GENERATOR DragNDrop)
 endif()
 
 # CPack vars etc. now fully configured, so include it

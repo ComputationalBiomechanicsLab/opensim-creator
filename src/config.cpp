@@ -34,6 +34,15 @@ static App_config load_application_config() {
             exists = true;
             break;
         }
+        // HACK: there is a file at "MacOS/osmv.toml", which is where the config
+        // is relative to SDL_GetBasePath. current_exe_dir should be fixed
+        // accordingly.
+        fs::path maybe_macos_config = p / "MacOS" / "osmv.toml";
+        if (fs::exists(maybe_macos_config)) {
+            p = maybe_macos_config;
+            exists = true;
+            break;
+        }
         p = p.parent_path();
     }
 
