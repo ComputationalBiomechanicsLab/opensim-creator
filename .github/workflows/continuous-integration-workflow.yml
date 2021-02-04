@@ -20,6 +20,10 @@ jobs:
         path: osmv
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./osmv/scripts/ubuntu-xenial_e2e-build.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu_xenial_installer.zip
+        path: osmv-build/*.deb
 
   ubuntu2004:
     name: Build on Ubuntu 20.04
@@ -30,6 +34,10 @@ jobs:
         path: osmv
     - name: run build script
       run: cd $GITHUB_WORKSPACE && ./osmv/scripts/debian-buster_e2e-build.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: debian_buster_installer.zip
+        path: osmv-build/*.deb
 
   macCatalina:
     name: Build on Mac (catalina)
