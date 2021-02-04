@@ -13,7 +13,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: windows_installer.zip
-        path: osmv-build/*.exe
+        path: osmv-build/Release/*.exe
 
   ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
