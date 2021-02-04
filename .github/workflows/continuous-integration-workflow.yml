@@ -55,10 +55,3 @@ jobs:
         name: mac_catalina_installer.zip
         path: osmv-build/*.dmg
 
-  macBigSur:
-    name: Build on Mac (big sur)
-    runs-on: macos-11.0
-    steps:
-    - uses: actions/checkout@v2
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/mac_catalina_10-15_build.sh
