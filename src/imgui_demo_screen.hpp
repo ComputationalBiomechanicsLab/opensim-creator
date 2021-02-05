@@ -8,7 +8,7 @@
 namespace osmv {
     class Imgui_demo_screen final : public Screen {
     public:
-        Event_response on_event(SDL_Event const&) override;
+        bool on_event(SDL_Event const&) override;
         void draw() override;
     };
 }

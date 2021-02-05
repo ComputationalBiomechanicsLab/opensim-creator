@@ -1,10 +1,10 @@
 ﻿#include "application.hpp"
 
+#include "config.hpp"
 #include "fd_simulation.hpp"
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "splash_screen.hpp"
-#include "config.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -65,46 +65,16 @@ int main(int argc, char** argv) {
         --argc;
     }
 
-    // global init stuff
+    // pre-launch global inits
     {
         std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
+        osmv::init_application();
     }
 
     // no args: show splash screen
     if (argc <= 0) {
-        osmv::Application application;
-        application.start_render_loop<osmv::Splash_screen>();
-
-        return EXIT_SUCCESS;
-    }
-
-    // 'fd' command:
-    //
-    // if the first unnamed argument to osmv is 'fd' then the caller wants to run an fd simulation
-    // using the same parameters as the visualizer. This is currently here for debugging
-    if (not std::strcmp(argv[0], "fd")) {
-
-        if (argc != 3) {
-            std::cerr << "osmv: fd: incorrect number of arguments: two (MODEL.osim final_time) expected\n";
-            return EXIT_FAILURE;
-        }
-
-        char const* osim_path = argv[1];
-        double final_time;
-        if (not safe_parse_double(argv[2], &final_time)) {
-            std::cerr << "osmv: fd: invalid final time given (not a number)\n";
-            return EXIT_FAILURE;
-        }
-        if (final_time < 0.0) {
-            std::cerr << "osmv: fd: invalid final time given (negative)\n";
-            return EXIT_FAILURE;
-        }
-
-        osmv::Model m{osim_path};
-        m->finalizeFromProperties();
-        osmv::run_fd_simulation(m);
-
+        osmv::app().start_render_loop<osmv::Splash_screen>();
         return EXIT_SUCCESS;
     }
 
@@ -113,8 +83,7 @@ int main(int argc, char** argv) {
     // the reason the subcommands are designed this way (rather than having a separate 'gui'
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
-    osmv::Application application;
-    application.start_render_loop<osmv::Loading_screen>(argv[0]);
+    osmv::app().start_render_loop<osmv::Loading_screen>(argv[0]);
 
     return EXIT_SUCCESS;
 }

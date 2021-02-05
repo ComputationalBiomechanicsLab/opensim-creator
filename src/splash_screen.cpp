@@ -51,14 +51,14 @@ namespace osmv {
     struct Splash_screen_impl final {
         std::vector<fs::path> example_osims = find_example_osims();
 
-        Event_response on_event(Application& app, SDL_Event const& e) {
+        bool on_event(Application& app, SDL_Event const& e) {
             if (e.type == SDL_KEYDOWN) {
                 SDL_Keycode sym = e.key.keysym.sym;
 
                 // ESCAPE: quit application
                 if (sym == SDLK_ESCAPE) {
                     app.request_quit_application();
-                    return Event_response::handled;
+                    return true;
                 }
 
                 // 1-9: load numbered example
@@ -66,19 +66,14 @@ namespace osmv {
                     size_t idx = static_cast<size_t>(sym - SDLK_1);
                     if (idx < example_osims.size()) {
                         app.request_screen_transition<Loading_screen>(example_osims[idx]);
-                        return Event_response::handled;
+                        return true;
                     }
                 }
             }
-            return Event_response::ignored;
+            return false;
         }
 
         void draw(Application& app) {
-            bool b = true;
-            std::unique_ptr<osmv::Screen> should_transition_to = nullptr;
-            bool should_exit = false;
-            char buf[512];
-
             // center the menu
             {
                 auto [w, h] = app.window_dimensions();
@@ -92,6 +87,8 @@ namespace osmv {
                 ImGui::SetNextWindowSizeConstraints({500, 500}, {500, 500});
             }
 
+            char buf[512];
+            bool b = true;
             if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
 
                 ImGui::Text("OpenSim Model Viewer (osmv)");
@@ -111,7 +108,7 @@ namespace osmv {
                     fs::path const& p = example_osims[i];
                     std::snprintf(buf, sizeof(buf), "%zu: %s", i + 1, p.filename().string().c_str());
                     if (ImGui::Button(buf)) {
-                        should_transition_to = std::make_unique<osmv::Loading_screen>(p);
+                        app.request_screen_transition<osmv::Loading_screen>(p);
                     }
                 }
 
@@ -120,28 +117,18 @@ namespace osmv {
                 ImGui::Dummy(ImVec2{0.0f, 2.0f});
 
                 if (ImGui::Button("ImGui demo")) {
-                    should_transition_to = std::make_unique<osmv::Imgui_demo_screen>();
+                    app.request_screen_transition<osmv::Imgui_demo_screen>();
                 }
 
                 if (ImGui::Button("editor")) {
-                    should_transition_to = std::make_unique<osmv::Model_editor_screen>(app);
+                    app.request_screen_transition<osmv::Model_editor_screen>();
                 }
 
                 if (ImGui::Button("Exit")) {
-                    should_exit = true;
+                    app.request_quit_application();
                 }
 
                 ImGui::End();
-            }
-
-            if (should_transition_to) {
-                app.request_screen_transition(std::move(should_transition_to));
-                return;
-            }
-
-            if (should_exit) {
-                app.request_quit_application();
-                return;
             }
         }
     };
@@ -152,12 +139,14 @@ namespace osmv {
 osmv::Splash_screen::Splash_screen() : impl{new Splash_screen_impl{}} {
 }
 
-osmv::Splash_screen::~Splash_screen() noexcept = default;
+osmv::Splash_screen::~Splash_screen() noexcept {
+    delete impl;
+}
 
-osmv::Event_response osmv::Splash_screen::on_event(SDL_Event const& e) {
-    return impl->on_event(application(), e);
+bool osmv::Splash_screen::on_event(SDL_Event const& e) {
+    return impl->on_event(app(), e);
 }
 
 void osmv::Splash_screen::draw() {
-    impl->draw(application());
+    impl->draw(app());
 }

@@ -1,20 +1,21 @@
 #include "imgui_demo_screen.hpp"
 
+#include "application.hpp"
 #include "splash_screen.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <imgui.h>
 
-osmv::Event_response osmv::Imgui_demo_screen::on_event(SDL_Event const& e) {
+bool osmv::Imgui_demo_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-        request_screen_transition<Splash_screen>();
-        return Event_response::handled;
+        app().request_screen_transition<Splash_screen>();
+        return true;
     }
 
     // osmv::Application already pumps the event into ImGui
 
-    return Event_response::ignored;
+    return false;
 }
 
 void osmv::Imgui_demo_screen::draw() {

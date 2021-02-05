@@ -42,9 +42,9 @@ namespace osmv {
 
         void request_screen_transition(std::unique_ptr<osmv::Screen>);
 
-        template<typename T, typename... Args>
+        template<typename Screen, typename... Args>
         void request_screen_transition(Args&&... args) {
-            request_screen_transition(std::make_unique<T>(std::forward<Args>(args)...));
+            request_screen_transition(std::make_unique<Screen>(std::forward<Args>(args)...));
         }
 
         void request_quit_application();
@@ -84,4 +84,12 @@ namespace osmv {
 
         void disable_vsync();
     };
+
+    extern std::unique_ptr<Application> _current_app;
+
+    void init_application();
+
+    inline Application& app() noexcept {
+        return *_current_app;
+    }
 }

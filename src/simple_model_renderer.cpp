@@ -15,12 +15,12 @@
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
 #include <SDL_video.h>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <SimTKcommon.h>
 #include <SimTKcommon/Orientation.h>
 #include <SimTKsimbody.h>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -518,42 +518,44 @@ osmv::Simple_model_renderer::~Simple_model_renderer() noexcept {
     delete impl;
 }
 
-bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e) {
+bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
+    Application& application = app();
+
     // edge-case: the event is a resize event, which might invalidate some buffers
     // the renderer is using
     if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         int w = e.window.data1;
         int h = e.window.data2;
-        int samples = app.samples();
+        int samples = application.samples();
         impl->renderer.reallocate_buffers(w, h, samples);
         return true;
     }
 
-    float aspect_ratio = app.window_aspect_ratio();
-    auto window_dims = app.window_dimensions();
+    float aspect_ratio = app().window_aspect_ratio();
+    auto window_dims = application.window_dimensions();
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
         case SDLK_w:
-            wireframe_mode = not wireframe_mode;
+            flags ^= SimpleModelRendererFlags_WireframeMode;
             return true;
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT:
-            dragging = true;
+            flags |= SimpleModelRendererFlags_Dragging;
             return true;
         case SDL_BUTTON_RIGHT:
-            panning = true;
+            flags |= SimpleModelRendererFlags_Panning;
             return true;
         }
     } else if (e.type == SDL_MOUSEBUTTONUP) {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT:
-            dragging = false;
+            flags &= ~SimpleModelRendererFlags_Dragging;
             return true;
         case SDL_BUTTON_RIGHT:
-            panning = false;
+            flags &= ~SimpleModelRendererFlags_Panning;
             return true;
         }
     } else if (e.type == SDL_MOUSEMOTION) {
@@ -563,7 +565,7 @@ bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e)
             return false;
         }
 
-        if (dragging) {
+        if (flags & SimpleModelRendererFlags_Dragging) {
             // alter camera position while dragging
             float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
             float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
@@ -571,7 +573,7 @@ bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e)
             phi += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dy;
         }
 
-        if (panning) {
+        if (flags & SimpleModelRendererFlags_Panning) {
             float dx = static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
             float dy = -static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
 
@@ -595,19 +597,19 @@ bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e)
         }
 
         // wrap mouse if it hits edges
-        if (dragging or panning) {
+        if (flags & (SimpleModelRendererFlags_Dragging | SimpleModelRendererFlags_Panning)) {
             constexpr int edge_width = 5;
             if (e.motion.x + edge_width > window_dims.w) {
-                app.move_mouse_to(edge_width, e.motion.y);
+                application.move_mouse_to(edge_width, e.motion.y);
             }
             if (e.motion.x - edge_width < 0) {
-                app.move_mouse_to(window_dims.w - edge_width, e.motion.y);
+                application.move_mouse_to(window_dims.w - edge_width, e.motion.y);
             }
             if (e.motion.y + edge_width > window_dims.h) {
-                app.move_mouse_to(e.motion.x, edge_width);
+                application.move_mouse_to(e.motion.x, edge_width);
             }
             if (e.motion.y - edge_width < 0) {
-                app.move_mouse_to(e.motion.x, window_dims.h - edge_width);
+                application.move_mouse_to(e.motion.x, window_dims.h - edge_width);
             }
 
             return true;
@@ -628,7 +630,7 @@ bool osmv::Simple_model_renderer::on_event(Application& app, SDL_Event const& e)
 }
 
 void osmv::Simple_model_renderer::draw(
-    Application const& app, OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected) {
+    OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected) {
 
     OpenSim_model_geometry& geom = impl->geom_swap;
     Raw_renderer& renderer = impl->renderer;
@@ -652,7 +654,7 @@ void osmv::Simple_model_renderer::draw(
 
         // if drawing selection rims, set the rims of selected/hovered components
         // accordingly
-        if (draw_rims) {
+        if (flags & SimpleModelRendererFlags_DrawRims) {
             OpenSim::Component const* owner = geom.associated_components[i];
             if (selected != nullptr and selected == owner) {
                 mi._passthrough.a = 1.0f;
@@ -673,13 +675,13 @@ void osmv::Simple_model_renderer::draw(
     // - SDL screen coords are traditional screen coords. Origin top-left, Y goes down
     // - OpenGL screen coords are mathematical coords. Origin bottom-left, Y goes up
     sdl::Mouse_state m = sdl::GetMouseState();
-    Window_dimensions d = app.window_dimensions();
+    Window_dimensions d = app().window_dimensions();
     renderer.passthrough_hittest_x = m.x;
     renderer.passthrough_hittest_y = d.h - m.y;
 
     // set any other parameters that the raw renderer depends on
     renderer.view_matrix = compute_view_matrix(theta, phi, radius, pan);
-    renderer.projection_matrix = glm::perspective(fov, app.window_aspect_ratio(), znear, zfar);
+    renderer.projection_matrix = glm::perspective(fov, app().window_aspect_ratio(), znear, zfar);
     renderer.view_pos = spherical_2_cartesian(theta, phi, radius);
     renderer.light_pos = light_pos;
     renderer.light_rgb = light_rgb;
@@ -690,19 +692,19 @@ void osmv::Simple_model_renderer::draw(
     renderer.flags |= RawRendererFlags_PerformPassthroughHitTest;
     renderer.flags |= RawRendererFlags_UseOptimizedButDelayed1FrameHitTest;
     renderer.flags |= RawRendererFlags_DrawSceneGeometry;
-    if (wireframe_mode) {
+    if (flags & SimpleModelRendererFlags_WireframeMode) {
         renderer.flags |= RawRendererFlags_WireframeMode;
     }
-    if (show_mesh_normals) {
+    if (flags & SimpleModelRendererFlags_ShowMeshNormals) {
         renderer.flags |= RawRendererFlags_ShowMeshNormals;
     }
-    if (show_floor) {
+    if (flags & SimpleModelRendererFlags_ShowFloor) {
         renderer.flags |= RawRendererFlags_ShowFloor;
     }
-    if (draw_rims) {
+    if (flags & SimpleModelRendererFlags_DrawRims) {
         renderer.flags |= RawRendererFlags_DrawRims;
     }
-    if (app.is_in_debug_mode()) {
+    if (app().is_in_debug_mode()) {
         renderer.flags |= RawRendererFlags_DrawDebugQuads;
     }
 

@@ -23,9 +23,13 @@
 #include <chrono>
 #include <cstdio>
 #include <iostream>
+#include <optional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
+
+// globals
+std::unique_ptr<osmv::Application> osmv::_current_app;
 
 struct ImGuiContext;
 
@@ -234,7 +238,7 @@ namespace osmv {
 
         // flag indicating whether the UI should draw certain debug UI elements (e.g. FPS counter,
         // debug overlays)
-        bool is_drawing_debug_ui = true;
+        bool is_drawing_debug_ui = false;
 
         Application_impl() :
             // initialize SDL library
@@ -356,7 +360,6 @@ namespace osmv {
 
         void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
             current_screen = std::move(s);
-            current_screen->on_application_mount(&app);
 
             // main application draw loop (i.e. the "game loop" of this app)
             //
@@ -399,7 +402,6 @@ namespace osmv {
                     }
                     if (requested_screen) {
                         current_screen = std::move(requested_screen);
-                        current_screen->on_application_mount(&app);
                         continue;
                     }
                 }
@@ -414,7 +416,6 @@ namespace osmv {
                 }
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
-                    current_screen->on_application_mount(&app);
                     continue;
                 }
 
@@ -471,7 +472,6 @@ namespace osmv {
                 }
                 if (requested_screen) {
                     current_screen = std::move(requested_screen);
-                    current_screen->on_application_mount(&app);
                     continue;
                 }
 
@@ -565,4 +565,8 @@ void osmv::Application::enable_vsync() {
 
 void osmv::Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
+}
+
+void osmv::init_application() {
+    _current_app = std::make_unique<Application>();
 }

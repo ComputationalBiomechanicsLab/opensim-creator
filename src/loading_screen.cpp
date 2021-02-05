@@ -35,14 +35,14 @@ namespace osmv {
             result{std::async(std::launch::async, [&]() { return std::optional<osmv::Model>{path}; })} {
         }
 
-        Event_response on_event(Application& app, SDL_Event const& e) {
+        bool on_event(Application& app, SDL_Event const& e) {
             // ESCAPE: go to splash screen
             if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
                 app.request_screen_transition<osmv::Splash_screen>();
-                return Event_response::handled;
+                return true;
             }
 
-            return Event_response::ignored;
+            return false;
         }
 
         void tick(Application& app) {
@@ -57,7 +57,7 @@ namespace osmv {
             // loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
-                    app.request_screen_transition<Show_model_screen>(app, path, result.get().value());
+                    app.request_screen_transition<Show_model_screen>(path, result.get().value());
                     return;
                 }
             } catch (std::exception const& ex) {
@@ -91,14 +91,16 @@ namespace osmv {
 osmv::Loading_screen::Loading_screen(std::filesystem::path _path) : impl{new Loading_screen_impl{std::move(_path)}} {
 }
 
-osmv::Loading_screen::~Loading_screen() noexcept = default;
+osmv::Loading_screen::~Loading_screen() noexcept {
+    delete impl;
+}
 
-osmv::Event_response osmv::Loading_screen::on_event(SDL_Event const& e) {
-    return impl->on_event(application(), e);
+bool osmv::Loading_screen::on_event(SDL_Event const& e) {
+    return impl->on_event(app(), e);
 }
 
 void osmv::Loading_screen::tick() {
-    return impl->tick(application());
+    return impl->tick(app());
 }
 
 void osmv::Loading_screen::draw() {

@@ -28,11 +28,11 @@
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
+#include <SimTKcommon/basics.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <imgui.h>
-#include <SimTKcommon/basics.h>
 
 #include <algorithm>
 #include <array>
@@ -612,14 +612,14 @@ namespace osmv {
         }
 
         // handle top-level UI event (user click, user drag, etc.)
-        Event_response handle_event(Application& app, SDL_Event const& e) {
+        bool handle_event(Application& app, SDL_Event const& e) {
             ImGuiIO& io = ImGui::GetIO();
 
             if (e.type == SDL_KEYDOWN) {
                 if (io.WantCaptureKeyboard) {
                     // if ImGUI wants to capture the keyboard, then the keyboard
                     // is probably interacting with an ImGUI panel
-                    return Event_response::ignored;
+                    return false;
                 }
 
                 switch (e.key.keysym.sym) {
@@ -629,14 +629,14 @@ namespace osmv {
                     SDL_Keymod km = SDL_GetModState();
                     if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
                         app.request_screen_transition<Loading_screen>(model_path);
-                        return Event_response::handled;
+                        return true;
                     }
 
                     // R: reset the model to its initial state
                     latest_state = model->initSystem();
                     on_user_edited_state();
 
-                    return Event_response::handled;
+                    return true;
                 }
                 case SDLK_SPACE: {
                     if (simulator_tab.simulator and simulator_tab.simulator->is_running()) {
@@ -651,11 +651,11 @@ namespace osmv {
                     break;
                 case SDLK_ESCAPE:
                     app.request_screen_transition<Splash_screen>();
-                    return Event_response::handled;
+                    return true;
                 case SDLK_c:
                     // clear selection
                     selected_component = nullptr;
-                    return Event_response::handled;
+                    return true;
                 }
                 }
             } else if (e.type == SDL_MOUSEMOTION) {
@@ -663,14 +663,14 @@ namespace osmv {
                     // if ImGUI wants to capture the mouse, then the mouse
                     // is probably interacting with an ImGUI panel and,
                     // therefore, the dragging/panning shouldn't be handled
-                    return Event_response::ignored;
+                    return false;
                 }
             } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                 if (io.WantCaptureMouse) {
                     // if ImGUI wants to capture the mouse, then the mouse
                     // is probably interacting with an ImGUI panel and,
                     // therefore, the dragging/panning shouldn't be handled
-                    return Event_response::ignored;
+                    return false;
                 }
 
             } else if (e.type == SDL_MOUSEBUTTONUP) {
@@ -678,7 +678,7 @@ namespace osmv {
                     // if ImGUI wants to capture the mouse, then the mouse
                     // is probably interacting with an ImGUI panel and,
                     // therefore, the dragging/panning shouldn't be handled
-                    return Event_response::ignored;
+                    return false;
                 }
 
                 // otherwise, maybe they're trying to select something in the viewport, so
@@ -691,13 +691,13 @@ namespace osmv {
                     // if ImGUI wants to capture the mouse, then the mouse
                     // is probably interacting with an ImGUI panel and,
                     // therefore, the dragging/panning shouldn't be handled
-                    return Event_response::ignored;
+                    return false;
                 }
             }
 
             // if no events were captured above, let the model viewer handle
             // the event
-            return renderer.on_event(app, e) ? Event_response::handled : Event_response::ignored;
+            return renderer.on_event(e);
         }
 
         // "tick" the UI state (usually, used for updating animations etc.)
@@ -746,7 +746,7 @@ namespace osmv {
         void draw(Application& app) {
 
             // draw OpenSim 3D model using renderer
-            renderer.draw(app, model, latest_state, selected_component);
+            renderer.draw(model, latest_state, selected_component);
 
             // overlay: if the user is hovering over a component, write the component's name
             //          next to the mouse
@@ -887,15 +887,30 @@ namespace osmv {
             ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
             ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_rgb));
             ImGui::SliderFloat("rim thickness", &renderer.rim_thickness, 0.0f, 0.1f);
-            ImGui::Checkbox("draw rims", &renderer.draw_rims);
-            ImGui::Checkbox("show_floor", &renderer.show_floor);
+            {
+                bool draw_rims = renderer.flags & SimpleModelRendererFlags_DrawRims;
+                if (ImGui::Checkbox("draw rims", &draw_rims)) {
+                    renderer.flags ^= SimpleModelRendererFlags_DrawRims;
+                }
+            }
+            {
+                bool show_floor = renderer.flags & SimpleModelRendererFlags_ShowFloor;
+                if (ImGui::Checkbox("show_floor", &show_floor)) {
+                    renderer.flags ^= SimpleModelRendererFlags_ShowFloor;
+                }
+            }
             {
                 bool throttling = app.is_throttling_fps();
                 if (ImGui::Checkbox("fps_throttle", &throttling)) {
                     app.is_throttling_fps(throttling);
                 }
             }
-            ImGui::Checkbox("show_mesh_normals", &renderer.show_mesh_normals);
+            {
+                bool show_mesh_norms = renderer.flags & SimpleModelRendererFlags_ShowMeshNormals;
+                if (ImGui::Checkbox("show_mesh_normals", &show_mesh_norms)) {
+                    renderer.flags ^= SimpleModelRendererFlags_ShowMeshNormals;
+                }
+            }
 
             if (ImGui::Button("fullscreen")) {
                 app.make_fullscreen();
@@ -917,11 +932,11 @@ namespace osmv {
 
             ImGui::NewLine();
             ImGui::Text("Interaction: ");
-            if (renderer.dragging) {
+            if (renderer.flags & SimpleModelRendererFlags_Dragging) {
                 ImGui::SameLine();
                 ImGui::Text("rotating ");
             }
-            if (renderer.panning) {
+            if (renderer.flags & SimpleModelRendererFlags_Panning) {
                 ImGui::SameLine();
                 ImGui::Text("panning ");
             }
@@ -1615,13 +1630,15 @@ namespace osmv {
 
 // screen PIMPL forwarding
 
-osmv::Show_model_screen::Show_model_screen(Application& app, std::filesystem::path path, osmv::Model model) :
-    impl{new Show_model_screen_impl{app, std::move(path), std::move(model)}} {
+osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Model model) :
+    impl{new Show_model_screen_impl{app(), std::move(path), std::move(model)}} {
 }
-osmv::Show_model_screen::~Show_model_screen() noexcept = default;
+osmv::Show_model_screen::~Show_model_screen() noexcept {
+    delete impl;
+}
 
-osmv::Event_response osmv::Show_model_screen::on_event(SDL_Event const& e) {
-    return impl->handle_event(application(), e);
+bool osmv::Show_model_screen::on_event(SDL_Event const& e) {
+    return impl->handle_event(app(), e);
 }
 
 void osmv::Show_model_screen::tick() {
@@ -1629,5 +1646,5 @@ void osmv::Show_model_screen::tick() {
 }
 
 void osmv::Show_model_screen::draw() {
-    impl->draw(application());
+    impl->draw(app());
 }

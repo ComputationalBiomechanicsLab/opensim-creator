@@ -14,8 +14,7 @@ osmv::Model::Model(std::unique_ptr<OpenSim::Model> _m) noexcept : handle{std::mo
 osmv::Model::Model(Model const& m) : Model{static_cast<OpenSim::Model const&>(m)} {
 }
 
-osmv::Model::Model(std::filesystem::path const& p) :
-    handle{std::make_unique<OpenSim::Model>(p.string())} {
+osmv::Model::Model(std::filesystem::path const& p) : handle{std::make_unique<OpenSim::Model>(p.string())} {
 }
 osmv::Model::Model(OpenSim::Model const& m) : handle{new OpenSim::Model{m}} {
 }
