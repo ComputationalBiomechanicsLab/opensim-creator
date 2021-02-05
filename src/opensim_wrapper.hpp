@@ -46,6 +46,14 @@ namespace osmv {
         OpenSim::Model const* operator->() const noexcept {
             return handle.get();
         }
+
+        OpenSim::Model const* get() const noexcept {
+            return handle.get();
+        }
+
+        OpenSim::Model* get() noexcept {
+            return handle.get();
+        }
     };
 
     // owned (but opaque) handle to a SimTK::State

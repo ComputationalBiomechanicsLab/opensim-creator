@@ -1,8 +1,11 @@
 #pragma once
 
+#include "raw_renderer.hpp"
+
 #include <SDL_events.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <vector>
 
 namespace OpenSim {
     class Component;
@@ -21,8 +24,20 @@ namespace osmv {
 }
 
 namespace osmv {
-    using SimpleModelRendererFlags = int;
+    // geometry generated from an OpenSim model + SimTK state pair
+    struct OpenSim_model_geometry final {
+        // these two vectors are 1:1 associated
+        std::vector<Mesh_instance> meshes;
+        std::vector<OpenSim::Component const*> associated_components;
 
+        void clear() {
+            meshes.clear();
+            associated_components.clear();
+        }
+    };
+
+    // runtime rendering flags: the renderer uses these to make rendering decisions
+    using SimpleModelRendererFlags = int;
     enum SimpleModelRendererFlags_ {
         SimpleModelRendererFlags_None = 0,
 
@@ -44,18 +59,33 @@ namespace osmv {
         // renderer should draw selection rims
         SimpleModelRendererFlags_DrawRims = 1 << 5,
 
-        SimpleModelRendererFlags_Default = SimpleModelRendererFlags_ShowFloor | SimpleModelRendererFlags_DrawRims,
+        // renderer should draw dynamic OpenSim model decorations
+        SimpleModelRendererFlags_DrawDynamicDecorations = 1 << 6,
+
+        // renderer should draw static OpenSim model decorations
+        SimpleModelRendererFlags_DrawStaticDecorations = 1 << 7,
+
+        // perform hover testing on dynamic decorations
+        SimpleModelRendererFlags_HoverableDynamicDecorations = 1 << 8,
+
+        // perform hover testing on static decorations
+        SimpleModelRendererFlags_HoverableStaticDecorations = 1 << 9,
+
+        SimpleModelRendererFlags_Default = SimpleModelRendererFlags_ShowFloor | SimpleModelRendererFlags_DrawRims |
+                                           SimpleModelRendererFlags_DrawDynamicDecorations |
+                                           SimpleModelRendererFlags_DrawStaticDecorations |
+                                           SimpleModelRendererFlags_HoverableDynamicDecorations
     };
 
     // a renderer that draws an OpenSim::Model + SimTK::State pair into the current
     // framebuffer using a basic polar camera that can swivel around the model
     struct Simple_model_renderer final {
     private:
-        Simple_model_renderer_impl* impl;
+        Raw_renderer renderer;
 
     public:
         // this is set whenever the implementation detects that the mouse is over
-        // a component
+        // a component (provided hover detection is enabled in the flags)
         OpenSim::Component const* hovered_component = nullptr;
 
         // not currently runtime-editable
@@ -77,6 +107,9 @@ namespace osmv {
 
         SimpleModelRendererFlags flags = SimpleModelRendererFlags_Default;
 
+        // populated by calling generate_geometry(Model, State)
+        OpenSim_model_geometry geometry;
+
     public:
         Simple_model_renderer(int w, int h, int samples);
         Simple_model_renderer(Simple_model_renderer const&) = delete;
@@ -90,7 +123,32 @@ namespace osmv {
         // returns `true` if the event was handled, `false` otherwise
         bool on_event(SDL_Event const&);
 
-        // draw the model in the supplied state onto the screen
-        void draw(OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected = nullptr);
+        // populate `this->geometry` with geometry from the model + state pair, but don't
+        // draw it on the screen
+        //
+        // this (advanced) approach is here so that callers can modify the draw list
+        // before drawing (e.g. to custom-color components)
+        void generate_geometry(OpenSim::Model const&, SimTK::State const&);
+
+        // apply rim colors for selected/hovered components in `this->geometry`
+        //
+        // note: you don't *need* to call this: it's a convenience method for the most common
+        //       use-case of having selected and hovered components in the scene
+        void apply_standard_rim_coloring(OpenSim::Component const* selected = nullptr);
+
+        // draw `this->geometry`
+        //
+        // note: this assumes you previously called `generate_geometry`
+        // note #2: `draw`ing mutates `this->geometry`
+        void draw();
+
+        // an "on rails" draw call that utilizes the more advanced API
+        //
+        // use this until you need to customize things
+        void draw(OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected = nullptr) {
+            generate_geometry(model, st);
+            apply_standard_rim_coloring(selected);
+            draw();
+        }
     };
 }

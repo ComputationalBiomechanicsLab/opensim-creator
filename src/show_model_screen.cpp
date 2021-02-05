@@ -613,15 +613,7 @@ namespace osmv {
 
         // handle top-level UI event (user click, user drag, etc.)
         bool handle_event(Application& app, SDL_Event const& e) {
-            ImGuiIO& io = ImGui::GetIO();
-
             if (e.type == SDL_KEYDOWN) {
-                if (io.WantCaptureKeyboard) {
-                    // if ImGUI wants to capture the keyboard, then the keyboard
-                    // is probably interacting with an ImGUI panel
-                    return false;
-                }
-
                 switch (e.key.keysym.sym) {
                 case SDLK_r: {
 
@@ -658,40 +650,11 @@ namespace osmv {
                     return true;
                 }
                 }
-            } else if (e.type == SDL_MOUSEMOTION) {
-                if (io.WantCaptureMouse) {
-                    // if ImGUI wants to capture the mouse, then the mouse
-                    // is probably interacting with an ImGUI panel and,
-                    // therefore, the dragging/panning shouldn't be handled
-                    return false;
-                }
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (io.WantCaptureMouse) {
-                    // if ImGUI wants to capture the mouse, then the mouse
-                    // is probably interacting with an ImGUI panel and,
-                    // therefore, the dragging/panning shouldn't be handled
-                    return false;
-                }
-
             } else if (e.type == SDL_MOUSEBUTTONUP) {
-                if (io.WantCaptureMouse) {
-                    // if ImGUI wants to capture the mouse, then the mouse
-                    // is probably interacting with an ImGUI panel and,
-                    // therefore, the dragging/panning shouldn't be handled
-                    return false;
-                }
-
                 // otherwise, maybe they're trying to select something in the viewport, so
                 // check if they are hovered over a component and select it if they are
                 if (e.button.button == SDL_BUTTON_RIGHT and renderer.hovered_component) {
                     selected_component = renderer.hovered_component;
-                }
-            } else if (e.type == SDL_MOUSEWHEEL) {
-                if (io.WantCaptureMouse) {
-                    // if ImGUI wants to capture the mouse, then the mouse
-                    // is probably interacting with an ImGUI panel and,
-                    // therefore, the dragging/panning shouldn't be handled
-                    return false;
                 }
             }
 
@@ -745,8 +708,33 @@ namespace osmv {
         // draw a frame of the UI
         void draw(Application& app) {
 
-            // draw OpenSim 3D model using renderer
-            renderer.draw(model, latest_state, selected_component);
+            // generate OpenSim scene geometry
+            renderer.generate_geometry(model, latest_state);
+
+            // perform screen-specific geometry fixups
+            {
+                OpenSim::Model const* m = model.get();
+                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
+                    OpenSim::Component const* c = renderer.geometry.associated_components[i];
+
+                    // for this screen specifically, the "owner"s should be fixed up to point to
+                    // muscle objects, rather than direct (e.g. GeometryPath) objects
+                    while (c != nullptr and c->hasOwner()) {
+                        if (dynamic_cast<OpenSim::Muscle const*>(c)) {
+                            break;
+                        }
+                        c = &c->getOwner();
+                    }
+                    if (c == m) {
+                        c = nullptr;
+                    }
+                    renderer.geometry.associated_components[i] = c;
+                }
+            }
+
+            renderer.apply_standard_rim_coloring(selected_component);
+
+            renderer.draw();
 
             // overlay: if the user is hovering over a component, write the component's name
             //          next to the mouse
@@ -757,24 +745,7 @@ namespace osmv {
                 ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
             }
 
-            // menu bar
-            if (false && ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginTabBar("MainTabBar")) {
-                    if (ImGui::BeginTabItem(model_path.filename().string().c_str())) {
-                        ImGui::EndTabItem();
-                    }
-
-                    ImGui::EndTabBar();
-                }
-
-                ImGui::EndMainMenuBar();
-            }
-
-            // draw lhs panel containing tabs (e.g. simulator, UI, muscles)
-            draw_main_panel(app);
-        }
-
-        void draw_main_panel(Application& app) {
+            // ImGui: draw editor panels
             bool b = true;
 
             if (ImGui::Begin("Coordinates", &b)) {

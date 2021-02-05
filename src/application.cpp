@@ -390,7 +390,20 @@ namespace osmv {
                     }
 
                     // ImGui: feed event into ImGui
-                    ImGui_ImplSDL2_ProcessEvent(&e);
+                    {
+                        ImGui_ImplSDL2_ProcessEvent(&e);
+                        ImGuiIO& io = ImGui::GetIO();
+
+                        // if ImGui wants mouse/keyboard then we're done with this event, see
+                        // comments in ImGui_ImplSDL2_ProcessEvent
+                        if (e.type == SDL_KEYDOWN) {
+                            if (io.WantTextInput) {
+                                continue;
+                            }
+                        } else if (io.WantCaptureMouse) {
+                            continue;
+                        }
+                    }
 
                     // osmv::Screen: feed event into the currently-showing osmv screen
                     current_screen->on_event(e);

@@ -72,12 +72,15 @@ namespace {
         std::vector<osmv::Untextured_vert> vert_swap;
 
         Global_opensim_mesh_loader_state() {
+            vert_swap.clear();
             osmv::unit_sphere_triangles(vert_swap);
             sphere_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
 
+            vert_swap.clear();
             osmv::simbody_cylinder_triangles(vert_swap);
             cylinder_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
 
+            vert_swap.clear();
             osmv::simbody_brick_triangles(vert_swap);
             cube_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
         }
@@ -322,8 +325,15 @@ namespace {
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
             // nyi
         }
-        void implementFrameGeometry(const DecorativeFrame&) override {
-            // nyi
+        void implementFrameGeometry(const DecorativeFrame& geom) override {
+            glm::vec3 s = scale_factors(geom);
+            s *= geom.getAxisLength();
+
+            glm::mat4 m = transform(geom);
+            m = glm::scale(m, s);
+
+            glm::vec4 rgba{1.0f, 0.0f, 0.0f, 1.0f};
+            out.emplace_back(m, rgba, global_meshes().cylinder_meshid);
         }
         void implementTextGeometry(const DecorativeText&) override {
             // nyi
@@ -391,132 +401,12 @@ namespace {
     glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
         return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
     }
-
-    // flags for the geometry generator
-    using GeometryGeneratorFlags = int;
-    enum GeometryGeneratorFlags_ {
-        // here for completeness
-        GeometryGeneratorFlags_None = 0,
-
-        // only generate geometry for static decorations in the model
-        GeometryGeneratorFlags_Static = 1 << 0,
-
-        // only generate geometry for dynamic decorations in the model
-        GeometryGeneratorFlags_Dynamic = 1 << 1,
-
-        // default flags
-        GeometryGeneratorFlags_Default = GeometryGeneratorFlags_Static | GeometryGeneratorFlags_Dynamic
-    };
-
-    // geometry + metadata pulled from an OpenSim model
-    struct OpenSim_model_geometry final {
-        std::vector<osmv::Mesh_instance> meshes;
-        std::vector<OpenSim::Component const*> associated_components;
-
-        void clear() {
-            meshes.clear();
-            associated_components.clear();
-        }
-    };
-
-    void generate_geometry(
-        OpenSim::Model const& model,
-        SimTK::State const& st,
-        OpenSim_model_geometry& append_out,
-        GeometryGeneratorFlags flags = GeometryGeneratorFlags_Default) {
-
-        // iterate over all components in the OpenSim model, keeping a few things in mind:
-        //
-        // - Anything in the component tree *might* render geometry
-        //
-        // - For selection logic, we only (currently) care about certain high-level components,
-        //   like muscles
-        //
-        // - Pretend the component tree traversal is implementation-defined because OpenSim's
-        //   implementation of component-tree walking is a bit of a clusterfuck. At time of
-        //   writing, it's a breadth-first recursive descent
-        //
-        // - Components of interest, like muscles, might not render their geometry - it might be
-        //   delegated to a subcomponent
-        //
-        // So this algorithm assumes that the list iterator is arbitrary, but always returns
-        // *something* in a tree that has the current model as a root. So, for each component that
-        // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
-        // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
-        // than the component that is rendering.
-
-        // get a reusable swap-space for geometry generation
-        SimTK::Array_<SimTK::DecorativeGeometry>& dg_swap = global_meshes().dg_swap;
-
-        // create a visitor that is called by OpenSim whenever it wants to generate abstract
-        // geometry
-        Geometry_visitor visitor{model.getSystem().getMatterSubsystem(), st, append_out.meshes};
-        OpenSim::ModelDisplayHints const& hints = model.getDisplayHints();
-
-        for (OpenSim::Component const& c : model.getComponentList()) {
-            // HACK: fixup the owners to be something more interesting
-            OpenSim::Component const* owner = nullptr;
-            for (OpenSim::Component const* p = &c; p != &model; p = &p->getOwner()) {
-                if (dynamic_cast<OpenSim::Muscle const*>(p)) {
-                    owner = p;
-                    break;
-                }
-            }
-
-            if (flags & GeometryGeneratorFlags_Static) {
-                dg_swap.clear();
-                c.generateDecorations(true, hints, st, dg_swap);
-
-                // static geometry has no "owner"
-                for (size_t i = 0; i < dg_swap.size(); ++i) {
-                    append_out.associated_components.push_back(nullptr);
-                }
-
-                // populate append_out.meshes
-                for (SimTK::DecorativeGeometry const& geom : dg_swap) {
-                    geom.implementGeometry(visitor);
-                }
-
-                assert(append_out.meshes.size() == append_out.associated_components.size());
-            }
-
-            if (flags & GeometryGeneratorFlags_Dynamic) {
-                dg_swap.clear();
-                c.generateDecorations(false, hints, st, dg_swap);
-
-                // assign owner
-                for (size_t i = 0; i < dg_swap.size(); ++i) {
-                    append_out.associated_components.push_back(owner);
-                }
-
-                // populate append_out.meshes
-                for (SimTK::DecorativeGeometry const& geom : dg_swap) {
-                    geom.implementGeometry(visitor);
-                }
-
-                assert(append_out.meshes.size() == append_out.associated_components.size());
-            }
-        }
-    }
 }
 
-namespace osmv {
-    struct Simple_model_renderer_impl final {
-        Raw_renderer renderer;
-        OpenSim_model_geometry geom_swap;
-
-        Simple_model_renderer_impl(int w, int h, int samples) : renderer{w, h, samples} {
-        }
-    };
+osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) : renderer{w, h, samples} {
 }
 
-osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) :
-    impl(new Simple_model_renderer_impl(w, h, samples)) {
-}
-
-osmv::Simple_model_renderer::~Simple_model_renderer() noexcept {
-    delete impl;
-}
+osmv::Simple_model_renderer::~Simple_model_renderer() noexcept = default;
 
 bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
     Application& application = app();
@@ -527,7 +417,7 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
         int w = e.window.data1;
         int h = e.window.data2;
         int samples = application.samples();
-        impl->renderer.reallocate_buffers(w, h, samples);
+        renderer.reallocate_buffers(w, h, samples);
         return true;
     }
 
@@ -629,46 +519,129 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
     return false;
 }
 
-void osmv::Simple_model_renderer::draw(
-    OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected) {
+void osmv::Simple_model_renderer::generate_geometry(OpenSim::Model const& model, SimTK::State const& state) {
+    // iterate over all components in the OpenSim model, keeping a few things in mind:
+    //
+    // - Anything in the component tree *might* render geometry
+    //
+    // - For selection logic, we only (currently) care about certain high-level components,
+    //   like muscles
+    //
+    // - Pretend the component tree traversal is implementation-defined because OpenSim's
+    //   implementation of component-tree walking is a bit of a clusterfuck. At time of
+    //   writing, it's a breadth-first recursive descent
+    //
+    // - Components of interest, like muscles, might not render their geometry - it might be
+    //   delegated to a subcomponent
+    //
+    // So this algorithm assumes that the list iterator is arbitrary, but always returns
+    // *something* in a tree that has the current model as a root. So, for each component that
+    // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
+    // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
+    // than the component that is rendering.
 
-    OpenSim_model_geometry& geom = impl->geom_swap;
-    Raw_renderer& renderer = impl->renderer;
+    geometry.clear();
 
-    // pull geometry out of the OpenSim model
-    geom.clear();
-    generate_geometry(model, st, geom);
-    assert(geom.meshes.size() == geom.associated_components.size());
+    // get a reusable swap-space for geometry generation
+    SimTK::Array_<SimTK::DecorativeGeometry>& dg_swap = global_meshes().dg_swap;
 
-    // perform any necessary fixups on the geometry instances
+    // create a visitor that is called by OpenSim whenever it wants to generate abstract
+    // geometry
+    Geometry_visitor visitor{model.getSystem().getMatterSubsystem(), state, geometry.meshes};
+    OpenSim::ModelDisplayHints const& hints = model.getDisplayHints();
 
-    for (size_t i = 0; i < geom.meshes.size(); ++i) {
-        Mesh_instance& mi = geom.meshes[i];
+    for (OpenSim::Component const& c : model.getComponentList()) {
 
-        // set passthrough data for hit-testing
+        if (flags & osmv::SimpleModelRendererFlags_DrawStaticDecorations) {
+            OpenSim::Component const* static_owner = nullptr;
+            if (flags & osmv::SimpleModelRendererFlags_HoverableStaticDecorations) {
+                static_owner = &c;
+            }
+
+            dg_swap.clear();
+            c.generateDecorations(true, hints, state, dg_swap);
+
+            size_t meshes_before = geometry.meshes.size();
+            for (SimTK::DecorativeGeometry const& geom : dg_swap) {
+                geom.implementGeometry(visitor);
+            }
+            size_t meshes_added = geometry.meshes.size() - meshes_before;
+
+            for (size_t i = 0; i < meshes_added; ++i) {
+                geometry.associated_components.push_back(static_owner);
+            }
+
+            assert(geometry.meshes.size() == geometry.associated_components.size());
+        }
+
+        if (flags & osmv::SimpleModelRendererFlags_DrawDynamicDecorations) {
+            OpenSim::Component const* dynamic_owner = nullptr;
+            if (flags & osmv::SimpleModelRendererFlags_HoverableDynamicDecorations) {
+                dynamic_owner = &c;
+            }
+
+            dg_swap.clear();
+            c.generateDecorations(false, hints, state, dg_swap);
+
+            // populate append_out.meshes
+            size_t meshes_before = geometry.meshes.size();
+            for (SimTK::DecorativeGeometry const& geom : dg_swap) {
+                geom.implementGeometry(visitor);
+            }
+            size_t meshes_added = geometry.meshes.size() - meshes_before;
+
+            for (size_t i = 0; i < meshes_added; ++i) {
+                geometry.associated_components.push_back(dynamic_owner);
+            }
+
+            assert(geometry.meshes.size() == geometry.associated_components.size());
+        }
+    }
+
+    assert(geometry.meshes.size() == geometry.associated_components.size());
+}
+
+void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Component* selected) {
+    if (not(flags & SimpleModelRendererFlags_DrawRims)) {
+        return;
+    }
+
+    if (selected == nullptr) {
+        // replace with a senteniel because nullptr means "not assigned"
+        // in the geometry list
+        selected = reinterpret_cast<OpenSim::Component const*>(-1);
+    }
+
+    assert(geometry.meshes.size() == geometry.associated_components.size());
+    for (size_t i = 0; i < geometry.meshes.size(); ++i) {
+        Mesh_instance& mi = geometry.meshes[i];
+        OpenSim::Component const* owner = geometry.associated_components[i];
+
+        if (owner == selected) {
+            mi._passthrough.a = 1.0f;
+        } else if (hovered_component != nullptr and hovered_component == owner) {
+            mi._passthrough.a = 0.2f;
+        } else {
+            mi._passthrough.a = 0.0f;
+        }
+    }
+}
+
+void osmv::Simple_model_renderer::draw() {
+    // set passthrough data for hit-testing
+    for (size_t i = 0; i < geometry.meshes.size(); ++i) {
+        Mesh_instance& mi = geometry.meshes[i];
+
         size_t id = i + 1;  // +1 because 0x0000 is reserved
         assert(id < (1 << 16) - 1);
         unsigned char b0 = id & 0xff;
         unsigned char b1 = (id >> 8) & 0xff;
         mi.set_passthrough_data(b0, b1);
-
-        // if drawing selection rims, set the rims of selected/hovered components
-        // accordingly
-        if (flags & SimpleModelRendererFlags_DrawRims) {
-            OpenSim::Component const* owner = geom.associated_components[i];
-            if (selected != nullptr and selected == owner) {
-                mi._passthrough.a = 1.0f;
-            } else if (hovered_component != nullptr and hovered_component == owner) {
-                mi._passthrough.a = 0.2f;
-            } else {
-                mi._passthrough.a = 0.0f;
-            }
-        }
     }
 
     // we can sort the mesh list now because we have encoded the index into `associated_components`
     // into each mesh instance
-    renderer.sort_meshes_for_drawing(geom.meshes);
+    renderer.sort_meshes_for_drawing(geometry.meshes);
 
     // set hit-testing location based on mouse position
     //
@@ -709,7 +682,7 @@ void osmv::Simple_model_renderer::draw(
     }
 
     // perform draw call
-    renderer.draw(geom.meshes);
+    renderer.draw(geometry.meshes);
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might
@@ -724,6 +697,6 @@ void osmv::Simple_model_renderer::draw(
     if (id == 0) {
         hovered_component = nullptr;
     } else {
-        hovered_component = geom.associated_components[id - 1];
+        hovered_component = geometry.associated_components[id - 1];
     }
 }
