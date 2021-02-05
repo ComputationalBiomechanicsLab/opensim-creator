@@ -4,6 +4,7 @@
 #include "config.hpp"
 #include "imgui_demo_screen.hpp"
 #include "loading_screen.hpp"
+#include "model_editor_screen.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
@@ -120,6 +121,10 @@ namespace osmv {
 
                 if (ImGui::Button("ImGui demo")) {
                     should_transition_to = std::make_unique<osmv::Imgui_demo_screen>();
+                }
+
+                if (ImGui::Button("editor")) {
+                    should_transition_to = std::make_unique<osmv::Model_editor_screen>(app);
                 }
 
                 if (ImGui::Button("Exit")) {

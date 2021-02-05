@@ -4,6 +4,7 @@
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "splash_screen.hpp"
+#include "config.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -62,6 +63,12 @@ int main(int argc, char** argv) {
 
         ++argv;
         --argc;
+    }
+
+    // global init stuff
+    {
+        std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
+        OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
     }
 
     // no args: show splash screen
