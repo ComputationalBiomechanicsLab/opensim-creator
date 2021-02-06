@@ -20,6 +20,7 @@ namespace osmv {
 
         double mass = 0.1;
         SimTK::Vec3 offset{0.0};
+        OpenSim::Component const* selected_component = nullptr;
 
         Model_editor_screen_impl() {
             renderer.flags |= SimpleModelRendererFlags_HoverableStaticDecorations;
@@ -55,6 +56,15 @@ bool osmv::Model_editor_screen::on_event(SDL_Event const& e) {
             return true;
         }
     }
+
+    // if the user right-clicks something in the viewport while the renderer detects
+    // a hover-over, then make the hover-over the selection
+    if (e.type == SDL_MOUSEBUTTONUP) {
+        if (e.button.button == SDL_BUTTON_RIGHT and impl->renderer.hovered_component) {
+            impl->selected_component = impl->renderer.hovered_component;
+        }
+    }
+
     return impl->renderer.on_event(e);
 }
 
@@ -128,6 +138,16 @@ void osmv::Model_editor_screen::draw() {
             impl->model.addComponent(origin);
             OpenSim::PhysicalOffsetFrame* pof = new OpenSim::PhysicalOffsetFrame{"offset", *origin, impl->offset};
             impl->model.addComponent(pof);
+        }
+
+        ImGui::Separator();
+
+        if (impl->selected_component) {
+            ImGui::Text("selected: %s", impl->selected_component->getName().c_str());
+            OpenSim::Body const* body = dynamic_cast<OpenSim::Body const*>(impl->selected_component);
+            if (body) {
+                ImGui::Text("it's a body");
+            }
         }
     }
     ImGui::End();

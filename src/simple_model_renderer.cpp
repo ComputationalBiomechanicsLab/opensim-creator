@@ -328,6 +328,7 @@ namespace {
         void implementFrameGeometry(const DecorativeFrame& geom) override {
             glm::vec3 s = scale_factors(geom);
             s *= geom.getAxisLength();
+            s *= 0.1f;
 
             glm::mat4 m = transform(geom);
             m = glm::scale(m, s);

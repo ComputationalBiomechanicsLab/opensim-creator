@@ -36,7 +36,7 @@ namespace osmv {
         // this color is subject to mesh shading (lighting, shadows), so the rendered color may
         // differ
         //
-        // note: alpha blending can be expensive. You should try to keep alpha == 1.0f
+        // note: alpha blending can be expensive. You should try to keep alpha >= 1.0f
         //       unless you *really* need blending
         glm::vec4 rgba;
 

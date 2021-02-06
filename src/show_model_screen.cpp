@@ -598,6 +598,7 @@ namespace osmv {
         Momentarms_tab_data mas_tab;
         Muscles_tab_data muscles_tab;
         Outputs_tab_data outputs_tab;
+        bool only_select_muscles = true;
 
         Show_model_screen_impl(Application& app, std::filesystem::path _path, osmv::Model _model) :
             model_path{std::move(_path)},
@@ -712,7 +713,7 @@ namespace osmv {
             renderer.generate_geometry(model, latest_state);
 
             // perform screen-specific geometry fixups
-            {
+            if (only_select_muscles) {
                 OpenSim::Model const* m = model.get();
                 for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
                     OpenSim::Component const* c = renderer.geometry.associated_components[i];
@@ -882,6 +883,19 @@ namespace osmv {
                     renderer.flags ^= SimpleModelRendererFlags_ShowMeshNormals;
                 }
             }
+            {
+                bool hoverable_static_decs = renderer.flags & SimpleModelRendererFlags_HoverableStaticDecorations;
+                if (ImGui::Checkbox("hoverable static geometry", &hoverable_static_decs)) {
+                    renderer.flags ^= SimpleModelRendererFlags_HoverableStaticDecorations;
+                }
+            }
+            {
+                bool hoverable_dynamic_decs = renderer.flags & SimpleModelRendererFlags_HoverableDynamicDecorations;
+                if (ImGui::Checkbox("hoverable dynamic geometry", &hoverable_dynamic_decs)) {
+                    renderer.flags ^= SimpleModelRendererFlags_HoverableDynamicDecorations;
+                }
+            }
+            ImGui::Checkbox("only select muscles", &only_select_muscles);
 
             if (ImGui::Button("fullscreen")) {
                 app.make_fullscreen();
@@ -1066,6 +1080,32 @@ namespace osmv {
                     }
                 }
                 on_user_edited_model();
+            }
+
+            // display hints
+            {
+                OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
+
+                {
+                    bool debug_geom = dh.get_show_debug_geometry();
+                    if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
+                        dh.set_show_debug_geometry(debug_geom);
+                    }
+                }
+
+                {
+                    bool frames_geom = dh.get_show_frames();
+                    if (ImGui::Checkbox("show frames", &frames_geom)) {
+                        dh.set_show_frames(frames_geom);
+                    }
+                }
+
+                {
+                    bool markers_geom = dh.get_show_markers();
+                    if (ImGui::Checkbox("show markers", &markers_geom)) {
+                        dh.set_show_markers(markers_geom);
+                    }
+                }
             }
 
             ImGui::Text("tendon strain");
