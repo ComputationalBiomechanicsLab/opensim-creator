@@ -315,11 +315,31 @@ target_link_libraries(osmv-all-dependencies INTERFACE
     ${OPENGL_LIBRARIES}
 )
 
-# `OSMV_LIB_FILES_TO_COPY`: all lib *files* that osmv should copy
-# (i.e. they aren't supplied by the system)
-foreach(OPENSIM_LIB ${OSMV_OPENSIM_LIBS})
-    list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
-endforeach()
+# ----- OSMV_LIB_FILES_TO_COPY: set to all lib files to be copied -----
+
+if(WIN32)
+    # in Windows, copy all DLLs in the OpenSim install dir
+    #
+    # this is necessary because there's a bunch of transitive DLLs that
+    # must be included (e.g. liblapack, libgfortran). On the other systems,
+    # these might be provided by the base OS
+
+    file(GLOB OPENSIM_DLLS LIST_DIRECTORIES false CONFIGURE_DEPENDS ${OpenSim_ROOT_DIR}/bin/*.dll)
+    foreach(OPENSIM_DLL ${OPENSIM_DLLS})
+        list(APPEND OSMV_LIB_FILES_TO_COPY ${OPENSIM_DLL})
+    endforeach()
+    unset(OPENSIM_DLL)
+    unset(OPENSIM_DLLS)
+else()
+    # on Linux/mac, only copy the direct dependencies (it's assumed that
+    # the OSes provide the rest)
+    foreach(OPENSIM_LIB ${OSMV_OPENSIM_LIBS})
+        message(FATAL_ERROR ${OpenSim_LIB_DIR})
+        list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
+    endforeach()
+endif()
+
+# copy SDL2 lib if on Windows/Mac
 if(NOT LINUX)
     list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:osmv-sdl2>)
 endif()
