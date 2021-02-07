@@ -334,7 +334,6 @@ else()
     # on Linux/mac, only copy the direct dependencies (it's assumed that
     # the OSes provide the rest)
     foreach(OPENSIM_LIB ${OSMV_OPENSIM_LIBS})
-        message(FATAL_ERROR ${OpenSim_LIB_DIR})
         list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
     endforeach()
 endif()
