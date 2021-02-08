@@ -574,13 +574,23 @@ namespace {
             }
         }
     };
+
+    using MuscleRecoloring = int;
+    enum MuscleRecoloring_ {
+        MuscleRecoloring_None = 0,
+        MuscleRecoloring_Strain,
+        MuscleRecoloring_Length,
+        MuscleRecoloring_NumOptions,
+    };
+    std::array<char const*, MuscleRecoloring_NumOptions> muscle_coloring_options = {"none", "strain", "length"};
+    static_assert(muscle_coloring_options.size() == MuscleRecoloring_NumOptions);
 }
 
 namespace osmv {
     struct Show_model_screen_impl final {
         // scratch: shared space that has no content guarantees
         struct {
-            char text[1024 + 1];
+            char text[1024];
             std::vector<OpenSim::Coordinate const*> coords;
             std::vector<OpenSim::Muscle const*> muscles;
         } scratch;
@@ -598,6 +608,7 @@ namespace osmv {
         Momentarms_tab_data mas_tab;
         Muscles_tab_data muscles_tab;
         Outputs_tab_data outputs_tab;
+        MuscleRecoloring muscle_recoloring = MuscleRecoloring_None;
         bool only_select_muscles = true;
 
         Show_model_screen_impl(Application& app, std::filesystem::path _path, osmv::Model _model) :
@@ -731,6 +742,40 @@ namespace osmv {
                         c = nullptr;
                     }
                     renderer.geometry.associated_components[i] = c;
+                }
+            }
+
+            if (muscle_recoloring == MuscleRecoloring_Strain) {
+                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
+                    Mesh_instance& mi = renderer.geometry.meshes[i];
+                    OpenSim::Component const* component = renderer.geometry.associated_components[i];
+
+                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(component);
+                    if (musc == nullptr) {
+                        continue;
+                    }
+
+                    mi.rgba.r = 100.0f * static_cast<float>(musc->getTendonStrain(latest_state));
+                    mi.rgba.g = 0.5f;
+                    mi.rgba.b = 0.5f;
+                    mi.rgba.a = 1.0f;
+                }
+            }
+
+            if (muscle_recoloring == MuscleRecoloring_Length) {
+                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
+                    Mesh_instance& mi = renderer.geometry.meshes[i];
+                    OpenSim::Component const* component = renderer.geometry.associated_components[i];
+
+                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(component);
+                    if (musc == nullptr) {
+                        continue;
+                    }
+
+                    mi.rgba.r = static_cast<float>(musc->getLength(latest_state));
+                    mi.rgba.g = 0.25f;
+                    mi.rgba.b = 0.25f;
+                    mi.rgba.a = 1.0f;
                 }
             }
 
@@ -921,6 +966,14 @@ namespace osmv {
                         dh.set_show_markers(markers_geom);
                     }
                 }
+            }
+
+            {
+                ImGui::Combo(
+                    "muscle coloring",
+                    &muscle_recoloring,
+                    muscle_coloring_options.data(),
+                    muscle_coloring_options.size());
             }
 
             if (ImGui::Button("fullscreen")) {
@@ -1611,14 +1664,21 @@ namespace osmv {
             // outputs
             if (ImGui::CollapsingHeader("outputs")) {
                 size_t i = 0;
-                ImGui::Columns(2);
                 for (auto const& ptr : c.getOutputs()) {
-
                     OpenSim::AbstractOutput const* ao = ptr.second.get();
+
+                    ImGui::Columns(2);
+
+                    ImGui::Text("%s", ao->getName().c_str());
+                    ImGui::PushStyleColor(ImGuiCol_Text, 0xaaaaaaaa);
+                    ImGui::Text("%s", ao->getValueAsString(latest_state).c_str());
+                    ImGui::PopStyleColor();
+                    ImGui::NextColumn();
+
                     OpenSim::Output<double> const* od = dynamic_cast<OpenSim::Output<double> const*>(ao);
                     if (od) {
                         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-                        selected_component.output_sinks[i++].draw(20.0f);
+                        selected_component.output_sinks[i++].draw(25.0f);
 
                         if (ImGui::BeginPopupContextItem(od->getName().c_str())) {
                             if (ImGui::MenuItem("Add to outputs tab")) {
@@ -1630,10 +1690,9 @@ namespace osmv {
                     }
                     ImGui::NextColumn();
 
-                    ImGui::Text("%s", ao->getName().c_str());
-                    ImGui::NextColumn();
+                    ImGui::Columns();
+                    ImGui::Separator();
                 }
-                ImGui::Columns();
             }
         }
     };
