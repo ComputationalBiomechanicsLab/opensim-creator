@@ -28,6 +28,25 @@
 #include <stdexcept>
 #include <string>
 
+// macros
+#define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
+    {                                                                                                                  \
+        int rv = SDL_GL_SetAttribute((attr), (value));                                                                 \
+        if (rv != 0) {                                                                                                 \
+            throw std::runtime_error{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "s +            \
+                                     SDL_GetError()};                                                                  \
+        }                                                                                                              \
+    }
+
+#define OSC_GL_CALL_CHECK(func, ...)                                                                                   \
+    {                                                                                                                  \
+        func(__VA_ARGS__);                                                                                             \
+        gl::assert_no_errors(#func);                                                                                   \
+    }
+
+using std::literals::string_literals::operator""s;
+using std::literals::chrono_literals::operator""ms;
+
 // globals
 std::unique_ptr<osmv::Application> osmv::_current_app;
 
@@ -75,31 +94,6 @@ namespace igx {
         }
     };
 }
-
-using std::literals::string_literals::operator""s;
-using std::literals::chrono_literals::operator""ms;
-
-#define OSC_SDL_GL_SetAttribute_CHECK(attr, value)                                                                     \
-    {                                                                                                                  \
-        int rv = SDL_GL_SetAttribute((attr), (value));                                                                 \
-        if (rv != 0) {                                                                                                 \
-            throw std::runtime_error{"SDL_GL_SetAttribute failed when setting " #attr " = " #value " : "s +            \
-                                     SDL_GetError()};                                                                  \
-        }                                                                                                              \
-    }
-
-// macros for quality-of-life checks
-#define OSC_GL_CALL_CHECK(func, ...)                                                                                   \
-    {                                                                                                                  \
-        func(__VA_ARGS__);                                                                                             \
-        gl::assert_no_errors(#func);                                                                                   \
-    }
-
-#ifdef NDEBUG
-#define DEBUG_PRINT(fmt, ...)
-#else
-#define DEBUG_PRINT(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
-#endif
 
 // callback function suitable for glDebugMessageCallback
 static void glOnDebugMessage(
@@ -189,6 +183,26 @@ static GLsizei get_max_multisamples() {
     glGetIntegerv(GL_MAX_SAMPLES, &v);
     v = std::min(v, 8);
     return v;
+}
+
+static void enable_opengl_debug_mode() {
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glOnDebugMessage, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+}
+
+static void disable_opengl_debug_mode() {
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glDisable(GL_DEBUG_OUTPUT);
+        glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    }
 }
 
 namespace osmv {
@@ -285,28 +299,6 @@ namespace osmv {
                     throw std::runtime_error{ss.str()};
                 }
 
-#ifndef NDEBUG
-                // enable debug-mode OpenGL
-                {
-                    int flags;
-                    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-                    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-                        glEnable(GL_DEBUG_OUTPUT);
-                        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-                        glDebugMessageCallback(glOnDebugMessage, nullptr);
-                        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-                    }
-                }
-
-                // print OpenGL driver info
-                DEBUG_PRINT(
-                    "OpenGL info: %s: %s (%s) /w GLSL: %s\n",
-                    glGetString(GL_VENDOR),
-                    glGetString(GL_RENDERER),
-                    glGetString(GL_VERSION),
-                    glGetString(GL_SHADING_LANGUAGE_VERSION));
-#endif
-
                 // depth testing used to ensure geometry overlaps correctly
                 OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
 
@@ -354,8 +346,14 @@ namespace osmv {
             imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
             imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
-
             ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+            // any other initialization fixups
+#ifndef NDEBUG
+            enable_opengl_debug_mode();
+            std::cerr << "OpenGL: " << glGetString(GL_VENDOR) << ", " << glGetString(GL_RENDERER) << "("
+                      << glGetString(GL_VERSION) << "), GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+#endif
         }
 
         void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
@@ -578,6 +576,14 @@ void osmv::Application::enable_vsync() {
 
 void osmv::Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
+}
+
+void osmv::Application::enable_opengl_debug_mode() {
+    ::enable_opengl_debug_mode();
+}
+
+void osmv::Application::disable_opengl_debug_mode() {
+    ::disable_opengl_debug_mode();
 }
 
 void osmv::init_application() {
