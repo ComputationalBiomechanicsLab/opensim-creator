@@ -748,17 +748,6 @@ namespace osmv {
             }
 
             // ImGui: draw editor panels
-            bool b = true;
-
-            if (ImGui::Begin("Coordinates", &b)) {
-                draw_coords_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Simulate", &b)) {
-                draw_simulate_tab();
-            }
-            ImGui::End();
 
             if (ImGui::Begin("Muscles")) {
                 draw_muscles_tab();
@@ -787,6 +776,16 @@ namespace osmv {
 
             if (ImGui::Begin("UI")) {
                 draw_ui_tab(app);
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Coordinates")) {
+                draw_coords_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Simulate")) {
+                draw_simulate_tab();
             }
             ImGui::End();
         }
@@ -897,6 +896,32 @@ namespace osmv {
                 }
             }
             ImGui::Checkbox("only select muscles", &only_select_muscles);
+
+            // display hints
+            {
+                OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
+
+                {
+                    bool debug_geom = dh.get_show_debug_geometry();
+                    if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
+                        dh.set_show_debug_geometry(debug_geom);
+                    }
+                }
+
+                {
+                    bool frames_geom = dh.get_show_frames();
+                    if (ImGui::Checkbox("show frames", &frames_geom)) {
+                        dh.set_show_frames(frames_geom);
+                    }
+                }
+
+                {
+                    bool markers_geom = dh.get_show_markers();
+                    if (ImGui::Checkbox("show markers", &markers_geom)) {
+                        dh.set_show_markers(markers_geom);
+                    }
+                }
+            }
 
             if (ImGui::Button("fullscreen")) {
                 app.make_fullscreen();
@@ -1081,32 +1106,6 @@ namespace osmv {
                     }
                 }
                 on_user_edited_model();
-            }
-
-            // display hints
-            {
-                OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
-
-                {
-                    bool debug_geom = dh.get_show_debug_geometry();
-                    if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
-                        dh.set_show_debug_geometry(debug_geom);
-                    }
-                }
-
-                {
-                    bool frames_geom = dh.get_show_frames();
-                    if (ImGui::Checkbox("show frames", &frames_geom)) {
-                        dh.set_show_frames(frames_geom);
-                    }
-                }
-
-                {
-                    bool markers_geom = dh.get_show_markers();
-                    if (ImGui::Checkbox("show markers", &markers_geom)) {
-                        dh.set_show_markers(markers_geom);
-                    }
-                }
             }
 
             ImGui::Text("tendon strain");
