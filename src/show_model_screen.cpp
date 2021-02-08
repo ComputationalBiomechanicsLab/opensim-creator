@@ -794,6 +794,11 @@ namespace osmv {
 
             // ImGui: draw editor panels
 
+            if (ImGui::Begin("Hierarchy")) {
+                draw_hierarchy_tab();
+            }
+            ImGui::End();
+
             if (ImGui::Begin("Muscles")) {
                 draw_muscles_tab();
             }
@@ -973,7 +978,7 @@ namespace osmv {
                     "muscle coloring",
                     &muscle_recoloring,
                     muscle_coloring_options.data(),
-                    muscle_coloring_options.size());
+                    static_cast<int>(muscle_coloring_options.size()));
             }
 
             if (ImGui::Button("fullscreen")) {
@@ -1163,6 +1168,12 @@ namespace osmv {
 
             ImGui::Text("tendon strain");
             ImGui::SameLine();
+        }
+
+        void draw_hierarchy_tab() {
+            for (OpenSim::Component const& c : model->getComponentList()) {
+                ImGui::Text("%s", c.getAbsolutePath().toString().c_str());
+            }
         }
 
         void draw_muscles_tab() {

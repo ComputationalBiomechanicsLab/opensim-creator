@@ -145,7 +145,27 @@ void osmv::Model_editor_screen::draw() {
         if (impl->selected_component) {
             ImGui::Text("selected: %s", impl->selected_component->getName().c_str());
             OpenSim::Body const* body = dynamic_cast<OpenSim::Body const*>(impl->selected_component);
+            for (OpenSim::Body const& b2 : impl->model.getComponentList<OpenSim::Body>()) {
+                if (&b2 == body) {
+                    continue;
+                }
+                // add other body
+                // add joint connecting body 1 to body 2
+                //     - pulldown for types of joints
+                //     - (good default): FreeJoint
+                // name coords in joint? (e.g. pin joint has 1 DoF): call it "whatever"
+                // force element / muscle (Model::addForce(body1, body2))
+
+                // if they add a joint
+                // - present "connectors" for the joint
+                // - they use the connector UI to select the bodies
+
+                // torque:
+                // has a connector for torque (select coord of Joint)
+            }
             if (body) {
+                if (ImGui::Button("add joint")) {
+                }
                 ImGui::Text("it's a body");
             }
         }

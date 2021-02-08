@@ -40,7 +40,7 @@ namespace {
         glm::vec3 pos;
     };
 
-    static constexpr std::array<Basic_vert, 3> triangle = {{
+    static std::array<Basic_vert, 3> triangle = {{
         Basic_vert{{-1.0f, -1.0f, 0.0f}},  // bottom-left
         Basic_vert{{1.0f, -1.0f, 0.0f}},  // bottom-right
         Basic_vert{{0.0f, 1.0f, 0.0f}},  // top-middle
