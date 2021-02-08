@@ -7,6 +7,7 @@
 
 #include <imgui.h>
 
+#include <array>
 #include <vector>
 
 namespace {
@@ -40,7 +41,7 @@ namespace {
         glm::vec3 pos;
     };
 
-    static std::array<Basic_vert, 3> triangle = {{
+    static constexpr std::array<Basic_vert, 3> triangle = {{
         Basic_vert{{-1.0f, -1.0f, 0.0f}},  // bottom-left
         Basic_vert{{1.0f, -1.0f, 0.0f}},  // bottom-right
         Basic_vert{{0.0f, 1.0f, 0.0f}},  // top-middle
