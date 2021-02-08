@@ -94,8 +94,8 @@ static void glOnDebugMessage(
     GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei, const char* message, const void*) {
 
     // ignore non-significant error/warning codes
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
-        return;
+    // if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+    //    return;
 
     std::cerr << "---------------" << std::endl;
     std::cerr << "Debug message (" << id << "): " << message << std::endl;
@@ -427,6 +427,11 @@ namespace osmv {
                     }
                 }
 
+#ifndef NDEBUG
+                // debug OpenGL: assert no OpenGL errors were induced by event handling
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
                 // osmv::Screen: run `tick`
                 current_screen->tick();
 
@@ -439,6 +444,11 @@ namespace osmv {
                     current_screen = std::move(requested_screen);
                     continue;
                 }
+
+#ifndef NDEBUG
+                // debug OpenGL: assert no OpenGL errors were induced by .tick()
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
                 // clear the window's framebuffer ready for a new frame to be drawn
                 gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -453,6 +463,15 @@ namespace osmv {
 
                 // osmv::Screen: call current screen's `draw` method
                 current_screen->draw();
+
+                // edge-case: the screen left its program bound. This can cause issues in the
+                //            ImGUI implementation.
+                gl::UseProgram();
+
+#ifndef NDEBUG
+                // debug OpenGL: assert no OpenGL errors were induced by .draw()
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
                 // NOTE: osmv::Screen side-effects:
                 //
@@ -485,6 +504,11 @@ namespace osmv {
                 // note: this can block on VSYNC, which will affect the timings
                 //       for software throttling
                 SDL_GL_SwapWindow(window);
+
+#ifndef NDEBUG
+                // debug OpenGL: assert no OpenGL errors induced by final draw steps
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
                 // osmv::Screen: handle any possible indirect side-effects the Screen's
                 //               `on_event` handler may have had on the application state
