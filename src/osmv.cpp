@@ -6,7 +6,12 @@
 #include "opensim_wrapper.hpp"
 #include "splash_screen.hpp"
 
+#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
+#include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
+#include <OpenSim/Common/RegisterTypes_osimCommon.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
+#include <OpenSim/Tools/RegisterTypes_osimTools.h>
 
 #include <cmath>
 #include <cstdlib>
@@ -67,6 +72,23 @@ int main(int argc, char** argv) {
 
     // pre-launch global inits
     {
+        // explicitly load OpenSim libs
+        //
+        // this is necessary because some compilers will refuse to link a library
+        // unless symbols from that library are directly used.
+        //
+        // Unfortunately, OpenSim relies on weak linkage *and* static library-loading
+        // side-effects. This means that (e.g.) the loading of muscles into the runtime
+        // happens in a static initializer *in the library*. OSMV may not link that
+        // libarary, though, because the source code in OSMV may not *directly* use a
+        // symbol exported by the library (e.g. the code might use OpenSim::Muscle references,
+        // but not actually concretely refer to a muscle implementation method (e.g. a ctor)
+        RegisterTypes_osimCommon();
+        RegisterTypes_osimSimulation();
+        RegisterTypes_osimActuators();
+        RegisterTypes_osimAnalyses();
+        RegisterTypes_osimTools();
+
         std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         osmv::init_application();
