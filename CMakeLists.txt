@@ -84,6 +84,8 @@ add_executable(osmv
     src/loading_screen.cpp
     src/imgui_demo_screen.hpp
     src/imgui_demo_screen.cpp
+    src/opengl_test_screen.hpp
+    src/opengl_test_screen.cpp
     src/model_editor_screen.hpp
     src/model_editor_screen.cpp
     src/splash_screen.hpp

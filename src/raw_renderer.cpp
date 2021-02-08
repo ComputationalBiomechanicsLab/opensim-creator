@@ -24,7 +24,6 @@ namespace {
         "this is required for offsetof macro usage, which is used for setting up OpenGL attribute pointers. See: https://en.cppreference.com/w/cpp/types/is_standard_layout");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
-
         GLuint loc = static_cast<GLuint>(mat4loc);
         for (unsigned i = 0; i < 4; ++i) {
             // HACK: from LearnOpenGL: mat4's must be set in this way because

@@ -5,6 +5,7 @@
 #include "imgui_demo_screen.hpp"
 #include "loading_screen.hpp"
 #include "model_editor_screen.hpp"
+#include "opengl_test_screen.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
@@ -122,6 +123,10 @@ namespace osmv {
 
                 if (ImGui::Button("editor")) {
                     app.request_screen_transition<osmv::Model_editor_screen>();
+                }
+
+                if (ImGui::Button("opengl test")) {
+                    app.request_screen_transition<osmv::Opengl_test_screen>();
                 }
 
                 if (ImGui::Button("Exit")) {

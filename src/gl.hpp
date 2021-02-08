@@ -290,6 +290,10 @@ namespace gl {
         glUniform3fv(u, 1, glm::value_ptr(v));
     }
 
+    inline void Uniform(Uniform_vec3& u, float* rgb) {
+        glUniform3fv(u, 1, rgb);
+    }
+
     inline void Uniform(Uniform_vec4& u, float x, float y, float z, float a) {
         Uniform(u, glm::vec4{x, y, z, a});
     }

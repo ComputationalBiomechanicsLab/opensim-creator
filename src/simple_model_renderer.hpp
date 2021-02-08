@@ -103,7 +103,7 @@ namespace osmv {
         glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
         glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
-        float rim_thickness = 0.002f;
+        float rim_thickness = 0.001f;
 
         SimpleModelRendererFlags flags = SimpleModelRendererFlags_Default;
 

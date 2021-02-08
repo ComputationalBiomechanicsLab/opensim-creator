@@ -21,7 +21,7 @@ namespace osmv {
     struct Untextured_vert;
     int globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
 
-    // one instance of a mesh that the renderer can render
+    // one instance of a mesh
     //
     // this struct is fairly complicated because it has to pack data together ready for a
     // GPU draw call. Instanced GPU drawing requires that the data is contiguous and has all
