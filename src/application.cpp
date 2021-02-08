@@ -367,12 +367,39 @@ namespace osmv {
                         return;
                     }
 
-                    // WINDOW EVENT: if it's a resize event, adjust the OpenGL viewport
-                    //               to reflect the new dimensions
+                    // WINDOW EVENT: window events can be *very* important, because screens may
+                    //               depend on the window size
                     if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
                         int w = e.window.data1;
                         int h = e.window.data2;
                         glViewport(0, 0, w, h);
+                    }
+
+                    // ImGui: feed event into ImGui
+                    //
+                    // note: the event *must* keep processing the event if it isn't mouse/keyboard
+                    //       because it might be an event that the current screen needs (e.g. a
+                    //       window resize)
+                    {
+                        ImGui_ImplSDL2_ProcessEvent(&e);
+                        ImGuiIO& io = ImGui::GetIO();
+
+                        switch (e.type) {
+                        case SDL_KEYDOWN:
+                        case SDL_KEYUP:
+                            if (io.WantTextInput) {
+                                continue;
+                            }
+                            break;
+                        case SDL_MOUSEMOTION:
+                        case SDL_MOUSEWHEEL:
+                        case SDL_MOUSEBUTTONUP:
+                        case SDL_MOUSEBUTTONDOWN:
+                            if (io.WantCaptureMouse) {
+                                continue;
+                            }
+                            break;
+                        }
                     }
 
                     // DEBUG MODE: toggled with F1
@@ -384,22 +411,6 @@ namespace osmv {
                     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
                         std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
                         ::enable_opengl_debug_mode();
-                    }
-
-                    // ImGui: feed event into ImGui
-                    {
-                        ImGui_ImplSDL2_ProcessEvent(&e);
-                        ImGuiIO& io = ImGui::GetIO();
-
-                        // if ImGui wants mouse/keyboard then we're done with this event, see
-                        // comments in ImGui_ImplSDL2_ProcessEvent
-                        if (e.type == SDL_KEYDOWN) {
-                            if (io.WantTextInput) {
-                                continue;
-                            }
-                        } else if (io.WantCaptureMouse) {
-                            continue;
-                        }
                     }
 
                     // osmv::Screen: feed event into the currently-showing osmv screen

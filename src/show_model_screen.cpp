@@ -616,10 +616,6 @@ namespace osmv {
 
         // handle top-level UI event (user click, user drag, etc.)
         bool handle_event(Application& app, SDL_Event const& e) {
-            if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                return renderer.on_event(e);
-            }
-
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_r: {
@@ -714,7 +710,6 @@ namespace osmv {
 
         // draw a frame of the UI
         void draw(Application& app) {
-
             // generate OpenSim scene geometry
             renderer.generate_geometry(model, latest_state);
 
