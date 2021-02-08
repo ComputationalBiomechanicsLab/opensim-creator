@@ -554,8 +554,15 @@ namespace osmv {
             gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
             glm::mat4 model_mtx = []() {
                 glm::mat4 rv = glm::identity<glm::mat4>();
+
+                // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                // floor down *slightly* to prevent Z fighting from planes rendered from the
+                // model itself (the contact planes, etc.)
+                rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
+
                 rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
                 rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+
                 return rv;
             }();
         } floor;
