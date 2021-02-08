@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <string>
 
+#define OSMV_ASSERT_NO_OPENGL_ERRORS_HERE() gl::assert_no_errors(__FILE__, __LINE__, __func__);
+
 namespace gl {
     std::string slurp(std::filesystem::path const& path);
 
@@ -750,7 +752,7 @@ namespace gl {
     }
 
     // asserts there are no current OpenGL errors (globally)
-    void assert_no_errors(char const* label);
+    void assert_no_errors(char const* file, int line, char const* func);
 
     template<typename T>
     class Array_bufferT final {

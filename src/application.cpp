@@ -38,12 +38,6 @@
         }                                                                                                              \
     }
 
-#define OSC_GL_CALL_CHECK(func, ...)                                                                                   \
-    {                                                                                                                  \
-        func(__VA_ARGS__);                                                                                             \
-        gl::assert_no_errors(#func);                                                                                   \
-    }
-
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
 
@@ -300,17 +294,16 @@ namespace osmv {
                 }
 
                 // depth testing used to ensure geometry overlaps correctly
-                OSC_GL_CALL_CHECK(glEnable, GL_DEPTH_TEST);
+                glEnable(GL_DEPTH_TEST);
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
                 // MSXAA is used to smooth out the model
-                OSC_GL_CALL_CHECK(glEnable, GL_MULTISAMPLE);
+                glEnable(GL_MULTISAMPLE);
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
                 // all vertices in the render are backface-culled
-                OSC_GL_CALL_CHECK(glEnable, GL_CULL_FACE);
-                glFrontFace(GL_CCW);
-
-                // ensure none of the above triggered a global OpenGL error
-                gl::assert_no_errors("Application::constructor");
+                glEnable(GL_CULL_FACE);
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
                 return ctx;
             }()},
@@ -385,6 +378,12 @@ namespace osmv {
                     // DEBUG MODE: toggled with F1
                     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {
                         is_drawing_debug_ui = not is_drawing_debug_ui;
+                    }
+
+                    // OpenGL DEBUG MODE: enabled (not toggled) with F2
+                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
+                        std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
+                        ::enable_opengl_debug_mode();
                     }
 
                     // ImGui: feed event into ImGui
@@ -576,14 +575,6 @@ void osmv::Application::enable_vsync() {
 
 void osmv::Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
-}
-
-void osmv::Application::enable_opengl_debug_mode() {
-    ::enable_opengl_debug_mode();
-}
-
-void osmv::Application::disable_opengl_debug_mode() {
-    ::disable_opengl_debug_mode();
 }
 
 void osmv::init_application() {

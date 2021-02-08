@@ -99,6 +99,9 @@ namespace {
             Vec4Pointer(aRgba1, offsetof(osmv::Mesh_instance, _passthrough));
 
             gl::BindVertexArray();
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
             return vao;
         }
     };
@@ -133,6 +136,8 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
             return vao;
         }
     };
@@ -166,6 +171,8 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
             return vao;
         }
     };
@@ -195,6 +202,8 @@ namespace {
                 aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
             return vao;
         }
@@ -226,6 +235,9 @@ namespace {
                 aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
             gl::EnableVertexAttribArray(aNormal);
             gl::BindVertexArray();
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
             return vao;
         }
     };
@@ -243,6 +255,8 @@ namespace {
             vbo{verts, verts + n},
             main_vao{Gouraud_mrt_shader::create_vao(vbo, instance_vbo)},
             normal_vao{Normals_shader::create_vao(vbo)} {
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
 
         int sizei() const noexcept {
@@ -375,6 +389,8 @@ namespace {
 
                     return rv;
                 }()} {
+
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
             }
         } scene;
 
@@ -416,6 +432,8 @@ namespace {
 
                     return rv;
                 }()} {
+
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
             }
         } skip_msxaa;
 
@@ -445,6 +463,8 @@ namespace {
 
                     return rv;
                 }()} {
+
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
             }
         };
 
@@ -472,6 +492,8 @@ namespace {
             scene{w, h, samples},
             skip_msxaa{w, h},
             color1_resolved{w, h, GL_RGBA} {
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
 
@@ -500,12 +522,16 @@ namespace osmv {
     // internal renderer implementation details
     struct Renderer_impl final {
 
-        struct {
+        struct Shaders {
             Gouraud_mrt_shader gouraud;
             Normals_shader normals;
             Plain_texture_shader plain_texture;
             Edge_detection_shader edge_detection_shader;
             Skip_msxaa_blitter_shader skip_msxaa_shader;
+
+            Shaders() {
+                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            }
         } shaders;
 
         // debug quad
@@ -541,6 +567,7 @@ namespace osmv {
         std::vector<Instance_batch> instance_batches;
 
         Renderer_impl(int w, int h, int samples) : buffers{w, h, samples} {
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
 }
@@ -563,6 +590,7 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
 //
 // DO NOT USE CURLY BRACERS HERE
 osmv::Raw_renderer::Raw_renderer(int w, int h, int samples) : state(new Renderer_impl(w, h, samples)) {
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Raw_renderer::~Raw_renderer() noexcept {
@@ -617,6 +645,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // (kind of like how deferred rendering puts everything into information-dense buffers). The
     // reason this rendering pipeline isn't fully deferred (gbuffers, albeido, etc.) is because
     // the scene is lit by a single directional light and the shading is fairly simple.
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure there are no OpenGL errors before setup
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     Renderer_buffers& buffers = state->buffers;
     std::vector<Instance_batch>& instance_batches = state->instance_batches;
@@ -677,6 +710,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure no OpenGL errors after initial buffer clears, draw setup
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     // render the scene to the FBO using a multiple-render-target (MRT) multisampled
     // (MSXAAed) shader.
@@ -763,6 +801,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         }
         gl::BindVertexArray();
     }
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure there are no errors after drawing the scene
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     // perform passthrough hit testing
     //
@@ -870,6 +913,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         }
     }
 
+#ifndef NDEBUG
+    // debug OpenGL: ensure no errors after performing passthrough hittests
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
     // resolve MSXAA in COLOR1
     //
     // "resolve" (i.e. blend) the MSXAA samples in COLOR1 into non-MSXAAed textures
@@ -887,11 +935,15 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // COLOR0 is now "done", so it can be written to the output
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure no errors after resolving MSXAA and blitting some output
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     // draw rims highlights over the output
     //
@@ -912,7 +964,6 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // branchless kernel lookups over a screen, so it isn't as expensive as you think
     if (flags & RawRendererFlags_DrawRims) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
@@ -931,6 +982,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         gl::BindVertexArray();
         glDisable(GL_BLEND);
     }
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure no errors after drawing rim overlay
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     // render debug quads
     if (flags & RawRendererFlags_DrawDebugQuads) {
@@ -999,6 +1055,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
 
         gl::BindVertexArray();
     }
+
+#ifndef NDEBUG
+    // debug OpenGL: ensure no errors after drawing debug quads
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);

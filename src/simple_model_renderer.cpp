@@ -405,6 +405,7 @@ namespace {
 }
 
 osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) : renderer{w, h, samples} {
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Simple_model_renderer::~Simple_model_renderer() noexcept = default;

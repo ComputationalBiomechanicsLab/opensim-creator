@@ -170,6 +170,7 @@ namespace osmv {
 // PIMPL forwarding for osmv::Splash_screen
 
 osmv::Splash_screen::Splash_screen() : impl{new Splash_screen_impl{}} {
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Splash_screen::~Splash_screen() noexcept {

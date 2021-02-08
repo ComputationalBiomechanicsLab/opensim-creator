@@ -334,13 +334,17 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     }
 
     gl::Texture_2d rv;
+    gl::ActiveTexture(GL_TEXTURE0);
     gl::BindTexture(rv.type, rv);
     glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     glGenerateMipmap(rv.type);
-    gl::TexParameteri(rv, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    gl::TexParameteri(rv, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl::TexParameteri(rv, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    gl::TexParameteri(rv, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
     return rv;
 }
 

@@ -610,10 +610,16 @@ namespace osmv {
                 return s;
             }()},
             renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
 
         // handle top-level UI event (user click, user drag, etc.)
         bool handle_event(Application& app, SDL_Event const& e) {
+            if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                return renderer.on_event(e);
+            }
+
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_r: {

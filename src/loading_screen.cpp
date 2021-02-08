@@ -33,6 +33,8 @@ namespace osmv {
 
             // immediately start loading the model file on a background thread
             result{std::async(std::launch::async, [&]() { return std::optional<osmv::Model>{path}; })} {
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
 
         bool on_event(Application& app, SDL_Event const& e) {
