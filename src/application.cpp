@@ -4,6 +4,7 @@
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
+#include "error_screen.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>
@@ -349,7 +350,7 @@ namespace osmv {
 #endif
         }
 
-        void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+        void internal_start_render_loop(Application& app, std::unique_ptr<Screen> s) {
             current_screen = std::move(s);
 
             // main application draw loop (i.e. the "game loop" of this app)
@@ -535,6 +536,22 @@ namespace osmv {
                         SDL_Delay(static_cast<Uint32>(dt_millis.count()));
                     }
                 }
+            }
+        }
+
+        void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+            std::unique_ptr<osmv::Error_screen> es;
+            try {
+                internal_start_render_loop(app, std::move(s));
+            } catch (std::exception const& ex) {
+                es = std::make_unique<Error_screen>(ex);
+            }
+
+            // if an exception is thrown all the way up here, try to draw it on
+            // the screen using a minimal error screen, because Windows users
+            // won't necessarily have ready access to the console logs
+            if (es) {
+                internal_start_render_loop(app, std::move(es));
             }
         }
 

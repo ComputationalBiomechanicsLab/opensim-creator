@@ -78,6 +78,8 @@ add_executable(osmv
     src/application.cpp
 
     src/screen.hpp
+    src/error_screen.hpp
+    src/error_screen.cpp
     src/show_model_screen.hpp
     src/show_model_screen.cpp
     src/loading_screen.hpp
