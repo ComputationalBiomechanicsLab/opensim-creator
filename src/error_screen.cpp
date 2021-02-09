@@ -5,6 +5,8 @@
 
 #include <imgui.h>
 
+#include <string>
+
 namespace osmv {
     struct Error_screen_impl final {
         std::string msg;
