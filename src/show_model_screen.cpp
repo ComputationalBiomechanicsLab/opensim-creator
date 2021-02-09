@@ -1108,12 +1108,14 @@ namespace osmv {
                 ImGui::NextColumn();
 
                 // if locked, color everything red
+                int styles_pushed = 0;
                 if (c->getLocked(latest_state)) {
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
+                    ++styles_pushed;
                 }
 
                 if (ImGui::Button(c->getLocked(latest_state) ? "u" : "l")) {
-                    c->setLocked(latest_state, not false);
+                    c->setLocked(latest_state, not c->getLocked(latest_state));
                     on_user_edited_state();
                 }
 
@@ -1127,9 +1129,7 @@ namespace osmv {
                     on_user_edited_state();
                 }
 
-                if (c->getLocked(latest_state)) {
-                    ImGui::PopStyleColor();
-                }
+                ImGui::PopStyleColor(styles_pushed);
                 ImGui::NextColumn();
 
                 ImGui::PopID();
