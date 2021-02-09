@@ -463,7 +463,23 @@ namespace osmv {
                 ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
                 // osmv::Screen: call current screen's `draw` method
-                current_screen->draw();
+                try {
+                    current_screen->draw();
+                } catch (...) {
+                    // if drawing the screen threw an exception, then we're potentially
+                    // kind of fucked, because OpenGL and ImGui might be in an intermediate
+                    // state (e.g. midway through drawing a window)
+                    //
+                    // to *try* and survive, clean up OpenGL a little and finalize the
+                    // draw call *before* throwing, so that the application has a small
+                    // chance of potentially launching into a different screen (e.g. an
+                    // error screen)
+                    gl::UseProgram();
+                    ImGui::Render();
+                    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+                    SDL_GL_SwapWindow(window);
+                    throw;
+                }
 
                 // edge-case: the screen left its program bound. This can cause issues in the
                 //            ImGUI implementation.
@@ -540,18 +556,17 @@ namespace osmv {
         }
 
         void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
-            std::unique_ptr<osmv::Error_screen> es;
-            try {
-                internal_start_render_loop(app, std::move(s));
-            } catch (std::exception const& ex) {
-                es = std::make_unique<Error_screen>(ex);
-            }
-
-            // if an exception is thrown all the way up here, try to draw it on
-            // the screen using a minimal error screen, because Windows users
-            // won't necessarily have ready access to the console logs
-            if (es) {
-                internal_start_render_loop(app, std::move(es));
+            bool quit = false;
+            while (not quit) {
+                try {
+                    internal_start_render_loop(app, std::move(s));
+                    quit = true;
+                } catch (std::exception const& ex) {
+                    // if an exception is thrown all the way up here, print it
+                    // to the stdout/stderr (Linux/Mac users with decent consoles)
+                    // but also throw up a basic error message GUI (Windows users)
+                    s = std::make_unique<Error_screen>(ex);
+                }
             }
         }
 

@@ -468,6 +468,8 @@ namespace {
             }
         };
 
+        Basic_fbo_texture_pair color0_resolved;
+
         // target for resolved (post-MSXAA) COLOR1 RGBA passthrough (selection logic)
         //
         // this isn't strictly necessary, but is useful to have so that we can render RGBA2 to
@@ -491,6 +493,7 @@ namespace {
             samples{_samples},
             scene{w, h, samples},
             skip_msxaa{w, h},
+            color0_resolved{w, h, GL_RGBA},
             color1_resolved{w, h, GL_RGBA} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
@@ -691,8 +694,8 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    GLint original_draw_fbo;
-    GLint original_read_fbo;
+    GLint original_draw_fbo = 0;
+    GLint original_read_fbo = 0;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
     gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
@@ -921,7 +924,23 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     }
 
 #ifndef NDEBUG
-    // debug OpenGL: ensure no errors after performing passthrough hittests
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
+    // resolve MSXAA in COLOR0
+    //
+    // "resolve" (i.e. blend) the MSXAA samples in COLOR0. We are "done" with
+    // COLOR0. You might expect we can directly blit it to the output, but that
+    // seems to explode with some OpenGL drivers (e.g. Intel iGPUs like UHD 620)
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.color0_resolved.fbo);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
+#ifndef NDEBUG
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
@@ -937,18 +956,33 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    // blit COLOR0 to output
-    //
-    // COLOR0 is now "done", so it can be written to the output
+    // the various internal buffers are resolved now, so re-bind back to the
+    // original FBOs
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+
+#ifndef NDEBUG
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
+    // draw resolved COLOR0 onto the screen
     {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        Plain_texture_shader& pts = state->shaders.plain_texture;
+        gl::UseProgram(pts.p);
+
+        gl::Uniform(pts.projMat, gl::identity_val);
+        gl::Uniform(pts.viewMat, gl::identity_val);
+        gl::Uniform(pts.modelMat, gl::identity_val);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(buffers.color0_resolved.tex);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
+        gl::BindVertexArray(state->pts_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+        gl::BindVertexArray();
     }
 
 #ifndef NDEBUG
-    // debug OpenGL: ensure no errors after resolving MSXAA and blitting some output
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
@@ -970,8 +1004,6 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // "zoom out" as if they were "in the scene"). However, GPUs are fairly efficient at running
     // branchless kernel lookups over a screen, so it isn't as expensive as you think
     if (flags & RawRendererFlags_DrawRims) {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
@@ -997,8 +1029,6 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
 
     // render debug quads
     if (flags & RawRendererFlags_DrawDebugQuads) {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-
         Plain_texture_shader& pts = state->shaders.plain_texture;
         gl::UseProgram(pts.p);
 
@@ -1067,7 +1097,4 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // debug OpenGL: ensure no errors after drawing debug quads
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
 }
