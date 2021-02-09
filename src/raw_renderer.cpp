@@ -954,9 +954,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         gl::BindTexture(buffers.color0_resolved.tex);
         gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
         gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
+        glDisable(GL_DEPTH_TEST);
         gl::BindVertexArray(state->pts_quad_vao);
         gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
+        glEnable(GL_DEPTH_TEST);
     }
 
 #ifndef NDEBUG
@@ -993,9 +995,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         gl::Uniform(shader.uRimThickness, rim_thickness);
 
         glEnable(GL_BLEND);  // rims can have alpha
+        glDisable(GL_DEPTH_TEST);
         gl::BindVertexArray(state->edge_detection_quad_vao);
         gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
         gl::BindVertexArray();
+        glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
     }
 
