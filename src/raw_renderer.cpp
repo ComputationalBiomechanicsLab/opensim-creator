@@ -295,26 +295,6 @@ namespace {
         return meshes[static_cast<size_t>(meshid)];
     }
 
-    // helper class: restore FBO to original value on destruction
-    struct Restore_original_framebuffer_on_destruction final {
-        GLint original_draw_fbo;
-        GLint original_read_fbo;
-
-        Restore_original_framebuffer_on_destruction() {
-            glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
-            glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
-        }
-        Restore_original_framebuffer_on_destruction(Restore_original_framebuffer_on_destruction const&) = delete;
-        Restore_original_framebuffer_on_destruction(Restore_original_framebuffer_on_destruction&&) = delete;
-        Restore_original_framebuffer_on_destruction&
-            operator=(Restore_original_framebuffer_on_destruction const&) = delete;
-        Restore_original_framebuffer_on_destruction& operator=(Restore_original_framebuffer_on_destruction&&) = delete;
-        ~Restore_original_framebuffer_on_destruction() noexcept {
-            gl::BindFrameBuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
-            gl::BindFrameBuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
-        }
-    };
-
     // OpenGL buffers used by the renderer
     //
     // designed with move + assignment semantics in-mind, so that users can just
@@ -373,8 +353,6 @@ namespace {
 
                 // allocate FBO that links all of the above
                 fbo{[this]() {
-                    Restore_original_framebuffer_on_destruction restore_fbos;
-
                     gl::Frame_buffer rv;
 
                     // configure main FBO
@@ -386,6 +364,8 @@ namespace {
 
                     // check it's OK
                     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+                    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                     return rv;
                 }()} {
@@ -419,8 +399,6 @@ namespace {
 
                 // attach COLOR0 to output storage
                 fbo{[this]() {
-                    Restore_original_framebuffer_on_destruction restore_fbos;
-
                     gl::Frame_buffer rv;
 
                     // configure non-MSXAA fbo
@@ -429,6 +407,8 @@ namespace {
 
                     // check non-MSXAA OK
                     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+                    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                     return rv;
                 }()} {
@@ -453,13 +433,13 @@ namespace {
                     return rv;
                 }()},
                 fbo{[this]() {
-                    Restore_original_framebuffer_on_destruction restore_fbos;
-
                     gl::Frame_buffer rv;
                     gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
                     gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
                     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+                    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                     return rv;
                 }()} {
@@ -694,10 +674,6 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    GLint original_draw_fbo = 0;
-    GLint original_read_fbo = 0;
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &original_draw_fbo);
-    glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &original_read_fbo);
     gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
 
     // clear the scene FBO's draw buffers for a new draw call
@@ -956,10 +932,11 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    // the various internal buffers are resolved now, so re-bind back to the
-    // original FBOs
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, original_read_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, original_draw_fbo);
+#ifndef NDEBUG
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
 #ifndef NDEBUG
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();

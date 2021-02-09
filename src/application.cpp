@@ -260,12 +260,16 @@ namespace osmv {
                 OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
                 OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
+                // careful about setting resolution, position, etc. - some people have *very* shitty
+                // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
+                // be <700 px high)
                 static constexpr char const* title = "osmv";
                 static constexpr int x = SDL_WINDOWPOS_CENTERED;
                 static constexpr int y = SDL_WINDOWPOS_CENTERED;
-                static constexpr int width = 1024;
-                static constexpr int height = 768;
-                static constexpr Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+                static constexpr int width = 800;
+                static constexpr int height = 600;
+                static constexpr Uint32 flags =
+                    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
                 return sdl::CreateWindoww(title, x, y, width, height, flags);
             }()},
