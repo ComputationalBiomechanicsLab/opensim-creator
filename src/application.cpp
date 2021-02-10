@@ -51,7 +51,7 @@ struct ImGuiContext;
 
 namespace igx {
     struct Context final {
-        static constexpr ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
+        static constexpr ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 
         std::string ini_dir = (osmv::user_data_dir() / "imgui.ini").string();
         ImGuiContext* handle;
@@ -519,6 +519,14 @@ namespace osmv {
                 // ImGui: finalize ImGui rendering
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+                if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                    SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
+                    SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+                    ImGui::UpdatePlatformWindows();
+                    ImGui::RenderPlatformWindowsDefault();
+                    SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+                }
 
                 // swap the framebuffer frame onto the window, showing it to the user
                 //
