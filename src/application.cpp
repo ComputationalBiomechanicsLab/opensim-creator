@@ -20,7 +20,6 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
 #include <imgui/imgui.h>
-#include <imgui/imgui_internal.h>
 
 #include <algorithm>
 #include <chrono>
@@ -51,9 +50,12 @@ struct ImGuiContext;
 
 namespace igx {
     struct Context final {
+        static constexpr ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
+
         ImGuiContext* handle;
 
         Context() : handle{ImGui::CreateContext()} {
+            ImGui::GetIO().ConfigFlags |= flags;
         }
         Context(Context const&) = delete;
         Context(Context&&) = delete;
@@ -63,6 +65,7 @@ namespace igx {
         void reset() {
             ImGui::DestroyContext(handle);
             handle = ImGui::CreateContext();
+            ImGui::GetIO().ConfigFlags |= flags;
         }
 
         ~Context() noexcept {
@@ -360,7 +363,6 @@ namespace osmv {
             imgui_ctx{},
             imgui_sdl2_ctx{window, gl},
             imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
-            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
             // any other initialization fixups
 #ifndef NDEBUG
