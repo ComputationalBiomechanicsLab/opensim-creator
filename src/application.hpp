@@ -49,10 +49,6 @@ namespace osmv {
 
         void request_quit_application();
 
-        // true if FPS is being throttled (e.g. with software (sleeps) or vsync)
-        bool is_throttling_fps() const noexcept;
-        void is_throttling_fps(bool);
-
         // dimensions of the main application window in pixels
         Window_dimensions window_dimensions() const noexcept;
 

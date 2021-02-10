@@ -922,12 +922,6 @@ namespace osmv {
                 }
             }
             {
-                bool throttling = app.is_throttling_fps();
-                if (ImGui::Checkbox("fps_throttle", &throttling)) {
-                    app.is_throttling_fps(throttling);
-                }
-            }
-            {
                 bool show_mesh_norms = renderer.flags & SimpleModelRendererFlags_ShowMeshNormals;
                 if (ImGui::Checkbox("show_mesh_normals", &show_mesh_norms)) {
                     renderer.flags ^= SimpleModelRendererFlags_ShowMeshNormals;

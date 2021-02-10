@@ -260,8 +260,6 @@ namespace sdl {
         return rv;
     }
 
-    void GL_SetSwapInterval(int interval);
-
     using Event = SDL_Event;
     using Rect = SDL_Rect;
 

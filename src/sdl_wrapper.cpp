@@ -84,14 +84,6 @@ sdl::Window_dimensions sdl::GetWindowSize(SDL_Window* window) {
     return d;
 }
 
-void sdl::GL_SetSwapInterval(int interval) {
-    int rv = SDL_GL_SetSwapInterval(interval);
-
-    if (rv != 0) {
-        throw std::runtime_error{"SDL_GL_SetSwapInterval failed: "s + SDL_GetError()};
-    }
-}
-
 sdl::Timer sdl::AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param) {
     SDL_TimerID handle = SDL_AddTimer(interval, callback, param);
     if (handle == 0) {

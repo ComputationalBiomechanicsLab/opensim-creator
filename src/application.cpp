@@ -200,6 +200,26 @@ static void disable_opengl_debug_mode() {
     }
 }
 
+static int highest_refresh_rate_display() {
+    int num_displays = SDL_GetNumVideoDisplays();
+
+    if (num_displays < 1) {
+        // this should be impossible but, you know, coding.
+        return 60;
+    }
+
+    int highest_refresh_rate = 30;
+    SDL_DisplayMode mode_struct{};
+    for (int display = 0; display < num_displays; ++display) {
+        int num_modes = SDL_GetNumDisplayModes(display);
+        for (int mode = 0; mode < num_modes; ++mode) {
+            SDL_GetDisplayMode(display, mode, &mode_struct);
+            highest_refresh_rate = std::max(highest_refresh_rate, mode_struct.refresh_rate);
+        }
+    }
+    return highest_refresh_rate;
+}
+
 namespace osmv {
     struct Application_impl final {
         // SDL's application-wide context (inits video subsystem etc.)
@@ -210,12 +230,6 @@ namespace osmv {
 
         // SDL OpenGL context
         sdl::GLContext gl;
-
-        // *highest* refresh rate display on user's machine
-        int refresh_rate = 60;
-
-        // milliseconds between frames - for software throttling
-        std::chrono::milliseconds millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))};
 
         // num multisamples that multisampled renderers should use
         int samples = 1;
@@ -228,11 +242,6 @@ namespace osmv {
 
         // ImGui OpenGL-specific initialization
         igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
-
-        // whether the application should sleep the CPU when the FPS exceeds some
-        // amount (ideally, throttling should keep the UI refresh rate close to the
-        // screen refresh rate)
-        bool software_throttle = true;
 
         // the current screen being drawn by the application
         std::unique_ptr<Screen> current_screen = nullptr;
@@ -251,7 +260,7 @@ namespace osmv {
 
         Application_impl() :
             // initialize SDL library
-            context{SDL_INIT_VIDEO | SDL_INIT_TIMER},
+            context{SDL_INIT_VIDEO},
 
             // initialize minimal SDL Window with OpenGL 3.2 support
             window{[]() {
@@ -283,10 +292,13 @@ namespace osmv {
                     throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
                 }
 
-                // disable VSync
+                // enable vsync by default
                 //
-                // UI uses software throttling because vsync can be laggy on some platforms
-                sdl::GL_SetSwapInterval(0);
+                // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
+                // on *constrained* systems (e.g. laptops, which the majority of users are using)
+                if (SDL_GL_SetSwapInterval(-1) != 0) {
+                    SDL_GL_SetSwapInterval(1);
+                }
 
                 // initialize GLEW
                 //
@@ -313,30 +325,6 @@ namespace osmv {
                 return ctx;
             }()},
 
-            // initialize refresh rate as the highest refresh-rate display mode on the computer
-            refresh_rate{[]() {
-                int num_displays = SDL_GetNumVideoDisplays();
-
-                if (num_displays < 1) {
-                    // this should be impossible but, you know, coding.
-                    return 60;
-                }
-
-                int highest_refresh_rate = 30;
-                SDL_DisplayMode mode_struct{};
-                for (int display = 0; display < num_displays; ++display) {
-                    int num_modes = SDL_GetNumDisplayModes(display);
-                    for (int mode = 0; mode < num_modes; ++mode) {
-                        SDL_GetDisplayMode(display, mode, &mode_struct);
-                        highest_refresh_rate = std::max(highest_refresh_rate, mode_struct.refresh_rate);
-                    }
-                }
-                return highest_refresh_rate;
-            }()},
-
-            // millis between frames (for throttling) is based on the highest refresh rate
-            millis_between_frames{static_cast<int>(1000.0 * (1.0 / refresh_rate))},
-
             // just set multisamples to max for now
             samples{get_max_multisamples()},
 
@@ -362,8 +350,6 @@ namespace osmv {
             // implemented an immediate GUI, rather than retained, which is
             // inefficient but makes it easier to add new UI features.
             while (true) {
-                auto frame_start = std::chrono::high_resolution_clock::now();
-
                 // pump events
                 for (SDL_Event e; SDL_PollEvent(&e);) {
 
@@ -540,22 +526,6 @@ namespace osmv {
                     current_screen = std::move(requested_screen);
                     continue;
                 }
-
-                // throttle the framerate, if requested
-                if (software_throttle) {
-                    // APPROXIMATION: rendering **the next frame** will take roughly as long as it
-                    // took to render this frame. Assume worst case is 3x longer (also, the thread
-                    // might wake up a little late).
-
-                    auto frame_end = std::chrono::high_resolution_clock::now();
-                    auto this_frame_dur = frame_end - frame_start;
-                    auto next_frame_estimation = 4 * this_frame_dur;
-                    if (next_frame_estimation < millis_between_frames) {
-                        auto dt = millis_between_frames - next_frame_estimation;
-                        auto dt_millis = std::chrono::duration_cast<std::chrono::milliseconds>(dt);
-                        SDL_Delay(static_cast<Uint32>(dt_millis.count()));
-                    }
-                }
             }
         }
 
@@ -599,14 +569,6 @@ void osmv::Application::request_screen_transition(std::unique_ptr<osmv::Screen> 
 
 void osmv::Application::request_quit_application() {
     impl->request_quit();
-}
-
-bool osmv::Application::is_throttling_fps() const noexcept {
-    return impl->software_throttle;
-}
-
-void osmv::Application::is_throttling_fps(bool throttle) {
-    impl->software_throttle = throttle;
 }
 
 // dimensions of the main application window in pixels
