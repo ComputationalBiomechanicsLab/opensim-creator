@@ -423,6 +423,14 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
         return true;
     }
 
+    // other edge-case: the event is a sample count change
+    if (e.type == SDL_USEREVENT and e.user.code == OsmvCustomEvent_SamplesChanged) {
+        auto [w, h] = application.window_dimensions();
+        int samples = application.samples();
+        renderer.reallocate_buffers(w, h, samples);
+        return true;
+    }
+
     float aspect_ratio = app().window_aspect_ratio();
     auto window_dims = application.window_dimensions();
 

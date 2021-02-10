@@ -62,6 +62,7 @@ add_executable(osmv
     src/gl.hpp
     src/gl.cpp
     src/shims.hpp
+    src/algs.hpp
 
     src/config.hpp
     src/config.cpp

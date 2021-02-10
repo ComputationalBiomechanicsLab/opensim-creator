@@ -17,6 +17,13 @@ namespace osmv {
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
 namespace osmv {
+    // custom events that OSMV may push into the SDL event queue
+    enum OsmvCustomEvent {
+        // number of MSXAA samples changed - implementations should check if they need to
+        // reallocate any render buffers
+        OsmvCustomEvent_SamplesChanged,
+    };
+
     struct Window_dimensions final {
         int w;
         int h;
@@ -60,9 +67,14 @@ namespace osmv {
         // move mouse relative to the window (origin in top-left)
         void move_mouse_to(int x, int y);
 
-        // returns the number of samples (MSXAA) that multisampled renderers should
-        // use
+        // returns the number of samples (MSXAA) that multisampled renderers should use
         int samples() const noexcept;
+
+        // returns the maximum number of samples (MSXAA) that the OpenGL backend supports
+        int max_samples() const noexcept;
+
+        // set the number of samples (MSXAA) that multisampled renderers should use
+        void set_samples(int);
 
         // returns true if the application is rendering in debug mode (i.e. whether
         // downstream rendererers should also render debug info)

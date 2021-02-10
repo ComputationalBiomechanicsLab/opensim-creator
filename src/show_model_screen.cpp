@@ -1,6 +1,7 @@
 #include "show_model_screen.hpp"
 
 #include "3d_common.hpp"
+#include "algs.hpp"
 #include "application.hpp"
 #include "fd_simulation.hpp"
 #include "loading_screen.hpp"
@@ -841,7 +842,21 @@ namespace osmv {
         }
 
         void draw_ui_tab(Application& app) {
-            ImGui::Text("Fps: %.1f", static_cast<double>(ImGui::GetIO().Framerate));
+            ImGui::Text("%.1f fps", static_cast<double>(ImGui::GetIO().Framerate));
+
+            // msxaa selector
+            {
+                static constexpr std::array<char const*, 8> aa_lvls = {
+                    "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
+                int samples_idx = lsb_index(app.samples());
+                int max_samples_idx = lsb_index(app.max_samples());
+                assert(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
+
+                if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
+                    app.set_samples(1 << samples_idx);
+                }
+            }
+
             ImGui::NewLine();
 
             ImGui::Text("Camera Position:");

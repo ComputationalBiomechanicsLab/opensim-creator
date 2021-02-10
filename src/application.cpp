@@ -1,5 +1,6 @@
 #include "application.hpp"
 
+#include "algs.hpp"
 #include "error_screen.hpp"
 #include "gl.hpp"
 #include "osmv_config.hpp"
@@ -19,6 +20,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 #include <algorithm>
 #include <chrono>
@@ -48,16 +50,21 @@ std::unique_ptr<osmv::Application> osmv::_current_app;
 struct ImGuiContext;
 
 namespace igx {
-    class Context final {
+    struct Context final {
         ImGuiContext* handle;
 
-    public:
         Context() : handle{ImGui::CreateContext()} {
         }
         Context(Context const&) = delete;
         Context(Context&&) = delete;
         Context& operator=(Context const&) = delete;
         Context& operator=(Context&&) = delete;
+
+        void reset() {
+            ImGui::DestroyContext(handle);
+            handle = ImGui::CreateContext();
+        }
+
         ~Context() noexcept {
             ImGui::DestroyContext(handle);
         }
@@ -71,6 +78,12 @@ namespace igx {
         SDL2_Context(SDL2_Context&&) = delete;
         SDL2_Context& operator=(SDL2_Context const&) = delete;
         SDL2_Context& operator=(SDL2_Context&&) = delete;
+
+        void reset(SDL_Window* w, void* gl) {
+            ImGui_ImplSDL2_Shutdown();
+            ImGui_ImplSDL2_InitForOpenGL(w, gl);
+        }
+
         ~SDL2_Context() noexcept {
             ImGui_ImplSDL2_Shutdown();
         }
@@ -84,6 +97,12 @@ namespace igx {
         OpenGL3_Context(OpenGL3_Context&&) = delete;
         OpenGL3_Context& operator=(OpenGL3_Context const&) = delete;
         OpenGL3_Context& operator=(OpenGL3_Context&&) = delete;
+
+        void reset(char const* version) {
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplOpenGL3_Init(version);
+        }
+
         ~OpenGL3_Context() noexcept {
             ImGui_ImplOpenGL3_Shutdown();
         }
@@ -173,10 +192,13 @@ static void glOnDebugMessage(
     std::cerr << std::endl;
 }
 
-static GLsizei get_max_multisamples() {
+static int get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
-    v = std::min(v, 8);
+
+    // OpenGL spec: "the value must be at least 4"
+    // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
+    assert(v > 4);
     return v;
 }
 
@@ -230,6 +252,9 @@ namespace osmv {
 
         // SDL OpenGL context
         sdl::GLContext gl;
+
+        // the maximum num multisamples that the OpenGL backend supports
+        int max_samples = 1;
 
         // num multisamples that multisampled renderers should use
         int samples = 1;
@@ -325,8 +350,11 @@ namespace osmv {
                 return ctx;
             }()},
 
-            // just set multisamples to max for now
-            samples{get_max_multisamples()},
+            // find out the maximum number of samples the OpenGL backend supports
+            max_samples{get_max_multisamples()},
+
+            // set the number of samples multisampled renderers in osmv should use
+            samples{std::min(max_samples, 8)},
 
             // initialize ImGui
             imgui_ctx{},
@@ -455,19 +483,26 @@ namespace osmv {
                 // osmv::Screen: call current screen's `draw` method
                 try {
                     current_screen->draw();
+                } catch (std::bad_alloc const&) {
+                    throw;  // don't even try to handle this
                 } catch (...) {
                     // if drawing the screen threw an exception, then we're potentially
                     // kind of fucked, because OpenGL and ImGui might be in an intermediate
                     // state (e.g. midway through drawing a window)
                     //
-                    // to *try* and survive, clean up OpenGL a little and finalize the
+                    // to *try* and survive, clean up OpenGL and ImGui a little and finalize the
                     // draw call *before* throwing, so that the application has a small
                     // chance of potentially launching into a different screen (e.g. an
                     // error screen)
+
                     gl::UseProgram();
-                    ImGui::Render();
-                    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+                    imgui_sdl2_ogl2_ctx.reset(OSMV_GLSL_VERSION);
+                    imgui_sdl2_ctx.reset(window, gl);
+                    imgui_ctx.reset();
+
                     SDL_GL_SwapWindow(window);
+
                     throw;
                 }
 
@@ -584,6 +619,34 @@ void osmv::Application::move_mouse_to(int x, int y) {
 
 int osmv::Application::samples() const noexcept {
     return impl->samples;
+}
+
+int osmv::Application::max_samples() const noexcept {
+    return impl->max_samples;
+}
+
+void osmv::Application::set_samples(int s) {
+    if (s <= 0) {
+        throw std::runtime_error{"tried to set number of samples to <= 0"};
+    }
+
+    if (s > max_samples()) {
+        throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
+    }
+
+    if (num_bits_set_in(s) != 1) {
+        throw std::runtime_error{
+            "tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
+    }
+
+    impl->samples = s;
+
+    // push a SamplesChanged event into the event queue so that downstream screens can change any
+    // internal renderers/buffers to match
+    SDL_Event e;
+    e.type = SDL_USEREVENT;
+    e.user.code = OsmvCustomEvent_SamplesChanged;
+    SDL_PushEvent(&e);
 }
 
 bool osmv::Application::is_in_debug_mode() const noexcept {
