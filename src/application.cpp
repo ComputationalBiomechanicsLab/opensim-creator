@@ -1,10 +1,10 @@
 #include "application.hpp"
 
+#include "error_screen.hpp"
 #include "gl.hpp"
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
-#include "error_screen.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>
@@ -637,11 +637,22 @@ void osmv::Application::make_windowed() {
 }
 
 bool osmv::Application::is_vsync_enabled() const noexcept {
-    return SDL_GL_GetSwapInterval() == 1;
+    // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
+    return SDL_GL_GetSwapInterval() != 0;
 }
 
 void osmv::Application::enable_vsync() {
-    SDL_GL_SetSwapInterval(1);
+    // try using adaptive vsync
+    if (SDL_GL_SetSwapInterval(-1) == 0) {
+        return;
+    }
+
+    // if adaptive vsync doesn't work, then try normal vsync
+    if (SDL_GL_SetSwapInterval(1) == 0) {
+        return;
+    }
+
+    // otherwise, setting vsync isn't supported by the system
 }
 
 void osmv::Application::disable_vsync() {
