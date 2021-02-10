@@ -10,13 +10,14 @@ namespace osmv {
     struct Error_screen_impl;
     class Error_screen final : public Screen {
         Error_screen_impl* impl;
+
     public:
         Error_screen(std::exception const& ex);
         Error_screen(Error_screen const&) = delete;
         Error_screen(Error_screen&&) = delete;
         Error_screen& operator=(Error_screen const&) = delete;
         Error_screen& operator=(Error_screen&&) = delete;
-        ~Error_screen() noexcept;
+        ~Error_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
         void draw() override;
