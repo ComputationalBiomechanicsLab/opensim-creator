@@ -6,7 +6,9 @@ A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensi
 
 ![screenshot](0.0.1-screenshot.png)
 
-`osmv` is a lightweight GUI for the OpenSim C++ API. It is designed to be easy to build and only depends on OpenSim + lightweight GUI libraries (SDL2, GLEW, and ImGui). `osmv` was developed to make it easy to create prototype GUIs on top of the OpenSim API. It is not designed as a production-ready user-facing GUI for OpenSim. For that, you should use the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
+`osmv` is a lightweight GUI for the OpenSim C++ API. It is designed to be easy to build and only depends on OpenSim + lightweight GUI libraries (SDL2, GLEW, and ImGui). `osmv` was developed to make it easy to create prototype GUIs on top of the OpenSim API. 
+
+It is not designed as a production-ready user-facing GUI for OpenSim. For that, you should use the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
 
 # Downloads
 
@@ -21,7 +23,7 @@ A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensi
 
 # Building
 
-Because things are still in alpha (and might change, a lot), we don't currently publish a full build guide. However, the build is designed to be easy to run on a blank machine (such as the GitHub actions CI machines), and there are end-to-end build scripts /w comments for building on each platform. Please read these:
+Because things are still in alpha (and might change, a lot), we don't currently publish a full build guide. However, the build is designed to be easy to run on a blank machine, so there are end-to-end build scripts /w comments for building on each platform. Please read these:
 
 | OS | Comments |
 | - | - |
