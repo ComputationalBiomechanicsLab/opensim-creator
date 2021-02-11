@@ -137,11 +137,25 @@ target_compile_options(osmv PRIVATE
         -Wdisabled-optimization
         -Wpacked
         -Wno-sign-compare  # disable: broken by STB headers
+
+        # regardless of debug/release, pin the frame pointer register
+        # so that stack traces are usually possible. Makes debugging
+        # prod releases *much* easier (otherwise, the debugger might
+        # produce junk on a release binary)
+        -fno-omit-frame-pointer
     >
 
     # clang-only
     $<$<CXX_COMPILER_ID:Clang>:
         -Wno-cast-align
+
+        # required in earlier clangs. Just setting
+        # -fno-omit-frame-pointer (above) is not enough
+        #
+        # see:
+        #   - https://stackoverflow.com/questions/43864881/fno-omit-frame-pointer-equivalent-compiler-option-for-clang
+        #   - fixed here: https://reviews.llvm.org/D64294
+        -mno-omit-leaf-frame-pointer
     >
 
     # gcc-only
