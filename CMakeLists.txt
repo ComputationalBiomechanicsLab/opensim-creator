@@ -146,6 +146,10 @@ target_compile_options(osmv PRIVATE
         # to setup their base pointers etc.) but makes debugging + profiling
         # the application much easier, even in release mode
         -fno-omit-frame-pointer
+
+        # use address sanitizer when building in Debug mode, so that invalid
+        # memory accesses are spotted during development
+        $<$<CONFIG:DEBUG>:-fsanitize=address>
     >
 
     # clang-only
@@ -225,6 +229,10 @@ target_link_options(osmv PUBLIC
         # that the application can emit its own stack trace /w function
         # names - even in Release mode.
         -rdynamic
+
+        # use address sanitizer when building in Debug mode, so that invalid
+        # memory accesses are spotted during development
+        $<$<CONFIG:DEBUG>:-fsanitize=address>
     >
 )
 
