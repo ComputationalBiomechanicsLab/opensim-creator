@@ -4,6 +4,7 @@
 #include "fd_simulation.hpp"
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
+#include "os.hpp"
 #include "splash_screen.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
@@ -72,6 +73,12 @@ int main(int argc, char** argv) {
 
     // pre-launch global inits
     {
+        // install backtrace dumper
+        //
+        // useful if the application fails in prod: can provide some basic info that
+        // users can paste into an issue or something, rather than "yuh, it segfaulted"
+        osmv::install_backtrace_handler();
+
         // explicitly load OpenSim libs
         //
         // this is necessary because some compilers will refuse to link a library
@@ -89,13 +96,14 @@ int main(int argc, char** argv) {
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
 
+        // globally set OpenSim's geometry search path
         std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
-        osmv::init_application();
     }
 
     // no args: show splash screen
     if (argc <= 0) {
+        osmv::init_application();
         osmv::app().start_render_loop<osmv::Splash_screen>();
         return EXIT_SUCCESS;
     }
@@ -105,6 +113,7 @@ int main(int argc, char** argv) {
     // the reason the subcommands are designed this way (rather than having a separate 'gui'
     // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
     // a file in the OS's file explorer
+    osmv::init_application();
     osmv::app().start_render_loop<osmv::Loading_screen>(argv[0]);
 
     return EXIT_SUCCESS;
