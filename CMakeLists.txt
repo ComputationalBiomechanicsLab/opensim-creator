@@ -115,6 +115,7 @@ target_compile_options(osmv PRIVATE
         /wd4455  # disable warning 4455: incorrectly flags std::string::literals::"s"
         /W3  # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
         /WX  # treat all warnings as errors
+        /Oy-  # keep frame pointers around
     >
 
     # gcc/clang flags
@@ -139,9 +140,11 @@ target_compile_options(osmv PRIVATE
         -Wno-sign-compare  # disable: broken by STB headers
 
         # regardless of debug/release, pin the frame pointer register
-        # so that stack traces are usually possible. Makes debugging
-        # prod releases *much* easier (otherwise, the debugger might
-        # produce junk on a release binary)
+        # so that stack traces are sane when debugging (even in Release).
+        #
+        # This adds some overhead (pins one register and requires callers
+        # to setup their base pointers etc.) but makes debugging + profiling
+        # the application much easier, even in release mode
         -fno-omit-frame-pointer
     >
 
@@ -207,17 +210,23 @@ if(${OSMV_USING_MODERN_CMAKE})
     target_compile_features(osmv PUBLIC cxx_std_17)
 endif()
 
-if(MSVC)
-    target_link_options(osmv PUBLIC
-        # on Windows, open the application as a desktop application, rather than as
-        # a CLI application
-        $<$<CXX_COMPILER_ID:MSVC>:
-            /SUBSYSTEM:windows  # open as a desktop app, not CLI
-            /ENTRY:mainCRTStartup  # as above
-            /ignore:4217  # ImGui uses locally defined symbols
-        >
-    )
-endif()
+target_link_options(osmv PUBLIC
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /SUBSYSTEM:windows  # open as a desktop app, not CLI
+        /ENTRY:mainCRTStartup  # as above
+        /ignore:4217  # ImGui uses locally defined symbols
+    >
+
+    $<$<AND:$<BOOL:LINUX>,$<CXX_COMPILER_ID:GNU>>:
+        # make `ld` emit symbols for all functions - even if they aren't
+        # externally used (with an exe, only `main` is used, really)
+        #
+        # this makes the binary a little bigger (~400 KB) but means
+        # that the application can emit its own stack trace /w function
+        # names - even in Release mode.
+        -rdynamic
+    >
+)
 
 
 # -------------- development nice-to-haves ------------- #
