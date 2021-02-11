@@ -75,10 +75,22 @@ CC=gcc-8 CXX=g++-8 cmake ../osmv \
   -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -Wl,--no-as-needed"
-cmake --build . --target osmv -- -j$(nproc)
+cmake --build . --target package -- -j$(nproc)
+cd -
 
-# (if you want a .deb)
-cmake --build . --target package
+# build osmv again, but in debug mode
+#
+# this is so we have a debug build /w libASAN etc. available for
+# end-users to download and try out. Can be helpful to provide them
+# with a debug build for repros
+mkdir osmv-debug-build/
+cd osmv-debug-build/
+CC=gcc-8 CXX=g++-8 cmake ../osmv \
+  -DCMAKE_PREFIX_PATH=${PWD}/../opensim-debug-install/lib/cmake \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -Wl,--no-as-needed"
+cmake --build . --target package -- -j$(nproc)
+cd -
 
 # (if you want to install the .deb onto your system)
 # apt-get install -yf ./osmv-*.deb
