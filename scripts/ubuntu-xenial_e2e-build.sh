@@ -86,7 +86,7 @@ cd -
 mkdir osmv-debug-build/
 cd osmv-debug-build/
 CC=gcc-8 CXX=g++-8 cmake ../osmv \
-  -DCMAKE_PREFIX_PATH=${PWD}/../opensim-debug-install/lib/cmake \
+  -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -Wl,--no-as-needed"
 cmake --build . --target package -- -j$(nproc)
