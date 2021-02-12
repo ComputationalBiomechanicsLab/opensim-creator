@@ -12,7 +12,7 @@ jobs:
         scripts\\windows_e2e-build.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv-installer.exe
+        name: osmv_windows.exe
         path: osmv-build/*win64.exe
         if-no-files-found: error
 
@@ -27,9 +27,12 @@ jobs:
       run: cd $GITHUB_WORKSPACE && ./osmv/scripts/ubuntu-xenial_e2e-build.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv-installer.deb
+        name: osmv_xenial.deb
         path: osmv-build/*.deb
         if-no-files-found: error
+      with:
+        name: osmv_xenial_debug.deb
+        path: osmv-debug-build/*.deb
 
   ubuntu2004:
     name: Build on Ubuntu 20.04
@@ -42,7 +45,7 @@ jobs:
       run: cd $GITHUB_WORKSPACE && ./osmv/scripts/debian-buster_e2e-build.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv-ubu20-installer.deb
+        name: osmv_focal_installer.deb
         path: osmv-build/*.deb
         if-no-files-found: error
 
@@ -55,7 +58,6 @@ jobs:
       run: cd $GITHUB_WORKSPACE && ./scripts/mac_catalina_10-15_build.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv-installer.dmg
+        name: osmv_catalina.dmg
         path: osmv-build/*.dmg
         if-no-files-found: error
-
