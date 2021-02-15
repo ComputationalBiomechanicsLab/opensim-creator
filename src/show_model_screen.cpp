@@ -10,6 +10,8 @@
 #include "sdl_wrapper.hpp"
 #include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
+#include "hierarchy_viewer.hpp"
+#include "selection_viewer.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
@@ -274,6 +276,10 @@ namespace {
 
         OpenSim::Component const& operator*() const noexcept {
             return *ptr;
+        }
+
+        OpenSim::Component const* get() const noexcept {
+            return ptr;
         }
 
         void on_ui_state_update(SimTK::State const& st) {
@@ -1180,85 +1186,10 @@ namespace osmv {
         }
 
         void draw_hierarchy_tab() {
-            std::string output_str;
-            OpenSim::Component const* root = &model->getRoot();
-            std::array<OpenSim::Component const*, 32> prev_path;
-            size_t prev_path_sz = 0;
-            bool header_showing = true;
-            for (OpenSim::Component const& cr : model->getComponentList()) {
-
-                std::array<OpenSim::Component const*, 32> cur_path;
-                size_t i = 0;
-
-                {
-                    // push each element in the tree into a stack (child --> parent)
-                    OpenSim::Component const* c = &cr;
-                    while (c != root) {
-                        assert(i < cur_path.size());
-                        cur_path[i++] = c;
-                        c = &c->getOwner();
-                    }
-
-                    // reverse the stack to yield a linear sequence (parent --> child)
-                    std::reverse(cur_path.begin(), cur_path.begin() + i);
-                }
-
-                size_t indent = 0;
-                {
-                    // figure out common subpath between this path and the previous one
-                    size_t len = std::min(prev_path_sz, i);
-                    while (indent < len and prev_path[indent] == cur_path[indent]) {
-                        ++indent;
-                    }
-                }
-
-                if (indent == 0) {
-                    // edge-case: first-level elements should be put into a collapsing header that
-                    //            the user can toggle
-                    header_showing = ImGui::CollapsingHeader(cur_path[indent]->getName().c_str());
-                    ++indent;
-                }
-
-                if (header_showing) {
-                    for (size_t j = indent; j < i; ++j) {
-                        // print out the not-common tail
-
-                        OpenSim::Component const* comp = cur_path[j];
-
-                        output_str.clear();
-                        for (size_t k = 0; k < indent; ++k) {
-                            output_str += "    ";
-                        }
-                        output_str += comp->getName().c_str();
-
-                        int style_pushes = 0;
-                        if (comp == renderer.hovered_component) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
-                            ++style_pushes;
-                        }
-                        if (comp == selected_component) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
-                            ++style_pushes;
-                        }
-
-                        ImGui::Text(output_str.c_str());
-                        if (ImGui::IsItemHovered()) {
-                            renderer.hovered_component = comp;
-                        }
-                        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                            selected_component = comp;
-                        }
-
-                        ImGui::PopStyleColor(style_pushes);
-                    }
-                }
-
-                {
-                    // update loop invariants
-                    std::copy(cur_path.begin(), cur_path.begin() + i, prev_path.begin());
-                    prev_path_sz = i;
-                }
-            }
+            Hierarchy_viewer v;
+            OpenSim::Component const* selected = selected_component.get();
+            v.draw(&model->getRoot(), &selected, &renderer.hovered_component);
+            selected_component = selected;
         }
 
         void draw_muscles_tab() {
@@ -1666,109 +1597,16 @@ namespace osmv {
                 return;
             }
 
-            OpenSim::Component const& c = *selected_component;
-
-            // top-level info
+            // draw standard selection info
             {
-                ImGui::Text("top-level information:");
-                ImGui::Dummy(ImVec2{0.0, 2.5f});
-                ImGui::Separator();
-
-                ImGui::Columns(2);
-
-                ImGui::Text("getName()");
-                ImGui::NextColumn();
-                ImGui::Text("%s", c.getName().c_str());
-                ImGui::NextColumn();
-
-                ImGui::Text("getAuthors()");
-                ImGui::NextColumn();
-                ImGui::Text("%s", c.getAuthors().c_str());
-                ImGui::NextColumn();
-
-                ImGui::Text("getOwner().getName()");
-                ImGui::NextColumn();
-                ImGui::Text("%s", c.getOwner().getName().c_str());
-                ImGui::NextColumn();
-
-                ImGui::Text("getAbsolutePath()");
-                ImGui::NextColumn();
-                ImGui::Text("%s", c.getAbsolutePath().toString().c_str());
-                ImGui::NextColumn();
-
-                ImGui::Text("getConcreteClassName()");
-                ImGui::NextColumn();
-                ImGui::Text("%s", c.getConcreteClassName().c_str());
-                ImGui::NextColumn();
-
-                ImGui::Text("getNumInputs()");
-                ImGui::NextColumn();
-                ImGui::Text("%i", c.getNumInputs());
-                ImGui::NextColumn();
-
-                ImGui::Text("getNumOutputs()");
-                ImGui::NextColumn();
-                ImGui::Text("%i", c.getNumOutputs());
-                ImGui::NextColumn();
-
-                ImGui::Text("getNumSockets()");
-                ImGui::NextColumn();
-                ImGui::Text("%i", c.getNumSockets());
-                ImGui::NextColumn();
-
-                ImGui::Text("getNumStateVariables()");
-                ImGui::NextColumn();
-                ImGui::Text("%i", c.getNumStateVariables());
-                ImGui::NextColumn();
-
-                ImGui::Text("getNumProperties()");
-                ImGui::NextColumn();
-                ImGui::Text("%i", c.getNumProperties());
-                ImGui::NextColumn();
-
-                ImGui::Columns();
+                OpenSim::Component const* c = selected_component.get();
+                Selection_viewer{}.draw(latest_state, &c);
+                selected_component = c;
             }
 
-            // properties
-            if (ImGui::CollapsingHeader("properties")) {
-                ImGui::Columns(2);
-                for (int i = 0; i < c.getNumProperties(); ++i) {
-                    OpenSim::AbstractProperty const& p = c.getPropertyByIndex(i);
-                    ImGui::Text("%s", p.getName().c_str());
-                    ImGui::NextColumn();
-                    ImGui::Text("%s", p.toString().c_str());
-                    ImGui::NextColumn();
-                }
-                ImGui::Columns();
-            }
+            // draw selection outputs (screen-specific)
 
-            // state variables
-            if (ImGui::CollapsingHeader("state variables")) {
-                OpenSim::Array<std::string> names = c.getStateVariableNames();
-                ImGui::Columns(2);
-                for (int i = 0; i < names.size(); ++i) {
-                    std::string const& name = names[i];
-
-                    ImGui::Text("%s", name.c_str());
-                    ImGui::NextColumn();
-                    ImGui::Text("%f", c.getStateVariableValue(latest_state, name));
-                    ImGui::NextColumn();
-
-                    ImGui::Text("%s (deriv)", name.c_str());
-                    ImGui::NextColumn();
-                    ImGui::Text("%f", c.getStateVariableDerivativeValue(latest_state, name));
-                    ImGui::NextColumn();
-                }
-                ImGui::Columns();
-            }
-
-            // inputs
-            if (ImGui::CollapsingHeader("inputs")) {
-                std::vector<std::string> input_names = c.getInputNames();
-                for (std::string const& input_name : input_names) {
-                    ImGui::Text(input_name.c_str());
-                }
-            }
+            OpenSim::Component const& c = *selected_component;
 
             // outputs
             if (ImGui::CollapsingHeader("outputs")) {
@@ -1802,24 +1640,6 @@ namespace osmv {
                     ImGui::Columns();
                     ImGui::Separator();
                 }
-            }
-
-            // sockets
-            if (ImGui::CollapsingHeader("sockets")) {
-                std::vector<std::string> socknames = const_cast<OpenSim::Component&>(c).getSocketNames();
-                ImGui::Columns(2);
-                for (std::string const& sn : socknames) {
-                    ImGui::Text(sn.c_str());
-                    ImGui::NextColumn();
-
-                    std::string const& cp = c.getSocket(sn).getConnecteePath();
-                    ImGui::Text(cp.c_str());
-                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                        selected_component = &c.getComponent(cp);
-                    }
-                    ImGui::NextColumn();
-                }
-                ImGui::Columns();
             }
         }
     };

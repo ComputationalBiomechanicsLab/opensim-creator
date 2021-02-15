@@ -79,6 +79,11 @@ add_executable(osmv
     src/application.hpp
     src/application.cpp
 
+    src/hierarchy_viewer.hpp
+    src/hierarchy_viewer.cpp
+    src/selection_viewer.hpp
+    src/selection_viewer.cpp
+
     src/screen.hpp
     src/error_screen.hpp
     src/error_screen.cpp

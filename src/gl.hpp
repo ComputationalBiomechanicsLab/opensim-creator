@@ -670,7 +670,7 @@ namespace gl {
             return *this;
         }
         ~Render_buffer() noexcept {
-            if (handle != 0) {
+            if (handle != empty_handle) {
                 glDeleteRenderbuffers(1, &handle);
             }
         }
