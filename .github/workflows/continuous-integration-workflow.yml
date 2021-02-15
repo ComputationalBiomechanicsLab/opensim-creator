@@ -30,9 +30,11 @@ jobs:
         name: osmv_xenial.deb
         path: osmv-build/*.deb
         if-no-files-found: error
+    - uses: actions/upload-artifact@v2
       with:
         name: osmv_xenial_debug.deb
         path: osmv-debug-build/*.deb
+        if-no-files-found: error
 
   ubuntu2004:
     name: Build on Ubuntu 20.04
