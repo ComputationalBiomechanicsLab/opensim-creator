@@ -23,6 +23,7 @@ set(OSMV_USE_IWYU OFF CACHE BOOL "enable/disable running `iwyu` (include-what-yo
 set(OSMV_IWYU_PATH "iwyu" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
 set(OSMV_REPO_PROVIDER "https://github.com" CACHE STRING "URL (or local path, if you setup your mirrors properly) to a git repo provider for external projects")
 set(OSMV_ENABLE_ASSERTS OFF CACHE BOOL "enable asserts, even if building a release build")
+set(OSMV_USE_ASAN OFF CACHE BOOL "enable address sanitizer: useful for spotting leaks when debugging")
 
 if(${OSMV_USING_MODERN_CMAKE})
     cmake_policy(SET CMP0072 NEW)  # use newer OpenGL linking strategy
@@ -154,7 +155,7 @@ target_compile_options(osmv PRIVATE
 
         # use address sanitizer when building in Debug mode, so that invalid
         # memory accesses are spotted during development
-        $<$<CONFIG:DEBUG>:-fsanitize=address>
+        $<$<BOOL:${OSMV_USE_ASAN}>:-fsanitize=address>
     >
 
     # clang-only
@@ -237,7 +238,7 @@ target_link_options(osmv PUBLIC
 
         # use address sanitizer when building in Debug mode, so that invalid
         # memory accesses are spotted during development
-        $<$<CONFIG:DEBUG>:-fsanitize=address>
+        $<$<BOOL:${OSMV_USE_ASAN}>:-fsanitize=address>
     >
 )
 
