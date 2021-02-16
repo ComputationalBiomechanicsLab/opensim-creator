@@ -93,11 +93,6 @@ namespace osmv {
         void disable_vsync();
     };
 
-    extern std::unique_ptr<Application> _current_app;
-
-    void init_application();
-
-    inline Application& app() noexcept {
-        return *_current_app;
-    }
+    void set_current_application(Application* app);
+    Application& app() noexcept;
 }

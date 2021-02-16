@@ -38,18 +38,6 @@ static bool skip_prefix(char const* prefix, char const* s, char const** out) {
     return false;
 }
 
-static bool safe_parse_double(char const* s, double* out) {
-    char* end;
-    double v = strtod(s, &end);
-
-    if (*end != '\0' or v >= HUGE_VAL or v <= -HUGE_VAL) {
-        return false;  // not a number
-    }
-
-    *out = v;
-    return true;
-}
-
 int main(int argc, char** argv) {
     --argc;
     ++argv;
@@ -75,8 +63,9 @@ int main(int argc, char** argv) {
     {
         // install backtrace dumper
         //
-        // useful if the application fails in prod: can provide some basic info that
-        // users can paste into an issue or something, rather than "yuh, it segfaulted"
+        // useful if the application fails in prod: can provide some basic backtrace
+        // info that users can paste into an issue or something, which is *a lot* more
+        // information than "yeah, it's broke"
         osmv::install_backtrace_handler();
 
         // explicitly load OpenSim libs
@@ -86,10 +75,12 @@ int main(int argc, char** argv) {
         //
         // Unfortunately, OpenSim relies on weak linkage *and* static library-loading
         // side-effects. This means that (e.g.) the loading of muscles into the runtime
-        // happens in a static initializer *in the library*. OSMV may not link that
-        // libarary, though, because the source code in OSMV may not *directly* use a
-        // symbol exported by the library (e.g. the code might use OpenSim::Muscle references,
-        // but not actually concretely refer to a muscle implementation method (e.g. a ctor)
+        // happens in a static initializer *in the library*.
+        //
+        // osmv may not link that library, though, because the source code in OSMV may
+        // not *directly* use a symbol exported by the library (e.g. the code might use
+        // OpenSim::Muscle references, but not actually concretely refer to a muscle
+        // implementation method (e.g. a ctor)
         RegisterTypes_osimCommon();
         RegisterTypes_osimSimulation();
         RegisterTypes_osimActuators();
@@ -97,24 +88,24 @@ int main(int argc, char** argv) {
         RegisterTypes_osimTools();
 
         // globally set OpenSim's geometry search path
+        //
+        // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
+        // OpenSim implementation will look in these directories for that file
         std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
     }
 
-    // no args: show splash screen
-    if (argc <= 0) {
-        osmv::init_application();
-        osmv::app().start_render_loop<osmv::Splash_screen>();
-        return EXIT_SUCCESS;
-    }
+    // init an application instance ready for rendering
+    osmv::Application app;
+    osmv::set_current_application(&app);
 
-    // no subcommand command (but args): show the UI
-    //
-    // the reason the subcommands are designed this way (rather than having a separate 'gui'
-    // subcommand) is because most OS desktop managers call `binary.exe <arg>` when users click on
-    // a file in the OS's file explorer
-    osmv::init_application();
-    osmv::app().start_render_loop<osmv::Loading_screen>(argv[0]);
+    if (argc <= 0) {
+        // no args: show splash screen
+        app.start_render_loop<osmv::Splash_screen>();
+    } else {
+        // args: load args as osim files
+        app.start_render_loop<osmv::Loading_screen>(argv[0]);
+    }
 
     return EXIT_SUCCESS;
 }

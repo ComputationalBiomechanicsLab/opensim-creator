@@ -44,7 +44,7 @@ using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
 
 // globals
-std::unique_ptr<osmv::Application> osmv::_current_app;
+static osmv::Application* g_current_application = nullptr;
 
 struct ImGuiContext;
 
@@ -686,6 +686,11 @@ void osmv::Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
 }
 
-void osmv::init_application() {
-    _current_app = std::make_unique<Application>();
+void osmv::set_current_application(Application* app) {
+    g_current_application = app;
+}
+
+osmv::Application& osmv::app() noexcept {
+    assert(g_current_application != nullptr);
+    return *g_current_application;
 }
