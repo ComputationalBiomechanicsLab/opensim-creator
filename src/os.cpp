@@ -11,28 +11,49 @@
 
 using std::literals::string_literals::operator""s;
 
-static std::filesystem::path get_current_exe_dir() {
-    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
-
-    if (not p) {
-        throw std::runtime_error{"SDL_GetBasePath: returned null: "s + SDL_GetError()};
+static std::filesystem::path convert_sdl_path_to_stdpath(char const* methodname, char* p) {
+    if (p == nullptr) {
+        std::stringstream ss;
+        ss << methodname;
+        ss << ": returned null: ";
+        ss << SDL_GetError();
+        throw std::runtime_error{std::move(ss).str()};
     }
 
-    size_t l = std::strlen(p.get());
+    size_t len = std::strlen(p);
 
-    if (l == 0) {
-        throw std::runtime_error{"SDL_GetBasePath: returned an empty string"};
+    if (len == 0) {
+        std::stringstream ss;
+        ss << methodname;
+        ss << ": returned an empty string";
+        throw std::runtime_error{std::move(ss).str()};
     }
 
     // remove trailing slash: it interferes with std::filesystem::path
-    p.get()[l - 1] = '\0';
+    p[len - 1] = '\0';
 
-    return std::filesystem::path{p.get()};
+    return std::filesystem::path{p};
 }
 
-std::filesystem::path osmv::current_exe_dir() {
+static std::filesystem::path get_current_exe_dir() {
+    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
+    return convert_sdl_path_to_stdpath("SDL_GetBasePath", p.get());
+}
+
+std::filesystem::path const& osmv::current_exe_dir() {
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = get_current_exe_dir();
+    return d;
+}
+
+static std::filesystem::path get_user_data_dir() {
+    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osmv"), SDL_free};
+    return convert_sdl_path_to_stdpath("SDL_GetPrefPath", p.get());
+}
+
+std::filesystem::path const& osmv::user_data_dir() {
+    // can be expensive to compute: cache after first retrieval
+    static std::filesystem::path const d = get_user_data_dir();
     return d;
 }
 

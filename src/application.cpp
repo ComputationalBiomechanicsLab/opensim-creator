@@ -3,6 +3,7 @@
 #include "algs.hpp"
 #include "error_screen.hpp"
 #include "gl.hpp"
+#include "os.hpp"
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
@@ -52,20 +53,28 @@ namespace igx {
     struct Context final {
         static constexpr ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
 
+        std::string ini_dir = (osmv::user_data_dir() / "imgui.ini").string();
         ImGuiContext* handle;
 
         Context() : handle{ImGui::CreateContext()} {
-            ImGui::GetIO().ConfigFlags |= flags;
+
+            configure_context(ImGui::GetIO());
         }
         Context(Context const&) = delete;
         Context(Context&&) = delete;
         Context& operator=(Context const&) = delete;
         Context& operator=(Context&&) = delete;
 
+        void configure_context(ImGuiIO& io) {
+            io.IniFilename = ini_dir.c_str();
+            io.ConfigFlags |= flags;
+        }
+
         void reset() {
             ImGui::DestroyContext(handle);
             handle = ImGui::CreateContext();
-            ImGui::GetIO().ConfigFlags |= flags;
+
+            configure_context(ImGui::GetIO());
         }
 
         ~Context() noexcept {
