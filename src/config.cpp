@@ -4,6 +4,7 @@
 
 #include <toml.hpp>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string_view>
@@ -75,4 +76,86 @@ std::filesystem::path osmv::config::resource_path(std::filesystem::path const& s
 static std::filesystem::path const shaders_dir = "shaders";
 std::filesystem::path osmv::config::shader_path(char const* shader_name) {
     return resource_path(shaders_dir / shader_name);
+}
+
+static fs::path get_recent_files_path() {
+    return osmv::user_data_dir() / "recent_files.txt";
+}
+
+static std::vector<osmv::config::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
+    std::ifstream fd{p, std::ios::in};
+
+    if (not fd) {
+        std::stringstream ss;
+        ss << p;
+        ss << ": could not be opened for reading: cannot load recent files list";
+        throw std::runtime_error{std::move(ss).str()};
+    }
+
+    std::vector<osmv::config::Recent_file> rv;
+    std::string line;
+    while (std::getline(fd, line)) {
+        std::istringstream ss{line};
+
+        // read line content
+        uint64_t timestamp;
+        fs::path path;
+        ss >> timestamp;
+        ss >> path;
+
+        // calc tertiary data
+        bool exists = fs::exists(path);
+        std::chrono::seconds timestamp_secs{timestamp};
+
+        rv.emplace_back(exists, std::move(timestamp_secs), std::move(path));
+    }
+
+    return rv;
+}
+
+static std::chrono::seconds unix_timestamp() {
+    return std::chrono::seconds(std::time(nullptr));
+}
+
+std::vector<osmv::config::Recent_file> osmv::config::recent_files() {
+    fs::path recent_files_path = get_recent_files_path();
+
+    if (not fs::exists(recent_files_path)) {
+        return {};
+    }
+
+    return load_recent_files_file(recent_files_path);
+}
+
+void osmv::config::add_recent_file(std::filesystem::path const& p) {
+    fs::path rfs_path = get_recent_files_path();
+
+    // load existing list
+    std::vector<Recent_file> rfs;
+    if (fs::exists(rfs_path)) {
+        rfs = load_recent_files_file(rfs_path);
+    }
+
+    // clear potentially duplicate entries from existing list
+    {
+        auto it = std::remove_if(rfs.begin(), rfs.end(), [&p](Recent_file const& rf) { return rf.path == p; });
+        rfs.erase(it, rfs.end());
+    }
+
+    // write by truncating existing list file
+    std::ofstream fd{rfs_path, std::ios::trunc};
+    if (not fd) {
+        std::stringstream ss;
+        ss << rfs_path;
+        ss << ": could not be opened for writing: cannot update recent files list";
+        throw std::runtime_error{std::move(ss).str()};
+    }
+
+    // re-serialize existing entries (the above may have removed things)
+    for (Recent_file const& rf : rfs) {
+        fd << rf.last_opened_unix_timestamp.count() << ' ' << rf.path << std::endl;
+    }
+
+    // append the new entry
+    fd << unix_timestamp().count() << ' ' << fs::absolute(p) << std::endl;
 }

@@ -22,6 +22,10 @@
 
 namespace fs = std::filesystem;
 
+static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
+    return a.filename() < b.filename();
+}
+
 // helper that searches for example .osim files in the resources/ directory
 static std::vector<fs::path> find_example_osims() {
     fs::path models_dir = osmv::config::resource_path("models");
@@ -45,7 +49,7 @@ static std::vector<fs::path> find_example_osims() {
         }
     }
 
-    std::sort(rv.begin(), rv.end());
+    std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
 
     return rv;
 }
@@ -53,6 +57,7 @@ static std::vector<fs::path> find_example_osims() {
 namespace osmv {
     struct Splash_screen_impl final {
         std::vector<fs::path> example_osims = find_example_osims();
+        std::vector<config::Recent_file> recent_files = osmv::config::recent_files();
 
         bool on_event(Application& app, SDL_Event const& e) {
             if (e.type == SDL_KEYDOWN) {
@@ -63,15 +68,6 @@ namespace osmv {
                     app.request_quit_application();
                     return true;
                 }
-
-                // 1-9: load numbered example
-                if (SDLK_1 <= sym and sym <= SDLK_9) {
-                    size_t idx = static_cast<size_t>(sym - SDLK_1);
-                    if (idx < example_osims.size()) {
-                        app.request_screen_transition<Loading_screen>(example_osims[idx]);
-                        return true;
-                    }
-                }
             }
             return false;
         }
@@ -79,64 +75,89 @@ namespace osmv {
         void draw(Application& app) {
             // center the menu
             {
-                auto [w, h] = app.window_dimensions();
-                glm::vec2 app_window_dims{w, h};
-                glm::vec2 rough_menu_dims = {500, 500};
-                glm::vec2 menu_pos = 0.5f * (app_window_dims - rough_menu_dims);
-                menu_pos.y = 100;
+                static constexpr int menu_width = 700;
+                static constexpr int menu_height = 700;
 
-                ImGui::SetNextWindowPos(menu_pos);
-                ImGui::SetNextWindowSize(ImVec2{500, -1});
-                ImGui::SetNextWindowSizeConstraints({500, 500}, {500, 500});
+                auto d = app.window_dimensions();
+                int menu_x = (d.w - menu_width) / 2;
+                int menu_y = (d.h - menu_height) / 2;
+
+                ImGui::SetNextWindowPos(ImVec2(menu_x, menu_y));
+                ImGui::SetNextWindowSize(ImVec2{menu_width, -1});
+                ImGui::SetNextWindowSizeConstraints({menu_width, menu_height}, {menu_width, menu_height});
             }
 
-            char buf[512];
             bool b = true;
             if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
+                ImGui::Columns(2);
 
-                ImGui::Text("OpenSim Model Viewer (osmv)");
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-                ImGui::Text("For development use");
-                ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-                if (not example_osims.empty()) {
-                    ImGui::Text("Examples");
-                    ImGui::Separator();
+                // left-column: utils etc.
+                {
+                    ImGui::Text("Utilities:");
                     ImGui::Dummy(ImVec2{0.0f, 3.0f});
-                }
 
-                // list of examples with buttons
-                for (size_t i = 0; i < example_osims.size(); ++i) {
-                    fs::path const& p = example_osims[i];
-                    std::snprintf(buf, sizeof(buf), "%zu: %s", i + 1, p.filename().string().c_str());
-                    if (ImGui::Button(buf)) {
-                        app.request_screen_transition<osmv::Loading_screen>(p);
+                    if (ImGui::Button("ImGui demo")) {
+                        app.request_screen_transition<osmv::Imgui_demo_screen>();
                     }
+
+                    if (ImGui::Button("Model editor")) {
+                        app.request_screen_transition<osmv::Model_editor_screen>();
+                    }
+
+                    if (ImGui::Button("Rendering tests (meta)")) {
+                        app.request_screen_transition<osmv::Opengl_test_screen>();
+                    }
+
+                    ImGui::Dummy(ImVec2{0.0f, 4.0f});
+                    if (ImGui::Button("Exit")) {
+                        app.request_quit_application();
+                    }
+
+                    ImGui::NextColumn();
                 }
 
-                ImGui::Dummy(ImVec2{0.0f, 10.0f});
-                ImGui::Separator();
-                ImGui::Dummy(ImVec2{0.0f, 2.0f});
+                // right-column: open, recent files, examples
+                {
+                    // de-dupe imgui IDs because these lists may contain duplicate
+                    // names
+                    int id = 0;
 
-                if (ImGui::Button("ImGui demo")) {
-                    app.request_screen_transition<osmv::Imgui_demo_screen>();
+                    // recent files:
+                    if (not recent_files.empty()) {
+                        ImGui::Text("Recent files:");
+                        ImGui::Dummy(ImVec2{0.0f, 3.0f});
+
+                        // iterate in reverse: recent files are stored oldest --> newest
+                        for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
+                            config::Recent_file const& rf = *it;
+                            ImGui::PushID(++id);
+                            if (ImGui::Button(rf.path.filename().c_str())) {
+                                app.request_screen_transition<osmv::Loading_screen>(rf.path);
+                            }
+                            ImGui::PopID();
+                        }
+                    }
+
+                    ImGui::Dummy(ImVec2{0.0f, 5.0f});
+
+                    // examples:
+                    if (not example_osims.empty()) {
+                        ImGui::Text("Examples:");
+                        ImGui::Dummy(ImVec2{0.0f, 3.0f});
+
+                        for (fs::path const& ex : example_osims) {
+                            ImGui::PushID(++id);
+                            if (ImGui::Button(ex.filename().c_str())) {
+                                app.request_screen_transition<osmv::Loading_screen>(ex);
+                            }
+                            ImGui::PopID();
+                        }
+                    }
+
+                    ImGui::NextColumn();
                 }
-
-                if (ImGui::Button("editor")) {
-                    app.request_screen_transition<osmv::Model_editor_screen>();
-                }
-
-                if (ImGui::Button("opengl test")) {
-                    app.request_screen_transition<osmv::Opengl_test_screen>();
-                }
-
-                if (ImGui::Button("Exit")) {
-                    app.request_quit_application();
-                }
-
-                ImGui::End();
             }
+            ImGui::End();
 
             // bottom-right: version info etc.
             {
@@ -146,6 +167,7 @@ namespace osmv {
                 char const* l1 = "osmv " OSMV_VERSION_STRING;
                 ImVec2 l1_dims = ImGui::CalcTextSize(l1);
 
+                char buf[512];
                 std::snprintf(
                     buf,
                     sizeof(buf),

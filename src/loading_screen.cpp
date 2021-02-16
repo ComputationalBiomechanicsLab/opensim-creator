@@ -1,6 +1,7 @@
 #include "loading_screen.hpp"
 
 #include "application.hpp"
+#include "config.hpp"
 #include "gl.hpp"
 #include "opensim_wrapper.hpp"
 #include "show_model_screen.hpp"
@@ -59,6 +60,7 @@ namespace osmv {
             // loading the osim file.
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
+                    osmv::config::add_recent_file(path);
                     app.request_screen_transition<Show_model_screen>(path, result.get().value());
                     return;
                 }
