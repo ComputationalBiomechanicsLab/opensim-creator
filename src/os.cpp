@@ -108,12 +108,22 @@ void osmv::install_backtrace_handler() {
     sigact.sa_sigaction = OSMV_critical_error_handler;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
+    // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0) {
         fprintf(
             stderr,
             "osmv: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
             SIGSEGV,
             strsignal(SIGSEGV));
+    }
+
+    // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
+    if (sigaction(SIGABRT, &sigact, nullptr) != 0) {
+        fprintf(
+            stderr,
+            "osmv: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
+            SIGABRT,
+            strsignal(SIGABRT));
     }
 }
 
