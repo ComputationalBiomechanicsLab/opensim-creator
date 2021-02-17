@@ -418,16 +418,8 @@ void osmv::Simple_model_renderer::reallocate_buffers(int w, int h, int samples) 
 bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
     Application& application = app();
 
-    // other edge-case: the event is a sample count change
-    if (e.type == SDL_USEREVENT and e.user.code == OsmvCustomEvent_SamplesChanged) {
-        auto [w, h] = application.window_dimensions();
-        int samples = application.samples();
-        renderer.set_config(Raw_renderer_config{w, h, samples});
-        return true;
-    }
-
-    float aspect_ratio = app().window_aspect_ratio();
-    auto window_dims = application.window_dimensions();
+    auto dims = sdl::Window_dimensions{renderer.config().w, renderer.config().h};
+    float aspect_ratio = static_cast<float>(dims.w) / static_cast<float>(dims.h);
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
@@ -462,15 +454,15 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
 
         if (flags & SimpleModelRendererFlags_Dragging) {
             // alter camera position while dragging
-            float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
-            float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
+            float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(dims.w);
+            float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(dims.h);
             theta += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dx;
             phi += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dy;
         }
 
         if (flags & SimpleModelRendererFlags_Panning) {
-            float dx = static_cast<float>(e.motion.xrel) / static_cast<float>(window_dims.w);
-            float dy = -static_cast<float>(e.motion.yrel) / static_cast<float>(window_dims.h);
+            float dx = static_cast<float>(e.motion.xrel) / static_cast<float>(dims.w);
+            float dy = -static_cast<float>(e.motion.yrel) / static_cast<float>(dims.h);
 
             // how much panning is done depends on how far the camera is from the
             // origin (easy, with polar coordinates) *and* the FoV of the camera.
@@ -492,23 +484,25 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
         }
 
         // wrap mouse if it hits edges
+        /*
         if (flags & (SimpleModelRendererFlags_Dragging | SimpleModelRendererFlags_Panning)) {
             constexpr int edge_width = 5;
-            if (e.motion.x + edge_width > window_dims.w) {
+            if (e.motion.x + edge_width > dims.w) {
                 application.move_mouse_to(edge_width, e.motion.y);
             }
             if (e.motion.x - edge_width < 0) {
-                application.move_mouse_to(window_dims.w - edge_width, e.motion.y);
+                application.move_mouse_to(dims.w - edge_width, e.motion.y);
             }
-            if (e.motion.y + edge_width > window_dims.h) {
+            if (e.motion.y + edge_width > dims.h) {
                 application.move_mouse_to(e.motion.x, edge_width);
             }
             if (e.motion.y - edge_width < 0) {
-                application.move_mouse_to(e.motion.x, window_dims.h - edge_width);
+                application.move_mouse_to(e.motion.x, dims.h - edge_width);
             }
 
             return true;
         }
+        */
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (e.wheel.y > 0 and radius >= 0.1f) {
             radius *= mouse_wheel_sensitivity;
@@ -648,16 +642,8 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     // into each mesh instance
     renderer.sort_meshes_for_drawing(geometry.meshes);
 
-    // set hit-testing location based on mouse position
-    //
-    // - SDL screen coords are traditional screen coords. Origin top-left, Y goes down
-    // - OpenGL screen coords are mathematical coords. Origin bottom-left, Y goes up
-    sdl::Mouse_state m = sdl::GetMouseState();
-    Window_dimensions d = app().window_dimensions();
-    renderer.passthrough_hittest_x = m.x;
-    renderer.passthrough_hittest_y = d.h - m.y;
-
-    // set any other parameters that the raw renderer depends on
+    renderer.passthrough_hittest_x = hovertest_x;
+    renderer.passthrough_hittest_y = hovertest_y;
     renderer.view_matrix = compute_view_matrix(theta, phi, radius, pan);
     renderer.projection_matrix = glm::perspective(
         fov, static_cast<float>(renderer.config().w) / static_cast<float>(renderer.config().h), znear, zfar);

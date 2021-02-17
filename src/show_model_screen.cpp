@@ -682,7 +682,7 @@ namespace osmv {
 
             // if no events were captured above, let the model viewer handle
             // the event
-            if (mouse_over_renderer) {
+            if (mouse_over_renderer or e.type == SDL_MOUSEBUTTONUP) {
                 return renderer.on_event(e);
             }
 
@@ -735,8 +735,11 @@ namespace osmv {
         void draw(Application& app) {
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
-            if (ImGui::Begin("render", nullptr)) {
-                draw_render_tab();
+            if (ImGui::Begin("render")) {
+                if (ImGui::BeginChild("child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
+                    draw_render_tab();
+                    ImGui::EndChild();
+                }
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -850,6 +853,7 @@ namespace osmv {
             renderer.apply_standard_rim_coloring(selected_component);
             auto dims = ImGui::GetContentRegionAvail();
             renderer.reallocate_buffers(static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples());
+
             gl::Texture_2d& render = renderer.draw();
 
             {
@@ -862,8 +866,17 @@ namespace osmv {
                 ImVec2 uv0{0, 1};
                 ImVec2 uv1{1, 0};
 
+                ImVec2 cp = ImGui::GetCursorPos();
+                ImVec2 mp = ImGui::GetMousePos();
+                ImVec2 wp = ImGui::GetWindowPos();
+
                 ImGui::Image(texture_handle, image_dimensions, uv0, uv1);
+
                 mouse_over_renderer = ImGui::IsItemHovered();
+
+                renderer.hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
+                // y is reversed (OpenGL coords, not screen)
+                renderer.hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
             }
 
             // overlay: if the user is hovering over a component, write the component's name

@@ -86,6 +86,8 @@ namespace osmv {
     public:
         // this is set whenever the implementation detects that the mouse is over
         // a component (provided hover detection is enabled in the flags)
+        int hovertest_x = -1;
+        int hovertest_y = -1;
         OpenSim::Component const* hovered_component = nullptr;
 
         // not currently runtime-editable
