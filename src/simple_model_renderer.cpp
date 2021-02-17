@@ -642,39 +642,41 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     // into each mesh instance
     renderer.sort_meshes_for_drawing(geometry.meshes);
 
-    renderer.passthrough_hittest_x = hovertest_x;
-    renderer.passthrough_hittest_y = hovertest_y;
-    renderer.view_matrix = compute_view_matrix(theta, phi, radius, pan);
-    renderer.projection_matrix = glm::perspective(
+    Raw_drawcall_params params;
+
+    params.passthrough_hittest_x = hovertest_x;
+    params.passthrough_hittest_y = hovertest_y;
+    params.view_matrix = compute_view_matrix(theta, phi, radius, pan);
+    params.projection_matrix = glm::perspective(
         fov, static_cast<float>(renderer.config().w) / static_cast<float>(renderer.config().h), znear, zfar);
-    renderer.view_pos = spherical_2_cartesian(theta, phi, radius);
-    renderer.light_pos = light_pos;
-    renderer.light_rgb = light_rgb;
-    renderer.background_rgba = background_rgba;
-    renderer.rim_rgba = rim_rgba;
-    renderer.rim_thickness = rim_thickness;
-    renderer.flags = RawRendererFlags_None;
-    renderer.flags |= RawRendererFlags_PerformPassthroughHitTest;
-    renderer.flags |= RawRendererFlags_UseOptimizedButDelayed1FrameHitTest;
-    renderer.flags |= RawRendererFlags_DrawSceneGeometry;
+    params.view_pos = spherical_2_cartesian(theta, phi, radius);
+    params.light_pos = light_pos;
+    params.light_rgb = light_rgb;
+    params.background_rgba = background_rgba;
+    params.rim_rgba = rim_rgba;
+    params.rim_thickness = rim_thickness;
+    params.flags = RawRendererFlags_None;
+    params.flags |= RawRendererFlags_PerformPassthroughHitTest;
+    params.flags |= RawRendererFlags_UseOptimizedButDelayed1FrameHitTest;
+    params.flags |= RawRendererFlags_DrawSceneGeometry;
     if (flags & SimpleModelRendererFlags_WireframeMode) {
-        renderer.flags |= RawRendererFlags_WireframeMode;
+        params.flags |= RawRendererFlags_WireframeMode;
     }
     if (flags & SimpleModelRendererFlags_ShowMeshNormals) {
-        renderer.flags |= RawRendererFlags_ShowMeshNormals;
+        params.flags |= RawRendererFlags_ShowMeshNormals;
     }
     if (flags & SimpleModelRendererFlags_ShowFloor) {
-        renderer.flags |= RawRendererFlags_ShowFloor;
+        params.flags |= RawRendererFlags_ShowFloor;
     }
     if (flags & SimpleModelRendererFlags_DrawRims) {
-        renderer.flags |= RawRendererFlags_DrawRims;
+        params.flags |= RawRendererFlags_DrawRims;
     }
     if (app().is_in_debug_mode()) {
-        renderer.flags |= RawRendererFlags_DrawDebugQuads;
+        params.flags |= RawRendererFlags_DrawDebugQuads;
     }
 
     // perform draw call
-    gl::Texture_2d& render = renderer.draw(geometry.meshes);
+    gl::Texture_2d& render = renderer.draw(params, geometry.meshes);
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might

@@ -626,7 +626,8 @@ void osmv::Raw_renderer::sort_meshes_for_drawing(Mesh_instance* meshes, size_t n
     }
 }
 
-gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
+gl::Texture_2d&
+    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t nmeshes) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -688,7 +689,7 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     //   - COLOR0: main scene render: fill in background
     //   - COLOR1: RGBA passthrough (selection logic + rim alpa): blank out all channels
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-    gl::ClearColor(background_rgba);
+    gl::ClearColor(params.background_rgba);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     gl::DrawBuffer(GL_COLOR_ATTACHMENT1);
@@ -698,7 +699,7 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     // handle wireframe mode: should only be enabled for scene + floor render: the other
     // renders will render to a screen-sized quad
     GLenum original_poly_mode = gl::GetEnum(GL_POLYGON_MODE);
-    if (flags & RawRendererFlags_WireframeMode) {
+    if (params.flags & RawRendererFlags_WireframeMode) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -719,16 +720,16 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     // - COLOR1: RGBA passthrough: written to output as-is
     //     - the input color encodes the selected component index (RGB) and the rim
     //       alpha (A). It's used in downstream steps
-    if (flags & RawRendererFlags_DrawSceneGeometry) {
+    if (params.flags & RawRendererFlags_DrawSceneGeometry) {
         Gouraud_mrt_shader& shader = state->shaders.gouraud;
 
         gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
         gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjMat, projection_matrix);
-        gl::Uniform(shader.uViewMat, view_matrix);
-        gl::Uniform(shader.uLightPos, light_pos);
-        gl::Uniform(shader.uLightColor, light_rgb);
-        gl::Uniform(shader.uViewPos, view_pos);
+        gl::Uniform(shader.uProjMat, params.projection_matrix);
+        gl::Uniform(shader.uViewMat, params.view_matrix);
+        gl::Uniform(shader.uLightPos, params.light_pos);
+        gl::Uniform(shader.uLightColor, params.light_rgb);
+        gl::Uniform(shader.uViewPos, params.view_pos);
 
         // blending:
         //     COLOR0 should be blended because OpenSim scenes can contain blending
@@ -754,13 +755,13 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     }
 
     // (optional): draw a textured floor into COLOR0
-    if (flags & RawRendererFlags_ShowFloor) {
+    if (params.flags & RawRendererFlags_ShowFloor) {
         Plain_texture_shader& pts = state->shaders.plain_texture;
 
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(pts.p);
-        gl::Uniform(pts.projMat, projection_matrix);
-        gl::Uniform(pts.viewMat, view_matrix);
+        gl::Uniform(pts.projMat, params.projection_matrix);
+        gl::Uniform(pts.viewMat, params.view_matrix);
         gl::Uniform(pts.modelMat, state->floor.model_mtx);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(state->floor.floor_texture);
@@ -775,12 +776,12 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
 
     // (optional): render scene normals into COLOR0
-    if (flags & RawRendererFlags_ShowMeshNormals) {
+    if (params.flags & RawRendererFlags_ShowMeshNormals) {
         Normals_shader& shader = state->shaders.normals;
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjMat, projection_matrix);
-        gl::Uniform(shader.uViewMat, view_matrix);
+        gl::Uniform(shader.uProjMat, params.projection_matrix);
+        gl::Uniform(shader.uViewMat, params.view_matrix);
 
         for (size_t i = 0; i < nmeshes; ++i) {
             Mesh_instance const& m = meshes[i];
@@ -808,13 +809,13 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     //
     // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
     // model information (e.g. "a component index") into screenspace
-    if (flags & RawRendererFlags_PerformPassthroughHitTest) {
+    if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
         //
         // this causes the subsequent draw call to only run the fragment shader around where
         // we actually care about
-        glViewport(passthrough_hittest_x - 1, passthrough_hittest_y - 1, 3, 3);
+        glViewport(params.passthrough_hittest_x - 1, params.passthrough_hittest_y - 1, 3, 3);
 
         // bind to a non-MSXAAed FBO
         gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.skip_msxaa.fbo);
@@ -866,13 +867,14 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
         //      requires that this PBO is populated once the mapping is enabled, so this will
         //      stall the pipeline. However, that pipeline stall will be on the *previous* frame
         //      which is less costly to stall on
-        if (flags & RawRendererFlags_UseOptimizedButDelayed1FrameHitTest) {
+        if (params.flags & RawRendererFlags_UseOptimizedButDelayed1FrameHitTest) {
             int reader = buffers.pbo_idx % static_cast<int>(buffers.pbos.size());
             int mapper = (buffers.pbo_idx + 1) % static_cast<int>(buffers.pbos.size());
 
             // launch asynchronous request for this frame's pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(reader)]);
-            glReadPixels(passthrough_hittest_x, passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glReadPixels(
+                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
             // synchrnously read *last frame's* pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(mapper)]);
@@ -896,7 +898,8 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
             // bizzarely (e.g. because it is delayed one frame)
 
             GLubyte rgba[4]{};
-            glReadPixels(passthrough_hittest_x, passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+            glReadPixels(
+                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
 
             passthrough_result_prev_frame[0] = passthrough_result_this_frame[0];
             passthrough_result_prev_frame[1] = passthrough_result_this_frame[1];
@@ -967,7 +970,7 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
     // edge-detected, and the rims are in screen-space, rather than world space (so they don't
     // "zoom out" as if they were "in the scene"). However, GPUs are fairly efficient at running
     // branchless kernel lookups over a screen, so it isn't as expensive as you think
-    if (flags & RawRendererFlags_DrawRims) {
+    if (params.flags & RawRendererFlags_DrawRims) {
         Edge_detection_shader& shader = state->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
@@ -976,8 +979,8 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(buffers.color1_resolved.tex);
         gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::Uniform(shader.uRimRgba, rim_rgba);
-        gl::Uniform(shader.uRimThickness, rim_thickness);
+        gl::Uniform(shader.uRimRgba, params.rim_rgba);
+        gl::Uniform(shader.uRimThickness, params.rim_thickness);
 
         glEnable(GL_BLEND);  // rims can have alpha
         glDisable(GL_DEPTH_TEST);
@@ -994,7 +997,7 @@ gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nme
 #endif
 
     // render debug quads onto output (if applicable)
-    if (flags & RawRendererFlags_DrawDebugQuads) {
+    if (params.flags & RawRendererFlags_DrawDebugQuads) {
         Plain_texture_shader& pts = state->shaders.plain_texture;
         gl::UseProgram(pts.p);
 

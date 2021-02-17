@@ -125,19 +125,23 @@ namespace osmv {
         int samples;
     };
 
-    struct Renderer_impl;
-    struct Raw_renderer final {
-        glm::mat4 view_matrix{};
-        glm::mat4 projection_matrix{};
-        glm::vec3 view_pos = {0.0f, 0.0f, 0.0f};
+    struct Raw_drawcall_params final {
+        glm::mat4 view_matrix = {};
+        glm::mat4 projection_matrix = {};
+        glm::vec3 view_pos = {};
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
         glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
         glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
         float rim_thickness = 0.002f;
+
         Raw_renderer_flags flags = RawRendererFlags_Default;
         int passthrough_hittest_x = 0;
         int passthrough_hittest_y = 0;
+    };
+
+    struct Renderer_impl;
+    struct Raw_renderer final {
         unsigned char passthrough_result_prev_frame[2];
         unsigned char passthrough_result_this_frame[2];
 
@@ -166,11 +170,11 @@ namespace osmv {
             sort_meshes_for_drawing(c.data(), c.size());
         }
 
-        gl::Texture_2d& draw(Mesh_instance const* meshes, size_t n);
+        gl::Texture_2d& draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t n);
 
         template<typename Container>
-        gl::Texture_2d& draw(Container const& c) {
-            return draw(c.data(), c.size());
+        gl::Texture_2d& draw(Raw_drawcall_params const& params, Container const& c) {
+            return draw(params, c.data(), c.size());
         }
     };
 }
