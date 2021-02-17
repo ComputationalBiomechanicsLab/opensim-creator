@@ -4,6 +4,7 @@
 #include <glm/vec4.hpp>
 
 #include <cstddef>
+#include <vector>
 
 // raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
 //
@@ -119,11 +120,20 @@ namespace osmv {
                                    RawRendererFlags_DrawSceneGeometry
     };
 
-    struct Raw_renderer_config final {
-        int w;
-        int h;
-        int samples;
+    struct Raw_renderer_drawlist final {
+        std::vector<Mesh_instance> instances;
+
+        void clear() {
+            instances.clear();
+        }
+
+        Mesh_instance& emplace_back(glm::mat4 const& _transform, glm::vec4 const& _rgba, int _meshid) {
+            return instances.emplace_back(_transform, _rgba, _meshid);
+        }
     };
+
+    // note: can re-order the mesh instance list
+    void optimize_drawlist(Raw_renderer_drawlist&);
 
     struct Raw_drawcall_params final {
         glm::mat4 view_matrix = {};
@@ -140,11 +150,24 @@ namespace osmv {
         int passthrough_hittest_y = 0;
     };
 
+    struct Raw_drawcall_result final {
+        gl::Texture_2d* texture;
+        unsigned char passthrough_hittest_result[2];
+    };
+
+    struct Raw_renderer_config final {
+        int w;
+        int h;
+        int samples;
+    };
+
+    struct Raw_renderer_dimensions final {
+        int x;
+        int y;
+    };
+
     struct Renderer_impl;
     struct Raw_renderer final {
-        unsigned char passthrough_result_prev_frame[2];
-        unsigned char passthrough_result_this_frame[2];
-
     private:
         Renderer_impl* state;
 
@@ -157,24 +180,11 @@ namespace osmv {
         ~Raw_renderer() noexcept;
 
         Raw_renderer_config config() const noexcept;
-        void set_config(Raw_renderer_config const&);
+        void change_config(Raw_renderer_config const&);
 
-        // sort the provided meshes ready for a draw call
-        //
-        // if you skip this step, drawing might perform *extremely* sub-optimally and
-        // blended components might be drawn in the wrong order
-        void sort_meshes_for_drawing(Mesh_instance* meshes, size_t n);
+        glm::vec2 dimensions() const noexcept;
+        float aspect_ratio() const noexcept;
 
-        template<typename Container>
-        void sort_meshes_for_drawing(Container& c) {
-            sort_meshes_for_drawing(c.data(), c.size());
-        }
-
-        gl::Texture_2d& draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t n);
-
-        template<typename Container>
-        gl::Texture_2d& draw(Raw_drawcall_params const& params, Container const& c) {
-            return draw(params, c.data(), c.size());
-        }
+        Raw_drawcall_result draw(Raw_drawcall_params const& config, Raw_renderer_drawlist const& drawlist);
     };
 }

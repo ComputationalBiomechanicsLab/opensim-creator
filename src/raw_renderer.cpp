@@ -592,19 +592,31 @@ osmv::Raw_renderer_config osmv::Raw_renderer::config() const noexcept {
     return Raw_renderer_config{bufs.w, bufs.h, bufs.samples};
 }
 
-void osmv::Raw_renderer::set_config(Raw_renderer_config const& cfg) {
+void osmv::Raw_renderer::change_config(Raw_renderer_config const& cfg) {
     Renderer_buffers& b = state->buffers;
     if (cfg.w != b.w or cfg.h != b.h or cfg.samples != b.samples) {
         state->buffers = Renderer_buffers{cfg.w, cfg.h, cfg.samples};
     }
 }
 
-void osmv::Raw_renderer::sort_meshes_for_drawing(Mesh_instance* meshes, size_t n) {
+glm::vec2 osmv::Raw_renderer::dimensions() const noexcept {
+    return {static_cast<float>(state->buffers.w), static_cast<float>(state->buffers.h)};
+}
+
+float osmv::Raw_renderer::aspect_ratio() const noexcept {
+    glm::vec2 d = dimensions();
+    return d.x / d.y;
+}
+
+void osmv::optimize_drawlist(Raw_renderer_drawlist& dl) {
     // the renderer is an instanced renderer that batches adjacent meshes that have
     // the same mesh ID
     //
     // an extra consideration is blending: blended elements should always be drawn
     // last, because they are blended "over" the other elements in the scene
+
+    size_t n = dl.instances.size();
+    Mesh_instance* meshes = dl.instances.data();
 
     // first, partition by blending to put blended elements at the end
     auto it1 = std::partition(meshes, meshes + n, [](Mesh_instance const& a) { return a.rgba.a >= 1.0f; });
@@ -626,8 +638,8 @@ void osmv::Raw_renderer::sort_meshes_for_drawing(Mesh_instance* meshes, size_t n
     }
 }
 
-gl::Texture_2d&
-    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t nmeshes) {
+osmv::Raw_drawcall_result
+    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Raw_renderer_drawlist const& drawlist) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -646,6 +658,9 @@ gl::Texture_2d&
     // debug OpenGL: ensure there are no OpenGL errors before setup
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
+
+    Mesh_instance const* meshes = drawlist.instances.data();
+    size_t nmeshes = drawlist.instances.size();
 
     Renderer_buffers& buffers = state->buffers;
     std::vector<Instance_batch>& instance_batches = state->instance_batches;
@@ -801,6 +816,9 @@ gl::Texture_2d&
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
+    Raw_drawcall_result rv;
+    rv.texture = &buffers.color0_resolved.tex;
+
     // perform passthrough hit testing
     //
     // in the previous draw call, COLOR1's RGB channels encoded arbitrary passthrough data
@@ -880,12 +898,9 @@ gl::Texture_2d&
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(mapper)]);
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
-            // these aren't applicable if using delayed hit testing
-            passthrough_result_this_frame[0] = 0x00;
-            passthrough_result_this_frame[1] = 0x00;
-
-            passthrough_result_prev_frame[0] = src[0];
-            passthrough_result_prev_frame[1] = src[1];
+            // note: these values are the *last frame*'s
+            rv.passthrough_hittest_result[0] = src[0];
+            rv.passthrough_hittest_result[1] = src[1];
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -901,11 +916,8 @@ gl::Texture_2d&
             glReadPixels(
                 params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
 
-            passthrough_result_prev_frame[0] = passthrough_result_this_frame[0];
-            passthrough_result_prev_frame[1] = passthrough_result_this_frame[1];
-
-            passthrough_result_this_frame[0] = rgba[0];
-            passthrough_result_this_frame[1] = rgba[1];
+            rv.passthrough_hittest_result[0] = rgba[0];
+            rv.passthrough_hittest_result[1] = rgba[1];
         }
     }
 
@@ -1070,5 +1082,5 @@ gl::Texture_2d&
     // bind back to the original framebuffer (assumed to be window)
     gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
-    return buffers.color0_resolved.tex;
+    return rv;
 }

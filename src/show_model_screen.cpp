@@ -797,8 +797,9 @@ namespace osmv {
             // perform screen-specific geometry fixups
             if (only_select_muscles) {
                 OpenSim::Model const* m = model.get();
-                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
-                    OpenSim::Component const* c = renderer.geometry.associated_components[i];
+
+                for (Mutable_opensim_mesh_instance mi : renderer.geometry) {
+                    OpenSim::Component const* c = mi.associated_component;
 
                     // for this screen specifically, the "owner"s should be fixed up to point to
                     // muscle objects, rather than direct (e.g. GeometryPath) objects
@@ -811,14 +812,15 @@ namespace osmv {
                     if (c == m) {
                         c = nullptr;
                     }
-                    renderer.geometry.associated_components[i] = c;
+
+                    mi.associated_component = c;
                 }
             }
 
             if (muscle_recoloring == MuscleRecoloring_Strain) {
-                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
-                    Mesh_instance& mi = renderer.geometry.meshes[i];
-                    OpenSim::Component const* component = renderer.geometry.associated_components[i];
+                for (Mutable_opensim_mesh_instance mip : renderer.geometry) {
+                    Mesh_instance& mi = mip.data;
+                    OpenSim::Component const* component = mip.associated_component;
 
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(component);
                     if (musc == nullptr) {
@@ -833,9 +835,9 @@ namespace osmv {
             }
 
             if (muscle_recoloring == MuscleRecoloring_Length) {
-                for (size_t i = 0; i < renderer.geometry.meshes.size(); ++i) {
-                    Mesh_instance& mi = renderer.geometry.meshes[i];
-                    OpenSim::Component const* component = renderer.geometry.associated_components[i];
+                for (Mutable_opensim_mesh_instance mip : renderer.geometry) {
+                    Mesh_instance& mi = mip.data;
+                    OpenSim::Component const* component = mip.associated_component;
 
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(component);
                     if (musc == nullptr) {

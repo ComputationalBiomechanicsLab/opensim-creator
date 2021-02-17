@@ -27,14 +27,85 @@ namespace osmv {
     // geometry generated from an OpenSim model + SimTK state pair
     struct OpenSim_model_geometry final {
         // these two vectors are 1:1 associated
-        std::vector<Mesh_instance> meshes;
+        Raw_renderer_drawlist drawlist;
         std::vector<OpenSim::Component const*> associated_components;
 
         void clear() {
-            meshes.clear();
+            drawlist.clear();
             associated_components.clear();
         }
+
+        Mesh_instance& push_back(OpenSim::Component const*, glm::mat4 transform, glm::vec4 rgba, int meshid);
     };
+
+    struct Mutable_opensim_mesh_instance final {
+        OpenSim::Component const*& associated_component;
+        Mesh_instance& data;
+    };
+
+    struct Immutable_opensim_mesh_instance final {
+        OpenSim::Component const* associated_component;
+        Mesh_instance const& data;
+    };
+
+    template<bool IsConst>
+    class OpenSim_geometry_iterator final {
+        OpenSim_model_geometry& geom;
+        size_t pos = 0;
+
+    public:
+        OpenSim_geometry_iterator(OpenSim_model_geometry& _geom, size_t _pos) noexcept : geom{_geom}, pos{_pos} {
+        }
+
+        template<bool T = IsConst, typename = typename std::enable_if<T, Immutable_opensim_mesh_instance>::type>
+        typename std::enable_if<T, Immutable_opensim_mesh_instance>::type operator*() noexcept {
+            return Immutable_opensim_mesh_instance{geom.associated_components[pos], geom.drawlist.instances[pos]};
+        }
+
+        template<bool T = !IsConst, typename = typename std::enable_if<T, Mutable_opensim_mesh_instance>::type>
+        typename std::enable_if<T, Mutable_opensim_mesh_instance>::type operator*() noexcept {
+            return Mutable_opensim_mesh_instance{geom.associated_components[pos], geom.drawlist.instances[pos]};
+        }
+
+        bool operator!=(OpenSim_geometry_iterator const& other) const noexcept {
+            return pos != other.pos;
+        }
+
+        OpenSim_geometry_iterator& operator++() noexcept {
+            ++pos;
+            return *this;
+        }
+    };
+
+    inline osmv::OpenSim_geometry_iterator<true> begin(osmv::OpenSim_model_geometry const& geom) {
+        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom), 0};
+    }
+
+    inline osmv::OpenSim_geometry_iterator<true> cbegin(osmv::OpenSim_model_geometry const& geom) {
+        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom), 0};
+    }
+
+    inline osmv::OpenSim_geometry_iterator<false> begin(osmv::OpenSim_model_geometry& geom) {
+        return osmv::OpenSim_geometry_iterator<false>{geom, 0};
+    }
+
+    inline osmv::OpenSim_geometry_iterator<true> end(osmv::OpenSim_model_geometry const& geom) {
+        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom),
+                                                     geom.associated_components.size()};
+    }
+
+    inline osmv::OpenSim_geometry_iterator<true> cend(osmv::OpenSim_model_geometry const& geom) {
+        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom),
+                                                     geom.associated_components.size()};
+    }
+
+    inline osmv::OpenSim_geometry_iterator<false> end(osmv::OpenSim_model_geometry& geom) {
+        return osmv::OpenSim_geometry_iterator<false>{const_cast<osmv::OpenSim_model_geometry&>(geom),
+                                                      geom.associated_components.size()};
+    }
+}
+
+namespace osmv {
 
     // runtime rendering flags: the renderer uses these to make rendering decisions
     using SimpleModelRendererFlags = int;

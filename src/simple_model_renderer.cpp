@@ -204,12 +204,13 @@ namespace {
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
         SimbodyMatterSubsystem const& matter_subsystem;
         SimTK::State const& state;
-        std::vector<osmv::Mesh_instance>& out;
+        osmv::OpenSim_model_geometry& out;
+        OpenSim::Component const* cur_component = nullptr;
 
         Geometry_visitor(
             SimbodyMatterSubsystem const& _matter_subsystem,
             SimTK::State const& _state,
-            std::vector<osmv::Mesh_instance>& _out) :
+            osmv::OpenSim_model_geometry& _out) :
             matter_subsystem{_matter_subsystem},
             state{_state},
             out{_out} {
@@ -294,13 +295,13 @@ namespace {
 
             glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
 
-            out.emplace_back(cylinder_xform, rgba(geom), global_meshes().cylinder_meshid);
+            out.push_back(cur_component, cylinder_xform, rgba(geom), global_meshes().cylinder_meshid);
         }
         void implementBrickGeometry(const DecorativeBrick& geom) override {
             SimTK::Vec3 dims = geom.getHalfLengths();
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
 
-            out.emplace_back(xform, rgba(geom), global_meshes().cube_meshid);
+            out.push_back(cur_component, xform, rgba(geom), global_meshes().cube_meshid);
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -311,7 +312,7 @@ namespace {
 
             glm::mat4 xform = glm::scale(m, s);
 
-            out.emplace_back(xform, rgba(geom), global_meshes().cylinder_meshid);
+            out.push_back(cur_component, xform, rgba(geom), global_meshes().cylinder_meshid);
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
             // nyi
@@ -320,7 +321,7 @@ namespace {
             float r = static_cast<float>(geom.getRadius());
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
 
-            out.emplace_back(xform, rgba(geom), global_meshes().sphere_meshid);
+            out.push_back(cur_component, xform, rgba(geom), global_meshes().sphere_meshid);
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
             // nyi
@@ -334,7 +335,7 @@ namespace {
             m = glm::scale(m, s);
 
             glm::vec4 rgba{1.0f, 0.0f, 0.0f, 1.0f};
-            out.emplace_back(m, rgba, global_meshes().cylinder_meshid);
+            out.push_back(cur_component, m, rgba, global_meshes().cylinder_meshid);
         }
         void implementTextGeometry(const DecorativeText&) override {
             // nyi
@@ -368,7 +369,7 @@ namespace {
             }
 
             glm::mat4 xform = glm::scale(transform(m), scale_factors(m));
-            out.emplace_back(xform, rgba(m), meshid);
+            out.push_back(cur_component, xform, rgba(m), meshid);
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
             // nyi
@@ -404,6 +405,24 @@ namespace {
     }
 }
 
+osmv::Mesh_instance& osmv::OpenSim_model_geometry::push_back(
+    OpenSim::Component const* associated_component, glm::mat4 transform, glm::vec4 rgba, int meshid) {
+
+    size_t pos = associated_components.size();
+    associated_components.push_back(associated_component);
+
+    Mesh_instance& mi = drawlist.instances.emplace_back(transform, rgba, meshid);
+
+    // encode associated component into the mesh instance
+    size_t id = pos + 1;
+    assert(id < ((1 << 16) - 1));
+    unsigned char b0 = id & 0xff;
+    unsigned char b1 = (id >> 8) & 0xff;
+    mi.set_passthrough_data(b0, b1);
+
+    return mi;
+}
+
 osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) :
     renderer{osmv::Raw_renderer_config{w, h, samples}} {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
@@ -412,14 +431,12 @@ osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) :
 osmv::Simple_model_renderer::~Simple_model_renderer() noexcept = default;
 
 void osmv::Simple_model_renderer::reallocate_buffers(int w, int h, int samples) {
-    renderer.set_config(Raw_renderer_config{w, h, samples});
+    renderer.change_config(Raw_renderer_config{w, h, samples});
 }
 
 bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
-    Application& application = app();
-
-    auto dims = sdl::Window_dimensions{renderer.config().w, renderer.config().h};
-    float aspect_ratio = static_cast<float>(dims.w) / static_cast<float>(dims.h);
+    glm::vec2 d = renderer.dimensions();
+    float aspect_ratio = d.x / d.y;
 
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
@@ -454,15 +471,15 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
 
         if (flags & SimpleModelRendererFlags_Dragging) {
             // alter camera position while dragging
-            float dx = -static_cast<float>(e.motion.xrel) / static_cast<float>(dims.w);
-            float dy = static_cast<float>(e.motion.yrel) / static_cast<float>(dims.h);
+            float dx = -static_cast<float>(e.motion.xrel) / d.x;
+            float dy = static_cast<float>(e.motion.yrel) / d.y;
             theta += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dx;
             phi += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dy;
         }
 
         if (flags & SimpleModelRendererFlags_Panning) {
-            float dx = static_cast<float>(e.motion.xrel) / static_cast<float>(dims.w);
-            float dy = -static_cast<float>(e.motion.yrel) / static_cast<float>(dims.h);
+            float dx = static_cast<float>(e.motion.xrel) / d.x;
+            float dy = -static_cast<float>(e.motion.yrel) / d.y;
 
             // how much panning is done depends on how far the camera is from the
             // origin (easy, with polar coordinates) *and* the FoV of the camera.
@@ -482,27 +499,6 @@ bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
             pan.y += panning_axes.y;
             pan.z += panning_axes.z;
         }
-
-        // wrap mouse if it hits edges
-        /*
-        if (flags & (SimpleModelRendererFlags_Dragging | SimpleModelRendererFlags_Panning)) {
-            constexpr int edge_width = 5;
-            if (e.motion.x + edge_width > dims.w) {
-                application.move_mouse_to(edge_width, e.motion.y);
-            }
-            if (e.motion.x - edge_width < 0) {
-                application.move_mouse_to(dims.w - edge_width, e.motion.y);
-            }
-            if (e.motion.y + edge_width > dims.h) {
-                application.move_mouse_to(e.motion.x, edge_width);
-            }
-            if (e.motion.y - edge_width < 0) {
-                application.move_mouse_to(e.motion.x, dims.h - edge_width);
-            }
-
-            return true;
-        }
-        */
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (e.wheel.y > 0 and radius >= 0.1f) {
             radius *= mouse_wheel_sensitivity;
@@ -546,58 +542,38 @@ void osmv::Simple_model_renderer::generate_geometry(OpenSim::Model const& model,
 
     // create a visitor that is called by OpenSim whenever it wants to generate abstract
     // geometry
-    Geometry_visitor visitor{model.getSystem().getMatterSubsystem(), state, geometry.meshes};
+    Geometry_visitor visitor{model.getSystem().getMatterSubsystem(), state, geometry};
     OpenSim::ModelDisplayHints const& hints = model.getDisplayHints();
 
     for (OpenSim::Component const& c : model.getComponentList()) {
-
         if (flags & osmv::SimpleModelRendererFlags_DrawStaticDecorations) {
-            OpenSim::Component const* static_owner = nullptr;
+            visitor.cur_component = nullptr;
             if (flags & osmv::SimpleModelRendererFlags_HoverableStaticDecorations) {
-                static_owner = &c;
+                visitor.cur_component = &c;
             }
 
             dg_swap.clear();
             c.generateDecorations(true, hints, state, dg_swap);
 
-            size_t meshes_before = geometry.meshes.size();
             for (SimTK::DecorativeGeometry const& geom : dg_swap) {
                 geom.implementGeometry(visitor);
             }
-            size_t meshes_added = geometry.meshes.size() - meshes_before;
-
-            for (size_t i = 0; i < meshes_added; ++i) {
-                geometry.associated_components.push_back(static_owner);
-            }
-
-            assert(geometry.meshes.size() == geometry.associated_components.size());
         }
 
         if (flags & osmv::SimpleModelRendererFlags_DrawDynamicDecorations) {
-            OpenSim::Component const* dynamic_owner = nullptr;
+            visitor.cur_component = nullptr;
             if (flags & osmv::SimpleModelRendererFlags_HoverableDynamicDecorations) {
-                dynamic_owner = &c;
+                visitor.cur_component = &c;
             }
 
             dg_swap.clear();
             c.generateDecorations(false, hints, state, dg_swap);
 
-            // populate append_out.meshes
-            size_t meshes_before = geometry.meshes.size();
             for (SimTK::DecorativeGeometry const& geom : dg_swap) {
                 geom.implementGeometry(visitor);
             }
-            size_t meshes_added = geometry.meshes.size() - meshes_before;
-
-            for (size_t i = 0; i < meshes_added; ++i) {
-                geometry.associated_components.push_back(dynamic_owner);
-            }
-
-            assert(geometry.meshes.size() == geometry.associated_components.size());
         }
     }
-
-    assert(geometry.meshes.size() == geometry.associated_components.size());
 }
 
 void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Component* selected) {
@@ -611,10 +587,9 @@ void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Com
         selected = reinterpret_cast<OpenSim::Component const*>(-1);
     }
 
-    assert(geometry.meshes.size() == geometry.associated_components.size());
-    for (size_t i = 0; i < geometry.meshes.size(); ++i) {
-        Mesh_instance& mi = geometry.meshes[i];
-        OpenSim::Component const* owner = geometry.associated_components[i];
+    for (Mutable_opensim_mesh_instance mip : geometry) {
+        Mesh_instance& mi = mip.data;
+        OpenSim::Component const* owner = mip.associated_component;
 
         if (owner == selected) {
             mi._passthrough.a = 1.0f;
@@ -627,28 +602,16 @@ void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Com
 }
 
 gl::Texture_2d& osmv::Simple_model_renderer::draw() {
-    // set passthrough data for hit-testing
-    for (size_t i = 0; i < geometry.meshes.size(); ++i) {
-        Mesh_instance& mi = geometry.meshes[i];
-
-        size_t id = i + 1;  // +1 because 0x0000 is reserved
-        assert(id < (1 << 16) - 1);
-        unsigned char b0 = id & 0xff;
-        unsigned char b1 = (id >> 8) & 0xff;
-        mi.set_passthrough_data(b0, b1);
-    }
-
     // we can sort the mesh list now because we have encoded the index into `associated_components`
     // into each mesh instance
-    renderer.sort_meshes_for_drawing(geometry.meshes);
+    osmv::optimize_drawlist(geometry.drawlist);
 
     Raw_drawcall_params params;
 
     params.passthrough_hittest_x = hovertest_x;
     params.passthrough_hittest_y = hovertest_y;
     params.view_matrix = compute_view_matrix(theta, phi, radius, pan);
-    params.projection_matrix = glm::perspective(
-        fov, static_cast<float>(renderer.config().w) / static_cast<float>(renderer.config().h), znear, zfar);
+    params.projection_matrix = glm::perspective(fov, renderer.aspect_ratio(), znear, zfar);
     params.view_pos = spherical_2_cartesian(theta, phi, radius);
     params.light_pos = light_pos;
     params.light_rgb = light_rgb;
@@ -676,17 +639,14 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     }
 
     // perform draw call
-    gl::Texture_2d& render = renderer.draw(params, geometry.meshes);
+    Raw_drawcall_result result = renderer.draw(params, geometry.drawlist);
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might
     //        contain now-stale components
-    unsigned char* bytes = renderer.passthrough_result_prev_frame;
-    unsigned char b0 = bytes[0];
-    unsigned char b1 = bytes[1];
 
-    size_t id = static_cast<size_t>(b0);
-    id |= static_cast<size_t>(b1) << 8;
+    size_t id = static_cast<size_t>(result.passthrough_hittest_result[0]);
+    id |= static_cast<size_t>(result.passthrough_hittest_result[1]) << 8;
 
     if (id == 0) {
         hovered_component = nullptr;
@@ -694,5 +654,5 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
         hovered_component = geometry.associated_components[id - 1];
     }
 
-    return render;
+    return *result.texture;
 }
