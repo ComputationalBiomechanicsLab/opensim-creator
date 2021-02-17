@@ -504,6 +504,10 @@ namespace gl {
         operator GLuint() noexcept {
             return handle;
         }
+
+        GLuint raw_handle() const noexcept {
+            return handle;
+        }
     };
 
     struct Texture_2d final : public Texture {

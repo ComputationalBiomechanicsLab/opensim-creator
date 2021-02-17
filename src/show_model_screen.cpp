@@ -4,14 +4,14 @@
 #include "algs.hpp"
 #include "application.hpp"
 #include "fd_simulation.hpp"
+#include "hierarchy_viewer.hpp"
 #include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
+#include "selection_viewer.hpp"
 #include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
-#include "hierarchy_viewer.hpp"
-#include "selection_viewer.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
@@ -609,6 +609,7 @@ namespace osmv {
         Selected_component selected_component;
 
         Simple_model_renderer renderer;
+        bool mouse_over_renderer = false;
 
         Coordinates_tab_data coords_tab;
         Simulator_tab simulator_tab;
@@ -681,7 +682,11 @@ namespace osmv {
 
             // if no events were captured above, let the model viewer handle
             // the event
-            return renderer.on_event(e);
+            if (mouse_over_renderer) {
+                return renderer.on_event(e);
+            }
+
+            return false;
         }
 
         // "tick" the UI state (usually, used for updating animations etc.)
@@ -728,6 +733,61 @@ namespace osmv {
 
         // draw a frame of the UI
         void draw(Application& app) {
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
+            if (ImGui::Begin("render", nullptr)) {
+                draw_render_tab();
+            }
+            ImGui::End();
+            ImGui::PopStyleVar();
+
+            if (ImGui::Begin("Hierarchy")) {
+                draw_hierarchy_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Muscles")) {
+                draw_muscles_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Outputs")) {
+                draw_outputs_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Utils")) {
+                draw_utils_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Moment Arms")) {
+                draw_moment_arms_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Selection")) {
+                draw_selection_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("UI")) {
+                draw_ui_tab(app);
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Coordinates")) {
+                draw_coords_tab();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Simulate")) {
+                draw_simulate_tab();
+            }
+            ImGui::End();
+        }
+
+        void draw_render_tab() {
             // generate OpenSim scene geometry
             renderer.generate_geometry(model, latest_state);
 
@@ -786,9 +846,25 @@ namespace osmv {
                 }
             }
 
+            // draw the scene to an OpenGL texture
             renderer.apply_standard_rim_coloring(selected_component);
+            auto dims = ImGui::GetContentRegionAvail();
+            renderer.reallocate_buffers(static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples());
+            gl::Texture_2d& render = renderer.draw();
 
-            renderer.draw();
+            {
+                // required by ImGui::Image
+                //
+                // UV coords: ImGui::Image uses different texture coordinates from the renderer
+                //            (specifically, Y is reversed)
+                void* texture_handle = reinterpret_cast<void*>(render.raw_handle());
+                ImVec2 image_dimensions{dims.x, dims.y};
+                ImVec2 uv0{0, 1};
+                ImVec2 uv1{1, 0};
+
+                ImGui::Image(texture_handle, image_dimensions, uv0, uv1);
+                mouse_over_renderer = ImGui::IsItemHovered();
+            }
 
             // overlay: if the user is hovering over a component, write the component's name
             //          next to the mouse
@@ -798,53 +874,6 @@ namespace osmv {
                 ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
                 ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
             }
-
-            // ImGui: draw editor panels
-
-            if (ImGui::Begin("Hierarchy")) {
-                draw_hierarchy_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Muscles")) {
-                draw_muscles_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Outputs")) {
-                draw_outputs_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Utils")) {
-                draw_utils_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Moment Arms")) {
-                draw_moment_arms_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Selection")) {
-                draw_selection_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("UI")) {
-                draw_ui_tab(app);
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Coordinates")) {
-                draw_coords_tab();
-            }
-            ImGui::End();
-
-            if (ImGui::Begin("Simulate")) {
-                draw_simulate_tab();
-            }
-            ImGui::End();
         }
 
         void draw_ui_tab(Application& app) {
@@ -1023,6 +1052,10 @@ namespace osmv {
             if (renderer.flags & SimpleModelRendererFlags_Panning) {
                 ImGui::SameLine();
                 ImGui::Text("panning ");
+            }
+            if (mouse_over_renderer) {
+                ImGui::SameLine();
+                ImGui::Text("interacting ");
             }
         }
 

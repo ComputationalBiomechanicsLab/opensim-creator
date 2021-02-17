@@ -9,6 +9,10 @@
 //
 // this API is designed with performance and power in mind, not convenience. Use a downstream
 // renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
+namespace gl {
+    struct Texture_2d;
+}
+
 namespace osmv {
     constexpr int invalid_meshid = -1;
 
@@ -115,6 +119,12 @@ namespace osmv {
                                    RawRendererFlags_DrawSceneGeometry
     };
 
+    struct Raw_renderer_config final {
+        int w;
+        int h;
+        int samples;
+    };
+
     struct Renderer_impl;
     struct Raw_renderer final {
         glm::mat4 view_matrix{};
@@ -135,14 +145,15 @@ namespace osmv {
         Renderer_impl* state;
 
     public:
-        Raw_renderer(int w, int h, int samples);
+        Raw_renderer(Raw_renderer_config const&);
         Raw_renderer(Raw_renderer const&) = delete;
         Raw_renderer(Raw_renderer&&) = delete;
         Raw_renderer& operator=(Raw_renderer const&) = delete;
         Raw_renderer& operator=(Raw_renderer&&) = delete;
         ~Raw_renderer() noexcept;
 
-        void reallocate_buffers(int w, int h, int samples);
+        Raw_renderer_config config() const noexcept;
+        void set_config(Raw_renderer_config const&);
 
         // sort the provided meshes ready for a draw call
         //
@@ -155,11 +166,11 @@ namespace osmv {
             sort_meshes_for_drawing(c.data(), c.size());
         }
 
-        void draw(Mesh_instance const* meshes, size_t n);
+        gl::Texture_2d& draw(Mesh_instance const* meshes, size_t n);
 
         template<typename Container>
-        void draw(Container const& c) {
-            draw(c.data(), c.size());
+        gl::Texture_2d& draw(Container const& c) {
+            return draw(c.data(), c.size());
         }
     };
 }

@@ -404,30 +404,25 @@ namespace {
     }
 }
 
-osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) : renderer{w, h, samples} {
+osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) :
+    renderer{osmv::Raw_renderer_config{w, h, samples}} {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Simple_model_renderer::~Simple_model_renderer() noexcept = default;
 
+void osmv::Simple_model_renderer::reallocate_buffers(int w, int h, int samples) {
+    renderer.set_config(Raw_renderer_config{w, h, samples});
+}
+
 bool osmv::Simple_model_renderer::on_event(SDL_Event const& e) {
     Application& application = app();
-
-    // edge-case: the event is a resize event, which might invalidate some buffers
-    // the renderer is using
-    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        int w = e.window.data1;
-        int h = e.window.data2;
-        int samples = application.samples();
-        renderer.reallocate_buffers(w, h, samples);
-        return true;
-    }
 
     // other edge-case: the event is a sample count change
     if (e.type == SDL_USEREVENT and e.user.code == OsmvCustomEvent_SamplesChanged) {
         auto [w, h] = application.window_dimensions();
         int samples = application.samples();
-        renderer.reallocate_buffers(w, h, samples);
+        renderer.set_config(Raw_renderer_config{w, h, samples});
         return true;
     }
 
@@ -637,7 +632,7 @@ void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Com
     }
 }
 
-void osmv::Simple_model_renderer::draw() {
+gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     // set passthrough data for hit-testing
     for (size_t i = 0; i < geometry.meshes.size(); ++i) {
         Mesh_instance& mi = geometry.meshes[i];
@@ -664,7 +659,8 @@ void osmv::Simple_model_renderer::draw() {
 
     // set any other parameters that the raw renderer depends on
     renderer.view_matrix = compute_view_matrix(theta, phi, radius, pan);
-    renderer.projection_matrix = glm::perspective(fov, app().window_aspect_ratio(), znear, zfar);
+    renderer.projection_matrix = glm::perspective(
+        fov, static_cast<float>(renderer.config().w) / static_cast<float>(renderer.config().h), znear, zfar);
     renderer.view_pos = spherical_2_cartesian(theta, phi, radius);
     renderer.light_pos = light_pos;
     renderer.light_rgb = light_rgb;
@@ -692,7 +688,7 @@ void osmv::Simple_model_renderer::draw() {
     }
 
     // perform draw call
-    renderer.draw(geometry.meshes);
+    gl::Texture_2d& render = renderer.draw(geometry.meshes);
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might
@@ -709,4 +705,6 @@ void osmv::Simple_model_renderer::draw() {
     } else {
         hovered_component = geometry.associated_components[id - 1];
     }
+
+    return render;
 }

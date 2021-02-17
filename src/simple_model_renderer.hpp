@@ -118,6 +118,8 @@ namespace osmv {
         Simple_model_renderer& operator=(Simple_model_renderer&&) = delete;
         ~Simple_model_renderer() noexcept;
 
+        void reallocate_buffers(int w, int h, int samples);
+
         // handle event (probably forwarded from a screen)
         //
         // returns `true` if the event was handled, `false` otherwise
@@ -140,15 +142,16 @@ namespace osmv {
         //
         // note: this assumes you previously called `generate_geometry`
         // note #2: `draw`ing mutates `this->geometry`
-        void draw();
+        gl::Texture_2d& draw();
 
         // an "on rails" draw call that utilizes the more advanced API
         //
         // use this until you need to customize things
-        void draw(OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected = nullptr) {
+        gl::Texture_2d&
+            draw(OpenSim::Model const& model, SimTK::State const& st, OpenSim::Component const* selected = nullptr) {
             generate_geometry(model, st);
             apply_standard_rim_coloring(selected);
-            draw();
+            return draw();
         }
     };
 }

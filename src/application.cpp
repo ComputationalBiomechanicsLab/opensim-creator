@@ -397,40 +397,8 @@ namespace osmv {
                         return;
                     }
 
-                    // WINDOW EVENT: window events can be *very* important, because screens may
-                    //               depend on the window size
-                    if (e.type == SDL_WINDOWEVENT and e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                        int w = e.window.data1;
-                        int h = e.window.data2;
-                        glViewport(0, 0, w, h);
-                    }
-
                     // ImGui: feed event into ImGui
-                    //
-                    // note: the event *must* keep processing the event if it isn't mouse/keyboard
-                    //       because it might be an event that the current screen needs (e.g. a
-                    //       window resize)
-                    {
-                        ImGui_ImplSDL2_ProcessEvent(&e);
-                        ImGuiIO& io = ImGui::GetIO();
-
-                        switch (e.type) {
-                        case SDL_KEYDOWN:
-                        case SDL_KEYUP:
-                            if (io.WantTextInput) {
-                                continue;
-                            }
-                            break;
-                        case SDL_MOUSEMOTION:
-                        case SDL_MOUSEWHEEL:
-                        case SDL_MOUSEBUTTONUP:
-                        case SDL_MOUSEBUTTONDOWN:
-                            if (io.WantCaptureMouse) {
-                                continue;
-                            }
-                            break;
-                        }
-                    }
+                    ImGui_ImplSDL2_ProcessEvent(&e);
 
                     // DEBUG MODE: toggled with F1
                     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {

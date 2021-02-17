@@ -556,7 +556,7 @@ namespace osmv {
         // batches of instances to be rendered (changes per draw call)
         std::vector<Instance_batch> instance_batches;
 
-        Renderer_impl(int w, int h, int samples) : buffers{w, h, samples} {
+        Renderer_impl(Raw_renderer_config const& settings) : buffers{settings.w, settings.h, settings.samples} {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
@@ -579,7 +579,7 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Raw_renderer::Raw_renderer(int w, int h, int samples) : state(new Renderer_impl(w, h, samples)) {
+osmv::Raw_renderer::Raw_renderer(osmv::Raw_renderer_config const& _settings) : state(new Renderer_impl(_settings)) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
@@ -587,10 +587,15 @@ osmv::Raw_renderer::~Raw_renderer() noexcept {
     delete state;
 }
 
-void osmv::Raw_renderer::reallocate_buffers(int w, int h, int samples) {
+osmv::Raw_renderer_config osmv::Raw_renderer::config() const noexcept {
+    auto const& bufs = state->buffers;
+    return Raw_renderer_config{bufs.w, bufs.h, bufs.samples};
+}
+
+void osmv::Raw_renderer::set_config(Raw_renderer_config const& cfg) {
     Renderer_buffers& b = state->buffers;
-    if (w != b.w or h != b.h or samples != b.samples) {
-        state->buffers = Renderer_buffers{w, h, samples};
+    if (cfg.w != b.w or cfg.h != b.h or cfg.samples != b.samples) {
+        state->buffers = Renderer_buffers{cfg.w, cfg.h, cfg.samples};
     }
 }
 
@@ -621,7 +626,7 @@ void osmv::Raw_renderer::sort_meshes_for_drawing(Mesh_instance* meshes, size_t n
     }
 }
 
-void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
+gl::Texture_2d& osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -669,6 +674,8 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
             pos = end;
         }
     }
+
+    glViewport(0, 0, buffers.w, buffers.h);
 
     // bind to an off-screen framebuffer object (FBO)
     //
@@ -903,7 +910,7 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    // resolve MSXAA in COLOR0
+    // resolve MSXAA in COLOR0 to output texture
     //
     // "resolve" (i.e. blend) the MSXAA samples in COLOR0. We are "done" with
     // COLOR0. You might expect we can directly blit it to the output, but that
@@ -936,36 +943,14 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+    // bind to output texture: all further drawing goes onto it
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.color0_resolved.fbo);
 
 #ifndef NDEBUG
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    // draw resolved COLOR0 onto the screen
-    {
-        Plain_texture_shader& pts = state->shaders.plain_texture;
-        gl::UseProgram(pts.p);
-
-        gl::Uniform(pts.projMat, gl::identity_val);
-        gl::Uniform(pts.viewMat, gl::identity_val);
-        gl::Uniform(pts.modelMat, gl::identity_val);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(buffers.color0_resolved.tex);
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
-        glDisable(GL_DEPTH_TEST);
-        gl::BindVertexArray(state->pts_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
-        gl::BindVertexArray();
-        glEnable(GL_DEPTH_TEST);
-    }
-
-#ifndef NDEBUG
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
-
-    // draw rims highlights over the output
+    // draw rims highlights onto the output
     //
     // COLOR1's alpha channel contains *filled in shapes* for each element in the scene that
     // should be rim-shaded. Those shapes are exactly the same as the scene geometry, so showing
@@ -1008,7 +993,7 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    // render debug quads
+    // render debug quads onto output (if applicable)
     if (flags & RawRendererFlags_DrawDebugQuads) {
         Plain_texture_shader& pts = state->shaders.plain_texture;
         gl::UseProgram(pts.p);
@@ -1078,4 +1063,9 @@ void osmv::Raw_renderer::draw(Mesh_instance const* meshes, size_t nmeshes) {
     // debug OpenGL: ensure no errors after drawing debug quads
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
+
+    // bind back to the original framebuffer (assumed to be window)
+    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+
+    return buffers.color0_resolved.tex;
 }
