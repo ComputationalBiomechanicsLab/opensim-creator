@@ -5,6 +5,7 @@
 #include <SDL_events.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <stdexcept>
 #include <vector>
 
 namespace OpenSim {
@@ -24,85 +25,57 @@ namespace osmv {
 }
 
 namespace osmv {
+
     // geometry generated from an OpenSim model + SimTK state pair
     struct OpenSim_model_geometry final {
         // these two vectors are 1:1 associated
-        Raw_renderer_drawlist drawlist;
+        std::vector<Mesh_instance> instances;
         std::vector<OpenSim::Component const*> associated_components;
 
         void clear() {
-            drawlist.clear();
+            instances.clear();
             associated_components.clear();
         }
 
-        Mesh_instance& push_back(OpenSim::Component const*, glm::mat4 transform, glm::vec4 rgba, int meshid);
-    };
+        template<typename... Args>
+        Mesh_instance& emplace_back(OpenSim::Component const* c, Args&&... args) {
+            size_t idx = associated_components.size();
 
-    struct Mutable_opensim_mesh_instance final {
-        OpenSim::Component const*& associated_component;
-        Mesh_instance& data;
-    };
+            if (idx >= (1 << 16)) {
+                throw std::runtime_error{
+                    "precondition error: tried to render more than the maximum number of components osmv can render"};
+            }
 
-    struct Immutable_opensim_mesh_instance final {
-        OpenSim::Component const* associated_component;
-        Mesh_instance const& data;
-    };
+            associated_components.push_back(c);
+            Mesh_instance& rv = instances.emplace_back(std::forward<Args>(args)...);
 
-    template<bool IsConst>
-    class OpenSim_geometry_iterator final {
-        OpenSim_model_geometry& geom;
-        size_t pos = 0;
+            uint16_t id = static_cast<uint16_t>(idx) + 1;
+            rv.set_passthrough(id & 0xff, (id >> 8) & 0xff);
 
-    public:
-        OpenSim_geometry_iterator(OpenSim_model_geometry& _geom, size_t _pos) noexcept : geom{_geom}, pos{_pos} {
+            return rv;
         }
 
-        template<bool T = IsConst, typename = typename std::enable_if<T, Immutable_opensim_mesh_instance>::type>
-        typename std::enable_if<T, Immutable_opensim_mesh_instance>::type operator*() noexcept {
-            return Immutable_opensim_mesh_instance{geom.associated_components[pos], geom.drawlist.instances[pos]};
+        OpenSim::Component const* associated_component_via_passthrough(unsigned char b0, unsigned char b1) {
+            uint16_t id = b0;
+            id |= static_cast<uint16_t>(b1) << 8;
+            return id == 0 ? nullptr : associated_components[id - 1];
         }
 
-        template<bool T = !IsConst, typename = typename std::enable_if<T, Mutable_opensim_mesh_instance>::type>
-        typename std::enable_if<T, Mutable_opensim_mesh_instance>::type operator*() noexcept {
-            return Mutable_opensim_mesh_instance{geom.associated_components[pos], geom.drawlist.instances[pos]};
-        }
+        template<typename Callback>
+        void for_each(Callback f) {
+            assert(instances.size() == associated_components.size());
 
-        bool operator!=(OpenSim_geometry_iterator const& other) const noexcept {
-            return pos != other.pos;
-        }
+            for (Mesh_instance& mi : instances) {
+                unsigned char b0;
+                unsigned char b1;
+                mi.get_passthrough(&b0, &b1);
 
-        OpenSim_geometry_iterator& operator++() noexcept {
-            ++pos;
-            return *this;
+                OpenSim::Component const* c = associated_component_via_passthrough(b0, b1);
+
+                f(c, mi);
+            }
         }
     };
-
-    inline osmv::OpenSim_geometry_iterator<true> begin(osmv::OpenSim_model_geometry const& geom) {
-        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom), 0};
-    }
-
-    inline osmv::OpenSim_geometry_iterator<true> cbegin(osmv::OpenSim_model_geometry const& geom) {
-        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom), 0};
-    }
-
-    inline osmv::OpenSim_geometry_iterator<false> begin(osmv::OpenSim_model_geometry& geom) {
-        return osmv::OpenSim_geometry_iterator<false>{geom, 0};
-    }
-
-    inline osmv::OpenSim_geometry_iterator<true> end(osmv::OpenSim_model_geometry const& geom) {
-        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom),
-                                                     geom.associated_components.size()};
-    }
-
-    inline osmv::OpenSim_geometry_iterator<true> cend(osmv::OpenSim_model_geometry const& geom) {
-        return osmv::OpenSim_geometry_iterator<true>{const_cast<osmv::OpenSim_model_geometry&>(geom),
-                                                     geom.associated_components.size()};
-    }
-
-    inline osmv::OpenSim_geometry_iterator<false> end(osmv::OpenSim_model_geometry& geom) {
-        return osmv::OpenSim_geometry_iterator<false>{const_cast<osmv::OpenSim_model_geometry&>(geom),
-                                                      geom.associated_components.size()};
-    }
 }
 
 namespace osmv {

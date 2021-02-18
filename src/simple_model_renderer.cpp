@@ -295,13 +295,13 @@ namespace {
 
             glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
 
-            out.push_back(cur_component, cylinder_xform, rgba(geom), global_meshes().cylinder_meshid);
+            out.emplace_back(cur_component, cylinder_xform, rgba(geom), global_meshes().cylinder_meshid);
         }
         void implementBrickGeometry(const DecorativeBrick& geom) override {
             SimTK::Vec3 dims = geom.getHalfLengths();
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
 
-            out.push_back(cur_component, xform, rgba(geom), global_meshes().cube_meshid);
+            out.emplace_back(cur_component, xform, rgba(geom), global_meshes().cube_meshid);
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -312,7 +312,7 @@ namespace {
 
             glm::mat4 xform = glm::scale(m, s);
 
-            out.push_back(cur_component, xform, rgba(geom), global_meshes().cylinder_meshid);
+            out.emplace_back(cur_component, xform, rgba(geom), global_meshes().cylinder_meshid);
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
             // nyi
@@ -321,7 +321,7 @@ namespace {
             float r = static_cast<float>(geom.getRadius());
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
 
-            out.push_back(cur_component, xform, rgba(geom), global_meshes().sphere_meshid);
+            out.emplace_back(cur_component, xform, rgba(geom), global_meshes().sphere_meshid);
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
             // nyi
@@ -335,7 +335,7 @@ namespace {
             m = glm::scale(m, s);
 
             glm::vec4 rgba{1.0f, 0.0f, 0.0f, 1.0f};
-            out.push_back(cur_component, m, rgba, global_meshes().cylinder_meshid);
+            out.emplace_back(cur_component, m, rgba, global_meshes().cylinder_meshid);
         }
         void implementTextGeometry(const DecorativeText&) override {
             // nyi
@@ -369,7 +369,7 @@ namespace {
             }
 
             glm::mat4 xform = glm::scale(transform(m), scale_factors(m));
-            out.push_back(cur_component, xform, rgba(m), meshid);
+            out.emplace_back(cur_component, xform, rgba(m), meshid);
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
             // nyi
@@ -403,24 +403,6 @@ namespace {
     glm::vec3 spherical_2_cartesian(float theta, float phi, float radius) {
         return glm::vec3{radius * sinf(theta) * cosf(phi), radius * sinf(phi), radius * cosf(theta) * cosf(phi)};
     }
-}
-
-osmv::Mesh_instance& osmv::OpenSim_model_geometry::push_back(
-    OpenSim::Component const* associated_component, glm::mat4 transform, glm::vec4 rgba, int meshid) {
-
-    size_t pos = associated_components.size();
-    associated_components.push_back(associated_component);
-
-    Mesh_instance& mi = drawlist.instances.emplace_back(transform, rgba, meshid);
-
-    // encode associated component into the mesh instance
-    size_t id = pos + 1;
-    assert(id < ((1 << 16) - 1));
-    unsigned char b0 = id & 0xff;
-    unsigned char b1 = (id >> 8) & 0xff;
-    mi.set_passthrough_data(b0, b1);
-
-    return mi;
 }
 
 osmv::Simple_model_renderer::Simple_model_renderer(int w, int h, int samples) :
@@ -547,13 +529,10 @@ void osmv::Simple_model_renderer::generate_geometry(OpenSim::Model const& model,
 
     for (OpenSim::Component const& c : model.getComponentList()) {
         if (flags & osmv::SimpleModelRendererFlags_DrawStaticDecorations) {
-            visitor.cur_component = nullptr;
-            if (flags & osmv::SimpleModelRendererFlags_HoverableStaticDecorations) {
-                visitor.cur_component = &c;
-            }
-
             dg_swap.clear();
             c.generateDecorations(true, hints, state, dg_swap);
+
+            visitor.cur_component = flags & osmv::SimpleModelRendererFlags_HoverableStaticDecorations ? &c : nullptr;
 
             for (SimTK::DecorativeGeometry const& geom : dg_swap) {
                 geom.implementGeometry(visitor);
@@ -561,19 +540,18 @@ void osmv::Simple_model_renderer::generate_geometry(OpenSim::Model const& model,
         }
 
         if (flags & osmv::SimpleModelRendererFlags_DrawDynamicDecorations) {
-            visitor.cur_component = nullptr;
-            if (flags & osmv::SimpleModelRendererFlags_HoverableDynamicDecorations) {
-                visitor.cur_component = &c;
-            }
-
             dg_swap.clear();
             c.generateDecorations(false, hints, state, dg_swap);
+
+            visitor.cur_component = flags & osmv::SimpleModelRendererFlags_HoverableDynamicDecorations ? &c : nullptr;
 
             for (SimTK::DecorativeGeometry const& geom : dg_swap) {
                 geom.implementGeometry(visitor);
             }
         }
     }
+
+    optimize_draw_order(geometry.instances.data(), geometry.instances.size());
 }
 
 void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Component* selected) {
@@ -587,27 +565,23 @@ void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Com
         selected = reinterpret_cast<OpenSim::Component const*>(-1);
     }
 
-    for (Mutable_opensim_mesh_instance mip : geometry) {
-        Mesh_instance& mi = mip.data;
-        OpenSim::Component const* owner = mip.associated_component;
-
+    OpenSim::Component const* hovered = hovered_component;
+    geometry.for_each([selected, hovered](OpenSim::Component const* owner, Mesh_instance& mi) {
+        float rim_alpha;
         if (owner == selected) {
-            mi._passthrough.a = 1.0f;
-        } else if (hovered_component != nullptr and hovered_component == owner) {
-            mi._passthrough.a = 0.2f;
+            rim_alpha = 1.0f;
+        } else if (hovered != nullptr and hovered == owner) {
+            rim_alpha = 0.2f;
         } else {
-            mi._passthrough.a = 0.0f;
+            rim_alpha = 0.0f;
         }
-    }
+
+        mi.set_rim_alpha(rim_alpha);
+    });
 }
 
 gl::Texture_2d& osmv::Simple_model_renderer::draw() {
-    // we can sort the mesh list now because we have encoded the index into `associated_components`
-    // into each mesh instance
-    osmv::optimize_drawlist(geometry.drawlist);
-
     Raw_drawcall_params params;
-
     params.passthrough_hittest_x = hovertest_x;
     params.passthrough_hittest_y = hovertest_y;
     params.view_matrix = compute_view_matrix(theta, phi, radius, pan);
@@ -639,14 +613,14 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     }
 
     // perform draw call
-    Raw_drawcall_result result = renderer.draw(params, geometry.drawlist);
+    Raw_drawcall_result result = renderer.draw(params, geometry.instances.data(), geometry.instances.size());
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might
     //        contain now-stale components
 
-    size_t id = static_cast<size_t>(result.passthrough_hittest_result[0]);
-    id |= static_cast<size_t>(result.passthrough_hittest_result[1]) << 8;
+    size_t id = static_cast<size_t>(result.passthrough_result[0]);
+    id |= static_cast<size_t>(result.passthrough_result[1]) << 8;
 
     if (id == 0) {
         hovered_component = nullptr;
@@ -654,5 +628,5 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
         hovered_component = geometry.associated_components[id - 1];
     }
 
-    return *result.texture;
+    return result.texture;
 }

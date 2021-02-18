@@ -4,7 +4,6 @@
 #include <glm/vec4.hpp>
 
 #include <cstddef>
-#include <vector>
 
 // raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
 //
@@ -19,7 +18,7 @@ namespace osmv {
 
     // globally allocate mesh data on the GPU
     //
-    // the returned handle is a "mesh ID" and is guaranteed to be a positive number that
+    // the returned handle is a "mesh ID" and is guaranteed to be a non-negative number that
     // increases monotonically
     //
     // must only be called after OpenGL is initialized
@@ -77,14 +76,16 @@ namespace osmv {
         // INTERNAL: mesh ID: globally unique ID for the mesh vertices that should be rendered
         //
         // the renderer uses this ID to deduplicate and instance draw calls. You shouldn't mess
-        // with this unless you know what you're doing.
+        // with this unless you know what you're doing
         int _meshid;
 
-        Mesh_instance(glm::mat4 const& _transform, glm::vec4 const& _rgba, int __meshid) :
+        Mesh_instance() = default;
+
+        Mesh_instance(glm::mat4 const& _transform, glm::vec4 const& _rgba, int meshid) :
             transform{_transform},
             rgba{_rgba},
             _normal_xform{glm::transpose(glm::inverse(transform))},
-            _meshid{__meshid} {
+            _meshid{meshid} {
         }
 
         void set_rim_alpha(float a) {
@@ -95,11 +96,25 @@ namespace osmv {
         //
         // note: wherever the scene *isn't* rendered, black (0x000000) is encoded, so users of
         //       this should treat 0x000000 as "reserved"
-        void set_passthrough_data(unsigned char b0, unsigned char b1) {
-            // map a byte range (0 - 255) onto an OpenGL color range (0.0f - 1.0f)
+        void set_passthrough(unsigned char b0, unsigned char b1) {
+            // map a bytes (0 - 255) onto an OpenGL color range (0.0f - 1.0f)
             _passthrough.r = static_cast<float>(b0) / 255.0f;
             _passthrough.g = static_cast<float>(b1) / 255.0f;
         }
+
+        void get_passthrough(unsigned char* b0, unsigned char* b1) {
+            *b0 = static_cast<unsigned char>(255.0f * _passthrough.r);
+            *b1 = static_cast<unsigned char>(255.0f * _passthrough.g);
+        }
+    };
+
+    // reorder a contiguous sequence of mesh instances for optimal drawing
+    void optimize_draw_order(Mesh_instance* begin, size_t) noexcept;
+
+    struct Raw_renderer_config final {
+        int w;
+        int h;
+        int samples;
     };
 
     using Raw_renderer_flags = int;
@@ -120,21 +135,6 @@ namespace osmv {
                                    RawRendererFlags_DrawSceneGeometry
     };
 
-    struct Raw_renderer_drawlist final {
-        std::vector<Mesh_instance> instances;
-
-        void clear() {
-            instances.clear();
-        }
-
-        Mesh_instance& emplace_back(glm::mat4 const& _transform, glm::vec4 const& _rgba, int _meshid) {
-            return instances.emplace_back(_transform, _rgba, _meshid);
-        }
-    };
-
-    // note: can re-order the mesh instance list
-    void optimize_drawlist(Raw_renderer_drawlist&);
-
     struct Raw_drawcall_params final {
         glm::mat4 view_matrix = {};
         glm::mat4 projection_matrix = {};
@@ -151,19 +151,13 @@ namespace osmv {
     };
 
     struct Raw_drawcall_result final {
-        gl::Texture_2d* texture;
-        unsigned char passthrough_hittest_result[2];
-    };
+        gl::Texture_2d& texture;
+        unsigned char passthrough_result[2];
 
-    struct Raw_renderer_config final {
-        int w;
-        int h;
-        int samples;
-    };
-
-    struct Raw_renderer_dimensions final {
-        int x;
-        int y;
+        Raw_drawcall_result(gl::Texture_2d& _texture, unsigned char b0, unsigned char b1) :
+            texture{_texture},
+            passthrough_result{b0, b1} {
+        }
     };
 
     struct Renderer_impl;
@@ -185,6 +179,6 @@ namespace osmv {
         glm::vec2 dimensions() const noexcept;
         float aspect_ratio() const noexcept;
 
-        Raw_drawcall_result draw(Raw_drawcall_params const& config, Raw_renderer_drawlist const& drawlist);
+        Raw_drawcall_result draw(Raw_drawcall_params const&, Mesh_instance const* begin, size_t n);
     };
 }

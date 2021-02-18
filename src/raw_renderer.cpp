@@ -479,26 +479,6 @@ namespace {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
-
-    struct Instance_batch final {
-        int meshid;
-        osmv::Mesh_instance const* instances;
-        size_t ninstances;
-        size_t hash;
-    };
-
-    size_t hash_instances(osmv::Mesh_instance const* first, size_t n) {
-        static constexpr size_t expected_instance_size =
-            sizeof(glm::mat4) + sizeof(glm::vec4) + sizeof(glm::vec4) + sizeof(glm::mat4) + sizeof(int);
-        static_assert(
-            sizeof(osmv::Mesh_instance) == expected_instance_size,
-            "unexpected mesh instance size: might contain padding, which would cause undefined behavior when hashing its bytes: review struct layout");
-
-        char const* p = reinterpret_cast<char const*>(first);
-        size_t nbytes = n * sizeof(osmv::Mesh_instance);
-
-        return std::hash<std::string_view>{}(std::string_view{p, nbytes});
-    }
 }
 
 namespace osmv {
@@ -553,13 +533,14 @@ namespace osmv {
         // other OpenGL (GPU) buffers used by the renderer
         Renderer_buffers buffers;
 
-        // batches of instances to be rendered (changes per draw call)
-        std::vector<Instance_batch> instance_batches;
-
         Renderer_impl(Raw_renderer_config const& settings) : buffers{settings.w, settings.h, settings.samples} {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
+
+    static bool mi_drawordering_comp(Mesh_instance const& a, Mesh_instance const& b) {
+        return a.rgba.a != b.rgba.a ? a.rgba.a > a.rgba.b : a._meshid < b._meshid;
+    }
 }
 
 int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
@@ -567,6 +548,10 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
     int meshid = static_cast<int>(global_meshes.size());
     global_meshes.emplace_back(verts, n);
     return meshid;
+}
+
+void osmv::optimize_draw_order(Mesh_instance* mi, size_t n) noexcept {
+    std::sort(mi, mi + n, mi_drawordering_comp);
 }
 
 // ok, this took an inordinate amount of time, but there's a fucking
@@ -608,38 +593,8 @@ float osmv::Raw_renderer::aspect_ratio() const noexcept {
     return d.x / d.y;
 }
 
-void osmv::optimize_drawlist(Raw_renderer_drawlist& dl) {
-    // the renderer is an instanced renderer that batches adjacent meshes that have
-    // the same mesh ID
-    //
-    // an extra consideration is blending: blended elements should always be drawn
-    // last, because they are blended "over" the other elements in the scene
-
-    size_t n = dl.instances.size();
-    Mesh_instance* meshes = dl.instances.data();
-
-    // first, partition by blending to put blended elements at the end
-    auto it1 = std::partition(meshes, meshes + n, [](Mesh_instance const& a) { return a.rgba.a >= 1.0f; });
-
-    // subpartition non-blended elements by meshid to group meshids together
-    Mesh_instance* it = meshes;
-    Mesh_instance* end = it1;
-    while (it != end) {
-        int id = it->_meshid;
-        it = std::partition(it, end, [id](Mesh_instance const& a) { return a._meshid == id; });
-    }
-
-    // do the same for blended elements
-    it = it1;
-    end = meshes + n;
-    while (it != end) {
-        int id = it->_meshid;
-        it = std::partition(it, end, [id](Mesh_instance const& a) { return a._meshid == id; });
-    }
-}
-
 osmv::Raw_drawcall_result
-    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Raw_renderer_drawlist const& drawlist) {
+    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t nmeshes) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -659,37 +614,7 @@ osmv::Raw_drawcall_result
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    Mesh_instance const* meshes = drawlist.instances.data();
-    size_t nmeshes = drawlist.instances.size();
-
     Renderer_buffers& buffers = state->buffers;
-    std::vector<Instance_batch>& instance_batches = state->instance_batches;
-
-    // compute instance batches for supplied meshes
-    //
-    // this figures out the minimum number of draw calls + VBO assignments required to draw
-    // everything
-    {
-        instance_batches.clear();
-
-        size_t pos = 0;
-        while (pos < nmeshes) {
-            int meshid = meshes[pos]._meshid;
-            size_t end = pos + 1;
-
-            while (end < nmeshes and meshes[end]._meshid == meshid) {
-                ++end;
-            }
-
-            // [pos, end) contains a batch of instances with the same meshid
-            Mesh_instance const* instances = meshes + pos;
-            size_t ninstances = end - pos;
-            size_t hash = hash_instances(instances, ninstances);
-            instance_batches.push_back(Instance_batch{meshid, instances, ninstances, hash});
-
-            pos = end;
-        }
-    }
 
     glViewport(0, 0, buffers.w, buffers.h);
 
@@ -753,17 +678,25 @@ osmv::Raw_drawcall_result
         glDisablei(GL_BLEND, 1);
         glEnablei(GL_BLEND, 0);
 
-        for (Instance_batch const& ib : instance_batches) {
-            Mesh_on_gpu& md = global_mesh_lookup(ib.meshid);
+        // instanced draw ordering
+        //
+        // cluster draw calls by meshid
+        size_t pos = 0;
+        while (pos < nmeshes) {
+            int meshid = meshes[pos]._meshid;
+            size_t end = pos + 1;
 
-            // if the data on the GPU doesn't match the instance data, assign it
-            if (md.instance_hash != ib.hash) {
-                md.instance_vbo.assign(ib.instances, ib.instances + ib.ninstances);
-                md.instance_hash = ib.hash;
+            while (end < nmeshes and meshes[end]._meshid == meshid) {
+                ++end;
             }
 
+            // [pos, end) contains instances with meshid
+            Mesh_on_gpu& md = global_mesh_lookup(static_cast<int>(meshid));
+            md.instance_vbo.assign(meshes + pos, meshes + end);
             gl::BindVertexArray(md.main_vao);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(ib.ninstances));
+            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
+
+            pos = end;
         }
         gl::BindVertexArray();
         glDisablei(GL_BLEND, 0);
@@ -799,12 +732,10 @@ osmv::Raw_drawcall_result
         gl::Uniform(shader.uViewMat, params.view_matrix);
 
         for (size_t i = 0; i < nmeshes; ++i) {
-            Mesh_instance const& m = meshes[i];
-
-            gl::Uniform(shader.uModelMat, m.transform);
-            gl::Uniform(shader.uNormalMat, m._normal_xform);
-
-            Mesh_on_gpu& md = global_mesh_lookup(m._meshid);
+            Mesh_instance const& mi = meshes[i];
+            Mesh_on_gpu& md = global_mesh_lookup(mi._meshid);
+            gl::Uniform(shader.uModelMat, mi.transform);
+            gl::Uniform(shader.uNormalMat, mi._normal_xform);
             gl::BindVertexArray(md.normal_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
         }
@@ -816,9 +747,6 @@ osmv::Raw_drawcall_result
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    Raw_drawcall_result rv;
-    rv.texture = &buffers.color0_resolved.tex;
-
     // perform passthrough hit testing
     //
     // in the previous draw call, COLOR1's RGB channels encoded arbitrary passthrough data
@@ -827,6 +755,7 @@ osmv::Raw_drawcall_result
     //
     // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
     // model information (e.g. "a component index") into screenspace
+    unsigned char hittest_result[2]{};
     if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
@@ -885,6 +814,7 @@ osmv::Raw_drawcall_result
         //      requires that this PBO is populated once the mapping is enabled, so this will
         //      stall the pipeline. However, that pipeline stall will be on the *previous* frame
         //      which is less costly to stall on
+
         if (params.flags & RawRendererFlags_UseOptimizedButDelayed1FrameHitTest) {
             int reader = buffers.pbo_idx % static_cast<int>(buffers.pbos.size());
             int mapper = (buffers.pbo_idx + 1) % static_cast<int>(buffers.pbos.size());
@@ -899,8 +829,8 @@ osmv::Raw_drawcall_result
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
             // note: these values are the *last frame*'s
-            rv.passthrough_hittest_result[0] = src[0];
-            rv.passthrough_hittest_result[1] = src[1];
+            hittest_result[0] = src[0];
+            hittest_result[1] = src[1];
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -916,8 +846,8 @@ osmv::Raw_drawcall_result
             glReadPixels(
                 params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
 
-            rv.passthrough_hittest_result[0] = rgba[0];
-            rv.passthrough_hittest_result[1] = rgba[1];
+            hittest_result[0] = rgba[0];
+            hittest_result[1] = rgba[1];
         }
     }
 
@@ -1082,5 +1012,5 @@ osmv::Raw_drawcall_result
     // bind back to the original framebuffer (assumed to be window)
     gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
-    return rv;
+    return Raw_drawcall_result{buffers.color0_resolved.tex, hittest_result[0], hittest_result[1]};
 }
