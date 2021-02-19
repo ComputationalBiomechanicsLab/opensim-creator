@@ -9,6 +9,7 @@ namespace osmv {
 
     class Opengl_test_screen final : public Screen {
         Opengl_test_screen_impl* impl;
+
     public:
         Opengl_test_screen();
         Opengl_test_screen(Opengl_test_screen const&) = delete;

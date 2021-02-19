@@ -1,11 +1,11 @@
-#include "selection_viewer.hpp"
+#include "component_selection_widget.hpp"
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <imgui.h>
 
-void osmv::Selection_viewer::draw(SimTK::State const& state, OpenSim::Component const** selected) {
+void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::Component const** selected) {
 
-    if (not *selected) {
+    if (not*selected) {
         ImGui::Text("nothing selected: right click a muscle");
         return;
     }

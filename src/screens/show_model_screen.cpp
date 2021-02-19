@@ -10,8 +10,8 @@
 #include "src/fd_simulation.hpp"
 #include "src/opensim_wrapper.hpp"
 #include "src/sdl_wrapper.hpp"
-#include "src/widgets/hierarchy_viewer.hpp"
-#include "src/widgets/selection_viewer.hpp"
+#include "src/widgets/component_hierarchy_widget.hpp"
+#include "src/widgets/component_selection_widget.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
@@ -1227,7 +1227,7 @@ namespace osmv {
         }
 
         void draw_hierarchy_tab() {
-            Hierarchy_viewer v;
+            Component_hierarchy_widget v;
             OpenSim::Component const* selected = selected_component.get();
             v.draw(&model->getRoot(), &selected, &renderer.hovered_component);
             selected_component = selected;
@@ -1641,7 +1641,7 @@ namespace osmv {
             // draw standard selection info
             {
                 OpenSim::Component const* c = selected_component.get();
-                Selection_viewer{}.draw(latest_state, &c);
+                Component_selection_widget{}.draw(latest_state, &c);
                 selected_component = c;
             }
 

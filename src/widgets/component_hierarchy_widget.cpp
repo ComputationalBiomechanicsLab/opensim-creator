@@ -1,4 +1,4 @@
-#include "hierarchy_viewer.hpp"
+#include "component_hierarchy_widget.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -6,7 +6,7 @@
 #include <string>
 #include <array>
 
-void osmv::Hierarchy_viewer::draw(const OpenSim::Component *root, OpenSim::Component const** selected, OpenSim::Component const** hovered) {
+void osmv::Component_hierarchy_widget::draw(const OpenSim::Component *root, OpenSim::Component const** selected, OpenSim::Component const** hovered) {
     std::string output_str;
     std::array<OpenSim::Component const*, 32> prev_path;
     size_t prev_path_sz = 0;

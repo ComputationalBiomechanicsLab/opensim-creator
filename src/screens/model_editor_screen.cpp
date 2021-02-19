@@ -5,8 +5,8 @@
 #include "src/application.hpp"
 #include "src/fd_simulation.hpp"
 #include "src/sdl_wrapper.hpp"
-#include "src/widgets/hierarchy_viewer.hpp"
-#include "src/widgets/selection_viewer.hpp"
+#include "src/widgets/component_hierarchy_widget.hpp"
+#include "src/widgets/component_selection_widget.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -227,14 +227,14 @@ void osmv::Model_editor_screen::draw() {
 
     // hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
-        Hierarchy_viewer hv;
+        Component_hierarchy_widget hv;
         hv.draw(&model.getRoot(), &impl->selected_component, &impl->renderer.hovered_component);
     }
     ImGui::End();
 
     // selection viewer
     if (ImGui::Begin("Selection")) {
-        Selection_viewer sv;
+        Component_selection_widget sv;
         sv.draw(state, &impl->selected_component);
     }
     ImGui::End();

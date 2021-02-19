@@ -76,10 +76,10 @@ add_executable(osmv
     src/3d/simple_model_renderer.cpp
     src/3d/labelled_model_drawlist.hpp
 
-    src/widgets/hierarchy_viewer.hpp
-    src/widgets/hierarchy_viewer.cpp
-    src/widgets/selection_viewer.hpp
-    src/widgets/selection_viewer.cpp
+    src/widgets/component_hierarchy_widget.hpp
+    src/widgets/component_hierarchy_widget.cpp
+    src/widgets/component_selection_widget.hpp
+    src/widgets/component_selection_widget.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

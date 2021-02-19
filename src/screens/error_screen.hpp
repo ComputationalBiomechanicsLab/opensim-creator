@@ -8,6 +8,7 @@
 // blank screen that shows the exception message in-UI
 namespace osmv {
     struct Error_screen_impl;
+
     class Error_screen final : public Screen {
         Error_screen_impl* impl;
 
