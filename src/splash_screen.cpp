@@ -131,7 +131,7 @@ namespace osmv {
                         for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
                             config::Recent_file const& rf = *it;
                             ImGui::PushID(++id);
-                            if (ImGui::Button(rf.path.filename().c_str())) {
+                            if (ImGui::Button(rf.path.filename().string().c_str())) {
                                 app.request_screen_transition<osmv::Loading_screen>(rf.path);
                             }
                             ImGui::PopID();
