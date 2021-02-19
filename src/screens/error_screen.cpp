@@ -1,7 +1,7 @@
 #include "error_screen.hpp"
 
-#include "application.hpp"
 #include "splash_screen.hpp"
+#include "src/application.hpp"
 
 #include <imgui.h>
 
@@ -37,5 +37,4 @@ void osmv::Error_screen::draw() {
         ImGui::Text("(press ESC to return to the splash screen)");
     }
     ImGui::End();
-    
 }

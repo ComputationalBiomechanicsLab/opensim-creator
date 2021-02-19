@@ -2,10 +2,10 @@
 
 #include "config.hpp"
 #include "fd_simulation.hpp"
-#include "loading_screen.hpp"
 #include "opensim_wrapper.hpp"
 #include "os.hpp"
-#include "splash_screen.hpp"
+#include "src/screens/loading_screen.hpp"
+#include "src/screens/splash_screen.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>

@@ -1,11 +1,11 @@
 #include "loading_screen.hpp"
 
-#include "application.hpp"
-#include "config.hpp"
-#include "opensim_wrapper.hpp"
 #include "show_model_screen.hpp"
 #include "splash_screen.hpp"
 #include "src/3d/gl.hpp"
+#include "src/application.hpp"
+#include "src/config.hpp"
+#include "src/opensim_wrapper.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>

@@ -89,21 +89,21 @@ add_executable(osmv
     src/selection_viewer.hpp
     src/selection_viewer.cpp
 
-    src/screen.hpp
-    src/error_screen.hpp
-    src/error_screen.cpp
-    src/show_model_screen.hpp
-    src/show_model_screen.cpp
-    src/loading_screen.hpp
-    src/loading_screen.cpp
-    src/imgui_demo_screen.hpp
-    src/imgui_demo_screen.cpp
-    src/opengl_test_screen.hpp
-    src/opengl_test_screen.cpp
-    src/model_editor_screen.hpp
-    src/model_editor_screen.cpp
-    src/splash_screen.hpp
-    src/splash_screen.cpp
+    src/screens/screen.hpp
+    src/screens/error_screen.hpp
+    src/screens/error_screen.cpp
+    src/screens/show_model_screen.hpp
+    src/screens/show_model_screen.cpp
+    src/screens/loading_screen.hpp
+    src/screens/loading_screen.cpp
+    src/screens/imgui_demo_screen.hpp
+    src/screens/imgui_demo_screen.cpp
+    src/screens/opengl_test_screen.hpp
+    src/screens/opengl_test_screen.cpp
+    src/screens/model_editor_screen.hpp
+    src/screens/model_editor_screen.cpp
+    src/screens/splash_screen.hpp
+    src/screens/splash_screen.cpp
 
     src/osmv.cpp
 )

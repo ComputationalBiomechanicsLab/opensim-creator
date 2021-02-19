@@ -1,7 +1,7 @@
 #pragma once
 
-#include "opensim_wrapper.hpp"
 #include "screen.hpp"
+#include "src/opensim_wrapper.hpp"
 
 #include <SDL_events.h>
 #include <filesystem>

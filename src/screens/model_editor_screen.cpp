@@ -1,12 +1,12 @@
 #include "model_editor_screen.hpp"
 
-#include "application.hpp"
-#include "fd_simulation.hpp"
-#include "hierarchy_viewer.hpp"
-#include "sdl_wrapper.hpp"
-#include "selection_viewer.hpp"
 #include "splash_screen.hpp"
 #include "src/3d/simple_model_renderer.hpp"
+#include "src/application.hpp"
+#include "src/fd_simulation.hpp"
+#include "src/hierarchy_viewer.hpp"
+#include "src/sdl_wrapper.hpp"
+#include "src/selection_viewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>

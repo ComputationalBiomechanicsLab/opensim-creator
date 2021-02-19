@@ -1,13 +1,13 @@
 #include "splash_screen.hpp"
 
-#include "application.hpp"
-#include "config.hpp"
 #include "imgui_demo_screen.hpp"
 #include "loading_screen.hpp"
 #include "model_editor_screen.hpp"
 #include "opengl_test_screen.hpp"
 #include "osmv_config.hpp"
 #include "src/3d/gl.hpp"
+#include "src/application.hpp"
+#include "src/config.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>

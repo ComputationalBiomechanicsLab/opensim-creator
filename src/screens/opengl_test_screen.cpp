@@ -1,9 +1,9 @@
 #include "opengl_test_screen.hpp"
 
-#include "application.hpp"
-#include "config.hpp"
 #include "splash_screen.hpp"
 #include "src/3d/gl.hpp"
+#include "src/application.hpp"
+#include "src/config.hpp"
 
 #include <imgui.h>
 

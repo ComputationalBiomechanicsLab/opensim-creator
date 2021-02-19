@@ -2,12 +2,12 @@
 
 #include "algs.hpp"
 #include "config.hpp"
-#include "error_screen.hpp"
 #include "os.hpp"
 #include "osmv_config.hpp"
-#include "screen.hpp"
 #include "sdl_wrapper.hpp"
 #include "src/3d/gl.hpp"
+#include "src/screens/error_screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>

@@ -1,7 +1,7 @@
 #include "imgui_demo_screen.hpp"
 
-#include "application.hpp"
 #include "splash_screen.hpp"
+#include "src/application.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
