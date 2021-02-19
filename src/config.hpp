@@ -34,4 +34,6 @@ namespace osmv::config {
     //
     // duplicates paths are automatically removed on insertion
     void add_recent_file(std::filesystem::path const&);
+
+    bool should_use_multi_viewport();
 }

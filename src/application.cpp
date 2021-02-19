@@ -1,6 +1,7 @@
 #include "application.hpp"
 
 #include "algs.hpp"
+#include "config.hpp"
 #include "error_screen.hpp"
 #include "gl.hpp"
 #include "os.hpp"
@@ -51,13 +52,10 @@ struct ImGuiContext;
 
 namespace igx {
     struct Context final {
-        static constexpr ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
-
         std::string ini_dir = (osmv::user_data_dir() / "imgui.ini").string();
         ImGuiContext* handle;
 
         Context() : handle{ImGui::CreateContext()} {
-
             configure_context(ImGui::GetIO());
         }
         Context(Context const&) = delete;
@@ -67,7 +65,10 @@ namespace igx {
 
         void configure_context(ImGuiIO& io) {
             io.IniFilename = ini_dir.c_str();
-            io.ConfigFlags |= flags;
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+            if (osmv::config::should_use_multi_viewport()) {
+                io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+            }
         }
 
         void reset() {

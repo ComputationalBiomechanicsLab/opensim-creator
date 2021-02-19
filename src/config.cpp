@@ -14,6 +14,7 @@ namespace fs = std::filesystem;
 
 struct App_config final {
     std::filesystem::path resource_dir;
+    bool use_multi_viewport;
 };
 
 static App_config load_application_config() {
@@ -51,7 +52,8 @@ static App_config load_application_config() {
     // no config: return an in-memory config that has reasonable defaults
     if (not exists) {
         fs::path default_resource_dir = fs::path{".."} / "resources";
-        return App_config{default_resource_dir};
+        bool use_multi_viewport = false;
+        return App_config{default_resource_dir, use_multi_viewport};
     }
 
     // warning: can throw
@@ -62,7 +64,9 @@ static App_config load_application_config() {
     fs::path config_file_dir = p.parent_path();
     fs::path resource_dir_path = config_file_dir / resource_dir;
 
-    return App_config{resource_dir_path};
+    bool use_multi_viewport = config["experimental_feature_flags"]["multiple_viewports"].value_or(false);
+
+    return App_config{resource_dir_path, use_multi_viewport};
 }
 
 static App_config load_config() {
@@ -159,4 +163,8 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
 
     // append the new entry
     fd << unix_timestamp().count() << ' ' << fs::absolute(p) << std::endl;
+}
+
+bool osmv::config::should_use_multi_viewport() {
+    return load_config().use_multi_viewport;
 }
