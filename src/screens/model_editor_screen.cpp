@@ -4,9 +4,9 @@
 #include "src/3d/simple_model_renderer.hpp"
 #include "src/application.hpp"
 #include "src/fd_simulation.hpp"
-#include "src/hierarchy_viewer.hpp"
 #include "src/sdl_wrapper.hpp"
-#include "src/selection_viewer.hpp"
+#include "src/widgets/hierarchy_viewer.hpp"
+#include "src/widgets/selection_viewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>

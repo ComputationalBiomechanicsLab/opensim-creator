@@ -76,18 +76,10 @@ add_executable(osmv
     src/3d/simple_model_renderer.cpp
     src/3d/labelled_model_drawlist.hpp
 
-    src/opensim_wrapper.hpp
-    src/opensim_wrapper.cpp
-    src/fd_simulation.hpp
-    src/fd_simulation.cpp
-
-    src/application.hpp
-    src/application.cpp
-
-    src/hierarchy_viewer.hpp
-    src/hierarchy_viewer.cpp
-    src/selection_viewer.hpp
-    src/selection_viewer.cpp
+    src/widgets/hierarchy_viewer.hpp
+    src/widgets/hierarchy_viewer.cpp
+    src/widgets/selection_viewer.hpp
+    src/widgets/selection_viewer.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
@@ -105,6 +97,12 @@ add_executable(osmv
     src/screens/splash_screen.hpp
     src/screens/splash_screen.cpp
 
+    src/opensim_wrapper.hpp
+    src/opensim_wrapper.cpp
+    src/fd_simulation.hpp
+    src/fd_simulation.cpp
+    src/application.hpp
+    src/application.cpp
     src/osmv.cpp
 )
 target_link_libraries(osmv PRIVATE

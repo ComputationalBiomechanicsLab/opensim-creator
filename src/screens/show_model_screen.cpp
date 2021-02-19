@@ -8,10 +8,10 @@
 #include "src/algs.hpp"
 #include "src/application.hpp"
 #include "src/fd_simulation.hpp"
-#include "src/hierarchy_viewer.hpp"
 #include "src/opensim_wrapper.hpp"
 #include "src/sdl_wrapper.hpp"
-#include "src/selection_viewer.hpp"
+#include "src/widgets/hierarchy_viewer.hpp"
+#include "src/widgets/selection_viewer.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
