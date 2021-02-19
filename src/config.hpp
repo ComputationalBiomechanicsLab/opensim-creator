@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <vector>
 
 namespace osmv::config {
     std::filesystem::path resource_path(std::filesystem::path const&);

@@ -79,8 +79,8 @@ namespace osmv {
                 static constexpr int menu_height = 700;
 
                 auto d = app.window_dimensions();
-                int menu_x = (d.w - menu_width) / 2;
-                int menu_y = (d.h - menu_height) / 2;
+                float menu_x = static_cast<float>((d.w - menu_width) / 2);
+                float menu_y = static_cast<float>((d.h - menu_height) / 2);
 
                 ImGui::SetNextWindowPos(ImVec2(menu_x, menu_y));
                 ImGui::SetNextWindowSize(ImVec2{menu_width, -1});
@@ -131,7 +131,7 @@ namespace osmv {
                         for (auto it = recent_files.rbegin(); it != recent_files.rend(); ++it) {
                             config::Recent_file const& rf = *it;
                             ImGui::PushID(++id);
-                            if (ImGui::Button(rf.path.filename().c_str())) {
+                            if (ImGui::Button(rf.path.filename().string().c_str())) {
                                 app.request_screen_transition<osmv::Loading_screen>(rf.path);
                             }
                             ImGui::PopID();
@@ -147,7 +147,7 @@ namespace osmv {
 
                         for (fs::path const& ex : example_osims) {
                             ImGui::PushID(++id);
-                            if (ImGui::Button(ex.filename().c_str())) {
+                            if (ImGui::Button(ex.filename().string().c_str())) {
                                 app.request_screen_transition<osmv::Loading_screen>(ex);
                             }
                             ImGui::PopID();
