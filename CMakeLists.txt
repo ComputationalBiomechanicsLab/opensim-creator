@@ -60,23 +60,27 @@ add_executable(osmv
     src/os.cpp
     src/sdl_wrapper.hpp
     src/sdl_wrapper.cpp
-    src/gl.hpp
-    src/gl.cpp
     src/shims.hpp
     src/algs.hpp
-
     src/config.hpp
     src/config.cpp
+
+    src/3d/gl.hpp
+    src/3d/gl.cpp
+    src/3d/3d_common.hpp
+    src/3d/3d_common.cpp
+    src/3d/mesh_instance.hpp
+    src/3d/raw_renderer.hpp
+    src/3d/raw_renderer.cpp
+    src/3d/simple_model_renderer.hpp
+    src/3d/simple_model_renderer.cpp
+    src/3d/labelled_model_drawlist.hpp
+
     src/opensim_wrapper.hpp
     src/opensim_wrapper.cpp
-    src/3d_common.hpp
-    src/3d_common.cpp
     src/fd_simulation.hpp
     src/fd_simulation.cpp
-    src/raw_renderer.hpp
-    src/raw_renderer.cpp
-    src/simple_model_renderer.hpp
-    src/simple_model_renderer.cpp
+
     src/application.hpp
     src/application.cpp
 
@@ -111,6 +115,7 @@ target_link_libraries(osmv PRIVATE
 )
 target_include_directories(osmv PRIVATE
     ${PROJECT_BINARY_DIR}  # for osmv_config.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}  # for "src/<path>"
 )
 target_compile_options(osmv PRIVATE
 

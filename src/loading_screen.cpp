@@ -2,10 +2,10 @@
 
 #include "application.hpp"
 #include "config.hpp"
-#include "gl.hpp"
 #include "opensim_wrapper.hpp"
 #include "show_model_screen.hpp"
 #include "splash_screen.hpp"
+#include "src/3d/gl.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>

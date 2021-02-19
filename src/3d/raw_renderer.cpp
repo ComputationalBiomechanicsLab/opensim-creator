@@ -1,8 +1,8 @@
 ﻿#include "raw_renderer.hpp"
 
 #include "3d_common.hpp"
-#include "config.hpp"
 #include "gl.hpp"
+#include "src/config.hpp"
 
 #include <GL/glew.h>
 

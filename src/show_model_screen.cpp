@@ -1,6 +1,5 @@
 #include "show_model_screen.hpp"
 
-#include "3d_common.hpp"
 #include "algs.hpp"
 #include "application.hpp"
 #include "fd_simulation.hpp"
@@ -10,8 +9,9 @@
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
 #include "selection_viewer.hpp"
-#include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
+#include "src/3d/3d_common.hpp"
+#include "src/3d/simple_model_renderer.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>

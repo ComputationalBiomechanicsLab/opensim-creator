@@ -3,8 +3,8 @@
 #include "raw_renderer.hpp"
 
 #include "3d_common.hpp"
-#include "application.hpp"
-#include "sdl_wrapper.hpp"
+#include "src/application.hpp"
+#include "src/sdl_wrapper.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

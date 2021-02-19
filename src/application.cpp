@@ -3,11 +3,11 @@
 #include "algs.hpp"
 #include "config.hpp"
 #include "error_screen.hpp"
-#include "gl.hpp"
 #include "os.hpp"
 #include "osmv_config.hpp"
 #include "screen.hpp"
 #include "sdl_wrapper.hpp"
+#include "src/3d/gl.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>

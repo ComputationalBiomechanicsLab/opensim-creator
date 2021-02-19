@@ -5,8 +5,8 @@
 #include "hierarchy_viewer.hpp"
 #include "sdl_wrapper.hpp"
 #include "selection_viewer.hpp"
-#include "simple_model_renderer.hpp"
 #include "splash_screen.hpp"
+#include "src/3d/simple_model_renderer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>

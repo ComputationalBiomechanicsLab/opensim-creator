@@ -2,8 +2,8 @@
 
 #include "application.hpp"
 #include "config.hpp"
-#include "gl.hpp"
 #include "splash_screen.hpp"
+#include "src/3d/gl.hpp"
 
 #include <imgui.h>
 
