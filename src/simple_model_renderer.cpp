@@ -227,7 +227,6 @@ namespace {
 
         glm::mat4 transform(DecorativeGeometry const& geom) {
             Transform t = ground_to_decoration_xform(geom);
-            glm::mat4 m = glm::identity<glm::mat4>();
 
             // glm::mat4 is column major:
             //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
@@ -236,28 +235,39 @@ namespace {
             // SimTK is whoknowswtf-major (actually, row), carefully read the
             // sourcecode for `SimTK::Transform`.
 
-            // x
-            m[0][0] = static_cast<float>(t.R().row(0)[0]);
-            m[0][1] = static_cast<float>(t.R().row(1)[0]);
-            m[0][2] = static_cast<float>(t.R().row(2)[0]);
+            glm::mat4 m;
+
+            // x0 y0 z0 w0
+            Rotation const& r = t.R();
+            Vec3 const& p = t.p();
+
+            {
+                auto const& row0 = r[0];
+                m[0][0] = static_cast<float>(row0[0]);
+                m[1][0] = static_cast<float>(row0[1]);
+                m[2][0] = static_cast<float>(row0[2]);
+                m[3][0] = static_cast<float>(p[0]);
+            }
+
+            {
+                auto const& row1 = r[1];
+                m[0][1] = static_cast<float>(row1[0]);
+                m[1][1] = static_cast<float>(row1[1]);
+                m[2][1] = static_cast<float>(row1[2]);
+                m[3][1] = static_cast<float>(p[1]);
+            }
+
+            {
+                auto const& row2 = r[2];
+                m[0][2] = static_cast<float>(row2[0]);
+                m[1][2] = static_cast<float>(row2[1]);
+                m[2][2] = static_cast<float>(row2[2]);
+                m[3][2] = static_cast<float>(p[2]);
+            }
+
             m[0][3] = 0.0f;
-
-            // y
-            m[1][0] = static_cast<float>(t.R().row(0)[1]);
-            m[1][1] = static_cast<float>(t.R().row(1)[1]);
-            m[1][2] = static_cast<float>(t.R().row(2)[1]);
             m[1][3] = 0.0f;
-
-            // z
-            m[2][0] = static_cast<float>(t.R().row(0)[2]);
-            m[2][1] = static_cast<float>(t.R().row(1)[2]);
-            m[2][2] = static_cast<float>(t.R().row(2)[2]);
             m[2][3] = 0.0f;
-
-            // w
-            m[3][0] = static_cast<float>(t.p()[0]);
-            m[3][1] = static_cast<float>(t.p()[1]);
-            m[3][2] = static_cast<float>(t.p()[2]);
             m[3][3] = 1.0f;
 
             return m;
@@ -271,10 +281,16 @@ namespace {
             return glm::vec3{sf[0], sf[1], sf[2]};
         }
 
-        glm::vec4 rgba(DecorativeGeometry const& geom) {
+        osmv::Rgba32 rgba(DecorativeGeometry const& geom) {
             Vec3 const& rgb = geom.getColor();
             Real a = geom.getOpacity();
-            return {rgb[0], rgb[1], rgb[2], a < 0.0f ? 1.0f : a};
+
+            osmv::Rgba32 rv;
+            rv.r = static_cast<unsigned char>(255.0 * rgb[0]);
+            rv.g = static_cast<unsigned char>(255.0 * rgb[1]);
+            rv.b = static_cast<unsigned char>(255.0 * rgb[2]);
+            rv.a = a < 0.0 ? 255 : static_cast<unsigned char>(255.0 * a);
+            return rv;
         }
 
         glm::vec4 to_vec4(Vec3 const& v, float w = 1.0f) {
@@ -567,13 +583,13 @@ void osmv::Simple_model_renderer::apply_standard_rim_coloring(const OpenSim::Com
 
     OpenSim::Component const* hovered = hovered_component;
     geometry.for_each([selected, hovered](OpenSim::Component const* owner, Mesh_instance& mi) {
-        float rim_alpha;
+        unsigned char rim_alpha;
         if (owner == selected) {
-            rim_alpha = 1.0f;
+            rim_alpha = 255;
         } else if (hovered != nullptr and hovered == owner) {
-            rim_alpha = 0.2f;
+            rim_alpha = 70;
         } else {
-            rim_alpha = 0.0f;
+            rim_alpha = 0;
         }
 
         mi.set_rim_alpha(rim_alpha);
@@ -613,20 +629,12 @@ gl::Texture_2d& osmv::Simple_model_renderer::draw() {
     }
 
     // perform draw call
-    Raw_drawcall_result result = renderer.draw(params, geometry.instances.data(), geometry.instances.size());
+    Raw_drawcall_result result = renderer.draw(params, geometry.instances);
 
     // post-draw: check if the hit-test passed
     // TODO:: optimized indices are from the previous frame, which might
     //        contain now-stale components
-
-    size_t id = static_cast<size_t>(result.passthrough_result[0]);
-    id |= static_cast<size_t>(result.passthrough_result[1]) << 8;
-
-    if (id == 0) {
-        hovered_component = nullptr;
-    } else {
-        hovered_component = geometry.associated_components[id - 1];
-    }
+    hovered_component = geometry.component_from_passthrough(result.passthrough_result);
 
     return result.texture;
 }

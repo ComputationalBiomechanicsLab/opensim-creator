@@ -1,4 +1,4 @@
-#include "raw_renderer.hpp"
+﻿#include "raw_renderer.hpp"
 
 #include "3d_common.hpp"
 #include "config.hpp"
@@ -22,6 +22,12 @@ namespace {
     static_assert(
         std::is_standard_layout<osmv::Mesh_instance>::value,
         "this is required for offsetof macro usage, which is used for setting up OpenGL attribute pointers. See: https://en.cppreference.com/w/cpp/types/is_standard_layout");
+    static_assert(
+        std::is_trivially_constructible<osmv::Mesh_instance>::value,
+        "this is a nice-to-have, because it enables bulk-allocating mesh instances in a collection class with zero overhead");
+    static_assert(
+        std::is_trivially_destructible<osmv::Mesh_instance>::value,
+        "this is a nice-to-have, because it enables bulk-destroying mesh instances in a collection class with zero overhead");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
         GLuint loc = static_cast<GLuint>(mat4loc);
@@ -44,9 +50,37 @@ namespace {
         }
     }
 
+    void Mat3Pointer(gl::Attribute const& mat3loc, size_t base_offset) {
+        GLuint loc = static_cast<GLuint>(mat3loc);
+        for (unsigned i = 0; i < 3; ++i) {
+            // HACK: from LearnOpenGL: mat4's must be set in this way because
+            //       of OpenGL not allowing more than 4 or so floats to be set
+            //       in a single call
+            //
+            // see:
+            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
+            glVertexAttribPointer(
+                loc + i,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                sizeof(osmv::Mesh_instance),
+                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
+            glEnableVertexAttribArray(loc + i);
+            glVertexAttribDivisor(loc + i, 1);
+        }
+    }
+
     void Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
             vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+        glEnableVertexAttribArray(vec4log);
+        glVertexAttribDivisor(vec4log, 1);
+    }
+
+    void u8_to_Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
+        glVertexAttribPointer(
+            vec4log, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
@@ -68,8 +102,8 @@ namespace {
         // instancing attrs
         static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(2);
         static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(6);
-        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
-        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
+        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(9);
+        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(10);
 
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
@@ -94,9 +128,9 @@ namespace {
 
             gl::BindBuffer(instance_vbo);
             Mat4Pointer(aModelMat, offsetof(osmv::Mesh_instance, transform));
-            Mat4Pointer(aNormalMat, offsetof(osmv::Mesh_instance, _normal_xform));
-            Vec4Pointer(aRgba0, offsetof(osmv::Mesh_instance, rgba));
-            Vec4Pointer(aRgba1, offsetof(osmv::Mesh_instance, _passthrough));
+            Mat3Pointer(aNormalMat, offsetof(osmv::Mesh_instance, _normal_xform));
+            u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Mesh_instance, rgba));
+            u8_to_Vec4Pointer(aRgba1, offsetof(osmv::Mesh_instance, _passthrough));
 
             gl::BindVertexArray();
 
@@ -109,6 +143,39 @@ namespace {
     // A basic shader that just samples a texture onto the provided geometry
     //
     // useful for rendering quads etc.
+    struct Colormapped_plain_texture_shader final {
+        gl::Program p = gl::CreateProgramFrom(
+            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("colormapped_plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("colormapped_plain_texture.frag")));
+
+        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+
+        gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
+        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
+        gl::Uniform_mat4 uSamplerMultiplier = gl::GetUniformLocation(p, "uSamplerMultiplier");
+
+        template<typename Vbo, typename T = typename Vbo::value_type>
+        static gl::Vertex_array create_vao(Vbo& vbo) {
+            gl::Vertex_array vao = gl::GenVertexArrays();
+
+            gl::BindVertexArray(vao);
+            gl::BindBuffer(vbo);
+            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::EnableVertexAttribArray(aPos);
+            gl::VertexAttribPointer(
+                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::EnableVertexAttribArray(aTexCoord);
+            gl::BindVertexArray();
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+
+            return vao;
+        }
+    };
+
+    //
+    // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
             gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("plain_texture.vert")),
@@ -117,11 +184,9 @@ namespace {
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
 
-        gl::Uniform_mat4 projMat = gl::GetUniformLocation(p, "projMat");
-        gl::Uniform_mat4 viewMat = gl::GetUniformLocation(p, "viewMat");
-        gl::Uniform_mat4 modelMat = gl::GetUniformLocation(p, "modelMat");
+        gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
+        gl::Uniform_float uTextureScaler = gl::GetUniformLocation(p, "uTextureScaler");
         gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
-        gl::Uniform_mat4 uSamplerMultiplier = gl::GetUniformLocation(p, "uSamplerMultiplier");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
@@ -246,7 +311,7 @@ namespace {
     struct Mesh_on_gpu final {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
         size_t instance_hash = 0;  // cache VBO assignments
-        gl::Array_bufferT<osmv::Mesh_instance> instance_vbo;
+        gl::Array_bufferT<osmv::Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
@@ -489,6 +554,7 @@ namespace osmv {
             Gouraud_mrt_shader gouraud;
             Normals_shader normals;
             Plain_texture_shader plain_texture;
+            Colormapped_plain_texture_shader colormapped_plain_texture;
             Edge_detection_shader edge_detection_shader;
             Skip_msxaa_blitter_shader skip_msxaa_shader;
 
@@ -502,19 +568,11 @@ namespace osmv {
         gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
         gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
         gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
+        gl::Vertex_array cpts_quad_vao = Colormapped_plain_texture_shader::create_vao(quad_vbo);
 
-        // floor texture
+        // floor
         struct {
-            gl::Array_bufferT<osmv::Shaded_textured_vert> vbo = []() {
-                auto copy = osmv::shaded_textured_quad_verts;
-                for (osmv::Shaded_textured_vert& st : copy) {
-                    st.texcoord *= 200.0f;  // make chequers smaller
-                }
-                return gl::Array_bufferT<osmv::Shaded_textured_vert>{copy};
-            }();
-
-            gl::Vertex_array vao = Plain_texture_shader::create_vao(vbo);
-            gl::Texture_2d floor_texture = osmv::generate_chequered_floor_texture();
+            gl::Texture_2d texture = osmv::generate_chequered_floor_texture();
             glm::mat4 model_mtx = []() {
                 glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -537,10 +595,6 @@ namespace osmv {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
-
-    static bool mi_drawordering_comp(Mesh_instance const& a, Mesh_instance const& b) {
-        return a.rgba.a != b.rgba.a ? a.rgba.a > a.rgba.b : a._meshid < b._meshid;
-    }
 }
 
 int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
@@ -551,7 +605,9 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
 }
 
 void osmv::optimize_draw_order(Mesh_instance* mi, size_t n) noexcept {
-    std::sort(mi, mi + n, mi_drawordering_comp);
+    std::sort(mi, mi + n, [](osmv::Mesh_instance const& a, osmv::Mesh_instance const& b) {
+        return a.rgba.a != b.rgba.a ? a.rgba.a > a.rgba.b : a._meshid < b._meshid;
+    });
 }
 
 // ok, this took an inordinate amount of time, but there's a fucking
@@ -564,28 +620,23 @@ void osmv::optimize_draw_order(Mesh_instance* mi, size_t n) noexcept {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Raw_renderer::Raw_renderer(osmv::Raw_renderer_config const& _settings) : state(new Renderer_impl(_settings)) {
+osmv::Raw_renderer::Raw_renderer(osmv::Raw_renderer_config const& _settings) : impl(new Renderer_impl(_settings)) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Raw_renderer::~Raw_renderer() noexcept {
-    delete state;
-}
-
-osmv::Raw_renderer_config osmv::Raw_renderer::config() const noexcept {
-    auto const& bufs = state->buffers;
-    return Raw_renderer_config{bufs.w, bufs.h, bufs.samples};
+    delete impl;
 }
 
 void osmv::Raw_renderer::change_config(Raw_renderer_config const& cfg) {
-    Renderer_buffers& b = state->buffers;
+    Renderer_buffers& b = impl->buffers;
     if (cfg.w != b.w or cfg.h != b.h or cfg.samples != b.samples) {
-        state->buffers = Renderer_buffers{cfg.w, cfg.h, cfg.samples};
+        impl->buffers = Renderer_buffers{cfg.w, cfg.h, cfg.samples};
     }
 }
 
 glm::vec2 osmv::Raw_renderer::dimensions() const noexcept {
-    return {static_cast<float>(state->buffers.w), static_cast<float>(state->buffers.h)};
+    return {static_cast<float>(impl->buffers.w), static_cast<float>(impl->buffers.h)};
 }
 
 float osmv::Raw_renderer::aspect_ratio() const noexcept {
@@ -614,7 +665,7 @@ osmv::Raw_drawcall_result
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-    Renderer_buffers& buffers = state->buffers;
+    Renderer_buffers& buffers = impl->buffers;
 
     glViewport(0, 0, buffers.w, buffers.h);
 
@@ -661,7 +712,7 @@ osmv::Raw_drawcall_result
     //     - the input color encodes the selected component index (RGB) and the rim
     //       alpha (A). It's used in downstream steps
     if (params.flags & RawRendererFlags_DrawSceneGeometry) {
-        Gouraud_mrt_shader& shader = state->shaders.gouraud;
+        Gouraud_mrt_shader& shader = impl->shaders.gouraud;
 
         gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
         gl::UseProgram(shader.program);
@@ -704,20 +755,18 @@ osmv::Raw_drawcall_result
 
     // (optional): draw a textured floor into COLOR0
     if (params.flags & RawRendererFlags_ShowFloor) {
-        Plain_texture_shader& pts = state->shaders.plain_texture;
+        Plain_texture_shader& pts = impl->shaders.plain_texture;
 
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(pts.p);
-        gl::Uniform(pts.projMat, params.projection_matrix);
-        gl::Uniform(pts.viewMat, params.view_matrix);
-        gl::Uniform(pts.modelMat, state->floor.model_mtx);
+        gl::Uniform(pts.uMVP, params.projection_matrix * params.view_matrix * impl->floor.model_mtx);
+        gl::Uniform(pts.uTextureScaler, 200.0f);
         gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(state->floor.floor_texture);
+        gl::BindTexture(impl->floor.texture);
         gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
 
-        gl::BindVertexArray(state->floor.vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, state->floor.vbo.sizei());
+        gl::BindVertexArray(impl->pts_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
         gl::BindVertexArray();
     }
 
@@ -725,7 +774,7 @@ osmv::Raw_drawcall_result
 
     // (optional): render scene normals into COLOR0
     if (params.flags & RawRendererFlags_ShowMeshNormals) {
-        Normals_shader& shader = state->shaders.normals;
+        Normals_shader& shader = impl->shaders.normals;
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(shader.program);
         gl::Uniform(shader.uProjMat, params.projection_matrix);
@@ -755,7 +804,8 @@ osmv::Raw_drawcall_result
     //
     // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
     // model information (e.g. "a component index") into screenspace
-    unsigned char hittest_result[2]{};
+
+    Passthrough_data hittest_result{};
     if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
@@ -773,7 +823,7 @@ osmv::Raw_drawcall_result
         //
         // by deliberately avoiding MSXAA, every value in this output should be exactly the
         // same as the passthrough value provided by the caller
-        Skip_msxaa_blitter_shader& shader = state->shaders.skip_msxaa_shader;
+        Skip_msxaa_blitter_shader& shader = impl->shaders.skip_msxaa_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
@@ -781,8 +831,8 @@ osmv::Raw_drawcall_result
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(buffers.scene.color1);
         gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(state->skip_msxaa_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+        gl::BindVertexArray(impl->skip_msxaa_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
         gl::BindVertexArray();
 
         // reset viewport
@@ -829,8 +879,8 @@ osmv::Raw_drawcall_result
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
             // note: these values are the *last frame*'s
-            hittest_result[0] = src[0];
-            hittest_result[1] = src[1];
+            hittest_result.b0 = src[0];
+            hittest_result.b1 = src[1];
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -846,8 +896,8 @@ osmv::Raw_drawcall_result
             glReadPixels(
                 params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
 
-            hittest_result[0] = rgba[0];
-            hittest_result[1] = rgba[1];
+            hittest_result.b0 = rgba[0];
+            hittest_result.b1 = rgba[1];
         }
     }
 
@@ -913,7 +963,7 @@ osmv::Raw_drawcall_result
     // "zoom out" as if they were "in the scene"). However, GPUs are fairly efficient at running
     // branchless kernel lookups over a screen, so it isn't as expensive as you think
     if (params.flags & RawRendererFlags_DrawRims) {
-        Edge_detection_shader& shader = state->shaders.edge_detection_shader;
+        Edge_detection_shader& shader = impl->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);
         gl::Uniform(shader.uViewMat, gl::identity_val);
@@ -926,8 +976,8 @@ osmv::Raw_drawcall_result
 
         glEnable(GL_BLEND);  // rims can have alpha
         glDisable(GL_DEPTH_TEST);
-        gl::BindVertexArray(state->edge_detection_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+        gl::BindVertexArray(impl->edge_detection_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
         gl::BindVertexArray();
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
@@ -940,12 +990,9 @@ osmv::Raw_drawcall_result
 
     // render debug quads onto output (if applicable)
     if (params.flags & RawRendererFlags_DrawDebugQuads) {
-        Plain_texture_shader& pts = state->shaders.plain_texture;
-        gl::UseProgram(pts.p);
-
-        gl::Uniform(pts.projMat, gl::identity_val);
-        gl::Uniform(pts.viewMat, gl::identity_val);
-        gl::BindVertexArray(state->pts_quad_vao);
+        Colormapped_plain_texture_shader& cpts = impl->shaders.colormapped_plain_texture;
+        gl::UseProgram(cpts.p);
+        gl::BindVertexArray(impl->pts_quad_vao);
 
         // COLOR1 quad (RGB)
         if (true) {
@@ -956,12 +1003,12 @@ osmv::Raw_drawcall_result
                 return m;
             }();
 
-            gl::Uniform(pts.modelMat, row1);
+            gl::Uniform(cpts.uMVP, row1);
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(buffers.color1_resolved.tex);
-            gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-            gl::Uniform(pts.uSamplerMultiplier, gl::identity_val);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+            gl::Uniform(cpts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+            gl::Uniform(cpts.uSamplerMultiplier, gl::identity_val);
+            gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
         }
 
         // COLOR1 quad (A)
@@ -993,12 +1040,12 @@ osmv::Raw_drawcall_result
                 1.0f,
             };
 
-            gl::Uniform(pts.modelMat, row2);
+            gl::Uniform(cpts.uMVP, row2);
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(buffers.color1_resolved.tex);
-            gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-            gl::Uniform(pts.uSamplerMultiplier, alpha2rgb);
-            gl::DrawArrays(GL_TRIANGLES, 0, state->quad_vbo.sizei());
+            gl::Uniform(cpts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+            gl::Uniform(cpts.uSamplerMultiplier, alpha2rgb);
+            gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
         }
 
         gl::BindVertexArray();
@@ -1012,5 +1059,5 @@ osmv::Raw_drawcall_result
     // bind back to the original framebuffer (assumed to be window)
     gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
-    return Raw_drawcall_result{buffers.color0_resolved.tex, hittest_result[0], hittest_result[1]};
+    return Raw_drawcall_result{buffers.color0_resolved.tex, hittest_result};
 }

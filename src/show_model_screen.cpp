@@ -823,10 +823,10 @@ namespace osmv {
                         return;
                     }
 
-                    mi.rgba.r = 100.0f * static_cast<float>(musc->getTendonStrain(latest_state));
-                    mi.rgba.g = 0.5f;
-                    mi.rgba.b = 0.5f;
-                    mi.rgba.a = 1.0f;
+                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getTendonStrain(latest_state));
+                    mi.rgba.g = 255 / 2;
+                    mi.rgba.b = 255 / 2;
+                    mi.rgba.a = 255;
                 });
             }
 
@@ -837,10 +837,10 @@ namespace osmv {
                         return;
                     }
 
-                    mi.rgba.r = static_cast<float>(musc->getLength(latest_state));
-                    mi.rgba.g = 0.25f;
-                    mi.rgba.b = 0.25f;
-                    mi.rgba.a = 1.0f;
+                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getLength(latest_state));
+                    mi.rgba.g = 255 / 4;
+                    mi.rgba.b = 255 / 4;
+                    mi.rgba.a = 255;
                 });
             }
 

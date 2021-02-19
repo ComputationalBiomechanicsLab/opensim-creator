@@ -316,8 +316,8 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     struct Rgb {
         unsigned char r, g, b;
     };
-    constexpr size_t chequer_width = 32;
-    constexpr size_t chequer_height = 32;
+    constexpr size_t chequer_width = 16;
+    constexpr size_t chequer_height = 16;
     constexpr size_t w = 2 * chequer_width;
     constexpr size_t h = 2 * chequer_height;
     constexpr Rgb on_color = {0xe5, 0xe5, 0xe5};

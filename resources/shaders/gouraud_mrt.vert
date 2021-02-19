@@ -8,9 +8,9 @@
 layout (location = 0) in vec3 aLocation;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in mat4 aModelMat;
-layout (location = 6) in mat4 aNormalMat;
-layout (location = 10) in vec4 aRgba0;
-layout (location = 11) in vec4 aRgba1;
+layout (location = 6) in mat3 aNormalMat;
+layout (location = 9) in vec4 aRgba0;
+layout (location = 10) in vec4 aRgba1;
 
 uniform mat4 uProjMat;
 uniform mat4 uViewMat;
@@ -29,7 +29,7 @@ const float shininess = 32;
 void main() {
     gl_Position = uProjMat * uViewMat * aModelMat * vec4(aLocation, 1.0);
 
-    vec3 normalDir = normalize(mat3(aNormalMat) * aNormal);
+    vec3 normalDir = normalize(aNormalMat * aNormal);
     vec3 fragPos = vec3(aModelMat * vec4(aLocation, 1.0));
     vec3 frag2lightDir = normalize(uLightPos - fragPos);
     vec3 frag2viewDir = normalize(uViewPos - fragPos);
