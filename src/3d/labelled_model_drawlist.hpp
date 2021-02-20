@@ -43,6 +43,8 @@ namespace osmv {
                 throw std::runtime_error{
                     "precondition error: tried to render more than the maximum number of components osmv can render"};
             }
+
+            // this is safe because of the above assert
             uint16_t passthrough_id = static_cast<uint16_t>(idx + 1);
 
             OpenSim::Component const*& component = associated_components.emplace_back(c);

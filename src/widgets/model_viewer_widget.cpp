@@ -31,6 +31,7 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event&) {
 }
 
 void osmv::Model_viewer_widget::draw(OpenSim::Model const& model, SimTK::State const& state) {
+    /*
     Simple_model_renderer& renderer = impl->renderer;
 
     // generate OpenSim scene geometry
@@ -55,6 +56,7 @@ void osmv::Model_viewer_widget::draw(OpenSim::Model const& model, SimTK::State c
         associated_component = c;
     });
     //    }
+    */
 
     /*
 if (muscle_recoloring == MuscleRecoloring_Strain) {
@@ -86,6 +88,7 @@ if (muscle_recoloring == MuscleRecoloring_Length) {
 }
 */
 
+    /*
     // draw the scene to an OpenGL texture
     renderer.apply_standard_rim_coloring(selected_component);
     auto dims = ImGui::GetContentRegionAvail();
@@ -124,4 +127,5 @@ if (muscle_recoloring == MuscleRecoloring_Length) {
         ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
         ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
     }
+    */
 }
