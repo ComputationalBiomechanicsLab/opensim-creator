@@ -1,6 +1,8 @@
 #pragma once
 
 #include "labelled_model_drawlist.hpp"
+#include "model_drawlist_generator.hpp"
+#include "polar_camera.hpp"
 #include "raw_renderer.hpp"
 
 #include <SDL_events.h>
@@ -29,12 +31,6 @@ namespace osmv {
     using SimpleModelRendererFlags = int;
     enum SimpleModelRendererFlags_ {
         SimpleModelRendererFlags_None = 0,
-
-        // camera is in a "currently dragging" state
-        SimpleModelRendererFlags_Dragging = 1 << 0,
-
-        // camera is in a "currently panning" state
-        SimpleModelRendererFlags_Panning = 1 << 1,
 
         // renderer should draw in wireframe mode
         SimpleModelRendererFlags_WireframeMode = 1 << 2,
@@ -66,12 +62,17 @@ namespace osmv {
                                            SimpleModelRendererFlags_HoverableDynamicDecorations
     };
 
+    void apply_standard_rim_coloring(
+        Labelled_model_drawlist& drawlist,
+        OpenSim::Component const* hovered = nullptr,
+        OpenSim::Component const* selected = nullptr);
+
     // a renderer that draws an OpenSim::Model + SimTK::State pair into the current
     // framebuffer using a basic polar camera that can swivel around the model
     struct Simple_model_renderer_impl;
     struct Simple_model_renderer final {
     private:
-        Raw_renderer renderer;
+        Simple_model_renderer_impl* impl;
 
     public:
         // this is set whenever the implementation detects that the mouse is over
@@ -80,17 +81,7 @@ namespace osmv {
         int hovertest_y = -1;
         OpenSim::Component const* hovered_component = nullptr;
 
-        // not currently runtime-editable
-        static constexpr float fov = 120.0f;
-        static constexpr float znear = 0.1f;
-        static constexpr float zfar = 100.0f;
-        static constexpr float mouse_wheel_sensitivity = 0.9f;
-        static constexpr float mouse_drag_sensitivity = 1.0f;
-
-        float radius = 5.0f;
-        float theta = 0.88f;
-        float phi = 0.4f;
-        glm::vec3 pan = {0.3f, -0.5f, 0.0f};
+        Polar_camera camera;
         glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
         glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
@@ -100,7 +91,7 @@ namespace osmv {
         SimpleModelRendererFlags flags = SimpleModelRendererFlags_Default;
 
         // populated by calling generate_geometry(Model, State)
-        OpenSim_model_geometry geometry;
+        Labelled_model_drawlist geometry;
 
     public:
         Simple_model_renderer(int w, int h, int samples);
@@ -128,7 +119,11 @@ namespace osmv {
         //
         // note: you don't *need* to call this: it's a convenience method for the most common
         //       use-case of having selected and hovered components in the scene
-        void apply_standard_rim_coloring(OpenSim::Component const* selected = nullptr);
+        void apply_standard_rim_coloring(OpenSim::Component const* selected = nullptr) {
+            if (flags & SimpleModelRendererFlags_DrawRims) {
+                osmv::apply_standard_rim_coloring(geometry, hovered_component, selected);
+            }
+        }
 
         // draw `this->geometry`
         //

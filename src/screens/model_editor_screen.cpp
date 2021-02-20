@@ -202,14 +202,8 @@ void osmv::Model_editor_screen::draw() {
     {
         model.realizePosition(state);
         impl->renderer.generate_geometry(model, state);
-
         // screen-specific fixup: all hoverables are their parents
-        {
-            for (OpenSim::Component const*& c : impl->renderer.geometry.associated_components) {
-                c = &c->getOwner();
-            }
-        }
-
+        impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
         impl->renderer.apply_standard_rim_coloring(nullptr);
         impl->renderer.draw();
     }

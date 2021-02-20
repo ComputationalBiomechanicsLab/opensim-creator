@@ -46,7 +46,7 @@ namespace osmv {
     // this struct is fairly complicated because it has to pack data together ready for a
     // GPU draw call. Instanced GPU drawing requires that the data is contiguous and has all
     // necessary draw parameters (transform matrices, etc.) at predictable memory offsets.
-    struct alignas(16) Mesh_instance final {
+    struct alignas(16) Raw_mesh_instance final {
         // transforms mesh vertices into scene worldspace
         glm::mat4 transform;
 
@@ -74,13 +74,13 @@ namespace osmv {
         // currently used for:
         //
         //     - r+g: raw passthrough data, used to handle selection logic. Downstream renderers
-        //             use these channels to encode logical information (e.g. "an OpenSim component")
-        //             into screen-space (e.g. "A pixel from an OpenSim component")
+        //            use these channels to encode logical information (e.g. "an OpenSim component")
+        //            into screen-space (e.g. "A pixel from an OpenSim component")
         //
-        //     - b:    unused (reserved)
+        //     - b:   unused (reserved)
         //
-        //     - a:    rim alpha. Used to calculate how strongly (if any) rims should be drawn
-        //             around the rendered geometry. Used for highlighting elements in the scene
+        //     - a:   rim alpha. Used to calculate how strongly (if any) rims should be drawn
+        //            around the rendered geometry. Used for highlighting elements in the scene
         Rgba32 _passthrough;
 
         // INTERNAL: mesh ID: globally unique ID for the mesh vertices that should be rendered
@@ -91,10 +91,10 @@ namespace osmv {
 
         // trivial ctor: useful if the caller knows what they're doing and some STL
         //               algorithms like when a type is trivially constructable
-        Mesh_instance() = default;
+        Raw_mesh_instance() = default;
 
         template<typename Mat4, typename Rgba>
-        Mesh_instance(Mat4&& _transform, Rgba&& _rgba, int meshid) noexcept :
+        Raw_mesh_instance(Mat4&& _transform, Rgba&& _rgba, int meshid) noexcept :
             transform{std::forward<Mat4>(_transform)},
             _normal_xform{glm::transpose(glm::inverse(transform))},
             rgba{std::forward<Rgba>(_rgba)},

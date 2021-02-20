@@ -17,16 +17,16 @@
 
 namespace {
     static_assert(
-        std::is_trivially_copyable<osmv::Mesh_instance>::value,
+        std::is_trivially_copyable<osmv::Raw_mesh_instance>::value,
         "a mesh instance should ideally be trivially copyable, because it is potentially used *a lot* in draw calls. You can remove this assert if you disagree");
     static_assert(
-        std::is_standard_layout<osmv::Mesh_instance>::value,
+        std::is_standard_layout<osmv::Raw_mesh_instance>::value,
         "this is required for offsetof macro usage, which is used for setting up OpenGL attribute pointers. See: https://en.cppreference.com/w/cpp/types/is_standard_layout");
     static_assert(
-        std::is_trivially_constructible<osmv::Mesh_instance>::value,
+        std::is_trivially_constructible<osmv::Raw_mesh_instance>::value,
         "this is a nice-to-have, because it enables bulk-allocating mesh instances in a collection class with zero overhead");
     static_assert(
-        std::is_trivially_destructible<osmv::Mesh_instance>::value,
+        std::is_trivially_destructible<osmv::Raw_mesh_instance>::value,
         "this is a nice-to-have, because it enables bulk-destroying mesh instances in a collection class with zero overhead");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
@@ -43,7 +43,7 @@ namespace {
                 4,
                 GL_FLOAT,
                 GL_FALSE,
-                sizeof(osmv::Mesh_instance),
+                sizeof(osmv::Raw_mesh_instance),
                 reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec4)));
             glEnableVertexAttribArray(loc + i);
             glVertexAttribDivisor(loc + i, 1);
@@ -64,7 +64,7 @@ namespace {
                 3,
                 GL_FLOAT,
                 GL_FALSE,
-                sizeof(osmv::Mesh_instance),
+                sizeof(osmv::Raw_mesh_instance),
                 reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
             glEnableVertexAttribArray(loc + i);
             glVertexAttribDivisor(loc + i, 1);
@@ -73,14 +73,19 @@ namespace {
 
     void Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
-            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(osmv::Raw_mesh_instance), reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
 
     void u8_to_Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
-            vec4log, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+            vec4log,
+            4,
+            GL_UNSIGNED_BYTE,
+            GL_TRUE,
+            sizeof(osmv::Raw_mesh_instance),
+            reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
@@ -112,7 +117,7 @@ namespace {
         gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo, gl::Array_bufferT<osmv::Mesh_instance>& instance_vbo) {
+        static gl::Vertex_array create_vao(Vbo& vbo, gl::Array_bufferT<osmv::Raw_mesh_instance>& instance_vbo) {
             static_assert(std::is_standard_layout<T>::value, "this is required for offsetof macro usage");
 
             gl::Vertex_array vao = gl::GenVertexArrays();
@@ -127,10 +132,10 @@ namespace {
             gl::EnableVertexAttribArray(aNormal);
 
             gl::BindBuffer(instance_vbo);
-            Mat4Pointer(aModelMat, offsetof(osmv::Mesh_instance, transform));
-            Mat3Pointer(aNormalMat, offsetof(osmv::Mesh_instance, _normal_xform));
-            u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Mesh_instance, rgba));
-            u8_to_Vec4Pointer(aRgba1, offsetof(osmv::Mesh_instance, _passthrough));
+            Mat4Pointer(aModelMat, offsetof(osmv::Raw_mesh_instance, transform));
+            Mat3Pointer(aNormalMat, offsetof(osmv::Raw_mesh_instance, _normal_xform));
+            u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Raw_mesh_instance, rgba));
+            u8_to_Vec4Pointer(aRgba1, offsetof(osmv::Raw_mesh_instance, _passthrough));
 
             gl::BindVertexArray();
 
@@ -311,7 +316,7 @@ namespace {
     struct Mesh_on_gpu final {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
         size_t instance_hash = 0;  // cache VBO assignments
-        gl::Array_bufferT<osmv::Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
+        gl::Array_bufferT<osmv::Raw_mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
@@ -604,12 +609,6 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
     return meshid;
 }
 
-void osmv::optimize_draw_order(Mesh_instance* mi, size_t n) noexcept {
-    std::sort(mi, mi + n, [](osmv::Mesh_instance const& a, osmv::Mesh_instance const& b) {
-        return a.rgba.a != b.rgba.a ? a.rgba.a > a.rgba.b : a._meshid < b._meshid;
-    });
-}
-
 // ok, this took an inordinate amount of time, but there's a fucking
 // annoying bug in Clang:
 //
@@ -644,8 +643,7 @@ float osmv::Raw_renderer::aspect_ratio() const noexcept {
     return d.x / d.y;
 }
 
-osmv::Raw_drawcall_result
-    osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Mesh_instance const* meshes, size_t nmeshes) {
+osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Raw_drawlist const& drawlist) {
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -659,6 +657,9 @@ osmv::Raw_drawcall_result
     // (kind of like how deferred rendering puts everything into information-dense buffers). The
     // reason this rendering pipeline isn't fully deferred (gbuffers, albeido, etc.) is because
     // the scene is lit by a single directional light and the shading is fairly simple.
+
+    Raw_mesh_instance const* meshes = drawlist.instances.data();
+    size_t nmeshes = drawlist.instances.size();
 
 #ifndef NDEBUG
     // debug OpenGL: ensure there are no OpenGL errors before setup
@@ -781,7 +782,7 @@ osmv::Raw_drawcall_result
         gl::Uniform(shader.uViewMat, params.view_matrix);
 
         for (size_t i = 0; i < nmeshes; ++i) {
-            Mesh_instance const& mi = meshes[i];
+            Raw_mesh_instance const& mi = meshes[i];
             Mesh_on_gpu& md = global_mesh_lookup(mi._meshid);
             gl::Uniform(shader.uModelMat, mi.transform);
             gl::Uniform(shader.uNormalMat, mi._normal_xform);

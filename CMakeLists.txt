@@ -69,17 +69,26 @@ add_executable(osmv
     src/3d/gl.cpp
     src/3d/3d_common.hpp
     src/3d/3d_common.cpp
-    src/3d/mesh_instance.hpp
+    src/3d/raw_mesh_instance.hpp
+    src/3d/raw_drawlist.hpp
+    src/3d/raw_drawlist.cpp
     src/3d/raw_renderer.hpp
     src/3d/raw_renderer.cpp
+    src/3d/labelled_model_drawlist.hpp
+    src/3d/model_drawlist_generator.hpp
+    src/3d/model_drawlist_generator.cpp
+    src/3d/polar_camera.hpp
+    src/3d/polar_camera.cpp
     src/3d/simple_model_renderer.hpp
     src/3d/simple_model_renderer.cpp
-    src/3d/labelled_model_drawlist.hpp
+
 
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
     src/widgets/component_selection_widget.hpp
     src/widgets/component_selection_widget.cpp
+    src/widgets/model_viewer_widget.hpp
+    src/widgets/model_viewer_widget.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

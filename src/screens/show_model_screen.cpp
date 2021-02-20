@@ -798,26 +798,27 @@ namespace osmv {
             if (only_select_muscles) {
                 OpenSim::Model const* m = model.get();
 
-                renderer.geometry.for_each([m](OpenSim::Component const*& associated_component, Mesh_instance const&) {
-                    // for this screen specifically, the "owner"s should be fixed up to point to
-                    // muscle objects, rather than direct (e.g. GeometryPath) objects
-                    OpenSim::Component const* c = associated_component;
-                    while (c != nullptr and c->hasOwner()) {
-                        if (dynamic_cast<OpenSim::Muscle const*>(c)) {
-                            break;
+                renderer.geometry.for_each(
+                    [m](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
+                        // for this screen specifically, the "owner"s should be fixed up to point to
+                        // muscle objects, rather than direct (e.g. GeometryPath) objects
+                        OpenSim::Component const* c = associated_component;
+                        while (c != nullptr and c->hasOwner()) {
+                            if (dynamic_cast<OpenSim::Muscle const*>(c)) {
+                                break;
+                            }
+                            c = &c->getOwner();
                         }
-                        c = &c->getOwner();
-                    }
-                    if (c == m) {
-                        c = nullptr;
-                    }
+                        if (c == m) {
+                            c = nullptr;
+                        }
 
-                    associated_component = c;
-                });
+                        associated_component = c;
+                    });
             }
 
             if (muscle_recoloring == MuscleRecoloring_Strain) {
-                renderer.geometry.for_each([this](OpenSim::Component const* c, Mesh_instance& mi) {
+                renderer.geometry.for_each([this](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -831,7 +832,7 @@ namespace osmv {
             }
 
             if (muscle_recoloring == MuscleRecoloring_Length) {
-                renderer.geometry.for_each([this](OpenSim::Component const* c, Mesh_instance& mi) {
+                renderer.geometry.for_each([this](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -908,14 +909,14 @@ namespace osmv {
 
             if (ImGui::Button("Front")) {
                 // assumes models tend to point upwards in Y and forwards in +X
-                renderer.theta = pi_f / 2.0f;
-                renderer.phi = 0.0f;
+                renderer.camera.theta = pi_f / 2.0f;
+                renderer.camera.phi = 0.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Back")) {
                 // assumes models tend to point upwards in Y and forwards in +X
-                renderer.theta = 3.0f * (pi_f / 2.0f);
-                renderer.phi = 0.0f;
+                renderer.camera.theta = 3.0f * (pi_f / 2.0f);
+                renderer.camera.phi = 0.0f;
             }
 
             ImGui::SameLine();
@@ -925,15 +926,15 @@ namespace osmv {
             if (ImGui::Button("Left")) {
                 // assumes models tend to point upwards in Y and forwards in +X
                 // (so sidewards is theta == 0 or PI)
-                renderer.theta = pi_f;
-                renderer.phi = 0.0f;
+                renderer.camera.theta = pi_f;
+                renderer.camera.phi = 0.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Right")) {
                 // assumes models tend to point upwards in Y and forwards in +X
                 // (so sidewards is theta == 0 or PI)
-                renderer.theta = 0.0f;
-                renderer.phi = 0.0f;
+                renderer.camera.theta = 0.0f;
+                renderer.camera.phi = 0.0f;
             }
 
             ImGui::SameLine();
@@ -941,24 +942,24 @@ namespace osmv {
             ImGui::SameLine();
 
             if (ImGui::Button("Top")) {
-                renderer.theta = 0.0f;
-                renderer.phi = pi_f / 2.0f;
+                renderer.camera.theta = 0.0f;
+                renderer.camera.phi = pi_f / 2.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Bottom")) {
-                renderer.theta = 0.0f;
-                renderer.phi = 3.0f * (pi_f / 2.0f);
+                renderer.camera.theta = 0.0f;
+                renderer.camera.phi = 3.0f * (pi_f / 2.0f);
             }
 
             ImGui::NewLine();
 
-            ImGui::SliderFloat("radius", &renderer.radius, 0.0f, 10.0f);
-            ImGui::SliderFloat("theta", &renderer.theta, 0.0f, 2.0f * pi_f);
-            ImGui::SliderFloat("phi", &renderer.phi, 0.0f, 2.0f * pi_f);
+            ImGui::SliderFloat("radius", &renderer.camera.radius, 0.0f, 10.0f);
+            ImGui::SliderFloat("theta", &renderer.camera.theta, 0.0f, 2.0f * pi_f);
+            ImGui::SliderFloat("phi", &renderer.camera.phi, 0.0f, 2.0f * pi_f);
             ImGui::NewLine();
-            ImGui::SliderFloat("pan_x", &renderer.pan.x, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_y", &renderer.pan.y, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_z", &renderer.pan.z, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_x", &renderer.camera.pan.x, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_y", &renderer.camera.pan.y, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_z", &renderer.camera.pan.z, -100.0f, 100.0f);
 
             ImGui::NewLine();
             ImGui::Text("Lighting:");
@@ -1053,11 +1054,11 @@ namespace osmv {
 
             ImGui::NewLine();
             ImGui::Text("Interaction: ");
-            if (renderer.flags & SimpleModelRendererFlags_Dragging) {
+            if (renderer.camera.is_dragging) {
                 ImGui::SameLine();
                 ImGui::Text("rotating ");
             }
-            if (renderer.flags & SimpleModelRendererFlags_Panning) {
+            if (renderer.camera.is_panning) {
                 ImGui::SameLine();
                 ImGui::Text("panning ");
             }

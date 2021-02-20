@@ -1,6 +1,7 @@
 #pragma once
 
-#include "mesh_instance.hpp"
+#include "raw_drawlist.hpp"
+#include "raw_mesh_instance.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
@@ -26,9 +27,6 @@ namespace osmv {
     // must only be called after OpenGL is initialized
     struct Untextured_vert;
     int globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
-
-    // reorder a contiguous sequence of mesh instances for optimal drawing
-    void optimize_draw_order(Mesh_instance* begin, size_t) noexcept;
 
     struct Raw_renderer_config final {
         int w;
@@ -90,11 +88,6 @@ namespace osmv {
         glm::vec2 dimensions() const noexcept;
         float aspect_ratio() const noexcept;
 
-        Raw_drawcall_result draw(Raw_drawcall_params const&, Mesh_instance const* begin, size_t n);
-
-        template<typename ContiguousContainer>
-        Raw_drawcall_result draw(Raw_drawcall_params const& params, ContiguousContainer const& c) {
-            return draw(params, c.data(), c.size());
-        }
+        Raw_drawcall_result draw(Raw_drawcall_params const&, Raw_drawlist const&);
     };
 }
