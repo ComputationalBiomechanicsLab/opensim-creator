@@ -12,6 +12,7 @@
 #include "src/sdl_wrapper.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/model_viewer_widget.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
@@ -395,8 +396,7 @@ namespace {
             }
         }
 
-        void draw(
-            osmv::Simple_model_renderer&, Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
+        void draw(Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
             // start/stop button
             if (simulator and simulator->is_running()) {
                 ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
@@ -607,9 +607,9 @@ namespace osmv {
         osmv::State latest_state;
 
         Selected_component selected_component;
-
-        Simple_model_renderer renderer;
-        bool mouse_over_renderer = false;
+        Model_viewer_widget model_viewer;
+        Model_viewer_widget model_viewer2;
+        OpenSim::Component const* current_hover = nullptr;
 
         Coordinates_tab_data coords_tab;
         Simulator_tab simulator_tab;
@@ -627,8 +627,8 @@ namespace osmv {
                 osmv::State s{model->initSystem()};
                 model->realizeReport(s);
                 return s;
-            }()},
-            renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
+            }()} {
+            // renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
@@ -675,18 +675,20 @@ namespace osmv {
             } else if (e.type == SDL_MOUSEBUTTONUP) {
                 // otherwise, maybe they're trying to select something in the viewport, so
                 // check if they are hovered over a component and select it if they are
-                if (e.button.button == SDL_BUTTON_RIGHT and renderer.hovered_component) {
-                    selected_component = renderer.hovered_component;
+                if (e.button.button == SDL_BUTTON_RIGHT and current_hover) {
+                    selected_component = current_hover;
                 }
             }
 
-            // if no events were captured above, let the model viewer handle
-            // the event
-            if (mouse_over_renderer or e.type == SDL_MOUSEBUTTONUP) {
-                return renderer.on_event(e);
+            if (model_viewer.is_moused_over()) {
+                model_viewer.on_event(e);
             }
 
-            return false;
+            if (model_viewer2.is_moused_over()) {
+                model_viewer2.on_event(e);
+            }
+
+            return true;
         }
 
         // "tick" the UI state (usually, used for updating animations etc.)
@@ -733,16 +735,35 @@ namespace osmv {
 
         // draw a frame of the UI
         void draw(Application& app) {
+            {
+                OpenSim::Component const* selected = selected_component;
+                OpenSim::Component const* hovered = current_hover;
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
-            if (ImGui::Begin("render")) {
-                if (ImGui::BeginChild("child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
-                    draw_render_tab();
-                    ImGui::EndChild();
+                model_viewer.draw("render1", model, latest_state, &selected, &hovered);
+
+                if (selected and selected != selected_component) {
+                    selected_component = selected;
+                }
+
+                if (hovered and hovered != current_hover) {
+                    current_hover = hovered;
                 }
             }
-            ImGui::End();
-            ImGui::PopStyleVar();
+
+            {
+                OpenSim::Component const* selected = selected_component;
+                OpenSim::Component const* hovered = current_hover;
+
+                model_viewer2.draw("render2", model, latest_state, &selected, &hovered);
+
+                if (selected and selected != selected_component) {
+                    selected_component = selected;
+                }
+
+                if (hovered and hovered != current_hover) {
+                    current_hover = hovered;
+                }
+            }
 
             if (ImGui::Begin("Hierarchy")) {
                 draw_hierarchy_tab();
@@ -790,101 +811,6 @@ namespace osmv {
             ImGui::End();
         }
 
-        void draw_render_tab() {
-            // generate OpenSim scene geometry
-            renderer.generate_geometry(model, latest_state);
-
-            // perform screen-specific geometry fixups
-            if (only_select_muscles) {
-                OpenSim::Model const* m = model.get();
-
-                renderer.geometry.for_each(
-                    [m](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
-                        // for this screen specifically, the "owner"s should be fixed up to point to
-                        // muscle objects, rather than direct (e.g. GeometryPath) objects
-                        OpenSim::Component const* c = associated_component;
-                        while (c != nullptr and c->hasOwner()) {
-                            if (dynamic_cast<OpenSim::Muscle const*>(c)) {
-                                break;
-                            }
-                            c = &c->getOwner();
-                        }
-                        if (c == m) {
-                            c = nullptr;
-                        }
-
-                        associated_component = c;
-                    });
-            }
-
-            if (muscle_recoloring == MuscleRecoloring_Strain) {
-                renderer.geometry.for_each([this](OpenSim::Component const* c, Raw_mesh_instance& mi) {
-                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                    if (not musc) {
-                        return;
-                    }
-
-                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getTendonStrain(latest_state));
-                    mi.rgba.g = 255 / 2;
-                    mi.rgba.b = 255 / 2;
-                    mi.rgba.a = 255;
-                });
-            }
-
-            if (muscle_recoloring == MuscleRecoloring_Length) {
-                renderer.geometry.for_each([this](OpenSim::Component const* c, Raw_mesh_instance& mi) {
-                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                    if (not musc) {
-                        return;
-                    }
-
-                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getLength(latest_state));
-                    mi.rgba.g = 255 / 4;
-                    mi.rgba.b = 255 / 4;
-                    mi.rgba.a = 255;
-                });
-            }
-
-            // draw the scene to an OpenGL texture
-            renderer.apply_standard_rim_coloring(selected_component);
-            auto dims = ImGui::GetContentRegionAvail();
-            renderer.reallocate_buffers(static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples());
-
-            gl::Texture_2d& render = renderer.draw();
-
-            {
-                // required by ImGui::Image
-                //
-                // UV coords: ImGui::Image uses different texture coordinates from the renderer
-                //            (specifically, Y is reversed)
-                void* texture_handle = reinterpret_cast<void*>(render.raw_handle());
-                ImVec2 image_dimensions{dims.x, dims.y};
-                ImVec2 uv0{0, 1};
-                ImVec2 uv1{1, 0};
-
-                ImVec2 cp = ImGui::GetCursorPos();
-                ImVec2 mp = ImGui::GetMousePos();
-                ImVec2 wp = ImGui::GetWindowPos();
-
-                ImGui::Image(texture_handle, image_dimensions, uv0, uv1);
-
-                mouse_over_renderer = ImGui::IsItemHovered();
-
-                renderer.hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
-                // y is reversed (OpenGL coords, not screen)
-                renderer.hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
-            }
-
-            // overlay: if the user is hovering over a component, write the component's name
-            //          next to the mouse
-            if (renderer.hovered_component) {
-                OpenSim::Component const& c = *renderer.hovered_component;
-                sdl::Mouse_state m = sdl::GetMouseState();
-                ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
-                ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
-            }
-        }
-
         void draw_ui_tab(Application& app) {
             ImGui::Text("%.1f fps", static_cast<double>(ImGui::GetIO().Framerate));
 
@@ -909,14 +835,14 @@ namespace osmv {
 
             if (ImGui::Button("Front")) {
                 // assumes models tend to point upwards in Y and forwards in +X
-                renderer.camera.theta = pi_f / 2.0f;
-                renderer.camera.phi = 0.0f;
+                model_viewer.camera().theta = pi_f / 2.0f;
+                model_viewer.camera().phi = 0.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Back")) {
                 // assumes models tend to point upwards in Y and forwards in +X
-                renderer.camera.theta = 3.0f * (pi_f / 2.0f);
-                renderer.camera.phi = 0.0f;
+                model_viewer.camera().theta = 3.0f * (pi_f / 2.0f);
+                model_viewer.camera().phi = 0.0f;
             }
 
             ImGui::SameLine();
@@ -926,15 +852,15 @@ namespace osmv {
             if (ImGui::Button("Left")) {
                 // assumes models tend to point upwards in Y and forwards in +X
                 // (so sidewards is theta == 0 or PI)
-                renderer.camera.theta = pi_f;
-                renderer.camera.phi = 0.0f;
+                model_viewer.camera().theta = pi_f;
+                model_viewer.camera().phi = 0.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Right")) {
                 // assumes models tend to point upwards in Y and forwards in +X
                 // (so sidewards is theta == 0 or PI)
-                renderer.camera.theta = 0.0f;
-                renderer.camera.phi = 0.0f;
+                model_viewer.camera().theta = 0.0f;
+                model_viewer.camera().phi = 0.0f;
             }
 
             ImGui::SameLine();
@@ -942,25 +868,26 @@ namespace osmv {
             ImGui::SameLine();
 
             if (ImGui::Button("Top")) {
-                renderer.camera.theta = 0.0f;
-                renderer.camera.phi = pi_f / 2.0f;
+                model_viewer.camera().theta = 0.0f;
+                model_viewer.camera().phi = pi_f / 2.0f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Bottom")) {
-                renderer.camera.theta = 0.0f;
-                renderer.camera.phi = 3.0f * (pi_f / 2.0f);
+                model_viewer.camera().theta = 0.0f;
+                model_viewer.camera().phi = 3.0f * (pi_f / 2.0f);
             }
 
             ImGui::NewLine();
 
-            ImGui::SliderFloat("radius", &renderer.camera.radius, 0.0f, 10.0f);
-            ImGui::SliderFloat("theta", &renderer.camera.theta, 0.0f, 2.0f * pi_f);
-            ImGui::SliderFloat("phi", &renderer.camera.phi, 0.0f, 2.0f * pi_f);
+            ImGui::SliderFloat("radius", &model_viewer.camera().radius, 0.0f, 10.0f);
+            ImGui::SliderFloat("theta", &model_viewer.camera().theta, 0.0f, 2.0f * pi_f);
+            ImGui::SliderFloat("phi", &model_viewer.camera().phi, 0.0f, 2.0f * pi_f);
             ImGui::NewLine();
-            ImGui::SliderFloat("pan_x", &renderer.camera.pan.x, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_y", &renderer.camera.pan.y, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_z", &renderer.camera.pan.z, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_x", &model_viewer.camera().pan.x, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_y", &model_viewer.camera().pan.y, -100.0f, 100.0f);
+            ImGui::SliderFloat("pan_z", &model_viewer.camera().pan.z, -100.0f, 100.0f);
 
+            /*
             ImGui::NewLine();
             ImGui::Text("Lighting:");
             ImGui::SliderFloat("light_x", &renderer.light_pos.x, -30.0f, 30.0f);
@@ -999,6 +926,7 @@ namespace osmv {
                 }
             }
             ImGui::Checkbox("only select muscles", &only_select_muscles);
+            */
 
             // display hints
             {
@@ -1054,22 +982,22 @@ namespace osmv {
 
             ImGui::NewLine();
             ImGui::Text("Interaction: ");
-            if (renderer.camera.is_dragging) {
+            if (model_viewer.camera().is_dragging) {
                 ImGui::SameLine();
                 ImGui::Text("rotating ");
             }
-            if (renderer.camera.is_panning) {
+            if (model_viewer.camera().is_panning) {
                 ImGui::SameLine();
                 ImGui::Text("panning ");
             }
-            if (mouse_over_renderer) {
+            if (model_viewer.is_moused_over()) {
                 ImGui::SameLine();
                 ImGui::Text("interacting ");
             }
         }
 
         void draw_simulate_tab() {
-            simulator_tab.draw(renderer, selected_component, model, latest_state);
+            simulator_tab.draw(selected_component, model, latest_state);
         }
 
         void draw_coords_tab() {
@@ -1230,7 +1158,7 @@ namespace osmv {
         void draw_hierarchy_tab() {
             Component_hierarchy_widget v;
             OpenSim::Component const* selected = selected_component.get();
-            v.draw(&model->getRoot(), &selected, &renderer.hovered_component);
+            v.draw(&model->getRoot(), &selected, &current_hover);
             selected_component = selected;
         }
 
@@ -1378,7 +1306,7 @@ namespace osmv {
             for (OpenSim::Muscle const* musc : scratch.muscles) {
                 ImGui::Text("%s", musc->getName().c_str());
                 if (ImGui::IsItemHovered()) {
-                    renderer.hovered_component = musc;
+                    current_hover = musc;
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                     selected_component = musc;

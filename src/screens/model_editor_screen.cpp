@@ -1,12 +1,12 @@
 #include "model_editor_screen.hpp"
 
 #include "splash_screen.hpp"
-#include "src/3d/simple_model_renderer.hpp"
 #include "src/application.hpp"
 #include "src/fd_simulation.hpp"
 #include "src/sdl_wrapper.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/model_viewer_widget.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -26,15 +26,17 @@ namespace osmv {
 
         int parentbodyidx = -1;
 
-        Simple_model_renderer renderer{app().window_dimensions().w, app().window_dimensions().h, app().samples()};
+        Model_viewer_widget model_viewer;
 
-        osmv::State fdss{model.initSystem()};
+        osmv::State simulator_state{model.initSystem()};
+        osmv::State editor_state{model.initSystem()};
         std::optional<Fd_simulator> fdsim;
         OpenSim::Component const* selected_component = nullptr;
+        OpenSim::Component const* hovered_component = nullptr;
 
         Model_editor_screen_impl() {
-            renderer.flags |= SimpleModelRendererFlags_HoverableStaticDecorations;
-            model.realizeReport(fdss);
+            // TODO: renderer.flags |= SimpleModelRendererFlags_HoverableStaticDecorations;
+            model.realizeReport(simulator_state);
             model.updDisplayHints().set_show_frames(true);
         }
 
@@ -170,12 +172,12 @@ bool osmv::Model_editor_screen::on_event(SDL_Event const& e) {
     // if the user right-clicks something in the viewport while the renderer detects
     // a hover-over, then make the hover-over the selection
     if (e.type == SDL_MOUSEBUTTONUP) {
-        if (e.button.button == SDL_BUTTON_RIGHT and impl->renderer.hovered_component) {
-            impl->selected_component = impl->renderer.hovered_component;
+        if (e.button.button == SDL_BUTTON_RIGHT and impl->hovered_component) {
+            impl->selected_component = impl->hovered_component;
         }
     }
 
-    return impl->renderer.on_event(e);
+    return impl->model_viewer.on_event(e);
 }
 
 void osmv::Model_editor_screen::tick() {
@@ -185,9 +187,12 @@ void osmv::Model_editor_screen::draw() {
     OpenSim::Model& model = impl->model;
 
     // if running a simulation only show the simulation
-    if (impl->fdsim and impl->fdsim->try_pop_state(impl->fdss)) {
-        model.realizeReport(impl->fdss);
-        impl->renderer.draw(model, impl->fdss);
+    if (impl->fdsim and impl->fdsim->try_pop_state(impl->simulator_state)) {
+        model.realizeReport(impl->simulator_state);
+
+        OpenSim::Component const* selected = nullptr;
+        OpenSim::Component const* hovered = nullptr;
+        impl->model_viewer.draw("render", model, impl->simulator_state, &selected, &hovered);
         return;
     }
     // else: the user is editing the model and all panels should be shown
@@ -197,23 +202,21 @@ void osmv::Model_editor_screen::draw() {
     // this means that the model can be edited directly, but that we're also editing it in
     // a state that can easily be thrown into (e.g.) an fd simulation for ad-hoc testing
     SimTK::State state = model.initSystem();
+    model.realizePosition(state);
 
-    // render it
-    {
-        model.realizePosition(state);
-        impl->renderer.generate_geometry(model, state);
-        // screen-specific fixup: all hoverables are their parents
-        impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
-        impl->renderer.apply_standard_rim_coloring(nullptr);
-        impl->renderer.draw();
-    }
+    OpenSim::Component const* hovered = nullptr;
+
+    impl->model_viewer.draw("render", model, state, &impl->selected_component, &hovered);
+
+    // screen-specific fixup: all hoverables are their parents
+    // TODO: impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
 
     // hovering
     //
     // if the user's mouse is hovering over a component, print the component's name next to
     // the user's mouse
-    if (impl->renderer.hovered_component) {
-        OpenSim::Component const& c = *impl->renderer.hovered_component;
+    if (hovered) {
+        OpenSim::Component const& c = *hovered;
         sdl::Mouse_state m = sdl::GetMouseState();
         ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
         ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
@@ -222,7 +225,7 @@ void osmv::Model_editor_screen::draw() {
     // hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
         Component_hierarchy_widget hv;
-        hv.draw(&model.getRoot(), &impl->selected_component, &impl->renderer.hovered_component);
+        hv.draw(&model.getRoot(), &impl->selected_component, &hovered);
     }
     ImGui::End();
 
