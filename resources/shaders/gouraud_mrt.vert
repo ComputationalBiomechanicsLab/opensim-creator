@@ -7,7 +7,7 @@
 
 layout (location = 0) in vec3 aLocation;
 layout (location = 1) in vec3 aNormal;
-layout (location = 2) in mat4 aModelMat;
+layout (location = 2) in mat4x3 aModelMat;
 layout (location = 6) in mat3 aNormalMat;
 layout (location = 9) in vec4 aRgba0;
 layout (location = 10) in vec4 aRgba1;
@@ -27,10 +27,11 @@ const float specularStrength = 0.1f;
 const float shininess = 32;
 
 void main() {
-    gl_Position = uProjMat * uViewMat * aModelMat * vec4(aLocation, 1.0);
+    mat4 modelMat = mat4(vec4(aModelMat[0], 0), vec4(aModelMat[1], 0), vec4(aModelMat[2], 0), vec4(aModelMat[3], 1));
+    gl_Position = uProjMat * uViewMat * modelMat * vec4(aLocation, 1.0);
 
     vec3 normalDir = normalize(aNormalMat * aNormal);
-    vec3 fragPos = vec3(aModelMat * vec4(aLocation, 1.0));
+    vec3 fragPos = vec3(modelMat * vec4(aLocation, 1.0));
     vec3 frag2lightDir = normalize(uLightPos - fragPos);
     vec3 frag2viewDir = normalize(uViewPos - fragPos);
 

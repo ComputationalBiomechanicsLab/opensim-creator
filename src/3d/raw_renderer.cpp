@@ -50,6 +50,27 @@ namespace {
         }
     }
 
+    void Mat4x3Pointer(gl::Attribute const& mat4x3loc, size_t base_offset) {
+        GLuint loc = static_cast<GLuint>(mat4x3loc);
+        for (unsigned i = 0; i < 4; ++i) {
+            // HACK: from LearnOpenGL: mat4's must be set in this way because
+            //       of OpenGL not allowing more than 4 or so floats to be set
+            //       in a single call
+            //
+            // see:
+            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
+            glVertexAttribPointer(
+                loc + i,
+                3,
+                GL_FLOAT,
+                GL_FALSE,
+                sizeof(osmv::Raw_mesh_instance),
+                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
+            glEnableVertexAttribArray(loc + i);
+            glVertexAttribDivisor(loc + i, 1);
+        }
+    }
+
     void Mat3Pointer(gl::Attribute const& mat3loc, size_t base_offset) {
         GLuint loc = static_cast<GLuint>(mat3loc);
         for (unsigned i = 0; i < 3; ++i) {
@@ -132,7 +153,7 @@ namespace {
             gl::EnableVertexAttribArray(aNormal);
 
             gl::BindBuffer(instance_vbo);
-            Mat4Pointer(aModelMat, offsetof(osmv::Raw_mesh_instance, transform));
+            Mat4x3Pointer(aModelMat, offsetof(osmv::Raw_mesh_instance, transform));
             Mat3Pointer(aNormalMat, offsetof(osmv::Raw_mesh_instance, _normal_xform));
             u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Raw_mesh_instance, rgba));
             u8_to_Vec4Pointer(aRgba1, offsetof(osmv::Raw_mesh_instance, _passthrough));

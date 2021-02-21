@@ -41,14 +41,20 @@ namespace osmv {
         }
     };
 
+    template<typename Mtx>
+    static glm::mat3 normal_matrix(Mtx&& m) {
+        glm::mat3 top_left{m};
+        return glm::inverse(glm::transpose(top_left));
+    }
+
     // one instance of a mesh
     //
     // this struct is fairly complicated because it has to pack data together ready for a
     // GPU draw call. Instanced GPU drawing requires that the data is contiguous and has all
     // necessary draw parameters (transform matrices, etc.) at predictable memory offsets.
-    struct alignas(16) Raw_mesh_instance final {
+    struct alignas(32) Raw_mesh_instance final {
         // transforms mesh vertices into scene worldspace
-        glm::mat4 transform;
+        glm::mat4x3 transform;
 
         // INTERNAL: normal transform: transforms mesh normals into scene worldspace
         //
@@ -93,10 +99,10 @@ namespace osmv {
         //               algorithms like when a type is trivially constructable
         Raw_mesh_instance() = default;
 
-        template<typename Mat4, typename Rgba>
-        Raw_mesh_instance(Mat4&& _transform, Rgba&& _rgba, int meshid) noexcept :
-            transform{std::forward<Mat4>(_transform)},
-            _normal_xform{glm::transpose(glm::inverse(transform))},
+        template<typename Mat4x3, typename Rgba>
+        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, int meshid) noexcept :
+            transform{std::forward<Mat4x3>(_transform)},
+            _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},
             _passthrough{},
             _meshid{meshid} {
