@@ -800,18 +800,81 @@ namespace gl {
             return static_cast<GLsizei>(_size);
         }
 
+        // Assign new data to the array buffer
         void assign(T const* begin, T const* end) {
-            size_t new_size = end - begin;
+            size_t n = end - begin;
+            GLsizeiptr num_bytes = static_cast<GLsizeiptr>(sizeof(T) * n);
+
+            gl::BindBuffer(_vbo);
+
+            gl::BufferData(_vbo.type, num_bytes, begin, usage);
+            _capacity = n;
+            _size = n;
+        }
+
+        // Append new data to the end of the existing data
+        void push_back(T const* begin, T const* end) {
+            size_t n = end - begin;
+            size_t new_size = _size + n;
+
             gl::BindBuffer(_vbo);
 
             if (new_size <= _capacity) {
-                glBufferSubData(_vbo.type, 0, static_cast<long>(new_size * sizeof(T)), begin);
+                GLintptr start = static_cast<GLintptr>(sizeof(T) * _size);
+                GLsizeiptr nbytes = static_cast<GLsizeiptr>(sizeof(T) * n);
+                glBufferSubData(_vbo.type, start, nbytes, begin);
                 _size = new_size;
             } else {
-                // reallocate
-                gl::BufferData(_vbo.type, static_cast<long>(new_size * sizeof(T)), begin, usage);
-                _capacity = new_size;
+                // allocate a new buffer with the necessary capacity, copy all existing data
+                // to the new buffer, then copy the data back to the original VBO (so that the
+                // VBOs ID does not change, which might invalidate VAOs etc. downstream)
+
+                // geometrically grow the buffer in powers of 2 for push_back, because it is
+                // likely that the caller is going to repeatably call `push_back`
+                GLsizeiptr new_capacity = [new_size]() {
+                    GLsizeiptr v = 1;
+                    while (v < new_size) {
+                        v *= 2;
+                    }
+                    return v;
+                }();
+                GLsizeiptr new_capacity_nbytes = sizeof(T) * new_capacity;
+
+                // create temporary storage space with necessary size
+                gl::Array_buffer tmp{};
+                gl::BindBuffer(tmp);
+                gl::BufferData(tmp.type, new_capacity_nbytes, nullptr, usage);
+
+                // copy existing data to the front of the temporary
+                gl::BindBuffer(GL_COPY_READ_BUFFER, _vbo);
+                gl::BindBuffer(GL_COPY_WRITE_BUFFER, tmp);
+                GLsizeiptr size_nbytes = static_cast<GLsizeiptr>(sizeof(T) * _size);
+                glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size_nbytes);
+
+                // write new data at the end
+                gl::BindBuffer(tmp);
+                GLsizeiptr added_nbytes = static_cast<GLsizeiptr>(sizeof(T) * n);
+                glBufferSubData(tmp.type, size_nbytes, added_nbytes, begin);
+
+                // the temporary now contains all the data we want, but at the "wrong" index
+                //
+                // reallocate (in OpenGL, blank) the "right" index and copy the data to it,
+                // followed by destroying the temporary
+
+                // reallocate vbo
+                gl::BindBuffer(_vbo);
+                gl::BufferData(_vbo.type, new_capacity_nbytes, nullptr, usage);
+
+                // copy temporary data into the reallocated vbo
+                gl::BindBuffer(GL_COPY_READ_BUFFER, tmp);
+                gl::BindBuffer(GL_COPY_WRITE_BUFFER, _vbo);
+                GLsizeiptr new_size_nbytes = static_cast<GLsizeiptr>(sizeof(T) * new_size);
+                glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, new_size_nbytes);
+
+                _capacity = new_capacity;
                 _size = new_size;
+
+                // (destructor kills tmp)
             }
         }
     };
