@@ -37,13 +37,29 @@ namespace osmv {
     using Raw_renderer_flags = int;
     enum Raw_renderer_flags_ {
         RawRendererFlags_None = 0 << 0,
+
+        // draw meshes in wireframe mode
         RawRendererFlags_WireframeMode = 1 << 0,
+
+        // draw mesh normals on top of render
         RawRendererFlags_ShowMeshNormals = 1 << 1,
+
+        // draw a chequered floor
         RawRendererFlags_ShowFloor = 1 << 2,
+
+        // draw selection rims
         RawRendererFlags_DrawRims = 1 << 3,
+
+        // draw debug quads (development)
         RawRendererFlags_DrawDebugQuads = 1 << 4,
+
+        // perform hit testing on Raw_mesh_instance passthrough data
         RawRendererFlags_PerformPassthroughHitTest = 1 << 5,
+
+        // use optimized hit testing (which might arrive a frame late)
         RawRendererFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 6,
+
+        // draw the scene
         RawRendererFlags_DrawSceneGeometry = 1 << 7,
 
         RawRendererFlags_Default = RawRendererFlags_ShowFloor | RawRendererFlags_DrawRims |
