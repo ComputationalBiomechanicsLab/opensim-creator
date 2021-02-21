@@ -26,6 +26,10 @@ namespace osmv {
         std::vector<Raw_mesh_instance> instances;
 
     public:
+        size_t size() const noexcept {
+            return instances.size();
+        }
+
         template<typename... Args>
         Raw_mesh_instance& emplace_back(Args... args) {
             return instances.emplace_back(std::forward<Args>(args)...);

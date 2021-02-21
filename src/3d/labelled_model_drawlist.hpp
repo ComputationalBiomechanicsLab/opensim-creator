@@ -74,7 +74,7 @@ namespace osmv {
         template<typename Callback>
         void for_each(Callback f) {
             // emplace-back ensures this
-            assert(instances.size() == associated_components.size());
+            assert(drawlist.size() == associated_components.size());
 
             drawlist.for_each([&](Raw_mesh_instance& mi) {
                 uint16_t id = mi.passthrough_data().to_u16();
