@@ -35,12 +35,11 @@ osmv::Polar_camera& osmv::Model_viewer_widget::camera() noexcept {
 }
 
 bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
-    // if no events were captured above, let the model viewer handle
-    // the event
-    if (impl->mouse_over_render or e.type == SDL_MOUSEBUTTONUP) {
-        return impl->renderer.on_event(e);
+    if (not(impl->mouse_over_render or e.type == SDL_MOUSEBUTTONUP)) {
+        return false;
     }
-    return false;
+
+    return impl->renderer.on_event(e);
 }
 
 void osmv::Model_viewer_widget::draw(
@@ -59,55 +58,53 @@ void osmv::Model_viewer_widget::draw(
             renderer.generate_geometry(model, state);
 
             // perform screen-specific geometry fixups
-            //    if (only_select_muscles) {
-            renderer.geometry.for_each(
-                [&model](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
-                    // for this screen specifically, the "owner"s should be fixed up to point to
-                    // muscle objects, rather than direct (e.g. GeometryPath) objects
-                    OpenSim::Component const* c = associated_component;
-                    while (c != nullptr and c->hasOwner()) {
-                        if (dynamic_cast<OpenSim::Muscle const*>(c)) {
-                            break;
+            if (geometry_flags & ModelViewerGeometryFlags_CanOnlyInteractWithMuscles) {
+                renderer.geometry.for_each(
+                    [&model](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
+                        // for this screen specifically, the "owner"s should be fixed up to point to
+                        // muscle objects, rather than direct (e.g. GeometryPath) objects
+                        OpenSim::Component const* c = associated_component;
+                        while (c != nullptr and c->hasOwner()) {
+                            if (dynamic_cast<OpenSim::Muscle const*>(c)) {
+                                break;
+                            }
+                            c = &c->getOwner();
                         }
-                        c = &c->getOwner();
-                    }
-                    if (c == &model) {
-                        c = nullptr;
+                        if (c == &model) {
+                            c = nullptr;
+                        }
+
+                        associated_component = c;
+                    });
+            }
+
+            if (recoloring == ModelViewerRecoloring_Strain) {
+                renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
+                    if (not musc) {
+                        return;
                     }
 
-                    associated_component = c;
+                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getTendonStrain(state));
+                    mi.rgba.g = 255 / 2;
+                    mi.rgba.b = 255 / 2;
+                    mi.rgba.a = 255;
                 });
-            //    }
+            }
 
-            /*
-        if (muscle_recoloring == MuscleRecoloring_Strain) {
-            renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
-                OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                if (not musc) {
-                    return;
-                }
+            if (recoloring == ModelViewerRecoloring_Length) {
+                renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                    OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
+                    if (not musc) {
+                        return;
+                    }
 
-                mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getTendonStrain(state));
-                mi.rgba.g = 255 / 2;
-                mi.rgba.b = 255 / 2;
-                mi.rgba.a = 255;
-            });
-        }
-
-        if (muscle_recoloring == MuscleRecoloring_Length) {
-            renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
-                OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                if (not musc) {
-                    return;
-                }
-
-                mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getLength(state));
-                mi.rgba.g = 255 / 4;
-                mi.rgba.b = 255 / 4;
-                mi.rgba.a = 255;
-            });
-        }
-        */
+                    mi.rgba.r = static_cast<unsigned char>(255.0 * musc->getLength(state));
+                    mi.rgba.g = 255 / 4;
+                    mi.rgba.b = 255 / 4;
+                    mi.rgba.a = 255;
+                });
+            }
 
             // draw the scene to an OpenGL texture
             renderer.apply_standard_rim_coloring(*selected);
