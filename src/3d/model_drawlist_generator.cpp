@@ -1,6 +1,6 @@
 #include "model_drawlist_generator.hpp"
 
-#include "3d_common.hpp"
+#include "meshes.hpp"
 #include "raw_renderer.hpp"
 
 #include <OpenSim/Common/Component.h>

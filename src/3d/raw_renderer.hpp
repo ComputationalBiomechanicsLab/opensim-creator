@@ -69,18 +69,18 @@ namespace osmv {
     };
 
     struct Raw_drawcall_params final {
-        glm::mat4 view_matrix = {};
-        glm::mat4 projection_matrix = {};
-        glm::vec3 view_pos = {};
-        glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
-        glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-        glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
-        glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 1.0f};
-        float rim_thickness = 0.002f;
+        glm::mat4 view_matrix;
+        glm::mat4 projection_matrix;
+        glm::vec3 view_pos;
+        glm::vec3 light_pos;
+        glm::vec3 light_rgb;
+        glm::vec4 background_rgba;
+        glm::vec4 rim_rgba;
+        float rim_thickness;
 
-        Raw_renderer_flags flags = RawRendererFlags_Default;
-        int passthrough_hittest_x = 0;
-        int passthrough_hittest_y = 0;
+        Raw_renderer_flags flags;
+        int passthrough_hittest_x;
+        int passthrough_hittest_y;
     };
 
     struct Raw_drawcall_result final {

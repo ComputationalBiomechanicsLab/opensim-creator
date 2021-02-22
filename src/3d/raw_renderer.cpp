@@ -1,9 +1,10 @@
 ﻿#include "raw_renderer.hpp"
 
-#include "3d_common.hpp"
 #include "constants.hpp"
 #include "gl.hpp"
+#include "meshes.hpp"
 #include "src/config.hpp"
+#include "texturing.hpp"
 
 #include <GL/glew.h>
 
@@ -591,7 +592,7 @@ namespace osmv {
         } shaders;
 
         // debug quad
-        gl::Array_bufferT<osmv::Shaded_textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
+        gl::Array_bufferT<osmv::Textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
         gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
         gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
         gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);

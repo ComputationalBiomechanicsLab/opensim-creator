@@ -67,8 +67,10 @@ add_executable(osmv
 
     src/3d/gl.hpp
     src/3d/gl.cpp
-    src/3d/3d_common.hpp
-    src/3d/3d_common.cpp
+    src/3d/meshes.hpp
+    src/3d/meshes.cpp
+    src/3d/texturing.hpp
+    src/3d/texturing.cpp
     src/3d/raw_mesh_instance.hpp
     src/3d/raw_drawlist.hpp
     src/3d/raw_drawlist.cpp
