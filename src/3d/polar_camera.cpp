@@ -1,5 +1,7 @@
 #include "polar_camera.hpp"
 
+#include "3d_common.hpp"
+
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
@@ -65,8 +67,8 @@ void osmv::Polar_camera::on_right_click_up() noexcept {
 void osmv::Polar_camera::on_mouse_motion(float aspect_ratio, float dx, float dy) noexcept {
     if (is_dragging) {
         // alter camera position while dragging
-        theta += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * -dx;
-        phi += 2.0f * static_cast<float>(M_PI) * mouse_drag_sensitivity * dy;
+        theta += 2.0f * pi_f * mouse_drag_sensitivity * -dx;
+        phi += 2.0f * pi_f * mouse_drag_sensitivity * dy;
     }
 
     if (is_panning) {
