@@ -4,7 +4,8 @@
 #include <glm/vec3.hpp>
 
 namespace osmv {
-    struct Polar_camera final {
+    class Polar_camera final {
+    public:
         float radius = 5.0f;
         float theta = 0.88f;
         float phi = 0.4f;
