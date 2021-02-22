@@ -1,6 +1,6 @@
 #include "polar_camera.hpp"
 
-#include "3d_common.hpp"
+#include "constants.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>

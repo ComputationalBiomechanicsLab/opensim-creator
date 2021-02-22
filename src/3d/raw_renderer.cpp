@@ -1,6 +1,7 @@
 ﻿#include "raw_renderer.hpp"
 
 #include "3d_common.hpp"
+#include "constants.hpp"
 #include "gl.hpp"
 #include "src/config.hpp"
 

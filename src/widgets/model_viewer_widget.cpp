@@ -1,7 +1,9 @@
 #include "model_viewer_widget.hpp"
 
 #include "src/3d/gl.hpp"
-#include "src/3d/simple_model_renderer.hpp"
+#include "src/3d/labelled_model_drawlist.hpp"
+#include "src/3d/model_drawlist_generator.hpp"
+#include "src/3d/polar_camera.hpp"
 #include "src/application.hpp"
 #include "src/sdl_wrapper.hpp"
 
@@ -9,17 +11,147 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 
+namespace {
+    using namespace osmv;
+
+    void generate_geometry(
+        ModelViewerGeometryFlags flags,
+        Labelled_model_drawlist& geometry,
+        Model_drawlist_generator& drawlist_generator,
+        OpenSim::Model const& model,
+        SimTK::State const& state) {
+
+        // iterate over all components in the OpenSim model, keeping a few things in mind:
+        //
+        // - Anything in the component tree *might* render geometry
+        //
+        // - For selection logic, we only (currently) care about certain high-level components,
+        //   like muscles
+        //
+        // - Pretend the component tree traversal is implementation-defined because OpenSim's
+        //   implementation of component-tree walking is a bit of a clusterfuck. At time of
+        //   writing, it's a breadth-first recursive descent
+        //
+        // - Components of interest, like muscles, might not render their geometry - it might be
+        //   delegated to a subcomponent
+        //
+        // So this algorithm assumes that the list iterator is arbitrary, but always returns
+        // *something* in a tree that has the current model as a root. So, for each component that
+        // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
+        // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
+        // than the component that is rendering.
+
+        geometry.clear();
+
+        auto on_append =
+            [&](osmv::ModelDrawlistOnAppendFlags f, OpenSim::Component const*& c, osmv::Raw_mesh_instance&) {
+                if (f & osmv::ModelDrawlistOnAppendFlags_IsStatic and
+                    not(flags & ModelViewerGeometryFlags_CanInteractWithStaticDecorations)) {
+                    c = nullptr;
+                }
+
+                if (f & ModelDrawlistOnAppendFlags_IsDynamic and
+                    not(flags & ModelViewerGeometryFlags_CanInteractWithDynamicDecorations)) {
+                    c = nullptr;
+                }
+            };
+
+        ModelDrawlistGeneratorFlags draw_flags = ModelDrawlistGeneratorFlags_None;
+        if (flags & ModelViewerGeometryFlags_DrawStaticDecorations) {
+            draw_flags |= ModelDrawlistGeneratorFlags_GenerateStaticDecorations;
+        }
+        if (flags & ModelViewerGeometryFlags_DrawDynamicDecorations) {
+            draw_flags |= ModelDrawlistGeneratorFlags_GenerateDynamicDecorations;
+        }
+
+        drawlist_generator.generate(model, state, geometry, on_append, draw_flags);
+
+        geometry.optimize();
+    }
+
+    void apply_standard_rim_coloring(
+        Labelled_model_drawlist& drawlist,
+        OpenSim::Component const* hovered = nullptr,
+        OpenSim::Component const* selected = nullptr) {
+
+        if (selected == nullptr) {
+            // replace with a senteniel because nullptr means "not assigned"
+            // in the geometry list
+            selected = reinterpret_cast<OpenSim::Component const*>(-1);
+        }
+
+        drawlist.for_each([selected, hovered](OpenSim::Component const* owner, Raw_mesh_instance& mi) {
+            unsigned char rim_alpha;
+            if (owner == selected) {
+                rim_alpha = 255;
+            } else if (hovered != nullptr and hovered == owner) {
+                rim_alpha = 70;
+            } else {
+                rim_alpha = 0;
+            }
+
+            mi.set_rim_alpha(rim_alpha);
+        });
+    }
+}
+
 namespace osmv {
     struct Model_viewer_widget_impl final {
-        Simple_model_renderer renderer;
+        Raw_renderer renderer;
+
         bool mouse_over_render = false;
 
-        Model_viewer_widget_impl() : renderer{100, 100, app().samples()} {
+        int hovertest_x = -1;
+        int hovertest_y = -1;
+        OpenSim::Component const* hovered_component = nullptr;
+        Polar_camera camera;
+        glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
+        glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
+        glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
+        float rim_thickness = 0.00075f;
+
+        // populated by calling generate_geometry(Model, State)
+        Labelled_model_drawlist geometry;
+        Model_drawlist_generator drawlist_generator;
+
+        Model_viewer_widget_impl() : renderer{Raw_renderer_config{100, 100, app().samples()}} {
+        }
+
+        gl::Texture_2d& draw(Raw_renderer_flags flags) {
+            Raw_drawcall_params params;
+            params.passthrough_hittest_x = hovertest_x;
+            params.passthrough_hittest_y = hovertest_y;
+            params.view_matrix = camera.view_matrix();
+            params.projection_matrix = camera.projection_matrix(renderer.aspect_ratio());
+            params.view_pos = camera.pos();
+            params.light_pos = light_pos;
+            params.light_rgb = light_rgb;
+            params.background_rgba = background_rgba;
+            params.rim_rgba = rim_rgba;
+            params.rim_thickness = rim_thickness;
+            params.flags = flags;
+            if (app().is_in_debug_mode()) {
+                params.flags |= RawRendererFlags_DrawDebugQuads;
+            } else {
+                params.flags &= ~RawRendererFlags_DrawDebugQuads;
+            }
+
+            // perform draw call
+            Raw_drawcall_result result = renderer.draw(params, geometry.raw_drawlist());
+
+            // post-draw: check if the hit-test passed
+            // TODO:: optimized indices are from the previous frame, which might
+            //        contain now-stale components
+            hovered_component = geometry.component_from_passthrough(result.passthrough_result);
+
+            return result.texture;
         }
     };
 }
 
 osmv::Model_viewer_widget::Model_viewer_widget() : impl{new Model_viewer_widget_impl{}} {
+    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
 osmv::Model_viewer_widget::~Model_viewer_widget() noexcept {
@@ -31,7 +163,7 @@ bool osmv::Model_viewer_widget::is_moused_over() const noexcept {
 }
 
 osmv::Polar_camera& osmv::Model_viewer_widget::camera() noexcept {
-    return impl->renderer.camera;
+    return impl->camera;
 }
 
 bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
@@ -39,7 +171,45 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
         return false;
     }
 
-    return impl->renderer.on_event(e);
+    if (e.type == SDL_KEYDOWN) {
+        switch (e.key.keysym.sym) {
+        case SDLK_w:
+            rendering_flags ^= RawRendererFlags_WireframeMode;
+            return true;
+        }
+    } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+        switch (e.button.button) {
+        case SDL_BUTTON_LEFT:
+            impl->camera.on_left_click_down();
+            return true;
+        case SDL_BUTTON_RIGHT:
+            impl->camera.on_right_click_down();
+            return true;
+        }
+    } else if (e.type == SDL_MOUSEBUTTONUP) {
+        switch (e.button.button) {
+        case SDL_BUTTON_LEFT:
+            impl->camera.on_left_click_up();
+            return true;
+        case SDL_BUTTON_RIGHT:
+            impl->camera.on_right_click_up();
+            return true;
+        }
+    } else if (e.type == SDL_MOUSEMOTION) {
+        glm::vec2 d = impl->renderer.dimensions();
+        float aspect_ratio = d.x / d.y;
+        float dx = static_cast<float>(e.motion.xrel) / d.x;
+        float dy = static_cast<float>(e.motion.yrel) / d.y;
+        impl->camera.on_mouse_motion(aspect_ratio, dx, dy);
+    } else if (e.type == SDL_MOUSEWHEEL) {
+        if (e.wheel.y > 0) {
+            impl->camera.on_scroll_up();
+        } else {
+            impl->camera.on_scroll_down();
+        }
+        return true;
+    }
+    return false;
 }
 
 void osmv::Model_viewer_widget::draw(
@@ -49,17 +219,17 @@ void osmv::Model_viewer_widget::draw(
     OpenSim::Component const** selected,
     OpenSim::Component const** hovered) {
 
-    Simple_model_renderer& renderer = impl->renderer;
+    Raw_renderer& renderer = impl->renderer;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name)) {
         if (ImGui::BeginChild("##child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
             // generate OpenSim scene geometry
-            renderer.generate_geometry(model, state);
+            generate_geometry(geometry_flags, impl->geometry, impl->drawlist_generator, model, state);
 
             // perform screen-specific geometry fixups
             if (geometry_flags & ModelViewerGeometryFlags_CanOnlyInteractWithMuscles) {
-                renderer.geometry.for_each(
+                impl->geometry.for_each(
                     [&model](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
                         // for this screen specifically, the "owner"s should be fixed up to point to
                         // muscle objects, rather than direct (e.g. GeometryPath) objects
@@ -79,7 +249,7 @@ void osmv::Model_viewer_widget::draw(
             }
 
             if (recoloring == ModelViewerRecoloring_Strain) {
-                renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -93,7 +263,7 @@ void osmv::Model_viewer_widget::draw(
             }
 
             if (recoloring == ModelViewerRecoloring_Length) {
-                renderer.geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -106,14 +276,19 @@ void osmv::Model_viewer_widget::draw(
                 });
             }
 
+            if (rendering_flags & RawRendererFlags_DrawRims) {
+                apply_standard_rim_coloring(impl->geometry, *hovered, *selected);
+            }
+
             // draw the scene to an OpenGL texture
-            renderer.apply_standard_rim_coloring(*selected);
+            apply_standard_rim_coloring(impl->geometry, impl->hovered_component, *selected);
             auto dims = ImGui::GetContentRegionAvail();
 
             if (dims.x >= 1 and dims.y >= 1) {
-                renderer.reallocate_buffers(static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples());
+                impl->renderer.change_config(
+                    Raw_renderer_config{static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples()});
 
-                gl::Texture_2d& render = renderer.draw();
+                gl::Texture_2d& render = impl->draw(rendering_flags);
 
                 {
                     // required by ImGui::Image
@@ -133,22 +308,22 @@ void osmv::Model_viewer_widget::draw(
 
                     impl->mouse_over_render = ImGui::IsItemHovered();
 
-                    renderer.hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
+                    impl->hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
                     // y is reversed (OpenGL coords, not screen)
-                    renderer.hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
+                    impl->hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
                 }
 
                 // overlay: if the user is hovering over a component, write the component's name
                 //          next to the mouse
-                if (renderer.hovered_component) {
-                    OpenSim::Component const& c = *renderer.hovered_component;
+                if (impl->hovered_component) {
+                    OpenSim::Component const& c = *impl->hovered_component;
                     sdl::Mouse_state m = sdl::GetMouseState();
                     ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
                     ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
                 }
 
-                if (renderer.hovered_component != *hovered) {
-                    *hovered = renderer.hovered_component;
+                if (impl->hovered_component != *hovered) {
+                    *hovered = impl->hovered_component;
                 }
             }
 

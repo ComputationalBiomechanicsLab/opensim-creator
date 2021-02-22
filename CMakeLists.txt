@@ -79,9 +79,6 @@ add_executable(osmv
     src/3d/model_drawlist_generator.cpp
     src/3d/polar_camera.hpp
     src/3d/polar_camera.cpp
-    src/3d/simple_model_renderer.hpp
-    src/3d/simple_model_renderer.cpp
-
 
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp

@@ -1,5 +1,7 @@
 #include "3d_common.hpp"
 
+#include "constants.hpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <GL/glew.h>
 #include <stb_image.h>

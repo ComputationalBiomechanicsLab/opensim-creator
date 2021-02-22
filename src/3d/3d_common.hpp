@@ -11,8 +11,6 @@
 
 // 3d common: common primitives/structs used for mesh generation/rendering
 namespace osmv {
-    static constexpr float pi_f = static_cast<float>(3.14159265358979323846);
-
     struct Shaded_textured_vert final {
         glm::vec3 pos;
         glm::vec3 normal;
