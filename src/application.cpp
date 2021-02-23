@@ -266,7 +266,7 @@ namespace {
         Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage const&) = delete;
         Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage&&) = delete;
         ~Globally_allocated_mesh_storage() noexcept {
-            osmv::nuke_globally_allocated_meshes();
+            osmv::nuke_gpu_allocations();
         }
     };
 }

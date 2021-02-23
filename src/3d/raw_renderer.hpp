@@ -14,6 +14,7 @@ namespace gl {
 
 namespace osmv {
     struct Untextured_vert;
+    struct Textured_vert;
     class Raw_drawlist;
 }
 
@@ -29,7 +30,9 @@ namespace osmv {
     //
     // must only be called after OpenGL is initialized
     Mesh_reference globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
-    void nuke_globally_allocated_meshes();
+    Mesh_reference globally_allocate_mesh(osmv::Textured_vert const* verts, size_t n);
+    Texture_reference globally_store_texture(gl::Texture_2d&&);
+    void nuke_gpu_allocations();
 
     struct Raw_renderer_config final {
         int w;

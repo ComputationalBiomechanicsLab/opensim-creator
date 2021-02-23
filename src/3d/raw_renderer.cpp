@@ -120,6 +120,40 @@ namespace {
         glVertexAttribDivisor(vec4log, 1);
     }
 
+    /**
+     * what you are about to see (using SFINAE to test whether a class has a uv coord)
+     * is better described with a diagram:
+
+            _            _.,----,
+ __  _.-._ / '-.        -  ,._  \)
+|  `-)_   '-.   \       / < _ )/" }
+/__    '-.   \   '-, ___(c-(6)=(6)
+ , `'.    `._ '.  _,'   >\    "  )
+ :;;,,'-._   '---' (  ( "/`. -='/
+;:;;:;;,  '..__    ,`-.`)'- '--'
+;';:;;;;;'-._ /'._|   Y/   _/' \
+      '''"._ F    |  _/ _.'._   `\
+             L    \   \/     '._  \
+      .-,-,_ |     `.  `'---,  \_ _|
+      //    'L    /  \,   ("--',=`)7
+     | `._       : _,  \  /'`-._L,_'-._
+     '--' '-.\__/ _L   .`'         './/
+                 [ (  /
+                  ) `{
+       snd        \__)
+
+     */
+    template<typename>
+    struct sfinae_true : std::true_type {};
+    namespace detail {
+        template<typename T>
+        static auto test_has_texcoord(int) -> sfinae_true<decltype(std::declval<T>().texcoord)>;
+        template<typename T>
+        static auto test_has_texcoord(long) -> std::false_type;
+    }
+    template<typename T>
+    struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
+
     // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
     // COLOR0 and RGBA passthrough for COLOR1
     //
@@ -133,18 +167,21 @@ namespace {
         // vertex attrs
         static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(2);
 
         // instancing attrs
-        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(2);
-        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(6);
-        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(9);
-        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(10);
+        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(3);
+        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(7);
+        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
+        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
 
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
         gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
         gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
         gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
+        gl::Uniform_bool uIsTextured = gl::GetUniformLocation(program, "uIsTextured");
+        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(program, "uSampler0");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo, gl::Array_bufferT<osmv::Raw_mesh_instance>& instance_vbo) {
@@ -160,6 +197,12 @@ namespace {
             gl::VertexAttribPointer(
                 aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
             gl::EnableVertexAttribArray(aNormal);
+
+            if constexpr (has_texcoord<T>::value) {
+                gl::VertexAttribPointer(
+                    aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+                gl::EnableVertexAttribArray(aTexCoord);
+            }
 
             gl::BindBuffer(instance_vbo);
             Mat4x3Pointer(aModelMat, offsetof(osmv::Raw_mesh_instance, transform));
@@ -342,24 +385,43 @@ namespace {
         }
     };
 
+    template<typename TVert>
+    static gl::Array_buffer alloc_sized_vbo(TVert const* verts, size_t n) {
+        gl::Array_buffer rv;
+        gl::BindBuffer(rv);
+        gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(TVert) * n), verts, GL_STATIC_DRAW);
+        return rv;
+    }
+
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
-        gl::Array_bufferT<osmv::Untextured_vert> vbo;
+        gl::Array_buffer vbo;
+        size_t nverts;
         gl::Array_bufferT<osmv::Raw_mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
     public:
         Mesh_on_gpu(osmv::Untextured_vert const* verts, size_t n) :
-            vbo{verts, verts + n},
-            main_vao{Gouraud_mrt_shader::create_vao(vbo, instance_vbo)},
-            normal_vao{Normals_shader::create_vao(vbo)} {
+            vbo{alloc_sized_vbo(verts, n)},
+            nverts{n},
+            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, osmv::Untextured_vert>(vbo, instance_vbo)},
+            normal_vao{Normals_shader::create_vao<gl::Array_buffer, osmv::Untextured_vert>(vbo)} {
+
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        }
+
+        Mesh_on_gpu(osmv::Textured_vert const* verts, size_t n) :
+            vbo{alloc_sized_vbo(verts, n)},
+            nverts{n},
+            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, osmv::Textured_vert>(vbo, instance_vbo)},
+            normal_vao{Normals_shader::create_vao<gl::Array_buffer, osmv::Textured_vert>(vbo)} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
 
         int sizei() const noexcept {
-            return vbo.sizei();
+            return static_cast<int>(nverts);
         }
     };
 
@@ -382,12 +444,19 @@ namespace {
     // instance data)
     //
     // this should only be populated after OpenGL is initialized
-    std::vector<Mesh_on_gpu> global_meshes;
+    static std::vector<Mesh_on_gpu> GLOBAL_meshes;
+    static std::vector<gl::Texture_2d> GLOBAL_textures;
 
     Mesh_on_gpu& global_mesh_lookup(osmv::Mesh_reference meshid) {
         size_t idx = meshid.to_index();
-        assert(idx < global_meshes.size());
-        return global_meshes[idx];
+        assert(idx < GLOBAL_meshes.size());
+        return GLOBAL_meshes[idx];
+    }
+
+    gl::Texture_2d& global_texture_lookup(osmv::Texture_reference ref) {
+        size_t idx = ref.to_index();
+        assert(idx < GLOBAL_textures.size());
+        return GLOBAL_textures[idx];
     }
 
     // OpenGL buffers used by the renderer
@@ -602,7 +671,7 @@ namespace osmv {
 
         // floor
         struct {
-            gl::Texture_2d texture = osmv::generate_chequered_floor_texture();
+            Texture_reference texture = osmv::globally_store_texture(osmv::generate_chequered_floor_texture());
             glm::mat4 model_mtx = []() {
                 glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -627,14 +696,29 @@ namespace osmv {
     };
 }
 
-osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
-    Mesh_reference ref = Mesh_reference::from_index(global_meshes.size());
-    global_meshes.emplace_back(verts, n);
+template<typename TVert>
+static osmv::Mesh_reference _globally_allocate_mesh(TVert const* verts, size_t n) {
+    osmv::Mesh_reference ref = osmv::Mesh_reference::from_index(GLOBAL_meshes.size());
+    GLOBAL_meshes.emplace_back(verts, n);
     return ref;
 }
 
-void osmv::nuke_globally_allocated_meshes() {
-    global_meshes.clear();
+osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
+    return _globally_allocate_mesh(verts, n);
+}
+
+osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Textured_vert const* verts, size_t n) {
+    return _globally_allocate_mesh(verts, n);
+}
+
+osmv::Texture_reference osmv::globally_store_texture(gl::Texture_2d&& rvalue) {
+    osmv::Texture_reference ref = osmv::Texture_reference::from_index(GLOBAL_textures.size());
+    GLOBAL_textures.emplace_back(std::move(rvalue));
+    return ref;
+}
+
+void osmv::nuke_gpu_allocations() {
+    GLOBAL_meshes.clear();
 }
 
 // ok, this took an inordinate amount of time, but there's a fucking
@@ -764,13 +848,24 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
         size_t pos = 0;
         while (pos < nmeshes) {
             osmv::Mesh_reference meshid = meshes[pos]._meshid;
+            osmv::Texture_reference textureid = meshes[pos]._diffuse_texture;
             size_t end = pos + 1;
 
-            while (end < nmeshes and meshes[end]._meshid == meshid) {
+            while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid) {
                 ++end;
             }
 
-            // [pos, end) contains instances with meshid
+            // [pos, end) contains instances with the same meshid + textureid
+
+            if (textureid) {
+                gl::Uniform(shader.uIsTextured, true);
+                gl::ActiveTexture(GL_TEXTURE0);
+                gl::BindTexture(global_texture_lookup(textureid));
+                gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
+            } else {
+                gl::Uniform(shader.uIsTextured, false);
+            }
+
             Mesh_on_gpu& md = global_mesh_lookup(meshid);
             md.instance_vbo.assign(meshes + pos, meshes + end);
             gl::BindVertexArray(md.main_vao);
@@ -791,7 +886,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
         gl::Uniform(pts.uMVP, params.projection_matrix * params.view_matrix * impl->floor.model_mtx);
         gl::Uniform(pts.uTextureScaler, 200.0f);
         gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(impl->floor.texture);
+        gl::BindTexture(global_texture_lookup(impl->floor.texture));
         gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
 
         gl::BindVertexArray(impl->pts_quad_vao);

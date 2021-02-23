@@ -96,6 +96,8 @@ namespace osmv {
         // with this unless you know what you're doing
         Mesh_reference _meshid;
 
+        Texture_reference _diffuse_texture;
+
         template<typename Mat4x3, typename Rgba>
         Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid) noexcept :
             transform{std::forward<Mat4x3>(_transform)},

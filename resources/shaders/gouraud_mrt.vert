@@ -5,21 +5,24 @@
 // performs lighting calculations per vertex (Gouraud shading), rather
 // than per frag ((Blinn-)Phong shading)
 
-layout (location = 0) in vec3 aLocation;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in mat4x3 aModelMat;
-layout (location = 6) in mat3 aNormalMat;
-layout (location = 9) in vec4 aRgba0;
-layout (location = 10) in vec4 aRgba1;
-
 uniform mat4 uProjMat;
 uniform mat4 uViewMat;
 uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
 
-out vec4 Color0in;
-out vec4 Color1in;
+layout (location = 0) in vec3 aLocation;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoord;
+layout (location = 3) in mat4x3 aModelMat;
+layout (location = 7) in mat3 aNormalMat;
+layout (location = 10) in vec4 aRgba0;
+layout (location = 11) in vec4 aRgba1;
+
+out vec4 GouraudBrightness;
+out vec4 Rgba0;
+out vec4 Rgba1;
+out vec2 TexCoord;
 
 const float ambientStrength = 0.5f;
 const float diffuseStrength = 0.3f;
@@ -45,8 +48,9 @@ void main() {
     vec3 specularComponent = specularStrength * specularAmmount * uLightColor;
 
     vec3 lightStrength = ambientComponent + diffuseComponent + specularComponent;
-    vec3 lightRgb = uLightColor * lightStrength;
 
-    Color0in = vec4(lightRgb, 1.0) * aRgba0;
-    Color1in = aRgba1; // passthrough
+    GouraudBrightness = vec4(uLightColor * lightStrength, 1.0);
+    Rgba0 = aRgba0;
+    Rgba1 = aRgba1;
+    TexCoord = aTexCoord;
 }
