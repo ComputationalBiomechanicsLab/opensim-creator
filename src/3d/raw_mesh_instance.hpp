@@ -51,9 +51,8 @@ namespace osmv {
 
     // one instance of a mesh
     //
-    // this struct is fairly complicated because it has to pack data together ready for a
-    // GPU draw call. Instanced GPU drawing requires that the data is contiguous and has all
-    // necessary draw parameters (transform matrices, etc.) at predictable memory offsets.
+    // this struct is fairly complicated and densely packed because it is *exactly* what
+    // will be copied to the GPU at runtime. Size + alignment can matter *a lot*.
     struct alignas(32) Raw_mesh_instance final {
         // transforms mesh vertices into scene worldspace
         glm::mat4x3 transform;
@@ -96,10 +95,6 @@ namespace osmv {
         // the renderer uses this ID to deduplicate and instance draw calls. You shouldn't mess
         // with this unless you know what you're doing
         Mesh_reference _meshid;
-
-        // trivial ctor: useful if the caller knows what they're doing and some STL
-        //               algorithms like when a type is trivially constructable
-        Raw_mesh_instance() = default;
 
         template<typename Mat4x3, typename Rgba>
         Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid) noexcept :

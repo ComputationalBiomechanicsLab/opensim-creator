@@ -2,9 +2,16 @@
 
 #include <algorithm>
 
+static bool is_opaque(osmv::Raw_mesh_instance const& m) {
+    return m.rgba.a >= 1.0f;
+}
+
+static bool has_lower_meshid(osmv::Raw_mesh_instance const& m1, osmv::Raw_mesh_instance const& m2) {
+    return m1._meshid < m2._meshid;
+}
+
 void osmv::Raw_drawlist::optimize() noexcept {
-    std::sort(
-        instances.begin(), instances.end(), [](osmv::Raw_mesh_instance const& a, osmv::Raw_mesh_instance const& b) {
-            return a.rgba.a != b.rgba.a ? a.rgba.a > a.rgba.b : a._meshid < b._meshid;
-        });
+    auto blended_start = std::partition(instances.begin(), instances.end(), is_opaque);
+    std::sort(instances.begin(), blended_start, has_lower_meshid);
+    std::sort(blended_start, instances.end(), has_lower_meshid);
 }

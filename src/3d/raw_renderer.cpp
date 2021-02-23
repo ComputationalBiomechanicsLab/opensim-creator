@@ -26,9 +26,6 @@ namespace {
         std::is_standard_layout<osmv::Raw_mesh_instance>::value,
         "this is required for offsetof macro usage, which is used for setting up OpenGL attribute pointers. See: https://en.cppreference.com/w/cpp/types/is_standard_layout");
     static_assert(
-        std::is_trivially_constructible<osmv::Raw_mesh_instance>::value,
-        "this is a nice-to-have, because it enables bulk-allocating mesh instances in a collection class with zero overhead");
-    static_assert(
         std::is_trivially_destructible<osmv::Raw_mesh_instance>::value,
         "this is a nice-to-have, because it enables bulk-destroying mesh instances in a collection class with zero overhead");
     static_assert(std::is_standard_layout<osmv::Mesh_reference>::value);
