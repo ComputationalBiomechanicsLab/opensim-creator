@@ -1,0 +1,4 @@
+#ifndef MESH_REFERENCE_HPP
+#define MESH_REFERENCE_HPP
+
+#endif // MESH_REFERENCE_HPP

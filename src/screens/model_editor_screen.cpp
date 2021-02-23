@@ -266,7 +266,7 @@ namespace osmv {
             for (fs::path const& p : available_vtps) {
                 if (ImGui::Button(p.filename().string().c_str())) {
                     // pf.updProperty_attached_geometry().clear();
-                    pf.attachGeometry(new OpenSim::Mesh{p});
+                    pf.attachGeometry(new OpenSim::Mesh{p.string()});
                 }
             }
         }
