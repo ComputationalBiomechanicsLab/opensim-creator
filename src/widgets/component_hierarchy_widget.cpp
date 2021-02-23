@@ -1,12 +1,13 @@
 #include "component_hierarchy_widget.hpp"
 
-#include <imgui.h>
 #include <OpenSim/Common/Component.h>
+#include <imgui.h>
 
-#include <string>
 #include <array>
+#include <string>
 
-void osmv::Component_hierarchy_widget::draw(const OpenSim::Component *root, OpenSim::Component const** selected, OpenSim::Component const** hovered) {
+void osmv::Component_hierarchy_widget::draw(
+    const OpenSim::Component* root, OpenSim::Component const** selected, OpenSim::Component const** hovered) {
     std::string output_str;
     std::array<OpenSim::Component const*, 32> prev_path;
     size_t prev_path_sz = 0;
@@ -67,7 +68,7 @@ void osmv::Component_hierarchy_widget::draw(const OpenSim::Component *root, Open
                     ++style_pushes;
                 }
 
-                ImGui::Text(output_str.c_str());
+                ImGui::Text("%s", output_str.c_str());
                 if (ImGui::IsItemHovered()) {
                     *hovered = comp;
                 }

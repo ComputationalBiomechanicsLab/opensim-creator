@@ -6,6 +6,7 @@
 
 #include <array>
 #include <cstddef>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 

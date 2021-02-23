@@ -406,7 +406,7 @@ void osmv::Model_viewer_widget::draw(
                     //
                     // UV coords: ImGui::Image uses different texture coordinates from the renderer
                     //            (specifically, Y is reversed)
-                    void* texture_handle = reinterpret_cast<void*>(render.raw_handle());
+                    void* texture_handle = (void*)render.raw_handle();
                     ImVec2 image_dimensions{dims.x, dims.y};
                     ImVec2 uv0{0, 1};
                     ImVec2 uv1{1, 0};

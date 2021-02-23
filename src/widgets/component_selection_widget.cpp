@@ -110,7 +110,7 @@ void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::
     if (ImGui::CollapsingHeader("inputs")) {
         std::vector<std::string> input_names = c.getInputNames();
         for (std::string const& input_name : input_names) {
-            ImGui::Text(input_name.c_str());
+            ImGui::Text("%s", input_name.c_str());
         }
     }
 
@@ -119,11 +119,11 @@ void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::
         std::vector<std::string> socknames = const_cast<OpenSim::Component&>(c).getSocketNames();
         ImGui::Columns(2);
         for (std::string const& sn : socknames) {
-            ImGui::Text(sn.c_str());
+            ImGui::Text("%s", sn.c_str());
             ImGui::NextColumn();
 
             std::string const& cp = c.getSocket(sn).getConnecteePath();
-            ImGui::Text(cp.c_str());
+            ImGui::Text("%s", cp.c_str());
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                 *selected = &c.getComponent(cp);
             }

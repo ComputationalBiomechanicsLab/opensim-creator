@@ -32,7 +32,7 @@ void osmv::Error_screen::draw() {
     if (ImGui::Begin("fatal exception")) {
         ImGui::Text("The application threw an exception with the following message:");
         ImGui::Dummy(ImVec2{0.0f, 10.0f});
-        ImGui::Text(impl->msg.c_str());
+        ImGui::Text("%s", impl->msg.c_str());
         ImGui::Dummy(ImVec2{0.0f, 10.0f});
         ImGui::Text("(press ESC to return to the splash screen)");
     }
