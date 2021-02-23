@@ -28,6 +28,8 @@ namespace osmv {
     struct Untextured_vert;
     int globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
 
+    void nuke_globally_allocated_meshes();
+
     struct Raw_renderer_config final {
         int w;
         int h;
@@ -76,7 +78,6 @@ namespace osmv {
         glm::vec3 light_rgb;
         glm::vec4 background_rgba;
         glm::vec4 rim_rgba;
-        float rim_thickness;
 
         Raw_renderer_flags flags;
         int passthrough_hittest_x;

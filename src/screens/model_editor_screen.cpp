@@ -2,6 +2,7 @@
 
 #include "splash_screen.hpp"
 #include "src/application.hpp"
+#include "src/config.hpp"
 #include "src/fd_simulation.hpp"
 #include "src/sdl_wrapper.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
@@ -13,10 +14,76 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <imgui.h>
 
+#include <filesystem>
 #include <optional>
+#include <vector>
+
+namespace fs = std::filesystem;
+
+namespace {
+    template<typename T>
+    T const* find_ancestor(OpenSim::Component const* c) {
+        while (c) {
+            T const* p = dynamic_cast<T const*>(c);
+            if (p) {
+                return p;
+            }
+            c = c->hasOwner() ? &c->getOwner() : nullptr;
+        }
+        return nullptr;
+    }
+
+    bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
+        return a.filename() < b.filename();
+    }
+
+    std::vector<fs::path> find_all_vtp_resources() {
+        fs::path geometry_dir = osmv::config::resource_path("geometry");
+
+        std::vector<fs::path> rv;
+
+        if (not fs::exists(geometry_dir)) {
+            // application installation is probably mis-configured, or missing
+            // the geometry dir (e.g. the user deleted it)
+            return rv;
+        }
+
+        if (not fs::is_directory(geometry_dir)) {
+            // something horrible has happened, such as the user creating a file
+            // called "geometry" in the application resources dir. Silently eat
+            // this for now
+            return rv;
+        }
+
+        // ensure the number of files iterated over does not exeed some (arbitrary)
+        // limit to protect the application from the edge-case that the implementation
+        // selects (e.g.) a root directory and ends up recursing over the entire
+        // filesystem
+        int i = 0;
+        static constexpr int file_limit = 10000;
+
+        for (fs::directory_entry const& entry : fs::recursive_directory_iterator{geometry_dir}) {
+            if (i++ > file_limit) {
+                // TODO: log warning
+                return rv;
+            }
+
+            if (entry.path().extension() == ".vtp") {
+                rv.push_back(entry.path());
+            }
+        }
+
+        std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
+
+        return rv;
+    }
+
+}
 
 namespace osmv {
     struct Model_editor_screen_impl final {
+        std::vector<fs::path> available_vtps = find_all_vtp_resources();
+
         OpenSim::Model model;
 
         char meshname[128] = "block.vtp";
@@ -38,6 +105,8 @@ namespace osmv {
             // TODO: renderer.flags |= SimpleModelRendererFlags_HoverableStaticDecorations;
             model.realizeReport(simulator_state);
             model.updDisplayHints().set_show_frames(true);
+            model_viewer.geometry_flags |= ModelViewerGeometryFlags_CanInteractWithStaticDecorations;
+            model_viewer.geometry_flags &= ~ModelViewerGeometryFlags_CanOnlyInteractWithMuscles;
         }
 
         void draw_prop_editor() {
@@ -139,6 +208,68 @@ namespace osmv {
             }
             ImGui::Columns();
         }
+
+        void draw_physical_frame_actions(OpenSim::PhysicalFrame& pf) {
+            if (ImGui::Button("Add offset frame")) {
+                auto* frame = new OpenSim::PhysicalOffsetFrame{};
+                frame->setParentFrame(pf);
+                pf.addComponent(frame);
+            }
+
+            if (ImGui::Button("Add body")) {
+                auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
+                model.addBody(body);
+            }
+
+            if (ImGui::Button("Add FreeJoint")) {
+                auto* mesh = new OpenSim::Mesh{meshname};
+                auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
+                body->attachGeometry(mesh);
+
+                auto* joint = new OpenSim::FreeJoint{"freejoint", pf, *body};
+
+                // SimTK::Vec3 offset{0.0, 0.0, 0.0};
+                // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
+                // joint->addFrame(pof);
+
+                // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
+                // joint->addFrame(cof);
+
+                auto& bs = model.updBodySet();
+                bs.insert(bs.getSize(), body);
+
+                auto& js = model.updJointSet();
+                js.insert(js.getSize(), joint);
+            }
+
+            if (ImGui::Button("Add PinJoint")) {
+                auto* mesh = new OpenSim::Mesh{meshname};
+                auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
+                body->attachGeometry(mesh);
+
+                auto* joint = new OpenSim::PinJoint{"pinjoint", pf, *body};
+
+                // SimTK::Vec3 offset{0.0, 0.0, 0.0};
+                // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
+                // joint->addFrame(pof);
+
+                // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
+                // joint->addFrame(cof);
+
+                auto& bs = model.updBodySet();
+                bs.insert(bs.getSize(), body);
+
+                auto& js = model.updJointSet();
+                js.insert(js.getSize(), joint);
+            }
+
+            for (fs::path const& p : available_vtps) {
+                if (ImGui::Button(p.filename().string().c_str())) {
+                    // pf.updProperty_attached_geometry().clear();
+                    pf.attachGeometry(new OpenSim::Mesh{p});
+                }
+            }
+        }
     };
 }
 
@@ -156,16 +287,13 @@ bool osmv::Model_editor_screen::on_event(SDL_Event const& e) {
             return true;
         }
 
-        if (e.key.keysym.sym == SDLK_SPACE) {
-            if (impl->fdsim) {
-                impl->fdsim = std::nullopt;
-            } else {
-                impl->fdsim.emplace(Fd_simulation_params{Model{impl->model},
-                                                         State{impl->model.initSystem()},
-                                                         static_cast<double>(10),
-                                                         IntegratorMethod_ExplicitEuler});
+        if (e.key.keysym.sym == SDLK_DELETE and impl->selected_component) {
+            auto* geom = const_cast<OpenSim::Geometry*>(find_ancestor<OpenSim::Geometry>(impl->selected_component));
+            auto* pf = const_cast<OpenSim::Frame*>(find_ancestor<OpenSim::Frame>(geom));
+            if (geom and pf) {
+                pf->updProperty_attached_geometry().clear();
+                impl->selected_component = nullptr;
             }
-            return true;
         }
     }
 
@@ -204,9 +332,7 @@ void osmv::Model_editor_screen::draw() {
     SimTK::State state = model.initSystem();
     model.realizePosition(state);
 
-    OpenSim::Component const* hovered = nullptr;
-
-    impl->model_viewer.draw("render", model, state, &impl->selected_component, &hovered);
+    impl->model_viewer.draw("render", model, state, &impl->selected_component, &impl->hovered_component);
 
     // screen-specific fixup: all hoverables are their parents
     // TODO: impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
@@ -215,8 +341,8 @@ void osmv::Model_editor_screen::draw() {
     //
     // if the user's mouse is hovering over a component, print the component's name next to
     // the user's mouse
-    if (hovered) {
-        OpenSim::Component const& c = *hovered;
+    if (impl->hovered_component) {
+        OpenSim::Component const& c = *impl->hovered_component;
         sdl::Mouse_state m = sdl::GetMouseState();
         ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
         ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
@@ -225,7 +351,7 @@ void osmv::Model_editor_screen::draw() {
     // hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
         Component_hierarchy_widget hv;
-        hv.draw(&model.getRoot(), &impl->selected_component, &hovered);
+        hv.draw(&model.getRoot(), &impl->selected_component, &impl->hovered_component);
     }
     ImGui::End();
 
@@ -279,57 +405,20 @@ void osmv::Model_editor_screen::draw() {
     //
     // this is a dumping ground for generic editing actions (add body, add something to selection)
     if (ImGui::Begin("Actions")) {
-
         if (impl->selected_component == nullptr) {
             ImGui::Text("select something");
         }
 
         // if a physical frame is selected, show "add joint" option
-        {
-            auto* pf = dynamic_cast<OpenSim::PhysicalFrame const*>(impl->selected_component);
-            if (pf) {
-                if (ImGui::Button("Add FreeJoint")) {
-                    auto* mesh = new OpenSim::Mesh{impl->meshname};
-                    auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-                    body->attachGeometry(mesh);
+        auto* pf = const_cast<OpenSim::PhysicalFrame*>(find_ancestor<OpenSim::PhysicalFrame>(impl->selected_component));
+        if (pf) {
+            impl->draw_physical_frame_actions(*pf);
+        }
 
-                    auto* joint = new OpenSim::FreeJoint{"freejoint", *pf, *body};
+        auto* j = const_cast<OpenSim::Joint*>(find_ancestor<OpenSim::Joint>(impl->selected_component));
+        if (j) {
 
-                    // SimTK::Vec3 offset{0.0, 0.0, 0.0};
-                    // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
-                    // joint->addFrame(pof);
-
-                    // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
-                    // joint->addFrame(cof);
-
-                    auto& bs = model.updBodySet();
-                    bs.insert(bs.getSize(), body);
-
-                    auto& js = model.updJointSet();
-                    js.insert(js.getSize(), joint);
-                }
-
-                if (ImGui::Button("Add PinJoint")) {
-                    auto* mesh = new OpenSim::Mesh{impl->meshname};
-                    auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-                    body->attachGeometry(mesh);
-
-                    auto* joint = new OpenSim::PinJoint{"pinjoint", *pf, *body};
-
-                    // SimTK::Vec3 offset{0.0, 0.0, 0.0};
-                    // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
-                    // joint->addFrame(pof);
-
-                    // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
-                    // joint->addFrame(cof);
-
-                    auto& bs = model.updBodySet();
-                    bs.insert(bs.getSize(), body);
-
-                    auto& js = model.updJointSet();
-                    js.insert(js.getSize(), joint);
-                }
-            }
+            ImGui::Text("joint selected");
         }
     }
     ImGui::End();

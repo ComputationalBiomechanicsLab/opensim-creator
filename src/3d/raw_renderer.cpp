@@ -632,6 +632,10 @@ int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
     return meshid;
 }
 
+void osmv::nuke_globally_allocated_meshes() {
+    global_meshes.clear();
+}
+
 // ok, this took an inordinate amount of time, but there's a fucking
 // annoying bug in Clang:
 //
@@ -996,7 +1000,10 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
         gl::BindTexture(buffers.color1_resolved.tex);
         gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
         gl::Uniform(shader.uRimRgba, params.rim_rgba);
-        gl::Uniform(shader.uRimThickness, params.rim_thickness);
+
+        float rim_thickness = 2.0f / std::max(buffers.w, buffers.h);
+
+        gl::Uniform(shader.uRimThickness, rim_thickness);
 
         glEnable(GL_BLEND);  // rims can have alpha
         glDisable(GL_DEPTH_TEST);

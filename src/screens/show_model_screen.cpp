@@ -617,8 +617,6 @@ namespace osmv {
         Momentarms_tab_data mas_tab;
         Muscles_tab_data muscles_tab;
         Outputs_tab_data outputs_tab;
-        MuscleRecoloring muscle_recoloring = MuscleRecoloring_None;
-        bool only_select_muscles = true;
 
         Show_model_screen_impl(Application& app, std::filesystem::path _path, osmv::Model _model) :
             model_path{std::move(_path)},
@@ -629,6 +627,7 @@ namespace osmv {
                 model->realizeReport(s);
                 return s;
             }()} {
+
             // renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
@@ -736,17 +735,90 @@ namespace osmv {
 
         // draw a frame of the UI
         void draw(Application& app) {
+            if (ImGui::BeginMainMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Exit")) {
+                        app.request_quit_application();
+                    }
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("Graphics")) {
+                    ImGui::Text("%.1f fps", static_cast<double>(ImGui::GetIO().Framerate));
+
+                    // msxaa selector
+                    {
+                        static constexpr std::array<char const*, 8> aa_lvls = {
+                            "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
+                        int samples_idx = lsb_index(app.samples());
+                        int max_samples_idx = lsb_index(app.max_samples());
+                        assert(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
+
+                        if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
+                            app.set_samples(1 << samples_idx);
+                        }
+                    }
+
+                    ImGui::NewLine();
+
+                    // display hints
+                    {
+                        OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
+
+                        {
+                            bool debug_geom = dh.get_show_debug_geometry();
+                            if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
+                                dh.set_show_debug_geometry(debug_geom);
+                            }
+                        }
+
+                        {
+                            bool frames_geom = dh.get_show_frames();
+                            if (ImGui::Checkbox("show frames", &frames_geom)) {
+                                dh.set_show_frames(frames_geom);
+                            }
+                        }
+
+                        {
+                            bool markers_geom = dh.get_show_markers();
+                            if (ImGui::Checkbox("show markers", &markers_geom)) {
+                                dh.set_show_markers(markers_geom);
+                            }
+                        }
+                    }
+
+                    if (ImGui::Button("fullscreen")) {
+                        app.make_fullscreen();
+                    }
+
+                    if (ImGui::Button("windowed")) {
+                        app.make_windowed();
+                    }
+
+                    if (not app.is_vsync_enabled()) {
+                        if (ImGui::Button("enable vsync")) {
+                            app.enable_vsync();
+                        }
+                    } else {
+                        if (ImGui::Button("disable vsync")) {
+                            app.disable_vsync();
+                        }
+                    }
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMainMenuBar();
+            }
+
             {
                 OpenSim::Component const* selected = selected_component;
                 OpenSim::Component const* hovered = current_hover;
 
                 model_viewer.draw("render1", model, latest_state, &selected, &hovered);
 
-                if (selected and selected != selected_component) {
+                if (model_viewer.is_moused_over()) {
                     selected_component = selected;
-                }
-
-                if (hovered and hovered != current_hover) {
                     current_hover = hovered;
                 }
             }
@@ -757,11 +829,8 @@ namespace osmv {
 
                 model_viewer2.draw("render2", model, latest_state, &selected, &hovered);
 
-                if (selected and selected != selected_component) {
+                if (model_viewer2.is_moused_over()) {
                     selected_component = selected;
-                }
-
-                if (hovered and hovered != current_hover) {
                     current_hover = hovered;
                 }
             }
@@ -796,11 +865,6 @@ namespace osmv {
             }
             ImGui::End();
 
-            if (ImGui::Begin("UI")) {
-                draw_ui_tab(app);
-            }
-            ImGui::End();
-
             if (ImGui::Begin("Coordinates")) {
                 draw_coords_tab();
             }
@@ -810,191 +874,6 @@ namespace osmv {
                 draw_simulate_tab();
             }
             ImGui::End();
-        }
-
-        void draw_ui_tab(Application& app) {
-            ImGui::Text("%.1f fps", static_cast<double>(ImGui::GetIO().Framerate));
-
-            // msxaa selector
-            {
-                static constexpr std::array<char const*, 8> aa_lvls = {
-                    "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
-                int samples_idx = lsb_index(app.samples());
-                int max_samples_idx = lsb_index(app.max_samples());
-                assert(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
-
-                if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
-                    app.set_samples(1 << samples_idx);
-                }
-            }
-
-            ImGui::NewLine();
-
-            ImGui::Text("Camera Position:");
-
-            ImGui::NewLine();
-
-            if (ImGui::Button("Front")) {
-                // assumes models tend to point upwards in Y and forwards in +X
-                model_viewer.camera().theta = pi_f / 2.0f;
-                model_viewer.camera().phi = 0.0f;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Back")) {
-                // assumes models tend to point upwards in Y and forwards in +X
-                model_viewer.camera().theta = 3.0f * (pi_f / 2.0f);
-                model_viewer.camera().phi = 0.0f;
-            }
-
-            ImGui::SameLine();
-            ImGui::Text("|");
-            ImGui::SameLine();
-
-            if (ImGui::Button("Left")) {
-                // assumes models tend to point upwards in Y and forwards in +X
-                // (so sidewards is theta == 0 or PI)
-                model_viewer.camera().theta = pi_f;
-                model_viewer.camera().phi = 0.0f;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Right")) {
-                // assumes models tend to point upwards in Y and forwards in +X
-                // (so sidewards is theta == 0 or PI)
-                model_viewer.camera().theta = 0.0f;
-                model_viewer.camera().phi = 0.0f;
-            }
-
-            ImGui::SameLine();
-            ImGui::Text("|");
-            ImGui::SameLine();
-
-            if (ImGui::Button("Top")) {
-                model_viewer.camera().theta = 0.0f;
-                model_viewer.camera().phi = pi_f / 2.0f;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Bottom")) {
-                model_viewer.camera().theta = 0.0f;
-                model_viewer.camera().phi = 3.0f * (pi_f / 2.0f);
-            }
-
-            ImGui::NewLine();
-
-            ImGui::SliderFloat("radius", &model_viewer.camera().radius, 0.0f, 10.0f);
-            ImGui::SliderFloat("theta", &model_viewer.camera().theta, 0.0f, 2.0f * pi_f);
-            ImGui::SliderFloat("phi", &model_viewer.camera().phi, 0.0f, 2.0f * pi_f);
-            ImGui::NewLine();
-            ImGui::SliderFloat("pan_x", &model_viewer.camera().pan.x, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_y", &model_viewer.camera().pan.y, -100.0f, 100.0f);
-            ImGui::SliderFloat("pan_z", &model_viewer.camera().pan.z, -100.0f, 100.0f);
-
-            /*
-            ImGui::NewLine();
-            ImGui::Text("Lighting:");
-            ImGui::SliderFloat("light_x", &renderer.light_pos.x, -30.0f, 30.0f);
-            ImGui::SliderFloat("light_y", &renderer.light_pos.y, -30.0f, 30.0f);
-            ImGui::SliderFloat("light_z", &renderer.light_pos.z, -30.0f, 30.0f);
-            ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&renderer.light_rgb));
-            ImGui::SliderFloat("rim thickness", &renderer.rim_thickness, 0.0f, 0.1f);
-            {
-                bool draw_rims = renderer.flags & SimpleModelRendererFlags_DrawRims;
-                if (ImGui::Checkbox("draw rims", &draw_rims)) {
-                    renderer.flags ^= SimpleModelRendererFlags_DrawRims;
-                }
-            }
-            {
-                bool show_floor = renderer.flags & SimpleModelRendererFlags_ShowFloor;
-                if (ImGui::Checkbox("show_floor", &show_floor)) {
-                    renderer.flags ^= SimpleModelRendererFlags_ShowFloor;
-                }
-            }
-            {
-                bool show_mesh_norms = renderer.flags & SimpleModelRendererFlags_ShowMeshNormals;
-                if (ImGui::Checkbox("show_mesh_normals", &show_mesh_norms)) {
-                    renderer.flags ^= SimpleModelRendererFlags_ShowMeshNormals;
-                }
-            }
-            {
-                bool hoverable_static_decs = renderer.flags & SimpleModelRendererFlags_HoverableStaticDecorations;
-                if (ImGui::Checkbox("hoverable static geometry", &hoverable_static_decs)) {
-                    renderer.flags ^= SimpleModelRendererFlags_HoverableStaticDecorations;
-                }
-            }
-            {
-                bool hoverable_dynamic_decs = renderer.flags & SimpleModelRendererFlags_HoverableDynamicDecorations;
-                if (ImGui::Checkbox("hoverable dynamic geometry", &hoverable_dynamic_decs)) {
-                    renderer.flags ^= SimpleModelRendererFlags_HoverableDynamicDecorations;
-                }
-            }
-            ImGui::Checkbox("only select muscles", &only_select_muscles);
-            */
-
-            // display hints
-            {
-                OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
-
-                {
-                    bool debug_geom = dh.get_show_debug_geometry();
-                    if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
-                        dh.set_show_debug_geometry(debug_geom);
-                    }
-                }
-
-                {
-                    bool frames_geom = dh.get_show_frames();
-                    if (ImGui::Checkbox("show frames", &frames_geom)) {
-                        dh.set_show_frames(frames_geom);
-                    }
-                }
-
-                {
-                    bool markers_geom = dh.get_show_markers();
-                    if (ImGui::Checkbox("show markers", &markers_geom)) {
-                        dh.set_show_markers(markers_geom);
-                    }
-                }
-            }
-
-            {
-                ImGui::Combo(
-                    "muscle coloring",
-                    &muscle_recoloring,
-                    muscle_coloring_options.data(),
-                    static_cast<int>(muscle_coloring_options.size()));
-            }
-
-            if (ImGui::Button("fullscreen")) {
-                app.make_fullscreen();
-            }
-
-            if (ImGui::Button("windowed")) {
-                app.make_windowed();
-            }
-
-            if (not app.is_vsync_enabled()) {
-                if (ImGui::Button("enable vsync")) {
-                    app.enable_vsync();
-                }
-            } else {
-                if (ImGui::Button("disable vsync")) {
-                    app.disable_vsync();
-                }
-            }
-
-            ImGui::NewLine();
-            ImGui::Text("Interaction: ");
-            if (model_viewer.camera().is_dragging) {
-                ImGui::SameLine();
-                ImGui::Text("rotating ");
-            }
-            if (model_viewer.camera().is_panning) {
-                ImGui::SameLine();
-                ImGui::Text("panning ");
-            }
-            if (model_viewer.is_moused_over()) {
-                ImGui::SameLine();
-                ImGui::Text("interacting ");
-            }
         }
 
         void draw_simulate_tab() {

@@ -1,5 +1,6 @@
 #include "model_viewer_widget.hpp"
 
+#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/labelled_model_drawlist.hpp"
 #include "src/3d/model_drawlist_generator.hpp"
@@ -10,9 +11,18 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 namespace {
     using namespace osmv;
+
+    using ModelViewerRecoloring = int;
+    enum ModelViewerRecoloring_ {
+        ModelViewerRecoloring_None = 0,
+        ModelViewerRecoloring_Strain,
+        ModelViewerRecoloring_Length,
+        ModelViewerRecoloring_COUNT,
+    };
 
     void generate_geometry(
         ModelViewerGeometryFlags flags,
@@ -109,11 +119,12 @@ namespace osmv {
         glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
         glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
-        float rim_thickness = 0.00075f;
 
         // populated by calling generate_geometry(Model, State)
         Labelled_model_drawlist geometry;
         Model_drawlist_generator drawlist_generator;
+        ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
+        Raw_renderer_flags rendering_flags = RawRendererFlags_Default;
 
         Model_viewer_widget_impl() : renderer{Raw_renderer_config{100, 100, app().samples()}} {
         }
@@ -129,7 +140,6 @@ namespace osmv {
             params.light_rgb = light_rgb;
             params.background_rgba = background_rgba;
             params.rim_rgba = rim_rgba;
-            params.rim_thickness = rim_thickness;
             params.flags = flags;
             if (app().is_in_debug_mode()) {
                 params.flags |= RawRendererFlags_DrawDebugQuads;
@@ -162,10 +172,6 @@ bool osmv::Model_viewer_widget::is_moused_over() const noexcept {
     return impl->mouse_over_render;
 }
 
-osmv::Polar_camera& osmv::Model_viewer_widget::camera() noexcept {
-    return impl->camera;
-}
-
 bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
     if (not(impl->mouse_over_render or e.type == SDL_MOUSEBUTTONUP)) {
         return false;
@@ -174,7 +180,7 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
         case SDLK_w:
-            rendering_flags ^= RawRendererFlags_WireframeMode;
+            impl->rendering_flags ^= RawRendererFlags_WireframeMode;
             return true;
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -219,11 +225,117 @@ void osmv::Model_viewer_widget::draw(
     OpenSim::Component const** selected,
     OpenSim::Component const** hovered) {
 
-    Raw_renderer& renderer = impl->renderer;
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
-    if (ImGui::Begin(panel_name)) {
+    if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("Options")) {
+
+                ImGui::Text("Selection logic:");
+
+                ImGui::CheckboxFlags(
+                    "coerce selection to muscle", &geometry_flags, ModelViewerGeometryFlags_CanOnlyInteractWithMuscles);
+
+                ImGui::CheckboxFlags(
+                    "can interact with static geometry",
+                    &geometry_flags,
+                    ModelViewerGeometryFlags_CanInteractWithStaticDecorations);
+
+                ImGui::CheckboxFlags(
+                    "can interact with dynamic geometry",
+                    &geometry_flags,
+                    ModelViewerGeometryFlags_CanInteractWithDynamicDecorations);
+
+                ImGui::CheckboxFlags(
+                    "draw dynamic geometry", &geometry_flags, ModelViewerGeometryFlags_DrawDynamicDecorations);
+
+                ImGui::CheckboxFlags(
+                    "draw static geometry", &geometry_flags, ModelViewerGeometryFlags_DrawStaticDecorations);
+
+                ImGui::Separator();
+
+                ImGui::Text("Graphical Options:");
+
+                ImGui::CheckboxFlags("wireframe mode", &impl->rendering_flags, RawRendererFlags_WireframeMode);
+                ImGui::CheckboxFlags("show normals", &impl->rendering_flags, RawRendererFlags_ShowMeshNormals);
+                ImGui::CheckboxFlags("show floor", &impl->rendering_flags, RawRendererFlags_ShowFloor);
+                ImGui::CheckboxFlags("draw rims", &impl->rendering_flags, RawRendererFlags_DrawRims);
+                ImGui::CheckboxFlags("hit testing", &impl->rendering_flags, RawRendererFlags_PerformPassthroughHitTest);
+                ImGui::CheckboxFlags(
+                    "optimized hit testing",
+                    &impl->rendering_flags,
+                    RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
+                ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Scene")) {
+                if (ImGui::Button("Left")) {
+                    // assumes models tend to point upwards in Y and forwards in +X
+                    // (so sidewards is theta == 0 or PI)
+                    impl->camera.theta = pi_f;
+                    impl->camera.phi = 0.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Right")) {
+                    // assumes models tend to point upwards in Y and forwards in +X
+                    // (so sidewards is theta == 0 or PI)
+                    impl->camera.theta = 0.0f;
+                    impl->camera.phi = 0.0f;
+                }
+
+                if (ImGui::Button("Look top")) {
+                    impl->camera.theta = 0.0f;
+                    impl->camera.phi = pi_f / 2.0f;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Look bottom")) {
+                    impl->camera.theta = 0.0f;
+                    impl->camera.phi = 3.0f * (pi_f / 2.0f);
+                }
+
+                ImGui::NewLine();
+
+                ImGui::SliderFloat("radius", &impl->camera.radius, 0.0f, 10.0f);
+                ImGui::SliderFloat("theta", &impl->camera.theta, 0.0f, 2.0f * pi_f);
+                ImGui::SliderFloat("phi", &impl->camera.phi, 0.0f, 2.0f * pi_f);
+                ImGui::NewLine();
+                ImGui::SliderFloat("pan_x", &impl->camera.pan.x, -100.0f, 100.0f);
+                ImGui::SliderFloat("pan_y", &impl->camera.pan.y, -100.0f, 100.0f);
+                ImGui::SliderFloat("pan_z", &impl->camera.pan.z, -100.0f, 100.0f);
+
+                ImGui::Separator();
+
+                ImGui::SliderFloat("light_x", &impl->light_pos.x, -30.0f, 30.0f);
+                ImGui::SliderFloat("light_y", &impl->light_pos.y, -30.0f, 30.0f);
+                ImGui::SliderFloat("light_z", &impl->light_pos.z, -30.0f, 30.0f);
+                ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl->light_rgb));
+
+                ImGui::EndMenu();
+            }
+
+            // muscle coloring
+            {
+                char buf[32];
+                std::snprintf(buf, sizeof(buf), "something longer than options");
+                ImVec2 font_dims = ImGui::CalcTextSize(buf);
+
+                static constexpr char const* recoloring_strs[ModelViewerRecoloring_COUNT] = {
+                    "default muscle coloring",
+                    "color muscles by strain",
+                    "color muscles by length",
+                };
+                ImGui::Dummy(ImVec2{5.0f, 0.0f});
+                ImGui::SetNextItemWidth(font_dims.x);
+                ImGui::Combo("##musclecoloring", &impl->recoloring, recoloring_strs, ModelViewerRecoloring_COUNT);
+            }
+
+            ImGui::EndMenuBar();
+        }
+
+        // put the renderer in a child window that can't be moved to prevent accidental dragging
         if (ImGui::BeginChild("##child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
+
             // generate OpenSim scene geometry
             generate_geometry(geometry_flags, impl->geometry, impl->drawlist_generator, model, state);
 
@@ -248,7 +360,7 @@ void osmv::Model_viewer_widget::draw(
                     });
             }
 
-            if (recoloring == ModelViewerRecoloring_Strain) {
+            if (impl->recoloring == ModelViewerRecoloring_Strain) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
@@ -262,7 +374,7 @@ void osmv::Model_viewer_widget::draw(
                 });
             }
 
-            if (recoloring == ModelViewerRecoloring_Length) {
+            if (impl->recoloring == ModelViewerRecoloring_Length) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
@@ -276,19 +388,18 @@ void osmv::Model_viewer_widget::draw(
                 });
             }
 
-            if (rendering_flags & RawRendererFlags_DrawRims) {
+            if (impl->rendering_flags & RawRendererFlags_DrawRims) {
                 apply_standard_rim_coloring(impl->geometry, *hovered, *selected);
             }
 
             // draw the scene to an OpenGL texture
-            apply_standard_rim_coloring(impl->geometry, impl->hovered_component, *selected);
             auto dims = ImGui::GetContentRegionAvail();
 
             if (dims.x >= 1 and dims.y >= 1) {
                 impl->renderer.change_config(
                     Raw_renderer_config{static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples()});
 
-                gl::Texture_2d& render = impl->draw(rendering_flags);
+                gl::Texture_2d& render = impl->draw(impl->rendering_flags);
 
                 {
                     // required by ImGui::Image
@@ -322,9 +433,7 @@ void osmv::Model_viewer_widget::draw(
                     ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
                 }
 
-                if (impl->hovered_component != *hovered) {
-                    *hovered = impl->hovered_component;
-                }
+                *hovered = impl->hovered_component;
             }
 
             ImGui::EndChild();

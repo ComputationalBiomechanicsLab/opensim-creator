@@ -6,18 +6,18 @@
 void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::Component const** selected) {
 
     if (not*selected) {
-        ImGui::Text("nothing selected: right click a muscle");
+        ImGui::Text("(nothing selected)");
         return;
     }
 
     OpenSim::Component const& c = **selected;
 
+    ImGui::Text("selection information:");
+    ImGui::Dummy(ImVec2{0.0, 2.5f});
+    ImGui::Separator();
+
     // top-level info
     {
-        ImGui::Text("top-level information:");
-        ImGui::Dummy(ImVec2{0.0, 2.5f});
-        ImGui::Separator();
-
         ImGui::Columns(2);
 
         ImGui::Text("getName()");

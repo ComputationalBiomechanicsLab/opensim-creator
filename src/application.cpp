@@ -6,6 +6,7 @@
 #include "osmv_config.hpp"
 #include "sdl_wrapper.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/raw_renderer.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
 
@@ -255,6 +256,21 @@ static int highest_refresh_rate_display() {
     return highest_refresh_rate;
 }
 
+namespace {
+    struct Globally_allocated_mesh_storage final {
+        Globally_allocated_mesh_storage() {
+            // currently noop
+        }
+        Globally_allocated_mesh_storage(Globally_allocated_mesh_storage const&) = delete;
+        Globally_allocated_mesh_storage(Globally_allocated_mesh_storage&&) = delete;
+        Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage const&) = delete;
+        Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage&&) = delete;
+        ~Globally_allocated_mesh_storage() noexcept {
+            osmv::nuke_globally_allocated_meshes();
+        }
+    };
+}
+
 namespace osmv {
     struct Application_impl final {
         // SDL's application-wide context (inits video subsystem etc.)
@@ -265,6 +281,9 @@ namespace osmv {
 
         // SDL OpenGL context
         sdl::GLContext gl;
+
+        // Setup global mesh storage
+        Globally_allocated_mesh_storage global_mesh_storage;
 
         // the maximum num multisamples that the OpenGL backend supports
         int max_samples = 1;
@@ -458,7 +477,9 @@ namespace osmv {
                 ImGui_ImplSDL2_NewFrame(window);
                 ImGui::NewFrame();
 
-                ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+                ImGui::DockSpaceOverViewport(
+                    ImGui::GetMainViewport(),
+                    ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
 
                 // osmv::Screen: call current screen's `draw` method
                 try {

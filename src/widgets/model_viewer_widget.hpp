@@ -33,20 +33,12 @@ namespace osmv {
                                            ModelViewerGeometryFlags_CanOnlyInteractWithMuscles
     };
 
-    enum ModelViewerRecoloring {
-        ModelViewerRecoloring_None,
-        ModelViewerRecoloring_Strain,
-        ModelViewerRecoloring_Length,
-    };
-
     struct Model_viewer_widget_impl;
     class Model_viewer_widget final {
         Model_viewer_widget_impl* impl;
 
     public:
-        Raw_renderer_flags rendering_flags = RawRendererFlags_Default;
         ModelViewerGeometryFlags geometry_flags = ModelViewerGeometryFlags_Default;
-        ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
 
         Model_viewer_widget();
         Model_viewer_widget(Model_viewer_widget const&) = delete;
@@ -56,7 +48,6 @@ namespace osmv {
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;
-        Polar_camera& camera() noexcept;
         bool on_event(SDL_Event const&);
         void draw(
             char const* panel_name,
