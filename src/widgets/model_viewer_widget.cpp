@@ -5,6 +5,7 @@
 #include "src/3d/labelled_model_drawlist.hpp"
 #include "src/3d/model_drawlist_generator.hpp"
 #include "src/3d/polar_camera.hpp"
+#include "src/3d/raw_renderer.hpp"
 #include "src/application.hpp"
 #include "src/sdl_wrapper.hpp"
 
@@ -108,8 +109,8 @@ namespace {
 namespace osmv {
     struct Model_viewer_widget_impl final {
         Raw_renderer renderer;
-
-        bool mouse_over_render = false;
+        Labelled_model_drawlist geometry;
+        Model_drawlist_generator drawlist_generator;
 
         int hovertest_x = -1;
         int hovertest_y = -1;
@@ -120,11 +121,9 @@ namespace osmv {
         glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
         glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
-        // populated by calling generate_geometry(Model, State)
-        Labelled_model_drawlist geometry;
-        Model_drawlist_generator drawlist_generator;
         ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
         Raw_renderer_flags rendering_flags = RawRendererFlags_Default;
+        bool mouse_over_render = false;
 
         Model_viewer_widget_impl() : renderer{Raw_renderer_config{100, 100, app().samples()}} {
         }

@@ -3,6 +3,7 @@
 #include "constants.hpp"
 #include "gl.hpp"
 #include "meshes.hpp"
+#include "raw_drawlist.hpp"
 #include "src/config.hpp"
 #include "texturing.hpp"
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "raw_drawlist.hpp"
 #include "raw_mesh_instance.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -8,14 +7,18 @@
 
 #include <cstddef>
 
-// raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
-//
-// this API is designed with performance and power in mind, not convenience. Use a downstream
-// renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
 namespace gl {
     struct Texture_2d;
 }
 
+namespace osmv {
+    class Raw_drawlist;
+}
+
+// raw renderer: an OpenGL renderer that is Application, Screen, and OpenSim agnostic.
+//
+// this API is designed with performance and power in mind, not convenience. Use a downstream
+// renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
 namespace osmv {
     constexpr int invalid_meshid = -1;
 

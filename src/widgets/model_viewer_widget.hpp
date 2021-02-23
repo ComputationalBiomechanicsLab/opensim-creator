@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/3d/raw_renderer.hpp"
-
 #include <SDL_events.h>
 
 namespace OpenSim {

@@ -4,7 +4,6 @@
 #include <imgui.h>
 
 void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::Component const** selected) {
-
     if (not*selected) {
         ImGui::Text("(nothing selected)");
         return;
