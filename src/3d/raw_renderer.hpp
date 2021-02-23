@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mesh_reference.hpp"
 #include "raw_mesh_instance.hpp"
 
 #include <glm/mat4x4.hpp>
@@ -12,6 +13,7 @@ namespace gl {
 }
 
 namespace osmv {
+    struct Untextured_vert;
     class Raw_drawlist;
 }
 
@@ -20,17 +22,13 @@ namespace osmv {
 // this API is designed with performance and power in mind, not convenience. Use a downstream
 // renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
 namespace osmv {
-    constexpr int invalid_meshid = -1;
-
     // globally allocate mesh data on the GPU
     //
     // the returned handle is a "mesh ID" and is guaranteed to be a non-negative number that
     // increases monotonically
     //
     // must only be called after OpenGL is initialized
-    struct Untextured_vert;
-    int globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
-
+    Mesh_reference globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n);
     void nuke_globally_allocated_meshes();
 
     struct Raw_renderer_config final {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mesh_reference.hpp"
+
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/vec4.hpp>
@@ -93,14 +95,14 @@ namespace osmv {
         //
         // the renderer uses this ID to deduplicate and instance draw calls. You shouldn't mess
         // with this unless you know what you're doing
-        int _meshid;
+        Mesh_reference _meshid;
 
         // trivial ctor: useful if the caller knows what they're doing and some STL
         //               algorithms like when a type is trivially constructable
         Raw_mesh_instance() = default;
 
         template<typename Mat4x3, typename Rgba>
-        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, int meshid) noexcept :
+        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid) noexcept :
             transform{std::forward<Mat4x3>(_transform)},
             _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},

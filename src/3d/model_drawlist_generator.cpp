@@ -32,9 +32,9 @@ namespace {
         // spheres and planes fall into this category. They are typically generated on the CPU
         // once and then uploaded onto the GPU. Then, whenever OpenSim/Simbody want one they can
         // just use the meshid to automatically freewheel it from the GPU.
-        int sphere_meshid;
-        int cylinder_meshid;
-        int cube_meshid;
+        osmv::Mesh_reference sphere_meshid;
+        osmv::Mesh_reference cylinder_meshid;
+        osmv::Mesh_reference cube_meshid;
 
         // path-to-meshid lookup
         //
@@ -44,7 +44,7 @@ namespace {
         //
         // this is necessary because SimTK will emit mesh information as paths on the
         // filesystem
-        std::unordered_map<std::string, int> path2meshid;
+        std::unordered_map<std::string, osmv::Mesh_reference> path2meshid;
 
         // swap space for Simbody's generateDecorations append target
         //
@@ -364,12 +364,12 @@ namespace {
             auto& global = global_meshes();
 
             // perform a cache search for the mesh
-            int meshid = osmv::invalid_meshid;
+            osmv::Mesh_reference meshid = osmv::Mesh_reference::invalid();
             {
                 auto [it, inserted] = global.path2meshid.emplace(
                     std::piecewise_construct,
                     std::forward_as_tuple(std::ref(m.getMeshFile())),
-                    std::forward_as_tuple(osmv::invalid_meshid));
+                    std::forward_as_tuple(osmv::Mesh_reference::invalid()));
 
                 if (not inserted) {
                     // it wasn't inserted, so the path has already been loaded and the entry

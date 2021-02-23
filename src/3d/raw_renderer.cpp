@@ -31,6 +31,14 @@ namespace {
     static_assert(
         std::is_trivially_destructible<osmv::Raw_mesh_instance>::value,
         "this is a nice-to-have, because it enables bulk-destroying mesh instances in a collection class with zero overhead");
+    static_assert(std::is_standard_layout<osmv::Mesh_reference>::value);
+    static_assert(
+        std::is_trivially_constructible<osmv::Mesh_reference>::value,
+        "this might not be necessary - it's only here as a warning flag if someone edits the class. Trivial constructability is handy for bulk-malloc'ing storage for the class");
+    static_assert(std::is_trivial<osmv::Mesh_reference>::value);
+    static_assert(
+        std::has_unique_object_representations<osmv::Mesh_reference>::value,
+        "i.e. is comparing the bytes of the object sufficient enough to implement equality for the object (comes in handy when dealing with large collections of objects in memory)");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
         GLuint loc = static_cast<GLuint>(mat4loc);
@@ -339,7 +347,6 @@ namespace {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_bufferT<osmv::Untextured_vert> vbo;
-        size_t instance_hash = 0;  // cache VBO assignments
         gl::Array_bufferT<osmv::Raw_mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
@@ -379,14 +386,10 @@ namespace {
     // this should only be populated after OpenGL is initialized
     std::vector<Mesh_on_gpu> global_meshes;
 
-    Mesh_on_gpu& global_mesh_lookup(int meshid) {
-        std::vector<Mesh_on_gpu>& meshes = global_meshes;
-
-        assert(meshid != osmv::invalid_meshid);
-        assert(meshid >= 0);
-        assert(static_cast<size_t>(meshid) < meshes.size());
-
-        return meshes[static_cast<size_t>(meshid)];
+    Mesh_on_gpu& global_mesh_lookup(osmv::Mesh_reference meshid) {
+        size_t idx = meshid.to_index();
+        assert(idx < global_meshes.size());
+        return global_meshes[idx];
     }
 
     // OpenGL buffers used by the renderer
@@ -626,11 +629,10 @@ namespace osmv {
     };
 }
 
-int osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
-    assert(global_meshes.size() < std::numeric_limits<int>::max());
-    int meshid = static_cast<int>(global_meshes.size());
+osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
+    Mesh_reference ref = Mesh_reference::from_index(global_meshes.size());
     global_meshes.emplace_back(verts, n);
-    return meshid;
+    return ref;
 }
 
 void osmv::nuke_globally_allocated_meshes() {
@@ -763,7 +765,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
         // cluster draw calls by meshid
         size_t pos = 0;
         while (pos < nmeshes) {
-            int meshid = meshes[pos]._meshid;
+            osmv::Mesh_reference meshid = meshes[pos]._meshid;
             size_t end = pos + 1;
 
             while (end < nmeshes and meshes[end]._meshid == meshid) {
@@ -771,7 +773,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
             }
 
             // [pos, end) contains instances with meshid
-            Mesh_on_gpu& md = global_mesh_lookup(static_cast<int>(meshid));
+            Mesh_on_gpu& md = global_mesh_lookup(meshid);
             md.instance_vbo.assign(meshes + pos, meshes + end);
             gl::BindVertexArray(md.main_vao);
             glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
