@@ -29,10 +29,8 @@ namespace osmv {
             return Gpu_data_reference{static_cast<meshid_t>(idx)};
         }
 
-        // trivial constructability might be important for high-perf algs
-        //
-        // user beware ;)
-        Gpu_data_reference() = default;
+        constexpr Gpu_data_reference() noexcept : id{senteniel} {
+        }
 
         constexpr Gpu_data_reference(decltype(id) _id) noexcept : id{_id} {
         }
@@ -43,6 +41,10 @@ namespace osmv {
             // the start of a sequence, not (e.g.) in the middle
             static_assert(senteniel < 0);
             return id >= 0;
+        }
+
+        constexpr operator bool() const noexcept {
+            return is_valid();
         }
 
         constexpr bool operator==(Gpu_data_reference const& other) const noexcept {
@@ -64,4 +66,5 @@ namespace osmv {
     };
 
     using Mesh_reference = Gpu_data_reference<short>;
+    using Texture_reference = Gpu_data_reference<short>;
 }

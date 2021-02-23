@@ -28,11 +28,12 @@ namespace {
     static_assert(
         std::is_trivially_destructible<osmv::Raw_mesh_instance>::value,
         "this is a nice-to-have, because it enables bulk-destroying mesh instances in a collection class with zero overhead");
+
+    static_assert(std::is_trivially_copyable<osmv::Mesh_reference>::value);
+    static_assert(std::is_trivially_move_assignable<osmv::Mesh_reference>::value);
+    static_assert(std::is_trivially_move_constructible<osmv::Mesh_reference>::value);
+    static_assert(std::is_trivially_destructible<osmv::Mesh_reference>::value);
     static_assert(std::is_standard_layout<osmv::Mesh_reference>::value);
-    static_assert(
-        std::is_trivially_constructible<osmv::Mesh_reference>::value,
-        "this might not be necessary - it's only here as a warning flag if someone edits the class. Trivial constructability is handy for bulk-malloc'ing storage for the class");
-    static_assert(std::is_trivial<osmv::Mesh_reference>::value);
     static_assert(
         std::has_unique_object_representations<osmv::Mesh_reference>::value,
         "i.e. is comparing the bytes of the object sufficient enough to implement equality for the object (comes in handy when dealing with large collections of objects in memory)");
