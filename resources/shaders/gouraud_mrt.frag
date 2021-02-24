@@ -13,8 +13,11 @@ layout (location = 1) out vec4 Color1Out;
 
 void main() {
     // write shaded geometry color
-    vec4 rgba = uIsTextured ? texture(uSampler0, TexCoord) : Rgba0;
-    Color0Out = GouraudBrightness * rgba;
+    if (uIsTextured) {
+        Color0Out = texture(uSampler0, TexCoord);
+    } else {
+        Color0Out = GouraudBrightness * Rgba0;
+    }
 
     // write passthrough colors
     Color1Out = Rgba1;

@@ -669,24 +669,6 @@ namespace osmv {
         gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
         gl::Vertex_array cpts_quad_vao = Colormapped_plain_texture_shader::create_vao(quad_vbo);
 
-        // floor
-        struct {
-            Texture_reference texture = osmv::globally_store_texture(osmv::generate_chequered_floor_texture());
-            glm::mat4 model_mtx = []() {
-                glm::mat4 rv = glm::identity<glm::mat4>();
-
-                // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-                // floor down *slightly* to prevent Z fighting from planes rendered from the
-                // model itself (the contact planes, etc.)
-                rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
-
-                rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
-                rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
-
-                return rv;
-            }();
-        } floor;
-
         // other OpenGL (GPU) buffers used by the renderer
         Renderer_buffers buffers;
 
@@ -861,6 +843,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
                 gl::Uniform(shader.uIsTextured, true);
                 gl::ActiveTexture(GL_TEXTURE0);
                 gl::BindTexture(global_texture_lookup(textureid));
+
                 gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
             } else {
                 gl::Uniform(shader.uIsTextured, false);
@@ -875,23 +858,6 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
         }
         gl::BindVertexArray();
         glDisablei(GL_BLEND, 0);
-    }
-
-    // (optional): draw a textured floor into COLOR0
-    if (params.flags & RawRendererFlags_ShowFloor) {
-        Plain_texture_shader& pts = impl->shaders.plain_texture;
-
-        gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, params.projection_matrix * params.view_matrix * impl->floor.model_mtx);
-        gl::Uniform(pts.uTextureScaler, 200.0f);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(global_texture_lookup(impl->floor.texture));
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-
-        gl::BindVertexArray(impl->pts_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
-        gl::BindVertexArray();
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
@@ -1016,6 +982,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
             // this is kept here so that people can try it out if selection logic is acting
             // bizzarely (e.g. because it is delayed one frame)
 
+            glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
             GLubyte rgba[4]{};
             glReadPixels(
                 params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);

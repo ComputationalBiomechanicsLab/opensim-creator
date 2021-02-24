@@ -50,28 +50,24 @@ namespace osmv {
         // draw mesh normals on top of render
         RawRendererFlags_ShowMeshNormals = 1 << 1,
 
-        // draw a chequered floor
-        RawRendererFlags_ShowFloor = 1 << 2,
-
         // draw selection rims
-        RawRendererFlags_DrawRims = 1 << 3,
+        RawRendererFlags_DrawRims = 1 << 2,
 
         // draw debug quads (development)
-        RawRendererFlags_DrawDebugQuads = 1 << 4,
+        RawRendererFlags_DrawDebugQuads = 1 << 3,
 
         // perform hit testing on Raw_mesh_instance passthrough data
-        RawRendererFlags_PerformPassthroughHitTest = 1 << 5,
+        RawRendererFlags_PerformPassthroughHitTest = 1 << 4,
 
         // use optimized hit testing (which might arrive a frame late)
-        RawRendererFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 6,
+        RawRendererFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 5,
 
         // draw the scene
-        RawRendererFlags_DrawSceneGeometry = 1 << 7,
+        RawRendererFlags_DrawSceneGeometry = 1 << 6,
 
-        RawRendererFlags_Default = RawRendererFlags_ShowFloor | RawRendererFlags_DrawRims |
-                                   RawRendererFlags_DrawDebugQuads | RawRendererFlags_PerformPassthroughHitTest |
-                                   RawRendererFlags_UseOptimizedButDelayed1FrameHitTest |
-                                   RawRendererFlags_DrawSceneGeometry
+        RawRendererFlags_Default =
+            RawRendererFlags_DrawRims | RawRendererFlags_DrawDebugQuads | RawRendererFlags_PerformPassthroughHitTest |
+            RawRendererFlags_UseOptimizedButDelayed1FrameHitTest | RawRendererFlags_DrawSceneGeometry
     };
 
     struct Raw_drawcall_params final {

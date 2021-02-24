@@ -3,9 +3,11 @@
 #include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/labelled_model_drawlist.hpp"
+#include "src/3d/meshes.hpp"
 #include "src/3d/model_drawlist_generator.hpp"
 #include "src/3d/polar_camera.hpp"
 #include "src/3d/raw_renderer.hpp"
+#include "src/3d/texturing.hpp"
 #include "src/application.hpp"
 #include "src/sdl_wrapper.hpp"
 
@@ -77,7 +79,39 @@ namespace {
 
         drawlist_generator.generate(model, state, geometry, on_append, draw_flags);
 
-        geometry.optimize();
+        // HACK: bodge the floor into the scene
+        if (flags & ModelViewerGeometryFlags_DrawFloor) {
+            static Texture_reference floor_tex = osmv::globally_store_texture(osmv::generate_chequered_floor_texture());
+            static Mesh_reference floor_verts = []() {
+                auto copy = osmv::shaded_textured_quad_verts;
+                for (Textured_vert& v : copy) {
+                    v.texcoord *= 200.0f;
+                }
+
+                return osmv::globally_allocate_mesh(copy.data(), copy.size());
+            }();
+            static glm::mat4 floor_model_mtx = []() {
+                glm::mat4 rv = glm::identity<glm::mat4>();
+
+                // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                // floor down *slightly* to prevent Z fighting from planes rendered from the
+                // model itself (the contact planes, etc.)
+                rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
+                rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+
+                return rv;
+            }();
+            static Rgba32 floor_color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
+            static Raw_mesh_instance floor_mi{floor_model_mtx, floor_color, floor_verts};
+            floor_mi._diffuse_texture = floor_tex;
+
+            geometry.emplace_back(nullptr, floor_mi);
+        }
+
+        if (flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
+            geometry.optimize();
+        }
     }
 
     void apply_standard_rim_coloring(
@@ -256,7 +290,6 @@ void osmv::Model_viewer_widget::draw(
 
                 ImGui::CheckboxFlags("wireframe mode", &impl->rendering_flags, RawRendererFlags_WireframeMode);
                 ImGui::CheckboxFlags("show normals", &impl->rendering_flags, RawRendererFlags_ShowMeshNormals);
-                ImGui::CheckboxFlags("show floor", &impl->rendering_flags, RawRendererFlags_ShowFloor);
                 ImGui::CheckboxFlags("draw rims", &impl->rendering_flags, RawRendererFlags_DrawRims);
                 ImGui::CheckboxFlags("hit testing", &impl->rendering_flags, RawRendererFlags_PerformPassthroughHitTest);
                 ImGui::CheckboxFlags(
@@ -264,6 +297,9 @@ void osmv::Model_viewer_widget::draw(
                     &impl->rendering_flags,
                     RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
                 ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
+                ImGui::CheckboxFlags("draw floor", &geometry_flags, ModelViewerGeometryFlags_DrawFloor);
+                ImGui::CheckboxFlags(
+                    "optimize draw order", &geometry_flags, ModelViewerGeometryFlags_OptimizeDrawOrder);
 
                 ImGui::EndMenu();
             }

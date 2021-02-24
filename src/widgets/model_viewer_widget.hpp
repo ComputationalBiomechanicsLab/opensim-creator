@@ -24,11 +24,14 @@ namespace osmv {
         ModelViewerGeometryFlags_CanInteractWithDynamicDecorations = 1 << 2,
         ModelViewerGeometryFlags_CanInteractWithStaticDecorations = 1 << 3,
         ModelViewerGeometryFlags_CanOnlyInteractWithMuscles = 1 << 4,
+        ModelViewerGeometryFlags_DrawFloor = 1 << 5,
+        ModelViewerGeometryFlags_OptimizeDrawOrder = 1 << 6,
 
-        ModelViewerGeometryFlags_Default = ModelViewerGeometryFlags_DrawDynamicDecorations |
-                                           ModelViewerGeometryFlags_DrawStaticDecorations |
-                                           ModelViewerGeometryFlags_CanInteractWithDynamicDecorations |
-                                           ModelViewerGeometryFlags_CanOnlyInteractWithMuscles
+        ModelViewerGeometryFlags_Default =
+            ModelViewerGeometryFlags_DrawDynamicDecorations | ModelViewerGeometryFlags_DrawStaticDecorations |
+            ModelViewerGeometryFlags_CanInteractWithDynamicDecorations |
+            ModelViewerGeometryFlags_CanOnlyInteractWithMuscles | ModelViewerGeometryFlags_DrawFloor |
+            ModelViewerGeometryFlags_OptimizeDrawOrder
     };
 
     struct Model_viewer_widget_impl;
