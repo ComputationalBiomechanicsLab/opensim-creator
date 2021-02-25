@@ -2,6 +2,8 @@
 
 #include <SDL_events.h>
 
+#include <memory>
+
 namespace OpenSim {
     class Model;
     class Component;
@@ -13,6 +15,7 @@ namespace SimTK {
 
 namespace osmv {
     class Polar_camera;
+    struct Gpu_cache;
 }
 
 namespace osmv {
@@ -34,18 +37,14 @@ namespace osmv {
             ModelViewerGeometryFlags_OptimizeDrawOrder
     };
 
-    struct Model_viewer_widget_impl;
     class Model_viewer_widget final {
-        Model_viewer_widget_impl* impl;
+        struct Impl;
+        std::unique_ptr<Impl> impl;
 
     public:
         ModelViewerGeometryFlags geometry_flags = ModelViewerGeometryFlags_Default;
 
-        Model_viewer_widget();
-        Model_viewer_widget(Model_viewer_widget const&) = delete;
-        Model_viewer_widget(Model_viewer_widget&&) = delete;
-        Model_viewer_widget& operator=(Model_viewer_widget const&) = delete;
-        Model_viewer_widget& operator=(Model_viewer_widget&&) = delete;
+        Model_viewer_widget(Gpu_cache&);
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;

@@ -16,8 +16,8 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     struct Rgb {
         unsigned char r, g, b;
     };
-    constexpr size_t chequer_width = 16;
-    constexpr size_t chequer_height = 16;
+    constexpr size_t chequer_width = 32;
+    constexpr size_t chequer_height = 32;
     constexpr size_t w = 2 * chequer_width;
     constexpr size_t h = 2 * chequer_height;
     constexpr Rgb on_color = {0xe5, 0xe5, 0xe5};
@@ -39,7 +39,7 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     glGenerateMipmap(rv.type);
     gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
     gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 

@@ -1,10 +1,13 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <utility>
 
 namespace osmv {
     class Screen;
+    class Rendering_system;
+    class Model_decoration_generator;
 }
 namespace osmv {
     struct Application_impl;
@@ -30,9 +33,21 @@ namespace osmv {
     };
 
     class Application final {
-        std::unique_ptr<Application_impl> impl;
+        static Application* gCurrent;
+
+        class Impl;
+        std::unique_ptr<Impl> impl;
 
     public:
+        static void set_current(Application* ptr) {
+            gCurrent = ptr;
+        }
+
+        static Application& current() noexcept {
+            assert(gCurrent != nullptr);
+            return *gCurrent;
+        }
+
         Application();
         Application(Application const&) = delete;
         Application(Application&&) = delete;
@@ -92,7 +107,4 @@ namespace osmv {
 
         void disable_vsync();
     };
-
-    void set_current_application(Application* app);
-    Application& app() noexcept;
 }

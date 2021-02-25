@@ -9,7 +9,7 @@
 
 bool osmv::Imgui_demo_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-        app().request_screen_transition<Splash_screen>();
+        Application::current().request_screen_transition<Splash_screen>();
         return true;
     }
 

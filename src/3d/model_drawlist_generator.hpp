@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gpu_cache.hpp"
 #include "labelled_model_drawlist.hpp"
 
 #include <functional>
@@ -31,17 +32,16 @@ namespace osmv {
     };
 
     // used to generate a raw drawlist from an OpenSim Model + State
-    struct Drawlist_generator_impl;
-    class Model_drawlist_generator final {
-        Drawlist_generator_impl* impl;
+    class Model_decoration_generator final {
+    public:
+        class Impl;
+
+    private:
+        std::unique_ptr<Impl> impl;
 
     public:
-        Model_drawlist_generator();
-        Model_drawlist_generator(Model_drawlist_generator const&) = delete;
-        Model_drawlist_generator(Model_drawlist_generator&&) = delete;
-        Model_drawlist_generator& operator=(Model_drawlist_generator const&) = delete;
-        Model_drawlist_generator& operator=(Model_drawlist_generator&&) = delete;
-        ~Model_drawlist_generator() noexcept;
+        Model_decoration_generator(Gpu_cache&);
+        ~Model_decoration_generator() noexcept;
 
         void generate(
             OpenSim::Model const&,

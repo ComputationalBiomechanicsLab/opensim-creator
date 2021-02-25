@@ -1,6 +1,8 @@
 #include "model_editor_screen.hpp"
 
 #include "splash_screen.hpp"
+#include "src/3d/gpu_cache.hpp"
+#include "src/3d/texture_storage.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/fd_simulation.hpp"
@@ -93,7 +95,8 @@ namespace osmv {
 
         int parentbodyidx = -1;
 
-        Model_viewer_widget model_viewer;
+        Gpu_cache cache;
+        Model_viewer_widget model_viewer{cache};
 
         osmv::State simulator_state{model.initSystem()};
         osmv::State editor_state{model.initSystem()};
@@ -283,7 +286,7 @@ osmv::Model_editor_screen::~Model_editor_screen() noexcept {
 bool osmv::Model_editor_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN) {
         if (e.key.keysym.sym == SDLK_ESCAPE) {
-            app().request_screen_transition<Splash_screen>();
+            Application::current().request_screen_transition<Splash_screen>();
             return true;
         }
 

@@ -1,7 +1,7 @@
 #include "model_drawlist_generator.hpp"
 
+#include "gpu_storage.hpp"
 #include "meshes.hpp"
-#include "raw_renderer.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -21,67 +21,17 @@ namespace OpenSim {
     class ModelDisplayHints;
 }
 
-namespace {
-    // this is global-ed because renderers + meshes might be duped between
-    // the various screens in OSMV and it's efficient to have everything
-    // freewheeled
-    struct Global_opensim_mesh_loader_state final {
-        // reserved mesh IDs:
-        //
-        // these are meshes that aren't actually loaded from a file, but generated. Things like
-        // spheres and planes fall into this category. They are typically generated on the CPU
-        // once and then uploaded onto the GPU. Then, whenever OpenSim/Simbody want one they can
-        // just use the meshid to automatically freewheel it from the GPU.
-        osmv::Mesh_reference sphere_meshid;
-        osmv::Mesh_reference cylinder_meshid;
-        osmv::Mesh_reference cube_meshid;
-
-        // path-to-meshid lookup
-        //
-        // allows decoration generators to lookup whether a mesh file (e.g. pelvis.vtp)
-        // has already been uploaded to the GPU or not and, if it has, what meshid it
-        // was assigned
-        //
-        // this is necessary because SimTK will emit mesh information as paths on the
-        // filesystem
-        std::unordered_map<std::string, osmv::Mesh_reference> path2meshid;
-
-        // swap space for Simbody's generateDecorations append target
-        //
-        // generateDecorations requires an Array_ outparam
-        SimTK::Array_<SimTK::DecorativeGeometry> dg_swap;
-
-        // swap space for osmv::Untextured_vert
-        //
-        // this is generally the format needed for GPU uploads
-        std::vector<osmv::Untextured_vert> vert_swap;
-
-        Global_opensim_mesh_loader_state() {
-            vert_swap.clear();
-            osmv::unit_sphere_triangles(vert_swap);
-            sphere_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
-
-            vert_swap.clear();
-            osmv::simbody_cylinder_triangles(vert_swap);
-            cylinder_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
-
-            vert_swap.clear();
-            osmv::simbody_brick_triangles(vert_swap);
-            cube_meshid = osmv::globally_allocate_mesh(vert_swap.data(), vert_swap.size());
-        }
-    };
-
-    // getter for the global mesh loader instance
-    //
-    // must only be called after OpenGL is initialized.
-    Global_opensim_mesh_loader_state& global_meshes() {
-        static Global_opensim_mesh_loader_state data;
-        return data;
-    }
-}
-
 using namespace SimTK;
 using namespace OpenSim;
+using namespace osmv;
+
+class osmv::Model_decoration_generator::Impl final {
+public:
+    Gpu_cache& cache;
+
+    Impl(Gpu_cache& _cache) : cache{_cache} {
+    }
+};
 
 // OpenSim rendering specifics
 namespace {
@@ -101,7 +51,7 @@ namespace {
     }
 
     // load a SimTK::PolygonalMesh into an osmv::Untextured_vert mesh ready for GPU upload
-    void load_mesh_data(PolygonalMesh const& mesh, std::vector<osmv::Untextured_vert>& triangles) {
+    void load_mesh_data(PolygonalMesh const& mesh, std::vector<Untextured_vert>& triangles) {
 
         // helper function: gets a vertex for a face
         auto get_face_vert_pos = [&](int face, int vert) {
@@ -187,23 +137,28 @@ namespace {
 
     // a visitor that can be used with SimTK's `implementGeometry` method
     struct Geometry_visitor final : public DecorativeGeometryImplementation {
+        Gpu_cache& cache;
+        std::vector<Untextured_vert> verts;
+
         SimbodyMatterSubsystem const& matter_subsystem;
         SimTK::State const& state;
-        osmv::Labelled_model_drawlist& out;
-        std::function<void(osmv::ModelDrawlistOnAppendFlags, OpenSim::Component const*&, osmv::Raw_mesh_instance&)>&
+        Labelled_model_drawlist& out;
+        std::function<void(ModelDrawlistOnAppendFlags, OpenSim::Component const*&, osmv::Raw_mesh_instance&)>&
             on_append;
 
         // caller mutates this as geometry is generated
-        osmv::ModelDrawlistOnAppendFlags cur_flags = osmv::ModelDrawlistOnAppendFlags_None;
+        ModelDrawlistOnAppendFlags cur_flags = osmv::ModelDrawlistOnAppendFlags_None;
         OpenSim::Component const* cur_component = nullptr;
 
         Geometry_visitor(
+            Gpu_cache& _cache,
             SimbodyMatterSubsystem const& _matter_subsystem,
             SimTK::State const& _state,
-            osmv::Labelled_model_drawlist& _out,
-            std::function<void(osmv::ModelDrawlistOnAppendFlags, OpenSim::Component const*&, osmv::Raw_mesh_instance&)>&
+            Labelled_model_drawlist& _out,
+            std::function<void(ModelDrawlistOnAppendFlags, OpenSim::Component const*&, osmv::Raw_mesh_instance&)>&
                 _on_append) :
 
+            cache{_cache},
             matter_subsystem{_matter_subsystem},
             state{_state},
             out{_out},
@@ -212,7 +167,7 @@ namespace {
 
         template<typename... Args>
         void emplace_to_output(Args... args) {
-            osmv::Model_drawlist_entry_reference ref = out.emplace_back(cur_component, std::forward<Args>(args)...);
+            Model_drawlist_entry_reference ref = out.emplace_back(cur_component, std::forward<Args>(args)...);
             on_append(cur_flags, ref.component, ref.mesh_instance);
         }
 
@@ -281,11 +236,11 @@ namespace {
             return glm::vec3{sf[0], sf[1], sf[2]};
         }
 
-        osmv::Rgba32 rgba(DecorativeGeometry const& geom) {
+        Rgba32 rgba(DecorativeGeometry const& geom) {
             Vec3 const& rgb = geom.getColor();
             Real a = geom.getOpacity();
 
-            osmv::Rgba32 rv;
+            Rgba32 rv;
             rv.r = static_cast<unsigned char>(255.0 * rgb[0]);
             rv.g = static_cast<unsigned char>(255.0 * rgb[1]);
             rv.b = static_cast<unsigned char>(255.0 * rgb[2]);
@@ -311,13 +266,13 @@ namespace {
 
             glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
 
-            emplace_to_output(cylinder_xform, rgba(geom), global_meshes().cylinder_meshid);
+            emplace_to_output(cylinder_xform, rgba(geom), cache.simbody_cylinder);
         }
         void implementBrickGeometry(const DecorativeBrick& geom) override {
             SimTK::Vec3 dims = geom.getHalfLengths();
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{dims[0], dims[1], dims[2]});
 
-            emplace_to_output(xform, rgba(geom), global_meshes().cube_meshid);
+            emplace_to_output(xform, rgba(geom), cache.simbody_cube);
         }
         void implementCylinderGeometry(const DecorativeCylinder& geom) override {
             glm::mat4 m = transform(geom);
@@ -328,7 +283,7 @@ namespace {
 
             glm::mat4 xform = glm::scale(m, s);
 
-            emplace_to_output(xform, rgba(geom), global_meshes().cylinder_meshid);
+            emplace_to_output(xform, rgba(geom), cache.simbody_cylinder);
         }
         void implementCircleGeometry(const DecorativeCircle&) override {
             // nyi
@@ -337,7 +292,7 @@ namespace {
             float r = static_cast<float>(geom.getRadius());
             glm::mat4 xform = glm::scale(transform(geom), glm::vec3{r, r, r});
 
-            emplace_to_output(xform, rgba(geom), global_meshes().sphere_meshid);
+            emplace_to_output(xform, rgba(geom), cache.simbody_sphere);
         }
         void implementEllipsoidGeometry(const DecorativeEllipsoid&) override {
             // nyi
@@ -352,7 +307,7 @@ namespace {
 
             glm::vec4 rgba{1.0f, 0.0f, 0.0f, 1.0f};
 
-            emplace_to_output(m, rgba, global_meshes().cylinder_meshid);
+            emplace_to_output(m, rgba, cache.simbody_cylinder);
         }
         void implementTextGeometry(const DecorativeText&) override {
             // nyi
@@ -361,32 +316,31 @@ namespace {
             // nyi
         }
         void implementMeshFileGeometry(const DecorativeMeshFile& m) override {
-            auto& global = global_meshes();
-
             // perform a cache search for the mesh
-            osmv::Mesh_reference meshid = osmv::Mesh_reference::invalid();
+            Mesh_reference mesh_ref;
             {
-                auto [it, inserted] = global.path2meshid.emplace(
+                auto [it, inserted] = cache.filepath2mesh.emplace(
                     std::piecewise_construct,
                     std::forward_as_tuple(std::ref(m.getMeshFile())),
-                    std::forward_as_tuple(osmv::Mesh_reference::invalid()));
+                    std::forward_as_tuple());
 
                 if (not inserted) {
                     // it wasn't inserted, so the path has already been loaded and the entry
                     // contains a meshid for the fully-loaded mesh
-                    meshid = it->second;
+                    mesh_ref = it->second;
                 } else {
                     // it was inserted, and is currently a junk meshid because we haven't loaded
                     // a mesh yet. Load the mesh from the file onto the GPU and allocate a new
                     // meshid for it. Assign that meshid to the path2meshid lookup.
-                    load_mesh_data(m.getMesh(), global.vert_swap);
-                    meshid = osmv::globally_allocate_mesh(global.vert_swap.data(), global.vert_swap.size());
-                    it->second = meshid;
+                    load_mesh_data(m.getMesh(), verts);
+
+                    mesh_ref = cache.storage.meshes.allocate(verts);
+                    it->second = mesh_ref;
                 }
             }
 
             glm::mat4 xform = glm::scale(transform(m), scale_factors(m));
-            emplace_to_output(xform, rgba(m), meshid);
+            emplace_to_output(xform, rgba(m), mesh_ref);
         }
         void implementArrowGeometry(const DecorativeArrow&) override {
             // nyi
@@ -400,53 +354,44 @@ namespace {
     };
 }
 
-namespace osmv {
-    struct Drawlist_generator_impl final {
-        SimTK::Array_<SimTK::DecorativeGeometry> dg_swap;
-    };
+osmv::Model_decoration_generator::Model_decoration_generator(Gpu_cache& storage) :
+    impl(new Model_decoration_generator::Impl{storage}) {
 }
 
-osmv::Model_drawlist_generator::Model_drawlist_generator() : impl{new Drawlist_generator_impl{}} {
-}
+osmv::Model_decoration_generator::~Model_decoration_generator() noexcept = default;
 
-osmv::Model_drawlist_generator::~Model_drawlist_generator() noexcept {
-    delete impl;
-}
-
-void osmv::Model_drawlist_generator::generate(
+void osmv::Model_decoration_generator::generate(
     OpenSim::Model const& model,
     SimTK::State const& state,
     Labelled_model_drawlist& out,
     std::function<void(ModelDrawlistOnAppendFlags, OpenSim::Component const*&, Raw_mesh_instance&)> on_append,
     ModelDrawlistGeneratorFlags flags) {
 
-    // get a reusable swap-space for geometry generation
-    SimTK::Array_<SimTK::DecorativeGeometry>& dg_swap = impl->dg_swap;
-
     // create a visitor that is called by OpenSim whenever it wants to generate abstract
     // geometry
-    Geometry_visitor visitor{model.getSystem().getMatterSubsystem(), state, out, on_append};
+    Geometry_visitor visitor{impl->cache, model.getSystem().getMatterSubsystem(), state, out, on_append};
+    SimTK::Array_<SimTK::DecorativeGeometry> dg;
     OpenSim::ModelDisplayHints const& hints = model.getDisplayHints();
 
     for (OpenSim::Component const& c : model.getComponentList()) {
         if (flags & ModelDrawlistGeneratorFlags_GenerateStaticDecorations) {
-            dg_swap.clear();
-            c.generateDecorations(true, hints, state, dg_swap);
+            dg.clear();
+            c.generateDecorations(true, hints, state, dg);
 
             visitor.cur_component = &c;
             visitor.cur_flags = ModelDrawlistOnAppendFlags_IsStatic;
-            for (SimTK::DecorativeGeometry const& geom : dg_swap) {
+            for (SimTK::DecorativeGeometry const& geom : dg) {
                 geom.implementGeometry(visitor);
             }
         }
 
         if (flags & ModelDrawlistGeneratorFlags_GenerateDynamicDecorations) {
-            dg_swap.clear();
-            c.generateDecorations(false, hints, state, dg_swap);
+            dg.clear();
+            c.generateDecorations(false, hints, state, dg);
 
             visitor.cur_component = &c;
             visitor.cur_flags = ModelDrawlistOnAppendFlags_IsDynamic;
-            for (SimTK::DecorativeGeometry const& geom : dg_swap) {
+            for (SimTK::DecorativeGeometry const& geom : dg) {
                 geom.implementGeometry(visitor);
             }
         }

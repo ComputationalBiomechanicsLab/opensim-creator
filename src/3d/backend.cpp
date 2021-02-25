@@ -1,9 +1,12 @@
-﻿#include "raw_renderer.hpp"
+﻿#include "scene_renderer.hpp"
 
 #include "constants.hpp"
 #include "gl.hpp"
+#include "gpu_storage.hpp"
 #include "meshes.hpp"
 #include "raw_drawlist.hpp"
+#include "src/3d/mesh_storage.hpp"
+#include "src/3d/texture_storage.hpp"
 #include "src/config.hpp"
 #include "texturing.hpp"
 
@@ -108,6 +111,18 @@ namespace {
         glVertexAttribDivisor(vec4log, 1);
     }
 
+    void u8_to_Vec3Pointer(gl::Attribute const& vec3log, size_t base_offset) {
+        glVertexAttribPointer(
+            vec3log,
+            3,
+            GL_UNSIGNED_BYTE,
+            GL_TRUE,
+            sizeof(osmv::Raw_mesh_instance),
+            reinterpret_cast<void*>(base_offset));
+        glEnableVertexAttribArray(vec3log);
+        glVertexAttribDivisor(vec3log, 1);
+    }
+
     void u8_to_Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
             vec4log,
@@ -155,10 +170,10 @@ namespace {
     struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
 
     // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
-    // COLOR0 and RGBA passthrough for COLOR1
+    // COLOR0 and RGB passthrough for COLOR1
     //
     // - COLOR0: geometry colored with Gouraud shading: i.e. "the scene"
-    // - COLOR1: RGBA passthrough (selection logic + rim alphas)
+    // - COLOR1: RGB passthrough (selection logic + rim alphas)
     struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
             gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("gouraud_mrt.vert")),
@@ -173,7 +188,7 @@ namespace {
         static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(3);
         static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(7);
         static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
-        static constexpr gl::Attribute aRgba1 = gl::AttributeAtLocation(11);
+        static constexpr gl::Attribute aRgb1 = gl::AttributeAtLocation(11);
 
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
@@ -208,7 +223,7 @@ namespace {
             Mat4x3Pointer(aModelMat, offsetof(osmv::Raw_mesh_instance, transform));
             Mat3Pointer(aNormalMat, offsetof(osmv::Raw_mesh_instance, _normal_xform));
             u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Raw_mesh_instance, rgba));
-            u8_to_Vec4Pointer(aRgba1, offsetof(osmv::Raw_mesh_instance, _passthrough));
+            u8_to_Vec3Pointer(aRgb1, offsetof(osmv::Raw_mesh_instance, _passthrough));
 
             gl::BindVertexArray();
 
@@ -392,7 +407,9 @@ namespace {
         gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(TVert) * n), verts, GL_STATIC_DRAW);
         return rv;
     }
+}
 
+namespace osmv {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_buffer vbo;
@@ -424,39 +441,17 @@ namespace {
             return static_cast<int>(nverts);
         }
     };
+}
 
+namespace {
     // create an OpenGL Pixel Buffer Object (PBO) that holds exactly one pixel
     gl::Pixel_pack_buffer make_single_pixel_PBO() {
         gl::Pixel_pack_buffer rv;
         gl::BindBuffer(rv);
-        GLubyte rgba[4]{};  // initialize PBO's content to zeroed values
-        gl::BufferData(rv.type, 4, rgba, GL_STREAM_READ);
+        GLubyte rgb[4]{};  // initialize PBO's content to zeroed values
+        gl::BufferData(rv.type, 4, rgb, GL_STREAM_READ);
         gl::UnbindBuffer(rv);
         return rv;
-    }
-
-    // this global exists because it makes handling mesh allocations between
-    // different parts of the application *much* simpler. We "know" that meshids
-    // are globally unique, and that there is one global API for allocating them
-    // (OpenGL). It also means that the rest of the appliation can use trivial
-    // types (ints) which is handy when they are composed with other trivial
-    // types into large buffers that need to be memcopied around (e.g. mesh
-    // instance data)
-    //
-    // this should only be populated after OpenGL is initialized
-    static std::vector<Mesh_on_gpu> GLOBAL_meshes;
-    static std::vector<gl::Texture_2d> GLOBAL_textures;
-
-    Mesh_on_gpu& global_mesh_lookup(osmv::Mesh_reference meshid) {
-        size_t idx = meshid.to_index();
-        assert(idx < GLOBAL_meshes.size());
-        return GLOBAL_meshes[idx];
-    }
-
-    gl::Texture_2d& global_texture_lookup(osmv::Texture_reference ref) {
-        size_t idx = ref.to_index();
-        assert(idx < GLOBAL_textures.size());
-        return GLOBAL_textures[idx];
     }
 
     // OpenGL buffers used by the renderer
@@ -478,7 +473,7 @@ namespace {
             // stores multisampled scene render /w shading
             gl::Render_buffer color0;
 
-            // stores COLOR1 RGBA passthrough (selection logic)
+            // stores COLOR1 RGB passthrough (selection logic)
             //
             // this is a texture because color picking (hover) logic needs to access exactly
             // one sample in it with a specialized shader
@@ -503,7 +498,7 @@ namespace {
                 color1{[w, h, samps]() {
                     gl::Texture_2d_multisample rv;
                     gl::BindTexture(rv);
-                    glTexImage2DMultisample(rv.type, samps, GL_RGBA, w, h, GL_TRUE);
+                    glTexImage2DMultisample(rv.type, samps, GL_RGB, w, h, GL_TRUE);
                     return rv;
                 }()},
 
@@ -540,7 +535,7 @@ namespace {
 
         // non-MSXAAed FBO for sampling raw color values
         //
-        // used to sample raw passthrough RGBA to decode selection logic
+        // used to sample raw passthrough RGB to decode selection logic
         struct Non_msxaaed final {
 
             // output storage
@@ -556,7 +551,7 @@ namespace {
 
                     // allocate non-MSXAA texture for non-blended sampling
                     gl::BindTexture(rv);
-                    gl::TexImage2D(rv.type, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                    gl::TexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
                     return rv;
                 }()},
@@ -614,9 +609,9 @@ namespace {
 
         Basic_fbo_texture_pair color0_resolved;
 
-        // target for resolved (post-MSXAA) COLOR1 RGBA passthrough (selection logic)
+        // target for resolved (post-MSXAA) COLOR1 RGB passthrough (selection logic)
         //
-        // this isn't strictly necessary, but is useful to have so that we can render RGBA2 to
+        // this isn't strictly necessary, but is useful to have so that we can render RGB2 to
         // a debug quad
         Basic_fbo_texture_pair color1_resolved;
 
@@ -638,70 +633,95 @@ namespace {
             scene{w, h, samples},
             skip_msxaa{w, h},
             color0_resolved{w, h, GL_RGBA},
-            color1_resolved{w, h, GL_RGBA} {
+            color1_resolved{w, h, GL_RGB} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
     };
 }
 
-namespace osmv {
-    // internal renderer implementation details
-    struct Renderer_impl final {
+class osmv::Mesh_storage::Impl final {
+public:
+    std::vector<Mesh_on_gpu> meshes;
+};
 
-        struct Shaders {
-            Gouraud_mrt_shader gouraud;
-            Normals_shader normals;
-            Plain_texture_shader plain_texture;
-            Colormapped_plain_texture_shader colormapped_plain_texture;
-            Edge_detection_shader edge_detection_shader;
-            Skip_msxaa_blitter_shader skip_msxaa_shader;
+osmv::Mesh_storage::Mesh_storage() : impl{new Mesh_storage::Impl{}} {
+}
 
-            Shaders() {
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-            }
-        } shaders;
+osmv::Mesh_storage::~Mesh_storage() noexcept = default;
 
-        // debug quad
-        gl::Array_bufferT<osmv::Textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
-        gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
-        gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
-        gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
-        gl::Vertex_array cpts_quad_vao = Colormapped_plain_texture_shader::create_vao(quad_vbo);
+osmv::Mesh_on_gpu& osmv::Mesh_storage::lookup(Mesh_reference ref) const {
+    size_t idx = ref.to_index();
+    assert(idx < impl->meshes.size());
+    return impl->meshes[idx];
+}
 
-        // other OpenGL (GPU) buffers used by the renderer
-        Renderer_buffers buffers;
+template<typename Vert>
+static osmv::Mesh_reference allocate(std::vector<osmv::Mesh_on_gpu>& meshes, Vert const* verts, size_t n) {
+    osmv::Mesh_reference ref = osmv::Mesh_reference::from_index(meshes.size());
+    meshes.emplace_back(verts, n);
+    return ref;
+}
 
-        Renderer_impl(Raw_renderer_config const& settings) : buffers{settings.w, settings.h, settings.samples} {
+osmv::Mesh_reference osmv::Mesh_storage::allocate(Untextured_vert const* verts, size_t n) {
+    return ::allocate(impl->meshes, verts, n);
+}
+
+osmv::Mesh_reference osmv::Mesh_storage::allocate(Textured_vert const* verts, size_t n) {
+    return ::allocate(impl->meshes, verts, n);
+}
+
+class osmv::Texture_storage::Impl final {
+public:
+    std::vector<gl::Texture_2d> textures;
+};
+
+osmv::Texture_storage::Texture_storage() : impl{new Texture_storage::Impl{}} {
+}
+
+osmv::Texture_storage::~Texture_storage() noexcept = default;
+
+gl::Texture_2d& osmv::Texture_storage::lookup(Texture_reference ref) const {
+    size_t idx = ref.to_index();
+    assert(idx < impl->textures.size());
+    return impl->textures[idx];
+}
+
+osmv::Texture_reference osmv::Texture_storage::allocate(gl::Texture_2d&& tex) {
+    osmv::Texture_reference ref = osmv::Texture_reference::from_index(impl->textures.size());
+    impl->textures.emplace_back(std::move(tex));
+    return ref;
+}
+
+class osmv::Raw_renderer::Impl final {
+public:
+    struct Shaders {
+        Gouraud_mrt_shader gouraud;
+        Normals_shader normals;
+        Plain_texture_shader plain_texture;
+        Colormapped_plain_texture_shader colormapped_plain_texture;
+        Edge_detection_shader edge_detection_shader;
+        Skip_msxaa_blitter_shader skip_msxaa_shader;
+
+        Shaders() {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
-    };
-}
+    } shaders;
 
-template<typename TVert>
-static osmv::Mesh_reference _globally_allocate_mesh(TVert const* verts, size_t n) {
-    osmv::Mesh_reference ref = osmv::Mesh_reference::from_index(GLOBAL_meshes.size());
-    GLOBAL_meshes.emplace_back(verts, n);
-    return ref;
-}
+    // debug quad
+    gl::Array_bufferT<osmv::Textured_vert> quad_vbo = osmv::shaded_textured_quad_verts;
+    gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
+    gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
+    gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
+    gl::Vertex_array cpts_quad_vao = Colormapped_plain_texture_shader::create_vao(quad_vbo);
 
-osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Untextured_vert const* verts, size_t n) {
-    return _globally_allocate_mesh(verts, n);
-}
+    // other OpenGL (GPU) buffers used by the renderer
+    Renderer_buffers buffers;
 
-osmv::Mesh_reference osmv::globally_allocate_mesh(osmv::Textured_vert const* verts, size_t n) {
-    return _globally_allocate_mesh(verts, n);
-}
-
-osmv::Texture_reference osmv::globally_store_texture(gl::Texture_2d&& rvalue) {
-    osmv::Texture_reference ref = osmv::Texture_reference::from_index(GLOBAL_textures.size());
-    GLOBAL_textures.emplace_back(std::move(rvalue));
-    return ref;
-}
-
-void osmv::nuke_gpu_allocations() {
-    GLOBAL_meshes.clear();
-}
+    Impl(Raw_renderer_config const& settings) : buffers{settings.w, settings.h, settings.samples} {
+        OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+    }
+};
 
 // ok, this took an inordinate amount of time, but there's a fucking
 // annoying bug in Clang:
@@ -713,13 +733,11 @@ void osmv::nuke_gpu_allocations() {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Raw_renderer::Raw_renderer(osmv::Raw_renderer_config const& _settings) : impl(new Renderer_impl(_settings)) {
+osmv::Raw_renderer::Raw_renderer(osmv::Raw_renderer_config const& _settings) : impl(new Raw_renderer::Impl(_settings)) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
-osmv::Raw_renderer::~Raw_renderer() noexcept {
-    delete impl;
-}
+osmv::Raw_renderer::~Raw_renderer() noexcept = default;
 
 void osmv::Raw_renderer::change_config(Raw_renderer_config const& cfg) {
     Renderer_buffers& b = impl->buffers;
@@ -737,7 +755,9 @@ float osmv::Raw_renderer::aspect_ratio() const noexcept {
     return d.x / d.y;
 }
 
-osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& params, Raw_drawlist const& drawlist) {
+osmv::Raw_drawcall_result osmv::Raw_renderer::draw(
+    Gpu_storage const& storage, Raw_drawcall_params const& params, Raw_drawlist const& drawlist) {
+
     // overview:
     //
     // drawing the scene efficiently is a fairly involved process. I apologize for that, but
@@ -773,7 +793,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
     // clear the scene FBO's draw buffers for a new draw call
     //
     //   - COLOR0: main scene render: fill in background
-    //   - COLOR1: RGBA passthrough (selection logic + rim alpa): blank out all channels
+    //   - COLOR1: RGB passthrough (selection logic + rim alpa): blank out all channels
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
     gl::ClearColor(params.background_rgba);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -785,7 +805,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
     // handle wireframe mode: should only be enabled for scene + floor render: the other
     // renders will render to a screen-sized quad
     GLenum original_poly_mode = gl::GetEnum(GL_POLYGON_MODE);
-    if (params.flags & RawRendererFlags_WireframeMode) {
+    if (params.flags & DrawcallFlags_WireframeMode) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -803,9 +823,9 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
     //
     // - COLOR0: main target: multisampled scene geometry
     //     - the input color is Gouraud-shaded based on light parameters etc.
-    // - COLOR1: RGBA passthrough: written to output as-is
-    //     - the input color encodes the selected component index (RGB) and the rim
-    //       alpha (A). It's used in downstream steps
+    // - COLOR1: RGB passthrough: written to output as-is
+    //     - the input color encodes the selected component index (RG) and the rim
+    //       alpha (B). It's used in downstream steps
     if (params.flags & RawRendererFlags_DrawSceneGeometry) {
         Gouraud_mrt_shader& shader = impl->shaders.gouraud;
 
@@ -842,14 +862,14 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
             if (textureid) {
                 gl::Uniform(shader.uIsTextured, true);
                 gl::ActiveTexture(GL_TEXTURE0);
-                gl::BindTexture(global_texture_lookup(textureid));
+                gl::BindTexture(storage.textures.lookup(textureid));
 
                 gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
             } else {
                 gl::Uniform(shader.uIsTextured, false);
             }
 
-            Mesh_on_gpu& md = global_mesh_lookup(meshid);
+            Mesh_on_gpu& md = storage.meshes.lookup(meshid);
             md.instance_vbo.assign(meshes + pos, meshes + end);
             gl::BindVertexArray(md.main_vao);
             glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
@@ -863,7 +883,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
     glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
 
     // (optional): render scene normals into COLOR0
-    if (params.flags & RawRendererFlags_ShowMeshNormals) {
+    if (params.flags & DrawcallFlags_ShowMeshNormals) {
         Normals_shader& shader = impl->shaders.normals;
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(shader.program);
@@ -872,7 +892,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
 
         for (size_t i = 0; i < nmeshes; ++i) {
             Raw_mesh_instance const& mi = meshes[i];
-            Mesh_on_gpu& md = global_mesh_lookup(mi._meshid);
+            Mesh_on_gpu& md = storage.meshes.lookup(mi._meshid);
             gl::Uniform(shader.uModelMat, mi.transform);
             gl::Uniform(shader.uNormalMat, mi._normal_xform);
             gl::BindVertexArray(md.normal_vao);
@@ -962,7 +982,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
             // launch asynchronous request for this frame's pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(reader)]);
             glReadPixels(
-                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
             // synchrnously read *last frame's* pixel
             gl::BindBuffer(buffers.pbos[static_cast<size_t>(mapper)]);
@@ -983,9 +1003,9 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
             // bizzarely (e.g. because it is delayed one frame)
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-            GLubyte rgba[4]{};
+            GLubyte rgba[3]{};
             glReadPixels(
-                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, rgba);
 
             hittest_result.b0 = rgba[0];
             hittest_result.b1 = rgba[1];
@@ -1053,7 +1073,7 @@ osmv::Raw_drawcall_result osmv::Raw_renderer::draw(Raw_drawcall_params const& pa
     // edge-detected, and the rims are in screen-space, rather than world space (so they don't
     // "zoom out" as if they were "in the scene"). However, GPUs are fairly efficient at running
     // branchless kernel lookups over a screen, so it isn't as expensive as you think
-    if (params.flags & RawRendererFlags_DrawRims) {
+    if (params.flags & DrawcallFlags_DrawRims) {
         Edge_detection_shader& shader = impl->shaders.edge_detection_shader;
         gl::UseProgram(shader.p);
         gl::Uniform(shader.uModelMat, gl::identity_val);

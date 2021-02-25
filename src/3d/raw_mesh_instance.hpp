@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh_reference.hpp"
+#include "gpu_data_reference.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -24,6 +24,12 @@ namespace osmv {
             b{static_cast<unsigned char>(255.0f * v.b)},
             a{static_cast<unsigned char>(255.0f * v.a)} {
         }
+    };
+
+    struct Rgb24 final {
+        unsigned char r;
+        unsigned char g;
+        unsigned char b;
     };
 
     struct Passthrough_data final {
@@ -84,11 +90,9 @@ namespace osmv {
         //            use these channels to encode logical information (e.g. "an OpenSim component")
         //            into screen-space (e.g. "A pixel from an OpenSim component")
         //
-        //     - b:   unused (reserved)
-        //
-        //     - a:   rim alpha. Used to calculate how strongly (if any) rims should be drawn
+        //     - b:   rim alpha. Used to calculate how strongly (if any) rims should be drawn
         //            around the rendered geometry. Used for highlighting elements in the scene
-        Rgba32 _passthrough;
+        Rgb24 _passthrough;
 
         // INTERNAL: mesh ID: globally unique ID for the mesh vertices that should be rendered
         //
@@ -107,8 +111,18 @@ namespace osmv {
             _meshid{meshid} {
         }
 
+        template<typename Mat4x3, typename Rgba>
+        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference mesh, Texture_reference tex) noexcept :
+            transform{std::forward<Mat4x3>(_transform)},
+            _normal_xform{normal_matrix(transform)},
+            rgba{std::forward<Rgba>(_rgba)},
+            _passthrough{},
+            _meshid{mesh},
+            _diffuse_texture{tex} {
+        }
+
         void set_rim_alpha(unsigned char a) noexcept {
-            _passthrough.a = a;
+            _passthrough.b = a;
         }
 
         // set passthrough data

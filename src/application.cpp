@@ -6,7 +6,8 @@
 #include "osmv_config.hpp"
 #include "sdl_wrapper.hpp"
 #include "src/3d/gl.hpp"
-#include "src/3d/raw_renderer.hpp"
+#include "src/3d/model_drawlist_generator.hpp"
+#include "src/3d/scene_renderer.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
 
@@ -45,9 +46,10 @@
 
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
+using namespace osmv;
 
 // globals
-static osmv::Application* g_current_application = nullptr;
+osmv::Application* osmv::Application::gCurrent = nullptr;
 
 struct ImGuiContext;
 
@@ -256,202 +258,165 @@ static int highest_refresh_rate_display() {
     return highest_refresh_rate;
 }
 
-namespace {
-    struct Globally_allocated_mesh_storage final {
-        Globally_allocated_mesh_storage() {
-            // currently noop
-        }
-        Globally_allocated_mesh_storage(Globally_allocated_mesh_storage const&) = delete;
-        Globally_allocated_mesh_storage(Globally_allocated_mesh_storage&&) = delete;
-        Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage const&) = delete;
-        Globally_allocated_mesh_storage& operator=(Globally_allocated_mesh_storage&&) = delete;
-        ~Globally_allocated_mesh_storage() noexcept {
-            osmv::nuke_gpu_allocations();
-        }
-    };
-}
+class osmv::Application::Impl final {
+public:
+    // SDL's application-wide context (inits video subsystem etc.)
+    sdl::Context context;
 
-namespace osmv {
-    struct Application_impl final {
-        // SDL's application-wide context (inits video subsystem etc.)
-        sdl::Context context;
+    // SDL active window
+    sdl::Window window;
 
-        // SDL active window
-        sdl::Window window;
+    // SDL OpenGL context
+    sdl::GLContext gl;
 
-        // SDL OpenGL context
-        sdl::GLContext gl;
+    // the maximum num multisamples that the OpenGL backend supports
+    int max_samples = 1;
 
-        // Setup global mesh storage
-        Globally_allocated_mesh_storage global_mesh_storage;
+    // num multisamples that multisampled renderers should use
+    int samples = 1;
 
-        // the maximum num multisamples that the OpenGL backend supports
-        int max_samples = 1;
+    // ImGui application-wide context
+    igx::Context imgui_ctx;
 
-        // num multisamples that multisampled renderers should use
-        int samples = 1;
+    // ImGui SDL-specific initialization
+    igx::SDL2_Context imgui_sdl2_ctx;
 
-        // ImGui application-wide context
-        igx::Context imgui_ctx;
+    // ImGui OpenGL-specific initialization
+    igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
 
-        // ImGui SDL-specific initialization
-        igx::SDL2_Context imgui_sdl2_ctx;
+    // the current screen being drawn by the application
+    std::unique_ptr<Screen> current_screen = nullptr;
 
-        // ImGui OpenGL-specific initialization
-        igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
+    // the next screen that the application should show
+    //
+    // this is typically set when a screen calls `request_transition`
+    std::unique_ptr<Screen> requested_screen = nullptr;
 
-        // the current screen being drawn by the application
-        std::unique_ptr<Screen> current_screen = nullptr;
+    // flag that is set whenever a screen requests that the application should quit
+    bool should_quit = false;
 
-        // the next screen that the application should show
-        //
-        // this is typically set when a screen calls `request_transition`
-        std::unique_ptr<Screen> requested_screen = nullptr;
+    // flag indicating whether the UI should draw certain debug UI elements (e.g. FPS counter,
+    // debug overlays)
+    bool is_drawing_debug_ui = false;
 
-        // flag that is set whenever a screen requests that the application should quit
-        bool should_quit = false;
+    Impl() :
+        // initialize SDL library
+        context{SDL_INIT_VIDEO},
 
-        // flag indicating whether the UI should draw certain debug UI elements (e.g. FPS counter,
-        // debug overlays)
-        bool is_drawing_debug_ui = false;
+        // initialize minimal SDL Window with OpenGL 3.2 support
+        window{[]() {
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-        Application_impl() :
-            // initialize SDL library
-            context{SDL_INIT_VIDEO},
+            // careful about setting resolution, position, etc. - some people have *very* shitty
+            // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
+            // be <700 px high)
+            static constexpr char const* title = "osmv";
+            static constexpr int x = SDL_WINDOWPOS_CENTERED;
+            static constexpr int y = SDL_WINDOWPOS_CENTERED;
+            static constexpr int width = 800;
+            static constexpr int height = 600;
+            static constexpr Uint32 flags =
+                SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
-            // initialize minimal SDL Window with OpenGL 3.2 support
-            window{[]() {
-                OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-                OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-                OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-                OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            return sdl::CreateWindoww(title, x, y, width, height, flags);
+        }()},
 
-                // careful about setting resolution, position, etc. - some people have *very* shitty
-                // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
-                // be <700 px high)
-                static constexpr char const* title = "osmv";
-                static constexpr int x = SDL_WINDOWPOS_CENTERED;
-                static constexpr int y = SDL_WINDOWPOS_CENTERED;
-                static constexpr int width = 800;
-                static constexpr int height = 600;
-                static constexpr Uint32 flags =
-                    SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
+        // initialize GL context for the application window
+        gl{[this]() {
+            sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
-                return sdl::CreateWindoww(title, x, y, width, height, flags);
-            }()},
+            // enable the context
+            if (SDL_GL_MakeCurrent(window, gl) != 0) {
+                throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
+            }
 
-            // initialize GL context for the application window
-            gl{[this]() {
-                sdl::GLContext ctx = sdl::GL_CreateContext(window);
-
-                // enable the context
-                if (SDL_GL_MakeCurrent(window, gl) != 0) {
-                    throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
-                }
-
-                // enable vsync by default
-                //
-                // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
-                // on *constrained* systems (e.g. laptops, which the majority of users are using)
-                if (SDL_GL_SetSwapInterval(-1) != 0) {
-                    SDL_GL_SetSwapInterval(1);
-                }
-
-                // initialize GLEW
-                //
-                // effectively, enables the OpenGL API used by this application
-                if (auto err = glewInit(); err != GLEW_OK) {
-                    std::stringstream ss;
-                    ss << "glewInit() failed: ";
-                    ss << glewGetErrorString(err);
-                    throw std::runtime_error{ss.str()};
-                }
-
-                // depth testing used to ensure geometry overlaps correctly
-                glEnable(GL_DEPTH_TEST);
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-
-                // MSXAA is used to smooth out the model
-                glEnable(GL_MULTISAMPLE);
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-
-                // all vertices in the render are backface-culled
-                glEnable(GL_CULL_FACE);
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-
-                return ctx;
-            }()},
-
-            // find out the maximum number of samples the OpenGL backend supports
-            max_samples{get_max_multisamples()},
-
-            // set the number of samples multisampled renderers in osmv should use
-            samples{std::min(max_samples, 8)},
-
-            // initialize ImGui
-            imgui_ctx{},
-            imgui_sdl2_ctx{window, gl},
-            imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
-
-            // any other initialization fixups
-#ifndef NDEBUG
-            enable_opengl_debug_mode();
-            std::cerr << "OpenGL: " << glGetString(GL_VENDOR) << ", " << glGetString(GL_RENDERER) << "("
-                      << glGetString(GL_VERSION) << "), GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-#endif
-        }
-
-        void internal_start_render_loop(Application& app, std::unique_ptr<Screen> s) {
-            current_screen = std::move(s);
-
-            // main application draw loop (i.e. the "game loop" of this app)
+            // enable vsync by default
             //
-            // implemented an immediate GUI, rather than retained, which is
-            // inefficient but makes it easier to add new UI features.
-            while (true) {
-                // pump events
-                for (SDL_Event e; SDL_PollEvent(&e);) {
+            // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
+            // on *constrained* systems (e.g. laptops, which the majority of users are using)
+            if (SDL_GL_SetSwapInterval(-1) != 0) {
+                SDL_GL_SetSwapInterval(1);
+            }
 
-                    // QUIT: quit application
-                    if (e.type == SDL_QUIT) {
-                        return;
-                    }
+            // initialize GLEW
+            //
+            // effectively, enables the OpenGL API used by this application
+            if (auto err = glewInit(); err != GLEW_OK) {
+                std::stringstream ss;
+                ss << "glewInit() failed: ";
+                ss << glewGetErrorString(err);
+                throw std::runtime_error{ss.str()};
+            }
 
-                    // ImGui: feed event into ImGui
-                    ImGui_ImplSDL2_ProcessEvent(&e);
+            // depth testing used to ensure geometry overlaps correctly
+            glEnable(GL_DEPTH_TEST);
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
-                    // DEBUG MODE: toggled with F1
-                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {
-                        is_drawing_debug_ui = not is_drawing_debug_ui;
-                    }
+            // MSXAA is used to smooth out the model
+            glEnable(GL_MULTISAMPLE);
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
-                    // OpenGL DEBUG MODE: enabled (not toggled) with F2
-                    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
-                        std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
-                        ::enable_opengl_debug_mode();
-                    }
+            // all vertices in the render are backface-culled
+            glEnable(GL_CULL_FACE);
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
-                    // osmv::Screen: feed event into the currently-showing osmv screen
-                    current_screen->on_event(e);
+            return ctx;
+        }()},
 
-                    // osmv::Screen: handle any possible indirect side-effects the Screen's
-                    //               `on_event` handler may have had on the application state
-                    if (should_quit) {
-                        return;
-                    }
-                    if (requested_screen) {
-                        current_screen = std::move(requested_screen);
-                        continue;
-                    }
+        // find out the maximum number of samples the OpenGL backend supports
+        max_samples{get_max_multisamples()},
+
+        // set the number of samples multisampled renderers in osmv should use
+        samples{std::min(max_samples, 8)},
+
+        // initialize ImGui
+        imgui_ctx{},
+        imgui_sdl2_ctx{window, gl},
+        imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
+
+        // any other initialization fixups
+#ifndef NDEBUG
+        enable_opengl_debug_mode();
+        std::cerr << "OpenGL: " << glGetString(GL_VENDOR) << ", " << glGetString(GL_RENDERER) << "("
+                  << glGetString(GL_VERSION) << "), GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+#endif
+    }
+
+    void internal_start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+        current_screen = std::move(s);
+
+        // main application draw loop (i.e. the "game loop" of this app)
+        //
+        // implemented an immediate GUI, rather than retained, which is
+        // inefficient but makes it easier to add new UI features.
+        while (true) {
+            // pump events
+            for (SDL_Event e; SDL_PollEvent(&e);) {
+
+                // QUIT: quit application
+                if (e.type == SDL_QUIT) {
+                    return;
                 }
 
-#ifndef NDEBUG
-                // debug OpenGL: assert no OpenGL errors were induced by event handling
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+                // ImGui: feed event into ImGui
+                ImGui_ImplSDL2_ProcessEvent(&e);
 
-                // osmv::Screen: run `tick`
-                current_screen->tick();
+                // DEBUG MODE: toggled with F1
+                if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {
+                    is_drawing_debug_ui = not is_drawing_debug_ui;
+                }
+
+                // OpenGL DEBUG MODE: enabled (not toggled) with F2
+                if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
+                    std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
+                    ::enable_opengl_debug_mode();
+                }
+
+                // osmv::Screen: feed event into the currently-showing osmv screen
+                current_screen->on_event(e);
 
                 // osmv::Screen: handle any possible indirect side-effects the Screen's
                 //               `on_event` handler may have had on the application state
@@ -462,143 +427,160 @@ namespace osmv {
                     current_screen = std::move(requested_screen);
                     continue;
                 }
+            }
 
 #ifndef NDEBUG
-                // debug OpenGL: assert no OpenGL errors were induced by .tick()
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            // debug OpenGL: assert no OpenGL errors were induced by event handling
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-                // clear the window's framebuffer ready for a new frame to be drawn
-                gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // osmv::Screen: run `tick`
+            current_screen->tick();
 
-                // prepare ImGui for a new draw call (an implementation detail of ImGui)
-                ImGui_ImplOpenGL3_NewFrame();
-                ImGui_ImplSDL2_NewFrame(window);
-                ImGui::NewFrame();
+            // osmv::Screen: handle any possible indirect side-effects the Screen's
+            //               `on_event` handler may have had on the application state
+            if (should_quit) {
+                return;
+            }
+            if (requested_screen) {
+                current_screen = std::move(requested_screen);
+                continue;
+            }
 
-                ImGui::DockSpaceOverViewport(
-                    ImGui::GetMainViewport(),
-                    ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
+#ifndef NDEBUG
+            // debug OpenGL: assert no OpenGL errors were induced by .tick()
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
 
-                // osmv::Screen: call current screen's `draw` method
-                try {
-                    current_screen->draw();
-                } catch (std::bad_alloc const&) {
-                    throw;  // don't even try to handle this
-                } catch (...) {
-                    // if drawing the screen threw an exception, then we're potentially
-                    // kind of fucked, because OpenGL and ImGui might be in an intermediate
-                    // state (e.g. midway through drawing a window)
-                    //
-                    // to *try* and survive, clean up OpenGL and ImGui a little and finalize the
-                    // draw call *before* throwing, so that the application has a small
-                    // chance of potentially launching into a different screen (e.g. an
-                    // error screen)
+            // clear the window's framebuffer ready for a new frame to be drawn
+            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                    gl::UseProgram();
+            // prepare ImGui for a new draw call (an implementation detail of ImGui)
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplSDL2_NewFrame(window);
+            ImGui::NewFrame();
 
-                    imgui_sdl2_ogl2_ctx.reset(OSMV_GLSL_VERSION);
-                    imgui_sdl2_ctx.reset(window, gl);
-                    imgui_ctx.reset();
+            ImGui::DockSpaceOverViewport(
+                ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
 
-                    SDL_GL_SwapWindow(window);
+            // osmv::Screen: call current screen's `draw` method
+            try {
+                current_screen->draw();
+            } catch (std::bad_alloc const&) {
+                throw;  // don't even try to handle this
+            } catch (...) {
+                // if drawing the screen threw an exception, then we're potentially
+                // kind of fucked, because OpenGL and ImGui might be in an intermediate
+                // state (e.g. midway through drawing a window)
+                //
+                // to *try* and survive, clean up OpenGL and ImGui a little and finalize the
+                // draw call *before* throwing, so that the application has a small
+                // chance of potentially launching into a different screen (e.g. an
+                // error screen)
 
-                    throw;
-                }
-
-                // edge-case: the screen left its program bound. This can cause issues in the
-                //            ImGUI implementation.
                 gl::UseProgram();
 
-#ifndef NDEBUG
-                // debug OpenGL: assert no OpenGL errors were induced by .draw()
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+                imgui_sdl2_ogl2_ctx.reset(OSMV_GLSL_VERSION);
+                imgui_sdl2_ctx.reset(window, gl);
+                imgui_ctx.reset();
 
-                // NOTE: osmv::Screen side-effects:
-                //
-                // - The screen's `draw` method *may* have had indirect side-effects on the
-                //   application state
-                //
-                // - However, we finish rendering + swapping the full frame before handling those
-                //   side-effects, because ImGui might be in an intermediate state (e.g. it needs
-                //   finalizing) and because it might be handy to see the screen *just* before
-                //   some kind of transition
-
-                // draw FPS overlay in bottom-right: handy for dev
-                if (is_drawing_debug_ui) {
-                    char buf[16];
-                    double fps = static_cast<double>(ImGui::GetIO().Framerate);
-                    std::snprintf(buf, sizeof(buf), "%.0f", fps);
-                    sdl::Window_dimensions d = sdl::GetWindowSize(window);
-                    ImVec2 window_sims = {static_cast<float>(d.w), static_cast<float>(d.h)};
-                    ImVec2 font_dims = ImGui::CalcTextSize(buf);
-                    ImVec2 fps_pos = {window_sims.x - font_dims.x, window_sims.y - font_dims.y};
-                    ImGui::GetBackgroundDrawList()->AddText(fps_pos, 0xff0000ff, buf);
-                }
-
-                // ImGui: finalize ImGui rendering
-                ImGui::Render();
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-                if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-                    SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
-                    SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-                    ImGui::UpdatePlatformWindows();
-                    ImGui::RenderPlatformWindowsDefault();
-                    SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-                }
-
-                // swap the framebuffer frame onto the window, showing it to the user
-                //
-                // note: this can block on VSYNC, which will affect the timings
-                //       for software throttling
                 SDL_GL_SwapWindow(window);
 
+                throw;
+            }
+
+            // edge-case: the screen left its program bound. This can cause issues in the
+            //            ImGUI implementation.
+            gl::UseProgram();
+
 #ifndef NDEBUG
-                // debug OpenGL: assert no OpenGL errors induced by final draw steps
-                OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            // debug OpenGL: assert no OpenGL errors were induced by .draw()
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 #endif
 
-                // osmv::Screen: handle any possible indirect side-effects the Screen's
-                //               `on_event` handler may have had on the application state
-                if (should_quit) {
-                    return;
-                }
-                if (requested_screen) {
-                    current_screen = std::move(requested_screen);
-                    continue;
-                }
+            // NOTE: osmv::Screen side-effects:
+            //
+            // - The screen's `draw` method *may* have had indirect side-effects on the
+            //   application state
+            //
+            // - However, we finish rendering + swapping the full frame before handling those
+            //   side-effects, because ImGui might be in an intermediate state (e.g. it needs
+            //   finalizing) and because it might be handy to see the screen *just* before
+            //   some kind of transition
+
+            // draw FPS overlay in bottom-right: handy for dev
+            if (is_drawing_debug_ui) {
+                char buf[16];
+                double fps = static_cast<double>(ImGui::GetIO().Framerate);
+                std::snprintf(buf, sizeof(buf), "%.0f", fps);
+                sdl::Window_dimensions d = sdl::GetWindowSize(window);
+                ImVec2 window_sims = {static_cast<float>(d.w), static_cast<float>(d.h)};
+                ImVec2 font_dims = ImGui::CalcTextSize(buf);
+                ImVec2 fps_pos = {window_sims.x - font_dims.x, window_sims.y - font_dims.y};
+                ImGui::GetBackgroundDrawList()->AddText(fps_pos, 0xff0000ff, buf);
+            }
+
+            // ImGui: finalize ImGui rendering
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+                SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
+                SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+            }
+
+            // swap the framebuffer frame onto the window, showing it to the user
+            //
+            // note: this can block on VSYNC, which will affect the timings
+            //       for software throttling
+            SDL_GL_SwapWindow(window);
+
+#ifndef NDEBUG
+            // debug OpenGL: assert no OpenGL errors induced by final draw steps
+            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+#endif
+
+            // osmv::Screen: handle any possible indirect side-effects the Screen's
+            //               `on_event` handler may have had on the application state
+            if (should_quit) {
+                return;
+            }
+            if (requested_screen) {
+                current_screen = std::move(requested_screen);
+                continue;
             }
         }
+    }
 
-        void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
-            bool quit = false;
-            while (not quit) {
-                try {
-                    internal_start_render_loop(app, std::move(s));
-                    quit = true;
-                } catch (std::exception const& ex) {
-                    // if an exception is thrown all the way up here, print it
-                    // to the stdout/stderr (Linux/Mac users with decent consoles)
-                    // but also throw up a basic error message GUI (Windows users)
-                    s = std::make_unique<Error_screen>(ex);
-                }
+    void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+        bool quit = false;
+        while (not quit) {
+            try {
+                internal_start_render_loop(app, std::move(s));
+                quit = true;
+            } catch (std::exception const& ex) {
+                // if an exception is thrown all the way up here, print it
+                // to the stdout/stderr (Linux/Mac users with decent consoles)
+                // but also throw up a basic error message GUI (Windows users)
+                s = std::make_unique<Error_screen>(ex);
             }
         }
+    }
 
-        void request_transition(std::unique_ptr<osmv::Screen> s) {
-            requested_screen = std::move(s);
-        }
+    void request_transition(std::unique_ptr<osmv::Screen> s) {
+        requested_screen = std::move(s);
+    }
 
-        void request_quit() {
-            should_quit = true;
-        }
-    };
-}
+    void request_quit() {
+        should_quit = true;
+    }
+};
 
-osmv::Application::Application() : impl{new Application_impl{}} {
+osmv::Application::Application() : impl{new Application::Impl{}} {
 }
 
 osmv::Application::~Application() noexcept = default;
@@ -691,13 +673,4 @@ void osmv::Application::enable_vsync() {
 
 void osmv::Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
-}
-
-void osmv::set_current_application(Application* app) {
-    g_current_application = app;
-}
-
-osmv::Application& osmv::app() noexcept {
-    assert(g_current_application != nullptr);
-    return *g_current_application;
 }

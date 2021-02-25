@@ -38,17 +38,17 @@ namespace osmv {
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
 
-        bool on_event(Application& app, SDL_Event const& e) {
+        bool on_event(SDL_Event const& e) {
             // ESCAPE: go to splash screen
             if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-                app.request_screen_transition<osmv::Splash_screen>();
+                Application::current().request_screen_transition<osmv::Splash_screen>();
                 return true;
             }
 
             return false;
         }
 
-        void tick(Application& app) {
+        void tick() {
             // if there's an error, then the result came through (it's an error)
             // and this screen will just continuously show the error with no
             // recourse
@@ -61,7 +61,7 @@ namespace osmv {
             try {
                 if (result.wait_for(0ms) == std::future_status::ready) {
                     osmv::config::add_recent_file(path);
-                    app.request_screen_transition<Show_model_screen>(path, result.get().value());
+                    Application::current().request_screen_transition<Show_model_screen>(path, result.get().value());
                     return;
                 }
             } catch (std::exception const& ex) {
@@ -100,11 +100,11 @@ osmv::Loading_screen::~Loading_screen() noexcept {
 }
 
 bool osmv::Loading_screen::on_event(SDL_Event const& e) {
-    return impl->on_event(app(), e);
+    return impl->on_event(e);
 }
 
 void osmv::Loading_screen::tick() {
-    return impl->tick(app());
+    return impl->tick();
 }
 
 void osmv::Loading_screen::draw() {

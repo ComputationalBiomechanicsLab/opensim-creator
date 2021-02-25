@@ -12,34 +12,26 @@ namespace osmv {
     // guarantees (it's designed to be trivially constructable/copyable/movable
     // in-memory)
     template<typename T>
-    class Gpu_data_reference final {
-        using meshid_t = T;
-        static constexpr meshid_t senteniel = -1;
-        static constexpr meshid_t max_meshid = std::numeric_limits<meshid_t>::max();
+    class Gpu_data_reference {
+    public:
+        using value_type = T;
+        static constexpr value_type invalid_value = -1;
 
-        meshid_t id;
+    private:
+        value_type id;
 
     public:
-        static constexpr Gpu_data_reference invalid() noexcept {
-            return Gpu_data_reference{senteniel};
-        }
-
-        static constexpr Gpu_data_reference from_index(size_t idx) {
-            assert(idx < max_meshid);
-            return Gpu_data_reference{static_cast<meshid_t>(idx)};
-        }
-
-        constexpr Gpu_data_reference() noexcept : id{senteniel} {
+        constexpr Gpu_data_reference() noexcept : id{invalid_value} {
         }
 
         constexpr Gpu_data_reference(decltype(id) _id) noexcept : id{_id} {
         }
 
-        constexpr bool is_valid() const noexcept {
+        [[nodiscard]] constexpr bool is_valid() const noexcept {
             // the use of a negative senteniel interplays with sort logic very well,
             // because it ensures (for example) that invalid references cluster at
             // the start of a sequence, not (e.g.) in the middle
-            static_assert(senteniel < 0);
+            static_assert(invalid_value < 0);
             return id >= 0;
         }
 
@@ -59,12 +51,25 @@ namespace osmv {
             return id < other.id;
         }
 
-        constexpr size_t to_index() const {
+        [[nodiscard]] constexpr size_t to_index() const noexcept {
             assert(is_valid());
             return static_cast<size_t>(id);
         }
     };
 
-    using Mesh_reference = Gpu_data_reference<short>;
-    using Texture_reference = Gpu_data_reference<short>;
+    class Mesh_reference : public Gpu_data_reference<short> {
+    public:
+        [[nodiscard]] static constexpr Mesh_reference from_index(size_t idx) noexcept {
+            assert(idx < std::numeric_limits<value_type>::max());
+            return {static_cast<value_type>(idx)};
+        }
+    };
+
+    class Texture_reference : public Gpu_data_reference<short> {
+    public:
+        [[nodiscard]] static constexpr Texture_reference from_index(size_t idx) noexcept {
+            assert(idx < std::numeric_limits<value_type>::max());
+            return {static_cast<value_type>(idx)};
+        }
+    };
 }

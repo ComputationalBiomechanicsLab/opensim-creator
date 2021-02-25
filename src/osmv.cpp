@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
     // init an application instance ready for rendering
     osmv::Application app;
-    osmv::set_current_application(&app);
+    osmv::Application::set_current(&app);
 
     if (argc <= 0) {
         // no args: show splash screen

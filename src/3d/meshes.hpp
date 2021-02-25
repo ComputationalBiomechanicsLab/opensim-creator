@@ -38,6 +38,7 @@ namespace osmv {
 
     // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
     void unit_sphere_triangles(std::vector<Untextured_vert>& out);
+    std::vector<Untextured_vert> unit_sphere_triangles();
 
     // Returns triangles for a "unit" cylinder with `num_sides` sides.
     //
@@ -47,7 +48,8 @@ namespace osmv {
     // - top == [0.0f, 0.0f, -1.0f]
     // - bottom == [0.0f, 0.0f, +1.0f]
     // - (so the height is 2.0f, not 1.0f)
-    void unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untextured_vert>& out);
+    void unit_cylinder_triangles(size_t num_sides, std::vector<Untextured_vert>& out);
+    std::vector<Untextured_vert> unit_cylinder_triangles(size_t num_sides);
 
     // Returns triangles for a standard "simbody" cylinder
     //
@@ -62,11 +64,13 @@ namespace osmv {
     //     [0.0f, -1.0f, 0.0f]
     //
     // see simbody-visualizer.cpp::makeCylinder for my source material
-    void simbody_cylinder_triangles(std::vector<osmv::Untextured_vert>& out);
+    void simbody_cylinder_triangles(std::vector<Untextured_vert>& out);
+    std::vector<Untextured_vert> simbody_cylinder_triangles();
 
     // Returns triangles for a standard "Simbody" cube
     //
     // TODO: I have no idea what a Simbody cube is, the verts returned by this are
     // a pure guess
     void simbody_brick_triangles(std::vector<osmv::Untextured_vert>& out);
+    std::vector<Untextured_vert> simbody_brick_triangles();
 }

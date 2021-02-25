@@ -4,8 +4,10 @@
 #include "screen.hpp"
 #include "splash_screen.hpp"
 #include "src/3d/constants.hpp"
+#include "src/3d/gpu_cache.hpp"
 #include "src/3d/meshes.hpp"
 #include "src/3d/polar_camera.hpp"
+#include "src/3d/texture_storage.hpp"
 #include "src/algs.hpp"
 #include "src/application.hpp"
 #include "src/fd_simulation.hpp"
@@ -608,8 +610,9 @@ namespace osmv {
         osmv::State latest_state;
 
         Selected_component selected_component;
-        Model_viewer_widget model_viewer;
-        Model_viewer_widget model_viewer2;
+        Gpu_cache cache;
+        Model_viewer_widget model_viewer{cache};
+        Model_viewer_widget model_viewer2{cache};
         OpenSim::Component const* current_hover = nullptr;
 
         Coordinates_tab_data coords_tab;
@@ -618,7 +621,7 @@ namespace osmv {
         Muscles_tab_data muscles_tab;
         Outputs_tab_data outputs_tab;
 
-        Show_model_screen_impl(Application& app, std::filesystem::path _path, osmv::Model _model) :
+        Show_model_screen_impl(std::filesystem::path _path, osmv::Model _model) :
             model_path{std::move(_path)},
             model{std::move(_model)},
             latest_state{[this]() {
@@ -634,7 +637,7 @@ namespace osmv {
         }
 
         // handle top-level UI event (user click, user drag, etc.)
-        bool handle_event(Application& app, SDL_Event const& e) {
+        bool handle_event(SDL_Event const& e) {
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                 case SDLK_r: {
@@ -642,7 +645,7 @@ namespace osmv {
                     // CTRL + R: reload the model from scratch
                     SDL_Keymod km = SDL_GetModState();
                     if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                        app.request_screen_transition<Loading_screen>(model_path);
+                        Application::current().request_screen_transition<Loading_screen>(model_path);
                         return true;
                     }
 
@@ -664,7 +667,7 @@ namespace osmv {
                     }
                     break;
                 case SDLK_ESCAPE:
-                    app.request_screen_transition<Splash_screen>();
+                    Application::current().request_screen_transition<Splash_screen>();
                     return true;
                 case SDLK_c:
                     // clear selection
@@ -734,11 +737,11 @@ namespace osmv {
         }
 
         // draw a frame of the UI
-        void draw(Application& app) {
+        void draw() {
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
                     if (ImGui::MenuItem("Exit")) {
-                        app.request_quit_application();
+                        Application::current().request_quit_application();
                     }
                     ImGui::EndMenu();
                 }
@@ -750,12 +753,12 @@ namespace osmv {
                     {
                         static constexpr std::array<char const*, 8> aa_lvls = {
                             "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
-                        int samples_idx = lsb_index(app.samples());
-                        int max_samples_idx = lsb_index(app.max_samples());
+                        int samples_idx = lsb_index(Application::current().samples());
+                        int max_samples_idx = lsb_index(Application::current().max_samples());
                         assert(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
 
                         if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
-                            app.set_samples(1 << samples_idx);
+                            Application::current().set_samples(1 << samples_idx);
                         }
                     }
 
@@ -788,20 +791,20 @@ namespace osmv {
                     }
 
                     if (ImGui::Button("fullscreen")) {
-                        app.make_fullscreen();
+                        Application::current().make_fullscreen();
                     }
 
                     if (ImGui::Button("windowed")) {
-                        app.make_windowed();
+                        Application::current().make_windowed();
                     }
 
-                    if (not app.is_vsync_enabled()) {
+                    if (not Application::current().is_vsync_enabled()) {
                         if (ImGui::Button("enable vsync")) {
-                            app.enable_vsync();
+                            Application::current().enable_vsync();
                         }
                     } else {
                         if (ImGui::Button("disable vsync")) {
-                            app.disable_vsync();
+                            Application::current().disable_vsync();
                         }
                     }
 
@@ -1498,14 +1501,14 @@ namespace osmv {
 // screen PIMPL forwarding
 
 osmv::Show_model_screen::Show_model_screen(std::filesystem::path path, osmv::Model model) :
-    impl{new Show_model_screen_impl{app(), std::move(path), std::move(model)}} {
+    impl{new Show_model_screen_impl{std::move(path), std::move(model)}} {
 }
 osmv::Show_model_screen::~Show_model_screen() noexcept {
     delete impl;
 }
 
 bool osmv::Show_model_screen::on_event(SDL_Event const& e) {
-    return impl->handle_event(app(), e);
+    return impl->handle_event(e);
 }
 
 void osmv::Show_model_screen::tick() {
@@ -1513,5 +1516,5 @@ void osmv::Show_model_screen::tick() {
 }
 
 void osmv::Show_model_screen::draw() {
-    impl->draw(app());
+    impl->draw();
 }

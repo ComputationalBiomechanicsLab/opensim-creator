@@ -71,12 +71,17 @@ add_executable(osmv
     src/3d/meshes.cpp
     src/3d/texturing.hpp
     src/3d/texturing.cpp
-    src/3d/mesh_reference.hpp
+    src/3d/gpu_data_reference.hpp
     src/3d/raw_mesh_instance.hpp
+    src/3d/mesh_storage.hpp
+    src/3d/texture_storage.hpp
+    src/3d/gpu_storage.hpp
+    src/3d/gpu_cache.hpp
+    src/3d/gpu_cache.cpp
     src/3d/raw_drawlist.hpp
     src/3d/raw_drawlist.cpp
-    src/3d/raw_renderer.hpp
-    src/3d/raw_renderer.cpp
+    src/3d/scene_renderer.hpp
+    src/3d/backend.cpp
     src/3d/labelled_model_drawlist.hpp
     src/3d/model_drawlist_generator.hpp
     src/3d/model_drawlist_generator.cpp

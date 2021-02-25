@@ -59,20 +59,22 @@ namespace osmv {
         std::vector<fs::path> example_osims = find_example_osims();
         std::vector<config::Recent_file> recent_files = osmv::config::recent_files();
 
-        bool on_event(Application& app, SDL_Event const& e) {
+        bool on_event(SDL_Event const& e) {
             if (e.type == SDL_KEYDOWN) {
                 SDL_Keycode sym = e.key.keysym.sym;
 
                 // ESCAPE: quit application
                 if (sym == SDLK_ESCAPE) {
-                    app.request_quit_application();
+                    Application::current().request_quit_application();
                     return true;
                 }
             }
             return false;
         }
 
-        void draw(Application& app) {
+        void draw() {
+            Application& app = Application::current();
+
             // center the menu
             {
                 static constexpr int menu_width = 700;
@@ -200,9 +202,9 @@ osmv::Splash_screen::~Splash_screen() noexcept {
 }
 
 bool osmv::Splash_screen::on_event(SDL_Event const& e) {
-    return impl->on_event(app(), e);
+    return impl->on_event(e);
 }
 
 void osmv::Splash_screen::draw() {
-    impl->draw(app());
+    impl->draw();
 }

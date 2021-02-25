@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh_reference.hpp"
+#include "gpu_data_reference.hpp"
 #include "raw_mesh_instance.hpp"
 
 #include <vector>

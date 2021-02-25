@@ -2,11 +2,14 @@
 
 #include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gpu_storage.hpp"
 #include "src/3d/labelled_model_drawlist.hpp"
+#include "src/3d/mesh_storage.hpp"
 #include "src/3d/meshes.hpp"
 #include "src/3d/model_drawlist_generator.hpp"
 #include "src/3d/polar_camera.hpp"
-#include "src/3d/raw_renderer.hpp"
+#include "src/3d/scene_renderer.hpp"
+#include "src/3d/texture_storage.hpp"
 #include "src/3d/texturing.hpp"
 #include "src/application.hpp"
 #include "src/sdl_wrapper.hpp"
@@ -29,8 +32,8 @@ namespace {
 
     void generate_geometry(
         ModelViewerGeometryFlags flags,
+        Model_decoration_generator& generator,
         Labelled_model_drawlist& geometry,
-        Model_drawlist_generator& drawlist_generator,
         OpenSim::Model const& model,
         SimTK::State const& state) {
 
@@ -77,41 +80,7 @@ namespace {
             draw_flags |= ModelDrawlistGeneratorFlags_GenerateDynamicDecorations;
         }
 
-        drawlist_generator.generate(model, state, geometry, on_append, draw_flags);
-
-        // HACK: bodge the floor into the scene
-        if (flags & ModelViewerGeometryFlags_DrawFloor) {
-            static Texture_reference floor_tex = osmv::globally_store_texture(osmv::generate_chequered_floor_texture());
-            static Mesh_reference floor_verts = []() {
-                auto copy = osmv::shaded_textured_quad_verts;
-                for (Textured_vert& v : copy) {
-                    v.texcoord *= 200.0f;
-                }
-
-                return osmv::globally_allocate_mesh(copy.data(), copy.size());
-            }();
-            static glm::mat4 floor_model_mtx = []() {
-                glm::mat4 rv = glm::identity<glm::mat4>();
-
-                // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-                // floor down *slightly* to prevent Z fighting from planes rendered from the
-                // model itself (the contact planes, etc.)
-                rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
-                rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
-                rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
-
-                return rv;
-            }();
-            static Rgba32 floor_color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
-            static Raw_mesh_instance floor_mi{floor_model_mtx, floor_color, floor_verts};
-            floor_mi._diffuse_texture = floor_tex;
-
-            geometry.emplace_back(nullptr, floor_mi);
-        }
-
-        if (flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
-            geometry.optimize();
-        }
+        generator.generate(model, state, geometry, on_append, draw_flags);
     }
 
     void apply_standard_rim_coloring(
@@ -140,66 +109,66 @@ namespace {
     }
 }
 
-namespace osmv {
-    struct Model_viewer_widget_impl final {
-        Raw_renderer renderer;
-        Labelled_model_drawlist geometry;
-        Model_drawlist_generator drawlist_generator;
+struct osmv::Model_viewer_widget::Impl final {
+    Gpu_cache& cache;
+    Model_decoration_generator drawlist_generator;
+    Raw_renderer renderer;
+    Labelled_model_drawlist geometry;
 
-        int hovertest_x = -1;
-        int hovertest_y = -1;
-        OpenSim::Component const* hovered_component = nullptr;
-        Polar_camera camera;
-        glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
-        glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-        glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
-        glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
+    int hovertest_x = -1;
+    int hovertest_y = -1;
+    OpenSim::Component const* hovered_component = nullptr;
+    Polar_camera camera;
+    glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
+    glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
+    glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
-        ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
-        Raw_renderer_flags rendering_flags = RawRendererFlags_Default;
-        bool mouse_over_render = false;
+    ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
+    DrawcallFlags rendering_flags = RawRendererFlags_Default;
+    bool mouse_over_render = false;
 
-        Model_viewer_widget_impl() : renderer{Raw_renderer_config{100, 100, app().samples()}} {
+    Impl(Gpu_cache& _cache) :
+        cache{_cache},
+        drawlist_generator{cache},
+        renderer{Raw_renderer_config{100, 100, Application::current().samples()}} {
+    }
+
+    gl::Texture_2d& draw(DrawcallFlags flags) {
+        Raw_drawcall_params params;
+        params.passthrough_hittest_x = hovertest_x;
+        params.passthrough_hittest_y = hovertest_y;
+        params.view_matrix = camera.view_matrix();
+        params.projection_matrix = camera.projection_matrix(renderer.aspect_ratio());
+        params.view_pos = camera.pos();
+        params.light_pos = light_pos;
+        params.light_rgb = light_rgb;
+        params.background_rgba = background_rgba;
+        params.rim_rgba = rim_rgba;
+        params.flags = flags;
+        if (Application::current().is_in_debug_mode()) {
+            params.flags |= RawRendererFlags_DrawDebugQuads;
+        } else {
+            params.flags &= ~RawRendererFlags_DrawDebugQuads;
         }
 
-        gl::Texture_2d& draw(Raw_renderer_flags flags) {
-            Raw_drawcall_params params;
-            params.passthrough_hittest_x = hovertest_x;
-            params.passthrough_hittest_y = hovertest_y;
-            params.view_matrix = camera.view_matrix();
-            params.projection_matrix = camera.projection_matrix(renderer.aspect_ratio());
-            params.view_pos = camera.pos();
-            params.light_pos = light_pos;
-            params.light_rgb = light_rgb;
-            params.background_rgba = background_rgba;
-            params.rim_rgba = rim_rgba;
-            params.flags = flags;
-            if (app().is_in_debug_mode()) {
-                params.flags |= RawRendererFlags_DrawDebugQuads;
-            } else {
-                params.flags &= ~RawRendererFlags_DrawDebugQuads;
-            }
+        // perform draw call
+        Raw_drawcall_result result = renderer.draw(cache.storage, params, geometry.raw_drawlist());
 
-            // perform draw call
-            Raw_drawcall_result result = renderer.draw(params, geometry.raw_drawlist());
+        // post-draw: check if the hit-test passed
+        // TODO:: optimized indices are from the previous frame, which might
+        //        contain now-stale components
+        hovered_component = geometry.component_from_passthrough(result.passthrough_result);
 
-            // post-draw: check if the hit-test passed
-            // TODO:: optimized indices are from the previous frame, which might
-            //        contain now-stale components
-            hovered_component = geometry.component_from_passthrough(result.passthrough_result);
+        return result.texture;
+    }
+};
 
-            return result.texture;
-        }
-    };
-}
-
-osmv::Model_viewer_widget::Model_viewer_widget() : impl{new Model_viewer_widget_impl{}} {
+osmv::Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache) : impl{new Model_viewer_widget::Impl{cache}} {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
-osmv::Model_viewer_widget::~Model_viewer_widget() noexcept {
-    delete impl;
-}
+osmv::Model_viewer_widget::~Model_viewer_widget() noexcept = default;
 
 bool osmv::Model_viewer_widget::is_moused_over() const noexcept {
     return impl->mouse_over_render;
@@ -213,7 +182,7 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
     if (e.type == SDL_KEYDOWN) {
         switch (e.key.keysym.sym) {
         case SDLK_w:
-            impl->rendering_flags ^= RawRendererFlags_WireframeMode;
+            impl->rendering_flags ^= DrawcallFlags_WireframeMode;
             return true;
         }
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -288,9 +257,9 @@ void osmv::Model_viewer_widget::draw(
 
                 ImGui::Text("Graphical Options:");
 
-                ImGui::CheckboxFlags("wireframe mode", &impl->rendering_flags, RawRendererFlags_WireframeMode);
-                ImGui::CheckboxFlags("show normals", &impl->rendering_flags, RawRendererFlags_ShowMeshNormals);
-                ImGui::CheckboxFlags("draw rims", &impl->rendering_flags, RawRendererFlags_DrawRims);
+                ImGui::CheckboxFlags("wireframe mode", &impl->rendering_flags, DrawcallFlags_WireframeMode);
+                ImGui::CheckboxFlags("show normals", &impl->rendering_flags, DrawcallFlags_ShowMeshNormals);
+                ImGui::CheckboxFlags("draw rims", &impl->rendering_flags, DrawcallFlags_DrawRims);
                 ImGui::CheckboxFlags("hit testing", &impl->rendering_flags, RawRendererFlags_PerformPassthroughHitTest);
                 ImGui::CheckboxFlags(
                     "optimized hit testing",
@@ -372,7 +341,31 @@ void osmv::Model_viewer_widget::draw(
         if (ImGui::BeginChild("##child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
 
             // generate OpenSim scene geometry
-            generate_geometry(geometry_flags, impl->geometry, impl->drawlist_generator, model, state);
+            generate_geometry(geometry_flags, impl->drawlist_generator, impl->geometry, model, state);
+
+            // HACK: add floor in
+            {
+                glm::mat4 model_mtx = []() {
+                    glm::mat4 rv = glm::identity<glm::mat4>();
+
+                    // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                    // floor down *slightly* to prevent Z fighting from planes rendered from the
+                    // model itself (the contact planes, etc.)
+                    rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
+                    rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                    rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+
+                    return rv;
+                }();
+
+                Rgba32 color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
+                impl->geometry.emplace_back(
+                    nullptr, model_mtx, color, impl->cache.floor_quad, impl->cache.chequered_texture);
+            }
+
+            if (geometry_flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
+                impl->geometry.optimize();
+            }
 
             // perform screen-specific geometry fixups
             if (geometry_flags & ModelViewerGeometryFlags_CanOnlyInteractWithMuscles) {
@@ -423,7 +416,7 @@ void osmv::Model_viewer_widget::draw(
                 });
             }
 
-            if (impl->rendering_flags & RawRendererFlags_DrawRims) {
+            if (impl->rendering_flags & DrawcallFlags_DrawRims) {
                 apply_standard_rim_coloring(impl->geometry, *hovered, *selected);
             }
 
@@ -431,8 +424,8 @@ void osmv::Model_viewer_widget::draw(
             auto dims = ImGui::GetContentRegionAvail();
 
             if (dims.x >= 1 and dims.y >= 1) {
-                impl->renderer.change_config(
-                    Raw_renderer_config{static_cast<int>(dims.x), static_cast<int>(dims.y), app().samples()});
+                impl->renderer.change_config(Raw_renderer_config{
+                    static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples()});
 
                 gl::Texture_2d& render = impl->draw(impl->rendering_flags);
 

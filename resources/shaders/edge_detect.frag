@@ -36,7 +36,7 @@ void main(void) {
         vec2 offset = uRimThickness * offsets[i];
         vec2 coord = TexCoord + offset;
 
-        rimStrength += kernel[i] * texture(uSampler0, coord).a;
+        rimStrength += kernel[i] * texture(uSampler0, coord).b;
     }
 
     // the kernel:

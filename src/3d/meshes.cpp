@@ -96,6 +96,12 @@ void osmv::unit_sphere_triangles(std::vector<osmv::Untextured_vert>& out) {
     }
 }
 
+std::vector<osmv::Untextured_vert> osmv::unit_sphere_triangles() {
+    std::vector<Untextured_vert> rv;
+    unit_sphere_triangles(rv);
+    return rv;
+}
+
 // Returns triangles for a "unit" cylinder with `num_sides` sides.
 //
 // Here, "unit" means:
@@ -170,6 +176,12 @@ void osmv::unit_cylinder_triangles(size_t num_sides, std::vector<osmv::Untexture
             out.push_back({p2, n2});
         }
     }
+}
+
+std::vector<osmv::Untextured_vert> osmv::unit_cylinder_triangles(size_t num_sides) {
+    std::vector<Untextured_vert> rv;
+    unit_cylinder_triangles(num_sides, rv);
+    return rv;
 }
 
 // Returns triangles for a "simbody" cylinder with `num_sides` sides.
@@ -261,6 +273,12 @@ void osmv::simbody_cylinder_triangles(std::vector<osmv::Untextured_vert>& out) {
     }
 }
 
+std::vector<osmv::Untextured_vert> osmv::simbody_cylinder_triangles() {
+    std::vector<Untextured_vert> rv;
+    simbody_cylinder_triangles(rv);
+    return rv;
+}
+
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
 // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
 static constexpr std::array<osmv::Textured_vert, 36> shaded_textured_cube_verts = {{
@@ -314,4 +332,10 @@ void osmv::simbody_brick_triangles(std::vector<osmv::Untextured_vert>& out) {
     for (Textured_vert v : shaded_textured_cube_verts) {
         out.push_back({v.pos, v.normal});
     }
+}
+
+std::vector<osmv::Untextured_vert> osmv::simbody_brick_triangles() {
+    std::vector<Untextured_vert> rv;
+    simbody_brick_triangles(rv);
+    return rv;
 }
