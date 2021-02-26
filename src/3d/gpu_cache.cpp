@@ -13,9 +13,6 @@
 #include <vector>
 
 osmv::Gpu_cache::Gpu_cache() :
-    storage{},
-    filepath2mesh{},
-
     simbody_sphere{storage.meshes.allocate(unit_sphere_triangles())},
     simbody_cylinder{storage.meshes.allocate(simbody_cylinder_triangles())},
     simbody_cube{storage.meshes.allocate(simbody_brick_triangles())},
