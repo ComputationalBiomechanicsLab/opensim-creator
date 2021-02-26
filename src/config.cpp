@@ -1,6 +1,6 @@
 #include "config.hpp"
 
-#include "os.hpp"
+#include "src/utils/os.hpp"
 
 #include <toml.hpp>
 

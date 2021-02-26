@@ -1,11 +1,10 @@
 ﻿#include "application.hpp"
 
-#include "config.hpp"
-#include "fd_simulation.hpp"
-#include "opensim_wrapper.hpp"
-#include "os.hpp"
+#include "src/config.hpp"
+#include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/utils/os.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
@@ -19,6 +18,8 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+
+using namespace osmv;
 
 static const char usage[] = R"(usage: osmv [--help] [fd] MODEL.osim
 )";
@@ -96,15 +97,15 @@ int main(int argc, char** argv) {
     }
 
     // init an application instance ready for rendering
-    osmv::Application app;
-    osmv::Application::set_current(&app);
+    Application app;
+    Application::set_current(&app);
 
     if (argc <= 0) {
         // no args: show splash screen
-        app.start_render_loop<osmv::Splash_screen>();
+        app.start_render_loop<Splash_screen>();
     } else {
         // args: load args as osim files
-        app.start_render_loop<osmv::Loading_screen>(argv[0]);
+        app.start_render_loop<Loading_screen>(argv[0]);
     }
 
     return EXIT_SUCCESS;

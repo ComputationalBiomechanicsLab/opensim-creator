@@ -26,8 +26,8 @@ namespace osmv {
 
         void on_mouse_motion(float aspect_ratio, float dx, float dy) noexcept;
 
-        glm::mat4 view_matrix() const noexcept;
-        glm::mat4 projection_matrix(float aspect_ratio) const noexcept;
-        glm::vec3 pos() const noexcept;
+        [[nodiscard]] glm::mat4 view_matrix() const noexcept;
+        [[nodiscard]] glm::mat4 projection_matrix(float aspect_ratio) const noexcept;
+        [[nodiscard]] glm::vec3 pos() const noexcept;
     };
 }

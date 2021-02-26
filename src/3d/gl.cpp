@@ -22,8 +22,9 @@ void gl::CompileShader(Shader& sh) {
 
     GLint log_len = 0;
     glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &log_len);
+    assert(log_len >= 0);
 
-    std::vector<GLchar> errmsg(log_len);
+    std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetShaderInfoLog(sh, log_len, &log_len, errmsg.data());
 
     std::stringstream ss;
@@ -46,7 +47,9 @@ void gl::LinkProgram(gl::Program& prog) {
     GLint log_len = 0;
     glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &log_len);
 
-    std::vector<GLchar> errmsg(log_len);
+    assert(log_len >= 0);
+
+    std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetProgramInfoLog(prog, static_cast<GLsizei>(errmsg.size()), nullptr, errmsg.data());
 
     std::stringstream ss;
@@ -66,12 +69,12 @@ std::string gl::slurp(std::filesystem::path const& path) {
     return ss.str();
 }
 
+static std::string to_string(GLubyte const* err_string) {
+    return std::string{reinterpret_cast<char const*>(err_string)};
+}
+
 // asserts there are no current OpenGL errors (globally)
 void gl::assert_no_errors(char const* file, int line, char const* func) {
-    static auto to_string = [](GLubyte const* err_string) {
-        return std::string{reinterpret_cast<char const*>(err_string)};
-    };
-
     GLenum err = glGetError();
     if (err == GL_NO_ERROR) {
         return;

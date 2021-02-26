@@ -1,14 +1,15 @@
 #include "opengl_test_screen.hpp"
 
-#include "splash_screen.hpp"
 #include "src/3d/gl.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
+#include "src/screens/splash_screen.hpp"
 
 #include <imgui.h>
 
 #include <array>
-#include <vector>
+
+using namespace osmv;
 
 namespace {
     struct Plain_color_shader final {
@@ -48,47 +49,42 @@ namespace {
     }};
 }
 
-namespace osmv {
-    struct Opengl_test_screen_impl final {
-        std::vector<std::string> demos = {"hello triangle"};
-        size_t demo_shown = 0;
+struct Opengl_test_screen::Impl final {
+    std::array<std::string, 1> demos = {"hello triangle"};
+    size_t demo_shown = 0;
 
-        struct Hello_triangle_impl {
-            Plain_color_shader shader;
-            gl::Array_bufferT<Basic_vert> vbo{triangle};
-            gl::Vertex_array vao = Plain_color_shader::create_vao(vbo);
-            float rgb[3]{1.0f, 0.0f, 0.0f};
-        } hellotriangle;
-    };
+    struct Hello_triangle_demo {
+        Plain_color_shader shader;
+        gl::Array_bufferT<Basic_vert> vbo{triangle};
+        gl::Vertex_array vao = Plain_color_shader::create_vao(vbo);
+        float rgb[3]{1.0f, 0.0f, 0.0f};
+
+        void draw() {
+            if (ImGui::Begin("editor")) {
+                ImGui::ColorEdit3("rgb", rgb);
+                ImGui::End();
+            }
+
+            gl::UseProgram(shader.p);
+            gl::Uniform(shader.uModelMat, gl::identity_val);
+            gl::Uniform(shader.uViewMat, gl::identity_val);
+            gl::Uniform(shader.uProjMat, gl::identity_val);
+            gl::Uniform(shader.uRgb, rgb);
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
+            gl::BindVertexArray();
+        }
+    } hellotriangle;
+};
+
+Opengl_test_screen::Opengl_test_screen() : impl{new Impl{}} {
 }
 
-static void draw_demo0_hellotriangle(osmv::Opengl_test_screen_impl& impl) {
-    auto& hti = impl.hellotriangle;
-    Plain_color_shader& shader = hti.shader;
-
-    if (ImGui::Begin("editor")) {
-        ImGui::ColorEdit3("rgb", hti.rgb);
-        ImGui::End();
-    }
-
-    gl::UseProgram(shader.p);
-    gl::Uniform(shader.uModelMat, gl::identity_val);
-    gl::Uniform(shader.uViewMat, gl::identity_val);
-    gl::Uniform(shader.uProjMat, gl::identity_val);
-    gl::Uniform(shader.uRgb, hti.rgb);
-    gl::BindVertexArray(hti.vao);
-    gl::DrawArrays(GL_TRIANGLES, 0, hti.vbo.sizei());
-    gl::BindVertexArray();
-}
-
-osmv::Opengl_test_screen::Opengl_test_screen() : impl{new Opengl_test_screen_impl{}} {
-}
-
-osmv::Opengl_test_screen::~Opengl_test_screen() noexcept {
+Opengl_test_screen::~Opengl_test_screen() noexcept {
     delete impl;
 }
 
-bool osmv::Opengl_test_screen::on_event(SDL_Event const& e) {
+bool Opengl_test_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
         Application::current().request_screen_transition<osmv::Splash_screen>();
         return true;
@@ -96,10 +92,10 @@ bool osmv::Opengl_test_screen::on_event(SDL_Event const& e) {
     return false;
 }
 
-void osmv::Opengl_test_screen::draw() {
+void Opengl_test_screen::draw() {
     switch (impl->demo_shown) {
     case 0:
-        draw_demo0_hellotriangle(*impl);
+        impl->hellotriangle.draw();
         break;
     default:
         assert(false && "invalid demo index selected: this shouldn't happen");

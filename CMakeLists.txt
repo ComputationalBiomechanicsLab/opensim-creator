@@ -56,37 +56,38 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osmv_config.hpp.in" "osmv_config
 add_executable(osmv
     ${CMAKE_BINARY_DIR}/osmv_config.hpp
 
-    src/os.hpp
-    src/os.cpp
-    src/sdl_wrapper.hpp
-    src/sdl_wrapper.cpp
-    src/shims.hpp
-    src/algs.hpp
-    src/config.hpp
-    src/config.cpp
-
     src/3d/gl.hpp
     src/3d/gl.cpp
-    src/3d/meshes.hpp
-    src/3d/meshes.cpp
+    src/3d/textured_vert.hpp
+    src/3d/untextured_vert.hpp
+    src/3d/mesh_generation.hpp
+    src/3d/mesh_generation.cpp
     src/3d/texturing.hpp
     src/3d/texturing.cpp
     src/3d/gpu_data_reference.hpp
-    src/3d/raw_mesh_instance.hpp
+    src/3d/mesh_instance.hpp
     src/3d/mesh_storage.hpp
     src/3d/texture_storage.hpp
+    src/3d/shader_cache.hpp
     src/3d/gpu_storage.hpp
     src/3d/gpu_cache.hpp
     src/3d/gpu_cache.cpp
-    src/3d/raw_drawlist.hpp
-    src/3d/raw_drawlist.cpp
-    src/3d/scene_renderer.hpp
-    src/3d/backend.cpp
-    src/3d/labelled_model_drawlist.hpp
-    src/3d/model_drawlist_generator.hpp
-    src/3d/model_drawlist_generator.cpp
+    src/3d/drawlist.hpp
+    src/3d/drawlist.cpp
+    src/3d/render_target.hpp
+    src/3d/renderer.hpp
     src/3d/polar_camera.hpp
     src/3d/polar_camera.cpp
+    src/3d/backend.cpp
+
+    src/opensim_bindings/simbody_geometry_visitor.hpp
+    src/opensim_bindings/simbody_geometry_visitor.cpp
+    src/opensim_bindings/lambda_geometry_visitor.hpp
+    src/opensim_bindings/model_drawlist.hpp
+    src/opensim_bindings/model_drawlist_generator.hpp
+    src/opensim_bindings/model_drawlist_generator.cpp
+    src/opensim_bindings/fd_simulation.hpp
+    src/opensim_bindings/fd_simulation.cpp
 
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
@@ -111,10 +112,17 @@ add_executable(osmv
     src/screens/splash_screen.hpp
     src/screens/splash_screen.cpp
 
-    src/opensim_wrapper.hpp
-    src/opensim_wrapper.cpp
-    src/fd_simulation.hpp
-    src/fd_simulation.cpp
+    src/utils/geometry.hpp
+    src/utils/bitwise_algs.hpp
+    src/utils/concurrency.hpp
+    src/utils/shims.hpp
+    src/utils/sdl_wrapper.hpp
+    src/utils/sdl_wrapper.cpp
+    src/utils/os.hpp
+    src/utils/os.cpp
+
+    src/config.hpp
+    src/config.cpp
     src/application.hpp
     src/application.cpp
     src/osmv.cpp

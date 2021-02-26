@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl.hpp"
+#include "src/3d/gl.hpp"
 
 namespace osmv {
     gl::Texture_2d generate_chequered_floor_texture();

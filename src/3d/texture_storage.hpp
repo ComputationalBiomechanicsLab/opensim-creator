@@ -1,8 +1,6 @@
 #pragma once
 
-#include "gpu_data_reference.hpp"
-
-#include <memory>
+#include "src/3d/gpu_data_reference.hpp"
 
 namespace gl {
     struct Texture_2d;
@@ -10,14 +8,18 @@ namespace gl {
 
 namespace osmv {
     class Texture_storage final {
-        class Impl;
-        std::unique_ptr<Impl> impl;
+        struct Impl;
+        Impl* impl;
 
     public:
         Texture_storage();
+        Texture_storage(Texture_storage const&) = delete;
+        Texture_storage(Texture_storage&&) = delete;
+        Texture_storage& operator=(Texture_storage const&) = delete;
+        Texture_storage& operator=(Texture_storage&&) = delete;
         ~Texture_storage() noexcept;
 
-        gl::Texture_2d& lookup(Texture_reference) const;
-        Texture_reference allocate(gl::Texture_2d&&);
+        [[nodiscard]] gl::Texture_2d& lookup(Texture_reference) const;
+        [[nodiscard]] Texture_reference allocate(gl::Texture_2d&&);
     };
 }

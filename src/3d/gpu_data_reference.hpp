@@ -21,9 +21,6 @@ namespace osmv {
         value_type id;
 
     public:
-        constexpr Gpu_data_reference() noexcept : id{invalid_value} {
-        }
-
         constexpr Gpu_data_reference(decltype(id) _id) noexcept : id{_id} {
         }
 
@@ -63,6 +60,10 @@ namespace osmv {
             assert(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
         }
+
+        [[nodiscard]] static constexpr Mesh_reference invalid() noexcept {
+            return Mesh_reference{invalid_value};
+        }
     };
 
     class Texture_reference : public Gpu_data_reference<short> {
@@ -70,6 +71,10 @@ namespace osmv {
         [[nodiscard]] static constexpr Texture_reference from_index(size_t idx) noexcept {
             assert(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
+        }
+
+        [[nodiscard]] static constexpr Texture_reference invalid() noexcept {
+            return Texture_reference{invalid_value};
         }
     };
 }

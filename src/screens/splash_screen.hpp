@@ -1,14 +1,13 @@
 #pragma once
 
-#include "screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
 
 namespace osmv {
-    struct Splash_screen_impl;
-
     class Splash_screen final : public Screen {
-        Splash_screen_impl* impl;
+        struct Impl;
+        Impl* impl;
 
     public:
         Splash_screen();

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "raw_mesh_instance.hpp"
+#include "src/3d/mesh_instance.hpp"
 
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 #include <cstddef>
-#include <memory>
 
 namespace gl {
     struct Texture_2d;
@@ -15,9 +15,10 @@ namespace gl {
 namespace osmv {
     struct Untextured_vert;
     struct Textured_vert;
-    class Raw_drawlist;
+    class Drawlist;
     struct Mesh_on_gpu;
     struct Gpu_storage;
+    class Render_target;
 }
 
 namespace sdl {
@@ -28,12 +29,6 @@ namespace sdl {
 // this API is designed with performance and power in mind, not convenience. Use a downstream
 // renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
 namespace osmv {
-
-    struct Raw_renderer_config final {
-        int w;
-        int h;
-        int samples;
-    };
 
     using DrawcallFlags = int;
     enum DrawcallFlags_ {
@@ -79,23 +74,19 @@ namespace osmv {
         int passthrough_hittest_y;
     };
 
-    struct Raw_drawcall_result final {
-        gl::Texture_2d& texture;
-        Passthrough_data passthrough_result;
-    };
-
-    class Raw_renderer final {
-        class Impl;
-        std::unique_ptr<Impl> impl;
+    class Renderer final {
+        struct Impl;
+        Impl* impl;
 
     public:
-        Raw_renderer(Raw_renderer_config const&);
-        ~Raw_renderer() noexcept;
+        Renderer();
+        Renderer(Renderer const&) = delete;
+        Renderer(Renderer&&) = delete;
+        Renderer& operator=(Renderer const&) = delete;
+        Renderer& operator=(Renderer&&) = delete;
+        ~Renderer() noexcept;
 
-        void change_config(Raw_renderer_config const&);
-        glm::vec2 dimensions() const noexcept;
-        float aspect_ratio() const noexcept;
-
-        Raw_drawcall_result draw(Gpu_storage const&, Raw_drawcall_params const&, Raw_drawlist const&);
+        [[nodiscard]] Passthrough_data
+            draw(Gpu_storage const&, Raw_drawcall_params const&, Drawlist const&, Render_target& out);
     };
 }

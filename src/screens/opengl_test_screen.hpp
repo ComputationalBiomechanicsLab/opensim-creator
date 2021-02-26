@@ -1,14 +1,13 @@
 #pragma once
 
-#include "screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
 
 namespace osmv {
-    struct Opengl_test_screen_impl;
-
     class Opengl_test_screen final : public Screen {
-        Opengl_test_screen_impl* impl;
+        struct Impl;
+        Impl* impl;
 
     public:
         Opengl_test_screen();

@@ -1,16 +1,13 @@
 #pragma once
 
+#include "src/utils/geometry.hpp"
+
 #include <cassert>
 #include <memory>
 #include <utility>
 
 namespace osmv {
     class Screen;
-    class Rendering_system;
-    class Model_decoration_generator;
-}
-namespace osmv {
-    struct Application_impl;
 }
 
 // application: top-level application state
@@ -20,18 +17,6 @@ namespace osmv {
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
 namespace osmv {
-    // custom events that OSMV may push into the SDL event queue
-    enum OsmvCustomEvent {
-        // number of MSXAA samples changed - implementations should check if they need to
-        // reallocate any render buffers
-        OsmvCustomEvent_SamplesChanged,
-    };
-
-    struct Window_dimensions final {
-        int w;
-        int h;
-    };
-
     class Application final {
         static Application* gCurrent;
 
@@ -39,11 +24,11 @@ namespace osmv {
         std::unique_ptr<Impl> impl;
 
     public:
-        static void set_current(Application* ptr) {
+        static void set_current(Application* ptr) noexcept {
             gCurrent = ptr;
         }
 
-        static Application& current() noexcept {
+        [[nodiscard]] static Application& current() noexcept {
             assert(gCurrent != nullptr);
             return *gCurrent;
         }
@@ -71,29 +56,20 @@ namespace osmv {
 
         void request_quit_application();
 
-        // dimensions of the main application window in pixels
-        Window_dimensions window_dimensions() const noexcept;
-
-        float window_aspect_ratio() const noexcept {
-            auto [w, h] = window_dimensions();
-            return static_cast<float>(w) / static_cast<float>(h);
-        }
-
-        // move mouse relative to the window (origin in top-left)
-        void move_mouse_to(int x, int y);
+        [[nodiscard]] Dimensions<int> window_dimensions() const noexcept;
 
         // returns the number of samples (MSXAA) that multisampled renderers should use
-        int samples() const noexcept;
+        [[nodiscard]] int samples() const noexcept;
 
         // returns the maximum number of samples (MSXAA) that the OpenGL backend supports
-        int max_samples() const noexcept;
+        [[nodiscard]] int max_samples() const noexcept;
 
         // set the number of samples (MSXAA) that multisampled renderers should use
         void set_samples(int);
 
         // returns true if the application is rendering in debug mode (i.e. whether
         // downstream rendererers should also render debug info)
-        bool is_in_debug_mode() const noexcept;
+        [[nodiscard]] bool is_in_debug_mode() const noexcept;
 
         // makes the application window fullscreen
         void make_fullscreen();
@@ -101,7 +77,7 @@ namespace osmv {
         // makes the application window windowed (as opposed to fullscreen)
         void make_windowed();
 
-        bool is_vsync_enabled() const noexcept;
+        [[nodiscard]] bool is_vsync_enabled() const noexcept;
 
         void enable_vsync();
 

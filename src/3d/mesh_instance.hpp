@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpu_data_reference.hpp"
+#include "src/3d/gpu_data_reference.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -18,7 +18,7 @@ namespace osmv {
 
         Rgba32() = default;
 
-        Rgba32(glm::vec4 const& v) :
+        constexpr Rgba32(glm::vec4 const& v) noexcept :
             r{static_cast<unsigned char>(255.0f * v.r)},
             g{static_cast<unsigned char>(255.0f * v.g)},
             b{static_cast<unsigned char>(255.0f * v.b)},
@@ -36,13 +36,13 @@ namespace osmv {
         unsigned char b0;
         unsigned char b1;
 
-        static constexpr Passthrough_data from_u16(uint16_t v) noexcept {
+        [[nodiscard]] static constexpr Passthrough_data from_u16(uint16_t v) noexcept {
             unsigned char b0 = v & 0xff;
             unsigned char b1 = (v >> 8) & 0xff;
             return Passthrough_data{b0, b1};
         }
 
-        constexpr uint16_t to_u16() const noexcept {
+        [[nodiscard]] constexpr uint16_t to_u16() const noexcept {
             uint16_t rv = b0;
             rv |= static_cast<uint16_t>(b1) << 8;
             return rv;
@@ -50,7 +50,7 @@ namespace osmv {
     };
 
     template<typename Mtx>
-    static glm::mat3 normal_matrix(Mtx&& m) {
+    static constexpr glm::mat3 normal_matrix(Mtx&& m) noexcept {
         glm::mat3 top_left{m};
         return glm::inverse(glm::transpose(top_left));
     }
@@ -59,7 +59,7 @@ namespace osmv {
     //
     // this struct is fairly complicated and densely packed because it is *exactly* what
     // will be copied to the GPU at runtime. Size + alignment can matter *a lot*.
-    struct alignas(32) Raw_mesh_instance final {
+    struct alignas(16) Mesh_instance final {
         // transforms mesh vertices into scene worldspace
         glm::mat4x3 transform;
 
@@ -103,16 +103,18 @@ namespace osmv {
         Texture_reference _diffuse_texture;
 
         template<typename Mat4x3, typename Rgba>
-        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid) noexcept :
+        constexpr Mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid) noexcept :
             transform{std::forward<Mat4x3>(_transform)},
             _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},
             _passthrough{},
-            _meshid{meshid} {
+            _meshid{meshid},
+            _diffuse_texture{Texture_reference::invalid()} {
         }
 
         template<typename Mat4x3, typename Rgba>
-        Raw_mesh_instance(Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference mesh, Texture_reference tex) noexcept :
+        constexpr Mesh_instance(
+            Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference mesh, Texture_reference tex) noexcept :
             transform{std::forward<Mat4x3>(_transform)},
             _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},
@@ -121,7 +123,7 @@ namespace osmv {
             _diffuse_texture{tex} {
         }
 
-        void set_rim_alpha(unsigned char a) noexcept {
+        constexpr void set_rim_alpha(unsigned char a) noexcept {
             _passthrough.b = a;
         }
 
@@ -129,12 +131,12 @@ namespace osmv {
         //
         // note: wherever the scene *isn't* rendered, black (0x000000) is encoded, so users of
         //       this should treat 0x000000 as "reserved"
-        void set_passthrough_data(Passthrough_data pd) noexcept {
+        constexpr void set_passthrough_data(Passthrough_data pd) noexcept {
             _passthrough.r = pd.b0;
             _passthrough.g = pd.b1;
         }
 
-        Passthrough_data passthrough_data() const noexcept {
+        [[nodiscard]] constexpr Passthrough_data passthrough_data() const noexcept {
             return {_passthrough.r, _passthrough.g};
         }
     };

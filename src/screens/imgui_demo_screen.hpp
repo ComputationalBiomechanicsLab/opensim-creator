@@ -1,6 +1,6 @@
 #pragma once
 
-#include "screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
 

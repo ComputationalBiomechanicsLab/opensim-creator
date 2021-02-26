@@ -1,15 +1,14 @@
 #include "application.hpp"
 
-#include "algs.hpp"
-#include "config.hpp"
-#include "os.hpp"
 #include "osmv_config.hpp"
-#include "sdl_wrapper.hpp"
 #include "src/3d/gl.hpp"
-#include "src/3d/model_drawlist_generator.hpp"
-#include "src/3d/scene_renderer.hpp"
+#include "src/3d/renderer.hpp"
+#include "src/config.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
+#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/os.hpp"
+#include "src/utils/sdl_wrapper.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>
@@ -258,7 +257,7 @@ static int highest_refresh_rate_display() {
     return highest_refresh_rate;
 }
 
-class osmv::Application::Impl final {
+class Application::Impl final {
 public:
     // SDL's application-wide context (inits video subsystem etc.)
     sdl::Context context;
@@ -570,53 +569,40 @@ public:
             }
         }
     }
-
-    void request_transition(std::unique_ptr<osmv::Screen> s) {
-        requested_screen = std::move(s);
-    }
-
-    void request_quit() {
-        should_quit = true;
-    }
 };
 
-osmv::Application::Application() : impl{new Application::Impl{}} {
+Application::Application() : impl{new Impl{}} {
 }
 
-osmv::Application::~Application() noexcept = default;
+Application::~Application() noexcept = default;
 
-void osmv::Application::start_render_loop(std::unique_ptr<Screen> s) {
+void Application::start_render_loop(std::unique_ptr<Screen> s) {
     impl->start_render_loop(*this, std::move(s));
 }
 
-void osmv::Application::request_screen_transition(std::unique_ptr<osmv::Screen> s) {
-    impl->request_transition(std::move(s));
+void Application::request_screen_transition(std::unique_ptr<Screen> s) {
+    impl->requested_screen = std::move(s);
 }
 
-void osmv::Application::request_quit_application() {
-    impl->request_quit();
+void Application::request_quit_application() {
+    impl->should_quit = true;
 }
 
 // dimensions of the main application window in pixels
-osmv::Window_dimensions osmv::Application::window_dimensions() const noexcept {
+Dimensions<int> Application::window_dimensions() const noexcept {
     auto [w, h] = sdl::GetWindowSize(impl->window);
-    return Window_dimensions{w, h};
+    return {w, h};
 }
 
-// move mouse relative to the window (origin in top-left)
-void osmv::Application::move_mouse_to(int x, int y) {
-    SDL_WarpMouseInWindow(impl->window, x, y);
-}
-
-int osmv::Application::samples() const noexcept {
+int Application::samples() const noexcept {
     return impl->samples;
 }
 
-int osmv::Application::max_samples() const noexcept {
+int Application::max_samples() const noexcept {
     return impl->max_samples;
 }
 
-void osmv::Application::set_samples(int s) {
+void Application::set_samples(int s) {
     if (s <= 0) {
         throw std::runtime_error{"tried to set number of samples to <= 0"};
     }
@@ -631,33 +617,26 @@ void osmv::Application::set_samples(int s) {
     }
 
     impl->samples = s;
-
-    // push a SamplesChanged event into the event queue so that downstream screens can change any
-    // internal renderers/buffers to match
-    SDL_Event e;
-    e.type = SDL_USEREVENT;
-    e.user.code = OsmvCustomEvent_SamplesChanged;
-    SDL_PushEvent(&e);
 }
 
-bool osmv::Application::is_in_debug_mode() const noexcept {
+bool Application::is_in_debug_mode() const noexcept {
     return impl->is_drawing_debug_ui;
 }
 
-void osmv::Application::make_fullscreen() {
+void Application::make_fullscreen() {
     SDL_SetWindowFullscreen(impl->window, SDL_WINDOW_FULLSCREEN);
 }
 
-void osmv::Application::make_windowed() {
+void Application::make_windowed() {
     SDL_SetWindowFullscreen(impl->window, 0);
 }
 
-bool osmv::Application::is_vsync_enabled() const noexcept {
+bool Application::is_vsync_enabled() const noexcept {
     // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
     return SDL_GL_GetSwapInterval() != 0;
 }
 
-void osmv::Application::enable_vsync() {
+void Application::enable_vsync() {
     // try using adaptive vsync
     if (SDL_GL_SetSwapInterval(-1) == 0) {
         return;
@@ -671,6 +650,6 @@ void osmv::Application::enable_vsync() {
     // otherwise, setting vsync isn't supported by the system
 }
 
-void osmv::Application::disable_vsync() {
+void Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
 }

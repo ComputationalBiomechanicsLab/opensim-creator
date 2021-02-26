@@ -2,8 +2,6 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace OpenSim {
     class Model;
     class Component;
@@ -14,37 +12,22 @@ namespace SimTK {
 }
 
 namespace osmv {
-    class Polar_camera;
     struct Gpu_cache;
 }
 
 namespace osmv {
-    using ModelViewerGeometryFlags = int;
-    enum ModelViewerGeometryFlags_ {
-        ModelViewerGeometryFlags_None = 0,
-        ModelViewerGeometryFlags_DrawDynamicDecorations = 1 << 0,
-        ModelViewerGeometryFlags_DrawStaticDecorations = 1 << 1,
-        ModelViewerGeometryFlags_CanInteractWithDynamicDecorations = 1 << 2,
-        ModelViewerGeometryFlags_CanInteractWithStaticDecorations = 1 << 3,
-        ModelViewerGeometryFlags_CanOnlyInteractWithMuscles = 1 << 4,
-        ModelViewerGeometryFlags_DrawFloor = 1 << 5,
-        ModelViewerGeometryFlags_OptimizeDrawOrder = 1 << 6,
-
-        ModelViewerGeometryFlags_Default =
-            ModelViewerGeometryFlags_DrawDynamicDecorations | ModelViewerGeometryFlags_DrawStaticDecorations |
-            ModelViewerGeometryFlags_CanInteractWithDynamicDecorations |
-            ModelViewerGeometryFlags_CanOnlyInteractWithMuscles | ModelViewerGeometryFlags_DrawFloor |
-            ModelViewerGeometryFlags_OptimizeDrawOrder
+    using ModelViewerWidgetFlags = int;
+    enum ModelViewerWidgetFlags_ {
+        ModelViewerWidgetFlags_None = 0,
+        ModelViewerWidgetFlags_CanOnlyInteractWithMuscles = 1 << 0,
     };
 
     class Model_viewer_widget final {
         struct Impl;
-        std::unique_ptr<Impl> impl;
+        Impl* impl;
 
     public:
-        ModelViewerGeometryFlags geometry_flags = ModelViewerGeometryFlags_Default;
-
-        Model_viewer_widget(Gpu_cache&);
+        Model_viewer_widget(Gpu_cache&, ModelViewerWidgetFlags = ModelViewerWidgetFlags_None);
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;

@@ -1,26 +1,27 @@
 #include "error_screen.hpp"
 
-#include "splash_screen.hpp"
 #include "src/application.hpp"
+#include "src/screens/splash_screen.hpp"
 
 #include <imgui.h>
 
+#include <stdexcept>
 #include <string>
 
-namespace osmv {
-    struct Error_screen_impl final {
-        std::string msg;
-    };
+using namespace osmv;
+
+struct Error_screen::Impl final {
+    std::string msg;
+};
+
+Error_screen::Error_screen(std::exception const& ex) : impl{new Impl{ex.what()}} {
 }
 
-osmv::Error_screen::Error_screen(std::exception const& ex) : impl{new Error_screen_impl{ex.what()}} {
-}
-
-osmv::Error_screen::~Error_screen() noexcept {
+Error_screen::~Error_screen() noexcept {
     delete impl;
 }
 
-bool osmv::Error_screen::on_event(SDL_Event const& e) {
+bool Error_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
         Application::current().request_screen_transition<Splash_screen>();
         return true;
@@ -28,7 +29,7 @@ bool osmv::Error_screen::on_event(SDL_Event const& e) {
     return false;
 }
 
-void osmv::Error_screen::draw() {
+void Error_screen::draw() {
     if (ImGui::Begin("fatal exception")) {
         ImGui::Text("The application threw an exception with the following message:");
         ImGui::Dummy(ImVec2{0.0f, 10.0f});

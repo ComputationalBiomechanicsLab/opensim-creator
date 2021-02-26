@@ -1,27 +1,30 @@
 #include "model_viewer_widget.hpp"
 
-#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gpu_cache.hpp"
 #include "src/3d/gpu_storage.hpp"
-#include "src/3d/labelled_model_drawlist.hpp"
+#include "src/3d/mesh_generation.hpp"
+#include "src/3d/mesh_instance.hpp"
 #include "src/3d/mesh_storage.hpp"
-#include "src/3d/meshes.hpp"
-#include "src/3d/model_drawlist_generator.hpp"
 #include "src/3d/polar_camera.hpp"
-#include "src/3d/scene_renderer.hpp"
+#include "src/3d/render_target.hpp"
+#include "src/3d/renderer.hpp"
 #include "src/3d/texture_storage.hpp"
 #include "src/3d/texturing.hpp"
 #include "src/application.hpp"
-#include "src/sdl_wrapper.hpp"
+#include "src/constants.hpp"
+#include "src/opensim_bindings/model_drawlist.hpp"
+#include "src/opensim_bindings/model_drawlist_generator.hpp"
+#include "src/utils/sdl_wrapper.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 
-namespace {
-    using namespace osmv;
+using namespace osmv;
 
+namespace {
     using ModelViewerRecoloring = int;
     enum ModelViewerRecoloring_ {
         ModelViewerRecoloring_None = 0,
@@ -30,61 +33,21 @@ namespace {
         ModelViewerRecoloring_COUNT,
     };
 
-    void generate_geometry(
-        ModelViewerGeometryFlags flags,
-        Model_decoration_generator& generator,
-        Labelled_model_drawlist& geometry,
-        OpenSim::Model const& model,
-        SimTK::State const& state) {
+    using ModelViewerGeometryFlags = int;
+    enum ModelViewerGeometryFlags_ {
+        ModelViewerGeometryFlags_None = 0,
+        ModelViewerGeometryFlags_DrawDynamicDecorations = 1 << 0,
+        ModelViewerGeometryFlags_DrawStaticDecorations = 1 << 1,
+        ModelViewerGeometryFlags_DrawFloor = 1 << 2,
+        ModelViewerGeometryFlags_OptimizeDrawOrder = 1 << 3,
 
-        // iterate over all components in the OpenSim model, keeping a few things in mind:
-        //
-        // - Anything in the component tree *might* render geometry
-        //
-        // - For selection logic, we only (currently) care about certain high-level components,
-        //   like muscles
-        //
-        // - Pretend the component tree traversal is implementation-defined because OpenSim's
-        //   implementation of component-tree walking is a bit of a clusterfuck. At time of
-        //   writing, it's a breadth-first recursive descent
-        //
-        // - Components of interest, like muscles, might not render their geometry - it might be
-        //   delegated to a subcomponent
-        //
-        // So this algorithm assumes that the list iterator is arbitrary, but always returns
-        // *something* in a tree that has the current model as a root. So, for each component that
-        // pops out of `getComponentList`, crawl "up" to the root. If we encounter something
-        // interesting (e.g. a `Muscle`) then we tag the geometry against that component, rather
-        // than the component that is rendering.
-
-        geometry.clear();
-
-        auto on_append =
-            [&](osmv::ModelDrawlistOnAppendFlags f, OpenSim::Component const*& c, osmv::Raw_mesh_instance&) {
-                if (f & osmv::ModelDrawlistOnAppendFlags_IsStatic and
-                    not(flags & ModelViewerGeometryFlags_CanInteractWithStaticDecorations)) {
-                    c = nullptr;
-                }
-
-                if (f & ModelDrawlistOnAppendFlags_IsDynamic and
-                    not(flags & ModelViewerGeometryFlags_CanInteractWithDynamicDecorations)) {
-                    c = nullptr;
-                }
-            };
-
-        ModelDrawlistGeneratorFlags draw_flags = ModelDrawlistGeneratorFlags_None;
-        if (flags & ModelViewerGeometryFlags_DrawStaticDecorations) {
-            draw_flags |= ModelDrawlistGeneratorFlags_GenerateStaticDecorations;
-        }
-        if (flags & ModelViewerGeometryFlags_DrawDynamicDecorations) {
-            draw_flags |= ModelDrawlistGeneratorFlags_GenerateDynamicDecorations;
-        }
-
-        generator.generate(model, state, geometry, on_append, draw_flags);
-    }
+        ModelViewerGeometryFlags_Default =
+            ModelViewerGeometryFlags_DrawDynamicDecorations | ModelViewerGeometryFlags_DrawStaticDecorations |
+            ModelViewerGeometryFlags_DrawFloor | ModelViewerGeometryFlags_OptimizeDrawOrder
+    };
 
     void apply_standard_rim_coloring(
-        Labelled_model_drawlist& drawlist,
+        Model_drawlist& drawlist,
         OpenSim::Component const* hovered = nullptr,
         OpenSim::Component const* selected = nullptr) {
 
@@ -94,7 +57,7 @@ namespace {
             selected = reinterpret_cast<OpenSim::Component const*>(-1);
         }
 
-        drawlist.for_each([selected, hovered](OpenSim::Component const* owner, Raw_mesh_instance& mi) {
+        drawlist.for_each([selected, hovered](OpenSim::Component const* owner, Mesh_instance& mi) {
             unsigned char rim_alpha;
             if (owner == selected) {
                 rim_alpha = 255;
@@ -111,9 +74,9 @@ namespace {
 
 struct osmv::Model_viewer_widget::Impl final {
     Gpu_cache& cache;
-    Model_decoration_generator drawlist_generator;
-    Raw_renderer renderer;
-    Labelled_model_drawlist geometry;
+    Render_target render_target{100, 100, Application::current().samples()};
+    Renderer renderer;
+    Model_drawlist geometry;
 
     int hovertest_x = -1;
     int hovertest_y = -1;
@@ -126,12 +89,12 @@ struct osmv::Model_viewer_widget::Impl final {
 
     ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
     DrawcallFlags rendering_flags = RawRendererFlags_Default;
+    ModelViewerGeometryFlags geom_flags = ModelViewerGeometryFlags_Default;
+    ModelViewerWidgetFlags user_flags = ModelViewerWidgetFlags_None;
+
     bool mouse_over_render = false;
 
-    Impl(Gpu_cache& _cache) :
-        cache{_cache},
-        drawlist_generator{cache},
-        renderer{Raw_renderer_config{100, 100, Application::current().samples()}} {
+    Impl(Gpu_cache& _cache, ModelViewerWidgetFlags _user_flags) : cache{_cache}, user_flags{_user_flags} {
     }
 
     gl::Texture_2d& draw(DrawcallFlags flags) {
@@ -139,7 +102,7 @@ struct osmv::Model_viewer_widget::Impl final {
         params.passthrough_hittest_x = hovertest_x;
         params.passthrough_hittest_y = hovertest_y;
         params.view_matrix = camera.view_matrix();
-        params.projection_matrix = camera.projection_matrix(renderer.aspect_ratio());
+        params.projection_matrix = camera.projection_matrix(render_target.aspect_ratio());
         params.view_pos = camera.pos();
         params.light_pos = light_pos;
         params.light_rgb = light_rgb;
@@ -153,28 +116,29 @@ struct osmv::Model_viewer_widget::Impl final {
         }
 
         // perform draw call
-        Raw_drawcall_result result = renderer.draw(cache.storage, params, geometry.raw_drawlist());
+        Passthrough_data passthrough = renderer.draw(cache.storage, params, geometry.raw_drawlist(), render_target);
 
         // post-draw: check if the hit-test passed
         // TODO:: optimized indices are from the previous frame, which might
         //        contain now-stale components
-        hovered_component = geometry.component_from_passthrough(result.passthrough_result);
+        hovered_component = geometry.component_from_passthrough(passthrough);
 
-        return result.texture;
+        return render_target.main();
     }
 };
 
-osmv::Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache) : impl{new Model_viewer_widget::Impl{cache}} {
+Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache, ModelViewerWidgetFlags flags) :
+    impl{new Impl{cache, flags}} {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
-osmv::Model_viewer_widget::~Model_viewer_widget() noexcept = default;
+Model_viewer_widget::~Model_viewer_widget() noexcept = default;
 
-bool osmv::Model_viewer_widget::is_moused_over() const noexcept {
+bool Model_viewer_widget::is_moused_over() const noexcept {
     return impl->mouse_over_render;
 }
 
-bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
+bool Model_viewer_widget::on_event(const SDL_Event& e) {
     if (not(impl->mouse_over_render or e.type == SDL_MOUSEBUTTONUP)) {
         return false;
     }
@@ -204,7 +168,7 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
             return true;
         }
     } else if (e.type == SDL_MOUSEMOTION) {
-        glm::vec2 d = impl->renderer.dimensions();
+        glm::vec2 d = impl->render_target.dimensions();
         float aspect_ratio = d.x / d.y;
         float dx = static_cast<float>(e.motion.xrel) / d.x;
         float dy = static_cast<float>(e.motion.yrel) / d.y;
@@ -220,7 +184,7 @@ bool osmv::Model_viewer_widget::on_event(const SDL_Event& e) {
     return false;
 }
 
-void osmv::Model_viewer_widget::draw(
+void Model_viewer_widget::draw(
     char const* panel_name,
     OpenSim::Model const& model,
     SimTK::State const& state,
@@ -235,23 +199,13 @@ void osmv::Model_viewer_widget::draw(
                 ImGui::Text("Selection logic:");
 
                 ImGui::CheckboxFlags(
-                    "coerce selection to muscle", &geometry_flags, ModelViewerGeometryFlags_CanOnlyInteractWithMuscles);
+                    "coerce selection to muscle", &impl->user_flags, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles);
 
                 ImGui::CheckboxFlags(
-                    "can interact with static geometry",
-                    &geometry_flags,
-                    ModelViewerGeometryFlags_CanInteractWithStaticDecorations);
+                    "draw dynamic geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawDynamicDecorations);
 
                 ImGui::CheckboxFlags(
-                    "can interact with dynamic geometry",
-                    &geometry_flags,
-                    ModelViewerGeometryFlags_CanInteractWithDynamicDecorations);
-
-                ImGui::CheckboxFlags(
-                    "draw dynamic geometry", &geometry_flags, ModelViewerGeometryFlags_DrawDynamicDecorations);
-
-                ImGui::CheckboxFlags(
-                    "draw static geometry", &geometry_flags, ModelViewerGeometryFlags_DrawStaticDecorations);
+                    "draw static geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawStaticDecorations);
 
                 ImGui::Separator();
 
@@ -266,9 +220,9 @@ void osmv::Model_viewer_widget::draw(
                     &impl->rendering_flags,
                     RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
                 ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
-                ImGui::CheckboxFlags("draw floor", &geometry_flags, ModelViewerGeometryFlags_DrawFloor);
+                ImGui::CheckboxFlags("draw floor", &impl->geom_flags, ModelViewerGeometryFlags_DrawFloor);
                 ImGui::CheckboxFlags(
-                    "optimize draw order", &geometry_flags, ModelViewerGeometryFlags_OptimizeDrawOrder);
+                    "optimize draw order", &impl->geom_flags, ModelViewerGeometryFlags_OptimizeDrawOrder);
 
                 ImGui::EndMenu();
             }
@@ -341,7 +295,8 @@ void osmv::Model_viewer_widget::draw(
         if (ImGui::BeginChild("##child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
 
             // generate OpenSim scene geometry
-            generate_geometry(geometry_flags, impl->drawlist_generator, impl->geometry, model, state);
+            impl->geometry.clear();
+            generate_decoration_drawlist(model, state, model.getDisplayHints(), impl->cache, impl->geometry);
 
             // HACK: add floor in
             {
@@ -363,14 +318,14 @@ void osmv::Model_viewer_widget::draw(
                     nullptr, model_mtx, color, impl->cache.floor_quad, impl->cache.chequered_texture);
             }
 
-            if (geometry_flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
+            if (impl->geom_flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
                 impl->geometry.optimize();
             }
 
             // perform screen-specific geometry fixups
-            if (geometry_flags & ModelViewerGeometryFlags_CanOnlyInteractWithMuscles) {
+            if (impl->user_flags & ModelViewerWidgetFlags_CanOnlyInteractWithMuscles) {
                 impl->geometry.for_each(
-                    [&model](OpenSim::Component const*& associated_component, Raw_mesh_instance const&) {
+                    [&model](OpenSim::Component const*& associated_component, Mesh_instance const&) {
                         // for this screen specifically, the "owner"s should be fixed up to point to
                         // muscle objects, rather than direct (e.g. GeometryPath) objects
                         OpenSim::Component const* c = associated_component;
@@ -389,7 +344,7 @@ void osmv::Model_viewer_widget::draw(
             }
 
             if (impl->recoloring == ModelViewerRecoloring_Strain) {
-                impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -403,7 +358,7 @@ void osmv::Model_viewer_widget::draw(
             }
 
             if (impl->recoloring == ModelViewerRecoloring_Length) {
-                impl->geometry.for_each([&state](OpenSim::Component const* c, Raw_mesh_instance& mi) {
+                impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
                         return;
@@ -424,8 +379,8 @@ void osmv::Model_viewer_widget::draw(
             auto dims = ImGui::GetContentRegionAvail();
 
             if (dims.x >= 1 and dims.y >= 1) {
-                impl->renderer.change_config(Raw_renderer_config{
-                    static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples()});
+                impl->render_target.reconfigure(
+                    static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples());
 
                 gl::Texture_2d& render = impl->draw(impl->rendering_flags);
 

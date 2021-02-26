@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raw_drawlist.hpp"
+#include "src/3d/drawlist.hpp"
 
 #include <cstddef>
 #include <stdexcept>
@@ -11,22 +11,12 @@ namespace OpenSim {
 }
 
 namespace osmv {
-    struct Model_drawlist_entry_reference final {
-        OpenSim::Component const*& component;
-        Raw_mesh_instance& mesh_instance;
-
-        Model_drawlist_entry_reference(
-            OpenSim::Component const*& _component, Raw_mesh_instance& _mesh_instance) noexcept :
-            component{_component},
-            mesh_instance{_mesh_instance} {
-        }
-    };
 
     // geometry generated from an OpenSim model + SimTK state pair
-    class Labelled_model_drawlist final {
+    class Model_drawlist final {
 
         // these two are 1:1 associated
-        Raw_drawlist drawlist;
+        Drawlist drawlist;
         std::vector<OpenSim::Component const*> associated_components;
 
     public:
@@ -36,7 +26,7 @@ namespace osmv {
         }
 
         template<typename... Args>
-        Model_drawlist_entry_reference emplace_back(OpenSim::Component const* c, Args&&... args) {
+        Mesh_instance& emplace_back(OpenSim::Component const* c, Args&&... args) {
             size_t idx = associated_components.size();
 
             if (idx >= std::numeric_limits<uint16_t>::max()) {
@@ -47,8 +37,8 @@ namespace osmv {
             // this is safe because of the above assert
             uint16_t passthrough_id = static_cast<uint16_t>(idx + 1);
 
-            OpenSim::Component const*& component = associated_components.emplace_back(c);
-            Raw_mesh_instance& mesh_instance = drawlist.emplace_back(std::forward<Args>(args)...);
+            associated_components.emplace_back(c);
+            Mesh_instance& mesh_instance = drawlist.emplace_back(std::forward<Args>(args)...);
 
             // encode index+1 into the passthrough data, so that:
             //
@@ -63,7 +53,7 @@ namespace osmv {
             // rather than "information, which is zero"
             mesh_instance.set_passthrough_data(Passthrough_data::from_u16(passthrough_id));
 
-            return {component, mesh_instance};
+            return mesh_instance;
         }
 
         OpenSim::Component const* component_from_passthrough(Passthrough_data d) {
@@ -76,7 +66,7 @@ namespace osmv {
             // emplace-back ensures this
             assert(drawlist.size() == associated_components.size());
 
-            drawlist.for_each([&](Raw_mesh_instance& mi) {
+            drawlist.for_each([&](Mesh_instance& mi) {
                 uint16_t id = mi.passthrough_data().to_u16();
                 assert(id != 0);  // emplace-back ensures this
                 f(associated_components[id - 1], mi);
@@ -97,7 +87,7 @@ namespace osmv {
             drawlist.optimize();
         }
 
-        Raw_drawlist const& raw_drawlist() const noexcept {
+        Drawlist const& raw_drawlist() const noexcept {
             return drawlist;
         }
     };

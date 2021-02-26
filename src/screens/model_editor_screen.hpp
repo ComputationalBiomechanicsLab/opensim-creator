@@ -1,14 +1,13 @@
 #pragma once
 
-#include "screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
 
 namespace osmv {
-    struct Model_editor_screen_impl;
-
     class Model_editor_screen final : public Screen {
-        Model_editor_screen_impl* impl;
+        struct Impl;
+        Impl* impl;
 
     public:
         Model_editor_screen();

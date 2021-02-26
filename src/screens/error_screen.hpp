@@ -1,16 +1,16 @@
 #pragma once
 
-#include "screen.hpp"
+#include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
+
 #include <stdexcept>
 
 // blank screen that shows the exception message in-UI
 namespace osmv {
-    struct Error_screen_impl;
-
     class Error_screen final : public Screen {
-        Error_screen_impl* impl;
+        struct Impl;
+        Impl* impl;
 
     public:
         Error_screen(std::exception const& ex);
