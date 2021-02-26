@@ -18,11 +18,11 @@ endif()
 
 get_property(OSMV_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
-set(OSMV_USE_LINTER OFF CACHE BOOL "enable/disable running `clang-tidy` (linter) while building")
+set(OSMV_USE_CLANG_TIDY OFF CACHE BOOL "enable/disable running `clang-tidy` (linter) while building")
 set(OSMV_USE_IWYU OFF CACHE BOOL "enable/disable running `iwyu` (include-what-you-use) while building")
-set(OSMV_IWYU_PATH "iwyu" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
+set(OSMV_IWYU_PATH "include-what-you-use" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
 set(OSMV_REPO_PROVIDER "https://github.com" CACHE STRING "URL (or local path, if you setup your mirrors properly) to a git repo provider for external projects")
-set(OSMV_ENABLE_ASSERTS OFF CACHE BOOL "enable asserts, even if building a release build")
+set(OSMV_FORCE_ASSERTS_ENABLED OFF CACHE BOOL "enable asserts, even if building a release build")
 set(OSMV_USE_ASAN OFF CACHE BOOL "enable address sanitizer: useful for spotting leaks when debugging")
 
 if(${OSMV_USING_MODERN_CMAKE})
@@ -38,6 +38,13 @@ if(UNIX AND NOT APPLE)
     endif()
 endif()
 
+if(OSMV_USE_IWYU)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${OSMV_IWYU_PATH};-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;")
+endif()
+
+if(OSMV_USE_CLANG_TIDY)
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+endif()
 
 
 # --------------- dependency management ----------------- #
@@ -204,7 +211,7 @@ target_compile_options(osmv PRIVATE
     # older CMakes do not support C++17 config
     $<$<NOT:$<BOOL:${OSMV_USING_MODERN_CMAKE}>>:-std=c++17>
 )
-if(OSMV_ENABLE_ASSERTS)
+if(OSMV_FORCE_ASSERTS_ENABLED)
     # MSVC
     string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
@@ -216,11 +223,7 @@ set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED YES
     EXPORT_COMPILE_COMMANDS ON  # needed by clang-tidy
-    CLANG_TIDY $<${OSMV_USE_LINTER}:"clang-tidy">
 )
-if(OSMV_USE_IWYU)
-    set_target_properties(osmv PROPERTIES INCLUDE_WHAT_YOU_USE "${OSMV_IWYU_PATH}")
-endif()
 if(LINUX)
     # Linux RPATH:
     #     - at installation time, Linux install dir is:

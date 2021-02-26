@@ -8,7 +8,9 @@
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
+#include "src/utils/geometry.hpp"
 
+#include <GL/glew.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <imgui.h>
@@ -17,7 +19,6 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;

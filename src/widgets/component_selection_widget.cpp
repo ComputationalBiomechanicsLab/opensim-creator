@@ -1,7 +1,14 @@
 #include "component_selection_widget.hpp"
 
+#include <OpenSim/Common/AbstractProperty.h>
+#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ComponentSocket.h>
 #include <imgui.h>
+
+#include <string>
+#include <vector>
 
 void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::Component const** selected) {
     if (not*selected) {

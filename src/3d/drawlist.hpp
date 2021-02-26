@@ -1,8 +1,9 @@
 #pragma once
 
-#include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/mesh_instance.hpp"
 
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 namespace osmv {

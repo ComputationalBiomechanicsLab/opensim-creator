@@ -2,27 +2,19 @@
 
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
-#include "src/3d/mesh_generation.hpp"
-#include "src/3d/polar_camera.hpp"
-#include "src/3d/texture_storage.hpp"
 #include "src/application.hpp"
-#include "src/constants.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
-#include "src/screens/screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
-#include "src/utils/sdl_wrapper.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 
-#include <OpenSim/Common/AbstractProperty.h>
-#include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentOutput.h>
-#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
@@ -36,9 +28,6 @@
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
 #include <SimTKcommon/basics.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/vec3.hpp>
 #include <imgui.h>
 
 #include <algorithm>

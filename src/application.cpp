@@ -2,7 +2,6 @@
 
 #include "osmv_config.hpp"
 #include "src/3d/gl.hpp"
-#include "src/3d/renderer.hpp"
 #include "src/config.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
@@ -16,9 +15,7 @@
 #include <SDL_events.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
-#include <SDL_mouse.h>
 #include <SDL_stdinc.h>
-#include <SDL_timer.h>
 #include <SDL_video.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
@@ -27,9 +24,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <filesystem>
 #include <iostream>
-#include <optional>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -384,7 +380,7 @@ public:
 #endif
     }
 
-    void internal_start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+    void internal_start_render_loop(std::unique_ptr<Screen> s) {
         current_screen = std::move(s);
 
         // main application draw loop (i.e. the "game loop" of this app)
@@ -555,11 +551,11 @@ public:
         }
     }
 
-    void start_render_loop(Application& app, std::unique_ptr<Screen> s) {
+    void start_render_loop(std::unique_ptr<Screen> s) {
         bool quit = false;
         while (not quit) {
             try {
-                internal_start_render_loop(app, std::move(s));
+                internal_start_render_loop(std::move(s));
                 quit = true;
             } catch (std::exception const& ex) {
                 // if an exception is thrown all the way up here, print it
@@ -577,7 +573,7 @@ Application::Application() : impl{new Impl{}} {
 Application::~Application() noexcept = default;
 
 void Application::start_render_loop(std::unique_ptr<Screen> s) {
-    impl->start_render_loop(*this, std::move(s));
+    impl->start_render_loop(std::move(s));
 }
 
 void Application::request_screen_transition(std::unique_ptr<Screen> s) {

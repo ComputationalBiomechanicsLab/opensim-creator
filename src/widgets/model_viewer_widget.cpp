@@ -2,15 +2,10 @@
 
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
-#include "src/3d/gpu_storage.hpp"
-#include "src/3d/mesh_generation.hpp"
 #include "src/3d/mesh_instance.hpp"
-#include "src/3d/mesh_storage.hpp"
 #include "src/3d/polar_camera.hpp"
 #include "src/3d/render_target.hpp"
 #include "src/3d/renderer.hpp"
-#include "src/3d/texture_storage.hpp"
-#include "src/3d/texturing.hpp"
 #include "src/application.hpp"
 #include "src/constants.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
@@ -19,8 +14,22 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <imgui.h>
-#include <imgui_internal.h>
+
+#include <cstdint>
+#include <cstdio>
+#include <string>
+#include <vector>
 
 using namespace osmv;
 
@@ -181,6 +190,7 @@ bool Model_viewer_widget::on_event(const SDL_Event& e) {
         }
         return true;
     }
+
     return false;
 }
 

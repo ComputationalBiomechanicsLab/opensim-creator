@@ -1,8 +1,12 @@
 #pragma once
 
+#include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/gpu_storage.hpp"
 
+#include <string>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
 
 namespace osmv {
     struct Gpu_cache final {

@@ -1,7 +1,16 @@
 #include "gpu_cache.hpp"
 
 #include "src/3d/mesh_generation.hpp"
+#include "src/3d/mesh_storage.hpp"
+#include "src/3d/texture_storage.hpp"
+#include "src/3d/textured_vert.hpp"
 #include "src/3d/texturing.hpp"
+#include "src/3d/untextured_vert.hpp"
+
+#include <glm/vec2.hpp>
+
+#include <array>
+#include <vector>
 
 osmv::Gpu_cache::Gpu_cache() :
     storage{},

@@ -1,5 +1,7 @@
 #include "gl.hpp"
 
+#include <GL/glew.h>
+
 #include <filesystem>
 #include <fstream>
 #include <sstream>

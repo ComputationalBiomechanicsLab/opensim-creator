@@ -1,11 +1,13 @@
 #include "mesh_generation.hpp"
 
+#include "src/3d/textured_vert.hpp"
+#include "src/3d/untextured_vert.hpp"
 #include "src/constants.hpp"
+
+#include <glm/vec3.hpp>
 
 #include <cassert>
 #include <cmath>
-#include <type_traits>
-#include <utility>
 
 using namespace osmv;
 

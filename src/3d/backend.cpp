@@ -3,26 +3,33 @@
 
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/gpu_storage.hpp"
 #include "src/3d/mesh_generation.hpp"
+#include "src/3d/mesh_instance.hpp"
 #include "src/3d/mesh_storage.hpp"
 #include "src/3d/render_target.hpp"
 #include "src/3d/renderer.hpp"
 #include "src/3d/shader_cache.hpp"
 #include "src/3d/texture_storage.hpp"
-#include "src/3d/texturing.hpp"
+#include "src/3d/textured_vert.hpp"
+#include "src/3d/untextured_vert.hpp"
 #include "src/config.hpp"
-#include "src/constants.hpp"
 
 #include <GL/glew.h>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <exception>
-#include <limits>
-#include <string_view>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace osmv;

@@ -3,7 +3,6 @@
 #include "src/utils/concurrency.hpp"
 #include "src/utils/shims.hpp"
 
-#include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -11,11 +10,11 @@
 #include <simmath/Integrator.h>
 
 #include <functional>
-#include <mutex>
 #include <ratio>
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
 using namespace osmv;
 

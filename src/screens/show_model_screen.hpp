@@ -4,6 +4,7 @@
 
 #include <SDL_events.h>
 #include <filesystem>
+#include <memory>
 
 namespace OpenSim {
     class Model;

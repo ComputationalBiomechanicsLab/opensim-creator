@@ -1,5 +1,7 @@
 #include "drawlist.hpp"
 
+#include "src/3d/gpu_data_reference.hpp"
+
 #include <algorithm>
 
 static bool is_opaque(osmv::Mesh_instance const& m) {

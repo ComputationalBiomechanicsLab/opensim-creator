@@ -5,9 +5,13 @@
 #include <toml.hpp>
 
 #include <algorithm>
+#include <cstdint>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace fs = std::filesystem;

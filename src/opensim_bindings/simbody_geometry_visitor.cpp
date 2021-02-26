@@ -1,12 +1,19 @@
 #include "simbody_geometry_visitor.hpp"
 
 #include "src/3d/gpu_cache.hpp"
+#include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/mesh_instance.hpp"
+#include "src/3d/untextured_vert.hpp"
 
-#include "simbody/internal/MobilizedBody.h"
-#include "simbody/internal/SimbodyMatterSubsystem.h"
-
+#include <SimTKcommon/Orientation.h>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <simbody/internal/MobilizedBody.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
+
+#include <algorithm>
 
 using namespace SimTK;
 using namespace osmv;

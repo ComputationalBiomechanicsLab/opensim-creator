@@ -3,7 +3,10 @@
 #include <OpenSim/Common/Component.h>
 #include <imgui.h>
 
+#include <algorithm>
 #include <array>
+#include <cassert>
+#include <cstddef>
 #include <string>
 
 void osmv::Component_hierarchy_widget::draw(

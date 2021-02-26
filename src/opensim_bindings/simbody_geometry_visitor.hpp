@@ -2,8 +2,9 @@
 
 #include "src/3d/untextured_vert.hpp"
 
-#include "SimTKcommon/internal/DecorativeGeometry.h"
+#include <SimTKcommon/internal/DecorativeGeometry.h>
 
+#include <utility>
 #include <vector>
 
 namespace SimTK {

@@ -1,7 +1,6 @@
 #include "model_editor_screen.hpp"
 
 #include "src/3d/gpu_cache.hpp"
-#include "src/3d/texture_storage.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
@@ -11,13 +10,38 @@
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 
+#include <OpenSim/Common/AbstractProperty.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/PropertyObjArray.h>
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <SDL_mouse.h>
+#include <SimTKcommon.h>
+#include <SimTKcommon/Mechanics.h>
+#include <SimTKcommon/SmallMatrix.h>
 #include <imgui.h>
 
+#include <algorithm>
+#include <cstring>
 #include <filesystem>
+#include <memory>
 #include <optional>
+#include <string>
+#include <typeinfo>
 #include <vector>
 
 namespace fs = std::filesystem;

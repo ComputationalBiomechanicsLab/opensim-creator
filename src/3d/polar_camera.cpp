@@ -4,6 +4,10 @@
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
+
+#include <cmath>
 
 namespace {
     glm::mat4 compute_view_matrix(float theta, float phi, float radius, glm::vec3 pan) {

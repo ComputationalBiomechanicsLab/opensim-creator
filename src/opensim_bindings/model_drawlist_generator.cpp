@@ -6,12 +6,15 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKcommon.h>
-#include <SimTKcommon/Orientation.h>
 #include <SimTKsimbody.h>
 
+#include <utility>
 #include <vector>
+
+namespace osmv {
+    struct Mesh_instance;
+}
 
 void osmv::generate_decoration_drawlist(
     OpenSim::Component const& root,

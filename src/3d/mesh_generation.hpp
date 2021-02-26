@@ -4,6 +4,7 @@
 #include "src/3d/untextured_vert.hpp"
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
 // 3d common: common primitives/structs used for mesh generation/rendering

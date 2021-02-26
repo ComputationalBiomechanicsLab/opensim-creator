@@ -130,6 +130,7 @@ if(TRUE)
         COMPILE_DEFINITIONS "GLEW_STATIC"
         INTERFACE_INCLUDE_DIRECTORIES ${GLEW_DIR}/include
         INTERFACE_COMPILE_DEFINITIONS GLEW_STATIC
+        POSITION_INDEPENDENT_CODE ON
     )
 
     # kill security checks which are dependent on stdlib

@@ -5,9 +5,18 @@
 #include "src/config.hpp"
 #include "src/screens/splash_screen.hpp"
 
+#include <GL/glew.h>
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
+#include <glm/vec3.hpp>
 #include <imgui.h>
 
 #include <array>
+#include <cassert>
+#include <cstddef>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 
 using namespace osmv;
 

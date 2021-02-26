@@ -1,7 +1,6 @@
 ﻿#include "application.hpp"
 
 #include "src/config.hpp"
-#include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/os.hpp"
@@ -9,15 +8,13 @@
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
 
-#include <cmath>
 #include <cstdlib>
-#include <cstring>
+#include <filesystem>
 #include <iostream>
-#include <vector>
 
 using namespace osmv;
 

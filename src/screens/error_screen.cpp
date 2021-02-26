@@ -3,6 +3,8 @@
 #include "src/application.hpp"
 #include "src/screens/splash_screen.hpp"
 
+#include <SDL_keyboard.h>
+#include <SDL_keycode.h>
 #include <imgui.h>
 
 #include <stdexcept>
