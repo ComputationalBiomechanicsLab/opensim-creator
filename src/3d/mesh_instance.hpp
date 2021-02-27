@@ -59,7 +59,7 @@ namespace osmv {
     //
     // this struct is fairly complicated and densely packed because it is *exactly* what
     // will be copied to the GPU at runtime. Size + alignment can matter *a lot*.
-    struct alignas(16) Mesh_instance final {
+    struct alignas(32) Mesh_instance final {
         // transforms mesh vertices into scene worldspace
         glm::mat4x3 transform;
 
@@ -93,6 +93,8 @@ namespace osmv {
         //     - b:   rim alpha. Used to calculate how strongly (if any) rims should be drawn
         //            around the rendered geometry. Used for highlighting elements in the scene
         Rgb24 _passthrough;
+
+        unsigned char pad = 0;
 
         // INTERNAL: mesh ID: globally unique ID for the mesh vertices that should be rendered
         //

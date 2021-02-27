@@ -266,7 +266,8 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
     glm::mat4 mover = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
 
     // origin
-    emplace_instance(glm::scale(xform, glm::vec3{0.01f}), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}, gpu_cache.simbody_sphere);
+    emplace_instance(
+        glm::scale(xform, glm::vec3{0.0075f}), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}, gpu_cache.simbody_sphere);
 
     // axis Y
     emplace_instance(xform * scaler * mover, glm::vec4{0.0f, 0.75f, 0.0f, 1.0f}, gpu_cache.simbody_cylinder);
