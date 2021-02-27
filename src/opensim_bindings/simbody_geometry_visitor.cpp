@@ -4,6 +4,7 @@
 #include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/mesh_instance.hpp"
 #include "src/3d/untextured_vert.hpp"
+#include "src/constants.hpp"
 
 #include <SimTKcommon/Orientation.h>
 #include <glm/ext/matrix_transform.hpp>
@@ -185,15 +186,21 @@ static glm::vec3 scale_factors(DecorativeGeometry const& geom) {
     return glm::vec3{sf[0], sf[1], sf[2]};
 }
 
-static Rgba32 rgba(DecorativeGeometry const& geom) {
+static Rgba32 extract_rgba(DecorativeGeometry const& geom) {
     Vec3 const& rgb = geom.getColor();
-    Real a = geom.getOpacity();
+    Real ar = geom.getOpacity();
+    ar = ar < 0.0 ? 1.0 : ar;
 
     Rgba32 rv;
-    rv.r = static_cast<unsigned char>(255.0 * rgb[0]);
-    rv.g = static_cast<unsigned char>(255.0 * rgb[1]);
-    rv.b = static_cast<unsigned char>(255.0 * rgb[2]);
-    rv.a = a < 0.0 ? 255 : static_cast<unsigned char>(255.0 * a);
+    int r = std::min(255, static_cast<int>(255.0 * rgb[0]));
+    int g = std::min(255, static_cast<int>(255.0 * rgb[1]));
+    int b = std::min(255, static_cast<int>(255.0 * rgb[2]));
+    int a = std::min(255, static_cast<int>(255.0 * ar));
+    rv.r = static_cast<unsigned char>(r);
+    rv.g = static_cast<unsigned char>(g);
+    rv.b = static_cast<unsigned char>(b);
+    rv.a = static_cast<unsigned char>(a);
+
     return rv;
 }
 
@@ -211,7 +218,7 @@ void Simbody_geometry_visitor::implementLineGeometry(SimTK::DecorativeLine const
     glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
     glm::mat4 cylinder_xform = cylinder_to_line_xform(0.005f, p1, p2);
 
-    emplace_instance(cylinder_xform, rgba(geom), gpu_cache.simbody_cylinder);
+    emplace_instance(cylinder_xform, extract_rgba(geom), gpu_cache.simbody_cylinder);
 }
 
 void Simbody_geometry_visitor::implementBrickGeometry(SimTK::DecorativeBrick const& geom) {
@@ -219,7 +226,7 @@ void Simbody_geometry_visitor::implementBrickGeometry(SimTK::DecorativeBrick con
     glm::mat4 base_xform = to_mat4(matter_subsys, state, geom);
     glm::mat4 xform = glm::scale(base_xform, glm::vec3{dims[0], dims[1], dims[2]});
 
-    emplace_instance(xform, rgba(geom), gpu_cache.simbody_cube);
+    emplace_instance(xform, extract_rgba(geom), gpu_cache.simbody_cube);
 }
 
 void Simbody_geometry_visitor::implementCylinderGeometry(SimTK::DecorativeCylinder const& geom) {
@@ -229,7 +236,7 @@ void Simbody_geometry_visitor::implementCylinderGeometry(SimTK::DecorativeCylind
     s.y *= static_cast<float>(geom.getHalfHeight());
     s.z *= static_cast<float>(geom.getRadius());
 
-    emplace_instance(glm::scale(m, s), rgba(geom), gpu_cache.simbody_cylinder);
+    emplace_instance(glm::scale(m, s), extract_rgba(geom), gpu_cache.simbody_cylinder);
 }
 
 void Simbody_geometry_visitor::implementCircleGeometry(SimTK::DecorativeCircle const&) {
@@ -240,7 +247,7 @@ void Simbody_geometry_visitor::implementSphereGeometry(SimTK::DecorativeSphere c
     float r = static_cast<float>(geom.getRadius());
     glm::mat4 xform = glm::scale(to_mat4(matter_subsys, state, geom), glm::vec3{r, r, r});
 
-    emplace_instance(xform, rgba(geom), gpu_cache.simbody_sphere);
+    emplace_instance(xform, extract_rgba(geom), gpu_cache.simbody_sphere);
 }
 
 void Simbody_geometry_visitor::implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const&) {
@@ -248,16 +255,32 @@ void Simbody_geometry_visitor::implementEllipsoidGeometry(SimTK::DecorativeEllip
 }
 
 void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame const& geom) {
-    glm::vec3 s = scale_factors(geom);
-    s *= geom.getAxisLength();
-    s *= 0.1f;
+    glm::mat4 xform = to_mat4(matter_subsys, state, geom);
 
-    glm::mat4 m = to_mat4(matter_subsys, state, geom);
-    m = glm::scale(m, s);
+    glm::mat4 scaler = [&geom]() {
+        glm::vec3 s = scale_factors(geom);
+        s *= static_cast<float>(geom.getAxisLength());
+        return glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.015f * s.x, 0.1f * s.y, 0.015f * s.z});
+    }();
 
-    glm::vec4 rgba{1.0f, 0.0f, 0.0f, 1.0f};
+    glm::mat4 mover = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
 
-    emplace_instance(m, rgba, gpu_cache.simbody_cylinder);
+    // origin
+    emplace_instance(glm::scale(xform, glm::vec3{0.01f}), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}, gpu_cache.simbody_sphere);
+
+    // axis Y
+    emplace_instance(xform * scaler * mover, glm::vec4{0.0f, 0.75f, 0.0f, 1.0f}, gpu_cache.simbody_cylinder);
+
+    // X
+    glm::mat4 rotate_plusy_to_plusx =
+        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, -1.0f});
+    emplace_instance(
+        xform * rotate_plusy_to_plusx * scaler * mover, glm::vec4{0.75f, 0.0f, 0.0f, 1.0f}, gpu_cache.simbody_cylinder);
+
+    // Z
+    glm::mat4 rotate_plusy_to_plusz = glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
+    emplace_instance(
+        xform * rotate_plusy_to_plusz * scaler * mover, glm::vec4{0.0f, 0.0f, 0.75f, 1.0f}, gpu_cache.simbody_cylinder);
 }
 
 void Simbody_geometry_visitor::implementTextGeometry(SimTK::DecorativeText const&) {
@@ -275,7 +298,7 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
             return vert_swap;
         });
 
-    emplace_instance(glm::scale(to_mat4(matter_subsys, state, geom), scale_factors(geom)), rgba(geom), ref);
+    emplace_instance(glm::scale(to_mat4(matter_subsys, state, geom), scale_factors(geom)), extract_rgba(geom), ref);
 }
 
 void Simbody_geometry_visitor::implementArrowGeometry(SimTK::DecorativeArrow const&) {
