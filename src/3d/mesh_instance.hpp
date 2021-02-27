@@ -49,6 +49,10 @@ namespace osmv {
         }
     };
 
+    [[nodiscard]] inline constexpr bool operator<(Passthrough_data const& a, Passthrough_data const& b) noexcept {
+        return a.to_u16() < b.to_u16();
+    }
+
     template<typename Mtx>
     static constexpr glm::mat3 normal_matrix(Mtx&& m) noexcept {
         glm::mat3 top_left{m};
