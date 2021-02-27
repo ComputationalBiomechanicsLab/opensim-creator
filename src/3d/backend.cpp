@@ -433,7 +433,7 @@ namespace osmv {
     struct Mesh_on_gpu final {
         gl::Array_buffer vbo;
         size_t nverts;
-        gl::Array_bufferT<osmv::Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
+        gl::Array_bufferT<Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
@@ -441,8 +441,8 @@ namespace osmv {
         Mesh_on_gpu(osmv::Untextured_vert const* verts, size_t n) :
             vbo{alloc_sized_vbo(verts, n)},
             nverts{n},
-            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, osmv::Untextured_vert>(vbo, instance_vbo)},
-            normal_vao{Normals_shader::create_vao<gl::Array_buffer, osmv::Untextured_vert>(vbo)} {
+            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, Untextured_vert>(vbo, instance_vbo)},
+            normal_vao{Normals_shader::create_vao<gl::Array_buffer, Untextured_vert>(vbo)} {
 
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
         }
@@ -908,42 +908,62 @@ osmv::Passthrough_data osmv::Renderer::draw(
         //     COLOR0 should be blended because OpenSim scenes can contain blending
         //     COLOR1 should never be blended: it's a value for the top-most fragment
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisablei(GL_BLEND, 1);
         glEnablei(GL_BLEND, 0);
+        glDisablei(GL_BLEND, 1);
 
-        // instanced draw ordering
-        //
-        // cluster draw calls by meshid
-        size_t pos = 0;
-        while (pos < nmeshes) {
-            osmv::Mesh_reference meshid = meshes[pos]._meshid;
-            osmv::Texture_reference textureid = meshes[pos]._diffuse_texture;
-            size_t end = pos + 1;
+        if (params.flags & RawRendererFlags_UseInstancedRenderer) {
+            size_t pos = 0;
+            while (pos < nmeshes) {
+                Mesh_reference meshid = meshes[pos]._meshid;
+                Texture_reference textureid = meshes[pos]._diffuse_texture;
+                size_t end = pos + 1;
 
-            while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid) {
-                ++end;
+                while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid) {
+                    ++end;
+                }
+
+                // [pos, end) contains instances with the same meshid + textureid
+
+                if (textureid) {
+                    gl::Uniform(shader.uIsTextured, true);
+                    gl::ActiveTexture(GL_TEXTURE0);
+                    gl::BindTexture(storage.textures.lookup(textureid));
+                    gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
+                } else {
+                    gl::Uniform(shader.uIsTextured, false);
+                }
+
+                Mesh_on_gpu& md = storage.meshes.lookup(meshid);
+                md.instance_vbo.assign(meshes + pos, meshes + end);
+                gl::BindVertexArray(md.main_vao);
+                glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
+                gl::BindVertexArray();
+
+                pos = end;
             }
+        } else {
+            // perform (slower) one-drawcall-per-item rendering
+            //
+            // this is here mostly for perf comparison and debugging
 
-            // [pos, end) contains instances with the same meshid + textureid
-
-            if (textureid) {
-                gl::Uniform(shader.uIsTextured, true);
-                gl::ActiveTexture(GL_TEXTURE0);
-                gl::BindTexture(storage.textures.lookup(textureid));
-
-                gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-            } else {
-                gl::Uniform(shader.uIsTextured, false);
+            for (size_t i = 0; i < nmeshes; ++i) {
+                Mesh_instance const& mi = meshes[i];
+                if (mi._diffuse_texture) {
+                    gl::Uniform(shader.uIsTextured, true);
+                    gl::ActiveTexture(GL_TEXTURE0);
+                    gl::BindTexture(storage.textures.lookup(mi._diffuse_texture));
+                    gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
+                } else {
+                    gl::Uniform(shader.uIsTextured, false);
+                }
+                Mesh_on_gpu& md = storage.meshes.lookup(mi._meshid);
+                md.instance_vbo.assign(meshes + i, meshes + i + 1);
+                gl::BindVertexArray(md.main_vao);
+                glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(1));
+                gl::BindVertexArray();
             }
-
-            Mesh_on_gpu& md = storage.meshes.lookup(meshid);
-            md.instance_vbo.assign(meshes + pos, meshes + end);
-            gl::BindVertexArray(md.main_vao);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
-
-            pos = end;
         }
-        gl::BindVertexArray();
+
         glDisablei(GL_BLEND, 0);
     }
 

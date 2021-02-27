@@ -55,9 +55,13 @@ namespace osmv {
         // draw the scene
         RawRendererFlags_DrawSceneGeometry = 1 << 6,
 
-        RawRendererFlags_Default =
-            DrawcallFlags_DrawRims | RawRendererFlags_DrawDebugQuads | RawRendererFlags_PerformPassthroughHitTest |
-            RawRendererFlags_UseOptimizedButDelayed1FrameHitTest | RawRendererFlags_DrawSceneGeometry
+        // use instanced (optimized) rendering
+        RawRendererFlags_UseInstancedRenderer = 1 << 7,
+
+        RawRendererFlags_Default = DrawcallFlags_DrawRims | RawRendererFlags_DrawDebugQuads |
+                                   RawRendererFlags_PerformPassthroughHitTest |
+                                   RawRendererFlags_UseOptimizedButDelayed1FrameHitTest |
+                                   RawRendererFlags_DrawSceneGeometry | RawRendererFlags_UseInstancedRenderer
     };
 
     struct Raw_drawcall_params final {
