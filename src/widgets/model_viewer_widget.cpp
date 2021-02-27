@@ -49,6 +49,9 @@ namespace {
         ModelViewerGeometryFlags_DrawStaticDecorations = 1 << 1,
         ModelViewerGeometryFlags_DrawFloor = 1 << 2,
         ModelViewerGeometryFlags_OptimizeDrawOrder = 1 << 3,
+        ModelViewerGeometryFlags_DrawFrames = 1 << 4,
+        ModelViewerGeometryFlags_DrawDebugGeometry = 1 << 5,
+        ModelViewerGeometryFlags_DrawLabels = 1 << 6,
 
         ModelViewerGeometryFlags_Default =
             ModelViewerGeometryFlags_DrawDynamicDecorations | ModelViewerGeometryFlags_DrawStaticDecorations |
@@ -217,6 +220,12 @@ void Model_viewer_widget::draw(
                 ImGui::CheckboxFlags(
                     "draw static geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawStaticDecorations);
 
+                ImGui::CheckboxFlags("draw frames", &impl->geom_flags, ModelViewerGeometryFlags_DrawFrames);
+
+                ImGui::CheckboxFlags(
+                    "draw debug geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawDebugGeometry);
+                ImGui::CheckboxFlags("draw labels", &impl->geom_flags, ModelViewerGeometryFlags_DrawLabels);
+
                 ImGui::Separator();
 
                 ImGui::Text("Graphical Options:");
@@ -233,6 +242,10 @@ void Model_viewer_widget::draw(
                 ImGui::CheckboxFlags("draw floor", &impl->geom_flags, ModelViewerGeometryFlags_DrawFloor);
                 ImGui::CheckboxFlags(
                     "optimize draw order", &impl->geom_flags, ModelViewerGeometryFlags_OptimizeDrawOrder);
+                ImGui::CheckboxFlags(
+                    "use instanced (optimized) renderer",
+                    &impl->rendering_flags,
+                    RawRendererFlags_UseInstancedRenderer);
 
                 ImGui::EndMenu();
             }
@@ -305,11 +318,28 @@ void Model_viewer_widget::draw(
         if (ImGui::BeginChild("##child", ImVec2(0, 0), false, ImGuiWindowFlags_NoMove)) {
 
             // generate OpenSim scene geometry
-            impl->geometry.clear();
-            generate_decoration_drawlist(model, state, model.getDisplayHints(), impl->cache, impl->geometry);
+            {
+                impl->geometry.clear();
+                ModelDrawlistFlags flags = ModelDrawlistFlags_None;
+                if (impl->geom_flags & ModelViewerGeometryFlags_DrawStaticDecorations) {
+                    flags |= ModelDrawlistFlags_StaticGeometry;
+                }
+                if (impl->geom_flags & ModelViewerGeometryFlags_DrawDynamicDecorations) {
+                    flags |= ModelDrawlistFlags_DynamicGeometry;
+                }
+
+                OpenSim::ModelDisplayHints cpy = model.getDisplayHints();
+
+                cpy.upd_show_frames() = static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawFrames);
+                cpy.upd_show_debug_geometry() =
+                    static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawDebugGeometry);
+                cpy.upd_show_labels() = static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawLabels);
+
+                generate_decoration_drawlist(model, state, cpy, impl->cache, impl->geometry, flags);
+            }
 
             // HACK: add floor in
-            {
+            if (impl->geom_flags & ModelViewerGeometryFlags_DrawFloor) {
                 glm::mat4 model_mtx = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
