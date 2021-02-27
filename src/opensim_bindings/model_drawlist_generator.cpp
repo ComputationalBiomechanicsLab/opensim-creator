@@ -21,7 +21,8 @@ void osmv::generate_decoration_drawlist(
     SimTK::State const& state,
     OpenSim::ModelDisplayHints const& hints,
     Gpu_cache& gpu_cache,
-    Model_drawlist& drawlist) {
+    Model_drawlist& drawlist,
+    ModelDrawlistFlags flags) {
 
     std::vector<Untextured_vert> vert_swap_space;
     OpenSim::Component const* current_component = nullptr;
@@ -38,16 +39,20 @@ void osmv::generate_decoration_drawlist(
     for (OpenSim::Component const& c : root.getComponentList()) {
         current_component = &c;
 
-        dg.clear();
-        c.generateDecorations(true, hints, state, dg);
-        for (SimTK::DecorativeGeometry const& geom : dg) {
-            geom.implementGeometry(visitor);
+        if (flags & ModelDrawlistFlags_StaticGeometry) {
+            dg.clear();
+            c.generateDecorations(true, hints, state, dg);
+            for (SimTK::DecorativeGeometry const& geom : dg) {
+                geom.implementGeometry(visitor);
+            }
         }
 
-        dg.clear();
-        c.generateDecorations(false, hints, state, dg);
-        for (SimTK::DecorativeGeometry const& geom : dg) {
-            geom.implementGeometry(visitor);
+        if (flags & ModelDrawlistFlags_DynamicGeometry) {
+            dg.clear();
+            c.generateDecorations(false, hints, state, dg);
+            for (SimTK::DecorativeGeometry const& geom : dg) {
+                geom.implementGeometry(visitor);
+            }
         }
     }
 }
