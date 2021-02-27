@@ -588,8 +588,8 @@ struct Show_model_screen::Impl final {
 
     Selected_component selected_component;
     Gpu_cache cache;
-    Model_viewer_widget model_viewer{cache};
-    Model_viewer_widget model_viewer2{cache};
+    Model_viewer_widget model_viewer{cache, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
+    Model_viewer_widget model_viewer2{cache, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
     OpenSim::Component const* current_hover = nullptr;
 
     Coordinates_tab_data coords_tab;
