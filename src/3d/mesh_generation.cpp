@@ -6,8 +6,11 @@
 
 #include <glm/vec3.hpp>
 
+#include <array>
 #include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <vector>
 
 using namespace osmv;
 
@@ -38,12 +41,15 @@ static constexpr std::array<Textured_vert, 6> _shaded_textured_quad_verts = {{
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
 }};
 
-std::array<Textured_vert, 6> osmv::shaded_textured_quad_verts() {
-    return _shaded_textured_quad_verts;
+Textured_mesh osmv::shaded_textured_quad_verts() {
+    Textured_mesh mesh;
+    mesh.vert_data.assign(_shaded_textured_quad_verts.begin(), _shaded_textured_quad_verts.end());
+    mesh.generate_trivial_indices();
+    return mesh;
 }
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
-std::vector<Untextured_vert> osmv::unit_sphere_triangles() {
+Plain_mesh osmv::unit_sphere_triangles() {
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
     // something like a patched sphere:
@@ -109,7 +115,7 @@ std::vector<Untextured_vert> osmv::unit_sphere_triangles() {
         }
     }
 
-    return out;
+    return Plain_mesh::by_deduping(std::move(out));
 }
 
 // Returns triangles for a "unit" cylinder with `num_sides` sides.
@@ -120,7 +126,9 @@ std::vector<Untextured_vert> osmv::unit_sphere_triangles() {
 // - top == [0.0f, 0.0f, -1.0f]
 // - bottom == [0.0f, 0.0f, +1.0f]
 // - (so the height is 2.0f, not 1.0f)
-std::vector<Untextured_vert> osmv::unit_cylinder_triangles(size_t num_sides) {
+Plain_mesh osmv::unit_cylinder_triangles() {
+    size_t num_sides = 12;
+
     std::vector<Untextured_vert> out;
 
     assert(num_sides >= 3);
@@ -189,7 +197,7 @@ std::vector<Untextured_vert> osmv::unit_cylinder_triangles(size_t num_sides) {
         }
     }
 
-    return out;
+    return Plain_mesh::by_deduping(std::move(out));
 }
 
 // Returns triangles for a "simbody" cylinder with `num_sides` sides.
@@ -205,7 +213,7 @@ std::vector<Untextured_vert> osmv::unit_cylinder_triangles(size_t num_sides) {
 //     [0.0f, -1.0f, 0.0f]
 //
 // see simbody-visualizer.cpp::makeCylinder for my source material
-std::vector<osmv::Untextured_vert> osmv::simbody_cylinder_triangles() {
+Plain_mesh osmv::simbody_cylinder_triangles() {
     std::vector<osmv::Untextured_vert> out;
 
     size_t num_sides = 12;
@@ -282,7 +290,7 @@ std::vector<osmv::Untextured_vert> osmv::simbody_cylinder_triangles() {
         }
     }
 
-    return out;
+    return Plain_mesh::by_deduping(std::move(out));
 }
 
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
@@ -332,12 +340,12 @@ static constexpr std::array<osmv::Textured_vert, 36> shaded_textured_cube_verts 
     {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
 }};
 
-std::vector<osmv::Untextured_vert> osmv::simbody_brick_triangles() {
+Plain_mesh osmv::simbody_brick_triangles() {
     std::vector<Untextured_vert> out;
     // TODO: establish how wrong this is in Simbody, because it might do something
     // unusual like use half-width cubes
     for (Textured_vert v : shaded_textured_cube_verts) {
         out.push_back({v.pos, v.normal});
     }
-    return out;
+    return Plain_mesh::by_deduping(std::move(out));
 }

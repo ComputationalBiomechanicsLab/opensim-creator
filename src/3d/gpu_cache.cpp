@@ -18,7 +18,7 @@ osmv::Gpu_cache::Gpu_cache() :
     simbody_cube{storage.meshes.allocate(simbody_brick_triangles())},
     floor_quad{[& meshes = this->storage.meshes]() {
         auto quad_verts = osmv::shaded_textured_quad_verts();
-        for (Textured_vert& v : quad_verts) {
+        for (Textured_vert& v : quad_verts.vert_data) {
             v.texcoord *= 200.0f;
         }
         return meshes.allocate(quad_verts);

@@ -6,6 +6,8 @@ namespace osmv {
     struct Mesh_on_gpu;
     struct Untextured_vert;
     struct Textured_vert;
+    struct Plain_mesh;
+    struct Textured_mesh;
 }
 
 namespace osmv {
@@ -23,8 +25,8 @@ namespace osmv {
 
         [[nodiscard]] Mesh_on_gpu& lookup(Mesh_reference) const;
 
-        [[nodiscard]] Mesh_reference allocate(Untextured_vert const* verts, size_t n);
-        [[nodiscard]] Mesh_reference allocate(Textured_vert const* verts, size_t n);
+        [[nodiscard]] Mesh_reference allocate(Plain_mesh const&);
+        [[nodiscard]] Mesh_reference allocate(Textured_mesh const&);
 
         template<typename Container>
         [[nodiscard]] Mesh_reference allocate(Container const& c) {

@@ -1,18 +1,13 @@
 #pragma once
 
-#include "src/3d/textured_vert.hpp"
-#include "src/3d/untextured_vert.hpp"
-
-#include <array>
-#include <cstddef>
-#include <vector>
+#include "src/3d/mesh.hpp"
 
 // 3d common: common primitives/structs used for mesh generation/rendering
 namespace osmv {
-    [[nodiscard]] std::array<Textured_vert, 6> shaded_textured_quad_verts();
+    [[nodiscard]] Textured_mesh shaded_textured_quad_verts();
 
     // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
-    [[nodiscard]] std::vector<Untextured_vert> unit_sphere_triangles();
+    [[nodiscard]] Plain_mesh unit_sphere_triangles();
 
     // Returns triangles for a "unit" cylinder with `num_sides` sides.
     //
@@ -22,7 +17,7 @@ namespace osmv {
     // - top == [0.0f, 0.0f, -1.0f]
     // - bottom == [0.0f, 0.0f, +1.0f]
     // - (so the height is 2.0f, not 1.0f)
-    [[nodiscard]] std::vector<Untextured_vert> unit_cylinder_triangles(size_t num_sides);
+    [[nodiscard]] Plain_mesh unit_cylinder_triangles();
 
     // Returns triangles for a standard "simbody" cylinder
     //
@@ -37,11 +32,11 @@ namespace osmv {
     //     [0.0f, -1.0f, 0.0f]
     //
     // see simbody-visualizer.cpp::makeCylinder for my source material
-    [[nodiscard]] std::vector<Untextured_vert> simbody_cylinder_triangles();
+    [[nodiscard]] Plain_mesh simbody_cylinder_triangles();
 
     // Returns triangles for a standard "Simbody" cube
     //
     // TODO: I have no idea what a Simbody cube is, the verts returned by this are
     // a pure guess
-    [[nodiscard]] std::vector<Untextured_vert> simbody_brick_triangles();
+    [[nodiscard]] Plain_mesh simbody_brick_triangles();
 }

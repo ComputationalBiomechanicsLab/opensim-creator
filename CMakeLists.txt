@@ -67,6 +67,8 @@ add_executable(osmv
     src/3d/gl.cpp
     src/3d/textured_vert.hpp
     src/3d/untextured_vert.hpp
+    src/3d/mesh.hpp
+    src/3d/mesh.cpp
     src/3d/mesh_generation.hpp
     src/3d/mesh_generation.cpp
     src/3d/texturing.hpp
@@ -80,7 +82,6 @@ add_executable(osmv
     src/3d/gpu_cache.hpp
     src/3d/gpu_cache.cpp
     src/3d/drawlist.hpp
-    src/3d/drawlist.cpp
     src/3d/render_target.hpp
     src/3d/renderer.hpp
     src/3d/polar_camera.hpp

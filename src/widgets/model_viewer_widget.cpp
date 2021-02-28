@@ -359,7 +359,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->geom_flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
-                impl->geometry.optimize();
+                optimize(impl->geometry);
             }
 
             // perform screen-specific geometry fixups

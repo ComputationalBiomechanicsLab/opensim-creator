@@ -1,6 +1,6 @@
 #include "model_drawlist_generator.hpp"
 
-#include "src/3d/untextured_vert.hpp"
+#include "src/3d/mesh.hpp"
 #include "src/opensim_bindings/lambda_geometry_visitor.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
 
@@ -24,7 +24,7 @@ void osmv::generate_decoration_drawlist(
     Model_drawlist& drawlist,
     ModelDrawlistFlags flags) {
 
-    std::vector<Untextured_vert> vert_swap_space;
+    Plain_mesh mesh_swap;
     OpenSim::Component const* current_component = nullptr;
     SimTK::SimbodyMatterSubsystem const& matter = root.getSystem().getMatterSubsystem();
 
@@ -33,7 +33,7 @@ void osmv::generate_decoration_drawlist(
         drawlist.emplace_back(current_component, mi);
     };
 
-    auto visitor = Lambda_geometry_visitor{std::move(on_instance_created), vert_swap_space, gpu_cache, matter, state};
+    auto visitor = Lambda_geometry_visitor{std::move(on_instance_created), mesh_swap, gpu_cache, matter, state};
 
     SimTK::Array_<SimTK::DecorativeGeometry> dg;
     for (OpenSim::Component const& c : root.getComponentList()) {

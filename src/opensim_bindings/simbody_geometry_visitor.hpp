@@ -15,25 +15,26 @@ namespace SimTK {
 namespace osmv {
     struct Gpu_cache;
     struct Mesh_instance;
+    struct Plain_mesh;
 }
 
 namespace osmv {
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
-        std::vector<Untextured_vert>& vert_swap;
+        Plain_mesh& mesh_swap;
         Gpu_cache& gpu_cache;
         SimTK::SimbodyMatterSubsystem const& matter_subsys;
         SimTK::State const& state;
 
     public:
         constexpr Simbody_geometry_visitor(
-            std::vector<Untextured_vert>& _vert_swap,
+            Plain_mesh& _mesh_swap,
             Gpu_cache& _cache,
             SimTK::SimbodyMatterSubsystem const& _matter,
             SimTK::State const& _state) noexcept :
 
             SimTK::DecorativeGeometryImplementation{},
 
-            vert_swap{_vert_swap},
+            mesh_swap{_mesh_swap},
             gpu_cache{_cache},
             matter_subsys{_matter},
             state{_state} {

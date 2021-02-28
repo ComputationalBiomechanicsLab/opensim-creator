@@ -14,6 +14,7 @@ namespace osmv {
 
     // geometry generated from an OpenSim model + SimTK state pair
     class Model_drawlist final {
+        friend void optimize(Model_drawlist&) noexcept;
 
         // these two are 1:1 associated
         Drawlist drawlist;
@@ -80,15 +81,12 @@ namespace osmv {
             }
         }
 
-        // optimize this drawlist
-        //
-        // note: this may reorder the *instances*, but should not reorder the components
-        void optimize() {
-            drawlist.optimize();
-        }
-
         Drawlist const& raw_drawlist() const noexcept {
             return drawlist;
         }
     };
+
+    inline void optimize(Model_drawlist& mdl) noexcept {
+        optimize(mdl.drawlist);
+    }
 }

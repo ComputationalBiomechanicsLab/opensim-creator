@@ -5,6 +5,7 @@
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/gpu_storage.hpp"
+#include "src/3d/mesh.hpp"
 #include "src/3d/mesh_generation.hpp"
 #include "src/3d/mesh_instance.hpp"
 #include "src/3d/mesh_storage.hpp"
@@ -54,7 +55,7 @@ namespace {
     static_assert(
         std::is_trivially_destructible<Mesh_reference>::value,
         "a mesh reference should be trivially destructible, because it is used in *a lot* of places and ends up in collections etc.");
-    static_assert(std::is_standard_layout<osmv::Mesh_reference>::value);
+    static_assert(std::is_standard_layout<Mesh_reference>::value);
     static_assert(
         std::has_unique_object_representations<Mesh_reference>::value,
         "i.e. is comparing the bytes of the object sufficient enough to implement equality for the object. This is a nice-to-have and comes in handy when bulk hashing instance ids");
@@ -67,7 +68,7 @@ namespace {
         sizeof(glm::vec3) == 3 * sizeof(float),
         "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
     static_assert(
-        sizeof(osmv::Untextured_vert) == 6 * sizeof(float),
+        sizeof(Untextured_vert) == 6 * sizeof(float),
         "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
     void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
@@ -84,7 +85,7 @@ namespace {
                 4,
                 GL_FLOAT,
                 GL_FALSE,
-                sizeof(osmv::Mesh_instance),
+                sizeof(Mesh_instance),
                 reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec4)));
             glEnableVertexAttribArray(loc + i);
             glVertexAttribDivisor(loc + i, 1);
@@ -105,7 +106,7 @@ namespace {
                 3,
                 GL_FLOAT,
                 GL_FALSE,
-                sizeof(osmv::Mesh_instance),
+                sizeof(Mesh_instance),
                 reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
             glEnableVertexAttribArray(loc + i);
             glVertexAttribDivisor(loc + i, 1);
@@ -126,7 +127,7 @@ namespace {
                 3,
                 GL_FLOAT,
                 GL_FALSE,
-                sizeof(osmv::Mesh_instance),
+                sizeof(Mesh_instance),
                 reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
             glEnableVertexAttribArray(loc + i);
             glVertexAttribDivisor(loc + i, 1);
@@ -135,21 +136,21 @@ namespace {
 
     void Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
-            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
 
     void u8_to_Vec3Pointer(gl::Attribute const& vec3log, size_t base_offset) {
         glVertexAttribPointer(
-            vec3log, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+            vec3log, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec3log);
         glVertexAttribDivisor(vec3log, 1);
     }
 
     void u8_to_Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
         glVertexAttribPointer(
-            vec4log, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(osmv::Mesh_instance), reinterpret_cast<void*>(base_offset));
+            vec4log, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
         glEnableVertexAttribArray(vec4log);
         glVertexAttribDivisor(vec4log, 1);
     }
@@ -218,7 +219,8 @@ namespace {
         gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(program, "uSampler0");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo, gl::Array_bufferT<osmv::Mesh_instance>& instance_vbo) {
+        static gl::Vertex_array
+            create_vao(Vbo& vbo, gl::Element_array_buffer& ebo, gl::Array_bufferT<Mesh_instance>& instance_vbo) {
             static_assert(std::is_standard_layout<T>::value, "this is required for offsetof macro usage");
 
             gl::Vertex_array vao = gl::GenVertexArrays();
@@ -237,12 +239,13 @@ namespace {
                     aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
                 gl::EnableVertexAttribArray(aTexCoord);
             }
+            gl::BindBuffer(ebo);
 
             gl::BindBuffer(instance_vbo);
-            Mat4x3Pointer(aModelMat, offsetof(osmv::Mesh_instance, transform));
-            Mat3Pointer(aNormalMat, offsetof(osmv::Mesh_instance, _normal_xform));
-            u8_to_Vec4Pointer(aRgba0, offsetof(osmv::Mesh_instance, rgba));
-            u8_to_Vec3Pointer(aRgb1, offsetof(osmv::Mesh_instance, _passthrough));
+            Mat4x3Pointer(aModelMat, offsetof(Mesh_instance, transform));
+            Mat3Pointer(aNormalMat, offsetof(Mesh_instance, _normal_xform));
+            u8_to_Vec4Pointer(aRgba0, offsetof(Mesh_instance, rgba));
+            u8_to_Vec3Pointer(aRgb1, offsetof(Mesh_instance, _passthrough));
 
             gl::BindVertexArray();
 
@@ -426,37 +429,51 @@ namespace {
         gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(TVert) * n), verts, GL_STATIC_DRAW);
         return rv;
     }
+
+    static gl::Element_array_buffer ebo_from_vec(std::vector<GLushort> const& data) {
+        gl::Element_array_buffer rv;
+        gl::BindBuffer(rv);
+        gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(GLushort) * data.size()), data.data(), GL_STATIC_DRAW);
+        return rv;
+    }
+
+    static gl::Element_array_buffer alloc_basic_ebo(size_t n) {
+        std::vector<GLushort> data(n);
+        for (size_t i = 0; i < n; i++) {
+            data[i] = static_cast<GLushort>(i);
+        }
+
+        return ebo_from_vec(data);
+    }
 }
 
 namespace osmv {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_buffer vbo;
+        gl::Element_array_buffer ebo;
         size_t nverts;
+        size_t nels;
         gl::Array_bufferT<Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
 
     public:
-        Mesh_on_gpu(osmv::Untextured_vert const* verts, size_t n) :
-            vbo{alloc_sized_vbo(verts, n)},
-            nverts{n},
-            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, Untextured_vert>(vbo, instance_vbo)},
-            normal_vao{Normals_shader::create_vao<gl::Array_buffer, Untextured_vert>(vbo)} {
-
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        template<typename TVert>
+        Mesh_on_gpu(Mesh<TVert> const& mesh) :
+            vbo{alloc_sized_vbo(mesh.vert_data.data(), mesh.vert_data.size())},
+            ebo{ebo_from_vec(mesh.indices)},
+            nverts{mesh.vert_data.size()},
+            nels{mesh.indices.size()},
+            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, TVert>(vbo, ebo, instance_vbo)},
+            normal_vao{Normals_shader::create_vao<gl::Array_buffer, TVert>(vbo)} {
         }
 
-        Mesh_on_gpu(osmv::Textured_vert const* verts, size_t n) :
-            vbo{alloc_sized_vbo(verts, n)},
-            nverts{n},
-            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, osmv::Textured_vert>(vbo, instance_vbo)},
-            normal_vao{Normals_shader::create_vao<gl::Array_buffer, osmv::Textured_vert>(vbo)} {
-
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        [[nodiscard]] int nelsi() const noexcept {
+            return static_cast<int>(nels);
         }
 
-        int sizei() const noexcept {
+        [[nodiscard]] int nvertsi() const noexcept {
             return static_cast<int>(nverts);
         }
     };
@@ -480,63 +497,63 @@ namespace {
     // change)
     struct Renderer_buffers final {};
 
-    template<typename Vert>
-    osmv::Mesh_reference allocate(std::vector<osmv::Mesh_on_gpu>& meshes, Vert const* verts, size_t n) {
-        osmv::Mesh_reference ref = osmv::Mesh_reference::from_index(meshes.size());
-        meshes.emplace_back(verts, n);
+    template<typename TVert>
+    Mesh_reference allocate(std::vector<Mesh_on_gpu>& meshes, Mesh<TVert> const& mesh) {
+        Mesh_reference ref = Mesh_reference::from_index(meshes.size());
+        meshes.emplace_back(mesh);
         return ref;
     }
 }
 
-struct osmv::Mesh_storage::Impl final {
+struct Mesh_storage::Impl final {
     std::vector<Mesh_on_gpu> meshes;
 };
 
-osmv::Mesh_storage::Mesh_storage() : impl{new Mesh_storage::Impl{}} {
+Mesh_storage::Mesh_storage() : impl{new Impl{}} {
 }
 
-osmv::Mesh_storage::~Mesh_storage() noexcept {
+Mesh_storage::~Mesh_storage() noexcept {
     delete impl;
 }
 
-osmv::Mesh_on_gpu& osmv::Mesh_storage::lookup(Mesh_reference ref) const {
+Mesh_on_gpu& Mesh_storage::lookup(Mesh_reference ref) const {
     size_t idx = ref.to_index();
     assert(idx < impl->meshes.size());
     return impl->meshes[idx];
 }
 
-osmv::Mesh_reference osmv::Mesh_storage::allocate(Untextured_vert const* verts, size_t n) {
-    return ::allocate(impl->meshes, verts, n);
+Mesh_reference Mesh_storage::allocate(Plain_mesh const& mesh) {
+    return ::allocate(impl->meshes, mesh);
 }
 
-osmv::Mesh_reference osmv::Mesh_storage::allocate(Textured_vert const* verts, size_t n) {
-    return ::allocate(impl->meshes, verts, n);
+Mesh_reference Mesh_storage::allocate(Textured_mesh const& mesh) {
+    return ::allocate(impl->meshes, mesh);
 }
 
-struct osmv::Texture_storage::Impl final {
+struct Texture_storage::Impl final {
     std::vector<gl::Texture_2d> textures;
 };
 
-osmv::Texture_storage::Texture_storage() : impl{new Texture_storage::Impl{}} {
+Texture_storage::Texture_storage() : impl{new Impl{}} {
 }
 
-osmv::Texture_storage::~Texture_storage() noexcept {
+Texture_storage::~Texture_storage() noexcept {
     delete impl;
 }
 
-gl::Texture_2d& osmv::Texture_storage::lookup(Texture_reference ref) const {
+gl::Texture_2d& Texture_storage::lookup(Texture_reference ref) const {
     size_t idx = ref.to_index();
     assert(idx < impl->textures.size());
     return impl->textures[idx];
 }
 
-osmv::Texture_reference osmv::Texture_storage::allocate(gl::Texture_2d&& tex) {
-    osmv::Texture_reference ref = osmv::Texture_reference::from_index(impl->textures.size());
+Texture_reference Texture_storage::allocate(gl::Texture_2d&& tex) {
+    Texture_reference ref = Texture_reference::from_index(impl->textures.size());
     impl->textures.emplace_back(std::move(tex));
     return ref;
 }
 
-struct osmv::Shader_cache::Impl final {
+struct Shader_cache::Impl final {
     Gouraud_mrt_shader gouraud;
     Normals_shader normals;
     Plain_texture_shader plain_texture;
@@ -549,38 +566,38 @@ struct osmv::Shader_cache::Impl final {
     }
 };
 
-osmv::Shader_cache::Shader_cache() : impl{new Shader_cache::Impl{}} {
+Shader_cache::Shader_cache() : impl{new Impl{}} {
 }
 
-osmv::Shader_cache::~Shader_cache() noexcept {
+Shader_cache::~Shader_cache() noexcept {
     delete impl;
 }
 
-Gouraud_mrt_shader& osmv::Shader_cache::gouraud() const {
+Gouraud_mrt_shader& Shader_cache::gouraud() const {
     return impl->gouraud;
 }
 
-Normals_shader& osmv::Shader_cache::normals() const {
+Normals_shader& Shader_cache::normals() const {
     return impl->normals;
 }
 
-Plain_texture_shader& osmv::Shader_cache::pts() const {
+Plain_texture_shader& Shader_cache::pts() const {
     return impl->plain_texture;
 }
 
-Colormapped_plain_texture_shader& osmv::Shader_cache::colormapped_pts() const {
+Colormapped_plain_texture_shader& Shader_cache::colormapped_pts() const {
     return impl->colormapped_plain_texture;
 }
 
-Edge_detection_shader& osmv::Shader_cache::edge_detector() const {
+Edge_detection_shader& Shader_cache::edge_detector() const {
     return impl->edge_detection_shader;
 }
 
-Skip_msxaa_blitter_shader& osmv::Shader_cache::skip_msxaa() const {
+Skip_msxaa_blitter_shader& Shader_cache::skip_msxaa() const {
     return impl->skip_msxaa_shader;
 }
 
-struct osmv::Render_target::Impl final {
+struct Render_target::Impl final {
     // dimensions that these buffers were initialized with
     int w;
     int h;
@@ -759,45 +776,74 @@ struct osmv::Render_target::Impl final {
     }
 };
 
-osmv::Render_target::Render_target(int w, int h, int samples) : impl{new Render_target::Impl{w, h, samples}} {
-}
-
-osmv::Render_target::~Render_target() noexcept {
-    delete impl;
-}
-
-osmv::Render_target::Impl& osmv::Render_target::raw_impl() const noexcept {
-    return *impl;
-}
-
-void osmv::Render_target::reconfigure(int w, int h, int samples) {
-    Render_target::Impl& cur = *impl;
-    if (w != cur.w or h != cur.h or samples != cur.samples) {
-        delete impl;
-        impl = new Render_target::Impl{w, h, samples};
+static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2) {
+    if (m1.rgba.a != m2.rgba.a) {
+        // first, sort by opacity descending: opaque elements should be drawn before
+        // blended elements
+        return m1.rgba.a > m2.rgba.a;
+    } else if (m1._meshid != m2._meshid) {
+        // second, sort by mesh, because instanced rendering is essentially the
+        // process of batching draw calls by mesh
+        return m1._meshid < m2._meshid;
+    } else if (m1._diffuse_texture != m2._diffuse_texture) {
+        // third, sort by texture, because an instanced render call must have
+        // one textureset binding for the whole draw call
+        return m1._diffuse_texture < m2._diffuse_texture;
+    } else {
+        // finally, sort by passthrough data
+        //
+        // logically, this shouldn't matter, but it does because the draw
+        // order, when combined with depth testing, might have a downstream
+        // effect on selection logic if the passthrough data is being used to
+        // select things in screen space (e.g. if two meshes perfectly overlap
+        // eachover, we want a consistent approach to selection logic propagation)
+        return m1.passthrough_data() < m2.passthrough_data();
     }
 }
 
-glm::vec2 osmv::Render_target::dimensions() const noexcept {
+void osmv::optimize(Drawlist& drawlist) noexcept {
+    std::sort(drawlist.instances.begin(), drawlist.instances.end(), optimal_orderering);
+}
+
+Render_target::Render_target(int w, int h, int samples) : impl{new Impl{w, h, samples}} {
+}
+
+Render_target::~Render_target() noexcept {
+    delete impl;
+}
+
+Render_target::Impl& Render_target::raw_impl() const noexcept {
+    return *impl;
+}
+
+void Render_target::reconfigure(int w, int h, int samples) {
+    Impl& cur = *impl;
+    if (w != cur.w or h != cur.h or samples != cur.samples) {
+        delete impl;
+        impl = new Impl{w, h, samples};
+    }
+}
+
+glm::vec2 Render_target::dimensions() const noexcept {
     return {static_cast<float>(impl->w), static_cast<float>(impl->h)};
 }
 
-int osmv::Render_target::samples() const noexcept {
+int Render_target::samples() const noexcept {
     return impl->samples;
 }
 
-float osmv::Render_target::aspect_ratio() const noexcept {
+float Render_target::aspect_ratio() const noexcept {
     auto dims = dimensions();
     return dims.x / dims.y;
 }
 
-gl::Texture_2d& osmv::Render_target::main() noexcept {
+gl::Texture_2d& Render_target::main() noexcept {
     return impl->color0_resolved.tex;
 }
 
-struct osmv::Renderer::Impl final {
+struct Renderer::Impl final {
     // debug quad
-    gl::Array_bufferT<osmv::Textured_vert> quad_vbo = osmv::shaded_textured_quad_verts();
+    gl::Array_bufferT<Textured_vert> quad_vbo{osmv::shaded_textured_quad_verts().vert_data};
     gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
     gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
     gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
@@ -814,15 +860,15 @@ struct osmv::Renderer::Impl final {
 // dtors (Simbody uses exceptional dtors...)
 //
 // DO NOT USE CURLY BRACERS HERE
-osmv::Renderer::Renderer() : impl(new Renderer::Impl()) {
+Renderer::Renderer() : impl(new Impl()) {
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
-osmv::Renderer::~Renderer() noexcept {
+Renderer::~Renderer() noexcept {
     delete impl;
 }
 
-osmv::Passthrough_data osmv::Renderer::draw(
+Passthrough_data Renderer::draw(
     Gpu_storage const& storage, Raw_drawcall_params const& params, Drawlist const& drawlist, Render_target& out) {
 
     // overview:
@@ -936,7 +982,8 @@ osmv::Passthrough_data osmv::Renderer::draw(
                 Mesh_on_gpu& md = storage.meshes.lookup(meshid);
                 md.instance_vbo.assign(meshes + pos, meshes + end);
                 gl::BindVertexArray(md.main_vao);
-                glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(end - pos));
+                glDrawElementsInstanced(
+                    GL_TRIANGLES, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(end - pos));
                 gl::BindVertexArray();
 
                 pos = end;
@@ -959,7 +1006,7 @@ osmv::Passthrough_data osmv::Renderer::draw(
                 Mesh_on_gpu& md = storage.meshes.lookup(mi._meshid);
                 md.instance_vbo.assign(meshes + i, meshes + i + 1);
                 gl::BindVertexArray(md.main_vao);
-                glDrawArraysInstanced(GL_TRIANGLES, 0, md.sizei(), static_cast<GLsizei>(1));
+                glDrawElementsInstanced(GL_TRIANGLES, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(1));
                 gl::BindVertexArray();
             }
         }
@@ -983,7 +1030,7 @@ osmv::Passthrough_data osmv::Renderer::draw(
             gl::Uniform(shader.uModelMat, mi.transform);
             gl::Uniform(shader.uNormalMat, mi._normal_xform);
             gl::BindVertexArray(md.normal_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.sizei());
+            gl::DrawArrays(GL_TRIANGLES, 0, md.nvertsi());
         }
         gl::BindVertexArray();
     }

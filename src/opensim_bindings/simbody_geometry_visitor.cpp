@@ -2,6 +2,7 @@
 
 #include "src/3d/gpu_cache.hpp"
 #include "src/3d/gpu_data_reference.hpp"
+#include "src/3d/mesh.hpp"
 #include "src/3d/mesh_instance.hpp"
 #include "src/3d/untextured_vert.hpp"
 #include "src/constants.hpp"
@@ -15,6 +16,7 @@
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 
 #include <algorithm>
+#include <limits>
 
 using namespace SimTK;
 using namespace osmv;
@@ -35,7 +37,7 @@ static glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, g
 }
 
 // load a SimTK::PolygonalMesh into an osmv::Untextured_vert mesh ready for GPU upload
-static void load_mesh_data(PolygonalMesh const& mesh, std::vector<Untextured_vert>& triangles) {
+static void load_mesh_data(PolygonalMesh const& mesh, Plain_mesh& out) {
 
     // helper function: gets a vertex for a face
     auto get_face_vert_pos = [&](int face, int vert) {
@@ -45,10 +47,11 @@ static void load_mesh_data(PolygonalMesh const& mesh, std::vector<Untextured_ver
 
     // helper function: compute the normal of the triangle p1, p2, p3
     auto make_normal = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
-        return glm::cross(p2 - p1, p3 - p1);
+        return glm::normalize(glm::cross(p2 - p1, p3 - p1));
     };
 
-    triangles.clear();
+    out.clear();
+    std::vector<Untextured_vert>& triangles = out.vert_data;
 
     // iterate over each face in the PolygonalMesh and transform each into a sequence of
     // GPU-friendly triangle verts
@@ -117,6 +120,8 @@ static void load_mesh_data(PolygonalMesh const& mesh, std::vector<Untextured_ver
             triangles.push_back({center, normal});
         }
     }
+
+    out = Plain_mesh::by_deduping(std::move(triangles));
 }
 
 static Transform ground_to_decoration_xform(
@@ -294,9 +299,9 @@ void Simbody_geometry_visitor::implementMeshGeometry(SimTK::DecorativeMesh const
 
 void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFile const& geom) {
     Mesh_reference ref =
-        gpu_cache.lookup_or_construct_mesh(geom.getMeshFile(), [&geom, &vert_swap = this->vert_swap]() {
-            load_mesh_data(geom.getMesh(), vert_swap);
-            return vert_swap;
+        gpu_cache.lookup_or_construct_mesh(geom.getMeshFile(), [&geom, &mesh_swap = this->mesh_swap]() {
+            load_mesh_data(geom.getMesh(), mesh_swap);
+            return mesh_swap;
         });
 
     emplace_instance(glm::scale(to_mat4(matter_subsys, state, geom), scale_factors(geom)), extract_rgba(geom), ref);

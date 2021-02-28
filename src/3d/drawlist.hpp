@@ -9,6 +9,7 @@
 namespace osmv {
     class Drawlist final {
         friend class Renderer;
+        friend void optimize(Drawlist&) noexcept;
 
         std::vector<Mesh_instance> instances;
 
@@ -32,11 +33,8 @@ namespace osmv {
                 f(mi);
             }
         }
-
-        // permitted to re-order or minorly mutate elements, but not remove any
-        //
-        // not permitted to modify Raw_mesh_instance::passthrough_data - use that to encode
-        // any information you need *before* optimizing
-        void optimize() noexcept;
     };
+
+    // backend-defined draw order optimization
+    void optimize(Drawlist&) noexcept;
 }
