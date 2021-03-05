@@ -5,6 +5,7 @@
 #include "src/application.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
@@ -582,14 +583,16 @@ struct Show_model_screen::Impl final {
         std::vector<OpenSim::Muscle const*> muscles;
     } scratch;
 
-    std::filesystem::path model_path;
+    std::unique_ptr<OpenSim::Model> original_model;
     std::unique_ptr<OpenSim::Model> model;
     std::unique_ptr<SimTK::State> latest_state;
 
     Selected_component selected_component;
     Gpu_cache cache;
-    Model_viewer_widget model_viewer{cache, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
-    Model_viewer_widget model_viewer2{cache, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
+    Model_viewer_widget model_viewer{
+        cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
+    Model_viewer_widget model_viewer2{
+        cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
     OpenSim::Component const* current_hover = nullptr;
 
     Coordinates_tab_data coords_tab;
@@ -598,9 +601,9 @@ struct Show_model_screen::Impl final {
     Muscles_tab_data muscles_tab;
     Outputs_tab_data outputs_tab;
 
-    Impl(std::filesystem::path _path, std::unique_ptr<OpenSim::Model> _model) :
-        model_path{std::move(_path)},
-        model{std::move(_model)},
+    Impl(std::unique_ptr<OpenSim::Model> _model) :
+        original_model{std::move(_model)},
+        model{std::make_unique<OpenSim::Model>(*original_model)},
         latest_state{[this]() {
             model->finalizeFromProperties();
             auto p = std::make_unique<SimTK::State>(model->initSystem());
@@ -622,7 +625,7 @@ struct Show_model_screen::Impl final {
                 // CTRL + R: reload the model from scratch
                 SDL_Keymod km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    Application::current().request_screen_transition<Loading_screen>(model_path);
+                    model = std::make_unique<OpenSim::Model>(*original_model);
                     return true;
                 }
 
@@ -1016,7 +1019,11 @@ struct Show_model_screen::Impl final {
             on_user_edited_model();
         }
 
-        ImGui::Text("tendon strain");
+        if (ImGui::Button("edit")) {
+            Application::current().request_screen_transition<Model_editor_screen>(
+                std::make_unique<OpenSim::Model>(*model));
+        }
+
         ImGui::SameLine();
     }
 
@@ -1479,8 +1486,7 @@ struct Show_model_screen::Impl final {
     }
 };
 
-Show_model_screen::Show_model_screen(std::filesystem::path path, std::unique_ptr<OpenSim::Model> model) :
-    impl{new Impl{std::move(path), std::move(model)}} {
+Show_model_screen::Show_model_screen(std::unique_ptr<OpenSim::Model> model) : impl{new Impl{std::move(model)}} {
 }
 
 Show_model_screen::~Show_model_screen() noexcept {

@@ -34,29 +34,6 @@
 using namespace osmv;
 
 namespace {
-    using ModelViewerRecoloring = int;
-    enum ModelViewerRecoloring_ {
-        ModelViewerRecoloring_None = 0,
-        ModelViewerRecoloring_Strain,
-        ModelViewerRecoloring_Length,
-        ModelViewerRecoloring_COUNT,
-    };
-
-    using ModelViewerGeometryFlags = int;
-    enum ModelViewerGeometryFlags_ {
-        ModelViewerGeometryFlags_None = 0,
-        ModelViewerGeometryFlags_DrawDynamicDecorations = 1 << 0,
-        ModelViewerGeometryFlags_DrawStaticDecorations = 1 << 1,
-        ModelViewerGeometryFlags_DrawFloor = 1 << 2,
-        ModelViewerGeometryFlags_OptimizeDrawOrder = 1 << 3,
-        ModelViewerGeometryFlags_DrawFrames = 1 << 4,
-        ModelViewerGeometryFlags_DrawDebugGeometry = 1 << 5,
-        ModelViewerGeometryFlags_DrawLabels = 1 << 6,
-
-        ModelViewerGeometryFlags_Default =
-            ModelViewerGeometryFlags_DrawDynamicDecorations | ModelViewerGeometryFlags_DrawStaticDecorations |
-            ModelViewerGeometryFlags_DrawFloor | ModelViewerGeometryFlags_OptimizeDrawOrder
-    };
 
     void apply_standard_rim_coloring(
         Model_drawlist& drawlist,
@@ -99,17 +76,15 @@ struct osmv::Model_viewer_widget::Impl final {
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
-    ModelViewerRecoloring recoloring = ModelViewerRecoloring_None;
+    ModelViewerWidgetFlags flags;
     DrawcallFlags rendering_flags = RawRendererFlags_Default;
-    ModelViewerGeometryFlags geom_flags = ModelViewerGeometryFlags_Default;
-    ModelViewerWidgetFlags user_flags = ModelViewerWidgetFlags_None;
 
     bool mouse_over_render = false;
 
-    Impl(Gpu_cache& _cache, ModelViewerWidgetFlags _user_flags) : cache{_cache}, user_flags{_user_flags} {
+    Impl(Gpu_cache& _cache, ModelViewerWidgetFlags _flags) : cache{_cache}, flags{_flags} {
     }
 
-    gl::Texture_2d& draw(DrawcallFlags flags) {
+    gl::Texture_2d& draw(DrawcallFlags drawflags) {
         Raw_drawcall_params params;
         params.passthrough_hittest_x = hovertest_x;
         params.passthrough_hittest_y = hovertest_y;
@@ -120,7 +95,7 @@ struct osmv::Model_viewer_widget::Impl final {
         params.light_rgb = light_rgb;
         params.background_rgba = background_rgba;
         params.rim_rgba = rim_rgba;
-        params.flags = flags;
+        params.flags = drawflags;
         if (Application::current().is_in_debug_mode()) {
             params.flags |= RawRendererFlags_DrawDebugQuads;
         } else {
@@ -144,7 +119,9 @@ Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache, ModelViewerWidgetFlag
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 }
 
-Model_viewer_widget::~Model_viewer_widget() noexcept = default;
+Model_viewer_widget::~Model_viewer_widget() noexcept {
+    delete impl;
+}
 
 bool Model_viewer_widget::is_moused_over() const noexcept {
     return impl->mouse_over_render;
@@ -212,19 +189,18 @@ void Model_viewer_widget::draw(
                 ImGui::Text("Selection logic:");
 
                 ImGui::CheckboxFlags(
-                    "coerce selection to muscle", &impl->user_flags, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles);
+                    "coerce selection to muscle", &impl->flags, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles);
 
                 ImGui::CheckboxFlags(
-                    "draw dynamic geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawDynamicDecorations);
+                    "draw dynamic geometry", &impl->flags, ModelViewerWidgetFlags_DrawDynamicDecorations);
 
                 ImGui::CheckboxFlags(
-                    "draw static geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawStaticDecorations);
+                    "draw static geometry", &impl->flags, ModelViewerWidgetFlags_DrawStaticDecorations);
 
-                ImGui::CheckboxFlags("draw frames", &impl->geom_flags, ModelViewerGeometryFlags_DrawFrames);
+                ImGui::CheckboxFlags("draw frames", &impl->flags, ModelViewerWidgetFlags_DrawFrames);
 
-                ImGui::CheckboxFlags(
-                    "draw debug geometry", &impl->geom_flags, ModelViewerGeometryFlags_DrawDebugGeometry);
-                ImGui::CheckboxFlags("draw labels", &impl->geom_flags, ModelViewerGeometryFlags_DrawLabels);
+                ImGui::CheckboxFlags("draw debug geometry", &impl->flags, ModelViewerWidgetFlags_DrawDebugGeometry);
+                ImGui::CheckboxFlags("draw labels", &impl->flags, ModelViewerWidgetFlags_DrawLabels);
 
                 ImGui::Separator();
 
@@ -239,9 +215,8 @@ void Model_viewer_widget::draw(
                     &impl->rendering_flags,
                     RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
                 ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
-                ImGui::CheckboxFlags("draw floor", &impl->geom_flags, ModelViewerGeometryFlags_DrawFloor);
-                ImGui::CheckboxFlags(
-                    "optimize draw order", &impl->geom_flags, ModelViewerGeometryFlags_OptimizeDrawOrder);
+                ImGui::CheckboxFlags("draw floor", &impl->flags, ModelViewerWidgetFlags_DrawFloor);
+                ImGui::CheckboxFlags("optimize draw order", &impl->flags, ModelViewerWidgetFlags_OptimizeDrawOrder);
                 ImGui::CheckboxFlags(
                     "use instanced (optimized) renderer",
                     &impl->rendering_flags,
@@ -301,14 +276,37 @@ void Model_viewer_widget::draw(
                 std::snprintf(buf, sizeof(buf), "something longer than options");
                 ImVec2 font_dims = ImGui::CalcTextSize(buf);
 
-                static constexpr char const* recoloring_strs[ModelViewerRecoloring_COUNT] = {
-                    "default muscle coloring",
-                    "color muscles by strain",
-                    "color muscles by length",
-                };
+                static constexpr std::array<char const*, 3> options = {
+                    "default muscle coloring", "color muscles by strain", "color muscles by length"};
+
                 ImGui::Dummy(ImVec2{5.0f, 0.0f});
                 ImGui::SetNextItemWidth(font_dims.x);
-                ImGui::Combo("##musclecoloring", &impl->recoloring, recoloring_strs, ModelViewerRecoloring_COUNT);
+                int choice = 0;
+                if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
+                    choice = 1;
+                } else if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
+                    choice = 2;
+                }
+
+                if (ImGui::Combo("##musclecoloring", &choice, options.data(), options.size())) {
+                    switch (choice) {
+                    case 0:
+                        impl->flags |= ModelViewerWidgetFlags_DefaultMuscleColoring;
+                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByLength;
+                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        break;
+                    case 1:
+                        impl->flags &= ~ModelViewerWidgetFlags_DefaultMuscleColoring;
+                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByLength;
+                        impl->flags |= ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        break;
+                    case 2:
+                        impl->flags &= ~ModelViewerWidgetFlags_DefaultMuscleColoring;
+                        impl->flags |= ModelViewerWidgetFlags_RecolorMusclesByLength;
+                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        break;
+                    }
+                }
             }
 
             ImGui::EndMenuBar();
@@ -321,25 +319,24 @@ void Model_viewer_widget::draw(
             {
                 impl->geometry.clear();
                 ModelDrawlistFlags flags = ModelDrawlistFlags_None;
-                if (impl->geom_flags & ModelViewerGeometryFlags_DrawStaticDecorations) {
+                if (impl->flags & ModelViewerWidgetFlags_DrawStaticDecorations) {
                     flags |= ModelDrawlistFlags_StaticGeometry;
                 }
-                if (impl->geom_flags & ModelViewerGeometryFlags_DrawDynamicDecorations) {
+                if (impl->flags & ModelViewerWidgetFlags_DrawDynamicDecorations) {
                     flags |= ModelDrawlistFlags_DynamicGeometry;
                 }
 
                 OpenSim::ModelDisplayHints cpy = model.getDisplayHints();
 
-                cpy.upd_show_frames() = static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawFrames);
-                cpy.upd_show_debug_geometry() =
-                    static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawDebugGeometry);
-                cpy.upd_show_labels() = static_cast<bool>(impl->geom_flags & ModelViewerGeometryFlags_DrawLabels);
+                cpy.upd_show_frames() = impl->flags & ModelViewerWidgetFlags_DrawFrames;
+                cpy.upd_show_debug_geometry() = impl->flags & ModelViewerWidgetFlags_DrawDebugGeometry;
+                cpy.upd_show_labels() = impl->flags & ModelViewerWidgetFlags_DrawLabels;
 
                 generate_decoration_drawlist(model, state, cpy, impl->cache, impl->geometry, flags);
             }
 
             // HACK: add floor in
-            if (impl->geom_flags & ModelViewerGeometryFlags_DrawFloor) {
+            if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
                 glm::mat4 model_mtx = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -358,12 +355,12 @@ void Model_viewer_widget::draw(
                     nullptr, model_mtx, color, impl->cache.floor_quad, impl->cache.chequered_texture);
             }
 
-            if (impl->geom_flags & ModelViewerGeometryFlags_OptimizeDrawOrder) {
+            if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {
                 optimize(impl->geometry);
             }
 
             // perform screen-specific geometry fixups
-            if (impl->user_flags & ModelViewerWidgetFlags_CanOnlyInteractWithMuscles) {
+            if (impl->flags & ModelViewerWidgetFlags_CanOnlyInteractWithMuscles) {
                 impl->geometry.for_each(
                     [&model](OpenSim::Component const*& associated_component, Mesh_instance const&) {
                         // for this screen specifically, the "owner"s should be fixed up to point to
@@ -383,7 +380,7 @@ void Model_viewer_widget::draw(
                     });
             }
 
-            if (impl->recoloring == ModelViewerRecoloring_Strain) {
+            if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
@@ -397,7 +394,7 @@ void Model_viewer_widget::draw(
                 });
             }
 
-            if (impl->recoloring == ModelViewerRecoloring_Length) {
+            if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (not musc) {
@@ -423,7 +420,7 @@ void Model_viewer_widget::draw(
                     static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples());
 
                 gl::Texture_2d& render = impl->draw(impl->rendering_flags);
-
+                bool mouse_right_clicked_render = false;
                 {
                     // required by ImGui::Image
                     //
@@ -441,6 +438,7 @@ void Model_viewer_widget::draw(
                     ImGui::Image(texture_handle, image_dimensions, uv0, uv1);
 
                     impl->mouse_over_render = ImGui::IsItemHovered();
+                    mouse_right_clicked_render = ImGui::IsItemClicked(ImGuiMouseButton_Right);
 
                     impl->hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
                     // y is reversed (OpenGL coords, not screen)
@@ -457,6 +455,10 @@ void Model_viewer_widget::draw(
                 }
 
                 *hovered = impl->hovered_component;
+
+                if (impl->hovered_component and mouse_right_clicked_render) {
+                    *selected = impl->hovered_component;
+                }
             }
 
             ImGui::EndChild();

@@ -42,10 +42,7 @@ static constexpr std::array<Textured_vert, 6> _shaded_textured_quad_verts = {{
 }};
 
 Textured_mesh osmv::shaded_textured_quad_verts() {
-    Textured_mesh mesh;
-    mesh.vert_data.assign(_shaded_textured_quad_verts.begin(), _shaded_textured_quad_verts.end());
-    mesh.generate_trivial_indices();
-    return mesh;
+    return Textured_mesh::from_raw_verts(_shaded_textured_quad_verts);
 }
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere

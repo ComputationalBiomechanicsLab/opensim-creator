@@ -121,7 +121,7 @@ static void load_mesh_data(PolygonalMesh const& mesh, Plain_mesh& out) {
         }
     }
 
-    out = Plain_mesh::by_deduping(std::move(triangles));
+    out = Plain_mesh::from_raw_verts(std::move(triangles));
 }
 
 static Transform ground_to_decoration_xform(

@@ -19,7 +19,25 @@ namespace osmv {
     using ModelViewerWidgetFlags = int;
     enum ModelViewerWidgetFlags_ {
         ModelViewerWidgetFlags_None = 0,
-        ModelViewerWidgetFlags_CanOnlyInteractWithMuscles = 1 << 0,
+
+        ModelViewerWidgetFlags_DrawDynamicDecorations = 1 << 0,
+        ModelViewerWidgetFlags_DrawStaticDecorations = 1 << 1,
+        ModelViewerWidgetFlags_DrawFloor = 1 << 2,
+        ModelViewerWidgetFlags_OptimizeDrawOrder = 1 << 3,
+        ModelViewerWidgetFlags_DrawFrames = 1 << 4,
+        ModelViewerWidgetFlags_DrawDebugGeometry = 1 << 5,
+        ModelViewerWidgetFlags_DrawLabels = 1 << 6,
+
+        ModelViewerWidgetFlags_CanOnlyInteractWithMuscles = 1 << 7,
+
+        ModelViewerWidgetFlags_DefaultMuscleColoring = 1 << 8,
+        ModelViewerWidgetFlags_RecolorMusclesByStrain = 1 << 9,  // overrides previous
+        ModelViewerWidgetFlags_RecolorMusclesByLength = 1 << 10,  // overrides previous
+
+        ModelViewerWidgetFlags_Default = ModelViewerWidgetFlags_DrawDynamicDecorations |
+                                         ModelViewerWidgetFlags_DrawStaticDecorations |
+                                         ModelViewerWidgetFlags_DrawFloor | ModelViewerWidgetFlags_OptimizeDrawOrder |
+                                         ModelViewerWidgetFlags_DefaultMuscleColoring
     };
 
     class Model_viewer_widget final {

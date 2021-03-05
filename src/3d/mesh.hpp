@@ -21,12 +21,9 @@ namespace osmv {
 
         Mesh() = default;
 
-        void generate_trivial_indices() {
-            size_t n = vert_data.size();
-            indices.resize(n);
-            for (size_t i = 0; i < n; ++i) {
-                indices[i] = i;
-            }
+        Mesh(std::vector<TVert> _vert_data, std::vector<element_index_type> _indices) :
+            vert_data{std::move(_vert_data)},
+            indices{std::move(_indices)} {
         }
 
         template<typename... Args>
@@ -54,9 +51,20 @@ namespace osmv {
 
         // warning: could be expensive
         [[nodiscard]] static Plain_mesh by_deduping(std::vector<Untextured_vert>);
+
+        [[nodiscard]] static Plain_mesh from_raw_verts(std::vector<Untextured_vert>);
     };
 
     struct Textured_mesh final : public Mesh<Textured_vert> {
         using Mesh::Mesh;
+
+        [[nodiscard]] static Textured_mesh from_raw_verts(std::vector<Textured_vert>);
+
+        [[nodiscard]] static Textured_mesh from_raw_verts(Textured_vert const* first, size_t n);
+
+        template<typename Container>
+        [[nodiscard]] static Textured_mesh from_raw_verts(Container const& c) {
+            return Textured_mesh::from_raw_verts(c.data(), c.size());
+        }
     };
 }

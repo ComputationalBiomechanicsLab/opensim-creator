@@ -18,7 +18,7 @@ namespace osmv {
         Impl* impl;
 
     public:
-        Show_model_screen(std::filesystem::path, std::unique_ptr<OpenSim::Model>);
+        Show_model_screen(std::unique_ptr<OpenSim::Model>);
         Show_model_screen(Show_model_screen const&) = delete;
         Show_model_screen(Show_model_screen&&) = delete;
         Show_model_screen& operator=(Show_model_screen const&) = delete;

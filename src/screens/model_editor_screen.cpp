@@ -4,11 +4,16 @@
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/sdl_wrapper.hpp"
+#include "src/widgets/add_joint_modal.hpp"
+#include "src/widgets/attach_geometry_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
+#include "src/widgets/properties_editor.hpp"
+#include "src/widgets/reassign_socket_modal.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -23,10 +28,12 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <SDL_mouse.h>
@@ -55,6 +62,18 @@ static T const* find_ancestor(OpenSim::Component const* c) {
             return p;
         }
         c = c->hasOwner() ? &c->getOwner() : nullptr;
+    }
+    return nullptr;
+}
+
+template<typename T>
+static T* find_ancestor(OpenSim::Component* c) {
+    while (c) {
+        T* p = dynamic_cast<T*>(c);
+        if (p) {
+            return p;
+        }
+        c = c->hasOwner() ? const_cast<OpenSim::Component*>(&c->getOwner()) : nullptr;
     }
     return nullptr;
 }
@@ -106,193 +125,269 @@ static std::vector<fs::path> find_all_vtp_resources() {
 
 struct Model_editor_screen::Impl final {
     std::vector<fs::path> available_vtps = find_all_vtp_resources();
+    std::unique_ptr<OpenSim::Model> model;
 
-    OpenSim::Model model;
-
-    char meshname[128] = "block.vtp";
-
-    std::vector<OpenSim::Model> snapshots;
+    std::vector<std::unique_ptr<OpenSim::Model>> snapshots;
     int snapshotidx = 0;
 
-    int parentbodyidx = -1;
-
-    Gpu_cache cache;
-    Model_viewer_widget model_viewer{cache, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
-
-    SimTK::State editor_state{model.initSystem()};
+    Gpu_cache gpu_cache;
+    Model_viewer_widget model_viewer{gpu_cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
     std::optional<Fd_simulation> fdsim;
     OpenSim::Component const* selected_component = nullptr;
     OpenSim::Component const* hovered_component = nullptr;
 
-    Impl() {
-        model.updDisplayHints().set_show_frames(true);
-    }
+    std::array<Add_joint_modal, 4> add_joint_modals = {
+        Add_joint_modal::create<OpenSim::FreeJoint>("Add FreeJoint"),
+        Add_joint_modal::create<OpenSim::PinJoint>("Add PinJoint"),
+        Add_joint_modal::create<OpenSim::UniversalJoint>("Add UniversalJoint"),
+        Add_joint_modal::create<OpenSim::BallJoint>("Add BallJoint")};
 
-    void draw_prop_editor() {
-        if (not selected_component) {
-            ImGui::Text("select something");
-            return;
-        }
-
-        // TODO: naughty naughty: this is because pointers to non-const els
-        // cannot be easily be coerced into points to const els (even though
-        // you'd expect one to be a logical subset of the other)
-        //
-        // see:
-        // https://stackoverflow.com/questions/36302078/non-const-reference-to-a-non-const-pointer-pointing-to-the-const-object
-        OpenSim::Component& c = const_cast<OpenSim::Component&>(*selected_component);
-
-        // properties
-        ImGui::Columns(2);
-
-        // edit name
-        {
-            ImGui::Text("name");
-            ImGui::NextColumn();
-
-            char nambuf[128];
-            nambuf[sizeof(nambuf) - 1] = '\0';
-            std::strncpy(nambuf, c.getName().c_str(), sizeof(nambuf) - 1);
-            if (ImGui::InputText("##nameditor", nambuf, sizeof(nambuf))) {
-                c.setName(nambuf);
-            }
-            ImGui::NextColumn();
-        }
-
-        for (int i = 0; i < c.getNumProperties(); ++i) {
-            OpenSim::AbstractProperty& p = c.updPropertyByIndex(i);
-            ImGui::Text("%s", p.getName().c_str());
-            ImGui::NextColumn();
-
-            ImGui::PushID(p.getName().c_str());
-            bool editor_rendered = false;
-
-            // try string
-            {
-                auto* sp = dynamic_cast<OpenSim::Property<std::string>*>(&p);
-                if (sp) {
-                    char buf[64]{};
-                    buf[sizeof(buf) - 1] = '\0';
-                    std::strncpy(buf, sp->getValue().c_str(), sizeof(buf) - 1);
-
-                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                    ImGui::InputText("##stringeditor", buf, sizeof(buf));
-
-                    editor_rendered = true;
-                }
-            }
-
-            // try double
-            {
-                auto* dp = dynamic_cast<OpenSim::Property<double>*>(&p);
-                if (dp and not dp->isListProperty()) {
-                    float v = static_cast<float>(dp->getValue());
-
-                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                    if (ImGui::InputFloat("##doubleditor", &v)) {
-                        dp->setValue(static_cast<double>(v));
-                    }
-
-                    editor_rendered = true;
-                }
-            }
-
-            // try Vec3
-            {
-                auto* vp = dynamic_cast<OpenSim::Property<SimTK::Vec3>*>(&p);
-                if (vp and not vp->isListProperty()) {
-                    SimTK::Vec3 const& v = vp->getValue();
-                    float vs[3];
-                    vs[0] = static_cast<float>(v[0]);
-                    vs[1] = static_cast<float>(v[1]);
-                    vs[2] = static_cast<float>(v[2]);
-
-                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                    if (ImGui::InputFloat3("##vec3editor", vs)) {
-                        vp->setValue(SimTK::Vec3{
-                            static_cast<double>(vs[0]), static_cast<double>(vs[1]), static_cast<double>(vs[2])});
-                    }
-
-                    editor_rendered = true;
-                }
-            }
-
-            if (not editor_rendered) {
-                ImGui::Text("%s", p.toString().c_str());
-            }
-
-            ImGui::PopID();
-
-            ImGui::NextColumn();
-        }
-        ImGui::Columns();
-    }
-
-    void draw_physical_frame_actions(OpenSim::PhysicalFrame& pf) {
-        if (ImGui::Button("Add offset frame")) {
-            auto* frame = new OpenSim::PhysicalOffsetFrame{};
-            frame->setParentFrame(pf);
-            pf.addComponent(frame);
-        }
-
-        if (ImGui::Button("Add body")) {
-            auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-            model.addBody(body);
-        }
-
-        if (ImGui::Button("Add FreeJoint")) {
-            auto* mesh = new OpenSim::Mesh{meshname};
-            auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-            body->attachGeometry(mesh);
-
-            auto* joint = new OpenSim::FreeJoint{"freejoint", pf, *body};
-
-            // SimTK::Vec3 offset{0.0, 0.0, 0.0};
-            // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
-            // joint->addFrame(pof);
-
-            // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
-            // joint->addFrame(cof);
-
-            auto& bs = model.updBodySet();
-            bs.insert(bs.getSize(), body);
-
-            auto& js = model.updJointSet();
-            js.insert(js.getSize(), joint);
-        }
-
-        if (ImGui::Button("Add PinJoint")) {
-            auto* mesh = new OpenSim::Mesh{meshname};
-            auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-            body->attachGeometry(mesh);
-
-            auto* joint = new OpenSim::PinJoint{"pinjoint", pf, *body};
-
-            // SimTK::Vec3 offset{0.0, 0.0, 0.0};
-            // auto* pof = new OpenSim::PhysicalOffsetFrame{"parent_offset", *parent, offset};
-            // joint->addFrame(pof);
-
-            // auto* cof = new OpenSim::PhysicalOffsetFrame{"child_offset", *body, offset};
-            // joint->addFrame(cof);
-
-            auto& bs = model.updBodySet();
-            bs.insert(bs.getSize(), body);
-
-            auto& js = model.updJointSet();
-            js.insert(js.getSize(), joint);
-        }
-
-        for (fs::path const& p : available_vtps) {
-            if (ImGui::Button(p.filename().string().c_str())) {
-                // pf.updProperty_attached_geometry().clear();
-                pf.attachGeometry(new OpenSim::Mesh{p.string()});
-            }
-        }
+    Impl(std::unique_ptr<OpenSim::Model> _model) : model{std::move(_model)} {
     }
 };
 
-Model_editor_screen::Model_editor_screen() : impl{new Impl{}} {
+static void draw_top_level_editor(OpenSim::Component& c) {
+    ImGui::Columns(2);
+
+    ImGui::Text("name");
+    ImGui::NextColumn();
+
+    char nambuf[128];
+    nambuf[sizeof(nambuf) - 1] = '\0';
+    std::strncpy(nambuf, c.getName().c_str(), sizeof(nambuf) - 1);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    if (ImGui::InputText("##nameditor", nambuf, sizeof(nambuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+        if (std::strlen(nambuf) > 0) {
+            c.setName(nambuf);
+        }
+    }
+    ImGui::NextColumn();
+
+    ImGui::Columns();
+}
+
+static void draw_frame_contextual_actions(
+    OpenSim::Model& model,
+    std::vector<fs::path> const& vtps,
+    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
+    OpenSim::PhysicalFrame& frame) {
+
+    ImGui::Columns(2);
+
+    thread_local Attach_geometry_modal modal;
+
+    ImGui::Text("geometry");
+    ImGui::NextColumn();
+    if (ImGui::Button("attach geometry")) {
+        modal.show();
+    }
+    modal.draw(model, vtps, snapshots, frame);
+    ImGui::NextColumn();
+
+    ImGui::Text("offset frame");
+    ImGui::NextColumn();
+    if (ImGui::Button("add offset frame")) {
+        auto* pf = new OpenSim::PhysicalOffsetFrame{};
+        pf->setParentFrame(frame);
+        frame.addComponent(pf);
+    }
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+
+    ImGui::Separator();
+}
+
+static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joint& dest) {
+    dest.setName(src.getName());
+
+    // copy owned frames
+    dest.updProperty_frames().assign(src.getProperty_frames());
+
+    // copy, or reference, the parent based on whether the source owns it
+    {
+        OpenSim::PhysicalFrame const& src_parent = src.getParentFrame();
+        bool parent_assigned = false;
+        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
+            if (&src.get_frames(i) == &src_parent) {
+                // the source's parent is also owned by the source, so we need to
+                // ensure the destination refers to its own (cloned, above) copy
+                dest.connectSocket_parent_frame(dest.get_frames(i));
+                parent_assigned = true;
+                break;
+            }
+        }
+        if (not parent_assigned) {
+            // the source's parent is a reference to some frame that the source
+            // doesn't, itself, own, so the destination should just also refer
+            // to the same (not-owned) frame
+            dest.connectSocket_parent_frame(src_parent);
+        }
+    }
+
+    // copy, or reference, the child based on whether the source owns it
+    {
+        OpenSim::PhysicalFrame const& src_child = src.getChildFrame();
+        bool child_assigned = false;
+        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
+            if (&src.get_frames(i) == &src_child) {
+                // the source's child is also owned by the source, so we need to
+                // ensure the destination refers to its own (cloned, above) copy
+                dest.connectSocket_child_frame(dest.get_frames(i));
+                child_assigned = true;
+                break;
+            }
+        }
+        if (not child_assigned) {
+            // the source's child is a reference to some frame that the source
+            // doesn't, itself, own, so the destination should just also refer
+            // to the same (not-owned) frame
+            dest.connectSocket_child_frame(src_child);
+        }
+    }
+}
+
+static void draw_joint_contextual_actions(OpenSim::Model& model, OpenSim::Component** selected, OpenSim::Joint& joint) {
+    assert(selected and dynamic_cast<OpenSim::Joint*>(*selected));
+
+    ImGui::Columns(2);
+
+    if (auto const* jsp = dynamic_cast<OpenSim::JointSet const*>(&joint.getOwner()); jsp) {
+        OpenSim::JointSet& js = *const_cast<OpenSim::JointSet*>(jsp);
+
+        int idx = -1;
+        for (int i = 0; i < js.getSize(); ++i) {
+            if (&js[i] == &joint) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx >= 0) {
+            ImGui::Text("joint type");
+            ImGui::NextColumn();
+
+            std::unique_ptr<OpenSim::Joint> added_joint = nullptr;
+            if (ImGui::Button("fj")) {
+                added_joint.reset(new OpenSim::FreeJoint{});
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("pj")) {
+                added_joint.reset(new OpenSim::PinJoint{});
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("uj")) {
+                added_joint.reset(new OpenSim::UniversalJoint{});
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("bj")) {
+                added_joint.reset(new OpenSim::BallJoint{});
+            }
+
+            if (added_joint) {
+                copy_common_joint_properties(joint, *added_joint);
+
+                assert(*selected == &joint);
+                *selected = added_joint.get();
+
+                js.set(idx, added_joint.release());
+            }
+        }
+    }
+
+    ImGui::Columns();
+}
+
+static void draw_contextual_actions(
+    OpenSim::Model& model,
+    std::vector<fs::path> const& vtps,
+    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
+    OpenSim::Component** selection) {
+
+    assert(selection and *selection and "selection is blank (shouldn't be)");
+
+    if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(*selection); frame) {
+        draw_frame_contextual_actions(model, vtps, snapshots, *frame);
+    } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(*selection); joint) {
+        draw_joint_contextual_actions(model, selection, *joint);
+    }
+}
+
+static void draw_socket_editor(OpenSim::Model& model, OpenSim::Component& c) {
+    std::vector<std::string> socknames = c.getSocketNames();
+    ImGui::Columns(2);
+    for (std::string const& sn : socknames) {
+        ImGui::Text("%s", sn.c_str());
+        ImGui::NextColumn();
+
+        OpenSim::AbstractSocket& socket = c.updSocket(sn);
+        std::string sockname = socket.getConnecteePath();
+        std::string popupname = std::string{"reassign"} + sockname;
+
+        thread_local Reassign_socket_modal modal;
+
+        if (ImGui::Button(sockname.c_str())) {
+            modal.show(popupname.c_str());
+        }
+        modal.draw(popupname.c_str(), model, socket);
+
+        ImGui::NextColumn();
+    }
+    ImGui::Columns();
+}
+
+static void draw_selection_editor(
+    OpenSim::Model& model,
+    std::vector<fs::path> const& vtps,
+    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
+    OpenSim::Component const** selected) {
+
+    if (not selected or not*selected) {
+        ImGui::Text("(nothing selected)");
+        return;
+    }
+
+    // TODO: naughty naughty: this is because pointers to non-const els
+    // cannot be easily be coerced into points to const els (even though
+    // you'd expect one to be a logical subset of the other)
+    //
+    // see:
+    // https://stackoverflow.com/questions/36302078/non-const-reference-to-a-non-const-pointer-pointing-to-the-const-object
+    OpenSim::Component** mutable_selected = const_cast<OpenSim::Component**>(selected);
+
+    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Text("top-level attributes:");
+    ImGui::Separator();
+    draw_top_level_editor(**mutable_selected);
+
+    // contextual actions
+    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Text("contextual actions:");
+    ImGui::Separator();
+    draw_contextual_actions(model, vtps, snapshots, mutable_selected);
+
+    // property editor
+    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Text("properties:");
+    ImGui::Separator();
+    draw_properties_editor(**mutable_selected);
+
+    // socket editor
+    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Text("sockets:");
+    ImGui::Separator();
+    draw_socket_editor(model, **mutable_selected);
+}
+
+Model_editor_screen::Model_editor_screen() : impl{new Impl{std::make_unique<OpenSim::Model>()}} {
+}
+
+Model_editor_screen::Model_editor_screen(std::unique_ptr<OpenSim::Model> _model) : impl{new Impl{std::move(_model)}} {
 }
 
 Model_editor_screen::~Model_editor_screen() noexcept {
@@ -307,20 +402,43 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
         }
 
         if (e.key.keysym.sym == SDLK_DELETE and impl->selected_component) {
-            auto* geom = const_cast<OpenSim::Geometry*>(find_ancestor<OpenSim::Geometry>(impl->selected_component));
-            auto* pf = const_cast<OpenSim::Frame*>(find_ancestor<OpenSim::Frame>(geom));
-            if (geom and pf) {
-                pf->updProperty_attached_geometry().clear();
-                impl->selected_component = nullptr;
-            }
-        }
-    }
+            OpenSim::Component const* selected = impl->selected_component;
 
-    // if the user right-clicks something in the viewport while the renderer detects
-    // a hover-over, then make the hover-over the selection
-    if (e.type == SDL_MOUSEBUTTONUP) {
-        if (e.button.button == SDL_BUTTON_RIGHT and impl->hovered_component) {
-            impl->selected_component = impl->hovered_component;
+            if (auto const* p = dynamic_cast<OpenSim::Body const*>(selected); p) {
+                // it's a body. If the owner is a BodySet then try to remove the body
+                // from the BodySet
+                if (auto* bs = const_cast<OpenSim::BodySet*>(dynamic_cast<OpenSim::BodySet const*>(&p->getOwner()));
+                    bs) {
+                    std::cerr << "deleting bodys NYI: segfaults" << std::endl;
+                    /*
+                    for (int i = 0; i < bs->getSize(); ++i) {
+                        if (&bs->get(i) == p) {
+                            bs->remove(i);
+                            impl->selected_component = nullptr;
+                        }
+                    }
+                    */
+                }
+            } else if (auto const* geom = find_ancestor<OpenSim::Geometry>(selected); geom) {
+                // it's some child of geometry (probably a mesh), try and find its owning
+                // frame and clear the frame of all geometry
+                if (auto const* frame = find_ancestor<OpenSim::Frame>(geom); frame) {
+                    const_cast<OpenSim::Frame*>(frame)->updProperty_attached_geometry().clear();
+                    impl->selected_component = nullptr;
+                }
+            } else if (auto const* joint = dynamic_cast<OpenSim::Joint const*>(selected); joint) {
+                if (auto const* jointset = dynamic_cast<OpenSim::JointSet const*>(&joint->getOwner()); jointset) {
+                    OpenSim::JointSet& js = *const_cast<OpenSim::JointSet*>(jointset);
+                    for (int i = 0; i < js.getSize(); ++i) {
+                        if (&js.get(i) == joint) {
+                            js.remove(i);
+                            impl->model->finalizeFromProperties();
+                            impl->selected_component = nullptr;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -331,7 +449,7 @@ void Model_editor_screen::tick() {
 }
 
 void osmv::Model_editor_screen::draw() {
-    OpenSim::Model& model = impl->model;
+    OpenSim::Model& model = *impl->model;
 
     // if running a simulation only show the simulation
     if (impl->fdsim) {
@@ -354,7 +472,21 @@ void osmv::Model_editor_screen::draw() {
     SimTK::State state = model.initSystem();
     model.realizePosition(state);
 
-    impl->model_viewer.draw("render", model, state, &impl->selected_component, &impl->hovered_component);
+    {
+        OpenSim::Component const* selected = impl->selected_component;
+        impl->model_viewer.draw("render", model, state, &selected, &impl->hovered_component);
+
+        if (selected != impl->selected_component) {
+            // selection coercion: if the user selects a FrameGeometry in the 3d view they
+            // *probably* want to actually select the object that owns the frame geometry
+
+            if (auto const* fg = dynamic_cast<OpenSim::FrameGeometry const*>(selected); fg) {
+                selected = &fg->getOwner();
+            }
+        }
+
+        impl->selected_component = selected;
+    }
 
     // screen-specific fixup: all hoverables are their parents
     // TODO: impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
@@ -386,7 +518,7 @@ void osmv::Model_editor_screen::draw() {
 
     // prop editor
     if (ImGui::Begin("Edit Props")) {
-        impl->draw_prop_editor();
+        draw_selection_editor(*impl->model, impl->available_vtps, impl->snapshots, &impl->selected_component);
     }
     ImGui::End();
 
@@ -410,7 +542,7 @@ void osmv::Model_editor_screen::draw() {
             if (impl->snapshotidx > 0) {
                 size_t idx = impl->snapshots.size() - static_cast<size_t>(impl->snapshotidx);
 
-                impl->model = impl->snapshots[idx];
+                impl->model = std::make_unique<OpenSim::Model>(*impl->snapshots[idx]);
                 impl->snapshotidx = 0;
                 impl->fdsim.reset();
                 impl->selected_component = nullptr;
@@ -418,7 +550,7 @@ void osmv::Model_editor_screen::draw() {
         }
 
         if (ImGui::Button("take snapshot")) {
-            impl->snapshots.push_back(impl->model);
+            impl->snapshots.push_back(std::make_unique<OpenSim::Model>(*impl->model));
         }
     }
     ImGui::End();
@@ -427,20 +559,32 @@ void osmv::Model_editor_screen::draw() {
     //
     // this is a dumping ground for generic editing actions (add body, add something to selection)
     if (ImGui::Begin("Actions")) {
-        if (impl->selected_component == nullptr) {
-            ImGui::Text("select something");
+        if (ImGui::Button("Add body")) {
+            auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
+            model.addBody(body);
+            impl->selected_component = body;
         }
 
-        // if a physical frame is selected, show "add joint" option
-        auto* pf = const_cast<OpenSim::PhysicalFrame*>(find_ancestor<OpenSim::PhysicalFrame>(impl->selected_component));
-        if (pf) {
-            impl->draw_physical_frame_actions(*pf);
+        for (Add_joint_modal& modal : impl->add_joint_modals) {
+            if (ImGui::Button(modal.modal_name.c_str())) {
+                modal.show();
+            }
+            modal.draw(*impl->model, &impl->selected_component);
         }
 
-        auto* j = const_cast<OpenSim::Joint*>(find_ancestor<OpenSim::Joint>(impl->selected_component));
-        if (j) {
+        if (ImGui::Button("Show model in viewer")) {
+            Application::current().request_screen_transition<Show_model_screen>(
+                std::make_unique<OpenSim::Model>(*impl->model));
+        }
 
-            ImGui::Text("joint selected");
+        OpenSim::Component* c = const_cast<OpenSim::Component*>(impl->selected_component);
+
+        if (auto* j = find_ancestor<OpenSim::Joint>(c); j) {
+            if (ImGui::Button("Add offset frame")) {
+                auto* frame = new OpenSim::PhysicalOffsetFrame{};
+                frame->setParentFrame(model.getGround());
+                j->addFrame(frame);
+            }
         }
     }
     ImGui::End();

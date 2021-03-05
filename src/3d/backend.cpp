@@ -652,7 +652,7 @@ struct Render_target::Impl final {
                 gl::Frame_buffer rv;
 
                 // configure main FBO
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color0);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, color1.type, color1, 0);
                 gl::FramebufferRenderbuffer(
@@ -661,7 +661,7 @@ struct Render_target::Impl final {
                 // check it's OK
                 assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
@@ -698,13 +698,13 @@ struct Render_target::Impl final {
                 gl::Frame_buffer rv;
 
                 // configure non-MSXAA fbo
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
                 // check non-MSXAA OK
                 assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
@@ -730,12 +730,12 @@ struct Render_target::Impl final {
             }()},
             fbo{[this]() {
                 gl::Frame_buffer rv;
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, rv);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
                 assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
-                gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+                gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
@@ -901,7 +901,7 @@ Passthrough_data Renderer::draw(
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
+    gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
 
     // clear the scene FBO's draw buffers for a new draw call
     //
@@ -1059,7 +1059,7 @@ Passthrough_data Renderer::draw(
         glViewport(params.passthrough_hittest_x - 1, params.passthrough_hittest_y - 1, 3, 3);
 
         // bind to a non-MSXAAed FBO
-        gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.skip_msxaa.fbo);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.skip_msxaa.fbo);
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
         // use a specialized shader that is MSXAA-aware to blit exactly one non-blended AA
@@ -1184,7 +1184,7 @@ Passthrough_data Renderer::draw(
 #endif
 
     // bind to output texture: all further drawing goes onto it
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, buffers.color0_resolved.fbo);
+    gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.color0_resolved.fbo);
 
 #ifndef NDEBUG
     OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
@@ -1305,7 +1305,7 @@ Passthrough_data Renderer::draw(
 #endif
 
     // bind back to the original framebuffer (assumed to be window)
-    gl::BindFrameBuffer(GL_FRAMEBUFFER, gl::window_fbo);
+    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
     return hittest_result;
 }

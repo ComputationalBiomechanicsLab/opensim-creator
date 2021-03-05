@@ -69,7 +69,7 @@ void Loading_screen::tick() {
     try {
         if (impl->result.wait_for(0ms) == std::future_status::ready) {
             config::add_recent_file(impl->path);
-            Application::current().request_screen_transition<Show_model_screen>(impl->path, impl->result.get());
+            Application::current().request_screen_transition<Show_model_screen>(impl->result.get());
             return;
         }
     } catch (std::exception const& ex) {

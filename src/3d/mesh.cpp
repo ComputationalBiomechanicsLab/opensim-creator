@@ -6,6 +6,7 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include <cmath>
+#include <limits>
 #include <utility>
 
 using namespace osmv;
@@ -21,25 +22,33 @@ static bool are_effectively_equal(Untextured_vert const& p1, Untextured_vert con
     return false;
 }
 
+static std::vector<Plain_mesh::element_index_type> create_trivial_indices(size_t n) {
+    assert(n < std::numeric_limits<Plain_mesh::element_index_type>::max());
+
+    std::vector<Plain_mesh::element_index_type> rv(n);
+    for (size_t i = 0; i < n; ++i) {
+        rv[i] = static_cast<Plain_mesh::element_index_type>(i);
+    }
+    return rv;
+}
+
 Plain_mesh Plain_mesh::by_deduping(std::vector<Untextured_vert> points) {
-    Plain_mesh pm;
-    pm.vert_data = std::move(points);
-    pm.generate_trivial_indices();
+    std::vector<Plain_mesh::element_index_type> indices = create_trivial_indices(points.size());
 
-    for (size_t i = 0; i < pm.vert_data.size(); ++i) {
-        Untextured_vert const& p1 = pm.vert_data[i];
+    for (size_t i = 0; i < points.size(); ++i) {
+        Untextured_vert const& p1 = points[i];
 
-        for (size_t j = i + 1; j < pm.vert_data.size(); ++j) {
-            Untextured_vert const& p2 = pm.vert_data[j];
+        for (size_t j = i + 1; j < points.size(); ++j) {
+            Untextured_vert const& p2 = points[j];
 
             if (not are_effectively_equal(p1, p2)) {
                 continue;
             }
 
-            pm.vert_data.erase(pm.vert_data.begin() + j);
+            points.erase(points.begin() + j);
 
             // now update the indices
-            for (Plain_mesh::element_index_type& idx : pm.indices) {
+            for (Plain_mesh::element_index_type& idx : indices) {
                 if (idx == j) {
                     idx = static_cast<Plain_mesh::element_index_type>(i);
                 } else if (idx > j) {
@@ -51,5 +60,19 @@ Plain_mesh Plain_mesh::by_deduping(std::vector<Untextured_vert> points) {
         }
     }
 
-    return pm;
+    return Plain_mesh{std::move(points), std::move(indices)};
+}
+
+Plain_mesh Plain_mesh::from_raw_verts(std::vector<Untextured_vert> verts) {
+    size_t n = verts.size();
+    return Plain_mesh{std::move(verts), create_trivial_indices(n)};
+}
+
+Textured_mesh Textured_mesh::from_raw_verts(std::vector<Textured_vert> verts) {
+    size_t n = verts.size();
+    return Textured_mesh{std::move(verts), create_trivial_indices(n)};
+}
+
+Textured_mesh Textured_mesh::from_raw_verts(Textured_vert const* first, size_t n) {
+    return Textured_mesh::from_raw_verts(std::vector<Textured_vert>(first, first + n));
 }

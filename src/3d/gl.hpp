@@ -619,12 +619,12 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFrameBuffer(GLenum target, GLuint handle) {
+    inline void BindFramebuffer(GLenum target, GLuint handle) {
         glBindFramebuffer(target, handle);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFrameBuffer(GLenum target, Frame_buffer const& fb) {
+    inline void BindFramebuffer(GLenum target, Frame_buffer const& fb) {
         glBindFramebuffer(target, fb);
     }
 
