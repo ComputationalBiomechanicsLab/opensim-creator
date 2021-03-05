@@ -288,7 +288,7 @@ void Model_viewer_widget::draw(
                     choice = 2;
                 }
 
-                if (ImGui::Combo("##musclecoloring", &choice, options.data(), options.size())) {
+                if (ImGui::Combo("##musclecoloring", &choice, options.data(), static_cast<int>(options.size()))) {
                     switch (choice) {
                     case 0:
                         impl->flags |= ModelViewerWidgetFlags_DefaultMuscleColoring;

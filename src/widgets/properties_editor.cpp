@@ -104,36 +104,6 @@ bool osmv::Properties_editor::draw(OpenSim::Component& component) {
             }
         }
 
-        // try vec2
-        {
-            auto* vp = dynamic_cast<OpenSim::Property<SimTK::Vec2>*>(&p);
-            if (vp and not vp->isListProperty()) {
-                // lock btn
-                bool locked = property_locked[static_cast<size_t>(i)];
-                if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
-                    property_locked[static_cast<size_t>(i)] = locked;
-                }
-                ImGui::SameLine();
-
-                SimTK::Vec2 const& v = vp->getValue();
-                float vs[2];
-                vs[0] = static_cast<float>(v[0]);
-                vs[1] = static_cast<float>(v[1]);
-
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::InputFloat2("##vec2editor", vs)) {
-                    if (locked) {
-                        float nv = diff(vp->getValue(), vs, 2);
-                        vp->setValue(SimTK::Vec2{static_cast<double>(nv), static_cast<double>(nv)});
-                    } else {
-                        vp->setValue(SimTK::Vec2{static_cast<double>(vs[0]), static_cast<double>(vs[1])});
-                    }
-                }
-
-                editor_rendered = true;
-            }
-        }
-
         // try Vec3
         {
             auto* vp = dynamic_cast<OpenSim::Property<SimTK::Vec3>*>(&p);
