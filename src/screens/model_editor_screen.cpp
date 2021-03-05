@@ -143,6 +143,8 @@ struct Model_editor_screen::Impl final {
         Add_joint_modal::create<OpenSim::UniversalJoint>("Add UniversalJoint"),
         Add_joint_modal::create<OpenSim::BallJoint>("Add BallJoint")};
 
+    Properties_editor properties_editor;
+
     Impl(std::unique_ptr<OpenSim::Model> _model) : model{std::move(_model)} {
     }
 };
@@ -180,8 +182,24 @@ static void draw_frame_contextual_actions(
 
     ImGui::Text("geometry");
     ImGui::NextColumn();
-    if (ImGui::Button("attach geometry")) {
-        modal.show();
+
+    if (frame.getProperty_attached_geometry().empty()) {
+        if (ImGui::Button("add geometry")) {
+            modal.show();
+        }
+    } else {
+        std::string name;
+        if (frame.getProperty_attached_geometry().size() > 1) {
+            name = "multiple";
+        } else if (auto const* mesh = dynamic_cast<OpenSim::Mesh const*>(&frame.get_attached_geometry(0)); mesh) {
+            name = mesh->get_mesh_file();
+        } else {
+            name = frame.get_attached_geometry(0).getConcreteClassName();
+        }
+
+        if (ImGui::Button(name.c_str())) {
+            modal.show();
+        }
     }
     modal.draw(model, vtps, snapshots, frame);
     ImGui::NextColumn();
@@ -196,8 +214,6 @@ static void draw_frame_contextual_actions(
     ImGui::NextColumn();
 
     ImGui::Columns(1);
-
-    ImGui::Separator();
 }
 
 static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joint& dest) {
@@ -266,27 +282,70 @@ static void draw_joint_contextual_actions(OpenSim::Model& model, OpenSim::Compon
         }
 
         if (idx >= 0) {
-            ImGui::Text("joint type");
+            auto const& joint_tid = typeid(joint);
+
+            ImGui::Text("change joint type");
             ImGui::NextColumn();
 
             std::unique_ptr<OpenSim::Joint> added_joint = nullptr;
-            if (ImGui::Button("fj")) {
-                added_joint.reset(new OpenSim::FreeJoint{});
+
+            {
+                int pushed_styles = 0;
+                if (joint_tid == typeid(OpenSim::FreeJoint)) {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ++pushed_styles;
+                }
+
+                if (ImGui::Button("fj")) {
+                    added_joint.reset(new OpenSim::FreeJoint{});
+                }
+
+                ImGui::PopStyleColor(pushed_styles);
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("pj")) {
-                added_joint.reset(new OpenSim::PinJoint{});
+            {
+                int pushed_styles = 0;
+                if (joint_tid == typeid(OpenSim::PinJoint)) {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ++pushed_styles;
+                }
+
+                if (ImGui::Button("pj")) {
+                    added_joint.reset(new OpenSim::PinJoint{});
+                }
+
+                ImGui::PopStyleColor(pushed_styles);
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("uj")) {
-                added_joint.reset(new OpenSim::UniversalJoint{});
+            {
+                int pushed_styles = 0;
+                if (joint_tid == typeid(OpenSim::UniversalJoint)) {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ++pushed_styles;
+                }
+
+                if (ImGui::Button("uj")) {
+                    added_joint.reset(new OpenSim::UniversalJoint{});
+                }
+
+                ImGui::PopStyleColor(pushed_styles);
             }
 
             ImGui::SameLine();
-            if (ImGui::Button("bj")) {
-                added_joint.reset(new OpenSim::BallJoint{});
+            {
+                int pushed_styles = 0;
+                if (joint_tid == typeid(OpenSim::BallJoint)) {
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ++pushed_styles;
+                }
+
+                if (ImGui::Button("bj")) {
+                    added_joint.reset(new OpenSim::BallJoint{});
+                }
+
+                ImGui::PopStyleColor(pushed_styles);
             }
 
             if (added_joint) {
@@ -297,8 +356,26 @@ static void draw_joint_contextual_actions(OpenSim::Model& model, OpenSim::Compon
 
                 js.set(idx, added_joint.release());
             }
+
+            ImGui::NextColumn();
         }
     }
+
+    ImGui::Text("add offset frame");
+    ImGui::NextColumn();
+
+    if (ImGui::Button("parent")) {
+        auto* pf = new OpenSim::PhysicalOffsetFrame{};
+        pf->setParentFrame(joint.getParentFrame());
+        joint.addFrame(pf);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("child")) {
+        auto* pf = new OpenSim::PhysicalOffsetFrame{};
+        pf->setParentFrame(joint.getChildFrame());
+        joint.addFrame(pf);
+    }
+    ImGui::NextColumn();
 
     ImGui::Columns();
 }
@@ -341,11 +418,11 @@ static void draw_socket_editor(OpenSim::Model& model, OpenSim::Component& c) {
     ImGui::Columns();
 }
 
-static void draw_selection_editor(
-    OpenSim::Model& model,
-    std::vector<fs::path> const& vtps,
-    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
-    OpenSim::Component const** selected) {
+static void draw_selection_editor(Model_editor_screen::Impl& impl) {
+    OpenSim::Model& model = *impl.model;
+    std::vector<fs::path> const& vtps = impl.available_vtps;
+    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots = impl.snapshots;
+    OpenSim::Component const** selected = &impl.selected_component;
 
     if (not selected or not*selected) {
         ImGui::Text("(nothing selected)");
@@ -375,7 +452,7 @@ static void draw_selection_editor(
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("properties:");
     ImGui::Separator();
-    draw_properties_editor(**mutable_selected);
+    impl.properties_editor.draw(**mutable_selected);
 
     // socket editor
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
@@ -518,7 +595,7 @@ void osmv::Model_editor_screen::draw() {
 
     // prop editor
     if (ImGui::Begin("Edit Props")) {
-        draw_selection_editor(*impl->model, impl->available_vtps, impl->snapshots, &impl->selected_component);
+        draw_selection_editor(*impl);
     }
     ImGui::End();
 

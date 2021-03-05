@@ -39,7 +39,8 @@ void osmv::Attach_geometry_modal::draw(
                 if (ImGui::Selectable(p.filename().string().c_str())) {
                     snapshots.push_back(std::make_unique<OpenSim::Model>(model));
                     frame.updProperty_attached_geometry().clear();
-                    frame.attachGeometry(new OpenSim::Mesh{p.string()});
+                    // TODO: this should check whether the mesh is findable via its filename
+                    frame.attachGeometry(new OpenSim::Mesh{p.filename().string()});
                     ImGui::CloseCurrentPopup();
                 }
             }
@@ -61,7 +62,8 @@ void osmv::Attach_geometry_modal::draw(
 
                 snapshots.push_back(std::make_unique<OpenSim::Model>(model));
                 frame.updProperty_attached_geometry().clear();
-                frame.attachGeometry(new OpenSim::Mesh{vtp.string()});
+                // TODO: this should check whether the mesh is findable via its filename
+                frame.attachGeometry(new OpenSim::Mesh{vtp.filename().string()});
                 recent.push_back(vtp);
                 ImGui::CloseCurrentPopup();
             }

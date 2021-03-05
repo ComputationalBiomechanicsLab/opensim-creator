@@ -9,8 +9,19 @@
 #include <cstring>
 #include <string>
 
-bool osmv::draw_properties_editor(OpenSim::Component& component) {
+template<typename Coll1, typename Coll2>
+static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
+    for (int i = 0; i < n; ++i) {
+        if (older[i] != newer[i]) {
+            return newer[i];
+        }
+    }
+    return older[0];
+}
+
+bool osmv::Properties_editor::draw(OpenSim::Component& component) {
     ImGui::Columns(2);
+    property_locked.resize(static_cast<size_t>(component.getNumProperties()), true);
     for (int i = 0; i < component.getNumProperties(); ++i) {
         OpenSim::AbstractProperty& p = component.updPropertyByIndex(i);
         ImGui::Text("%s", p.getName().c_str());
@@ -52,12 +63,26 @@ bool osmv::draw_properties_editor(OpenSim::Component& component) {
 
             // it's two doubles
             if (dp and dp->isListProperty() and dp->size() == 2) {
+                // lock btn
+                bool locked = property_locked[static_cast<size_t>(i)];
+                if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
+                    property_locked[static_cast<size_t>(i)] = locked;
+                }
+                ImGui::SameLine();
+
                 float vs[2] = {static_cast<float>(dp->getValue(0)), static_cast<float>(dp->getValue(1))};
+                float old[2] = {vs[0], vs[1]};
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat2("##vec2editor", vs)) {
-                    dp->setValue(0, static_cast<double>(vs[0]));
-                    dp->setValue(1, static_cast<double>(vs[1]));
+                    if (locked) {
+                        float nv = diff(old, vs, 2);
+                        dp->setValue(0, static_cast<double>(nv));
+                        dp->setValue(1, static_cast<double>(nv));
+                    } else {
+                        dp->setValue(0, static_cast<double>(vs[0]));
+                        dp->setValue(1, static_cast<double>(vs[1]));
+                    }
                 }
 
                 editor_rendered = true;
@@ -83,6 +108,13 @@ bool osmv::draw_properties_editor(OpenSim::Component& component) {
         {
             auto* vp = dynamic_cast<OpenSim::Property<SimTK::Vec2>*>(&p);
             if (vp and not vp->isListProperty()) {
+                // lock btn
+                bool locked = property_locked[static_cast<size_t>(i)];
+                if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
+                    property_locked[static_cast<size_t>(i)] = locked;
+                }
+                ImGui::SameLine();
+
                 SimTK::Vec2 const& v = vp->getValue();
                 float vs[2];
                 vs[0] = static_cast<float>(v[0]);
@@ -90,7 +122,12 @@ bool osmv::draw_properties_editor(OpenSim::Component& component) {
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat2("##vec2editor", vs)) {
-                    vp->setValue(SimTK::Vec2{static_cast<double>(vs[0]), static_cast<double>(vs[1])});
+                    if (locked) {
+                        float nv = diff(vp->getValue(), vs, 2);
+                        vp->setValue(SimTK::Vec2{static_cast<double>(nv), static_cast<double>(nv)});
+                    } else {
+                        vp->setValue(SimTK::Vec2{static_cast<double>(vs[0]), static_cast<double>(vs[1])});
+                    }
                 }
 
                 editor_rendered = true;
@@ -101,6 +138,13 @@ bool osmv::draw_properties_editor(OpenSim::Component& component) {
         {
             auto* vp = dynamic_cast<OpenSim::Property<SimTK::Vec3>*>(&p);
             if (vp and not vp->isListProperty()) {
+                // lock btn
+                bool locked = property_locked[static_cast<size_t>(i)];
+                if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
+                    property_locked[static_cast<size_t>(i)] = locked;
+                }
+                ImGui::SameLine();
+
                 SimTK::Vec3 const& v = vp->getValue();
                 float vs[3];
                 vs[0] = static_cast<float>(v[0]);
@@ -109,8 +153,13 @@ bool osmv::draw_properties_editor(OpenSim::Component& component) {
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat3("##vec3editor", vs)) {
-                    vp->setValue(SimTK::Vec3{
-                        static_cast<double>(vs[0]), static_cast<double>(vs[1]), static_cast<double>(vs[2])});
+                    if (locked) {
+                        double locked_val = static_cast<double>(diff(vp->getValue(), vs, 3));
+                        vp->setValue(SimTK::Vec3{locked_val, locked_val, locked_val});
+                    } else {
+                        vp->setValue(SimTK::Vec3{
+                            static_cast<double>(vs[0]), static_cast<double>(vs[1]), static_cast<double>(vs[2])});
+                    }
                 }
 
                 editor_rendered = true;

@@ -102,7 +102,7 @@ struct osmv::Model_viewer_widget::Impl final {
             params.flags &= ~RawRendererFlags_DrawDebugQuads;
         }
 
-        // perform draw call
+        // draw scene
         Passthrough_data passthrough = renderer.draw(cache.storage, params, geometry.raw_drawlist(), render_target);
 
         // post-draw: check if the hit-test passed
