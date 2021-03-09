@@ -1,6 +1,7 @@
 #version 330 core
 
 uniform bool uIsTextured = false;
+uniform bool uIsShaded = true;
 uniform sampler2D uSampler0;
 
 in vec4 GouraudBrightness;
@@ -13,12 +14,12 @@ layout (location = 1) out vec3 Color1Out;
 
 void main() {
     // write shaded geometry color
-    if (uIsTextured) {
-        Color0Out = texture(uSampler0, TexCoord);
-    } else {
-        Color0Out = GouraudBrightness * Rgba0;
+    vec4 color = uIsTextured ? texture(uSampler0, TexCoord) : Rgba0;
+
+    if (uIsShaded) {
+        color *= GouraudBrightness;
     }
 
-    // write passthrough colors
-    Color1Out = Rgb1;
+    Color0Out = color;
+    Color1Out = Rgb1;  // passthrough
 }

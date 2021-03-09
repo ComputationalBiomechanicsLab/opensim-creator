@@ -216,7 +216,9 @@ namespace {
         gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
         gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
         gl::Uniform_bool uIsTextured = gl::GetUniformLocation(program, "uIsTextured");
+        gl::Uniform_bool uIsShaded = gl::GetUniformLocation(program, "uIsShaded");
         gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(program, "uSampler0");
+        gl::Uniform_bool uSkipVP = gl::GetUniformLocation(program, "uSkipVP");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array
@@ -444,6 +446,17 @@ namespace {
         }
 
         return ebo_from_vec(data);
+    }
+
+    static constexpr GLenum mode_from_flags(Instance_flags f) noexcept {
+        switch (f.mode) {
+        case Instance_flags::mode_lines:
+            return GL_LINES;
+        case Instance_flags::mode_triangles:
+            return GL_TRIANGLES;
+        default:
+            return GL_TRIANGLES;
+        }
     }
 }
 
@@ -786,17 +799,29 @@ static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2)
         // process of batching draw calls by mesh
         return m1._meshid < m2._meshid;
     } else if (m1._diffuse_texture != m2._diffuse_texture) {
-        // third, sort by texture, because an instanced render call must have
-        // one textureset binding for the whole draw call
+        // third, sort by texture, because even though we *could* render a batch of
+        // instances with the same mesh in one draw call, some of those meshes might
+        // be textured, and textures can't be instanced (so the drawcall must be split
+        // into separate calls etc.)
         return m1._diffuse_texture < m2._diffuse_texture;
+    } else if (m1.flags != m2.flags) {
+        // fourth, sort by flags, because the flags can change a draw call (e.g.
+        // although we are drawing the same mesh with the same texture, this
+        // partiular *instance* should be drawn with GL_TRIANGLES or GL_POINTS)
+        //
+        // like textures, if the drawcall-affecting flags are different, we have
+        // to split the drawcall (e.g. draw TRIANGLES then draw POINTS)
+        return m1.flags < m2.flags;
     } else {
         // finally, sort by passthrough data
         //
-        // logically, this shouldn't matter, but it does because the draw
-        // order, when combined with depth testing, might have a downstream
-        // effect on selection logic if the passthrough data is being used to
-        // select things in screen space (e.g. if two meshes perfectly overlap
-        // eachover, we want a consistent approach to selection logic propagation)
+        // *logically*, for OpenGL's drawing algorithms, this shouldn't matter.
+        // However, what OpenGL doesn't know is that the passthrough data (effectively,
+        // colors) affects UX (specifically, selection logic)
+        //
+        // again, this *probably* doesn't matter, because the depth buffer *should*
+        // ensure that exactly one fragment (the closest) ends up in screen space, so
+        // you could try and remove this
         return m1.passthrough_data() < m2.passthrough_data();
     }
 }
@@ -962,14 +987,18 @@ Passthrough_data Renderer::draw(
             while (pos < nmeshes) {
                 Mesh_reference meshid = meshes[pos]._meshid;
                 Texture_reference textureid = meshes[pos]._diffuse_texture;
+                Instance_flags flags = meshes[pos].flags;
                 size_t end = pos + 1;
 
-                while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid) {
+                while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid and
+                       meshes[end].flags == flags) {
+
                     ++end;
                 }
 
-                // [pos, end) contains instances with the same meshid + textureid
+                // [pos, end) contains instances with the same meshid + textureid + flags
 
+                // texture-related stuff
                 if (textureid) {
                     gl::Uniform(shader.uIsTextured, true);
                     gl::ActiveTexture(GL_TEXTURE0);
@@ -979,11 +1008,16 @@ Passthrough_data Renderer::draw(
                     gl::Uniform(shader.uIsTextured, false);
                 }
 
+                // flag-related stuff
+                gl::Uniform(shader.uIsShaded, flags.is_shaded);
+                gl::Uniform(shader.uSkipVP, flags.skip_view_projection);
+                GLenum mode = mode_from_flags(flags);
+
                 Mesh_on_gpu& md = storage.meshes.lookup(meshid);
                 md.instance_vbo.assign(meshes + pos, meshes + end);
                 gl::BindVertexArray(md.main_vao);
-                glDrawElementsInstanced(
-                    GL_TRIANGLES, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(end - pos));
+
+                glDrawElementsInstanced(mode, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(end - pos));
                 gl::BindVertexArray();
 
                 pos = end;
@@ -995,6 +1029,8 @@ Passthrough_data Renderer::draw(
 
             for (size_t i = 0; i < nmeshes; ++i) {
                 Mesh_instance const& mi = meshes[i];
+
+                // texture-related stuff
                 if (mi._diffuse_texture) {
                     gl::Uniform(shader.uIsTextured, true);
                     gl::ActiveTexture(GL_TEXTURE0);
@@ -1003,10 +1039,16 @@ Passthrough_data Renderer::draw(
                 } else {
                     gl::Uniform(shader.uIsTextured, false);
                 }
+
+                // flag-related stuff
+                gl::Uniform(shader.uIsShaded, mi.flags.is_shaded);
+                gl::Uniform(shader.uSkipVP, mi.flags.skip_view_projection);
+                GLenum mode = mode_from_flags(mi.flags);
+
                 Mesh_on_gpu& md = storage.meshes.lookup(mi._meshid);
                 md.instance_vbo.assign(meshes + i, meshes + i + 1);
                 gl::BindVertexArray(md.main_vao);
-                glDrawElementsInstanced(GL_TRIANGLES, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(1));
+                glDrawElementsInstanced(mode, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(1));
                 gl::BindVertexArray();
             }
         }

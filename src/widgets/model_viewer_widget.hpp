@@ -27,12 +27,15 @@ namespace osmv {
         ModelViewerWidgetFlags_DrawFrames = 1 << 4,
         ModelViewerWidgetFlags_DrawDebugGeometry = 1 << 5,
         ModelViewerWidgetFlags_DrawLabels = 1 << 6,
+        ModelViewerWidgetFlags_DrawXZGrid = 1 << 7,
+        ModelViewerWidgetFlags_DrawXYGrid = 1 << 8,
+        ModelViewerWidgetFlags_DrawYZGrid = 1 << 9,
 
-        ModelViewerWidgetFlags_CanOnlyInteractWithMuscles = 1 << 7,
+        ModelViewerWidgetFlags_CanOnlyInteractWithMuscles = 1 << 10,
 
-        ModelViewerWidgetFlags_DefaultMuscleColoring = 1 << 8,
-        ModelViewerWidgetFlags_RecolorMusclesByStrain = 1 << 9,  // overrides previous
-        ModelViewerWidgetFlags_RecolorMusclesByLength = 1 << 10,  // overrides previous
+        ModelViewerWidgetFlags_DefaultMuscleColoring = 1 << 11,
+        ModelViewerWidgetFlags_RecolorMusclesByStrain = 1 << 12,  // overrides previous
+        ModelViewerWidgetFlags_RecolorMusclesByLength = 1 << 13,  // overrides previous
 
         ModelViewerWidgetFlags_Default = ModelViewerWidgetFlags_DrawDynamicDecorations |
                                          ModelViewerWidgetFlags_DrawStaticDecorations |

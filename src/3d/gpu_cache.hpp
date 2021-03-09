@@ -17,6 +17,7 @@ namespace osmv {
         Mesh_reference simbody_cylinder;
         Mesh_reference simbody_cube;
         Mesh_reference floor_quad;
+        Mesh_reference _25x25grid;
 
         Texture_reference chequered_texture;
 

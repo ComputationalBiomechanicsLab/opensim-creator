@@ -216,6 +216,9 @@ void Model_viewer_widget::draw(
                     RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
                 ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
                 ImGui::CheckboxFlags("draw floor", &impl->flags, ModelViewerWidgetFlags_DrawFloor);
+                ImGui::CheckboxFlags("show XZ grid", &impl->flags, ModelViewerWidgetFlags_DrawXZGrid);
+                ImGui::CheckboxFlags("show XY grid", &impl->flags, ModelViewerWidgetFlags_DrawXYGrid);
+                ImGui::CheckboxFlags("show YZ grid", &impl->flags, ModelViewerWidgetFlags_DrawYZGrid);
                 ImGui::CheckboxFlags("optimize draw order", &impl->flags, ModelViewerWidgetFlags_OptimizeDrawOrder);
                 ImGui::CheckboxFlags(
                     "use instanced (optimized) renderer",
@@ -335,7 +338,6 @@ void Model_viewer_widget::draw(
                 generate_decoration_drawlist(model, state, cpy, impl->cache, impl->geometry, flags);
             }
 
-            // HACK: add floor in
             if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
                 glm::mat4 model_mtx = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
@@ -351,8 +353,117 @@ void Model_viewer_widget::draw(
                 }();
 
                 Rgba32 color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
-                impl->geometry.emplace_back(
+                Mesh_instance& mi = impl->geometry.emplace_back(
                     nullptr, model_mtx, color, impl->cache.floor_quad, impl->cache.chequered_texture);
+                mi.flags.is_shaded = false;
+            }
+
+            if (impl->flags & ModelViewerWidgetFlags_DrawXZGrid) {
+                glm::mat4 model_mtx = []() {
+                    glm::mat4 rv = glm::identity<glm::mat4>();
+
+                    // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                    // floor down *slightly* to prevent Z fighting from planes rendered from the
+                    // model itself (the contact planes, etc.)
+                    rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
+                    rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+
+                    return rv;
+                }();
+
+                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
+                mi.flags.mode = Instance_flags::mode_lines;
+                mi.flags.is_shaded = false;
+            }
+
+            if (impl->flags & ModelViewerWidgetFlags_DrawXYGrid) {
+                glm::mat4 model_mtx = []() {
+                    glm::mat4 rv = glm::identity<glm::mat4>();
+
+                    // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                    // floor down *slightly* to prevent Z fighting from planes rendered from the
+                    // model itself (the contact planes, etc.)
+                    rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+
+                    return rv;
+                }();
+
+                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
+                mi.flags.mode = Instance_flags::mode_lines;
+                mi.flags.is_shaded = false;
+            }
+
+            if (impl->flags & ModelViewerWidgetFlags_DrawYZGrid) {
+                glm::mat4 model_mtx = []() {
+                    glm::mat4 rv = glm::identity<glm::mat4>();
+
+                    // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+                    // floor down *slightly* to prevent Z fighting from planes rendered from the
+                    // model itself (the contact planes, etc.)
+                    rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
+                    rv = glm::rotate(rv, osmv::pi_f / 2, {0.0, -1.0, 0.0});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+
+                    return rv;
+                }();
+
+                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
+                mi.flags.mode = Instance_flags::mode_lines;
+                mi.flags.is_shaded = false;
+            }
+
+            if (false) {
+                glm::mat4 v = impl->camera.view_matrix();
+                v[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
+
+                glm::mat4 m = glm::identity<glm::mat4>();
+
+                glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.025f, 0.25f, 0.025f});
+                glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.9f, -0.9f, 0.0f});
+
+                // green: +Y
+                if (true) {
+                    glm::mat4 model_mtx = translator * scaler * v;
+
+                    Rgba32 color{0x00, 0xff, 0x00, 0xff};
+                    Mesh_instance& mi =
+                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
+                    mi.flags.is_shaded = false;
+                    mi.flags.skip_view_projection = true;
+                }
+
+                // red: +X
+                if (true) {
+                    glm::mat4 model_mtx = v;
+                    glm::mat4 rotater =
+                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, 1.0f});
+
+                    model_mtx = model_mtx * rotater * scaler;
+                    Rgba32 color{0xff, 0x00, 0x00, 0xff};
+                    Mesh_instance& mi =
+                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
+                    mi.flags.is_shaded = false;
+                    mi.flags.skip_view_projection = true;
+                }
+
+                // blue: +Z
+                if (true) {
+                    glm::mat4 model_mtx = v;
+                    glm::mat4 rotater =
+                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
+
+                    model_mtx = model_mtx * rotater * scaler;
+                    Rgba32 color{0x00, 0x00, 0xff, 0xff};
+                    Mesh_instance& mi =
+                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
+                    mi.flags.is_shaded = false;
+                    mi.flags.skip_view_projection = true;
+                }
             }
 
             if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {

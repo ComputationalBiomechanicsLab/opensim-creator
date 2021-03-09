@@ -53,6 +53,13 @@ namespace osmv {
         [[nodiscard]] static Plain_mesh by_deduping(std::vector<Untextured_vert>);
 
         [[nodiscard]] static Plain_mesh from_raw_verts(std::vector<Untextured_vert>);
+
+        [[nodiscard]] static Plain_mesh from_raw_verts(Untextured_vert const* first, size_t n);
+
+        template<typename Container>
+        [[nodiscard]] static Plain_mesh from_raw_verts(Container const& c) {
+            return Plain_mesh::from_raw_verts(c.data(), c.size());
+        }
     };
 
     struct Textured_mesh final : public Mesh<Textured_vert> {

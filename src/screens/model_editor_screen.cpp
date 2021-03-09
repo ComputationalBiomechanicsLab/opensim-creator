@@ -7,6 +7,7 @@
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/sdl_wrapper.hpp"
+#include "src/widgets/add_body_modal.hpp"
 #include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/attach_geometry_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
@@ -136,6 +137,8 @@ struct Model_editor_screen::Impl final {
     std::optional<Fd_simulation> fdsim;
     OpenSim::Component const* selected_component = nullptr;
     OpenSim::Component const* hovered_component = nullptr;
+
+    Added_body_modal_state abm;
 
     std::array<Add_joint_modal, 4> add_joint_modals = {
         Add_joint_modal::create<OpenSim::FreeJoint>("Add FreeJoint"),
@@ -637,10 +640,9 @@ void osmv::Model_editor_screen::draw() {
     // this is a dumping ground for generic editing actions (add body, add something to selection)
     if (ImGui::Begin("Actions")) {
         if (ImGui::Button("Add body")) {
-            auto* body = new OpenSim::Body{"added_body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{0.1}};
-            model.addBody(body);
-            impl->selected_component = body;
+            show_add_body_modal(impl->abm);
         }
+        try_draw_add_body_modal(impl->abm, model, &impl->selected_component);
 
         for (Add_joint_modal& modal : impl->add_joint_modals) {
             if (ImGui::Button(modal.modal_name.c_str())) {

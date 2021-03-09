@@ -18,6 +18,13 @@ namespace osmv {
 
         Rgba32() = default;
 
+        constexpr Rgba32(unsigned char _r, unsigned char _g, unsigned char _b, unsigned char _a) noexcept :
+            r{_r},
+            g{_g},
+            b{_b},
+            a{_a} {
+        }
+
         constexpr Rgba32(glm::vec4 const& v) noexcept :
             r{static_cast<unsigned char>(255.0f * v.r)},
             g{static_cast<unsigned char>(255.0f * v.g)},
@@ -59,6 +66,43 @@ namespace osmv {
         return glm::inverse(glm::transpose(top_left));
     }
 
+    struct Instance_flags final {
+        static constexpr char mode_triangles = 0;
+        static constexpr char mode_lines = 1;
+
+        // draw mode (e.g. triangles, lines, dots)
+        char mode : 4;
+
+        // if the instance is subject to shading (e.g. Gouraud, Phong)
+        bool is_shaded : 1;
+
+        // if the instance is subject to view + projection mapping
+        //
+        // setting this false may also disable shading
+        bool skip_view_projection : 1;
+
+        char pad : 2;  // (padding)
+
+        constexpr Instance_flags() noexcept :
+            mode{mode_triangles},
+            is_shaded{true},
+            skip_view_projection{false},
+            pad{0} {
+        }
+    };
+
+    [[nodiscard]] inline constexpr bool operator==(Instance_flags const& a, Instance_flags const& b) noexcept {
+        return a.mode == b.mode and a.is_shaded == b.is_shaded;
+    }
+
+    [[nodiscard]] inline constexpr bool operator!=(Instance_flags const& a, Instance_flags const& b) noexcept {
+        return not(a == b);
+    }
+
+    [[nodiscard]] inline constexpr bool operator<(Instance_flags const& a, Instance_flags const& b) noexcept {
+        return (a.mode != b.mode) ? a.mode < b.mode : a.is_shaded < b.is_shaded;
+    }
+
     // one instance of a mesh
     //
     // this struct is fairly complicated and densely packed because it is *exactly* what
@@ -98,7 +142,7 @@ namespace osmv {
         //            around the rendered geometry. Used for highlighting elements in the scene
         Rgb24 _passthrough;
 
-        unsigned char pad = 0;
+        Instance_flags flags;
 
         // INTERNAL: mesh ID: globally unique ID for the mesh vertices that should be rendered
         //
@@ -114,6 +158,7 @@ namespace osmv {
             _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},
             _passthrough{},
+            flags{},
             _meshid{meshid},
             _diffuse_texture{Texture_reference::invalid()} {
         }
@@ -125,6 +170,7 @@ namespace osmv {
             _normal_xform{normal_matrix(transform)},
             rgba{std::forward<Rgba>(_rgba)},
             _passthrough{},
+            flags{},
             _meshid{mesh},
             _diffuse_texture{tex} {
         }

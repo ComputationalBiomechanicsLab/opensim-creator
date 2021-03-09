@@ -41,7 +41,6 @@ void osmv::Add_joint_modal::draw(OpenSim::Model& model, OpenSim::Component const
 
     ImGui::Text("parent frame:");
     ImGui::BeginChild("parent", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    // edge case: joint attaching to ground
     for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
         if (&b == child_frame) {
             continue;  // don't allow circular connections

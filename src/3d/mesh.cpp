@@ -68,6 +68,10 @@ Plain_mesh Plain_mesh::from_raw_verts(std::vector<Untextured_vert> verts) {
     return Plain_mesh{std::move(verts), create_trivial_indices(n)};
 }
 
+Plain_mesh Plain_mesh::from_raw_verts(Untextured_vert const* first, size_t n) {
+    return Plain_mesh::from_raw_verts(std::vector<Untextured_vert>(first, first + n));
+}
+
 Textured_mesh Textured_mesh::from_raw_verts(std::vector<Textured_vert> verts) {
     size_t n = verts.size();
     return Textured_mesh{std::move(verts), create_trivial_indices(n)};

@@ -111,6 +111,8 @@ add_executable(osmv
     src/widgets/reassign_socket_modal.cpp
     src/widgets/attach_geometry_modal.hpp
     src/widgets/attach_geometry_modal.cpp
+    src/widgets/add_body_modal.hpp
+    src/widgets/add_body_modal.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

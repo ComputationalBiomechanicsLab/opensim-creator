@@ -10,6 +10,7 @@ uniform mat4 uViewMat;
 uniform vec3 uLightPos;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
+uniform bool uSkipVP = false;
 
 layout (location = 0) in vec3 aLocation;
 layout (location = 1) in vec3 aNormal;
@@ -31,7 +32,12 @@ const float shininess = 32;
 
 void main() {
     mat4 modelMat = mat4(vec4(aModelMat[0], 0), vec4(aModelMat[1], 0), vec4(aModelMat[2], 0), vec4(aModelMat[3], 1));
-    gl_Position = uProjMat * uViewMat * modelMat * vec4(aLocation, 1.0);
+
+    if (uSkipVP) {
+        gl_Position = modelMat * vec4(aLocation, 1.0);
+    } else {
+        gl_Position = uProjMat * uViewMat * modelMat * vec4(aLocation, 1.0);
+    }
 
     vec3 normalDir = normalize(aNormalMat * aNormal);
     vec3 fragPos = vec3(modelMat * vec4(aLocation, 1.0));
