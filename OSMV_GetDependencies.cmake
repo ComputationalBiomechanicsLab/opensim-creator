@@ -4,7 +4,7 @@
 #
 # - Must handle all dependencies as part of the main build, so that
 #   this file can be `include`d from the main CMakeLists.txt to "magically"
-#   handle all the dependencies in a sane way across all platforms without 
+#   handle all the dependencies in a sane way across all platforms without
 #   developers having to fuck around with separate build steps or bootstrap
 #   scripts
 #
@@ -37,7 +37,7 @@ if(NOT OSMV_REPO_PROVIDER)
 endif()
 
 
-# Forward CMake arguments from this configuration to the external 
+# Forward CMake arguments from this configuration to the external
 # sub-build dependencies
 #
 # each flag should be checked, because some sub builds screw up if you set
@@ -294,8 +294,8 @@ if(TRUE)
         )
     elseif(WIN32)
         add_library(osmv-nativefiledialog STATIC
-            third_party/nativefiledialog/src/nfd_gtk.c
             third_party/nativefiledialog/src/nfd_win.cpp
+            third_party/nativefiledialog/src/nfd_common.c
         )
         target_include_directories(osmv-nativefiledialog
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
@@ -304,8 +304,8 @@ if(TRUE)
         )
     elseif(APPLE)
         add_library(osmv-nativefiledialog STATIC
-            third_party/nativefiledialog/src/nfd_gtk.c
             third_party/nativefiledialog/src/nfd_cocoa.m
+            third_party/nativefiledialog/src/nfd_common.c
         )
         target_include_directories(osmv-nativefiledialog
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
@@ -333,7 +333,7 @@ endif()
 #       OpenSim on your system
 if(TRUE)
     find_package(OpenSim REQUIRED)
-    set(OSMV_OPENSIM_LIBS 
+    set(OSMV_OPENSIM_LIBS
         osimCommon
         osimSimulation
         osimActuators
