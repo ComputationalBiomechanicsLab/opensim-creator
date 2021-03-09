@@ -44,6 +44,7 @@
 #include <vector>
 
 using namespace osmv;
+using std::chrono_literals::operator""s;
 
 namespace {
     static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
@@ -583,7 +584,6 @@ struct Show_model_screen::Impl final {
         std::vector<OpenSim::Muscle const*> muscles;
     } scratch;
 
-    std::unique_ptr<OpenSim::Model> original_model;
     std::unique_ptr<OpenSim::Model> model;
     std::unique_ptr<SimTK::State> latest_state;
 
@@ -601,18 +601,22 @@ struct Show_model_screen::Impl final {
     Muscles_tab_data muscles_tab;
     Outputs_tab_data outputs_tab;
 
+    struct File_watcher final {
+        static constexpr std::chrono::seconds update_delay = 1s;
+
+        std::chrono::steady_clock::time_point last_check;
+        std::filesystem::file_time_type last_write;
+        bool enabled = false;
+    } file_watcher;
+
     Impl(std::unique_ptr<OpenSim::Model> _model) :
-        original_model{std::move(_model)},
-        model{std::make_unique<OpenSim::Model>(*original_model)},
+        model{std::move(_model)},
         latest_state{[this]() {
             model->finalizeFromProperties();
             auto p = std::make_unique<SimTK::State>(model->initSystem());
             model->realizeReport(*p);
             return p;
         }()} {
-
-        // renderer{app.window_dimensions().w, app.window_dimensions().h, app.samples()} {
-
         OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
     }
 
@@ -625,7 +629,11 @@ struct Show_model_screen::Impl final {
                 // CTRL + R: reload the model from scratch
                 SDL_Keymod km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    model = std::make_unique<OpenSim::Model>(*original_model);
+                    std::string file = model->getDocumentFileName();
+                    if (not file.empty()) {
+                        model = std::make_unique<OpenSim::Model>(file);
+                        on_user_edited_model();
+                    }
                     return true;
                 }
 
@@ -688,6 +696,37 @@ struct Show_model_screen::Impl final {
                 outputs_tab.on_ui_state_update(*latest_state);
                 simulator_tab.on_ui_state_update(*model, *latest_state);
                 selected_component.on_ui_state_update(*latest_state);
+            }
+        }
+
+        if (file_watcher.enabled) {
+            auto now = std::chrono::steady_clock::now();
+            auto next_check = file_watcher.last_check + 1s;
+
+            if (now >= next_check) {
+                std::string filename = model->getDocumentFileName();
+                if (not filename.empty()) {
+                    auto file_timepoint = std::filesystem::last_write_time(filename);
+
+                    // we performed the check either way
+                    file_watcher.last_check = now;
+
+                    if (file_timepoint != file_watcher.last_write) {
+                        file_watcher.last_write = file_timepoint;
+
+                        std::unique_ptr<OpenSim::Model> p;
+                        try {
+                            p = std::make_unique<OpenSim::Model>(filename);
+                        } catch (std::exception const& ex) {
+                            // TODO: emit this to the log, or a popup, or whatever.
+                        }
+
+                        if (p) {
+                            model = std::move(p);
+                            on_user_edited_model();
+                        }
+                    }
+                }
             }
         }
     }
@@ -1023,6 +1062,8 @@ struct Show_model_screen::Impl final {
             Application::current().request_screen_transition<Model_editor_screen>(
                 std::make_unique<OpenSim::Model>(*model));
         }
+
+        ImGui::Checkbox("watch file changes", &file_watcher.enabled);
 
         ImGui::SameLine();
     }
