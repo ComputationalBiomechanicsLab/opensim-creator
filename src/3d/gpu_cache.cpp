@@ -66,6 +66,13 @@ template<size_t N>
     return Plain_mesh::from_raw_verts(verts);
 }
 
+[[nodiscard]] static Plain_mesh generate_y_line() {
+    std::array<Untextured_vert, 2> points = {{// pos                // normal
+                                              {{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}},
+                                              {{0.0f, +1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}}};
+    return Plain_mesh::from_raw_verts(points);
+}
+
 osmv::Gpu_cache::Gpu_cache() :
     storage{},
     filepath2mesh{},
@@ -75,6 +82,7 @@ osmv::Gpu_cache::Gpu_cache() :
     simbody_cube{storage.meshes.allocate(simbody_brick_triangles())},
     floor_quad{storage.meshes.allocate(generate_floor_quad())},
     _25x25grid{storage.meshes.allocate(generate_NxN_grid<25>())},
+    y_line{storage.meshes.allocate(generate_y_line())},
 
     chequered_texture{storage.textures.allocate(generate_chequered_floor_texture())} {
 }

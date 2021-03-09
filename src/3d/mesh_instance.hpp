@@ -165,6 +165,18 @@ namespace osmv {
 
         template<typename Mat4x3, typename Rgba>
         constexpr Mesh_instance(
+            Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference meshid, Instance_flags _flags) noexcept :
+            transform{std::forward<Mat4x3>(_transform)},
+            _normal_xform{normal_matrix(transform)},
+            rgba{std::forward<Rgba>(_rgba)},
+            _passthrough{},
+            flags{_flags},
+            _meshid{meshid},
+            _diffuse_texture{Texture_reference::invalid()} {
+        }
+
+        template<typename Mat4x3, typename Rgba>
+        constexpr Mesh_instance(
             Mat4x3&& _transform, Rgba&& _rgba, Mesh_reference mesh, Texture_reference tex) noexcept :
             transform{std::forward<Mat4x3>(_transform)},
             _normal_xform{normal_matrix(transform)},
