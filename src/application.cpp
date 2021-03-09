@@ -51,11 +51,16 @@ struct ImGuiContext;
 
 namespace igx {
     struct Context final {
-        std::string ini_dir = (osmv::user_data_dir() / "imgui.ini").string();
+        std::string default_ini = osmv::config::resource_path("imgui_base_config.ini").string();
+        std::string user_ini = (osmv::user_data_dir() / "imgui.ini").string();
+
         ImGuiContext* handle;
 
         Context() : handle{ImGui::CreateContext()} {
             configure_context(ImGui::GetIO());
+            ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
+            ImGui::LoadIniSettingsFromDisk(user_ini.c_str());
+            ImGui::GetIO().IniFilename = user_ini.c_str();
         }
         Context(Context const&) = delete;
         Context(Context&&) = delete;
@@ -63,7 +68,6 @@ namespace igx {
         Context& operator=(Context&&) = delete;
 
         void configure_context(ImGuiIO& io) {
-            io.IniFilename = ini_dir.c_str();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
             if (osmv::config::should_use_multi_viewport()) {
                 io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -73,8 +77,10 @@ namespace igx {
         void reset() {
             ImGui::DestroyContext(handle);
             handle = ImGui::CreateContext();
-
             configure_context(ImGui::GetIO());
+            ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
+            ImGui::LoadIniSettingsFromDisk(user_ini.c_str());
+            ImGui::GetIO().IniFilename = user_ini.c_str();
         }
 
         ~Context() noexcept {

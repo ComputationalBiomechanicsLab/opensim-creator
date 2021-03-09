@@ -18,6 +18,7 @@ namespace osmv {
         Mesh_reference simbody_cube;
         Mesh_reference floor_quad;
         Mesh_reference _25x25grid;
+        Mesh_reference y_line;  // 2 verts @ x = 0, y = [-1.0f, 1.0f], z = 0
 
         Texture_reference chequered_texture;
 

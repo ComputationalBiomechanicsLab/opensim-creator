@@ -219,6 +219,7 @@ void Model_viewer_widget::draw(
                 ImGui::CheckboxFlags("show XZ grid", &impl->flags, ModelViewerWidgetFlags_DrawXZGrid);
                 ImGui::CheckboxFlags("show XY grid", &impl->flags, ModelViewerWidgetFlags_DrawXYGrid);
                 ImGui::CheckboxFlags("show YZ grid", &impl->flags, ModelViewerWidgetFlags_DrawYZGrid);
+                ImGui::CheckboxFlags("show alignment axes", &impl->flags, ModelViewerWidgetFlags_DrawAlignmentAxes);
                 ImGui::CheckboxFlags("optimize draw order", &impl->flags, ModelViewerWidgetFlags_OptimizeDrawOrder);
                 ImGui::CheckboxFlags(
                     "use instanced (optimized) renderer",
@@ -417,53 +418,40 @@ void Model_viewer_widget::draw(
                 mi.flags.is_shaded = false;
             }
 
-            if (false) {
-                glm::mat4 v = impl->camera.view_matrix();
-                v[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
+            if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
+                glm::mat4 model2view = impl->camera.view_matrix();
 
-                glm::mat4 m = glm::identity<glm::mat4>();
+                // we only care about rotation of the axes, not scaling
+                model2view[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
 
-                glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.025f, 0.25f, 0.025f});
+                // rescale + translate the y-line vertices
+                glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.05f});
                 glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.9f, -0.9f, 0.0f});
+                glm::mat4 base_model_mtx = translator * scaler * model2view;
 
-                // green: +Y
-                if (true) {
-                    glm::mat4 model_mtx = translator * scaler * v;
+                Instance_flags flags;
+                flags.is_shaded = false;
+                flags.skip_view_projection = true;
+                flags.mode = Instance_flags::mode_lines;
 
-                    Rgba32 color{0x00, 0xff, 0x00, 0xff};
-                    Mesh_instance& mi =
-                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
-                    mi.flags.is_shaded = false;
-                    mi.flags.skip_view_projection = true;
-                }
+                static constexpr Rgba32 red = {0xff, 0x00, 0x00, 0xff};
+                static constexpr Rgba32 green = {0x00, 0xff, 0x00, 0xff};
+                static constexpr Rgba32 blue = {0x00, 0x00, 0xff, 0xff};
 
-                // red: +X
-                if (true) {
-                    glm::mat4 model_mtx = v;
-                    glm::mat4 rotater =
-                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, 1.0f});
+                // Y axis
+                impl->geometry.emplace_back(nullptr, base_model_mtx, green, impl->cache.y_line, flags);
 
-                    model_mtx = model_mtx * rotater * scaler;
-                    Rgba32 color{0xff, 0x00, 0x00, 0xff};
-                    Mesh_instance& mi =
-                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
-                    mi.flags.is_shaded = false;
-                    mi.flags.skip_view_projection = true;
-                }
+                glm::mat4 rotate_y_to_x =
+                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, 1.0f});
 
-                // blue: +Z
-                if (true) {
-                    glm::mat4 model_mtx = v;
-                    glm::mat4 rotater =
-                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
+                // X axis
+                impl->geometry.emplace_back(nullptr, base_model_mtx * rotate_y_to_x, red, impl->cache.y_line, flags);
 
-                    model_mtx = model_mtx * rotater * scaler;
-                    Rgba32 color{0x00, 0x00, 0xff, 0xff};
-                    Mesh_instance& mi =
-                        impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache.simbody_cylinder);
-                    mi.flags.is_shaded = false;
-                    mi.flags.skip_view_projection = true;
-                }
+                glm::mat4 rotate_y_to_z =
+                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
+
+                // Z axis
+                impl->geometry.emplace_back(nullptr, base_model_mtx * rotate_y_to_z, blue, impl->cache.y_line, flags);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {
