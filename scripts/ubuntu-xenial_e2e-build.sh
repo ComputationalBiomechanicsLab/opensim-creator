@@ -26,7 +26,7 @@ ${sudo} apt-get install -y gcc-snapshot
 ${sudo} apt-get install -y gcc-8 g++-8
 
 # osmv: get other tools/libraries used by osmv
-${sudo} apt-get install -y cmake make libsdl2-dev
+${sudo} apt-get install -y cmake make libsdl2-dev libgtk-3-dev
 
 # (if building OpenSim): get OpenSim build dependencies
 ${sudo} apt-get install -y git cmake freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
