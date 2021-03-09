@@ -312,6 +312,7 @@ if(TRUE)
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
         )
+        target_link_libraries(osmv-nativefiledialog INTERFACE "-framework Cocoa")
     else()
         message(FATAL_ERROR "no implementation of nfd.h available on this platform: required for native platform file dialogs")
     endif()
