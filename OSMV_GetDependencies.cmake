@@ -272,6 +272,51 @@ if(TRUE)
     target_include_directories(osmv-tomlplusplus INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)
 endif()
 
+# DEPENDENCY: nativefiledialog
+#     OS-dependent library for showing file/folder open/save dialogs
+if(TRUE)
+    if(LINUX)
+        include(FindPkgConfig)
+
+        add_library(osmv-nativefiledialog STATIC
+            third_party/nativefiledialog/src/nfd_gtk.c
+            third_party/nativefiledialog/src/nfd_common.c
+        )
+
+        pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+
+        target_link_libraries(osmv-nativefiledialog INTERFACE ${GTK3_LIBRARIES})
+        target_include_directories(osmv-nativefiledialog
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+            PRIVATE ${GTK3_INCLUDE_DIRS}
+            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+        )
+    elseif(WIN32)
+        add_library(osmv-nativefiledialog STATIC
+            third_party/nativefiledialog/src/nfd_gtk.c
+            third_party/nativefiledialog/src/nfd_win.cpp
+        )
+        target_include_directories(osmv-nativefiledialog
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+        )
+    elseif(APPLE)
+        add_library(osmv-nativefiledialog STATIC
+            third_party/nativefiledialog/src/nfd_gtk.c
+            third_party/nativefiledialog/src/nfd_cocoa.m
+        )
+        target_include_directories(osmv-nativefiledialog
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
+            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+            INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
+        )
+    else()
+        message(FATAL_ERROR "no implementation of nfd.h available on this platform: required for native platform file dialogs")
+    endif()
+endif()
+
 # DEPENDENCY: OpenSim
 #     primary dependency for performing musculoskeletal simulations
 #
@@ -311,6 +356,7 @@ target_link_libraries(osmv-all-dependencies INTERFACE
     osmv-imgui
     osmv-stb-image
     osmv-tomlplusplus
+    osmv-nativefiledialog
 
     ${OSMV_OPENSIM_LIBS}
     ${OPENGL_LIBRARIES}

@@ -138,6 +138,7 @@ add_executable(osmv
     src/utils/sdl_wrapper.cpp
     src/utils/os.hpp
     src/utils/os.cpp
+    src/utils/scope_guard.hpp
 
     src/config.hpp
     src/config.cpp
