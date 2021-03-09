@@ -97,8 +97,8 @@ void osmv::Splash_screen::draw() {
         float menu_y = static_cast<float>((d.h - menu_height) / 2);
 
         ImGui::SetNextWindowPos(ImVec2(menu_x, menu_y));
-        ImGui::SetNextWindowSize(ImVec2{menu_width, -1});
-        ImGui::SetNextWindowSizeConstraints({menu_width, menu_height}, {menu_width, menu_height});
+        ImGui::SetNextWindowSize(ImVec2(menu_width, -1));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(menu_width, menu_height), ImVec2(menu_width, menu_height));
     }
 
     bool b = true;

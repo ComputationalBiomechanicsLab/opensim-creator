@@ -717,7 +717,7 @@ struct Show_model_screen::Impl final {
                         std::unique_ptr<OpenSim::Model> p;
                         try {
                             p = std::make_unique<OpenSim::Model>(filename);
-                        } catch (std::exception const& ex) {
+                        } catch (std::exception const&) {
                             // TODO: emit this to the log, or a popup, or whatever.
                         }
 
