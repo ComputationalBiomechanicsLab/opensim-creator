@@ -22,7 +22,7 @@ fi
 ${sudo} apt-get update
 
 # osmv: main dependencies
-${sudo} apt-get install -y build-essential cmake libsdl2-dev
+${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev
 
 # osmv: transitive dependencies from OpenSim4.1
 ${sudo} apt-get install -y git freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget

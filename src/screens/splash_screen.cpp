@@ -9,11 +9,13 @@
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
 #include "src/utils/geometry.hpp"
+#include "src/utils/scope_guard.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <imgui.h>
+#include <nfd.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -79,6 +81,25 @@ bool osmv::Splash_screen::on_event(SDL_Event const& e) {
         if (sym == SDLK_ESCAPE) {
             Application::current().request_quit_application();
             return true;
+        }
+
+        // CTRL+O: open file
+        if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_o and e.key.keysym.mod & KMOD_CTRL) {
+            nfdchar_t* outpath = nullptr;
+
+            nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
+
+            Scope_guard guard{[&]() {
+                if (outpath) {
+                    free(outpath);
+                }
+            }};
+
+            if (result == NFD_OKAY) {
+                Application::current().request_screen_transition<Loading_screen>(outpath);
+            }
+
+            return 0;
         }
     }
     return false;
