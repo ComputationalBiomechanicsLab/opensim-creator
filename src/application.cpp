@@ -3,6 +3,7 @@
 #include "osmv_config.hpp"
 #include "src/3d/gl.hpp"
 #include "src/config.hpp"
+#include "src/log.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
@@ -305,8 +306,10 @@ public:
         // initialize SDL library
         context{SDL_INIT_VIDEO},
 
-        // initialize minimal SDL Window with OpenGL 3.2 support
-        window{[]() {
+        // initialize minimal SDL Window with OpenGL support
+        window{[this]() {
+            log::info("initializing main application (OpenGL 3.3) window");
+
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -328,6 +331,8 @@ public:
 
         // initialize GL context for the application window
         gl{[this]() {
+            log::info("initializing application OpenGL context");
+
             sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
             // enable the context
@@ -365,6 +370,14 @@ public:
             glEnable(GL_CULL_FACE);
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
+            // print OpenGL information if in debug mode
+            log::info(
+                "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
+                glGetString(GL_VENDOR),
+                glGetString(GL_RENDERER),
+                glGetString(GL_VERSION),
+                glGetString(GL_SHADING_LANGUAGE_VERSION));
+
             return ctx;
         }()},
 
@@ -378,13 +391,6 @@ public:
         imgui_ctx{},
         imgui_sdl2_ctx{window, gl},
         imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
-
-        // any other initialization fixups
-#ifndef NDEBUG
-        enable_opengl_debug_mode();
-        std::cerr << "OpenGL: " << glGetString(GL_VENDOR) << ", " << glGetString(GL_RENDERER) << "("
-                  << glGetString(GL_VERSION) << "), GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-#endif
     }
 
     void internal_start_render_loop(std::unique_ptr<Screen> s) {
@@ -559,12 +565,18 @@ public:
     }
 
     void start_render_loop(std::unique_ptr<Screen> s) {
+        log::info("starting main render loop");
+
         bool quit = false;
         while (not quit) {
             try {
                 internal_start_render_loop(std::move(s));
                 quit = true;
             } catch (std::exception const& ex) {
+                log::error("exception thrown by the main render loop");
+                log::error("message: %s", ex.what());
+                log::error("attempting to show error in the UI");
+
                 // if an exception is thrown all the way up here, print it
                 // to the stdout/stderr (Linux/Mac users with decent consoles)
                 // but also throw up a basic error message GUI (Windows users)

@@ -10,6 +10,7 @@
 #include "src/utils/bitwise_algs.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -899,6 +900,11 @@ struct Show_model_screen::Impl final {
 
         if (ImGui::Begin("Simulate")) {
             draw_simulate_tab();
+        }
+        ImGui::End();
+
+        if (ImGui::Begin("Log")) {
+            Log_viewer_widget{}.draw();
         }
         ImGui::End();
     }
