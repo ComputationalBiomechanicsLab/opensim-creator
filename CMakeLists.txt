@@ -113,6 +113,8 @@ add_executable(osmv
     src/widgets/attach_geometry_modal.cpp
     src/widgets/add_body_modal.hpp
     src/widgets/add_body_modal.cpp
+    src/widgets/log_viewer_widget.hpp
+    src/widgets/log_viewer_widget.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
@@ -139,11 +141,16 @@ add_executable(osmv
     src/utils/os.hpp
     src/utils/os.cpp
     src/utils/scope_guard.hpp
+    src/utils/circular_buffer.hpp
+    src/utils/circular_log_sink.hpp
+    src/utils/circular_log_sink.cpp
 
     src/config.hpp
     src/config.cpp
     src/application.hpp
     src/application.cpp
+    src/log.hpp
+    src/log.cpp
     src/osmv.cpp
 )
 target_link_libraries(osmv PRIVATE

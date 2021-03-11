@@ -3,6 +3,7 @@
 #include "osmv_config.hpp"
 #include "src/3d/gl.hpp"
 #include "src/config.hpp"
+#include "src/log.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
@@ -135,79 +136,91 @@ static void glOnDebugMessage(
     // if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
     //    return;
 
-    std::cerr << "---------------" << std::endl;
-    std::cerr << "Debug message (" << id << "): " << message << std::endl;
+    log::level::Level_enum lvl = log::level::debug;
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        lvl = log::level::err;
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        lvl = log::level::warn;
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        lvl = log::level::info;
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        lvl = log::level::trace;
+        break;
+    }
+
+    log::log(lvl, "OpenGL debug message:");
+    log::log(lvl, "    id = %u");
+    log::log(lvl, "    message = %s", message);
 
     switch (source) {
     case GL_DEBUG_SOURCE_API:
-        std::cerr << "Source: API";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_API");
         break;
     case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        std::cerr << "Source: Window System";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_WINDOW_SYSTEM");
         break;
     case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        std::cerr << "Source: Shader Compiler";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_SHADER_COMPILER");
         break;
     case GL_DEBUG_SOURCE_THIRD_PARTY:
-        std::cerr << "Source: Third Party";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_THIRD_PARTY");
         break;
     case GL_DEBUG_SOURCE_APPLICATION:
-        std::cerr << "Source: Application";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_APPLICATION");
         break;
     case GL_DEBUG_SOURCE_OTHER:
-        std::cerr << "Source: Other";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_OTHER");
         break;
     }
-    std::cerr << std::endl;
 
     switch (type) {
     case GL_DEBUG_TYPE_ERROR:
-        std::cerr << "Type: Error";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_ERROR");
         break;
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        std::cerr << "Type: Deprecated Behaviour";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR");
         break;
     case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        std::cerr << "Type: Undefined Behaviour";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR");
         break;
     case GL_DEBUG_TYPE_PORTABILITY:
-        std::cerr << "Type: Portability";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PORTABILITY");
         break;
     case GL_DEBUG_TYPE_PERFORMANCE:
-        std::cerr << "Type: Performance";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PERFORMANCE");
         break;
     case GL_DEBUG_TYPE_MARKER:
-        std::cerr << "Type: Marker";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_MARKER");
         break;
     case GL_DEBUG_TYPE_PUSH_GROUP:
-        std::cerr << "Type: Push Group";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PUSH_GROUP");
         break;
     case GL_DEBUG_TYPE_POP_GROUP:
-        std::cerr << "Type: Pop Group";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_POP_GROUP");
         break;
     case GL_DEBUG_TYPE_OTHER:
-        std::cerr << "Type: Other";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_OTHER");
         break;
     }
-    std::cerr << std::endl;
 
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-        std::cerr << "Severity: high";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_HIGH");
         break;
     case GL_DEBUG_SEVERITY_MEDIUM:
-        std::cerr << "Severity: medium";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_MEDIUM");
         break;
     case GL_DEBUG_SEVERITY_LOW:
-        std::cerr << "Severity: low";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_LOW");
         break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-        std::cerr << "Severity: notification";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_NOTIFICATION");
         break;
     }
-    std::cerr << std::endl;
-
-    std::cerr << std::endl;
 }
 
 static int get_max_multisamples() {
@@ -221,6 +234,8 @@ static int get_max_multisamples() {
 }
 
 static void enable_opengl_debug_mode() {
+    log::info("trying to enable OpenGL debug mode (GL_DEBUG_OUTPUT)");
+
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -228,15 +243,33 @@ static void enable_opengl_debug_mode() {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(glOnDebugMessage, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        log::info("OpenGL debug mode enabled");
+    } else {
+        log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
     }
 }
 
 static void disable_opengl_debug_mode() {
+    log::info("trying to disable OpenGL debug mode (GL_DEBUG_OUTPUT)");
+
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
         glDisable(GL_DEBUG_OUTPUT);
         glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        log::info("OpenGL debug mode disabled");
+    } else {
+        log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
+    }
+}
+
+static void toggle_opengl_debug_mode() {
+    GLboolean b = false;
+    glGetBooleanv(GL_DEBUG_OUTPUT, &b);
+    if (b) {
+        disable_opengl_debug_mode();
+    } else {
+        enable_opengl_debug_mode();
     }
 }
 
@@ -305,12 +338,15 @@ public:
         // initialize SDL library
         context{SDL_INIT_VIDEO},
 
-        // initialize minimal SDL Window with OpenGL 3.2 support
-        window{[]() {
+        // initialize minimal SDL Window with OpenGL support
+        window{[this]() {
+            log::info("initializing main application (OpenGL 3.3) window");
+
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
             // careful about setting resolution, position, etc. - some people have *very* shitty
             // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
@@ -328,6 +364,8 @@ public:
 
         // initialize GL context for the application window
         gl{[this]() {
+            log::info("initializing application OpenGL context");
+
             sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
             // enable the context
@@ -365,6 +403,14 @@ public:
             glEnable(GL_CULL_FACE);
             OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
 
+            // print OpenGL information if in debug mode
+            log::info(
+                "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
+                glGetString(GL_VENDOR),
+                glGetString(GL_RENDERER),
+                glGetString(GL_VERSION),
+                glGetString(GL_SHADING_LANGUAGE_VERSION));
+
             return ctx;
         }()},
 
@@ -378,13 +424,6 @@ public:
         imgui_ctx{},
         imgui_sdl2_ctx{window, gl},
         imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
-
-        // any other initialization fixups
-#ifndef NDEBUG
-        enable_opengl_debug_mode();
-        std::cerr << "OpenGL: " << glGetString(GL_VENDOR) << ", " << glGetString(GL_RENDERER) << "("
-                  << glGetString(GL_VERSION) << "), GLSL " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-#endif
     }
 
     void internal_start_render_loop(std::unique_ptr<Screen> s) {
@@ -413,8 +452,7 @@ public:
 
                 // OpenGL DEBUG MODE: enabled (not toggled) with F2
                 if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
-                    std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
-                    ::enable_opengl_debug_mode();
+                    ::toggle_opengl_debug_mode();
                 }
 
                 // osmv::Screen: feed event into the currently-showing osmv screen
@@ -559,12 +597,18 @@ public:
     }
 
     void start_render_loop(std::unique_ptr<Screen> s) {
+        log::info("starting main render loop");
+
         bool quit = false;
         while (not quit) {
             try {
                 internal_start_render_loop(std::move(s));
                 quit = true;
             } catch (std::exception const& ex) {
+                log::error("exception thrown by the main render loop");
+                log::error("message: %s", ex.what());
+                log::error("attempting to show error in the UI");
+
                 // if an exception is thrown all the way up here, print it
                 // to the stdout/stderr (Linux/Mac users with decent consoles)
                 // but also throw up a basic error message GUI (Windows users)
