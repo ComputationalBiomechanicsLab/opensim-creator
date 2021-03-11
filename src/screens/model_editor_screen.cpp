@@ -3,6 +3,7 @@
 #include "src/3d/gpu_cache.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
+#include "src/log.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
@@ -489,7 +490,7 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
                 // from the BodySet
                 if (auto* bs = const_cast<OpenSim::BodySet*>(dynamic_cast<OpenSim::BodySet const*>(&p->getOwner()));
                     bs) {
-                    std::cerr << "deleting bodys NYI: segfaults" << std::endl;
+                    log::error("deleting bodys from model NYI: it segfaults");
                     /*
                     for (int i = 0; i < bs->getSize(); ++i) {
                         if (&bs->get(i) == p) {
