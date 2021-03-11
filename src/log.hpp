@@ -57,7 +57,7 @@ namespace osmv::log {
     class Logger final {
         std::string name;
         std::vector<std::shared_ptr<Sink>> _sinks;
-        level::Level_enum level{level::info};
+        level::Level_enum level{level::trace};
 
     public:
         Logger(std::string _name) : name{std::move(_name)}, _sinks() {
@@ -127,6 +127,11 @@ namespace osmv::log {
     // global logging API
     std::shared_ptr<Logger> default_logger() noexcept;
     Logger* default_logger_raw() noexcept;
+
+    template<typename... Args>
+    inline void log(level::Level_enum level, char const* fmt, Args const&... args) {
+        default_logger_raw()->log(level, fmt, args...);
+    }
 
     template<typename... Args>
     inline void trace(char const* fmt, Args const&... args) {

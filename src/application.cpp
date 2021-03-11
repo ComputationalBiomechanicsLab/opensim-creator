@@ -136,79 +136,91 @@ static void glOnDebugMessage(
     // if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
     //    return;
 
-    std::cerr << "---------------" << std::endl;
-    std::cerr << "Debug message (" << id << "): " << message << std::endl;
+    log::level::Level_enum lvl = log::level::debug;
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        lvl = log::level::err;
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        lvl = log::level::warn;
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        lvl = log::level::info;
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        lvl = log::level::trace;
+        break;
+    }
+
+    log::log(lvl, "OpenGL debug message:");
+    log::log(lvl, "    id = %u");
+    log::log(lvl, "    message = %s", message);
 
     switch (source) {
     case GL_DEBUG_SOURCE_API:
-        std::cerr << "Source: API";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_API");
         break;
     case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        std::cerr << "Source: Window System";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_WINDOW_SYSTEM");
         break;
     case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        std::cerr << "Source: Shader Compiler";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_SHADER_COMPILER");
         break;
     case GL_DEBUG_SOURCE_THIRD_PARTY:
-        std::cerr << "Source: Third Party";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_THIRD_PARTY");
         break;
     case GL_DEBUG_SOURCE_APPLICATION:
-        std::cerr << "Source: Application";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_APPLICATION");
         break;
     case GL_DEBUG_SOURCE_OTHER:
-        std::cerr << "Source: Other";
+        log::log(lvl, "    source = GL_DEBUG_SOURCE_OTHER");
         break;
     }
-    std::cerr << std::endl;
 
     switch (type) {
     case GL_DEBUG_TYPE_ERROR:
-        std::cerr << "Type: Error";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_ERROR");
         break;
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        std::cerr << "Type: Deprecated Behaviour";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR");
         break;
     case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        std::cerr << "Type: Undefined Behaviour";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR");
         break;
     case GL_DEBUG_TYPE_PORTABILITY:
-        std::cerr << "Type: Portability";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PORTABILITY");
         break;
     case GL_DEBUG_TYPE_PERFORMANCE:
-        std::cerr << "Type: Performance";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PERFORMANCE");
         break;
     case GL_DEBUG_TYPE_MARKER:
-        std::cerr << "Type: Marker";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_MARKER");
         break;
     case GL_DEBUG_TYPE_PUSH_GROUP:
-        std::cerr << "Type: Push Group";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_PUSH_GROUP");
         break;
     case GL_DEBUG_TYPE_POP_GROUP:
-        std::cerr << "Type: Pop Group";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_POP_GROUP");
         break;
     case GL_DEBUG_TYPE_OTHER:
-        std::cerr << "Type: Other";
+        log::log(lvl, "    type = GL_DEBUG_TYPE_OTHER");
         break;
     }
-    std::cerr << std::endl;
 
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-        std::cerr << "Severity: high";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_HIGH");
         break;
     case GL_DEBUG_SEVERITY_MEDIUM:
-        std::cerr << "Severity: medium";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_MEDIUM");
         break;
     case GL_DEBUG_SEVERITY_LOW:
-        std::cerr << "Severity: low";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_LOW");
         break;
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-        std::cerr << "Severity: notification";
+        log::log(lvl, "    severity = GL_DEBUG_SEVERITY_NOTIFICATION");
         break;
     }
-    std::cerr << std::endl;
-
-    std::cerr << std::endl;
 }
 
 static int get_max_multisamples() {
@@ -222,6 +234,8 @@ static int get_max_multisamples() {
 }
 
 static void enable_opengl_debug_mode() {
+    log::info("trying to enable OpenGL debug mode (GL_DEBUG_OUTPUT)");
+
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
@@ -229,15 +243,33 @@ static void enable_opengl_debug_mode() {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(glOnDebugMessage, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        log::info("OpenGL debug mode enabled");
+    } else {
+        log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
     }
 }
 
 static void disable_opengl_debug_mode() {
+    log::info("trying to disable OpenGL debug mode (GL_DEBUG_OUTPUT)");
+
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
         glDisable(GL_DEBUG_OUTPUT);
         glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        log::info("OpenGL debug mode disabled");
+    } else {
+        log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
+    }
+}
+
+static void toggle_opengl_debug_mode() {
+    GLboolean b = false;
+    glGetBooleanv(GL_DEBUG_OUTPUT, &b);
+    if (b) {
+        disable_opengl_debug_mode();
+    } else {
+        enable_opengl_debug_mode();
     }
 }
 
@@ -314,6 +346,7 @@ public:
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
             // careful about setting resolution, position, etc. - some people have *very* shitty
             // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
@@ -419,8 +452,7 @@ public:
 
                 // OpenGL DEBUG MODE: enabled (not toggled) with F2
                 if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
-                    std::cerr << "enabling OpenGL debug mode (GL_DEBUG_OUTPUT)" << std::endl;
-                    ::enable_opengl_debug_mode();
+                    ::toggle_opengl_debug_mode();
                 }
 
                 // osmv::Screen: feed event into the currently-showing osmv screen
