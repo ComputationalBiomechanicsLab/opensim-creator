@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstdarg>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -67,14 +68,25 @@ namespace osmv::log {
         }
 
         template<typename... Args>
-        void log(level::Level_enum msg_level, char const* fmt, Args const&... args) {
+        void log(level::Level_enum msg_level, char const* fmt, ...) {
             if (msg_level < level) {
                 return;
             }
 
             // create the log message
             char buf[255];
-            size_t n = std::snprintf(buf, sizeof(buf), fmt, args...);
+            size_t n = 0;
+            {
+                va_list args;
+                va_start(args, fmt);
+                int rv = std::vsnprintf(buf, sizeof(buf), fmt, args);
+                va_end(args);
+
+                if (rv < 0) {
+                    return;
+                }
+                n = std::min(static_cast<size_t>(rv), sizeof(buf));
+            }
             Log_msg msg{name, std::string_view{buf, n}, msg_level};
 
             // sink it
