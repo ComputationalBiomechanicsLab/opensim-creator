@@ -195,6 +195,7 @@ target_compile_options(osmv PRIVATE
         -Wdisabled-optimization
         -Wpacked
         -Wno-sign-compare  # disable: broken by STB headers
+        -Wformat-security
 
         # regardless of debug/release, pin the frame pointer register
         # so that stack traces are sane when debugging (even in Release).
