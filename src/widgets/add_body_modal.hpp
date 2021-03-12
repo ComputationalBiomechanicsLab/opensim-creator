@@ -13,7 +13,7 @@ namespace osmv {
         char joint_name[64]{};
         float mass = 1.0f;
         float com[3]{};
-        float inertia[3]{};
+        float inertia[3] = {1.0f, 1.0f, 1.0f};
         bool add_offset_frames_to_the_joint = true;
     };
 

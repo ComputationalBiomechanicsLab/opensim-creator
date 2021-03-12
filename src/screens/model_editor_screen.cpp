@@ -7,12 +7,14 @@
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/utils/scope_guard.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/widgets/add_body_modal.hpp"
 #include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/attach_geometry_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 #include "src/widgets/properties_editor.hpp"
 #include "src/widgets/reassign_socket_modal.hpp"
@@ -43,6 +45,7 @@
 #include <SimTKcommon/Mechanics.h>
 #include <SimTKcommon/SmallMatrix.h>
 #include <imgui.h>
+#include <nfd.h>
 
 #include <algorithm>
 #include <cstring>
@@ -465,6 +468,68 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     draw_socket_editor(model, **mutable_selected);
 }
 
+static std::optional<std::filesystem::path> prompt_save_single_file() {
+    nfdchar_t* outpath = nullptr;
+    nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
+    OSMV_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+}
+
+static bool is_subpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
+    auto dir_n = std::distance(dir.begin(), dir.end());
+    auto pth_n = std::distance(pth.begin(), pth.end());
+
+    if (pth_n < dir_n) {
+        return false;
+    }
+
+    return std::equal(dir.begin(), dir.end(), pth.begin());
+}
+
+static bool is_example_file(std::filesystem::path const& path) {
+    std::filesystem::path examples_dir = config::resource_path("models");
+    return is_subpath(examples_dir, path);
+}
+
+static std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
+    if (std::string const& backing_path = m.getInputFileName();
+        backing_path != "Unassigned" and backing_path.size() > 0) {
+
+        // the model has an associated file
+        //
+        // we can save over this document - *IF* it's not an example file
+        if (is_example_file(backing_path)) {
+            return prompt_save_single_file();
+        } else {
+            return backing_path;
+        }
+    } else {
+        // the model has no associated file, so prompt the user for a save
+        // location
+        return prompt_save_single_file();
+    }
+}
+
+static void save_model(OpenSim::Model& model, std::string const& save_loc) {
+    try {
+        model.print(save_loc);
+        model.setInputFileName(save_loc);
+        log::info("saved model to %s", save_loc.c_str());
+        config::add_recent_file(save_loc);
+    } catch (OpenSim::Exception const& ex) {
+        log::error("error saving model: %s", ex.what());
+    }
+}
+
+static void try_save_model(OpenSim::Model& model) {
+    std::optional<std::string> maybe_save_loc = try_get_save_location(model);
+
+    if (maybe_save_loc) {
+        save_model(model, *maybe_save_loc);
+    }
+}
+
 Model_editor_screen::Model_editor_screen() : impl{new Impl{std::make_unique<OpenSim::Model>()}} {
 }
 
@@ -519,6 +584,18 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
                         }
                     }
                 }
+            }
+        }
+
+        if (e.key.keysym.sym == SDLK_s and e.key.keysym.mod & KMOD_CTRL) {
+            try_save_model(*impl->model);
+            return true;
+        }
+
+        if (e.key.keysym.sym == SDLK_F12) {
+            std::optional<std::string> maybe_path = prompt_save_single_file();
+            if (maybe_path) {
+                save_model(*impl->model, *maybe_path);
             }
         }
     }
@@ -666,6 +743,12 @@ void osmv::Model_editor_screen::draw() {
                 j->addFrame(frame);
             }
         }
+    }
+    ImGui::End();
+
+    // console panel
+    if (ImGui::Begin("Log")) {
+        Log_viewer_widget{}.draw();
     }
     ImGui::End();
 }
