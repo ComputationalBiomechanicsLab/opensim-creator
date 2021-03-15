@@ -1,16 +1,19 @@
 #pragma once
 
 #include <array>
+#include <cassert>
+#include <iterator>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
 template<typename T, size_t N>
 class Circular_buffer final {
-    static_assert(N > 1);
+    static_assert(N > 1, "the internal representation of a circular buffer (it has one 'dead' entry) requires this");
 
     std::array<T, N> storage;
-    int _begin = 0;
-    int _end = 0;
+    int _begin = 0;  // idx of first element
+    int _end = 0;  // first index after last element
 
     template<bool IsConst>
     class Iterator final {
@@ -18,8 +21,26 @@ class Circular_buffer final {
         int pos = 0;
 
     public:
+        using difference_type = int;
+        using value_type = T;
+        using pointer = typename std::conditional<IsConst, T const*, T*>::type;
+        using reference = typename std::conditional<IsConst, T const&, T&>::type;
+        using iterator_category = std::random_access_iterator_tag;
+        friend class Iterator<not IsConst>;
+
+        constexpr Iterator() = default;
+
         constexpr Iterator(T* _data, int _pos) noexcept : data{_data}, pos{_pos} {
         }
+
+        // implicit conversion from non-const iterator to a const one
+
+        template<bool _IsConst = IsConst>
+        [[nodiscard]] constexpr operator typename std::enable_if_t<not _IsConst, Iterator<true>>() const noexcept {
+            return Iterator<true>{data, pos};
+        }
+
+        // LegacyIterator
 
         constexpr Iterator& operator++() noexcept {
             pos = (pos + 1) % N;
@@ -32,12 +53,121 @@ class Circular_buffer final {
         }
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T&> operator*() noexcept {
+        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T&> operator*() const noexcept {
             return data[pos];
         }
 
-        [[nodiscard]] constexpr bool operator!=(Iterator const& other) const noexcept {
-            return pos != other.pos or data != other.data;
+        // EqualityComparable
+
+        template<bool OtherConst>
+        [[nodiscard]] constexpr bool operator!=(Iterator<OtherConst> const& other) const noexcept {
+            return pos != other.pos;
+        }
+
+        template<bool OtherConst>
+        [[nodiscard]] constexpr bool operator==(Iterator<OtherConst> const& other) const noexcept {
+            return not(*this != other);
+        }
+
+        // LegacyInputIterator
+
+        template<bool _IsConst = IsConst>
+        [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const*> operator->() const noexcept {
+            return &data[pos];
+        }
+
+        template<bool _IsConst = IsConst>
+        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T*> operator->() const noexcept {
+            return &data[pos];
+        }
+
+        // LegacyForwardIterator
+
+        constexpr Iterator operator++(int) noexcept {
+            Iterator copy{*this};
+            ++(*this);
+            return copy;
+        }
+
+        // LegacyBidirectionalIterator
+
+        constexpr Iterator& operator--() noexcept {
+            pos = pos == 0 ? N - 1 : pos - 1;
+            return *this;
+        }
+
+        constexpr Iterator operator--(int) noexcept {
+            Iterator copy{*this};
+            --(*this);
+            return copy;
+        }
+
+        // LegacyRandomAccessIterator
+
+        constexpr Iterator& operator+=(difference_type i) noexcept {
+            pos = (pos + i) % N;
+            return *this;
+        }
+
+        constexpr Iterator operator+(difference_type i) const noexcept {
+            Iterator copy{*this};
+            copy += i;
+            return copy;
+        }
+
+        constexpr Iterator& operator-=(difference_type i) noexcept {
+            difference_type im = (i % N);
+
+            if (im > pos) {
+                pos = N - (im - pos);
+            } else {
+                pos = pos - im;
+            }
+
+            return *this;
+        }
+
+        constexpr Iterator operator-(difference_type i) const noexcept {
+            Iterator copy{*this};
+            copy -= i;
+            return copy;
+        }
+
+        template<bool OtherConst>
+        constexpr difference_type operator-(Iterator<OtherConst> const& other) const noexcept {
+            return pos - other.pos;
+        }
+
+        template<bool _IsConst = IsConst>
+        [[nodiscard]] constexpr typename std::enable_if_t<_IsConst, T const&> operator[](difference_type i) const
+            noexcept {
+            return data[(pos + i) % N];
+        }
+
+        template<bool _IsConst = IsConst>
+        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T&> operator[](difference_type i) const
+            noexcept {
+            return data[(pos + i) % N];
+        }
+
+        template<bool OtherConst>
+        constexpr bool operator<(Iterator<OtherConst> const& other) const noexcept {
+            return pos < other.pos;
+        }
+
+        template<bool OtherConst>
+        constexpr bool operator>(Iterator<OtherConst> const& other) const noexcept {
+            return pos > other.pos;
+        }
+
+        template<bool OtherConst>
+        constexpr bool operator>=(Iterator<OtherConst> const& other) const noexcept {
+            return not(*this < other);
+        }
+
+        template<bool OtherConst>
+        constexpr bool operator<=(Iterator<OtherConst> const& other) const noexcept {
+            return not(*this > other);
         }
     };
 
@@ -48,6 +178,8 @@ public:
     using const_reference = T const&;
     using iterator = Iterator<false>;
     using const_iterator = Iterator<true>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     constexpr Circular_buffer() = default;
 
@@ -79,30 +211,62 @@ public:
         return storage[_begin];
     }
 
+    [[nodiscard]] constexpr reference back() noexcept {
+        return *storage.rbegin();
+    }
+
+    [[nodiscard]] constexpr const_reference back() const noexcept {
+        return *storage.rbegin();
+    }
+
     // iterators
 
-    [[nodiscard]] Iterator<true> begin() const noexcept {
+    [[nodiscard]] constexpr const_iterator begin() const noexcept {
         return {const_cast<T*>(storage.data()), _begin};
     }
 
-    [[nodiscard]] Iterator<false> begin() noexcept {
+    [[nodiscard]] constexpr iterator begin() noexcept {
         return {storage.data(), _begin};
     }
 
-    [[nodiscard]] Iterator<true> cbegin() const noexcept {
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept {
         return {const_cast<T*>(storage.data()), _begin};
     }
 
-    [[nodiscard]] Iterator<true> end() const noexcept {
+    [[nodiscard]] constexpr const_iterator end() const noexcept {
         return {const_cast<T*>(storage.data()), _end};
     }
 
-    [[nodiscard]] Iterator<false> end() noexcept {
+    [[nodiscard]] constexpr iterator end() noexcept {
         return {storage.data(), _end};
     }
 
-    [[nodiscard]] Iterator<true> cend() const noexcept {
+    [[nodiscard]] constexpr const_iterator cend() const noexcept {
         return {const_cast<T*>(storage.data()), _end};
+    }
+
+    [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept {
+        return const_reverse_iterator{end()};
+    }
+
+    [[nodiscard]] constexpr reverse_iterator rbegin() noexcept {
+        return reverse_iterator{end()};
+    }
+
+    [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept {
+        return const_reverse_iterator{end()};
+    }
+
+    [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept {
+        return const_reverse_iterator{begin()};
+    }
+
+    [[nodiscard]] constexpr reverse_iterator rend() noexcept {
+        return reverse_iterator{begin()};
+    }
+
+    [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept {
+        return const_reverse_iterator{begin()};
     }
 
     // capacity
@@ -153,5 +317,29 @@ public:
 
     constexpr void push_back(T&& v) {
         emplace_back(std::move(v));
+    }
+
+    constexpr iterator erase(iterator first, iterator last) {
+        assert(last == end() && "TODO: can currently only erase elements from end of circular buffer");
+
+        // TODO: the impl. currently relies on default construction of the elements being
+        // cheap, because we assume all elements are in a valid, destructible, state
+        for (auto it = first; it < last; ++it) {
+            *it = T{};
+        }
+
+        _end -= std::distance(first, last);
+
+        return end();
+    }
+
+    constexpr std::optional<T> try_pop_back() {
+        if (empty()) {
+            return std::nullopt;
+        }
+
+        _end = _end == 0 ? N - 1 : _end - 1;
+
+        return std::move(storage[_end]);
     }
 };

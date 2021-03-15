@@ -1,4 +1,4 @@
-#include "circular_log_sink.hpp"
+#include "traceback_log.hpp"
 
 #include <memory>
 

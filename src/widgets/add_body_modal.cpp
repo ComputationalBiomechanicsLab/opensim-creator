@@ -1,5 +1,8 @@
 #include "add_body_modal.hpp"
 
+#include "src/utils/indirect_ptr.hpp"
+#include "src/utils/indirect_ref.hpp"
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -15,7 +18,9 @@ void osmv::show_add_body_modal(Added_body_modal_state& st) {
 }
 
 void osmv::try_draw_add_body_modal(
-    Added_body_modal_state& st, OpenSim::Model& model, OpenSim::Component const** selection) {
+    Added_body_modal_state& st, Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
+
+    // OpenSim::Model& model, OpenSim::Component const** selection
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -37,7 +42,7 @@ void osmv::try_draw_add_body_modal(
     ImGui::Text("join body to:");
     ImGui::Separator();
     ImGui::BeginChild("join", ImVec2{256.0f, 256.0f}, true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
+    for (OpenSim::PhysicalFrame const& pf : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
         int styles_pushed = 0;
         if (&pf == st.selected_pf) {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.3f, 1.0f, 0.3f, 1.0f});
@@ -62,7 +67,9 @@ void osmv::try_draw_add_body_modal(
         SimTK::Inertia inertia{
             static_cast<double>(st.inertia[0]), static_cast<double>(st.inertia[1]), static_cast<double>(st.inertia[2])};
         OpenSim::Body* b = new OpenSim::Body{st.body_name, 1.0, com, inertia};
-        model.addBody(b);
+
+        auto guard = model.modify();
+        guard->addBody(b);
 
         // create a new (default) joint and assign it offset frames etc. accordingly
         OpenSim::FreeJoint* fj = nullptr;
@@ -86,9 +93,8 @@ void osmv::try_draw_add_body_modal(
         } else {
             fj = new OpenSim::FreeJoint{st.joint_name, *st.selected_pf, *b};
         }
-        model.addJoint(fj);
-
-        *selection = b;
+        guard->addJoint(fj);
+        selection.reset(b);
         st = {};  // reset user inputs
 
         ImGui::CloseCurrentPopup();

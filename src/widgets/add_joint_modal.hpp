@@ -4,10 +4,18 @@
 #include <string>
 
 namespace OpenSim {
-    class Joint;
-    class PhysicalFrame;
     class Model;
     class Component;
+    class Joint;
+    class PhysicalFrame;
+}
+
+namespace osmv {
+    template<typename T>
+    class Indirect_ref;
+
+    template<typename T>
+    class Indirect_ptr;
 }
 
 namespace osmv {
@@ -29,6 +37,6 @@ namespace osmv {
 
         void reset();
         void show();
-        void draw(OpenSim::Model& model, OpenSim::Component const** selected_component);
+        void draw(Indirect_ref<OpenSim::Model>&, Indirect_ptr<OpenSim::Component>& selection);
     };
 }

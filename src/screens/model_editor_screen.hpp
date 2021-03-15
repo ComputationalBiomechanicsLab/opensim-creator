@@ -28,7 +28,6 @@ namespace osmv {
         ~Model_editor_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
-        void tick() override;
         void draw() override;
     };
 }

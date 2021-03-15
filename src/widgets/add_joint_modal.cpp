@@ -1,5 +1,8 @@
 #include "add_joint_modal.hpp"
 
+#include "src/utils/indirect_ptr.hpp"
+#include "src/utils/indirect_ref.hpp"
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -26,7 +29,7 @@ void osmv::Add_joint_modal::show() {
     ImGui::OpenPopup(modal_name.c_str());
 }
 
-void osmv::Add_joint_modal::draw(OpenSim::Model& model, OpenSim::Component const** selected_component) {
+void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(512, 0));
@@ -41,7 +44,7 @@ void osmv::Add_joint_modal::draw(OpenSim::Model& model, OpenSim::Component const
 
     ImGui::Text("parent frame:");
     ImGui::BeginChild("parent", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
+    for (auto const& b : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
         if (&b == child_frame) {
             continue;  // don't allow circular connections
         }
@@ -60,7 +63,7 @@ void osmv::Add_joint_modal::draw(OpenSim::Model& model, OpenSim::Component const
 
     ImGui::Text("child frame:");
     ImGui::BeginChild("child", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
+    for (auto const& b : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
         if (&b == parent_frame) {
             continue;  // don't allow circular connections
         }
@@ -97,8 +100,8 @@ void osmv::Add_joint_modal::draw(OpenSim::Model& model, OpenSim::Component const
             joint->addFrame(cof);
             joint->connectSocket_child_frame(*cof);
 
-            model.addJoint(joint);
-            *selected_component = joint;
+            model.apply_modification([&joint](OpenSim::Model& m) { m.addJoint(joint); });
+            selection.reset(joint);
 
             this->reset();
             ImGui::CloseCurrentPopup();

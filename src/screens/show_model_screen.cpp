@@ -8,6 +8,8 @@
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
+#include "src/utils/indirect_ptr.hpp"
+#include "src/utils/indirect_ref.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
@@ -840,10 +842,13 @@ struct Show_model_screen::Impl final {
         }
 
         {
-            OpenSim::Component const* selected = selected_component;
-            OpenSim::Component const* hovered = current_hover;
 
-            model_viewer.draw("render1", *model, *latest_state, &selected, &hovered);
+            OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
+            auto sel = Trivial_indirect_ptr{&selected};
+            OpenSim::Component* hovered = const_cast<OpenSim::Component*>(current_hover);
+            auto hover = Trivial_indirect_ptr{&hovered};
+
+            model_viewer.draw("render1", *model, *latest_state, sel, hover);
 
             if (model_viewer.is_moused_over()) {
                 selected_component = selected;
@@ -852,10 +857,12 @@ struct Show_model_screen::Impl final {
         }
 
         {
-            OpenSim::Component const* selected = selected_component;
-            OpenSim::Component const* hovered = current_hover;
+            OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
+            auto sel = Trivial_indirect_ptr{&selected};
+            OpenSim::Component* hovered = const_cast<OpenSim::Component*>(current_hover);
+            auto hover = Trivial_indirect_ptr{&hovered};
 
-            model_viewer2.draw("render2", *model, *latest_state, &selected, &hovered);
+            model_viewer2.draw("render2", *model, *latest_state, sel, hover);
 
             if (model_viewer2.is_moused_over()) {
                 selected_component = selected;
@@ -1076,9 +1083,13 @@ struct Show_model_screen::Impl final {
 
     void draw_hierarchy_tab() {
         Component_hierarchy_widget v;
-        OpenSim::Component const* selected = selected_component.get();
-        v.draw(&model->getRoot(), &selected, &current_hover);
+        OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
+        auto hsh = Trivial_indirect_ptr{&selected};
+        OpenSim::Component* hover = const_cast<OpenSim::Component*>(current_hover);
+        auto hhh = Trivial_indirect_ptr{&hover};
+        v.draw(&model->getRoot(), hsh, hhh);
         selected_component = selected;
+        current_hover = hover;
     }
 
     void draw_muscles_tab() {
@@ -1488,8 +1499,9 @@ struct Show_model_screen::Impl final {
 
         // draw standard selection info
         {
-            OpenSim::Component const* c = selected_component.get();
-            Component_selection_widget{}.draw(*latest_state, &c);
+            OpenSim::Component* c = const_cast<OpenSim::Component*>(selected_component.get());
+            auto hsh = Trivial_indirect_ptr{&c};
+            Component_selection_widget{}.draw(*latest_state, hsh);
             selected_component = c;
         }
 

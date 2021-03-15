@@ -1,5 +1,7 @@
 #include "attach_geometry_modal.hpp"
 
+#include "src/utils/indirect_ptr.hpp"
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <imgui.h>
@@ -13,10 +15,7 @@ void osmv::Attach_geometry_modal::show() {
 }
 
 void osmv::Attach_geometry_modal::draw(
-    OpenSim::Model& model,
-    std::vector<std::filesystem::path> const& vtps,
-    std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
-    OpenSim::PhysicalFrame& frame) {
+    std::vector<std::filesystem::path> const& vtps, Indirect_ptr<OpenSim::PhysicalFrame>& frame) {
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -37,10 +36,11 @@ void osmv::Attach_geometry_modal::draw(
         for (std::filesystem::path const& p : recent) {
             if (p.filename().compare(search)) {
                 if (ImGui::Selectable(p.filename().string().c_str())) {
-                    snapshots.push_back(std::make_unique<OpenSim::Model>(model));
-                    frame.updProperty_attached_geometry().clear();
+                    auto guard = frame.modify();
+
+                    guard->updProperty_attached_geometry().clear();
                     // TODO: this should check whether the mesh is findable via its filename
-                    frame.attachGeometry(new OpenSim::Mesh{p.filename().string()});
+                    guard->attachGeometry(new OpenSim::Mesh{p.filename().string()});
                     ImGui::CloseCurrentPopup();
                 }
             }
@@ -60,10 +60,10 @@ void osmv::Attach_geometry_modal::draw(
             if (ImGui::Selectable(filename.c_str())) {
                 std::filesystem::path const& vtp = vtps[i];
 
-                snapshots.push_back(std::make_unique<OpenSim::Model>(model));
-                frame.updProperty_attached_geometry().clear();
+                auto guard = frame.modify();
+                guard->updProperty_attached_geometry().clear();
                 // TODO: this should check whether the mesh is findable via its filename
-                frame.attachGeometry(new OpenSim::Mesh{vtp.filename().string()});
+                guard->attachGeometry(new OpenSim::Mesh{vtp.filename().string()});
                 recent.push_back(vtp);
                 ImGui::CloseCurrentPopup();
             }

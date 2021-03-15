@@ -10,6 +10,7 @@
 #include "src/constants.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
 #include "src/opensim_bindings/model_drawlist_generator.hpp"
+#include "src/utils/indirect_ptr.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -178,8 +179,8 @@ void Model_viewer_widget::draw(
     char const* panel_name,
     OpenSim::Model const& model,
     SimTK::State const& state,
-    OpenSim::Component const** selected,
-    OpenSim::Component const** hovered) {
+    Indirect_ptr<OpenSim::Component>& selection,
+    Indirect_ptr<OpenSim::Component>& hover) {
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -508,7 +509,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->rendering_flags & DrawcallFlags_DrawRims) {
-                apply_standard_rim_coloring(impl->geometry, *hovered, *selected);
+                apply_standard_rim_coloring(impl->geometry, hover.get(), selection.get());
             }
 
             // draw the scene to an OpenGL texture
@@ -553,10 +554,12 @@ void Model_viewer_widget::draw(
                     ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
                 }
 
-                *hovered = impl->hovered_component;
+                if (hover != impl->hovered_component) {
+                    hover.reset(impl->hovered_component);
+                }
 
-                if (impl->hovered_component and mouse_right_clicked_render) {
-                    *selected = impl->hovered_component;
+                if (impl->hovered_component and mouse_right_clicked_render and selection != impl->hovered_component) {
+                    selection.reset(impl->hovered_component);
                 }
             }
 

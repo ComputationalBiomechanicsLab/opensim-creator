@@ -316,6 +316,10 @@ if(TRUE)
     else()
         message(FATAL_ERROR "no implementation of nfd.h available on this platform: required for native platform file dialogs")
     endif()
+
+    set_target_properties(osmv-nativefiledialog PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
+    )
 endif()
 
 # DEPENDENCY: OpenSim

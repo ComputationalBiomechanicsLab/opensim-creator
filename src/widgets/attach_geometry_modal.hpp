@@ -1,12 +1,17 @@
 #pragma once
 
 #include <filesystem>
-#include <memory>
 #include <vector>
 
 namespace OpenSim {
     class Model;
     class PhysicalFrame;
+}
+
+namespace osmv {
+    template<typename T>
+    class Indirect_ptr;
+    class Snapshot_taker;
 }
 
 namespace osmv {
@@ -17,10 +22,6 @@ namespace osmv {
         char search[128]{};
 
         void show();
-        void draw(
-            OpenSim::Model& model,
-            std::vector<std::filesystem::path> const& vtps,
-            std::vector<std::unique_ptr<OpenSim::Model>>& snapshots,
-            OpenSim::PhysicalFrame& frame);
+        void draw(std::vector<std::filesystem::path> const& vtps, Indirect_ptr<OpenSim::PhysicalFrame>&);
     };
 }

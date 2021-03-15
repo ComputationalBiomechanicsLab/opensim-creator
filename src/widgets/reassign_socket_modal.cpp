@@ -1,5 +1,7 @@
 #include "reassign_socket_modal.hpp"
 
+#include "src/utils/indirect_ref.hpp"
+
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -15,7 +17,9 @@ void osmv::Reassign_socket_modal::close() {
     ImGui::CloseCurrentPopup();
 }
 
-void osmv::Reassign_socket_modal::draw(char const* modal_name, OpenSim::Model& model, OpenSim::AbstractSocket& socket) {
+void osmv::Reassign_socket_modal::draw(
+    char const* modal_name, Indirect_ref<OpenSim::Model>& model, Indirect_ref<OpenSim::AbstractSocket>& socket) {
+
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
@@ -27,18 +31,20 @@ void osmv::Reassign_socket_modal::draw(char const* modal_name, OpenSim::Model& m
 
     ImGui::Text("objects:");
     ImGui::BeginChild("obj list", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (OpenSim::Component const& c : model.getComponentList()) {
+    for (OpenSim::Component const& c : model.get().getComponentList()) {
         std::string name = c.getName();
         if (name.find(search) != std::string::npos) {
             if (ImGui::Selectable(c.getName().c_str())) {
-                OpenSim::Object const& existing = socket.getConnecteeAsObject();
+                OpenSim::Object const& existing = socket.get().getConnecteeAsObject();
                 try {
-                    socket.connect(c);
-                    model.finalizeConnections();
+                    socket.apply_modification([&c](OpenSim::AbstractSocket& s) { s.connect(c); });
+                    model.apply_modification([](OpenSim::Model& m) { m.finalizeConnections(); });
+
                     this->close();
                 } catch (std::exception const& ex) {
                     last_connection_error = ex.what();
-                    socket.connect(existing);
+
+                    socket.apply_modification([&existing](OpenSim::AbstractSocket& s) { s.connect(existing); });
                 }
             }
         }

@@ -1,5 +1,7 @@
 #include "component_selection_widget.hpp"
 
+#include "src/utils/indirect_ptr.hpp"
+
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
@@ -10,13 +12,13 @@
 #include <string>
 #include <vector>
 
-void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::Component const** selected) {
-    if (not*selected) {
+void osmv::Component_selection_widget::draw(SimTK::State const& state, Indirect_ptr<OpenSim::Component>& selection) {
+    if (not selection) {
         ImGui::Text("(nothing selected)");
         return;
     }
 
-    OpenSim::Component const& c = **selected;
+    OpenSim::Component const& c = *selection;
 
     ImGui::Text("selection information:");
     ImGui::Dummy(ImVec2{0.0, 2.5f});
@@ -131,7 +133,7 @@ void osmv::Component_selection_widget::draw(SimTK::State const& state, OpenSim::
             std::string const& cp = c.getSocket(sn).getConnecteePath();
             ImGui::Text("%s", cp.c_str());
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                *selected = &c.getComponent(cp);
+                selection.reset(&c.getComponent(cp));
             }
             ImGui::NextColumn();
         }

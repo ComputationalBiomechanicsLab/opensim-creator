@@ -7,10 +7,15 @@ namespace OpenSim {
 }
 
 namespace osmv {
+    template<typename T>
+    class Indirect_ptr;
+}
+
+namespace osmv {
     class Properties_editor final {
         std::vector<bool> property_locked;
 
     public:
-        bool draw(OpenSim::Component&);
+        bool draw(Indirect_ptr<OpenSim::Component>&);
     };
 }

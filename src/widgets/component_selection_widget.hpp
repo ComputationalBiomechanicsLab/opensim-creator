@@ -9,6 +9,11 @@ namespace OpenSim {
 }
 
 namespace osmv {
+    template<typename T>
+    class Indirect_ptr;
+}
+
+namespace osmv {
     class Component_selection_widget final {
     public:
         Component_selection_widget() = default;
@@ -32,6 +37,6 @@ namespace osmv {
         //
         // this is because the user can change the selection inside this widget
         // (e.g. by hopping up to the parent component)
-        void draw(SimTK::State const& state, OpenSim::Component const** selected);
+        void draw(SimTK::State const& state, Indirect_ptr<OpenSim::Component>&);
     };
 }

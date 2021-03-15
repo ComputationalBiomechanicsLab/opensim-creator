@@ -1,6 +1,6 @@
 #include "log_viewer_widget.hpp"
 
-#include "src/utils/circular_log_sink.hpp"
+#include "src/utils/traceback_log.hpp"
 
 #include <imgui.h>
 

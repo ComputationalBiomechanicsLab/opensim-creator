@@ -1,9 +1,16 @@
 #pragma once
 
 namespace OpenSim {
+    class PhysicalFrame;
     class Model;
     class Component;
-    class PhysicalFrame;
+}
+
+namespace osmv {
+    template<typename T>
+    class Indirect_ref;
+    template<typename T>
+    class Indirect_ptr;
 }
 
 namespace osmv {
@@ -18,5 +25,6 @@ namespace osmv {
     };
 
     void show_add_body_modal(Added_body_modal_state&);
-    void try_draw_add_body_modal(Added_body_modal_state&, OpenSim::Model&, OpenSim::Component const**);
+    void try_draw_add_body_modal(
+        Added_body_modal_state&, Indirect_ref<OpenSim::Model>&, Indirect_ptr<OpenSim::Component>& selection);
 }

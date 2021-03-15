@@ -142,8 +142,10 @@ add_executable(osmv
     src/utils/os.cpp
     src/utils/scope_guard.hpp
     src/utils/circular_buffer.hpp
-    src/utils/circular_log_sink.hpp
-    src/utils/circular_log_sink.cpp
+    src/utils/traceback_log.hpp
+    src/utils/traceback_log.cpp
+    src/utils/indirect_ptr.hpp
+    src/utils/indirect_ref.hpp
 
     src/config.hpp
     src/config.cpp

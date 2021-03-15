@@ -4,8 +4,7 @@
 #include "src/log.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
-#include "src/utils/circular_buffer.hpp"
-#include "src/utils/circular_log_sink.hpp"
+#include "src/utils/traceback_log.hpp"
 #include "src/utils/os.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>

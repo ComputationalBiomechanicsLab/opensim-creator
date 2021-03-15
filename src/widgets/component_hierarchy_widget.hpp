@@ -5,6 +5,11 @@ namespace OpenSim {
 }
 
 namespace osmv {
+    template<typename T>
+    class Indirect_ptr;
+}
+
+namespace osmv {
     class Component_hierarchy_widget final {
     public:
         Component_hierarchy_widget() = default;
@@ -34,6 +39,8 @@ namespace osmv {
         //     }
         //
         void draw(
-            OpenSim::Component const* root, OpenSim::Component const** selected, OpenSim::Component const** hovered);
+            OpenSim::Component const* root,
+            Indirect_ptr<OpenSim::Component>& selection,
+            Indirect_ptr<OpenSim::Component>& hover);
     };
 }
