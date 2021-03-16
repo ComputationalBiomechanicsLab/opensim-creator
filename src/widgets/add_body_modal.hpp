@@ -15,6 +15,8 @@ namespace osmv {
 
 namespace osmv {
     struct Added_body_modal_state {
+        static constexpr char const* modal_name = "add body";
+
         OpenSim::PhysicalFrame const* selected_pf = nullptr;
         char body_name[64]{};
         char joint_name[64]{};
@@ -22,6 +24,8 @@ namespace osmv {
         float com[3]{};
         float inertia[3] = {1.0f, 1.0f, 1.0f};
         bool add_offset_frames_to_the_joint = true;
+        bool inertia_locked = true;
+        bool com_locked = true;
     };
 
     void show_add_body_modal(Added_body_modal_state&);

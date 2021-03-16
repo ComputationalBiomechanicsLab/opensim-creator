@@ -65,6 +65,8 @@ void osmv::Attach_geometry_modal::draw(
                 // TODO: this should check whether the mesh is findable via its filename
                 guard->attachGeometry(new OpenSim::Mesh{vtp.filename().string()});
                 recent.push_back(vtp);
+
+                search[0] = '\0';
                 ImGui::CloseCurrentPopup();
             }
         }
@@ -72,6 +74,7 @@ void osmv::Attach_geometry_modal::draw(
     ImGui::EndChild();
 
     if (ImGui::Button("Cancel")) {
+        search[0] = '\0';
         ImGui::CloseCurrentPopup();
     }
 

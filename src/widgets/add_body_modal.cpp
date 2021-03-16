@@ -1,7 +1,9 @@
 #include "add_body_modal.hpp"
 
+#include "src/opensim_bindings/conversions.hpp"
 #include "src/utils/indirect_ptr.hpp"
 #include "src/utils/indirect_ref.hpp"
+#include "src/widgets/lockable_f3_editor.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -11,14 +13,70 @@
 
 #include <memory>
 
-static constexpr char const modal_name[] = "add body";
-
 void osmv::show_add_body_modal(Added_body_modal_state& st) {
-    ImGui::OpenPopup(modal_name);
+    ImGui::OpenPopup(st.modal_name);
+}
+
+static void prettify_coord_names(OpenSim::FreeJoint& fj) {
+    static constexpr std::array<const char*, 6> const lut = {"rx", "ry", "rz", "tx", "ty", "tz"};
+
+    for (size_t i = 0; i < lut.size(); ++i) {
+        auto& coord = fj.upd_coordinates(static_cast<int>(i));
+        coord.setName(lut[i] + coord.getName());
+    }
+}
+
+static std::unique_ptr<OpenSim::Joint> make_joint(osmv::Added_body_modal_state& st, OpenSim::Body const& b) {
+    if (not st.add_offset_frames_to_the_joint) {
+        auto fj = std::make_unique<OpenSim::FreeJoint>(st.joint_name, *st.selected_pf, b);
+        prettify_coord_names(*fj);
+        return std::move(fj);
+    }
+
+    auto fj = std::make_unique<OpenSim::FreeJoint>();
+    fj->setName(st.joint_name);
+    prettify_coord_names(*fj);
+
+    // add first offset frame as joint's parent
+    {
+        auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        pof1->setParentFrame(*st.selected_pf);
+        pof1->setName(st.selected_pf->getName() + "_offset");
+        fj->addFrame(pof1.get());
+        fj->connectSocket_parent_frame(*pof1.release());
+    }
+
+    // add second offset frame as joint's child
+    {
+        auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        pof2->setParentFrame(b);
+        pof2->setName(b.getName() + "_offset");
+        fj->addFrame(pof2.get());
+        fj->connectSocket_child_frame(*pof2.release());
+    }
+
+    return std::move(fj);
+}
+
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
+static void HelpMarker(const char* desc) {
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
 }
 
 void osmv::try_draw_add_body_modal(
     Added_body_modal_state& st, Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
+
+    if (st.selected_pf == nullptr) {
+        st.selected_pf = &model.get().getGround();
+    }
 
     // OpenSim::Model& model, OpenSim::Component const** selection
     // center the modal
@@ -29,19 +87,41 @@ void osmv::try_draw_add_body_modal(
     }
 
     // try to show modal
-    if (not ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (not ImGui::BeginPopupModal(st.modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        // modal not showing
         return;
     }
 
     // collect user input
-    ImGui::InputText("body name", st.body_name, sizeof(st.body_name));
-    ImGui::InputFloat("mass", &st.mass);
-    ImGui::InputFloat3("center of mass", st.com);
-    ImGui::InputFloat3("inertia", st.inertia);
+    ImGui::Columns(2);
 
-    ImGui::Text("join body to:");
-    ImGui::Separator();
-    ImGui::BeginChild("join", ImVec2{256.0f, 256.0f}, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::Text("body name");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::InputText("##bodyname", st.body_name, sizeof(st.body_name));
+    ImGui::NextColumn();
+
+    ImGui::Text("mass (unitless)");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::InputFloat("##mass", &st.mass);
+    ImGui::NextColumn();
+
+    ImGui::Text("center of mass");
+    ImGui::NextColumn();
+    draw_lockable_f3_editor("##comlockbtn", "##comeditor", st.com, &st.com_locked);
+    ImGui::NextColumn();
+
+    ImGui::Text("inertia");
+    ImGui::NextColumn();
+    draw_lockable_f3_editor("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertia_locked);
+    ImGui::NextColumn();
+
+    ImGui::Text("join body to");
+    ImGui::SameLine();
+    HelpMarker("OpenSim::Body's must joined to something else with a joint");
+    ImGui::NextColumn();
+    ImGui::BeginChild("join", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
     for (OpenSim::PhysicalFrame const& pf : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
         int styles_pushed = 0;
         if (&pf == st.selected_pf) {
@@ -54,54 +134,56 @@ void osmv::try_draw_add_body_modal(
         ImGui::PopStyleColor(styles_pushed);
     }
     ImGui::EndChild();
+    ImGui::NextColumn();
 
-    ImGui::Text("with a FreeJoint");
+    ImGui::Text("joint type");
+    ImGui::SameLine();
+    HelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to whatever was selected above");
+    ImGui::NextColumn();
+    ImGui::Text("OpenSim::FreeJoint");
+    ImGui::NextColumn();
 
-    ImGui::InputText("joint name", st.joint_name, sizeof(st.joint_name));
-    ImGui::Checkbox("add offset frames to the joint", &st.add_offset_frames_to_the_joint);
+    ImGui::Text("joint name");
+    ImGui::SameLine();
+    HelpMarker("The name of the OpenSim::Joint specified above");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::InputText("##jointnameinput", st.joint_name, sizeof(st.joint_name));
+    ImGui::NextColumn();
 
-    // add body (if user clicks `add` button)
-    if (st.selected_pf != nullptr and ImGui::Button("add")) {
-        // create user-requested body
-        SimTK::Vec3 com{static_cast<double>(st.com[0]), static_cast<double>(st.com[1]), static_cast<double>(st.com[2])};
-        SimTK::Inertia inertia{
-            static_cast<double>(st.inertia[0]), static_cast<double>(st.inertia[1]), static_cast<double>(st.inertia[2])};
-        OpenSim::Body* b = new OpenSim::Body{st.body_name, 1.0, com, inertia};
-
-        auto guard = model.modify();
-        guard->addBody(b);
-
-        // create a new (default) joint and assign it offset frames etc. accordingly
-        OpenSim::FreeJoint* fj = nullptr;
-        if (st.add_offset_frames_to_the_joint) {
-            fj = new OpenSim::FreeJoint{};
-            fj->setName(st.joint_name);
-
-            // add first offset frame as joint's parent
-            OpenSim::PhysicalOffsetFrame* pof1 = new OpenSim::PhysicalOffsetFrame{};
-            pof1->setParentFrame(*st.selected_pf);
-            pof1->setName(st.selected_pf->getName() + "_offset");
-            fj->addFrame(pof1);
-            fj->connectSocket_parent_frame(*pof1);
-
-            // add second offset frame as joint's child
-            OpenSim::PhysicalOffsetFrame* pof2 = new OpenSim::PhysicalOffsetFrame{};
-            pof2->setParentFrame(*b);
-            pof2->setName(b->getName() + "_offset");
-            fj->addFrame(pof2);
-            fj->connectSocket_child_frame(*pof2);
-        } else {
-            fj = new OpenSim::FreeJoint{st.joint_name, *st.selected_pf, *b};
-        }
-        guard->addJoint(fj);
-        selection.reset(b);
-        st = {};  // reset user inputs
-
-        ImGui::CloseCurrentPopup();
-    }
+    ImGui::Text("add offset frames?");
+    ImGui::SameLine();
+    HelpMarker(
+        "Whether osmv should automatically add intermediate offset frames to the OpenSim::Joint (rather than joining directly)");
+    ImGui::NextColumn();
+    ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
+    ImGui::NextColumn();
 
     if (ImGui::Button("cancel")) {
         st = {};  // reset user inputs
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("add")) {
+
+        // create user-requested body
+        auto com = stk_vec3_from(st.com);
+        auto inertia = stk_inertia_from(st.inertia);
+        auto body = std::make_unique<OpenSim::Body>(st.body_name, 1.0, com, inertia);
+
+        // hold onto this pointer so that it can be used post-release
+        OpenSim::Body const* bptr = body.get();
+
+        {
+            auto guard = model.modify();
+            guard->addBody(body.release());
+            guard->addJoint(make_joint(st, *bptr).release());
+        }
+
+        selection.reset(bptr);
+        st = {};  // reset user inputs
+
         ImGui::CloseCurrentPopup();
     }
 

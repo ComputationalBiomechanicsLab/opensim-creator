@@ -54,6 +54,12 @@ namespace osmv {
             f(guard.get());
         }
 
+        Indirect_ref<T>& operator=(T const& other) {
+            auto guard = modify();
+            guard.get() = other;
+            return *this;
+        }
+
         // UNSAFE because it violates the contract of calling the virtual `on_begin_modify` before
         // editing and `on_end_modify` after editing. This is a backdoor method for when the caller
         // knows what they're doing
@@ -104,24 +110,30 @@ namespace osmv {
         }
     };
 
-    template<typename T, typename Getter, typename ModificationCallback>
+    template<typename T, typename OnBeginModifyFunc, typename OnEndModifyFunc>
     class Lambda_indirect_ref final : public Indirect_ref<T> {
-        Getter getter;
-        ModificationCallback _on_end_modify;
+        T& ref;
+        OnBeginModifyFunc notify_begin;
+        OnEndModifyFunc notify_end;
 
     public:
-        Lambda_indirect_ref(Getter _getter, ModificationCallback cb) :
-            getter{std::move(_getter)},
-            _on_end_modify{std::move(cb)} {
+        Lambda_indirect_ref(T& _ref, OnBeginModifyFunc _notify_begin, OnEndModifyFunc _notify_end) :
+            ref{_ref},
+            notify_begin{std::move(_notify_begin)},
+            notify_end{std::move(_notify_end)} {
         }
 
     private:
-        T& impl_upd() {
-            return getter();
+        T& impl_upd() override {
+            return ref;
+        }
+
+        void on_begin_modify() override {
+            notify_begin();
         }
 
         void on_end_modify() noexcept override {
-            on_end_modify();
+            notify_end();
         }
     };
 }

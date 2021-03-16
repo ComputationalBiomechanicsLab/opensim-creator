@@ -558,7 +558,8 @@ static void
         }
 
         if (idx >= 0) {
-            auto const& joint_tid = typeid(selection.get());
+            ImVec4 enabled_color{0.1f, 0.6f, 0.1f, 1.0f};
+            auto const& joint_tid = typeid(*selection);
 
             ImGui::Text("change joint type");
             ImGui::NextColumn();
@@ -568,7 +569,7 @@ static void
             {
                 int pushed_styles = 0;
                 if (joint_tid == typeid(OpenSim::FreeJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
                     ++pushed_styles;
                 }
 
@@ -583,7 +584,7 @@ static void
             {
                 int pushed_styles = 0;
                 if (joint_tid == typeid(OpenSim::PinJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
                     ++pushed_styles;
                 }
 
@@ -598,7 +599,7 @@ static void
             {
                 int pushed_styles = 0;
                 if (joint_tid == typeid(OpenSim::UniversalJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
                     ++pushed_styles;
                 }
 
@@ -613,7 +614,7 @@ static void
             {
                 int pushed_styles = 0;
                 if (joint_tid == typeid(OpenSim::BallJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
+                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
                     ++pushed_styles;
                 }
 
@@ -630,13 +631,12 @@ static void
 
                 // `const_cast` necessary because jsp is extracted via the `getParent` call in
                 // OpenSim
-                const_cast<OpenSim::JointSet*>(jsp)->set(idx, added_joint.release());
-
+                //
                 // UNSAFE because we have effectively modified *the model* by hopping up to the
                 // selection's parent: really, this modification should happen under a model guard
                 // (e.g. by traversing from the root model the JointSet under a guard)
-                model.UNSAFE_on_begin_modify();
-                model.UNSAFE_on_end_modify();
+                auto guard = model.modify();
+                const_cast<OpenSim::JointSet*>(jsp)->set(idx, added_joint.release());
             }
 
             ImGui::NextColumn();
@@ -701,20 +701,11 @@ static void draw_socket_editor(
             modal.show(popupname.c_str());
         }
 
-        // these `const_cast`s are necessary because there isn't (currently) a clean way of
-        // expressing that the modification is happening to a subcomponent (it would require
-        // a lens/projection proxy that I haven't developed yet ;))
-        auto getter = [&socket]() { return std::ref(const_cast<OpenSim::AbstractSocket&>(socket)); };
-
-        // this UNSAFE is because we are notifying that the selection was changed (because a child
-        // socket in the selection was changed)
-        auto on_socket_modification = [&selection]() {
-            selection.UNSAFE_on_begin_modify();
-            selection.UNSAFE_on_begin_modify();
-        };
-
-        auto ref = Lambda_indirect_ref<OpenSim::AbstractSocket, decltype(getter), decltype(on_socket_modification)>{
-            getter, on_socket_modification};
+        // the `const_cast` is necessary because there isn't a clean way of expressing that the modification is
+        // happening to a subcomponent
+        auto ref = Lambda_indirect_ref{selection.UNSAFE_upd()->updSocket(sn),
+                                       [&]() { selection.UNSAFE_on_begin_modify(); },
+                                       [&]() { selection.UNSAFE_on_end_modify(); }};
 
         modal.draw(popupname.c_str(), model, ref);
 

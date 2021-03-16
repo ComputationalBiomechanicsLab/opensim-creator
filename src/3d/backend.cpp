@@ -921,7 +921,7 @@ Passthrough_data Renderer::draw(
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    gl::BindFramebuffer(GL_FRAMEBUFFER, 568);
+    gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
 
     // clear the scene FBO's draw buffers for a new draw call
     //

@@ -2,6 +2,8 @@
 
 #include "src/assertions.hpp"
 #include "src/utils/indirect_ptr.hpp"
+#include "src/utils/indirect_ref.hpp"
+#include "src/widgets/lockable_f3_editor.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -122,31 +124,23 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
         {
             auto const* vp = dynamic_cast<OpenSim::Property<SimTK::Vec3> const*>(&p);
             if (vp and not vp->isListProperty()) {
-                // lock btn
+                SimTK::Vec3 v = vp->getValue();
+                float fv[3] = {
+                    static_cast<float>(v[0]),
+                    static_cast<float>(v[1]),
+                    static_cast<float>(v[2]),
+                };
+
                 bool locked = property_locked[static_cast<size_t>(i)];
-                if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
+
+                if (draw_lockable_f3_editor("##vec3lockbtn", "##vec3editor", fv, &locked)) {
+                    auto guard = selection.modify();
+
                     property_locked[static_cast<size_t>(i)] = locked;
-                }
-                ImGui::SameLine();
-
-                SimTK::Vec3 const& v = vp->getValue();
-                float vs[3];
-                vs[0] = static_cast<float>(v[0]);
-                vs[1] = static_cast<float>(v[1]);
-                vs[2] = static_cast<float>(v[2]);
-
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::InputFloat3("##vec3editor", vs, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    auto update_guard = selection.modify();
-
-                    if (locked) {
-                        double locked_val = static_cast<double>(diff(vp->getValue(), vs, 3));
-                        const_cast<OpenSim::Property<SimTK::Vec3>*>(vp)->setValue(
-                            SimTK::Vec3{locked_val, locked_val, locked_val});
-                    } else {
-                        const_cast<OpenSim::Property<SimTK::Vec3>*>(vp)->setValue(SimTK::Vec3{
-                            static_cast<double>(vs[0]), static_cast<double>(vs[1]), static_cast<double>(vs[2])});
-                    }
+                    v[0] = static_cast<double>(fv[0]);
+                    v[1] = static_cast<double>(fv[1]);
+                    v[2] = static_cast<double>(fv[2]);
+                    const_cast<OpenSim::Property<SimTK::Vec3>*>(vp)->setValue(v);
                 }
 
                 editor_rendered = true;

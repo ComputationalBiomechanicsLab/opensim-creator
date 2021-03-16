@@ -1,5 +1,6 @@
 #include "assertions.hpp"
 
+#include <cstdio>
 #include <cstring>
 #include <stdexcept>
 

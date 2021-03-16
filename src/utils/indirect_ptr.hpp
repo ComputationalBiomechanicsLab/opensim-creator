@@ -190,4 +190,35 @@ namespace osmv {
             *ptr2ptr = p;
         }
     };
+
+    template<typename T, typename BeforeModification, typename AfterModification>
+    class Lambda_indirect_ptr final : public Indirect_ptr<T> {
+        T** ptr2ptr;
+        BeforeModification before_modify;
+        AfterModification after_modify;
+
+    public:
+        Lambda_indirect_ptr(T** _p, BeforeModification _before, AfterModification _after) :
+            ptr2ptr{_p},
+            before_modify{std::move(_before)},
+            after_modify{std::move(_after)} {
+        }
+
+    private:
+        T* impl_upd() override {
+            return *ptr2ptr;
+        }
+
+        void impl_set(T* p) override {
+            *ptr2ptr = p;
+        }
+
+        void on_begin_modify() override {
+            before_modify();
+        }
+
+        void on_end_modify() noexcept {
+            after_modify();
+        }
+    };
 }
