@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cassert>
+#include "src/assertions.hpp"
+
 #include <optional>
 #include <utility>
 
@@ -134,18 +135,18 @@ namespace osmv {
         friend std::optional<Downcasted_indirect_ptr<TBase_, TDerived_>> try_downcast(Indirect_ptr<TBase_>&);
 
         Downcasted_indirect_ptr(Indirect_ptr<TBase>& _proxy) : proxy{_proxy} {
-            assert(dynamic_cast<TDerived const*>(proxy.get()));
+            OSMV_ASSERT(dynamic_cast<TDerived const*>(proxy.get()));
         }
 
         TDerived* impl_upd() override {
             TBase* p = proxy.UNSAFE_upd();
-            assert(dynamic_cast<TDerived*>(p));
+            OSMV_ASSERT(dynamic_cast<TDerived*>(p));
             return static_cast<TDerived*>(p);
         }
 
         TDerived const* impl_get() override {
             TBase const* p = proxy.get();
-            assert(dynamic_cast<TDerived const*>(p));
+            OSMV_ASSERT(dynamic_cast<TDerived const*>(p));
             return static_cast<TDerived const*>(p);
         }
 
@@ -177,7 +178,7 @@ namespace osmv {
 
     public:
         constexpr Trivial_indirect_ptr(T** _ptr2ptr) noexcept : ptr2ptr{_ptr2ptr} {
-            assert(ptr2ptr != nullptr);
+            OSMV_ASSERT(ptr2ptr != nullptr);
         }
 
     private:

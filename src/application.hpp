@@ -1,8 +1,8 @@
 #pragma once
 
+#include "src/assertions.hpp"
 #include "src/utils/geometry.hpp"
 
-#include <cassert>
 #include <memory>
 #include <utility>
 
@@ -29,7 +29,7 @@ namespace osmv {
         }
 
         [[nodiscard]] static Application& current() noexcept {
-            assert(gCurrent != nullptr);
+            OSMV_ASSERT(gCurrent != nullptr);
             return *gCurrent;
         }
 

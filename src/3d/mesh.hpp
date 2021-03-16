@@ -5,6 +5,7 @@
 
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -29,7 +30,11 @@ namespace osmv {
         template<typename... Args>
         element_index_type vertex_emplace_back(Args&&... args) {
             size_t idx = vert_data.size();
-            assert(idx <= std::numeric_limits<element_index_type>::max());
+
+            if (idx > std::numeric_limits<element_index_type>::max()) {
+                throw std::runtime_error{
+                    "tried to load a mesh with too many vertices. OSMV internally uses 16-bit indices for element indices, so you can only use meshes with <65k verts. If you desperately need more vertices, raise a support ticket."};
+            }
             vert_data.emplace_back(std::forward<Args>(args)...);
 
             return static_cast<element_index_type>(idx);

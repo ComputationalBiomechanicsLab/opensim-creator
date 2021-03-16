@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/assertions.hpp"
+
 #include <GL/glew.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,14 +11,14 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include <cassert>
 #include <cstddef>
 #include <exception>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
 
-#define OSMV_ASSERT_NO_OPENGL_ERRORS_HERE() gl::assert_no_errors(__FILE__, __LINE__, __func__);
+#define OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE(comment)                                                               \
+    { gl::assert_no_errors(comment, __FILE__, __LINE__, __func__); }
 
 namespace gl {
     std::string slurp(std::filesystem::path const& path);
@@ -758,7 +760,7 @@ namespace gl {
     }
 
     // asserts there are no current OpenGL errors (globally)
-    void assert_no_errors(char const* file, int line, char const* func);
+    void assert_no_errors(char const* comment, char const* file, int line, char const* func);
 
     template<typename T>
     class Array_bufferT final {
@@ -891,8 +893,8 @@ namespace gl {
         glDrawBuffers(sizeof...(vs), attachments);
     }
 
-    inline void assert_current_fbo_complete() {
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    inline bool is_current_fbo_complete() {
+        return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
     inline int GetInteger(GLenum pname) {

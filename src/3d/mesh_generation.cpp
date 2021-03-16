@@ -7,7 +7,6 @@
 #include <glm/vec3.hpp>
 
 #include <array>
-#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -124,11 +123,9 @@ Plain_mesh osmv::unit_sphere_triangles() {
 // - bottom == [0.0f, 0.0f, +1.0f]
 // - (so the height is 2.0f, not 1.0f)
 Plain_mesh osmv::unit_cylinder_triangles() {
-    size_t num_sides = 12;
+    static constexpr size_t num_sides = 12;
 
     std::vector<Untextured_vert> out;
-
-    assert(num_sides >= 3);
 
     out.reserve(4 * num_sides);  // side quad, top triangle, bottom triangle
 

@@ -5,6 +5,7 @@
 
 #include <glm/ext/matrix_transform.hpp>
 
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <utility>

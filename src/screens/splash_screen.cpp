@@ -66,7 +66,7 @@ struct Splash_screen::Impl final {
 // PIMPL forwarding for osmv::Splash_screen
 
 osmv::Splash_screen::Splash_screen() : impl{new Impl{}} {
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing splash screen");
 }
 
 osmv::Splash_screen::~Splash_screen() noexcept {

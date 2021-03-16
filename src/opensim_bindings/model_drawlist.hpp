@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/3d/drawlist.hpp"
+#include "src/assertions.hpp"
 
 #include <cstddef>
 #include <stdexcept>
@@ -65,11 +66,11 @@ namespace osmv {
         template<typename Callback>
         void for_each(Callback f) {
             // emplace-back ensures this
-            assert(drawlist.size() == associated_components.size());
+            OSMV_ASSERT(drawlist.size() == associated_components.size());
 
             drawlist.for_each([&](Mesh_instance& mi) {
                 uint16_t id = mi.passthrough_data().to_u16();
-                assert(id != 0);  // emplace-back ensures this
+                OSMV_ASSERT(id != 0 and "zero ID inserted into drawlist (emplace_back should prevent this)");
                 f(associated_components[id - 1], mi);
             });
         }

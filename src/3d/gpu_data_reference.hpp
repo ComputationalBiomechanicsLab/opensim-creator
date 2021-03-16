@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cassert>
+#include "src/assertions.hpp"
+
 #include <cstddef>
 #include <limits>
 
@@ -49,7 +50,7 @@ namespace osmv {
         }
 
         [[nodiscard]] constexpr size_t to_index() const noexcept {
-            assert(is_valid());
+            OSMV_ASSERT(is_valid());
             return static_cast<size_t>(id);
         }
     };
@@ -57,7 +58,7 @@ namespace osmv {
     class Mesh_reference : public Gpu_data_reference<short> {
     public:
         [[nodiscard]] static constexpr Mesh_reference from_index(size_t idx) noexcept {
-            assert(idx < std::numeric_limits<value_type>::max());
+            OSMV_ASSERT(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
         }
 
@@ -69,7 +70,7 @@ namespace osmv {
     class Texture_reference : public Gpu_data_reference<short> {
     public:
         [[nodiscard]] static constexpr Texture_reference from_index(size_t idx) noexcept {
-            assert(idx < std::numeric_limits<value_type>::max());
+            OSMV_ASSERT(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
         }
 

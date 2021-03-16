@@ -1,5 +1,6 @@
 #include "properties_editor.hpp"
 
+#include "src/assertions.hpp"
 #include "src/utils/indirect_ptr.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
@@ -22,7 +23,11 @@ static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
 }
 
 bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) {
-    assert(selection);
+    if (not selection) {
+        ImGui::Text("no component provided (nothing selected?)");
+        return false;
+    }
+
     OpenSim::Component const& component = *selection;
 
     ImGui::Columns(2);

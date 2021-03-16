@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <string>
 
@@ -45,7 +44,7 @@ void osmv::Component_hierarchy_widget::draw(
             // push each element in the tree into a stack (child --> parent)
             OpenSim::Component const* c = &cr;
             while (c != root) {
-                assert(num_path_els < path_els.size());
+                OSMV_ASSERT(num_path_els < path_els.size());
                 path_els[num_path_els++] = c;
                 c = &c->getOwner();
             }

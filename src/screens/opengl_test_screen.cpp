@@ -107,7 +107,7 @@ void Opengl_test_screen::draw() {
         impl->hellotriangle.draw();
         break;
     default:
-        assert(false && "invalid demo index selected: this shouldn't happen");
+        OSMV_ASSERT(false && "invalid demo index selected: this is a developer error");
     }
 
     if (ImGui::Begin("main panel")) {

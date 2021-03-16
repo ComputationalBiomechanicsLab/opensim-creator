@@ -15,6 +15,7 @@
 #include "src/3d/texture_storage.hpp"
 #include "src/3d/textured_vert.hpp"
 #include "src/3d/untextured_vert.hpp"
+#include "src/assertions.hpp"
 #include "src/config.hpp"
 
 #include <GL/glew.h>
@@ -26,7 +27,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <exception>
 #include <type_traits>
@@ -251,7 +251,7 @@ namespace {
 
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating Gouraud VAO");
 
             return vao;
         }
@@ -285,7 +285,7 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating colormapped VAO");
 
             return vao;
         }
@@ -318,7 +318,7 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating pts VAO");
 
             return vao;
         }
@@ -353,7 +353,7 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating edge detection VAO");
 
             return vao;
         }
@@ -385,7 +385,7 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating MSXAA blitter VAO");
 
             return vao;
         }
@@ -418,7 +418,7 @@ namespace {
             gl::EnableVertexAttribArray(aNormal);
             gl::BindVertexArray();
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating normals VAO");
 
             return vao;
         }
@@ -531,7 +531,7 @@ Mesh_storage::~Mesh_storage() noexcept {
 
 Mesh_on_gpu& Mesh_storage::lookup(Mesh_reference ref) const {
     size_t idx = ref.to_index();
-    assert(idx < impl->meshes.size());
+    OSMV_ASSERT(idx < impl->meshes.size());
     return impl->meshes[idx];
 }
 
@@ -556,7 +556,7 @@ Texture_storage::~Texture_storage() noexcept {
 
 gl::Texture_2d& Texture_storage::lookup(Texture_reference ref) const {
     size_t idx = ref.to_index();
-    assert(idx < impl->textures.size());
+    OSMV_ASSERT(idx < impl->textures.size());
     return impl->textures[idx];
 }
 
@@ -575,7 +575,7 @@ struct Shader_cache::Impl final {
     Skip_msxaa_blitter_shader skip_msxaa_shader;
 
     Impl() {
-        OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing shader cache");
     }
 };
 
@@ -671,15 +671,14 @@ struct Render_target::Impl final {
                 gl::FramebufferRenderbuffer(
                     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8);
 
-                // check it's OK
-                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+                OSMV_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing scene buffers");
         }
     } scene;
 
@@ -714,15 +713,14 @@ struct Render_target::Impl final {
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
-                // check non-MSXAA OK
-                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+                OSMV_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing non-MSXAAed buffers");
         }
     } skip_msxaa;
 
@@ -746,14 +744,14 @@ struct Render_target::Impl final {
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
-                assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+                OSMV_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
                 return rv;
             }()} {
 
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing basic FBO texture pair");
         }
     };
 
@@ -785,7 +783,7 @@ struct Render_target::Impl final {
         color0_resolved{w, h, GL_RGBA},
         color1_resolved{w, h, GL_RGB} {
 
-        OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing render target");
     }
 };
 
@@ -886,7 +884,7 @@ struct Renderer::Impl final {
 //
 // DO NOT USE CURLY BRACERS HERE
 Renderer::Renderer() : impl(new Impl()) {
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after renderer initialization");
 }
 
 Renderer::~Renderer() noexcept {
@@ -913,10 +911,7 @@ Passthrough_data Renderer::draw(
     Mesh_instance const* meshes = drawlist.instances.data();
     size_t nmeshes = drawlist.instances.size();
 
-#ifndef NDEBUG
-    // debug OpenGL: ensure there are no OpenGL errors before setup
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("before drawcall setup");
 
     Render_target::Impl& buffers = out.raw_impl();
 
@@ -926,7 +921,7 @@ Passthrough_data Renderer::draw(
     //
     // drawing into this FBO writes to textures that the user can't see, but that can
     // be sampled by downstream shaders
-    gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.scene.fbo);
+    gl::BindFramebuffer(GL_FRAMEBUFFER, 568);
 
     // clear the scene FBO's draw buffers for a new draw call
     //
@@ -949,10 +944,7 @@ Passthrough_data Renderer::draw(
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-#ifndef NDEBUG
-    // debug OpenGL: ensure no OpenGL errors after initial buffer clears, draw setup
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initial draw buffer clearing");
 
     // render the scene to the FBO using a multiple-render-target (MRT) multisampled
     // (MSXAAed) shader.
@@ -1077,10 +1069,7 @@ Passthrough_data Renderer::draw(
         gl::BindVertexArray();
     }
 
-#ifndef NDEBUG
-    // debug OpenGL: ensure there are no errors after drawing the scene
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing the scene");
 
     // perform passthrough hit testing
     //
@@ -1188,9 +1177,7 @@ Passthrough_data Renderer::draw(
         }
     }
 
-#ifndef NDEBUG
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after hit testing");
 
     // resolve MSXAA in COLOR0 to output texture
     //
@@ -1205,9 +1192,7 @@ Passthrough_data Renderer::draw(
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-#ifndef NDEBUG
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after resolving COLOR0");
 
     // resolve MSXAA in COLOR1
     //
@@ -1221,16 +1206,12 @@ Passthrough_data Renderer::draw(
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-#ifndef NDEBUG
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after resolving COLOR1");
 
     // bind to output texture: all further drawing goes onto it
     gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.color0_resolved.fbo);
 
-#ifndef NDEBUG
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after binding to output texture");
 
     // draw rims highlights onto the output
     //
@@ -1273,10 +1254,7 @@ Passthrough_data Renderer::draw(
         glDisable(GL_BLEND);
     }
 
-#ifndef NDEBUG
-    // debug OpenGL: ensure no errors after drawing rim overlay
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing rim highlights");
 
     // render debug quads onto output (if applicable)
     if (params.flags & RawRendererFlags_DrawDebugQuads) {
@@ -1341,10 +1319,7 @@ Passthrough_data Renderer::draw(
         gl::BindVertexArray();
     }
 
-#ifndef NDEBUG
-    // debug OpenGL: ensure no errors after drawing debug quads
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing debug quads");
 
     // bind back to the original framebuffer (assumed to be window)
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);

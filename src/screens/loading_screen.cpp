@@ -35,7 +35,7 @@ struct Loading_screen::Impl final {
         // immediately start loading the model file on a background thread
         result{std::async(std::launch::async, [&]() { return std::make_unique<OpenSim::Model>(path.string()); })} {
 
-        OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing loading screen");
     }
 };
 

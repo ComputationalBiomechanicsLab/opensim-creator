@@ -74,7 +74,7 @@ namespace osmv::log {
             }
 
             // create the log message
-            char buf[255];
+            char buf[512];
             size_t n = 0;
             {
                 va_list args;

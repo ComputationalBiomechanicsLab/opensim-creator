@@ -229,7 +229,8 @@ static int get_max_multisamples() {
 
     // OpenGL spec: "the value must be at least 4"
     // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-    assert(v > 4);
+    OSMV_ASSERT(v > 4);
+
     return v;
 }
 
@@ -393,15 +394,15 @@ public:
 
             // depth testing used to ensure geometry overlaps correctly
             glEnable(GL_DEPTH_TEST);
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling depth test");
 
             // MSXAA is used to smooth out the model
             glEnable(GL_MULTISAMPLE);
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling multisampling");
 
             // all vertices in the render are backface-culled
             glEnable(GL_CULL_FACE);
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling face culling");
 
             // print OpenGL information if in debug mode
             log::info(
@@ -469,10 +470,7 @@ public:
                 }
             }
 
-#ifndef NDEBUG
-            // debug OpenGL: assert no OpenGL errors were induced by event handling
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::on_event");
 
             // osmv::Screen: run `tick`
             current_screen->tick();
@@ -487,10 +485,8 @@ public:
                 continue;
             }
 
-#ifndef NDEBUG
             // debug OpenGL: assert no OpenGL errors were induced by .tick()
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::tick");
 
             // clear the window's framebuffer ready for a new frame to be drawn
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -534,10 +530,8 @@ public:
             //            ImGUI implementation.
             gl::UseProgram();
 
-#ifndef NDEBUG
             // debug OpenGL: assert no OpenGL errors were induced by .draw()
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::draw");
 
             // NOTE: osmv::Screen side-effects:
             //
@@ -579,10 +573,7 @@ public:
             //       for software throttling
             SDL_GL_SwapWindow(window);
 
-#ifndef NDEBUG
-            // debug OpenGL: assert no OpenGL errors induced by final draw steps
-            OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
-#endif
+            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after swapping window");
 
             // osmv::Screen: handle any possible indirect side-effects the Screen's
             //               `on_event` handler may have had on the application state

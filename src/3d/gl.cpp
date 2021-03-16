@@ -1,7 +1,10 @@
 #include "gl.hpp"
 
+#include "src/assertions.hpp"
+
 #include <GL/glew.h>
 
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -24,7 +27,8 @@ void gl::CompileShader(Shader& sh) {
 
     GLint log_len = 0;
     glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &log_len);
-    assert(log_len >= 0);
+
+    OSMV_ASSERT_ALWAYS(log_len >= 0);
 
     std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetShaderInfoLog(sh, log_len, &log_len, errmsg.data());
@@ -49,7 +53,7 @@ void gl::LinkProgram(gl::Program& prog) {
     GLint log_len = 0;
     glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &log_len);
 
-    assert(log_len >= 0);
+    OSMV_ASSERT_ALWAYS(log_len >= 0);
 
     std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetProgramInfoLog(prog, static_cast<GLsizei>(errmsg.size()), nullptr, errmsg.data());
@@ -71,12 +75,13 @@ std::string gl::slurp(std::filesystem::path const& path) {
     return ss.str();
 }
 
-static std::string to_string(GLubyte const* err_string) {
-    return std::string{reinterpret_cast<char const*>(err_string)};
+static char const* to_c_str(GLenum err) {
+    // string is iso 8859 encoded
+    return reinterpret_cast<char const*>(gluErrorString(err));
 }
 
 // asserts there are no current OpenGL errors (globally)
-void gl::assert_no_errors(char const* file, int line, char const* func) {
+void gl::assert_no_errors(char const* comment, char const* file, int line, char const* func) {
     GLenum err = glGetError();
     if (err == GL_NO_ERROR) {
         return;
@@ -89,16 +94,19 @@ void gl::assert_no_errors(char const* file, int line, char const* func) {
     } while ((err = glGetError()) != GL_NO_ERROR);
 
     std::stringstream msg;
-    msg << "OpenGL: failed: " << file << ":" << line << ":" << func;
-    if (errors.size() == 1) {
-        msg << ": ";
-    } else {
-        msg << " with " << errors.size() << " errors: ";
-    }
-    for (auto it = errors.begin(); it != errors.end() - 1; ++it) {
-        msg << to_string(gluErrorString(*it)) << ", ";
-    }
-    msg << to_string(gluErrorString(errors.back()));
 
-    throw std::runtime_error{msg.str()};
+    msg << file << ':' << line << ": opengl error occurred:\n"
+        << "    file = " << file << "\n    line = " << line << "\n    func = " << func << "\n    comment = " << comment
+        << '\n';
+
+    if (errors.size() == 1) {
+        msg << "    message = " << to_c_str(errors.front());
+    } else {
+        int i = 0;
+        for (GLenum e : errors) {
+            msg << "    message (" << i++ << ") = " << to_c_str(e) << '\n';
+        }
+    }
+
+    throw std::runtime_error{std::move(msg).str()};
 }

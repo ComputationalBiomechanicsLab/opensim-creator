@@ -423,7 +423,10 @@ public:
 };
 
 static void draw_top_level_editor(Indirect_ptr<OpenSim::Component>& selection) {
-    assert(selection);
+    if (not selection) {
+        ImGui::Text("cannot draw top level editor: nothing selected?");
+        return;
+    }
 
     ImGui::Columns(2);
 
@@ -538,7 +541,10 @@ static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joi
 
 static void
     draw_joint_contextual_actions(Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Joint>& selection) {
-    assert(selection);
+    if (not selection) {
+        ImGui::Text("cannot draw contextual actions: nothing selected");
+        return;
+    }
 
     ImGui::Columns(2);
 
@@ -659,8 +665,10 @@ static void
 }
 
 static void draw_contextual_actions(osmv::Model_editor_screen::Impl& impl) {
-
-    assert(impl.selection() and "selection is blank (shouldn't be)");
+    if (not impl.selection()) {
+        ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
+        return;
+    }
 
     if (auto frame = try_downcast<OpenSim::PhysicalFrame>(impl.selection()); frame) {
         draw_frame_contextual_actions(impl.ui.attach_geometry_modal, impl.vtps(), *frame);
@@ -672,7 +680,10 @@ static void draw_contextual_actions(osmv::Model_editor_screen::Impl& impl) {
 static void draw_socket_editor(
     Reassign_socket_modal& modal, Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
 
-    assert(selection);
+    if (not selection) {
+        ImGui::Text("cannot draw socket editor: selection is blank (shouldn't be)");
+        return;
+    }
 
     // this UNSAFE is because I want to get the socket names, which is a non-const method on
     // the `selection`, but doesn't actually modify the selection (much, at least...)

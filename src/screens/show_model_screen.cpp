@@ -3,6 +3,7 @@
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
 #include "src/application.hpp"
+#include "src/assertions.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
@@ -36,7 +37,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <chrono>
 #include <cstdio>
 #include <limits>
@@ -152,7 +152,7 @@ namespace {
         }
 
         float last_datapoint() const {
-            assert(n > 0);
+            OSMV_ASSERT(n > 0);
             return data[n - 1];
         }
     };
@@ -547,7 +547,7 @@ namespace {
 
                 // only certain types of output are plottable at the moment
                 auto* o = dynamic_cast<OpenSim::Output<double> const*>(p.handle());
-                assert(o);
+                OSMV_ASSERT(o != nullptr and "unexpected output type (expected OpenSim::Output<double>)");
                 double v = o->getValue(st);
                 float fv = static_cast<float>(v);
 
@@ -620,7 +620,7 @@ struct Show_model_screen::Impl final {
             model->realizeReport(*p);
             return p;
         }()} {
-        OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after constructing show model screen impl");
     }
 
     // handle top-level UI event (user click, user drag, etc.)
@@ -782,7 +782,7 @@ struct Show_model_screen::Impl final {
                         "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
                     int samples_idx = lsb_index(Application::current().samples());
                     int max_samples_idx = lsb_index(Application::current().max_samples());
-                    assert(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
+                    OSMV_ASSERT(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
 
                     if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
                         Application::current().set_samples(1 << samples_idx);
@@ -1183,8 +1183,8 @@ struct Show_model_screen::Impl final {
         }
 
         // sort muscle list
-        assert(not muscles_tab.sorting_choices.empty());
-        assert(muscles_tab.current_sort_choice < muscles_tab.sorting_choices.size());
+        OSMV_ASSERT(not muscles_tab.sorting_choices.empty());
+        OSMV_ASSERT(muscles_tab.current_sort_choice < muscles_tab.sorting_choices.size());
         switch (muscles_tab.current_sort_choice) {
         case 0: {  // sort muscles by length
             std::sort(
@@ -1317,13 +1317,13 @@ struct Show_model_screen::Impl final {
                     std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* ms) {
                         return &ms->getName() == mas_tab.selected_musc;
                     });
-                assert(it != scratch.muscles.end());
+                OSMV_ASSERT(it != scratch.muscles.end());
 
                 auto it2 =
                     std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](OpenSim::Coordinate const* c) {
                         return &c->getName() == mas_tab.selected_coord;
                     });
-                assert(it2 != scratch.coords.end());
+                OSMV_ASSERT(it2 != scratch.coords.end());
 
                 auto p = std::make_unique<Moment_arm_plot>();
                 p->muscle_name = *mas_tab.selected_musc;

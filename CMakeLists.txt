@@ -22,7 +22,8 @@ set(OSMV_USE_CLANG_TIDY OFF CACHE BOOL "enable/disable running `clang-tidy` (lin
 set(OSMV_USE_IWYU OFF CACHE BOOL "enable/disable running `iwyu` (include-what-you-use) while building")
 set(OSMV_IWYU_PATH "include-what-you-use" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
 set(OSMV_REPO_PROVIDER "https://github.com" CACHE STRING "URL (or local path, if you setup your mirrors properly) to a git repo provider for external projects")
-set(OSMV_FORCE_ASSERTS_ENABLED OFF CACHE BOOL "enable asserts, even if building a release build")
+set(OSMV_FORCE_ASSERTS_ENABLED ON CACHE BOOL "enable OSMV's runtime assertions, even if building a release build")
+set(OSMV_FORCE_UNDEFINE_NDEBUG OFF CACHE BOOL "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions (standard lib, SimTK, OpenSim)")
 set(OSMV_USE_ASAN OFF CACHE BOOL "enable address sanitizer: useful for spotting leaks when debugging")
 
 if(${OSMV_USING_MODERN_CMAKE})
@@ -153,6 +154,8 @@ add_executable(osmv
     src/application.cpp
     src/log.hpp
     src/log.cpp
+    src/assertions.hpp
+    src/assertions.cpp
     src/osmv.cpp
 )
 target_link_libraries(osmv PRIVATE
@@ -234,6 +237,10 @@ target_compile_options(osmv PRIVATE
     $<$<NOT:$<BOOL:${OSMV_USING_MODERN_CMAKE}>>:-std=c++17>
 )
 if(OSMV_FORCE_ASSERTS_ENABLED)
+    target_compile_definitions(osmv PRIVATE -DOSMV_FORCE_ASSERTS_ENABLED=1)
+endif()
+
+if(OSMV_FORCE_UNDEFINE_NDEBUG)
     # MSVC
     string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
@@ -241,6 +248,7 @@ if(OSMV_FORCE_ASSERTS_ENABLED)
     string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
+
 set_target_properties(osmv PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED YES

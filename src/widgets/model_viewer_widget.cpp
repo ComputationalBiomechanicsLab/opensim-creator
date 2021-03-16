@@ -117,7 +117,7 @@ struct osmv::Model_viewer_widget::Impl final {
 
 Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache, ModelViewerWidgetFlags flags) :
     impl{new Impl{cache, flags}} {
-    OSMV_ASSERT_NO_OPENGL_ERRORS_HERE();
+    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after constructing model viewer widget");
 }
 
 Model_viewer_widget::~Model_viewer_widget() noexcept {
