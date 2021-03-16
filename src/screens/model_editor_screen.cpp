@@ -766,7 +766,19 @@ static bool is_example_file(std::filesystem::path const& path) {
     return is_subpath(examples_dir, path);
 }
 
+template<typename T, typename MappingFunction>
+static auto map_optional(MappingFunction f, std::optional<T> opt)
+    -> std::optional<decltype(f(std::move(opt).value()))> {
+
+    return opt ? std::optional{f(std::move(opt).value())} : std::nullopt;
+}
+
+static std::string path2string(std::filesystem::path p) {
+    return p.string();
+}
+
 static std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
+
     if (std::string const& backing_path = m.getInputFileName();
         backing_path != "Unassigned" and backing_path.size() > 0) {
 
@@ -774,7 +786,7 @@ static std::optional<std::string> try_get_save_location(OpenSim::Model const& m)
         //
         // we can save over this document - *IF* it's not an example file
         if (is_example_file(backing_path)) {
-            return prompt_save_single_file();
+            return map_optional(path2string, prompt_save_single_file());
         } else {
             return backing_path;
         }
