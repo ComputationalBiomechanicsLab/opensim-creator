@@ -660,7 +660,7 @@ static void
 
 static void draw_contextual_actions(osmv::Model_editor_screen::Impl& impl) {
 
-    assert(selection and "selection is blank (shouldn't be)");
+    assert(impl.selection() and "selection is blank (shouldn't be)");
 
     if (auto frame = try_downcast<OpenSim::PhysicalFrame>(impl.selection()); frame) {
         draw_frame_contextual_actions(impl.ui.attach_geometry_modal, impl.vtps(), *frame);
