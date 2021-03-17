@@ -2,41 +2,48 @@
 
 #include <chrono>
 #include <filesystem>
+#include <functional>
 
 namespace osmv {
-
     struct File_change_poller final {
         using clock = std::chrono::system_clock;
 
-        std::filesystem::path path;
-        clock::time_point last_timepoint;
         std::chrono::milliseconds delay;
         clock::time_point next;
+        std::chrono::system_clock::time_point last_modification_time;
+        bool enabled;
 
-        // assumes that the caller wants to monitor changes *after* this constructor
-        // is called
-        File_change_poller(std::filesystem::path _path, std::chrono::milliseconds _delay) :
-            path{std::move(_path)},
-            last_timepoint{std::filesystem::last_write_time(path)},
-            delay{std::move(_delay)},
-            next{clock::now() + delay} {
+        File_change_poller(std::chrono::milliseconds _delay, std::string const& path) :
+            delay{_delay},
+            next{clock::now() + delay},
+            last_modification_time{path.empty() or path == "Unassigned" ? std::chrono::system_clock::time_point{}
+                                                                        : std::filesystem::last_write_time(path)},
+            enabled{true} {
         }
 
-        bool change_detected() {
+        bool change_detected(std::string const& path) {
+            if (not enabled) {
+                return false;
+            }
+
+            if (path.empty() or path == "Unassigned") {
+                return false;
+            }
+
             auto now = clock::now();
 
             if (now < next) {
                 return false;
             }
 
-            auto tp = std::filesystem::last_write_time(path);
+            auto modification_time = std::filesystem::last_write_time(path);
             next = now + delay;
 
-            if (tp == last_timepoint) {
+            if (modification_time == last_modification_time) {
                 return false;
             }
 
-            last_timepoint = tp;
+            last_modification_time = modification_time;
             return true;
         }
     };

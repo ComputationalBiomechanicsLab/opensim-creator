@@ -8,6 +8,7 @@
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/circular_buffer.hpp"
+#include "src/utils/file_change_poller.hpp"
 #include "src/utils/indirect_ptr.hpp"
 #include "src/utils/indirect_ref.hpp"
 #include "src/utils/scope_guard.hpp"
@@ -62,6 +63,7 @@
 namespace fs = std::filesystem;
 using namespace osmv;
 using std::literals::operator""s;
+using std::literals::operator""ms;
 
 template<typename T>
 static T const* find_ancestor(OpenSim::Component const* c) {
@@ -147,6 +149,19 @@ struct Model_ui_state final {
 
     Model_ui_state& operator=(Model_ui_state other) {
         swap(*this, other);
+        return *this;
+    }
+
+    Model_ui_state& operator=(std::unique_ptr<OpenSim::Model> ptr) {
+        if (model == ptr) {
+            return *this;
+        }
+
+        std::swap(model, ptr);
+        state = init_fresh_state(*model);
+        selected_component = relocate_pointer(*model, selected_component);
+        hovered_component = relocate_pointer(*model, hovered_component);
+
         return *this;
     }
 
@@ -271,6 +286,8 @@ public:
         Attach_geometry_modal_state attach_geometry_modal;
     } ui;
 
+    File_change_poller file_poller{1000ms, ""};
+
     [[nodiscard]] Indirect_ptr<OpenSim::Component>& selection() noexcept {
         return selection_ptr;
     }
@@ -361,6 +378,11 @@ public:
 
     SimTK::State const& get_state() {
         return ms.state;
+    }
+
+    void set_model(std::unique_ptr<OpenSim::Model> model) {
+        attempt_new_undo_push();
+        ms = std::move(model);
     }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) : ms{std::move(_model)} {
@@ -881,6 +903,24 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
     }
 
     return handled ? true : impl->model_viewer.on_event(e);
+}
+
+void osmv::Model_editor_screen::tick() {
+    auto const& fname = impl->model().get().getInputFileName();
+    if (impl->file_poller.change_detected(fname)) {
+        std::unique_ptr<OpenSim::Model> p;
+        try {
+            p = std::make_unique<OpenSim::Model>(fname);
+            log::info("opened updated file");
+        } catch (std::exception const& ex) {
+            log::error("an error occurred while trying to automatically load a model file");
+            log::error(ex.what());
+        }
+
+        if (p) {
+            impl->set_model(std::move(p));
+        }
+    }
 }
 
 void osmv::Model_editor_screen::draw() {

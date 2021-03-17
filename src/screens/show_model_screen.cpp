@@ -607,17 +607,7 @@ struct Show_model_screen::Impl final {
     Muscles_tab_data muscles_tab;
     Outputs_tab_data outputs_tab;
 
-    std::optional<File_change_poller> file_poller;
-
-    static std::optional<File_change_poller> try_init_file_poller(OpenSim::Model const& m) {
-        std::string docname = m.getDocumentFileName();
-
-        if (not docname.empty()) {
-            return std::optional<File_change_poller>{File_change_poller{docname, 1000ms}};
-        } else {
-            return std::nullopt;
-        }
-    }
+    File_change_poller file_poller;
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         model{std::move(_model)},
@@ -627,7 +617,7 @@ struct Show_model_screen::Impl final {
             model->realizeReport(*p);
             return p;
         }()},
-        file_poller{try_init_file_poller(*model)} {
+        file_poller{1000ms, model->getDocumentFileName()} {
         OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after constructing show model screen impl");
     }
 
@@ -710,10 +700,10 @@ struct Show_model_screen::Impl final {
             }
         }
 
-        if (file_poller and file_poller->change_detected()) {
+        if (file_poller.change_detected(model->getDocumentFileName())) {
             std::unique_ptr<OpenSim::Model> p;
             try {
-                p = std::make_unique<OpenSim::Model>(file_poller->path.string());
+                p = std::make_unique<OpenSim::Model>(model->getDocumentFileName());
             } catch (std::exception const& ex) {
                 log::error("an error occurred while trying to automatically load a model file");
                 log::error(ex.what());
@@ -735,7 +725,6 @@ struct Show_model_screen::Impl final {
 
         outputs_tab.on_user_edited_model();
         simulator_tab.on_user_edited_model();
-        file_poller = try_init_file_poller(*model);
 
         *latest_state = model->initSystem();
         model->realizeReport(*latest_state);
@@ -1069,12 +1058,7 @@ struct Show_model_screen::Impl final {
                 std::make_unique<OpenSim::Model>(*model));
         }
 
-        {
-            bool watch = file_poller.has_value();
-            if (ImGui::Checkbox("watch changes", &watch)) {
-                file_poller = watch ? try_init_file_poller(*model) : std::nullopt;
-            }
-        }
+        ImGui::Checkbox("watch changes", &file_poller.enabled);
 
         ImGui::SameLine();
     }
