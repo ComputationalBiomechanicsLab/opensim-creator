@@ -34,6 +34,7 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
 
     ImGui::Columns(2);
     property_locked.resize(static_cast<size_t>(component.getNumProperties()), true);
+
     for (int i = 0; i < component.getNumProperties(); ++i) {
         OpenSim::AbstractProperty const& p = component.getPropertyByIndex(i);
         ImGui::Text("%s", p.getName().c_str());

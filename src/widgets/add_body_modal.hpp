@@ -1,23 +1,27 @@
 #pragma once
 
+#include "src/widgets/attach_geometry_modal.hpp"
+
+#include <functional>
+#include <memory>
+
 namespace OpenSim {
     class PhysicalFrame;
     class Model;
-    class Component;
-}
-
-namespace osmv {
-    template<typename T>
-    class Indirect_ref;
-    template<typename T>
-    class Indirect_ptr;
+    class Mesh;
+    class Body;
+    class Joint;
 }
 
 namespace osmv {
     struct Added_body_modal_state {
-        static constexpr char const* modal_name = "add body";
+        struct {
+            Attach_geometry_modal_state state;
+            std::unique_ptr<OpenSim::Mesh> selected = nullptr;
+        } attach_geom;
 
         OpenSim::PhysicalFrame const* selected_pf = nullptr;
+
         char body_name[64]{};
         char joint_name[64]{};
         float mass = 1.0f;
@@ -28,7 +32,20 @@ namespace osmv {
         bool com_locked = true;
     };
 
-    void show_add_body_modal(Added_body_modal_state&);
+    struct Added_body_modal_output final {
+        std::unique_ptr<OpenSim::Body> body;
+        std::unique_ptr<OpenSim::Joint> joint;
+
+        Added_body_modal_output(std::unique_ptr<OpenSim::Body> b, std::unique_ptr<OpenSim::Joint> j) :
+            body{std::move(b)},
+            joint{std::move(j)} {
+        }
+    };
+
+    // assumes caller has handled calling ImGui::OpenPopup(modal_name)
     void try_draw_add_body_modal(
-        Added_body_modal_state&, Indirect_ref<OpenSim::Model>&, Indirect_ptr<OpenSim::Component>& selection);
+        Added_body_modal_state&,
+        char const* modal_name,
+        OpenSim::Model const&,
+        std::function<void(Added_body_modal_output)> const& on_add_requested);
 }

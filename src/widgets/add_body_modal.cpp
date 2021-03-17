@@ -13,10 +13,6 @@
 
 #include <memory>
 
-void osmv::show_add_body_modal(Added_body_modal_state& st) {
-    ImGui::OpenPopup(st.modal_name);
-}
-
 static void prettify_coord_names(OpenSim::FreeJoint& fj) {
     static constexpr std::array<const char*, 6> const lut = {"rx", "ry", "rz", "tx", "ty", "tz"};
 
@@ -72,10 +68,13 @@ static void HelpMarker(const char* desc) {
 }
 
 void osmv::try_draw_add_body_modal(
-    Added_body_modal_state& st, Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
+    Added_body_modal_state& st,
+    char const* modal_name,
+    OpenSim::Model const& model,
+    std::function<void(Added_body_modal_output)> const& on_add_requested) {
 
     if (st.selected_pf == nullptr) {
-        st.selected_pf = &model.get().getGround();
+        st.selected_pf = &model.getGround();
     }
 
     // OpenSim::Model& model, OpenSim::Component const** selection
@@ -87,7 +86,7 @@ void osmv::try_draw_add_body_modal(
     }
 
     // try to show modal
-    if (not ImGui::BeginPopupModal(st.modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (not ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         // modal not showing
         return;
     }
@@ -122,7 +121,7 @@ void osmv::try_draw_add_body_modal(
     HelpMarker("OpenSim::Body's must joined to something else with a joint");
     ImGui::NextColumn();
     ImGui::BeginChild("join", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (OpenSim::PhysicalFrame const& pf : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
+    for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
         int styles_pushed = 0;
         if (&pf == st.selected_pf) {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.3f, 1.0f, 0.3f, 1.0f});
@@ -159,6 +158,26 @@ void osmv::try_draw_add_body_modal(
     ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
     ImGui::NextColumn();
 
+    ImGui::Text("geometry");
+    ImGui::SameLine();
+    HelpMarker("Visual geometry attached to this body (i.e. what the body looks like in the viewer)");
+    ImGui::NextColumn();
+    {
+        static constexpr char const* attach_modal_name = "addbody_attachgeometry";
+        char const* label = st.attach_geom.selected ? st.attach_geom.selected->get_mesh_file().c_str() : "attach";
+        if (ImGui::Button(label)) {
+            ImGui::OpenPopup(attach_modal_name);
+        }
+        draw_attach_geom_modal_if_opened(
+            st.attach_geom.state,
+            attach_modal_name,
+            [& selected = st.attach_geom.selected](std::unique_ptr<OpenSim::Mesh> m) { selected = std::move(m); });
+    }
+    ImGui::NextColumn();
+
+    ImGui::Columns();
+    ImGui::Dummy(ImVec2{0.0f, 1.0f});
+
     if (ImGui::Button("cancel")) {
         st = {};  // reset user inputs
         ImGui::CloseCurrentPopup();
@@ -171,19 +190,14 @@ void osmv::try_draw_add_body_modal(
         auto com = stk_vec3_from(st.com);
         auto inertia = stk_inertia_from(st.inertia);
         auto body = std::make_unique<OpenSim::Body>(st.body_name, 1.0, com, inertia);
+        auto joint = make_joint(st, *body);
 
-        // hold onto this pointer so that it can be used post-release
-        OpenSim::Body const* bptr = body.get();
-
-        {
-            auto guard = model.modify();
-            guard->addBody(body.release());
-            guard->addJoint(make_joint(st, *bptr).release());
+        if (st.attach_geom.selected) {
+            body->attachGeometry(st.attach_geom.selected.release());
         }
 
-        selection.reset(bptr);
+        on_add_requested(Added_body_modal_output{std::move(body), std::move(joint)});
         st = {};  // reset user inputs
-
         ImGui::CloseCurrentPopup();
     }
 

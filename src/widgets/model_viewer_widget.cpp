@@ -34,32 +34,33 @@
 
 using namespace osmv;
 
-namespace {
+static bool is_subcomponent_of(OpenSim::Component const* parent, OpenSim::Component const* c) {
+    for (auto* ptr = c; ptr != nullptr; ptr = ptr->hasOwner() ? &ptr->getOwner() : nullptr) {
+        if (ptr == parent) {
+            return true;
+        }
+    }
+    return false;
+}
 
-    void apply_standard_rim_coloring(
-        Model_drawlist& drawlist,
-        OpenSim::Component const* hovered = nullptr,
-        OpenSim::Component const* selected = nullptr) {
+static void apply_standard_rim_coloring(
+    Model_drawlist& drawlist,
+    OpenSim::Component const* hovered = nullptr,
+    OpenSim::Component const* selected = nullptr) {
 
-        if (selected == nullptr) {
-            // replace with a senteniel because nullptr means "not assigned"
-            // in the geometry list
-            selected = reinterpret_cast<OpenSim::Component const*>(-1);
+    drawlist.for_each([selected, hovered](OpenSim::Component const* c, Mesh_instance& mi) {
+        unsigned char rim_alpha;
+
+        if (is_subcomponent_of(selected, c)) {
+            rim_alpha = 255;
+        } else if (is_subcomponent_of(hovered, c)) {
+            rim_alpha = 70;
+        } else {
+            rim_alpha = 0;
         }
 
-        drawlist.for_each([selected, hovered](OpenSim::Component const* owner, Mesh_instance& mi) {
-            unsigned char rim_alpha;
-            if (owner == selected) {
-                rim_alpha = 255;
-            } else if (hovered != nullptr and hovered == owner) {
-                rim_alpha = 70;
-            } else {
-                rim_alpha = 0;
-            }
-
-            mi.set_rim_alpha(rim_alpha);
-        });
-    }
+        mi.set_rim_alpha(rim_alpha);
+    });
 }
 
 struct osmv::Model_viewer_widget::Impl final {
@@ -271,6 +272,7 @@ void Model_viewer_widget::draw(
                 ImGui::SliderFloat("light_y", &impl->light_pos.y, -30.0f, 30.0f);
                 ImGui::SliderFloat("light_z", &impl->light_pos.z, -30.0f, 30.0f);
                 ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl->light_rgb));
+                ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl->background_rgba));
 
                 ImGui::EndMenu();
             }
@@ -426,8 +428,9 @@ void Model_viewer_widget::draw(
                 model2view[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
 
                 // rescale + translate the y-line vertices
-                glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.05f});
-                glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.9f, -0.9f, 0.0f});
+                glm::mat4 make_line_one_sided = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
+                glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.025f});
+                glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
                 glm::mat4 base_model_mtx = translator * scaler * model2view;
 
                 Instance_flags flags;
@@ -440,19 +443,22 @@ void Model_viewer_widget::draw(
                 static constexpr Rgba32 blue = {0x00, 0x00, 0xff, 0xff};
 
                 // Y axis
-                impl->geometry.emplace_back(nullptr, base_model_mtx, green, impl->cache.y_line, flags);
+                impl->geometry.emplace_back(
+                    nullptr, base_model_mtx * make_line_one_sided, green, impl->cache.y_line, flags);
 
                 glm::mat4 rotate_y_to_x =
-                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, 1.0f});
+                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, -1.0f});
 
                 // X axis
-                impl->geometry.emplace_back(nullptr, base_model_mtx * rotate_y_to_x, red, impl->cache.y_line, flags);
+                impl->geometry.emplace_back(
+                    nullptr, base_model_mtx * rotate_y_to_x * make_line_one_sided, red, impl->cache.y_line, flags);
 
                 glm::mat4 rotate_y_to_z =
                     glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
 
                 // Z axis
-                impl->geometry.emplace_back(nullptr, base_model_mtx * rotate_y_to_z, blue, impl->cache.y_line, flags);
+                impl->geometry.emplace_back(
+                    nullptr, base_model_mtx * rotate_y_to_z * make_line_one_sided, blue, impl->cache.y_line, flags);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {

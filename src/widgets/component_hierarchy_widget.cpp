@@ -32,9 +32,6 @@ void osmv::Component_hierarchy_widget::draw(
     bool header_showing = false;
 
     for (OpenSim::Component const& cr : root->getComponentList()) {
-        if (dynamic_cast<OpenSim::FrameGeometry const*>(&cr)) {
-            continue;  // HACK: don't list FrameGeometry
-        }
 
         // break the path up into individual components
         std::array<OpenSim::Component const*, 32> path_els;

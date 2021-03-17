@@ -75,56 +75,6 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-template<typename T>
-static bool has_ancestor(OpenSim::Component const* c) {
-    return find_ancestor<T>(c) != nullptr;
-}
-
-static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
-    return a.filename() < b.filename();
-}
-
-static std::vector<fs::path> find_all_vtp_resources() {
-    fs::path geometry_dir = config::resource_path("geometry");
-
-    std::vector<fs::path> rv;
-
-    if (not fs::exists(geometry_dir)) {
-        // application installation is probably mis-configured, or missing
-        // the geometry dir (e.g. the user deleted it)
-        return rv;
-    }
-
-    if (not fs::is_directory(geometry_dir)) {
-        // something horrible has happened, such as the user creating a file
-        // called "geometry" in the application resources dir. Silently eat
-        // this for now
-        return rv;
-    }
-
-    // ensure the number of files iterated over does not exeed some (arbitrary)
-    // limit to protect the application from the edge-case that the implementation
-    // selects (e.g.) a root directory and ends up recursing over the entire
-    // filesystem
-    int i = 0;
-    static constexpr int file_limit = 10000;
-
-    for (fs::directory_entry const& entry : fs::recursive_directory_iterator{geometry_dir}) {
-        if (i++ > file_limit) {
-            // TODO: log warning
-            return rv;
-        }
-
-        if (entry.path().extension() == ".vtp") {
-            rv.push_back(entry.path());
-        }
-    }
-
-    std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
-
-    return rv;
-}
-
 // bundles together:
 //
 // - model
@@ -221,7 +171,6 @@ struct Timestamped final {
 
 struct Model_editor_screen::Impl final {
 private:
-    std::vector<fs::path> available_vtps = find_all_vtp_resources();
     Model_ui_state ms;
     Gpu_cache gpu_cache;
     Circular_buffer<Timestamped<Model_ui_state>, 32> undo;
@@ -319,7 +268,7 @@ public:
             Add_joint_modal::create<OpenSim::BallJoint>("Add BallJoint")};
         Properties_editor properties_editor;
         Reassign_socket_modal reassign_socket;
-        Attach_geometry_modal attach_geometry_modal;
+        Attach_geometry_modal_state attach_geometry_modal;
     } ui;
 
     [[nodiscard]] Indirect_ptr<OpenSim::Component>& selection() noexcept {
@@ -351,7 +300,7 @@ public:
     void attempt_new_undo_push() {
         auto now = std::chrono::system_clock::now();
 
-        if (not undo.empty() and undo.back().t + 5s > now) {
+        if (not undo.empty() and (undo.back().t + 5s) > now) {
             return;  // too temporally close to previous push
         }
 
@@ -414,10 +363,6 @@ public:
         return ms.state;
     }
 
-    std::vector<fs::path> const& vtps() {
-        return available_vtps;
-    }
-
     Impl(std::unique_ptr<OpenSim::Model> _model) : ms{std::move(_model)} {
     }
 };
@@ -449,17 +394,19 @@ static void draw_top_level_editor(Indirect_ptr<OpenSim::Component>& selection) {
     ImGui::Columns();
 }
 
-static void draw_frame_contextual_actions(
-    Attach_geometry_modal& modal, std::vector<fs::path> const& vtps, Indirect_ptr<OpenSim::PhysicalFrame>& frame) {
+static void
+    draw_frame_contextual_actions(Attach_geometry_modal_state& modal, Indirect_ptr<OpenSim::PhysicalFrame>& frame) {
 
     ImGui::Columns(2);
 
     ImGui::Text("geometry");
     ImGui::NextColumn();
 
+    static constexpr char const* modal_name = "attach geometry";
+
     if (frame->getProperty_attached_geometry().empty()) {
         if (ImGui::Button("add geometry")) {
-            modal.show();
+            ImGui::OpenPopup(modal_name);
         }
     } else {
         std::string name;
@@ -472,16 +419,24 @@ static void draw_frame_contextual_actions(
         }
 
         if (ImGui::Button(name.c_str())) {
-            modal.show();
+            ImGui::OpenPopup(modal_name);
         }
     }
-    modal.draw(vtps, frame);
+
+    auto on_mesh_add = [&frame](std::unique_ptr<OpenSim::Mesh> m) {
+        auto guard = frame.modify();
+        guard->updProperty_attached_geometry().clear();
+        guard->attachGeometry(m.release());
+    };
+
+    draw_attach_geom_modal_if_opened(modal, modal_name, on_mesh_add);
     ImGui::NextColumn();
 
     ImGui::Text("offset frame");
     ImGui::NextColumn();
     if (ImGui::Button("add offset frame")) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        pof->setName(frame->getName() + "_frame");
         pof->setParentFrame(*frame);
         frame.modify()->addComponent(pof.release());
     }
@@ -644,23 +599,26 @@ static void
         }
     }
 
-    ImGui::Text("add offset frame");
-    ImGui::NextColumn();
+    // BEWARE: broke
+    {
+        ImGui::Text("add offset frame");
+        ImGui::NextColumn();
 
-    if (ImGui::Button("parent")) {
-        auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        pf->setParentFrame(selection->getParentFrame());
-        auto guard = selection.modify();
-        guard->addFrame(pf.release());
+        if (ImGui::Button("parent")) {
+            auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            pf->setParentFrame(selection->getParentFrame());
+            auto guard = selection.modify();
+            guard->addFrame(pf.release());
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("child")) {
+            auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+            pf->setParentFrame(selection->getChildFrame());
+            auto guard = selection.modify();
+            guard->addFrame(pf.release());
+        }
+        ImGui::NextColumn();
     }
-    ImGui::SameLine();
-    if (ImGui::Button("child")) {
-        auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        pf->setParentFrame(selection->getChildFrame());
-        auto guard = selection.modify();
-        guard->addFrame(pf.release());
-    }
-    ImGui::NextColumn();
 
     ImGui::Columns();
 }
@@ -672,7 +630,7 @@ static void draw_contextual_actions(osmv::Model_editor_screen::Impl& impl) {
     }
 
     if (auto frame = try_downcast<OpenSim::PhysicalFrame>(impl.selection()); frame) {
-        draw_frame_contextual_actions(impl.ui.attach_geometry_modal, impl.vtps(), *frame);
+        draw_frame_contextual_actions(impl.ui.attach_geometry_modal, *frame);
     } else if (auto joint = try_downcast<OpenSim::Joint>(impl.selection()); joint) {
         draw_joint_contextual_actions(impl.model(), *joint);
     }
@@ -995,10 +953,21 @@ void osmv::Model_editor_screen::draw() {
     //
     // this is a dumping ground for generic editing actions (add body, add something to selection)
     if (ImGui::Begin("Actions")) {
+        static constexpr char const* add_body_modal_name = "add body";
+
         if (ImGui::Button("Add body")) {
-            show_add_body_modal(impl->ui.abm);
+            ImGui::OpenPopup(add_body_modal_name);
         }
-        try_draw_add_body_modal(impl->ui.abm, impl->model(), impl->selection());
+
+        auto on_body_add = [& impl = *this->impl](Added_body_modal_output out) {
+            auto guard = impl.model().modify();
+            guard->addJoint(out.joint.release());
+            OpenSim::Body const* b = out.body.get();
+            guard->addBody(out.body.release());
+            impl.selection().reset(b);
+        };
+
+        try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model().get(), on_body_add);
 
         for (Add_joint_modal& modal : impl->ui.add_joint_modals) {
             if (ImGui::Button(modal.modal_name.c_str())) {

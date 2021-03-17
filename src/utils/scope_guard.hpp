@@ -21,7 +21,7 @@ namespace osmv {
 
 #define OSMV_TOKENPASTE(x, y) x##y
 #define OSMV_TOKENPASTE2(x, y) OSMV_TOKENPASTE(x, y)
-#define OSMV_SCOPE_GUARD(action) Scope_guard OSMV_TOKENPASTE2(guard_, __LINE__){[&]() action};
+#define OSMV_SCOPE_GUARD(action) osmv::Scope_guard OSMV_TOKENPASTE2(guard_, __LINE__){[&]() action};
 #define OSMV_SCOPE_GUARD_IF(cond, action)                                                                              \
     OSMV_SCOPE_GUARD({                                                                                                 \
         if (cond) {                                                                                                    \

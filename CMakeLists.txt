@@ -150,6 +150,7 @@ add_executable(osmv
     src/utils/traceback_log.cpp
     src/utils/indirect_ptr.hpp
     src/utils/indirect_ref.hpp
+    src/utils/file_change_poller.hpp
 
     src/config.hpp
     src/config.cpp

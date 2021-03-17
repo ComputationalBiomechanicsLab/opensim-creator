@@ -4,11 +4,13 @@
 #include "src/3d/gpu_cache.hpp"
 #include "src/application.hpp"
 #include "src/assertions.hpp"
+#include "src/log.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
+#include "src/utils/file_change_poller.hpp"
 #include "src/utils/indirect_ptr.hpp"
 #include "src/utils/indirect_ref.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
@@ -48,6 +50,7 @@
 
 using namespace osmv;
 using std::chrono_literals::operator""s;
+using std::chrono_literals::operator""ms;
 
 namespace {
     static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
@@ -604,13 +607,17 @@ struct Show_model_screen::Impl final {
     Muscles_tab_data muscles_tab;
     Outputs_tab_data outputs_tab;
 
-    struct File_watcher final {
-        static constexpr std::chrono::seconds update_delay = 1s;
+    std::optional<File_change_poller> file_poller;
 
-        std::chrono::steady_clock::time_point last_check;
-        std::filesystem::file_time_type last_write;
-        bool enabled = false;
-    } file_watcher;
+    static std::optional<File_change_poller> try_init_file_poller(OpenSim::Model const& m) {
+        std::string docname = m.getDocumentFileName();
+
+        if (not docname.empty()) {
+            return std::optional<File_change_poller>{File_change_poller{docname, 1000ms}};
+        } else {
+            return std::nullopt;
+        }
+    }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         model{std::move(_model)},
@@ -619,7 +626,8 @@ struct Show_model_screen::Impl final {
             auto p = std::make_unique<SimTK::State>(model->initSystem());
             model->realizeReport(*p);
             return p;
-        }()} {
+        }()},
+        file_poller{try_init_file_poller(*model)} {
         OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after constructing show model screen impl");
     }
 
@@ -702,34 +710,18 @@ struct Show_model_screen::Impl final {
             }
         }
 
-        if (file_watcher.enabled) {
-            auto now = std::chrono::steady_clock::now();
-            auto next_check = file_watcher.last_check + 1s;
+        if (file_poller and file_poller->change_detected()) {
+            std::unique_ptr<OpenSim::Model> p;
+            try {
+                p = std::make_unique<OpenSim::Model>(file_poller->path.string());
+            } catch (std::exception const& ex) {
+                log::error("an error occurred while trying to automatically load a model file");
+                log::error(ex.what());
+            }
 
-            if (now >= next_check) {
-                std::string filename = model->getDocumentFileName();
-                if (not filename.empty()) {
-                    auto file_timepoint = std::filesystem::last_write_time(filename);
-
-                    // we performed the check either way
-                    file_watcher.last_check = now;
-
-                    if (file_timepoint != file_watcher.last_write) {
-                        file_watcher.last_write = file_timepoint;
-
-                        std::unique_ptr<OpenSim::Model> p;
-                        try {
-                            p = std::make_unique<OpenSim::Model>(filename);
-                        } catch (std::exception const&) {
-                            // TODO: emit this to the log, or a popup, or whatever.
-                        }
-
-                        if (p) {
-                            model = std::move(p);
-                            on_user_edited_model();
-                        }
-                    }
-                }
+            if (p) {
+                model = std::move(p);
+                on_user_edited_model();
             }
         }
     }
@@ -743,6 +735,7 @@ struct Show_model_screen::Impl final {
 
         outputs_tab.on_user_edited_model();
         simulator_tab.on_user_edited_model();
+        file_poller = try_init_file_poller(*model);
 
         *latest_state = model->initSystem();
         model->realizeReport(*latest_state);
@@ -1076,7 +1069,12 @@ struct Show_model_screen::Impl final {
                 std::make_unique<OpenSim::Model>(*model));
         }
 
-        ImGui::Checkbox("watch file changes", &file_watcher.enabled);
+        {
+            bool watch = file_poller.has_value();
+            if (ImGui::Checkbox("watch changes", &watch)) {
+                file_poller = watch ? try_init_file_poller(*model) : std::nullopt;
+            }
+        }
 
         ImGui::SameLine();
     }
