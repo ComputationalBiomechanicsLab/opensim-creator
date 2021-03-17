@@ -30,7 +30,7 @@ static std::unique_ptr<OpenSim::Joint> make_joint(osmv::Added_body_modal_state& 
     if (not st.add_offset_frames_to_the_joint) {
         auto fj = std::make_unique<OpenSim::FreeJoint>(st.joint_name, *st.selected_pf, b);
         prettify_coord_names(*fj);
-        return std::move(fj);
+        return fj;
     }
 
     auto fj = std::make_unique<OpenSim::FreeJoint>();
@@ -55,7 +55,7 @@ static std::unique_ptr<OpenSim::Joint> make_joint(osmv::Added_body_modal_state& 
         fj->connectSocket_child_frame(*pof2.release());
     }
 
-    return std::move(fj);
+    return fj;
 }
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.

@@ -97,6 +97,7 @@ add_executable(osmv
     src/opensim_bindings/model_drawlist_generator.cpp
     src/opensim_bindings/fd_simulation.hpp
     src/opensim_bindings/fd_simulation.cpp
+    src/opensim_bindings/conversions.hpp
 
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
@@ -116,6 +117,8 @@ add_executable(osmv
     src/widgets/add_body_modal.cpp
     src/widgets/log_viewer_widget.hpp
     src/widgets/log_viewer_widget.cpp
+    src/widgets/lockable_f3_editor.hpp
+    src/widgets/lockable_f3_editor.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

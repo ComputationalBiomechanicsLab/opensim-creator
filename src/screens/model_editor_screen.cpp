@@ -559,7 +559,8 @@ static void
 
         if (idx >= 0) {
             ImVec4 enabled_color{0.1f, 0.6f, 0.1f, 1.0f};
-            auto const& joint_tid = typeid(*selection);
+            OpenSim::Joint const& joint_ref = *selection;
+            auto const& joint_tid = typeid(joint_ref);
 
             ImGui::Text("change joint type");
             ImGui::NextColumn();
@@ -795,7 +796,7 @@ static std::optional<std::string> try_get_save_location(OpenSim::Model const& m)
     } else {
         // the model has no associated file, so prompt the user for a save
         // location
-        return prompt_save_single_file();
+        return map_optional(path2string, prompt_save_single_file());
     }
 }
 
