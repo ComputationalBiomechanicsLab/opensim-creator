@@ -1,6 +1,6 @@
 #include "component_hierarchy_widget.hpp"
 
-#include "src/utils/indirect_ptr.hpp"
+#include "src/assertions.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -11,14 +11,16 @@
 #include <cstddef>
 #include <string>
 
-void osmv::Component_hierarchy_widget::draw(
-    const OpenSim::Component* root,
-    Indirect_ptr<OpenSim::Component>& selection,
-    Indirect_ptr<OpenSim::Component>& hover) {
+void osmv::draw_component_hierarchy_widget(
+    OpenSim::Component const* root,
+    OpenSim::Component const* current_selection,
+    OpenSim::Component const* current_hover,
+    std::function<void(OpenSim::Component const*)> const& on_selection_change,
+    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
 
     OpenSim::Component const* selection_top_level_parent = nullptr;
-    if (selection) {
-        OpenSim::Component const* c = selection.get();
+    if (current_selection) {
+        OpenSim::Component const* c = current_selection;
         while (&c->getOwner() != root) {
             c = &c->getOwner();
         }
@@ -67,7 +69,7 @@ void osmv::Component_hierarchy_widget::draw(
             OpenSim::Component const* comp = path_els[0];
 
             int style_pushes = 0;
-            if (comp == selection) {
+            if (comp == current_selection) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
                 ++style_pushes;
             }
@@ -79,10 +81,10 @@ void osmv::Component_hierarchy_widget::draw(
             ++disjoint_begin;
 
             if (ImGui::IsItemHovered()) {
-                hover.reset(comp);
+                on_hover_changed(comp);
             }
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                selection.reset(comp);
+                on_selection_change(comp);
             }
 
             ImGui::PopStyleColor(style_pushes);
@@ -99,11 +101,11 @@ void osmv::Component_hierarchy_widget::draw(
                 swap += comp->getName().c_str();
 
                 int style_pushes = 0;
-                if (comp == hover) {
+                if (comp == current_hover) {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
                     ++style_pushes;
                 }
-                if (comp == selection) {
+                if (comp == current_selection) {
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
                     ++style_pushes;
                 }
@@ -112,10 +114,10 @@ void osmv::Component_hierarchy_widget::draw(
                 ImGui::Text("%s", swap.c_str());
                 ImGui::PopID();
                 if (ImGui::IsItemHovered()) {
-                    hover.reset(comp);
+                    on_hover_changed(comp);
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    selection.reset(comp);
+                    on_selection_change(comp);
                 }
 
                 ImGui::PopStyleColor(style_pushes);

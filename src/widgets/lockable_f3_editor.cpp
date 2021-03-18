@@ -1,7 +1,5 @@
 #include "lockable_f3_editor.hpp"
 
-#include "src/utils/indirect_ref.hpp"
-
 #include <SimTKcommon.h>
 #include <imgui.h>
 

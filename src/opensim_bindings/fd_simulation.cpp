@@ -1,5 +1,6 @@
 #include "fd_simulation.hpp"
 
+#include "src/log.hpp"
 #include "src/utils/concurrency.hpp"
 #include "src/utils/shims.hpp"
 

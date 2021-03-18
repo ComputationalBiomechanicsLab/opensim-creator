@@ -2,6 +2,8 @@
 
 #include <SDL_events.h>
 
+#include <functional>
+
 namespace OpenSim {
     class Model;
     class Component;
@@ -13,8 +15,6 @@ namespace SimTK {
 
 namespace osmv {
     struct Gpu_cache;
-    template<typename T>
-    class Indirect_ptr;
 }
 
 namespace osmv {
@@ -60,7 +60,9 @@ namespace osmv {
             char const* panel_name,
             OpenSim::Model const&,
             SimTK::State const&,
-            Indirect_ptr<OpenSim::Component>& selection,
-            Indirect_ptr<OpenSim::Component>& hover);
+            OpenSim::Component const* current_selection,
+            OpenSim::Component const* current_hover,
+            std::function<void(OpenSim::Component const*)> const& on_selection_changed,
+            std::function<void(OpenSim::Component const*)> const& on_hover_changed);
     };
 }

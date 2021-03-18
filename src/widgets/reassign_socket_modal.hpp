@@ -1,24 +1,25 @@
 #pragma once
 
+#include <functional>
 #include <string>
 
 namespace OpenSim {
     class Model;
     class AbstractSocket;
+    class Object;
 }
 
 namespace osmv {
-    template<typename T>
-    class Indirect_ref;
-}
-
-namespace osmv {
-    struct Reassign_socket_modal final {
-        std::string last_connection_error;
+    struct Reassign_socket_modal_state final {
+        std::string error;
         char search[128]{};
-
-        void show(char const* modal_name);
-        void close();
-        void draw(char const* modal_name, Indirect_ref<OpenSim::Model>&, Indirect_ref<OpenSim::AbstractSocket>&);
     };
+
+    // assumes caller handles ImGui::OpenPopup(modal_name);
+    void draw_reassign_socket_modal(
+        Reassign_socket_modal_state&,
+        char const* modal_name,
+        OpenSim::Model const&,
+        OpenSim::AbstractSocket const&,
+        std::function<void(OpenSim::Object const&)> const& on_conectee_change_request);
 }

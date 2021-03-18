@@ -1,8 +1,6 @@
 #include "add_body_modal.hpp"
 
 #include "src/opensim_bindings/conversions.hpp"
-#include "src/utils/indirect_ptr.hpp"
-#include "src/utils/indirect_ref.hpp"
 #include "src/widgets/help_marker.hpp"
 #include "src/widgets/lockable_f3_editor.hpp"
 

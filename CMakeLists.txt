@@ -98,6 +98,7 @@ add_executable(osmv
     src/opensim_bindings/fd_simulation.hpp
     src/opensim_bindings/fd_simulation.cpp
     src/opensim_bindings/conversions.hpp
+    src/opensim_bindings/model_ui_state.hpp
 
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
@@ -125,6 +126,11 @@ add_executable(osmv
     src/widgets/main_menu_about_tab.cpp
     src/widgets/help_marker.hpp
     src/widgets/help_marker.cpp
+    src/widgets/evenly_spaced_sparkline.hpp
+    src/widgets/coordinate_editor.hpp
+    src/widgets/coordinate_editor.cpp
+    src/widgets/muscles_table.hpp
+    src/widgets/muscles_table.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
@@ -154,8 +160,6 @@ add_executable(osmv
     src/utils/circular_buffer.hpp
     src/utils/traceback_log.hpp
     src/utils/traceback_log.cpp
-    src/utils/indirect_ptr.hpp
-    src/utils/indirect_ref.hpp
     src/utils/file_change_poller.hpp
 
     src/config.hpp

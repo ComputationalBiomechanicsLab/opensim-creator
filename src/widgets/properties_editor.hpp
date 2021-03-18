@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 namespace OpenSim {
@@ -7,15 +8,13 @@ namespace OpenSim {
 }
 
 namespace osmv {
-    template<typename T>
-    class Indirect_ptr;
-}
-
-namespace osmv {
-    class Properties_editor final {
+    struct Properties_editor_state final {
         std::vector<bool> property_locked;
-
-    public:
-        bool draw(Indirect_ptr<OpenSim::Component>&);
     };
+
+    void draw_properties_editor(
+        Properties_editor_state&,
+        OpenSim::Component&,
+        std::function<void()> const& before_property_edited,
+        std::function<void()> const& after_property_edited);
 }

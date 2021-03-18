@@ -1,8 +1,5 @@
 #include "add_joint_modal.hpp"
 
-#include "src/utils/indirect_ptr.hpp"
-#include "src/utils/indirect_ref.hpp"
-
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -29,7 +26,9 @@ void osmv::Add_joint_modal::show() {
     ImGui::OpenPopup(modal_name.c_str());
 }
 
-void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
+void osmv::Add_joint_modal::draw(
+    OpenSim::Model const& model, std::function<void(std::unique_ptr<OpenSim::Joint>)> const& on_add) {
+
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(512, 0));
@@ -38,13 +37,13 @@ void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_p
         return;
     }
 
-    ImGui::InputText("name", added_joint_name, sizeof(modal_name));
+    ImGui::InputText("name", added_joint_name, sizeof(added_joint_name));
 
     ImGui::Columns(2);
 
     ImGui::Text("parent frame:");
     ImGui::BeginChild("parent", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
+    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
         if (&b == child_frame) {
             continue;  // don't allow circular connections
         }
@@ -63,7 +62,7 @@ void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_p
 
     ImGui::Text("child frame:");
     ImGui::BeginChild("child", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.get().getComponentList<OpenSim::PhysicalFrame>()) {
+    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
         if (&b == parent_frame) {
             continue;  // don't allow circular connections
         }
@@ -86,7 +85,7 @@ void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_p
 
     if (parent_frame and child_frame) {
         if (ImGui::Button("OK")) {
-            auto* joint = joint_prototype->clone();
+            std::unique_ptr<OpenSim::Joint> joint{joint_prototype->clone()};
             joint->setName(added_joint_name);
 
             SimTK::Vec3 offset{0.0, 0.0, 0.0};
@@ -100,9 +99,7 @@ void osmv::Add_joint_modal::draw(Indirect_ref<OpenSim::Model>& model, Indirect_p
             joint->addFrame(cof);
             joint->connectSocket_child_frame(*cof);
 
-            model.apply_modification([&joint](OpenSim::Model& m) { m.addJoint(joint); });
-            selection.reset(joint);
-
+            on_add(std::move(joint));
             this->reset();
             ImGui::CloseCurrentPopup();
         }

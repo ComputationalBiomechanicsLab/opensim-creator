@@ -1,8 +1,6 @@
 #include "properties_editor.hpp"
 
 #include "src/assertions.hpp"
-#include "src/utils/indirect_ptr.hpp"
-#include "src/utils/indirect_ref.hpp"
 #include "src/widgets/lockable_f3_editor.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
@@ -24,16 +22,14 @@ static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
     return static_cast<float>(older[0]);
 }
 
-bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) {
-    if (not selection) {
-        ImGui::Text("no component provided (nothing selected?)");
-        return false;
-    }
-
-    OpenSim::Component const& component = *selection;
+void osmv::draw_properties_editor(
+    Properties_editor_state& st,
+    OpenSim::Component& component,
+    std::function<void()> const& before_property_edited,
+    std::function<void()> const& after_property_edited) {
 
     ImGui::Columns(2);
-    property_locked.resize(static_cast<size_t>(component.getNumProperties()), true);
+    st.property_locked.resize(static_cast<size_t>(component.getNumProperties()), true);
 
     for (int i = 0; i < component.getNumProperties(); ++i) {
         OpenSim::AbstractProperty const& p = component.getPropertyByIndex(i);
@@ -68,8 +64,9 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat("##doubleditor", &v, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    auto update_guard = selection.modify();
+                    before_property_edited();
                     const_cast<OpenSim::Property<double>*>(dp)->setValue(static_cast<double>(v));
+                    after_property_edited();
                 }
 
                 editor_rendered = true;
@@ -78,9 +75,9 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
             // it's two doubles
             if (dp and dp->isListProperty() and dp->size() == 2) {
                 // lock btn
-                bool locked = property_locked[static_cast<size_t>(i)];
+                bool locked = st.property_locked[static_cast<size_t>(i)];
                 if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
-                    property_locked[static_cast<size_t>(i)] = locked;
+                    st.property_locked[static_cast<size_t>(i)] = locked;
                 }
                 ImGui::SameLine();
 
@@ -89,7 +86,7 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat2("##vec2editor", vs, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    auto update_guard = selection.modify();
+                    before_property_edited();
                     auto* mdp = const_cast<OpenSim::Property<double>*>(dp);
                     if (locked) {
                         float nv = diff(old, vs, 2);
@@ -99,6 +96,7 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
                         mdp->setValue(0, static_cast<double>(vs[0]));
                         mdp->setValue(1, static_cast<double>(vs[1]));
                     }
+                    after_property_edited();
                 }
 
                 editor_rendered = true;
@@ -113,8 +111,9 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
                 bool v = bp->getValue();
 
                 if (ImGui::Checkbox("##booleditor", &v)) {
-                    auto update_guard = selection.modify();
+                    before_property_edited();
                     const_cast<OpenSim::Property<bool>*>(bp)->setValue(v);
+                    after_property_edited();
                 }
 
                 editor_rendered = true;
@@ -132,16 +131,16 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
                     static_cast<float>(v[2]),
                 };
 
-                bool locked = property_locked[static_cast<size_t>(i)];
+                bool locked = st.property_locked[static_cast<size_t>(i)];
 
                 if (draw_lockable_f3_editor("##vec3lockbtn", "##vec3editor", fv, &locked)) {
-                    auto guard = selection.modify();
-
-                    property_locked[static_cast<size_t>(i)] = locked;
+                    before_property_edited();
+                    st.property_locked[static_cast<size_t>(i)] = locked;
                     v[0] = static_cast<double>(fv[0]);
                     v[1] = static_cast<double>(fv[1]);
                     v[2] = static_cast<double>(fv[2]);
                     const_cast<OpenSim::Property<SimTK::Vec3>*>(vp)->setValue(v);
+                    after_property_edited();
                 }
 
                 editor_rendered = true;
@@ -163,24 +162,26 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat3("##vec6editor_a", vs, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    auto update_guard = selection.modify();
+                    before_property_edited();
                     const_cast<OpenSim::Property<SimTK::Vec6>*>(vp)->setValue(SimTK::Vec6{static_cast<double>(vs[0]),
                                                                                           static_cast<double>(vs[1]),
                                                                                           static_cast<double>(vs[2]),
                                                                                           static_cast<double>(vs[3]),
                                                                                           static_cast<double>(vs[4]),
                                                                                           static_cast<double>(vs[5])});
+                    after_property_edited();
                 }
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 if (ImGui::InputFloat3("##vec6editor_b", vs + 3, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                    auto update_guard = selection.modify();
+                    before_property_edited();
                     const_cast<OpenSim::Property<SimTK::Vec6>*>(vp)->setValue(SimTK::Vec6{static_cast<double>(vs[0]),
                                                                                           static_cast<double>(vs[1]),
                                                                                           static_cast<double>(vs[2]),
                                                                                           static_cast<double>(vs[3]),
                                                                                           static_cast<double>(vs[4]),
                                                                                           static_cast<double>(vs[5])});
+                    after_property_edited();
                 }
 
                 editor_rendered = true;
@@ -202,15 +203,17 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
                 newColor[0] = static_cast<double>(rgb[0]);
                 newColor[1] = static_cast<double>(rgb[1]);
                 newColor[2] = static_cast<double>(rgb[2]);
-                auto update_guard = selection.modify();
+                before_property_edited();
                 const_cast<OpenSim::Appearance&>(app).set_color(newColor);
                 const_cast<OpenSim::Appearance&>(app).set_opacity(static_cast<double>(rgb[3]));
+                after_property_edited();
             }
 
             bool is_visible = app.get_visible();
             if (ImGui::Checkbox("is visible", &is_visible)) {
-                auto update_guard = selection.modify();
+                before_property_edited();
                 const_cast<OpenSim::Appearance&>(app).set_visible(is_visible);
+                after_property_edited();
             }
 
             editor_rendered = true;
@@ -227,6 +230,4 @@ bool osmv::Properties_editor::draw(Indirect_ptr<OpenSim::Component>& selection) 
         ImGui::NextColumn();
     }
     ImGui::Columns(1);
-
-    return false;
 }

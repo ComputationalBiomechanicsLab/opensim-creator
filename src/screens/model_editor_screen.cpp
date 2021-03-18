@@ -5,12 +5,11 @@
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/model_ui_state.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/circular_buffer.hpp"
 #include "src/utils/file_change_poller.hpp"
-#include "src/utils/indirect_ptr.hpp"
-#include "src/utils/indirect_ref.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/widgets/add_body_modal.hpp"
@@ -78,110 +77,20 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-// bundles together:
-//
-// - model
-// - state
-// - selection
-// - hover
-//
-// into a single class that supports coherent copying, moving, assingment etc.
-//
-// enables snapshotting everything necessary to render a typical UI scene (just copy this) and
-// should automatically update/invalidate any pointers, states, etc. on each operation
-struct Model_ui_state final {
-    static std::unique_ptr<OpenSim::Model> copy_model(OpenSim::Model const& model) {
-        auto copy = std::make_unique<OpenSim::Model>(model);
-        copy->finalizeFromProperties();
-        return copy;
-    }
+struct Undo_redo_entry final {
+    std::chrono::system_clock::time_point time;
+    Model_ui_state state;
 
-    static SimTK::State init_fresh_state(OpenSim::Model& model) {
-        SimTK::State rv = model.initSystem();
-        model.realizePosition(rv);
-        return rv;
-    }
-
-    // relocate a component pointer to point into `model`, rather into whatever
-    // model it used to point into
-    static OpenSim::Component* relocate_pointer(OpenSim::Model const& model, OpenSim::Component* ptr) {
-        if (not ptr) {
-            return nullptr;
-        }
-
-        return const_cast<OpenSim::Component*>(model.findComponent(ptr->getAbsolutePath()));
-    }
-
-    std::unique_ptr<OpenSim::Model> model;
-    SimTK::State state;
-    OpenSim::Component* selected_component;
-    OpenSim::Component* hovered_component;
-
-    Model_ui_state() : model{nullptr}, state{SimTK::State{}}, selected_component{nullptr}, hovered_component{nullptr} {
-    }
-
-    Model_ui_state(std::unique_ptr<OpenSim::Model> _model) :
-        model{std::move(_model)},
-        state{init_fresh_state(*model)},
-        selected_component{nullptr},
-        hovered_component{nullptr} {
-    }
-
-    Model_ui_state(Model_ui_state const& other) :
-        model{copy_model(*other.model)},
-        state{init_fresh_state(*model)},
-        selected_component{relocate_pointer(*model, other.selected_component)},
-        hovered_component{relocate_pointer(*model, other.hovered_component)} {
-    }
-
-    Model_ui_state(Model_ui_state&& tmp) :
-        model{std::move(tmp.model)},
-        state{std::move(tmp.state)},
-        selected_component{std::move(tmp.selected_component)},
-        hovered_component{std::move(tmp.hovered_component)} {
-    }
-
-    friend void swap(Model_ui_state& a, Model_ui_state& b) {
-        std::swap(a.model, b.model);
-        std::swap(a.selected_component, b.selected_component);
-        std::swap(a.hovered_component, b.hovered_component);
-        std::swap(a.state, b.state);
-    }
-
-    Model_ui_state& operator=(Model_ui_state other) {
-        swap(*this, other);
-        return *this;
-    }
-
-    Model_ui_state& operator=(std::unique_ptr<OpenSim::Model> ptr) {
-        if (model == ptr) {
-            return *this;
-        }
-
-        std::swap(model, ptr);
-        state = init_fresh_state(*model);
-        selected_component = relocate_pointer(*model, selected_component);
-        hovered_component = relocate_pointer(*model, hovered_component);
-
-        return *this;
-    }
-
-    void update_state() {
-        state = init_fresh_state(*model);
-    }
-};
-
-template<typename T>
-struct Timestamped final {
-    std::chrono::system_clock::time_point t;
-    T v;
-
-    Timestamped() = default;
+    Undo_redo_entry() = default;
 
     template<typename... Args>
-    Timestamped(std::chrono::system_clock::time_point _t, Args&&... args) :
-        t{std::move(_t)},
-        v{std::forward<Args>(args)...} {
+    Undo_redo_entry(std::chrono::system_clock::time_point t, Args&&... args) :
+        time{std::move(t)},
+        state{std::forward<Args>(args)...} {
+    }
+
+    template<typename... Args>
+    Undo_redo_entry(Args&&... args) : time{std::chrono::system_clock::now()}, state{std::forward<Args>(args)...} {
     }
 };
 
@@ -189,88 +98,9 @@ struct Model_editor_screen::Impl final {
 private:
     Model_ui_state ms;
     Gpu_cache gpu_cache;
-    Circular_buffer<Timestamped<Model_ui_state>, 32> undo;
-    Circular_buffer<Timestamped<Model_ui_state>, 32> redo;
+    Circular_buffer<Undo_redo_entry, 32> undo;
+    Circular_buffer<Undo_redo_entry, 32> redo;
     bool recovered_from_disaster = false;
-
-    struct Selection_ptr final : public Indirect_ptr<OpenSim::Component> {
-        Impl& parent;
-        Selection_ptr(Impl& _parent) : parent{_parent} {
-        }
-
-    private:
-        OpenSim::Component* impl_upd() override {
-            return parent.ms.selected_component;
-        }
-
-        void impl_set(OpenSim::Component* c) override {
-            parent.ms.selected_component = c;
-        }
-
-        void on_begin_modify() override {
-            if (parent.ms.selected_component) {
-                log::info("selection on_begin_modify (name = %s)", parent.ms.selected_component->getName().c_str());
-                parent.attempt_new_undo_push();
-            }
-        }
-
-        void on_end_modify() noexcept override {
-            if (parent.ms.selected_component) {
-                log::info("selection on_end_modify (name = %s)", parent.ms.selected_component->getName().c_str());
-                parent.try_update_model_system_and_state_with_rollback();
-            }
-        }
-    } selection_ptr{*this};
-
-    struct Hover_ptr final : public Indirect_ptr<OpenSim::Component> {
-        Impl& parent;
-        Hover_ptr(Impl& _parent) : parent{_parent} {
-        }
-
-    private:
-        OpenSim::Component* impl_upd() override {
-            return parent.ms.hovered_component;
-        }
-
-        void impl_set(OpenSim::Component* c) override {
-            parent.ms.hovered_component = c;
-        }
-
-        void on_begin_modify() override {
-            if (parent.ms.hovered_component) {
-                log::info("hover on_begin_modify (name = %s)", parent.ms.hovered_component->getName().c_str());
-                parent.attempt_new_undo_push();
-            }
-        }
-
-        void on_end_modify() noexcept override {
-            if (parent.ms.hovered_component) {
-                log::info("hover on_end_modify (name = %s)", parent.ms.hovered_component->getName().c_str());
-                parent.try_update_model_system_and_state_with_rollback();
-            }
-        }
-    } hover_ptr{*this};
-
-    struct Model_ref final : public Indirect_ref<OpenSim::Model> {
-        Impl& parent;
-        Model_ref(Impl& _parent) : parent{_parent} {
-        }
-
-    private:
-        OpenSim::Model& impl_upd() override {
-            return *parent.ms.model;
-        }
-
-        void on_begin_modify() override {
-            log::info("start model modification");
-            parent.attempt_new_undo_push();
-        }
-
-        void on_end_modify() noexcept override {
-            log::info("end model modification");
-            parent.try_update_model_system_and_state_with_rollback();
-        }
-    } model_ref{*this};
 
 public:
     Model_viewer_widget model_viewer{gpu_cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
@@ -283,23 +113,49 @@ public:
             Add_joint_modal::create<OpenSim::PinJoint>("Add PinJoint"),
             Add_joint_modal::create<OpenSim::UniversalJoint>("Add UniversalJoint"),
             Add_joint_modal::create<OpenSim::BallJoint>("Add BallJoint")};
-        Properties_editor properties_editor;
-        Reassign_socket_modal reassign_socket;
+        Properties_editor_state properties_editor;
+        Reassign_socket_modal_state reassign_socket;
         Attach_geometry_modal_state attach_geometry_modal;
     } ui;
 
     File_change_poller file_poller{1000ms, ""};
 
-    [[nodiscard]] Indirect_ptr<OpenSim::Component>& selection() noexcept {
-        return selection_ptr;
+    void before_modify_model() {
+        log::info("start modification");
+        attempt_new_undo_push();
     }
 
-    [[nodiscard]] Indirect_ptr<OpenSim::Component>& hover() noexcept {
-        return hover_ptr;
+    void after_modify_model() {
+        log::info("end modification");
+        try_update_model_system_and_state_with_rollback();
     }
 
-    [[nodiscard]] Indirect_ref<OpenSim::Model>& model() noexcept {
-        return model_ref;
+    [[nodiscard]] OpenSim::Model& model() noexcept {
+        return *ms.model;
+    }
+
+    void before_modify_selection() {
+        before_modify_model();
+    }
+
+    void after_modify_selection() {
+        after_modify_model();
+    }
+
+    void set_selection(OpenSim::Component* c) {
+        ms.selected_component = c;
+    }
+
+    [[nodiscard]] OpenSim::Component* selection() noexcept {
+        return ms.selected_component;
+    }
+
+    [[nodiscard]] OpenSim::Component* hover() noexcept {
+        return ms.hovered_component;
+    }
+
+    void set_hover(OpenSim::Component* c) {
+        ms.hovered_component = c;
     }
 
     void perform_end_of_draw_steps() {
@@ -319,7 +175,7 @@ public:
     void attempt_new_undo_push() {
         auto now = std::chrono::system_clock::now();
 
-        if (not undo.empty() and (undo.back().t + 5s) > now) {
+        if (not undo.empty() and (undo.back().time + 5s) > now) {
             return;  // too temporally close to previous push
         }
 
@@ -332,8 +188,8 @@ public:
             return;
         }
 
-        undo.emplace_back(std::chrono::system_clock::now(), std::move(ms));
-        ms = std::move(redo.try_pop_back()).value().v;
+        undo.emplace_back(std::move(ms));
+        ms = std::move(redo.try_pop_back()).value().state;
     }
 
     void do_undo() {
@@ -341,13 +197,13 @@ public:
             return;
         }
 
-        redo.emplace_back(std::chrono::system_clock::now(), std::move(ms));
-        ms = std::move(undo.try_pop_back()).value().v;
+        redo.emplace_back(std::move(ms));
+        ms = std::move(undo.try_pop_back()).value().state;
     }
 
     void try_update_model_system_and_state_with_rollback() noexcept {
         try {
-            ms.update_state();
+            ms.on_model_modified();
         } catch (std::exception const& ex) {
             log::error("exception thrown when initializing updated model: %s", ex.what());
             log::error("attempting to rollback to earlier (pre-modification) version of the model");
@@ -391,11 +247,13 @@ public:
     }
 };
 
-static void draw_top_level_editor(Indirect_ptr<OpenSim::Component>& selection) {
-    if (not selection) {
+static void draw_top_level_editor(Model_editor_screen::Impl& impl) {
+    if (not impl.selection()) {
         ImGui::Text("cannot draw top level editor: nothing selected?");
         return;
     }
+
+    OpenSim::Component& selection = *impl.selection();
 
     ImGui::Columns(2);
 
@@ -404,13 +262,14 @@ static void draw_top_level_editor(Indirect_ptr<OpenSim::Component>& selection) {
 
     char nambuf[128];
     nambuf[sizeof(nambuf) - 1] = '\0';
-    std::strncpy(nambuf, selection->getName().c_str(), sizeof(nambuf) - 1);
+    std::strncpy(nambuf, selection.getName().c_str(), sizeof(nambuf) - 1);
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     if (ImGui::InputText("##nameditor", nambuf, sizeof(nambuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 
         if (std::strlen(nambuf) > 0) {
-            auto guard = selection.modify();
-            guard->setName(nambuf);
+            impl.before_modify_selection();
+            selection.setName(nambuf);
+            impl.after_modify_selection();
         }
     }
     ImGui::NextColumn();
@@ -418,9 +277,7 @@ static void draw_top_level_editor(Indirect_ptr<OpenSim::Component>& selection) {
     ImGui::Columns();
 }
 
-static void
-    draw_frame_contextual_actions(Attach_geometry_modal_state& modal, Indirect_ptr<OpenSim::PhysicalFrame>& frame) {
-
+static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::PhysicalFrame& selection) {
     ImGui::Columns(2);
 
     ImGui::Text("geometry");
@@ -428,18 +285,18 @@ static void
 
     static constexpr char const* modal_name = "attach geometry";
 
-    if (frame->getProperty_attached_geometry().empty()) {
+    if (selection.getProperty_attached_geometry().empty()) {
         if (ImGui::Button("add geometry")) {
             ImGui::OpenPopup(modal_name);
         }
     } else {
         std::string name;
-        if (frame->getProperty_attached_geometry().size() > 1) {
+        if (selection.getProperty_attached_geometry().size() > 1) {
             name = "multiple";
-        } else if (auto const* mesh = dynamic_cast<OpenSim::Mesh const*>(&frame->get_attached_geometry(0)); mesh) {
+        } else if (auto const* mesh = dynamic_cast<OpenSim::Mesh const*>(&selection.get_attached_geometry(0)); mesh) {
             name = mesh->get_mesh_file();
         } else {
-            name = frame->get_attached_geometry(0).getConcreteClassName();
+            name = selection.get_attached_geometry(0).getConcreteClassName();
         }
 
         if (ImGui::Button(name.c_str())) {
@@ -447,22 +304,26 @@ static void
         }
     }
 
-    auto on_mesh_add = [&frame](std::unique_ptr<OpenSim::Mesh> m) {
-        auto guard = frame.modify();
-        guard->updProperty_attached_geometry().clear();
-        guard->attachGeometry(m.release());
+    auto on_mesh_add = [&impl, &selection](std::unique_ptr<OpenSim::Mesh> m) {
+        impl.before_modify_selection();
+        selection.updProperty_attached_geometry().clear();
+        selection.attachGeometry(m.release());
+        impl.after_modify_selection();
     };
 
-    draw_attach_geom_modal_if_opened(modal, modal_name, on_mesh_add);
+    draw_attach_geom_modal_if_opened(impl.ui.attach_geometry_modal, modal_name, on_mesh_add);
     ImGui::NextColumn();
 
     ImGui::Text("offset frame");
     ImGui::NextColumn();
     if (ImGui::Button("add offset frame")) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        pof->setName(frame->getName() + "_frame");
-        pof->setParentFrame(*frame);
-        frame.modify()->addComponent(pof.release());
+        pof->setName(selection.getName() + "_frame");
+        pof->setParentFrame(selection);
+
+        impl.before_modify_selection();
+        selection.addComponent(pof.release());
+        impl.after_modify_selection();
     }
     ImGui::NextColumn();
 
@@ -518,19 +379,14 @@ static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joi
     }
 }
 
-static void
-    draw_joint_contextual_actions(Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Joint>& selection) {
-    if (not selection) {
-        ImGui::Text("cannot draw contextual actions: nothing selected");
-        return;
-    }
+static void draw_joint_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::Joint& selection) {
 
     ImGui::Columns(2);
 
-    if (auto const* jsp = dynamic_cast<OpenSim::JointSet const*>(&selection->getOwner()); jsp) {
+    if (auto const* jsp = dynamic_cast<OpenSim::JointSet const*>(&selection.getOwner()); jsp) {
         int idx = -1;
         for (int i = 0; i < jsp->getSize(); ++i) {
-            if (&(*jsp)[i] == selection) {
+            if (&(*jsp)[i] == &selection) {
                 idx = i;
                 break;
             }
@@ -538,8 +394,7 @@ static void
 
         if (idx >= 0) {
             ImVec4 enabled_color{0.1f, 0.6f, 0.1f, 1.0f};
-            OpenSim::Joint const& joint_ref = *selection;
-            auto const& joint_tid = typeid(joint_ref);
+            auto const& joint_tid = typeid(selection);
 
             ImGui::Text("change joint type");
             ImGui::NextColumn();
@@ -606,17 +461,12 @@ static void
             }
 
             if (added_joint) {
-                copy_common_joint_properties(*selection, *added_joint);
-                selection.reset(added_joint.get());
+                copy_common_joint_properties(selection, *added_joint);
 
-                // `const_cast` necessary because jsp is extracted via the `getParent` call in
-                // OpenSim
-                //
-                // UNSAFE because we have effectively modified *the model* by hopping up to the
-                // selection's parent: really, this modification should happen under a model guard
-                // (e.g. by traversing from the root model the JointSet under a guard)
-                auto guard = model.modify();
+                impl.before_modify_model();
+                impl.set_selection(added_joint.get());
                 const_cast<OpenSim::JointSet*>(jsp)->set(idx, added_joint.release());
+                impl.after_modify_model();
             }
 
             ImGui::NextColumn();
@@ -630,16 +480,20 @@ static void
 
         if (ImGui::Button("parent")) {
             auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pf->setParentFrame(selection->getParentFrame());
-            auto guard = selection.modify();
-            guard->addFrame(pf.release());
+            pf->setParentFrame(selection.getParentFrame());
+
+            impl.before_modify_selection();
+            selection.addFrame(pf.release());
+            impl.after_modify_selection();
         }
         ImGui::SameLine();
         if (ImGui::Button("child")) {
             auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pf->setParentFrame(selection->getChildFrame());
-            auto guard = selection.modify();
-            guard->addFrame(pf.release());
+            pf->setParentFrame(selection.getChildFrame());
+
+            impl.before_modify_selection();
+            selection.addFrame(pf.release());
+            impl.after_modify_selection();
         }
         ImGui::NextColumn();
     }
@@ -647,50 +501,51 @@ static void
     ImGui::Columns();
 }
 
-static void draw_contextual_actions(osmv::Model_editor_screen::Impl& impl) {
+static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
     if (not impl.selection()) {
         ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
         return;
     }
 
-    if (auto frame = try_downcast<OpenSim::PhysicalFrame>(impl.selection()); frame) {
-        draw_frame_contextual_actions(impl.ui.attach_geometry_modal, *frame);
-    } else if (auto joint = try_downcast<OpenSim::Joint>(impl.selection()); joint) {
-        draw_joint_contextual_actions(impl.model(), *joint);
+    if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(impl.selection()); frame) {
+        draw_frame_contextual_actions(impl, *frame);
+    } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(impl.selection()); joint) {
+        draw_joint_contextual_actions(impl, *joint);
     }
 }
 
-static void draw_socket_editor(
-    Reassign_socket_modal& modal, Indirect_ref<OpenSim::Model>& model, Indirect_ptr<OpenSim::Component>& selection) {
+static void draw_socket_editor(Model_editor_screen::Impl& impl) {
 
-    if (not selection) {
+    if (not impl.selection()) {
         ImGui::Text("cannot draw socket editor: selection is blank (shouldn't be)");
         return;
     }
+    OpenSim::Component& selection = *impl.selection();
 
     // this UNSAFE is because I want to get the socket names, which is a non-const method on
     // the `selection`, but doesn't actually modify the selection (much, at least...)
-    std::vector<std::string> socknames = selection.UNSAFE_upd()->getSocketNames();
+    std::vector<std::string> socknames = selection.getSocketNames();
     ImGui::Columns(2);
     for (std::string const& sn : socknames) {
         ImGui::Text("%s", sn.c_str());
         ImGui::NextColumn();
 
-        OpenSim::AbstractSocket const& socket = selection->getSocket(sn);
+        OpenSim::AbstractSocket const& socket = selection.getSocket(sn);
         std::string sockname = socket.getConnecteePath();
         std::string popupname = std::string{"reassign"} + sockname;
 
         if (ImGui::Button(sockname.c_str())) {
-            modal.show(popupname.c_str());
+            ImGui::OpenPopup(popupname.c_str());
         }
 
-        // the `const_cast` is necessary because there isn't a clean way of expressing that the modification is
-        // happening to a subcomponent
-        auto ref = Lambda_indirect_ref{selection.UNSAFE_upd()->updSocket(sn),
-                                       [&]() { selection.UNSAFE_on_begin_modify(); },
-                                       [&]() { selection.UNSAFE_on_end_modify(); }};
+        auto on_conectee_change = [&](auto const& new_conectee) {
+            impl.before_modify_selection();
+            selection.updSocket(sn).connect(new_conectee);
+            impl.after_modify_selection();
+        };
 
-        modal.draw(popupname.c_str(), model, ref);
+        draw_reassign_socket_modal(
+            impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket, on_conectee_change);
 
         ImGui::NextColumn();
     }
@@ -702,11 +557,12 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
         ImGui::Text("(nothing selected)");
         return;
     }
+    OpenSim::Component& selection = *impl.selection();
 
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("top-level attributes:");
     ImGui::Separator();
-    draw_top_level_editor(impl.selection());
+    draw_top_level_editor(impl);
 
     // contextual actions
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
@@ -718,59 +574,45 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("properties:");
     ImGui::Separator();
-    impl.ui.properties_editor.draw(impl.selection());
+    {
+        auto before_property_edited = [&]() { impl.before_modify_selection(); };
+        auto after_property_edited = [&]() { impl.after_modify_selection(); };
+        draw_properties_editor(impl.ui.properties_editor, selection, before_property_edited, after_property_edited);
+    }
 
     // socket editor
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("sockets:");
     ImGui::Separator();
-    draw_socket_editor(impl.ui.reassign_socket, impl.model(), impl.selection());
+    draw_socket_editor(impl);
 }
 
 static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
-    OpenSim::Component const* selected = impl.selection();
+    OpenSim::Component* selected = impl.selection();
 
     if (not selected) {
         return;
     }
 
-    if (auto body = try_downcast<OpenSim::Body>(impl.selection()); body) {
-        // it's a body. If the owner is a BodySet then try to remove the body
-        // from the BodySet
-        if (auto* bs = const_cast<OpenSim::BodySet*>(dynamic_cast<OpenSim::BodySet const*>(&body->get()->getOwner()));
-            bs) {
-            log::error("deleting bodys from model NYI: it segfaults");
-            /*
-            for (int i = 0; i < bs->getSize(); ++i) {
-                if (&bs->get(i) == p) {
-                    bs->remove(i);
-                    impl->selected_component = nullptr;
-                }
-            }
-            */
-        }
-    } else if (auto const* geom = find_ancestor<OpenSim::Geometry>(selected); geom) {
+    if (auto const* geom = find_ancestor<OpenSim::Geometry>(selected); geom) {
         // it's some child of geometry (probably a mesh), try and find its owning
         // frame and clear the frame of all geometry
         if (auto const* frame = find_ancestor<OpenSim::Frame>(geom); frame) {
+            impl.before_modify_model();
             const_cast<OpenSim::Frame*>(frame)->updProperty_attached_geometry().clear();
-
-            // clear the selection (it's now deleted)
-            impl.selection().reset();
-
-            // notify that the model was modified (UNSAFE because we actually modified it
-            // via an ancestor of a pointer to a component it happens to own - that
-            // relationship is hard to express entirely in the type system)
-            impl.model().UNSAFE_on_begin_modify();
-            impl.model().UNSAFE_on_end_modify();
+            impl.set_selection(nullptr);
+            impl.after_modify_model();
         }
-    } else if (auto joint = try_downcast<OpenSim::Joint>(impl.selection()); joint) {
-        if (auto const* jointset = dynamic_cast<OpenSim::JointSet const*>(&joint->get()->getOwner()); jointset) {
+    } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(selected); joint) {
+        if (auto const* jointset = dynamic_cast<OpenSim::JointSet const*>(&joint->getOwner()); jointset) {
             for (int i = 0; i < jointset->getSize(); ++i) {
-                if (&jointset->get(i) == *joint) {
+                if (&jointset->get(i) == joint) {
+
+                    impl.before_modify_model();
                     const_cast<OpenSim::JointSet*>(jointset)->remove(i);
-                    impl.selection().reset();
-                    impl.model().modify()->finalizeFromProperties();
+                    impl.model().finalizeFromProperties();
+                    impl.set_selection(nullptr);
+                    impl.after_modify_model();
                     break;
                 }
             }
@@ -787,7 +629,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
 
             switch (e.keysym.sym) {
             case SDLK_s:
-                main_menu_save_as(impl.model().UNSAFE_upd());
+                main_menu_save_as(impl.model());
                 return true;
             }
             return false;
@@ -803,7 +645,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
         case SDLK_s:
             // UNSAFE because saving a model may modify its document name, which
             //        isn't a mutation the abstraction should care about (for now)
-            main_menu_save(impl.model().UNSAFE_upd());
+            main_menu_save(impl.model());
             return true;
         case SDLK_q:
             Application::current().request_quit_application();
@@ -820,7 +662,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
     case SDLK_F12:
         // UNSAFE because saving a model may modify its document name, which
         //        isn't a mutation the abstraction should care about (for now)
-        main_menu_save_as(impl.model().UNSAFE_upd());
+        main_menu_save_as(impl.model());
         return true;
     }
 
@@ -848,7 +690,7 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
 }
 
 void osmv::Model_editor_screen::tick() {
-    auto const& fname = impl->model().get().getInputFileName();
+    auto const& fname = impl->model().getInputFileName();
     if (impl->file_poller.change_detected(fname)) {
         std::unique_ptr<OpenSim::Model> p;
         try {
@@ -885,12 +727,29 @@ void osmv::Model_editor_screen::draw() {
     //    // else: the user is editing the model and all panels should be shown
 
     if (ImGui::BeginMainMenuBar()) {
-        draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model().UNSAFE_upd());
+        draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());
         draw_main_menu_about_tab();
         ImGui::EndMainMenuBar();
     }
 
-    impl->model_viewer.draw("render", impl->model().get(), impl->get_state(), impl->selection(), impl->hover());
+    {
+        auto on_selection_change = [this](OpenSim::Component const* new_selection) {
+            impl->set_selection(const_cast<OpenSim::Component*>(new_selection));
+        };
+
+        auto on_hover_change = [this](OpenSim::Component const* new_hover) {
+            impl->set_hover(const_cast<OpenSim::Component*>(new_hover));
+        };
+
+        impl->model_viewer.draw(
+            "render",
+            impl->model(),
+            impl->get_state(),
+            impl->selection(),
+            impl->hover(),
+            on_selection_change,
+            on_hover_change);
+    }
 
     // screen-specific fixup: all hoverables are their parents
     // TODO: impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
@@ -908,15 +767,17 @@ void osmv::Model_editor_screen::draw() {
 
     // hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
-        Component_hierarchy_widget hv;
-        hv.draw(&impl->model().get().getRoot(), impl->selection(), impl->hover());
+        auto on_select = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
+        auto on_hover = [this](auto const* c) { impl->set_hover(const_cast<OpenSim::Component*>(c)); };
+        draw_component_hierarchy_widget(
+            &impl->model().getRoot(), impl->selection(), impl->hover(), on_select, on_hover);
     }
     ImGui::End();
 
     // selection viewer
     if (ImGui::Begin("Selection")) {
-        Component_selection_widget sv;
-        sv.draw(impl->get_state(), impl->selection());
+        auto on_selection_changed = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
+        draw_component_selection_widget(impl->get_state(), impl->selection(), on_selection_changed);
     }
     ImGui::End();
 
@@ -948,32 +809,44 @@ void osmv::Model_editor_screen::draw() {
         }
 
         auto on_body_add = [& impl = *this->impl](Added_body_modal_output out) {
-            auto guard = impl.model().modify();
-            guard->addJoint(out.joint.release());
+            impl.before_modify_model();
+            impl.model().addJoint(out.joint.release());
             OpenSim::Body const* b = out.body.get();
-            guard->addBody(out.body.release());
-            impl.selection().reset(b);
+            impl.model().addBody(out.body.release());
+            impl.set_selection(const_cast<OpenSim::Body*>(b));
+            impl.after_modify_model();
         };
 
-        try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model().get(), on_body_add);
+        try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model(), on_body_add);
+
+        auto on_add_joint = [this](auto joint) {
+            auto const* ptr = joint.get();
+            impl->before_modify_model();
+            impl->model().addJoint(joint.release());
+            impl->set_selection(const_cast<OpenSim::Joint*>(ptr));
+            impl->after_modify_model();
+        };
 
         for (Add_joint_modal& modal : impl->ui.add_joint_modals) {
             if (ImGui::Button(modal.modal_name.c_str())) {
                 modal.show();
             }
-            modal.draw(impl->model(), impl->selection());
+            modal.draw(impl->model(), on_add_joint);
         }
 
         if (ImGui::Button("Show model in viewer")) {
             Application::current().request_screen_transition<Show_model_screen>(
-                std::make_unique<OpenSim::Model>(impl->model().get()));
+                std::make_unique<OpenSim::Model>(impl->model()));
         }
 
-        if (auto joint = try_downcast<OpenSim::Joint>(impl->selection()); joint) {
+        if (auto* joint = dynamic_cast<OpenSim::Joint*>(impl->selection()); joint) {
             if (ImGui::Button("Add offset frame")) {
                 auto frame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                frame->setParentFrame(impl->model().get().getGround());
-                joint->modify()->addFrame(frame.release());
+                frame->setParentFrame(impl->model().getGround());
+
+                impl->before_modify_selection();
+                joint->addFrame(frame.release());
+                impl->after_modify_selection();
             }
         }
     }

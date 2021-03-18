@@ -10,7 +10,6 @@
 #include "src/constants.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
 #include "src/opensim_bindings/model_drawlist_generator.hpp"
-#include "src/utils/indirect_ptr.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -180,8 +179,10 @@ void Model_viewer_widget::draw(
     char const* panel_name,
     OpenSim::Model const& model,
     SimTK::State const& state,
-    Indirect_ptr<OpenSim::Component>& selection,
-    Indirect_ptr<OpenSim::Component>& hover) {
+    OpenSim::Component const* current_selection,
+    OpenSim::Component const* current_hover,
+    std::function<void(OpenSim::Component const*)> const& on_selection_changed,
+    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -515,7 +516,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->rendering_flags & DrawcallFlags_DrawRims) {
-                apply_standard_rim_coloring(impl->geometry, hover.get(), selection.get());
+                apply_standard_rim_coloring(impl->geometry, current_hover, current_selection);
             }
 
             // draw the scene to an OpenGL texture
@@ -560,12 +561,13 @@ void Model_viewer_widget::draw(
                     ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
                 }
 
-                if (hover != impl->hovered_component) {
-                    hover.reset(impl->hovered_component);
+                if (current_hover != impl->hovered_component) {
+                    on_hover_changed(impl->hovered_component);
                 }
 
-                if (impl->hovered_component and mouse_right_clicked_render and selection != impl->hovered_component) {
-                    selection.reset(impl->hovered_component);
+                if (impl->hovered_component and mouse_right_clicked_render and
+                    current_selection != impl->hovered_component) {
+                    on_selection_changed(impl->hovered_component);
                 }
             }
 

@@ -11,14 +11,15 @@
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
 #include "src/utils/file_change_poller.hpp"
-#include "src/utils/indirect_ptr.hpp"
-#include "src/utils/indirect_ref.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/coordinate_editor.hpp"
+#include "src/widgets/evenly_spaced_sparkline.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/main_menu_about_tab.hpp"
 #include "src/widgets/main_menu_file_tab.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
+#include "src/widgets/muscles_table.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -54,117 +55,40 @@ using namespace osmv;
 using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
 
+static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
+    std::snprintf(buf, n, "%s/%s", ao->getOwner().getName().c_str(), ao->getName().c_str());
+}
+
+static void compute_moment_arms(
+    OpenSim::Muscle const& muscle, SimTK::State const& st, OpenSim::Coordinate const& c, float* out, size_t steps) {
+
+    SimTK::State state = st;
+    muscle.getModel().realizeReport(state);
+
+    bool prev_locked = c.getLocked(state);
+    double prev_val = c.getValue(state);
+
+    c.setLocked(state, false);
+
+    double start = c.getRangeMin();
+    double end = c.getRangeMax();
+    double step = (end - start) / steps;
+
+    for (size_t i = 0; i < steps; ++i) {
+        double v = start + (i * step);
+        c.setValue(state, v);
+        out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
+    }
+
+    c.setLocked(state, prev_locked);
+    c.setValue(state, prev_val);
+}
+
 namespace {
-    static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
-        std::snprintf(buf, n, "%s/%s", ao->getOwner().getName().c_str(), ao->getName().c_str());
-    }
-
-    static void get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordinate const*>& out) {
-        OpenSim::CoordinateSet const& s = m.getCoordinateSet();
-        int len = s.getSize();
-        out.reserve(out.size() + static_cast<size_t>(len));
-        for (int i = 0; i < len; ++i) {
-            out.push_back(&s[i]);
-        }
-    }
-
-    static void compute_moment_arms(
-        OpenSim::Muscle const& muscle, SimTK::State const& st, OpenSim::Coordinate const& c, float* out, size_t steps) {
-
-        SimTK::State state = st;
-        muscle.getModel().realizeReport(state);
-
-        bool prev_locked = c.getLocked(state);
-        double prev_val = c.getValue(state);
-
-        c.setLocked(state, false);
-
-        double start = c.getRangeMin();
-        double end = c.getRangeMax();
-        double step = (end - start) / steps;
-
-        for (size_t i = 0; i < steps; ++i) {
-            double v = start + (i * step);
-            c.setValue(state, v);
-            out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
-        }
-
-        c.setLocked(state, prev_locked);
-        c.setValue(state, prev_val);
-    }
-
-    // holds a fixed number of Y datapoints that are assumed to be roughly evenly spaced in X
-    //
-    // if the number of datapoints "pushed" onto the sparkline exceeds the (fixed) capacity then
-    // the datapoints will be halved (reducing resolution) to make room for more, which is how
-    // it guarantees constant size
-    template<size_t MaxDatapoints = 256>
-    struct Evenly_spaced_sparkline final {
-        static constexpr float min_x_step = 0.001f;
-        static_assert(MaxDatapoints % 2 == 0, "num datapoints must be even because the impl uses integer division");
-
-        std::array<float, MaxDatapoints> data;
-        size_t n = 0;
-        float x_step = min_x_step;
-        float latest_x = -min_x_step;
-        float min = std::numeric_limits<float>::max();
-        float max = std::numeric_limits<float>::min();
-
-        constexpr Evenly_spaced_sparkline() = default;
-
-        // reset the data, but not the output being monitored
-        void clear() {
-            n = 0;
-            x_step = min_x_step;
-            latest_x = -min_x_step;
-            min = std::numeric_limits<float>::max();
-            max = std::numeric_limits<float>::min();
-        }
-
-        void push_datapoint(float x, float y) {
-            if (x < latest_x + x_step) {
-                return;  // too close to previous datapoint: do not record
-            }
-
-            if (n == MaxDatapoints) {
-                // too many datapoints recorded: half the resolution of the
-                // sparkline to accomodate more datapoints being added
-                size_t halfway = n / 2;
-                for (size_t i = 0; i < halfway; ++i) {
-                    size_t first = 2 * i;
-                    data[i] = (data[first] + data[first + 1]) / 2.0f;
-                }
-                n = halfway;
-                x_step *= 2.0f;
-            }
-
-            data[n++] = y;
-            latest_x = x;
-            min = std::min(min, y);
-            max = std::max(max, y);
-        }
-
-        void draw(float height = 60.0f) const {
-            ImGui::PlotLines(
-                "",
-                data.data(),
-                static_cast<int>(n),
-                0,
-                nullptr,
-                std::numeric_limits<float>::min(),
-                std::numeric_limits<float>::max(),
-                ImVec2(0, height));
-        }
-
-        float last_datapoint() const {
-            OSMV_ASSERT(n > 0);
-            return data[n - 1];
-        }
-    };
 
     struct Output_plot final {
         OpenSim::AbstractOutput const* ao;
-        Evenly_spaced_sparkline<256> plot;
+        osmv::Evenly_spaced_sparkline<256> plot;
 
         explicit Output_plot(OpenSim::AbstractOutput const* _ao) : ao{_ao} {
         }
@@ -522,22 +446,6 @@ namespace {
         std::vector<std::unique_ptr<Moment_arm_plot>> plots;
     };
 
-    struct Muscles_tab_data final {
-        // name filtering
-        char filter[64]{};
-
-        // length filtering
-        float min_len = std::numeric_limits<float>::min();
-        float max_len = std::numeric_limits<float>::max();
-        bool inverse_range = false;
-
-        // sorting
-        static constexpr std::array<char const*, 2> sorting_choices{"length", "strain"};
-        size_t current_sort_choice = 0;
-
-        bool reverse_results = false;
-    };
-
     struct Outputs_tab_data final {
         char filter[64]{};
         std::vector<OpenSim::AbstractOutput const*> available;
@@ -571,16 +479,6 @@ namespace {
             }
         }
     };
-
-    using MuscleRecoloring = int;
-    enum MuscleRecoloring_ {
-        MuscleRecoloring_None = 0,
-        MuscleRecoloring_Strain,
-        MuscleRecoloring_Length,
-        MuscleRecoloring_NumOptions,
-    };
-    std::array<char const*, MuscleRecoloring_NumOptions> muscle_coloring_options = {"none", "strain", "length"};
-    static_assert(muscle_coloring_options.size() == MuscleRecoloring_NumOptions);
 }
 
 struct Show_model_screen::Impl final {
@@ -605,10 +503,11 @@ struct Show_model_screen::Impl final {
 
     Main_menu_file_tab_state mm_filetab_st;
 
-    Coordinates_tab_data coords_tab;
+    Coordinate_editor_state coords_tab_st;
+    Muscles_table_state muscles_table_st;
+
     Simulator_tab simulator_tab;
     Momentarms_tab_data mas_tab;
-    Muscles_tab_data muscles_tab;
     Outputs_tab_data outputs_tab;
 
     File_change_poller file_poller;
@@ -751,39 +650,57 @@ struct Show_model_screen::Impl final {
 
     // draw a frame of the UI
     void draw() {
+        // draw top menu bar
         if (ImGui::BeginMainMenuBar()) {
             draw_main_menu_file_tab(mm_filetab_st);
             draw_main_menu_about_tab();
             ImGui::EndMainMenuBar();
         }
 
+        // draw model viewer(s)
         {
+            auto on_selection_change = [this](OpenSim::Component const* new_selection) {
+                if (model_viewer.is_moused_over()) {
+                    selected_component = new_selection;
+                }
+            };
 
-            OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
-            auto sel = Trivial_indirect_ptr{&selected};
-            OpenSim::Component* hovered = const_cast<OpenSim::Component*>(current_hover);
-            auto hover = Trivial_indirect_ptr{&hovered};
+            auto on_hover_change = [this](OpenSim::Component const* new_hover) {
+                if (model_viewer.is_moused_over()) {
+                    current_hover = new_hover;
+                }
+            };
 
-            model_viewer.draw("render1", *model, *latest_state, sel, hover);
-
-            if (model_viewer.is_moused_over()) {
-                selected_component = selected;
-                current_hover = hovered;
-            }
+            model_viewer.draw(
+                "render1",
+                *model,
+                *latest_state,
+                selected_component,
+                current_hover,
+                on_selection_change,
+                on_hover_change);
         }
-
         {
-            OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
-            auto sel = Trivial_indirect_ptr{&selected};
-            OpenSim::Component* hovered = const_cast<OpenSim::Component*>(current_hover);
-            auto hover = Trivial_indirect_ptr{&hovered};
+            auto on_selection_change = [this](OpenSim::Component const* new_selection) {
+                if (model_viewer2.is_moused_over()) {
+                    selected_component = new_selection;
+                }
+            };
 
-            model_viewer2.draw("render2", *model, *latest_state, sel, hover);
+            auto on_hover_change = [this](OpenSim::Component const* new_hover) {
+                if (model_viewer2.is_moused_over()) {
+                    current_hover = new_hover;
+                }
+            };
 
-            if (model_viewer2.is_moused_over()) {
-                selected_component = selected;
-                current_hover = hovered;
-            }
+            model_viewer2.draw(
+                "render2",
+                *model,
+                *latest_state,
+                selected_component,
+                current_hover,
+                on_selection_change,
+                on_hover_change);
         }
 
         if (ImGui::Begin("Hierarchy")) {
@@ -837,125 +754,9 @@ struct Show_model_screen::Impl final {
     }
 
     void draw_coords_tab() {
-        // render coordinate filters
-        {
-            ImGui::Text("filters:");
-            ImGui::Dummy({0.0f, 2.5f});
-            ImGui::Separator();
-
-            ImGui::Columns(2);
-
-            ImGui::Text("search");
-            ImGui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputText("##coords search filter", coords_tab.filter, sizeof(coords_tab.filter));
-            ImGui::NextColumn();
-
-            ImGui::Text("sort alphabetically");
-            ImGui::NextColumn();
-            ImGui::Checkbox("##coords alphabetical sort", &coords_tab.sort_by_name);
-            ImGui::NextColumn();
-
-            ImGui::Text("show rotational");
-            ImGui::NextColumn();
-            ImGui::Checkbox("##rotational coordinates checkbox", &coords_tab.show_rotational);
-            ImGui::NextColumn();
-
-            ImGui::Text("show translational");
-            ImGui::NextColumn();
-            ImGui::Checkbox("##translational coordinates checkbox", &coords_tab.show_translational);
-            ImGui::NextColumn();
-
-            ImGui::Text("show coupled");
-            ImGui::NextColumn();
-            ImGui::Checkbox("##coupled coordinates checkbox", &coords_tab.show_coupled);
-            ImGui::NextColumn();
-
-            ImGui::Columns();
+        if (draw_coordinate_editor(coords_tab_st, *model, *latest_state)) {
+            on_user_edited_state();
         }
-
-        // load coords
-        scratch.coords.clear();
-        get_coordinates(*model, scratch.coords);
-
-        // sort coords
-        {
-            auto should_remove = [&](OpenSim::Coordinate const* c) {
-                if (c->getName().find(coords_tab.filter) == c->getName().npos) {
-                    return true;
-                }
-
-                OpenSim::Coordinate::MotionType mt = c->getMotionType();
-                if (coords_tab.show_rotational and mt == OpenSim::Coordinate::MotionType::Rotational) {
-                    return false;
-                }
-
-                if (coords_tab.show_translational and mt == OpenSim::Coordinate::MotionType::Translational) {
-                    return false;
-                }
-
-                if (coords_tab.show_coupled and mt == OpenSim::Coordinate::MotionType::Coupled) {
-                    return false;
-                }
-
-                return true;
-            };
-
-            auto it = std::remove_if(scratch.coords.begin(), scratch.coords.end(), should_remove);
-            scratch.coords.erase(it, scratch.coords.end());
-        }
-
-        // sort coords
-        if (coords_tab.sort_by_name) {
-            auto by_name = [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
-                return c1->getName() < c2->getName();
-            };
-
-            std::sort(scratch.coords.begin(), scratch.coords.end(), by_name);
-        }
-
-        // render coordinates list
-        ImGui::Dummy({0.0f, 10.0f});
-        ImGui::Text("coordinates (%zu):", scratch.coords.size());
-        ImGui::Dummy({0.0f, 2.5f});
-        ImGui::Separator();
-
-        ImGui::Columns(2);
-        int i = 0;
-        for (OpenSim::Coordinate const* c : scratch.coords) {
-            ImGui::PushID(i++);
-
-            ImGui::Text("%s", c->getName().c_str());
-            ImGui::NextColumn();
-
-            // if locked, color everything red
-            int styles_pushed = 0;
-            if (c->getLocked(*latest_state)) {
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
-                ++styles_pushed;
-            }
-
-            if (ImGui::Button(c->getLocked(*latest_state) ? "u" : "l")) {
-                c->setLocked(*latest_state, not c->getLocked(*latest_state));
-                on_user_edited_state();
-            }
-
-            ImGui::SameLine();
-
-            float v = static_cast<float>(c->getValue(*latest_state));
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::SliderFloat(
-                    " ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-                c->setValue(*latest_state, static_cast<double>(v));
-                on_user_edited_state();
-            }
-
-            ImGui::PopStyleColor(styles_pushed);
-            ImGui::NextColumn();
-
-            ImGui::PopID();
-        }
-        ImGui::Columns();
     }
 
     void draw_utils_tab() {
@@ -998,174 +799,16 @@ struct Show_model_screen::Impl final {
     }
 
     void draw_hierarchy_tab() {
-        Component_hierarchy_widget v;
-        OpenSim::Component* selected = const_cast<OpenSim::Component*>(selected_component.get());
-        auto hsh = Trivial_indirect_ptr{&selected};
-        OpenSim::Component* hover = const_cast<OpenSim::Component*>(current_hover);
-        auto hhh = Trivial_indirect_ptr{&hover};
-        v.draw(&model->getRoot(), hsh, hhh);
-        selected_component = selected;
-        current_hover = hover;
+        auto on_select = [this](auto const* c) { selected_component = c; };
+        auto on_hover = [this](auto const* c) { current_hover = c; };
+        draw_component_hierarchy_widget(
+            &model->getRoot(), selected_component.get(), current_hover, on_select, on_hover);
     }
 
     void draw_muscles_tab() {
-        // extract muscles details from model
-        scratch.muscles.clear();
-        for (OpenSim::Muscle const& musc : model->getComponentList<OpenSim::Muscle>()) {
-            scratch.muscles.push_back(&musc);
-        }
-
-        ImGui::Text("filters:");
-        ImGui::Dummy({0.0f, 2.5f});
-        ImGui::Separator();
-
-        ImGui::Columns(2);
-
-        ImGui::Text("search");
-        ImGui::NextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        ImGui::InputText("##muscles search filter", muscles_tab.filter, sizeof(muscles_tab.filter));
-        ImGui::NextColumn();
-
-        ImGui::Text("min length");
-        ImGui::NextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        ImGui::InputFloat("##muscles min filter", &muscles_tab.min_len);
-        ImGui::NextColumn();
-
-        ImGui::Text("max length");
-        ImGui::NextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        ImGui::InputFloat("##muscles max filter", &muscles_tab.max_len);
-        ImGui::NextColumn();
-
-        ImGui::Text("inverse length range");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##muscles inverse range filter", &muscles_tab.inverse_range);
-        ImGui::NextColumn();
-
-        ImGui::Text("sort by");
-        ImGui::NextColumn();
-        ImGui::PushID("muscles sort by checkbox");
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (ImGui::BeginCombo(
-                " ", muscles_tab.sorting_choices[muscles_tab.current_sort_choice], ImGuiComboFlags_None)) {
-            for (size_t n = 0; n < muscles_tab.sorting_choices.size(); n++) {
-                bool is_selected = (muscles_tab.current_sort_choice == n);
-                if (ImGui::Selectable(muscles_tab.sorting_choices[n], is_selected)) {
-                    muscles_tab.current_sort_choice = n;
-                }
-
-                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                if (is_selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-            ImGui::EndCombo();
-        }
-        ImGui::PopID();
-        ImGui::NextColumn();
-
-        ImGui::Text("reverse results");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##muscles reverse results chechbox", &muscles_tab.reverse_results);
-        ImGui::NextColumn();
-
-        ImGui::Columns();
-
-        // all user filters handled, transform the muscle list accordingly.
-
-        // filter muscle list
-        {
-            auto filter_fn = [&](OpenSim::Muscle const* m) {
-                bool in_range = muscles_tab.min_len <= static_cast<float>(m->getLength(*latest_state)) and
-                                static_cast<float>(m->getLength(*latest_state)) <= muscles_tab.max_len;
-
-                if (muscles_tab.inverse_range) {
-                    in_range = not in_range;
-                }
-
-                if (not in_range) {
-                    return true;
-                }
-
-                bool matches_filter = m->getName().find(muscles_tab.filter) != m->getName().npos;
-
-                return not matches_filter;
-            };
-
-            auto it = std::remove_if(scratch.muscles.begin(), scratch.muscles.end(), filter_fn);
-            scratch.muscles.erase(it, scratch.muscles.end());
-        }
-
-        // sort muscle list
-        OSMV_ASSERT(not muscles_tab.sorting_choices.empty());
-        OSMV_ASSERT(muscles_tab.current_sort_choice < muscles_tab.sorting_choices.size());
-        switch (muscles_tab.current_sort_choice) {
-        case 0: {  // sort muscles by length
-            std::sort(
-                scratch.muscles.begin(),
-                scratch.muscles.end(),
-                [this](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
-                    return m1->getLength(*latest_state) > m2->getLength(*latest_state);
-                });
-            break;
-        }
-        case 1: {  // sort muscles by tendon strain
-            std::sort(
-                scratch.muscles.begin(),
-                scratch.muscles.end(),
-                [&](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
-                    return m1->getTendonStrain(*latest_state) > m2->getTendonStrain(*latest_state);
-                });
-            break;
-        }
-        default:
-            break;  // skip sorting
-        }
-
-        // reverse list (if necessary)
-        if (muscles_tab.reverse_results) {
-            std::reverse(scratch.muscles.begin(), scratch.muscles.end());
-        }
-
-        ImGui::Dummy({0.0f, 20.0f});
-        ImGui::Text("results (%zu):", scratch.muscles.size());
-        ImGui::Dummy({0.0f, 2.5f});
-        ImGui::Separator();
-
-        // muscle table header
-        ImGui::Columns(4);
-        ImGui::Text("name");
-        ImGui::NextColumn();
-        ImGui::Text("length");
-        ImGui::NextColumn();
-        ImGui::Text("strain");
-        ImGui::NextColumn();
-        ImGui::Text("force");
-        ImGui::NextColumn();
-        ImGui::Columns();
-        ImGui::Separator();
-
-        // muscle table rows
-        ImGui::Columns(4);
-        for (OpenSim::Muscle const* musc : scratch.muscles) {
-            ImGui::Text("%s", musc->getName().c_str());
-            if (ImGui::IsItemHovered()) {
-                current_hover = musc;
-            }
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                selected_component = musc;
-            }
-            ImGui::NextColumn();
-            ImGui::Text("%.3f", static_cast<double>(musc->getLength(*latest_state)));
-            ImGui::NextColumn();
-            ImGui::Text("%.3f", 100.0 * musc->getTendonStrain(*latest_state));
-            ImGui::NextColumn();
-            ImGui::Text("%.3f", musc->getTendonForce(*latest_state));
-            ImGui::NextColumn();
-        }
-        ImGui::Columns();
+        auto on_hover = [&](OpenSim::Component const* new_hover) { current_hover = new_hover; };
+        auto on_select = [&](OpenSim::Component const* new_select) { selected_component = new_select; };
+        draw_muscles_table(muscles_table_st, *model, *latest_state, on_hover, on_select);
     }
 
     void draw_moment_arms_tab() {
@@ -1409,16 +1052,14 @@ struct Show_model_screen::Impl final {
 
     void draw_selection_tab() {
         if (not selected_component) {
-            ImGui::Text("nothing selected: right click a muscle");
+            ImGui::Text("nothing selected: right click something");
             return;
         }
 
         // draw standard selection info
         {
-            OpenSim::Component* c = const_cast<OpenSim::Component*>(selected_component.get());
-            auto hsh = Trivial_indirect_ptr{&c};
-            Component_selection_widget{}.draw(*latest_state, hsh);
-            selected_component = c;
+            auto on_selection_changed = [this](auto const* c) { selected_component = c; };
+            draw_component_selection_widget(*latest_state, selected_component.get(), on_selection_changed);
         }
 
         // draw selection outputs (screen-specific)
