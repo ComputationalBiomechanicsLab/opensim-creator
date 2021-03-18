@@ -19,6 +19,8 @@
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
+#include "src/widgets/main_menu_about_tab.hpp"
+#include "src/widgets/main_menu_file_tab.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 #include "src/widgets/properties_editor.hpp"
 #include "src/widgets/reassign_socket_modal.hpp"
@@ -49,7 +51,6 @@
 #include <SimTKcommon/Mechanics.h>
 #include <SimTKcommon/SmallMatrix.h>
 #include <imgui.h>
-#include <nfd.h>
 
 #include <algorithm>
 #include <cstring>
@@ -275,6 +276,7 @@ public:
     Model_viewer_widget model_viewer{gpu_cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
     struct {
+        Main_menu_file_tab_state main_menu_tab;
         Added_body_modal_state abm;
         std::array<Add_joint_modal, 4> add_joint_modals = {
             Add_joint_modal::create<OpenSim::FreeJoint>("Add FreeJoint"),
@@ -725,80 +727,6 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     draw_socket_editor(impl.ui.reassign_socket, impl.model(), impl.selection());
 }
 
-static std::optional<std::filesystem::path> prompt_save_single_file() {
-    nfdchar_t* outpath = nullptr;
-    nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
-    OSMV_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
-}
-
-static bool is_subpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
-    auto dir_n = std::distance(dir.begin(), dir.end());
-    auto pth_n = std::distance(pth.begin(), pth.end());
-
-    if (pth_n < dir_n) {
-        return false;
-    }
-
-    return std::equal(dir.begin(), dir.end(), pth.begin());
-}
-
-static bool is_example_file(std::filesystem::path const& path) {
-    std::filesystem::path examples_dir = config::resource_path("models");
-    return is_subpath(examples_dir, path);
-}
-
-template<typename T, typename MappingFunction>
-static auto map_optional(MappingFunction f, std::optional<T> opt)
-    -> std::optional<decltype(f(std::move(opt).value()))> {
-
-    return opt ? std::optional{f(std::move(opt).value())} : std::nullopt;
-}
-
-static std::string path2string(std::filesystem::path p) {
-    return p.string();
-}
-
-static std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
-
-    if (std::string const& backing_path = m.getInputFileName();
-        backing_path != "Unassigned" and backing_path.size() > 0) {
-
-        // the model has an associated file
-        //
-        // we can save over this document - *IF* it's not an example file
-        if (is_example_file(backing_path)) {
-            return map_optional(path2string, prompt_save_single_file());
-        } else {
-            return backing_path;
-        }
-    } else {
-        // the model has no associated file, so prompt the user for a save
-        // location
-        return map_optional(path2string, prompt_save_single_file());
-    }
-}
-
-static void save_model(OpenSim::Model& model, std::string const& save_loc) {
-    try {
-        model.print(save_loc);
-        model.setInputFileName(save_loc);
-        log::info("saved model to %s", save_loc.c_str());
-        config::add_recent_file(save_loc);
-    } catch (OpenSim::Exception const& ex) {
-        log::error("error saving model: %s", ex.what());
-    }
-}
-
-static void try_save_model(OpenSim::Model& model) {
-    std::optional<std::string> maybe_save_loc = try_get_save_location(model);
-
-    if (maybe_save_loc) {
-        save_model(model, *maybe_save_loc);
-    }
-}
-
 static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
     OpenSim::Component const* selected = impl.selection();
 
@@ -850,36 +778,50 @@ static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
     }
 }
 
-static void on_save_as(osmv::Model_editor_screen::Impl& impl) {
-    std::optional<std::string> maybe_path = prompt_save_single_file();
-    if (maybe_path) {
-        save_model(impl.model().modify(), *maybe_path);
-    }
-}
-
 static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent const& e) {
     if (e.keysym.mod & KMOD_CTRL) {
-        // CTRL-modified keybinds
+        // CTRL
+
+        if (e.keysym.mod & KMOD_SHIFT) {
+            // CTRL+SHIFT
+
+            switch (e.keysym.sym) {
+            case SDLK_s:
+                main_menu_save_as(impl.model().UNSAFE_upd());
+                return true;
+            }
+            return false;
+        }
 
         switch (e.keysym.sym) {
+        case SDLK_n:
+            main_menu_new();
+            return true;
+        case SDLK_o:
+            main_menu_open();
+            return true;
         case SDLK_s:
-            try_save_model(impl.model().modify());
+            // UNSAFE because saving a model may modify its document name, which
+            //        isn't a mutation the abstraction should care about (for now)
+            main_menu_save(impl.model().UNSAFE_upd());
+            return true;
+        case SDLK_q:
+            Application::current().request_quit_application();
             return true;
         }
-    } else {
-        // unmodified keybinds
 
-        switch (e.keysym.sym) {
-        case SDLK_ESCAPE:
-            Application::current().request_screen_transition<Splash_screen>();
-            return true;
-        case SDLK_DELETE:
-            on_delete_selection(impl);
-            return true;
-        case SDLK_F12:
-            on_save_as(impl);
-            return true;
-        }
+        return false;
+    }
+
+    switch (e.keysym.sym) {
+    case SDLK_DELETE:
+        on_delete_selection(impl);
+        return true;
+    case SDLK_F12:
+        // UNSAFE because saving a model may modify its document name, which
+        //        isn't a mutation the abstraction should care about (for now)
+        main_menu_save_as(impl.model().UNSAFE_upd());
+        return true;
     }
 
     return false;
@@ -941,6 +883,12 @@ void osmv::Model_editor_screen::draw() {
     //        }
     //    }
     //    // else: the user is editing the model and all panels should be shown
+
+    if (ImGui::BeginMainMenuBar()) {
+        draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model().UNSAFE_upd());
+        draw_main_menu_about_tab();
+        ImGui::EndMainMenuBar();
+    }
 
     impl->model_viewer.draw("render", impl->model().get(), impl->get_state(), impl->selection(), impl->hover());
 

@@ -172,3 +172,34 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
 bool osmv::config::should_use_multi_viewport() {
     return load_config().use_multi_viewport;
 }
+
+static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
+    return a.filename() < b.filename();
+}
+
+std::vector<fs::path> osmv::config::example_osim_files() {
+    fs::path models_dir = resource_path("models");
+
+    std::vector<fs::path> rv;
+
+    if (not fs::exists(models_dir)) {
+        // probably running from a weird location, or resources are missing
+        return rv;
+    }
+
+    if (not fs::is_directory(models_dir)) {
+        // something horrible has happened, but gracefully fallback to ignoring
+        // that issue (grumble grumble, this should be logged)
+        return rv;
+    }
+
+    for (fs::directory_entry const& e : fs::recursive_directory_iterator{models_dir}) {
+        if (e.path().extension() == ".osim") {
+            rv.push_back(e.path());
+        }
+    }
+
+    std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
+
+    return rv;
+}

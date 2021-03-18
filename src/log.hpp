@@ -36,7 +36,7 @@ namespace osmv::log {
     };
 
     class Sink {
-        level::Level_enum level_{level::trace};
+        level::Level_enum level_{level::info};
 
     public:
         virtual ~Sink() noexcept = default;
@@ -58,7 +58,7 @@ namespace osmv::log {
     class Logger final {
         std::string name;
         std::vector<std::shared_ptr<Sink>> _sinks;
-        level::Level_enum level{level::trace};
+        level::Level_enum level{level::info};
 
     public:
         Logger(std::string _name) : name{std::move(_name)}, _sinks() {

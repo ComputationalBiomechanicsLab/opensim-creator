@@ -10,12 +10,13 @@
 #include "src/screens/opengl_test_screen.hpp"
 #include "src/utils/geometry.hpp"
 #include "src/utils/scope_guard.hpp"
+#include "src/widgets/main_menu_about_tab.hpp"
+#include "src/widgets/main_menu_file_tab.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <imgui.h>
-#include <nfd.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -26,41 +27,8 @@
 namespace fs = std::filesystem;
 using namespace osmv;
 
-static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
-    return a.filename() < b.filename();
-}
-
-// helper that searches for example .osim files in the resources/ directory
-static std::vector<fs::path> find_example_osims() {
-    fs::path models_dir = osmv::config::resource_path("models");
-
-    std::vector<fs::path> rv;
-
-    if (not fs::exists(models_dir)) {
-        // probably running from a weird location, or resources are missing
-        return rv;
-    }
-
-    if (not fs::is_directory(models_dir)) {
-        // something horrible has happened, but gracefully fallback to ignoring
-        // that issue (grumble grumble, this should be logged)
-        return rv;
-    }
-
-    for (fs::directory_entry const& e : fs::recursive_directory_iterator{models_dir}) {
-        if (e.path().extension() == ".osim") {
-            rv.push_back(e.path());
-        }
-    }
-
-    std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
-
-    return rv;
-}
-
 struct Splash_screen::Impl final {
-    std::vector<fs::path> example_osims = find_example_osims();
-    std::vector<config::Recent_file> recent_files = osmv::config::recent_files();
+    Main_menu_file_tab_state mm_state;
 };
 
 // PIMPL forwarding for osmv::Splash_screen
@@ -73,40 +41,43 @@ osmv::Splash_screen::~Splash_screen() noexcept {
     delete impl;
 }
 
-bool osmv::Splash_screen::on_event(SDL_Event const& e) {
-    if (e.type == SDL_KEYDOWN) {
-        SDL_Keycode sym = e.key.keysym.sym;
+static bool on_keydown(SDL_KeyboardEvent const& e) {
+    SDL_Keycode sym = e.keysym.sym;
 
-        // ESCAPE: quit application
-        if (sym == SDLK_ESCAPE) {
+    if (e.keysym.mod & KMOD_CTRL) {
+        // CTRL
+
+        switch (sym) {
+        case SDLK_n:
+            main_menu_new();
+            return true;
+        case SDLK_o:
+            main_menu_open();
+            return true;
+        case SDLK_q:
             Application::current().request_quit_application();
             return true;
         }
+    }
 
-        // CTRL+O: open file
-        if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_o and e.key.keysym.mod & KMOD_CTRL) {
-            nfdchar_t* outpath = nullptr;
+    return false;
+}
 
-            nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
-
-            Scope_guard guard{[&]() {
-                if (outpath) {
-                    free(outpath);
-                }
-            }};
-
-            if (result == NFD_OKAY) {
-                Application::current().request_screen_transition<Loading_screen>(outpath);
-            }
-
-            return 0;
-        }
+bool osmv::Splash_screen::on_event(SDL_Event const& e) {
+    if (e.type == SDL_KEYDOWN) {
+        return on_keydown(e.key);
     }
     return false;
 }
 
 void osmv::Splash_screen::draw() {
     Application& app = Application::current();
+
+    if (ImGui::BeginMainMenuBar()) {
+        draw_main_menu_file_tab(impl->mm_state);
+        draw_main_menu_about_tab();
+        ImGui::EndMainMenuBar();
+    }
 
     // center the menu
     {
@@ -158,12 +129,12 @@ void osmv::Splash_screen::draw() {
             int id = 0;
 
             // recent files:
-            if (not impl->recent_files.empty()) {
+            if (not impl->mm_state.recent_files.empty()) {
                 ImGui::Text("Recent files:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
                 // iterate in reverse: recent files are stored oldest --> newest
-                for (auto it = impl->recent_files.rbegin(); it != impl->recent_files.rend(); ++it) {
+                for (auto it = impl->mm_state.recent_files.rbegin(); it != impl->mm_state.recent_files.rend(); ++it) {
                     config::Recent_file const& rf = *it;
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str())) {
@@ -176,11 +147,11 @@ void osmv::Splash_screen::draw() {
             ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
             // examples:
-            if (not impl->example_osims.empty()) {
+            if (not impl->mm_state.example_osims.empty()) {
                 ImGui::Text("Examples:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-                for (fs::path const& ex : impl->example_osims) {
+                for (fs::path const& ex : impl->mm_state.example_osims) {
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str())) {
                         app.request_screen_transition<osmv::Loading_screen>(ex);

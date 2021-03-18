@@ -16,6 +16,8 @@
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
+#include "src/widgets/main_menu_about_tab.hpp"
+#include "src/widgets/main_menu_file_tab.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -601,6 +603,8 @@ struct Show_model_screen::Impl final {
         cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
     OpenSim::Component const* current_hover = nullptr;
 
+    Main_menu_file_tab_state mm_filetab_st;
+
     Coordinates_tab_data coords_tab;
     Simulator_tab simulator_tab;
     Momentarms_tab_data mas_tab;
@@ -748,78 +752,8 @@ struct Show_model_screen::Impl final {
     // draw a frame of the UI
     void draw() {
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Exit")) {
-                    Application::current().request_quit_application();
-                }
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::BeginMenu("Graphics")) {
-                ImGui::Text("%.1f fps", static_cast<double>(ImGui::GetIO().Framerate));
-
-                // msxaa selector
-                {
-                    static constexpr std::array<char const*, 8> aa_lvls = {
-                        "x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
-                    int samples_idx = lsb_index(Application::current().samples());
-                    int max_samples_idx = lsb_index(Application::current().max_samples());
-                    OSMV_ASSERT(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
-
-                    if (ImGui::Combo("samples", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
-                        Application::current().set_samples(1 << samples_idx);
-                    }
-                }
-
-                ImGui::NewLine();
-
-                // display hints
-                {
-                    OpenSim::ModelDisplayHints& dh = model->updDisplayHints();
-
-                    {
-                        bool debug_geom = dh.get_show_debug_geometry();
-                        if (ImGui::Checkbox("show debug geometry", &debug_geom)) {
-                            dh.set_show_debug_geometry(debug_geom);
-                        }
-                    }
-
-                    {
-                        bool frames_geom = dh.get_show_frames();
-                        if (ImGui::Checkbox("show frames", &frames_geom)) {
-                            dh.set_show_frames(frames_geom);
-                        }
-                    }
-
-                    {
-                        bool markers_geom = dh.get_show_markers();
-                        if (ImGui::Checkbox("show markers", &markers_geom)) {
-                            dh.set_show_markers(markers_geom);
-                        }
-                    }
-                }
-
-                if (ImGui::Button("fullscreen")) {
-                    Application::current().make_fullscreen();
-                }
-
-                if (ImGui::Button("windowed")) {
-                    Application::current().make_windowed();
-                }
-
-                if (not Application::current().is_vsync_enabled()) {
-                    if (ImGui::Button("enable vsync")) {
-                        Application::current().enable_vsync();
-                    }
-                } else {
-                    if (ImGui::Button("disable vsync")) {
-                        Application::current().disable_vsync();
-                    }
-                }
-
-                ImGui::EndMenu();
-            }
-
+            draw_main_menu_file_tab(mm_filetab_st);
+            draw_main_menu_about_tab();
             ImGui::EndMainMenuBar();
         }
 

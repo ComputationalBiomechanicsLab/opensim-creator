@@ -119,6 +119,12 @@ add_executable(osmv
     src/widgets/log_viewer_widget.cpp
     src/widgets/lockable_f3_editor.hpp
     src/widgets/lockable_f3_editor.cpp
+    src/widgets/main_menu_file_tab.hpp
+    src/widgets/main_menu_file_tab.cpp
+    src/widgets/main_menu_about_tab.hpp
+    src/widgets/main_menu_about_tab.cpp
+    src/widgets/help_marker.hpp
+    src/widgets/help_marker.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

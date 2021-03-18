@@ -37,4 +37,6 @@ namespace osmv::config {
     void add_recent_file(std::filesystem::path const&);
 
     bool should_use_multi_viewport();
+
+    std::vector<std::filesystem::path> example_osim_files();
 }

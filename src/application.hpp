@@ -82,5 +82,9 @@ namespace osmv {
         void enable_vsync();
 
         void disable_vsync();
+
+        [[nodiscard]] bool is_in_opengl_debug_mode() const noexcept;
+        void enable_opengl_debug_mode();
+        void disable_opengl_debug_mode();
     };
 }

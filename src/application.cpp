@@ -264,10 +264,19 @@ static void disable_opengl_debug_mode() {
     }
 }
 
+static bool is_in_opengl_debug_mode() {
+    GLboolean b1 = false;
+    glGetBooleanv(GL_DEBUG_OUTPUT, &b1);
+    GLboolean b2 = false;
+    glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b2);
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+
+    return b1 and b2 and (flags & GL_CONTEXT_FLAG_DEBUG_BIT);
+}
+
 static void toggle_opengl_debug_mode() {
-    GLboolean b = false;
-    glGetBooleanv(GL_DEBUG_OUTPUT, &b);
-    if (b) {
+    if (is_in_opengl_debug_mode()) {
         disable_opengl_debug_mode();
     } else {
         enable_opengl_debug_mode();
@@ -451,7 +460,7 @@ public:
                     is_drawing_debug_ui = not is_drawing_debug_ui;
                 }
 
-                // OpenGL DEBUG MODE: enabled (not toggled) with F2
+                // OpenGL DEBUG MODE: enabled with F2
                 if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
                     ::toggle_opengl_debug_mode();
                 }
@@ -690,4 +699,16 @@ void Application::enable_vsync() {
 
 void Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
+}
+
+bool Application::is_in_opengl_debug_mode() const noexcept {
+    return ::is_in_opengl_debug_mode();
+}
+
+void Application::enable_opengl_debug_mode() {
+    ::enable_opengl_debug_mode();
+}
+
+void Application::disable_opengl_debug_mode() {
+    ::disable_opengl_debug_mode();
 }

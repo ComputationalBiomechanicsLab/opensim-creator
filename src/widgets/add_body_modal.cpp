@@ -3,6 +3,7 @@
 #include "src/opensim_bindings/conversions.hpp"
 #include "src/utils/indirect_ptr.hpp"
 #include "src/utils/indirect_ref.hpp"
+#include "src/widgets/help_marker.hpp"
 #include "src/widgets/lockable_f3_editor.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -52,19 +53,6 @@ static std::unique_ptr<OpenSim::Joint> make_joint(osmv::Added_body_modal_state& 
     }
 
     return fj;
-}
-
-// Helper to display a little (?) mark which shows a tooltip when hovered.
-// In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
-static void HelpMarker(const char* desc) {
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
 }
 
 void osmv::try_draw_add_body_modal(
@@ -118,7 +106,7 @@ void osmv::try_draw_add_body_modal(
 
     ImGui::Text("join body to");
     ImGui::SameLine();
-    HelpMarker("OpenSim::Body's must joined to something else with a joint");
+    draw_help_marker("OpenSim::Body's must joined to something else with a joint");
     ImGui::NextColumn();
     ImGui::BeginChild("join", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
     for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
@@ -137,14 +125,15 @@ void osmv::try_draw_add_body_modal(
 
     ImGui::Text("joint type");
     ImGui::SameLine();
-    HelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to whatever was selected above");
+    draw_help_marker(
+        "The type of OpenSim::Joint that will connect the new OpenSim::Body to whatever was selected above");
     ImGui::NextColumn();
     ImGui::Text("OpenSim::FreeJoint");
     ImGui::NextColumn();
 
     ImGui::Text("joint name");
     ImGui::SameLine();
-    HelpMarker("The name of the OpenSim::Joint specified above");
+    draw_help_marker("The name of the OpenSim::Joint specified above");
     ImGui::NextColumn();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     ImGui::InputText("##jointnameinput", st.joint_name, sizeof(st.joint_name));
@@ -152,7 +141,7 @@ void osmv::try_draw_add_body_modal(
 
     ImGui::Text("add offset frames?");
     ImGui::SameLine();
-    HelpMarker(
+    draw_help_marker(
         "Whether osmv should automatically add intermediate offset frames to the OpenSim::Joint (rather than joining directly)");
     ImGui::NextColumn();
     ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
@@ -160,7 +149,7 @@ void osmv::try_draw_add_body_modal(
 
     ImGui::Text("geometry");
     ImGui::SameLine();
-    HelpMarker("Visual geometry attached to this body (i.e. what the body looks like in the viewer)");
+    draw_help_marker("Visual geometry attached to this body (i.e. what the body looks like in the viewer)");
     ImGui::NextColumn();
     {
         static constexpr char const* attach_modal_name = "addbody_attachgeometry";
