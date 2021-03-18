@@ -10,13 +10,13 @@ namespace osmv {
 
         std::chrono::milliseconds delay;
         clock::time_point next;
-        std::chrono::system_clock::time_point last_modification_time;
+        std::filesystem::file_time_type last_modification_time;
         bool enabled;
 
         File_change_poller(std::chrono::milliseconds _delay, std::string const& path) :
             delay{_delay},
             next{clock::now() + delay},
-            last_modification_time{path.empty() or path == "Unassigned" ? std::chrono::system_clock::time_point{}
+            last_modification_time{path.empty() or path == "Unassigned" ? std::filesystem::file_time_type{}
                                                                         : std::filesystem::last_write_time(path)},
             enabled{true} {
         }
