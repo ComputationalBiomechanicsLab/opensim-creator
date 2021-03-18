@@ -10,8 +10,10 @@
 #include <GL/glew.h>
 #include <imgui.h>
 
+#include <array>
+
 static void draw_header(char const* str) {
-    ImGui::Text(str);
+    ImGui::Text("%s", str);
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0f, 0.5f));
 }

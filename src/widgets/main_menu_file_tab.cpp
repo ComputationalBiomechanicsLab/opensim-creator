@@ -58,7 +58,7 @@ template<typename T, typename MappingFunction>
 static auto map_optional(MappingFunction f, std::optional<T> opt)
     -> std::optional<decltype(f(std::move(opt).value()))> {
 
-    return opt ? std::optional{f(std::move(opt).value())} : std::nullopt;
+    return opt ? std::optional{f(std::move(opt).value())} : std::optional<decltype(f(std::move(opt).value()))>{};
 }
 
 static std::string path2string(std::filesystem::path p) {
@@ -113,7 +113,7 @@ void osmv::main_menu_save(OpenSim::Model& model) {
 }
 
 void osmv::main_menu_save_as(OpenSim::Model& model) {
-    std::optional<std::string> maybe_path = prompt_save_single_file();
+    std::optional<std::string> maybe_path = map_optional(path2string, prompt_save_single_file());
     if (maybe_path) {
         save_model(model, *maybe_path);
     }
