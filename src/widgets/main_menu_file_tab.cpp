@@ -68,7 +68,7 @@ static std::string path2string(std::filesystem::path p) {
 static std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
 
     if (std::string const& backing_path = m.getInputFileName();
-        backing_path != "Unassigned" and backing_path.size() > 0) {
+        backing_path != "Unassigned" && backing_path.size() > 0) {
 
         // the model has an associated file
         //

@@ -234,11 +234,11 @@ namespace sdl {
     };
 
     inline bool operator==(Window_dimensions const& a, Window_dimensions const& b) noexcept {
-        return a.w == b.w and a.h == b.h;
+        return a.w == b.w && a.h == b.h;
     }
 
     inline bool operator!=(Window_dimensions const& a, Window_dimensions const& b) noexcept {
-        return not(a == b);
+        return !(a == b);
     }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize

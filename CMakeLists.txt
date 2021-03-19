@@ -28,6 +28,7 @@ set(OSMV_USE_ASAN OFF CACHE BOOL "enable address sanitizer: useful for spotting 
 
 if(${OSMV_USING_MODERN_CMAKE})
     cmake_policy(SET CMP0072 NEW)  # use newer OpenGL linking strategy
+    cmake_policy(SET CMP0111 NEW)  # imported targets must produce files that exist
 endif()
 set(OpenGL_GL_PREFERENCE "GLVND")  # use newer OpenGL linking strategy
 
@@ -186,7 +187,6 @@ target_compile_options(osmv PRIVATE
 
     # msvc flags
     $<$<CXX_COMPILER_ID:MSVC>:
-        /permissive-  # I like `and` and `not` keywords: sue me
         /wd4996  # disable warning 4996: Simbody uses a deprecated iterator class
         /wd4455  # disable warning 4455: incorrectly flags std::string::literals::"s"
         /W3  # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)

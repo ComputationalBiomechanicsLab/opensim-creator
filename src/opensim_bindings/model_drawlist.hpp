@@ -70,7 +70,7 @@ namespace osmv {
 
             drawlist.for_each([&](Mesh_instance& mi) {
                 uint16_t id = mi.passthrough_data().to_u16();
-                OSMV_ASSERT(id != 0 and "zero ID inserted into drawlist (emplace_back should prevent this)");
+                OSMV_ASSERT(id != 0 && "zero ID inserted into drawlist (emplace_back should prevent this)");
                 f(associated_components[id - 1], mi);
             });
         }

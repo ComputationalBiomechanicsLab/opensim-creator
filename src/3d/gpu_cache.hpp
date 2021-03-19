@@ -29,7 +29,7 @@ namespace osmv {
             auto [it, inserted] = filepath2mesh.emplace(
                 std::piecewise_construct, std::forward_as_tuple(k), std::forward_as_tuple(Mesh_reference::invalid()));
 
-            if (not inserted) {
+            if (!inserted) {
                 return it->second;
             }
 

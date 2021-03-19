@@ -16,17 +16,17 @@ namespace osmv {
         File_change_poller(std::chrono::milliseconds _delay, std::string const& path) :
             delay{_delay},
             next{clock::now() + delay},
-            last_modification_time{path.empty() or path == "Unassigned" ? std::filesystem::file_time_type{}
+            last_modification_time{path.empty() || path == "Unassigned" ? std::filesystem::file_time_type{}
                                                                         : std::filesystem::last_write_time(path)},
             enabled{true} {
         }
 
         bool change_detected(std::string const& path) {
-            if (not enabled) {
+            if (!enabled) {
                 return false;
             }
 
-            if (path.empty() or path == "Unassigned") {
+            if (path.empty() || path == "Unassigned") {
                 return false;
             }
 

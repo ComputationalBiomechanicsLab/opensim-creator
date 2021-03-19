@@ -272,7 +272,7 @@ static bool is_in_opengl_debug_mode() {
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 
-    return b1 and b2 and (flags & GL_CONTEXT_FLAG_DEBUG_BIT);
+    return b1 && b2 && (flags & GL_CONTEXT_FLAG_DEBUG_BIT);
 }
 
 static void toggle_opengl_debug_mode() {
@@ -456,12 +456,12 @@ public:
                 ImGui_ImplSDL2_ProcessEvent(&e);
 
                 // DEBUG MODE: toggled with F1
-                if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F1) {
-                    is_drawing_debug_ui = not is_drawing_debug_ui;
+                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F1) {
+                    is_drawing_debug_ui = !is_drawing_debug_ui;
                 }
 
                 // OpenGL DEBUG MODE: enabled with F2
-                if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_F2) {
+                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F2) {
                     ::toggle_opengl_debug_mode();
                 }
 
@@ -600,7 +600,7 @@ public:
         log::info("starting main render loop");
 
         bool quit = false;
-        while (not quit) {
+        while (!quit) {
             try {
                 internal_start_render_loop(std::move(s));
                 quit = true;

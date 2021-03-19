@@ -165,27 +165,6 @@ if(LINUX)
         INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
     )
 else()
-    # on non-Linux, build SDL from source and package it with the install
-    ExternalProject_Add(sdl2-project
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
-        CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
-        INSTALL_COMMAND ""
-        EXCLUDE_FROM_ALL TRUE
-        UPDATE_DISCONNECTED ON
-        # HACK: this is specifically required by Ninja, because it
-        # needs to know the side-effects of external build steps
-        BUILD_BYPRODUCTS
-        "sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0${CMAKE_SHARED_LIBRARY_SUFFIX};sdl2-project-prefix/src/sdl2-project-build/libSDL2-2.0d${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    )
-    ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
-    ExternalProject_Get_Property(sdl2-project BINARY_DIR)
-
-    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
-    file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
-
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    add_dependencies(osmv-sdl2 sdl2-project)
-
     if(WIN32)
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2d)
@@ -196,6 +175,32 @@ else()
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d)
     endif()
+
+    set(HACK_BUILD_DIR "sdl2-project-prefix/src/sdl2-project-build")
+    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+    # on non-Linux, build SDL from source and package it with the install
+    ExternalProject_Add(sdl2-project
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
+        CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
+        INSTALL_COMMAND ""
+        EXCLUDE_FROM_ALL TRUE
+        UPDATE_DISCONNECTED ON
+        # HACK: this is specifically required by Ninja, because it
+        # needs to know the side-effects of external build steps
+        BUILD_BYPRODUCTS "${HACK_POSSIBLE_BYPRODUCTS}"
+    )
+    ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
+    ExternalProject_Get_Property(sdl2-project BINARY_DIR)
+
+    # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
+    file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
+
+    add_library(osmv-sdl2 SHARED IMPORTED)
+    add_dependencies(osmv-sdl2 sdl2-project)
 
     if(CMAKE_BUILD_TYPE MATCHES Debug)
         set(SDL2_LIB_SUFFIX "d")
@@ -221,6 +226,7 @@ else()
     else()
         set_target_properties(osmv-sdl2 PROPERTIES
             IMPORTED_LOCATION ${BINARY_DIR}/${LIBNAME}${SDL2_LIB_SUFFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}
+            IMPORTED_IMPLIB ${BINARY_DIR}/${LIBNAME}${SDL2_LIB_SUFFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
     endif()
 
@@ -229,6 +235,8 @@ else()
     unset(BINARY_DIR)
     unset(LIBNAME)
     unset(DEBUG_LIBNAME)
+    unset(HACK_BUILD_DIR)
+    unset(HACK_POSSIBLE_BYPRODUCTS)
 endif()
 
 # DEPENDENCY: glm

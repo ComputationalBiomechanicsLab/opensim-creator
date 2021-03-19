@@ -48,7 +48,7 @@ Loading_screen::~Loading_screen() noexcept {
 
 bool Loading_screen::on_event(SDL_Event const& e) {
     // ESCAPE: go to splash screen
-    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
         Application::current().request_screen_transition<Splash_screen>();
         return true;
     }
@@ -60,7 +60,7 @@ void Loading_screen::tick() {
     // if there's an error, then the result came through (it's an error)
     // and this screen will just continuously show the error with no
     // recourse
-    if (not impl->error.empty()) {
+    if (!impl->error.empty()) {
         return;
     }
 

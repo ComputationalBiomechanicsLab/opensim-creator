@@ -26,7 +26,7 @@ class Circular_buffer final {
         using pointer = typename std::conditional<IsConst, T const*, T*>::type;
         using reference = typename std::conditional<IsConst, T const&, T&>::type;
         using iterator_category = std::random_access_iterator_tag;
-        friend class Iterator<not IsConst>;
+        friend class Iterator<!IsConst>;
 
         constexpr Iterator() = default;
 
@@ -36,7 +36,7 @@ class Circular_buffer final {
         // implicit conversion from non-const iterator to a const one
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr operator typename std::enable_if_t<not _IsConst, Iterator<true>>() const noexcept {
+        [[nodiscard]] constexpr operator typename std::enable_if_t<!_IsConst, Iterator<true>>() const noexcept {
             return Iterator<true>{data, pos};
         }
 
@@ -53,7 +53,7 @@ class Circular_buffer final {
         }
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T&> operator*() const noexcept {
+        [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator*() const noexcept {
             return data[pos];
         }
 
@@ -66,7 +66,7 @@ class Circular_buffer final {
 
         template<bool OtherConst>
         [[nodiscard]] constexpr bool operator==(Iterator<OtherConst> const& other) const noexcept {
-            return not(*this != other);
+            return !(*this != other);
         }
 
         // LegacyInputIterator
@@ -77,7 +77,7 @@ class Circular_buffer final {
         }
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T*> operator->() const noexcept {
+        [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T*> operator->() const noexcept {
             return &data[pos];
         }
 
@@ -145,7 +145,7 @@ class Circular_buffer final {
         }
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr typename std::enable_if_t<not _IsConst, T&> operator[](difference_type i) const
+        [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const
             noexcept {
             return data[(pos + i) % N];
         }
@@ -162,12 +162,12 @@ class Circular_buffer final {
 
         template<bool OtherConst>
         constexpr bool operator>=(Iterator<OtherConst> const& other) const noexcept {
-            return not(*this < other);
+            return !(*this < other);
         }
 
         template<bool OtherConst>
         constexpr bool operator<=(Iterator<OtherConst> const& other) const noexcept {
-            return not(*this > other);
+            return !(*this > other);
         }
     };
 

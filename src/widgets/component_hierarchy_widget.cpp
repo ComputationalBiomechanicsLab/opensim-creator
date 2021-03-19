@@ -56,7 +56,7 @@ void osmv::draw_component_hierarchy_widget(
         size_t disjoint_begin = 0;
         {
             size_t len = std::min(prev_num_path_els, num_path_els);
-            while (disjoint_begin < len and prev_path_els[disjoint_begin] == path_els[disjoint_begin]) {
+            while (disjoint_begin < len && prev_path_els[disjoint_begin] == path_els[disjoint_begin]) {
                 ++disjoint_begin;
             }
         }

@@ -15,15 +15,15 @@ static bool should_filter_out(osmv::Coordinate_editor_state& st, OpenSim::Coordi
     }
 
     OpenSim::Coordinate::MotionType mt = c->getMotionType();
-    if (st.show_rotational and mt == OpenSim::Coordinate::MotionType::Rotational) {
+    if (st.show_rotational && mt == OpenSim::Coordinate::MotionType::Rotational) {
         return false;
     }
 
-    if (st.show_translational and mt == OpenSim::Coordinate::MotionType::Translational) {
+    if (st.show_translational && mt == OpenSim::Coordinate::MotionType::Translational) {
         return false;
     }
 
-    if (st.show_coupled and mt == OpenSim::Coordinate::MotionType::Coupled) {
+    if (st.show_coupled && mt == OpenSim::Coordinate::MotionType::Coupled) {
         return false;
     }
 
@@ -116,7 +116,7 @@ bool osmv::draw_coordinate_editor(Coordinate_editor_state& st, OpenSim::Model co
         }
 
         if (ImGui::Button(c->getLocked(stk_st) ? "u" : "l")) {
-            c->setLocked(stk_st, not c->getLocked(stk_st));
+            c->setLocked(stk_st, !c->getLocked(stk_st));
             state_modified = true;
         }
 

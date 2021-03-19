@@ -15,7 +15,7 @@ void osmv::draw_reassign_socket_modal(
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-    if (not ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         return;
     }
 
@@ -41,7 +41,7 @@ void osmv::draw_reassign_socket_modal(
     }
     ImGui::EndChild();
 
-    if (not st.error.empty()) {
+    if (!st.error.empty()) {
         ImGui::Text("%s", st.error.c_str());
     }
 

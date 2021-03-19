@@ -33,7 +33,7 @@ namespace osmv {
         // relocate a component pointer to point into `model`, rather into whatever
         // model it used to point into
         static OpenSim::Component* relocate_pointer(OpenSim::Model const& model, OpenSim::Component* ptr) {
-            if (not ptr) {
+            if (!ptr) {
                 return nullptr;
             }
 

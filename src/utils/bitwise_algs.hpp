@@ -14,7 +14,7 @@ namespace osmv {
     inline int lsb_index(int v) {
         unsigned uv = static_cast<unsigned>(v);
         unsigned i = 0;
-        while (not(uv & 0x1)) {
+        while (!(uv & 0x1)) {
             uv >>= 1;
             ++i;
         }

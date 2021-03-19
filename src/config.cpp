@@ -54,7 +54,7 @@ static App_config load_application_config() {
     }
 
     // no config: return an in-memory config that has reasonable defaults
-    if (not exists) {
+    if (!exists) {
         fs::path default_resource_dir = fs::path{".."} / "resources";
         bool use_multi_viewport = false;
         return App_config{default_resource_dir, use_multi_viewport};
@@ -94,7 +94,7 @@ static fs::path get_recent_files_path() {
 static std::vector<osmv::config::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
     std::ifstream fd{p, std::ios::in};
 
-    if (not fd) {
+    if (!fd) {
         std::stringstream ss;
         ss << p;
         ss << ": could not be opened for reading: cannot load recent files list";
@@ -129,7 +129,7 @@ static std::chrono::seconds unix_timestamp() {
 std::vector<osmv::config::Recent_file> osmv::config::recent_files() {
     fs::path recent_files_path = get_recent_files_path();
 
-    if (not fs::exists(recent_files_path)) {
+    if (!fs::exists(recent_files_path)) {
         return {};
     }
 
@@ -153,7 +153,7 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
 
     // write by truncating existing list file
     std::ofstream fd{rfs_path, std::ios::trunc};
-    if (not fd) {
+    if (!fd) {
         std::stringstream ss;
         ss << rfs_path;
         ss << ": could not be opened for writing: cannot update recent files list";
@@ -182,12 +182,12 @@ std::vector<fs::path> osmv::config::example_osim_files() {
 
     std::vector<fs::path> rv;
 
-    if (not fs::exists(models_dir)) {
+    if (!fs::exists(models_dir)) {
         // probably running from a weird location, or resources are missing
         return rv;
     }
 
-    if (not fs::is_directory(models_dir)) {
+    if (!fs::is_directory(models_dir)) {
         // something horrible has happened, but gracefully fallback to ignoring
         // that issue (grumble grumble, this should be logged)
         return rv;

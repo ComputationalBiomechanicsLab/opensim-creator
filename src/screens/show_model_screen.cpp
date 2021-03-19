@@ -298,7 +298,7 @@ namespace {
         }
 
         void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st) {
-            if (not simulator) {
+            if (!simulator) {
                 return;
             }
             // get latest integrator stats
@@ -317,7 +317,7 @@ namespace {
 
         void draw(Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
             // start/stop button
-            if (simulator and simulator->is_running()) {
+            if (simulator && simulator->is_running()) {
                 ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
                 if (ImGui::Button("stop [SPC]")) {
                     simulator->request_stop();
@@ -460,7 +460,7 @@ namespace {
 
                 // only certain types of output are plottable at the moment
                 auto* o = dynamic_cast<OpenSim::Output<double> const*>(p.handle());
-                OSMV_ASSERT(o != nullptr and "unexpected output type (expected OpenSim::Output<double>)");
+                OSMV_ASSERT(o != nullptr && "unexpected output type (expected OpenSim::Output<double>)");
                 double v = o->getValue(st);
                 float fv = static_cast<float>(v);
 
@@ -534,7 +534,7 @@ struct Show_model_screen::Impl final {
                 SDL_Keymod km = SDL_GetModState();
                 if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
                     std::string file = model->getDocumentFileName();
-                    if (not file.empty()) {
+                    if (!file.empty()) {
                         model = std::make_unique<OpenSim::Model>(file);
                         on_user_edited_model();
                     }
@@ -548,7 +548,7 @@ struct Show_model_screen::Impl final {
                 return true;
             }
             case SDLK_SPACE: {
-                if (simulator_tab.simulator and simulator_tab.simulator->is_running()) {
+                if (simulator_tab.simulator && simulator_tab.simulator->is_running()) {
                     simulator_tab.simulator->request_stop();
                 } else {
                     simulator_tab.simulator.emplace(Fd_simulation_params{
@@ -570,7 +570,7 @@ struct Show_model_screen::Impl final {
         } else if (e.type == SDL_MOUSEBUTTONUP) {
             // otherwise, maybe they're trying to select something in the viewport, so
             // check if they are hovered over a component and select it if they are
-            if (e.button.button == SDL_BUTTON_RIGHT and current_hover) {
+            if (e.button.button == SDL_BUTTON_RIGHT && current_hover) {
                 selected_component = current_hover;
             }
         }
@@ -645,7 +645,7 @@ struct Show_model_screen::Impl final {
     }
 
     bool simulator_running() {
-        return simulator_tab.simulator and simulator_tab.simulator->is_running();
+        return simulator_tab.simulator && simulator_tab.simulator->is_running();
     }
 
     // draw a frame of the UI
@@ -870,7 +870,7 @@ struct Show_model_screen::Impl final {
         }
         ImGui::Columns();
 
-        if (mas_tab.selected_musc and mas_tab.selected_coord) {
+        if (mas_tab.selected_musc && mas_tab.selected_coord) {
             if (ImGui::Button("+ add plot")) {
                 auto it =
                     std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* ms) {
@@ -917,7 +917,7 @@ struct Show_model_screen::Impl final {
             throw std::runtime_error{"refreshing moment arm plots NYI"};
         }
 
-        if (not mas_tab.plots.empty() and ImGui::Button("clear all")) {
+        if (!mas_tab.plots.empty() && ImGui::Button("clear all")) {
             mas_tab.plots.clear();
         }
 
@@ -1022,7 +1022,7 @@ struct Show_model_screen::Impl final {
         }
 
         // draw watches
-        if (not outputs_tab.watches.empty()) {
+        if (!outputs_tab.watches.empty()) {
             ImGui::Text("watches:");
             ImGui::Separator();
             for (OpenSim::AbstractOutput const* ao : outputs_tab.watches) {
@@ -1032,7 +1032,7 @@ struct Show_model_screen::Impl final {
         }
 
         // draw plots
-        if (not outputs_tab.plots.empty()) {
+        if (!outputs_tab.plots.empty()) {
             ImGui::Text("plots:");
             ImGui::Separator();
 
@@ -1051,7 +1051,7 @@ struct Show_model_screen::Impl final {
     }
 
     void draw_selection_tab() {
-        if (not selected_component) {
+        if (!selected_component) {
             ImGui::Text("nothing selected: right click something");
             return;
         }

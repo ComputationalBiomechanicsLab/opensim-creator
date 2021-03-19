@@ -129,7 +129,7 @@ bool Model_viewer_widget::is_moused_over() const noexcept {
 }
 
 bool Model_viewer_widget::on_event(const SDL_Event& e) {
-    if (not(impl->mouse_over_render or e.type == SDL_MOUSEBUTTONUP)) {
+    if (!(impl->mouse_over_render || e.type == SDL_MOUSEBUTTONUP)) {
         return false;
     }
 
@@ -473,7 +473,7 @@ void Model_viewer_widget::draw(
                         // for this screen specifically, the "owner"s should be fixed up to point to
                         // muscle objects, rather than direct (e.g. GeometryPath) objects
                         OpenSim::Component const* c = associated_component;
-                        while (c != nullptr and c->hasOwner()) {
+                        while (c != nullptr && c->hasOwner()) {
                             if (dynamic_cast<OpenSim::Muscle const*>(c)) {
                                 break;
                             }
@@ -490,7 +490,7 @@ void Model_viewer_widget::draw(
             if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                    if (not musc) {
+                    if (!musc) {
                         return;
                     }
 
@@ -504,7 +504,7 @@ void Model_viewer_widget::draw(
             if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
                 impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
-                    if (not musc) {
+                    if (!musc) {
                         return;
                     }
 
@@ -522,7 +522,7 @@ void Model_viewer_widget::draw(
             // draw the scene to an OpenGL texture
             auto dims = ImGui::GetContentRegionAvail();
 
-            if (dims.x >= 1 and dims.y >= 1) {
+            if (dims.x >= 1 && dims.y >= 1) {
                 impl->render_target.reconfigure(
                     static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples());
 
@@ -565,7 +565,7 @@ void Model_viewer_widget::draw(
                     on_hover_changed(impl->hovered_component);
                 }
 
-                if (impl->hovered_component and mouse_right_clicked_render and
+                if (impl->hovered_component && mouse_right_clicked_render &&
                     current_selection != impl->hovered_component) {
                     on_selection_changed(impl->hovered_component);
                 }

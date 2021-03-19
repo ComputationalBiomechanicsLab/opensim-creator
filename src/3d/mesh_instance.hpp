@@ -92,11 +92,11 @@ namespace osmv {
     };
 
     [[nodiscard]] inline constexpr bool operator==(Instance_flags const& a, Instance_flags const& b) noexcept {
-        return a.mode == b.mode and a.is_shaded == b.is_shaded;
+        return a.mode == b.mode && a.is_shaded == b.is_shaded;
     }
 
     [[nodiscard]] inline constexpr bool operator!=(Instance_flags const& a, Instance_flags const& b) noexcept {
-        return not(a == b);
+        return !(a == b);
     }
 
     [[nodiscard]] inline constexpr bool operator<(Instance_flags const& a, Instance_flags const& b) noexcept {

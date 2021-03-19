@@ -85,20 +85,20 @@ void osmv::draw_muscles_table(
     // filter muscle list
     {
         auto filter_fn = [&](OpenSim::Muscle const* m) {
-            bool in_range = st.min_len <= static_cast<float>(m->getLength(stkst)) and
+            bool in_range = st.min_len <= static_cast<float>(m->getLength(stkst)) &&
                             static_cast<float>(m->getLength(stkst)) <= st.max_len;
 
             if (st.inverse_range) {
-                in_range = not in_range;
+                in_range = !in_range;
             }
 
-            if (not in_range) {
+            if (!in_range) {
                 return true;
             }
 
             bool matches_filter = m->getName().find(st.filter) != m->getName().npos;
 
-            return not matches_filter;
+            return !matches_filter;
         };
 
         auto it = std::remove_if(st.muscles.begin(), st.muscles.end(), filter_fn);

@@ -48,7 +48,7 @@ namespace osmv {
             bool has_stop_state = shared_state != nullptr;
             bool already_stopped = shared_state->exchange(true);
 
-            return has_stop_state and (not already_stopped);
+            return has_stop_state && !already_stopped;
         }
 
         stop_token get_token() const noexcept {

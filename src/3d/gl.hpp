@@ -574,7 +574,7 @@ namespace gl {
 
     template<GLenum E>
     inline constexpr unsigned texture_index() {
-        static_assert(GL_TEXTURE0 <= E and E <= GL_TEXTURE30);
+        static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
         return E - GL_TEXTURE0;
     }
 

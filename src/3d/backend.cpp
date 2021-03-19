@@ -841,7 +841,7 @@ Render_target::Impl& Render_target::raw_impl() const noexcept {
 
 void Render_target::reconfigure(int w, int h, int samples) {
     Impl& cur = *impl;
-    if (w != cur.w or h != cur.h or samples != cur.samples) {
+    if (w != cur.w || h != cur.h || samples != cur.samples) {
         delete impl;
         impl = new Impl{w, h, samples};
     }
@@ -982,7 +982,7 @@ Passthrough_data Renderer::draw(
                 Instance_flags flags = meshes[pos].flags;
                 size_t end = pos + 1;
 
-                while (end < nmeshes and meshes[end]._meshid == meshid and meshes[end]._diffuse_texture == textureid and
+                while (end < nmeshes && meshes[end]._meshid == meshid && meshes[end]._diffuse_texture == textureid &&
                        meshes[end].flags == flags) {
 
                     ++end;

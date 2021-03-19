@@ -29,7 +29,7 @@ static const char help[] = R"(OPTIONS
 
 static bool skip_prefix(char const* prefix, char const* s, char const** out) {
     do {
-        if (*prefix == '\0' and (*s == '\0' or *s == '=')) {
+        if (*prefix == '\0' && (*s == '\0' || *s == '=')) {
             *out = s;
             return true;
         }

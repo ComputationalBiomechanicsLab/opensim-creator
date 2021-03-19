@@ -23,13 +23,13 @@ std::vector<std::filesystem::path> osmv::find_all_vtp_resources() {
 
     std::vector<fs::path> rv;
 
-    if (not fs::exists(geometry_dir)) {
+    if (!fs::exists(geometry_dir)) {
         // application installation is probably mis-configured, or missing
         // the geometry dir (e.g. the user deleted it)
         return rv;
     }
 
-    if (not fs::is_directory(geometry_dir)) {
+    if (!fs::is_directory(geometry_dir)) {
         // something horrible has happened, such as the user creating a file
         // called "geometry" in the application resources dir. Silently eat
         // this for now
@@ -106,7 +106,7 @@ void osmv::draw_attach_geom_modal_if_opened(
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     // try to show the modal (depends on caller calling ImGui::OpenPopup)
-    if (not ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         return;
     }
 
@@ -115,7 +115,7 @@ void osmv::draw_attach_geom_modal_if_opened(
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
 
     // show previous (recent) user choices
-    if (not st.recent_user_choices.empty()) {
+    if (!st.recent_user_choices.empty()) {
         ImGui::Text("recent:");
         ImGui::BeginChild(
             "recent meshes", ImVec2(ImGui::GetContentRegionAvail().x, 64), false, ImGuiWindowFlags_HorizontalScrollbar);

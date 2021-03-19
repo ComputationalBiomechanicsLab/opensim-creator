@@ -165,17 +165,17 @@ public:
     }
 
     [[nodiscard]] bool can_undo() const noexcept {
-        return not undo.empty();
+        return !undo.empty();
     }
 
     [[nodiscard]] bool can_redo() const noexcept {
-        return not redo.empty();
+        return !redo.empty();
     }
 
     void attempt_new_undo_push() {
         auto now = std::chrono::system_clock::now();
 
-        if (not undo.empty() and (undo.back().time + 5s) > now) {
+        if (!undo.empty() && (undo.back().time + 5s) > now) {
             return;  // too temporally close to previous push
         }
 
@@ -207,7 +207,7 @@ public:
         } catch (std::exception const& ex) {
             log::error("exception thrown when initializing updated model: %s", ex.what());
             log::error("attempting to rollback to earlier (pre-modification) version of the model");
-            if (not undo.empty()) {
+            if (!undo.empty()) {
                 do_undo();
 
                 // NOTE: REDO now contains the broken model
@@ -248,7 +248,7 @@ public:
 };
 
 static void draw_top_level_editor(Model_editor_screen::Impl& impl) {
-    if (not impl.selection()) {
+    if (!impl.selection()) {
         ImGui::Text("cannot draw top level editor: nothing selected?");
         return;
     }
@@ -349,7 +349,7 @@ static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joi
                 break;
             }
         }
-        if (not parent_assigned) {
+        if (!parent_assigned) {
             // the source's parent is a reference to some frame that the source
             // doesn't, itself, own, so the destination should just also refer
             // to the same (not-owned) frame
@@ -370,7 +370,7 @@ static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joi
                 break;
             }
         }
-        if (not child_assigned) {
+        if (!child_assigned) {
             // the source's child is a reference to some frame that the source
             // doesn't, itself, own, so the destination should just also refer
             // to the same (not-owned) frame
@@ -502,7 +502,7 @@ static void draw_joint_contextual_actions(Model_editor_screen::Impl& impl, OpenS
 }
 
 static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
-    if (not impl.selection()) {
+    if (!impl.selection()) {
         ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
         return;
     }
@@ -516,7 +516,7 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
 
 static void draw_socket_editor(Model_editor_screen::Impl& impl) {
 
-    if (not impl.selection()) {
+    if (!impl.selection()) {
         ImGui::Text("cannot draw socket editor: selection is blank (shouldn't be)");
         return;
     }
@@ -553,7 +553,7 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
 }
 
 static void draw_selection_editor(Model_editor_screen::Impl& impl) {
-    if (not impl.selection()) {
+    if (!impl.selection()) {
         ImGui::Text("(nothing selected)");
         return;
     }
@@ -590,7 +590,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
 static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
     OpenSim::Component* selected = impl.selection();
 
-    if (not selected) {
+    if (!selected) {
         return;
     }
 
@@ -788,11 +788,11 @@ void osmv::Model_editor_screen::draw() {
     ImGui::End();
 
     if (ImGui::Begin("Snapshots")) {
-        if (impl->can_undo() and ImGui::Button("undo")) {
+        if (impl->can_undo() && ImGui::Button("undo")) {
             impl->do_undo();
         }
 
-        if (impl->can_redo() and ImGui::Button("redo")) {
+        if (impl->can_redo() && ImGui::Button("redo")) {
             impl->do_redo();
         }
     }

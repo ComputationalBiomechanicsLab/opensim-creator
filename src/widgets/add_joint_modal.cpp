@@ -33,7 +33,7 @@ void osmv::Add_joint_modal::draw(
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(512, 0));
 
-    if (not ImGui::BeginPopupModal(modal_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(modal_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         return;
     }
 
@@ -83,7 +83,7 @@ void osmv::Add_joint_modal::draw(
 
     ImGui::Columns(1);
 
-    if (parent_frame and child_frame) {
+    if (parent_frame && child_frame) {
         if (ImGui::Button("OK")) {
             std::unique_ptr<OpenSim::Joint> joint{joint_prototype->clone()};
             joint->setName(added_joint_name);

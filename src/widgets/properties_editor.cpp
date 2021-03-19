@@ -59,7 +59,7 @@ void osmv::draw_properties_editor(
             auto const* dp = dynamic_cast<OpenSim::Property<double> const*>(&p);
 
             // it's a *single* double
-            if (dp and not dp->isListProperty()) {
+            if (dp && !dp->isListProperty()) {
                 float v = static_cast<float>(dp->getValue());
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -73,7 +73,7 @@ void osmv::draw_properties_editor(
             }
 
             // it's two doubles
-            if (dp and dp->isListProperty() and dp->size() == 2) {
+            if (dp && dp->isListProperty() && dp->size() == 2) {
                 // lock btn
                 bool locked = st.property_locked[static_cast<size_t>(i)];
                 if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
@@ -107,7 +107,7 @@ void osmv::draw_properties_editor(
         {
             auto const* bp = dynamic_cast<OpenSim::Property<bool> const*>(&p);
 
-            if (bp and not bp->isListProperty()) {
+            if (bp && !bp->isListProperty()) {
                 bool v = bp->getValue();
 
                 if (ImGui::Checkbox("##booleditor", &v)) {
@@ -123,7 +123,7 @@ void osmv::draw_properties_editor(
         // try Vec3
         {
             auto const* vp = dynamic_cast<OpenSim::Property<SimTK::Vec3> const*>(&p);
-            if (vp and not vp->isListProperty()) {
+            if (vp && !vp->isListProperty()) {
                 SimTK::Vec3 v = vp->getValue();
                 float fv[3] = {
                     static_cast<float>(v[0]),
@@ -150,7 +150,7 @@ void osmv::draw_properties_editor(
         // try Vec6 (e.g. body inertia)
         {
             auto const* vp = dynamic_cast<OpenSim::Property<SimTK::Vec6> const*>(&p);
-            if (vp and not vp->isListProperty()) {
+            if (vp && !vp->isListProperty()) {
                 SimTK::Vec6 const& v = vp->getValue();
                 float vs[6];
                 vs[0] = static_cast<float>(v[0]);
@@ -219,7 +219,7 @@ void osmv::draw_properties_editor(
             editor_rendered = true;
         }
 
-        if (not editor_rendered) {
+        if (!editor_rendered) {
             ImGui::Text("%s", p.toString().c_str());
         }
 

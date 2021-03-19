@@ -29,7 +29,7 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
         bool y_on = (row / chequer_height) % 2 == 0;
         for (size_t col = 0; col < w; ++col) {
             bool x_on = (col / chequer_width) % 2 == 0;
-            pixels[row_start + col] = y_on xor x_on ? on_color : off_color;
+            pixels[row_start + col] = y_on ^ x_on ? on_color : off_color;
         }
     }
 

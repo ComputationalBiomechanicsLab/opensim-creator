@@ -16,7 +16,7 @@ static bool are_effectively_equal(Untextured_vert const& p1, Untextured_vert con
     if (p1.pos == p2.pos) {
         // assumes normals have a magnitude roughly equal to 1
         float cos_angle = glm::dot(p1.normal, p2.normal);
-        if (0.99f <= cos_angle and cos_angle <= 1.01f) {
+        if (0.99f <= cos_angle && cos_angle <= 1.01f) {
             return true;
         }
     }
@@ -42,7 +42,7 @@ Plain_mesh Plain_mesh::by_deduping(std::vector<Untextured_vert> points) {
         for (size_t j = i + 1; j < points.size(); ++j) {
             Untextured_vert const& p2 = points[j];
 
-            if (not are_effectively_equal(p1, p2)) {
+            if (!are_effectively_equal(p1, p2)) {
                 continue;
             }
 

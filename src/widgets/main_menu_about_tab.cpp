@@ -19,7 +19,7 @@ static void draw_header(char const* str) {
 }
 
 void osmv::draw_main_menu_about_tab() {
-    if (not ImGui::BeginMenu("About")) {
+    if (!ImGui::BeginMenu("About")) {
         return;
     }
 

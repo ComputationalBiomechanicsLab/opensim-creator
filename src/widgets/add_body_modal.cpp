@@ -22,7 +22,7 @@ static void prettify_coord_names(OpenSim::FreeJoint& fj) {
 }
 
 static std::unique_ptr<OpenSim::Joint> make_joint(osmv::Added_body_modal_state& st, OpenSim::Body const& b) {
-    if (not st.add_offset_frames_to_the_joint) {
+    if (!st.add_offset_frames_to_the_joint) {
         auto fj = std::make_unique<OpenSim::FreeJoint>(st.joint_name, *st.selected_pf, b);
         prettify_coord_names(*fj);
         return fj;
@@ -72,7 +72,7 @@ void osmv::try_draw_add_body_modal(
     }
 
     // try to show modal
-    if (not ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         // modal not showing
         return;
     }

@@ -15,7 +15,7 @@ void osmv::draw_component_selection_widget(
     OpenSim::Component const* current_selection,
     std::function<void(OpenSim::Component const*)> const& on_selection_changed) {
 
-    if (not current_selection) {
+    if (!current_selection) {
         ImGui::Text("(nothing selected)");
         return;
     }

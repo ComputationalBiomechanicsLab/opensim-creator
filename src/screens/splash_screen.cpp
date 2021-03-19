@@ -129,7 +129,7 @@ void osmv::Splash_screen::draw() {
             int id = 0;
 
             // recent files:
-            if (not impl->mm_state.recent_files.empty()) {
+            if (!impl->mm_state.recent_files.empty()) {
                 ImGui::Text("Recent files:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
@@ -147,7 +147,7 @@ void osmv::Splash_screen::draw() {
             ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
             // examples:
-            if (not impl->mm_state.example_osims.empty()) {
+            if (!impl->mm_state.example_osims.empty()) {
                 ImGui::Text("Examples:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 

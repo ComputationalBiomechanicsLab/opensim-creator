@@ -94,7 +94,7 @@ Opengl_test_screen::~Opengl_test_screen() noexcept {
 }
 
 bool Opengl_test_screen::on_event(SDL_Event const& e) {
-    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
         Application::current().request_screen_transition<osmv::Splash_screen>();
         return true;
     }
