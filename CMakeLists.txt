@@ -28,7 +28,6 @@ set(OSMV_USE_ASAN OFF CACHE BOOL "enable address sanitizer: useful for spotting 
 
 if(${OSMV_USING_MODERN_CMAKE})
     cmake_policy(SET CMP0072 NEW)  # use newer OpenGL linking strategy
-    cmake_policy(SET CMP0111 NEW)  # imported targets must produce files that exist
 endif()
 set(OpenGL_GL_PREFERENCE "GLVND")  # use newer OpenGL linking strategy
 
