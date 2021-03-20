@@ -31,8 +31,11 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ContactHalfSpace.h>
+#include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -42,6 +45,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
@@ -501,6 +505,29 @@ static void draw_joint_contextual_actions(Model_editor_screen::Impl& impl, OpenS
     ImGui::Columns();
 }
 
+static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::HuntCrossleyForce& selection) {
+    if (ImGui::Button("add all contact geom (WIP)")) {
+        auto const& cgs = impl.model().getContactGeometrySet();
+
+        impl.before_modify_model();
+        selection.setStiffness(100000000);
+        selection.setDissipation(0.5);
+        selection.setStaticFriction(0.90000000000000002);
+        selection.setDynamicFriction(0.90000000000000002);
+        selection.setViscousFriction(0.59999999999999998);
+        for (int i = 0; i < cgs.getSize(); ++i) {
+            selection.addGeometry(cgs[i].getName());
+        }
+        selection.setStiffness(100000000);
+        selection.setDissipation(0.5);
+        selection.setStaticFriction(0.90000000000000002);
+        selection.setDynamicFriction(0.90000000000000002);
+        selection.setViscousFriction(0.59999999999999998);
+        impl.model().finalizeConnections();
+        impl.after_modify_model();
+    }
+}
+
 static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
     if (!impl.selection()) {
         ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
@@ -511,6 +538,8 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
         draw_frame_contextual_actions(impl, *frame);
     } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(impl.selection()); joint) {
         draw_joint_contextual_actions(impl, *joint);
+    } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(impl.selection()); hcf) {
+        draw_hcf_contextual_actions(impl, *hcf);
     }
 }
 
@@ -802,36 +831,41 @@ void osmv::Model_editor_screen::draw() {
     //
     // this is a dumping ground for generic editing actions (add body, add something to selection)
     if (ImGui::Begin("Actions")) {
-        static constexpr char const* add_body_modal_name = "add body";
 
-        if (ImGui::Button("Add body")) {
-            ImGui::OpenPopup(add_body_modal_name);
+        {
+            static constexpr char const* add_body_modal_name = "add body";
+
+            if (ImGui::Button("Add body")) {
+                ImGui::OpenPopup(add_body_modal_name);
+            }
+
+            auto on_body_add = [& impl = *this->impl](Added_body_modal_output out) {
+                impl.before_modify_model();
+                impl.model().addJoint(out.joint.release());
+                OpenSim::Body const* b = out.body.get();
+                impl.model().addBody(out.body.release());
+                impl.set_selection(const_cast<OpenSim::Body*>(b));
+                impl.after_modify_model();
+            };
+
+            try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model(), on_body_add);
         }
 
-        auto on_body_add = [& impl = *this->impl](Added_body_modal_output out) {
-            impl.before_modify_model();
-            impl.model().addJoint(out.joint.release());
-            OpenSim::Body const* b = out.body.get();
-            impl.model().addBody(out.body.release());
-            impl.set_selection(const_cast<OpenSim::Body*>(b));
-            impl.after_modify_model();
-        };
+        {
+            auto on_add_joint = [this](auto joint) {
+                auto const* ptr = joint.get();
+                impl->before_modify_model();
+                impl->model().addJoint(joint.release());
+                impl->set_selection(const_cast<OpenSim::Joint*>(ptr));
+                impl->after_modify_model();
+            };
 
-        try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model(), on_body_add);
-
-        auto on_add_joint = [this](auto joint) {
-            auto const* ptr = joint.get();
-            impl->before_modify_model();
-            impl->model().addJoint(joint.release());
-            impl->set_selection(const_cast<OpenSim::Joint*>(ptr));
-            impl->after_modify_model();
-        };
-
-        for (Add_joint_modal& modal : impl->ui.add_joint_modals) {
-            if (ImGui::Button(modal.modal_name.c_str())) {
-                modal.show();
+            for (Add_joint_modal& modal : impl->ui.add_joint_modals) {
+                if (ImGui::Button(modal.modal_name.c_str())) {
+                    modal.show();
+                }
+                modal.draw(impl->model(), on_add_joint);
             }
-            modal.draw(impl->model(), on_add_joint);
         }
 
         if (ImGui::Button("Show model in viewer")) {
@@ -848,6 +882,41 @@ void osmv::Model_editor_screen::draw() {
                 joint->addFrame(frame.release());
                 impl->after_modify_selection();
             }
+        }
+
+        if (ImGui::Button("Add ContactSphere")) {
+            auto cs = std::make_unique<OpenSim::ContactSphere>();
+            cs->setFrame(impl->model().getGround());
+
+            impl->before_modify_model();
+            impl->model().addContactGeometry(cs.release());
+            impl->model().finalizeConnections();
+            impl->after_modify_model();
+        }
+
+        if (ImGui::Button("Add ContactHalfSpace")) {
+            auto cs = std::make_unique<OpenSim::ContactHalfSpace>();
+            cs->setFrame(impl->model().getGround());
+
+            impl->before_modify_model();
+            impl->model().addContactGeometry(cs.release());
+            impl->model().finalizeConnections();
+            impl->after_modify_model();
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.0f, 0.0f, 1.0f});
+        if (ImGui::Button("Add PointOnLineConstraint")) {
+            auto polc = std::make_unique<OpenSim::PointOnLineConstraint>();
+            log::error("TODO: needs a way of connecting the two bodies (e.g. a popup/modal)");
+        }
+        ImGui::PopStyleColor();
+
+        if (ImGui::Button("Add HuntCrossleyForce")) {
+            auto hcf = std::make_unique<OpenSim::HuntCrossleyForce>();
+
+            impl->before_modify_model();
+            impl->model().addForce(hcf.release());
+            impl->after_modify_model();
         }
     }
     ImGui::End();
