@@ -136,6 +136,7 @@ namespace {
         clock::time_point simulation_thread_started = clock::now();
         clock::time_point last_report_start = clock::now();
         clock::time_point last_report_end = clock::now();
+        std::chrono::microseconds sim_initial_time{static_cast<long>(1000000.0 * params.state->getTime())};
 
         params.model->addAnalysis(new Lambda_analysis([&](SimTK::State const& s) {
             // simulation cancellation
@@ -155,11 +156,12 @@ namespace {
             // it runs slower than wall time then sleep the simulation thread
             if (params.throttle_to_wall_time) {
                 std::chrono::microseconds sim_time{static_cast<long>(1000000.0 * s.getTime())};
-                std::chrono::microseconds wall_time{
+                std::chrono::microseconds sim_elapsed = sim_time - sim_initial_time;
+                std::chrono::microseconds wall_elapsed{
                     std::chrono::duration_cast<std::chrono::microseconds>(report_start - simulation_thread_started)};
 
-                if (sim_time > wall_time) {
-                    std::this_thread::sleep_for(sim_time - wall_time);
+                if (sim_elapsed > wall_elapsed) {
+                    std::this_thread::sleep_for(sim_elapsed - wall_elapsed);
                 }
             }
 
