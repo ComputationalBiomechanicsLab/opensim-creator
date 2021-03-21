@@ -650,6 +650,33 @@ static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
     }
 }
 
+static void main_menu_undo(Model_editor_screen::Impl& impl) {
+    if (!impl.can_undo()) {
+        return;
+    }
+    impl.do_undo();
+}
+
+static void main_menu_redo(Model_editor_screen::Impl& impl) {
+    if (!impl.can_redo()) {
+        return;
+    }
+    impl.do_redo();
+}
+
+static void draw_main_menu_edit_tab(osmv::Model_editor_screen::Impl& impl) {
+    if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("Undo", "Ctrl+Z", false, impl.can_undo())) {
+            main_menu_undo(impl);
+        }
+
+        if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", false, impl.can_redo())) {
+            main_menu_redo(impl);
+        }
+        ImGui::EndMenu();
+    }
+}
+
 static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent const& e) {
     if (e.keysym.mod & KMOD_CTRL) {
         // CTRL
@@ -660,6 +687,9 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
             switch (e.keysym.sym) {
             case SDLK_s:
                 main_menu_save_as(impl.model());
+                return true;
+            case SDLK_z:
+                main_menu_redo(impl);
                 return true;
             }
             return false;
@@ -679,6 +709,9 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
             return true;
         case SDLK_q:
             Application::current().request_quit_application();
+            return true;
+        case SDLK_z:
+            main_menu_undo(impl);
             return true;
         }
 
@@ -758,6 +791,7 @@ void osmv::Model_editor_screen::draw() {
 
     if (ImGui::BeginMainMenuBar()) {
         draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());
+        draw_main_menu_edit_tab(*impl);
         draw_main_menu_about_tab();
         ImGui::EndMainMenuBar();
     }
