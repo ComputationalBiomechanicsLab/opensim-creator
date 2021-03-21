@@ -120,6 +120,7 @@ public:
         Properties_editor_state properties_editor;
         Reassign_socket_modal_state reassign_socket;
         Attach_geometry_modal_state attach_geometry_modal;
+        Log_viewer_widget_state log_viewer;
     } ui;
 
     File_change_poller file_poller{1000ms, ""};
@@ -921,9 +922,5 @@ void osmv::Model_editor_screen::draw() {
     }
     ImGui::End();
 
-    // console panel
-    if (ImGui::Begin("Log")) {
-        Log_viewer_widget{}.draw();
-    }
-    ImGui::End();
+    draw_log_viewer_widget(impl->ui.log_viewer, "Log");
 }

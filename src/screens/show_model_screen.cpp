@@ -505,6 +505,7 @@ struct Show_model_screen::Impl final {
 
     Coordinate_editor_state coords_tab_st;
     Muscles_table_state muscles_table_st;
+    Log_viewer_widget_state log_viewer_st;
 
     Simulator_tab simulator_tab;
     Momentarms_tab_data mas_tab;
@@ -743,10 +744,7 @@ struct Show_model_screen::Impl final {
         }
         ImGui::End();
 
-        if (ImGui::Begin("Log")) {
-            Log_viewer_widget{}.draw();
-        }
-        ImGui::End();
+        draw_log_viewer_widget(log_viewer_st, "Log");
     }
 
     void draw_simulate_tab() {

@@ -158,8 +158,6 @@ add_executable(osmv
     src/utils/os.cpp
     src/utils/scope_guard.hpp
     src/utils/circular_buffer.hpp
-    src/utils/traceback_log.hpp
-    src/utils/traceback_log.cpp
     src/utils/file_change_poller.hpp
 
     src/config.hpp

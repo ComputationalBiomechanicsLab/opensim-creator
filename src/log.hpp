@@ -1,5 +1,8 @@
 #pragma once
 
+#include "src/utils/circular_buffer.hpp"
+#include "src/utils/concurrency.hpp"
+
 #include <chrono>
 #include <cstdarg>
 #include <memory>
@@ -12,10 +15,13 @@ namespace osmv::log {
     // sources if you want to see good software engineering
 
     namespace level {
-        enum Level_enum { trace = 0, debug, info, warn, err, critical, off };
+        enum Level_enum { trace = 0, debug, info, warn, err, critical, off, NUM_LEVELS };
     }
 #define OSMV_LOG_LVL_NAMES                                                                                             \
     { "trace", "debug", "info", "warning", "error", "critical", "off" }
+
+    extern std::string_view const level_names[];
+    extern char const* const level_cstring_names[];
 
     [[nodiscard]] std::string_view const& to_string_view(level::Level_enum) noexcept;
     [[nodiscard]] char const* to_c_str(level::Level_enum) noexcept;
@@ -58,7 +64,7 @@ namespace osmv::log {
     class Logger final {
         std::string name;
         std::vector<std::shared_ptr<Sink>> _sinks;
-        level::Level_enum level{level::info};
+        level::Level_enum level{level::trace};
 
     public:
         Logger(std::string _name) : name{std::move(_name)}, _sinks() {
@@ -104,7 +110,7 @@ namespace osmv::log {
 
         template<typename... Args>
         void debug(char const* fmt, Args const&... args) {
-            log(level::info, fmt, args...);
+            log(level::debug, fmt, args...);
         }
 
         template<typename... Args>
@@ -174,4 +180,27 @@ namespace osmv::log {
     void critical(char const* fmt, Args const&... args) {
         default_logger_raw()->critical(fmt, args...);
     }
+
+    // a log message that owns all of its data. Used for persisting log messages in memory
+    struct Owned_log_msg final {
+        std::string logger_name;
+        std::chrono::system_clock::time_point time;
+        std::string payload;
+        log::level::Level_enum level;
+
+        Owned_log_msg() = default;
+
+        Owned_log_msg(log::Log_msg const& msg) :
+            logger_name{msg.logger_name},
+            time{msg.time},
+            payload{msg.payload},
+            level{msg.level} {
+        }
+    };
+
+    static constexpr size_t max_traceback_log_messages = 256;
+
+    [[nodiscard]] level::Level_enum get_traceback_level();
+    void set_traceback_level(level::Level_enum);
+    [[nodiscard]] Mutex_guarded<Circular_buffer<Owned_log_msg, max_traceback_log_messages>>& get_traceback_log();
 }

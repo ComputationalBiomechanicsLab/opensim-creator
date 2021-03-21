@@ -5,7 +5,6 @@
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/os.hpp"
-#include "src/utils/traceback_log.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
@@ -71,13 +70,6 @@ int main(int argc, char** argv) {
 
     // pre-launch global inits
     {
-        // init traceback log sink
-        //
-        // this is an in-memory log sink that the UI can use to view messages as they
-        // happen (in contrast to a file/console one, which is usually used to persist
-        // all messages as part of a crash investigation)
-        osmv::init_traceback_log();
-
         // install backtrace dumper
         //
         // useful if the application fails in prod: can provide some basic backtrace
