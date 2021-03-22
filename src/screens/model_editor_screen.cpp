@@ -851,17 +851,6 @@ void osmv::Model_editor_screen::draw() {
     }
     ImGui::End();
 
-    if (ImGui::Begin("Snapshots")) {
-        if (impl->can_undo() && ImGui::Button("undo")) {
-            impl->do_undo();
-        }
-
-        if (impl->can_redo() && ImGui::Button("redo")) {
-            impl->do_redo();
-        }
-    }
-    ImGui::End();
-
     // 'actions' ImGui panel
     //
     // this is a dumping ground for generic editing actions (add body, add something to selection)
