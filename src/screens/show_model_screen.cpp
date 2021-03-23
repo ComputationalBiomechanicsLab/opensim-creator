@@ -11,6 +11,7 @@
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
 #include "src/utils/file_change_poller.hpp"
+#include "src/widgets/add_moment_arm_plot_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/coordinate_editor.hpp"
@@ -54,10 +55,6 @@
 using namespace osmv;
 using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
-
-static void append_name(OpenSim::AbstractOutput const* ao, char* buf, size_t n) {
-    std::snprintf(buf, n, "%s/%s", ao->getOwner().getName().c_str(), ao->getName().c_str());
-}
 
 static void compute_moment_arms(
     OpenSim::Muscle const& muscle, SimTK::State const& st, OpenSim::Coordinate const& c, float* out, size_t steps) {
@@ -486,8 +483,6 @@ struct Show_model_screen::Impl final {
     // scratch: shared space that has no content guarantees
     struct {
         char text[1024];
-        std::vector<OpenSim::Coordinate const*> coords;
-        std::vector<OpenSim::Muscle const*> muscles;
     } scratch;
 
     std::unique_ptr<OpenSim::Model> model;
@@ -495,10 +490,11 @@ struct Show_model_screen::Impl final {
 
     Selected_component selected_component;
     Gpu_cache cache;
-    Model_viewer_widget model_viewer{
-        cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
-    Model_viewer_widget model_viewer2{
-        cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles};
+    std::array<Model_viewer_widget, 1> model_viewers = {
+        Model_viewer_widget{cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        // Model_viewer_widget{cache, ModelViewerWidgetFlags_Default |
+        // ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+    };
     OpenSim::Component const* current_hover = nullptr;
 
     Main_menu_file_tab_state mm_filetab_st;
@@ -510,6 +506,7 @@ struct Show_model_screen::Impl final {
     Simulator_tab simulator_tab;
     Momentarms_tab_data mas_tab;
     Outputs_tab_data outputs_tab;
+    Add_moment_arm_plot_modal_state add_moment_arm_modal_st;
 
     File_change_poller file_poller;
 
@@ -576,12 +573,12 @@ struct Show_model_screen::Impl final {
             }
         }
 
-        if (model_viewer.is_moused_over()) {
-            model_viewer.on_event(e);
-        }
-
-        if (model_viewer2.is_moused_over()) {
-            model_viewer2.on_event(e);
+        // if we've got this far, the event is still unhandled: try and propagate it to
+        // each model viewer - if the model viewer is moused over
+        for (auto& viewer : model_viewers) {
+            if (viewer.is_moused_over()) {
+                viewer.on_event(e);
+            }
         }
 
         return true;
@@ -649,78 +646,95 @@ struct Show_model_screen::Impl final {
         return simulator_tab.simulator && simulator_tab.simulator->is_running();
     }
 
+    void draw_main_menu_edit_tab() {
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Edit model")) {
+                Application::current().request_screen_transition<Model_editor_screen>(
+                    std::make_unique<OpenSim::Model>(*model));
+            }
+
+            if (ImGui::MenuItem("Disable Wrapping Surfaces")) {
+                OpenSim::Model& m = *model;
+                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+                    for (int i = 0; i < wos.getSize(); ++i) {
+                        OpenSim::WrapObject& wo = wos[i];
+                        wo.set_active(false);
+                        wo.upd_Appearance().set_visible(false);
+                    }
+                }
+                on_user_edited_model();
+            }
+
+            if (ImGui::MenuItem("Enable Wrapping Surfaces")) {
+                OpenSim::Model& m = *model;
+                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+                    for (int i = 0; i < wos.getSize(); ++i) {
+                        OpenSim::WrapObject& wo = wos[i];
+                        wo.set_active(true);
+                        wo.upd_Appearance().set_visible(true);
+                    }
+                }
+                on_user_edited_model();
+            }
+
+            if (ImGui::MenuItem("Watch file changes", nullptr, file_poller.enabled)) {
+                file_poller.enabled = !file_poller.enabled;
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
     // draw a frame of the UI
     void draw() {
         // draw top menu bar
         if (ImGui::BeginMainMenuBar()) {
             draw_main_menu_file_tab(mm_filetab_st);
+            this->draw_main_menu_edit_tab();
             draw_main_menu_about_tab();
             ImGui::EndMainMenuBar();
         }
 
         // draw model viewer(s)
-        {
-            auto on_selection_change = [this](OpenSim::Component const* new_selection) {
-                if (model_viewer.is_moused_over()) {
-                    selected_component = new_selection;
-                }
-            };
+        for (size_t i = 0; i < model_viewers.size(); ++i) {
 
-            auto on_hover_change = [this](OpenSim::Component const* new_hover) {
-                if (model_viewer.is_moused_over()) {
+            char buf[64];
+            std::snprintf(buf, sizeof(buf), "viewer_%zu", i);
+
+            auto& viewer = model_viewers[i];
+            auto on_selection_change =
+                [&viewer, &selected_component = selected_component](OpenSim::Component const* new_selection) {
+                    if (viewer.is_moused_over()) {
+                        selected_component = new_selection;
+                    }
+                };
+            auto on_hover_change = [&viewer, &current_hover = current_hover](OpenSim::Component const* new_hover) {
+                if (viewer.is_moused_over()) {
                     current_hover = new_hover;
                 }
             };
 
-            model_viewer.draw(
-                "render1",
-                *model,
-                *latest_state,
-                selected_component,
-                current_hover,
-                on_selection_change,
-                on_hover_change);
-        }
-        {
-            auto on_selection_change = [this](OpenSim::Component const* new_selection) {
-                if (model_viewer2.is_moused_over()) {
-                    selected_component = new_selection;
-                }
-            };
-
-            auto on_hover_change = [this](OpenSim::Component const* new_hover) {
-                if (model_viewer2.is_moused_over()) {
-                    current_hover = new_hover;
-                }
-            };
-
-            model_viewer2.draw(
-                "render2",
-                *model,
-                *latest_state,
-                selected_component,
-                current_hover,
-                on_selection_change,
-                on_hover_change);
+            viewer.draw(
+                buf, *model, *latest_state, selected_component, current_hover, on_selection_change, on_hover_change);
         }
 
         if (ImGui::Begin("Hierarchy")) {
-            draw_hierarchy_tab();
+            auto on_select = [this](auto const* c) { selected_component = c; };
+            auto on_hover = [this](auto const* c) { current_hover = c; };
+            draw_component_hierarchy_widget(
+                &model->getRoot(), selected_component.get(), current_hover, on_select, on_hover);
         }
         ImGui::End();
 
         if (ImGui::Begin("Muscles")) {
-            draw_muscles_tab();
+            auto on_hover = [&](OpenSim::Component const* new_hover) { current_hover = new_hover; };
+            auto on_select = [&](OpenSim::Component const* new_select) { selected_component = new_select; };
+            draw_muscles_table(muscles_table_st, *model, *latest_state, on_hover, on_select);
         }
         ImGui::End();
 
         if (ImGui::Begin("Outputs")) {
             draw_outputs_tab();
-        }
-        ImGui::End();
-
-        if (ImGui::Begin("Utils")) {
-            draw_utils_tab();
         }
         ImGui::End();
 
@@ -735,184 +749,52 @@ struct Show_model_screen::Impl final {
         ImGui::End();
 
         if (ImGui::Begin("Coordinates")) {
-            draw_coords_tab();
+            if (draw_coordinate_editor(coords_tab_st, *model, *latest_state)) {
+                on_user_edited_state();
+            }
         }
         ImGui::End();
 
         if (ImGui::Begin("Simulate")) {
-            draw_simulate_tab();
+            simulator_tab.draw(selected_component, *model, *latest_state);
         }
         ImGui::End();
 
         draw_log_viewer_widget(log_viewer_st, "Log");
     }
 
-    void draw_simulate_tab() {
-        simulator_tab.draw(selected_component, *model, *latest_state);
-    }
+    void on_user_wants_to_add_ma_plot(std::pair<OpenSim::Muscle const*, OpenSim::Coordinate const*> pair) {
+        auto plot = std::make_unique<Moment_arm_plot>();
+        plot->muscle_name = pair.first->getName();
+        plot->coord_name = pair.second->getName();
+        plot->x_begin = static_cast<float>(pair.second->getRangeMin());
+        plot->x_end = static_cast<float>(pair.second->getRangeMax());
 
-    void draw_coords_tab() {
-        if (draw_coordinate_editor(coords_tab_st, *model, *latest_state)) {
-            on_user_edited_state();
+        // populate y values
+        compute_moment_arms(*pair.first, *latest_state, *pair.second, plot->y_vals.data(), plot->y_vals.size());
+        float min = std::numeric_limits<float>::max();
+        float max = std::numeric_limits<float>::min();
+        for (float v : plot->y_vals) {
+            min = std::min(min, v);
+            max = std::max(max, v);
         }
-    }
+        plot->min = min;
+        plot->max = max;
 
-    void draw_utils_tab() {
-        // tab containing one-off utilities that are useful when diagnosing a model
-
-        ImGui::Text("wrapping surfaces: ");
-        ImGui::SameLine();
-        if (ImGui::Button("disable")) {
-            OpenSim::Model& m = *model;
-            for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-                for (int i = 0; i < wos.getSize(); ++i) {
-                    OpenSim::WrapObject& wo = wos[i];
-                    wo.set_active(false);
-                    wo.upd_Appearance().set_visible(false);
-                }
-            }
-            on_user_edited_model();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("enable")) {
-            OpenSim::Model& m = *model;
-            for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-                for (int i = 0; i < wos.getSize(); ++i) {
-                    OpenSim::WrapObject& wo = wos[i];
-                    wo.set_active(true);
-                    wo.upd_Appearance().set_visible(true);
-                }
-            }
-            on_user_edited_model();
-        }
-
-        if (ImGui::Button("edit")) {
-            Application::current().request_screen_transition<Model_editor_screen>(
-                std::make_unique<OpenSim::Model>(*model));
-        }
-
-        ImGui::Checkbox("watch changes", &file_poller.enabled);
-
-        ImGui::SameLine();
-    }
-
-    void draw_hierarchy_tab() {
-        auto on_select = [this](auto const* c) { selected_component = c; };
-        auto on_hover = [this](auto const* c) { current_hover = c; };
-        draw_component_hierarchy_widget(
-            &model->getRoot(), selected_component.get(), current_hover, on_select, on_hover);
-    }
-
-    void draw_muscles_tab() {
-        auto on_hover = [&](OpenSim::Component const* new_hover) { current_hover = new_hover; };
-        auto on_select = [&](OpenSim::Component const* new_select) { selected_component = new_select; };
-        draw_muscles_table(muscles_table_st, *model, *latest_state, on_hover, on_select);
+        mas_tab.plots.push_back(std::move(plot));
     }
 
     void draw_moment_arms_tab() {
-        ImGui::Columns(2);
-
-        // lhs: muscle selection
+        // let user open a modal for adding new coordinate plots
         {
-            ImGui::Text("muscles:");
-            ImGui::Dummy({0.0f, 5.0f});
+            static constexpr char const* modal_name = "add_ma_modal";
 
-            scratch.muscles.clear();
-            for (OpenSim::Muscle const& musc : model->getComponentList<OpenSim::Muscle>()) {
-                scratch.muscles.push_back(&musc);
+            if (ImGui::Button("add plot")) {
+                ImGui::OpenPopup(modal_name);
             }
 
-            // usability: sort by name
-            std::sort(
-                scratch.muscles.begin(),
-                scratch.muscles.end(),
-                [](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) { return m1->getName() < m2->getName(); });
-
-            ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-            ImGui::BeginChild(
-                "MomentArmPlotMuscleSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
-            for (OpenSim::Muscle const* m : scratch.muscles) {
-                if (ImGui::Selectable(m->getName().c_str(), &m->getName() == mas_tab.selected_musc)) {
-                    mas_tab.selected_musc = &m->getName();
-                }
-            }
-            ImGui::EndChild();
-            ImGui::NextColumn();
-        }
-        // rhs: coord selection
-        {
-            ImGui::Text("coordinates:");
-            ImGui::Dummy({0.0f, 5.0f});
-
-            scratch.coords.clear();
-            get_coordinates(*model, scratch.coords);
-
-            // usability: sort by name
-            std::sort(
-                scratch.coords.begin(),
-                scratch.coords.end(),
-                [](OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
-                    return c1->getName() < c2->getName();
-                });
-
-            ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-            ImGui::BeginChild(
-                "MomentArmPlotCoordSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
-            for (OpenSim::Coordinate const* c : scratch.coords) {
-                if (ImGui::Selectable(c->getName().c_str(), &c->getName() == mas_tab.selected_coord)) {
-                    mas_tab.selected_coord = &c->getName();
-                }
-            }
-            ImGui::EndChild();
-            ImGui::NextColumn();
-        }
-        ImGui::Columns();
-
-        if (mas_tab.selected_musc && mas_tab.selected_coord) {
-            if (ImGui::Button("+ add plot")) {
-                auto it =
-                    std::find_if(scratch.muscles.begin(), scratch.muscles.end(), [this](OpenSim::Muscle const* ms) {
-                        return &ms->getName() == mas_tab.selected_musc;
-                    });
-                OSMV_ASSERT(it != scratch.muscles.end());
-
-                auto it2 =
-                    std::find_if(scratch.coords.begin(), scratch.coords.end(), [this](OpenSim::Coordinate const* c) {
-                        return &c->getName() == mas_tab.selected_coord;
-                    });
-                OSMV_ASSERT(it2 != scratch.coords.end());
-
-                auto p = std::make_unique<Moment_arm_plot>();
-                p->muscle_name = *mas_tab.selected_musc;
-                p->coord_name = *mas_tab.selected_coord;
-                p->x_begin = static_cast<float>((*it2)->getRangeMin());
-                p->x_end = static_cast<float>((*it2)->getRangeMax());
-
-                // populate y values
-                compute_moment_arms(**it, *latest_state, **it2, p->y_vals.data(), p->y_vals.size());
-                float min = std::numeric_limits<float>::max();
-                float max = std::numeric_limits<float>::min();
-                for (float v : p->y_vals) {
-                    min = std::min(min, v);
-                    max = std::max(max, v);
-                }
-                p->min = min;
-                p->max = max;
-
-                // clear current coordinate selection to prevent user from double
-                // clicking plot by accident *but* don't clear muscle because it's
-                // feasible that a user will want to plot other coords against the
-                // same muscle
-                mas_tab.selected_coord = nullptr;
-
-                mas_tab.plots.push_back(std::move(p));
-            }
-        }
-
-        if (ImGui::Button("refresh TODO")) {
-            // iterate through each plot in plots vector and recompute the moment
-            // arms from the UI's current model + state
-            throw std::runtime_error{"refreshing moment arm plots NYI"};
+            draw_add_moment_arm_plot_modal(
+                add_moment_arm_modal_st, modal_name, *model, [&](auto p) { on_user_wants_to_add_ma_plot(p); });
         }
 
         if (!mas_tab.plots.empty() && ImGui::Button("clear all")) {
@@ -972,7 +854,12 @@ struct Show_model_screen::Impl final {
         {
             auto it = std::remove_if(
                 outputs_tab.available.begin(), outputs_tab.available.end(), [&](OpenSim::AbstractOutput const* ao) {
-                    append_name(ao, scratch.text, sizeof(scratch.text));
+                    std::snprintf(
+                        scratch.text,
+                        sizeof(scratch.text),
+                        "%s/%s",
+                        ao->getOwner().getName().c_str(),
+                        ao->getName().c_str());
                     return std::strstr(scratch.text, outputs_tab.filter) == nullptr;
                 });
             outputs_tab.available.erase(it, outputs_tab.available.end());

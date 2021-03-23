@@ -145,8 +145,7 @@ class Circular_buffer final {
         }
 
         template<bool _IsConst = IsConst>
-        [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const
-            noexcept {
+        [[nodiscard]] constexpr typename std::enable_if_t<!_IsConst, T&> operator[](difference_type i) const noexcept {
             return data[(pos + i) % N];
         }
 
@@ -212,11 +211,11 @@ public:
     }
 
     [[nodiscard]] constexpr reference back() noexcept {
-        return *storage.rbegin();
+        return *rbegin();
     }
 
     [[nodiscard]] constexpr const_reference back() const noexcept {
-        return *storage.rbegin();
+        return *rbegin();
     }
 
     // iterators

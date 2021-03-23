@@ -6,6 +6,7 @@
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <SimTKcommon.h>
 #include <imgui.h>
@@ -28,39 +29,43 @@ static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
 
 template<typename T>
 static void draw_property_editor(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state&,
+    OpenSim::Object&,
     int i,
-    OpenSim::Property<T> const& prop,
+    OpenSim::Property<T> const&,
     std::function<void()> const& before_property_edited,
     std::function<void()> const& after_property_edited);
 
 template<>
 void draw_property_editor<std::string>(
-    osmv::Properties_editor_state&,
-    OpenSim::Component& component,
-    int i,
+    Property_editor_state&,
+    OpenSim::Object& obj,
+    int parent_idx,
     OpenSim::Property<std::string> const& prop,
     std::function<void()> const& before_property_edited,
     std::function<void()> const& after_property_edited) {
 
-    char buf[64]{};
-    buf[sizeof(buf) - 1] = '\0';
-    std::strncpy(buf, prop.getValue().c_str(), sizeof(buf) - 1);
+    for (int idx = 0; idx < prop.size(); ++idx) {
+        char buf[64]{};
+        buf[sizeof(buf) - 1] = '\0';
+        std::strncpy(buf, prop.getValue(idx).c_str(), sizeof(buf) - 1);
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-    if (ImGui::InputText("##stringeditor", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        before_property_edited();
-        static_cast<OpenSim::Property<std::string>&>(component.updPropertyByIndex(i)).setValue(0, buf);
-        after_property_edited();
+        ImGui::PushID(idx);
+        if (ImGui::InputText("##stringeditor", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+            before_property_edited();
+            static_cast<OpenSim::Property<std::string>&>(obj.updPropertyByIndex(parent_idx)).setValue(0, buf);
+            after_property_edited();
+        }
+        ImGui::PopID();
     }
 }
 
 template<>
 void draw_property_editor<double>(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state& st,
+    OpenSim::Object& obj,
     int i,
     OpenSim::Property<double> const& prop,
     std::function<void()> const& before_property_edited,
@@ -74,16 +79,18 @@ void draw_property_editor<double>(
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (ImGui::InputFloat("##doubleditor", &v, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
             before_property_edited();
-            static_cast<OpenSim::Property<double>&>(component.updPropertyByIndex(i)).setValue(static_cast<double>(v));
+            static_cast<OpenSim::Property<double>&>(obj.updPropertyByIndex(i)).setValue(static_cast<double>(v));
             after_property_edited();
         }
     } else if (prop.size() == 2) {
         // it's *two* doubles
 
         // lock btn
-        bool locked = st.property_locked[static_cast<size_t>(i)];
+        bool locked = st.is_locked;
         if (ImGui::Checkbox("##vec2lockbtn", &locked)) {
-            st.property_locked[static_cast<size_t>(i)] = locked;
+            before_property_edited();
+            st.is_locked = locked;
+            after_property_edited();
         }
         ImGui::SameLine();
 
@@ -104,7 +111,7 @@ void draw_property_editor<double>(
             }
 
             before_property_edited();
-            auto& mutable_prop = static_cast<OpenSim::Property<double>&>(component.updPropertyByIndex(i));
+            auto& mutable_prop = static_cast<OpenSim::Property<double>&>(obj.updPropertyByIndex(i));
             mutable_prop.setValue(0, v1);
             mutable_prop.setValue(1, v2);
             after_property_edited();
@@ -116,8 +123,8 @@ void draw_property_editor<double>(
 
 template<>
 void draw_property_editor<bool>(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state&,
+    OpenSim::Object& obj,
     int i,
     OpenSim::Property<bool> const& prop,
     std::function<void()> const& before_property_edited,
@@ -131,15 +138,15 @@ void draw_property_editor<bool>(
     bool v = prop.getValue();
     if (ImGui::Checkbox("##booleditor", &v)) {
         before_property_edited();
-        static_cast<OpenSim::Property<double>&>(component.updPropertyByIndex(i)).setValue(v);
+        static_cast<OpenSim::Property<double>&>(obj.updPropertyByIndex(i)).setValue(v);
         after_property_edited();
     }
 }
 
 template<>
 void draw_property_editor<SimTK::Vec3>(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state& st,
+    OpenSim::Object& obj,
     int i,
     OpenSim::Property<SimTK::Vec3> const& prop,
     std::function<void()> const& before_property_edited,
@@ -157,23 +164,22 @@ void draw_property_editor<SimTK::Vec3>(
         static_cast<float>(v[2]),
     };
 
-    bool locked = st.property_locked[static_cast<size_t>(i)];
-
+    bool locked = st.is_locked;
     if (draw_lockable_f3_editor("##vec3lockbtn", "##vec3editor", fv, &locked)) {
         before_property_edited();
-        st.property_locked[static_cast<size_t>(i)] = locked;
+        st.is_locked = locked;
         v[0] = static_cast<double>(fv[0]);
         v[1] = static_cast<double>(fv[1]);
         v[2] = static_cast<double>(fv[2]);
-        static_cast<OpenSim::Property<SimTK::Vec3>&>(component.updPropertyByIndex(i)).setValue(v);
+        static_cast<OpenSim::Property<SimTK::Vec3>&>(obj.updPropertyByIndex(i)).setValue(v);
         after_property_edited();
     }
 }
 
 template<>
 void draw_property_editor<SimTK::Vec6>(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state&,
+    OpenSim::Object& obj,
     int i,
     OpenSim::Property<SimTK::Vec6> const& prop,
     std::function<void()> const& before_property_edited,
@@ -196,7 +202,7 @@ void draw_property_editor<SimTK::Vec6>(
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     if (ImGui::InputFloat3("##vec6editor_a", vs, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
         before_property_edited();
-        static_cast<OpenSim::Property<SimTK::Vec6>&>(component.updPropertyByIndex(i))
+        static_cast<OpenSim::Property<SimTK::Vec6>&>(obj.updPropertyByIndex(i))
             .setValue(SimTK::Vec6{static_cast<double>(vs[0]),
                                   static_cast<double>(vs[1]),
                                   static_cast<double>(vs[2]),
@@ -209,7 +215,7 @@ void draw_property_editor<SimTK::Vec6>(
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     if (ImGui::InputFloat3("##vec6editor_b", vs + 3, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
         before_property_edited();
-        static_cast<OpenSim::Property<SimTK::Vec6>&>(component.updPropertyByIndex(i))
+        static_cast<OpenSim::Property<SimTK::Vec6>&>(obj.updPropertyByIndex(i))
             .setValue(SimTK::Vec6{static_cast<double>(vs[0]),
                                   static_cast<double>(vs[1]),
                                   static_cast<double>(vs[2]),
@@ -222,8 +228,8 @@ void draw_property_editor<SimTK::Vec6>(
 
 template<>
 void draw_property_editor<OpenSim::Appearance>(
-    osmv::Properties_editor_state& st,
-    OpenSim::Component& component,
+    Property_editor_state&,
+    OpenSim::Object& obj,
     int i,
     OpenSim::Property<OpenSim::Appearance> const& prop,
     std::function<void()> const& before_property_edited,
@@ -243,10 +249,8 @@ void draw_property_editor<OpenSim::Appearance>(
         newColor[1] = static_cast<double>(rgb[1]);
         newColor[2] = static_cast<double>(rgb[2]);
         before_property_edited();
-        static_cast<OpenSim::Property<OpenSim::Appearance>&>(component.updPropertyByIndex(i))
-            .updValue()
-            .set_color(newColor);
-        static_cast<OpenSim::Property<OpenSim::Appearance>&>(component.updPropertyByIndex(i))
+        static_cast<OpenSim::Property<OpenSim::Appearance>&>(obj.updPropertyByIndex(i)).updValue().set_color(newColor);
+        static_cast<OpenSim::Property<OpenSim::Appearance>&>(obj.updPropertyByIndex(i))
             .updValue()
             .set_opacity(static_cast<double>(rgb[3]));
         after_property_edited();
@@ -266,8 +270,8 @@ void draw_property_editor<OpenSim::Appearance>(
 // gradually get slower (and uglier) as more editors are added
 namespace {
     using editor_rendering_fn = void(
-        osmv::Properties_editor_state&,
-        OpenSim::Component&,
+        Property_editor_state&,
+        OpenSim::Object&,
         int,
         OpenSim::AbstractProperty const&,
         std::function<void()> const&,
@@ -277,8 +281,8 @@ namespace {
     // identical function signatures
     template<typename T>
     static void draw_property_editor_TYPE_ERASED(
-        osmv::Properties_editor_state& st,
-        OpenSim::Component& component,
+        Property_editor_state& st,
+        OpenSim::Object& component,
         int i,
         OpenSim::AbstractProperty const& prop,
         std::function<void()> const& before_property_edited,
@@ -312,35 +316,79 @@ namespace {
                                                                              object_prop_editor<OpenSim::Appearance>()};
 }
 
-void osmv::draw_properties_editor(
-    Properties_editor_state& st,
-    OpenSim::Component& component,
+static void draw_property_editor(
+    Property_editor_state& st,
+    OpenSim::Object& parent,
+    int prop_idx_in_parent,
+    OpenSim::AbstractProperty const& prop,
     std::function<void()> const& before_property_edited,
     std::function<void()> const& after_property_edited) {
 
-    st.property_locked.resize(static_cast<size_t>(component.getNumProperties()), true);
+    // left column: property name
+    ImGui::Text("%s", prop.getName().c_str());
+    {
+        std::string const& comment = prop.getComment();
+        if (!comment.empty()) {
+            ImGui::SameLine();
+            draw_help_marker(prop.getComment().c_str());
+        }
+    }
+    ImGui::NextColumn();
+
+    // right column: editor
+    ImGui::PushID(std::addressof(prop));
+    auto it = editors.find(typeid(prop).hash_code());
+    if (it != editors.end()) {
+        it->second(st, parent, prop_idx_in_parent, prop, before_property_edited, after_property_edited);
+    } else {
+        // no editor available for this type
+        ImGui::Text("%s", prop.toString().c_str());
+    }
+    ImGui::PopID();
+    ImGui::NextColumn();
+}
+
+void osmv::draw_properties_editor(
+    Properties_editor_state& st,
+    OpenSim::Object& obj,
+    std::function<void()> const& before_property_edited,
+    std::function<void()> const& after_property_edited) {
+
+    int num_props = obj.getNumProperties();
+    OSMV_ASSERT(num_props >= 0);
+
+    st.property_editor_states.resize(static_cast<size_t>(num_props));
 
     ImGui::Columns(2);
-    for (int i = 0; i < component.getNumProperties(); ++i) {
-        OpenSim::AbstractProperty const& p = component.getPropertyByIndex(i);
+    for (int i = 0; i < num_props; ++i) {
+        OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(i);
+        Property_editor_state& substate = st.property_editor_states[static_cast<size_t>(i)];
+        draw_property_editor(substate, obj, i, p, before_property_edited, after_property_edited);
+    }
+    ImGui::Columns(1);
+}
 
-        // left column: property name
-        ImGui::Text("%s", p.getName().c_str());
-        ImGui::SameLine();
-        draw_help_marker(p.getComment().c_str());
-        ImGui::NextColumn();
+void osmv::draw_properties_editor_for_props_with_indices(
+    Properties_editor_state& st,
+    OpenSim::Object& obj,
+    int* indices,
+    size_t nindices,
+    std::function<void()> const& before_property_edited,
+    std::function<void()> const& after_property_edited) {
 
-        // right column: editor
-        ImGui::PushID(i);
-        auto it = editors.find(typeid(p).hash_code());
-        if (it != editors.end()) {
-            it->second(st, component, i, p, before_property_edited, after_property_edited);
-        } else {
-            // no editor available for this type
-            ImGui::Text("%s", p.toString().c_str());
-        }
-        ImGui::PopID();
-        ImGui::NextColumn();
+    int highest = *std::max_element(indices, indices + nindices);
+    int nprops = obj.getNumProperties();
+    OSMV_ASSERT(highest >= 0);
+    OSMV_ASSERT(highest < nprops);
+
+    st.property_editor_states.resize(static_cast<size_t>(highest));
+
+    ImGui::Columns(2);
+    for (size_t i = 0; i < nindices; ++i) {
+        int propidx = indices[i];
+        OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(propidx);
+        Property_editor_state& substate = st.property_editor_states[static_cast<size_t>(i)];
+        draw_property_editor(substate, obj, propidx, p, before_property_edited, after_property_edited);
     }
     ImGui::Columns(1);
 }

@@ -133,7 +133,7 @@ static Transform ground_to_decoration_xform(
     return ground_to_body_xform * body_to_decoration_xform;
 }
 
-static glm::mat4 to_mat4(Transform t) {
+static glm::mat4 to_mat4(Transform const& t) {
     // glm::mat4 is column major:
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
     //     (and just Google "glm column major?")

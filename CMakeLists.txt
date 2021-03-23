@@ -131,6 +131,12 @@ add_executable(osmv
     src/widgets/coordinate_editor.cpp
     src/widgets/muscles_table.hpp
     src/widgets/muscles_table.cpp
+    src/widgets/select_2_pfs_modal.hpp
+    src/widgets/select_2_pfs_modal.cpp
+    src/widgets/add_moment_arm_plot_modal.hpp
+    src/widgets/add_moment_arm_plot_modal.cpp
+    src/widgets/model_actions_panel.hpp
+    src/widgets/model_actions_panel.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
@@ -159,6 +165,7 @@ add_executable(osmv
     src/utils/scope_guard.hpp
     src/utils/circular_buffer.hpp
     src/utils/file_change_poller.hpp
+    src/utils/time_helpers.hpp
 
     src/config.hpp
     src/config.cpp

@@ -20,9 +20,11 @@
 #include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/main_menu_about_tab.hpp"
 #include "src/widgets/main_menu_file_tab.hpp"
+#include "src/widgets/model_actions_panel.hpp"
 #include "src/widgets/model_viewer_widget.hpp"
 #include "src/widgets/properties_editor.hpp"
 #include "src/widgets/reassign_socket_modal.hpp"
+#include "src/widgets/select_2_pfs_modal.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -31,6 +33,7 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -40,6 +43,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -109,7 +113,7 @@ private:
 public:
     Model_viewer_widget model_viewer{gpu_cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
-    struct {
+    struct Panels {
         Main_menu_file_tab_state main_menu_tab;
         Added_body_modal_state abm;
         std::array<Add_joint_modal, 4> add_joint_modals = {
@@ -121,17 +125,19 @@ public:
         Reassign_socket_modal_state reassign_socket;
         Attach_geometry_modal_state attach_geometry_modal;
         Log_viewer_widget_state log_viewer;
+        Select_2_pfs_modal_state select_2_pfs;
+        Model_actions_panel_state model_actions_panel;
     } ui;
 
     File_change_poller file_poller{1000ms, ""};
 
     void before_modify_model() {
-        log::info("start modification");
+        log::debug("starting model modification");
         attempt_new_undo_push();
     }
 
     void after_modify_model() {
-        log::info("end modification");
+        log::debug("ended model modification");
         try_update_model_system_and_state_with_rollback();
     }
 
@@ -180,12 +186,17 @@ public:
     void attempt_new_undo_push() {
         auto now = std::chrono::system_clock::now();
 
-        if (!undo.empty() && (undo.back().time + 5s) > now) {
-            return;  // too temporally close to previous push
-        }
+        // debounce pushing undos to prevent it from being populated with hundreds of tiny
+        // edits that can occur when (e.g.) a user is playing with a slider - the user's
+        // probably still happy if they can reverse to <= `debounce_time` ago
 
-        undo.emplace_back(now, ms);
-        redo.clear();
+        static constexpr std::chrono::seconds debounce = 5s;
+        bool should_undo = undo.empty() || undo.back().time + debounce <= now;
+
+        if (should_undo) {
+            undo.emplace_back(now, ms);
+            redo.clear();
+        }
     }
 
     void do_redo() {
@@ -507,25 +518,50 @@ static void draw_joint_contextual_actions(Model_editor_screen::Impl& impl, OpenS
 }
 
 static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::HuntCrossleyForce& selection) {
-    if (ImGui::Button("add all contact geom (WIP)")) {
-        auto const& cgs = impl.model().getContactGeometrySet();
+    if (selection.get_contact_parameters().getSize() > 1) {
+        ImGui::Text("cannot edit: has more than one HuntCrossleyForce::Parameter");
+        return;
+    }
 
-        impl.before_modify_model();
-        selection.setStiffness(100000000);
-        selection.setDissipation(0.5);
-        selection.setStaticFriction(0.90000000000000002);
-        selection.setDynamicFriction(0.90000000000000002);
-        selection.setViscousFriction(0.59999999999999998);
-        for (int i = 0; i < cgs.getSize(); ++i) {
-            selection.addGeometry(cgs[i].getName());
+    // HACK: if it has no parameters, give it some. The HuntCrossleyForce implementation effectively
+    // does this internally anyway to satisfy its own API (e.g. `getStaticFriction` requires that
+    // the HuntCrossleyForce has a parameter)
+    if (selection.get_contact_parameters().getSize() == 0) {
+        selection.updContactParametersSet().adoptAndAppend(new OpenSim::HuntCrossleyForce::ContactParameters());
+    }
+
+    OpenSim::HuntCrossleyForce::ContactParameters& params = selection.upd_contact_parameters()[0];
+
+    // TODO: this is work in progress
+
+    // the `geometry` property contains the *names* of contact geometry in the model that
+    // the contact force should use.
+    {
+        OpenSim::Property<std::string> const& geoms = params.getGeometry();
+        for (int i = 0; i < geoms.size(); ++i) {
+            Property_editor_state st{};
         }
-        selection.setStiffness(100000000);
-        selection.setDissipation(0.5);
-        selection.setStaticFriction(0.90000000000000002);
-        selection.setDynamicFriction(0.90000000000000002);
-        selection.setViscousFriction(0.59999999999999998);
-        impl.model().finalizeConnections();
-        impl.after_modify_model();
+    }
+
+    // render standard, easy to render, props of the contact params
+    {
+        std::array<int, 6> easy_to_handle_props = {
+            params.PropertyIndex_geometry,
+            params.PropertyIndex_stiffness,
+            params.PropertyIndex_dissipation,
+            params.PropertyIndex_static_friction,
+            params.PropertyIndex_dynamic_friction,
+            params.PropertyIndex_viscous_friction,
+        };
+
+        Properties_editor_state st{};
+        draw_properties_editor_for_props_with_indices(
+            st,
+            params,
+            easy_to_handle_props.data(),
+            easy_to_handle_props.size(),
+            [&impl]() { impl.before_modify_model(); },
+            [&impl]() { impl.after_modify_model(); });
     }
 }
 
@@ -552,8 +588,6 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
     }
     OpenSim::Component& selection = *impl.selection();
 
-    // this UNSAFE is because I want to get the socket names, which is a non-const method on
-    // the `selection`, but doesn't actually modify the selection (much, at least...)
     std::vector<std::string> socknames = selection.getSocketNames();
     ImGui::Columns(2);
     for (std::string const& sn : socknames) {
@@ -753,15 +787,20 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
 }
 
 void osmv::Model_editor_screen::tick() {
+    // auto update from file: check for changes in the underlying file, reloading
+    // the UI if a change is detected
+
     auto const& fname = impl->model().getInputFileName();
     if (impl->file_poller.change_detected(fname)) {
+        log::info("file change detected: loading updated file");
         std::unique_ptr<OpenSim::Model> p;
         try {
             p = std::make_unique<OpenSim::Model>(fname);
-            log::info("opened updated file");
+            log::info("loaded updated file");
         } catch (std::exception const& ex) {
-            log::error("an error occurred while trying to automatically load a model file");
+            log::error("error occurred while trying to automatically load a model file:");
             log::error(ex.what());
+            log::error("the file will not be loaded into osmv (you won't see the change in the UI)");
         }
 
         if (p) {
@@ -771,24 +810,7 @@ void osmv::Model_editor_screen::tick() {
 }
 
 void osmv::Model_editor_screen::draw() {
-    //    // TODO: show simulation
-
-    //    OpenSim::Model& model = *impl->model;
-
-    //    // if running a simulation only show the simulation
-    //    if (impl->fdsim) {
-    //        auto state_ptr = impl->fdsim->try_pop_state();
-
-    //        if (state_ptr) {
-    //            model.realizeReport(*state_ptr);
-    //            OpenSim::Component const* selected = nullptr;
-    //            OpenSim::Component const* hovered = nullptr;
-    //            impl->model_viewer.draw("render", model, *state_ptr, &selected, &hovered);
-    //            return;
-    //        }
-    //    }
-    //    // else: the user is editing the model and all panels should be shown
-
+    // draw main menu
     if (ImGui::BeginMainMenuBar()) {
         draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());
         draw_main_menu_edit_tab(*impl);
@@ -796,6 +818,7 @@ void osmv::Model_editor_screen::draw() {
         ImGui::EndMainMenuBar();
     }
 
+    // draw model viewer
     {
         auto on_selection_change = [this](OpenSim::Component const* new_selection) {
             impl->set_selection(const_cast<OpenSim::Component*>(new_selection));
@@ -813,23 +836,27 @@ void osmv::Model_editor_screen::draw() {
             impl->hover(),
             on_selection_change,
             on_hover_change);
+
+        // mouseover tooltips:
+        //
+        // if the user has moused over something in the model viewer then show a tooltip under
+        // the mouse containing basic hover information (component name + type)
+        if (OpenSim::Component const* cptr = impl->hover(); cptr) {
+            OpenSim::Component const& component = *cptr;
+
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 200.0f);
+            ImGui::TextUnformatted(component.getName().c_str());
+            ImGui::Dummy(ImVec2{0.0f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
+            ImGui::TextUnformatted(component.getConcreteClassName().c_str());
+            ImGui::PopStyleColor();
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
     }
 
-    // screen-specific fixup: all hoverables are their parents
-    // TODO: impl->renderer.geometry.for_each_component([](OpenSim::Component const*& c) { c = &c->getOwner(); });
-
-    // hovering
-    //
-    // if the user's mouse is hovering over a component, print the component's name next to
-    // the user's mouse
-    if (impl->hover()) {
-        OpenSim::Component const& c = *impl->hover();
-        sdl::Mouse_state m = sdl::GetMouseState();
-        ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
-        ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
-    }
-
-    // hierarchy viewer
+    // draw hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
         auto on_select = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
         auto on_hover = [this](auto const* c) { impl->set_hover(const_cast<OpenSim::Component*>(c)); };
@@ -838,112 +865,28 @@ void osmv::Model_editor_screen::draw() {
     }
     ImGui::End();
 
-    // selection viewer
+    // draw selection viewer
     if (ImGui::Begin("Selection")) {
         auto on_selection_changed = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
         draw_component_selection_widget(impl->get_state(), impl->selection(), on_selection_changed);
     }
     ImGui::End();
 
-    // prop editor
+    // draw property editor panel
     if (ImGui::Begin("Edit Props")) {
         draw_selection_editor(*impl);
     }
     ImGui::End();
 
-    // 'actions' ImGui panel
-    //
-    // this is a dumping ground for generic editing actions (add body, add something to selection)
-    if (ImGui::Begin("Actions")) {
-
-        {
-            static constexpr char const* add_body_modal_name = "add body";
-
-            if (ImGui::Button("Add body")) {
-                ImGui::OpenPopup(add_body_modal_name);
-            }
-
-            auto on_body_add = [& impl = *this->impl](Added_body_modal_output out) {
-                impl.before_modify_model();
-                impl.model().addJoint(out.joint.release());
-                OpenSim::Body const* b = out.body.get();
-                impl.model().addBody(out.body.release());
-                impl.set_selection(const_cast<OpenSim::Body*>(b));
-                impl.after_modify_model();
-            };
-
-            try_draw_add_body_modal(impl->ui.abm, add_body_modal_name, impl->model(), on_body_add);
-        }
-
-        {
-            auto on_add_joint = [this](auto joint) {
-                auto const* ptr = joint.get();
-                impl->before_modify_model();
-                impl->model().addJoint(joint.release());
-                impl->set_selection(const_cast<OpenSim::Joint*>(ptr));
-                impl->after_modify_model();
-            };
-
-            for (Add_joint_modal& modal : impl->ui.add_joint_modals) {
-                if (ImGui::Button(modal.modal_name.c_str())) {
-                    modal.show();
-                }
-                modal.draw(impl->model(), on_add_joint);
-            }
-        }
-
-        if (ImGui::Button("Show model in viewer")) {
-            Application::current().request_screen_transition<Show_model_screen>(
-                std::make_unique<OpenSim::Model>(impl->model()));
-        }
-
-        if (auto* joint = dynamic_cast<OpenSim::Joint*>(impl->selection()); joint) {
-            if (ImGui::Button("Add offset frame")) {
-                auto frame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                frame->setParentFrame(impl->model().getGround());
-
-                impl->before_modify_selection();
-                joint->addFrame(frame.release());
-                impl->after_modify_selection();
-            }
-        }
-
-        if (ImGui::Button("Add ContactSphere")) {
-            auto cs = std::make_unique<OpenSim::ContactSphere>();
-            cs->setFrame(impl->model().getGround());
-
-            impl->before_modify_model();
-            impl->model().addContactGeometry(cs.release());
-            impl->model().finalizeConnections();
-            impl->after_modify_model();
-        }
-
-        if (ImGui::Button("Add ContactHalfSpace")) {
-            auto cs = std::make_unique<OpenSim::ContactHalfSpace>();
-            cs->setFrame(impl->model().getGround());
-
-            impl->before_modify_model();
-            impl->model().addContactGeometry(cs.release());
-            impl->model().finalizeConnections();
-            impl->after_modify_model();
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{1.0f, 0.0f, 0.0f, 1.0f});
-        if (ImGui::Button("Add PointOnLineConstraint")) {
-            auto polc = std::make_unique<OpenSim::PointOnLineConstraint>();
-            log::error("TODO: needs a way of connecting the two bodies (e.g. a popup/modal)");
-        }
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button("Add HuntCrossleyForce")) {
-            auto hcf = std::make_unique<OpenSim::HuntCrossleyForce>();
-
-            impl->before_modify_model();
-            impl->model().addForce(hcf.release());
-            impl->after_modify_model();
-        }
-    }
-    ImGui::End();
-
+    // draw log panel
     draw_log_viewer_widget(impl->ui.log_viewer, "Log");
+
+    // draw actions panel
+    {
+        auto on_set_selection = [&](OpenSim::Component* c) { impl->set_selection(c); };
+        auto before_modify_model = [&]() { impl->before_modify_model(); };
+        auto after_modify_model = [&]() { impl->after_modify_model(); };
+        draw_model_actions_panel(
+            impl->ui.model_actions_panel, impl->model(), on_set_selection, before_modify_model, after_modify_model);
+    }
 }

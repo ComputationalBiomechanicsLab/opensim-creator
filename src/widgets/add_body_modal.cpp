@@ -63,7 +63,6 @@ void osmv::try_draw_add_body_modal(
         st.selected_pf = &model.getGround();
     }
 
-    // OpenSim::Model& model, OpenSim::Component const** selection
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
