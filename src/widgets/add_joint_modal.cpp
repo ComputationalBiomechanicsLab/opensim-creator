@@ -19,7 +19,7 @@ osmv::Add_joint_modal::Add_joint_modal(std::string _name, std::unique_ptr<OpenSi
 void osmv::Add_joint_modal::reset() {
     parent_frame = nullptr;
     child_frame = nullptr;
-    std::copy(std::begin(default_name), std::end(default_name), std::begin(modal_name));
+    std::copy(std::begin(default_name), std::end(default_name), std::begin(added_joint_name));
 }
 
 void osmv::Add_joint_modal::show() {

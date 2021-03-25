@@ -233,6 +233,11 @@ void Model_viewer_widget::draw(
             }
 
             if (ImGui::BeginMenu("Scene")) {
+                if (ImGui::Button("Top")) {
+                    impl->camera.theta = 0.0f;
+                    impl->camera.phi = pi_f / 2.0f;
+                }
+
                 if (ImGui::Button("Left")) {
                     // assumes models tend to point upwards in Y and forwards in +X
                     // (so sidewards is theta == 0 or PI)
@@ -247,12 +252,7 @@ void Model_viewer_widget::draw(
                     impl->camera.phi = 0.0f;
                 }
 
-                if (ImGui::Button("Look top")) {
-                    impl->camera.theta = 0.0f;
-                    impl->camera.phi = pi_f / 2.0f;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Look bottom")) {
+                if (ImGui::Button("Bottom")) {
                     impl->camera.theta = 0.0f;
                     impl->camera.phi = 3.0f * (pi_f / 2.0f);
                 }
@@ -280,12 +280,11 @@ void Model_viewer_widget::draw(
 
             // muscle coloring
             {
-                char buf[32];
-                std::snprintf(buf, sizeof(buf), "something longer than options");
-                ImVec2 font_dims = ImGui::CalcTextSize(buf);
+                static constexpr std::array<char const*, 3> options = {"default", "by strain", "by length"};
 
-                static constexpr std::array<char const*, 3> options = {
-                    "default muscle coloring", "color muscles by strain", "color muscles by length"};
+                char buf[32];
+                std::snprintf(buf, sizeof(buf), "something longer");
+                ImVec2 font_dims = ImGui::CalcTextSize(buf);
 
                 ImGui::Dummy(ImVec2{5.0f, 0.0f});
                 ImGui::SetNextItemWidth(font_dims.x);
@@ -296,7 +295,7 @@ void Model_viewer_widget::draw(
                     choice = 2;
                 }
 
-                if (ImGui::Combo("##musclecoloring", &choice, options.data(), static_cast<int>(options.size()))) {
+                if (ImGui::Combo("muscle coloring", &choice, options.data(), static_cast<int>(options.size()))) {
                     switch (choice) {
                     case 0:
                         impl->flags |= ModelViewerWidgetFlags_DefaultMuscleColoring;
@@ -552,15 +551,6 @@ void Model_viewer_widget::draw(
                     impl->hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
                 }
 
-                // overlay: if the user is hovering over a component, write the component's name
-                //          next to the mouse
-                if (impl->hovered_component) {
-                    OpenSim::Component const& c = *impl->hovered_component;
-                    sdl::Mouse_state m = sdl::GetMouseState();
-                    ImVec2 pos{static_cast<float>(m.x + 20), static_cast<float>(m.y)};
-                    ImGui::GetBackgroundDrawList()->AddText(pos, 0xff0000ff, c.getName().c_str());
-                }
-
                 if (current_hover != impl->hovered_component) {
                     on_hover_changed(impl->hovered_component);
                 }
@@ -576,4 +566,22 @@ void Model_viewer_widget::draw(
     }
     ImGui::End();
     ImGui::PopStyleVar();
+
+    // mouseover tooltips:
+    //
+    // if the user has moused over something in the model viewer then show a tooltip under
+    // the mouse containing basic hover information (component name + type)
+    if (OpenSim::Component const* cptr = impl->hovered_component; cptr) {
+        OpenSim::Component const& component = *cptr;
+
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() + 200.0f);
+        ImGui::TextUnformatted(component.getName().c_str());
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
+        ImGui::TextUnformatted(component.getConcreteClassName().c_str());
+        ImGui::PopStyleColor();
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
 }

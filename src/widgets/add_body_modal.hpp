@@ -23,6 +23,7 @@ namespace osmv {
         OpenSim::PhysicalFrame const* selected_pf = nullptr;
 
         char body_name[64]{};
+        int joint_idx = 0;
         char joint_name[64]{};
         float mass = 1.0f;
         float com[3]{};

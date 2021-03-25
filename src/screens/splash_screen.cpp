@@ -4,6 +4,7 @@
 #include "src/3d/gl.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
+#include "src/screens/experimental_merged_screen.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
@@ -14,6 +15,7 @@
 #include "src/widgets/main_menu_file_tab.hpp"
 
 #include <GL/glew.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <imgui.h>
@@ -112,6 +114,12 @@ void osmv::Splash_screen::draw() {
 
             if (ImGui::Button("Rendering tests (meta)")) {
                 app.request_screen_transition<osmv::Opengl_test_screen>();
+            }
+
+            if (ImGui::Button("experimental new merged screen")) {
+                auto rajagopal_path = config::resource_path("models", "RajagopalModel", "Rajagopal2015.osim");
+                auto model = std::make_unique<OpenSim::Model>(rajagopal_path.string());
+                app.request_screen_transition<Experimental_merged_screen>(std::move(model));
             }
 
             ImGui::Dummy(ImVec2{0.0f, 4.0f});

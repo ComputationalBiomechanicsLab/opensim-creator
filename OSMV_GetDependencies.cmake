@@ -276,8 +276,14 @@ endif()
 #     header-only library, used to parse toml config files
 if(TRUE)
     add_library(osmv-tomlplusplus INTERFACE)
-    add_dependencies(osmv-tomlplusplus tomlplusplus-project)  # so the headers are populated
     target_include_directories(osmv-tomlplusplus INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)
+endif()
+
+# DEPENDENCY: span-lite
+#     header-only library, shims std::span (C++20) into C++17
+if(TRUE)
+    add_library(osmv-span-lite INTERFACE)
+    target_include_directories(osmv-span-lite INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/span-lite)
 endif()
 
 # DEPENDENCY: nativefiledialog
@@ -369,6 +375,7 @@ target_link_libraries(osmv-all-dependencies INTERFACE
     osmv-imgui
     osmv-stb-image
     osmv-tomlplusplus
+    osmv-span-lite
     osmv-nativefiledialog
 
     ${OSMV_OPENSIM_LIBS}

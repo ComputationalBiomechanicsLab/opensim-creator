@@ -98,8 +98,11 @@ add_executable(osmv
     src/opensim_bindings/fd_simulation.hpp
     src/opensim_bindings/fd_simulation.cpp
     src/opensim_bindings/conversions.hpp
-    src/opensim_bindings/model_ui_state.hpp
+    src/opensim_bindings/type_registry.hpp
+    src/opensim_bindings/type_registry.cpp
 
+    src/widgets/add_component_popup.hpp
+    src/widgets/add_component_popup.cpp
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
     src/widgets/component_selection_widget.hpp
@@ -153,6 +156,8 @@ add_executable(osmv
     src/screens/model_editor_screen.cpp
     src/screens/splash_screen.hpp
     src/screens/splash_screen.cpp
+    src/screens/experimental_merged_screen.hpp
+    src/screens/experimental_merged_screen.cpp
 
     src/utils/geometry.hpp
     src/utils/bitwise_algs.hpp

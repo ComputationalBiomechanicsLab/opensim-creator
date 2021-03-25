@@ -14,8 +14,10 @@ namespace OpenSim {
 namespace osmv {
     struct Model_actions_panel_state final {
         Added_body_modal_state abm;
-        std::array<Add_joint_modal, 4> add_joint_modals;
+        std::array<Add_joint_modal, 10> add_joint_modals;
         Select_2_pfs_modal_state select_2_pfs;
+        int joint_idx_for_pfs_popup = -1;
+        int constraint_idx_for_pfs_popup = -1;
 
         Model_actions_panel_state();
     };

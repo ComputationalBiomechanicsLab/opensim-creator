@@ -5,7 +5,6 @@
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
-#include "src/opensim_bindings/model_ui_state.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/circular_buffer.hpp"
@@ -85,22 +84,125 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-struct Undo_redo_entry final {
-    std::chrono::system_clock::time_point time;
-    Model_ui_state state;
+namespace {
+    // bundles together:
+    //
+    // - model
+    // - state
+    // - selection
+    // - hover
+    //
+    // into a single class that supports coherent copying, moving, assingment etc.
+    //
+    // enables snapshotting everything necessary to render a typical UI scene (just copy this) and
+    // should automatically update/invalidate any pointers, states, etc. on each operation
+    struct Model_ui_state final {
+        static std::unique_ptr<OpenSim::Model> copy_model(OpenSim::Model const& model) {
+            auto copy = std::make_unique<OpenSim::Model>(model);
+            copy->finalizeFromProperties();
+            return copy;
+        }
 
-    Undo_redo_entry() = default;
+        static SimTK::State init_fresh_system_and_state(OpenSim::Model& model) {
+            SimTK::State rv = model.initSystem();
+            model.realizePosition(rv);
+            return rv;
+        }
 
-    template<typename... Args>
-    Undo_redo_entry(std::chrono::system_clock::time_point t, Args&&... args) :
-        time{std::move(t)},
-        state{std::forward<Args>(args)...} {
-    }
+        // relocate a component pointer to point into `model`, rather into whatever
+        // model it used to point into
+        static OpenSim::Component* relocate_pointer(OpenSim::Model const& model, OpenSim::Component* ptr) {
+            if (!ptr) {
+                return nullptr;
+            }
 
-    template<typename... Args>
-    Undo_redo_entry(Args&&... args) : time{std::chrono::system_clock::now()}, state{std::forward<Args>(args)...} {
-    }
-};
+            try {
+                return const_cast<OpenSim::Component*>(model.findComponent(ptr->getAbsolutePath()));
+            } catch (OpenSim::Exception const&) {
+                // finding fails with exception when ambiguous (fml)
+                return nullptr;
+            }
+        }
+
+        std::unique_ptr<OpenSim::Model> model = nullptr;
+        SimTK::State state = {};
+        OpenSim::Component* selected_component = nullptr;
+        OpenSim::Component* hovered_component = nullptr;
+
+        Model_ui_state() = default;
+
+        Model_ui_state(std::unique_ptr<OpenSim::Model> _model) :
+            model{std::move(_model)},
+            state{init_fresh_system_and_state(*model)},
+            selected_component{nullptr},
+            hovered_component{nullptr} {
+        }
+
+        Model_ui_state(Model_ui_state const& other) :
+            model{copy_model(*other.model)},
+            state{init_fresh_system_and_state(*model)},
+            selected_component{relocate_pointer(*model, other.selected_component)},
+            hovered_component{relocate_pointer(*model, other.hovered_component)} {
+        }
+
+        Model_ui_state(Model_ui_state&& tmp) :
+            model{std::move(tmp.model)},
+            state{std::move(tmp.state)},
+            selected_component{std::move(tmp.selected_component)},
+            hovered_component{std::move(tmp.hovered_component)} {
+        }
+
+        friend void swap(Model_ui_state& a, Model_ui_state& b) {
+            std::swap(a.model, b.model);
+            std::swap(a.state, b.state);
+            std::swap(a.selected_component, b.selected_component);
+            std::swap(a.hovered_component, b.hovered_component);
+        }
+
+        Model_ui_state& operator=(Model_ui_state other) {
+            swap(*this, other);
+            return *this;
+        }
+
+        Model_ui_state& operator=(std::unique_ptr<OpenSim::Model> ptr) {
+            if (model == ptr) {
+                return *this;
+            }
+
+            std::swap(model, ptr);
+            state = init_fresh_system_and_state(*model);
+            selected_component = relocate_pointer(*model, selected_component);
+            hovered_component = relocate_pointer(*model, hovered_component);
+
+            return *this;
+        }
+
+        // beware: can throw, because the model might've been put into an invalid
+        // state by the modification
+        void on_model_modified() {
+            state = init_fresh_system_and_state(*model);
+            selected_component = relocate_pointer(*model, selected_component);
+            hovered_component = relocate_pointer(*model, hovered_component);
+        }
+    };
+
+    struct Undo_redo_entry final {
+        std::chrono::system_clock::time_point time;
+        Model_ui_state state;
+
+        Undo_redo_entry() = default;
+
+        template<typename... Args>
+        Undo_redo_entry(std::chrono::system_clock::time_point t, Args&&... args) :
+            time{std::move(t)},
+            state{std::forward<Args>(args)...} {
+        }
+
+        template<typename... Args>
+        Undo_redo_entry(Args&&... args) : time{std::chrono::system_clock::now()}, state{std::forward<Args>(args)...} {
+        }
+    };
+}
 
 struct Model_editor_screen::Impl final {
 private:
@@ -818,6 +920,15 @@ void osmv::Model_editor_screen::draw() {
         ImGui::EndMainMenuBar();
     }
 
+    // draw editor actions panel
+    {
+        auto on_set_selection = [&](OpenSim::Component* c) { impl->set_selection(c); };
+        auto before_modify_model = [&]() { impl->before_modify_model(); };
+        auto after_modify_model = [&]() { impl->after_modify_model(); };
+        draw_model_actions_panel(
+            impl->ui.model_actions_panel, impl->model(), on_set_selection, before_modify_model, after_modify_model);
+    }
+
     // draw model viewer
     {
         auto on_selection_change = [this](OpenSim::Component const* new_selection) {
@@ -836,24 +947,6 @@ void osmv::Model_editor_screen::draw() {
             impl->hover(),
             on_selection_change,
             on_hover_change);
-
-        // mouseover tooltips:
-        //
-        // if the user has moused over something in the model viewer then show a tooltip under
-        // the mouse containing basic hover information (component name + type)
-        if (OpenSim::Component const* cptr = impl->hover(); cptr) {
-            OpenSim::Component const& component = *cptr;
-
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 200.0f);
-            ImGui::TextUnformatted(component.getName().c_str());
-            ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
-            ImGui::TextUnformatted(component.getConcreteClassName().c_str());
-            ImGui::PopStyleColor();
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
     }
 
     // draw hierarchy viewer
@@ -880,13 +973,4 @@ void osmv::Model_editor_screen::draw() {
 
     // draw log panel
     draw_log_viewer_widget(impl->ui.log_viewer, "Log");
-
-    // draw actions panel
-    {
-        auto on_set_selection = [&](OpenSim::Component* c) { impl->set_selection(c); };
-        auto before_modify_model = [&]() { impl->before_modify_model(); };
-        auto after_modify_model = [&]() { impl->after_modify_model(); };
-        draw_model_actions_panel(
-            impl->ui.model_actions_panel, impl->model(), on_set_selection, before_modify_model, after_modify_model);
-    }
 }
