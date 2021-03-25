@@ -2,7 +2,7 @@
 
 #include "src/assertions.hpp"
 
-#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+//#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -164,7 +164,7 @@ static auto const force_prototypes = make_prototype_collection<
     OpenSim::PointToPointSpring,
     OpenSim::SmoothSphereHalfSpaceForce,
     OpenSim::Thelen2003Muscle,
-    OpenSim::DeGrooteFregly2016Muscle,
+    //    OpenSim::DeGrooteFregly2016Muscle,
     OpenSim::Millard2012EquilibriumMuscle>();
 // OpenSim::RigidTendonMuscle
 
@@ -177,7 +177,7 @@ static constexpr std::array<char const*, force_prototypes.size()> force_descript
     "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
     "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
     "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
-    "This muscle model was published in De Groote et al. 2016.",
+    //"This muscle model was published in De Groote et al. 2016.",
     "This class implements a configurable equilibrium muscle model, as described in Millard et al. (2013).",
     //"A class implementing a RigidTendonMuscle actuator with no states. The path information for a RigidTendonMuscle is
     // contained in the base class, and the force-generating behavior should is defined in this class. The force (muscle

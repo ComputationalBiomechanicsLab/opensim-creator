@@ -100,10 +100,12 @@ namespace {
         static std::unique_ptr<OpenSim::Model> copy_model(OpenSim::Model const& model) {
             auto copy = std::make_unique<OpenSim::Model>(model);
             copy->finalizeFromProperties();
+            copy->finalizeConnections();
             return copy;
         }
 
         static SimTK::State init_fresh_system_and_state(OpenSim::Model& model) {
+            model.finalizeConnections();
             SimTK::State rv = model.initSystem();
             model.realizePosition(rv);
             return rv;
@@ -274,6 +276,7 @@ public:
     void perform_end_of_draw_steps() {
         if (recovered_from_disaster) {
             redo.clear();
+            recovered_from_disaster = false;
         }
     }
 
@@ -973,4 +976,6 @@ void osmv::Model_editor_screen::draw() {
 
     // draw log panel
     draw_log_viewer_widget(impl->ui.log_viewer, "Log");
+
+    impl->perform_end_of_draw_steps();
 }

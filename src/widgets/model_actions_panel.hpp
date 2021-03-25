@@ -1,10 +1,12 @@
 #pragma once
 
 #include "src/widgets/add_body_modal.hpp"
+#include "src/widgets/add_component_popup.hpp"
 #include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/select_2_pfs_modal.hpp"
 
 #include <functional>
+#include <optional>
 
 namespace OpenSim {
     class Model;
@@ -18,6 +20,9 @@ namespace osmv {
         Select_2_pfs_modal_state select_2_pfs;
         int joint_idx_for_pfs_popup = -1;
         int constraint_idx_for_pfs_popup = -1;
+
+        char const* add_component_popup_name = nullptr;
+        std::optional<Add_component_popup> add_component_popup = std::nullopt;
 
         Model_actions_panel_state();
     };

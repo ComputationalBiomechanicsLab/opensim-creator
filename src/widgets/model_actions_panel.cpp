@@ -146,37 +146,46 @@ static void render_actions_panel_content(
         draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "parent", "child", on_two_pfs_selected);
     }
 
-    if (ImGui::BeginMenu("add contact geometry")) {
-        auto names = contact_geom::names();
-        for (size_t i = 0; i < names.size(); ++i) {
-            if (ImGui::MenuItem(names[i])) {
-                std::unique_ptr<OpenSim::ContactGeometry> copy{contact_geom::prototypes()[i]->clone()};
-                copy->setFrame(model.getGround());
+    // draw add contact geometry dropdown
+    {
+        bool open_popup = false;  // has to be outside ImGui::Menu
 
-                auto ptr = copy.get();
-                on_before_modify_model();
-                model.addContactGeometry(copy.release());
-                model.finalizeConnections();
-                on_set_selection(ptr);
-                on_after_modify_model();
+        if (ImGui::BeginMenu("add contact geometry")) {
+            auto names = contact_geom::names();
+
+            for (size_t i = 0; i < names.size(); ++i) {
+                if (ImGui::MenuItem(names[i])) {
+                    std::unique_ptr<OpenSim::ContactGeometry> copy{contact_geom::prototypes()[i]->clone()};
+                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup_name = "Add Contact Geometry";
+                    open_popup = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    draw_tooltip(names[i], contact_geom::descriptions()[i]);
+                }
             }
-            if (ImGui::IsItemHovered()) {
-                draw_tooltip(names[i], contact_geom::descriptions()[i]);
-            }
+
+            ImGui::EndMenu();
         }
 
-        ImGui::EndMenu();
+        if (open_popup) {
+            ImGui::OpenPopup(st.add_component_popup_name);
+        }
     }
 
     // draw add constraint dropdown
     {
-        int constraintidx = -1;
+        bool open_popup = false;  // has to be outside ImGui::Menu
 
         if (ImGui::BeginMenu("add constraint")) {
             auto names = constraint::names();
             for (size_t i = 0; i < names.size(); ++i) {
+
                 if (ImGui::MenuItem(names[i])) {
-                    constraintidx = static_cast<int>(i);
+                    std::unique_ptr<OpenSim::Constraint> copy{constraint::prototypes()[i]->clone()};
+                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup_name = "Add Constraint";
+                    open_popup = true;
                 }
                 if (ImGui::IsItemHovered()) {
                     draw_tooltip(names[i], constraint::descriptions()[i]);
@@ -186,132 +195,68 @@ static void render_actions_panel_content(
             ImGui::EndMenu();
         }
 
-        static constexpr char const* modal_name = "select constraint frames";
-        if (constraintidx != -1) {
-            st.constraint_idx_for_pfs_popup = constraintidx;
-            ImGui::OpenPopup(modal_name);
+        if (open_popup) {
+            ImGui::OpenPopup(st.add_component_popup_name);
         }
-
-        auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
-            OSMV_ASSERT(
-                st.constraint_idx_for_pfs_popup >= 0 &&
-                static_cast<size_t>(st.constraint_idx_for_pfs_popup) < constraint::prototypes().size());
-            OpenSim::Constraint const& prototype =
-                *constraint::prototypes()[static_cast<size_t>(st.constraint_idx_for_pfs_popup)];
-            std::unique_ptr<OpenSim::Constraint> copy{prototype.clone()};
-            // copy->connectSocket_parent_frame(out.first);
-            // copy->connectSocket_child_frame(out.second);
-
-            auto ptr = copy.get();
-            on_before_modify_model();
-            model.addConstraint(copy.release());
-            on_set_selection(ptr);
-            on_after_modify_model();
-
-            st.constraint_idx_for_pfs_popup = -1;
-        };
-
-        draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "parent", "child", on_two_pfs_selected);
     }
 
-    if (ImGui::BeginMenu("add force")) {
-        auto names = force::names();
-        for (size_t i = 0; i < names.size(); ++i) {
-            if (ImGui::MenuItem(names[i])) {
-                log::error("TODO");
+    {
+        bool open_popup = false;  // has to be outside ImGui::Menu
+        if (ImGui::BeginMenu("add force")) {
+            auto names = force::names();
+            for (size_t i = 0; i < names.size(); ++i) {
+
+                if (ImGui::MenuItem(names[i])) {
+                    std::unique_ptr<OpenSim::Force> copy{force::prototypes()[i]->clone()};
+                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup_name = "Add Force";
+                    open_popup = true;
+                }
+                if (ImGui::IsItemHovered()) {
+                    draw_tooltip(names[i], force::descriptions()[i]);
+                }
             }
-            if (ImGui::IsItemHovered()) {
-                draw_tooltip(names[i], force::descriptions()[i]);
+
+            ImGui::EndMenu();
+        }
+
+        if (open_popup) {
+            ImGui::OpenPopup(st.add_component_popup_name);
+        }
+    }
+
+    if (st.add_component_popup && st.add_component_popup_name) {
+        auto new_component = st.add_component_popup->draw(st.add_component_popup_name, model);
+
+        if (new_component) {
+            auto ptr = new_component.get();
+
+            if (dynamic_cast<OpenSim::Joint*>(new_component.get())) {
+                on_before_modify_model();
+                model.addJoint(static_cast<OpenSim::Joint*>(new_component.release()));
+                on_set_selection(ptr);
+                on_after_modify_model();
+            } else if (dynamic_cast<OpenSim::Force*>(new_component.get())) {
+                on_before_modify_model();
+                model.addForce(static_cast<OpenSim::Force*>(new_component.release()));
+                on_set_selection(ptr);
+                on_after_modify_model();
+            } else if (dynamic_cast<OpenSim::Constraint*>(new_component.get())) {
+                on_before_modify_model();
+                model.addConstraint(static_cast<OpenSim::Constraint*>(new_component.release()));
+                on_set_selection(ptr);
+                on_after_modify_model();
+            } else if (dynamic_cast<OpenSim::ContactGeometry*>(new_component.get())) {
+                on_before_modify_model();
+                model.addContactGeometry(static_cast<OpenSim::ContactGeometry*>(new_component.release()));
+                on_set_selection(ptr);
+                on_after_modify_model();
+            } else {
+                log::error(
+                    "don't know how to add a component of type %s to the model",
+                    new_component->getConcreteClassName().c_str());
             }
         }
-
-        ImGui::EndMenu();
-    }
-
-    // draw "Add PointOnLineConstraint" action (modal)
-    {
-        static constexpr char const* modal_name = "select pfs";
-
-        if (ImGui::Button("Add PointOnLineConstraint")) {
-            ImGui::OpenPopup(modal_name);
-        }
-
-        auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
-            OpenSim::PhysicalFrame const& lineBody = out.first;
-            SimTK::Vec3 lineDirection{0.0};
-            SimTK::Vec3 pointOnLine{0.0};
-            OpenSim::PhysicalFrame const& followerBody = out.second;
-            SimTK::Vec3 followerPoint{0.0};
-
-            auto polc = std::make_unique<OpenSim::PointOnLineConstraint>(
-                lineBody, lineDirection, pointOnLine, followerBody, followerPoint);
-            auto selection_ptr = polc.get();
-
-            on_before_modify_model();
-            model.addConstraint(polc.release());
-            on_set_selection(selection_ptr);
-            on_after_modify_model();
-        };
-
-        draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "line_body", "follow_body", on_two_pfs_selected);
-    }
-
-    // draw "Add PointToPointSpring" action (modal)
-    {
-        static constexpr char const* modal_name = "select bodies to attatch p2p spring to";
-
-        if (ImGui::Button("Add PointToPointSpring")) {
-            ImGui::OpenPopup(modal_name);
-        }
-
-        auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
-            OpenSim::PhysicalFrame const& body1 = out.first;
-            SimTK::Vec3 point1 = {0.0, 0.0, 0.0};
-            OpenSim::PhysicalFrame const& body2 = out.second;
-            SimTK::Vec3 point2 = {0.0, 0.0, 0.0};
-            double stiffness = 1.0;
-            double restLength = 1.0;
-
-            auto p2ps =
-                std::make_unique<OpenSim::PointToPointSpring>(body1, point1, body2, point2, stiffness, restLength);
-            auto selection_ptr = p2ps.get();
-
-            on_before_modify_model();
-            model.addForce(p2ps.release());
-            on_set_selection(selection_ptr);
-            on_after_modify_model();
-        };
-
-        draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "body1", "body2", on_two_pfs_selected);
-    }
-
-    // draw "Add BrushingForce" action (modal)
-    {
-        static constexpr char const* modal_name = "select brushing force frames";
-
-        if (ImGui::Button("Add BrushingForce")) {
-            ImGui::OpenPopup(modal_name);
-        }
-
-        auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
-            auto bf = std::make_unique<OpenSim::BushingForce>("bushing_force", out.first, out.second);
-            auto selection_ptr = bf.get();
-
-            on_before_modify_model();
-            model.addForce(bf.release());
-            on_set_selection(selection_ptr);
-            on_after_modify_model();
-        };
-
-        draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "frame1", "frame2", on_two_pfs_selected);
-    }
-
-    if (ImGui::Button("Add HuntCrossleyForce")) {
-        auto hcf = std::make_unique<OpenSim::HuntCrossleyForce>();
-
-        on_before_modify_model();
-        model.addForce(hcf.release());
-        on_after_modify_model();
     }
 }
 

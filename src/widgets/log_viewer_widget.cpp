@@ -62,7 +62,7 @@ void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel
             ImGui::Text("[%s]", log::to_c_str(msg.level));
             ImGui::PopStyleColor();
             ImGui::SameLine();
-            ImGui::Text("%s", msg.payload.c_str());
+            ImGui::TextWrapped("%s", msg.payload.c_str());
 
             if (st.autoscroll) {
                 ImGui::SetScrollHere();

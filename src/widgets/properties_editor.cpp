@@ -71,7 +71,9 @@ void draw_property_editor<double>(
     std::function<void()> const& before_property_edited,
     std::function<void()> const& after_property_edited) {
 
-    if (!prop.isListProperty()) {
+    if (prop.size() == 0) {
+        // edge case: empty prop?
+    } else if (!prop.isListProperty()) {
         // it's a *single* double
 
         float v = static_cast<float>(prop.getValue());

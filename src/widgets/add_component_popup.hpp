@@ -17,10 +17,10 @@ namespace osmv {
 
     public:
         Add_component_popup(std::unique_ptr<OpenSim::Component> prototype);
-        Add_component_popup(Add_component_popup const&) = default;
-        Add_component_popup(Add_component_popup&&) = default;
-        Add_component_popup& operator=(Add_component_popup const&) = default;
-        Add_component_popup& operator=(Add_component_popup&&) = default;
+        Add_component_popup(Add_component_popup const&) = delete;
+        Add_component_popup(Add_component_popup&&);
+        Add_component_popup& operator=(Add_component_popup const&) = delete;
+        Add_component_popup& operator=(Add_component_popup&&);
         ~Add_component_popup() noexcept;
 
         // - assumes caller handles ImGui::OpenPopup(modal_name)

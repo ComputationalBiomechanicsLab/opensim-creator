@@ -53,10 +53,6 @@ void osmv::try_draw_add_body_modal(
     OpenSim::Model const& model,
     std::function<void(Added_body_modal_output)> const& on_add_requested) {
 
-    if (st.selected_pf == nullptr) {
-        st.selected_pf = &model.getGround();
-    }
-
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -68,6 +64,10 @@ void osmv::try_draw_add_body_modal(
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         // modal not showing
         return;
+    }
+
+    if (st.selected_pf == nullptr) {
+        st.selected_pf = &model.getGround();
     }
 
     // collect user input
