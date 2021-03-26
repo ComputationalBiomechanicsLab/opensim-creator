@@ -170,7 +170,6 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) noexcept {
         return;
     }
 
-    osmv::log::log(lvl, "backtrace:");
     for (int i = 0; i < size; ++i) {
         osmv::log::log(lvl, "%s", messages[i]);
     }
@@ -180,6 +179,7 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) noexcept {
 
 [[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
     osmv::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+    osmv::log::error("backtrace:");
     osmv::write_backtrace_to_log(osmv::log::level::err);
     exit(EXIT_FAILURE);
 }
