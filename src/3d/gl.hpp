@@ -17,9 +17,6 @@
 #include <stdexcept>
 #include <string>
 
-#define OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE(comment)                                                               \
-    { gl::assert_no_errors(comment, __FILE__, __LINE__, __func__); }
-
 namespace gl {
     std::string slurp(std::filesystem::path const& path);
 

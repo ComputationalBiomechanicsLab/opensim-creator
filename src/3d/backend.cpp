@@ -251,8 +251,6 @@ namespace {
 
             gl::BindVertexArray();
 
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating Gouraud VAO");
-
             return vao;
         }
     };
@@ -285,8 +283,6 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating colormapped VAO");
-
             return vao;
         }
     };
@@ -317,8 +313,6 @@ namespace {
                 aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating pts VAO");
 
             return vao;
         }
@@ -353,8 +347,6 @@ namespace {
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating edge detection VAO");
-
             return vao;
         }
     };
@@ -384,8 +376,6 @@ namespace {
                 aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating MSXAA blitter VAO");
 
             return vao;
         }
@@ -417,8 +407,6 @@ namespace {
                 aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
             gl::EnableVertexAttribArray(aNormal);
             gl::BindVertexArray();
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after creating normals VAO");
 
             return vao;
         }
@@ -575,7 +563,6 @@ struct Shader_cache::Impl final {
     Skip_msxaa_blitter_shader skip_msxaa_shader;
 
     Impl() {
-        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing shader cache");
     }
 };
 
@@ -677,8 +664,6 @@ struct Render_target::Impl final {
 
                 return rv;
             }()} {
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing scene buffers");
         }
     } scene;
 
@@ -719,8 +704,6 @@ struct Render_target::Impl final {
 
                 return rv;
             }()} {
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing non-MSXAAed buffers");
         }
     } skip_msxaa;
 
@@ -750,8 +733,6 @@ struct Render_target::Impl final {
 
                 return rv;
             }()} {
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing basic FBO texture pair");
         }
     };
 
@@ -782,8 +763,6 @@ struct Render_target::Impl final {
         skip_msxaa{w, h},
         color0_resolved{w, h, GL_RGBA},
         color1_resolved{w, h, GL_RGB} {
-
-        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initializing render target");
     }
 };
 
@@ -884,7 +863,6 @@ struct Renderer::Impl final {
 //
 // DO NOT USE CURLY BRACERS HERE
 Renderer::Renderer() : impl(new Impl()) {
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after renderer initialization");
 }
 
 Renderer::~Renderer() noexcept {
@@ -910,8 +888,6 @@ Passthrough_data Renderer::draw(
 
     Mesh_instance const* meshes = drawlist.instances.data();
     size_t nmeshes = drawlist.instances.size();
-
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("before drawcall setup");
 
     Render_target::Impl& buffers = out.raw_impl();
 
@@ -943,8 +919,6 @@ Passthrough_data Renderer::draw(
     } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
-
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after initial draw buffer clearing");
 
     // render the scene to the FBO using a multiple-render-target (MRT) multisampled
     // (MSXAAed) shader.
@@ -1069,8 +1043,6 @@ Passthrough_data Renderer::draw(
         gl::BindVertexArray();
     }
 
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing the scene");
-
     // perform passthrough hit testing
     //
     // in the previous draw call, COLOR1's RGB channels encoded arbitrary passthrough data
@@ -1177,8 +1149,6 @@ Passthrough_data Renderer::draw(
         }
     }
 
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after hit testing");
-
     // resolve MSXAA in COLOR0 to output texture
     //
     // "resolve" (i.e. blend) the MSXAA samples in COLOR0. We are "done" with
@@ -1192,8 +1162,6 @@ Passthrough_data Renderer::draw(
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after resolving COLOR0");
-
     // resolve MSXAA in COLOR1
     //
     // "resolve" (i.e. blend) the MSXAA samples in COLOR1 into non-MSXAAed textures
@@ -1206,12 +1174,8 @@ Passthrough_data Renderer::draw(
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after resolving COLOR1");
-
     // bind to output texture: all further drawing goes onto it
     gl::BindFramebuffer(GL_FRAMEBUFFER, buffers.color0_resolved.fbo);
-
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after binding to output texture");
 
     // draw rims highlights onto the output
     //
@@ -1253,8 +1217,6 @@ Passthrough_data Renderer::draw(
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
     }
-
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing rim highlights");
 
     // render debug quads onto output (if applicable)
     if (params.flags & RawRendererFlags_DrawDebugQuads) {
@@ -1318,8 +1280,6 @@ Passthrough_data Renderer::draw(
 
         gl::BindVertexArray();
     }
-
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after drawing debug quads");
 
     // bind back to the original framebuffer (assumed to be window)
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);

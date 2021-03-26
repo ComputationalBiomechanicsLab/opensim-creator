@@ -43,8 +43,6 @@ gl::Texture_2d osmv::generate_chequered_floor_texture() {
     gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_REPEAT);
     gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after generating floor texture");
-
     return rv;
 }
 

@@ -519,7 +519,6 @@ struct Show_model_screen::Impl final {
             return p;
         }()},
         file_poller{1000ms, model->getDocumentFileName()} {
-        OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after constructing show model screen impl");
     }
 
     // handle top-level UI event (user click, user drag, etc.)

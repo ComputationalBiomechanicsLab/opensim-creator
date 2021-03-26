@@ -445,15 +445,12 @@ public:
 
             // depth testing used to ensure geometry overlaps correctly
             glEnable(GL_DEPTH_TEST);
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling depth test");
 
             // MSXAA is used to smooth out the model
             glEnable(GL_MULTISAMPLE);
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling multisampling");
 
             // all vertices in the render are backface-culled
             glEnable(GL_CULL_FACE);
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after enabling face culling");
 
             // print OpenGL information if in debug mode
             log::info(
@@ -520,8 +517,6 @@ public:
                 }
             }
 
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::on_event");
-
             // osmv::Screen: run `tick`
             current_screen->tick();
 
@@ -534,9 +529,6 @@ public:
                 current_screen = std::move(requested_screen);
                 continue;
             }
-
-            // debug OpenGL: assert no OpenGL errors were induced by .tick()
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::tick");
 
             // clear the window's framebuffer ready for a new frame to be drawn
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -580,9 +572,6 @@ public:
             //            ImGUI implementation.
             gl::UseProgram();
 
-            // debug OpenGL: assert no OpenGL errors were induced by .draw()
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after handling Screen::draw");
-
             // NOTE: osmv::Screen side-effects:
             //
             // - The screen's `draw` method *may* have had indirect side-effects on the
@@ -622,8 +611,6 @@ public:
             // note: this can block on VSYNC, which will affect the timings
             //       for software throttling
             SDL_GL_SwapWindow(window);
-
-            OSMV_GL_ASSERT_ALWAYS_NO_GL_ERRORS_HERE("after swapping window");
 
             // osmv::Screen: handle any possible indirect side-effects the Screen's
             //               `on_event` handler may have had on the application state
