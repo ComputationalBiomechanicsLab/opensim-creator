@@ -201,6 +201,9 @@ target_compile_options(osmv PRIVATE
         /W3  # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
         /WX  # treat all warnings as errors
         /Oy-  # keep frame pointers around
+
+        # newer MSVCs may also come with LIBASAN (experimental)
+        $<$<BOOL:${OSMV_USE_ASAN}>:/fsanitize=address>
     >
 
     # gcc/clang flags
@@ -233,8 +236,7 @@ target_compile_options(osmv PRIVATE
         # the application much easier, even in release mode
         -fno-omit-frame-pointer
 
-        # use address sanitizer when building in Debug mode, so that invalid
-        # memory accesses are spotted during development
+        # if address sanitizer is specified, use it
         $<$<BOOL:${OSMV_USE_ASAN}>:-fsanitize=address>
     >
 
@@ -308,7 +310,8 @@ target_link_options(osmv PUBLIC
         /ignore:4217  # ImGui uses locally defined symbols
     >
 
-    $<$<AND:$<BOOL:LINUX>,$<CXX_COMPILER_ID:GNU>>:
+    # only Linux + GNU/Clang support rdynamic?
+    $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
         # make `ld` emit symbols for all functions - even if they aren't
         # externally used (with an exe, only `main` is used, really)
         #
@@ -316,9 +319,10 @@ target_link_options(osmv PUBLIC
         # that the application can emit its own stack trace /w function
         # names - even in Release mode.
         -rdynamic
+    >
 
-        # use address sanitizer when building in Debug mode, so that invalid
-        # memory accesses are spotted during development
+    # if address sanitizer is specified, use it
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         $<$<BOOL:${OSMV_USE_ASAN}>:-fsanitize=address>
     >
 )
