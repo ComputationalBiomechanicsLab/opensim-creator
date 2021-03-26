@@ -2,7 +2,7 @@
 
 #include "src/assertions.hpp"
 
-//#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+// #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>  OpenSim 4.2
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/PointActuator.h>
@@ -18,7 +18,7 @@
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
-#include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+// #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h> OpenSim 4.2
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
@@ -29,7 +29,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
+// #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
@@ -79,7 +79,7 @@ static std::unique_ptr<OpenSim::Joint const> joint_with_coords(std::initializer_
 
 // Joint LUTs
 
-static std::array<std::unique_ptr<OpenSim::Joint const>, 10> joint_prototypes = {
+static std::array<std::unique_ptr<OpenSim::Joint const>, 9> joint_prototypes = {
     joint_with_coords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
     joint_with_coords<OpenSim::PinJoint>({"rz"}),
     joint_with_coords<OpenSim::UniversalJoint>({"rx", "ry"}),
@@ -89,8 +89,8 @@ static std::array<std::unique_ptr<OpenSim::Joint const>, 10> joint_prototypes = 
     joint_with_coords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
     joint_with_coords<OpenSim::SliderJoint>({"tx"}),
     joint_with_coords<OpenSim::WeldJoint>({}),
-    joint_with_coords<OpenSim::ScapulothoracicJoint>(
-        {"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
+    // joint_with_coords<OpenSim::ScapulothoracicJoint>(
+    //    {"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
 };
 static auto const joint_names = extract_names(joint_prototypes);
 static constexpr std::array<char const*, joint_prototypes.size()> joint_descriptions = {
@@ -103,7 +103,8 @@ static constexpr std::array<char const*, joint_prototypes.size()> joint_descript
     "A Planar joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.",
     "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
     "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.",
-    "A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon which the joint frame of scapul rides.",
+    //"A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon
+    //which the joint frame of scapul rides.",
 };
 static_assert(joint_names.size() == joint_prototypes.size());
 static_assert(joint_descriptions.size() == joint_prototypes.size());
@@ -162,7 +163,7 @@ static auto const force_prototypes = make_prototype_collection<
     OpenSim::ElasticFoundationForce,
     OpenSim::HuntCrossleyForce,
     OpenSim::PointToPointSpring,
-    OpenSim::SmoothSphereHalfSpaceForce,
+    // OpenSim::SmoothSphereHalfSpaceForce,  OpenSim 4.2
     OpenSim::Thelen2003Muscle,
     //    OpenSim::DeGrooteFregly2016Muscle,
     OpenSim::Millard2012EquilibriumMuscle>();
@@ -175,7 +176,12 @@ static constexpr std::array<char const*, force_prototypes.size()> force_descript
     "This Force subclass implements an elastic foundation contact model. It places a spring at the center of each face of each ContactMesh it acts on. Those springs interact with all objects (both meshes and other objects) the mesh comes in contact with.",
     "This force subclass implements a Hunt-Crossley contact model. It uses Hertz contact theory to model the interactions between a set of ContactSpheres and ContactHalfSpaces.",
     "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
-    "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
+    //"This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even
+    // when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration
+    // depth. This component is designed for use in gradient-based optimizations, in which the model is required to be
+    // differentiable. This component models contact between a single sphere and a single half space. This force does
+    // NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this
+    // component.",
     "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
     //"This muscle model was published in De Groote et al. 2016.",
     "This class implements a configurable equilibrium muscle model, as described in Millard et al. (2013).",
