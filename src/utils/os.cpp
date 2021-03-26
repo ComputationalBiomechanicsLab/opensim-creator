@@ -1,5 +1,7 @@
 #include "os.hpp"
 
+#include "src/log.hpp"
+
 #include <SDL_error.h>
 #include <SDL_filesystem.h>
 #include <SDL_stdinc.h>
@@ -150,6 +152,47 @@ void osmv::install_backtrace_handler() {
     }
 }
 
+#elif defined(__APPLE__)
+#include <signal.h>  // sigaction(), struct sigaction, strsignal()
+#include <stdlib.h>  // exit(), free()
+#include <execinfo.h>  // backtrace(), backtrace_symbols()
+
+[[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+    osmv::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+
+    void* array[50];
+    int size = backtrace(array, 50);
+    char** messages = backtrace_symbols(array, size);
+
+    if (messages == nullptr) {
+        exit(EXIT_FAILURE);
+    }
+
+    osmv::log::error("backtrace:");
+    for (int i = 0; i < size; ++i) {
+        osmv::log::error("%s", messages[i]);
+    }
+
+    free(messages);
+    exit(EXIT_FAILURE);
+}
+
+void osmv::install_backtrace_handler() {
+    struct sigaction sigact;
+
+    sigact.sa_sigaction = OSMV_critical_error_handler;
+    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
+
+    // enable SIGSEGV (segmentation fault) handler
+    if (sigaction(SIGSEGV, &sigact, nullptr) != 0) {
+        log::warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
+    }
+
+    // enable SIGABRT (abort) handler - usually triggers when `assert` fails or std::terminate is called
+    if (sigaction(SIGABRT, &sigact, nullptr) != 0) {
+        log::warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
+    }
+}
 #else
 // currently, noop on Windows/Mac
 void osmv::install_backtrace_handler() {
