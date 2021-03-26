@@ -8,43 +8,17 @@
 #include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/select_2_pfs_modal.hpp"
 
-#include <OpenSim/Simulation/Model/BushingForce.h>
-#include <OpenSim/Simulation/Model/ContactHalfSpace.h>
-#include <OpenSim/Simulation/Model/ContactMesh.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PointToPointSpring.h>
-#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <imgui.h>
 
 using namespace osmv;
 
-Model_actions_panel_state::Model_actions_panel_state() :
-    abm{},
-    add_joint_modals{
-        Add_joint_modal::create<OpenSim::FreeJoint>("FreeJoint"),
-        Add_joint_modal::create<OpenSim::PinJoint>("PinJoint"),
-        Add_joint_modal::create<OpenSim::UniversalJoint>("UniversalJoint"),
-        Add_joint_modal::create<OpenSim::BallJoint>("BallJoint"),
-        Add_joint_modal::create<OpenSim::EllipsoidJoint>("EllipsoidJoint"),
-        Add_joint_modal::create<OpenSim::GimbalJoint>("GimbalJoint"),
-        Add_joint_modal::create<OpenSim::PlanarJoint>("PlanarJoint"),
-        Add_joint_modal::create<OpenSim::SliderJoint>("SliderJoint"),
-        Add_joint_modal::create<OpenSim::WeldJoint>("WeldJoint"),
-        Add_joint_modal::create<OpenSim::ScapulothoracicJoint>("ScapulothoracicJoint"),
-    },
-    select_2_pfs{} {
+Model_actions_panel_state::Model_actions_panel_state() : abm{}, select_2_pfs{} {
 }
 
 static void draw_tooltip(char const* header, char const* description) {
