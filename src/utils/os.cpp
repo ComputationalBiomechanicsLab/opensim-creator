@@ -202,7 +202,8 @@ void osmv::install_backtrace_handler() {
 }
 #else
 // currently, noop on Windows
-void osmv::write_backtrace_to_log(log::level::Level_enum) {
+void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
+    log::log(lvl, "    (writing backtraces does not currently work in Windows)");
 }
 
 void osmv::install_backtrace_handler() {
