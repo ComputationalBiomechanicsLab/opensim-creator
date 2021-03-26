@@ -1,6 +1,7 @@
 #include "gl.hpp"
 
 #include "src/assertions.hpp"
+#include "src/utils/os.hpp"
 
 #include <GL/glew.h>
 
@@ -86,6 +87,9 @@ void gl::assert_no_errors(char const* comment, char const* file, int line, char 
     if (err == GL_NO_ERROR) {
         return;
     }
+
+    // there are errors: print a backtrace to the log before throwing
+    osmv::write_backtrace_to_log(osmv::log::level::err);
 
     std::vector<GLenum> errors;
 
