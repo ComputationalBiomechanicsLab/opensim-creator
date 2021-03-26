@@ -265,14 +265,33 @@ static void disable_opengl_debug_mode() {
 }
 
 static bool is_in_opengl_debug_mode() {
-    GLboolean b1 = false;
-    glGetBooleanv(GL_DEBUG_OUTPUT, &b1);
-    GLboolean b2 = false;
-    glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b2);
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    // if context is not debug-mode, then some of the glGet*s below can fail
+    // (e.g. GL_DEBUG_OUTPUT_SYNCHRONOUS on apple).
+    {
+        GLint flags;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+        if (!(flags & GL_CONTEXT_FLAG_DEBUG_BIT)) {
+            return false;
+        }
+    }
 
-    return b1 && b2 && (flags & GL_CONTEXT_FLAG_DEBUG_BIT);
+    {
+        GLboolean b = false;
+        glGetBooleanv(GL_DEBUG_OUTPUT, &b);
+        if (!b) {
+            return false;
+        }
+    }
+
+    {
+        GLboolean b = false;
+        glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b);
+        if (!b) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 static void toggle_opengl_debug_mode() {
@@ -352,7 +371,6 @@ public:
         window{[this]() {
             log::info("initializing main application (OpenGL 3.3) window");
 
-            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
