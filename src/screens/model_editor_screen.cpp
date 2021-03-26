@@ -105,6 +105,7 @@ namespace {
         }
 
         static SimTK::State init_fresh_system_and_state(OpenSim::Model& model) {
+            model.finalizeFromProperties();
             model.finalizeConnections();
             SimTK::State rv = model.initSystem();
             model.realizePosition(rv);
@@ -726,7 +727,6 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
         ImGui::Text("(nothing selected)");
         return;
     }
-    OpenSim::Component& selection = *impl.selection();
 
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("top-level attributes:");
@@ -739,6 +739,11 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Separator();
     draw_contextual_actions(impl);
 
+    // a contextual action may have changed this
+    if (!impl.selection()) {
+        return;
+    }
+
     // property editor
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("properties:");
@@ -746,7 +751,8 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     {
         auto before_property_edited = [&]() { impl.before_modify_selection(); };
         auto after_property_edited = [&]() { impl.after_modify_selection(); };
-        draw_properties_editor(impl.ui.properties_editor, selection, before_property_edited, after_property_edited);
+        draw_properties_editor(
+            impl.ui.properties_editor, *impl.selection(), before_property_edited, after_property_edited);
     }
 
     // socket editor
