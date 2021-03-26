@@ -88,8 +88,9 @@ void gl::assert_no_errors(char const* comment, char const* file, int line, char 
         return;
     }
 
-    // there are errors: print a backtrace to the log before throwing
+    osmv::log::error("OpenGL error detected: backtrace:");
     osmv::write_backtrace_to_log(osmv::log::level::err);
+    osmv::log::error("throwing the OpenGL error as an exception");
 
     std::vector<GLenum> errors;
 
