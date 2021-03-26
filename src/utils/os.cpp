@@ -157,11 +157,11 @@ void osmv::install_backtrace_handler() {
 }
 
 #elif defined(__APPLE__)
+#include <execinfo.h>  // backtrace(), backtrace_symbols()
 #include <signal.h>  // sigaction(), struct sigaction, strsignal()
 #include <stdlib.h>  // exit(), free()
-#include <execinfo.h>  // backtrace(), backtrace_symbols()
 
-void osmv::write_backtrace_to_log(log::level::Level_enum lvl) noexcept {
+void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);

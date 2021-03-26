@@ -12,7 +12,8 @@ namespace osmv {
     // returns the full path to the user's data directory
     std::filesystem::path const& user_data_dir();
 
-    void write_backtrace_to_log(log::level::Level_enum) noexcept;
+    // writes a backtrace for the calling thread's stack to the log at the specified level
+    void write_backtrace_to_log(log::level::Level_enum);
 
     // installs a signal handler that prints a backtrace
     //
