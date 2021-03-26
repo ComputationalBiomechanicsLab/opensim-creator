@@ -2,7 +2,10 @@
 
 #include "src/log.hpp"
 
+#include <SDL.h>
 #include <imgui.h>
+
+#include <sstream>
 
 static ImVec4 color(osmv::log::level::Level_enum lvl) {
     using namespace osmv::log::level;
@@ -25,6 +28,24 @@ static ImVec4 color(osmv::log::level::Level_enum lvl) {
     }
 }
 
+static void copy_traceback_log_to_clipboard() {
+    std::stringstream ss;
+
+    auto& guarded_content = osmv::log::get_traceback_log();
+    {
+        auto const& content = guarded_content.lock();
+        for (osmv::log::Owned_log_msg const& msg : *content) {
+            ss << '[' << osmv::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
+        }
+    }
+
+    std::string full_log_content = std::move(ss).str();
+
+    if (SDL_SetClipboardText(full_log_content.c_str()) != 0) {
+        osmv::log::error("error copying log to clipboard %s", SDL_GetError());
+    }
+}
+
 void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel_name) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -32,6 +53,7 @@ void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel
             // level selector
             {
                 int lvl = static_cast<int>(log::get_traceback_level());
+                ImGui::SetNextItemWidth(200.0f);
                 if (ImGui::Combo("level", &lvl, log::level_cstring_names, log::level::NUM_LEVELS)) {
                     log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
                 }
@@ -48,6 +70,11 @@ void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel
             ImGui::SameLine();
             if (ImGui::Button("turn off")) {
                 log::set_traceback_level(log::level::off);
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("copy to clipboard")) {
+                copy_traceback_log_to_clipboard();
             }
 
             ImGui::Dummy(ImVec2{0.0f, 10.0f});

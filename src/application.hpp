@@ -67,9 +67,18 @@ namespace osmv {
         // set the number of samples (MSXAA) that multisampled renderers should use
         void set_samples(int);
 
-        // returns true if the application is rendering in debug mode (i.e. whether
-        // downstream rendererers should also render debug info)
+        // returns true if the application is rendering in debug mode
         [[nodiscard]] bool is_in_debug_mode() const noexcept;
+        void enable_debug_mode();
+        void disable_debug_mode();
+
+        // returns true if the application should throw an exception when an OpenGL exception
+        // is detected
+        //
+        // note: this only really works in debug mode, where OpenGL errors are caught
+        [[nodiscard]] bool is_opengl_throwing_on_error() const noexcept;
+        void enable_opengl_throwing_on_error();
+        void disable_opengl_throwing_on_error();
 
         // makes the application window fullscreen
         void make_fullscreen();
@@ -82,9 +91,5 @@ namespace osmv {
         void enable_vsync();
 
         void disable_vsync();
-
-        [[nodiscard]] bool is_in_opengl_debug_mode() const noexcept;
-        void enable_opengl_debug_mode();
-        void disable_opengl_debug_mode();
     };
 }

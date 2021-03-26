@@ -79,7 +79,20 @@ std::filesystem::path const& osmv::user_data_dir() {
 #include <unistd.h>
 
 // TODO
-void osmv::write_backtrace_to_log(log::level::Level_enum) {
+void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
+    void* array[50];
+    int size = backtrace(array, 50);
+    char** messages = backtrace_symbols(array, size);
+
+    if (messages == nullptr) {
+        return;
+    }
+
+    for (int i = 0; i < size; ++i) {
+        osmv::log::log(lvl, "%s", messages[i]);
+    }
+
+    free(messages);
 }
 
 /* This structure mirrors the one found in /usr/include/asm/ucontext.h */

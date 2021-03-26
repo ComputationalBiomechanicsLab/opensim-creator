@@ -23,6 +23,7 @@
 #include <imgui/imgui.h>
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
@@ -128,6 +129,8 @@ namespace igx {
     };
 }
 
+static std::atomic<bool> g_ThrowOnOpenGLErrors = true;
+
 // callback function suitable for glDebugMessageCallback
 static void glOnDebugMessage(
     GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei, const char* message, const void*) {
@@ -221,6 +224,30 @@ static void glOnDebugMessage(
         log::log(lvl, "    severity = GL_DEBUG_SEVERITY_NOTIFICATION");
         break;
     }
+
+    // if the application is configured to throw an exception whenever an OpenGL error occurs,
+    // then dump a backtrace to this source location (which, hopefully, should include the incidental
+    // OpenGL function in the stack somewhere)
+    if (g_ThrowOnOpenGLErrors) {
+        if (type != GL_DEBUG_TYPE_ERROR) {
+            return;
+        }
+
+        if (severity != GL_DEBUG_SEVERITY_MEDIUM && severity != GL_DEBUG_SEVERITY_HIGH) {
+            return;
+        }
+
+        // else: it's high enough severity/type to throw
+
+        // useful information for debugging: *where* did the error start
+        osmv::write_backtrace_to_log(osmv::log::level::err);
+
+        // throw from here: this *should* proagate via the OpenGL driver back into OSMV's handlers
+        // if GL_DEBUG_OUTPUT_SYNCHRONOUS is used
+        std::stringstream ss;
+        ss << "OpenGL error detected: id = " << id << ", message = " << message;
+        throw std::runtime_error{std::move(ss).str()};
+    }
 }
 
 static int get_max_multisamples() {
@@ -232,36 +259,6 @@ static int get_max_multisamples() {
     OSMV_ASSERT(v > 4);
 
     return v;
-}
-
-static void enable_opengl_debug_mode() {
-    log::info("trying to enable OpenGL debug mode (GL_DEBUG_OUTPUT)");
-
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glOnDebugMessage, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-        log::info("OpenGL debug mode enabled");
-    } else {
-        log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
-    }
-}
-
-static void disable_opengl_debug_mode() {
-    log::info("trying to disable OpenGL debug mode (GL_DEBUG_OUTPUT)");
-
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-        glDisable(GL_DEBUG_OUTPUT);
-        glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        log::info("OpenGL debug mode disabled");
-    } else {
-        log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
-    }
 }
 
 static bool is_in_opengl_debug_mode() {
@@ -294,11 +291,36 @@ static bool is_in_opengl_debug_mode() {
     return true;
 }
 
-static void toggle_opengl_debug_mode() {
+static void enable_opengl_debug_mode() {
     if (is_in_opengl_debug_mode()) {
-        disable_opengl_debug_mode();
+        log::info("application appears to already be in OpenGL debug mode: skipping enabling it");
+    }
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glOnDebugMessage, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        log::info("enabled OpenGL debug mode");
     } else {
-        enable_opengl_debug_mode();
+        log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
+    }
+}
+
+static void disable_opengl_debug_mode() {
+    if (!is_in_opengl_debug_mode()) {
+        log::info("application does not need to disable OpenGL debug mode: already in it: skipping");
+    }
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glDisable(GL_DEBUG_OUTPUT);
+        log::info("disabled OpenGL debug mode");
+    } else {
+        log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
     }
 }
 
@@ -359,9 +381,11 @@ public:
     // flag that is set whenever a screen requests that the application should quit
     bool should_quit = false;
 
-    // flag indicating whether the UI should draw certain debug UI elements (e.g. FPS counter,
-    // debug overlays)
-    bool is_drawing_debug_ui = false;
+    // flag indicating whether the application is in debug mode
+    //
+    // downstream, this flag is used to determine whether to install OpenGL debug handles, draw
+    // debug quads, debug UI elements, etc.
+    bool debug_mode = false;
 
     Impl() :
         // initialize SDL library
@@ -475,12 +499,11 @@ public:
 
                 // DEBUG MODE: toggled with F1
                 if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F1) {
-                    is_drawing_debug_ui = !is_drawing_debug_ui;
-                }
-
-                // OpenGL DEBUG MODE: enabled with F2
-                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F2) {
-                    ::toggle_opengl_debug_mode();
+                    if (is_in_debug_mode()) {
+                        disable_debug_mode();
+                    } else {
+                        enable_debug_mode();
+                    }
                 }
 
                 // osmv::Screen: feed event into the currently-showing osmv screen
@@ -571,7 +594,7 @@ public:
             //   some kind of transition
 
             // draw FPS overlay in bottom-right: handy for dev
-            if (is_drawing_debug_ui) {
+            if (is_in_debug_mode()) {
                 char buf[16];
                 double fps = static_cast<double>(ImGui::GetIO().Framerate);
                 std::snprintf(buf, sizeof(buf), "%.0f", fps);
@@ -634,6 +657,28 @@ public:
             }
         }
     }
+
+    [[nodiscard]] bool is_in_debug_mode() const noexcept {
+        return debug_mode;
+    }
+
+    void enable_debug_mode() {
+        if (is_in_debug_mode()) {
+            return;
+        }
+        log::info("enabling debug mode");
+        debug_mode = true;
+        ::enable_opengl_debug_mode();
+    }
+
+    void disable_debug_mode() {
+        if (!is_in_debug_mode()) {
+            return;
+        }
+        log::info("disabling debug mode");
+        debug_mode = false;
+        ::disable_opengl_debug_mode();
+    }
 };
 
 Application::Application() : impl{new Impl{}} {
@@ -685,7 +730,27 @@ void Application::set_samples(int s) {
 }
 
 bool Application::is_in_debug_mode() const noexcept {
-    return impl->is_drawing_debug_ui;
+    return impl->is_in_debug_mode();
+}
+
+void Application::enable_debug_mode() {
+    impl->enable_debug_mode();
+}
+
+void Application::disable_debug_mode() {
+    impl->disable_debug_mode();
+}
+
+bool Application::is_opengl_throwing_on_error() const noexcept {
+    return g_ThrowOnOpenGLErrors;
+}
+
+void Application::enable_opengl_throwing_on_error() {
+    g_ThrowOnOpenGLErrors = true;
+}
+
+void Application::disable_opengl_throwing_on_error() {
+    g_ThrowOnOpenGLErrors = false;
 }
 
 void Application::make_fullscreen() {
@@ -717,16 +782,4 @@ void Application::enable_vsync() {
 
 void Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
-}
-
-bool Application::is_in_opengl_debug_mode() const noexcept {
-    return ::is_in_opengl_debug_mode();
-}
-
-void Application::enable_opengl_debug_mode() {
-    ::enable_opengl_debug_mode();
-}
-
-void Application::disable_opengl_debug_mode() {
-    ::disable_opengl_debug_mode();
 }

@@ -138,18 +138,19 @@ void osmv::draw_main_menu_about_tab() {
         ImGui::PopID();
         ImGui::NextColumn();
 
-        ImGui::Text("OpenGL debug mode");
+        ImGui::Text("Debug mode");
         ImGui::SameLine();
         draw_help_marker(
-            "toggles whether OpenGL is running in debug mode. When enabled, OpenGL will dump error messages/warnings into the application log - useful for debugging OpenGL issues at runtime");
+            "Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ImGui::NextColumn();
         {
-            bool opengl_debug_enabled = Application::current().is_in_opengl_debug_mode();
-            if (ImGui::Checkbox("##opengldebugmodecheckbox", &opengl_debug_enabled)) {
-                if (opengl_debug_enabled) {
-                    Application::current().enable_opengl_debug_mode();
+            Application& app = Application::current();
+            bool debug_mode = app.is_in_debug_mode();
+            if (ImGui::Checkbox("##opengldebugmodecheckbox", &debug_mode)) {
+                if (debug_mode) {
+                    app.enable_debug_mode();
                 } else {
-                    Application::current().disable_opengl_debug_mode();
+                    app.disable_debug_mode();
                 }
             }
         }
