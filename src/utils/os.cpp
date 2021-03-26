@@ -78,6 +78,10 @@ std::filesystem::path const& osmv::user_data_dir() {
 #include <ucontext.h>
 #include <unistd.h>
 
+// TODO
+void osmv::write_backtrace_to_log(log::level::Level_enum) {
+}
+
 /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
 typedef struct _sig_ucontext {
     unsigned long uc_flags;
@@ -157,23 +161,26 @@ void osmv::install_backtrace_handler() {
 #include <stdlib.h>  // exit(), free()
 #include <execinfo.h>  // backtrace(), backtrace_symbols()
 
-[[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
-    osmv::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-
+void osmv::write_backtrace_to_log(log::level::Level_enum lvl) noexcept {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
 
     if (messages == nullptr) {
-        exit(EXIT_FAILURE);
+        return;
     }
 
-    osmv::log::error("backtrace:");
+    osmv::log::log(lvl, "backtrace:");
     for (int i = 0; i < size; ++i) {
-        osmv::log::error("%s", messages[i]);
+        osmv::log::log(lvl, "%s", messages[i]);
     }
 
     free(messages);
+}
+
+[[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+    osmv::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+    osmv::write_backtrace_to_log(osmv::log::level::err);
     exit(EXIT_FAILURE);
 }
 
@@ -194,7 +201,10 @@ void osmv::install_backtrace_handler() {
     }
 }
 #else
-// currently, noop on Windows/Mac
+// currently, noop on Windows
+void osmv::write_backtrace_to_log(log::level::Level_enum) {
+}
+
 void osmv::install_backtrace_handler() {
 }
 #endif
