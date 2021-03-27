@@ -25,15 +25,8 @@ namespace osmv {
         [[nodiscard]] static nonstd::span<char const* const> descriptions() noexcept;
     };
 
-    template struct Type_registry<OpenSim::Joint>;
     struct joint : Type_registry<OpenSim::Joint> {};
-
-    template struct Type_registry<OpenSim::ContactGeometry>;
     struct contact_geom : Type_registry<OpenSim::ContactGeometry> {};
-
-    template struct Type_registry<OpenSim::Constraint>;
     struct constraint : Type_registry<OpenSim::Constraint> {};
-
-    template struct Type_registry<OpenSim::Force>;
     struct force : Type_registry<OpenSim::Force> {};
 }
