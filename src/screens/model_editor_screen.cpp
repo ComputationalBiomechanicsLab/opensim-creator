@@ -5,6 +5,8 @@
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/opensim_helpers.hpp"
+#include "src/opensim_bindings/type_registry.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/circular_buffer.hpp"
@@ -16,6 +18,7 @@
 #include "src/widgets/attach_geometry_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
+#include "src/widgets/help_marker.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/main_menu_about_tab.hpp"
 #include "src/widgets/main_menu_file_tab.hpp"
@@ -501,99 +504,68 @@ static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joi
     }
 }
 
+static void draw_joint_type_switcher(Model_editor_screen::Impl& impl, OpenSim::Joint& selection) {
+    auto const* parent_jointset =
+        selection.hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&selection.getOwner()) : nullptr;
+
+    if (!parent_jointset) {
+        // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
+        // the joint type
+        return;
+    }
+
+    OpenSim::JointSet const& js = *parent_jointset;
+
+    int idx = -1;
+    for (int i = 0; i < js.getSize(); ++i) {
+        OpenSim::Joint const* j = &js[i];
+        if (j == &selection) {
+            idx = i;
+            break;
+        }
+    }
+
+    if (idx == -1) {
+        // logically, this should never happen
+        return;
+    }
+
+    ImGui::Text("joint type");
+    ImGui::NextColumn();
+
+    // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
+    std::optional<size_t> maybe_type_idx = joint::index_of(selection);
+    int type_idx = maybe_type_idx ? static_cast<int>(*maybe_type_idx) : -1;
+
+    auto known_joint_names = joint::names();
+
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    if (ImGui::Combo(
+            "##newjointtypeselector",
+            &type_idx,
+            known_joint_names.data(),
+            static_cast<int>(known_joint_names.size())) &&
+        type_idx >= 0) {
+
+        // copy + fixup  a prototype of the user's selection
+        std::unique_ptr<OpenSim::Joint> new_joint{joint::prototypes()[static_cast<size_t>(type_idx)]->clone()};
+        auto ptr = new_joint.get();
+        copy_common_joint_properties(selection, *new_joint);
+
+        // overwrite old joint in model
+        impl.before_modify_model();
+        const_cast<OpenSim::JointSet&>(js).set(idx, new_joint.release());
+        impl.set_selection(ptr);
+        impl.after_modify_model();
+    }
+    ImGui::NextColumn();
+}
+
 static void draw_joint_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::Joint& selection) {
 
     ImGui::Columns(2);
 
-    if (auto const* jsp = dynamic_cast<OpenSim::JointSet const*>(&selection.getOwner()); jsp) {
-        int idx = -1;
-        for (int i = 0; i < jsp->getSize(); ++i) {
-            if (&(*jsp)[i] == &selection) {
-                idx = i;
-                break;
-            }
-        }
-
-        if (idx >= 0) {
-            ImVec4 enabled_color{0.1f, 0.6f, 0.1f, 1.0f};
-            auto const& joint_tid = typeid(selection);
-
-            ImGui::Text("change joint type");
-            ImGui::NextColumn();
-
-            std::unique_ptr<OpenSim::Joint> added_joint = nullptr;
-
-            {
-                int pushed_styles = 0;
-                if (joint_tid == typeid(OpenSim::FreeJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
-                    ++pushed_styles;
-                }
-
-                if (ImGui::Button("fj")) {
-                    added_joint.reset(new OpenSim::FreeJoint{});
-                }
-
-                ImGui::PopStyleColor(pushed_styles);
-            }
-
-            ImGui::SameLine();
-            {
-                int pushed_styles = 0;
-                if (joint_tid == typeid(OpenSim::PinJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
-                    ++pushed_styles;
-                }
-
-                if (ImGui::Button("pj")) {
-                    added_joint.reset(new OpenSim::PinJoint{});
-                }
-
-                ImGui::PopStyleColor(pushed_styles);
-            }
-
-            ImGui::SameLine();
-            {
-                int pushed_styles = 0;
-                if (joint_tid == typeid(OpenSim::UniversalJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
-                    ++pushed_styles;
-                }
-
-                if (ImGui::Button("uj")) {
-                    added_joint.reset(new OpenSim::UniversalJoint{});
-                }
-
-                ImGui::PopStyleColor(pushed_styles);
-            }
-
-            ImGui::SameLine();
-            {
-                int pushed_styles = 0;
-                if (joint_tid == typeid(OpenSim::BallJoint)) {
-                    ImGui::PushStyleColor(ImGuiCol_Button, enabled_color);
-                    ++pushed_styles;
-                }
-
-                if (ImGui::Button("bj")) {
-                    added_joint.reset(new OpenSim::BallJoint{});
-                }
-
-                ImGui::PopStyleColor(pushed_styles);
-            }
-
-            if (added_joint) {
-                copy_common_joint_properties(selection, *added_joint);
-
-                impl.before_modify_model();
-                impl.set_selection(added_joint.get());
-                const_cast<OpenSim::JointSet*>(jsp)->set(idx, added_joint.release());
-                impl.after_modify_model();
-            }
-
-            ImGui::NextColumn();
-        }
-    }
+    draw_joint_type_switcher(impl, selection);
 
     // BEWARE: broke
     {
@@ -683,6 +655,10 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
         draw_joint_contextual_actions(impl, *joint);
     } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(impl.selection()); hcf) {
         draw_hcf_contextual_actions(impl, *hcf);
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.5f, 1.0f});
+        ImGui::Text("    (OpenSim::%s has no contextual actions)", impl.selection()->getConcreteClassName().c_str());
+        ImGui::PopStyleColor();
     }
 }
 
@@ -707,6 +683,15 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
         if (ImGui::Button(sockname.c_str())) {
             ImGui::OpenPopup(popupname.c_str());
         }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::Text(
+                "%s\n\nClick to reassign this socket's connectee",
+                socket.getConnecteeAsObject().getConcreteClassName().c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
 
         auto on_conectee_change = [&](auto const& new_conectee) {
             impl.before_modify_selection();
@@ -722,6 +707,41 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
     ImGui::Columns();
 }
 
+static void draw_selection_breadcrumbs(Model_editor_screen::Impl& impl) {
+    if (!impl.selection()) {
+        return;  // nothing selected
+    }
+
+    auto lst = osmv::path_to(*impl.selection());
+
+    if (lst.empty()) {
+        return;  // this shouldn't happen, but you never know...
+    }
+
+    float indent = 0.0f;
+
+    for (auto it = lst.begin(); it != lst.end() - 1; ++it) {
+        ImGui::Dummy(ImVec2{indent, 0.0f});
+        ImGui::SameLine();
+        if (ImGui::Button((*it)->getName().c_str())) {
+            impl.set_selection(const_cast<OpenSim::Component*>(*it));
+        }
+        if (ImGui::IsItemHovered()) {
+            impl.set_hover(const_cast<OpenSim::Component*>(*it));
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::Text("OpenSim::%s", (*it)->getConcreteClassName().c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        indent += 15.0f;
+    }
+
+    ImGui::Dummy(ImVec2{indent, 0.0f});
+    ImGui::SameLine();
+    ImGui::Text("%s", (*(lst.end() - 1))->getName().c_str());
+}
+
 static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     if (!impl.selection()) {
         ImGui::Text("(nothing selected)");
@@ -729,13 +749,24 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     }
 
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Text("hierarchy:");
+    ImGui::SameLine();
+    draw_help_marker("Where the selected component is in the model's component hierarchy");
+    ImGui::Separator();
+    draw_selection_breadcrumbs(impl);
+
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("top-level attributes:");
+    ImGui::SameLine();
+    draw_help_marker("Top-level properties on the OpenSim::Component itself");
     ImGui::Separator();
     draw_top_level_editor(impl);
 
     // contextual actions
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("contextual actions:");
+    ImGui::SameLine();
+    draw_help_marker("Actions that are specific to the type of OpenSim::Component that is currently selected");
     ImGui::Separator();
     draw_contextual_actions(impl);
 
@@ -745,8 +776,11 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     }
 
     // property editor
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("properties:");
+    ImGui::SameLine();
+    draw_help_marker(
+        "Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
     ImGui::Separator();
     {
         auto before_property_edited = [&]() { impl.before_modify_selection(); };
@@ -756,8 +790,11 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     }
 
     // socket editor
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("sockets:");
+    ImGui::SameLine();
+    draw_help_marker(
+        "What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
     ImGui::Separator();
     draw_socket_editor(impl);
 }
@@ -779,7 +816,9 @@ static void on_delete_selection(osmv::Model_editor_screen::Impl& impl) {
             impl.after_modify_model();
         }
     } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(selected); joint) {
-        if (auto const* jointset = dynamic_cast<OpenSim::JointSet const*>(&joint->getOwner()); jointset) {
+        if (auto const* jointset =
+                joint->hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&joint->getOwner()) : nullptr;
+            jointset) {
             for (int i = 0; i < jointset->getSize(); ++i) {
                 if (&jointset->get(i) == joint) {
 
@@ -811,6 +850,7 @@ static void main_menu_redo(Model_editor_screen::Impl& impl) {
 
 static void draw_main_menu_edit_tab(osmv::Model_editor_screen::Impl& impl) {
     if (ImGui::BeginMenu("Edit")) {
+
         if (ImGui::MenuItem("Undo", "Ctrl+Z", false, impl.can_undo())) {
             main_menu_undo(impl);
         }
@@ -818,6 +858,12 @@ static void draw_main_menu_edit_tab(osmv::Model_editor_screen::Impl& impl) {
         if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", false, impl.can_redo())) {
             main_menu_redo(impl);
         }
+
+        if (ImGui::MenuItem("Switch to simulator", "Ctrl+R")) {
+            auto copy = std::make_unique<OpenSim::Model>(impl.model());
+            Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
+        }
+
         ImGui::EndMenu();
     }
 }
@@ -835,7 +881,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
                 return true;
             case SDLK_z:
                 main_menu_redo(impl);
-                return true;
+                return false;
             }
             return false;
         }
@@ -857,6 +903,10 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
             return true;
         case SDLK_z:
             main_menu_undo(impl);
+            return true;
+        case SDLK_r:
+            auto copy = std::make_unique<OpenSim::Model>(impl.model());
+            Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
             return true;
         }
 

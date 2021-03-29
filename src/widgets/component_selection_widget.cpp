@@ -42,7 +42,7 @@ void osmv::draw_component_selection_widget(
 
         ImGui::Text("getOwner().getName()");
         ImGui::NextColumn();
-        ImGui::Text("%s", c.getOwner().getName().c_str());
+        ImGui::Text("%s", c.hasOwner() ? c.getOwner().getName().c_str() : "N/A (no owner)");
         ImGui::NextColumn();
 
         ImGui::Text("getAbsolutePath()");

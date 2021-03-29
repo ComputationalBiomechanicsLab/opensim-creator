@@ -40,16 +40,6 @@ static void render_actions_panel_content(
     std::function<void()> const& on_before_modify_model,
     std::function<void()> const& on_after_modify_model) {
 
-    // simulate button
-    {
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4{0.0f, 1.0f, 0.0f, 1.0f});
-        if (ImGui::MenuItem("simulate [Space]")) {
-            auto copy = std::make_unique<OpenSim::Model>(model);
-            Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
-        }
-        ImGui::PopStyleColor();
-    }
-
     // draw add body button
     {
         static constexpr char const* add_body_modal_name = "add body";

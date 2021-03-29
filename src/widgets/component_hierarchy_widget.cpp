@@ -21,7 +21,7 @@ void osmv::draw_component_hierarchy_widget(
     OpenSim::Component const* selection_top_level_parent = nullptr;
     if (current_selection) {
         OpenSim::Component const* c = current_selection;
-        while (&c->getOwner() != root) {
+        while (c != root && &c->getOwner() != root) {
             c = &c->getOwner();
         }
         selection_top_level_parent = c;
@@ -42,7 +42,7 @@ void osmv::draw_component_hierarchy_widget(
         {
             // push each element in the tree into a stack (child --> parent)
             OpenSim::Component const* c = &cr;
-            while (c != root) {
+            while (c != root && c->hasOwner()) {
                 OSMV_ASSERT(num_path_els < path_els.size());
                 path_els[num_path_els++] = c;
                 c = &c->getOwner();

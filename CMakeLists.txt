@@ -100,6 +100,7 @@ add_executable(osmv
     src/opensim_bindings/conversions.hpp
     src/opensim_bindings/type_registry.hpp
     src/opensim_bindings/type_registry.cpp
+    src/opensim_bindings/opensim_helpers.hpp
 
     src/widgets/add_component_popup.hpp
     src/widgets/add_component_popup.cpp

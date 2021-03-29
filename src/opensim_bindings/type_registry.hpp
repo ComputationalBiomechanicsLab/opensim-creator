@@ -3,6 +3,7 @@
 #include <nonstd/span.hpp>
 
 #include <memory>
+#include <optional>
 
 namespace OpenSim {
     class Joint;
@@ -12,7 +13,6 @@ namespace OpenSim {
 }
 
 namespace osmv {
-
     // static registry of types. The registry is guaranteed to:
     //
     // - return entries in constant time
@@ -23,6 +23,7 @@ namespace osmv {
         [[nodiscard]] static nonstd::span<std::unique_ptr<T const> const> prototypes() noexcept;
         [[nodiscard]] static nonstd::span<char const* const> names() noexcept;
         [[nodiscard]] static nonstd::span<char const* const> descriptions() noexcept;
+        [[nodiscard]] static std::optional<size_t> index_of(T const& v);
     };
 
     struct joint : Type_registry<OpenSim::Joint> {};

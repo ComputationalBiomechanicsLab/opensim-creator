@@ -22,6 +22,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
@@ -29,12 +30,14 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 // #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
+#include <algorithm>
 #include <array>
 
 using namespace osmv;
@@ -51,6 +54,16 @@ static auto extract_names(std::array<std::unique_ptr<Component>, N> const& compo
     std::array<char const*, N> rv;
     for (size_t i = 0; i < N; ++i) {
         rv[i] = components[i]->getConcreteClassName().c_str();
+    }
+    return rv;
+}
+
+template<typename Component, size_t N>
+static auto extract_type_hashes(std::array<std::unique_ptr<Component>, N> const& components)
+    -> std::array<size_t const, N> {
+    std::array<size_t const, N> rv{};
+    for (size_t i = 0; i < N; ++i) {
+        const_cast<size_t&>(rv[i]) = typeid(*components[i]).hash_code();
     }
     return rv;
 }
@@ -77,9 +90,22 @@ static std::unique_ptr<OpenSim::Joint const> joint_with_coords(std::initializer_
     return j;
 }
 
+template<typename Container, typename T>
+static std::optional<size_t> index_of(Container const& c, T const& v) {
+    using std::begin;
+    using std::end;
+
+    auto first = begin(c);
+    auto last = end(c);
+
+    auto it = std::find(first, last, v);
+
+    return it != last ? std::optional<size_t>{static_cast<size_t>(std::distance(first, it))} : std::nullopt;
+}
+
 // Joint LUTs
 
-static std::array<std::unique_ptr<OpenSim::Joint const>, 9> joint_prototypes = {
+static std::array<std::unique_ptr<OpenSim::Joint const>, 10> joint_prototypes = {
     joint_with_coords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
     joint_with_coords<OpenSim::PinJoint>({"rz"}),
     joint_with_coords<OpenSim::UniversalJoint>({"rx", "ry"}),
@@ -89,6 +115,7 @@ static std::array<std::unique_ptr<OpenSim::Joint const>, 9> joint_prototypes = {
     joint_with_coords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
     joint_with_coords<OpenSim::SliderJoint>({"tx"}),
     joint_with_coords<OpenSim::WeldJoint>({}),
+    joint_with_coords<OpenSim::CustomJoint>({}),
     // joint_with_coords<OpenSim::ScapulothoracicJoint>(
     //    {"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
 };
@@ -104,11 +131,15 @@ static constexpr std::array<char const*, joint_prototypes.size()> joint_descript
     "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
     "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.",
     //"A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon
-    //which the joint frame of scapul rides.",
+    // which the joint frame of scapul rides.",
+    "A class implementing a custom joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc.) as well as more complex biomechanical joints. The behavior of a custom joint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis has a function of joint coordinates that describes the motion about or along the transform axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is handled by transform axis functions that depend on the same coordinate(s).",
 };
+static auto const joint_hashes = extract_type_hashes(joint_prototypes);
+
 static_assert(joint_names.size() == joint_prototypes.size());
 static_assert(joint_descriptions.size() == joint_prototypes.size());
 static_assert(all_elements_not_null(joint_descriptions), "description missing?");
+static_assert(joint_hashes.size() == joint_prototypes.size());
 
 // Constraint LUTs
 
@@ -131,9 +162,12 @@ static constexpr std::array<char const*, constraint_prototypes.size()> constrain
     // function.",
     "Implements a Weld Constraint. A WeldConstraint eliminates up to 6 dofs of a model by fixing two PhysicalFrames together at their origins aligning their axes.  PhysicalFrames are generally Ground, Body, or PhysicalOffsetFrame attached to a PhysicalFrame. The underlying Constraint in Simbody is a SimTK::Constraint::Weld.",
 };
+static auto const constraint_hashes = extract_type_hashes(constraint_prototypes);
+
 static_assert(constraint_names.size() == constraint_prototypes.size());
 static_assert(constraint_descriptions.size() == constraint_prototypes.size());
 static_assert(all_elements_not_null(constraint_descriptions), "description missing?");
+static_assert(constraint_hashes.size() == constraint_prototypes.size());
 
 // ContactGeometry LUTs
 
@@ -149,9 +183,12 @@ static constexpr std::array<char const*, contact_geom_prototypes.size()> contact
     "Represents a half space (that is, everything to one side of an infinite plane) for use in contact modeling.  In its local coordinate system, all points for which x>0 are considered to be inside the geometry. Its location and orientation properties can be used to move and rotate it to represent other half spaces.Represents a spherical object for use in contact modeling.",
     "Represents a polygonal mesh for use in contact modeling",
 };
+static auto const contact_geom_hashes = extract_type_hashes(contact_geom_prototypes);
+
 static_assert(contact_geom_names.size() == contact_geom_prototypes.size());
 static_assert(contact_geom_descriptions.size() == contact_geom_prototypes.size());
 static_assert(all_elements_not_null(contact_geom_descriptions), "description missing?");
+static_assert(contact_geom_hashes.size() == contact_geom_prototypes.size());
 
 // Force LUTs
 
@@ -191,9 +228,14 @@ static constexpr std::array<char const*, force_prototypes.size()> force_descript
     // force-velocity relationships are evaluated directly. The control of this model is its activation. Force
     // production is instantaneous with no excitation-to-activation dynamics and excitation=activation."
 };
+static auto const force_hashes = extract_type_hashes(force_prototypes);
+
 static_assert(force_names.size() == force_prototypes.size());
 static_assert(force_descriptions.size() == force_prototypes.size());
 static_assert(all_elements_not_null(force_descriptions), "description missing?");
+static_assert(force_hashes.size() == force_prototypes.size());
+
+// Type_registry<OpenSim::Joint>
 
 template<>
 nonstd::span<std::unique_ptr<OpenSim::Joint const> const> osmv::Type_registry<OpenSim::Joint>::prototypes() noexcept {
@@ -209,6 +251,13 @@ template<>
 nonstd::span<char const* const> osmv::Type_registry<OpenSim::Joint>::descriptions() noexcept {
     return joint_descriptions;
 }
+
+template<>
+std::optional<size_t> osmv::Type_registry<OpenSim::Joint>::index_of(OpenSim::Joint const& joint) {
+    return ::index_of(joint_hashes, typeid(joint).hash_code());
+}
+
+// Type_registry<OpenSim::ContactGeometry>
 
 template<>
 nonstd::span<std::unique_ptr<OpenSim::ContactGeometry const> const>
@@ -227,6 +276,13 @@ nonstd::span<char const* const> osmv::Type_registry<OpenSim::ContactGeometry>::d
 }
 
 template<>
+std::optional<size_t> osmv::Type_registry<OpenSim::ContactGeometry>::index_of(OpenSim::ContactGeometry const& cg) {
+    return ::index_of(contact_geom_hashes, typeid(cg).hash_code());
+}
+
+// Type_registry<OpenSim::Constraint>
+
+template<>
 nonstd::span<std::unique_ptr<OpenSim::Constraint const> const>
     osmv::Type_registry<OpenSim::Constraint>::prototypes() noexcept {
     return constraint_prototypes;
@@ -243,6 +299,13 @@ nonstd::span<char const* const> osmv::Type_registry<OpenSim::Constraint>::descri
 }
 
 template<>
+std::optional<size_t> osmv::Type_registry<OpenSim::Constraint>::index_of(OpenSim::Constraint const& constraint) {
+    return ::index_of(constraint_hashes, typeid(constraint).hash_code());
+}
+
+// Type_registry<OpenSim::Force>
+
+template<>
 nonstd::span<std::unique_ptr<OpenSim::Force const> const> osmv::Type_registry<OpenSim::Force>::prototypes() noexcept {
     return force_prototypes;
 }
@@ -255,4 +318,9 @@ nonstd::span<char const* const> osmv::Type_registry<OpenSim::Force>::names() noe
 template<>
 nonstd::span<char const* const> osmv::Type_registry<OpenSim::Force>::descriptions() noexcept {
     return force_descriptions;
+}
+
+template<>
+std::optional<size_t> osmv::Type_registry<OpenSim::Force>::index_of(OpenSim::Force const& force) {
+    return ::index_of(force_hashes, typeid(force).hash_code());
 }
