@@ -671,6 +671,14 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
     OpenSim::Component& selection = *impl.selection();
 
     std::vector<std::string> socknames = selection.getSocketNames();
+
+    if (socknames.empty()) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.5f, 1.0f});
+        ImGui::Text("    (OpenSim::%s has no sockets)", impl.selection()->getConcreteClassName().c_str());
+        ImGui::PopStyleColor();
+        return;
+    }
+
     ImGui::Columns(2);
     for (std::string const& sn : socknames) {
         ImGui::Text("%s", sn.c_str());
@@ -862,6 +870,36 @@ static void draw_main_menu_edit_tab(osmv::Model_editor_screen::Impl& impl) {
         if (ImGui::MenuItem("Switch to simulator", "Ctrl+R")) {
             auto copy = std::make_unique<OpenSim::Model>(impl.model());
             Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
+        }
+
+        if (ImGui::BeginMenu("Utilities")) {
+            if (ImGui::MenuItem("Disable all wrapping surfaces")) {
+                OpenSim::Model& m = impl.model();
+                impl.before_modify_model();
+                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+                    for (int i = 0; i < wos.getSize(); ++i) {
+                        OpenSim::WrapObject& wo = wos[i];
+                        wo.set_active(false);
+                        wo.upd_Appearance().set_visible(false);
+                    }
+                }
+                impl.after_modify_model();
+            }
+
+            if (ImGui::MenuItem("Enable all wrapping surfaces")) {
+                OpenSim::Model& m = impl.model();
+                impl.before_modify_model();
+                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+                    for (int i = 0; i < wos.getSize(); ++i) {
+                        OpenSim::WrapObject& wo = wos[i];
+                        wo.set_active(true);
+                        wo.upd_Appearance().set_visible(true);
+                    }
+                }
+                impl.after_modify_model();
+            }
+
+            ImGui::EndMenu();
         }
 
         ImGui::EndMenu();
