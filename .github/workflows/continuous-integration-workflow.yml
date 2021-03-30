@@ -17,7 +17,8 @@ jobs:
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
       with:
-        path: osmv-build/*.pdb
+        path: osmv-build/RelWithDebInfo/*.pdb
+        if-no-files-found: error
 
   ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
