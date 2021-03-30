@@ -25,6 +25,8 @@ mkdir osmv-build
 cd osmv-build
 cmake ../ -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
 cmake --build . --config RelWithDebInfo --target package || exit /b
+REM print dir to show artifacts
+dir .
 cd ..
 
 if %errorlevel% neq 0 exit /b %errorlevel%
