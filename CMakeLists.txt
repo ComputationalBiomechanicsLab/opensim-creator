@@ -182,6 +182,9 @@ add_executable(osmv
     src/assertions.hpp
     src/assertions.cpp
     src/osmv.cpp
+
+    # add a resources file, which tells MSVC how to compile the icon etc. into the exe
+    $<$<CXX_COMPILER_ID:MSVC>:resources.rc>
 )
 target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
