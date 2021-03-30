@@ -4,7 +4,7 @@ A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensi
 
 🚧 **ALPHA-STAGE SOFTWARE: take everything you see here with a pinch of salt and extremely low expectations** 🚧
 
-![screenshot](0.0.1-screenshot.png)
+![screenshot](screenshot.png)
 
 `osmv` is a lightweight GUI for the OpenSim C++ API. It is designed to be easy to build and only depends on OpenSim + lightweight GUI libraries (SDL2, GLEW, and ImGui). `osmv` was developed to make it easy to create prototype GUIs on top of the OpenSim API. 
 
