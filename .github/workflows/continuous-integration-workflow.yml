@@ -15,6 +15,9 @@ jobs:
         name: osmv_windows.exe
         path: osmv-build/*win64.exe
         if-no-files-found: error
+    - uses: actions/upload-artifact@v2
+      with:
+        path: osmv-build/*.pdb
 
   ubuntu1604:
     name: Build on Ubuntu 16.04 (Xenial)
