@@ -265,6 +265,14 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
+static LONG crash_handler(EXCEPTION_POINTERS* info) {
+    osmv::log::error("exception propagated to root of OSMV: might be a segfault?");
+    osmv::write_backtrace_to_log(osmv::log::level::err);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
 void osmv::install_backtrace_handler() {
+    SetErrorMode(0);  // system default: display all errors
+    SetUnhandledExceptionFilter(crash_handler);  // when the application crashes, call this handler
 }
 #endif
