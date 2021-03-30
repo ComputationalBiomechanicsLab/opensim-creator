@@ -214,9 +214,55 @@ void osmv::install_backtrace_handler() {
     }
 }
 #else
-// currently, noop on Windows
+
+#include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
+#include <cinttypes>  // PRIXPTR
+
 void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
-    log::log(lvl, "    (writing backtraces does not currently work in Windows)");
+    constexpr size_t skipped_frames = 0;
+    constexpr size_t num_frames = 16;
+
+    PVOID return_addrs[num_frames];
+
+    // popupate [0, n) with return addresses (see MSDN)
+    USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
+
+    log::log(lvl, "backtrace:");
+    for (size_t i = 0; i < n; ++i) {
+        // figure out where the address is relative to the start of the page range the address
+        // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
+        MEMORY_BASIC_INFORMATION bmi;
+        VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
+        DWORD64 base_addr = reinterpret_cast<DWORD64>(bmi.AllocationBase);
+        static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
+
+        // use the base address to figure out the file name
+        TCHAR module_namebuf[1024];
+        GetModuleFileName(reinterpret_cast<HMODULE>(base_addr), module_namebuf, 1024);
+
+        // find the final element in the filename
+        TCHAR* cursor = module_namebuf;
+        TCHAR* filename_start = cursor;
+        {
+            while (*cursor != '\0') {
+                if (*cursor == '\\') {
+                    filename_start = cursor + 1;  // skip the slash
+                }
+                ++cursor;
+            }
+        }
+
+        PVOID relative_addr = reinterpret_cast<PVOID>(reinterpret_cast<DWORD64>(return_addrs[i]) - base_addr);
+
+        log::log(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
+    }
+    log::log(
+        lvl,
+        "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
+    log::log(lvl, "to analyze the backtrace in WinDbg: `ln osmv.exe+ADDR`");
+
+    // in windbg: ln osmv.exe+ADDR
+    // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
 void osmv::install_backtrace_handler() {
