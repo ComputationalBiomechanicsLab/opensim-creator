@@ -177,25 +177,11 @@ void osmv::Splash_screen::draw() {
         auto wd = app.window_dimensions();
         ImVec2 wd_imgui = {static_cast<float>(wd.w), static_cast<float>(wd.h)};
 
-        char const* l1 = "osmv " OSMV_VERSION_STRING;
+        char const* l1 = "osmv " OSMV_VERSION_STRING " (build " OSMV_BUILD_ID ")";
         ImVec2 l1_dims = ImGui::CalcTextSize(l1);
 
-        char buf[512];
-        std::snprintf(
-            buf,
-            sizeof(buf),
-            "OpenGL: %s, %s (%s); GLSL %s",
-            glGetString(GL_VENDOR),
-            glGetString(GL_RENDERER),
-            glGetString(GL_VERSION),
-            glGetString(GL_SHADING_LANGUAGE_VERSION));
-        ImVec2 l2_dims = ImGui::CalcTextSize(buf);
-
-        ImVec2 l2_pos = {0, wd_imgui.y - l2_dims.y};
-        ImVec2 l1_pos = l2_pos;
-        l1_pos.y -= l1_dims.y;
+        ImVec2 l1_pos = {0, wd_imgui.y - l1_dims.y};
 
         ImGui::GetBackgroundDrawList()->AddText(l1_pos, 0xaaaaaaaa, l1);
-        ImGui::GetBackgroundDrawList()->AddText(l2_pos, 0xaaaaaaaa, buf);
     }
 }

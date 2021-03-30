@@ -47,6 +47,15 @@ if(OSMV_USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 endif()
 
+# set a build ID so that errors in the binary can be linked to source
+if(DEFINED ENV{GITHUB_RUN_ID})
+    set(OSMV_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
+else()
+    string(RANDOM RANDOM_ID)
+    set(OSMV_BUILD_ID "CUSTOM_${RANDOM_ID}")
+    unset(RANDOM_ID)
+endif()
+
 
 # --------------- dependency management ----------------- #
 

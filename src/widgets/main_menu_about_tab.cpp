@@ -85,6 +85,11 @@ void osmv::draw_main_menu_about_tab() {
         ImGui::Text("%s", OSMV_VERSION_STRING);
         ImGui::NextColumn();
 
+        ImGui::Text("OSMV_BUILD_ID");
+        ImGui::NextColumn();
+        ImGui::Text("%s", OSMV_BUILD_ID);
+        ImGui::NextColumn();
+
         ImGui::Text("GL_VENDOR");
         ImGui::NextColumn();
         ImGui::Text("%s", glGetString(GL_VENDOR));
