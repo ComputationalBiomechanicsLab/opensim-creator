@@ -209,16 +209,14 @@ void osmv::Splash_screen::draw() {
 
     bool b = true;
     if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
-        void* texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(impl->logo.raw_handle()));
-        ImGui::Dummy(ImVec2{ImGui::GetContentRegionAvailWidth() / 2.0f - 125.0f/2.0f, 0.0f});
-        ImGui::SameLine();
-        ImVec2 image_dimensions{125.0f, 125.0f};
-        ImGui::Image(texture_handle, image_dimensions);
+        {
+            void* texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(impl->logo.raw_handle()));
+            ImGui::Dummy(ImVec2{ImGui::GetContentRegionAvailWidth() / 2.0f - 125.0f / 2.0f, 0.0f});
+            ImGui::SameLine();
+            ImVec2 image_dimensions{125.0f, 125.0f};
+            ImGui::Image(texture_handle, image_dimensions);
+        }
 
-        // required by ImGui::Image
-        //
-        // UV coords: ImGui::Image uses different texture coordinates from the renderer
-        //            (specifically, Y is reversed)
         ImGui::Columns(2);
 
         // left-column: utils etc.
