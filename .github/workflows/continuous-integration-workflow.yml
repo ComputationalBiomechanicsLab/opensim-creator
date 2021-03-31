@@ -17,6 +17,7 @@ jobs:
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
       with:
+        name: osmv_windows_pdb
         path: osmv-build/RelWithDebInfo/*.pdb
         if-no-files-found: error
 
