@@ -633,13 +633,25 @@ public:
                 internal_start_render_loop(std::move(s));
                 quit = true;
             } catch (std::exception const& ex) {
-                log::error("exception thrown by the main render loop");
-                log::error("message: %s", ex.what());
-                log::error("attempting to show error in the UI");
+                // top-level disaster recovery
+                //
+                // if an exception propagates all the way up here:
+                //
+                // - print it to the log (handy for Linux/Mac users, and Windows users
+                //   can read the log if it's persisted somewhere)
+                //
+                // - disable debug mode, because it might produce exceptions even while
+                //   the error screen is showing, which could cause the error screen to
+                //   not render
+                //
+                // - transition the UI to an error screen that shows the error + log
+                //   (handy for general users who don't have a console and don't know
+                //   where the log is saved)
+                log::error("unhandled exception thrown in main loop: %s", ex.what());
+                log::error("transitioning the UI to the error screen");
 
-                // if an exception is thrown all the way up here, print it
-                // to the stdout/stderr (Linux/Mac users with decent consoles)
-                // but also throw up a basic error message GUI (Windows users)
+                disable_debug_mode();
+
                 s = std::make_unique<Error_screen>(ex);
             }
         }
