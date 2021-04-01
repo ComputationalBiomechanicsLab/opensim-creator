@@ -1,39 +1,38 @@
 #include "splash_screen.hpp"
 
 #include "osmv_config.hpp"
+#include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gpu_cache.hpp"
+#include "src/3d/mesh_generation.hpp"
+#include "src/3d/mesh_instance.hpp"
+#include "src/3d/polar_camera.hpp"
+#include "src/3d/render_target.hpp"
+#include "src/3d/renderer.hpp"
+#include "src/3d/texturing.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
+#include "src/constants.hpp"
 #include "src/screens/experimental_merged_screen.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
-#include "src/utils/geometry.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/widgets/main_menu_about_tab.hpp"
 #include "src/widgets/main_menu_file_tab.hpp"
-#include "src/3d/texturing.hpp"
-#include "src/3d/render_target.hpp"
-#include "src/3d/gpu_cache.hpp"
-#include "src/3d/mesh_instance.hpp"
-#include "src/3d/drawlist.hpp"
-#include "src/constants.hpp"
-#include "src/3d/renderer.hpp"
-#include "src/3d/polar_camera.hpp"
-#include "src/3d/mesh_generation.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
-#include <imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <imgui.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -80,9 +79,11 @@ namespace {
 struct Splash_screen::Impl final {
     Main_menu_file_tab_state mm_state;
     gl::Texture_2d logo =
-        osmv::load_tex(osmv::config::resource_path("logo.png").string().c_str());
-    gl::Texture_2d cz_logo = osmv::load_tex(osmv::config::resource_path("chanzuckerberg_logo.png").string().c_str());
-    gl::Texture_2d tud_logo = osmv::load_tex(osmv::config::resource_path("tud_logo.png").string().c_str());
+        osmv::load_tex(osmv::config::resource_path("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d cz_logo = osmv::load_tex(
+        osmv::config::resource_path("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d tud_logo =
+        osmv::load_tex(osmv::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     Gpu_cache cache;
     Drawlist drawlist;
     Polar_camera camera;
@@ -157,6 +158,14 @@ bool osmv::Splash_screen::on_event(SDL_Event const& e) {
 void osmv::Splash_screen::draw() {
     Application& app = Application::current();
 
+    constexpr glm::vec2 menu_dims = {700.0f, 700.0f};
+    glm::vec2 window_dims;
+    {
+        auto [w, h] = app.window_dimensions();
+        window_dims.x = static_cast<float>(w);
+        window_dims.y = static_cast<float>(h);
+    }
+
     // draw chequered floor background
     {
         impl->render_target.reconfigure(app.window_dimensions().w, app.window_dimensions().h, app.samples());
@@ -186,6 +195,29 @@ void osmv::Splash_screen::draw() {
         gl::BindVertexArray();
     }
 
+    // draw logo just above the menu
+    {
+        constexpr glm::vec2 logo_dims = {125.0f, 125.0f};
+        glm::vec2 scale = logo_dims / window_dims;
+
+        glm::mat4 mtx = glm::scale(
+            glm::translate(
+                glm::identity<glm::mat4>(), glm::vec3{0.0f, (menu_dims.y + logo_dims.y) / window_dims.y, 0.0f}),
+            glm::vec3{scale.x, scale.y, 1.0f});
+
+        gl::UseProgram(impl->pts.p);
+        gl::Uniform(impl->pts.uMVP, mtx);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(impl->logo);
+        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(impl->quad_vao);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        gl::BindVertexArray();
+    }
 
     if (ImGui::BeginMainMenuBar()) {
         draw_main_menu_file_tab(impl->mm_state);
@@ -195,28 +227,17 @@ void osmv::Splash_screen::draw() {
 
     // center the menu
     {
-        static constexpr int menu_width = 700;
-        static constexpr int menu_height = 700;
-
         auto d = app.window_dimensions();
-        float menu_x = static_cast<float>((d.w - menu_width) / 2);
-        float menu_y = static_cast<float>((d.h - menu_height) / 2);
+        float menu_x = static_cast<float>((d.w - menu_dims.x) / 2);
+        float menu_y = static_cast<float>((d.h - menu_dims.y) / 2);
 
         ImGui::SetNextWindowPos(ImVec2(menu_x, menu_y));
-        ImGui::SetNextWindowSize(ImVec2(menu_width, -1));
-        ImGui::SetNextWindowSizeConstraints(ImVec2(menu_width, menu_height), ImVec2(menu_width, menu_height));
+        ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
+        ImGui::SetNextWindowSizeConstraints(menu_dims, menu_dims);
     }
 
     bool b = true;
     if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
-        {
-            void* texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(impl->logo.raw_handle()));
-            ImGui::Dummy(ImVec2{ImGui::GetContentRegionAvailWidth() / 2.0f - 125.0f / 2.0f, 0.0f});
-            ImGui::SameLine();
-            ImVec2 image_dimensions{125.0f, 125.0f};
-            ImGui::Image(texture_handle, image_dimensions);
-        }
-
         ImGui::Columns(2);
 
         // left-column: utils etc.
@@ -292,37 +313,56 @@ void osmv::Splash_screen::draw() {
         }
 
         ImGui::Columns();
-
-        // cz logo
-        {
-            void* handle = reinterpret_cast<void*>(static_cast<uintptr_t>(impl->cz_logo.raw_handle()));
-            ImGui::Dummy(ImVec2{ImGui::GetContentRegionAvailWidth() / 2.0f - 128.0f / 2.0f, 0.0f});
-            ImGui::SameLine();
-            ImVec2 image_dimensions{128.0f, 128.0f};
-            ImGui::Image(handle, image_dimensions);
-        }
-
-        // tud logo
-        {
-            void* handle = reinterpret_cast<void*>(static_cast<uintptr_t>(impl->tud_logo.raw_handle()));
-            ImGui::Dummy(ImVec2{ImGui::GetContentRegionAvailWidth() / 2.0f - 128.0f / 2.0f, 0.0f});
-            ImGui::SameLine();
-            ImVec2 image_dimensions{128.0f, 128.0f};
-            ImGui::Image(handle, image_dimensions);
-        }
     }
     ImGui::End();
 
-    // bottom-right: version info etc.
+    // draw logo just above the menu
     {
-        auto wd = app.window_dimensions();
-        ImVec2 wd_imgui = {static_cast<float>(wd.w), static_cast<float>(wd.h)};
+        constexpr glm::vec2 logo_dims = {128.0f, 128.0f};
+        glm::vec2 scale = logo_dims / window_dims;
 
-        char const* l1 = "osmv " OSMV_VERSION_STRING " (build " OSMV_BUILD_ID ")";
-        ImVec2 l1_dims = ImGui::CalcTextSize(l1);
+        glm::mat4 mtx = glm::scale(
+            glm::translate(
+                glm::identity<glm::mat4>(),
+                glm::vec3{-logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
+            glm::vec3{scale.x, scale.y, 1.0f});
 
-        ImVec2 l1_pos = {0, wd_imgui.y - l1_dims.y};
+        gl::UseProgram(impl->pts.p);
+        gl::Uniform(impl->pts.uMVP, mtx);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(impl->tud_logo);
+        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(impl->quad_vao);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        gl::BindVertexArray();
+    }
 
-        ImGui::GetBackgroundDrawList()->AddText(l1_pos, 0xff000000, l1);
+    // draw logo just above the menu
+    {
+        constexpr glm::vec2 logo_dims = {128.0f, 128.0f};
+        glm::vec2 scale = logo_dims / window_dims;
+
+        glm::mat4 mtx = glm::scale(
+            glm::translate(
+                glm::identity<glm::mat4>(),
+                glm::vec3{logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
+            glm::vec3{scale.x, scale.y, 1.0f});
+
+        gl::UseProgram(impl->pts.p);
+        gl::Uniform(impl->pts.uMVP, mtx);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(impl->cz_logo);
+        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(impl->quad_vao);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        gl::BindVertexArray();
     }
 }
