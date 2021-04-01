@@ -5,6 +5,7 @@
 #include <toml.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <ctime>
 #include <filesystem>
@@ -161,7 +162,7 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
     }
 
     // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
-    auto begin = rfs.end() - static_cast<long>(std::min(static_cast<size_t>(10), rfs.size()));
+    auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
     for (auto it = begin; it != rfs.end(); ++it) {
         fd << it->last_opened_unix_timestamp.count() << ' ' << it->path << std::endl;
     }
