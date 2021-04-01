@@ -856,7 +856,7 @@ static void main_menu_redo(Model_editor_screen::Impl& impl) {
     impl.do_redo();
 }
 
-static void draw_main_menu_edit_tab(osmv::Model_editor_screen::Impl& impl) {
+static void draw_main_menu_actions_tab(osmv::Model_editor_screen::Impl& impl) {
     if (ImGui::BeginMenu("Edit")) {
 
         if (ImGui::MenuItem("Undo", "Ctrl+Z", false, impl.can_undo())) {
@@ -1012,8 +1012,14 @@ void osmv::Model_editor_screen::draw() {
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
         draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());
-        draw_main_menu_edit_tab(*impl);
+        draw_main_menu_actions_tab(*impl);
         draw_main_menu_about_tab();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+        if (ImGui::Button("Switch to simulator (Ctrl+R)")) {
+            auto copy = std::make_unique<OpenSim::Model>(impl->model());
+            Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
+        }
+        ImGui::PopStyleColor();
         ImGui::EndMainMenuBar();
     }
 

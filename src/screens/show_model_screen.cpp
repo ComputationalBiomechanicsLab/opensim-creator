@@ -521,55 +521,117 @@ struct Show_model_screen::Impl final {
         file_poller{1000ms, model->getDocumentFileName()} {
     }
 
+    bool action_try_reload_model_file() {
+        std::string file = model->getDocumentFileName();
+        if (!file.empty()) {
+            model = std::make_unique<OpenSim::Model>(file);
+            on_user_edited_model();
+            return true;
+        }
+        return false;
+    }
+
+    void action_reset_model_to_initial_state() {
+        // R: reset the model to its initial state
+        *latest_state = model->initSystem();
+        on_user_edited_state();
+    }
+
+    void action_toggle_sim_start_or_stop() {
+        if (simulator_tab.simulator && simulator_tab.simulator->is_running()) {
+            simulator_tab.simulator->request_stop();
+        } else {
+            simulator_tab.simulator.emplace(
+                Fd_simulation_params{*model,
+                                     *latest_state,
+                                     std::chrono::duration<double>{static_cast<double>(simulator_tab.fd_final_time)},
+                                     simulator_tab.integrator_method});
+        }
+    }
+
+    void action_switch_to_editor() {
+        Application::current().request_screen_transition<Model_editor_screen>(std::make_unique<OpenSim::Model>(*model));
+    }
+
+    void action_transition_to_splash_screen() {
+        Application::current().request_screen_transition<Splash_screen>();
+    }
+
+    void action_clear_selection() {
+        selected_component = nullptr;
+    }
+
+    void action_quit_application() {
+        Application::current().request_quit_application();
+    }
+
+    void action_double_simulation_time() {
+        simulator_tab.fd_final_time *= 2.0f;
+    }
+
+    void action_half_simulation_time() {
+        simulator_tab.fd_final_time /= 2.0f;
+    }
+
+    bool handle_keyboard_event(SDL_KeyboardEvent const& e) {
+        if (e.keysym.mod & KMOD_CTRL) {
+            switch (e.keysym.sym) {
+            case SDLK_r:
+                return action_try_reload_model_file();
+            case SDLK_e:
+                action_switch_to_editor();
+                return true;
+            case SDLK_q:
+                action_quit_application();
+                return true;
+            }
+        }
+
+        // unmodified keybinds
+        switch (e.keysym.sym) {
+        case SDLK_r:
+            action_reset_model_to_initial_state();
+            return true;
+        case SDLK_SPACE:
+            action_toggle_sim_start_or_stop();
+            return true;
+        case SDLK_c:
+            action_clear_selection();
+            return true;
+        case SDLK_EQUALS:
+            action_double_simulation_time();
+            return true;
+        case SDLK_MINUS:
+            action_half_simulation_time();
+            return true;
+        }
+
+        return false;
+    }
+
+    void handle_mouseup_event(SDL_MouseButtonEvent const& e) {
+        // maybe they're trying to select something in the viewport, so check if they are
+        // hovered over a component and select it if they are
+        if (e.button == SDL_BUTTON_RIGHT && current_hover) {
+            selected_component = current_hover;
+        }
+    }
+
     // handle top-level UI event (user click, user drag, etc.)
     bool handle_event(SDL_Event const& e) {
-        if (e.type == SDL_KEYDOWN) {
-            switch (e.key.keysym.sym) {
-            case SDLK_r: {
+        bool handled = false;
 
-                // CTRL + R: reload the model from scratch
-                SDL_Keymod km = SDL_GetModState();
-                if (km & (KMOD_LCTRL | KMOD_RCTRL)) {
-                    std::string file = model->getDocumentFileName();
-                    if (!file.empty()) {
-                        model = std::make_unique<OpenSim::Model>(file);
-                        on_user_edited_model();
-                    }
-                    return true;
-                }
+        switch (e.type) {
+        case SDL_KEYDOWN:
+            handled = handle_keyboard_event(e.key);
+            break;
+        case SDL_MOUSEBUTTONUP:
+            handle_mouseup_event(e.button);  // doesn't affect handling
+            break;
+        }
 
-                // R: reset the model to its initial state
-                *latest_state = model->initSystem();
-                on_user_edited_state();
-
-                return true;
-            }
-            case SDLK_SPACE: {
-                if (simulator_tab.simulator && simulator_tab.simulator->is_running()) {
-                    simulator_tab.simulator->request_stop();
-                } else {
-                    simulator_tab.simulator.emplace(Fd_simulation_params{
-                        *model,
-                        *latest_state,
-                        std::chrono::duration<double>{static_cast<double>(simulator_tab.fd_final_time)},
-                        simulator_tab.integrator_method});
-                }
-                break;
-            case SDLK_ESCAPE:
-                Application::current().request_screen_transition<Splash_screen>();
-                return true;
-            case SDLK_c:
-                // clear selection
-                selected_component = nullptr;
-                return true;
-            }
-            }
-        } else if (e.type == SDL_MOUSEBUTTONUP) {
-            // otherwise, maybe they're trying to select something in the viewport, so
-            // check if they are hovered over a component and select it if they are
-            if (e.button.button == SDL_BUTTON_RIGHT && current_hover) {
-                selected_component = current_hover;
-            }
+        if (handled) {
+            return handled;
         }
 
         // if we've got this far, the event is still unhandled: try and propagate it to
@@ -577,10 +639,11 @@ struct Show_model_screen::Impl final {
         for (auto& viewer : model_viewers) {
             if (viewer.is_moused_over()) {
                 viewer.on_event(e);
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     // "tick" the UI state (usually, used for updating animations etc.)
@@ -645,39 +708,34 @@ struct Show_model_screen::Impl final {
         return simulator_tab.simulator && simulator_tab.simulator->is_running();
     }
 
-    void draw_main_menu_edit_tab() {
-        if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("Edit model")) {
-                Application::current().request_screen_transition<Model_editor_screen>(
-                    std::make_unique<OpenSim::Model>(*model));
+    void draw_main_menu_actions_tab() {
+        if (ImGui::BeginMenu("Actions")) {
+            if (ImGui::MenuItem("Start/Stop Simulation", "Space")) {
+                action_toggle_sim_start_or_stop();
             }
 
-            if (ImGui::MenuItem("Disable Wrapping Surfaces")) {
-                OpenSim::Model& m = *model;
-                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-                    for (int i = 0; i < wos.getSize(); ++i) {
-                        OpenSim::WrapObject& wo = wos[i];
-                        wo.set_active(false);
-                        wo.upd_Appearance().set_visible(false);
-                    }
-                }
-                on_user_edited_model();
+            if (ImGui::MenuItem("Reset Model to Initial State", "R")) {
+                action_reset_model_to_initial_state();
             }
 
-            if (ImGui::MenuItem("Enable Wrapping Surfaces")) {
-                OpenSim::Model& m = *model;
-                for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-                    for (int i = 0; i < wos.getSize(); ++i) {
-                        OpenSim::WrapObject& wo = wos[i];
-                        wo.set_active(true);
-                        wo.upd_Appearance().set_visible(true);
-                    }
-                }
-                on_user_edited_model();
+            if (ImGui::MenuItem("Reload Model File", "Ctrl+R")) {
+                action_try_reload_model_file();
             }
 
-            if (ImGui::MenuItem("Watch file changes", nullptr, file_poller.enabled)) {
-                file_poller.enabled = !file_poller.enabled;
+            if (ImGui::MenuItem("Clear Selection", "C")) {
+                action_clear_selection();
+            }
+
+            if (ImGui::MenuItem("Switch to Editor", "Ctrl+E")) {
+                action_switch_to_editor();
+            }
+
+            if (ImGui::MenuItem("Half Simulation Time", "-")) {
+                action_half_simulation_time();
+            }
+
+            if (ImGui::MenuItem("Double Simulation Time", "=")) {
+                action_double_simulation_time();
             }
 
             ImGui::EndMenu();
@@ -689,8 +747,14 @@ struct Show_model_screen::Impl final {
         // draw top menu bar
         if (ImGui::BeginMainMenuBar()) {
             draw_main_menu_file_tab(mm_filetab_st);
-            this->draw_main_menu_edit_tab();
+            this->draw_main_menu_actions_tab();
             draw_main_menu_about_tab();
+
+            if (ImGui::Button("Switch to editor (Ctrl+E)")) {
+                Application::current().request_screen_transition<Model_editor_screen>(
+                    std::make_unique<OpenSim::Model>(*model));
+            }
+
             ImGui::EndMainMenuBar();
         }
 

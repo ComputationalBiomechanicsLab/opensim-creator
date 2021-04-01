@@ -238,79 +238,43 @@ void osmv::Splash_screen::draw() {
 
     bool b = true;
     if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
+        // de-dupe imgui IDs because these lists may contain duplicate
+        // names
+        int id = 0;
+
         ImGui::Columns(2);
 
-        // left-column: utils etc.
-        {
-            ImGui::Text("Utilities:");
+        // left column: recent files
+        if (!impl->mm_state.recent_files.empty()) {
+            ImGui::Text("Recent files:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-            if (ImGui::Button("ImGui demo")) {
-                app.request_screen_transition<osmv::Imgui_demo_screen>();
-            }
-
-            if (ImGui::Button("Model editor")) {
-                app.request_screen_transition<osmv::Model_editor_screen>();
-            }
-
-            if (ImGui::Button("Rendering tests (meta)")) {
-                app.request_screen_transition<osmv::Opengl_test_screen>();
-            }
-
-            if (ImGui::Button("experimental new merged screen")) {
-                auto rajagopal_path = config::resource_path("models", "RajagopalModel", "Rajagopal2015.osim");
-                auto model = std::make_unique<OpenSim::Model>(rajagopal_path.string());
-                app.request_screen_transition<Experimental_merged_screen>(std::move(model));
-            }
-
-            ImGui::Dummy(ImVec2{0.0f, 4.0f});
-            if (ImGui::Button("Exit")) {
-                app.request_quit_application();
-            }
-
-            ImGui::NextColumn();
-        }
-
-        // right-column: open, recent files, examples
-        {
-            // de-dupe imgui IDs because these lists may contain duplicate
-            // names
-            int id = 0;
-
-            // recent files:
-            if (!impl->mm_state.recent_files.empty()) {
-                ImGui::Text("Recent files:");
-                ImGui::Dummy(ImVec2{0.0f, 3.0f});
-
-                // iterate in reverse: recent files are stored oldest --> newest
-                for (auto it = impl->mm_state.recent_files.rbegin(); it != impl->mm_state.recent_files.rend(); ++it) {
-                    config::Recent_file const& rf = *it;
-                    ImGui::PushID(++id);
-                    if (ImGui::Button(rf.path.filename().string().c_str())) {
-                        app.request_screen_transition<osmv::Loading_screen>(rf.path);
-                    }
-                    ImGui::PopID();
+            // iterate in reverse: recent files are stored oldest --> newest
+            for (auto it = impl->mm_state.recent_files.rbegin(); it != impl->mm_state.recent_files.rend(); ++it) {
+                config::Recent_file const& rf = *it;
+                ImGui::PushID(++id);
+                if (ImGui::Button(rf.path.filename().string().c_str())) {
+                    app.request_screen_transition<osmv::Loading_screen>(rf.path);
                 }
+                ImGui::PopID();
             }
-
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-            // examples:
-            if (!impl->mm_state.example_osims.empty()) {
-                ImGui::Text("Examples:");
-                ImGui::Dummy(ImVec2{0.0f, 3.0f});
-
-                for (fs::path const& ex : impl->mm_state.example_osims) {
-                    ImGui::PushID(++id);
-                    if (ImGui::Button(ex.filename().string().c_str())) {
-                        app.request_screen_transition<osmv::Loading_screen>(ex);
-                    }
-                    ImGui::PopID();
-                }
-            }
-
-            ImGui::NextColumn();
         }
+        ImGui::NextColumn();
+
+        // right column: example model files
+        if (!impl->mm_state.example_osims.empty()) {
+            ImGui::Text("Examples:");
+            ImGui::Dummy(ImVec2{0.0f, 3.0f});
+
+            for (fs::path const& ex : impl->mm_state.example_osims) {
+                ImGui::PushID(++id);
+                if (ImGui::Button(ex.filename().string().c_str())) {
+                    app.request_screen_transition<osmv::Loading_screen>(ex);
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::NextColumn();
 
         ImGui::Columns();
     }
