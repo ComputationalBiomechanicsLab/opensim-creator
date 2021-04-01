@@ -16,16 +16,26 @@ namespace osmv::log {
 
     namespace level {
         enum Level_enum { trace = 0, debug, info, warn, err, critical, off, NUM_LEVELS };
-    }
+
 #define OSMV_LOG_LVL_NAMES                                                                                             \
     { "trace", "debug", "info", "warning", "error", "critical", "off" }
 
-    extern std::string_view const level_names[];
-    extern char const* const level_cstring_names[];
+        extern std::string_view const name_views[];
+        extern char const* const name_cstrings[];
+    }
 
-    [[nodiscard]] std::string_view const& to_string_view(level::Level_enum) noexcept;
-    [[nodiscard]] char const* to_c_str(level::Level_enum) noexcept;
+    [[nodiscard]] inline std::string_view const& to_string_view(level::Level_enum lvl) noexcept {
+        return level::name_views[lvl];
+    }
 
+    [[nodiscard]] inline char const* to_c_str(level::Level_enum lvl) noexcept {
+        return level::name_cstrings[lvl];
+    }
+
+    // a log message
+    //
+    // to prevent needless runtime allocs, this does not own its data. See below if you need an
+    // owning version
     struct Log_msg final {
         std::string_view logger_name;
         std::chrono::system_clock::time_point time;
@@ -38,6 +48,25 @@ namespace osmv::log {
             time{std::chrono::system_clock::now()},
             payload{_payload},
             level{_level} {
+        }
+    };
+
+    // a log message that owns all its data
+    //
+    // useful if you need to persist a log message somewhere
+    struct Owned_log_msg final {
+        std::string logger_name;
+        std::chrono::system_clock::time_point time;
+        std::string payload;
+        log::level::Level_enum level;
+
+        Owned_log_msg() = default;
+
+        Owned_log_msg(log::Log_msg const& msg) :
+            logger_name{msg.logger_name},
+            time{msg.time},
+            payload{msg.payload},
+            level{msg.level} {
         }
     };
 
@@ -180,23 +209,6 @@ namespace osmv::log {
     void critical(char const* fmt, Args const&... args) {
         default_logger_raw()->critical(fmt, args...);
     }
-
-    // a log message that owns all of its data. Used for persisting log messages in memory
-    struct Owned_log_msg final {
-        std::string logger_name;
-        std::chrono::system_clock::time_point time;
-        std::string payload;
-        log::level::Level_enum level;
-
-        Owned_log_msg() = default;
-
-        Owned_log_msg(log::Log_msg const& msg) :
-            logger_name{msg.logger_name},
-            time{msg.time},
-            payload{msg.payload},
-            level{msg.level} {
-        }
-    };
 
     static constexpr size_t max_traceback_log_messages = 256;
 

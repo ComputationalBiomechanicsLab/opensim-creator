@@ -54,7 +54,7 @@ void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel
             {
                 int lvl = static_cast<int>(log::get_traceback_level());
                 ImGui::SetNextItemWidth(200.0f);
-                if (ImGui::Combo("level", &lvl, log::level_cstring_names, log::level::NUM_LEVELS)) {
+                if (ImGui::Combo("level", &lvl, log::level::name_cstrings, log::level::NUM_LEVELS)) {
                     log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
                 }
             }

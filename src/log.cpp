@@ -36,18 +36,10 @@ static std::shared_ptr<Circular_log_sink> create_traceback_sink() {
     return rv;
 }
 
-std::string_view const osmv::log::level_names[] OSMV_LOG_LVL_NAMES;
-char const* const osmv::log::level_cstring_names[] OSMV_LOG_LVL_NAMES;
+std::string_view const osmv::log::level::name_views[] OSMV_LOG_LVL_NAMES;
+char const* const osmv::log::level::name_cstrings[] OSMV_LOG_LVL_NAMES;
 static std::shared_ptr<Logger> default_sink = create_default_sink();
 static std::shared_ptr<Circular_log_sink> traceback_sink = create_traceback_sink();
-
-std::string_view const& osmv::log::to_string_view(level::Level_enum lvl) noexcept {
-    return level_names[lvl];
-}
-
-char const* osmv::log::to_c_str(level::Level_enum lvl) noexcept {
-    return level_cstring_names[lvl];
-}
 
 std::shared_ptr<Logger> osmv::log::default_logger() noexcept {
     return default_sink;
