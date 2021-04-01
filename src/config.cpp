@@ -160,9 +160,10 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
         throw std::runtime_error{std::move(ss).str()};
     }
 
-    // re-serialize existing entries (the above may have removed things)
-    for (Recent_file const& rf : rfs) {
-        fd << rf.last_opened_unix_timestamp.count() << ' ' << rf.path << std::endl;
+    // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
+    auto begin = rfs.end() - static_cast<long>(std::min(static_cast<size_t>(10), rfs.size()));
+    for (auto it = begin; it != rfs.end(); ++it) {
+        fd << it->last_opened_unix_timestamp.count() << ' ' << it->path << std::endl;
     }
 
     // append the new entry
