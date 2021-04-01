@@ -169,7 +169,6 @@ add_executable(osmv
     src/screens/experimental_merged_screen.hpp
     src/screens/experimental_merged_screen.cpp
 
-    src/utils/geometry.hpp
     src/utils/bitwise_algs.hpp
     src/utils/concurrency.hpp
     src/utils/shims.hpp
@@ -180,7 +179,6 @@ add_executable(osmv
     src/utils/scope_guard.hpp
     src/utils/circular_buffer.hpp
     src/utils/file_change_poller.hpp
-    src/utils/time_helpers.hpp
 
     src/config.hpp
     src/config.cpp

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/assertions.hpp"
-#include "src/utils/geometry.hpp"
 
 #include <memory>
 #include <utility>
@@ -56,7 +55,12 @@ namespace osmv {
 
         void request_quit_application();
 
-        [[nodiscard]] Dimensions<int> window_dimensions() const noexcept;
+        struct Window_dimensions final {
+            int w;
+            int h;
+        };
+
+        [[nodiscard]] Window_dimensions window_dimensions() const noexcept;
 
         // returns the number of samples (MSXAA) that multisampled renderers should use
         [[nodiscard]] int samples() const noexcept;
@@ -71,14 +75,6 @@ namespace osmv {
         [[nodiscard]] bool is_in_debug_mode() const noexcept;
         void enable_debug_mode();
         void disable_debug_mode();
-
-        // returns true if the application should throw an exception when an OpenGL exception
-        // is detected
-        //
-        // note: this only really works in debug mode, where OpenGL errors are caught
-        [[nodiscard]] bool is_opengl_throwing_on_error() const noexcept;
-        void enable_opengl_throwing_on_error();
-        void disable_opengl_throwing_on_error();
 
         // makes the application window fullscreen
         void make_fullscreen();

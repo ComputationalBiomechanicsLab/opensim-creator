@@ -225,29 +225,34 @@ static void glOnDebugMessage(
         break;
     }
 
-    // if the application is configured to throw an exception whenever an OpenGL error occurs,
-    // then dump a backtrace to this source location (which, hopefully, should include the incidental
-    // OpenGL function in the stack somewhere)
-    if (g_ThrowOnOpenGLErrors) {
-        if (type != GL_DEBUG_TYPE_ERROR) {
-            return;
-        }
-
-        if (severity != GL_DEBUG_SEVERITY_MEDIUM && severity != GL_DEBUG_SEVERITY_HIGH) {
-            return;
-        }
-
-        // else: it's high enough severity/type to throw
-
-        // useful information for debugging: *where* did the error start
-        osmv::write_backtrace_to_log(osmv::log::level::err);
-
-        // throw from here: this *should* proagate via the OpenGL driver back into OSMV's handlers
-        // if GL_DEBUG_OUTPUT_SYNCHRONOUS is used
-        std::stringstream ss;
-        ss << "OpenGL error detected: id = " << id << ", message = " << message;
-        throw std::runtime_error{std::move(ss).str()};
+    // only throw if application is configured to do so
+    if (!g_ThrowOnOpenGLErrors) {
+        return;
     }
+
+    // only throw on errors
+    if (type != GL_DEBUG_TYPE_ERROR) {
+        return;
+    }
+
+    // only throw on errors
+    if (severity != GL_DEBUG_SEVERITY_MEDIUM && severity != GL_DEBUG_SEVERITY_HIGH) {
+        return;
+    }
+
+    // if an error is about to be thrown, dump a stacktrace into the logs so that
+    // downstream devs/users can potentially diagnose what's happening
+    osmv::write_backtrace_to_log(osmv::log::level::err);
+
+    // throw the exception from this thread
+    //
+    // this is *probably* safe on systems that have GL_DEBUG_OUTPUT_SYNCHRONOUS enabled. If that
+    // turns out to be a fatal assumption then this should be reimplemented to use inter-thread
+    // messaging
+
+    std::stringstream ss;
+    ss << "OpenGL error detected: id = " << id << ", message = " << message;
+    throw std::runtime_error{std::move(ss).str()};
 }
 
 static int get_max_multisamples() {
@@ -359,6 +364,7 @@ public:
     int max_samples = 1;
 
     // num multisamples that multisampled renderers should use
+    static constexpr int default_samples = 8;
     int samples = 1;
 
     // ImGui application-wide context
@@ -392,7 +398,7 @@ public:
         context{SDL_INIT_VIDEO},
 
         // initialize minimal SDL Window with OpenGL support
-        window{[this]() {
+        window{[]() {
             log::info("initializing main application (OpenGL 3.3) window");
 
             OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -415,13 +421,13 @@ public:
         }()},
 
         // initialize GL context for the application window
-        gl{[this]() {
+        gl{[& window = this->window]() {
             log::info("initializing application OpenGL context");
 
             sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
             // enable the context
-            if (SDL_GL_MakeCurrent(window, gl) != 0) {
+            if (SDL_GL_MakeCurrent(window, ctx) != 0) {
                 throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
             }
 
@@ -467,7 +473,7 @@ public:
         max_samples{get_max_multisamples()},
 
         // set the number of samples multisampled renderers in osmv should use
-        samples{std::min(max_samples, 8)},
+        samples{std::min(max_samples, default_samples)},
 
         // initialize ImGui
         imgui_ctx{},
@@ -582,22 +588,11 @@ public:
             //   finalizing) and because it might be handy to see the screen *just* before
             //   some kind of transition
 
-            // draw FPS overlay in bottom-right: handy for dev
-            if (is_in_debug_mode()) {
-                char buf[16];
-                double fps = static_cast<double>(ImGui::GetIO().Framerate);
-                std::snprintf(buf, sizeof(buf), "%.0f", fps);
-                sdl::Window_dimensions d = sdl::GetWindowSize(window);
-                ImVec2 window_sims = {static_cast<float>(d.w), static_cast<float>(d.h)};
-                ImVec2 font_dims = ImGui::CalcTextSize(buf);
-                ImVec2 fps_pos = {window_sims.x - font_dims.x, window_sims.y - font_dims.y};
-                ImGui::GetBackgroundDrawList()->AddText(fps_pos, 0xff0000ff, buf);
-            }
-
             // ImGui: finalize ImGui rendering
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+            // ImGui: handle multi-viewports if the user has requested them
             if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
                 SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
                 SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
@@ -698,7 +693,7 @@ void Application::request_quit_application() {
 }
 
 // dimensions of the main application window in pixels
-Dimensions<int> Application::window_dimensions() const noexcept {
+Application::Window_dimensions Application::window_dimensions() const noexcept {
     auto [w, h] = sdl::GetWindowSize(impl->window);
     return {w, h};
 }
@@ -738,18 +733,6 @@ void Application::enable_debug_mode() {
 
 void Application::disable_debug_mode() {
     impl->disable_debug_mode();
-}
-
-bool Application::is_opengl_throwing_on_error() const noexcept {
-    return g_ThrowOnOpenGLErrors;
-}
-
-void Application::enable_opengl_throwing_on_error() {
-    g_ThrowOnOpenGLErrors = true;
-}
-
-void Application::disable_opengl_throwing_on_error() {
-    g_ThrowOnOpenGLErrors = false;
 }
 
 void Application::make_fullscreen() {
