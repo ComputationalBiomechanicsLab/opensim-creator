@@ -50,8 +50,7 @@ void Error_screen::draw() {
 
     if (ImGui::Begin("fatal error")) {
         ImGui::TextWrapped("The application threw an exception with the following message:");
-        ImGui::Dummy(ImVec2{0.0f, 10.0f});
-        ImGui::Dummy(ImVec2{2.0f, 0.0f});
+        ImGui::Dummy(ImVec2{2.0f, 10.0f});
         ImGui::SameLine();
         ImGui::TextWrapped("%s", impl->msg.c_str());
         ImGui::Dummy(ImVec2{0.0f, 10.0f});

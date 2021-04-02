@@ -83,9 +83,7 @@ namespace osmv {
         void make_windowed();
 
         [[nodiscard]] bool is_vsync_enabled() const noexcept;
-
         void enable_vsync();
-
         void disable_vsync();
     };
 }

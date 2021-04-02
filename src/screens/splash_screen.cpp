@@ -13,7 +13,6 @@
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/constants.hpp"
-#include "src/screens/experimental_merged_screen.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
