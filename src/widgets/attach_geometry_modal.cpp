@@ -81,7 +81,7 @@ static void try_draw_file_choice(
     std::filesystem::path const& p,
     std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out) {
 
-    if (p.filename().compare(st.search.data())) {
+    if (p.filename().string().find(st.search.data()) != std::string::npos) {
         if (ImGui::Selectable(p.filename().string().c_str())) {
             on_vtp_choice_made(st, out, p.filename());
         }
