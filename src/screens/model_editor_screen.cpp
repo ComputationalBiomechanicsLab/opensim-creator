@@ -807,38 +807,166 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     draw_socket_editor(impl);
 }
 
-static void action_selecte_selection(osmv::Model_editor_screen::Impl& impl) {
+template<typename T, typename TSetBase = OpenSim::Object>
+static void delete_item_from_set_in_model(OpenSim::Set<T, TSetBase>& set, T* item) {
+    for (int i = 0; i < set.getSize(); ++i) {
+        if (&set.get(i) == item) {
+            set.remove(i);
+            return;
+        }
+    }
+}
+
+static void action_delete_selection_from_model(osmv::Model_editor_screen::Impl& impl) {
     OpenSim::Component* selected = impl.selection();
 
     if (!selected) {
+        return;  // nothing selected, so nothing can be deleted
+    }
+
+    if (!selected->hasOwner()) {
+        // the selected item isn't owned by anything, so it can't be deleted from its
+        // owner's hierarchy
         return;
     }
 
+    OpenSim::Component* owner = const_cast<OpenSim::Component*>(&selected->getOwner());
+
+    // else: an OpenSim::Component is selected and we need to figure out how to remove it
+    // from its parent
+    //
+    // this is uglier than it should be because OpenSim doesn't have a uniform approach for
+    // storing Components in the model hierarchy. Some Components might be in specialized sets,
+    // some Components might be in std::vectors, some might be solo children, etc.
+    //
+    // the challenge is knowing what component is selected, what kind of parent it's contained
+    // within, and how that particular component type can be safely deleted from that particular
+    // parent type without leaving the overall Model in an invalid state
+
+    // try delete OpenSim::Joint from owning OpenSim::JointSet
+    if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner); js) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*js, static_cast<OpenSim::Joint*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete OpenSim::Body from owning OpenSim::BodySet
+    if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner); bs) {
+        log::error(
+            "cannot delete %s: deleting OpenSim::Body is not supported: it segfaults in the OpenSim API",
+            selected->getName().c_str());
+        return;
+
+        // segfaults:
+        // delete_item_from_set_in_model(impl, *bs, static_cast<OpenSim::Body*>(selected));
+    }
+
+    // try delete OpenSim::WrapObject from owning OpenSim::WrapObjectSet
+    if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner); wos) {
+
+        log::error(
+            "cannot delete %s: deleting an OpenSim::WrapObject is not supported: faults in the OpenSim API until after AK's connection checking addition",
+            selected->getName().c_str());
+        return;
+
+        // TODO: iterate over `PathWrap`s in the model and disconnect them from the
+        // GeometryPath that uses them: otherwise, the wrapping in the model is going
+        // to be invalid
+        /*
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*wos, static_cast<OpenSim::WrapObject*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        */
+    }
+
+    // try delete Controller from ControllerSet
+    if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*cs, static_cast<OpenSim::Controller*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete Constraint from ConstraintSet
+    if (auto* cs = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*cs, static_cast<OpenSim::Constraint*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete Force from ForceSet
+    if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*fs, static_cast<OpenSim::Force*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete Marker from MarkerSet
+    if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*ms, static_cast<OpenSim::Marker*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete Marker from MarkerSet
+    if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*ms, static_cast<OpenSim::Marker*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete ContactGeometry from ContactGeometrySet
+    if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*cgs, static_cast<OpenSim::ContactGeometry*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete Probe from ProbeSet
+    if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner); ps) {
+        impl.before_modify_model();
+        delete_item_from_set_in_model(*ps, static_cast<OpenSim::Probe*>(selected));
+        impl.set_selection(nullptr);
+        impl.set_hover(nullptr);
+        impl.after_modify_model();
+        return;
+    }
+
+    // try delete OpenSim::Geometry from owning OpenSim::Frame
     if (auto const* geom = find_ancestor<OpenSim::Geometry>(selected); geom) {
         // it's some child of geometry (probably a mesh), try and find its owning
         // frame and clear the frame of all geometry
         if (auto const* frame = find_ancestor<OpenSim::Frame>(geom); frame) {
+            log::info("cannot delete one piece of geometry: must delete them all (API limitation)");
             impl.before_modify_model();
             const_cast<OpenSim::Frame*>(frame)->updProperty_attached_geometry().clear();
             impl.set_selection(nullptr);
             impl.after_modify_model();
         }
-    } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(selected); joint) {
-        if (auto const* jointset =
-                joint->hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&joint->getOwner()) : nullptr;
-            jointset) {
-            for (int i = 0; i < jointset->getSize(); ++i) {
-                if (&jointset->get(i) == joint) {
 
-                    impl.before_modify_model();
-                    const_cast<OpenSim::JointSet*>(jointset)->remove(i);
-                    impl.model().finalizeFromProperties();
-                    impl.set_selection(nullptr);
-                    impl.after_modify_model();
-                    break;
-                }
-            }
-        }
+        return;
     }
 }
 
@@ -962,7 +1090,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
 
     switch (e.keysym.sym) {
     case SDLK_DELETE:
-        action_selecte_selection(impl);
+        action_delete_selection_from_model(impl);
         return true;
     case SDLK_F12:
         main_menu_save_as(impl.model());
