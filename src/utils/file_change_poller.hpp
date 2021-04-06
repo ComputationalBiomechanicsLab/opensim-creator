@@ -7,6 +7,7 @@
 namespace osmv {
     struct File_change_poller final {
         using clock = std::chrono::system_clock;
+        static constexpr char const* model_no_backing_file_senteniel = "Unassigned";
 
         std::chrono::milliseconds delay;
         clock::time_point next;
@@ -16,8 +17,9 @@ namespace osmv {
         File_change_poller(std::chrono::milliseconds _delay, std::string const& path) :
             delay{_delay},
             next{clock::now() + delay},
-            last_modification_time{path.empty() || path == "Unassigned" ? std::filesystem::file_time_type{}
-                                                                        : std::filesystem::last_write_time(path)},
+            last_modification_time{path.empty() || path == model_no_backing_file_senteniel
+                                       ? std::filesystem::file_time_type{}
+                                       : std::filesystem::last_write_time(path)},
             enabled{true} {
         }
 
@@ -26,7 +28,7 @@ namespace osmv {
                 return false;
             }
 
-            if (path.empty() || path == "Unassigned") {
+            if (path.empty() || path == model_no_backing_file_senteniel) {
                 return false;
             }
 
