@@ -584,6 +584,9 @@ struct Show_model_screen::Impl final {
             case SDLK_q:
                 action_quit_application();
                 return true;
+            case SDLK_a:
+                action_clear_selection();
+                return true;
             }
         }
 
@@ -594,9 +597,6 @@ struct Show_model_screen::Impl final {
             return true;
         case SDLK_SPACE:
             action_toggle_sim_start_or_stop();
-            return true;
-        case SDLK_c:
-            action_clear_selection();
             return true;
         case SDLK_EQUALS:
             action_double_simulation_time();
@@ -722,7 +722,7 @@ struct Show_model_screen::Impl final {
                 action_try_reload_model_file();
             }
 
-            if (ImGui::MenuItem("Clear Selection", "C")) {
+            if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
                 action_clear_selection();
             }
 

@@ -87,17 +87,8 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-// bundles together:
-//
-// - model
-// - state
-// - selection
-// - hover
-//
-// into a single class that supports coherent copying, moving, assingment etc.
-//
-// enables snapshotting everything necessary to render a typical UI scene (just copy this) and
-// should automatically update/invalidate any pointers, states, etc. on each operation
+// bundles together a model+state with pointers pointing into them, with support for
+// relocate-ability
 struct Model_ui_state final {
     static std::unique_ptr<OpenSim::Model> copy_model(OpenSim::Model const& model) {
         auto copy = std::make_unique<OpenSim::Model>(model);
@@ -134,6 +125,7 @@ struct Model_ui_state final {
     SimTK::State state = {};
     OpenSim::Component* selected_component = nullptr;
     OpenSim::Component* hovered_component = nullptr;
+    OpenSim::Component* isolated_component = nullptr;
 
     Model_ui_state() = default;
 
@@ -141,21 +133,24 @@ struct Model_ui_state final {
         model{std::move(_model)},
         state{init_fresh_system_and_state(*model)},
         selected_component{nullptr},
-        hovered_component{nullptr} {
+        hovered_component{nullptr},
+        isolated_component{nullptr} {
     }
 
     Model_ui_state(Model_ui_state const& other) :
         model{copy_model(*other.model)},
         state{init_fresh_system_and_state(*model)},
         selected_component{relocate_component_pointer_to_new_model(*model, other.selected_component)},
-        hovered_component{relocate_component_pointer_to_new_model(*model, other.hovered_component)} {
+        hovered_component{relocate_component_pointer_to_new_model(*model, other.hovered_component)},
+        isolated_component{relocate_component_pointer_to_new_model(*model, other.isolated_component)} {
     }
 
     Model_ui_state(Model_ui_state&& tmp) :
         model{std::move(tmp.model)},
         state{std::move(tmp.state)},
         selected_component{std::move(tmp.selected_component)},
-        hovered_component{std::move(tmp.hovered_component)} {
+        hovered_component{std::move(tmp.hovered_component)},
+        isolated_component{std::move(tmp.isolated_component)} {
     }
 
     friend void swap(Model_ui_state& a, Model_ui_state& b) {
@@ -163,6 +158,7 @@ struct Model_ui_state final {
         std::swap(a.state, b.state);
         std::swap(a.selected_component, b.selected_component);
         std::swap(a.hovered_component, b.hovered_component);
+        std::swap(a.isolated_component, b.isolated_component);
     }
 
     Model_ui_state& operator=(Model_ui_state other) {
@@ -179,6 +175,7 @@ struct Model_ui_state final {
         state = init_fresh_system_and_state(*model);
         selected_component = relocate_component_pointer_to_new_model(*model, selected_component);
         hovered_component = relocate_component_pointer_to_new_model(*model, hovered_component);
+        isolated_component = relocate_component_pointer_to_new_model(*model, isolated_component);
 
         return *this;
     }
@@ -189,6 +186,7 @@ struct Model_ui_state final {
         state = init_fresh_system_and_state(*model);
         selected_component = relocate_component_pointer_to_new_model(*model, selected_component);
         hovered_component = relocate_component_pointer_to_new_model(*model, hovered_component);
+        isolated_component = relocate_component_pointer_to_new_model(*model, isolated_component);
     }
 };
 
@@ -251,6 +249,8 @@ struct Model_editor_screen::Impl final {
     // prevents tiny changes that happen in quick succession from flooding the undo buffer
     static constexpr std::chrono::seconds undo_recording_debounce = 5s;
 
+    // Absolute path to Component in the current Model that should be renderered in isolation
+
     void before_modify_model() {
         log::debug("starting model modification");
         attempt_new_undo_push();
@@ -277,12 +277,20 @@ struct Model_editor_screen::Impl final {
         ms.selected_component = c;
     }
 
+    void set_isolated(OpenSim::Component* c) {
+        ms.isolated_component = c;
+    }
+
     [[nodiscard]] OpenSim::Component* selection() noexcept {
         return ms.selected_component;
     }
 
     [[nodiscard]] OpenSim::Component* hover() noexcept {
         return ms.hovered_component;
+    }
+
+    [[nodiscard]] OpenSim::Component* isolated() noexcept {
+        return ms.isolated_component;
     }
 
     void set_hover(OpenSim::Component* c) {
@@ -648,6 +656,30 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
         ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
         return;
     }
+
+    ImGui::Columns(2);
+    ImGui::Text("isolate in visualizer");
+    ImGui::NextColumn();
+    if (impl.selection() != impl.isolated()) {
+        if (ImGui::Button("isolate")) {
+            impl.set_isolated(impl.selection());
+        }
+    } else {
+        if (ImGui::Button("un-isolate")) {
+            impl.set_isolated(nullptr);
+        }
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(
+            "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Show all components)");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+    ImGui::NextColumn();
+    ImGui::Columns();
 
     if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(impl.selection()); frame) {
         draw_frame_contextual_actions(impl, *frame);
@@ -1030,6 +1062,14 @@ static void draw_main_menu_actions_tab(osmv::Model_editor_screen::Impl& impl) {
             action_switch_to_simulator(impl);
         }
 
+        if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
+            impl.set_selection(nullptr);
+        }
+
+        if (ImGui::MenuItem("Show all components")) {
+            impl.set_isolated(nullptr);
+        }
+
         if (ImGui::BeginMenu("Utilities")) {
             if (ImGui::MenuItem("Disable all wrapping surfaces")) {
                 action_disable_all_wrapping_surfs(impl);
@@ -1082,6 +1122,9 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
             return true;
         case SDLK_r:
             action_switch_to_simulator(impl);
+            return true;
+        case SDLK_a:
+            impl.set_selection(nullptr);
             return true;
         }
 
@@ -1186,14 +1229,26 @@ void osmv::Model_editor_screen::draw() {
             impl->set_hover(const_cast<OpenSim::Component*>(new_hover));
         };
 
-        impl->model_viewer.draw(
-            "render",
-            impl->model(),
-            impl->get_state(),
-            impl->selection(),
-            impl->hover(),
-            on_selection_change,
-            on_hover_change);
+        if (impl->isolated()) {
+            impl->model_viewer.draw(
+                "render",
+                *impl->isolated(),
+                impl->model().getDisplayHints(),
+                impl->get_state(),
+                impl->selection(),
+                impl->hover(),
+                on_selection_change,
+                on_hover_change);
+        } else {
+            impl->model_viewer.draw(
+                "render",
+                impl->model(),
+                impl->get_state(),
+                impl->selection(),
+                impl->hover(),
+                on_selection_change,
+                on_hover_change);
+        }
     }
 
     // draw model hierarchy viewer

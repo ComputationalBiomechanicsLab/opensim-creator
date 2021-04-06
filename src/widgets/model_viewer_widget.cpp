@@ -176,7 +176,8 @@ bool Model_viewer_widget::on_event(const SDL_Event& e) {
 
 void Model_viewer_widget::draw(
     char const* panel_name,
-    OpenSim::Model const& model,
+    OpenSim::Component const& model,
+    OpenSim::ModelDisplayHints const& mdh,
     SimTK::State const& state,
     OpenSim::Component const* current_selection,
     OpenSim::Component const* current_hover,
@@ -332,7 +333,7 @@ void Model_viewer_widget::draw(
                     flags |= ModelDrawlistFlags_DynamicGeometry;
                 }
 
-                OpenSim::ModelDisplayHints cpy = model.getDisplayHints();
+                OpenSim::ModelDisplayHints cpy{mdh};
 
                 cpy.upd_show_frames() = impl->flags & ModelViewerWidgetFlags_DrawFrames;
                 cpy.upd_show_debug_geometry() = impl->flags & ModelViewerWidgetFlags_DrawDebugGeometry;
@@ -583,4 +584,24 @@ void Model_viewer_widget::draw(
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+}
+
+void Model_viewer_widget::draw(
+    char const* panel_name,
+    OpenSim::Model const& model,
+    SimTK::State const& st,
+    OpenSim::Component const* current_selection,
+    OpenSim::Component const* current_hover,
+    std::function<void(OpenSim::Component const*)> const& on_selection_changed,
+    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
+
+    draw(
+        panel_name,
+        model,
+        model.getDisplayHints(),
+        st,
+        current_selection,
+        current_hover,
+        on_selection_changed,
+        on_hover_changed);
 }

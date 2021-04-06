@@ -7,6 +7,7 @@
 namespace OpenSim {
     class Model;
     class Component;
+    class ModelDisplayHints;
 }
 
 namespace SimTK {
@@ -55,7 +56,19 @@ namespace osmv {
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;
+
         bool on_event(SDL_Event const&);
+
+        void draw(
+            char const* panel_name,
+            OpenSim::Component const&,
+            OpenSim::ModelDisplayHints const&,
+            SimTK::State const&,
+            OpenSim::Component const* current_selection,
+            OpenSim::Component const* current_hover,
+            std::function<void(OpenSim::Component const*)> const& on_selection_changed,
+            std::function<void(OpenSim::Component const*)> const& on_hover_changed);
+
         void draw(
             char const* panel_name,
             OpenSim::Model const&,
