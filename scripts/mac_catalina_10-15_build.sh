@@ -10,6 +10,14 @@ if [[ "${skip_opensim_download}" -eq "0" ]]; then
     git clone --single-branch --branch 4.2 --depth=1 https://github.com/opensim-org/opensim-core
 fi
 
+# ----- setup: get dependencies ----- #
+
+# because a transitive dependency internally uses wget
+brew install wget
+
+# because a transitive dependency (ipopt) needs gfortran
+brew reinstall gcc
+
 # ----- build: build OpenSim (optional) then build osmv ----- #
 
 # (if building OpenSim): build OpenSim's dependencies
