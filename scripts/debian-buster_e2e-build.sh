@@ -60,9 +60,7 @@ cmake ../opensim-core/ \
     -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer" \
     -DOPENSIM_WITH_CASADI=NO \
     -DOPENSIM_WITH_TROPTER=NO \
-    -DOPENSIM_COPY_DEPENDENCIES=ON \
-    -DBUILD_API_ONLY=ON \
-    -DOPENSIM_BUILD_INDIVIDUAL_APPS=OFF
+    -DOPENSIM_COPY_DEPENDENCIES=ON
 cmake --build . --target install -- -j$(nproc)
 cd -
 
