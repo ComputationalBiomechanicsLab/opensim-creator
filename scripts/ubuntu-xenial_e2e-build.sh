@@ -31,8 +31,8 @@ ${sudo} apt-get install -y cmake make libsdl2-dev libgtk-3-dev
 # (if building OpenSim): get OpenSim build dependencies
 ${sudo} apt-get install -y git cmake freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
 
-# (if building OpenSim): get OpenSim 4.1 source
-git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core
+# (if building OpenSim): get OpenSim 4.2 source
+git clone --single-branch --branch 4.2 --depth=1 https://github.com/opensim-org/opensim-core
 
 
 # ----- build: build OpenSim (optional) then build osmv ----- #
@@ -40,14 +40,24 @@ git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/
 # (if building OpenSim): build OpenSim's dependencies
 mkdir -p opensim-dependencies-build/
 cd opensim-dependencies-build/
-cmake ../opensim-core/dependencies -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install
+cmake ../opensim-core/dependencies \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
+    -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer"
 cmake --build . -- -j$(nproc)
 cd -
 
 # (if building OpenSim): build OpenSim
 mkdir -p opensim-build/
 cd opensim-build/
-cmake ../opensim-core/ -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ -DCMAKE_INSTALL_PREFIX=../opensim-install/ -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_BUILD_TYPE=Release
+cmake ../opensim-core/ \
+    -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
+    -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
+    -DBUILD_JAVA_WRAPPING=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer" \
+    -DOPENSIM_WITH_CASADI=NO \
+    -DOPENSIM_WITH_TROPTER=NO
 cmake --build . --target install -- -j$(nproc)
 cd -
 
