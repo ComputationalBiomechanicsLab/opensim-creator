@@ -1,4 +1,4 @@
-![logo with title](logo_with_title.svg)
+![logo with title](build_resources/logo_with_title.svg)
 
 A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensim-core)
 

@@ -1,8 +1,0 @@
-resources = "@CMAKE_CURRENT_SOURCE_DIR@/resources"
-
-[experimental_feature_flags]
-
-# enable dragging panels out of the host window and into their own window
-#
-# warning: results vary *greatly* accross platforms
-multiple_viewports = false

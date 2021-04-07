@@ -189,7 +189,7 @@ add_executable(osmv
     src/osmv.cpp
 
     # add a resources file, which tells MSVC how to compile the icon etc. into the exe
-    $<$<CXX_COMPILER_ID:MSVC>:resources.rc>
+    $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
 )
 target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
@@ -348,7 +348,7 @@ target_link_options(osmv PUBLIC
 #
 #     - this config is switched out at install-time to a configuration that loads
 #       resources from the (copied) resource directory
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/DEV_osmv.toml.in" "${CMAKE_BINARY_DIR}/osmv.toml")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osmv.toml.in" "${CMAKE_BINARY_DIR}/osmv.toml")
 
 # (on Windows): copy libraries into the same dir as osmv.exe
 #
@@ -403,7 +403,7 @@ if (WIN32)
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osmv executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
 
     # install `resources/`
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
@@ -452,7 +452,7 @@ if (LINUX)
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osmv executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION ".")
 
     # install `resources/`
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
@@ -462,8 +462,8 @@ if (LINUX)
     set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osmv)
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0, libblas3, liblapack3, libstdc++6")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-    configure_file("${PROJECT_SOURCE_DIR}/postinst.in" "postinst" @ONLY)  # create symlink /usr/local/bin/osmv --> /opt/osmv/bin/osmv
-    configure_file("${PROJECT_SOURCE_DIR}/postrm.in" "postrm" @ONLY)  # destroy symlink created during install
+    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postinst.in" "postinst" @ONLY)  # create symlink /usr/local/bin/osmv --> /opt/osmv/bin/osmv
+    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postrm.in" "postrm" @ONLY)  # destroy symlink created during install
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")
 endif()
 
@@ -485,12 +485,12 @@ if (APPLE)
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osmv executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION osmv.app/Contents/MacOS/)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osmv.toml" RENAME "osmv.toml" DESTINATION osmv.app/Contents/MacOS/)
 
     # install an Info.plist file for this particular app
     #
     # this is a mac-specific XML file
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist" DESTINATION osmv.app/Contents/)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/Info.plist" DESTINATION osmv.app/Contents/)
 
     # install `resources/`
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION osmv.app/Contents/MacOS/)

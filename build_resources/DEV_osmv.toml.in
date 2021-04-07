@@ -1,0 +1,21 @@
+# DEV osmv configuration
+#
+# this is the configuration file used by developers that run OSMV from the raw build directory,
+# as opposed to the INSTALL configuration, which is what's used when running an installed version
+# of OSMV.
+#
+# This file is configured by CMake so that resources etc. are loaded from the developer's source
+# dir, and such that any other development-centric flags (more verbose logging, whatever) are
+# configured for typical dev debugging
+#
+# so, changing this will only affect developers - if you want to affect end-users then edit an
+# INSTALL configuration file.
+
+resources = "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+
+[experimental_feature_flags]
+
+# enable dragging panels out of the host window and into their own window
+#
+# warning: results vary *greatly* accross platforms
+multiple_viewports = false
