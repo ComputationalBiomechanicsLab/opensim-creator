@@ -2,8 +2,12 @@ REM Windows: end-2-end build
 REM
 REM     - this should build on a clean Windows 2019 Server PC
 
-REM checkout OpenSim 4.1
-git clone --single-branch --branch master --depth=1 https://github.com/opensim-org/opensim-core || exit /b
+REM checkout OpenSim 4.2
+git clone https://github.com/opensim-org/opensim-core || exit /b
+cd opensim-core/
+git checkout 4.2 || exit /b
+dir .
+cd ..
 
 REM build OpenSim dependencies
 dir .
@@ -17,7 +21,7 @@ cd ..
 REM build OpenSim
 mkdir opensim-build
 cd opensim-build
-cmake ../opensim-core -G"Visual Studio 16 2019" -A x64 -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install || exit /b
+cmake ../opensim-core -G"Visual Studio 16 2019" -A x64 -DOPENSIM_DEPENDENCIES_DIR=../dependencies-install -DBUILD_JAVA_WRAPPING=OFF -DCMAKE_INSTALL_PREFIX=../opensim-install -DOPENSIM_WITH_CASADI=NO -DOPENSIM_WITH_TROPTER=NO || exit /b
 cmake --build . --config Release --target install || exit /b
 cd ..
 
