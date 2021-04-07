@@ -1,14 +1,17 @@
-![logo with title](build_resources/logo_with_title.svg)
+# osmv <img src="build_resources/logo.svg" align="right" alt="osmv logo" width="128" height="128" />
 
-A lightweight development UI for [OpenSim](https://github.com/opensim-org/opensim-core)
-
-🚧 **ALPHA-STAGE SOFTWARE: take everything you see here with a pinch of salt and extremely low expectations** 🚧
+> A thin UI for building OpenSim models (🚧 **ALPHA-STAGE SOFTWARE** 🚧)
 
 ![screenshot](screenshot.png)
 
-`osmv` is a lightweight GUI for the OpenSim C++ API. It is designed to be easy to build and only depends on OpenSim + lightweight GUI libraries (SDL2, GLEW, and ImGui). `osmv` was developed to make it easy to create prototype GUIs on top of the OpenSim API. 
+`osmv` is a standalone UI for building [OpenSim](https://github.com/opensim-org/opensim-core) models. It
+is designed as a proof-of-concept GUI with the intent that some of its features may
+be merged into the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
 
-It is not designed as a production-ready user-facing GUI for OpenSim. For that, you should use the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
+`osmv` is designed to be an easy-to-build rapid prototyping UI platform. It mostly uses C/C++ that is directly 
+integrated against the [OpenSim core API](https://github.com/opensim-org/opensim-core) and only uses lightweight
+open-source libraries (e.g. SDL2, GLEW, ImGui) that can be built from source on all target platforms. This
+means that the osmv has direct access to the GPU and that it's fairly fast to add new GUI features.
 
 # Downloads
 
