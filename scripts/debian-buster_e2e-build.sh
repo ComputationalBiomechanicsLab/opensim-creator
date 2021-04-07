@@ -73,7 +73,7 @@ cd -
 mkdir -p osmv-build/
 cd osmv-build/
 cmake ../osmv \
-    -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
+    -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target package -- -j$(nproc)
 
