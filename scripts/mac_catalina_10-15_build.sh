@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-num_workers=$(sysctl -n hw.physicalcpu)
+num_workers=1 #$(sysctl -n hw.physicalcpu)
 skip_opensim_download=${skip_opensim_download:0}
 
 brew reinstall gcc
