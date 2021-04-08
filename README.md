@@ -26,28 +26,28 @@ Science" grant.
 > 🚧 **ALPHA-STAGE SOFTWARE** 🚧: OSMV is currently in development, so
 > things are prone to breaking. If a release doesn't work for you,
 > report it on the [issues](https://github.com/adamkewley/osmv/issues)
-> page, try a different [release](https://github.com/adamkewley/osmv/issues) 
+> page, try a different [release](https://github.com/adamkewley/osmv/releases) 
 > or try a passing build from [the actions page](https://github.com/adamkewley/osmv/actions)
 
-| OS | Details |
-| - | - |
-| Windows 10 | [.exe self-installer](TODO) |
-| Mac (Catalina onwards) | [.dmg installer](TODO) (note: it's unsigned, so you will probably need to open Finder -> Applications -> right click osmv -> open -> handle security prompt) |
-| Ubuntu Focal (20) | [.deb package](TODO) |
-| Debian Buster (10) | [.deb package](TODO) |
+| OS | Link | Comments |
+| - | - | - |
+| Windows 10 | [.exe](TODO) | |
+| Mac (Catalina onwards) | [.dmg](TODO) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osmv -> open -> handle security prompt |
+| Ubuntu Focal (20) | [.deb](TODO) | |
+| Debian Buster (10) | [.deb](TODO) | |
 
 
 # 🏗️  Building
 
-No full-fat build documentation available. However, the build is
-performed end-to-end on each platform without using too many
-GitHub-specific tricks
-([action](.github/workflows/continuous-integration-workflow.yml). These
-scripts should work on a standard C++ developer's machine (/w a C/C++
-compiler, CMake, etc.):
+No full-fat build documentation available (yet ;)). However, you can
+*probably* just run the CI build scripts because they don't rely on any
+GitHub (CI) specific tricks (e.g. see [action](.github/workflows/continuous-integration-workflow.yml)). The
+build scripts should work on a standard C++ developer's machine (as long as you have a C/C++ compiler, 
+CMake, etc. installed):
 
-| OS | Build Script | Build Example |
-| Windows | [.bat](scripts/windows_e2e-build.bat) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts\windows_e2e-build.bat |
+| OS | Build Script | Usage Example |
+| - | - | - |
+| Windows | [.bat](scripts/windows_e2e-build.bat) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts\windows_e2e-build.bat` |
 | Mac | [.sh](scripts/mac_catalina_10-15_build.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/mac_catalina_10-15_build.sh` |
 | Ubuntu/Debian | [.sh](scripts/debian-buster_e2e-build.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/debian-buster_e2e-build.sh` |
 
