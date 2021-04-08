@@ -5,8 +5,20 @@ set -xeuo pipefail
 num_workers=1 #$(sysctl -n hw.physicalcpu)
 skip_opensim_download=${skip_opensim_download:0}
 
+# necessary because OpenSim 4.2 depends on gfortran (for some libBLAS
+# transitive - god knows why it isn't using the OSX BLAS)
 brew reinstall gcc
-brew install wget
+
+# wget
+#
+#     Used by a transitive dep (Metis?) to install some other
+#     transitive dep
+#
+# automake
+#
+#     Used to get the `aclocal` exe - seems to be used for the `adolc`
+#     build (another transitive dep...)
+brew install wget automake
 
 # (if building OpenSim): get OpenSim 4.1 source
 if [[ "${skip_opensim_download}" -eq "0" ]]; then
