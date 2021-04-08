@@ -92,7 +92,7 @@ void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel
             ImGui::TextWrapped("%s", msg.payload.c_str());
 
             if (st.autoscroll) {
-                ImGui::SetScrollHere();
+                ImGui::SetScrollHereY();
             }
         }
     }
