@@ -5,6 +5,9 @@ set -xeuo pipefail
 num_workers=$(sysctl -n hw.physicalcpu)
 skip_opensim_download=${skip_opensim_download:0}
 
+brew reinstall gcc
+brew install wget
+
 # (if building OpenSim): get OpenSim 4.1 source
 if [[ "${skip_opensim_download}" -eq "0" ]]; then
     git clone --single-branch --branch 4.2 --depth=1 https://github.com/opensim-org/opensim-core
