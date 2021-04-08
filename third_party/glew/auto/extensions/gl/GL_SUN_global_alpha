@@ -1,5 +1,5 @@
 GL_SUN_global_alpha
-http://www.opengl.org/registry/specs/SUN/global_alpha.txt
+https://www.khronos.org/registry/OpenGL/extensions/SUN/SUN_global_alpha.txt
 GL_SUN_global_alpha
 
 	GL_GLOBAL_ALPHA_SUN 0x81D9

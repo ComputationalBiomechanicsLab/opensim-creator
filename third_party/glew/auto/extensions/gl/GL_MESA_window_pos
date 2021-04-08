@@ -1,5 +1,5 @@
 GL_MESA_window_pos
-http://www.opengl.org/registry/specs/MESA/window_pos.txt
+https://www.khronos.org/registry/OpenGL/extensions/MESA/MESA_window_pos.txt
 GL_MESA_window_pos
 
 	void glWindowPos2dMESA (GLdouble x, GLdouble y)

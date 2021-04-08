@@ -1,5 +1,5 @@
 GL_ARB_program_interface_query
-http://www.opengl.org/registry/specs/ARB/program_interface_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_program_interface_query.txt
 GL_ARB_program_interface_query
 
 	GL_UNIFORM 0x92E1

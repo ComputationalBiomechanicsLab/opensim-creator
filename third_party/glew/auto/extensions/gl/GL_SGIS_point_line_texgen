@@ -1,5 +1,5 @@
 GL_SGIS_point_line_texgen
-http://www.opengl.org/registry/specs/SGIS/point_line_texgen.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIS/SGIS_point_line_texgen.txt
 GL_SGIS_point_line_texgen
 
 	GL_EYE_DISTANCE_TO_POINT_SGIS 0x81F0

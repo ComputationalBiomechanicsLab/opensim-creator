@@ -1,5 +1,5 @@
 GL_EXT_multisampled_render_to_texture
-http://www.opengl.org/registry/specs/EXT/multisampled_render_to_texture.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_multisampled_render_to_texture.txt
 GL_EXT_multisampled_render_to_texture
 
 	GL_RENDERBUFFER_SAMPLES_EXT 0x8CAB

@@ -1,5 +1,5 @@
 GL_SGIX_vertex_array_object
-http://www.opengl.org/registry/specs/SGIX/vertex_array_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_vertex_array_object.txt
 GL_SGIX_vertex_array_object
 
 	GLboolean glAreVertexArraysResidentSGIX (GLsizei n, const GLuint* arrays, GLboolean* residences)

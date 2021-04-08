@@ -1,5 +1,5 @@
 GL_APPLE_framebuffer_multisample
-http://www.opengl.org/registry/specs/APPLE/framebuffer_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_framebuffer_multisample.txt
 GL_APPLE_framebuffer_multisample
 
 	GL_DRAW_FRAMEBUFFER_BINDING_APPLE 0x8CA6

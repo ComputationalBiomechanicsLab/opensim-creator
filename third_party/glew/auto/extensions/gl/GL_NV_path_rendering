@@ -1,5 +1,5 @@
 GL_NV_path_rendering
-http://www.opengl.org/registry/specs/NV/path_rendering.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_path_rendering.txt
 GL_NV_path_rendering
 
 	GL_CLOSE_PATH_NV 0x00

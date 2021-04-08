@@ -1,5 +1,5 @@
 GL_APPLE_vertex_program_evaluators
-http://www.opengl.org/registry/specs/APPLE/vertex_program_evaluators.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_vertex_program_evaluators.txt
 GL_APPLE_vertex_program_evaluators
 
 	GL_VERTEX_ATTRIB_MAP1_APPLE 0x8A00

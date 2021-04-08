@@ -3,4 +3,4 @@ https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 EGL_KHR_stream_producer_eglsurface
 
 	EGL_STREAM_BIT_KHR 0x0800
-	EGLSurface  eglCreateStreamProducerSurfaceKHR (EGLDisplay  dpy, EGLConfig  config, EGLStreamKHR  stream, const EGLint * attrib_list)
+	EGLSurface eglCreateStreamProducerSurfaceKHR (EGLDisplay dpy, EGLConfig config, EGLStreamKHR stream, const EGLint* attrib_list)

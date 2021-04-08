@@ -1,5 +1,5 @@
 GL_ATI_element_array
-http://www.opengl.org/registry/specs/ATI/element_array.txt
+https://www.khronos.org/registry/OpenGL/extensions/ATI/ATI_element_array.txt
 GL_ATI_element_array
 
 	GL_ELEMENT_ARRAY_ATI 0x8768

@@ -1,5 +1,5 @@
 GL_NV_3dvision_settings
-http://www.opengl.org/registry/specs/NV/3dvision_settings.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_3dvision_settings.txt
 GL_NV_3dvision_settings
 
 	GL_3DVISION_STEREO_NV 0x90F4

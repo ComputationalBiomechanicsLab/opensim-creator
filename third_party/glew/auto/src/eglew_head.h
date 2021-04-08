@@ -27,7 +27,11 @@
 #include <KHR/khrplatform.h>
 #include <EGL/eglplatform.h>
 
-#include <GL/glew.h>
+#ifndef GLEW_INCLUDE
+#  include <GL/glew.h>
+#else
+#  include GLEW_INCLUDE
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +76,7 @@ typedef khronos_utime_nanoseconds_t EGLuint64NV;
 typedef khronos_stime_nanoseconds_t EGLnsecsANDROID;
 
 struct EGLClientPixmapHI;
+struct AHardwareBuffer;
 
 #define EGL_DONT_CARE                     ((EGLint)-1)
 

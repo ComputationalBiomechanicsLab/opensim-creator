@@ -1,5 +1,5 @@
 GL_SGI_complex_type
-http://www.opengl.org/registry/specs/SGI/complex_type.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGI/SGI_complex_type.txt
 GL_SGI_complex_type
 
 	GL_COMPLEX_UNSIGNED_BYTE_SGI 0x81BD

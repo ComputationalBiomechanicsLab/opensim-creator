@@ -1,5 +1,5 @@
 GL_REGAL_enable
-https://github.com/p3/regal/tree/master/doc/extensions
+https://www.khronos.org/registry/OpenGL/extensions/REGAL/enable.txt
 GL_REGAL_enable
 
 	GL_ERROR_REGAL 0x9322

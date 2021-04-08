@@ -1,5 +1,5 @@
 GLX_SGIS_multisample
-http://www.opengl.org/registry/specs/SGIS/multisample.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_SGIS_multisample
 
 	GLX_SAMPLE_BUFFERS_SGIS 100000

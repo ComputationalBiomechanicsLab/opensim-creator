@@ -1,5 +1,5 @@
 GL_ARB_texture_buffer_object
-http://www.opengl.org/registry/specs/ARB/texture_buffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_buffer_object.txt
 GL_ARB_texture_buffer_object
 
 	GL_TEXTURE_BUFFER_ARB 0x8C2A

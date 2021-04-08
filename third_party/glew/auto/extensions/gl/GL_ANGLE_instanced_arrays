@@ -1,5 +1,5 @@
 GL_ANGLE_instanced_arrays
-https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
+https://www.khronos.org/registry/OpenGL/extensions/ANGLE/instanced_arrays.txt
 GL_ANGLE_instanced_arrays
 
 	GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE 0x88FE

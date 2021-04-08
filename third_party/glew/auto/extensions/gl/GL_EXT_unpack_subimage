@@ -1,5 +1,5 @@
 GL_EXT_unpack_subimage
-http://www.opengl.org/registry/specs/EXT/unpack_subimage.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_unpack_subimage.txt
 GL_EXT_unpack_subimage
 
 	GL_UNPACK_ROW_LENGTH_EXT 0x0CF2

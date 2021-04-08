@@ -23,5 +23,5 @@ EGL_KHR_lock_surface
 	EGL_BITMAP_PIXEL_LUMINANCE_OFFSET_KHR 0x30CD
 	EGL_LOWER_LEFT_KHR 0x30CE
 	EGL_UPPER_LEFT_KHR 0x30CF
-	EGLBoolean  eglLockSurfaceKHR (EGLDisplay  dpy, EGLSurface  surface, const EGLint * attrib_list)
-	EGLBoolean  eglUnlockSurfaceKHR (EGLDisplay  dpy, EGLSurface  surface)
+	EGLBoolean eglLockSurfaceKHR (EGLDisplay dpy, EGLSurface surface, const EGLint* attrib_list)
+	EGLBoolean eglUnlockSurfaceKHR (EGLDisplay dpy, EGLSurface surface)

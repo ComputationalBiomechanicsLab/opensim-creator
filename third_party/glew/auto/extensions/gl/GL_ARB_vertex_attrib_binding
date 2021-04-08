@@ -1,5 +1,5 @@
 GL_ARB_vertex_attrib_binding
-http://www.opengl.org/registry/specs/ARB/vertex_attrib_binding.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_vertex_attrib_binding.txt
 GL_ARB_vertex_attrib_binding
 
 	GL_VERTEX_ATTRIB_BINDING 0x82D4

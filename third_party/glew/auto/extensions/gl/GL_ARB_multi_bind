@@ -1,5 +1,5 @@
 GL_ARB_multi_bind
-http://www.opengl.org/registry/specs/ARB/multi_bind.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_multi_bind.txt
 GL_ARB_multi_bind
 
 	void glBindBuffersBase (GLenum target, GLuint first, GLsizei count, const GLuint* buffers)

@@ -1,5 +1,5 @@
 GL_REGAL_ES1_0_compatibility
-https://github.com/p3/regal/tree/master/doc/extensions
+https://www.khronos.org/registry/OpenGL/extensions/REGAL/ES1_0_compatibility.txt
 GL_REGAL_ES1_0_compatibility
 
 	void glAlphaFuncx (GLenum func, GLclampx ref)

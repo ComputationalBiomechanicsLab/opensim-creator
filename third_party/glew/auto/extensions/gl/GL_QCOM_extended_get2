@@ -1,5 +1,5 @@
 GL_QCOM_extended_get2
-http://www.opengl.org/registry/specs/QCOM/extended_get2.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_extended_get2.txt
 GL_QCOM_extended_get2
 
 	void glExtGetProgramBinarySourceQCOM (GLuint program, GLenum shadertype, GLchar* source, GLint* length)

@@ -1,5 +1,5 @@
 GL_EXT_framebuffer_multisample
-http://www.opengl.org/registry/specs/EXT/framebuffer_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_framebuffer_multisample.txt
 GL_EXT_framebuffer_multisample
 
 	GL_RENDERBUFFER_SAMPLES_EXT 0x8CAB

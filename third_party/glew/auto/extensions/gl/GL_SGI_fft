@@ -1,5 +1,5 @@
 GL_SGI_fft
-http://www.opengl.org/registry/specs/SGI/fft.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGI/SGI_fft.txt
 GL_SGI_fft
 
 	GL_PIXEL_TRANSFORM_OPERATOR_SGI 0x81C4

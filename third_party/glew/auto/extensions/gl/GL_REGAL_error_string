@@ -1,5 +1,5 @@
 GL_REGAL_error_string
-https://github.com/p3/regal/tree/master/doc/extensions
+https://www.khronos.org/registry/OpenGL/extensions/REGAL/error_string.txt
 GL_REGAL_error_string
 
 	const GLchar* glErrorStringREGAL (GLenum error)

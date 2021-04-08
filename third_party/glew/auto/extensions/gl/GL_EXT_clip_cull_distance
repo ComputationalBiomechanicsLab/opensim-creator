@@ -1,5 +1,5 @@
 GL_EXT_clip_cull_distance
-http://www.opengl.org/registry/specs/EXT/clip_cull_distance.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_clip_cull_distance.txt
 GL_EXT_clip_cull_distance
 
 	GL_MAX_CLIP_DISTANCES_EXT 0x0D32

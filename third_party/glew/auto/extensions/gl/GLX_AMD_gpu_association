@@ -1,5 +1,5 @@
 GLX_AMD_gpu_association
-http://www.opengl.org/registry/specs/AMD/glx_gpu_association.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_AMD_gpu_association
 
 	GLX_GPU_VENDOR_AMD 0x1F00

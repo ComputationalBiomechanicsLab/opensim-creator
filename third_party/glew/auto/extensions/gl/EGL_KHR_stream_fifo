@@ -6,4 +6,4 @@ EGL_KHR_stream_fifo
 	EGL_STREAM_TIME_NOW_KHR 0x31FD
 	EGL_STREAM_TIME_CONSUMER_KHR 0x31FE
 	EGL_STREAM_TIME_PRODUCER_KHR 0x31FF
-	EGLBoolean  eglQueryStreamTimeKHR (EGLDisplay  dpy, EGLStreamKHR  stream, EGLenum  attribute, EGLTimeKHR * value)
+	EGLBoolean eglQueryStreamTimeKHR (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLTimeKHR* value)

@@ -1,5 +1,5 @@
 GL_EXT_raster_multisample
-http://www.opengl.org/registry/specs/NV/framebuffer_mixed_samples.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_framebuffer_mixed_samples.txt
 GL_EXT_raster_multisample
 
 	GL_COLOR_SAMPLES_NV 0x8E20

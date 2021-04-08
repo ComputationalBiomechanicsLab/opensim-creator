@@ -1,5 +1,5 @@
 GL_ARB_query_buffer_object
-http://www.opengl.org/registry/specs/ARB/query_buffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_query_buffer_object.txt
 GL_ARB_query_buffer_object
 
 	GL_QUERY_BUFFER_BARRIER_BIT 0x00008000

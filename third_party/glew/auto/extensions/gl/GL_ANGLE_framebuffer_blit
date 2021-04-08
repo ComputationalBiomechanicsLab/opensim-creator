@@ -1,5 +1,5 @@
 GL_ANGLE_framebuffer_blit
-https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
+https://www.khronos.org/registry/OpenGL/extensions/ANGLE/framebuffer_blit.txt
 GL_ANGLE_framebuffer_blit
 
 	GL_DRAW_FRAMEBUFFER_BINDING_ANGLE 0x8CA6

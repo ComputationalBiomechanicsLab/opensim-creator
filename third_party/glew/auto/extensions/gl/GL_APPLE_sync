@@ -1,5 +1,5 @@
 GL_APPLE_sync
-http://www.opengl.org/registry/specs/APPLE/sync.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_sync.txt
 GL_APPLE_sync
 
 	GL_TIMEOUT_IGNORED_APPLE 0xFFFFFFFFFFFFFFFFull

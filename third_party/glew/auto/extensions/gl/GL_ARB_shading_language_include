@@ -1,5 +1,5 @@
 GL_ARB_shading_language_include
-http://www.opengl.org/registry/specs/ARB/shading_language_include.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_shading_language_include.txt
 GL_ARB_shading_language_include
 
 	GL_SHADER_INCLUDE_ARB 0x8DAE

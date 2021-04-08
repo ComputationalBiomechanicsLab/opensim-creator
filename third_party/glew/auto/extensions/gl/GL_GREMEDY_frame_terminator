@@ -1,5 +1,5 @@
 GL_GREMEDY_frame_terminator
-http://www.opengl.org/registry/specs/GREMEDY/frame_terminator.txt
+https://www.khronos.org/registry/OpenGL/extensions/GREMEDY/GREMEDY_frame_terminator.txt
 GL_GREMEDY_frame_terminator
 
 	void glFrameTerminatorGREMEDY (void)

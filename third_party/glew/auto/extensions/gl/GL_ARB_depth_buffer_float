@@ -1,5 +1,5 @@
 GL_ARB_depth_buffer_float
-http://www.opengl.org/registry/specs/ARB/depth_buffer_float.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_depth_buffer_float.txt
 GL_ARB_depth_buffer_float
 
 	GL_DEPTH_COMPONENT32F 0x8CAC

@@ -1,5 +1,5 @@
 GL_EXT_cmyka
-http://www.opengl.org/registry/specs/EXT/cmyka.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_cmyka.txt
 GL_EXT_cmyka
 
 	GL_CMYK_EXT 0x800C

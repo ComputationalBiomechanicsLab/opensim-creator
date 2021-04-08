@@ -1,5 +1,5 @@
 GL_ARB_uniform_buffer_object
-http://www.opengl.org/registry/specs/ARB/uniform_buffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_uniform_buffer_object.txt
 GL_ARB_uniform_buffer_object
 
 	GL_INVALID_INDEX 0xFFFFFFFFu

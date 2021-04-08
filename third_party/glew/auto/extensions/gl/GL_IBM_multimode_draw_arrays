@@ -1,5 +1,5 @@
 GL_IBM_multimode_draw_arrays
-http://www.opengl.org/registry/specs/IBM/multimode_draw_arrays.txt
+https://www.khronos.org/registry/OpenGL/extensions/IBM/IBM_multimode_draw_arrays.txt
 GL_IBM_multimode_draw_arrays
 
 	void glMultiModeDrawArraysIBM (const GLenum* mode, const GLint *first, const GLsizei *count, GLsizei primcount, GLint modestride)

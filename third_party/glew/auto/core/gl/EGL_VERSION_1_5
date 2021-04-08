@@ -2,8 +2,6 @@ EGL_VERSION_1_5
 https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 
 
-	EGL_NO_IMAGE ((EGLImage)0)
-	EGL_NO_SYNC ((EGLSync)0)
 	EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT 0x00000001
 	EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT 0x00000002
 	EGL_OPENGL_ES3_BIT 0x00000040
@@ -47,6 +45,8 @@ https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 	EGL_NO_RESET_NOTIFICATION 0x31BE
 	EGL_LOSE_CONTEXT_ON_RESET 0x31BF
 	EGL_FOREVER 0xFFFFFFFFFFFFFFFF
+	EGL_NO_IMAGE EGL_CAST(EGLImage,0)
+	EGL_NO_SYNC EGL_CAST(EGLSync,0)
 	EGLint  eglClientWaitSync (EGLDisplay  dpy, EGLSync  sync, EGLint  flags, EGLTime  timeout)
 	EGLImage  eglCreateImage (EGLDisplay  dpy, EGLContext  ctx, EGLenum  target, EGLClientBuffer  buffer, const EGLAttrib * attrib_list)
 	EGLSurface  eglCreatePlatformPixmapSurface (EGLDisplay  dpy, EGLConfig  config, void * native_pixmap, const EGLAttrib * attrib_list)

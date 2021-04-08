@@ -1,5 +1,5 @@
 GL_SGIX_quad_mesh
-http://www.opengl.org/registry/specs/SGIX/quad_mesh.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_quad_mesh.txt
 GL_SGIX_quad_mesh
 
 	void glMeshBreadthSGIX (GLint breadth)

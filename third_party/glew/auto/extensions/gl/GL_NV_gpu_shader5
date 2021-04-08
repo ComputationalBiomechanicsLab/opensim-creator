@@ -1,5 +1,5 @@
 GL_NV_gpu_shader5
-http://www.opengl.org/registry/specs/NV/gpu_shader5.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_gpu_shader5.txt
 GL_NV_gpu_shader5
 
 	GL_INT64_NV 0x140E

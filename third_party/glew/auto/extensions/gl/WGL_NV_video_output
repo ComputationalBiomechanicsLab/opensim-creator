@@ -1,5 +1,5 @@
 WGL_NV_video_output
-http://www.opengl.org/registry/specs/NV/wgl_video_output.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/WGL_NV_video_output.txt
 WGL_NV_video_output
 
 	WGL_BIND_TO_VIDEO_RGB_NV 0x20C0
@@ -17,7 +17,7 @@ WGL_NV_video_output
 	WGL_VIDEO_OUT_STACKED_FIELDS_2_1 0x20CC
 	BOOL wglBindVideoImageNV (HPVIDEODEV hVideoDevice, HPBUFFERARB hPbuffer, int iVideoBuffer)
 	BOOL wglGetVideoDeviceNV (HDC hDC, int numDevices, HPVIDEODEV* hVideoDevice)
-	BOOL wglGetVideoInfoNV (HPVIDEODEV hpVideoDevice, unsigned long* pulCounterOutputPbuffer, unsigned long *pulCounterOutputVideo)
+	BOOL wglGetVideoInfoNV (HPVIDEODEV hpVideoDevice, unsigned long* pulCounterOutputPbuffer, unsigned long* pulCounterOutputVideo)
 	BOOL wglReleaseVideoDeviceNV (HPVIDEODEV hVideoDevice)
 	BOOL wglReleaseVideoImageNV (HPBUFFERARB hPbuffer, int iVideoBuffer)
 	BOOL wglSendPbufferToVideoNV (HPBUFFERARB hPbuffer, int iBufferType, unsigned long* pulCounterPbuffer, BOOL bBlock)

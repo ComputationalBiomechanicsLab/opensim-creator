@@ -1,5 +1,5 @@
 GL_HP_image_transform
-http://www.opengl.org/registry/specs/HP/image_transform.txt
+https://www.khronos.org/registry/OpenGL/extensions/HP/HP_image_transform.txt
 GL_HP_image_transform
 
 	void glGetImageTransformParameterfvHP (GLenum target, GLenum pname, const GLfloat* params)

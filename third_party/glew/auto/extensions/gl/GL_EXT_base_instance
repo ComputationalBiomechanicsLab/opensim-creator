@@ -1,5 +1,5 @@
 GL_EXT_base_instance
-http://www.opengl.org/registry/specs/EXT/base_instance.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_base_instance.txt
 GL_EXT_base_instance
 
 	void glDrawArraysInstancedBaseInstanceEXT (GLenum mode, GLint first, GLsizei count, GLsizei instancecount, GLuint baseinstance)

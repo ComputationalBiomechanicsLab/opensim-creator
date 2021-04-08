@@ -1,5 +1,5 @@
 GL_NV_shader_thread_group
-http://www.opengl.org/registry/specs/NV/shader_thread_group.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_shader_thread_group.txt
 GL_NV_shader_thread_group
 
 	GL_WARP_SIZE_NV 0x9339

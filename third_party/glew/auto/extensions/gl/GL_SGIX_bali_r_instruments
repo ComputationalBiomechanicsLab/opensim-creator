@@ -1,5 +1,5 @@
 GL_SGIX_bali_r_instruments
-http://www.opengl.org/registry/specs/SGIX/bali_r_instruments.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_bali_r_instruments.txt
 GL_SGIX_bali_r_instruments
 
 	GL_BALI_FRAGMENTS_GENERATED_INSTRUMENT 0x6090

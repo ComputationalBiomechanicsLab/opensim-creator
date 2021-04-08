@@ -1,5 +1,5 @@
 GL_NV_command_list
-http://www.opengl.org/registry/specs/NV/command_list.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_command_list.txt
 GL_NV_command_list
 
 	GL_TERMINATE_SEQUENCE_COMMAND_NV 0x0000

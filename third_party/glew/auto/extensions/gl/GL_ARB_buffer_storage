@@ -1,5 +1,5 @@
 GL_ARB_buffer_storage
-http://www.opengl.org/registry/specs/ARB/buffer_storage.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_buffer_storage.txt
 GL_ARB_buffer_storage
 
 	GL_MAP_READ_BIT 0x0001

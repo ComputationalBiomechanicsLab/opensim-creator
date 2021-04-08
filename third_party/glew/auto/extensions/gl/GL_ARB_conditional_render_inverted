@@ -1,5 +1,5 @@
 GL_ARB_conditional_render_inverted
-http://www.opengl.org/registry/specs/ARB/conditional_render_inverted.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_conditional_render_inverted.txt
 GL_ARB_conditional_render_inverted
 
 	GL_QUERY_WAIT_INVERTED 0x8E17

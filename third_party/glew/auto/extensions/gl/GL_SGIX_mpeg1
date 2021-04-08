@@ -1,5 +1,5 @@
 GL_SGIX_mpeg1
-http://www.opengl.org/registry/specs/SGIX/mpeg1.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_mpeg1.txt
 GL_SGIX_mpeg1
 
 	void glAllocMPEGPredictorsSGIX (GLsizei width, GLsizei height, GLsizei n, GLuint* predictors)

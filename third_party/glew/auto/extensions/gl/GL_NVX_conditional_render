@@ -1,5 +1,5 @@
 GL_NVX_conditional_render
-http://www.opengl.org/registry/specs/NVX/nvx_conditional_render.txt
+https://www.khronos.org/registry/OpenGL/extensions/NVX/NVX_conditional_render.txt
 GL_NVX_conditional_render
 
 	void glBeginConditionalRenderNVX (GLuint id)

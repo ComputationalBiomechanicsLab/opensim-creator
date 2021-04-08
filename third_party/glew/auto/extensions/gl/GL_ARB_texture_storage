@@ -1,5 +1,5 @@
 GL_ARB_texture_storage
-http://www.opengl.org/registry/specs/ARB/texture_storage.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_storage.txt
 GL_ARB_texture_storage
 
 	GL_TEXTURE_IMMUTABLE_FORMAT 0x912F

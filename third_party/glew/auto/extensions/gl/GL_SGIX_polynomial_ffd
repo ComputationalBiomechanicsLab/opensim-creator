@@ -1,5 +1,5 @@
 GL_SGIX_polynomial_ffd
-http://www.opengl.org/registry/specs/SGIX/polynomial_ffd.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_polynomial_ffd.txt
 GL_SGIX_polynomial_ffd
 
 	GL_TEXTURE_DEFORMATION_BIT_SGIX 0x1

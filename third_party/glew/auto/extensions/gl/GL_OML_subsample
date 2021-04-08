@@ -1,5 +1,5 @@
 GL_OML_subsample
-http://www.opengl.org/registry/specs/OML/subsample.txt
+https://www.khronos.org/registry/OpenGL/extensions/OML/OML_subsample.txt
 GL_OML_subsample
 
 	GL_FORMAT_SUBSAMPLE_24_24_OML 0x8982

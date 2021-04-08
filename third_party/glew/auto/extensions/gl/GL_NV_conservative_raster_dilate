@@ -1,5 +1,5 @@
 GL_NV_conservative_raster_dilate
-http://www.opengl.org/registry/specs/NV/conservative_raster_dilate.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_conservative_raster_dilate.txt
 GL_NV_conservative_raster_dilate
 
 	GL_CONSERVATIVE_RASTER_DILATE_NV 0x9379

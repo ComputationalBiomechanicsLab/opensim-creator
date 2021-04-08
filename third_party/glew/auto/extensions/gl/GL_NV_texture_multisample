@@ -1,5 +1,5 @@
 GL_NV_texture_multisample
-http://www.opengl.org/registry/specs/NV/texture_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_texture_multisample.txt
 GL_NV_texture_multisample
 
 	GL_TEXTURE_COVERAGE_SAMPLES_NV 0x9045

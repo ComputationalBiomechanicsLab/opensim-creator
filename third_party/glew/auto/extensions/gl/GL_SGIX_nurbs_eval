@@ -1,5 +1,5 @@
 GL_SGIX_nurbs_eval
-http://www.opengl.org/registry/specs/SGIX/nurbs_eval.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_nurbs_eval.txt
 GL_SGIX_nurbs_eval
 
 	GL_MAP1_VERTEX_3_NURBS_SGIX 0x81CB

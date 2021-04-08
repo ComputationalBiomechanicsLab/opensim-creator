@@ -1,5 +1,5 @@
 GL_ARB_multisample
-http://www.opengl.org/registry/specs/ARB/multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_multisample.txt
 GL_ARB_multisample
 
 	GL_MULTISAMPLE_ARB 0x809D

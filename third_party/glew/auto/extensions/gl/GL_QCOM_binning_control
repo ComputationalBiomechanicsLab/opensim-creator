@@ -1,5 +1,5 @@
 GL_QCOM_binning_control
-http://www.opengl.org/registry/specs/QCOM/binning_control.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_binning_control.txt
 GL_QCOM_binning_control
 
 	GL_DONT_CARE 0x1100

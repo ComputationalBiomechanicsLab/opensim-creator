@@ -1,5 +1,5 @@
 GL_ARB_sync
-http://www.opengl.org/registry/specs/ARB/sync.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_sync.txt
 GL_ARB_sync
 
 	GL_TIMEOUT_IGNORED 0xFFFFFFFFFFFFFFFFull

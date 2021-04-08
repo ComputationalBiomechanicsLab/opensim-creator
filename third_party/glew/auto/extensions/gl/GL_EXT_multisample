@@ -1,5 +1,5 @@
 GL_EXT_multisample
-http://www.opengl.org/registry/specs/EXT/wgl_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/WGL_EXT_multisample.txt
 GL_EXT_multisample
 
 	GL_MULTISAMPLE_EXT 0x809D

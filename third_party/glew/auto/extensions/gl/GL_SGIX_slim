@@ -1,5 +1,5 @@
 GL_SGIX_slim
-http://www.opengl.org/registry/specs/SGIX/slim.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_slim.txt
 GL_SGIX_slim
 
 	GL_PACK_MAX_COMPRESSED_SIZE_SGIX 0x831B

@@ -1,5 +1,5 @@
 GLX_EXT_swap_control
-http://www.opengl.org/registry/specs/EXT/swap_control.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_EXT_swap_control
 
 	GLX_SWAP_INTERVAL_EXT 0x20F1

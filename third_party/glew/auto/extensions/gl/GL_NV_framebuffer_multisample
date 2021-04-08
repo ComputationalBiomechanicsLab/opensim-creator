@@ -1,5 +1,5 @@
 GL_NV_framebuffer_multisample
-http://www.opengl.org/registry/specs/NV/framebuffer_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_framebuffer_multisample.txt
 GL_NV_framebuffer_multisample
 
 	GL_RENDERBUFFER_SAMPLES_NV 0x8CAB

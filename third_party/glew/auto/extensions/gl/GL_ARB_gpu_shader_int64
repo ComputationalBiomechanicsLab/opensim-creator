@@ -1,5 +1,5 @@
 GL_ARB_gpu_shader_int64
-http://www.opengl.org/registry/specs/ARB/gpu_shader_int64.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_gpu_shader_int64.txt
 GL_ARB_gpu_shader_int64
 
 	GL_INT64_ARB 0x140E

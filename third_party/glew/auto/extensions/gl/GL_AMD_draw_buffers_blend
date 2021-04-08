@@ -1,5 +1,5 @@
 GL_AMD_draw_buffers_blend
-http://www.opengl.org/registry/specs/AMD/draw_buffers_blend.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_draw_buffers_blend.txt
 GL_AMD_draw_buffers_blend
 
 	void glBlendEquationIndexedAMD (GLuint buf, GLenum mode)

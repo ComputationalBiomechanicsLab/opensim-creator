@@ -1,5 +1,5 @@
 GL_EXT_cull_vertex
-http://www.opengl.org/registry/specs/EXT/cull_vertex.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_cull_vertex.txt
 GL_EXT_cull_vertex
 
 	GL_CULL_VERTEX_EXT 0x81AA

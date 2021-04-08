@@ -1,5 +1,5 @@
 GL_QCOM_alpha_test
-http://www.opengl.org/registry/specs/QCOM/alpha_test.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_alpha_test.txt
 GL_QCOM_alpha_test
 
 	GL_ALPHA_TEST_QCOM 0x0BC0

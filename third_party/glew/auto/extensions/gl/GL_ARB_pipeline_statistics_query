@@ -1,5 +1,5 @@
 GL_ARB_pipeline_statistics_query
-http://www.opengl.org/registry/specs/ARB/pipeline_statistics_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_pipeline_statistics_query.txt
 GL_ARB_pipeline_statistics_query
 
 	GL_VERTICES_SUBMITTED_ARB 0x82EE

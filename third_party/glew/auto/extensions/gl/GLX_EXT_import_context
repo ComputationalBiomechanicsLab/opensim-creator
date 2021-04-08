@@ -1,5 +1,5 @@
 GLX_EXT_import_context
-http://www.opengl.org/registry/specs/EXT/import_context.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_EXT_import_context
 
 	GLX_SHARE_CONTEXT_EXT 0x800A
@@ -7,6 +7,7 @@ GLX_EXT_import_context
 	GLX_SCREEN_EXT 0x800C
 	void glXFreeContextEXT (Display* dpy, GLXContext context)
 	GLXContextID glXGetContextIDEXT (const GLXContext context)
+	Display* glXGetCurrentDisplayEXT (void)
 	GLXContext glXImportContextEXT (Display* dpy, GLXContextID contextID)
-	int glXQueryContextInfoEXT (Display* dpy, GLXContext context, int attribute,int *value)
+	int glXQueryContextInfoEXT (Display* dpy, GLXContext context, int attribute, int* value)
 	typedef XID GLXContextID

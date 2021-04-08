@@ -1,5 +1,5 @@
 GL_APPLE_vertex_array_range
-http://www.opengl.org/registry/specs/APPLE/vertex_array_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_vertex_array_range.txt
 GL_APPLE_vertex_array_range
 
 	GL_VERTEX_ARRAY_RANGE_APPLE 0x851D

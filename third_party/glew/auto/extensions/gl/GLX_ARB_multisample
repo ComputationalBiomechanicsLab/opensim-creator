@@ -1,5 +1,5 @@
 GLX_ARB_multisample
-http://www.opengl.org/registry/specs/ARB/multisample.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_ARB_multisample
 
 	GLX_SAMPLE_BUFFERS_ARB 100000

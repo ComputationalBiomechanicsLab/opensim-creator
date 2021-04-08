@@ -1,5 +1,5 @@
 GL_NV_texture_env_combine4
-http://www.opengl.org/registry/specs/NV/texture_env_combine4.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_texture_env_combine4.txt
 GL_NV_texture_env_combine4
 
 	GL_COMBINE4_NV 0x8503

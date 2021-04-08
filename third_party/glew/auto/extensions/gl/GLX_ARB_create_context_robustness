@@ -1,5 +1,5 @@
 GLX_ARB_create_context_robustness
-http://www.opengl.org/registry/specs/ARB/glx_create_context_robustness.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_ARB_create_context_robustness
 
 	GLX_CONTEXT_ROBUST_ACCESS_BIT_ARB 0x00000004

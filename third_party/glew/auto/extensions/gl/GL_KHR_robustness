@@ -1,5 +1,5 @@
 GL_KHR_robustness
-http://www.opengl.org/registry/specs/KHR/robustness.txt
+https://www.khronos.org/registry/OpenGL/extensions/KHR/KHR_robustness.txt
 GL_KHR_robustness
 
 	GL_CONTEXT_LOST 0x0507

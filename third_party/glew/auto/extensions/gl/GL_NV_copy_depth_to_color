@@ -1,5 +1,5 @@
 GL_NV_copy_depth_to_color
-http://www.opengl.org/registry/specs/NV/copy_depth_to_color.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_copy_depth_to_color.txt
 GL_NV_copy_depth_to_color
 
 	GL_DEPTH_STENCIL_TO_RGBA_NV 0x886E

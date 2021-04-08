@@ -1,5 +1,5 @@
 WGL_NV_present_video
-http://www.opengl.org/registry/specs/NV/present_video.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/WGL_NV_present_video.txt
 WGL_NV_present_video
 
 	WGL_NUM_VIDEO_SLOTS_NV 0x20F0

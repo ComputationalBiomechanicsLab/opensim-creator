@@ -1,5 +1,5 @@
 GL_SGIX_texture_mipmap_anisotropic
-http://www.opengl.org/registry/specs/SGIX/texture_mipmap_anisotropic.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_texture_mipmap_anisotropic.txt
 GL_SGIX_texture_mipmap_anisotropic
 
 	GL_TEXTURE_MIPMAP_ANISOTROPY_SGIX 0x832E

@@ -1,5 +1,5 @@
 GL_ATI_fragment_shader
-http://www.opengl.org/registry/specs/ATI/fragment_shader.txt
+https://www.khronos.org/registry/OpenGL/extensions/ATI/ATI_fragment_shader.txt
 GL_ATI_fragment_shader
 
 	GL_2X_BIT_ATI 0x00000001

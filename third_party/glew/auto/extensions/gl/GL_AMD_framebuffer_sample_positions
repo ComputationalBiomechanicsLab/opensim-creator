@@ -1,5 +1,5 @@
 GL_AMD_framebuffer_sample_positions
-http://www.opengl.org/registry/specs/AMD/framebuffer_sample_positions.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_framebuffer_sample_positions.txt
 GL_AMD_framebuffer_sample_positions
 
 	GL_SUBSAMPLE_DISTANCE_AMD 0x883F

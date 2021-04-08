@@ -1,5 +1,5 @@
 GL_EXT_map_buffer_range
-http://www.opengl.org/registry/specs/EXT/map_buffer_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_map_buffer_range.txt
 GL_EXT_map_buffer_range
 
 	GL_MAP_READ_BIT_EXT 0x0001

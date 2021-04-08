@@ -1,5 +1,5 @@
 GL_SGIS_color_range
-http://www.opengl.org/registry/specs/SGIS/color_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIS/GLX_SGIS_color_range.txt
 GL_SGIS_color_range
 
 	GL_EXTENDED_RANGE_SGIS 0x85A5

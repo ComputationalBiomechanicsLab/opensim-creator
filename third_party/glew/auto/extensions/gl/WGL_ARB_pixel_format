@@ -1,5 +1,5 @@
 WGL_ARB_pixel_format
-http://www.opengl.org/registry/specs/ARB/wgl_pixel_format.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/WGL_ARB_pixel_format.txt
 WGL_ARB_pixel_format
 
 	WGL_NUMBER_PIXEL_FORMATS_ARB 0x2000
@@ -51,6 +51,6 @@ WGL_ARB_pixel_format
 	WGL_TRANSPARENT_BLUE_VALUE_ARB 0x2039
 	WGL_TRANSPARENT_ALPHA_VALUE_ARB 0x203A
 	WGL_TRANSPARENT_INDEX_VALUE_ARB 0x203B
-	BOOL wglChoosePixelFormatARB (HDC hdc, const int* piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats)
-	BOOL wglGetPixelFormatAttribfvARB (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int* piAttributes, FLOAT *pfValues)
-	BOOL wglGetPixelFormatAttribivARB (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int* piAttributes, int *piValues)
+	BOOL wglChoosePixelFormatARB (HDC hdc, const int* piAttribIList, const FLOAT* pfAttribFList, UINT nMaxFormats, int* piFormats, UINT* nNumFormats)
+	BOOL wglGetPixelFormatAttribfvARB (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int* piAttributes, FLOAT* pfValues)
+	BOOL wglGetPixelFormatAttribivARB (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int* piAttributes, int* piValues)

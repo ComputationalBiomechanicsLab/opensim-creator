@@ -1,5 +1,5 @@
 GL_IBM_vertex_array_lists
-http://www.opengl.org/registry/specs/IBM/vertex_array_lists.txt
+https://www.khronos.org/registry/OpenGL/extensions/IBM/IBM_vertex_array_lists.txt
 GL_IBM_vertex_array_lists
 
 	GL_VERTEX_ARRAY_LIST_IBM 103070

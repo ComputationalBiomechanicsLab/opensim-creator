@@ -13,5 +13,5 @@ EGL_EXT_image_dma_buf_import_modifiers
 	EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT 0x3448
 	EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT 0x3449
 	EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT 0x344A
-	EGLBoolean  eglQueryDmaBufFormatsEXT (EGLDisplay  dpy, EGLint  max_formats, EGLint  *formats, EGLint  *num_formats)
-	EGLBoolean  eglQueryDmaBufModifiersEXT (EGLDisplay  dpy, EGLint  format, EGLint  max_modifiers, EGLuint64KHR  *modifiers, EGLBoolean  *external_only, EGLint  *num_modifiers)
+	EGLBoolean eglQueryDmaBufFormatsEXT (EGLDisplay dpy, EGLint max_formats, EGLint* formats, EGLint* num_formats)
+	EGLBoolean eglQueryDmaBufModifiersEXT (EGLDisplay dpy, EGLint format, EGLint max_modifiers, EGLuint64KHR* modifiers, EGLBoolean* external_only, EGLint* num_modifiers)

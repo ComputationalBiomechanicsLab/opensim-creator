@@ -1,5 +1,5 @@
 GL_ARB_texture_rg
-http://www.opengl.org/registry/specs/ARB/texture_rg.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_rg.txt
 GL_ARB_texture_rg
 
 	GL_COMPRESSED_RED 0x8225

@@ -1,5 +1,5 @@
 GL_NV_explicit_multisample
-http://www.opengl.org/registry/specs/NV/explicit_multisample.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_explicit_multisample.txt
 GL_NV_explicit_multisample
 
 	GL_SAMPLE_POSITION_NV 0x8E50

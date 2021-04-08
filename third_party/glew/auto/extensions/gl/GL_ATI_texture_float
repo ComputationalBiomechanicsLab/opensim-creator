@@ -1,5 +1,5 @@
 GL_ATI_texture_float
-http://www.opengl.org/registry/specs/ATI/texture_float.txt
+https://www.khronos.org/registry/OpenGL/extensions/ATI/ATI_texture_float.txt
 GL_ATI_texture_float
 
 	GL_RGBA_FLOAT32_ATI 0x8814

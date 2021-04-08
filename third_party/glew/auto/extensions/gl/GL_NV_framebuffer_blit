@@ -1,5 +1,5 @@
 GL_NV_framebuffer_blit
-http://www.opengl.org/registry/specs/NV/framebuffer_blit.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_framebuffer_blit.txt
 GL_NV_framebuffer_blit
 
 	GL_DRAW_FRAMEBUFFER_BINDING_NV 0x8CA6

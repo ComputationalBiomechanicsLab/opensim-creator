@@ -1,5 +1,5 @@
 GL_ARB_sample_locations
-http://www.opengl.org/registry/specs/ARB/sample_locations.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_sample_locations.txt
 GL_ARB_sample_locations
 
 	GL_SAMPLE_LOCATION_ARB 0x8E50

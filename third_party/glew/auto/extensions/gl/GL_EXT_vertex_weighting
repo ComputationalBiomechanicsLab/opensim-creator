@@ -1,5 +1,5 @@
 GL_EXT_vertex_weighting
-http://www.opengl.org/registry/specs/EXT/vertex_weighting.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_vertex_weighting.txt
 GL_EXT_vertex_weighting
 
 	GL_MODELVIEW0_STACK_DEPTH_EXT 0x0BA3

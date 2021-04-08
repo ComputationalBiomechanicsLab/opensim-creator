@@ -1,5 +1,5 @@
 GL_AMD_occlusion_query_event
-http://www.opengl.org/registry/specs/AMD/occlusion_query_event.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_occlusion_query_event.txt
 GL_AMD_occlusion_query_event
 
 	GL_QUERY_DEPTH_PASS_EVENT_BIT_AMD 0x00000001

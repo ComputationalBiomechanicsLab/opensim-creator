@@ -1,5 +1,5 @@
 GL_SGIX_fragment_lighting_space
-http://www.opengl.org/registry/specs/SGIX/fragment_lighting_space.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_fragment_lighting_space.txt
 GL_SGIX_fragment_lighting_space
 
 	GL_EYE_SPACE_SGIX 0x8436

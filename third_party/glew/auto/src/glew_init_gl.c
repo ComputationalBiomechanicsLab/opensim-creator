@@ -79,7 +79,6 @@ static GLenum GLEWAPIENTRY glewContextInit ()
   const GLubyte* s;
   GLuint dot;
   GLint major, minor;
-  size_t n;
 
   #ifdef _WIN32
   getString = glGetString;
@@ -110,7 +109,7 @@ static GLenum GLEWAPIENTRY glewContextInit ()
   else
   {
     GLEW_VERSION_4_6   = ( major > 4 )                 || ( major == 4 && minor >= 6 ) ? GL_TRUE : GL_FALSE;
-    GLEW_VERSION_4_5   = GLEW_VERSION_4_4   == GL_TRUE || ( major == 4 && minor >= 5 ) ? GL_TRUE : GL_FALSE;
+    GLEW_VERSION_4_5   = GLEW_VERSION_4_6   == GL_TRUE || ( major == 4 && minor >= 5 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_4   = GLEW_VERSION_4_5   == GL_TRUE || ( major == 4 && minor >= 4 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_3   = GLEW_VERSION_4_4   == GL_TRUE || ( major == 4 && minor >= 3 ) ? GL_TRUE : GL_FALSE;
     GLEW_VERSION_4_2   = GLEW_VERSION_4_3   == GL_TRUE || ( major == 4 && minor >= 2 ) ? GL_TRUE : GL_FALSE;
@@ -130,8 +129,11 @@ static GLenum GLEWAPIENTRY glewContextInit ()
     GLEW_VERSION_1_1   = GLEW_VERSION_1_2   == GL_TRUE || ( major == 1 && minor >= 1 ) ? GL_TRUE : GL_FALSE;
   }
 
-  for (n = 0; n < sizeof(_glewExtensionString) / sizeof(_glewExtensionString[0]); ++n)
-    _glewExtensionString[n] = GL_FALSE;
+  {
+    size_t i;
+    for (i = 0; i < sizeof(_glewExtensionString) / sizeof(_glewExtensionString[0]); ++i)
+      _glewExtensionString[i] = GL_FALSE;
+  }
 
   if (GLEW_VERSION_3_0)
   {

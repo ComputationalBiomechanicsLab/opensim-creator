@@ -1,5 +1,5 @@
 GL_QCOM_framebuffer_foveated
-http://www.opengl.org/registry/specs/QCOM/framebuffer_foveated.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_framebuffer_foveated.txt
 GL_QCOM_framebuffer_foveated
 
 	GL_FOVEATION_ENABLE_BIT_QCOM 0x1
