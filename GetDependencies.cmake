@@ -423,5 +423,5 @@ endif()
 
 # copy SDL2 lib if on Windows/Mac
 if(NOT LINUX)
-    list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:osc-sdl2>)
+    list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:sdl2>)
 endif()
