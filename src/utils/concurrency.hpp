@@ -2,7 +2,7 @@
 
 #include <mutex>
 
-namespace osmv {
+namespace osc {
     // a mutex guard over a reference to `T`
     template<typename T>
     class Mutex_guard final {

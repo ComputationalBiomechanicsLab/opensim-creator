@@ -9,7 +9,7 @@ namespace {
     struct Skip_msxaa_blitter_shader;
 }
 
-namespace osmv {
+namespace osc {
     class Shader_cache final {
         struct Impl;
         Impl* impl;

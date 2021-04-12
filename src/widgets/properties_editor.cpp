@@ -15,7 +15,7 @@
 #include <string>
 #include <unordered_map>
 
-using namespace osmv;
+using namespace osc;
 
 template<typename Coll1, typename Coll2>
 static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
@@ -350,14 +350,14 @@ static void draw_property_editor(
     ImGui::NextColumn();
 }
 
-void osmv::draw_properties_editor(
+void osc::draw_properties_editor(
     Properties_editor_state& st,
     OpenSim::Object& obj,
     std::function<void()> const& before_property_edited,
     std::function<void()> const& after_property_edited) {
 
     int num_props = obj.getNumProperties();
-    OSMV_ASSERT(num_props >= 0);
+    OSC_ASSERT(num_props >= 0);
 
     st.property_editor_states.resize(static_cast<size_t>(num_props));
 
@@ -370,7 +370,7 @@ void osmv::draw_properties_editor(
     ImGui::Columns(1);
 }
 
-void osmv::draw_properties_editor_for_props_with_indices(
+void osc::draw_properties_editor_for_props_with_indices(
     Properties_editor_state& st,
     OpenSim::Object& obj,
     int* indices,
@@ -380,8 +380,8 @@ void osmv::draw_properties_editor_for_props_with_indices(
 
     int highest = *std::max_element(indices, indices + nindices);
     int nprops = obj.getNumProperties();
-    OSMV_ASSERT(highest >= 0);
-    OSMV_ASSERT(highest < nprops);
+    OSC_ASSERT(highest >= 0);
+    OSC_ASSERT(highest < nprops);
 
     st.property_editor_states.resize(static_cast<size_t>(highest));
 

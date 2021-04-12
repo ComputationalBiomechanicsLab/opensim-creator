@@ -3,7 +3,7 @@
 #include "src/3d/mesh.hpp"
 
 // 3d common: common primitives/structs used for mesh generation/rendering
-namespace osmv {
+namespace osc {
     [[nodiscard]] Textured_mesh shaded_textured_quad_verts();
 
     // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere

@@ -13,7 +13,7 @@
 #include <array>
 #include <memory>
 
-using namespace osmv;
+using namespace osc;
 
 static std::unique_ptr<OpenSim::Joint>
     make_joint(Added_body_modal_state& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
@@ -47,7 +47,7 @@ static std::unique_ptr<OpenSim::Joint>
     return copy;
 }
 
-void osmv::try_draw_add_body_modal(
+void osc::try_draw_add_body_modal(
     Added_body_modal_state& st,
     char const* modal_name,
     OpenSim::Model const& model,
@@ -129,7 +129,7 @@ void osmv::try_draw_add_body_modal(
     draw_help_marker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
     ImGui::NextColumn();
     {
-        auto names = osmv::joint::names();
+        auto names = osc::joint::names();
         ImGui::Combo("##jointtype", &st.joint_idx, names.data(), static_cast<int>(names.size()));
     }
     ImGui::NextColumn();
@@ -145,7 +145,7 @@ void osmv::try_draw_add_body_modal(
     ImGui::Text("add offset frames?");
     ImGui::SameLine();
     draw_help_marker(
-        "Whether osmv should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the the two bodies (this added one, plus the selected one) directly. However, most model designs have the joint attach to offset frames which, themselves, attach to the bodies. The utility of this is that the offset frames can later be moved/adjusted.");
+        "Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the the two bodies (this added one, plus the selected one) directly. However, most model designs have the joint attach to offset frames which, themselves, attach to the bodies. The utility of this is that the offset frames can later be moved/adjusted.");
     ImGui::NextColumn();
     ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
     ImGui::NextColumn();
@@ -183,7 +183,7 @@ void osmv::try_draw_add_body_modal(
         auto com = stk_vec3_from(st.com);
         auto inertia = stk_inertia_from(st.inertia);
         auto body = std::make_unique<OpenSim::Body>(st.body_name, 1.0, com, inertia);
-        auto joint = make_joint(st, *body, *osmv::joint::prototypes()[static_cast<size_t>(st.joint_idx)]);
+        auto joint = make_joint(st, *body, *osc::joint::prototypes()[static_cast<size_t>(st.joint_idx)]);
 
         if (st.attach_geom.selected) {
             body->attachGeometry(st.attach_geom.selected.release());

@@ -7,7 +7,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
 
     struct Select_2_pfs_modal_state final {
         OpenSim::PhysicalFrame const* first = nullptr;

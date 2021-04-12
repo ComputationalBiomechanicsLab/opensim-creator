@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace osmv;
+using namespace osc;
 
 struct Error_screen::Impl final {
     std::string msg;

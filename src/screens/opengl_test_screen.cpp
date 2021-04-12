@@ -18,13 +18,13 @@
 #include <string>
 #include <type_traits>
 
-using namespace osmv;
+using namespace osc;
 
 namespace {
     struct Plain_color_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("plain_color.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("plain_color.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_color.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_color.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
 
@@ -95,7 +95,7 @@ Opengl_test_screen::~Opengl_test_screen() noexcept {
 
 bool Opengl_test_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        Application::current().request_screen_transition<osmv::Splash_screen>();
+        Application::current().request_screen_transition<osc::Splash_screen>();
         return true;
     }
     return false;
@@ -107,7 +107,7 @@ void Opengl_test_screen::draw() {
         impl->hellotriangle.draw();
         break;
     default:
-        OSMV_ASSERT(false && "invalid demo index selected: this is a developer error");
+        OSC_ASSERT(false && "invalid demo index selected: this is a developer error");
     }
 
     if (ImGui::Begin("main panel")) {

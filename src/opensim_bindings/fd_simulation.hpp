@@ -11,7 +11,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
 
     enum IntegratorMethod {
         IntegratorMethod_OpenSimManagerDefault = 0,

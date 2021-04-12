@@ -3,7 +3,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
-namespace osmv {
+namespace osc {
     class Polar_camera final {
     public:
         float radius = 5.0f;

@@ -9,12 +9,12 @@ namespace SimTK {
     class State;
 }
 
-namespace osmv {
+namespace osc {
     struct Gpu_cache;
     class Model_drawlist;
 }
 
-namespace osmv {
+namespace osc {
     using ModelDrawlistFlags = int;
     enum ModelDrawlistFlags_ {
         ModelDrawlistFlags_None = 0,

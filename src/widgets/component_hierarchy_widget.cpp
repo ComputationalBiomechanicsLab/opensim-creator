@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <string>
 
-void osmv::draw_component_hierarchy_widget(
+void osc::draw_component_hierarchy_widget(
     OpenSim::Component const* root,
     OpenSim::Component const* current_selection,
     OpenSim::Component const* current_hover,
@@ -43,7 +43,7 @@ void osmv::draw_component_hierarchy_widget(
             // push each element in the tree into a stack (child --> parent)
             OpenSim::Component const* c = &cr;
             while (c != root && c->hasOwner()) {
-                OSMV_ASSERT(num_path_els < path_els.size());
+                OSC_ASSERT(num_path_els < path_els.size());
                 path_els[num_path_els++] = c;
                 c = &c->getOwner();
             }

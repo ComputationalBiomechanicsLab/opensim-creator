@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace osmv {
+namespace osc {
     template<typename TVert>
     struct Mesh {
         using element_index_type = unsigned short;
@@ -33,7 +33,7 @@ namespace osmv {
 
             if (idx > std::numeric_limits<element_index_type>::max()) {
                 throw std::runtime_error{
-                    "tried to load a mesh with too many vertices. OSMV internally uses 16-bit indices for element indices, so you can only use meshes with <65k verts. If you desperately need more vertices, raise a support ticket."};
+                    "tried to load a mesh with too many vertices. OSC internally uses 16-bit indices for element indices, so you can only use meshes with <65k verts. If you desperately need more vertices, raise a support ticket."};
             }
             vert_data.emplace_back(std::forward<Args>(args)...);
 

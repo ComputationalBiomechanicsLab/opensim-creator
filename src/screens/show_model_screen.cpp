@@ -52,7 +52,7 @@
 #include <utility>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
 
@@ -85,7 +85,7 @@ namespace {
 
     struct Output_plot final {
         OpenSim::AbstractOutput const* ao;
-        osmv::Evenly_spaced_sparkline<256> plot;
+        osc::Evenly_spaced_sparkline<256> plot;
 
         explicit Output_plot(OpenSim::AbstractOutput const* _ao) : ao{_ao} {
         }
@@ -457,7 +457,7 @@ namespace {
 
                 // only certain types of output are plottable at the moment
                 auto* o = dynamic_cast<OpenSim::Output<double> const*>(p.handle());
-                OSMV_ASSERT(o != nullptr && "unexpected output type (expected OpenSim::Output<double>)");
+                OSC_ASSERT(o != nullptr && "unexpected output type (expected OpenSim::Output<double>)");
                 double v = o->getValue(st);
                 float fv = static_cast<float>(v);
 

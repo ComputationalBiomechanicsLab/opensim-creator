@@ -18,8 +18,8 @@ static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
     return a.filename() < b.filename();
 }
 
-std::vector<std::filesystem::path> osmv::find_all_vtp_resources() {
-    fs::path geometry_dir = osmv::config::resource_path("geometry");
+std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
+    fs::path geometry_dir = osc::config::resource_path("geometry");
 
     std::vector<fs::path> rv;
 
@@ -60,7 +60,7 @@ std::vector<std::filesystem::path> osmv::find_all_vtp_resources() {
 }
 
 static void on_vtp_choice_made(
-    osmv::Attach_geometry_modal_state& st,
+    osc::Attach_geometry_modal_state& st,
     std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out,
     std::filesystem::path path) {
 
@@ -77,7 +77,7 @@ static void on_vtp_choice_made(
 }
 
 static void try_draw_file_choice(
-    osmv::Attach_geometry_modal_state& st,
+    osc::Attach_geometry_modal_state& st,
     std::filesystem::path const& p,
     std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out) {
 
@@ -91,12 +91,12 @@ static void try_draw_file_choice(
 static std::optional<std::filesystem::path> prompt_open_vtp() {
     nfdchar_t* outpath = nullptr;
     nfdresult_t result = NFD_OpenDialog("vtp", nullptr, &outpath);
-    OSMV_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
     return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
 }
 
-void osmv::draw_attach_geom_modal_if_opened(
+void osc::draw_attach_geom_modal_if_opened(
     Attach_geometry_modal_state& st,
     char const* modal_name,
     std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out) {

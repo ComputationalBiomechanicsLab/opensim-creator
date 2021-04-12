@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace osmv {
+namespace osc {
     struct Gpu_cache final {
         Gpu_storage storage;
         std::unordered_map<std::string, Mesh_reference> filepath2mesh;

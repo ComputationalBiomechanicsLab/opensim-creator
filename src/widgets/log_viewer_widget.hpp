@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osmv {
+namespace osc {
     struct Log_viewer_widget_state final {
         bool autoscroll = true;
     };

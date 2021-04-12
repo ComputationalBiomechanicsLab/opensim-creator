@@ -12,7 +12,7 @@ namespace OpenSim {
     class Force;
 }
 
-namespace osmv {
+namespace osc {
     // static registry of types. The registry is guaranteed to:
     //
     // - return entries in constant time

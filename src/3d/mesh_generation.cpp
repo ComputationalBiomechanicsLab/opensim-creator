@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 
 static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
     // https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352
@@ -40,12 +40,12 @@ static constexpr std::array<Textured_vert, 6> _shaded_textured_quad_verts = {{
     {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
 }};
 
-Textured_mesh osmv::shaded_textured_quad_verts() {
+Textured_mesh osc::shaded_textured_quad_verts() {
     return Textured_mesh::from_raw_verts(_shaded_textured_quad_verts);
 }
 
 // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
-Plain_mesh osmv::unit_sphere_triangles() {
+Plain_mesh osc::unit_sphere_triangles() {
     // this is a shitty alg that produces a shitty UV sphere. I don't have
     // enough time to implement something better, like an isosphere, or
     // something like a patched sphere:
@@ -122,7 +122,7 @@ Plain_mesh osmv::unit_sphere_triangles() {
 // - top == [0.0f, 0.0f, -1.0f]
 // - bottom == [0.0f, 0.0f, +1.0f]
 // - (so the height is 2.0f, not 1.0f)
-Plain_mesh osmv::unit_cylinder_triangles() {
+Plain_mesh osc::unit_cylinder_triangles() {
     static constexpr size_t num_sides = 12;
 
     std::vector<Untextured_vert> out;
@@ -207,8 +207,8 @@ Plain_mesh osmv::unit_cylinder_triangles() {
 //     [0.0f, -1.0f, 0.0f]
 //
 // see simbody-visualizer.cpp::makeCylinder for my source material
-Plain_mesh osmv::simbody_cylinder_triangles() {
-    std::vector<osmv::Untextured_vert> out;
+Plain_mesh osc::simbody_cylinder_triangles() {
+    std::vector<osc::Untextured_vert> out;
 
     size_t num_sides = 12;
 
@@ -221,7 +221,7 @@ Plain_mesh osmv::simbody_cylinder_triangles() {
     // top
     {
         glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        osmv::Untextured_vert top_middle{{0.0f, top_y, 0.0f}, normal};
+        osc::Untextured_vert top_middle{{0.0f, top_y, 0.0f}, normal};
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i * step_angle;
             float theta_end = (i + 1) * step_angle;
@@ -236,7 +236,7 @@ Plain_mesh osmv::simbody_cylinder_triangles() {
     // bottom
     {
         glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
-        osmv::Untextured_vert top_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
+        osc::Untextured_vert top_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
         for (auto i = 0U; i < num_sides; ++i) {
             float theta_start = i * step_angle;
             float theta_end = (i + 1) * step_angle;
@@ -289,7 +289,7 @@ Plain_mesh osmv::simbody_cylinder_triangles() {
 
 // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
 // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
-static constexpr std::array<osmv::Textured_vert, 36> shaded_textured_cube_verts = {{
+static constexpr std::array<osc::Textured_vert, 36> shaded_textured_cube_verts = {{
     // back face
     {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
     {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
@@ -334,7 +334,7 @@ static constexpr std::array<osmv::Textured_vert, 36> shaded_textured_cube_verts 
     {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
 }};
 
-Plain_mesh osmv::simbody_brick_triangles() {
+Plain_mesh osc::simbody_brick_triangles() {
     std::vector<Untextured_vert> out;
     // TODO: establish how wrong this is in Simbody, because it might do something
     // unusual like use half-width cubes

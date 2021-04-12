@@ -20,7 +20,7 @@
 #include <string>
 #include <utility>
 
-using namespace osmv;
+using namespace osc;
 using std::chrono_literals::operator""ms;
 
 struct Loading_screen::Impl final {

@@ -7,8 +7,8 @@
 
 #include <sstream>
 
-static ImVec4 color(osmv::log::level::Level_enum lvl) {
-    using namespace osmv::log::level;
+static ImVec4 color(osc::log::level::Level_enum lvl) {
+    using namespace osc::log::level;
 
     switch (lvl) {
     case trace:
@@ -31,22 +31,22 @@ static ImVec4 color(osmv::log::level::Level_enum lvl) {
 static void copy_traceback_log_to_clipboard() {
     std::stringstream ss;
 
-    auto& guarded_content = osmv::log::get_traceback_log();
+    auto& guarded_content = osc::log::get_traceback_log();
     {
         auto const& content = guarded_content.lock();
-        for (osmv::log::Owned_log_msg const& msg : *content) {
-            ss << '[' << osmv::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
+        for (osc::log::Owned_log_msg const& msg : *content) {
+            ss << '[' << osc::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
         }
     }
 
     std::string full_log_content = std::move(ss).str();
 
     if (SDL_SetClipboardText(full_log_content.c_str()) != 0) {
-        osmv::log::error("error copying log to clipboard %s", SDL_GetError());
+        osc::log::error("error copying log to clipboard %s", SDL_GetError());
     }
 }
 
-void osmv::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel_name) {
+void osc::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel_name) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
         if (ImGui::BeginMenuBar()) {

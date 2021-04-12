@@ -7,7 +7,7 @@
 #include <SDL_keycode.h>
 #include <imgui.h>
 
-using namespace osmv;
+using namespace osc;
 
 bool Imgui_demo_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
@@ -15,7 +15,7 @@ bool Imgui_demo_screen::on_event(SDL_Event const& e) {
         return true;
     }
 
-    // osmv::Application already pumps the event into ImGui
+    // osc::Application already pumps the event into ImGui
 
     return false;
 }

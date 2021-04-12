@@ -40,7 +40,7 @@
 #include <algorithm>
 #include <array>
 
-using namespace osmv;
+using namespace osc;
 
 // helper: make a statically-sized array of type prototypes
 template<typename TBase, typename... TDeriveds>
@@ -238,22 +238,22 @@ static_assert(force_hashes.size() == force_prototypes.size());
 // Type_registry<OpenSim::Joint>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::Joint const> const> osmv::Type_registry<OpenSim::Joint>::prototypes() noexcept {
+nonstd::span<std::unique_ptr<OpenSim::Joint const> const> osc::Type_registry<OpenSim::Joint>::prototypes() noexcept {
     return joint_prototypes;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Joint>::names() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Joint>::names() noexcept {
     return joint_names;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Joint>::descriptions() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Joint>::descriptions() noexcept {
     return joint_descriptions;
 }
 
 template<>
-std::optional<size_t> osmv::Type_registry<OpenSim::Joint>::index_of(OpenSim::Joint const& joint) {
+std::optional<size_t> osc::Type_registry<OpenSim::Joint>::index_of(OpenSim::Joint const& joint) {
     return ::index_of(joint_hashes, typeid(joint).hash_code());
 }
 
@@ -261,22 +261,22 @@ std::optional<size_t> osmv::Type_registry<OpenSim::Joint>::index_of(OpenSim::Joi
 
 template<>
 nonstd::span<std::unique_ptr<OpenSim::ContactGeometry const> const>
-    osmv::Type_registry<OpenSim::ContactGeometry>::prototypes() noexcept {
+    osc::Type_registry<OpenSim::ContactGeometry>::prototypes() noexcept {
     return contact_geom_prototypes;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::ContactGeometry>::names() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::ContactGeometry>::names() noexcept {
     return contact_geom_names;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::ContactGeometry>::descriptions() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::ContactGeometry>::descriptions() noexcept {
     return contact_geom_descriptions;
 }
 
 template<>
-std::optional<size_t> osmv::Type_registry<OpenSim::ContactGeometry>::index_of(OpenSim::ContactGeometry const& cg) {
+std::optional<size_t> osc::Type_registry<OpenSim::ContactGeometry>::index_of(OpenSim::ContactGeometry const& cg) {
     return ::index_of(contact_geom_hashes, typeid(cg).hash_code());
 }
 
@@ -284,43 +284,43 @@ std::optional<size_t> osmv::Type_registry<OpenSim::ContactGeometry>::index_of(Op
 
 template<>
 nonstd::span<std::unique_ptr<OpenSim::Constraint const> const>
-    osmv::Type_registry<OpenSim::Constraint>::prototypes() noexcept {
+    osc::Type_registry<OpenSim::Constraint>::prototypes() noexcept {
     return constraint_prototypes;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Constraint>::names() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Constraint>::names() noexcept {
     return constraint_names;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Constraint>::descriptions() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Constraint>::descriptions() noexcept {
     return constraint_descriptions;
 }
 
 template<>
-std::optional<size_t> osmv::Type_registry<OpenSim::Constraint>::index_of(OpenSim::Constraint const& constraint) {
+std::optional<size_t> osc::Type_registry<OpenSim::Constraint>::index_of(OpenSim::Constraint const& constraint) {
     return ::index_of(constraint_hashes, typeid(constraint).hash_code());
 }
 
 // Type_registry<OpenSim::Force>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::Force const> const> osmv::Type_registry<OpenSim::Force>::prototypes() noexcept {
+nonstd::span<std::unique_ptr<OpenSim::Force const> const> osc::Type_registry<OpenSim::Force>::prototypes() noexcept {
     return force_prototypes;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Force>::names() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Force>::names() noexcept {
     return force_names;
 }
 
 template<>
-nonstd::span<char const* const> osmv::Type_registry<OpenSim::Force>::descriptions() noexcept {
+nonstd::span<char const* const> osc::Type_registry<OpenSim::Force>::descriptions() noexcept {
     return force_descriptions;
 }
 
 template<>
-std::optional<size_t> osmv::Type_registry<OpenSim::Force>::index_of(OpenSim::Force const& force) {
+std::optional<size_t> osc::Type_registry<OpenSim::Force>::index_of(OpenSim::Force const& force) {
     return ::index_of(force_hashes, typeid(force).hash_code());
 }

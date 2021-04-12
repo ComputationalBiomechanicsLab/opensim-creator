@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <stdexcept>
 
-namespace osmv {
+namespace osc {
     class Component_path_ptrs {
         static constexpr size_t max_component_depth = 16;
         using container = std::array<OpenSim::Component const*, max_component_depth>;
@@ -23,7 +23,7 @@ namespace osmv {
             while (cp->hasOwner()) {
                 if (n >= max_component_depth) {
                     throw std::runtime_error{
-                        "cannot traverse hierarchy to a component: it is deeper than 32 levels in the component tree, which isn't currently supported by osmv"};
+                        "cannot traverse hierarchy to a component: it is deeper than 32 levels in the component tree, which isn't currently supported by osc"};
                 }
 
                 cp = &cp->getOwner();

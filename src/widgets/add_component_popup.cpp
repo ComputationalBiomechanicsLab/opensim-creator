@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 
 static std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Component& c) {
     std::vector<OpenSim::AbstractSocket const*> rv;
@@ -96,7 +96,7 @@ std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_
         ImGui::Separator();
         ImGui::Columns(2);
 
-        OSMV_ASSERT(impl->pf_sockets.size() == impl->pf_conectee_choices.size());
+        OSC_ASSERT(impl->pf_sockets.size() == impl->pf_conectee_choices.size());
 
         for (size_t i = 0; i < impl->pf_sockets.size(); ++i) {
             OpenSim::AbstractSocket const& sock = *impl->pf_sockets[i];

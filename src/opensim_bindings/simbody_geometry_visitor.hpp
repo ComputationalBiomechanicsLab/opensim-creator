@@ -12,13 +12,13 @@ namespace SimTK {
     class State;
 }
 
-namespace osmv {
+namespace osc {
     struct Gpu_cache;
     struct Mesh_instance;
     struct Plain_mesh;
 }
 
-namespace osmv {
+namespace osc {
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
         Plain_mesh& mesh_swap;
         Gpu_cache& gpu_cache;

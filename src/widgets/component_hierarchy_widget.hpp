@@ -6,7 +6,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osmv {
+namespace osc {
     void draw_component_hierarchy_widget(
         OpenSim::Component const* root,
         OpenSim::Component const* current_selection,

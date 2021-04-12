@@ -18,7 +18,7 @@ static void draw_header(char const* str) {
     ImGui::Dummy(ImVec2(0.0f, 0.5f));
 }
 
-void osmv::draw_main_menu_about_tab() {
+void osc::draw_main_menu_about_tab() {
     if (!ImGui::BeginMenu("About")) {
         return;
     }
@@ -41,7 +41,7 @@ void osmv::draw_main_menu_about_tab() {
             static constexpr std::array<char const*, 8> aa_lvls = {"x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
             int samples_idx = lsb_index(Application::current().samples());
             int max_samples_idx = lsb_index(Application::current().max_samples());
-            OSMV_ASSERT(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
+            OSC_ASSERT(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
 
             if (ImGui::Combo("##msxaa", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
                 Application::current().set_samples(1 << samples_idx);
@@ -80,14 +80,14 @@ void osmv::draw_main_menu_about_tab() {
     {
         ImGui::Columns(2);
 
-        ImGui::Text("OSMV_VERSION");
+        ImGui::Text("OSC_VERSION");
         ImGui::NextColumn();
-        ImGui::Text("%s", OSMV_VERSION_STRING);
+        ImGui::Text("%s", OSC_VERSION_STRING);
         ImGui::NextColumn();
 
-        ImGui::Text("OSMV_BUILD_ID");
+        ImGui::Text("OSC_BUILD_ID");
         ImGui::NextColumn();
-        ImGui::Text("%s", OSMV_BUILD_ID);
+        ImGui::Text("%s", OSC_BUILD_ID);
         ImGui::NextColumn();
 
         ImGui::Text("GL_VENDOR");

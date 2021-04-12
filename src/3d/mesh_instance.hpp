@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace osmv {
+namespace osc {
     struct Rgba32 final {
         unsigned char r;
         unsigned char g;

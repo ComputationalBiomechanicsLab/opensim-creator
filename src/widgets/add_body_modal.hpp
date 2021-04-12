@@ -13,7 +13,7 @@ namespace OpenSim {
     class Joint;
 }
 
-namespace osmv {
+namespace osc {
     struct Added_body_modal_state {
         struct {
             Attach_geometry_modal_state state;

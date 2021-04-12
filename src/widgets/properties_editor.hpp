@@ -8,7 +8,7 @@ namespace OpenSim {
     class AbstractProperty;
 }
 
-namespace osmv {
+namespace osc {
     struct Property_editor_state final {
         bool is_locked = true;
     };

@@ -10,7 +10,7 @@ static bool sort_by_name(OpenSim::Component const* c1, OpenSim::Component const*
     return c1->getName() < c2->getName();
 }
 
-void osmv::draw_add_moment_arm_plot_modal(
+void osc::draw_add_moment_arm_plot_modal(
     Add_moment_arm_plot_modal_state& st,
     char const* modal_name,
     OpenSim::Model const& model,

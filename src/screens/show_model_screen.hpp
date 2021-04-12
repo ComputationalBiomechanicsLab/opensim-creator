@@ -11,7 +11,7 @@ namespace OpenSim {
 
 // show model screen: main UI screen that shows a loaded OpenSim
 // model /w UX, manipulators, etc.
-namespace osmv {
+namespace osc {
     class Show_model_screen final : public Screen {
         struct Impl;
         Impl* impl;

@@ -17,9 +17,9 @@
 #include <filesystem>
 #include <iostream>
 
-using namespace osmv;
+using namespace osc;
 
-static const char usage[] = R"(usage: osmv [--help] [fd] MODEL.osim
+static const char usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";
 static const char help[] = R"(OPTIONS
     --help
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         // info that users can paste into an issue or something, which is *a lot* more
         // information than "yeah, it's broke"
         log::info("enabling backtrace handler");
-        osmv::install_backtrace_handler();
+        osc::install_backtrace_handler();
 
         //        TODO OpenSim 4.2
         // disable OpenSim's `opensim.log` default
@@ -85,11 +85,11 @@ int main(int argc, char** argv) {
         // directory. This should be disabled because it screws with running multiple
         // instances of the UI on filesystems that use locking (e.g. Windows) and
         // because it's incredibly obnoxious to have `opensim.log` appear in every
-        // working directory from which osmv is ran
+        // working directory from which osc is ran
         //        log::info("removing OpenSim's default log (opensim.log)");
         //        OpenSim::Logger::removeFileSink();
 
-        // add OSMV in-memory logger
+        // add OSC in-memory logger
         //
         // this logger collects the logs into a global mutex-protected in-memory structure
         // that the UI can can trivially render (w/o reading files etc.)
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
         // side-effects. This means that (e.g.) the loading of muscles into the runtime
         // happens in a static initializer *in the library*.
         //
-        // osmv may not link that library, though, because the source code in OSMV may
+        // osc may not link that library, though, because the source code in OSC may
         // not *directly* use a symbol exported by the library (e.g. the code might use
         // OpenSim::Muscle references, but not actually concretely refer to a muscle
         // implementation method (e.g. a ctor)
@@ -120,8 +120,8 @@ int main(int argc, char** argv) {
         //
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
-        log::info("registering OpenSim geometry search path to use osmv resources");
-        std::filesystem::path geometry_dir = osmv::config::resource_path("geometry");
+        log::info("registering OpenSim geometry search path to use osc resources");
+        std::filesystem::path geometry_dir = osc::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         log::info("added geometry search path entry: %s", geometry_dir.string().c_str());
     }

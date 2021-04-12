@@ -17,7 +17,7 @@
 #include <thread>
 #include <utility>
 
-using namespace osmv;
+using namespace osc;
 
 namespace {
     using clock = std::chrono::steady_clock;
@@ -103,28 +103,28 @@ namespace {
         // select integrator
         {
             switch (params.integrator_method) {
-            case osmv::IntegratorMethod_OpenSimManagerDefault:
+            case osc::IntegratorMethod_OpenSimManagerDefault:
                 // just use whatever Manager is already using
                 break;
-            case osmv::IntegratorMethod_ExplicitEuler:
+            case osc::IntegratorMethod_ExplicitEuler:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::ExplicitEuler);
                 break;
-            case osmv::IntegratorMethod_RungeKutta2:
+            case osc::IntegratorMethod_RungeKutta2:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKutta2);
                 break;
-            case osmv::IntegratorMethod_RungeKutta3:
+            case osc::IntegratorMethod_RungeKutta3:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKutta3);
                 break;
-            case osmv::IntegratorMethod_RungeKuttaFeldberg:
+            case osc::IntegratorMethod_RungeKuttaFeldberg:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKuttaFeldberg);
                 break;
-            case osmv::IntegratorMethod_RungeKuttaMerson:
+            case osc::IntegratorMethod_RungeKuttaMerson:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::RungeKuttaMerson);
                 break;
-            case osmv::IntegratorMethod_SemiExplicitEuler2:
+            case osc::IntegratorMethod_SemiExplicitEuler2:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::SemiExplicitEuler2);
                 break;
-            case osmv::IntegratorMethod_Verlet:
+            case osc::IntegratorMethod_Verlet:
                 manager.setIntegratorMethod(OpenSim::Manager::IntegratorMethod::Verlet);
                 break;
             default:
@@ -245,7 +245,7 @@ namespace {
     }
 }
 
-osmv::IntegratorMethod const osmv::integrator_methods[IntegratorMethod_NumIntegratorMethods] = {
+osc::IntegratorMethod const osc::integrator_methods[IntegratorMethod_NumIntegratorMethods] = {
     IntegratorMethod_OpenSimManagerDefault,
     IntegratorMethod_ExplicitEuler,
     IntegratorMethod_RungeKutta2,
@@ -256,7 +256,7 @@ osmv::IntegratorMethod const osmv::integrator_methods[IntegratorMethod_NumIntegr
     IntegratorMethod_Verlet,
 };
 
-char const* const osmv::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
+char const* const osc::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
     "OpenSim::Manager Default",
     "Explicit Euler",
     "Runge Kutta 2",
@@ -289,11 +289,11 @@ struct Fd_simulation::Impl final {
     }
 };
 
-osmv::Fd_simulation::Fd_simulation(Fd_simulation_params p) : impl{new Impl{std::move(p)}} {
+osc::Fd_simulation::Fd_simulation(Fd_simulation_params p) : impl{new Impl{std::move(p)}} {
 }
-osmv::Fd_simulation::~Fd_simulation() noexcept = default;
+osc::Fd_simulation::~Fd_simulation() noexcept = default;
 
-std::unique_ptr<SimTK::State> osmv::Fd_simulation::try_pop_state() {
+std::unique_ptr<SimTK::State> osc::Fd_simulation::try_pop_state() {
     std::unique_ptr<SimTK::State> maybe_latest = std::move(impl->shared->lock()->latest_state);
 
     if (maybe_latest) {
@@ -303,29 +303,29 @@ std::unique_ptr<SimTK::State> osmv::Fd_simulation::try_pop_state() {
     return maybe_latest;
 }
 
-int osmv::Fd_simulation::num_states_popped() const noexcept {
+int osc::Fd_simulation::num_states_popped() const noexcept {
     return impl->states_popped;
 }
 
-bool osmv::Fd_simulation::is_running() const noexcept {
+bool osc::Fd_simulation::is_running() const noexcept {
     return impl->shared->lock()->status == Sim_status::Running;
 }
 
-std::chrono::duration<double> osmv::Fd_simulation::wall_duration() const noexcept {
+std::chrono::duration<double> osc::Fd_simulation::wall_duration() const noexcept {
     clock::time_point start = impl->shared->lock()->wall_start;
     clock::time_point end = is_running() ? clock::now() : impl->shared->lock()->wall_end;
     return end - start;
 }
 
-std::chrono::duration<double> osmv::Fd_simulation::sim_current_time() const noexcept {
+std::chrono::duration<double> osc::Fd_simulation::sim_current_time() const noexcept {
     return impl->shared->lock()->stats.time;
 }
 
-std::chrono::duration<double> osmv::Fd_simulation::sim_final_time() const noexcept {
+std::chrono::duration<double> osc::Fd_simulation::sim_final_time() const noexcept {
     return impl->final_time;
 }
 
-char const* osmv::Fd_simulation::status_description() const noexcept {
+char const* osc::Fd_simulation::status_description() const noexcept {
     switch (impl->shared->lock()->status) {
     case Sim_status::Running:
         return "running";
@@ -340,15 +340,15 @@ char const* osmv::Fd_simulation::status_description() const noexcept {
     }
 }
 
-Simulation_stats osmv::Fd_simulation::stats() const noexcept {
+Simulation_stats osc::Fd_simulation::stats() const noexcept {
     return impl->shared->lock()->stats;
 }
 
-void osmv::Fd_simulation::request_stop() noexcept {
+void osc::Fd_simulation::request_stop() noexcept {
     impl->simulator_thread.request_stop();
 }
 
-void osmv::Fd_simulation::stop() noexcept {
+void osc::Fd_simulation::stop() noexcept {
     impl->simulator_thread.request_stop();
     impl->simulator_thread.join();
 }

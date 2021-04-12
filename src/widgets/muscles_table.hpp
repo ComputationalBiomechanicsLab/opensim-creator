@@ -14,7 +14,7 @@ namespace SimTK {
     class State;
 }
 
-namespace osmv {
+namespace osc {
     using MusclesTableSortChoice = int;
     enum MusclesTableSortChoice_ {
         MusclesTableSortChoice_Length = 0,
@@ -22,7 +22,7 @@ namespace osmv {
         MusclesTableSortChoice_NUM_CHOICES
     };
 
-#define OSMV_MUSCLE_SORT_NAMES                                                                                         \
+#define OSC_MUSCLE_SORT_NAMES                                                                                         \
     { "length", "strain" }
 
     struct Muscles_table_state final {

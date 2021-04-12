@@ -71,7 +71,7 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-using namespace osmv;
+using namespace osc;
 using std::literals::operator""s;
 using std::literals::operator""ms;
 
@@ -752,7 +752,7 @@ static void draw_selection_breadcrumbs(Model_editor_screen::Impl& impl) {
         return;  // nothing selected
     }
 
-    auto lst = osmv::path_to(*impl.selection());
+    auto lst = osc::path_to(*impl.selection());
 
     if (lst.empty()) {
         return;  // this shouldn't happen, but you never know...
@@ -849,7 +849,7 @@ static void delete_item_from_set_in_model(OpenSim::Set<T, TSetBase>& set, T* ite
     }
 }
 
-static void action_delete_selection_from_model(osmv::Model_editor_screen::Impl& impl) {
+static void action_delete_selection_from_model(osc::Model_editor_screen::Impl& impl) {
     OpenSim::Component* selected = impl.selection();
 
     if (!selected) {
@@ -1047,7 +1047,7 @@ static void action_enable_all_wrapping_surfs(Model_editor_screen::Impl& impl) {
     impl.after_modify_model();
 }
 
-static void draw_main_menu_actions_tab(osmv::Model_editor_screen::Impl& impl) {
+static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
     if (ImGui::BeginMenu("Edit")) {
 
         if (ImGui::MenuItem("Undo", "Ctrl+Z", false, impl.can_undo())) {
@@ -1086,7 +1086,7 @@ static void draw_main_menu_actions_tab(osmv::Model_editor_screen::Impl& impl) {
     }
 }
 
-static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent const& e) {
+static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent const& e) {
     if (e.keysym.mod & KMOD_CTRL) {
         // CTRL
 
@@ -1143,7 +1143,7 @@ static bool on_keydown(osmv::Model_editor_screen::Impl& impl, SDL_KeyboardEvent 
     return false;
 }
 
-static void on_model_backing_file_changed(osmv::Model_editor_screen::Impl& impl) {
+static void on_model_backing_file_changed(osc::Model_editor_screen::Impl& impl) {
     log::info("file change detected: loading updated file");
     std::unique_ptr<OpenSim::Model> p;
     try {
@@ -1152,7 +1152,7 @@ static void on_model_backing_file_changed(osmv::Model_editor_screen::Impl& impl)
     } catch (std::exception const& ex) {
         log::error("error occurred while trying to automatically load a model file:");
         log::error(ex.what());
-        log::error("the file will not be loaded into osmv (you won't see the change in the UI)");
+        log::error("the file will not be loaded into osc (you won't see the change in the UI)");
     }
 
     if (p) {
@@ -1187,13 +1187,13 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
     return handled;
 }
 
-void osmv::Model_editor_screen::tick() {
+void osc::Model_editor_screen::tick() {
     if (impl->file_poller.change_detected(impl->model().getInputFileName())) {
         on_model_backing_file_changed(*impl);
     }
 }
 
-void osmv::Model_editor_screen::draw() {
+void osc::Model_editor_screen::draw() {
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
         draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());

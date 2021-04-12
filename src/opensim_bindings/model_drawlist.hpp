@@ -11,7 +11,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osmv {
+namespace osc {
 
     // geometry generated from an OpenSim model + SimTK state pair
     class Model_drawlist final {
@@ -33,7 +33,7 @@ namespace osmv {
 
             if (idx >= std::numeric_limits<uint16_t>::max()) {
                 throw std::runtime_error{
-                    "precondition error: tried to render more than the maximum number of components osmv can render"};
+                    "precondition error: tried to render more than the maximum number of components osc can render"};
             }
 
             // this is safe because of the above assert
@@ -66,11 +66,11 @@ namespace osmv {
         template<typename Callback>
         void for_each(Callback f) {
             // emplace-back ensures this
-            OSMV_ASSERT(drawlist.size() == associated_components.size());
+            OSC_ASSERT(drawlist.size() == associated_components.size());
 
             drawlist.for_each([&](Mesh_instance& mi) {
                 uint16_t id = mi.passthrough_data().to_u16();
-                OSMV_ASSERT(id != 0 && "zero ID inserted into drawlist (emplace_back should prevent this)");
+                OSC_ASSERT(id != 0 && "zero ID inserted into drawlist (emplace_back should prevent this)");
                 f(associated_components[id - 1], mi);
             });
         }

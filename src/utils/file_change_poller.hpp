@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <functional>
 
-namespace osmv {
+namespace osc {
     struct File_change_poller final {
         using clock = std::chrono::system_clock;
         static constexpr char const* model_no_backing_file_senteniel = "Unassigned";

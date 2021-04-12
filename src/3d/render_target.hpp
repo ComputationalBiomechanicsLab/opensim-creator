@@ -6,7 +6,7 @@ namespace gl {
     struct Texture_2d;
 }
 
-namespace osmv {
+namespace osc {
     class Render_target final {
         friend class Renderer;
 

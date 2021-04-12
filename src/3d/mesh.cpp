@@ -10,7 +10,7 @@
 #include <limits>
 #include <utility>
 
-using namespace osmv;
+using namespace osc;
 
 static bool are_effectively_equal(Untextured_vert const& p1, Untextured_vert const& p2) {
     if (p1.pos == p2.pos) {

@@ -19,7 +19,7 @@
 #include <limits>
 
 using namespace SimTK;
-using namespace osmv;
+using namespace osc;
 
 // create an xform that transforms the unit cylinder into a line between
 // two points
@@ -36,7 +36,7 @@ static glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, g
     return translation * rotation * scale_xform;
 }
 
-// load a SimTK::PolygonalMesh into an osmv::Untextured_vert mesh ready for GPU upload
+// load a SimTK::PolygonalMesh into an osc::Untextured_vert mesh ready for GPU upload
 static void load_mesh_data(PolygonalMesh const& mesh, Plain_mesh& out) {
 
     // helper function: gets a vertex for a face

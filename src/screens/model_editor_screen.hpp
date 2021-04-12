@@ -10,7 +10,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
     class Model_editor_screen final : public Screen {
     public:
         struct Impl;

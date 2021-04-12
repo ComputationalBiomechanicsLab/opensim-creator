@@ -12,7 +12,7 @@
 
 using std::literals::operator""s;
 
-gl::Texture_2d osmv::generate_chequered_floor_texture() {
+gl::Texture_2d osc::generate_chequered_floor_texture() {
     struct Rgb {
         unsigned char r, g, b;
     };
@@ -68,7 +68,7 @@ namespace stbi {
     };
 }
 
-gl::Texture_2d osmv::load_tex(char const* path, Tex_flags flags) {
+gl::Texture_2d osc::load_tex(char const* path, Tex_flags flags) {
     gl::Texture_2d t;
 
     if (flags & TexFlag_Flip_Pixels_Vertically) {
@@ -125,7 +125,7 @@ static void load_cubemap_surface(char const* path, GLenum target) {
     glTexImage2D(target, 0, format, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.data);
 }
 
-gl::Texture_cubemap osmv::load_cubemap(
+gl::Texture_cubemap osc::load_cubemap(
     char const* path_pos_x,
     char const* path_neg_x,
     char const* path_pos_y,

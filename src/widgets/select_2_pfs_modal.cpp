@@ -5,7 +5,7 @@
 
 #include <imgui.h>
 
-void osmv::draw_select_2_pfs_modal(
+void osc::draw_select_2_pfs_modal(
     Select_2_pfs_modal_state& st,
     char const* modal_name,
     OpenSim::Model const& model,

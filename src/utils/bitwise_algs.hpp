@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osmv {
+namespace osc {
     inline int num_bits_set_in(int v) {
         unsigned uv = static_cast<unsigned>(v);
         unsigned i = 0;

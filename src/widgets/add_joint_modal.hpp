@@ -11,7 +11,7 @@ namespace OpenSim {
     class PhysicalFrame;
 }
 
-namespace osmv {
+namespace osc {
     struct Add_joint_modal final {
         static constexpr char default_name[] = "new_joint";
 
