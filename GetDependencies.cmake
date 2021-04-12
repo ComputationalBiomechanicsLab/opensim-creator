@@ -11,7 +11,7 @@
 # - Export all dependencies as standard CMake targets with the correct
 #   interfaces (includes, linking), such that the main build can just:
 #
-#       target_link_library(oscgui osc::dep1)
+#       target_link_library(oscgui osc::depX)
 #
 #     and not have to handle include paths etc. downstream manually
 #
@@ -21,9 +21,6 @@
 #   (e.g. some upstream builds just normalize artifacts into one directory
 #    without considering multi-config, which results in rebuilds when a dev
 #    switches between two (possibly, already built) configurations)
-#
-# - Must work in CMake 3.5, because Ubuntu Xenial still packages that and
-#   some team members still use Xenial
 #
 # - Must correctly list all the libraries that downstream must package (e.g.
 #   when `install` or `package`ing) to produce a portable (within config params)
@@ -159,6 +156,9 @@ if(LINUX)
         INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
     )
 else()
+    # on not-Linux, build SDL from source using the in-tree sources
+
+    # compute library name (e.g. libSDL2.dylib)
     if(WIN32)
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2d)
@@ -170,11 +170,18 @@ else()
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d)
     endif()
 
-    set(HACK_BUILD_DIR "sdl2-project-prefix/src/sdl2-project-build")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    # compute possible build byproducts (needed for build systems that check
+    # this, like ninja)
+    if(TRUE)
+        set(SDL_BINDIR "sdl2-project-prefix/src/sdl2-project-build")
+        list(APPEND SDL2_BUILD_BYPRODUCTS
+            "${SDL2_BINDIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+        unset(SDL2_BINDIR)
+    endif()
 
     # on non-Linux, build SDL from source and package it with the install
     ExternalProject_Add(sdl2-project
@@ -183,9 +190,7 @@ else()
         INSTALL_COMMAND ""
         EXCLUDE_FROM_ALL TRUE
         UPDATE_DISCONNECTED ON
-        # HACK: this is specifically required by Ninja, because it
-        # needs to know the side-effects of external build steps
-        BUILD_BYPRODUCTS "${HACK_POSSIBLE_BYPRODUCTS}"
+        BUILD_BYPRODUCTS "${SDL2_BUILD_BYPRODUCTS}"
     )
     ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
     ExternalProject_Get_Property(sdl2-project BINARY_DIR)
@@ -229,8 +234,7 @@ else()
     unset(BINARY_DIR)
     unset(LIBNAME)
     unset(DEBUG_LIBNAME)
-    unset(HACK_BUILD_DIR)
-    unset(HACK_POSSIBLE_BYPRODUCTS)
+    unset(SDL2_BUILD_BYPRODUCTS)
 endif()
 
 # DEPENDENCY: glm
@@ -259,8 +263,8 @@ if(TRUE)
     target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
 endif()
 
-# DEPENDENCY: stb_image
-#     header-only library, used to read/write images
+# DEPENDENCY: stb
+#     header-only library, used to read/write asset files (images, sounds)
 if(TRUE)
     add_library(stb INTERFACE)
     target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
