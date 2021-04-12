@@ -6,19 +6,21 @@ jobs:
     runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
-    - name: TODO build
+      with:
+        path: osc
+    - name: run build_windows.bat
       run: |
         cd $env:GITHUB_WORKSPACE
-        scripts\\windows_e2e-build.bat || exit /b
+        scripts\\build_windows.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv_windows.exe
-        path: osmv-build/*win64.exe
+        name: osc_windows.exe
+        path: osc-build/*win64.exe
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv_windows_pdb
-        path: osmv-build/RelWithDebInfo/*.pdb
+        name: osc_windows_pdb
+        path: osc-build/RelWithDebInfo/*.pdb
         if-no-files-found: error
 
   ubuntu1604:
@@ -27,18 +29,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        path: osmv
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./osmv/scripts/ubuntu-xenial_e2e-build.sh
+        path: osc
+    - name: run build_ubuntu-xenial.sh
+      run: |
+        cd $GITHUB_WORKSPACE
+        ./osc/scripts/build_ubuntu-xenial.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv_xenial.deb
-        path: osmv-build/*.deb
-        if-no-files-found: error
-    - uses: actions/upload-artifact@v2
-      with:
-        name: osmv_xenial_debug.deb
-        path: osmv-debug-build/*.deb
+        name: osc_xenial.deb
+        path: osc-build/*.deb
         if-no-files-found: error
 
   ubuntu2004:
@@ -47,13 +46,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        path: osmv
+        path: osc
     - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./osmv/scripts/debian-buster_e2e-build.sh
+      run: |
+        cd $GITHUB_WORKSPACE
+        ./osc/scripts/build_debian-buster.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv_focal_installer.deb
-        path: osmv-build/*.deb
+        name: osc_focal_installer.deb
+        path: osc-build/*.deb
         if-no-files-found: error
 
   macCatalina:
@@ -62,9 +63,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/mac_catalina_10-15_build.sh
+      run: |
+        cd $GITHUB_WORKSPACE
+        ./scripts/build_mac-catalina.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osmv_catalina.dmg
-        path: osmv-build/*.dmg
+        name: osc_catalina.dmg
+        path: osc-build/*.dmg
         if-no-files-found: error

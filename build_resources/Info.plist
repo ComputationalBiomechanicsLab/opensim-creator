@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleGetInfoString</key>
-  <string>osmv</string>
+  <string>osc</string>
   <key>CFBundleExecutable</key>
-  <string>osmv</string>
+  <string>osc</string>
   <key>CFBundleIdentifier</key>
-  <string>software.osmv</string>
+  <string>software.osc</string>
   <key>CFBundleName</key>
-  <string>osmv</string>
+  <string>osc</string>
   <key>CFBundleIconFile</key>
-  <string>osmv.icns</string>
+  <string>osc.icns</string>
   <key>CFBundleShortVersionString</key>
   <string>0.01</string>
   <key>CFBundleInfoDictionaryVersion</key>

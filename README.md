@@ -30,9 +30,9 @@ Because things are still in alpha (and might change, a lot), we don't currently 
 
 | OS | Comments |
 | - | - |
-| [Ubuntu 20+/Debian Buster](scripts/debian-buster_e2e-build.sh) | Builds OpenSim+osmv from scratch |
-| [Ubuntu Xenial](scripts/ubuntu-xenial_e2e-build.sh) | Downloads gcc-8 and builds OpenSim+osmv from scratch using that |
-| [OSX (Catalina)](scripts/mac_catalina_10-15_build.sh) | Builds OpenSim+osmv from scratch using basic build toolchain (full XCode shouldn't be necessary) |
-| [Windows 10](scripts/windows_e2e-build.bat) | Builds OpenSim+osmv using VS2019 |
+| [Ubuntu 20+/Debian Buster](scripts/build_debian-buster.sh) | Builds OpenSim+osmv from scratch |
+| [Ubuntu Xenial](scripts/build_ubuntu-xenial.sh) | Downloads gcc-8 and builds OpenSim+osmv from scratch using that |
+| [OSX (Catalina)](scripts/build_mac-catalina.sh) | Builds OpenSim+osmv from scratch using basic build toolchain (full XCode shouldn't be necessary) |
+| [Windows 10](scripts/build_windows.bat) | Builds OpenSim+osmv using VS2019 |
 
 These are the exact build scripts we use for continuous integratation (config [here](.github/workflows/continuous-integration-workflow.yml)). If you can't get a build working then it might be our fault. Check the [actions](https://github.com/adamkewley/osmv/actions) page to see if the build is passing CI on GitHub.
