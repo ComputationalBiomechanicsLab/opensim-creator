@@ -1,6 +1,6 @@
 #include "main_menu_about_tab.hpp"
 
-#include "osmv_config.hpp"
+#include "osc_build_config.hpp"
 #include "src/application.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"

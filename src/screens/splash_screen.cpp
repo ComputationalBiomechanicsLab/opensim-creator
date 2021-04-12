@@ -1,6 +1,6 @@
 #include "splash_screen.hpp"
 
-#include "osmv_config.hpp"
+#include "osc_build_config.hpp"
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"

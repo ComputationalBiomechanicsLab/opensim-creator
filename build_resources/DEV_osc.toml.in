@@ -1,8 +1,8 @@
-# DEV osmv configuration
+# DEV osc configuration
 #
-# this is the configuration file used by developers that run OSMV from the raw build directory,
+# this is the configuration file used by developers that run OSC from the raw build directory,
 # as opposed to the INSTALL configuration, which is what's used when running an installed version
-# of OSMV.
+# of OSC.
 #
 # This file is configured by CMake so that resources etc. are loaded from the developer's source
 # dir, and such that any other development-centric flags (more verbose logging, whatever) are

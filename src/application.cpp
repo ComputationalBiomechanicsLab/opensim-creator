@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-#include "osmv_config.hpp"
+#include "osc_build_config.hpp"
 #include "src/3d/gl.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
