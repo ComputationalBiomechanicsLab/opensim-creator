@@ -60,7 +60,7 @@ endif()
 # --------------- dependency management ----------------- #
 
 # (all handled from a single CMake file that declares targets etc.)
-include(OSMV_GetDependencies.cmake)
+include(GetDependencies.cmake)
 
 
 
@@ -195,7 +195,7 @@ target_link_libraries(osmv PRIVATE
     # in gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
 
-    osmv-all-dependencies  # see: OSMV_GetDependencies.cmake
+    osmv-all-dependencies  # see: GetDependencies.cmake
 )
 target_include_directories(osmv PRIVATE
     ${PROJECT_BINARY_DIR}  # for osmv_config.hpp

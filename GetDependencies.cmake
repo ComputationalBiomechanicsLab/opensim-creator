@@ -1,4 +1,4 @@
-# OSMV_GetDependencies
+# GetDependencies
 #
 # Dependency management for OSMV. Key points:
 #
