@@ -54,7 +54,7 @@ cmake ../opensim-core/ \
     -DBUILD_JAVA_WRAPPING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer" \
-    -DOPENSIM_WITH_CASADI=NO \
+    -DOPENSIM_WITH_CASADI=YES \
     -DOPENSIM_WITH_TROPTER=NO
 cmake --build . --target install -- -j ${num_workers}
 cd -
