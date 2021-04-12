@@ -31,10 +31,10 @@ Science" grant.
 
 | OS | Link | Comments |
 | - | - | - |
-| Windows 10 | [.exe](TODO) | |
-| Mac (Catalina onwards) | [.dmg](TODO) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osmv -> open -> handle security prompt |
-| Ubuntu Focal (20) | [.deb](TODO) | |
-| Debian Buster (10) | [.deb](TODO) | |
+| Windows 10 | [.exe](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-win64.exe) | |
+| Mac (Catalina onwards) | [.dmg](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-Darwin.dmg) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osmv -> open -> handle security prompt |
+| Ubuntu Focal (20) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
+| Debian Buster (10) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
 
 
 # 🏗️  Building
