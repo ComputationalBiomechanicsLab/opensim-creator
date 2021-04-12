@@ -1,4 +1,4 @@
-# OpenSim Creator <img src="build_resources/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
+# OpenSim Creator <img src="resources/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A thin UI for building OpenSim models
 
