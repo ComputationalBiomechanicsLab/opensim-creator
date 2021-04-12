@@ -29,6 +29,8 @@ Science" grant.
 > page, try a different [release](https://github.com/adamkewley/osmv/releases) 
 > or try a passing build from [the actions page](https://github.com/adamkewley/osmv/actions)
 
+*Latest release: 0.0.2 (released 12th Apr 2021)*
+
 | OS | Link | Comments |
 | - | - | - |
 | Windows 10 | [.exe](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-win64.exe) | |
