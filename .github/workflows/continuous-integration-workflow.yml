@@ -10,17 +10,17 @@ jobs:
         path: osc
     - name: run build_windows.bat
       run: |
-        cd $env:GITHUB_WORKSPACE
-        osc\\scripts\\build_windows.bat || exit /b
+        cd $env:GITHUB_WORKSPACE\osc
+        scripts\\build_windows.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
         name: osc_windows.exe
-        path: osc-build/*win64.exe
+        path: osc/osc-build/*win64.exe
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
       with:
         name: osc_windows_pdb
-        path: osc-build/RelWithDebInfo/*.pdb
+        path: osc/osc-build/RelWithDebInfo/*.pdb
         if-no-files-found: error
 
   ubuntu1604:
@@ -32,12 +32,12 @@ jobs:
         path: osc
     - name: run build_ubuntu-xenial.sh
       run: |
-        cd $GITHUB_WORKSPACE
-        ./osc/scripts/build_ubuntu-xenial.sh
+        cd $GITHUB_WORKSPACE/osc
+        ./scripts/build_ubuntu-xenial.sh
     - uses: actions/upload-artifact@v2
       with:
         name: osc_xenial.deb
-        path: osc-build/*.deb
+        path: osc/osc-build/*.deb
         if-no-files-found: error
 
   ubuntu2004:
@@ -49,12 +49,12 @@ jobs:
         path: osc
     - name: run build script
       run: |
-        cd $GITHUB_WORKSPACE
-        ./osc/scripts/build_debian-buster.sh
+        cd $GITHUB_WORKSPACE/osc
+        ./scripts/build_debian-buster.sh
     - uses: actions/upload-artifact@v2
       with:
         name: osc_focal_installer.deb
-        path: osc-build/*.deb
+        path: osc/osc-build/*.deb
         if-no-files-found: error
 
   macCatalina:

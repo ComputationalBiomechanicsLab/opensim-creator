@@ -11,7 +11,6 @@ dir .
 git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core || exit /b
 echo "Printing DIR (for build debugging)"
 dir opensim-core
-cd ..
 
 
 REM ----- build OpenSim's dependencies (e.g. Simbody) -----
@@ -46,7 +45,7 @@ echo "Printing DIR (for build debugging)"
 dir .
 mkdir osc-build
 cd osc-build
-cmake ../ -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
+cmake .. -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
 cmake --build . --config RelWithDebInfo --target package || exit /b
 echo "Printing DIR (for build debugging)"
 dir .

@@ -4,6 +4,8 @@
 #
 #     - this script should run to completion on a clean install of the
 #       OSes and produce a ready-to-use osc build
+#
+#     - run this from the repo root dir
 
 
 # error out of this script if it fails for any reason
@@ -42,6 +44,8 @@ cmake ../opensim-core/dependencies \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install
 cmake --build . -- -j$(nproc)
+echo "DEBUG: listing contents of OpenSim dependencies build dir"
+ls .
 cd -
 
 # OpenSim: build
@@ -53,6 +57,8 @@ cmake ../opensim-core/ \
     -DBUILD_JAVA_WRAPPING=OFF \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install -- -j$(nproc)
+echo "DEBUG: listing contents of OpenSim build dir"
+ls .
 cd -
 
 # osc: build DEB installer
@@ -64,8 +70,10 @@ cd -
 #              `--target package` for `--target osc`
 mkdir -p osc-build/
 cd osc-build/
-cmake ../osc -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
+cmake .. -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
 cmake --build . --target package -- -j$(nproc)
+echo "DEBUG: listing contents of final build dir"
+ls .
 
 
 # ----- install (example) -----
