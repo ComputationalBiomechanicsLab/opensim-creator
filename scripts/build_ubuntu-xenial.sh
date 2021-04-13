@@ -53,9 +53,9 @@ cd -
 mkdir -p opensim-build/
 cd opensim-build/
 cmake ../opensim-core/ \
-    -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/
-    -DCMAKE_INSTALL_PREFIX=../opensim-install/
-    -DBUILD_JAVA_WRAPPING=OFF
+    -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
+    -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
+    -DBUILD_JAVA_WRAPPING=OFF \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install -- -j$(nproc)
 cd -
