@@ -11,7 +11,7 @@ jobs:
     - name: run build_windows.bat
       run: |
         cd $env:GITHUB_WORKSPACE
-        scripts\\build_windows.bat || exit /b
+        osc\\scripts\\build_windows.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
         name: osc_windows.exe
