@@ -70,7 +70,7 @@ cd -
 #              `--target package` for `--target osc`
 mkdir -p osc-build/
 cd osc-build/
-cmake .. -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake
+cmake .. -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake
 cmake --build . --target package -- -j$(nproc)
 echo "DEBUG: listing contents of final build dir"
 ls .
