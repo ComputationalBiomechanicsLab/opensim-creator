@@ -20,6 +20,7 @@ department at [TU Delft](https://www.tudelft.nl/). It is funded by the
 Chan Zuckerberg Initiative's "Essential Open Source Software for
 Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
+<img src="resources/tud_logo.png" alt="TUD logo" width="128" height="128" /><img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
 
 # 🚀 Installation
 
