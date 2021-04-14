@@ -27,6 +27,7 @@
 #include "src/widgets/properties_editor.hpp"
 #include "src/widgets/reassign_socket_modal.hpp"
 #include "src/widgets/select_2_pfs_modal.hpp"
+#include "src/widgets/select_component.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -72,6 +73,7 @@
 
 namespace fs = std::filesystem;
 using namespace osc;
+using namespace osc::widgets;
 using std::literals::operator""s;
 using std::literals::operator""ms;
 
@@ -618,16 +620,32 @@ static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim
 
     OpenSim::HuntCrossleyForce::ContactParameters& params = selection.upd_contact_parameters()[0];
 
-    // TODO: this is work in progress
+    ImGui::Columns(2);
+    ImGui::Text("add contact geometry");
+    ImGui::SameLine();
+    draw_help_marker(
+        "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
+    ImGui::NextColumn();
 
-    // the `geometry` property contains the *names* of contact geometry in the model that
-    // the contact force should use.
+    // allow user to add geom
     {
-        OpenSim::Property<std::string> const& geoms = params.getGeometry();
-        for (int i = 0; i < geoms.size(); ++i) {
-            Property_editor_state st{};
+        if (ImGui::Button("add contact geometry")) {
+            ImGui::OpenPopup("select contact geometry");
+        }
+
+        select_component::State s;
+        OpenSim::ContactGeometry const* added =
+            select_component::draw<OpenSim::ContactGeometry>(s, "select contact geometry", impl.model());
+
+        if (added) {
+            impl.before_modify_selection();
+            params.updGeometry().appendValue(added->getName());
+            impl.after_modify_selection();
         }
     }
+
+    ImGui::NextColumn();
+    ImGui::Columns();
 
     // render standard, easy to render, props of the contact params
     {

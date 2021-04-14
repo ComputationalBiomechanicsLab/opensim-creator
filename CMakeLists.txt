@@ -154,6 +154,7 @@ add_executable(osc
     src/widgets/add_moment_arm_plot_modal.cpp
     src/widgets/model_actions_panel.hpp
     src/widgets/model_actions_panel.cpp
+    src/widgets/select_component.hpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
