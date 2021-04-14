@@ -157,7 +157,7 @@ bool osc::Splash_screen::on_event(SDL_Event const& e) {
 void osc::Splash_screen::draw() {
     Application& app = Application::current();
 
-    constexpr glm::vec2 menu_dims = {700.0f, 700.0f};
+    constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
     glm::vec2 window_dims;
     {
         auto [w, h] = app.window_dimensions();
