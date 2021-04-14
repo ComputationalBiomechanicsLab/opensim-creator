@@ -192,19 +192,26 @@ static_assert(contact_geom_hashes.size() == contact_geom_prototypes.size());
 
 // Force LUTs
 
-static auto const force_prototypes = make_prototype_collection<
-    OpenSim::Force,
-
-    OpenSim::BushingForce,
-    OpenSim::CoordinateLimitForce,
-    OpenSim::ElasticFoundationForce,
-    OpenSim::HuntCrossleyForce,
-    OpenSim::PointToPointSpring,
-    // OpenSim::SmoothSphereHalfSpaceForce,  OpenSim 4.2
-    OpenSim::Thelen2003Muscle,
-    //    OpenSim::DeGrooteFregly2016Muscle,
-    OpenSim::Millard2012EquilibriumMuscle>();
-// OpenSim::RigidTendonMuscle
+std::array<std::unique_ptr<OpenSim::Force const>, 7> const force_prototypes = {
+    std::make_unique<OpenSim::BushingForce>(),
+    std::make_unique<OpenSim::CoordinateLimitForce>(),
+    std::make_unique<OpenSim::ElasticFoundationForce>(),
+    []() {
+        auto hcf = std::make_unique<OpenSim::HuntCrossleyForce>();
+        hcf->setStiffness(100000000.0);
+        hcf->setDissipation(0.5);
+        hcf->setStaticFriction(0.9);
+        hcf->setDynamicFriction(0.9);
+        hcf->setViscousFriction(0.6);
+        return hcf;
+    }(),
+    std::make_unique<OpenSim::PointToPointSpring>(),
+    // OpenSim::SmoothSphereHalfSpaceForce
+    std::make_unique<OpenSim::Thelen2003Muscle>(),
+    // OpenSim::DeGrooteFregly2016Muscle
+    std::make_unique<OpenSim::Millard2012EquilibriumMuscle>(),
+    // OpenSim::RigidTendonMuscle
+};
 
 static auto const force_names = extract_names(force_prototypes);
 static constexpr std::array<char const*, force_prototypes.size()> force_descriptions = {
