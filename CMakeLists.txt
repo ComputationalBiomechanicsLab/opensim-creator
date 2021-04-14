@@ -381,7 +381,7 @@ endif()
 # ---------- installation / packaging (CPack) ----------- #
 
 include(InstallRequiredSystemLibraries)
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION_MAJOR "${osc_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${osc_VERSION_MINOR}")
 set(CPACK_PACKAGE_CONTACT "Adam Kewley <contact@adamkewley.com>")
