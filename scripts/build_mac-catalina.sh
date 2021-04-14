@@ -46,3 +46,4 @@ mkdir -p osc-build/
 cd osc-build/
 cmake .. -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target package -- -j ${num_workers}
+

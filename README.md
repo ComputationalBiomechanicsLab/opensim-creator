@@ -20,6 +20,7 @@ department at [TU Delft](https://www.tudelft.nl/). It is funded by the
 Chan Zuckerberg Initiative's "Essential Open Source Software for
 Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
+<img src="resources/tud_logo.png" alt="TUD logo" width="128" height="128" /><img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
 
 # 🚀 Installation
 
@@ -33,10 +34,10 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 | OS | Link | Comments |
 | - | - | - |
-| Windows 10 | [.exe](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-win64.exe) | |
-| Mac (Catalina onwards) | [.dmg](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-Darwin.dmg) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osc -> open -> handle security prompt |
-| Ubuntu Focal (20) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
-| Debian Buster (10) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
+| Windows 10 | [.exe](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-win64.exe) | Uses OpenSim 4.2 |
+| Mac (Catalina onwards) | [.dmg](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv-0.0.2-Darwin.dmg) | Uses OpenSim 4.1. The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osc -> open -> handle security prompt |
+| Ubuntu Focal (20) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | Uses OpenSim 4.1. |
+| Debian Buster (10) | [.deb](https://github.com/adamkewley/osmv/releases/download/0.0.2/osmv_0.0.2_amd64.deb) | Uses OpenSim 4.1. |
 
 # 🏗️  Building
 

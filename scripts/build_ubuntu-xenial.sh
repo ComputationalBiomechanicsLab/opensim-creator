@@ -53,9 +53,9 @@ cd -
 mkdir -p opensim-build/
 cd opensim-build/
 cmake ../opensim-core/ \
-    -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/
-    -DCMAKE_INSTALL_PREFIX=../opensim-install/
-    -DBUILD_JAVA_WRAPPING=OFF
+    -DOPENSIM_DEPENDENCIES_DIR=../opensim-dependencies-install/ \
+    -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
+    -DBUILD_JAVA_WRAPPING=OFF \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install -- -j$(nproc)
 cd -
@@ -72,7 +72,7 @@ cd -
 #     binary dependent on a libstdc++ that doesn't come with typical distros
 mkdir osc-build/
 cd osc-build/
-CC=gcc-8 CXX=g++-8 cmake ../osc \
+CC=gcc-8 CXX=g++-8 cmake .. \
   -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++"

@@ -4,14 +4,13 @@ REM     - this script should be able to build osc on a clean Windows 2019 Server
 REM       toolchain installs (Visual Studio, MSVC, CMake)
 
 
-REM ----- checkout OpenSim 4.1 sources from GitHub -----
+REM ----- checkout OpenSim 4.2 sources from GitHub -----
 
 echo "Printing DIR (for build debugging)"
 dir .
-git clone --single-branch --branch 4.1 --depth=1 https://github.com/opensim-org/opensim-core || exit /b
+git clone --single-branch --branch 4.2 --depth=1 https://github.com/opensim-org/opensim-core || exit /b
 echo "Printing DIR (for build debugging)"
 dir opensim-core
-cd ..
 
 
 REM ----- build OpenSim's dependencies (e.g. Simbody) -----
@@ -46,7 +45,7 @@ echo "Printing DIR (for build debugging)"
 dir .
 mkdir osc-build
 cd osc-build
-cmake ../ -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
+cmake .. -G"Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
 cmake --build . --config RelWithDebInfo --target package || exit /b
 echo "Printing DIR (for build debugging)"
 dir .
