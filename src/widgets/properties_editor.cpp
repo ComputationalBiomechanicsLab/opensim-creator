@@ -140,7 +140,7 @@ void draw_property_editor<bool>(
     bool v = prop.getValue();
     if (ImGui::Checkbox("##booleditor", &v)) {
         before_property_edited();
-        static_cast<OpenSim::Property<double>&>(obj.updPropertyByIndex(i)).setValue(v);
+        static_cast<OpenSim::Property<bool>&>(obj.updPropertyByIndex(i)).setValue(v);
         after_property_edited();
     }
 }
