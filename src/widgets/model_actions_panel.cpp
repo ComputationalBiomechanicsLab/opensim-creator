@@ -5,7 +5,6 @@
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/widgets/add_body_modal.hpp"
-#include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/select_2_pfs_modal.hpp"
 
 #include <OpenSim/Simulation/Model/ContactGeometry.h>

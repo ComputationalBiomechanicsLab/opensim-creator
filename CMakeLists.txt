@@ -123,8 +123,6 @@ add_executable(osc
     src/widgets/component_selection_widget.cpp
     src/widgets/model_viewer_widget.hpp
     src/widgets/model_viewer_widget.cpp
-    src/widgets/add_joint_modal.hpp
-    src/widgets/add_joint_modal.cpp
     src/widgets/properties_editor.hpp
     src/widgets/properties_editor.cpp
     src/widgets/reassign_socket_modal.hpp

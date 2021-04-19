@@ -14,7 +14,6 @@
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/widgets/add_body_modal.hpp"
-#include "src/widgets/add_joint_modal.hpp"
 #include "src/widgets/attach_geometry_modal.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
 #include "src/widgets/component_selection_widget.hpp"
@@ -227,11 +226,6 @@ struct Model_editor_screen::Impl final {
     struct {
         Main_menu_file_tab_state main_menu_tab;
         Added_body_modal_state abm;
-        std::array<Add_joint_modal, 4> add_joint_modals = {
-            Add_joint_modal::create<OpenSim::FreeJoint>("Add FreeJoint"),
-            Add_joint_modal::create<OpenSim::PinJoint>("Add PinJoint"),
-            Add_joint_modal::create<OpenSim::UniversalJoint>("Add UniversalJoint"),
-            Add_joint_modal::create<OpenSim::BallJoint>("Add BallJoint")};
         Properties_editor_state properties_editor;
         Reassign_socket_modal_state reassign_socket;
         Attach_geometry_modal_state attach_geometry_modal;
