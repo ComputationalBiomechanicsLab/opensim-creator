@@ -40,35 +40,35 @@ namespace {
     static constexpr float mouse_drag_sensitivity = 1.0f;
 }
 
-void osmv::Polar_camera::on_scroll_down() noexcept {
+void osc::Polar_camera::on_scroll_down() noexcept {
     if (radius < 100.0f) {
         radius /= mouse_wheel_sensitivity;
     }
 }
 
-void osmv::Polar_camera::on_scroll_up() noexcept {
+void osc::Polar_camera::on_scroll_up() noexcept {
     if (radius >= 0.1f) {
         radius *= mouse_wheel_sensitivity;
     }
 }
 
-void osmv::Polar_camera::on_left_click_down() noexcept {
+void osc::Polar_camera::on_left_click_down() noexcept {
     is_dragging = true;
 }
 
-void osmv::Polar_camera::on_left_click_up() noexcept {
+void osc::Polar_camera::on_left_click_up() noexcept {
     is_dragging = false;
 }
 
-void osmv::Polar_camera::on_right_click_down() noexcept {
+void osc::Polar_camera::on_right_click_down() noexcept {
     is_panning = true;
 }
 
-void osmv::Polar_camera::on_right_click_up() noexcept {
+void osc::Polar_camera::on_right_click_up() noexcept {
     is_panning = false;
 }
 
-void osmv::Polar_camera::on_mouse_motion(float aspect_ratio, float dx, float dy) noexcept {
+void osc::Polar_camera::on_mouse_motion(float aspect_ratio, float dx, float dy) noexcept {
     if (is_dragging) {
         // alter camera position while dragging
         theta += 2.0f * pi_f * mouse_drag_sensitivity * -dx;
@@ -96,14 +96,14 @@ void osmv::Polar_camera::on_mouse_motion(float aspect_ratio, float dx, float dy)
     }
 }
 
-glm::mat4 osmv::Polar_camera::view_matrix() const noexcept {
+glm::mat4 osc::Polar_camera::view_matrix() const noexcept {
     return compute_view_matrix(theta, phi, radius, pan);
 }
 
-glm::mat4 osmv::Polar_camera::projection_matrix(float aspect_ratio) const noexcept {
+glm::mat4 osc::Polar_camera::projection_matrix(float aspect_ratio) const noexcept {
     return glm::perspective(fov, aspect_ratio, znear, zfar);
 }
 
-glm::vec3 osmv::Polar_camera::pos() const noexcept {
+glm::vec3 osc::Polar_camera::pos() const noexcept {
     return spherical_2_cartesian(theta, phi, radius);
 }

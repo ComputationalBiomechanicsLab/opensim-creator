@@ -3,53 +3,52 @@
 # Ubuntu 20 (Groovy) / Debian Buster: end-2-end build
 #
 #     - this script should run to completion on a clean install of the
-#       OSes and produce a ready-to-use osmv binary
+#       OSes and produce a ready-to-use osc build
+#
+#     - run this from the repo root dir
 
 
 # error out of this script if it fails for any reason
 set -xeuo pipefail
 
 # if root is running this script then do not use `sudo` (some distros
-# do not supply it)
+# do not have 'sudo' available)
 if [[ "${UID}" == 0 ]]; then
     sudo=''
 else
     sudo='sudo'
 fi
 
-# ----- setup: get dependencies: you will need root/sudo for some of this ----- #
+# ----- get dependencies ----- #
 
 ${sudo} apt-get update
 
-# osmv: main dependencies
+# osc: main dependencies
 ${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev
 
-# osmv: transitive dependencies from OpenSim4.1
+# osc: transitive dependencies from OpenSim
 ${sudo} apt-get install -y git freeglut3-dev libxi-dev libxmu-dev liblapack-dev wget
 
-# get OpenSim 4.1 source
-#
-#    this can be skipped, along with the opensim build steps, if
-#    you're linking osmv to your own custom install via
-#    CMAKE_PREFIX_PATH)
+# OpenSim: get 4.1 sources
 if [[ ! -d opensim-core/ ]]; then
     git clone --single-branch --branch 4.2 --depth=1 https://github.com/opensim-org/opensim-core
 fi
 
 
-# ----- build: build OpenSim (optional) then build osmv ----- #
+# ----- build ----- #
 
-# (if building OpenSim): build OpenSim's dependencies
+# OpenSim: build dependencies
 mkdir -p opensim-dependencies-build/
 cd opensim-dependencies-build/
 cmake ../opensim-core/dependencies \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install \
-    -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer"
+    -DCMAKE_INSTALL_PREFIX=../opensim-dependencies-install
 cmake --build . -- -j$(nproc)
+echo "DEBUG: listing contents of OpenSim dependencies build dir"
+ls .
 cd -
 
-# (if building OpenSim): build OpenSim
+# OpenSim: build
 mkdir -p opensim-build/
 cd opensim-build/
 cmake ../opensim-core/ \
@@ -57,30 +56,36 @@ cmake ../opensim-core/ \
     -DCMAKE_INSTALL_PREFIX=../opensim-install/ \
     -DBUILD_JAVA_WRAPPING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer" \
     -DOPENSIM_WITH_CASADI=NO \
     -DOPENSIM_WITH_TROPTER=NO \
     -DOPENSIM_COPY_DEPENDENCIES=ON
 cmake --build . --target install -- -j$(nproc)
+echo "DEBUG: listing contents of OpenSim build dir"
+ls .
 cd -
 
-# build osmv DEB package
+# osc: build DEB installer
 #
 #     note #1: if you're providing your own OpenSim install, set
 #     CMAKE_PREFIX_PATH to that install path
 #
-#     note #2: if you just want to build osmv, switch `--target
-#     package` for `--target osmv`
-mkdir -p osmv-build/
-cd osmv-build/
-cmake ../osmv \
-    -DCMAKE_PREFIX_PATH=../opensim-install/lib/cmake \
-    -DCMAKE_BUILD_TYPE=Release
+#     note #2: if you just want to build osc, switch
+#              `--target package` for `--target osc`
+mkdir -p osc-build/
+cd osc-build/
+cmake .. \
+    -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install/lib/cmake \
+    -DCMAKE_BUILD_TYPE=Release  
 cmake --build . --target package -- -j$(nproc)
+echo "DEBUG: listing contents of final build dir"
+ls .
 
-# (if you want to install the .deb onto your system)
-# apt-get install -yf ./osmv-*.deb
 
-# (if you want to boot osmv)
-# ./osmv  # boot from the build dir
-# osmv    # boot the installed package (at /opt/osmv/bin/osmv)
+# ----- install (example) -----
+
+# apt-get install -yf ./osc-*.deb
+
+# ----- boot (example) -----
+
+# ./osc  # boot from the build dir
+# osc    # boot the installed DEB (at /opt/osc/bin/osc)

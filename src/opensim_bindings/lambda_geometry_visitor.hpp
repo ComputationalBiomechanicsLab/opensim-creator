@@ -4,11 +4,11 @@
 
 #include <utility>
 
-namespace osmv {
+namespace osc {
     struct Mesh_instance;
 }
 
-namespace osmv {
+namespace osc {
     template<typename OnInstanceCreatedCallback>
     class Lambda_geometry_visitor final : public Simbody_geometry_visitor {
         OnInstanceCreatedCallback callback;

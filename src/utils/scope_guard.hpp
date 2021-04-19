@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace osmv {
+namespace osc {
     template<typename Dtor>
     class Scope_guard final {
         Dtor dtor;
@@ -19,11 +19,11 @@ namespace osmv {
         }
     };
 
-#define OSMV_TOKENPASTE(x, y) x##y
-#define OSMV_TOKENPASTE2(x, y) OSMV_TOKENPASTE(x, y)
-#define OSMV_SCOPE_GUARD(action) osmv::Scope_guard OSMV_TOKENPASTE2(guard_, __LINE__){[&]() action};
-#define OSMV_SCOPE_GUARD_IF(cond, action)                                                                              \
-    OSMV_SCOPE_GUARD({                                                                                                 \
+#define OSC_TOKENPASTE(x, y) x##y
+#define OSC_TOKENPASTE2(x, y) OSC_TOKENPASTE(x, y)
+#define OSC_SCOPE_GUARD(action) osc::Scope_guard OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
+#define OSC_SCOPE_GUARD_IF(cond, action)                                                                              \
+    OSC_SCOPE_GUARD({                                                                                                 \
         if (cond) {                                                                                                    \
             action                                                                                                     \
         }                                                                                                              \

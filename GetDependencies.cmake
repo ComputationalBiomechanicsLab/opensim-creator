@@ -1,6 +1,6 @@
-# OSMV_GetDependencies
+# GetDependencies
 #
-# Dependency management for OSMV. Key points:
+# Dependency management for OpenSim Creator. Key points:
 #
 # - Must handle all dependencies as part of the main build, so that
 #   this file can be `include`d from the main CMakeLists.txt to "magically"
@@ -11,7 +11,7 @@
 # - Export all dependencies as standard CMake targets with the correct
 #   interfaces (includes, linking), such that the main build can just:
 #
-#       target_link_library(osmv osmv-some-dependency)
+#       target_link_library(oscgui osc::depX)
 #
 #     and not have to handle include paths etc. downstream manually
 #
@@ -22,67 +22,58 @@
 #    without considering multi-config, which results in rebuilds when a dev
 #    switches between two (possibly, already built) configurations)
 #
-# - Must work in CMake 3.5, because Ubuntu Xenial still packages that and
-#   some team members still use Xenial
-#
 # - Must correctly list all the libraries that downstream must package (e.g.
 #   when `install` or `package`ing) to produce a portable (within config params)
 #   build
 
 include(ExternalProject)
 
-
-if(NOT OSMV_REPO_PROVIDER)
-    set(OSMV_REPO_PROVIDER "https://github.com")
-endif()
-
-
 # Forward CMake arguments from this configuration to the external
 # sub-build dependencies
 #
 # each flag should be checked, because some sub builds screw up if you set
 # a flag to an empty value (e.g. GLEW)
-
-if(CMAKE_CXX_COMPILER)
-    list(APPEND OSMV_DEPENDENCY_OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER})
+if(TRUE)
+    if(CMAKE_CXX_COMPILER)
+        list(APPEND OSC_DEPENDENCY_OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER})
+    endif()
+    if(CMAKE_C_COMPILER)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER})
+    endif()
+    if(CMAKE_CXX_FLAGS)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+    endif()
+    if(CMAKE_CXX_FLAGS_DEBUG)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG})
+    endif()
+    if(CMAKE_CXX_FLAGS_MINSIZEREL)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_MINSIZEREL:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL})
+    endif()
+    if(CMAKE_CXX_FLAGS_RELEASE)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE})
+    endif()
+    if(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+    endif()
+    if(CMAKE_C_FLAGS)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+    endif()
+    if(CMAKE_C_FLAGS_DEBUG)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG})
+    endif()
+    if(CMAKE_C_FLAGS_MINSIZEREL)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_MINSIZEREL:STRING=${CMAKE_C_FLAGS_MINSIZEREL})
+    endif()
+    if(CMAKE_C_FLAGS_RELEASE)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
+    endif()
+    if(CMAKE_C_FLAGS_RELWITHDEBINFO)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+    endif()
+    if(CMAKE_BUILD_TYPE)
+        list(APPEND OSC_DEPENDENCY_CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
+    endif()
 endif()
-if(CMAKE_C_COMPILER)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER})
-endif()
-if(CMAKE_CXX_FLAGS)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
-endif()
-if(CMAKE_CXX_FLAGS_DEBUG)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG})
-endif()
-if(CMAKE_CXX_FLAGS_MINSIZEREL)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_MINSIZEREL:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL})
-endif()
-if(CMAKE_CXX_FLAGS_RELEASE)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE})
-endif()
-if(CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
-endif()
-if(CMAKE_C_FLAGS)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
-endif()
-if(CMAKE_C_FLAGS_DEBUG)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG})
-endif()
-if(CMAKE_C_FLAGS_MINSIZEREL)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_MINSIZEREL:STRING=${CMAKE_C_FLAGS_MINSIZEREL})
-endif()
-if(CMAKE_C_FLAGS_RELEASE)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
-endif()
-if(CMAKE_C_FLAGS_RELWITHDEBINFO)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
-endif()
-if(CMAKE_BUILD_TYPE)
-    list(APPEND OSMV_DEPENDENCY_CMAKE_ARGS -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE})
-endif()
-
 
 # DEPENDENCY: OpenGL
 #     transitively used by GLEW to load the OpenGL API
@@ -121,11 +112,11 @@ if(TRUE)
         list(APPEND GLEW_SRC_FILES ${GLEW_DIR}/build/glew.rc)
     endif()
 
-    add_library(osmv-glew STATIC ${GLEW_PUBLIC_HEADER_FILES} ${GLEW_SRC_FILES})
-    target_include_directories(osmv-glew PUBLIC ${GLEW_DIR}/include/)
-    target_compile_definitions(osmv-glew PRIVATE -DGLEW_NO_GLU)
-    target_link_libraries(osmv-glew PUBLIC ${OPENGL_LIBRARIES})
-    set_target_properties(osmv-glew PROPERTIES
+    add_library(glew STATIC ${GLEW_PUBLIC_HEADER_FILES} ${GLEW_SRC_FILES})
+    target_include_directories(glew PUBLIC ${GLEW_DIR}/include/)
+    target_compile_definitions(glew PRIVATE -DGLEW_NO_GLU)
+    target_link_libraries(glew PUBLIC ${OPENGL_LIBRARIES})
+    set_target_properties(glew PROPERTIES
         VERSION ${GLEW_VERSION}
         COMPILE_DEFINITIONS "GLEW_STATIC"
         INTERFACE_INCLUDE_DIRECTORIES ${GLEW_DIR}/include
@@ -135,10 +126,10 @@ if(TRUE)
 
     # kill security checks which are dependent on stdlib
     if(MSVC)
-        target_compile_definitions(osmv-glew PRIVATE "GLEW_STATIC;VC_EXTRALEAN")
-        target_compile_options(osmv-glew PRIVATE -GS-)
+        target_compile_definitions(glew PRIVATE "GLEW_STATIC;VC_EXTRALEAN")
+        target_compile_options(glew PRIVATE -GS-)
     elseif (WIN32 AND ((CMAKE_C_COMPILER_ID MATCHES "GNU") OR (CMAKE_C_COMPILER_ID MATCHES "Clang")))
-        target_compile_options (glew_s PRIVATE -fno-builtin -fno-stack-protector)
+        target_compile_options (glew PRIVATE -fno-builtin -fno-stack-protector)
     endif()
 
     unset(GLEW_VERSION)
@@ -158,13 +149,16 @@ endif()
 if(LINUX)
     # on Linux, dynamically link to system-provided SDL library
 
-    find_library(OSMV_SDL2_LOCATION SDL2 REQUIRED)
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    set_target_properties(osmv-sdl2 PROPERTIES
-        IMPORTED_LOCATION ${OSMV_SDL2_LOCATION}
+    find_library(OSC_SDL2_LOCATION SDL2 REQUIRED)
+    add_library(sdl2 SHARED IMPORTED)
+    set_target_properties(sdl2 PROPERTIES
+        IMPORTED_LOCATION ${OSC_SDL2_LOCATION}
         INTERFACE_INCLUDE_DIRECTORIES /usr/include/SDL2
     )
 else()
+    # on not-Linux, build SDL from source using the in-tree sources
+
+    # compute library name (e.g. libSDL2.dylib)
     if(WIN32)
         set(LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2)
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2d)
@@ -176,22 +170,27 @@ else()
         set(DEBUG_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}SDL2-2.0d)
     endif()
 
-    set(HACK_BUILD_DIR "sdl2-project-prefix/src/sdl2-project-build")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    list(APPEND HACK_POSSIBLE_BYPRODUCTS "${HACK_BUILD_DIR}/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    # compute possible build byproducts (needed for build systems that check
+    # this, like ninja)
+    if(TRUE)
+        set(SDL_BINDIR "sdl2-project-prefix/src/sdl2-project-build")
+        list(APPEND SDL2_BUILD_BYPRODUCTS
+            "${SDL2_BINDIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            "${SDL2_BINDIR}/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        )
+        unset(SDL2_BINDIR)
+    endif()
 
     # on non-Linux, build SDL from source and package it with the install
     ExternalProject_Add(sdl2-project
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sdl2
-        CMAKE_CACHE_ARGS ${OSMV_DEPENDENCY_CMAKE_ARGS}
+        CMAKE_CACHE_ARGS ${OSC_DEPENDENCY_CMAKE_ARGS}
         INSTALL_COMMAND ""
         EXCLUDE_FROM_ALL TRUE
         UPDATE_DISCONNECTED ON
-        # HACK: this is specifically required by Ninja, because it
-        # needs to know the side-effects of external build steps
-        BUILD_BYPRODUCTS "${HACK_POSSIBLE_BYPRODUCTS}"
+        BUILD_BYPRODUCTS "${SDL2_BUILD_BYPRODUCTS}"
     )
     ExternalProject_Get_Property(sdl2-project SOURCE_DIR)
     ExternalProject_Get_Property(sdl2-project BINARY_DIR)
@@ -199,8 +198,8 @@ else()
     # HACK: see: https://gitlab.kitware.com/cmake/cmake/-/issues/15052
     file(MAKE_DIRECTORY ${SOURCE_DIR}/include)
 
-    add_library(osmv-sdl2 SHARED IMPORTED)
-    add_dependencies(osmv-sdl2 sdl2-project)
+    add_library(sdl2 SHARED IMPORTED)
+    add_dependencies(sdl2 sdl2-project)
 
     if(CMAKE_BUILD_TYPE MATCHES Debug)
         set(SDL2_LIB_SUFFIX "d")
@@ -208,12 +207,12 @@ else()
         set(SDL2_LIB_SUFFIX "")
     endif()
 
-    set_target_properties(osmv-sdl2 PROPERTIES
+    set_target_properties(sdl2 PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES ${SOURCE_DIR}/include
     )
 
-    if(${OSMV_GENERATOR_IS_MULTI_CONFIG})
-        set_target_properties(osmv-sdl2 PROPERTIES
+    if(${OSC_GENERATOR_IS_MULTI_CONFIG})
+        set_target_properties(sdl2 PROPERTIES
             IMPORTED_LOCATION_DEBUG ${BINARY_DIR}/Debug/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
             IMPORTED_IMPLIB_DEBUG ${BINARY_DIR}/Debug/${DEBUG_LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${BINARY_DIR}/RelWithDebInfo/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -224,7 +223,7 @@ else()
             IMPORTED_IMPLIB_RELEASE ${BINARY_DIR}/Release/${LIBNAME}${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
     else()
-        set_target_properties(osmv-sdl2 PROPERTIES
+        set_target_properties(sdl2 PROPERTIES
             IMPORTED_LOCATION ${BINARY_DIR}/${LIBNAME}${SDL2_LIB_SUFFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}
             IMPORTED_IMPLIB ${BINARY_DIR}/${LIBNAME}${SDL2_LIB_SUFFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
@@ -235,15 +234,14 @@ else()
     unset(BINARY_DIR)
     unset(LIBNAME)
     unset(DEBUG_LIBNAME)
-    unset(HACK_BUILD_DIR)
-    unset(HACK_POSSIBLE_BYPRODUCTS)
+    unset(SDL2_BUILD_BYPRODUCTS)
 endif()
 
 # DEPENDENCY: glm
 #     header-only library, used for OpenGL-friendly vector maths
 if(TRUE)
-    add_library(osmv-glm INTERFACE)
-    target_include_directories(osmv-glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm)
+    add_library(glm INTERFACE)
+    target_include_directories(glm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm)
 endif()
 
 # DEPENDENCY: imgui
@@ -252,38 +250,38 @@ endif()
 #     - built from source with SDL2 + OpenGL backend
 #     - in tree, to reduce some of the faffing around to deal with CMake3.5 bugs
 if(TRUE)
-    add_library(osmv-imgui STATIC
+    add_library(imgui STATIC
         third_party/imgui/imgui.cpp
         third_party/imgui/imgui_draw.cpp
         third_party/imgui/imgui_widgets.cpp
         third_party/imgui/imgui_tables.cpp
-        third_party/imgui/imgui_demo.cpp  # useful for osmv devs to see what's available
+        third_party/imgui/imgui_demo.cpp  # useful for osc devs to see what widgets are available
         third_party/imgui/backends/imgui_impl_opengl3.cpp
         third_party/imgui/backends/imgui_impl_sdl.cpp
     )
-    target_link_libraries(osmv-imgui PUBLIC osmv-sdl2 osmv-glew osmv-glm)
-    target_include_directories(osmv-imgui PUBLIC third_party/ third_party/imgui/)
+    target_link_libraries(imgui PUBLIC sdl2 glew glm)
+    target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
 endif()
 
-# DEPENDENCY: stb_image
-#     header-only library, used to read/write images
+# DEPENDENCY: stb
+#     header-only library, used to read/write asset files (images, sounds)
 if(TRUE)
-    add_library(osmv-stb-image INTERFACE)
-    target_include_directories(osmv-stb-image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
+    add_library(stb INTERFACE)
+    target_include_directories(stb INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
 endif()
 
 # DEPENDENCY: tomlplusplus
 #     header-only library, used to parse toml config files
 if(TRUE)
-    add_library(osmv-tomlplusplus INTERFACE)
-    target_include_directories(osmv-tomlplusplus INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)
+    add_library(tomlplusplus INTERFACE)
+    target_include_directories(tomlplusplus INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)
 endif()
 
 # DEPENDENCY: span-lite
 #     header-only library, shims std::span (C++20) into C++17
 if(TRUE)
-    add_library(osmv-span-lite INTERFACE)
-    target_include_directories(osmv-span-lite INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/span-lite)
+    add_library(span-lite INTERFACE)
+    target_include_directories(span-lite INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/span-lite)
 endif()
 
 # DEPENDENCY: nativefiledialog
@@ -292,46 +290,46 @@ if(TRUE)
     if(LINUX)
         include(FindPkgConfig)
 
-        add_library(osmv-nativefiledialog STATIC
+        add_library(nativefiledialog STATIC
             third_party/nativefiledialog/src/nfd_gtk.c
             third_party/nativefiledialog/src/nfd_common.c
         )
 
         pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
-        target_link_libraries(osmv-nativefiledialog INTERFACE ${GTK3_LIBRARIES})
-        target_include_directories(osmv-nativefiledialog
+        target_link_libraries(nativefiledialog INTERFACE ${GTK3_LIBRARIES})
+        target_include_directories(nativefiledialog
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
             PRIVATE ${GTK3_INCLUDE_DIRS}
             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
         )
     elseif(WIN32)
-        add_library(osmv-nativefiledialog STATIC
+        add_library(nativefiledialog STATIC
             third_party/nativefiledialog/src/nfd_win.cpp
             third_party/nativefiledialog/src/nfd_common.c
         )
-        target_include_directories(osmv-nativefiledialog
+        target_include_directories(nativefiledialog
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
         )
     elseif(APPLE)
-        add_library(osmv-nativefiledialog STATIC
+        add_library(nativefiledialog STATIC
             third_party/nativefiledialog/src/nfd_cocoa.m
             third_party/nativefiledialog/src/nfd_common.c
         )
-        target_include_directories(osmv-nativefiledialog
+        target_include_directories(nativefiledialog
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src
             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
             INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/nativefiledialog/src/include
         )
-        target_link_libraries(osmv-nativefiledialog INTERFACE "-framework Cocoa")
+        target_link_libraries(nativefiledialog INTERFACE "-framework Cocoa")
     else()
         message(FATAL_ERROR "no implementation of nfd.h available on this platform: required for native platform file dialogs")
     endif()
 
-    set_target_properties(osmv-nativefiledialog PROPERTIES
+    set_target_properties(nativefiledialog PROPERTIES
         POSITION_INDEPENDENT_CODE ON
     )
 endif()
@@ -352,7 +350,7 @@ endif()
 #       OpenSim on your system
 if(TRUE)
     find_package(OpenSim REQUIRED)
-    set(OSMV_OPENSIM_LIBS
+    set(OSC_OPENSIM_LIBS
         osimCommon
         osimSimulation
         osimActuators
@@ -365,24 +363,42 @@ if(TRUE)
     )
 endif()
 
-# `osmv-all-dependencies`: all libraries osmv should link to
-add_library(osmv-all-dependencies INTERFACE)
-target_link_libraries(osmv-all-dependencies INTERFACE
+# `osc::all-deps`: all libraries osc should link to
+add_library(osc-all-deps INTERFACE)
+target_link_libraries(osc-all-deps INTERFACE
 
-    osmv-glew
-    osmv-sdl2
-    osmv-glm
-    osmv-imgui
-    osmv-stb-image
-    osmv-tomlplusplus
-    osmv-span-lite
-    osmv-nativefiledialog
-
-    ${OSMV_OPENSIM_LIBS}
+    # linking to the OSes OpenGL driver/loader
     ${OPENGL_LIBRARIES}
+
+    # for loading the OpenGL API at runtime
+    glew
+
+    # for application matrix maths, etc. necessary to use the OpenGL API
+    glm
+
+    # OS integration (window creation, sounds, input)
+    sdl2
+
+    # OS integration for file dialogs (Open, Save As, etc.)
+    nativefiledialog
+
+    # GUI component rendering (text boxes, sliders, etc.)
+    imgui
+
+    # GUI asset parsing (image files, sound files, etc.)
+    stb
+
+    # config file parsing
+    tomlplusplus
+
+    # shim for C++20's std::span
+    span-lite
+
+    # OpenSim API
+    ${OSC_OPENSIM_LIBS}
 )
 
-# ----- OSMV_LIB_FILES_TO_COPY: set to all lib files to be copied -----
+# ----- OSC_LIB_FILES_TO_COPY: variable that is set to all lib files to be copied -----
 
 if(WIN32)
     # in Windows, copy all DLLs in the OpenSim install dir
@@ -393,19 +409,19 @@ if(WIN32)
 
     file(GLOB OPENSIM_DLLS LIST_DIRECTORIES false CONFIGURE_DEPENDS ${OpenSim_ROOT_DIR}/bin/*.dll)
     foreach(OPENSIM_DLL ${OPENSIM_DLLS})
-        list(APPEND OSMV_LIB_FILES_TO_COPY ${OPENSIM_DLL})
+        list(APPEND OSC_LIB_FILES_TO_COPY ${OPENSIM_DLL})
     endforeach()
     unset(OPENSIM_DLL)
     unset(OPENSIM_DLLS)
 else()
     # on Linux/mac, only copy the direct dependencies (it's assumed that
     # the OSes provide the rest)
-    foreach(OPENSIM_LIB ${OSMV_OPENSIM_LIBS})
-        list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
+    foreach(OPENSIM_LIB ${OSC_OPENSIM_LIBS})
+        list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:${OPENSIM_LIB}>)
     endforeach()
 endif()
 
 # copy SDL2 lib if on Windows/Mac
 if(NOT LINUX)
-    list(APPEND OSMV_LIB_FILES_TO_COPY $<TARGET_FILE:osmv-sdl2>)
+    list(APPEND OSC_LIB_FILES_TO_COPY $<TARGET_FILE:sdl2>)
 endif()

@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <limits>
 
-namespace osmv {
+namespace osc {
 
     // holds a fixed number of Y datapoints that are assumed to be roughly evenly spaced in X
     //
@@ -72,7 +72,7 @@ namespace osmv {
         }
 
         float last_datapoint() const {
-            OSMV_ASSERT(n > 0);
+            OSC_ASSERT(n > 0);
             return data[n - 1];
         }
     };

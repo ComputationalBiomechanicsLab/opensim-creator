@@ -29,7 +29,7 @@ void gl::CompileShader(Shader& sh) {
     GLint log_len = 0;
     glGetShaderiv(sh, GL_INFO_LOG_LENGTH, &log_len);
 
-    OSMV_ASSERT_ALWAYS(log_len >= 0);
+    OSC_ASSERT_ALWAYS(log_len >= 0);
 
     std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetShaderInfoLog(sh, log_len, &log_len, errmsg.data());
@@ -54,7 +54,7 @@ void gl::LinkProgram(gl::Program& prog) {
     GLint log_len = 0;
     glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &log_len);
 
-    OSMV_ASSERT_ALWAYS(log_len >= 0);
+    OSC_ASSERT_ALWAYS(log_len >= 0);
 
     std::vector<GLchar> errmsg(static_cast<size_t>(log_len));
     glGetProgramInfoLog(prog, static_cast<GLsizei>(errmsg.size()), nullptr, errmsg.data());
@@ -88,9 +88,9 @@ void gl::assert_no_errors(char const* comment, char const* file, int line, char 
         return;
     }
 
-    osmv::log::error("OpenGL error detected: backtrace:");
-    osmv::write_backtrace_to_log(osmv::log::level::err);
-    osmv::log::error("throwing the OpenGL error as an exception");
+    osc::log::error("OpenGL error detected: backtrace:");
+    osc::write_backtrace_to_log(osc::log::level::err);
+    osc::log::error("throwing the OpenGL error as an exception");
 
     std::vector<GLenum> errors;
 

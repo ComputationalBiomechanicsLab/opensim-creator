@@ -10,7 +10,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osmv {
+namespace osc {
     void draw_component_selection_widget(
         SimTK::State const& state,
         OpenSim::Component const* current_selection,

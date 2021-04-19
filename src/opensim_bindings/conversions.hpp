@@ -2,7 +2,7 @@
 
 #include <SimTKcommon.h>
 
-namespace osmv {
+namespace osc {
     [[nodiscard]] inline SimTK::Vec3 stk_vec3_from(float v[3]) noexcept {
         return {
             static_cast<double>(v[0]),

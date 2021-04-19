@@ -14,11 +14,11 @@ namespace SimTK {
     class State;
 }
 
-namespace osmv {
+namespace osc {
     struct Gpu_cache;
 }
 
-namespace osmv {
+namespace osc {
     using ModelViewerWidgetFlags = int;
     enum ModelViewerWidgetFlags_ {
         ModelViewerWidgetFlags_None = 0,

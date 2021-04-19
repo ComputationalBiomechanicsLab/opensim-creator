@@ -10,7 +10,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
     struct Add_moment_arm_plot_modal_state final {
         std::vector<OpenSim::Muscle const*> muscles_scratch;
         std::vector<OpenSim::Coordinate const*> coords_scratch;

@@ -17,13 +17,13 @@
 #include <optional>
 #include <string>
 
-using namespace osmv;
+using namespace osc;
 
 static void do_open_file_via_dialog() {
     nfdchar_t* outpath = nullptr;
 
     nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
-    OSMV_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
     if (result == NFD_OKAY) {
         Application::current().request_screen_transition<Loading_screen>(outpath);
@@ -33,7 +33,7 @@ static void do_open_file_via_dialog() {
 static std::optional<std::filesystem::path> prompt_save_single_file() {
     nfdchar_t* outpath = nullptr;
     nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
-    OSMV_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
     return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
 }
@@ -96,15 +96,15 @@ static void save_model(OpenSim::Model& model, std::string const& save_loc) {
     }
 }
 
-void osmv::main_menu_new() {
+void osc::main_menu_new() {
     Application::current().request_screen_transition<Model_editor_screen>();
 }
 
-void osmv::main_menu_open() {
+void osc::main_menu_open() {
     do_open_file_via_dialog();
 }
 
-void osmv::main_menu_save(OpenSim::Model& model) {
+void osc::main_menu_save(OpenSim::Model& model) {
     std::optional<std::string> maybe_save_loc = try_get_save_location(model);
 
     if (maybe_save_loc) {
@@ -112,14 +112,14 @@ void osmv::main_menu_save(OpenSim::Model& model) {
     }
 }
 
-void osmv::main_menu_save_as(OpenSim::Model& model) {
+void osc::main_menu_save_as(OpenSim::Model& model) {
     std::optional<std::string> maybe_path = map_optional(path2string, prompt_save_single_file());
     if (maybe_path) {
         save_model(model, *maybe_path);
     }
 }
 
-void osmv::draw_main_menu_file_tab(Main_menu_file_tab_state& st, OpenSim::Model* opened_model) {
+void osc::draw_main_menu_file_tab(Main_menu_file_tab_state& st, OpenSim::Model* opened_model) {
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("New", "Ctrl+N")) {
             main_menu_new();

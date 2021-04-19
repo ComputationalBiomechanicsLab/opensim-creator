@@ -11,7 +11,7 @@ namespace OpenSim {
     class Mesh;
 }
 
-namespace osmv {
+namespace osc {
     std::vector<std::filesystem::path> find_all_vtp_resources();
 
     struct Attach_geometry_modal_state final {

@@ -5,8 +5,8 @@
 #include <iostream>
 #include <mutex>
 
-using namespace osmv;
-using namespace osmv::log;
+using namespace osc;
+using namespace osc::log;
 
 class Stdout_sink final : public Sink {
     std::mutex mutex;
@@ -36,28 +36,28 @@ static std::shared_ptr<Circular_log_sink> create_traceback_sink() {
     return rv;
 }
 
-std::string_view const osmv::log::level::name_views[] OSMV_LOG_LVL_NAMES;
-char const* const osmv::log::level::name_cstrings[] OSMV_LOG_LVL_NAMES;
+std::string_view const osc::log::level::name_views[] OSC_LOG_LVL_NAMES;
+char const* const osc::log::level::name_cstrings[] OSC_LOG_LVL_NAMES;
 static std::shared_ptr<Logger> default_sink = create_default_sink();
 static std::shared_ptr<Circular_log_sink> traceback_sink = create_traceback_sink();
 
-std::shared_ptr<Logger> osmv::log::default_logger() noexcept {
+std::shared_ptr<Logger> osc::log::default_logger() noexcept {
     return default_sink;
 }
 
-Logger* osmv::log::default_logger_raw() noexcept {
+Logger* osc::log::default_logger_raw() noexcept {
     return default_logger().get();
 }
 
-level::Level_enum osmv::log::get_traceback_level() {
+level::Level_enum osc::log::get_traceback_level() {
     return traceback_sink->level();
 }
 
-void osmv::log::set_traceback_level(level::Level_enum lvl) {
+void osc::log::set_traceback_level(level::Level_enum lvl) {
     traceback_sink->set_level(lvl);
 }
 
 [[nodiscard]] Mutex_guarded<Circular_buffer<Owned_log_msg, max_traceback_log_messages>>&
-    osmv::log::get_traceback_log() {
+    osc::log::get_traceback_log() {
     return traceback_sink->storage;
 }

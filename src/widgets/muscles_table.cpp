@@ -7,9 +7,9 @@
 
 #include <imgui.h>
 
-static constexpr char const* names[] = OSMV_MUSCLE_SORT_NAMES;
+static constexpr char const* names[] = OSC_MUSCLE_SORT_NAMES;
 
-void osmv::draw_muscles_table(
+void osc::draw_muscles_table(
     Muscles_table_state& st,
     OpenSim::Model const& model,
     SimTK::State const& stkst,
@@ -106,7 +106,7 @@ void osmv::draw_muscles_table(
     }
 
     // sort muscle list
-    OSMV_ASSERT(st.sort_choice < MusclesTableSortChoice_NUM_CHOICES);
+    OSC_ASSERT(st.sort_choice < MusclesTableSortChoice_NUM_CHOICES);
     switch (st.sort_choice) {
     case MusclesTableSortChoice_Length: {
         std::sort(st.muscles.begin(), st.muscles.end(), [&stkst](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {

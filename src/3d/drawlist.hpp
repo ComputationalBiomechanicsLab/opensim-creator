@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-namespace osmv {
+namespace osc {
     class Drawlist final {
         friend class Renderer;
         friend void optimize(Drawlist&) noexcept;

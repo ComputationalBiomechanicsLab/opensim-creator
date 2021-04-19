@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-void osmv::draw_component_selection_widget(
+void osc::draw_component_selection_widget(
     SimTK::State const& state,
     OpenSim::Component const* current_selection,
     std::function<void(OpenSim::Component const*)> const& on_selection_changed) {

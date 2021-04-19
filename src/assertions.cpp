@@ -4,7 +4,7 @@
 #include <cstring>
 #include <stdexcept>
 
-void osmv::on_assertion_failure(char const* failing_code, char const* file, unsigned int line) noexcept {
+void osc::on_assertion_failure(char const* failing_code, char const* file, unsigned int line) noexcept {
     char buf[512];
     std::snprintf(buf, sizeof(buf), "%s:%u: Assertion '%s' failed", file, line, failing_code);
     try {

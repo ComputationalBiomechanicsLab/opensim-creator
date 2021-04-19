@@ -10,14 +10,14 @@
 #include <string_view>
 #include <vector>
 
-namespace osmv::log {
+namespace osc::log {
     // this implementation is a gruesome simplification of spdlog: go read spdlog
     // sources if you want to see good software engineering
 
     namespace level {
         enum Level_enum { trace = 0, debug, info, warn, err, critical, off, NUM_LEVELS };
 
-#define OSMV_LOG_LVL_NAMES                                                                                             \
+#define OSC_LOG_LVL_NAMES                                                                                             \
     { "trace", "debug", "info", "warning", "error", "critical", "off" }
 
         extern std::string_view const name_views[];

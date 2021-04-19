@@ -4,7 +4,7 @@
 
 #include <SDL_events.h>
 
-namespace osmv {
+namespace osc {
     class Opengl_test_screen final : public Screen {
         struct Impl;
         Impl* impl;

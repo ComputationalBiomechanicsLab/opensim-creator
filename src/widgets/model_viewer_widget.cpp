@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 
 static bool is_subcomponent_of(OpenSim::Component const* parent, OpenSim::Component const* c) {
     for (auto* ptr = c; ptr != nullptr; ptr = ptr->hasOwner() ? &ptr->getOwner() : nullptr) {
@@ -62,7 +62,7 @@ static void apply_standard_rim_coloring(
     });
 }
 
-struct osmv::Model_viewer_widget::Impl final {
+struct osc::Model_viewer_widget::Impl final {
     Gpu_cache& cache;
     Render_target render_target{100, 100, Application::current().samples()};
     Renderer renderer;
@@ -350,7 +350,7 @@ void Model_viewer_widget::draw(
                     // floor down *slightly* to prevent Z fighting from planes rendered from the
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
-                    rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                    rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
                     rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
 
                     return rv;
@@ -370,7 +370,7 @@ void Model_viewer_widget::draw(
                     // floor down *slightly* to prevent Z fighting from planes rendered from the
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
-                    rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+                    rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
                     rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
 
                     return rv;
@@ -409,7 +409,7 @@ void Model_viewer_widget::draw(
                     // floor down *slightly* to prevent Z fighting from planes rendered from the
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
-                    rv = glm::rotate(rv, osmv::pi_f / 2, {0.0, -1.0, 0.0});
+                    rv = glm::rotate(rv, osc::pi_f / 2, {0.0, -1.0, 0.0});
                     rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
 
                     return rv;

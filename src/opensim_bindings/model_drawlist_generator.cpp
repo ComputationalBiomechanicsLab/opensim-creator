@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-namespace osmv {
+namespace osc {
     struct Mesh_instance;
 }
 
-void osmv::generate_decoration_drawlist(
+void osc::generate_decoration_drawlist(
     OpenSim::Component const& root,
     SimTK::State const& state,
     OpenSim::ModelDisplayHints const& hints,

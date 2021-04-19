@@ -5,7 +5,7 @@
 #include <memory>
 #include <utility>
 
-namespace osmv {
+namespace osc {
     class Screen;
 }
 
@@ -15,7 +15,7 @@ namespace osmv {
 // of the UI's functionality (e.g. OpenGL, SDL, ImGui), and handling
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
-namespace osmv {
+namespace osc {
     class Application final {
         static Application* gCurrent;
 
@@ -28,7 +28,7 @@ namespace osmv {
         }
 
         [[nodiscard]] static Application& current() noexcept {
-            OSMV_ASSERT(gCurrent != nullptr);
+            OSC_ASSERT(gCurrent != nullptr);
             return *gCurrent;
         }
 
@@ -46,7 +46,7 @@ namespace osmv {
             start_render_loop(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        void request_screen_transition(std::unique_ptr<osmv::Screen>);
+        void request_screen_transition(std::unique_ptr<osc::Screen>);
 
         template<typename Screen, typename... Args>
         void request_screen_transition(Args&&... args) {

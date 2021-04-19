@@ -33,7 +33,7 @@
 #include <utility>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 
 namespace {
     // These static asserts are used in order to catch some basic low-level footguns
@@ -196,8 +196,8 @@ namespace {
     // - COLOR1: RGB passthrough (selection logic + rim alphas)
     struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("gouraud_mrt.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("gouraud_mrt.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("gouraud_mrt.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("gouraud_mrt.frag")));
 
         // vertex attrs
         static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
@@ -260,8 +260,8 @@ namespace {
     // useful for rendering quads etc.
     struct Colormapped_plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("colormapped_plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("colormapped_plain_texture.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("colormapped_plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("colormapped_plain_texture.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -291,8 +291,8 @@ namespace {
     // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("plain_texture.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_texture.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -321,8 +321,8 @@ namespace {
     // A specialized edge-detection shader for rim highlighting
     struct Edge_detection_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("edge_detect.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("edge_detect.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("edge_detect.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("edge_detect.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -353,8 +353,8 @@ namespace {
 
     struct Skip_msxaa_blitter_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("skip_msxaa_blitter.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("skip_msxaa_blitter.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("skip_msxaa_blitter.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("skip_msxaa_blitter.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -384,9 +384,9 @@ namespace {
     // uses a geometry shader to render normals as lines
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("draw_normals.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("draw_normals.frag")),
-            gl::Compile<gl::Geometry_shader>(osmv::config::shader_path("draw_normals.geom")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("draw_normals.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("draw_normals.frag")),
+            gl::Compile<gl::Geometry_shader>(osc::config::shader_path("draw_normals.geom")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
@@ -448,7 +448,7 @@ namespace {
     }
 }
 
-namespace osmv {
+namespace osc {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
         gl::Array_buffer vbo;
@@ -519,7 +519,7 @@ Mesh_storage::~Mesh_storage() noexcept {
 
 Mesh_on_gpu& Mesh_storage::lookup(Mesh_reference ref) const {
     size_t idx = ref.to_index();
-    OSMV_ASSERT(idx < impl->meshes.size());
+    OSC_ASSERT(idx < impl->meshes.size());
     return impl->meshes[idx];
 }
 
@@ -544,7 +544,7 @@ Texture_storage::~Texture_storage() noexcept {
 
 gl::Texture_2d& Texture_storage::lookup(Texture_reference ref) const {
     size_t idx = ref.to_index();
-    OSMV_ASSERT(idx < impl->textures.size());
+    OSC_ASSERT(idx < impl->textures.size());
     return impl->textures[idx];
 }
 
@@ -658,7 +658,7 @@ struct Render_target::Impl final {
                 gl::FramebufferRenderbuffer(
                     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8);
 
-                OSMV_ASSERT(gl::is_current_fbo_complete());
+                OSC_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
@@ -698,7 +698,7 @@ struct Render_target::Impl final {
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
-                OSMV_ASSERT(gl::is_current_fbo_complete());
+                OSC_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
@@ -727,7 +727,7 @@ struct Render_target::Impl final {
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
 
-                OSMV_ASSERT(gl::is_current_fbo_complete());
+                OSC_ASSERT(gl::is_current_fbo_complete());
 
                 gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 
@@ -803,7 +803,7 @@ static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2)
     }
 }
 
-void osmv::optimize(Drawlist& drawlist) noexcept {
+void osc::optimize(Drawlist& drawlist) noexcept {
     std::sort(drawlist.instances.begin(), drawlist.instances.end(), optimal_orderering);
 }
 
@@ -845,7 +845,7 @@ gl::Texture_2d& Render_target::main() noexcept {
 
 struct Renderer::Impl final {
     // debug quad
-    gl::Array_bufferT<Textured_vert> quad_vbo{osmv::shaded_textured_quad_verts().vert_data};
+    gl::Array_bufferT<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
     gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
     gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
     gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);

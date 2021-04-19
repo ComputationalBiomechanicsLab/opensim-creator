@@ -12,7 +12,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osmv {
+namespace osc {
     struct Model_actions_panel_state final {
         Added_body_modal_state abm;
         Select_2_pfs_modal_state select_2_pfs;

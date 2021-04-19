@@ -5,7 +5,7 @@
 #include <SDL_events.h>
 #include <filesystem>
 
-namespace osmv {
+namespace osc {
     // loading screen: screen shown when UI has just booted and is loading (e.g.) an osim file
     class Loading_screen final : public Screen {
         struct Impl;

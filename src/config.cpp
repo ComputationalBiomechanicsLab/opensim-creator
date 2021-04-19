@@ -24,7 +24,7 @@ struct App_config final {
 
 static App_config load_application_config() {
     // the "system-wide" application config is searched recursively by stepping
-    // up the directory tree, searching for `osmv.toml`.
+    // up the directory tree, searching for `osc.toml`.
     //
     // If it is found, then the values in that file are used. If not, then use
     // reasonable defaults.
@@ -33,19 +33,19 @@ static App_config load_application_config() {
     //       absolute path to the developer's resource dir into the config file
     //       so that devs don't have to copy things around while developing
 
-    fs::path p = osmv::current_exe_dir();
+    fs::path p = osc::current_exe_dir();
     bool exists = false;
     while (p.has_filename()) {
-        fs::path maybe_config = p / "osmv.toml";
+        fs::path maybe_config = p / "osc.toml";
         if (fs::exists(maybe_config)) {
             p = maybe_config;
             exists = true;
             break;
         }
-        // HACK: there is a file at "MacOS/osmv.toml", which is where the config
+        // HACK: there is a file at "MacOS/osc.toml", which is where the config
         // is relative to SDL_GetBasePath. current_exe_dir should be fixed
         // accordingly.
-        fs::path maybe_macos_config = p / "MacOS" / "osmv.toml";
+        fs::path maybe_macos_config = p / "MacOS" / "osc.toml";
         if (fs::exists(maybe_macos_config)) {
             p = maybe_macos_config;
             exists = true;
@@ -79,20 +79,20 @@ static App_config load_config() {
     return config;
 }
 
-std::filesystem::path osmv::config::resource_path(std::filesystem::path const& subpath) {
+std::filesystem::path osc::config::resource_path(std::filesystem::path const& subpath) {
     return load_config().resource_dir / subpath;
 }
 
 static std::filesystem::path const shaders_dir = "shaders";
-std::filesystem::path osmv::config::shader_path(char const* shader_name) {
+std::filesystem::path osc::config::shader_path(char const* shader_name) {
     return resource_path(shaders_dir / shader_name);
 }
 
 static fs::path get_recent_files_path() {
-    return osmv::user_data_dir() / "recent_files.txt";
+    return osc::user_data_dir() / "recent_files.txt";
 }
 
-static std::vector<osmv::config::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
+static std::vector<osc::config::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
     std::ifstream fd{p, std::ios::in};
 
     if (!fd) {
@@ -102,7 +102,7 @@ static std::vector<osmv::config::Recent_file> load_recent_files_file(std::filesy
         throw std::runtime_error{std::move(ss).str()};
     }
 
-    std::vector<osmv::config::Recent_file> rv;
+    std::vector<osc::config::Recent_file> rv;
     std::string line;
     while (std::getline(fd, line)) {
         std::istringstream ss{line};
@@ -127,7 +127,7 @@ static std::chrono::seconds unix_timestamp() {
     return std::chrono::seconds(std::time(nullptr));
 }
 
-std::vector<osmv::config::Recent_file> osmv::config::recent_files() {
+std::vector<osc::config::Recent_file> osc::config::recent_files() {
     fs::path recent_files_path = get_recent_files_path();
 
     if (!fs::exists(recent_files_path)) {
@@ -137,7 +137,7 @@ std::vector<osmv::config::Recent_file> osmv::config::recent_files() {
     return load_recent_files_file(recent_files_path);
 }
 
-void osmv::config::add_recent_file(std::filesystem::path const& p) {
+void osc::config::add_recent_file(std::filesystem::path const& p) {
     fs::path rfs_path = get_recent_files_path();
 
     // load existing list
@@ -171,7 +171,7 @@ void osmv::config::add_recent_file(std::filesystem::path const& p) {
     fd << unix_timestamp().count() << ' ' << fs::absolute(p) << std::endl;
 }
 
-bool osmv::config::should_use_multi_viewport() {
+bool osc::config::should_use_multi_viewport() {
     return load_config().use_multi_viewport;
 }
 
@@ -179,7 +179,7 @@ static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
     return a.filename() < b.filename();
 }
 
-std::vector<fs::path> osmv::config::example_osim_files() {
+std::vector<fs::path> osc::config::example_osim_files() {
     fs::path models_dir = resource_path("models");
 
     std::vector<fs::path> rv;

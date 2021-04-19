@@ -5,7 +5,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 
-void osmv::draw_reassign_socket_modal(
+void osc::draw_reassign_socket_modal(
     Reassign_socket_modal_state& st,
     char const* modal_name,
     OpenSim::Model const& model,

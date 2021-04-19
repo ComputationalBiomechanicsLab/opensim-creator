@@ -8,7 +8,7 @@
 // framerate throttling, exit handling, etc. etc.) from specific per-screen
 // concerns (e.g. drawing stuff, handling screen-specific events, etc.)
 
-namespace osmv {
+namespace osc {
     // basic state machine for a screen that may draw itself onto the
     // current window
     class Screen {

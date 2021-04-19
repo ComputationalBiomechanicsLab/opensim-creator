@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 // blank screen that shows the exception message in-UI
-namespace osmv {
+namespace osc {
     class Error_screen final : public Screen {
         struct Impl;
         Impl* impl;

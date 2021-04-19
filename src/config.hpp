@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace osmv::config {
+namespace osc::config {
     std::filesystem::path resource_path(std::filesystem::path const&);
 
     template<typename... Els>

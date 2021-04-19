@@ -9,7 +9,7 @@ namespace OpenSim {
     class Object;
 }
 
-namespace osmv {
+namespace osc {
     struct Reassign_socket_modal_state final {
         std::string error;
         char search[128]{};

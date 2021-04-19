@@ -12,7 +12,7 @@ namespace gl {
     struct Texture_2d;
 }
 
-namespace osmv {
+namespace osc {
     struct Untextured_vert;
     struct Textured_vert;
     class Drawlist;
@@ -28,7 +28,7 @@ namespace sdl {
 //
 // this API is designed with performance and power in mind, not convenience. Use a downstream
 // renderer (e.g. a specialized OpenSim model renderer) if you need something more convenient.
-namespace osmv {
+namespace osc {
 
     using DrawcallFlags = int;
     enum DrawcallFlags_ {

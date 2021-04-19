@@ -44,18 +44,18 @@ static std::filesystem::path get_current_exe_dir() {
     return convert_sdl_path_to_stdpath("SDL_GetBasePath", p.get());
 }
 
-std::filesystem::path const& osmv::current_exe_dir() {
+std::filesystem::path const& osc::current_exe_dir() {
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = get_current_exe_dir();
     return d;
 }
 
 static std::filesystem::path get_user_data_dir() {
-    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osmv"), SDL_free};
+    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
     return convert_sdl_path_to_stdpath("SDL_GetPrefPath", p.get());
 }
 
-std::filesystem::path const& osmv::user_data_dir() {
+std::filesystem::path const& osc::user_data_dir() {
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = get_user_data_dir();
     return d;
@@ -79,7 +79,7 @@ std::filesystem::path const& osmv::user_data_dir() {
 #include <unistd.h>
 
 // TODO
-void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
@@ -89,7 +89,7 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
     }
 
     for (int i = 0; i < size; ++i) {
-        osmv::log::log(lvl, "%s", messages[i]);
+        osc::log::log(lvl, "%s", messages[i]);
     }
 
     free(messages);
@@ -104,7 +104,7 @@ typedef struct _sig_ucontext {
     sigset_t uc_sigmask;
 } sig_ucontext_t;
 
-[[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
     sig_ucontext_t* uc = static_cast<sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
@@ -118,7 +118,7 @@ typedef struct _sig_ucontext {
 
     fprintf(
         stderr,
-        "osmv: critical error: signal %d (%s) received from OS: address is %p from %p\n",
+        "osc: critical error: signal %d (%s) received from OS: address is %p from %p\n",
         sig_num,
         strsignal(sig_num),
         info->si_addr,
@@ -144,17 +144,17 @@ typedef struct _sig_ucontext {
     exit(EXIT_FAILURE);
 }
 
-void osmv::install_backtrace_handler() {
+void osc::install_backtrace_handler() {
     struct sigaction sigact;
 
-    sigact.sa_sigaction = OSMV_critical_error_handler;
+    sigact.sa_sigaction = OSC_critical_error_handler;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
     // install segfault handler
     if (sigaction(SIGSEGV, &sigact, nullptr) != 0) {
         fprintf(
             stderr,
-            "osmv: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
+            "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
             SIGSEGV,
             strsignal(SIGSEGV));
     }
@@ -163,7 +163,7 @@ void osmv::install_backtrace_handler() {
     if (sigaction(SIGABRT, &sigact, nullptr) != 0) {
         fprintf(
             stderr,
-            "osmv: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
+            "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
             SIGABRT,
             strsignal(SIGABRT));
     }
@@ -174,7 +174,7 @@ void osmv::install_backtrace_handler() {
 #include <signal.h>  // sigaction(), struct sigaction, strsignal()
 #include <stdlib.h>  // exit(), free()
 
-void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
@@ -184,23 +184,23 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
     }
 
     for (int i = 0; i < size; ++i) {
-        osmv::log::log(lvl, "%s", messages[i]);
+        osc::log::log(lvl, "%s", messages[i]);
     }
 
     free(messages);
 }
 
-[[noreturn]] static void OSMV_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
-    osmv::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-    osmv::log::error("backtrace:");
-    osmv::write_backtrace_to_log(osmv::log::level::err);
+[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+    osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
+    osc::log::error("backtrace:");
+    osc::write_backtrace_to_log(osc::log::level::err);
     exit(EXIT_FAILURE);
 }
 
-void osmv::install_backtrace_handler() {
+void osc::install_backtrace_handler() {
     struct sigaction sigact;
 
-    sigact.sa_sigaction = OSMV_critical_error_handler;
+    sigact.sa_sigaction = OSC_critical_error_handler;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
     // enable SIGSEGV (segmentation fault) handler
@@ -218,7 +218,7 @@ void osmv::install_backtrace_handler() {
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
 #include <cinttypes>  // PRIXPTR
 
-void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
 
@@ -259,19 +259,19 @@ void osmv::write_backtrace_to_log(log::level::Level_enum lvl) {
     log::log(
         lvl,
         "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
-    log::log(lvl, "to analyze the backtrace in WinDbg: `ln osmv.exe+ADDR`");
+    log::log(lvl, "to analyze the backtrace in WinDbg: `ln osc.exe+ADDR`");
 
-    // in windbg: ln osmv.exe+ADDR
+    // in windbg: ln osc.exe+ADDR
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
 static LONG crash_handler(EXCEPTION_POINTERS* info) {
-    osmv::log::error("exception propagated to root of OSMV: might be a segfault?");
-    osmv::write_backtrace_to_log(osmv::log::level::err);
+    osc::log::error("exception propagated to root of OSC: might be a segfault?");
+    osc::write_backtrace_to_log(osc::log::level::err);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-void osmv::install_backtrace_handler() {
+void osc::install_backtrace_handler() {
     SetErrorMode(0);  // system default: display all errors
     SetUnhandledExceptionFilter(crash_handler);  // when the application crashes, call this handler
 }

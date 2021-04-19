@@ -12,10 +12,10 @@
 #include <array>
 #include <vector>
 
-using namespace osmv;
+using namespace osc;
 
 [[nodiscard]] static Textured_mesh generate_floor_quad() {
-    auto quad_verts = osmv::shaded_textured_quad_verts();
+    auto quad_verts = osc::shaded_textured_quad_verts();
     for (Textured_vert& v : quad_verts.vert_data) {
         v.texcoord *= 200.0f;
     }
@@ -73,7 +73,7 @@ template<size_t N>
     return Plain_mesh::from_raw_verts(points);
 }
 
-osmv::Gpu_cache::Gpu_cache() :
+osc::Gpu_cache::Gpu_cache() :
     storage{},
     filepath2mesh{},
 

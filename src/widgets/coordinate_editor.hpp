@@ -11,7 +11,7 @@ namespace SimTK {
     class State;
 }
 
-namespace osmv {
+namespace osc {
     struct Coordinate_editor_state final {
         char filter[64]{};
         bool sort_by_name = true;

@@ -9,10 +9,10 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
     struct Main_menu_file_tab_state final {
-        std::vector<std::filesystem::path> example_osims = osmv::config::example_osim_files();
-        std::vector<config::Recent_file> recent_files = osmv::config::recent_files();
+        std::vector<std::filesystem::path> example_osims = osc::config::example_osim_files();
+        std::vector<config::Recent_file> recent_files = osc::config::recent_files();
     };
 
     void main_menu_new();

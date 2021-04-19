@@ -9,7 +9,7 @@ static bool sort_by_name(OpenSim::Coordinate const* c1, OpenSim::Coordinate cons
     return c1->getName() < c2->getName();
 }
 
-static bool should_filter_out(osmv::Coordinate_editor_state& st, OpenSim::Coordinate const* c) {
+static bool should_filter_out(osc::Coordinate_editor_state& st, OpenSim::Coordinate const* c) {
     if (c->getName().find(st.filter) == c->getName().npos) {
         return true;
     }
@@ -30,7 +30,7 @@ static bool should_filter_out(osmv::Coordinate_editor_state& st, OpenSim::Coordi
     return true;
 }
 
-void osmv::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordinate const*>& out) {
+void osc::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordinate const*>& out) {
     OpenSim::CoordinateSet const& s = m.getCoordinateSet();
     int len = s.getSize();
     out.reserve(out.size() + static_cast<size_t>(len));
@@ -39,7 +39,7 @@ void osmv::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordin
     }
 }
 
-bool osmv::draw_coordinate_editor(Coordinate_editor_state& st, OpenSim::Model const& model, SimTK::State& stk_st) {
+bool osc::draw_coordinate_editor(Coordinate_editor_state& st, OpenSim::Model const& model, SimTK::State& stk_st) {
     // render coordinate filters
     {
         ImGui::Text("filters:");

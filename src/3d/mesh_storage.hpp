@@ -2,7 +2,7 @@
 
 #include "src/3d/gpu_data_reference.hpp"
 
-namespace osmv {
+namespace osc {
     struct Mesh_on_gpu;
     struct Untextured_vert;
     struct Textured_vert;
@@ -10,7 +10,7 @@ namespace osmv {
     struct Textured_mesh;
 }
 
-namespace osmv {
+namespace osc {
     class Mesh_storage final {
         struct Impl;
         Impl* impl;

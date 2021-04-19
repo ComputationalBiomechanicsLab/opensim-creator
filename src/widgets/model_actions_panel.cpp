@@ -16,7 +16,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <imgui.h>
 
-using namespace osmv;
+using namespace osc;
 
 Model_actions_panel_state::Model_actions_panel_state() : abm{}, select_2_pfs{} {
 }
@@ -90,7 +90,7 @@ static void render_actions_panel_content(
         }
 
         auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
-            OSMV_ASSERT(
+            OSC_ASSERT(
                 st.joint_idx_for_pfs_popup >= 0 &&
                 static_cast<size_t>(st.joint_idx_for_pfs_popup) < joint::prototypes().size());
             OpenSim::Joint const& prototype = *joint::prototypes()[static_cast<size_t>(st.joint_idx_for_pfs_popup)];
@@ -224,7 +224,7 @@ static void render_actions_panel_content(
     }
 }
 
-void osmv::draw_model_actions_panel(
+void osc::draw_model_actions_panel(
     Model_actions_panel_state& st,
     OpenSim::Model& model,
     std::function<void(OpenSim::Component*)> const& on_set_selection,

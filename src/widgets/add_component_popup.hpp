@@ -7,7 +7,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osmv {
+namespace osc {
     class Add_component_popup final {
     public:
         struct Impl;

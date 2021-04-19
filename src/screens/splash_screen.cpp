@@ -1,6 +1,6 @@
 #include "splash_screen.hpp"
 
-#include "osmv_config.hpp"
+#include "osc_build_config.hpp"
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
@@ -40,15 +40,15 @@
 #include <vector>
 
 namespace fs = std::filesystem;
-using namespace osmv;
+using namespace osc;
 
 namespace {
     //
     // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osmv::config::shader_path("plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osmv::config::shader_path("plain_texture.frag")));
+            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_texture.vert")),
+            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_texture.frag")));
 
         static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
         static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
@@ -78,11 +78,11 @@ namespace {
 struct Splash_screen::Impl final {
     Main_menu_file_tab_state mm_state;
     gl::Texture_2d logo =
-        osmv::load_tex(osmv::config::resource_path("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    gl::Texture_2d cz_logo = osmv::load_tex(
-        osmv::config::resource_path("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+        osc::load_tex(osc::config::resource_path("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d cz_logo = osc::load_tex(
+        osc::config::resource_path("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     gl::Texture_2d tud_logo =
-        osmv::load_tex(osmv::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+        osc::load_tex(osc::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     Gpu_cache cache;
     Drawlist drawlist;
     Polar_camera camera;
@@ -93,7 +93,7 @@ struct Splash_screen::Impl final {
     Render_target render_target{1, 1, 1};
     Renderer renderer;
     Plain_texture_shader pts;
-    gl::Array_bufferT<Textured_vert> quad_vbo{osmv::shaded_textured_quad_verts().vert_data};
+    gl::Array_bufferT<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
     gl::Vertex_array quad_vao = Plain_texture_shader::create_vao(quad_vbo);
 
     Impl() {
@@ -104,7 +104,7 @@ struct Splash_screen::Impl final {
             // floor down *slightly* to prevent Z fighting from planes rendered from the
             // model itself (the contact planes, etc.)
             rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
-            rv = glm::rotate(rv, osmv::pi_f / 2, {-1.0, 0.0, 0.0});
+            rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
             rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
 
             return rv;
@@ -116,12 +116,12 @@ struct Splash_screen::Impl final {
     }
 };
 
-// PIMPL forwarding for osmv::Splash_screen
+// PIMPL forwarding for osc::Splash_screen
 
-osmv::Splash_screen::Splash_screen() : impl{new Impl{}} {
+osc::Splash_screen::Splash_screen() : impl{new Impl{}} {
 }
 
-osmv::Splash_screen::~Splash_screen() noexcept {
+osc::Splash_screen::~Splash_screen() noexcept {
     delete impl;
 }
 
@@ -147,17 +147,17 @@ static bool on_keydown(SDL_KeyboardEvent const& e) {
     return false;
 }
 
-bool osmv::Splash_screen::on_event(SDL_Event const& e) {
+bool osc::Splash_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN) {
         return on_keydown(e.key);
     }
     return false;
 }
 
-void osmv::Splash_screen::draw() {
+void osc::Splash_screen::draw() {
     Application& app = Application::current();
 
-    constexpr glm::vec2 menu_dims = {700.0f, 700.0f};
+    constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
     glm::vec2 window_dims;
     {
         auto [w, h] = app.window_dimensions();
@@ -253,7 +253,7 @@ void osmv::Splash_screen::draw() {
                 config::Recent_file const& rf = *it;
                 ImGui::PushID(++id);
                 if (ImGui::Button(rf.path.filename().string().c_str())) {
-                    app.request_screen_transition<osmv::Loading_screen>(rf.path);
+                    app.request_screen_transition<osc::Loading_screen>(rf.path);
                 }
                 ImGui::PopID();
             }
@@ -268,7 +268,7 @@ void osmv::Splash_screen::draw() {
             for (fs::path const& ex : impl->mm_state.example_osims) {
                 ImGui::PushID(++id);
                 if (ImGui::Button(ex.filename().string().c_str())) {
-                    app.request_screen_transition<osmv::Loading_screen>(ex);
+                    app.request_screen_transition<osc::Loading_screen>(ex);
                 }
                 ImGui::PopID();
             }

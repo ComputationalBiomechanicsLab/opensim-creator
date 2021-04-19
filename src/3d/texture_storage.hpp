@@ -6,7 +6,7 @@ namespace gl {
     struct Texture_2d;
 }
 
-namespace osmv {
+namespace osc {
     class Texture_storage final {
         struct Impl;
         Impl* impl;

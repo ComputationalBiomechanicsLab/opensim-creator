@@ -9,24 +9,24 @@
 #include <memory>
 #include <string>
 
-osmv::Add_joint_modal::Add_joint_modal(std::string _name, std::unique_ptr<OpenSim::Joint> _prototype) :
+osc::Add_joint_modal::Add_joint_modal(std::string _name, std::unique_ptr<OpenSim::Joint> _prototype) :
     modal_name{std::move(_name)},
     joint_prototype{std::move(_prototype)} {
 
     std::copy(std::begin(default_name), std::end(default_name), std::begin(added_joint_name));
 }
 
-void osmv::Add_joint_modal::reset() {
+void osc::Add_joint_modal::reset() {
     parent_frame = nullptr;
     child_frame = nullptr;
     std::copy(std::begin(default_name), std::end(default_name), std::begin(added_joint_name));
 }
 
-void osmv::Add_joint_modal::show() {
+void osc::Add_joint_modal::show() {
     ImGui::OpenPopup(modal_name.c_str());
 }
 
-void osmv::Add_joint_modal::draw(
+void osc::Add_joint_modal::draw(
     OpenSim::Model const& model, std::function<void(std::unique_ptr<OpenSim::Joint>)> const& on_add) {
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();

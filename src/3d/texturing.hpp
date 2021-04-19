@@ -2,7 +2,7 @@
 
 #include "src/3d/gl.hpp"
 
-namespace osmv {
+namespace osc {
     gl::Texture_2d generate_chequered_floor_texture();
 
     enum Tex_flags {

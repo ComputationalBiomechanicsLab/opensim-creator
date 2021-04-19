@@ -1,6 +1,6 @@
 #include "application.hpp"
 
-#include "osmv_config.hpp"
+#include "osc_build_config.hpp"
 #include "src/3d/gl.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
@@ -44,17 +44,17 @@
 
 using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
-using namespace osmv;
+using namespace osc;
 
 // globals
-osmv::Application* osmv::Application::gCurrent = nullptr;
+osc::Application* osc::Application::gCurrent = nullptr;
 
 struct ImGuiContext;
 
 namespace igx {
     struct Context final {
-        std::string default_ini = osmv::config::resource_path("imgui_base_config.ini").string();
-        std::string user_ini = (osmv::user_data_dir() / "imgui.ini").string();
+        std::string default_ini = osc::config::resource_path("imgui_base_config.ini").string();
+        std::string user_ini = (osc::user_data_dir() / "imgui.ini").string();
 
         ImGuiContext* handle;
 
@@ -71,7 +71,7 @@ namespace igx {
 
         void configure_context(ImGuiIO& io) {
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-            if (osmv::config::should_use_multi_viewport()) {
+            if (osc::config::should_use_multi_viewport()) {
                 io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
             }
         }
@@ -242,7 +242,7 @@ static void glOnDebugMessage(
 
     // if an error is about to be thrown, dump a stacktrace into the logs so that
     // downstream devs/users can potentially diagnose what's happening
-    osmv::write_backtrace_to_log(osmv::log::level::err);
+    osc::write_backtrace_to_log(osc::log::level::err);
 
     // throw the exception from this thread
     //
@@ -261,7 +261,7 @@ static int get_max_multisamples() {
 
     // OpenGL spec: "the value must be at least 4"
     // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-    OSMV_ASSERT(v > 4);
+    OSC_ASSERT(v > 4);
 
     return v;
 }
@@ -409,7 +409,7 @@ public:
             // careful about setting resolution, position, etc. - some people have *very* shitty
             // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
             // be <700 px high)
-            static constexpr char const* title = "osmv";
+            static constexpr char const* title = "osc";
             static constexpr int x = SDL_WINDOWPOS_CENTERED;
             static constexpr int y = SDL_WINDOWPOS_CENTERED;
             static constexpr int width = 800;
@@ -472,13 +472,13 @@ public:
         // find out the maximum number of samples the OpenGL backend supports
         max_samples{get_max_multisamples()},
 
-        // set the number of samples multisampled renderers in osmv should use
+        // set the number of samples multisampled renderers in osc should use
         samples{std::min(max_samples, default_samples)},
 
         // initialize ImGui
         imgui_ctx{},
         imgui_sdl2_ctx{window, gl},
-        imgui_sdl2_ogl2_ctx{OSMV_GLSL_VERSION} {
+        imgui_sdl2_ogl2_ctx{OSC_GLSL_VERSION} {
     }
 
     void internal_start_render_loop(std::unique_ptr<Screen> s) {
@@ -509,10 +509,10 @@ public:
                     }
                 }
 
-                // osmv::Screen: feed event into the currently-showing osmv screen
+                // osc::Screen: feed event into the currently-showing osc screen
                 current_screen->on_event(e);
 
-                // osmv::Screen: handle any possible indirect side-effects the Screen's
+                // osc::Screen: handle any possible indirect side-effects the Screen's
                 //               `on_event` handler may have had on the application state
                 if (should_quit) {
                     return;
@@ -523,10 +523,10 @@ public:
                 }
             }
 
-            // osmv::Screen: run `tick`
+            // osc::Screen: run `tick`
             current_screen->tick();
 
-            // osmv::Screen: handle any possible indirect side-effects the Screen's
+            // osc::Screen: handle any possible indirect side-effects the Screen's
             //               `on_event` handler may have had on the application state
             if (should_quit) {
                 return;
@@ -548,7 +548,7 @@ public:
             ImGui::DockSpaceOverViewport(
                 ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
 
-            // osmv::Screen: call current screen's `draw` method
+            // osc::Screen: call current screen's `draw` method
             try {
                 current_screen->draw();
             } catch (std::bad_alloc const&) {
@@ -565,7 +565,7 @@ public:
 
                 gl::UseProgram();
 
-                imgui_sdl2_ogl2_ctx.reset(OSMV_GLSL_VERSION);
+                imgui_sdl2_ogl2_ctx.reset(OSC_GLSL_VERSION);
                 imgui_sdl2_ctx.reset(window, gl);
                 imgui_ctx.reset();
 
@@ -578,7 +578,7 @@ public:
             //            ImGUI implementation.
             gl::UseProgram();
 
-            // NOTE: osmv::Screen side-effects:
+            // NOTE: osc::Screen side-effects:
             //
             // - The screen's `draw` method *may* have had indirect side-effects on the
             //   application state
@@ -607,7 +607,7 @@ public:
             //       for software throttling
             SDL_GL_SwapWindow(window);
 
-            // osmv::Screen: handle any possible indirect side-effects the Screen's
+            // osc::Screen: handle any possible indirect side-effects the Screen's
             //               `on_event` handler may have had on the application state
             if (should_quit) {
                 return;

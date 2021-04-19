@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <limits>
 
-namespace osmv {
+namespace osc {
     // a soft, non-owned, reference to a mesh
     //
     // users of this class are expected to know the actual lifetime of the mesh
@@ -50,7 +50,7 @@ namespace osmv {
         }
 
         [[nodiscard]] constexpr size_t to_index() const noexcept {
-            OSMV_ASSERT(is_valid());
+            OSC_ASSERT(is_valid());
             return static_cast<size_t>(id);
         }
     };
@@ -58,7 +58,7 @@ namespace osmv {
     class Mesh_reference : public Gpu_data_reference<short> {
     public:
         [[nodiscard]] static constexpr Mesh_reference from_index(size_t idx) noexcept {
-            OSMV_ASSERT(idx < std::numeric_limits<value_type>::max());
+            OSC_ASSERT(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
         }
 
@@ -70,7 +70,7 @@ namespace osmv {
     class Texture_reference : public Gpu_data_reference<short> {
     public:
         [[nodiscard]] static constexpr Texture_reference from_index(size_t idx) noexcept {
-            OSMV_ASSERT(idx < std::numeric_limits<value_type>::max());
+            OSC_ASSERT(idx < std::numeric_limits<value_type>::max());
             return {static_cast<value_type>(idx)};
         }
 
