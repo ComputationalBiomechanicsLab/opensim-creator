@@ -330,7 +330,7 @@ std::optional<osc::ui::property_editor::Response>
         std::string const& comment = prop.getComment();
         if (!comment.empty()) {
             ImGui::SameLine();
-            draw_help_marker(prop.getComment().c_str());
+            ui::help_marker::draw(prop.getComment().c_str());
         }
     }
     ImGui::NextColumn();
@@ -352,8 +352,7 @@ std::optional<osc::ui::property_editor::Response>
     return rv;
 }
 
-std::optional<osc::ui::properties_editor::Response>
-    osc::ui::properties_editor::draw(State& st, OpenSim::Object& obj) {
+std::optional<osc::ui::properties_editor::Response> osc::ui::properties_editor::draw(State& st, OpenSim::Object& obj) {
 
     int num_props = obj.getNumProperties();
     OSC_ASSERT(num_props >= 0);

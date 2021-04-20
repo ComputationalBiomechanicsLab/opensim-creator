@@ -657,7 +657,7 @@ static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim
     ImGui::Columns(2);
     ImGui::Text("add contact geometry");
     ImGui::SameLine();
-    draw_help_marker(
+    ui::help_marker::draw(
         "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
     ImGui::NextColumn();
 
@@ -858,14 +858,14 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::Text("hierarchy:");
     ImGui::SameLine();
-    draw_help_marker("Where the selected component is in the model's component hierarchy");
+    ui::help_marker::draw("Where the selected component is in the model's component hierarchy");
     ImGui::Separator();
     draw_selection_breadcrumbs(impl);
 
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("top-level attributes:");
     ImGui::SameLine();
-    draw_help_marker("Top-level properties on the OpenSim::Component itself");
+    ui::help_marker::draw("Top-level properties on the OpenSim::Component itself");
     ImGui::Separator();
     draw_top_level_editor(impl);
 
@@ -873,7 +873,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("contextual actions:");
     ImGui::SameLine();
-    draw_help_marker("Actions that are specific to the type of OpenSim::Component that is currently selected");
+    ui::help_marker::draw("Actions that are specific to the type of OpenSim::Component that is currently selected");
     ImGui::Separator();
     draw_contextual_actions(impl);
 
@@ -886,7 +886,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("properties:");
     ImGui::SameLine();
-    draw_help_marker(
+    ui::help_marker::draw(
         "Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
     ImGui::Separator();
     {
@@ -902,7 +902,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
     ImGui::Text("sockets:");
     ImGui::SameLine();
-    draw_help_marker(
+    ui::help_marker::draw(
         "What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
     ImGui::Separator();
     draw_socket_editor(impl);

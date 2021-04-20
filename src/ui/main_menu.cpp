@@ -134,7 +134,7 @@ void osc::ui::main_menu::about_tab::draw() {
 
         ImGui::Text("ImGui demo");
         ImGui::SameLine();
-        draw_help_marker(
+        ui::help_marker::draw(
             "shows the standard ImGui demo screen (ImGui::ShowDemoWindow). Useful for finding an ImGui feature.");
         ImGui::NextColumn();
         int id = 0;
@@ -147,7 +147,7 @@ void osc::ui::main_menu::about_tab::draw() {
 
         ImGui::Text("OpenGL experiments");
         ImGui::SameLine();
-        draw_help_marker(
+        ui::help_marker::draw(
             "opens a test screen for low-level OpenGL features - you probably don't care about this, but it's useful for testing hardware features in prod");
         ImGui::NextColumn();
         ImGui::PushID(id++);
@@ -159,7 +159,7 @@ void osc::ui::main_menu::about_tab::draw() {
 
         ImGui::Text("Debug mode");
         ImGui::SameLine();
-        draw_help_marker(
+        ui::help_marker::draw(
             "Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ImGui::NextColumn();
         {
