@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/widgets/properties_editor.hpp"
+#include "src/ui/properties_editor.hpp"
 
 #include <memory>
 #include <utility>
@@ -13,7 +13,7 @@ namespace OpenSim {
     class PhysicalFrame;
 }
 
-namespace osc::widgets::add_component {
+namespace osc::widgets::add_component_popup {
     std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Component& c);
 
     struct State final {

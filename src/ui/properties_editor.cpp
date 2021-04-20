@@ -1,8 +1,8 @@
 #include "properties_editor.hpp"
 
 #include "src/assertions.hpp"
-#include "src/widgets/help_marker.hpp"
-#include "src/widgets/lockable_f3_editor.hpp"
+#include "src/ui/help_marker.hpp"
+#include "src/ui/lockable_f3_editor.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>

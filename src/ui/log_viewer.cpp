@@ -1,4 +1,4 @@
-#include "log_viewer_widget.hpp"
+#include "log_viewer.hpp"
 
 #include "src/log.hpp"
 

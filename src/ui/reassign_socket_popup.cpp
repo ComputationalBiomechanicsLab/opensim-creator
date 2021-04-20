@@ -1,4 +1,4 @@
-#include "reassign_socket_modal.hpp"
+#include "reassign_socket_popup.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentSocket.h>

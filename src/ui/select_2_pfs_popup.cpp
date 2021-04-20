@@ -1,4 +1,4 @@
-#include "select_2_pfs_modal.hpp"
+#include "select_2_pfs_popup.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>

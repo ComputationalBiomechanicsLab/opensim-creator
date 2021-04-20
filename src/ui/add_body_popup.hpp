@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/assertions.hpp"
-#include "src/widgets/attach_geometry_modal.hpp"
+#include "src/ui/attach_geometry_popup.hpp"
 
 #include <memory>
 #include <optional>
@@ -14,10 +14,10 @@ namespace OpenSim {
     class Joint;
 }
 
-namespace osc::widgets::add_body {
+namespace osc::widgets::add_body_popup {
     struct State {
         struct {
-            attach_geometry::State state;
+            attach_geometry_popup::State state;
             std::unique_ptr<OpenSim::Mesh> selected = nullptr;
         } attach_geom;
 

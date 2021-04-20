@@ -1,4 +1,4 @@
-#include "component_hierarchy_widget.hpp"
+#include "component_hierarchy.hpp"
 
 #include "src/assertions.hpp"
 

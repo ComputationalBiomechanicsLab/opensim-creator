@@ -1,9 +1,9 @@
-#include "add_body_modal.hpp"
+#include "add_body_popup.hpp"
 
 #include "src/opensim_bindings/conversions.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
-#include "src/widgets/help_marker.hpp"
-#include "src/widgets/lockable_f3_editor.hpp"
+#include "src/ui/help_marker.hpp"
+#include "src/ui/lockable_f3_editor.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -16,7 +16,7 @@
 using namespace osc;
 
 static std::unique_ptr<OpenSim::Joint>
-    make_joint(osc::widgets::add_body::State& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
+    make_joint(osc::widgets::add_body_popup::State& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
 
     std::unique_ptr<OpenSim::Joint> copy{joint_prototype.clone()};
     copy->setName(st.joint_name);
@@ -47,8 +47,8 @@ static std::unique_ptr<OpenSim::Joint>
     return copy;
 }
 
-std::optional<osc::widgets::add_body::New_body>
-    osc::widgets::add_body::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
+std::optional<osc::widgets::add_body_popup::New_body>
+    osc::widgets::add_body_popup::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
 
     // center the modal
     {
@@ -159,7 +159,7 @@ std::optional<osc::widgets::add_body::New_body>
             ImGui::OpenPopup(attach_modal_name);
         }
 
-        if (auto attached = widgets::attach_geometry::draw(st.attach_geom.state, attach_modal_name); attached) {
+        if (auto attached = widgets::attach_geometry_popup::draw(st.attach_geom.state, attach_modal_name); attached) {
             st.attach_geom.selected = std::move(attached);
         }
     }

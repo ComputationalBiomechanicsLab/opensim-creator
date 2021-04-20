@@ -18,8 +18,8 @@
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
 #include "src/utils/scope_guard.hpp"
-#include "src/widgets/main_menu_about_tab.hpp"
-#include "src/widgets/main_menu_file_tab.hpp"
+#include "src/ui/main_menu_about_tab.hpp"
+#include "src/ui/main_menu_file_tab.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>

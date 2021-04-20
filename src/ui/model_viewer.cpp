@@ -1,4 +1,4 @@
-#include "model_viewer_widget.hpp"
+#include "model_viewer.hpp"
 
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"

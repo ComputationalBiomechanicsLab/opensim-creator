@@ -9,23 +9,23 @@
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/ui/add_body_popup.hpp"
+#include "src/ui/attach_geometry_popup.hpp"
+#include "src/ui/component_details.hpp"
+#include "src/ui/component_hierarchy.hpp"
+#include "src/ui/help_marker.hpp"
+#include "src/ui/log_viewer.hpp"
+#include "src/ui/main_menu_about_tab.hpp"
+#include "src/ui/main_menu_file_tab.hpp"
+#include "src/ui/model_actions.hpp"
+#include "src/ui/model_viewer.hpp"
+#include "src/ui/properties_editor.hpp"
+#include "src/ui/reassign_socket_popup.hpp"
+#include "src/ui/select_2_pfs_popup.hpp"
 #include "src/utils/circular_buffer.hpp"
 #include "src/utils/file_change_poller.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/sdl_wrapper.hpp"
-#include "src/widgets/add_body_modal.hpp"
-#include "src/widgets/attach_geometry_modal.hpp"
-#include "src/widgets/component_details.hpp"
-#include "src/widgets/component_hierarchy_widget.hpp"
-#include "src/widgets/help_marker.hpp"
-#include "src/widgets/log_viewer_widget.hpp"
-#include "src/widgets/main_menu_about_tab.hpp"
-#include "src/widgets/main_menu_file_tab.hpp"
-#include "src/widgets/model_actions_panel.hpp"
-#include "src/widgets/model_viewer_widget.hpp"
-#include "src/widgets/properties_editor.hpp"
-#include "src/widgets/reassign_socket_modal.hpp"
-#include "src/widgets/select_2_pfs_modal.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -268,10 +268,10 @@ struct Model_editor_screen::Impl final {
     // state of any sub-panels the editor screen draws
     struct {
         Main_menu_file_tab_state main_menu_tab;
-        widgets::add_body::State abm;
+        widgets::add_body_popup::State abm;
         widgets::properties_editor::State properties_editor;
         widgets::reassign_socket::State reassign_socket;
-        widgets::attach_geometry::State attach_geometry_modal;
+        widgets::attach_geometry_popup::State attach_geometry_modal;
         widgets::select_2_pfs::State select_2_pfs;
         widgets::model_actions::State model_actions_panel;
         widgets::log_viewer::State log_viewer;
@@ -476,7 +476,7 @@ static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenS
         }
     }
 
-    if (auto attached = attach_geometry::draw(impl.ui.attach_geometry_modal, modal_name); attached) {
+    if (auto attached = attach_geometry_popup::draw(impl.ui.attach_geometry_modal, modal_name); attached) {
         impl.before_modify_selection();
         selection.updProperty_attached_geometry().clear();
         selection.attachGeometry(attached.release());

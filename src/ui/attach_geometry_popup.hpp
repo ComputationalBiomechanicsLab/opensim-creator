@@ -13,7 +13,7 @@ namespace osc {
     std::vector<std::filesystem::path> find_all_vtp_resources();
 }
 
-namespace osc::widgets::attach_geometry {
+namespace osc::widgets::attach_geometry_popup {
     struct State final {
         std::vector<std::filesystem::path> vtps = find_all_vtp_resources();
         std::vector<std::filesystem::path> recent_user_choices = {};

@@ -1,8 +1,8 @@
 #include "add_component_popup.hpp"
 
 #include "src/assertions.hpp"
-#include "src/widgets/help_marker.hpp"
-#include "src/widgets/properties_editor.hpp"
+#include "src/ui/help_marker.hpp"
+#include "src/ui/properties_editor.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -14,7 +14,7 @@
 using namespace osc;
 using namespace osc::widgets;
 
-std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component::get_pf_sockets(OpenSim::Component& c) {
+std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component_popup::get_pf_sockets(OpenSim::Component& c) {
     std::vector<OpenSim::AbstractSocket const*> rv;
     for (std::string name : c.getSocketNames()) {
         OpenSim::AbstractSocket const& sock = c.getSocket(name);
@@ -25,14 +25,14 @@ std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component::get_pf_
     return rv;
 }
 
-[[nodiscard]] static bool all_sockets_assigned(add_component::State const& st) noexcept {
+[[nodiscard]] static bool all_sockets_assigned(add_component_popup::State const& st) noexcept {
     return std::all_of(st.physframe_connectee_choices.begin(), st.physframe_connectee_choices.end(), [](auto* ptr) {
         return ptr != nullptr;
     });
 }
 
 std::unique_ptr<OpenSim::Component>
-    osc::widgets::add_component::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
+    osc::widgets::add_component_popup::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
 
     // center the modal
     {

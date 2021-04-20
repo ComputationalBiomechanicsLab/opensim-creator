@@ -2,7 +2,7 @@
 
 #include "src/application.hpp"
 #include "src/screens/splash_screen.hpp"
-#include "src/widgets/log_viewer_widget.hpp"
+#include "src/ui/log_viewer.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
