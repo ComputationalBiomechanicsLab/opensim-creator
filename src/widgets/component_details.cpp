@@ -1,4 +1,4 @@
-#include "component_selection_widget.hpp"
+#include "component_details.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Array.h>
@@ -10,14 +10,14 @@
 #include <string>
 #include <vector>
 
-void osc::draw_component_selection_widget(
-    SimTK::State const& state,
-    OpenSim::Component const* current_selection,
-    std::function<void(OpenSim::Component const*)> const& on_selection_changed) {
+osc::widgets::component_details::Response
+    osc::widgets::component_details::draw(SimTK::State const& state, OpenSim::Component const* current_selection) {
+
+    Response rv;
 
     if (!current_selection) {
         ImGui::Text("(nothing selected)");
-        return;
+        return rv;
     }
 
     OpenSim::Component const& c = *current_selection;
@@ -135,10 +135,13 @@ void osc::draw_component_selection_widget(
             std::string const& cp = c.getSocket(sn).getConnecteePath();
             ImGui::Text("%s", cp.c_str());
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                on_selection_changed(&c.getComponent(cp));
+                rv.type = SelectionChanged;
+                rv.ptr = &c.getComponent(cp);
             }
             ImGui::NextColumn();
         }
         ImGui::Columns();
     }
+
+    return rv;
 }

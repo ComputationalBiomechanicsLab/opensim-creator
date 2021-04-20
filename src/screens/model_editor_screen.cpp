@@ -15,8 +15,8 @@
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/widgets/add_body_modal.hpp"
 #include "src/widgets/attach_geometry_modal.hpp"
+#include "src/widgets/component_details.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
-#include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/help_marker.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
 #include "src/widgets/main_menu_about_tab.hpp"
@@ -26,7 +26,6 @@
 #include "src/widgets/properties_editor.hpp"
 #include "src/widgets/reassign_socket_modal.hpp"
 #include "src/widgets/select_2_pfs_modal.hpp"
-#include "src/widgets/select_component.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -208,6 +207,50 @@ struct Undo_redo_entry final {
     }
 };
 
+// popup for selecting a component of the specified type
+namespace osc::widgets::select_component {
+    struct State final {};
+
+    // returns non-nullptr if user selects a component (that derives from) the specified type
+    //
+    // expects the caller to handle ImGui::OpenPopup
+    template<typename T>
+    T const* draw(State& st, char const* modal_name, OpenSim::Component const& root) {
+
+        // center the modal
+        {
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(512, 0));
+        }
+
+        // try to show modal
+        if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            // modal not showing
+            return nullptr;
+        }
+
+        T const* selected = nullptr;
+
+        ImGui::BeginChild("first", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+        for (T const& c : root.getComponentList<T>()) {
+            if (ImGui::Button(c.getName().c_str())) {
+                selected = &c;
+            }
+        }
+        ImGui::EndChild();
+
+        if (selected || ImGui::Button("cancel")) {
+            st = {};  // reset user inputs
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+
+        return selected;
+    }
+}
+
 struct Model_editor_screen::Impl final {
     // model + state being edited by the user
     Model_ui_state ms;
@@ -225,13 +268,13 @@ struct Model_editor_screen::Impl final {
     // state of any sub-panels the editor screen draws
     struct {
         Main_menu_file_tab_state main_menu_tab;
-        Added_body_modal_state abm;
-        Properties_editor_state properties_editor;
-        Reassign_socket_modal_state reassign_socket;
-        Attach_geometry_modal_state attach_geometry_modal;
-        Select_2_pfs_modal_state select_2_pfs;
-        Model_actions_panel_state model_actions_panel;
-        Log_viewer_widget_state log_viewer;
+        widgets::add_body::State abm;
+        widgets::properties_editor::State properties_editor;
+        widgets::reassign_socket::State reassign_socket;
+        widgets::attach_geometry::State attach_geometry_modal;
+        widgets::select_2_pfs::State select_2_pfs;
+        widgets::model_actions::State model_actions_panel;
+        widgets::log_viewer::State log_viewer;
     } ui;
 
     // poller that checks (with debouncing) when model being edited has changed on the filesystem
@@ -433,14 +476,12 @@ static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenS
         }
     }
 
-    auto on_mesh_add = [&impl, &selection](std::unique_ptr<OpenSim::Mesh> m) {
+    if (auto attached = attach_geometry::draw(impl.ui.attach_geometry_modal, modal_name); attached) {
         impl.before_modify_selection();
         selection.updProperty_attached_geometry().clear();
-        selection.attachGeometry(m.release());
+        selection.attachGeometry(attached.release());
         impl.after_modify_selection();
-    };
-
-    draw_attach_geom_modal_if_opened(impl.ui.attach_geometry_modal, modal_name, on_mesh_add);
+    }
     ImGui::NextColumn();
 
     ImGui::Text("offset frame");
@@ -627,9 +668,9 @@ static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim
             ImGui::OpenPopup("select contact geometry");
         }
 
-        select_component::State s;
+        widgets::select_component::State s;
         OpenSim::ContactGeometry const* added =
-            select_component::draw<OpenSim::ContactGeometry>(s, "select contact geometry", impl.model());
+            widgets::select_component::draw<OpenSim::ContactGeometry>(s, "select contact geometry", impl.model());
 
         if (added) {
             impl.before_modify_selection();
@@ -652,14 +693,14 @@ static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim
             params.PropertyIndex_viscous_friction,
         };
 
-        Properties_editor_state st{};
-        draw_properties_editor_for_props_with_indices(
-            st,
-            params,
-            easy_to_handle_props.data(),
-            easy_to_handle_props.size(),
-            [&impl]() { impl.before_modify_model(); },
-            [&impl]() { impl.after_modify_model(); });
+        properties_editor::State st;
+        auto maybe_updater = properties_editor::draw(st, params, easy_to_handle_props);
+
+        if (maybe_updater) {
+            impl.before_modify_model();
+            maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
+            impl.after_modify_model();
+        }
     }
 }
 
@@ -712,6 +753,7 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
         ImGui::Text("cannot draw socket editor: selection is blank (shouldn't be)");
         return;
     }
+
     OpenSim::Component& selection = *impl.selection();
 
     std::vector<std::string> socknames = selection.getSocketNames();
@@ -722,6 +764,9 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
         ImGui::PopStyleColor();
         return;
     }
+
+    // else: it has sockets with names, list each socket and provide the user
+    //       with the ability to reassign the socket's connectee
 
     ImGui::Columns(2);
     for (std::string const& sn : socknames) {
@@ -735,6 +780,7 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
         if (ImGui::Button(sockname.c_str())) {
             ImGui::OpenPopup(popupname.c_str());
         }
+
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -745,14 +791,25 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
             ImGui::EndTooltip();
         }
 
-        auto on_conectee_change = [&](auto const& new_conectee) {
-            impl.before_modify_selection();
-            selection.updSocket(sn).connect(new_conectee);
-            impl.after_modify_selection();
-        };
+        if (auto resp =
+                widgets::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket);
+            resp) {
 
-        draw_reassign_socket_modal(
-            impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket, on_conectee_change);
+            ImGui::CloseCurrentPopup();
+
+            OpenSim::Object const& existing = socket.getConnecteeAsObject();
+            try {
+                impl.before_modify_selection();
+                selection.updSocket(sn).connect(resp->new_connectee);
+                impl.ui.reassign_socket.search[0] = '\0';
+                impl.ui.reassign_socket.error.clear();
+                ImGui::CloseCurrentPopup();
+            } catch (std::exception const& ex) {
+                impl.ui.reassign_socket.error = ex.what();
+                selection.updSocket(sn).connect(existing);
+            }
+            impl.after_modify_selection();
+        }
 
         ImGui::NextColumn();
     }
@@ -835,10 +892,12 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
         "Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
     ImGui::Separator();
     {
-        auto before_property_edited = [&]() { impl.before_modify_selection(); };
-        auto after_property_edited = [&]() { impl.after_modify_selection(); };
-        draw_properties_editor(
-            impl.ui.properties_editor, *impl.selection(), before_property_edited, after_property_edited);
+        auto maybe_updater = properties_editor::draw(impl.ui.properties_editor, *impl.selection());
+        if (maybe_updater) {
+            impl.before_modify_model();
+            maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
+            impl.after_modify_model();
+        }
     }
 
     // socket editor
@@ -1227,7 +1286,7 @@ void osc::Model_editor_screen::draw() {
         auto on_set_selection = [&](OpenSim::Component* c) { impl->set_selection(c); };
         auto before_modify_model = [&]() { impl->before_modify_model(); };
         auto after_modify_model = [&]() { impl->after_modify_model(); };
-        draw_model_actions_panel(
+        widgets::model_actions::draw(
             impl->ui.model_actions_panel, impl->model(), on_set_selection, before_modify_model, after_modify_model);
     }
 
@@ -1265,17 +1324,26 @@ void osc::Model_editor_screen::draw() {
 
     // draw model hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
-        auto on_select = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
-        auto on_hover = [this](auto const* c) { impl->set_hover(const_cast<OpenSim::Component*>(c)); };
-        draw_component_hierarchy_widget(
-            &impl->model().getRoot(), impl->selection(), impl->hover(), on_select, on_hover);
+        auto resp = widgets::component_hierarchy::draw(&impl->model().getRoot(), impl->selection(), impl->hover());
+        switch (resp.type) {
+        case component_hierarchy::SelectionChanged:
+            impl->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+            break;
+        case component_hierarchy::HoverChanged:
+            impl->set_hover(const_cast<OpenSim::Component*>(resp.ptr));
+            break;
+        default:
+            break;
+        }
     }
     ImGui::End();
 
     // draw selection viewer
     if (ImGui::Begin("Selection")) {
-        auto on_selection_changed = [this](auto const* c) { impl->set_selection(const_cast<OpenSim::Component*>(c)); };
-        draw_component_selection_widget(impl->get_state(), impl->selection(), on_selection_changed);
+        if (auto resp = component_details::draw(impl->get_state(), impl->selection());
+            resp.type == component_details::SelectionChanged) {
+            impl->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+        }
     }
     ImGui::End();
 
@@ -1286,7 +1354,7 @@ void osc::Model_editor_screen::draw() {
     ImGui::End();
 
     // draw log viewer
-    draw_log_viewer_widget(impl->ui.log_viewer, "Log");
+    widgets::log_viewer::draw(impl->ui.log_viewer, "Log");
 
     if (impl->recovered_from_disaster) {
         impl->redo.clear();

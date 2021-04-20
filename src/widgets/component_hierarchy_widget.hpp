@@ -1,16 +1,19 @@
 #pragma once
 
-#include <functional>
-
 namespace OpenSim {
     class Component;
 }
 
-namespace osc {
-    void draw_component_hierarchy_widget(
+namespace osc::widgets::component_hierarchy {
+    enum Response_type { NothingHappened, SelectionChanged, HoverChanged };
+
+    struct Response final {
+        OpenSim::Component const* ptr = nullptr;
+        Response_type type = NothingHappened;
+    };
+
+    Response draw(
         OpenSim::Component const* root,
         OpenSim::Component const* current_selection,
-        OpenSim::Component const* current_hover,
-        std::function<void(OpenSim::Component const*)> const& on_selection_change,
-        std::function<void(OpenSim::Component const*)> const& on_hover_changed);
+        OpenSim::Component const* current_hover);
 }

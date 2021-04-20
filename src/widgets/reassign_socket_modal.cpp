@@ -5,36 +5,29 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 
-void osc::draw_reassign_socket_modal(
-    Reassign_socket_modal_state& st,
-    char const* modal_name,
-    OpenSim::Model const& model,
-    OpenSim::AbstractSocket const& socket,
-    std::function<void(OpenSim::Object const&)> const& on_conectee_change_request) {
+std::optional<osc::widgets::reassign_socket::Response> osc::widgets::reassign_socket::draw(
+    State& st, char const* modal_name, OpenSim::Model const& model, OpenSim::AbstractSocket const&) {
+
+    std::optional<Response> rv;
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        return;
+        return rv;
     }
 
     ImGui::InputText("search", st.search, sizeof(st.search));
 
-    ImGui::Text("objects:");
-    ImGui::BeginChild("obj list", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::TextUnformatted("objects:");
+    ImGui::BeginChild("obj list", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
+
     for (OpenSim::Component const& c : model.getComponentList()) {
-        std::string name = c.getName();
+        std::string const& name = c.getName();
         if (name.find(st.search) != std::string::npos) {
-            if (ImGui::Selectable(c.getName().c_str())) {
-                OpenSim::Object const& existing = socket.getConnecteeAsObject();
-                try {
-                    on_conectee_change_request(c);
-                    st.search[0] = '\0';
-                    ImGui::CloseCurrentPopup();
-                } catch (std::exception const& ex) {
-                    st.error = ex.what();
-                    on_conectee_change_request(existing);
+            if (ImGui::Selectable(name.c_str())) {
+                if (!rv) {
+                    rv.emplace(c);
                 }
             }
         }
@@ -42,13 +35,17 @@ void osc::draw_reassign_socket_modal(
     ImGui::EndChild();
 
     if (!st.error.empty()) {
-        ImGui::Text("%s", st.error.c_str());
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::TextWrapped("%s", st.error.c_str());
     }
 
     if (ImGui::Button("Cancel")) {
+        st.error.clear();
         st.search[0] = '\0';
         ImGui::CloseCurrentPopup();
     }
 
     ImGui::EndPopup();
+
+    return rv;
 }

@@ -59,13 +59,10 @@ std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
     return rv;
 }
 
-static void on_vtp_choice_made(
-    osc::Attach_geometry_modal_state& st,
-    std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out,
-    std::filesystem::path path) {
+static std::unique_ptr<OpenSim::Mesh>
+    on_vtp_choice_made(osc::widgets::attach_geometry::State& st, std::filesystem::path path) {
 
-    // pass selected mesh to caller
-    out(std::make_unique<OpenSim::Mesh>(path.string()));
+    auto rv = std::make_unique<OpenSim::Mesh>(path.string());
 
     // add to recent list
     st.recent_user_choices.push_back(std::move(path));
@@ -74,18 +71,20 @@ static void on_vtp_choice_made(
     st.search[0] = '\0';
 
     ImGui::CloseCurrentPopup();
+
+    return rv;
 }
 
-static void try_draw_file_choice(
-    osc::Attach_geometry_modal_state& st,
-    std::filesystem::path const& p,
-    std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out) {
+static std::unique_ptr<OpenSim::Mesh>
+    try_draw_file_choice(osc::widgets::attach_geometry::State& st, std::filesystem::path const& p) {
 
     if (p.filename().string().find(st.search.data()) != std::string::npos) {
         if (ImGui::Selectable(p.filename().string().c_str())) {
-            on_vtp_choice_made(st, out, p.filename());
+            return on_vtp_choice_made(st, p.filename());
         }
     }
+
+    return nullptr;
 }
 
 static std::optional<std::filesystem::path> prompt_open_vtp() {
@@ -96,10 +95,7 @@ static std::optional<std::filesystem::path> prompt_open_vtp() {
     return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
 }
 
-void osc::draw_attach_geom_modal_if_opened(
-    Attach_geometry_modal_state& st,
-    char const* modal_name,
-    std::function<void(std::unique_ptr<OpenSim::Mesh>)> const& out) {
+std::unique_ptr<OpenSim::Mesh> osc::widgets::attach_geometry::draw(State& st, char const* modal_name) {
 
     // center the modal
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -107,12 +103,14 @@ void osc::draw_attach_geom_modal_if_opened(
 
     // try to show the modal (depends on caller calling ImGui::OpenPopup)
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        return;
+        return nullptr;
     }
 
     // let user type a search
     ImGui::InputText("search", st.search.data(), st.search.size());
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
+
+    std::unique_ptr<OpenSim::Mesh> rv = nullptr;
 
     // show previous (recent) user choices
     if (!st.recent_user_choices.empty()) {
@@ -121,7 +119,10 @@ void osc::draw_attach_geom_modal_if_opened(
             "recent meshes", ImVec2(ImGui::GetContentRegionAvail().x, 64), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         for (std::filesystem::path const& p : st.recent_user_choices) {
-            try_draw_file_choice(st, p, out);
+            auto resp = try_draw_file_choice(st, p);
+            if (resp) {
+                rv = std::move(resp);
+            }
         }
 
         ImGui::EndChild();
@@ -135,7 +136,10 @@ void osc::draw_attach_geom_modal_if_opened(
             "all meshes", ImVec2(ImGui::GetContentRegionAvail().x, 256), false, ImGuiWindowFlags_HorizontalScrollbar);
 
         for (std::filesystem::path const& p : st.vtps) {
-            try_draw_file_choice(st, p, out);
+            auto resp = try_draw_file_choice(st, p);
+            if (resp) {
+                rv = std::move(resp);
+            }
         }
 
         ImGui::EndChild();
@@ -143,7 +147,7 @@ void osc::draw_attach_geom_modal_if_opened(
 
     if (ImGui::Button("Open")) {
         if (auto maybe_vtp = prompt_open_vtp(); maybe_vtp) {
-            on_vtp_choice_made(st, out, std::move(maybe_vtp).value());
+            rv = on_vtp_choice_made(st, std::move(maybe_vtp).value());
         }
     }
 
@@ -153,4 +157,6 @@ void osc::draw_attach_geom_modal_if_opened(
     }
 
     ImGui::EndPopup();
+
+    return rv;
 }

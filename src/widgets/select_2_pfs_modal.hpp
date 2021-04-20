@@ -1,30 +1,32 @@
 #pragma once
 
-#include <functional>
+#include "src/assertions.hpp"
+
+#include <optional>
 
 namespace OpenSim {
     class PhysicalFrame;
     class Model;
 }
 
-namespace osc {
+namespace osc::widgets::select_2_pfs {
 
-    struct Select_2_pfs_modal_state final {
+    struct State final {
         OpenSim::PhysicalFrame const* first = nullptr;
         OpenSim::PhysicalFrame const* second = nullptr;
     };
 
-    struct Select_2_pfs_modal_output final {
+    struct Response final {
         OpenSim::PhysicalFrame const& first;
         OpenSim::PhysicalFrame const& second;
+
+        Response(OpenSim::PhysicalFrame const& _first, OpenSim::PhysicalFrame const& _second) :
+            first{_first},
+            second{_second} {
+        }
     };
 
     // assumes caller has handled calling ImGui::OpenPopup(modal_name)
-    void draw_select_2_pfs_modal(
-        Select_2_pfs_modal_state&,
-        char const* modal_name,
-        OpenSim::Model const&,
-        char const* first_label,
-        char const* second_label,
-        std::function<void(Select_2_pfs_modal_output)> const&);
+    std::optional<Response>
+        draw(State&, char const* modal_name, OpenSim::Model const&, char const* first_label, char const* second_label);
 }

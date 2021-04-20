@@ -17,7 +17,7 @@
 
 using namespace osc;
 
-Model_actions_panel_state::Model_actions_panel_state() : abm{}, select_2_pfs{} {
+osc::widgets::model_actions::State::State() : abm{}, select_2_pfs{} {
 }
 
 static void draw_tooltip(char const* header, char const* description) {
@@ -33,7 +33,7 @@ static void draw_tooltip(char const* header, char const* description) {
 }
 
 static void render_actions_panel_content(
-    Model_actions_panel_state& st,
+    osc::widgets::model_actions::State& st,
     OpenSim::Model& model,
     std::function<void(OpenSim::Component*)> const& on_set_selection,
     std::function<void()> const& on_before_modify_model,
@@ -54,16 +54,14 @@ static void render_actions_panel_content(
                 "An OpenSim::Body is a PhysicalFrame (reference frame) with associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
         }
 
-        auto on_body_add = [&](Added_body_modal_output out) {
+        if (auto maybe_new_body = widgets::add_body::draw(st.abm, add_body_modal_name, model); maybe_new_body) {
             on_before_modify_model();
-            model.addJoint(out.joint.release());
-            OpenSim::Body const* b = out.body.get();
-            model.addBody(out.body.release());
-            on_set_selection(const_cast<OpenSim::Body*>(b));
+            model.addJoint(maybe_new_body->joint.release());
+            auto* ptr = maybe_new_body->body.get();
+            model.addBody(maybe_new_body->body.release());
+            on_set_selection(const_cast<OpenSim::Body*>(ptr));
             on_after_modify_model();
-        };
-
-        try_draw_add_body_modal(st.abm, add_body_modal_name, model, on_body_add);
+        }
     }
 
     // draw add joint dropdown
@@ -88,14 +86,16 @@ static void render_actions_panel_content(
             ImGui::OpenPopup(modal_name);
         }
 
-        auto on_two_pfs_selected = [&](Select_2_pfs_modal_output out) {
+        if (auto resp = widgets::select_2_pfs::draw(st.select_2_pfs, modal_name, model, "parent", "child"); resp) {
             OSC_ASSERT(
                 st.joint_idx_for_pfs_popup >= 0 &&
                 static_cast<size_t>(st.joint_idx_for_pfs_popup) < joint::prototypes().size());
+
             OpenSim::Joint const& prototype = *joint::prototypes()[static_cast<size_t>(st.joint_idx_for_pfs_popup)];
+
             std::unique_ptr<OpenSim::Joint> copy{prototype.clone()};
-            copy->connectSocket_parent_frame(out.first);
-            copy->connectSocket_child_frame(out.second);
+            copy->connectSocket_parent_frame(resp->first);
+            copy->connectSocket_child_frame(resp->second);
 
             auto ptr = copy.get();
             on_before_modify_model();
@@ -104,9 +104,7 @@ static void render_actions_panel_content(
             on_after_modify_model();
 
             st.joint_idx_for_pfs_popup = -1;
-        };
-
-        draw_select_2_pfs_modal(st.select_2_pfs, modal_name, model, "parent", "child", on_two_pfs_selected);
+        }
     }
 
     // draw add contact geometry dropdown
@@ -119,7 +117,7 @@ static void render_actions_panel_content(
             for (size_t i = 0; i < names.size(); ++i) {
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::ContactGeometry> copy{contact_geom::prototypes()[i]->clone()};
-                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup = widgets::add_component::State{std::move(copy)};
                     st.add_component_popup_name = "Add Contact Geometry";
                     open_popup = true;
                 }
@@ -146,7 +144,7 @@ static void render_actions_panel_content(
 
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::Constraint> copy{constraint::prototypes()[i]->clone()};
-                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup = widgets::add_component::State{std::move(copy)};
                     st.add_component_popup_name = "Add Constraint";
                     open_popup = true;
                 }
@@ -171,7 +169,7 @@ static void render_actions_panel_content(
 
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::Force> copy{force::prototypes()[i]->clone()};
-                    st.add_component_popup = Add_component_popup{std::move(copy)};
+                    st.add_component_popup = widgets::add_component::State{std::move(copy)};
                     st.add_component_popup_name = "Add Force";
                     open_popup = true;
                 }
@@ -189,7 +187,7 @@ static void render_actions_panel_content(
     }
 
     if (st.add_component_popup && st.add_component_popup_name) {
-        auto new_component = st.add_component_popup->draw(st.add_component_popup_name, model);
+        auto new_component = widgets::add_component::draw(*st.add_component_popup, st.add_component_popup_name, model);
 
         if (new_component) {
             auto ptr = new_component.get();
@@ -223,8 +221,8 @@ static void render_actions_panel_content(
     }
 }
 
-void osc::draw_model_actions_panel(
-    Model_actions_panel_state& st,
+void osc::widgets::model_actions::draw(
+    State& st,
     OpenSim::Model& model,
     std::function<void(OpenSim::Component*)> const& on_set_selection,
     std::function<void()> const& on_before_modify_model,

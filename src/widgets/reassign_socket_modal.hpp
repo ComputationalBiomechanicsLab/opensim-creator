@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
+#include <optional>
 #include <string>
 
 namespace OpenSim {
@@ -9,17 +10,19 @@ namespace OpenSim {
     class Object;
 }
 
-namespace osc {
-    struct Reassign_socket_modal_state final {
+namespace osc::widgets::reassign_socket {
+    struct State final {
         std::string error;
         char search[128]{};
     };
 
+    struct Response final {
+        OpenSim::Object const& new_connectee;
+
+        Response(OpenSim::Object const& _new_connectee) : new_connectee{_new_connectee} {
+        }
+    };
+
     // assumes caller handles ImGui::OpenPopup(modal_name);
-    void draw_reassign_socket_modal(
-        Reassign_socket_modal_state&,
-        char const* modal_name,
-        OpenSim::Model const&,
-        OpenSim::AbstractSocket const&,
-        std::function<void(OpenSim::Object const&)> const& on_conectee_change_request);
+    std::optional<Response> draw(State&, char const* modal_name, OpenSim::Model const&, OpenSim::AbstractSocket const&);
 }

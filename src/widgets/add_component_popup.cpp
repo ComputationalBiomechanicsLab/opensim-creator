@@ -12,8 +12,9 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::widgets;
 
-static std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Component& c) {
+std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component::get_pf_sockets(OpenSim::Component& c) {
     std::vector<OpenSim::AbstractSocket const*> rv;
     for (std::string name : c.getSocketNames()) {
         OpenSim::AbstractSocket const& sock = c.getSocket(name);
@@ -24,41 +25,15 @@ static std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Compo
     return rv;
 }
 
-struct Add_component_popup::Impl final {
-    std::unique_ptr<OpenSim::Component> proto;
-
-    // prop editor
-    Properties_editor_state prop_editor;
-
-    // socket assignments
-    std::vector<OpenSim::AbstractSocket const*> pf_sockets = get_pf_sockets(*proto);
-    std::vector<OpenSim::PhysicalFrame const*> pf_conectee_choices =
-        std::vector<OpenSim::PhysicalFrame const*>(pf_sockets.size());
-
-    Impl(std::unique_ptr<OpenSim::Component> p) : proto{std::move(p)} {
-    }
-
-    [[nodiscard]] bool already_assigned(OpenSim::PhysicalFrame const* pf) const noexcept {
-        auto it =
-            std::find_if(pf_conectee_choices.begin(), pf_conectee_choices.end(), [&](auto* el) { return el == pf; });
-        return it != pf_conectee_choices.end();
-    }
-
-    [[nodiscard]] bool all_sockets_assigned() const noexcept {
-        return std::all_of(
-            pf_conectee_choices.begin(), pf_conectee_choices.end(), [](auto* ptr) { return ptr != nullptr; });
-    }
-};
-
-Add_component_popup::Add_component_popup(std::unique_ptr<OpenSim::Component> prototype) :
-    impl{new Impl{std::move(prototype)}} {
+[[nodiscard]] static bool all_sockets_assigned(add_component::State const& st) noexcept {
+    return std::all_of(st.physframe_connectee_choices.begin(), st.physframe_connectee_choices.end(), [](auto* ptr) {
+        return ptr != nullptr;
+    });
 }
 
-Add_component_popup::Add_component_popup(Add_component_popup&&) = default;
-Add_component_popup& Add_component_popup::operator=(Add_component_popup&&) = default;
-Add_component_popup::~Add_component_popup() noexcept = default;
+std::unique_ptr<OpenSim::Component>
+    osc::widgets::add_component::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
 
-std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_name, OpenSim::Model const& model) {
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -81,14 +56,20 @@ std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_
 
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
-    draw_properties_editor(impl->prop_editor, *impl->proto, []() {}, []() {});
+    {
+        auto maybe_updater = widgets::properties_editor::draw(st.prop_editor, *st.prototype);
+        if (maybe_updater) {
+            maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
+        }
+    }
+
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
 
     // draw socket choices
     //
     // it's assumed that sockets *must* be assigned, because the model can be left in an invalid
     // state if a socket is left unassigned
-    if (!impl->pf_sockets.empty()) {
+    if (!st.physframe_sockets.empty()) {
         ImGui::Text("Socket assignments (required)");
         ImGui::SameLine();
         draw_help_marker(
@@ -96,11 +77,11 @@ std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_
         ImGui::Separator();
         ImGui::Columns(2);
 
-        OSC_ASSERT(impl->pf_sockets.size() == impl->pf_conectee_choices.size());
+        OSC_ASSERT(st.physframe_sockets.size() == st.physframe_connectee_choices.size());
 
-        for (size_t i = 0; i < impl->pf_sockets.size(); ++i) {
-            OpenSim::AbstractSocket const& sock = *impl->pf_sockets[i];
-            OpenSim::PhysicalFrame const** current_choice = &impl->pf_conectee_choices[i];
+        for (size_t i = 0; i < st.physframe_sockets.size(); ++i) {
+            OpenSim::AbstractSocket const& sock = *st.physframe_sockets[i];
+            OpenSim::PhysicalFrame const** current_choice = &st.physframe_connectee_choices[i];
 
             ImGui::Text("%s", sock.getName().c_str());
             ImGui::NextColumn();
@@ -121,7 +102,7 @@ std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_
         ImGui::Dummy(ImVec2(0.0f, 1.0f));
     }
 
-    if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(impl->proto.get()); pa) {
+    if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(st.prototype.get()); pa) {
         ImGui::Text("Path Points (at least 2 required)");
         ImGui::SameLine();
         draw_help_marker(
@@ -134,14 +115,14 @@ std::unique_ptr<OpenSim::Component> Add_component_popup::draw(char const* modal_
     }
 
     std::unique_ptr<OpenSim::Component> rv = nullptr;
-    if (impl->all_sockets_assigned()) {
+    if (all_sockets_assigned(st)) {
         if (ImGui::Button("ok")) {
             // clone the prototype into the return value
-            rv.reset(impl->proto->clone());
+            rv.reset(st.prototype->clone());
 
             // assign sockets
-            for (size_t i = 0; i < impl->pf_conectee_choices.size(); ++i) {
-                rv->updSocket(impl->pf_sockets[i]->getName()).connect(*impl->pf_conectee_choices[i]);
+            for (size_t i = 0; i < st.physframe_connectee_choices.size(); ++i) {
+                rv->updSocket(st.physframe_sockets[i]->getName()).connect(*st.physframe_connectee_choices[i]);
             }
 
             ImGui::CloseCurrentPopup();

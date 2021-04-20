@@ -12,7 +12,11 @@ namespace SimTK {
 }
 
 namespace osc {
-    struct Coordinate_editor_state final {
+    void get_coordinates(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
+}
+
+namespace osc::widgets::coordinate_editor {
+    struct State final {
         char filter[64]{};
         bool sort_by_name = true;
         bool show_rotational = true;
@@ -21,8 +25,6 @@ namespace osc {
         std::vector<OpenSim::Coordinate const*> coord_scratch;
     };
 
-    void get_coordinates(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
-
     // returns `true` if `State` was edited by the coordinate editor
-    bool draw_coordinate_editor(Coordinate_editor_state&, OpenSim::Model const&, SimTK::State&);
+    bool draw(State&, OpenSim::Model const&, SimTK::State&);
 }

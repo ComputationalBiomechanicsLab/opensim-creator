@@ -46,7 +46,7 @@ static void copy_traceback_log_to_clipboard() {
     }
 }
 
-void osc::draw_log_viewer_widget(Log_viewer_widget_state& st, char const* panel_name) {
+void osc::widgets::log_viewer::draw(State& st, char const* panel_name) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
         if (ImGui::BeginMenuBar()) {

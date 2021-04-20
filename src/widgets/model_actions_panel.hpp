@@ -12,20 +12,20 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osc {
-    struct Model_actions_panel_state final {
-        Added_body_modal_state abm;
-        Select_2_pfs_modal_state select_2_pfs;
+namespace osc::widgets::model_actions {
+    struct State final {
+        widgets::add_body::State abm;
+        widgets::select_2_pfs::State select_2_pfs;
         int joint_idx_for_pfs_popup = -1;
 
         char const* add_component_popup_name = nullptr;
-        std::optional<Add_component_popup> add_component_popup = std::nullopt;
+        std::optional<add_component::State> add_component_popup = std::nullopt;
 
-        Model_actions_panel_state();
+        State();
     };
 
-    void draw_model_actions_panel(
-        Model_actions_panel_state&,
+    void draw(
+        State&,
         OpenSim::Model& model,
         std::function<void(OpenSim::Component*)> const& on_set_selection,
         std::function<void()> const& on_before_modify_model,

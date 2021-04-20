@@ -1,30 +1,33 @@
 #pragma once
 
+#include "src/widgets/properties_editor.hpp"
+
 #include <memory>
+#include <utility>
+#include <vector>
 
 namespace OpenSim {
     class Component;
     class Model;
+    class AbstractSocket;
+    class PhysicalFrame;
 }
 
-namespace osc {
-    class Add_component_popup final {
-    public:
-        struct Impl;
+namespace osc::widgets::add_component {
+    std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Component& c);
 
-    private:
-        std::unique_ptr<Impl> impl;
+    struct State final {
+        std::unique_ptr<OpenSim::Component> prototype;
+        properties_editor::State prop_editor;
+        std::vector<OpenSim::AbstractSocket const*> physframe_sockets = get_pf_sockets(*prototype);
+        std::vector<OpenSim::PhysicalFrame const*> physframe_connectee_choices =
+            std::vector<OpenSim::PhysicalFrame const*>(physframe_sockets.size());
 
-    public:
-        Add_component_popup(std::unique_ptr<OpenSim::Component> prototype);
-        Add_component_popup(Add_component_popup const&) = delete;
-        Add_component_popup(Add_component_popup&&);
-        Add_component_popup& operator=(Add_component_popup const&) = delete;
-        Add_component_popup& operator=(Add_component_popup&&);
-        ~Add_component_popup() noexcept;
-
-        // - assumes caller handles ImGui::OpenPopup(modal_name)
-        // - returns nullptr until the user fully builds the Component
-        std::unique_ptr<OpenSim::Component> draw(char const* modal_name, OpenSim::Model const&);
+        State(std::unique_ptr<OpenSim::Component> _prototype) : prototype{std::move(_prototype)} {
+        }
     };
+
+    // - assumes caller handles ImGui::OpenPopup(modal_name)
+    // - returns nullptr until the user fully builds the Component
+    std::unique_ptr<OpenSim::Component> draw(State&, char const* modal_name, OpenSim::Model const&);
 }

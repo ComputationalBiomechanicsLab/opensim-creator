@@ -11,12 +11,10 @@
 #include <cstddef>
 #include <string>
 
-void osc::draw_component_hierarchy_widget(
+osc::widgets::component_hierarchy::Response osc::widgets::component_hierarchy::draw(
     OpenSim::Component const* root,
     OpenSim::Component const* current_selection,
-    OpenSim::Component const* current_hover,
-    std::function<void(OpenSim::Component const*)> const& on_selection_change,
-    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
+    OpenSim::Component const* current_hover) {
 
     OpenSim::Component const* selection_top_level_parent = nullptr;
     if (current_selection) {
@@ -32,6 +30,8 @@ void osc::draw_component_hierarchy_widget(
     size_t prev_num_path_els = 0;
     int id = 0;
     bool header_showing = false;
+
+    Response response;
 
     for (OpenSim::Component const& cr : root->getComponentList()) {
 
@@ -81,10 +81,12 @@ void osc::draw_component_hierarchy_widget(
             ++disjoint_begin;
 
             if (ImGui::IsItemHovered()) {
-                on_hover_changed(comp);
+                response.type = HoverChanged;
+                response.ptr = comp;
             }
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                on_selection_change(comp);
+                response.type = SelectionChanged;
+                response.ptr = comp;
             }
 
             ImGui::PopStyleColor(style_pushes);
@@ -114,10 +116,12 @@ void osc::draw_component_hierarchy_widget(
                 ImGui::Text("%s", swap.c_str());
                 ImGui::PopID();
                 if (ImGui::IsItemHovered()) {
-                    on_hover_changed(comp);
+                    response.type = HoverChanged;
+                    response.ptr = comp;
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    on_selection_change(comp);
+                    response.type = SelectionChanged;
+                    response.ptr = comp;
                 }
 
                 ImGui::PopStyleColor(style_pushes);
@@ -134,4 +138,6 @@ void osc::draw_component_hierarchy_widget(
     if (header_showing) {
         ImGui::TreePop();
     }
+
+    return response;
 }

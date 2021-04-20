@@ -16,7 +16,7 @@
 using namespace osc;
 
 static std::unique_ptr<OpenSim::Joint>
-    make_joint(Added_body_modal_state& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
+    make_joint(osc::widgets::add_body::State& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
 
     std::unique_ptr<OpenSim::Joint> copy{joint_prototype.clone()};
     copy->setName(st.joint_name);
@@ -47,11 +47,8 @@ static std::unique_ptr<OpenSim::Joint>
     return copy;
 }
 
-void osc::try_draw_add_body_modal(
-    Added_body_modal_state& st,
-    char const* modal_name,
-    OpenSim::Model const& model,
-    std::function<void(Added_body_modal_output)> const& on_add_requested) {
+std::optional<osc::widgets::add_body::New_body>
+    osc::widgets::add_body::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
 
     // center the modal
     {
@@ -63,7 +60,7 @@ void osc::try_draw_add_body_modal(
     // try to show modal
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         // modal not showing
-        return;
+        return std::nullopt;
     }
 
     if (st.selected_pf == nullptr) {
@@ -161,10 +158,10 @@ void osc::try_draw_add_body_modal(
         if (ImGui::Button(label)) {
             ImGui::OpenPopup(attach_modal_name);
         }
-        draw_attach_geom_modal_if_opened(
-            st.attach_geom.state,
-            attach_modal_name,
-            [& selected = st.attach_geom.selected](std::unique_ptr<OpenSim::Mesh> m) { selected = std::move(m); });
+
+        if (auto attached = widgets::attach_geometry::draw(st.attach_geom.state, attach_modal_name); attached) {
+            st.attach_geom.selected = std::move(attached);
+        }
     }
     ImGui::NextColumn();
 
@@ -177,6 +174,7 @@ void osc::try_draw_add_body_modal(
     }
     ImGui::SameLine();
 
+    std::optional<New_body> rv = std::nullopt;
     if (ImGui::Button("add")) {
 
         // create user-requested body
@@ -189,10 +187,12 @@ void osc::try_draw_add_body_modal(
             body->attachGeometry(st.attach_geom.selected.release());
         }
 
-        on_add_requested(Added_body_modal_output{std::move(body), std::move(joint)});
+        rv = New_body{std::move(body), std::move(joint)};
         st = {};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
 
     ImGui::EndPopup();
+
+    return rv;
 }

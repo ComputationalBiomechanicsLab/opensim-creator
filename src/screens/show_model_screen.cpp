@@ -11,9 +11,8 @@
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/bitwise_algs.hpp"
 #include "src/utils/file_change_poller.hpp"
-#include "src/widgets/add_moment_arm_plot_modal.hpp"
+#include "src/widgets/component_details.hpp"
 #include "src/widgets/component_hierarchy_widget.hpp"
-#include "src/widgets/component_selection_widget.hpp"
 #include "src/widgets/coordinate_editor.hpp"
 #include "src/widgets/evenly_spaced_sparkline.hpp"
 #include "src/widgets/log_viewer_widget.hpp"
@@ -53,6 +52,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::widgets;
 using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
 
@@ -79,6 +79,111 @@ static void compute_moment_arms(
 
     c.setLocked(state, prev_locked);
     c.setValue(state, prev_val);
+}
+
+struct Add_moment_arm_plot_modal_state final {
+    std::vector<OpenSim::Muscle const*> muscles_scratch;
+    std::vector<OpenSim::Coordinate const*> coords_scratch;
+    OpenSim::Muscle const* selected_muscle = nullptr;
+    OpenSim::Coordinate const* selected_coord = nullptr;
+};
+
+static bool sort_by_name(OpenSim::Component const* c1, OpenSim::Component const* c2) {
+    return c1->getName() < c2->getName();
+}
+
+static void draw_add_moment_arm_plot_modal(
+    Add_moment_arm_plot_modal_state& st,
+    char const* modal_name,
+    OpenSim::Model const& model,
+    std::function<void(std::pair<OpenSim::Muscle const*, OpenSim::Coordinate const*>)> const& on_add_plot_requested) {
+    // center the modal
+    {
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(512, 0));
+    }
+
+    // try to show modal
+    if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        // modal not showing
+        return;
+    }
+
+    ImGui::Columns(2);
+
+    // lhs: muscle selection
+    {
+        ImGui::Text("muscles:");
+        ImGui::Dummy({0.0f, 5.0f});
+
+        auto& muscles = st.muscles_scratch;
+
+        muscles.clear();
+        for (OpenSim::Muscle const& musc : model.getComponentList<OpenSim::Muscle>()) {
+            muscles.push_back(&musc);
+        }
+
+        // usability: sort by name
+        std::sort(muscles.begin(), muscles.end(), sort_by_name);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+        ImGui::BeginChild(
+            "MomentArmPlotMuscleSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
+
+        for (OpenSim::Muscle const* m : muscles) {
+            if (ImGui::Selectable(m->getName().c_str(), m == st.selected_muscle)) {
+                st.selected_muscle = m;
+            }
+        }
+        ImGui::EndChild();
+    }
+    ImGui::NextColumn();
+
+    // rhs: coord selection
+    {
+        ImGui::Text("coordinates:");
+        ImGui::Dummy({0.0f, 5.0f});
+
+        auto& coords = st.coords_scratch;
+
+        coords.clear();
+        get_coordinates(model, coords);
+
+        // usability: sort by name
+        std::sort(coords.begin(), coords.end(), sort_by_name);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
+        ImGui::BeginChild(
+            "MomentArmPlotCoordSelection", ImVec2(ImGui::GetContentRegionAvail().x, 260), false, window_flags);
+
+        for (OpenSim::Coordinate const* c : coords) {
+            if (ImGui::Selectable(c->getName().c_str(), c == st.selected_coord)) {
+                st.selected_coord = c;
+            }
+        }
+
+        ImGui::EndChild();
+    }
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+
+    if (ImGui::Button("cancel")) {
+        st = {};  // reset user inputs
+        ImGui::CloseCurrentPopup();
+    }
+
+    if (st.selected_coord && st.selected_muscle) {
+        ImGui::SameLine();
+        if (ImGui::Button("OK")) {
+            on_add_plot_requested({st.selected_muscle, st.selected_coord});
+            st = {};  // reset user input
+            ImGui::CloseCurrentPopup();
+        }
+    }
+
+    ImGui::EndPopup();
 }
 
 namespace {
@@ -499,9 +604,9 @@ struct Show_model_screen::Impl final {
 
     Main_menu_file_tab_state mm_filetab_st;
 
-    Coordinate_editor_state coords_tab_st;
-    Muscles_table_state muscles_table_st;
-    Log_viewer_widget_state log_viewer_st;
+    coordinate_editor::State coords_tab_st;
+    muscles_table::State muscles_table_st;
+    log_viewer::State log_viewer_st;
 
     Simulator_tab simulator_tab;
     Momentarms_tab_data mas_tab;
@@ -782,17 +887,33 @@ struct Show_model_screen::Impl final {
         }
 
         if (ImGui::Begin("Hierarchy")) {
-            auto on_select = [this](auto const* c) { selected_component = c; };
-            auto on_hover = [this](auto const* c) { current_hover = c; };
-            draw_component_hierarchy_widget(
-                &model->getRoot(), selected_component.get(), current_hover, on_select, on_hover);
+            auto resp = component_hierarchy::draw(&model->getRoot(), selected_component.get(), current_hover);
+
+            switch (resp.type) {
+            case component_hierarchy::SelectionChanged:
+                selected_component = resp.ptr;
+                break;
+            case component_hierarchy::HoverChanged:
+                current_hover = resp.ptr;
+                break;
+            default:
+                break;
+            }
         }
         ImGui::End();
 
         if (ImGui::Begin("Muscles")) {
-            auto on_hover = [&](OpenSim::Component const* new_hover) { current_hover = new_hover; };
-            auto on_select = [&](OpenSim::Component const* new_select) { selected_component = new_select; };
-            draw_muscles_table(muscles_table_st, *model, *latest_state, on_hover, on_select);
+            auto resp = muscles_table::draw(muscles_table_st, *model, *latest_state);
+            switch (resp.type) {
+            case muscles_table::SelectionChanged:
+                selected_component = resp.ptr;
+                break;
+            case muscles_table::HoverChanged:
+                current_hover = resp.ptr;
+                break;
+            default:
+                break;
+            }
         }
         ImGui::End();
 
@@ -812,7 +933,7 @@ struct Show_model_screen::Impl final {
         ImGui::End();
 
         if (ImGui::Begin("Coordinates")) {
-            if (draw_coordinate_editor(coords_tab_st, *model, *latest_state)) {
+            if (widgets::coordinate_editor::draw(coords_tab_st, *model, *latest_state)) {
                 on_user_edited_state();
             }
         }
@@ -823,7 +944,7 @@ struct Show_model_screen::Impl final {
         }
         ImGui::End();
 
-        draw_log_viewer_widget(log_viewer_st, "Log");
+        widgets::log_viewer::draw(log_viewer_st, "Log");
     }
 
     void on_user_wants_to_add_ma_plot(std::pair<OpenSim::Muscle const*, OpenSim::Coordinate const*> pair) {
@@ -1005,9 +1126,9 @@ struct Show_model_screen::Impl final {
         }
 
         // draw standard selection info
-        {
-            auto on_selection_changed = [this](auto const* c) { selected_component = c; };
-            draw_component_selection_widget(*latest_state, selected_component.get(), on_selection_changed);
+        if (auto resp = widgets::component_details::draw(*latest_state, selected_component.get());
+            resp.type == component_details::SelectionChanged) {
+            selected_component = resp.ptr;
         }
 
         // draw selection outputs (screen-specific)

@@ -119,8 +119,8 @@ add_executable(osc
     src/widgets/add_component_popup.cpp
     src/widgets/component_hierarchy_widget.hpp
     src/widgets/component_hierarchy_widget.cpp
-    src/widgets/component_selection_widget.hpp
-    src/widgets/component_selection_widget.cpp
+    src/widgets/component_details.cpp
+    src/widgets/component_details.hpp
     src/widgets/model_viewer_widget.hpp
     src/widgets/model_viewer_widget.cpp
     src/widgets/properties_editor.hpp
@@ -148,11 +148,8 @@ add_executable(osc
     src/widgets/muscles_table.cpp
     src/widgets/select_2_pfs_modal.hpp
     src/widgets/select_2_pfs_modal.cpp
-    src/widgets/add_moment_arm_plot_modal.hpp
-    src/widgets/add_moment_arm_plot_modal.cpp
     src/widgets/model_actions_panel.hpp
     src/widgets/model_actions_panel.cpp
-    src/widgets/select_component.hpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

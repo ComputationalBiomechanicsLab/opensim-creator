@@ -9,12 +9,10 @@
 
 static constexpr char const* names[] = OSC_MUSCLE_SORT_NAMES;
 
-void osc::draw_muscles_table(
-    Muscles_table_state& st,
-    OpenSim::Model const& model,
-    SimTK::State const& stkst,
-    std::function<void(OpenSim::Component const*)> const& on_hover,
-    std::function<void(OpenSim::Component const*)> const& on_select) {
+osc::widgets::muscles_table::Response
+    osc::widgets::muscles_table::draw(State& st, OpenSim::Model const& model, SimTK::State const& stkst) {
+
+    Response rv;
 
     // extract muscles details from model
     st.muscles.clear();
@@ -57,7 +55,7 @@ void osc::draw_muscles_table(
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
     if (ImGui::BeginCombo(" ", names[st.sort_choice], ImGuiComboFlags_None)) {
-        for (int n = 0; n < MusclesTableSortChoice_NUM_CHOICES; n++) {
+        for (int n = 0; n < SortChoice_NUM_CHOICES; n++) {
             bool is_selected = (st.sort_choice == n);
             if (ImGui::Selectable(names[n], is_selected)) {
                 st.sort_choice = n;
@@ -106,15 +104,15 @@ void osc::draw_muscles_table(
     }
 
     // sort muscle list
-    OSC_ASSERT(st.sort_choice < MusclesTableSortChoice_NUM_CHOICES);
+    OSC_ASSERT(st.sort_choice < SortChoice_NUM_CHOICES);
     switch (st.sort_choice) {
-    case MusclesTableSortChoice_Length: {
+    case SortChoice_Length: {
         std::sort(st.muscles.begin(), st.muscles.end(), [&stkst](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
             return m1->getLength(stkst) > m2->getLength(stkst);
         });
         break;
     }
-    case MusclesTableSortChoice_Strain: {
+    case SortChoice_Strain: {
         std::sort(st.muscles.begin(), st.muscles.end(), [&stkst](OpenSim::Muscle const* m1, OpenSim::Muscle const* m2) {
             return m1->getTendonStrain(stkst) > m2->getTendonStrain(stkst);
         });
@@ -152,10 +150,12 @@ void osc::draw_muscles_table(
     for (OpenSim::Muscle const* musc : st.muscles) {
         ImGui::Text("%s", musc->getName().c_str());
         if (ImGui::IsItemHovered()) {
-            on_hover(musc);
+            rv.type = HoverChanged;
+            rv.ptr = musc;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-            on_select(musc);
+            rv.type = SelectionChanged;
+            rv.ptr = musc;
         }
         ImGui::NextColumn();
         ImGui::Text("%.3f", static_cast<double>(musc->getLength(stkst)));
@@ -166,4 +166,6 @@ void osc::draw_muscles_table(
         ImGui::NextColumn();
     }
     ImGui::Columns();
+
+    return rv;
 }

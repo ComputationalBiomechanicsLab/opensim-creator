@@ -5,13 +5,8 @@
 
 #include <imgui.h>
 
-void osc::draw_select_2_pfs_modal(
-    Select_2_pfs_modal_state& st,
-    char const* modal_name,
-    OpenSim::Model const& model,
-    char const* first_label,
-    char const* second_label,
-    std::function<void(Select_2_pfs_modal_output)> const& on_bodies_selected) {
+std::optional<osc::widgets::select_2_pfs::Response> osc::widgets::select_2_pfs::draw(
+    State& st, char const* modal_name, OpenSim::Model const& model, char const* first_label, char const* second_label) {
 
     // center the modal
     {
@@ -23,7 +18,7 @@ void osc::draw_select_2_pfs_modal(
     // try to show modal
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         // modal not showing
-        return;
+        return std::nullopt;
     }
 
     ImGui::Columns(2);
@@ -70,9 +65,11 @@ void osc::draw_select_2_pfs_modal(
 
     ImGui::Columns(1);
 
+    std::optional<Response> rv = std::nullopt;
+
     if (st.first && st.second) {
         if (ImGui::Button("OK")) {
-            on_bodies_selected(Select_2_pfs_modal_output{*st.first, *st.second});
+            rv.emplace(*st.first, *st.second);
             st = {};  // reset user inputs
             ImGui::CloseCurrentPopup();
         }
@@ -86,4 +83,6 @@ void osc::draw_select_2_pfs_modal(
     }
 
     ImGui::EndPopup();
+
+    return rv;
 }
