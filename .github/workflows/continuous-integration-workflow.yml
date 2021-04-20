@@ -23,23 +23,6 @@ jobs:
         path: osc/osc-build/RelWithDebInfo/*.pdb
         if-no-files-found: error
 
-  ubuntu1604:
-    name: Build on Ubuntu 16.04 (Xenial)
-    runs-on: ubuntu-16.04
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        path: osc
-    - name: run build_ubuntu-xenial.sh
-      run: |
-        cd $GITHUB_WORKSPACE/osc
-        ./scripts/build_ubuntu-xenial.sh
-    - uses: actions/upload-artifact@v2
-      with:
-        name: osc_xenial.deb
-        path: osc/osc-build/*.deb
-        if-no-files-found: error
-
   ubuntu2004:
     name: Build on Ubuntu 20.04
     runs-on: ubuntu-20.04
