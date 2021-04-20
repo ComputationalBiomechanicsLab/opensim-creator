@@ -1,12 +1,12 @@
 #include "splash_screen.hpp"
 
 #include "osc_build_config.hpp"
+#include "src/3d/cameras.hpp"
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
 #include "src/3d/mesh_generation.hpp"
 #include "src/3d/mesh_instance.hpp"
-#include "src/3d/polar_camera.hpp"
 #include "src/3d/render_target.hpp"
 #include "src/3d/renderer.hpp"
 #include "src/3d/texturing.hpp"
@@ -84,7 +84,8 @@ struct Splash_screen::Impl final {
         osc::load_tex(osc::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     Gpu_cache cache;
     Drawlist drawlist;
-    Polar_camera camera;
+
+    Polar_perspective_camera camera;
     glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
     glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
@@ -171,9 +172,9 @@ void osc::Splash_screen::draw() {
         Raw_drawcall_params params;
         params.passthrough_hittest_x = -1;
         params.passthrough_hittest_y = -1;
-        params.view_matrix = impl->camera.view_matrix();
-        params.projection_matrix = impl->camera.projection_matrix(impl->render_target.aspect_ratio());
-        params.view_pos = impl->camera.pos();
+        params.view_matrix = view_matrix(impl->camera);
+        params.projection_matrix = projection_matrix(impl->camera, impl->render_target.aspect_ratio());
+        params.view_pos = pos(impl->camera);
         params.light_pos = impl->light_pos;
         params.light_rgb = impl->light_rgb;
         params.background_rgba = impl->background_rgba;

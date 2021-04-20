@@ -500,6 +500,25 @@ public:
                 // ImGui: feed event into ImGui
                 ImGui_ImplSDL2_ProcessEvent(&e);
 
+                // ImGui: check if it wants the event's side-effects
+                //
+                // if it does, then the current osc::Screen probably shouldn't
+                // also handle the event (could lead to a double-handle)
+                {
+                    auto& io = ImGui::GetIO();
+                    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)) {
+                        continue;
+                    }
+
+                    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION ||
+                                                e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN)) {
+                        continue;
+                    }
+                }
+
+                // else: it's an event that *could* be handled by other things
+                // in the application (other event handlers, screens, 3D, etc.)
+
                 // DEBUG MODE: toggled with F1
                 if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F1) {
                     if (is_in_debug_mode()) {
@@ -514,10 +533,10 @@ public:
 
                 // osc::Screen: handle any possible indirect side-effects the Screen's
                 //               `on_event` handler may have had on the application state
-                if (should_quit) {
+                if (this->should_quit) {
                     return;
                 }
-                if (requested_screen) {
+                if (this->requested_screen != nullptr) {
                     current_screen = std::move(requested_screen);
                     continue;
                 }
@@ -545,6 +564,8 @@ public:
             ImGui_ImplSDL2_NewFrame(window);
             ImGui::NewFrame();
 
+            // tell ImGui to treat the whole viewport as a dockspace, so that
+            // any panels in the main viewport *may* be docked
             ImGui::DockSpaceOverViewport(
                 ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
 
@@ -552,7 +573,7 @@ public:
             try {
                 current_screen->draw();
             } catch (std::bad_alloc const&) {
-                throw;  // don't even try to handle this
+                throw;  // don't even try to handle alloc errors
             } catch (...) {
                 // if drawing the screen threw an exception, then we're potentially
                 // kind of fucked, because OpenGL and ImGui might be in an intermediate
@@ -574,8 +595,8 @@ public:
                 throw;
             }
 
-            // edge-case: the screen left its program bound. This can cause issues in the
-            //            ImGUI implementation.
+            // edge-case: the screen left its program bound. This can cause
+            //            issues in the ImGUI implementation.
             gl::UseProgram();
 
             // NOTE: osc::Screen side-effects:

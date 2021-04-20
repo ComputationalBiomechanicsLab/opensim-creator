@@ -1,9 +1,9 @@
 #include "model_viewer.hpp"
 
+#include "src/3d/cameras.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gpu_cache.hpp"
 #include "src/3d/mesh_instance.hpp"
-#include "src/3d/polar_camera.hpp"
 #include "src/3d/render_target.hpp"
 #include "src/3d/renderer.hpp"
 #include "src/application.hpp"
@@ -71,7 +71,8 @@ struct osc::Model_viewer_widget::Impl final {
     int hovertest_x = -1;
     int hovertest_y = -1;
     OpenSim::Component const* hovered_component = nullptr;
-    Polar_camera camera;
+    Camera_state camera_state = Camera_state::Viewing;
+    Polar_perspective_camera camera;
     glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
     glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
@@ -89,9 +90,9 @@ struct osc::Model_viewer_widget::Impl final {
         Raw_drawcall_params params;
         params.passthrough_hittest_x = hovertest_x;
         params.passthrough_hittest_y = hovertest_y;
-        params.view_matrix = camera.view_matrix();
-        params.projection_matrix = camera.projection_matrix(render_target.aspect_ratio());
-        params.view_pos = camera.pos();
+        params.view_matrix = view_matrix(camera);
+        params.projection_matrix = projection_matrix(camera, render_target.aspect_ratio());
+        params.view_pos = pos(camera);
         params.light_pos = light_pos;
         params.light_rgb = light_rgb;
         params.background_rgba = background_rgba;
@@ -141,32 +142,40 @@ bool Model_viewer_widget::on_event(const SDL_Event& e) {
     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT:
-            impl->camera.on_left_click_down();
+            impl->camera_state = Camera_state::Dragging;
             return true;
         case SDL_BUTTON_RIGHT:
-            impl->camera.on_right_click_down();
+            impl->camera_state = Camera_state::Panning;
             return true;
         }
     } else if (e.type == SDL_MOUSEBUTTONUP) {
-        switch (e.button.button) {
-        case SDL_BUTTON_LEFT:
-            impl->camera.on_left_click_up();
-            return true;
-        case SDL_BUTTON_RIGHT:
-            impl->camera.on_right_click_up();
-            return true;
-        }
+        impl->camera_state = Camera_state::Viewing;
+        return true;
     } else if (e.type == SDL_MOUSEMOTION) {
         glm::vec2 d = impl->render_target.dimensions();
         float aspect_ratio = d.x / d.y;
         float dx = static_cast<float>(e.motion.xrel) / d.x;
         float dy = static_cast<float>(e.motion.yrel) / d.y;
-        impl->camera.on_mouse_motion(aspect_ratio, dx, dy);
+
+        switch (impl->camera_state) {
+        case Camera_state::Dragging:
+            drag(impl->camera, {dx, dy});
+            break;
+        case Camera_state::Panning:
+            pan(impl->camera, aspect_ratio, {dx, dy});
+            break;
+        default:
+            break;
+        }
     } else if (e.type == SDL_MOUSEWHEEL) {
         if (e.wheel.y > 0) {
-            impl->camera.on_scroll_up();
+            if (impl->camera.radius >= 0.1f) {
+                impl->camera.radius *= 0.9f;
+            }
         } else {
-            impl->camera.on_scroll_down();
+            if (impl->camera.radius < 100.0f) {
+                impl->camera.radius /= 0.9f;
+            }
         }
         return true;
     }
@@ -262,6 +271,9 @@ void Model_viewer_widget::draw(
                 ImGui::SliderFloat("radius", &impl->camera.radius, 0.0f, 10.0f);
                 ImGui::SliderFloat("theta", &impl->camera.theta, 0.0f, 2.0f * pi_f);
                 ImGui::SliderFloat("phi", &impl->camera.phi, 0.0f, 2.0f * pi_f);
+                ImGui::InputFloat("fov", &impl->camera.fov);
+                ImGui::InputFloat("znear", &impl->camera.znear);
+                ImGui::InputFloat("zfar", &impl->camera.zfar);
                 ImGui::NewLine();
                 ImGui::SliderFloat("pan_x", &impl->camera.pan.x, -100.0f, 100.0f);
                 ImGui::SliderFloat("pan_y", &impl->camera.pan.y, -100.0f, 100.0f);
@@ -422,7 +434,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
-                glm::mat4 model2view = impl->camera.view_matrix();
+                glm::mat4 model2view = view_matrix(impl->camera);
 
                 // we only care about rotation of the axes, not scaling
                 model2view[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
@@ -549,6 +561,12 @@ void Model_viewer_widget::draw(
                     impl->hovertest_x = static_cast<int>((mp.x - wp.x) - cp.x);
                     // y is reversed (OpenGL coords, not screen)
                     impl->hovertest_y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
+                }
+
+                if (impl->mouse_over_render) {
+                    ImGui::CaptureMouseFromApp(false);
+                } else {
+                    impl->camera_state = Camera_state::Viewing;
                 }
 
                 if (current_hover != impl->hovered_component) {

@@ -98,8 +98,8 @@ add_executable(osc
     src/3d/drawlist.hpp
     src/3d/render_target.hpp
     src/3d/renderer.hpp
-    src/3d/polar_camera.hpp
-    src/3d/polar_camera.cpp
+    src/3d/cameras.hpp
+    src/3d/cameras.cpp
     src/3d/backend.cpp
 
     src/opensim_bindings/simbody_geometry_visitor.hpp
