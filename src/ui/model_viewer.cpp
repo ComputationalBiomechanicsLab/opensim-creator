@@ -110,7 +110,9 @@ struct osc::Model_viewer_widget::Impl final {
         // post-draw: check if the hit-test passed
         // TODO:: optimized indices are from the previous frame, which might
         //        contain now-stale components
-        hovered_component = geometry.component_from_passthrough(passthrough);
+        if (mouse_over_render) {
+            hovered_component = geometry.component_from_passthrough(passthrough);
+        }
 
         return render_target.main();
     }
