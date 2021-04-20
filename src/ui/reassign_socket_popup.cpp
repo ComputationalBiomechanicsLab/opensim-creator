@@ -5,16 +5,14 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 
-std::optional<osc::ui::reassign_socket::Response> osc::ui::reassign_socket::draw(
+OpenSim::Object const* osc::ui::reassign_socket::draw(
     State& st, char const* modal_name, OpenSim::Model const& model, OpenSim::AbstractSocket const&) {
-
-    std::optional<Response> rv;
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        return rv;
+        return nullptr;
     }
 
     ImGui::InputText("search", st.search, sizeof(st.search));
@@ -22,12 +20,14 @@ std::optional<osc::ui::reassign_socket::Response> osc::ui::reassign_socket::draw
     ImGui::TextUnformatted("objects:");
     ImGui::BeginChild("obj list", ImVec2(512, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
 
+    OpenSim::Object const* rv = nullptr;
+
     for (OpenSim::Component const& c : model.getComponentList()) {
         std::string const& name = c.getName();
         if (name.find(st.search) != std::string::npos) {
             if (ImGui::Selectable(name.c_str())) {
-                if (!rv) {
-                    rv.emplace(c);
+                if (rv == nullptr) {
+                    rv = &c;
                 }
             }
         }

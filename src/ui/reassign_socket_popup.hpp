@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <functional>
-#include <optional>
 #include <string>
 
 namespace OpenSim {
@@ -16,13 +14,9 @@ namespace osc::ui::reassign_socket {
         char search[128]{};
     };
 
-    struct Response final {
-        OpenSim::Object const& new_connectee;
-
-        Response(OpenSim::Object const& _new_connectee) : new_connectee{_new_connectee} {
-        }
-    };
-
     // assumes caller handles ImGui::OpenPopup(modal_name);
-    std::optional<Response> draw(State&, char const* modal_name, OpenSim::Model const&, OpenSim::AbstractSocket const&);
+    //
+    // returns != nullptr with a pointer to the new connectee if viewer chooses
+    // one in UI
+    OpenSim::Object const* draw(State&, char const* modal_name, OpenSim::Model const&, OpenSim::AbstractSocket const&);
 }

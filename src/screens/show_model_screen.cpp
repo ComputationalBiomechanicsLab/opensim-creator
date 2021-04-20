@@ -904,10 +904,10 @@ struct Show_model_screen::Impl final {
         if (ImGui::Begin("Muscles")) {
             auto resp = muscles_table::draw(muscles_table_st, *model, *latest_state);
             switch (resp.type) {
-            case muscles_table::SelectionChanged:
+            case muscles_table::Response::SelectionChanged:
                 selected_component = resp.ptr;
                 break;
-            case muscles_table::HoverChanged:
+            case muscles_table::Response::HoverChanged:
                 current_hover = resp.ptr;
                 break;
             default:

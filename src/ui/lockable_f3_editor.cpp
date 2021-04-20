@@ -13,7 +13,7 @@ static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
     return static_cast<float>(older[0]);
 }
 
-bool osc::draw_lockable_f3_editor(char const* lock_id, char const* editor_id, float* v, bool* is_locked) {
+bool osc::ui::lockable_f3_editor::draw(char const* lock_id, char const* editor_id, float* v, bool* is_locked) {
     bool changed = false;
 
     if (ImGui::Checkbox(lock_id, is_locked)) {

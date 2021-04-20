@@ -90,7 +90,7 @@ std::optional<osc::ui::add_body_popup::New_body>
     ImGui::SameLine();
     ui::help_marker::draw("The location (Vec3) of the mass center in the body frame");
     ImGui::NextColumn();
-    draw_lockable_f3_editor("##comlockbtn", "##comeditor", st.com, &st.com_locked);
+    ui::lockable_f3_editor::draw("##comlockbtn", "##comeditor", st.com, &st.com_locked);
     ImGui::NextColumn();
 
     ImGui::Text("inertia");
@@ -98,7 +98,7 @@ std::optional<osc::ui::add_body_popup::New_body>
     ui::help_marker::draw(
         "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin");
     ImGui::NextColumn();
-    draw_lockable_f3_editor("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertia_locked);
+    ui::lockable_f3_editor::draw("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertia_locked);
     ImGui::NextColumn();
 
     ImGui::Text("join body to");

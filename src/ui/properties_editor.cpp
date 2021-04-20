@@ -167,7 +167,7 @@ std::optional<property_editor::Response>
         static_cast<float>(v[2]),
     };
 
-    if (draw_lockable_f3_editor("##vec3lockbtn", "##vec3editor", fv, &st.is_locked)) {
+    if (ui::lockable_f3_editor::draw("##vec3lockbtn", "##vec3editor", fv, &st.is_locked)) {
         v[0] = static_cast<double>(fv[0]);
         v[1] = static_cast<double>(fv[1]);
         v[2] = static_cast<double>(fv[2]);

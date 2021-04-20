@@ -150,11 +150,11 @@ osc::ui::muscles_table::Response
     for (OpenSim::Muscle const* musc : st.muscles) {
         ImGui::Text("%s", musc->getName().c_str());
         if (ImGui::IsItemHovered()) {
-            rv.type = HoverChanged;
+            rv.type = Response::HoverChanged;
             rv.ptr = musc;
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-            rv.type = SelectionChanged;
+            rv.type = Response::SelectionChanged;
             rv.ptr = musc;
         }
         ImGui::NextColumn();

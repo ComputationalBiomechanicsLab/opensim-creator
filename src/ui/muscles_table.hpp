@@ -30,14 +30,10 @@ namespace osc::ui::muscles_table {
         bool reverse_results = false;
     };
 
-    enum Response_type {
-        NothingChanged,
-        HoverChanged,
-        SelectionChanged,
-    };
-
     struct Response final {
-        Response_type type = NothingChanged;
+        enum Type { NothingChanged, HoverChanged, SelectionChanged };
+
+        Type type = NothingChanged;
         OpenSim::Muscle const* ptr = nullptr;
     };
 

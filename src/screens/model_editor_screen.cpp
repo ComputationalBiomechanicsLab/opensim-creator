@@ -790,15 +790,16 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
             ImGui::EndTooltip();
         }
 
-        if (auto resp = ui::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket);
-            resp) {
+        if (OpenSim::Object const* connectee =
+                ui::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket);
+            connectee) {
 
             ImGui::CloseCurrentPopup();
 
             OpenSim::Object const& existing = socket.getConnecteeAsObject();
             try {
                 impl.before_modify_selection();
-                selection.updSocket(sn).connect(resp->new_connectee);
+                selection.updSocket(sn).connect(*connectee);
                 impl.ui.reassign_socket.search[0] = '\0';
                 impl.ui.reassign_socket.error.clear();
                 ImGui::CloseCurrentPopup();
