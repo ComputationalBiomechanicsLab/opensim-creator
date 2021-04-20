@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <string>
 
-osc::widgets::component_hierarchy::Response osc::widgets::component_hierarchy::draw(
+osc::ui::component_hierarchy::Response osc::ui::component_hierarchy::draw(
     OpenSim::Component const* root,
     OpenSim::Component const* current_selection,
     OpenSim::Component const* current_hover) {

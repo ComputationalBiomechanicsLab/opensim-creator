@@ -11,7 +11,7 @@ namespace OpenSim {
     class AbstractProperty;
 }
 
-namespace osc::widgets::property_editor {
+namespace osc::ui::property_editor {
     struct State final {
         bool is_locked = true;
     };
@@ -25,7 +25,7 @@ namespace osc::widgets::property_editor {
     std::optional<Response> draw(State&, OpenSim::AbstractProperty const& prop);
 }
 
-namespace osc::widgets::properties_editor {
+namespace osc::ui::properties_editor {
     struct State final {
         std::vector<property_editor::State> property_editors;
     };

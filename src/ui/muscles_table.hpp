@@ -13,7 +13,7 @@ namespace SimTK {
     class State;
 }
 
-namespace osc::widgets::muscles_table {
+namespace osc::ui::muscles_table {
     using SortChoice = int;
     enum SortChoice_ { SortChoice_Length = 0, SortChoice_Strain, SortChoice_NUM_CHOICES };
 

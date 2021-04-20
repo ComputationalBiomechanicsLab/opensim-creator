@@ -14,7 +14,7 @@ namespace OpenSim {
     class Joint;
 }
 
-namespace osc::widgets::add_body_popup {
+namespace osc::ui::add_body_popup {
     struct State {
         struct {
             attach_geometry_popup::State state;

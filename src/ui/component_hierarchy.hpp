@@ -4,7 +4,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osc::widgets::component_hierarchy {
+namespace osc::ui::component_hierarchy {
     enum Response_type { NothingHappened, SelectionChanged, HoverChanged };
 
     struct Response final {

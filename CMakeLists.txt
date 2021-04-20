@@ -115,41 +115,39 @@ add_executable(osc
     src/opensim_bindings/type_registry.cpp
     src/opensim_bindings/opensim_helpers.hpp
 
-    src/widgets/add_component_popup.hpp
-    src/widgets/add_component_popup.cpp
-    src/widgets/component_hierarchy_widget.hpp
-    src/widgets/component_hierarchy_widget.cpp
-    src/widgets/component_details.cpp
-    src/widgets/component_details.hpp
-    src/widgets/model_viewer_widget.hpp
-    src/widgets/model_viewer_widget.cpp
-    src/widgets/properties_editor.hpp
-    src/widgets/properties_editor.cpp
-    src/widgets/reassign_socket_modal.hpp
-    src/widgets/reassign_socket_modal.cpp
-    src/widgets/attach_geometry_modal.hpp
-    src/widgets/attach_geometry_modal.cpp
-    src/widgets/add_body_modal.hpp
-    src/widgets/add_body_modal.cpp
-    src/widgets/log_viewer_widget.hpp
-    src/widgets/log_viewer_widget.cpp
-    src/widgets/lockable_f3_editor.hpp
-    src/widgets/lockable_f3_editor.cpp
-    src/widgets/main_menu_file_tab.hpp
-    src/widgets/main_menu_file_tab.cpp
-    src/widgets/main_menu_about_tab.hpp
-    src/widgets/main_menu_about_tab.cpp
-    src/widgets/help_marker.hpp
-    src/widgets/help_marker.cpp
-    src/widgets/evenly_spaced_sparkline.hpp
-    src/widgets/coordinate_editor.hpp
-    src/widgets/coordinate_editor.cpp
-    src/widgets/muscles_table.hpp
-    src/widgets/muscles_table.cpp
-    src/widgets/select_2_pfs_modal.hpp
-    src/widgets/select_2_pfs_modal.cpp
-    src/widgets/model_actions_panel.hpp
-    src/widgets/model_actions_panel.cpp
+    src/ui/add_component_popup.hpp
+    src/ui/add_component_popup.cpp
+    src/ui/component_hierarchy.hpp
+    src/ui/component_hierarchy.cpp
+    src/ui/component_details.cpp
+    src/ui/component_details.hpp
+    src/ui/model_viewer.hpp
+    src/ui/model_viewer.cpp
+    src/ui/properties_editor.hpp
+    src/ui/properties_editor.cpp
+    src/ui/reassign_socket_popup.hpp
+    src/ui/reassign_socket_popup.cpp
+    src/ui/attach_geometry_popup.hpp
+    src/ui/attach_geometry_popup.cpp
+    src/ui/add_body_popup.hpp
+    src/ui/add_body_popup.cpp
+    src/ui/log_viewer.hpp
+    src/ui/log_viewer.cpp
+    src/ui/lockable_f3_editor.hpp
+    src/ui/lockable_f3_editor.cpp
+    src/ui/main_menu.hpp
+    src/ui/main_menu.cpp
+    src/ui/help_marker.hpp
+    src/ui/help_marker.cpp
+    src/ui/evenly_spaced_sparkline.hpp
+    src/ui/coordinate_editor.hpp
+    src/ui/coordinate_editor.cpp
+    src/ui/muscles_table.hpp
+    src/ui/muscles_table.cpp
+    src/ui/select_2_pfs_popup.hpp
+    src/ui/select_2_pfs_popup.cpp
+    src/ui/model_actions.hpp
+    src/ui/model_actions.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

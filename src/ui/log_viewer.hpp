@@ -1,6 +1,6 @@
 #pragma once
 
-namespace osc::widgets::log_viewer {
+namespace osc::ui::log_viewer {
     struct State final {
         bool autoscroll = true;
     };

@@ -16,7 +16,7 @@
 #include <unordered_map>
 
 using namespace osc;
-using namespace osc::widgets;
+using namespace osc::ui;
 
 template<typename Coll1, typename Coll2>
 static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
@@ -322,8 +322,8 @@ namespace {
                                                                              object_prop_editor<OpenSim::Appearance>()};
 }
 
-std::optional<osc::widgets::property_editor::Response>
-    osc::widgets::property_editor::draw(State& st, OpenSim::AbstractProperty const& prop) {
+std::optional<osc::ui::property_editor::Response>
+    osc::ui::property_editor::draw(State& st, OpenSim::AbstractProperty const& prop) {
     // left column: property name
     ImGui::Text("%s", prop.getName().c_str());
     {
@@ -352,8 +352,8 @@ std::optional<osc::widgets::property_editor::Response>
     return rv;
 }
 
-std::optional<osc::widgets::properties_editor::Response>
-    osc::widgets::properties_editor::draw(State& st, OpenSim::Object& obj) {
+std::optional<osc::ui::properties_editor::Response>
+    osc::ui::properties_editor::draw(State& st, OpenSim::Object& obj) {
 
     int num_props = obj.getNumProperties();
     OSC_ASSERT(num_props >= 0);
@@ -376,8 +376,8 @@ std::optional<osc::widgets::properties_editor::Response>
     return rv;
 }
 
-std::optional<osc::widgets::properties_editor::Response>
-    osc::widgets::properties_editor::draw(State& st, OpenSim::Object& obj, nonstd::span<int const> indices) {
+std::optional<osc::ui::properties_editor::Response>
+    osc::ui::properties_editor::draw(State& st, OpenSim::Object& obj, nonstd::span<int const> indices) {
 
     int highest = *std::max_element(indices.begin(), indices.end());
     int nprops = obj.getNumProperties();

@@ -60,7 +60,7 @@ std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
 }
 
 static std::unique_ptr<OpenSim::Mesh>
-    on_vtp_choice_made(osc::widgets::attach_geometry_popup::State& st, std::filesystem::path path) {
+    on_vtp_choice_made(osc::ui::attach_geometry_popup::State& st, std::filesystem::path path) {
 
     auto rv = std::make_unique<OpenSim::Mesh>(path.string());
 
@@ -76,7 +76,7 @@ static std::unique_ptr<OpenSim::Mesh>
 }
 
 static std::unique_ptr<OpenSim::Mesh>
-    try_draw_file_choice(osc::widgets::attach_geometry_popup::State& st, std::filesystem::path const& p) {
+    try_draw_file_choice(osc::ui::attach_geometry_popup::State& st, std::filesystem::path const& p) {
 
     if (p.filename().string().find(st.search.data()) != std::string::npos) {
         if (ImGui::Selectable(p.filename().string().c_str())) {
@@ -95,7 +95,7 @@ static std::optional<std::filesystem::path> prompt_open_vtp() {
     return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
 }
 
-std::unique_ptr<OpenSim::Mesh> osc::widgets::attach_geometry_popup::draw(State& st, char const* modal_name) {
+std::unique_ptr<OpenSim::Mesh> osc::ui::attach_geometry_popup::draw(State& st, char const* modal_name) {
 
     // center the modal
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();

@@ -12,9 +12,9 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::widgets;
+using namespace osc::ui;
 
-std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component_popup::get_pf_sockets(OpenSim::Component& c) {
+std::vector<OpenSim::AbstractSocket const*> osc::ui::add_component_popup::get_pf_sockets(OpenSim::Component& c) {
     std::vector<OpenSim::AbstractSocket const*> rv;
     for (std::string name : c.getSocketNames()) {
         OpenSim::AbstractSocket const& sock = c.getSocket(name);
@@ -32,7 +32,7 @@ std::vector<OpenSim::AbstractSocket const*> osc::widgets::add_component_popup::g
 }
 
 std::unique_ptr<OpenSim::Component>
-    osc::widgets::add_component_popup::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
+    osc::ui::add_component_popup::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
 
     // center the modal
     {
@@ -57,7 +57,7 @@ std::unique_ptr<OpenSim::Component>
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     {
-        auto maybe_updater = widgets::properties_editor::draw(st.prop_editor, *st.prototype);
+        auto maybe_updater = ui::properties_editor::draw(st.prop_editor, *st.prototype);
         if (maybe_updater) {
             maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
         }

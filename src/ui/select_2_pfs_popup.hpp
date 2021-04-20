@@ -9,7 +9,7 @@ namespace OpenSim {
     class Model;
 }
 
-namespace osc::widgets::select_2_pfs {
+namespace osc::ui::select_2_pfs {
 
     struct State final {
         OpenSim::PhysicalFrame const* first = nullptr;

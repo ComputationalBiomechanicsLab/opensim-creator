@@ -5,7 +5,7 @@
 
 #include <imgui.h>
 
-std::optional<osc::widgets::select_2_pfs::Response> osc::widgets::select_2_pfs::draw(
+std::optional<osc::ui::select_2_pfs::Response> osc::ui::select_2_pfs::draw(
     State& st, char const* modal_name, OpenSim::Model const& model, char const* first_label, char const* second_label) {
 
     // center the modal

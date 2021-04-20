@@ -17,9 +17,8 @@
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
+#include "src/ui/main_menu.hpp"
 #include "src/utils/scope_guard.hpp"
-#include "src/ui/main_menu_about_tab.hpp"
-#include "src/ui/main_menu_file_tab.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -76,7 +75,7 @@ namespace {
 }
 
 struct Splash_screen::Impl final {
-    Main_menu_file_tab_state mm_state;
+    ui::main_menu::file_tab::State mm_state;
     gl::Texture_2d logo =
         osc::load_tex(osc::config::resource_path("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     gl::Texture_2d cz_logo = osc::load_tex(
@@ -133,10 +132,10 @@ static bool on_keydown(SDL_KeyboardEvent const& e) {
 
         switch (sym) {
         case SDLK_n:
-            main_menu_new();
+            ui::main_menu::action_new_model();
             return true;
         case SDLK_o:
-            main_menu_open();
+            ui::main_menu::action_open_model();
             return true;
         case SDLK_q:
             Application::current().request_quit_application();
@@ -219,8 +218,8 @@ void osc::Splash_screen::draw() {
     }
 
     if (ImGui::BeginMainMenuBar()) {
-        draw_main_menu_file_tab(impl->mm_state);
-        draw_main_menu_about_tab();
+        ui::main_menu::file_tab::draw(impl->mm_state);
+        ui::main_menu::about_tab::draw();
         ImGui::EndMainMenuBar();
     }
 

@@ -12,10 +12,10 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osc::widgets::model_actions {
+namespace osc::ui::model_actions {
     struct State final {
-        widgets::add_body_popup::State abm;
-        widgets::select_2_pfs::State select_2_pfs;
+        ui::add_body_popup::State abm;
+        ui::select_2_pfs::State select_2_pfs;
         int joint_idx_for_pfs_popup = -1;
 
         char const* add_component_popup_name = nullptr;

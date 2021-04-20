@@ -17,7 +17,7 @@
 
 using namespace osc;
 
-osc::widgets::model_actions::State::State() : abm{}, select_2_pfs{} {
+osc::ui::model_actions::State::State() : abm{}, select_2_pfs{} {
 }
 
 static void draw_tooltip(char const* header, char const* description) {
@@ -33,7 +33,7 @@ static void draw_tooltip(char const* header, char const* description) {
 }
 
 static void render_actions_panel_content(
-    osc::widgets::model_actions::State& st,
+    osc::ui::model_actions::State& st,
     OpenSim::Model& model,
     std::function<void(OpenSim::Component*)> const& on_set_selection,
     std::function<void()> const& on_before_modify_model,
@@ -54,7 +54,7 @@ static void render_actions_panel_content(
                 "An OpenSim::Body is a PhysicalFrame (reference frame) with associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
         }
 
-        if (auto maybe_new_body = widgets::add_body_popup::draw(st.abm, add_body_modal_name, model); maybe_new_body) {
+        if (auto maybe_new_body = ui::add_body_popup::draw(st.abm, add_body_modal_name, model); maybe_new_body) {
             on_before_modify_model();
             model.addJoint(maybe_new_body->joint.release());
             auto* ptr = maybe_new_body->body.get();
@@ -86,7 +86,7 @@ static void render_actions_panel_content(
             ImGui::OpenPopup(modal_name);
         }
 
-        if (auto resp = widgets::select_2_pfs::draw(st.select_2_pfs, modal_name, model, "parent", "child"); resp) {
+        if (auto resp = ui::select_2_pfs::draw(st.select_2_pfs, modal_name, model, "parent", "child"); resp) {
             OSC_ASSERT(
                 st.joint_idx_for_pfs_popup >= 0 &&
                 static_cast<size_t>(st.joint_idx_for_pfs_popup) < joint::prototypes().size());
@@ -117,7 +117,7 @@ static void render_actions_panel_content(
             for (size_t i = 0; i < names.size(); ++i) {
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::ContactGeometry> copy{contact_geom::prototypes()[i]->clone()};
-                    st.add_component_popup = widgets::add_component_popup::State{std::move(copy)};
+                    st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Contact Geometry";
                     open_popup = true;
                 }
@@ -144,7 +144,7 @@ static void render_actions_panel_content(
 
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::Constraint> copy{constraint::prototypes()[i]->clone()};
-                    st.add_component_popup = widgets::add_component_popup::State{std::move(copy)};
+                    st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Constraint";
                     open_popup = true;
                 }
@@ -169,7 +169,7 @@ static void render_actions_panel_content(
 
                 if (ImGui::MenuItem(names[i])) {
                     std::unique_ptr<OpenSim::Force> copy{force::prototypes()[i]->clone()};
-                    st.add_component_popup = widgets::add_component_popup::State{std::move(copy)};
+                    st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Force";
                     open_popup = true;
                 }
@@ -188,7 +188,7 @@ static void render_actions_panel_content(
 
     if (st.add_component_popup && st.add_component_popup_name) {
         auto new_component =
-            widgets::add_component_popup::draw(*st.add_component_popup, st.add_component_popup_name, model);
+            ui::add_component_popup::draw(*st.add_component_popup, st.add_component_popup_name, model);
 
         if (new_component) {
             auto ptr = new_component.get();
@@ -222,7 +222,7 @@ static void render_actions_panel_content(
     }
 }
 
-void osc::widgets::model_actions::draw(
+void osc::ui::model_actions::draw(
     State& st,
     OpenSim::Model& model,
     std::function<void(OpenSim::Component*)> const& on_set_selection,

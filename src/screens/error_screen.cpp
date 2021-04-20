@@ -15,7 +15,7 @@ using namespace osc;
 
 struct Error_screen::Impl final {
     std::string msg;
-    widgets::log_viewer::State log;
+    ui::log_viewer::State log;
 
     Impl(std::string _msg) : msg{std::move(_msg)} {
     }
@@ -69,5 +69,5 @@ void Error_screen::draw() {
         ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
     }
 
-    widgets::log_viewer::draw(impl->log, "log");
+    ui::log_viewer::draw(impl->log, "log");
 }

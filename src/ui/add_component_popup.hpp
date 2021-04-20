@@ -13,7 +13,7 @@ namespace OpenSim {
     class PhysicalFrame;
 }
 
-namespace osc::widgets::add_component_popup {
+namespace osc::ui::add_component_popup {
     std::vector<OpenSim::AbstractSocket const*> get_pf_sockets(OpenSim::Component& c);
 
     struct State final {

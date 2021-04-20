@@ -8,7 +8,7 @@ namespace OpenSim {
     class Component;
 }
 
-namespace osc::widgets::component_details {
+namespace osc::ui::component_details {
     enum Response_type {
         NothingHappened,
         SelectionChanged

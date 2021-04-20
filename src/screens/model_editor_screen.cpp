@@ -15,8 +15,7 @@
 #include "src/ui/component_hierarchy.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/log_viewer.hpp"
-#include "src/ui/main_menu_about_tab.hpp"
-#include "src/ui/main_menu_file_tab.hpp"
+#include "src/ui/main_menu.hpp"
 #include "src/ui/model_actions.hpp"
 #include "src/ui/model_viewer.hpp"
 #include "src/ui/properties_editor.hpp"
@@ -71,7 +70,7 @@
 
 namespace fs = std::filesystem;
 using namespace osc;
-using namespace osc::widgets;
+using namespace osc::ui;
 using std::literals::operator""s;
 using std::literals::operator""ms;
 
@@ -208,7 +207,7 @@ struct Undo_redo_entry final {
 };
 
 // popup for selecting a component of the specified type
-namespace osc::widgets::select_component {
+namespace osc::ui::select_component {
     struct State final {};
 
     // returns non-nullptr if user selects a component (that derives from) the specified type
@@ -267,14 +266,14 @@ struct Model_editor_screen::Impl final {
 
     // state of any sub-panels the editor screen draws
     struct {
-        Main_menu_file_tab_state main_menu_tab;
-        widgets::add_body_popup::State abm;
-        widgets::properties_editor::State properties_editor;
-        widgets::reassign_socket::State reassign_socket;
-        widgets::attach_geometry_popup::State attach_geometry_modal;
-        widgets::select_2_pfs::State select_2_pfs;
-        widgets::model_actions::State model_actions_panel;
-        widgets::log_viewer::State log_viewer;
+        ui::main_menu::file_tab::State main_menu_tab;
+        ui::add_body_popup::State abm;
+        ui::properties_editor::State properties_editor;
+        ui::reassign_socket::State reassign_socket;
+        ui::attach_geometry_popup::State attach_geometry_modal;
+        ui::select_2_pfs::State select_2_pfs;
+        ui::model_actions::State model_actions_panel;
+        ui::log_viewer::State log_viewer;
     } ui;
 
     // poller that checks (with debouncing) when model being edited has changed on the filesystem
@@ -668,9 +667,9 @@ static void draw_hcf_contextual_actions(Model_editor_screen::Impl& impl, OpenSim
             ImGui::OpenPopup("select contact geometry");
         }
 
-        widgets::select_component::State s;
+        ui::select_component::State s;
         OpenSim::ContactGeometry const* added =
-            widgets::select_component::draw<OpenSim::ContactGeometry>(s, "select contact geometry", impl.model());
+            ui::select_component::draw<OpenSim::ContactGeometry>(s, "select contact geometry", impl.model());
 
         if (added) {
             impl.before_modify_selection();
@@ -791,8 +790,7 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
             ImGui::EndTooltip();
         }
 
-        if (auto resp =
-                widgets::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket);
+        if (auto resp = ui::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.model(), socket);
             resp) {
 
             ImGui::CloseCurrentPopup();
@@ -1166,7 +1164,7 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
 
             switch (e.keysym.sym) {
             case SDLK_s:
-                main_menu_save_as(impl.model());
+                ui::main_menu::action_save_as(impl.model());
                 return true;
             case SDLK_z:
                 action_redo(impl);
@@ -1177,13 +1175,13 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
 
         switch (e.keysym.sym) {
         case SDLK_n:
-            main_menu_new();
+            ui::main_menu::action_new_model();
             return true;
         case SDLK_o:
-            main_menu_open();
+            ui::main_menu::action_open_model();
             return true;
         case SDLK_s:
-            main_menu_save(impl.model());
+            ui::main_menu::action_save(impl.model());
             return true;
         case SDLK_q:
             Application::current().request_quit_application();
@@ -1207,7 +1205,7 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
         action_delete_selection_from_model(impl);
         return true;
     case SDLK_F12:
-        main_menu_save_as(impl.model());
+        ui::main_menu::action_save_as(impl.model());
         return true;
     }
 
@@ -1267,9 +1265,9 @@ void osc::Model_editor_screen::tick() {
 void osc::Model_editor_screen::draw() {
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
-        draw_main_menu_file_tab(impl->ui.main_menu_tab, &impl->model());
+        ui::main_menu::file_tab::draw(impl->ui.main_menu_tab, &impl->model());
         draw_main_menu_actions_tab(*impl);
-        draw_main_menu_about_tab();
+        ui::main_menu::about_tab::draw();
 
         // colored "switch to simulator" menu button
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
@@ -1286,7 +1284,7 @@ void osc::Model_editor_screen::draw() {
         auto on_set_selection = [&](OpenSim::Component* c) { impl->set_selection(c); };
         auto before_modify_model = [&]() { impl->before_modify_model(); };
         auto after_modify_model = [&]() { impl->after_modify_model(); };
-        widgets::model_actions::draw(
+        ui::model_actions::draw(
             impl->ui.model_actions_panel, impl->model(), on_set_selection, before_modify_model, after_modify_model);
     }
 
@@ -1324,7 +1322,7 @@ void osc::Model_editor_screen::draw() {
 
     // draw model hierarchy viewer
     if (ImGui::Begin("Hierarchy")) {
-        auto resp = widgets::component_hierarchy::draw(&impl->model().getRoot(), impl->selection(), impl->hover());
+        auto resp = ui::component_hierarchy::draw(&impl->model().getRoot(), impl->selection(), impl->hover());
         switch (resp.type) {
         case component_hierarchy::SelectionChanged:
             impl->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
@@ -1354,7 +1352,7 @@ void osc::Model_editor_screen::draw() {
     ImGui::End();
 
     // draw log viewer
-    widgets::log_viewer::draw(impl->ui.log_viewer, "Log");
+    ui::log_viewer::draw(impl->ui.log_viewer, "Log");
 
     if (impl->recovered_from_disaster) {
         impl->redo.clear();

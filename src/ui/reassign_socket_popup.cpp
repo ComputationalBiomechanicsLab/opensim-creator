@@ -5,7 +5,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 
-std::optional<osc::widgets::reassign_socket::Response> osc::widgets::reassign_socket::draw(
+std::optional<osc::ui::reassign_socket::Response> osc::ui::reassign_socket::draw(
     State& st, char const* modal_name, OpenSim::Model const& model, OpenSim::AbstractSocket const&) {
 
     std::optional<Response> rv;

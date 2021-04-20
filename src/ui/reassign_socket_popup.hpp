@@ -10,7 +10,7 @@ namespace OpenSim {
     class Object;
 }
 
-namespace osc::widgets::reassign_socket {
+namespace osc::ui::reassign_socket {
     struct State final {
         std::string error;
         char search[128]{};

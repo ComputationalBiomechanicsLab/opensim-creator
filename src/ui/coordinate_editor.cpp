@@ -9,7 +9,7 @@ static bool sort_by_name(OpenSim::Coordinate const* c1, OpenSim::Coordinate cons
     return c1->getName() < c2->getName();
 }
 
-static bool should_filter_out(osc::widgets::coordinate_editor::State& st, OpenSim::Coordinate const* c) {
+static bool should_filter_out(osc::ui::coordinate_editor::State& st, OpenSim::Coordinate const* c) {
     if (c->getName().find(st.filter) == c->getName().npos) {
         return true;
     }
@@ -39,7 +39,7 @@ void osc::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordina
     }
 }
 
-bool osc::widgets::coordinate_editor::draw(State& st, OpenSim::Model const& model, SimTK::State& stk_st) {
+bool osc::ui::coordinate_editor::draw(State& st, OpenSim::Model const& model, SimTK::State& stk_st) {
     // render coordinate filters
     {
         ImGui::Text("filters:");

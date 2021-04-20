@@ -15,7 +15,7 @@ namespace osc {
     void get_coordinates(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
 }
 
-namespace osc::widgets::coordinate_editor {
+namespace osc::ui::coordinate_editor {
     struct State final {
         char filter[64]{};
         bool sort_by_name = true;

@@ -9,17 +9,16 @@
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
-#include "src/utils/bitwise_algs.hpp"
-#include "src/utils/file_change_poller.hpp"
 #include "src/ui/component_details.hpp"
 #include "src/ui/component_hierarchy.hpp"
 #include "src/ui/coordinate_editor.hpp"
 #include "src/ui/evenly_spaced_sparkline.hpp"
 #include "src/ui/log_viewer.hpp"
-#include "src/ui/main_menu_about_tab.hpp"
-#include "src/ui/main_menu_file_tab.hpp"
+#include "src/ui/main_menu.hpp"
 #include "src/ui/model_viewer.hpp"
 #include "src/ui/muscles_table.hpp"
+#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/file_change_poller.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -52,7 +51,7 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::widgets;
+using namespace osc::ui;
 using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
 
@@ -602,7 +601,7 @@ struct Show_model_screen::Impl final {
     };
     OpenSim::Component const* current_hover = nullptr;
 
-    Main_menu_file_tab_state mm_filetab_st;
+    ui::main_menu::file_tab::State mm_filetab_st;
 
     coordinate_editor::State coords_tab_st;
     muscles_table::State muscles_table_st;
@@ -851,9 +850,9 @@ struct Show_model_screen::Impl final {
     void draw() {
         // draw top menu bar
         if (ImGui::BeginMainMenuBar()) {
-            draw_main_menu_file_tab(mm_filetab_st);
+            ui::main_menu::file_tab::draw(mm_filetab_st);
             this->draw_main_menu_actions_tab();
-            draw_main_menu_about_tab();
+            ui::main_menu::about_tab::draw();
 
             if (ImGui::Button("Switch to editor (Ctrl+E)")) {
                 Application::current().request_screen_transition<Model_editor_screen>(
@@ -933,7 +932,7 @@ struct Show_model_screen::Impl final {
         ImGui::End();
 
         if (ImGui::Begin("Coordinates")) {
-            if (widgets::coordinate_editor::draw(coords_tab_st, *model, *latest_state)) {
+            if (ui::coordinate_editor::draw(coords_tab_st, *model, *latest_state)) {
                 on_user_edited_state();
             }
         }
@@ -944,7 +943,7 @@ struct Show_model_screen::Impl final {
         }
         ImGui::End();
 
-        widgets::log_viewer::draw(log_viewer_st, "Log");
+        ui::log_viewer::draw(log_viewer_st, "Log");
     }
 
     void on_user_wants_to_add_ma_plot(std::pair<OpenSim::Muscle const*, OpenSim::Coordinate const*> pair) {
@@ -1126,7 +1125,7 @@ struct Show_model_screen::Impl final {
         }
 
         // draw standard selection info
-        if (auto resp = widgets::component_details::draw(*latest_state, selected_component.get());
+        if (auto resp = ui::component_details::draw(*latest_state, selected_component.get());
             resp.type == component_details::SelectionChanged) {
             selected_component = resp.ptr;
         }

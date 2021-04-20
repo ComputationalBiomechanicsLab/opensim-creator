@@ -9,8 +9,8 @@
 
 static constexpr char const* names[] = OSC_MUSCLE_SORT_NAMES;
 
-osc::widgets::muscles_table::Response
-    osc::widgets::muscles_table::draw(State& st, OpenSim::Model const& model, SimTK::State const& stkst) {
+osc::ui::muscles_table::Response
+    osc::ui::muscles_table::draw(State& st, OpenSim::Model const& model, SimTK::State const& stkst) {
 
     Response rv;
 
