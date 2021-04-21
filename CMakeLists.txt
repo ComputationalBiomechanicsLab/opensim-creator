@@ -79,6 +79,8 @@ add_executable(osc
 
     src/3d/gl.hpp
     src/3d/gl.cpp
+    src/3d/gl_extensions.hpp
+    src/3d/gl_extensions.cpp
     src/3d/textured_vert.hpp
     src/3d/untextured_vert.hpp
     src/3d/mesh.hpp
@@ -175,6 +177,9 @@ add_executable(osc
     src/utils/scope_guard.hpp
     src/utils/circular_buffer.hpp
     src/utils/file_change_poller.hpp
+    src/utils/helpers.hpp
+    src/utils/helpers.cpp
+    src/utils/sfinae.hpp
 
     src/config.hpp
     src/config.cpp

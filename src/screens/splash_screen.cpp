@@ -4,6 +4,7 @@
 #include "src/3d/cameras.hpp"
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gl_extensions.hpp"
 #include "src/3d/gpu_cache.hpp"
 #include "src/3d/mesh_generation.hpp"
 #include "src/3d/mesh_instance.hpp"
@@ -18,6 +19,7 @@
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/opengl_test_screen.hpp"
 #include "src/ui/main_menu.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
 
 #include <GL/glew.h>
@@ -46,11 +48,13 @@ namespace {
     // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_texture.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("plain_texture.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("plain_texture.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aTexCoord{1};
 
         gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
         gl::Uniform_float uTextureScaler = gl::GetUniformLocation(p, "uTextureScaler");
@@ -58,14 +62,13 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
@@ -93,7 +96,7 @@ struct Splash_screen::Impl final {
     Render_target render_target{1, 1, 1};
     Renderer renderer;
     Plain_texture_shader pts;
-    gl::Array_bufferT<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
+    gl::Array_buffer<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
     gl::Vertex_array quad_vao = Plain_texture_shader::create_vao(quad_vbo);
 
     Impl() {
@@ -296,11 +299,11 @@ void osc::Splash_screen::draw() {
         gl::BindTexture(impl->tud_logo);
         gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
         gl::BindVertexArray(impl->quad_vao);
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
+        gl::Disable(GL_DEPTH_TEST);
+        gl::Enable(GL_BLEND);
         gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
+        gl::Disable(GL_BLEND);
+        gl::Enable(GL_DEPTH_TEST);
         gl::BindVertexArray();
     }
 
@@ -321,11 +324,11 @@ void osc::Splash_screen::draw() {
         gl::BindTexture(impl->cz_logo);
         gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
         gl::BindVertexArray(impl->quad_vao);
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
+        gl::Disable(GL_DEPTH_TEST);
+        gl::Enable(GL_BLEND);
         gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
+        gl::Disable(GL_BLEND);
+        gl::Enable(GL_DEPTH_TEST);
         gl::BindVertexArray();
     }
 }

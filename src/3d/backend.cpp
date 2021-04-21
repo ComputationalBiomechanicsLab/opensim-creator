@@ -3,6 +3,7 @@
 
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gl_extensions.hpp"
 #include "src/3d/gpu_data_reference.hpp"
 #include "src/3d/gpu_storage.hpp"
 #include "src/3d/mesh.hpp"
@@ -17,6 +18,8 @@
 #include "src/3d/untextured_vert.hpp"
 #include "src/assertions.hpp"
 #include "src/config.hpp"
+#include "src/utils/helpers.hpp"
+#include "src/utils/sfinae.hpp"
 
 #include <GL/glew.h>
 #include <glm/ext/matrix_transform.hpp>
@@ -71,124 +74,6 @@ namespace {
         sizeof(Untextured_vert) == 6 * sizeof(float),
         "unexpected struct size: could cause problems when uploading to the GPU: review where this is used");
 
-    void Mat4Pointer(gl::Attribute const& mat4loc, size_t base_offset) {
-        GLuint loc = static_cast<GLuint>(mat4loc);
-        for (unsigned i = 0; i < 4; ++i) {
-            // HACK: from LearnOpenGL: mat4's must be set in this way because
-            //       of OpenGL not allowing more than 4 or so floats to be set
-            //       in a single call
-            //
-            // see:
-            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
-            glVertexAttribPointer(
-                loc + i,
-                4,
-                GL_FLOAT,
-                GL_FALSE,
-                sizeof(Mesh_instance),
-                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec4)));
-            glEnableVertexAttribArray(loc + i);
-            glVertexAttribDivisor(loc + i, 1);
-        }
-    }
-
-    void Mat4x3Pointer(gl::Attribute const& mat4x3loc, size_t base_offset) {
-        GLuint loc = static_cast<GLuint>(mat4x3loc);
-        for (unsigned i = 0; i < 4; ++i) {
-            // HACK: from LearnOpenGL: mat4's must be set in this way because
-            //       of OpenGL not allowing more than 4 or so floats to be set
-            //       in a single call
-            //
-            // see:
-            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
-            glVertexAttribPointer(
-                loc + i,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                sizeof(Mesh_instance),
-                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
-            glEnableVertexAttribArray(loc + i);
-            glVertexAttribDivisor(loc + i, 1);
-        }
-    }
-
-    void Mat3Pointer(gl::Attribute const& mat3loc, size_t base_offset) {
-        GLuint loc = static_cast<GLuint>(mat3loc);
-        for (unsigned i = 0; i < 3; ++i) {
-            // HACK: from LearnOpenGL: mat4's must be set in this way because
-            //       of OpenGL not allowing more than 4 or so floats to be set
-            //       in a single call
-            //
-            // see:
-            // https://learnopengl.com/code_viewer_gh.php?code=src/4.advanced_opengl/10.3.asteroids_instanced/asteroids_instanced.cpp
-            glVertexAttribPointer(
-                loc + i,
-                3,
-                GL_FLOAT,
-                GL_FALSE,
-                sizeof(Mesh_instance),
-                reinterpret_cast<void*>(base_offset + i * sizeof(glm::vec3)));
-            glEnableVertexAttribArray(loc + i);
-            glVertexAttribDivisor(loc + i, 1);
-        }
-    }
-
-    void Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
-        glVertexAttribPointer(
-            vec4log, 4, GL_FLOAT, GL_FALSE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
-        glEnableVertexAttribArray(vec4log);
-        glVertexAttribDivisor(vec4log, 1);
-    }
-
-    void u8_to_Vec3Pointer(gl::Attribute const& vec3log, size_t base_offset) {
-        glVertexAttribPointer(
-            vec3log, 3, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
-        glEnableVertexAttribArray(vec3log);
-        glVertexAttribDivisor(vec3log, 1);
-    }
-
-    void u8_to_Vec4Pointer(gl::Attribute const& vec4log, size_t base_offset) {
-        glVertexAttribPointer(
-            vec4log, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Mesh_instance), reinterpret_cast<void*>(base_offset));
-        glEnableVertexAttribArray(vec4log);
-        glVertexAttribDivisor(vec4log, 1);
-    }
-
-    /**
-     * what you are about to see (using SFINAE to test whether a class has a uv coord)
-     * is better described with a diagram:
-
-            _            _.,----,
- __  _.-._ / '-.        -  ,._  \)
-|  `-)_   '-.   \       / < _ )/" }
-/__    '-.   \   '-, ___(c-(6)=(6)
- , `'.    `._ '.  _,'   >\    "  )
- :;;,,'-._   '---' (  ( "/`. -='/
-;:;;:;;,  '..__    ,`-.`)'- '--'
-;';:;;;;;'-._ /'._|   Y/   _/' \
-      '''"._ F    |  _/ _.'._   `\
-             L    \   \/     '._  \
-      .-,-,_ |     `.  `'---,  \_ _|
-      //    'L    /  \,   ("--',=`)7
-     | `._       : _,  \  /'`-._L,_'-._
-     '--' '-.\__/ _L   .`'         './/
-                 [ (  /
-                  ) `{
-       snd        \__)
-
-     */
-    template<typename>
-    struct sfinae_true : std::true_type {};
-    namespace detail {
-        template<typename T>
-        static auto test_has_texcoord(int) -> sfinae_true<decltype(std::declval<T>().texcoord)>;
-        template<typename T>
-        static auto test_has_texcoord(long) -> std::false_type;
-    }
-    template<typename T>
-    struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
-
     // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
     // COLOR0 and RGB passthrough for COLOR1
     //
@@ -196,19 +81,21 @@ namespace {
     // - COLOR1: RGB passthrough (selection logic + rim alphas)
     struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("gouraud_mrt.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("gouraud_mrt.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("gouraud_mrt.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("gouraud_mrt.frag")).c_str()));
 
         // vertex attrs
-        static constexpr gl::Attribute aLocation = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(2);
+        static constexpr gl::Attribute_vec3 aLocation{0};
+        static constexpr gl::Attribute_vec3 aNormal{1};
+        static constexpr gl::Attribute_vec2 aTexCoord{2};
 
         // instancing attrs
-        static constexpr gl::Attribute aModelMat = gl::AttributeAtLocation(3);
-        static constexpr gl::Attribute aNormalMat = gl::AttributeAtLocation(7);
-        static constexpr gl::Attribute aRgba0 = gl::AttributeAtLocation(10);
-        static constexpr gl::Attribute aRgb1 = gl::AttributeAtLocation(11);
+        static constexpr gl::Attribute_mat4x3 aModelMat{3};
+        static constexpr gl::Attribute_mat3 aNormalMat{7};
+        static constexpr gl::Attribute_vec4 aRgba0{10};
+        static constexpr gl::Attribute_vec3 aRgb1{11};
 
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
@@ -221,33 +108,52 @@ namespace {
         gl::Uniform_bool uSkipVP = gl::GetUniformLocation(program, "uSkipVP");
 
         template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array
-            create_vao(Vbo& vbo, gl::Element_array_buffer& ebo, gl::Array_bufferT<Mesh_instance>& instance_vbo) {
+        static gl::Vertex_array create_vao(
+            Vbo& vbo,
+            gl::Typed_buffer_handle<GL_ELEMENT_ARRAY_BUFFER>& ebo,
+            gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW>& instance_vbo) {
+
             static_assert(std::is_standard_layout<T>::value, "this is required for offsetof macro usage");
 
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(
-                aLocation, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aLocation, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aLocation);
-            gl::VertexAttribPointer(
-                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::VertexAttribPointer(aNormal, false, sizeof(T), offsetof(T, normal));
             gl::EnableVertexAttribArray(aNormal);
 
             if constexpr (has_texcoord<T>::value) {
-                gl::VertexAttribPointer(
-                    aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+                gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
                 gl::EnableVertexAttribArray(aTexCoord);
             }
-            gl::BindBuffer(ebo);
 
+            gl::BindBuffer(ebo.buffer_type, ebo);
+
+            // set up instanced VBOs
             gl::BindBuffer(instance_vbo);
-            Mat4x3Pointer(aModelMat, offsetof(Mesh_instance, transform));
-            Mat3Pointer(aNormalMat, offsetof(Mesh_instance, _normal_xform));
-            u8_to_Vec4Pointer(aRgba0, offsetof(Mesh_instance, rgba));
-            u8_to_Vec3Pointer(aRgb1, offsetof(Mesh_instance, _passthrough));
+
+            gl::VertexAttribPointer(aModelMat, false, sizeof(Mesh_instance), offsetof(Mesh_instance, transform));
+            gl::EnableVertexAttribArray(aModelMat);
+            gl::VertexAttribDivisor(aModelMat, 1);
+
+            gl::VertexAttribPointer(aNormalMat, false, sizeof(Mesh_instance), offsetof(Mesh_instance, _normal_xform));
+            gl::EnableVertexAttribArray(aNormalMat);
+            gl::VertexAttribDivisor(aNormalMat, 1);
+
+            // note: RGBs are tricksy, because their CPU-side data is UNSIGNED_BYTEs but
+            // their GPU-side data is normalized FLOATs
+
+            gl::VertexAttribPointer<decltype(aRgba0)::glsl_type, GL_UNSIGNED_BYTE>(
+                aRgba0, true, sizeof(Mesh_instance), offsetof(Mesh_instance, rgba));
+            gl::EnableVertexAttribArray(aRgba0);
+            gl::VertexAttribDivisor(aRgba0, 1);
+
+            gl::VertexAttribPointer<decltype(aRgb1)::glsl_type, GL_UNSIGNED_BYTE>(
+                aRgb1, true, sizeof(Mesh_instance), offsetof(Mesh_instance, _passthrough));
+            gl::EnableVertexAttribArray(aRgb1);
+            gl::VertexAttribDivisor(aRgb1, 1);
 
             gl::BindVertexArray();
 
@@ -260,11 +166,13 @@ namespace {
     // useful for rendering quads etc.
     struct Colormapped_plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("colormapped_plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("colormapped_plain_texture.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("colormapped_plain_texture.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("colormapped_plain_texture.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aTexCoord{1};
 
         gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
         gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
@@ -272,14 +180,13 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
@@ -291,11 +198,13 @@ namespace {
     // useful for rendering quads etc.
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_texture.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_texture.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("plain_texture.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("plain_texture.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aTexCoord{1};
 
         gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
         gl::Uniform_float uTextureScaler = gl::GetUniformLocation(p, "uTextureScaler");
@@ -303,14 +212,13 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
@@ -321,11 +229,13 @@ namespace {
     // A specialized edge-detection shader for rim highlighting
     struct Edge_detection_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("edge_detect.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("edge_detect.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("edge_detect.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("edge_detect.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aTexCoord{1};
 
         gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
@@ -336,14 +246,13 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
@@ -353,11 +262,13 @@ namespace {
 
     struct Skip_msxaa_blitter_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("skip_msxaa_blitter.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("skip_msxaa_blitter.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("skip_msxaa_blitter.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("skip_msxaa_blitter.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aTexCoord = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aTexCoord{1};
 
         gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
@@ -366,14 +277,13 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
 
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aTexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, texcoord)));
+            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
             gl::EnableVertexAttribArray(aTexCoord);
             gl::BindVertexArray();
 
@@ -384,12 +294,15 @@ namespace {
     // uses a geometry shader to render normals as lines
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("draw_normals.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("draw_normals.frag")),
-            gl::Compile<gl::Geometry_shader>(osc::config::shader_path("draw_normals.geom")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("draw_normals.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("draw_normals.frag")).c_str()),
+            gl::CompileFromSource<gl::Geometry_shader>(
+                slurp_into_string(config::shader_path("draw_normals.geom")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
-        static constexpr gl::Attribute aNormal = gl::AttributeAtLocation(1);
+        static constexpr gl::Attribute_vec3 aPos{0};
+        static constexpr gl::Attribute_vec2 aNormal{1};
 
         gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(program, "uModelMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
@@ -398,43 +311,18 @@ namespace {
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(
-                aNormal, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, normal)));
+            gl::VertexAttribPointer(aNormal, false, sizeof(T), offsetof(T, normal));
             gl::EnableVertexAttribArray(aNormal);
             gl::BindVertexArray();
 
             return vao;
         }
     };
-
-    template<typename TVert>
-    static gl::Array_buffer alloc_sized_vbo(TVert const* verts, size_t n) {
-        gl::Array_buffer rv;
-        gl::BindBuffer(rv);
-        gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(TVert) * n), verts, GL_STATIC_DRAW);
-        return rv;
-    }
-
-    static gl::Element_array_buffer ebo_from_vec(std::vector<GLushort> const& data) {
-        gl::Element_array_buffer rv;
-        gl::BindBuffer(rv);
-        gl::BufferData(rv.type, static_cast<GLsizeiptr>(sizeof(GLushort) * data.size()), data.data(), GL_STATIC_DRAW);
-        return rv;
-    }
-
-    static gl::Element_array_buffer alloc_basic_ebo(size_t n) {
-        std::vector<GLushort> data(n);
-        for (size_t i = 0; i < n; i++) {
-            data[i] = static_cast<GLushort>(i);
-        }
-
-        return ebo_from_vec(data);
-    }
 
     static constexpr GLenum mode_from_flags(Instance_flags f) noexcept {
         switch (f.mode) {
@@ -451,42 +339,30 @@ namespace {
 namespace osc {
     // mesh, fully loaded onto the GPU with whichever VAOs it needs initialized also
     struct Mesh_on_gpu final {
-        gl::Array_buffer vbo;
-        gl::Element_array_buffer ebo;
-        size_t nverts;
-        size_t nels;
-        gl::Array_bufferT<Mesh_instance> instance_vbo{static_cast<GLenum>(GL_DYNAMIC_DRAW)};
+        gl::Array_buffer<GLubyte> vbo;
+        gl::Element_array_buffer<GLushort> ebo;
+        int nverts;
+        gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW> instance_vbo;
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
+        int vert_size;
 
-    public:
         template<typename TVert>
         Mesh_on_gpu(Mesh<TVert> const& mesh) :
-            vbo{alloc_sized_vbo(mesh.vert_data.data(), mesh.vert_data.size())},
-            ebo{ebo_from_vec(mesh.indices)},
-            nverts{mesh.vert_data.size()},
-            nels{mesh.indices.size()},
-            main_vao{Gouraud_mrt_shader::create_vao<gl::Array_buffer, TVert>(vbo, ebo, instance_vbo)},
-            normal_vao{Normals_shader::create_vao<gl::Array_buffer, TVert>(vbo)} {
-        }
-
-        [[nodiscard]] int nelsi() const noexcept {
-            return static_cast<int>(nels);
-        }
-
-        [[nodiscard]] int nvertsi() const noexcept {
-            return static_cast<int>(nverts);
+            vbo(reinterpret_cast<GLubyte const*>(mesh.vert_data.data()), sizeof(TVert) * mesh.vert_data.size()),
+            ebo(mesh.indices),
+            nverts{static_cast<int>(mesh.vert_data.size())},
+            main_vao{Gouraud_mrt_shader::create_vao<decltype(vbo), TVert>(vbo, ebo, instance_vbo)},
+            normal_vao{Normals_shader::create_vao<decltype(vbo), TVert>(vbo)},
+            vert_size{static_cast<int>(sizeof(TVert))} {
         }
     };
 }
 
 namespace {
     // create an OpenGL Pixel Buffer Object (PBO) that holds exactly one pixel
-    gl::Pixel_pack_buffer make_single_pixel_PBO() {
-        gl::Pixel_pack_buffer rv;
-        gl::BindBuffer(rv);
-        GLubyte rgb[4]{};  // initialize PBO's content to zeroed values
-        gl::BufferData(rv.type, 4, rgb, GL_STREAM_READ);
+    gl::Pixel_pack_buffer<GLubyte, GL_STREAM_READ> make_single_pixel_PBO() {
+        gl::Pixel_pack_buffer<GLubyte, GL_STREAM_READ> rv = {0x00, 0x00, 0x00, 0x00};  // rgbo
         gl::UnbindBuffer(rv);
         return rv;
     }
@@ -653,10 +529,9 @@ struct Render_target::Impl final {
 
                 // configure main FBO
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color0);
-                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, color1.type, color1, 0);
-                gl::FramebufferRenderbuffer(
-                    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth24stencil8);
+                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color0);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, color1, 0);
+                gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depth24stencil8);
 
                 OSC_ASSERT(gl::is_current_fbo_complete());
 
@@ -696,7 +571,7 @@ struct Render_target::Impl final {
 
                 // configure non-MSXAA fbo
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
 
                 OSC_ASSERT(gl::is_current_fbo_complete());
 
@@ -725,7 +600,7 @@ struct Render_target::Impl final {
             fbo{[this]() {
                 gl::Frame_buffer rv;
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.type, tex, 0);
+                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0);
 
                 OSC_ASSERT(gl::is_current_fbo_complete());
 
@@ -749,7 +624,8 @@ struct Render_target::Impl final {
     // these are used to asychronously request the pixel under the user's mouse
     // such that the renderer can decode that pixel value *on the next frame*
     // without stalling the GPU pipeline
-    std::array<gl::Pixel_pack_buffer, 2> pbos{make_single_pixel_PBO(), make_single_pixel_PBO()};
+    std::array<gl::Pixel_pack_buffer<GLubyte, GL_STREAM_READ>, 2> pbos{make_single_pixel_PBO(),
+                                                                       make_single_pixel_PBO()};
     int pbo_idx = 0;  // 0 or 1
 
     // TODO: the renderer may not necessarily be drawing into the application screen
@@ -845,7 +721,7 @@ gl::Texture_2d& Render_target::main() noexcept {
 
 struct Renderer::Impl final {
     // debug quad
-    gl::Array_bufferT<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
+    gl::Array_buffer<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
     gl::Vertex_array edge_detection_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
     gl::Vertex_array skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
     gl::Vertex_array pts_quad_vao = Plain_texture_shader::create_vao(quad_vbo);
@@ -980,10 +856,11 @@ Passthrough_data Renderer::draw(
                 GLenum mode = mode_from_flags(flags);
 
                 Mesh_on_gpu& md = storage.meshes.lookup(meshid);
-                md.instance_vbo.assign(meshes + pos, meshes + end);
+                md.instance_vbo.assign(meshes + pos, end - pos);
                 gl::BindVertexArray(md.main_vao);
 
-                glDrawElementsInstanced(mode, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(end - pos));
+                glDrawElementsInstanced(
+                    mode, md.ebo.sizei(), gl::index_type(md.ebo), nullptr, static_cast<GLsizei>(end - pos));
                 gl::BindVertexArray();
 
                 pos = end;
@@ -1012,9 +889,9 @@ Passthrough_data Renderer::draw(
                 GLenum mode = mode_from_flags(mi.flags);
 
                 Mesh_on_gpu& md = storage.meshes.lookup(mi._meshid);
-                md.instance_vbo.assign(meshes + i, meshes + i + 1);
+                md.instance_vbo.assign(meshes + i, 1);
                 gl::BindVertexArray(md.main_vao);
-                glDrawElementsInstanced(mode, md.nelsi(), GL_UNSIGNED_SHORT, nullptr, static_cast<GLsizei>(1));
+                glDrawElementsInstanced(mode, md.ebo.sizei(), gl::index_type(md.ebo), nullptr, static_cast<GLsizei>(1));
                 gl::BindVertexArray();
             }
         }
@@ -1038,7 +915,7 @@ Passthrough_data Renderer::draw(
             gl::Uniform(shader.uModelMat, mi.transform);
             gl::Uniform(shader.uNormalMat, mi._normal_xform);
             gl::BindVertexArray(md.normal_vao);
-            gl::DrawArrays(GL_TRIANGLES, 0, md.nvertsi());
+            gl::DrawArrays(GL_TRIANGLES, 0, md.vbo.sizei() / md.vert_size);
         }
         gl::BindVertexArray();
     }
@@ -1155,9 +1032,9 @@ Passthrough_data Renderer::draw(
     // COLOR0. You might expect we can directly blit it to the output, but that
     // seems to explode with some OpenGL drivers (e.g. Intel iGPUs like UHD 620)
     {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.color0_resolved.fbo);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.color0_resolved.fbo);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
@@ -1167,9 +1044,9 @@ Passthrough_data Renderer::draw(
     // "resolve" (i.e. blend) the MSXAA samples in COLOR1 into non-MSXAAed textures
     // that the edge-detection shader can sample normally
     {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, buffers.scene.fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT1);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.color1_resolved.fbo);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, buffers.color1_resolved.fbo);
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::BlitFramebuffer(0, 0, buffers.w, buffers.h, 0, 0, buffers.w, buffers.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }

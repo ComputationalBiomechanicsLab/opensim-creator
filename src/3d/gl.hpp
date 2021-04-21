@@ -1,161 +1,157 @@
 #pragma once
 
-#include "src/assertions.hpp"
-
 #include <GL/glew.h>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-#include <cstddef>
 #include <exception>
-#include <filesystem>
-#include <stdexcept>
+#include <initializer_list>
 #include <string>
 
-namespace gl {
-    std::string slurp(std::filesystem::path const& path);
+#define GL_STRINGIFY(x) #x
+#define GL_TOSTRING(x) GL_STRINGIFY(x)
+#define GL_SOURCELOC __FILE__ ":" GL_TOSTRING(__LINE__)
 
-    // RAII wrapper for glDeleteShader
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteShader.xhtml
-    class Shader {
+namespace gl {
+
+    class Opengl_exception final : public std::exception {
+        std::string msg;
+
+    public:
+        template<typename Str>
+        Opengl_exception(Str&& _msg) : msg{_msg} {
+        }
+
+        char const* what() const noexcept override;
+    };
+
+    // a moveable handle to an OpenGL shader
+    class Shader_handle {
+        static constexpr GLuint senteniel = 0;
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = 0;
-
-        Shader(GLenum type) : handle{glCreateShader(type)} {
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glCreateShader: returned an empty handle"};
+        explicit Shader_handle(GLenum type) : handle{glCreateShader(type)} {
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC ": glCreateShader() failed"};
             }
         }
-        Shader(Shader const&) = delete;
-        Shader(Shader&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+
+        Shader_handle(Shader_handle const&) = delete;
+
+        constexpr Shader_handle(Shader_handle&& tmp) noexcept : handle{tmp.handle} {
+            tmp.handle = senteniel;
         }
-        Shader& operator=(Shader const&) = delete;
-        Shader& operator=(Shader&&) = delete;
-        ~Shader() noexcept {
-            if (handle != empty_handle) {
+
+        Shader_handle& operator=(Shader_handle const&) = delete;
+
+        constexpr Shader_handle& operator=(Shader_handle&& tmp) noexcept {
+            auto v = tmp.handle;
+            tmp.handle = handle;
+            handle = v;
+            return *this;
+        }
+
+        ~Shader_handle() noexcept {
+            if (handle != senteniel) {
                 glDeleteShader(handle);
             }
         }
 
-        operator GLuint() noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
+    };
 
-        operator GLuint() const noexcept {
-            return handle;  // TODO: this should be removed but is handy in (e.g. CreateProgramFrom)
+    // compile a shader from source
+    void CompileFromSource(Shader_handle const&, const char* src);
+
+    // a shader of a particular type (e.g. GL_FRAGMENT_SHADER) that owns a
+    // shader handle
+    template<GLuint ShaderType>
+    class Shader {
+        Shader_handle underlying_handle;
+
+    public:
+        static constexpr GLuint type = ShaderType;
+
+        Shader() : underlying_handle{type} {
+        }
+
+        [[nodiscard]] constexpr GLuint get() const noexcept {
+            return underlying_handle.get();
+        }
+
+        [[nodiscard]] constexpr Shader_handle const& handle() const noexcept {
+            return underlying_handle;
         }
     };
 
-    struct Vertex_shader final : public Shader {
-        Vertex_shader() : Shader{GL_VERTEX_SHADER} {
-        }
-    };
+    class Vertex_shader : public Shader<GL_VERTEX_SHADER> {};
+    class Fragment_shader : public Shader<GL_FRAGMENT_SHADER> {};
+    class Geometry_shader : public Shader<GL_GEOMETRY_SHADER> {};
 
-    struct Fragment_shader final : public Shader {
-        Fragment_shader() : Shader{GL_FRAGMENT_SHADER} {
-        }
-    };
-
-    struct Geometry_shader final : public Shader {
-        Geometry_shader() : Shader{GL_GEOMETRY_SHADER} {
-        }
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glShaderSource.xhtml
-    inline void ShaderSource(Shader& sh, char const* src) {
-        glShaderSource(sh, 1, &src, nullptr);
+    template<typename TShader>
+    inline TShader CompileFromSource(const char* src) {
+        TShader rv;
+        CompileFromSource(rv.handle(), src);
+        return rv;
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glCompileShader.xhtml
-    //     *throws on error
-    void CompileShader(Shader& sh);
-
-    template<typename T>
-    T Compile(char const* src) {
-        T shader;
-        ShaderSource(shader, src);
-        CompileShader(shader);
-        return shader;
-    }
-
-    template<typename T>
-    T Compile(std::string const& src) {
-        return Compile<T>(src.c_str());
-    }
-
-    template<typename T>
-    T Compile(std::filesystem::path const& path) {
-        try {
-            std::string src = slurp(path);
-            return Compile<T>(src);
-        } catch (std::exception const& ex) {
-            throw std::runtime_error{path.string() + ": cannot compile shader: " + ex.what()};
-        }
-    }
-
-    // RAII for glDeleteProgram
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteProgram.xhtml
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glCreateProgram.xhtml
+    // an OpenGL program (i.e. n shaders linked into one pipeline)
     class Program final {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = 0;
+        static constexpr GLuint senteniel = 0;
 
         Program() : handle{glCreateProgram()} {
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glCreateProgram: returned an empty handle"};
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glCreateProgram() failed"};
             }
         }
         Program(Program const&) = delete;
         Program(Program&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+            tmp.handle = senteniel;
         }
         Program& operator=(Program const&) = delete;
-        Program& operator=(Program&&) = delete;
+        Program& operator=(Program&& tmp) {
+            auto v = tmp.handle;
+            tmp.handle = handle;
+            handle = v;
+            return *this;
+        }
         ~Program() noexcept {
-            if (handle != empty_handle) {
+            if (handle != senteniel) {
                 glDeleteProgram(handle);
             }
         }
 
-        operator GLuint() noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
 
-    inline Program CreateProgram() {
-        return Program{};
-    }
-
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram(Program& p) {
-        glUseProgram(p);
+    inline void UseProgram(Program const& p) noexcept {
+        glUseProgram(p.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
     inline void UseProgram() {
-        glUseProgram(Program::empty_handle);
+        glUseProgram(static_cast<GLuint>(0));
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glAttachShader.xhtml
-    inline void AttachShader(Program& p, Shader const& sh) {
-        glAttachShader(p, sh);
+    inline void AttachShader(Program& p, Shader_handle const& sh) {
+        glAttachShader(p.get(), sh.get());
+    }
+
+    template<GLuint ShaderType>
+    inline void AttachShader(Program& p, Shader<ShaderType> const& s) {
+        glAttachShader(p.get(), s.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glLinkProgram.xhtml
-    //     *throws on error
     void LinkProgram(Program& prog);
 
-    inline Program CreateProgramFrom(Vertex_shader const& vs, Fragment_shader const& fs) {
+    inline gl::Program CreateProgramFrom(Vertex_shader const& vs, Fragment_shader const& fs) {
         gl::Program p;
         AttachShader(p, vs);
         AttachShader(p, fs);
@@ -163,307 +159,468 @@ namespace gl {
         return p;
     }
 
-    inline Program CreateProgramFrom(Vertex_shader const& vs, Fragment_shader const& fs, Geometry_shader const& gs) {
+    inline gl::Program
+        CreateProgramFrom(Vertex_shader const& vs, Fragment_shader const& fs, Geometry_shader const& gs) {
+
         gl::Program p;
         AttachShader(p, vs);
+        AttachShader(p, fs);
         AttachShader(p, gs);
-        AttachShader(p, fs);
         LinkProgram(p);
         return p;
-    }
-
-    // basic wrapper around an attribute
-    class Attribute {
-        GLuint location;
-
-    public:
-        explicit constexpr Attribute(GLuint _handle) : location{_handle} {
-        }
-
-        Attribute(Program& p, char const* name) {
-            GLint handle = glGetAttribLocation(p, name);
-            if (handle == -1) {
-                throw std::runtime_error{std::string{"glGetAttribLocation() failed: cannot get "} + name};
-            }
-            location = static_cast<GLuint>(handle);
-        }
-
-        operator GLuint() noexcept {
-            return location;
-        }
-
-        operator GLuint() const noexcept {
-            return location;
-        }
-    };
-
-    constexpr Attribute AttributeAtLocation(GLuint loc) {
-        return Attribute{loc};
-    }
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribPointer.xhtml
-    inline void VertexAttribPointer(
-        Attribute const& a, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer) {
-        glVertexAttribPointer(a, size, type, normalized, stride, pointer);
-    }
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glEnableVertexAttribArray.xhtml
-    inline void EnableVertexAttribArray(Attribute const& a) {
-        glEnableVertexAttribArray(a);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetUniformLocation.xhtml
     //     *throws on error
-    inline GLint GetUniformLocation(Program& p, GLchar const* name) {
-        GLint handle = glGetUniformLocation(p, name);
+    [[nodiscard]] inline GLint GetUniformLocation(Program const& p, GLchar const* name) {
+        GLint handle = glGetUniformLocation(p.get(), name);
         if (handle == -1) {
-            throw std::runtime_error{std::string{"glGetUniformLocation() failed: cannot get "} + name};
+            throw Opengl_exception{std::string{"glGetUniformLocation() failed: cannot get "} + name};
         }
         return handle;
     }
 
-    class Uniform_handle {
+    [[nodiscard]] inline GLint GetAttribLocation(Program const& p, GLchar const* name) {
+        GLint handle = glGetAttribLocation(p.get(), name);
+        if (handle == -1) {
+            throw Opengl_exception{std::string{"glGetAttribLocation() failed: cannot get "} + name};
+        }
+        return handle;
+    }
+
+    // metadata for GLSL data types that are typically bound from the CPU via (e.g.)
+    // glVertexAttribPointer
+    namespace glsl {
+        struct float_ final {
+            static constexpr GLint size = 1;
+            static constexpr GLenum type = GL_FLOAT;
+        };
+        struct int_ {
+            static constexpr GLint size = 1;
+            static constexpr GLenum type = GL_INT;
+        };
+        struct sampler2d : public int_ {};
+        struct sampler2DMS : public int_ {};
+        struct samplerCube : public int_ {};
+        struct bool_ : public int_ {};
+        struct vec2 final {
+            static constexpr GLint size = 2;
+            static constexpr GLenum type = GL_FLOAT;
+        };
+        struct vec3 final {
+            static constexpr GLint size = 3;
+            static constexpr GLenum type = GL_FLOAT;
+        };
+        struct vec4 final {
+            static constexpr GLint size = 4;
+            static constexpr GLenum type = GL_FLOAT;
+        };
+        struct mat4 final {
+            static constexpr GLint size = 16;
+            static constexpr GLenum type = GL_FLOAT;
+            static constexpr size_t els_per_location = 4;
+        };
+        struct mat3 final {
+            static constexpr GLint size = 9;
+            static constexpr GLenum type = GL_FLOAT;
+            static constexpr size_t els_per_location = 3;
+        };
+        struct mat4x3 final {
+            static constexpr GLint size = 12;
+            static constexpr GLenum type = GL_FLOAT;
+            static constexpr size_t els_per_location = 3;
+        };
+    }
+
+    // a uniform shader symbol (e.g. `uniform mat4 uProjectionMatrix`) at a
+    // particular location in a linked OpenGL program
+    template<typename TGlsl>
+    class Uniform_ {
         GLint location;
 
     public:
-        Uniform_handle(Program& p, char const* name) : location{GetUniformLocation(p, name)} {
-        }
-        Uniform_handle(GLint _location) : location{_location} {
+        constexpr Uniform_(GLint _location) noexcept : location{_location} {
         }
 
-        operator GLint() noexcept {
-            return location;
+        Uniform_(Program const& p, GLchar const* name) : location{GetUniformLocation(p, name)} {
+        }
+
+        [[nodiscard]] constexpr GLuint get() const noexcept {
+            return static_cast<GLuint>(location);
+        }
+
+        [[nodiscard]] constexpr GLint geti() const noexcept {
+            return static_cast<GLint>(location);
         }
     };
 
-    class Uniform_float final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_float : public Uniform_<glsl::float_> {
+        using Uniform_::Uniform_;
     };
-    class Uniform_int final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_int : public Uniform_<glsl::int_> {
+        using Uniform_::Uniform_;
     };
-    using Uniform_bool = Uniform_int;
-    using Uniform_sampler2d = Uniform_int;
-    using Uniform_sampler2DMS = Uniform_int;
-    using Uniform_samplerCube = Uniform_int;
-    class Uniform_mat4 final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_mat4 : public Uniform_<glsl::mat4> {
+        using Uniform_::Uniform_;
     };
-    class Uniform_mat3 final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_mat3 : public Uniform_<glsl::mat3> {
+        using Uniform_::Uniform_;
     };
-    class Uniform_vec4 final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_vec4 : public Uniform_<glsl::vec4> {
+        using Uniform_::Uniform_;
     };
-    class Uniform_vec3 final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_vec3 : public Uniform_<glsl::vec3> {
+        using Uniform_::Uniform_;
     };
-    class Uniform_vec2 final : public Uniform_handle {
-        using Uniform_handle::Uniform_handle;
+    class Uniform_vec2 : public Uniform_<glsl::vec2> {
+        using Uniform_::Uniform_;
+    };
+    class Uniform_bool : public Uniform_<glsl::bool_> {
+        using Uniform_::Uniform_;
+    };
+    class Uniform_sampler2d : public Uniform_<glsl::sampler2d> {
+        using Uniform_::Uniform_;
+    };
+    class Uniform_samplerCube : public Uniform_<glsl::samplerCube> {
+        using Uniform_::Uniform_;
+    };
+    class Uniform_sampler2DMS : public Uniform_<glsl::sampler2DMS> {
+        using Uniform_::Uniform_;
     };
 
-    struct Uniform_identity_val_tag {};
-    inline Uniform_identity_val_tag identity_val;
-
-    inline void Uniform(Uniform_float& u, GLfloat value) {
-        glUniform1f(u, value);
+    // set the value of a `float` uniform in the currently bound program
+    inline void Uniform(Uniform_float& u, GLfloat value) noexcept {
+        glUniform1f(u.geti(), value);
     }
 
-    inline void Uniform(Uniform_mat4& u, GLfloat const* value) {
-        glUniformMatrix4fv(u, 1, false, value);
+    // set the value of an `int` uniform in the currently bound program
+    inline void Uniform(Uniform_int& u, GLint value) noexcept {
+        glUniform1i(u.geti(), value);
     }
 
-    inline void Uniform(Uniform_int& u, GLint value) {
-        glUniform1i(u, value);
+    // a uniform that points to a statically-sized array of values in the shader
+    //
+    // This is just a uniform that points to the first element. The utility of
+    // this class is that it disambiguates overloads (so that calling code can
+    // assign sequences of values to uniform arrays)
+    template<typename TGlsl, int N>
+    class Uniform_array final : public Uniform_<TGlsl> {
+        static_assert(N >= 0);
+
+    public:
+        constexpr Uniform_array(GLint _location) noexcept : Uniform_<TGlsl>{_location} {
+        }
+
+        Uniform_array(Program const& p, GLchar const* name) : Uniform_<TGlsl>{p, name} {
+        }
+
+        [[nodiscard]] constexpr size_t size() const noexcept {
+            return static_cast<size_t>(N);
+        }
+
+        [[nodiscard]] constexpr int sizei() const noexcept {
+            return N;
+        }
+    };
+
+    // an attribute shader symbol (e.g. `attribute vec3 aPos`) at at particular
+    // location in a linked OpenGL program
+    template<typename TGlsl>
+    class Attribute {
+        GLint location;
+
+    public:
+        using glsl_type = TGlsl;
+
+        constexpr Attribute(GLint _location) noexcept : location{_location} {
+        }
+
+        Attribute(Program const& p, GLchar const* name) : location{GetAttribLocation(p, name)} {
+        }
+
+        [[nodiscard]] constexpr GLuint get() const noexcept {
+            return static_cast<GLuint>(location);
+        }
+
+        [[nodiscard]] constexpr GLint geti() const noexcept {
+            return static_cast<GLint>(location);
+        }
+    };
+
+    // utility defs for attributes typically used in downstream code
+    using Attribute_float = Attribute<glsl::float_>;
+    using Attribute_int = Attribute<glsl::int_>;
+    using Attribute_vec2 = Attribute<glsl::vec2>;
+    using Attribute_vec3 = Attribute<glsl::vec3>;
+    using Attribute_vec4 = Attribute<glsl::vec4>;
+    using Attribute_mat4 = Attribute<glsl::mat4>;
+    using Attribute_mat3 = Attribute<glsl::mat3>;
+    using Attribute_mat4x3 = Attribute<glsl::mat4x3>;
+
+    // set the attribute pointer parameters for an attribute, which specifies
+    // how the attribute reads its data from an OpenGL buffer
+    //
+    // this is a higher-level version of `glVertexAttribPointer`, because it
+    // also "magically" handles attributes that span multiple locations (e.g. mat4)
+    template<typename TGlsl, GLenum SourceType = TGlsl::type>
+    inline void
+        VertexAttribPointer(Attribute<TGlsl> const& attr, bool normalized, size_t stride, size_t offset) noexcept {
+        static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
+
+        GLboolean normgl = normalized ? GL_TRUE : GL_FALSE;
+        GLsizei stridegl = static_cast<GLsizei>(stride);
+        void* offsetgl = reinterpret_cast<void*>(offset);
+
+        if constexpr (TGlsl::size <= 4) {
+            glVertexAttribPointer(attr.get(), TGlsl::size, SourceType, normgl, stridegl, offsetgl);
+        } else if constexpr (SourceType == GL_FLOAT) {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::els_per_location; ++i) {
+                auto off = reinterpret_cast<void*>(offset + (i * TGlsl::els_per_location * sizeof(float)));
+                glVertexAttribPointer(attr.get() + i, TGlsl::els_per_location, SourceType, normgl, stridegl, off);
+            }
+        }
+
+        // else: not supported: see static_assert above
     }
 
-    inline void Uniform(Uniform_int& u, GLsizei n, GLint const* vs) {
-        glUniform1iv(u, n, vs);
+    // enable an attribute, which effectively makes it load data from the bound
+    // OpenGL buffer during a draw call
+    //
+    // this is a higher-level version of `glEnableVertexAttribArray`, because it
+    // also "magically" handles attributes that span multiple locations (e.g. mat4)
+    template<typename TGlsl>
+    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) {
+        static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
+
+        if constexpr (TGlsl::size <= 4) {
+            glEnableVertexAttribArray(loc.get());
+        } else if constexpr (TGlsl::type == GL_FLOAT) {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::els_per_location; ++i) {
+                glEnableVertexAttribArray(loc.get() + i);
+            }
+        }
+
+        // else: not supported: see static_assert above
     }
 
-    inline void Uniform(Uniform_mat3& u, glm::mat3 const& mat) {
-        glUniformMatrix3fv(u, 1, false, glm::value_ptr(mat));
+    // set the attribute divisor, which tells the implementation how to "step"
+    // through each attribute during an instanced draw call
+    //
+    // this is a higher-level version of `glVertexAttribDivisor`, because it
+    // also "magically" handles attributes that span multiple locations (e.g. mat4)
+    template<typename TGlsl>
+    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) {
+        static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
+
+        if constexpr (TGlsl::size <= 4) {
+            glVertexAttribDivisor(loc.get(), divisor);
+        } else if constexpr (TGlsl::type == GL_FLOAT) {
+            for (unsigned i = 0; i < TGlsl::size / TGlsl::els_per_location; ++i) {
+                glVertexAttribDivisor(loc.get() + i, divisor);
+            }
+        }
     }
 
-    inline void Uniform(Uniform_vec4& u, glm::vec4 const& v) {
-        glUniform4fv(u, 1, glm::value_ptr(v));
-    }
-
-    inline void Uniform(Uniform_vec3& u, glm::vec3 const& v) {
-        glUniform3fv(u, 1, glm::value_ptr(v));
-    }
-
-    inline void Uniform(Uniform_vec3& u, float* rgb) {
-        glUniform3fv(u, 1, rgb);
-    }
-
-    inline void Uniform(Uniform_vec4& u, float x, float y, float z, float a) {
-        Uniform(u, glm::vec4{x, y, z, a});
-    }
-
-    inline void Uniform(Uniform_vec3& u, float x, float y, float z) {
-        glUniform3f(u, x, y, z);
-    }
-
-    inline void Uniform(Uniform_mat4& u, glm::mat4 const& mat) {
-        glUniformMatrix4fv(u, 1, false, glm::value_ptr(mat));
-    }
-
-    inline void Uniform(Uniform_mat4& u, GLsizei n, glm::mat4 const* first) {
-        static_assert(sizeof(glm::mat4) == 16 * sizeof(GLfloat));
-        glUniformMatrix4fv(u, n, false, glm::value_ptr(*first));
-    }
-
-    inline void Uniform(Uniform_mat4& u, Uniform_identity_val_tag) {
-        Uniform(u, glm::identity<glm::mat4>());
-    }
-
-    inline void Uniform(Uniform_vec2& u, glm::vec2 const& v) {
-        glUniform2fv(u, 1, glm::value_ptr(v));
-    }
-
-    inline void Uniform(Uniform_vec2& u, GLsizei n, glm::vec2 const* vs) {
-        static_assert(sizeof(glm::vec2) == 2 * sizeof(float));
-        glUniform2fv(u, n, glm::value_ptr(*vs));
-    }
-
-    // RAII wrapper for glDeleteBuffers
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteBuffers.xhtml
-    class Buffer {
+    // a moveable handle to an OpenGL buffer (e.g. GL_ARRAY_BUFFER)
+    class Buffer_handle {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
+        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
 
-        Buffer() {
+        Buffer_handle() noexcept {
             glGenBuffers(1, &handle);
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glGenBuffers: returned an empty handle"};
-            }
         }
-        Buffer(Buffer const&) = delete;
-        Buffer(Buffer&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+        Buffer_handle(Buffer_handle const&) = delete;
+        Buffer_handle(Buffer_handle&& tmp) : handle{tmp.handle} {
+            tmp.handle = senteniel;
         }
-        Buffer& operator=(Buffer const&) = delete;
-        Buffer& operator=(Buffer&& tmp) {
-            GLuint h = handle;
-            handle = tmp.handle;
-            tmp.handle = h;
-            return *this;
-        }
-        ~Buffer() noexcept {
-            if (handle != empty_handle) {
+        Buffer_handle& operator=(Buffer_handle const&) = delete;
+        Buffer_handle& operator=(Buffer_handle&&) = delete;
+        ~Buffer_handle() noexcept {
+            if (handle != senteniel) {
                 glDeleteBuffers(1, &handle);
             }
         }
 
-        operator GLuint() noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
 
-    struct Array_buffer final : public Buffer {
-        static constexpr GLenum type = GL_ARRAY_BUFFER;
-    };
+    // a buffer handle that is locked against a particular type (e.g. GL_ELEMENT_ARRAY_BUFFER)
+    template<GLenum BufferType>
+    class Typed_buffer_handle : public Buffer_handle {
+        using Buffer_handle::Buffer_handle;
 
-    struct Element_array_buffer final : public Buffer {
-        static constexpr GLenum type = GL_ELEMENT_ARRAY_BUFFER;
+    public:
+        static constexpr GLenum buffer_type = BufferType;
     };
-
-    struct Pixel_pack_buffer final : public Buffer {
-        static constexpr GLenum type = GL_PIXEL_PACK_BUFFER;
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenBuffers.xhtml
-    inline Buffer GenBuffers() {
-        return Buffer{};
-    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
-    inline void BindBuffer(GLenum target, Buffer& buffer) {
-        glBindBuffer(target, buffer);
+    inline void BindBuffer(GLenum target, Buffer_handle const& handle) noexcept {
+        glBindBuffer(target, handle.get());
     }
 
-    inline void UnbindBuffer(GLenum target) {
-        glBindBuffer(target, 0);
+    template<GLenum BufferType>
+    inline void BindBuffer(Typed_buffer_handle<BufferType> const& handle) {
+        glBindBuffer(BufferType, handle.get());
     }
 
-    inline void BindBuffer(Array_buffer& buffer) {
-        BindBuffer(buffer.type, buffer);
+    template<GLenum BufferType>
+    inline void UnbindBuffer(Typed_buffer_handle<BufferType> const&) {
+        glBindBuffer(BufferType, 0);
     }
 
-    inline void BindBuffer(Element_array_buffer& buffer) {
-        BindBuffer(buffer.type, buffer);
+    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
+        glBufferData(target, size, data, usage);
     }
 
-    inline void BindBuffer(Pixel_pack_buffer& buffer) {
-        BindBuffer(buffer.type, buffer);
+    // an OpenGL buffer with compile-time known:
+    //
+    // - user type (T)
+    // - OpenGL type (BufferType, e.g. GL_ARRAY_BUFFER)
+    // - usage (e.g. GL_STATIC_DRAW)
+    //
+    // must be a trivially copyable type with a standard layout, because its
+    // data transfers onto the GPU
+    template<typename T, GLenum BufferType, GLenum Usage>
+    class Buffer : public Typed_buffer_handle<BufferType> {
+        size_t size_;
+
+    public:
+        static_assert(std::is_trivially_copyable<T>::value);
+        static_assert(std::is_standard_layout<T>::value);
+
+        using value_type = T;
+        static constexpr GLenum buffer_type = BufferType;
+
+        Buffer() = default;
+
+        Buffer(T const* begin, size_t n) : Typed_buffer_handle<BufferType>{}, size_{n} {
+            BindBuffer(*this);
+            BufferData(buffer_type, sizeof(T) * n, begin, Usage);
+        }
+
+        template<typename Collection>
+        Buffer(Collection const& c) : Buffer{c.data(), c.size()} {
+        }
+
+        Buffer(std::initializer_list<T> lst) : Buffer{lst.begin(), lst.size()} {
+        }
+
+        template<size_t N>
+        Buffer(T const (&arr)[N]) : Buffer{arr, N} {
+        }
+
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+            return this->get();
+        }
+
+        [[nodiscard]] constexpr size_t size() const noexcept {
+            return size;
+        }
+
+        [[nodiscard]] constexpr GLsizei sizei() const noexcept {
+            return static_cast<GLsizei>(size_);
+        }
+
+        void assign(T const* begin, size_t n) noexcept {
+            BindBuffer(*this);
+            BufferData(buffer_type, sizeof(T) * n, begin, Usage);
+            size_ = n;
+        }
+
+        template<typename Container>
+        void assign(Container const& c) noexcept {
+            assign(c.data(), c.size());
+        }
+
+        template<size_t N>
+        void assign(T const (&arr)[N]) {
+            assign(arr, N);
+        }
+    };
+
+    template<typename T, GLenum Usage = GL_STATIC_DRAW>
+    class Array_buffer : public Buffer<T, GL_ARRAY_BUFFER, Usage> {
+        using Buffer<T, GL_ARRAY_BUFFER, Usage>::Buffer;
+    };
+
+    template<typename T, GLenum Usage = GL_STATIC_DRAW>
+    class Element_array_buffer : public Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage> {
+        static_assert(std::is_unsigned_v<T>, "element indicies should be unsigned integers");
+        static_assert(sizeof(T) <= 4);
+
+        using Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage>::Buffer;
+    };
+
+    template<typename T, GLenum Usage = GL_STATIC_DRAW>
+    class Pixel_pack_buffer : public Buffer<T, GL_PIXEL_PACK_BUFFER, Usage> {
+        using Buffer<T, GL_PIXEL_PACK_BUFFER, Usage>::Buffer;
+    };
+
+    template<typename Buffer>
+    inline void BindBuffer(Buffer const& buf) noexcept {
+        glBindBuffer(Buffer::buffer_type, buf.raw_handle());
     }
 
-    inline void UnbindBuffer(Pixel_pack_buffer& buffer) {
-        UnbindBuffer(buffer.type);
+    // returns an OpenGL enum that describes the provided (integral) type
+    // argument, so that the index type to an element-based drawcall can
+    // be computed at compile-time
+    template<typename T>
+    inline constexpr GLenum index_type() {
+        static_assert(std::is_integral_v<T>, "element indices are integers");
+        static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
+        static_assert(sizeof(T) <= 4);
+
+        switch (sizeof(T)) {
+        case 1:
+            return GL_UNSIGNED_BYTE;
+        case 2:
+            return GL_UNSIGNED_SHORT;
+        case 4:
+            return GL_UNSIGNED_INT;
+        default:
+            return GL_UNSIGNED_INT;
+        }
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
-    //     *overload that unbinds current buffer
-    inline void BindBuffer() {
-        // from docs:
-        // > Instead, buffer set to zero effectively unbinds any buffer object
-        // > previously bound, and restores client memory usage for that buffer
-        // > object target (if supported for that target)
-        glBindBuffer(GL_ARRAY_BUFFER, Buffer::empty_handle);
+    // utility overload of index_type specifically for EBOs (the most common
+    // use-case in downstream code)
+    template<typename T>
+    inline constexpr GLenum index_type(gl::Element_array_buffer<T> const&) {
+        return index_type<T>();
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml
-    inline void BufferData(GLenum target, GLsizeiptr num_bytes, void const* data, GLenum usage) {
-        glBufferData(target, num_bytes, data, usage);
-    }
-
-    // RAII wrapper for glDeleteVertexArrays
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
+    // a handle to an OpenGL VAO with RAII semantics for glGenVertexArrays etc.
     class Vertex_array final {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
-
         Vertex_array() {
             glGenVertexArrays(1, &handle);
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glGenVertexArrays: returned an empty handle"};
-            }
         }
         Vertex_array(Vertex_array const&) = delete;
         Vertex_array(Vertex_array&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+            tmp.handle = static_cast<GLuint>(-1);
         }
         Vertex_array& operator=(Vertex_array const&) = delete;
-        Vertex_array& operator=(Vertex_array&& tmp) {
-            GLuint h = handle;
-            handle = tmp.handle;
-            tmp.handle = h;
-            return *this;
-        }
+        Vertex_array& operator=(Vertex_array&&) = delete;
         ~Vertex_array() noexcept {
-            if (handle == empty_handle) {
+            if (handle == static_cast<GLuint>(-1)) {
                 glDeleteVertexArrays(1, &handle);
             }
         }
 
-        operator GLuint() noexcept {
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
             return handle;
         }
     };
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
-    inline Vertex_array GenVertexArrays() {
-        return Vertex_array{};
-    }
-
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
     inline void BindVertexArray(Vertex_array& vao) {
-        glBindVertexArray(vao);
+        glBindVertexArray(vao.raw_handle());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
@@ -471,62 +628,32 @@ namespace gl {
         glBindVertexArray(static_cast<GLuint>(0));
     }
 
-    // RAII wrapper for glGenTextures/glDeleteTextures
-    //     https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glDeleteTextures.xml
-    class Texture {
+    // moveable RAII handle to an OpenGL texture (e.g. GL_TEXTURE_2D)
+    class Texture_handle {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
+        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
 
-        Texture() {
+        Texture_handle() {
             glGenTextures(1, &handle);
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glGenTextures: returned an empty handle"};
-            }
         }
-        Texture(Texture const& src) = delete;
-        Texture(Texture&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+        Texture_handle(Texture_handle const&) = delete;
+        Texture_handle(Texture_handle&& tmp) : handle{tmp.handle} {
+            tmp.handle = senteniel;
         }
-        Texture& operator=(Texture const&) = delete;
-        Texture& operator=(Texture&& tmp) {
-            GLuint h = tmp.handle;
-            tmp.handle = handle;
-            handle = h;
-            return *this;
-        }
-        ~Texture() noexcept {
-            if (handle != empty_handle) {
+        Texture_handle& operator=(Texture_handle const&) = delete;
+        Texture_handle& operator=(Texture_handle&&) = delete;
+        ~Texture_handle() noexcept {
+            if (handle != senteniel) {
                 glDeleteTextures(1, &handle);
             }
         }
 
-        operator GLuint() noexcept {
-            return handle;
-        }
-
-        GLuint raw_handle() const noexcept {
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
             return handle;
         }
     };
-
-    struct Texture_2d final : public Texture {
-        static constexpr GLenum type = GL_TEXTURE_2D;
-    };
-
-    struct Texture_cubemap final : public Texture {
-        static constexpr GLenum type = GL_TEXTURE_CUBE_MAP;
-    };
-
-    struct Texture_2d_multisample final : public Texture {
-        static constexpr GLenum type = GL_TEXTURE_2D_MULTISAMPLE;
-    };
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenTextures.xhtml
-    inline Texture GenTextures() {
-        return Texture{};
-    }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
     inline void ActiveTexture(GLenum texture) {
@@ -534,20 +661,8 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(GLenum target, Texture& texture) {
-        glBindTexture(target, texture);
-    }
-
-    inline void BindTexture(Texture_2d& texture) {
-        BindTexture(texture.type, texture);
-    }
-
-    inline void BindTexture(Texture_cubemap& texture) {
-        BindTexture(texture.type, texture);
-    }
-
-    inline void BindTexture(Texture_2d_multisample& texture) {
-        BindTexture(texture.type, texture);
+    inline void BindTexture(GLenum target, Texture_handle const& texture) {
+        glBindTexture(target, texture.raw_handle());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
@@ -555,149 +670,133 @@ namespace gl {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
-    inline void TexImage2D(
-        GLenum target,
-        GLint level,
-        GLint internalformat,
-        GLsizei width,
-        GLsizei height,
-        GLint border,
-        GLenum format,
-        GLenum type,
-        const void* data) {
-        glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
+    // moveable RAII handle to an OpenGL texture with compile-time known type
+    template<GLenum TextureType>
+    class Texture {
+        Texture_handle handle;
+
+    public:
+        static constexpr GLenum type = TextureType;
+
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+            return handle.raw_handle();
+        }
+
+        constexpr operator Texture_handle const&() const noexcept {
+            return handle;
+        }
+    };
+
+    class Texture_2d : public Texture<GL_TEXTURE_2D> {};
+    class Texture_cubemap : public Texture<GL_TEXTURE_CUBE_MAP> {};
+    class Texture_2d_multisample : public Texture<GL_TEXTURE_2D_MULTISAMPLE> {};
+
+    template<typename Texture>
+    inline void BindTexture(Texture const& t) noexcept {
+        glBindTexture(t.type, t.raw_handle());
     }
 
-    template<GLenum E>
-    inline constexpr unsigned texture_index() {
-        static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
-        return E - GL_TEXTURE0;
-    }
-
-    // RAII wrapper for glDeleteFrameBuffers
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteFramebuffers.xhtml
+    // moveable RAII handle to an OpenGL framebuffer (i.e. a render target)
     class Frame_buffer final {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = static_cast<GLuint>(-1);
+        static constexpr GLuint senteniel = static_cast<GLuint>(-1);
 
         Frame_buffer() {
             glGenFramebuffers(1, &handle);
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glGenFramebuffers: returned empty handle"};
-            }
         }
-
         Frame_buffer(Frame_buffer const&) = delete;
         Frame_buffer(Frame_buffer&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+            tmp.handle = senteniel;
         }
         Frame_buffer& operator=(Frame_buffer const&) = delete;
-        Frame_buffer& operator=(Frame_buffer&& tmp) {
-            GLuint h = tmp.handle;
-            tmp.handle = handle;
-            handle = h;
-            return *this;
-        }
+        Frame_buffer& operator=(Frame_buffer&&) = delete;
         ~Frame_buffer() noexcept {
-            if (handle != empty_handle) {
+            if (handle != senteniel) {
                 glDeleteFramebuffers(1, &handle);
             }
         }
 
-        operator GLuint() const noexcept {
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
             return handle;
         }
     };
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenFramebuffers.xhtml
-    inline Frame_buffer GenFrameBuffer() {
-        return Frame_buffer{};
-    }
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFramebuffer(GLenum target, GLuint handle) {
-        glBindFramebuffer(target, handle);
-    }
-
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
     inline void BindFramebuffer(GLenum target, Frame_buffer const& fb) {
-        glBindFramebuffer(target, fb);
+        glBindFramebuffer(target, fb.raw_handle());
     }
 
-    static constexpr GLuint window_fbo = 0;
-
-    // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glFramebufferTexture2D.xml
-    inline void FramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
-        glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    // bind to the main Window FBO for the current OpenGL context
+    struct Window_fbo final {};
+    static constexpr Window_fbo window_fbo{};
+    inline void BindFramebuffer(GLenum target, Window_fbo) noexcept {
+        glBindFramebuffer(target, 0);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
-    inline void BlitFramebuffer(
-        GLint srcX0,
-        GLint srcY0,
-        GLint srcX1,
-        GLint srcY1,
-        GLint dstX0,
-        GLint dstY0,
-        GLint dstX1,
-        GLint dstY1,
-        GLbitfield mask,
-        GLenum filter) {
-        glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    // assign a 2D texture to the framebuffer (so that subsequent draws/reads
+    // to/from the FBO use the texture)
+    template<typename Texture>
+    inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level) noexcept {
+        glFramebufferTexture2D(target, attachment, t.type, t.raw_handle(), level);
     }
 
-    // RAII wrapper for glDeleteRenderBuffers
-    //     https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDeleteRenderbuffers.xhtml
+    // moveable RAII handle to an OpenGL render buffer
     class Render_buffer final {
         GLuint handle;
 
     public:
-        static constexpr GLuint empty_handle = 0;
+        static constexpr GLuint senteniel = 0;
 
         Render_buffer() {
             glGenRenderbuffers(1, &handle);
-            if (handle == empty_handle) {
-                throw std::runtime_error{"glGenRenderbuffers: returned an empty handle"};
+
+            if (handle == 0) {
+                throw Opengl_exception{
+                    "OpenGL spec: The value zero is reserved, but there is no default renderbuffer object. Instead, renderbuffer set to zero effectively unbinds any renderbuffer object previously bound"};
             }
         }
         Render_buffer(Render_buffer const&) = delete;
         Render_buffer(Render_buffer&& tmp) : handle{tmp.handle} {
-            tmp.handle = empty_handle;
+            tmp.handle = senteniel;
         }
         Render_buffer& operator=(Render_buffer const&) = delete;
         Render_buffer& operator=(Render_buffer&& tmp) {
-            GLuint h = tmp.handle;
-            tmp.handle = handle;
-            handle = h;
+            GLuint v = handle;
+            handle = tmp.handle;
+            tmp.handle = v;
             return *this;
         }
+
         ~Render_buffer() noexcept {
-            if (handle != empty_handle) {
+            if (handle != senteniel) {
                 glDeleteRenderbuffers(1, &handle);
             }
         }
 
-        operator GLuint() noexcept {
+        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
             return handle;
         }
     };
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glGenRenderbuffers.xml
-    inline Render_buffer GenRenderBuffer() {
-        return Render_buffer{};
-    }
-
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
     inline void BindRenderBuffer(Render_buffer& rb) {
-        glBindRenderbuffer(GL_RENDERBUFFER, rb);
+        glBindRenderbuffer(GL_RENDERBUFFER, rb.raw_handle());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
     inline void BindRenderBuffer() {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    }
+
+    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, Render_buffer const& rb) {
+        glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.raw_handle());
+    }
+
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
+    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
+        glRenderbufferStorage(target, internalformat, width, height);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glClear.xhtml
@@ -716,8 +815,9 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribDivisor.xhtml
-    inline void VertexAttribDivisor(gl::Attribute& attr, GLuint divisor) {
-        glVertexAttribDivisor(attr, divisor);
+    template<typename Attribute>
+    inline void VertexAttribDivisor(Attribute loc, GLuint divisor) noexcept {
+        glVertexAttribDivisor(loc.get(), divisor);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
@@ -729,17 +829,8 @@ namespace gl {
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void ClearColor(glm::vec4 const& rgba) {
-        glClearColor(rgba.r, rgba.g, rgba.b, rgba.a);
-    }
-
     inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) {
         glViewport(x, y, w, h);
-    }
-
-    inline void
-        FramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) {
-        glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
@@ -747,141 +838,29 @@ namespace gl {
         glTexParameteri(target, pname, param);
     }
 
-    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
-    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
-        glRenderbufferStorage(target, internalformat, width, height);
+    inline void TexImage2D(
+        GLenum target,
+        GLint level,
+        GLint internalformat,
+        GLsizei width,
+        GLsizei height,
+        GLint border,
+        GLenum format,
+        GLenum type,
+        const void* pixels) {
+        glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
 
-    inline glm::mat3 normal_matrix(glm::mat4 const& m) {
-        return glm::transpose(glm::inverse(m));
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
+    template<typename Texture>
+    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) {
+        glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
-    // asserts there are no current OpenGL errors (globally)
-    void assert_no_errors(char const* comment, char const* file, int line, char const* func);
-
-    template<typename T>
-    class Array_bufferT final {
-        size_t _capacity = 0;
-        size_t _size = 0;
-        gl::Array_buffer _vbo{};
-        GLenum usage;
-
-    public:
-        using value_type = T;
-
-        Array_bufferT(GLenum _usage = GL_STATIC_DRAW) : usage{_usage} {
-        }
-
-        Array_bufferT(T const* begin, T const* end, GLenum _usage = GL_STATIC_DRAW) :
-            _capacity{static_cast<size_t>(end - begin)},
-            _size{_capacity},
-            usage{_usage} {
-
-            gl::BindBuffer(_vbo);
-            gl::BufferData(_vbo.type, static_cast<long>(_capacity * sizeof(T)), begin, usage);
-        }
-
-        template<typename Container>
-        Array_bufferT(Container const& c) : Array_bufferT{c.data(), c.data() + c.size()} {
-        }
-
-        operator gl::Array_buffer&() noexcept {
-            return _vbo;
-        }
-
-        operator gl::Array_buffer const&() const noexcept {
-            return _vbo;
-        }
-
-        size_t size() const noexcept {
-            return _size;
-        }
-
-        GLsizei sizei() const noexcept {
-            return static_cast<GLsizei>(_size);
-        }
-
-        // Assign new data to the array buffer
-        void assign(T const* begin, T const* end) {
-            size_t n = end - begin;
-            GLsizeiptr num_bytes = static_cast<GLsizeiptr>(sizeof(T) * n);
-
-            gl::BindBuffer(_vbo);
-
-            gl::BufferData(_vbo.type, num_bytes, begin, usage);
-            _capacity = n;
-            _size = n;
-        }
-
-        // Append new data to the end of the existing data
-        void push_back(T const* begin, T const* end) {
-            size_t n = end - begin;
-            size_t new_size = _size + n;
-
-            gl::BindBuffer(_vbo);
-
-            if (new_size <= _capacity) {
-                GLintptr start = static_cast<GLintptr>(sizeof(T) * _size);
-                GLsizeiptr nbytes = static_cast<GLsizeiptr>(sizeof(T) * n);
-                glBufferSubData(_vbo.type, start, nbytes, begin);
-                _size = new_size;
-            } else {
-                // allocate a new buffer with the necessary capacity, copy all existing data
-                // to the new buffer, then copy the data back to the original VBO (so that the
-                // VBOs ID does not change, which might invalidate VAOs etc. downstream)
-
-                // geometrically grow the buffer in powers of 2 for push_back, because it is
-                // likely that the caller is going to repeatably call `push_back`
-                GLsizeiptr new_capacity = [new_size]() {
-                    GLsizeiptr v = 1;
-                    while (v < new_size) {
-                        v *= 2;
-                    }
-                    return v;
-                }();
-                GLsizeiptr new_capacity_nbytes = sizeof(T) * new_capacity;
-
-                // create temporary storage space with necessary size
-                gl::Array_buffer tmp{};
-                gl::BindBuffer(tmp);
-                gl::BufferData(tmp.type, new_capacity_nbytes, nullptr, usage);
-
-                // copy existing data to the front of the temporary
-                gl::BindBuffer(GL_COPY_READ_BUFFER, _vbo);
-                gl::BindBuffer(GL_COPY_WRITE_BUFFER, tmp);
-                GLsizeiptr size_nbytes = static_cast<GLsizeiptr>(sizeof(T) * _size);
-                glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, size_nbytes);
-
-                // write new data at the end
-                gl::BindBuffer(tmp);
-                GLsizeiptr added_nbytes = static_cast<GLsizeiptr>(sizeof(T) * n);
-                glBufferSubData(tmp.type, size_nbytes, added_nbytes, begin);
-
-                // the temporary now contains all the data we want, but at the "wrong" index
-                //
-                // reallocate (in OpenGL, blank) the "right" index and copy the data to it,
-                // followed by destroying the temporary
-
-                // reallocate vbo
-                gl::BindBuffer(_vbo);
-                gl::BufferData(_vbo.type, new_capacity_nbytes, nullptr, usage);
-
-                // copy temporary data into the reallocated vbo
-                gl::BindBuffer(GL_COPY_READ_BUFFER, tmp);
-                gl::BindBuffer(GL_COPY_WRITE_BUFFER, _vbo);
-                GLsizeiptr new_size_nbytes = static_cast<GLsizeiptr>(sizeof(T) * new_size);
-                glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, new_size_nbytes);
-
-                _capacity = new_capacity;
-                _size = new_size;
-
-                // (destructor kills tmp)
-            }
-        }
-    };
-
-    inline void DrawBuffer(GLenum mode) {
-        glDrawBuffer(mode);
+    template<GLenum E>
+    inline constexpr unsigned texture_index() {
+        static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
+        return E - GL_TEXTURE0;
     }
 
     template<typename... T>
@@ -894,6 +873,32 @@ namespace gl {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
+    // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
+    inline void BlitFramebuffer(
+        GLint srcX0,
+        GLint srcY0,
+        GLint srcX1,
+        GLint srcY1,
+        GLint dstX0,
+        GLint dstY0,
+        GLint dstX1,
+        GLint dstY1,
+        GLbitfield mask,
+        GLenum filter) {
+        glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    }
+
+    inline void DrawBuffer(GLenum mode) {
+        glDrawBuffer(mode);
+    }
+
+    struct Error_span final {
+        size_t n;
+        char const** first;
+    };
+
+    Error_span pop_opengl_errors();
+
     inline int GetInteger(GLenum pname) {
         GLint out;
         glGetIntegerv(pname, &out);
@@ -902,5 +907,13 @@ namespace gl {
 
     inline GLenum GetEnum(GLenum pname) {
         return static_cast<GLenum>(GetInteger(pname));
+    }
+
+    inline void Enable(GLenum cap) {
+        glEnable(cap);
+    }
+
+    inline void Disable(GLenum cap) {
+        glDisable(cap);
     }
 }

@@ -1,9 +1,11 @@
 #include "opengl_test_screen.hpp"
 
 #include "src/3d/gl.hpp"
+#include "src/3d/gl_extensions.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/utils/helpers.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>
@@ -23,24 +25,26 @@ using namespace osc;
 namespace {
     struct Plain_color_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::Compile<gl::Vertex_shader>(osc::config::shader_path("plain_color.vert")),
-            gl::Compile<gl::Fragment_shader>(osc::config::shader_path("plain_color.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(
+                slurp_into_string(config::shader_path("plain_color.vert")).c_str()),
+            gl::CompileFromSource<gl::Fragment_shader>(
+                slurp_into_string(config::shader_path("plain_color.frag")).c_str()));
 
-        static constexpr gl::Attribute aPos = gl::AttributeAtLocation(0);
+        static constexpr gl::Attribute_vec3 aPos{0};
 
-        gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(p, "uModelMat");
-        gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(p, "uViewMat");
-        gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(p, "uProjMat");
-        gl::Uniform_vec3 uRgb = gl::GetUniformLocation(p, "uRgb");
+        gl::Uniform_mat4 uModelMat{p, "uModelMat"};
+        gl::Uniform_mat4 uViewMat{p, "uViewMat"};
+        gl::Uniform_mat4 uProjMat{p, "uProjMat"};
+        gl::Uniform_vec3 uRgb{p, "uRgb"};
 
         template<typename Vbo, typename T = typename Vbo::value_type>
         static gl::Vertex_array create_vao(Vbo& vbo) {
             static_assert(std::is_standard_layout<T>::value, "this is required for offsetof");
 
-            gl::Vertex_array vao = gl::GenVertexArrays();
+            gl::Vertex_array vao;
             gl::BindVertexArray(vao);
             gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, 3, GL_FLOAT, GL_FALSE, sizeof(T), reinterpret_cast<void*>(offsetof(T, pos)));
+            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
             gl::EnableVertexAttribArray(aPos);
             gl::BindVertexArray();
             return vao;
@@ -64,7 +68,7 @@ struct Opengl_test_screen::Impl final {
 
     struct Hello_triangle_demo {
         Plain_color_shader shader;
-        gl::Array_bufferT<Basic_vert> vbo{triangle};
+        gl::Array_buffer<Basic_vert> vbo{triangle};
         gl::Vertex_array vao = Plain_color_shader::create_vao(vbo);
         float rgb[3]{1.0f, 0.0f, 0.0f};
 
