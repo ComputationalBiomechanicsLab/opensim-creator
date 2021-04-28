@@ -19,8 +19,6 @@
 #include <filesystem>
 #include <iostream>
 
-using namespace osc;
-
 static const char usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";
 static const char help[] = R"(OPTIONS
@@ -42,7 +40,7 @@ static bool skip_prefix(char const* prefix, char const* s, char const** out) {
 // an OpenSim log sink that sinks into OSC's main log
 class Opensim_log_sink final : public OpenSim::LogSink {
     void sinkImpl(std::string const& msg) override {
-        log::info("%s", msg.c_str());
+        osc::log::info("%s", msg.c_str());
     }
 };
 
@@ -75,7 +73,7 @@ int main(int argc, char** argv) {
         // useful if the application fails in prod: can provide some basic backtrace
         // info that users can paste into an issue or something, which is *a lot* more
         // information than "yeah, it's broke"
-        log::info("enabling backtrace handler");
+        osc::log::info("enabling backtrace handler");
         osc::install_backtrace_handler();
 
         // disable OpenSim's `opensim.log` default
@@ -85,14 +83,14 @@ int main(int argc, char** argv) {
         // instances of the UI on filesystems that use locking (e.g. Windows) and
         // because it's incredibly obnoxious to have `opensim.log` appear in every
         // working directory from which osc is ran
-        log::info("removing OpenSim's default log (opensim.log)");
+        osc::log::info("removing OpenSim's default log (opensim.log)");
         OpenSim::Logger::removeFileSink();
 
         // add OSC in-memory logger
         //
         // this logger collects the logs into a global mutex-protected in-memory structure
         // that the UI can can trivially render (w/o reading files etc.)
-        log::info("attaching OpenSim to this log");
+        osc::log::info("attaching OpenSim to this log");
         OpenSim::Logger::addSink(std::make_shared<Opensim_log_sink>());
 
         // explicitly load OpenSim libs
@@ -108,7 +106,7 @@ int main(int argc, char** argv) {
         // not *directly* use a symbol exported by the library (e.g. the code might use
         // OpenSim::Muscle references, but not actually concretely refer to a muscle
         // implementation method (e.g. a ctor)
-        log::info("registering OpenSim types");
+        osc::log::info("registering OpenSim types");
         RegisterTypes_osimCommon();
         RegisterTypes_osimSimulation();
         RegisterTypes_osimActuators();
@@ -119,26 +117,26 @@ int main(int argc, char** argv) {
         //
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
-        log::info("registering OpenSim geometry search path to use osc resources");
+        osc::log::info("registering OpenSim geometry search path to use osc resources");
         std::filesystem::path geometry_dir = osc::config::resource_path("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
-        log::info("added geometry search path entry: %s", geometry_dir.string().c_str());
+        osc::log::info("added geometry search path entry: %s", geometry_dir.string().c_str());
     }
 
     // init an application instance ready for rendering
-    log::info("initializing application");
-    Application app;
-    Application::set_current(&app);
+    osc::log::info("initializing application");
+    osc::Application app;
+    osc::Application::set_current(&app);
 
     if (argc <= 0) {
         // no args: show splash screen
-        app.start_render_loop<Splash_screen>();
+        app.start_render_loop<osc::Splash_screen>();
     } else {
         // args: load args as osim files
-        app.start_render_loop<Loading_screen>(argv[0]);
+        app.start_render_loop<osc::Loading_screen>(argv[0]);
     }
 
-    log::info("exited main application event loop: shutting down application");
+    osc::log::info("exited main application event loop: shutting down application");
 
     return EXIT_SUCCESS;
 }
