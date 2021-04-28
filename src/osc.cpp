@@ -12,6 +12,8 @@
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
+#include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/Logger.h>
 
 #include <cstdlib>
 #include <filesystem>
@@ -37,14 +39,12 @@ static bool skip_prefix(char const* prefix, char const* s, char const** out) {
     return false;
 }
 
-// TODO: when OpenSim 4.2 is released
-// namespace {
-//    class Opensim_log_sink final : public OpenSim::LogSink {
-//        void sinkImpl(std::string const& msg) override {
-//            log::info("%s", msg.c_str());
-//        }
-//    };
-//}
+// an OpenSim log sink that sinks into OSC's main log
+class Opensim_log_sink final : public OpenSim::LogSink {
+    void sinkImpl(std::string const& msg) override {
+        log::info("%s", msg.c_str());
+    }
+};
 
 int main(int argc, char** argv) {
     // skip application name
@@ -78,7 +78,6 @@ int main(int argc, char** argv) {
         log::info("enabling backtrace handler");
         osc::install_backtrace_handler();
 
-        //        TODO OpenSim 4.2
         // disable OpenSim's `opensim.log` default
         //
         // by default, OpenSim creates an `opensim.log` file in the process's working
@@ -86,15 +85,15 @@ int main(int argc, char** argv) {
         // instances of the UI on filesystems that use locking (e.g. Windows) and
         // because it's incredibly obnoxious to have `opensim.log` appear in every
         // working directory from which osc is ran
-        //        log::info("removing OpenSim's default log (opensim.log)");
-        //        OpenSim::Logger::removeFileSink();
+        log::info("removing OpenSim's default log (opensim.log)");
+        OpenSim::Logger::removeFileSink();
 
         // add OSC in-memory logger
         //
         // this logger collects the logs into a global mutex-protected in-memory structure
         // that the UI can can trivially render (w/o reading files etc.)
-        //        log::info("attaching OpenSim to this log");
-        //        OpenSim::Logger::addSink(std::make_shared<Opensim_log_sink>());
+        log::info("attaching OpenSim to this log");
+        OpenSim::Logger::addSink(std::make_shared<Opensim_log_sink>());
 
         // explicitly load OpenSim libs
         //
