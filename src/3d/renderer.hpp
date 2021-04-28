@@ -9,7 +9,7 @@
 #include <cstddef>
 
 namespace gl {
-    struct Texture_2d;
+    class Texture_2d;
 }
 
 namespace osc {

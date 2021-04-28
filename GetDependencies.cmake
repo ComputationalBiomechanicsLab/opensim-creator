@@ -173,7 +173,7 @@ else()
     # compute possible build byproducts (needed for build systems that check
     # this, like ninja)
     if(TRUE)
-        set(SDL_BINDIR "sdl2-project-prefix/src/sdl2-project-build")
+        set(SDL2_BINDIR "sdl2-project-prefix/src/sdl2-project-build")
         list(APPEND SDL2_BUILD_BYPRODUCTS
             "${SDL2_BINDIR}/${LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"
             "${SDL2_BINDIR}/${DEBUG_LIBNAME}${CMAKE_SHARED_LIBRARY_SUFFIX}"

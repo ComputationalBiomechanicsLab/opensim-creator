@@ -72,7 +72,7 @@ namespace gl {
     }
 
     template<typename Container, size_t N>
-    inline std::enable_if_t<std::is_same_v<glm::vec2, Container::value_type>, void>
+    inline std::enable_if_t<std::is_same_v<glm::vec2, typename Container::value_type>, void>
         Uniform(Uniform_array<glsl::vec2, N>& u, Container const& container) {
         glUniform2fv(u.geti(), static_cast<GLsizei>(container.size()), glm::value_ptr(container.data()));
     }

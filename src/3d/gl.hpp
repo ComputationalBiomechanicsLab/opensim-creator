@@ -11,6 +11,8 @@
 
 namespace gl {
 
+    // an exception that specifically means something has gone wrong in
+    // the OpenGL API
     class Opengl_exception final : public std::exception {
         std::string msg;
 
@@ -22,15 +24,28 @@ namespace gl {
         char const* what() const noexcept override;
     };
 
+    constexpr void swap(GLuint& a, GLuint& b) noexcept {
+        GLuint v = a;
+        a = b;
+        b = v;
+    }
+
+    constexpr void swap(GLint& a, GLint& b) noexcept {
+        GLint v = a;
+        a = b;
+        b = v;
+    }
+
     // a moveable handle to an OpenGL shader
     class Shader_handle {
-        static constexpr GLuint senteniel = 0;
         GLuint handle;
 
     public:
+        static constexpr GLuint senteniel = 0;
+
         explicit Shader_handle(GLenum type) : handle{glCreateShader(type)} {
             if (handle == senteniel) {
-                throw Opengl_exception{GL_SOURCELOC ": glCreateShader() failed"};
+                throw Opengl_exception{GL_SOURCELOC ": glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
 
@@ -43,9 +58,7 @@ namespace gl {
         Shader_handle& operator=(Shader_handle const&) = delete;
 
         constexpr Shader_handle& operator=(Shader_handle&& tmp) noexcept {
-            auto v = tmp.handle;
-            tmp.handle = handle;
-            handle = v;
+            swap(handle, tmp.handle);
             return *this;
         }
 
@@ -67,20 +80,24 @@ namespace gl {
     // shader handle
     template<GLuint ShaderType>
     class Shader {
-        Shader_handle underlying_handle;
+        Shader_handle handle;
 
     public:
         static constexpr GLuint type = ShaderType;
 
-        Shader() : underlying_handle{type} {
+        Shader() : handle{type} {
         }
 
-        [[nodiscard]] constexpr GLuint get() const noexcept {
-            return underlying_handle.get();
+        [[nodiscard]] constexpr decltype(handle.get()) get() const noexcept {
+            return handle.get();
         }
 
-        [[nodiscard]] constexpr Shader_handle const& handle() const noexcept {
-            return underlying_handle;
+        [[nodiscard]] constexpr operator Shader_handle& () noexcept {
+            return handle;
+        }
+
+        [[nodiscard]] constexpr operator Shader_handle const& () const noexcept {
+            return handle;
         }
     };
 
@@ -91,7 +108,7 @@ namespace gl {
     template<typename TShader>
     inline TShader CompileFromSource(const char* src) {
         TShader rv;
-        CompileFromSource(rv.handle(), src);
+        CompileFromSource(rv, src);
         return rv;
     }
 
@@ -104,20 +121,23 @@ namespace gl {
 
         Program() : handle{glCreateProgram()} {
             if (handle == senteniel) {
-                throw Opengl_exception{GL_SOURCELOC "glCreateProgram() failed"};
+                throw Opengl_exception{GL_SOURCELOC "glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
+
         Program(Program const&) = delete;
-        Program(Program&& tmp) : handle{tmp.handle} {
+
+        constexpr Program(Program&& tmp) noexcept : handle{tmp.handle} {
             tmp.handle = senteniel;
         }
+
         Program& operator=(Program const&) = delete;
-        Program& operator=(Program&& tmp) {
-            auto v = tmp.handle;
-            tmp.handle = handle;
-            handle = v;
+
+        constexpr Program& operator=(Program&& tmp) noexcept {
+            swap(handle, tmp.handle);
             return *this;
         }
+
         ~Program() noexcept {
             if (handle != senteniel) {
                 glDeleteProgram(handle);
@@ -428,15 +448,26 @@ namespace gl {
     public:
         static constexpr GLuint senteniel = static_cast<GLuint>(-1);
 
-        Buffer_handle() noexcept {
+        Buffer_handle() {
             glGenBuffers(1, &handle);
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+            }
         }
+
         Buffer_handle(Buffer_handle const&) = delete;
-        Buffer_handle(Buffer_handle&& tmp) : handle{tmp.handle} {
+
+        constexpr Buffer_handle(Buffer_handle&& tmp) noexcept : handle{tmp.handle} {
             tmp.handle = senteniel;
         }
+
         Buffer_handle& operator=(Buffer_handle const&) = delete;
-        Buffer_handle& operator=(Buffer_handle&&) = delete;
+
+        constexpr Buffer_handle& operator=(Buffer_handle&& tmp) noexcept {
+            swap(handle, tmp.handle);
+            return *this;
+        }
+
         ~Buffer_handle() noexcept {
             if (handle != senteniel) {
                 glDeleteBuffers(1, &handle);
@@ -513,10 +544,6 @@ namespace gl {
         Buffer(T const (&arr)[N]) : Buffer{arr, N} {
         }
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
-            return this->get();
-        }
-
         [[nodiscard]] constexpr size_t size() const noexcept {
             return size;
         }
@@ -562,7 +589,7 @@ namespace gl {
 
     template<typename Buffer>
     inline void BindBuffer(Buffer const& buf) noexcept {
-        glBindBuffer(Buffer::buffer_type, buf.raw_handle());
+        glBindBuffer(Buffer::buffer_type, buf.get());
     }
 
     // returns an OpenGL enum that describes the provided (integral) type
@@ -598,29 +625,42 @@ namespace gl {
         GLuint handle;
 
     public:
+        static constexpr GLuint senteniel = -1;
+
         Vertex_array() {
             glGenVertexArrays(1, &handle);
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+            }
         }
+
         Vertex_array(Vertex_array const&) = delete;
-        Vertex_array(Vertex_array&& tmp) : handle{tmp.handle} {
-            tmp.handle = static_cast<GLuint>(-1);
+
+        constexpr Vertex_array(Vertex_array&& tmp) noexcept : handle{tmp.handle} {
+            tmp.handle = senteniel;
         }
+
         Vertex_array& operator=(Vertex_array const&) = delete;
-        Vertex_array& operator=(Vertex_array&&) = delete;
+
+        constexpr Vertex_array& operator=(Vertex_array&& tmp) noexcept {
+            swap(handle, tmp.handle);
+            return *this;
+        }
+
         ~Vertex_array() noexcept {
             if (handle == static_cast<GLuint>(-1)) {
                 glDeleteVertexArrays(1, &handle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
     inline void BindVertexArray(Vertex_array& vao) {
-        glBindVertexArray(vao.raw_handle());
+        glBindVertexArray(vao.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
@@ -637,20 +677,31 @@ namespace gl {
 
         Texture_handle() {
             glGenTextures(1, &handle);
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+            }
         }
+
         Texture_handle(Texture_handle const&) = delete;
-        Texture_handle(Texture_handle&& tmp) : handle{tmp.handle} {
+
+        constexpr Texture_handle(Texture_handle&& tmp) noexcept : handle{tmp.handle} {
             tmp.handle = senteniel;
         }
+
         Texture_handle& operator=(Texture_handle const&) = delete;
-        Texture_handle& operator=(Texture_handle&&) = delete;
+
+        constexpr Texture_handle& operator=(Texture_handle&& tmp) noexcept {
+            swap(handle, tmp.handle);
+            return *this;
+        }
+
         ~Texture_handle() noexcept {
             if (handle != senteniel) {
                 glDeleteTextures(1, &handle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
@@ -662,7 +713,7 @@ namespace gl {
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     inline void BindTexture(GLenum target, Texture_handle const& texture) {
-        glBindTexture(target, texture.raw_handle());
+        glBindTexture(target, texture.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
@@ -678,11 +729,15 @@ namespace gl {
     public:
         static constexpr GLenum type = TextureType;
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
-            return handle.raw_handle();
+        [[nodiscard]] constexpr decltype(handle.get()) get() const noexcept {
+            return handle.get();
         }
 
-        constexpr operator Texture_handle const&() const noexcept {
+        constexpr operator Texture_handle const& () const noexcept {
+            return handle;
+        }
+
+        constexpr operator Texture_handle& () noexcept {
             return handle;
         }
     };
@@ -693,7 +748,7 @@ namespace gl {
 
     template<typename Texture>
     inline void BindTexture(Texture const& t) noexcept {
-        glBindTexture(t.type, t.raw_handle());
+        glBindTexture(t.type, t.get());
     }
 
     // moveable RAII handle to an OpenGL framebuffer (i.e. a render target)
@@ -705,27 +760,38 @@ namespace gl {
 
         Frame_buffer() {
             glGenFramebuffers(1, &handle);
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
+            }
         }
+
         Frame_buffer(Frame_buffer const&) = delete;
-        Frame_buffer(Frame_buffer&& tmp) : handle{tmp.handle} {
+
+        constexpr Frame_buffer(Frame_buffer&& tmp) noexcept : handle{tmp.handle} {
             tmp.handle = senteniel;
         }
+
         Frame_buffer& operator=(Frame_buffer const&) = delete;
-        Frame_buffer& operator=(Frame_buffer&&) = delete;
+
+        constexpr Frame_buffer& operator=(Frame_buffer&& tmp) noexcept {
+            swap(handle, tmp.handle);
+            return *this;
+        }
+
         ~Frame_buffer() noexcept {
             if (handle != senteniel) {
                 glDeleteFramebuffers(1, &handle);
             }
         }
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
     inline void BindFramebuffer(GLenum target, Frame_buffer const& fb) {
-        glBindFramebuffer(target, fb.raw_handle());
+        glBindFramebuffer(target, fb.get());
     }
 
     // bind to the main Window FBO for the current OpenGL context
@@ -739,7 +805,7 @@ namespace gl {
     // to/from the FBO use the texture)
     template<typename Texture>
     inline void FramebufferTexture2D(GLenum target, GLenum attachment, Texture const& t, GLint level) noexcept {
-        glFramebufferTexture2D(target, attachment, t.type, t.raw_handle(), level);
+        glFramebufferTexture2D(target, attachment, t.type, t.get(), level);
     }
 
     // moveable RAII handle to an OpenGL render buffer
@@ -751,21 +817,21 @@ namespace gl {
 
         Render_buffer() {
             glGenRenderbuffers(1, &handle);
-
-            if (handle == 0) {
-                throw Opengl_exception{
-                    "OpenGL spec: The value zero is reserved, but there is no default renderbuffer object. Instead, renderbuffer set to zero effectively unbinds any renderbuffer object previously bound"};
+            if (handle == senteniel) {
+                throw Opengl_exception{GL_SOURCELOC "glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
+
         Render_buffer(Render_buffer const&) = delete;
-        Render_buffer(Render_buffer&& tmp) : handle{tmp.handle} {
+
+        constexpr Render_buffer(Render_buffer&& tmp) noexcept : handle{tmp.handle} {
             tmp.handle = senteniel;
         }
+
         Render_buffer& operator=(Render_buffer const&) = delete;
-        Render_buffer& operator=(Render_buffer&& tmp) {
-            GLuint v = handle;
-            handle = tmp.handle;
-            tmp.handle = v;
+
+        constexpr Render_buffer& operator=(Render_buffer&& tmp) noexcept {
+            swap(handle, tmp.handle);
             return *this;
         }
 
@@ -775,14 +841,14 @@ namespace gl {
             }
         }
 
-        [[nodiscard]] constexpr GLuint raw_handle() const noexcept {
+        [[nodiscard]] constexpr GLuint get() const noexcept {
             return handle;
         }
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
     inline void BindRenderBuffer(Render_buffer& rb) {
-        glBindRenderbuffer(GL_RENDERBUFFER, rb.raw_handle());
+        glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
@@ -791,7 +857,7 @@ namespace gl {
     }
 
     inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, Render_buffer const& rb) {
-        glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.raw_handle());
+        glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml

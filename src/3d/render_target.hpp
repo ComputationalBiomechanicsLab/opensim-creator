@@ -3,7 +3,7 @@
 #include <glm/vec2.hpp>
 
 namespace gl {
-    struct Texture_2d;
+    class Texture_2d;
 }
 
 namespace osc {

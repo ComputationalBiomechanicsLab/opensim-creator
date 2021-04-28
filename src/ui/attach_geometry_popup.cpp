@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <optional>
 
 namespace fs = std::filesystem;
 

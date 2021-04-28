@@ -3,7 +3,7 @@
 #include "src/3d/gpu_data_reference.hpp"
 
 namespace gl {
-    struct Texture_2d;
+    class Texture_2d;
 }
 
 namespace osc {
