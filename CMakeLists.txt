@@ -103,6 +103,8 @@ add_executable(osc
     src/3d/cameras.hpp
     src/3d/cameras.cpp
     src/3d/backend.cpp
+    src/3d/3d.hpp
+    src/3d/3d.cpp
 
     src/opensim_bindings/simbody_geometry_visitor.hpp
     src/opensim_bindings/simbody_geometry_visitor.cpp

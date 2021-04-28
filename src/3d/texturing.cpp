@@ -35,7 +35,7 @@ gl::Texture_2d osc::generate_chequered_floor_texture() {
 
     gl::Texture_2d rv;
     gl::ActiveTexture(GL_TEXTURE0);
-    gl::BindTexture(rv.type, rv);
+    gl::BindTexture(rv.type, rv.handle());
     glTexImage2D(rv.type, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     glGenerateMipmap(rv.type);
     gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -97,7 +97,7 @@ gl::Texture_2d osc::load_tex(char const* path, Tex_flags flags) {
         throw std::runtime_error{std::move(msg).str()};
     }
 
-    gl::BindTexture(t.type, t);
+    gl::BindTexture(t.type, t.handle());
     gl::TexImage2D(t.type, 0, internalFormat, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.data);
     glGenerateMipmap(t.type);
 

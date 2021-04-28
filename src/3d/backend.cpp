@@ -1,6 +1,8 @@
 ﻿// backend: implements the functionality exposed by all the other headers
 // in 3d/
 
+#include "src/3d/3d.hpp"
+
 #include "src/3d/drawlist.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_extensions.hpp"

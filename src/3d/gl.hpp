@@ -80,24 +80,24 @@ namespace gl {
     // shader handle
     template<GLuint ShaderType>
     class Shader {
-        Shader_handle handle;
+        Shader_handle handle_;
 
     public:
         static constexpr GLuint type = ShaderType;
 
-        Shader() : handle{type} {
+        Shader() : handle_{type} {
         }
 
-        [[nodiscard]] constexpr decltype(handle.get()) get() const noexcept {
-            return handle.get();
+        [[nodiscard]] constexpr decltype(handle_.get()) get() const noexcept {
+            return handle_.get();
         }
 
-        [[nodiscard]] constexpr operator Shader_handle& () noexcept {
-            return handle;
+        [[nodiscard]] constexpr Shader_handle& handle() noexcept {
+            return handle_;
         }
 
-        [[nodiscard]] constexpr operator Shader_handle const& () const noexcept {
-            return handle;
+        [[nodiscard]] constexpr Shader_handle const& handle() const noexcept {
+            return handle_;
         }
     };
 
@@ -108,7 +108,7 @@ namespace gl {
     template<typename TShader>
     inline TShader CompileFromSource(const char* src) {
         TShader rv;
-        CompileFromSource(rv, src);
+        CompileFromSource(rv.handle(), src);
         return rv;
     }
 
@@ -724,21 +724,21 @@ namespace gl {
     // moveable RAII handle to an OpenGL texture with compile-time known type
     template<GLenum TextureType>
     class Texture {
-        Texture_handle handle;
+        Texture_handle handle_;
 
     public:
         static constexpr GLenum type = TextureType;
 
-        [[nodiscard]] constexpr decltype(handle.get()) get() const noexcept {
-            return handle.get();
+        [[nodiscard]] constexpr decltype(handle_.get()) get() const noexcept {
+            return handle_.get();
         }
 
-        constexpr operator Texture_handle const& () const noexcept {
-            return handle;
+        constexpr Texture_handle const& handle() const noexcept {
+            return handle_;
         }
 
-        constexpr operator Texture_handle& () noexcept {
-            return handle;
+        constexpr Texture_handle& handle() noexcept {
+            return handle_;
         }
     };
 
