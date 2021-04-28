@@ -1,5 +1,5 @@
 GL_ARB_texture_rectangle
-http://www.opengl.org/registry/specs/ARB/texture_rectangle.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_rectangle.txt
 GL_ARB_texture_rectangle
 
 	GL_TEXTURE_RECTANGLE_ARB 0x84F5

@@ -1,5 +1,5 @@
 GL_ARB_indirect_parameters
-http://www.opengl.org/registry/specs/ARB/indirect_parameters.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_indirect_parameters.txt
 GL_ARB_indirect_parameters
 
 	GL_PARAMETER_BUFFER_ARB 0x80EE

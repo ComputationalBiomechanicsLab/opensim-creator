@@ -1,5 +1,5 @@
 GL_INTEL_performance_query
-http://www.opengl.org/registry/specs/INTEL/performance_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/INTEL/INTEL_performance_query.txt
 GL_INTEL_performance_query
 
 	GL_PERFQUERY_SINGLE_CONTEXT_INTEL 0x0000

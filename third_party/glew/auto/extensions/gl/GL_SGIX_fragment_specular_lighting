@@ -1,5 +1,5 @@
 GL_SGIX_fragment_specular_lighting
-http://www.opengl.org/registry/specs/SGIX/fragment_specular_lighting.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_fragment_specular_lighting.txt
 GL_SGIX_fragment_specular_lighting
 
 	void glFragmentColorMaterialSGIX (GLenum face, GLenum mode)
@@ -17,5 +17,5 @@ GL_SGIX_fragment_specular_lighting
 	void glFragmentMaterialivSGIX (GLenum face, GLenum pname, const GLint* params)
 	void glGetFragmentLightfvSGIX (GLenum light, GLenum value, GLfloat* data)
 	void glGetFragmentLightivSGIX (GLenum light, GLenum value, GLint* data)
-	void glGetFragmentMaterialfvSGIX (GLenum face, GLenum pname, const GLfloat* data)
-	void glGetFragmentMaterialivSGIX (GLenum face, GLenum pname, const GLint* data)
+	void glGetFragmentMaterialfvSGIX (GLenum face, GLenum pname, GLfloat* data)
+	void glGetFragmentMaterialivSGIX (GLenum face, GLenum pname, GLint* data)

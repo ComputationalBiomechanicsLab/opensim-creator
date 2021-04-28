@@ -1,5 +1,5 @@
 GL_APPLE_fence
-http://www.opengl.org/registry/specs/APPLE/fence.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_fence.txt
 GL_APPLE_fence
 
 	GL_DRAW_PIXELS_APPLE 0x8A0A

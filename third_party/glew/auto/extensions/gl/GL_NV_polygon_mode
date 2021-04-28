@@ -1,5 +1,5 @@
 GL_NV_polygon_mode
-http://www.opengl.org/registry/specs/NV/polygon_mode.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_polygon_mode.txt
 GL_NV_polygon_mode
 
 	GL_POLYGON_MODE_NV 0x0B40

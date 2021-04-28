@@ -1,5 +1,5 @@
 GL_EXT_debug_label
-http://www.opengl.org/registry/specs/EXT/debug_label.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_debug_label.txt
 GL_EXT_debug_label
 
 	GL_PROGRAM_PIPELINE_OBJECT_EXT 0x8A4F

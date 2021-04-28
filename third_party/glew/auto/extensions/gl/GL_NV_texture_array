@@ -1,5 +1,5 @@
 GL_NV_texture_array
-http://www.opengl.org/registry/specs/NV/texture_array.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_texture_array.txt
 GL_NV_texture_array
 
 	GL_UNPACK_SKIP_IMAGES_NV 0x806D

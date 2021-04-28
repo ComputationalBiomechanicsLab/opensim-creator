@@ -1,5 +1,5 @@
 GL_ATI_texture_mirror_once
-http://www.opengl.org/registry/specs/ATI/texture_mirror_once.txt
+https://www.khronos.org/registry/OpenGL/extensions/ATI/ATI_texture_mirror_once.txt
 GL_ATI_texture_mirror_once
 
 	GL_MIRROR_CLAMP_ATI 0x8742

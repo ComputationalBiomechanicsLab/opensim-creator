@@ -1,5 +1,5 @@
 GL_SUN_triangle_list
-http://www.opengl.org/registry/specs/SUN/triangle_list.txt
+https://www.khronos.org/registry/OpenGL/extensions/SUN/SUN_triangle_list.txt
 GL_SUN_triangle_list
 
 	GL_RESTART_SUN 0x01

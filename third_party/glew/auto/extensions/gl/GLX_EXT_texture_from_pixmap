@@ -1,5 +1,5 @@
 GLX_EXT_texture_from_pixmap
-http://www.opengl.org/registry/specs/EXT/texture_from_pixmap.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_EXT_texture_from_pixmap
 
 	GLX_TEXTURE_1D_BIT_EXT 0x00000001
@@ -20,8 +20,10 @@ GLX_EXT_texture_from_pixmap
 	GLX_TEXTURE_2D_EXT 0x20DC
 	GLX_TEXTURE_RECTANGLE_EXT 0x20DD
 	GLX_FRONT_LEFT_EXT 0x20DE
+	GLX_FRONT_EXT 0x20DE
 	GLX_FRONT_RIGHT_EXT 0x20DF
 	GLX_BACK_LEFT_EXT 0x20E0
+	GLX_BACK_EXT 0x20E0
 	GLX_BACK_RIGHT_EXT 0x20E1
 	GLX_AUX0_EXT 0x20E2
 	GLX_AUX1_EXT 0x20E3
@@ -33,5 +35,5 @@ GLX_EXT_texture_from_pixmap
 	GLX_AUX7_EXT 0x20E9
 	GLX_AUX8_EXT 0x20EA
 	GLX_AUX9_EXT 0x20EB
-	void glXBindTexImageEXT (Display* display, GLXDrawable drawable, int buffer, const int *attrib_list)
-	void glXReleaseTexImageEXT (Display* display, GLXDrawable drawable, int buffer)
+	void glXBindTexImageEXT (Display* dpy, GLXDrawable drawable, int buffer, const int* attrib_list)
+	void glXReleaseTexImageEXT (Display* dpy, GLXDrawable drawable, int buffer)

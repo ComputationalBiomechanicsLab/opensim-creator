@@ -1,5 +1,5 @@
 GL_NV_sRGB_formats
-http://www.opengl.org/registry/specs/NV/sRGB_formats.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_sRGB_formats.txt
 GL_NV_sRGB_formats
 
 	GL_ETC1_SRGB8_NV 0x88EE

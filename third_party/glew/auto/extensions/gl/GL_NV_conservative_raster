@@ -1,5 +1,5 @@
 GL_NV_conservative_raster
-http://www.opengl.org/registry/specs/NV/conservative_raster.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_conservative_raster.txt
 GL_NV_conservative_raster
 
 	GL_CONSERVATIVE_RASTERIZATION_NV 0x9346

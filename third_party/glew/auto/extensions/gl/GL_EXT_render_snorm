@@ -1,5 +1,5 @@
 GL_EXT_render_snorm
-http://www.opengl.org/registry/specs/EXT/render_snorm.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_render_snorm.txt
 GL_EXT_render_snorm
 
 	GL_BYTE 0x1400

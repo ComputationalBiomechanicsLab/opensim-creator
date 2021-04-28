@@ -1,5 +1,5 @@
 GL_NV_light_max_exponent
-http://www.opengl.org/registry/specs/NV/light_max_exponent.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_light_max_exponent.txt
 GL_NV_light_max_exponent
 
 	GL_MAX_SHININESS_NV 0x8504

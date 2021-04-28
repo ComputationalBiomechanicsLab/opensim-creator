@@ -1,5 +1,5 @@
 GL_NV_vertex_attrib_integer_64bit
-http://www.opengl.org/registry/specs/NV/vertex_attrib_integer_64bit.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_vertex_attrib_integer_64bit.txt
 GL_NV_vertex_attrib_integer_64bit
 
 	GL_INT64_NV 0x140E

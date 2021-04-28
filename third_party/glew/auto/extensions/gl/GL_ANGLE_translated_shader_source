@@ -1,5 +1,5 @@
 GL_ANGLE_translated_shader_source
-https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
+https://www.khronos.org/registry/OpenGL/extensions/ANGLE/translated_shader_source.txt
 GL_ANGLE_translated_shader_source
 
 	GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE 0x93A0

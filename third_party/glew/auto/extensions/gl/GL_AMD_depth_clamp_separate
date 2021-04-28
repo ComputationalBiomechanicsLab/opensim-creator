@@ -1,5 +1,5 @@
 GL_AMD_depth_clamp_separate
-http://www.opengl.org/registry/specs/AMD/depth_clamp_separate.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_depth_clamp_separate.txt
 GL_AMD_depth_clamp_separate
 
 	GL_DEPTH_CLAMP_NEAR_AMD 0x901E

@@ -1,5 +1,5 @@
 GL_SGIS_multitexture
-http://www.opengl.org/registry/specs/SGIS/multitexture.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIS/SGIS_multitexture.txt
 GL_SGIS_multitexture
 
 	GL_SELECTED_TEXTURE_SGIS 0x83C0

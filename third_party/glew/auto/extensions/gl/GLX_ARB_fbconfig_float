@@ -1,5 +1,5 @@
 GLX_ARB_fbconfig_float
-http://www.opengl.org/registry/specs/ARB/color_buffer_float.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_ARB_fbconfig_float
 
 	GLX_RGBA_FLOAT_BIT_ARB 0x00000004

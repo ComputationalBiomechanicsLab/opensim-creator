@@ -2,10 +2,6 @@ EGL_VERSION_1_0
 https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 
 
-	EGL_NO_CONTEXT ((EGLContext)0)
-	EGL_NO_DISPLAY ((EGLDisplay)0)
-	EGL_NO_SURFACE ((EGLSurface)0)
-	EGL_DONT_CARE ((EGLint)-1)
 	EGL_FALSE 0
 	EGL_PBUFFER_BIT 0x0001
 	EGL_PIXMAP_BIT 0x0002
@@ -61,6 +57,10 @@ https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 	EGL_READ 0x305A
 	EGL_CORE_NATIVE_ENGINE 0x305B
 	EGL_TRUE 1
+	EGL_NO_CONTEXT EGL_CAST(EGLContext,0)
+	EGL_NO_DISPLAY EGL_CAST(EGLDisplay,0)
+	EGL_NO_SURFACE EGL_CAST(EGLSurface,0)
+	EGL_DONT_CARE EGL_CAST(EGLint,-1)
 	EGLBoolean  eglChooseConfig (EGLDisplay  dpy, const EGLint * attrib_list, EGLConfig * configs, EGLint  config_size, EGLint * num_config)
 	EGLBoolean  eglCopyBuffers (EGLDisplay  dpy, EGLSurface  surface, EGLNativePixmapType  target)
 	EGLContext  eglCreateContext (EGLDisplay  dpy, EGLConfig  config, EGLContext  share_context, const EGLint * attrib_list)

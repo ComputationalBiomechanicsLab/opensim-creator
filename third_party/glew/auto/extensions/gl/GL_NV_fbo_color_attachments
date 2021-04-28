@@ -1,5 +1,5 @@
 GL_NV_fbo_color_attachments
-http://www.opengl.org/registry/specs/NV/fbo_color_attachments.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_fbo_color_attachments.txt
 GL_NV_fbo_color_attachments
 
 	GL_MAX_COLOR_ATTACHMENTS_NV 0x8CDF

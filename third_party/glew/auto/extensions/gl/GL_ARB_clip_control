@@ -1,5 +1,5 @@
 GL_ARB_clip_control
-http://www.opengl.org/registry/specs/ARB/clip_control.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_clip_control.txt
 GL_ARB_clip_control
 
 	GL_LOWER_LEFT 0x8CA1

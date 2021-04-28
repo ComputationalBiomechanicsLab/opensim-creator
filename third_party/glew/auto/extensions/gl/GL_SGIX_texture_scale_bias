@@ -1,5 +1,5 @@
 GL_SGIX_texture_scale_bias
-http://www.opengl.org/registry/specs/SGIX/texture_scale_bias.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_texture_scale_bias.txt
 GL_SGIX_texture_scale_bias
 
 	GL_POST_TEXTURE_FILTER_BIAS_SGIX 0x8179

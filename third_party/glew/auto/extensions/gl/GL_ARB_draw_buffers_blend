@@ -1,5 +1,5 @@
 GL_ARB_draw_buffers_blend
-http://www.opengl.org/registry/specs/ARB/draw_buffers_blend.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_draw_buffers_blend.txt
 GL_ARB_draw_buffers_blend
 
 	void glBlendEquationSeparateiARB (GLuint buf, GLenum modeRGB, GLenum modeAlpha)

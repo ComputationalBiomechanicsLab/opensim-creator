@@ -1,5 +1,5 @@
 GL_EXT_geometry_point_size
-http://www.opengl.org/registry/specs/EXT/geometry_shader.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_geometry_shader.txt
 GL_EXT_geometry_point_size
 
 	GL_GEOMETRY_SHADER_BIT_EXT 0x00000004

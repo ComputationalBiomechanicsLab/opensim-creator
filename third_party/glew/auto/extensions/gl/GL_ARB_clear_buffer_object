@@ -1,5 +1,5 @@
 GL_ARB_clear_buffer_object
-http://www.opengl.org/registry/specs/ARB/clear_buffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_clear_buffer_object.txt
 GL_ARB_clear_buffer_object
 
 	void glClearBufferData (GLenum target, GLenum internalformat, GLenum format, GLenum type, const void *data)

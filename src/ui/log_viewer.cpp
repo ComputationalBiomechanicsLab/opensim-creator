@@ -92,7 +92,7 @@ void osc::ui::log_viewer::draw(State& st, char const* panel_name) {
             ImGui::TextWrapped("%s", msg.payload.c_str());
 
             if (st.autoscroll) {
-                ImGui::SetScrollHere();
+                ImGui::SetScrollHereY();
             }
         }
     }

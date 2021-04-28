@@ -1,5 +1,5 @@
 GL_EXT_window_rectangles
-http://www.opengl.org/registry/specs/EXT/window_rectangles.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_window_rectangles.txt
 GL_EXT_window_rectangles
 
 	GL_INCLUSIVE_EXT 0x8F10

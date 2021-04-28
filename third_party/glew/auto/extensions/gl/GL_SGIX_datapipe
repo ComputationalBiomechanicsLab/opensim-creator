@@ -1,5 +1,5 @@
 GL_SGIX_datapipe
-http://www.opengl.org/registry/specs/SGIX/datapipe.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_datapipe.txt
 GL_SGIX_datapipe
 
 	GL_GEOMETRY_BIT 0x1

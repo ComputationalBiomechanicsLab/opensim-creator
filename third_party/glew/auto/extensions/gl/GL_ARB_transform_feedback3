@@ -1,5 +1,5 @@
 GL_ARB_transform_feedback3
-http://www.opengl.org/registry/specs/ARB/transform_feedback3.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_transform_feedback3.txt
 GL_ARB_transform_feedback3
 
 	GL_MAX_TRANSFORM_FEEDBACK_BUFFERS 0x8E70

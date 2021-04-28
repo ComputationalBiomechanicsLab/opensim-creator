@@ -1,5 +1,5 @@
 GL_ARB_ES2_compatibility
-http://www.opengl.org/registry/specs/ARB/ES2_compatibility.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_ES2_compatibility.txt
 GL_ARB_ES2_compatibility
 
 	GL_FIXED 0x140C

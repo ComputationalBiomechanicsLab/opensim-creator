@@ -1,5 +1,5 @@
 GL_SGIX_fragments_instrument
-http://www.opengl.org/registry/specs/SGIX/fragments_instrument.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_fragments_instrument.txt
 GL_SGIX_fragments_instrument
 
 	GL_FRAGMENTS_INSTRUMENT_SGIX 0x8313

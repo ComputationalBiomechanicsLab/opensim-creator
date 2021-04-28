@@ -1,5 +1,5 @@
 GL_S3_s3tc
-http://www.opengl.org/registry/specs/S3/s3tc.txt
+https://www.khronos.org/registry/OpenGL/extensions/S3/S3_s3tc.txt
 GL_S3_s3tc
 
 	GL_RGB_S3TC 0x83A0

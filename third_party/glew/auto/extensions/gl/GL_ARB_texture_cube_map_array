@@ -1,5 +1,5 @@
 GL_ARB_texture_cube_map_array
-http://www.opengl.org/registry/specs/ARB/texture_cube_map_array.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_cube_map_array.txt
 GL_ARB_texture_cube_map_array
 
 	GL_TEXTURE_CUBE_MAP_ARRAY_ARB 0x9009

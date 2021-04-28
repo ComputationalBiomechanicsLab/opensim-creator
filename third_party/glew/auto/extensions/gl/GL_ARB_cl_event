@@ -1,5 +1,5 @@
 GL_ARB_cl_event
-http://www.opengl.org/registry/specs/ARB/cl_event.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_cl_event.txt
 GL_ARB_cl_event
 
 	GL_SYNC_CL_EVENT_ARB 0x8240

@@ -1,5 +1,5 @@
 GL_NV_viewport_swizzle
-http://www.opengl.org/registry/specs/NV/viewport_swizzle.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_viewport_swizzle.txt
 GL_NV_viewport_swizzle
 
 	GL_VIEWPORT_SWIZZLE_POSITIVE_X_NV 0x9350

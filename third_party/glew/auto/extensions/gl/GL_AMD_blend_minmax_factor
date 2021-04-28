@@ -1,5 +1,5 @@
 GL_AMD_blend_minmax_factor
-http://www.opengl.org/registry/specs/AMD/blend_minmax_factor.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_blend_minmax_factor.txt
 GL_AMD_blend_minmax_factor
 
 	GL_FACTOR_MIN_AMD 0x901C

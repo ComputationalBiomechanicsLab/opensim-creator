@@ -1,5 +1,5 @@
 GL_SGIX_fog_blend
-http://www.opengl.org/registry/specs/SGIX/fog_blend.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_fog_blend.txt
 GL_SGIX_fog_blend
 
 	GL_FOG_BLEND_ALPHA_SGIX 0x81FE

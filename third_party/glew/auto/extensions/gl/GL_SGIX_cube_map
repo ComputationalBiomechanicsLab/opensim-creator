@@ -1,5 +1,5 @@
 GL_SGIX_cube_map
-http://www.opengl.org/registry/specs/SGIX/cube_map.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_cube_map.txt
 GL_SGIX_cube_map
 
 	GL_ENV_MAP_SGIX 0x8340

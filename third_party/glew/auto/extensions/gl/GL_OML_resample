@@ -1,5 +1,5 @@
 GL_OML_resample
-http://www.opengl.org/registry/specs/OML/resample.txt
+https://www.khronos.org/registry/OpenGL/extensions/OML/OML_resample.txt
 GL_OML_resample
 
 	GL_PACK_RESAMPLE_OML 0x8984

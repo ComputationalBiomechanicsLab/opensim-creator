@@ -1,5 +1,5 @@
 GL_MESAX_texture_stack
-http://www.opengl.org/registry/specs/MESAX/texture_stack.txt
+https://www.khronos.org/registry/OpenGL/extensions/MESAX/MESAX_texture_stack.txt
 GL_MESAX_texture_stack
 
 	GL_TEXTURE_1D_STACK_MESAX 0x8759

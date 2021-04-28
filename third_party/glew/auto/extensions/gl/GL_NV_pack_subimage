@@ -1,5 +1,5 @@
 GL_NV_pack_subimage
-http://www.opengl.org/registry/specs/NV/pack_subimage.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_pack_subimage.txt
 GL_NV_pack_subimage
 
 	GL_PACK_ROW_LENGTH_NV 0x0D02

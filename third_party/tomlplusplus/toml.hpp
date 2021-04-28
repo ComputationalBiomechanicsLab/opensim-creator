@@ -627,6 +627,9 @@ TOML_DISABLE_WARNINGS
 #if !TOML_HAS_CUSTOM_OPTIONAL_TYPE
 	#include <optional>
 #endif
+#if TOML_HAS_INCLUDE(<version>)
+	#include <version>
+#endif
 TOML_ENABLE_WARNINGS
 
 #ifdef __cpp_lib_launder

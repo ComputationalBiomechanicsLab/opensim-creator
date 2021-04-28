@@ -1,5 +1,5 @@
 GLX_MESA_query_renderer
-http://www.opengl.org/registry/specs/MESA/glx_query_renderer.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_MESA_query_renderer
 
 	GLX_RENDERER_VENDOR_ID_MESA 0x8183
@@ -13,8 +13,7 @@ GLX_MESA_query_renderer
 	GLX_RENDERER_OPENGL_COMPATIBILITY_PROFILE_VERSION_MESA 0x818B
 	GLX_RENDERER_OPENGL_ES_PROFILE_VERSION_MESA 0x818C
 	GLX_RENDERER_OPENGL_ES2_PROFILE_VERSION_MESA 0x818D
-	GLX_RENDERER_ID_MESA 0x818E
 	Bool glXQueryCurrentRendererIntegerMESA (int attribute, unsigned int* value)
 	const char* glXQueryCurrentRendererStringMESA (int attribute)
-	Bool glXQueryRendererIntegerMESA (Display* dpy, int screen, int renderer, int attribute, unsigned int *value)
-	const char* glXQueryRendererStringMESA (Display *dpy, int screen, int renderer, int attribute)
+	Bool glXQueryRendererIntegerMESA (Display* dpy, int screen, int renderer, int attribute, unsigned int* value)
+	const char* glXQueryRendererStringMESA (Display* dpy, int screen, int renderer, int attribute)

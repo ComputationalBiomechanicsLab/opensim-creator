@@ -1,5 +1,5 @@
 GL_EXT_subtexture
-http://www.opengl.org/registry/specs/EXT/subtexture.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_subtexture.txt
 GL_EXT_subtexture
 
 	void glTexSubImage1DEXT (GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void *pixels)

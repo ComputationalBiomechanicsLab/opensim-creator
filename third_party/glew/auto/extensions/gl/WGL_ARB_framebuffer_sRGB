@@ -1,5 +1,5 @@
 WGL_ARB_framebuffer_sRGB
-http://www.opengl.org/registry/specs/ARB/framebuffer_sRGB.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/WGL_ARB_framebuffer_sRGB.txt
 WGL_ARB_framebuffer_sRGB
 
 	WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB 0x20A9

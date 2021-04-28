@@ -1,5 +1,5 @@
 GL_EXT_vertex_array_setXXX
-http://www.opengl.org/registry/specs/EXT/vertex_array_setXXX.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_vertex_array_setXXX.txt
 GL_EXT_vertex_array_setXXX
 
 	void glBindArraySetEXT (const void *arrayset)

@@ -1,5 +1,5 @@
 GL_NV_texture_compression_latc
-http://www.opengl.org/registry/specs/NV/texture_compression_latc.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_texture_compression_latc.txt
 GL_NV_texture_compression_latc
 
 	GL_COMPRESSED_LUMINANCE_LATC1_NV 0x8C70

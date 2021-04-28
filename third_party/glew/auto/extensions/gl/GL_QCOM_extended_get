@@ -1,5 +1,5 @@
 GL_QCOM_extended_get
-http://www.opengl.org/registry/specs/QCOM/extended_get.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_extended_get.txt
 GL_QCOM_extended_get
 
 	GL_TEXTURE_WIDTH_QCOM 0x8BD2

@@ -1,5 +1,5 @@
 GL_QCOM_driver_control
-http://www.opengl.org/registry/specs/QCOM/driver_control.txt
+https://www.khronos.org/registry/OpenGL/extensions/QCOM/QCOM_driver_control.txt
 GL_QCOM_driver_control
 
 	void glDisableDriverControlQCOM (GLuint driverControl)

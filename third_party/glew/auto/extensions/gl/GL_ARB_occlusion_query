@@ -1,5 +1,5 @@
 GL_ARB_occlusion_query
-http://www.opengl.org/registry/specs/ARB/occlusion_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_occlusion_query.txt
 GL_ARB_occlusion_query
 
 	GL_QUERY_COUNTER_BITS_ARB 0x8864

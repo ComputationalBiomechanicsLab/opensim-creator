@@ -1,5 +1,5 @@
 GL_NV_draw_buffers
-http://www.opengl.org/registry/specs/NV/draw_buffers.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_draw_buffers.txt
 GL_NV_draw_buffers
 
 	GL_MAX_DRAW_BUFFERS_NV 0x8824

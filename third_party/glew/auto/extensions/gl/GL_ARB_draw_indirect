@@ -1,5 +1,5 @@
 GL_ARB_draw_indirect
-http://www.opengl.org/registry/specs/ARB/draw_indirect.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_draw_indirect.txt
 GL_ARB_draw_indirect
 
 	GL_DRAW_INDIRECT_BUFFER 0x8F3F

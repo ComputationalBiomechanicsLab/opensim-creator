@@ -1,5 +1,5 @@
 GL_ARB_point_sprite
-http://www.opengl.org/registry/specs/ARB/point_sprite.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_point_sprite.txt
 GL_ARB_point_sprite
 
 	GL_POINT_SPRITE_ARB 0x8861

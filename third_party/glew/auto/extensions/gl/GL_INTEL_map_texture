@@ -1,5 +1,5 @@
 GL_INTEL_map_texture
-http://www.opengl.org/registry/specs/INTEL/map_texture.txt
+https://www.khronos.org/registry/OpenGL/extensions/INTEL/INTEL_map_texture.txt
 GL_INTEL_map_texture
 
 	GL_LAYOUT_DEFAULT_INTEL 0

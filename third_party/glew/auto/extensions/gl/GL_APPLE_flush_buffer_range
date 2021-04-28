@@ -1,5 +1,5 @@
 GL_APPLE_flush_buffer_range
-http://www.opengl.org/registry/specs/APPLE/flush_buffer_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_flush_buffer_range.txt
 GL_APPLE_flush_buffer_range
 
 	GL_BUFFER_SERIALIZED_MODIFY_APPLE 0x8A12

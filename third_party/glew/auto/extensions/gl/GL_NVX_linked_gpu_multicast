@@ -1,5 +1,5 @@
 GL_NVX_linked_gpu_multicast
-http://www.opengl.org/registry/specs/NVX/nvx_linked_gpu_multicast.txt
+https://www.khronos.org/registry/OpenGL/extensions/NVX/NVX_linked_gpu_multicast.txt
 GL_NVX_linked_gpu_multicast
 
 	GL_LGPU_SEPARATE_STORAGE_BIT_NVX 0x0800

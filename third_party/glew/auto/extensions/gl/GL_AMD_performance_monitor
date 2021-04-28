@@ -1,5 +1,5 @@
 GL_AMD_performance_monitor
-http://www.opengl.org/registry/specs/AMD/performance_monitor.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_performance_monitor.txt
 GL_AMD_performance_monitor
 
 	GL_COUNTER_TYPE_AMD 0x8BC0

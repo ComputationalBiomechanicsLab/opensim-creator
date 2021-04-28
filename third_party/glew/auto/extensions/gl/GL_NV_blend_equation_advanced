@@ -1,5 +1,5 @@
 GL_NV_blend_equation_advanced
-http://www.opengl.org/registry/specs/NV/blend_equation_advanced.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_blend_equation_advanced.txt
 GL_NV_blend_equation_advanced
 
 	GL_XOR_NV 0x1506

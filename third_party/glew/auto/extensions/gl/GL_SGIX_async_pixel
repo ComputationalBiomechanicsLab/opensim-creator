@@ -1,5 +1,5 @@
 GL_SGIX_async_pixel
-http://www.opengl.org/registry/specs/SGIX/async_pixel.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_async_pixel.txt
 GL_SGIX_async_pixel
 
 	GL_ASYNC_TEX_IMAGE_SGIX 0x835C

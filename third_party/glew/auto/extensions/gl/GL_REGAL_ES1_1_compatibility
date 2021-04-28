@@ -1,5 +1,5 @@
 GL_REGAL_ES1_1_compatibility
-https://github.com/p3/regal/tree/master/doc/extensions
+https://www.khronos.org/registry/OpenGL/extensions/REGAL/ES1_1_compatibility.txt
 GL_REGAL_ES1_1_compatibility
 
 	void glClipPlanef (GLenum plane, const GLfloat* equation)

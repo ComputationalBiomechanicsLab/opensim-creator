@@ -1,5 +1,5 @@
 GL_EXT_shader_pixel_local_storage2
-http://www.opengl.org/registry/specs/EXT/shader_pixel_local_storage2.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_shader_pixel_local_storage2.txt
 GL_EXT_shader_pixel_local_storage2
 
 	GL_MAX_SHADER_COMBINED_LOCAL_STORAGE_FAST_SIZE_EXT 0x9650

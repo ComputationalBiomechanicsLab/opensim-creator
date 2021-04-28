@@ -1,5 +1,5 @@
 GL_NV_internalformat_sample_query
-http://www.opengl.org/registry/specs/NV/internalformat_sample_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_internalformat_sample_query.txt
 GL_NV_internalformat_sample_query
 
 	GL_MULTISAMPLES_NV 0x9371

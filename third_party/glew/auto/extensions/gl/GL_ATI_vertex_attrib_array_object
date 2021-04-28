@@ -1,5 +1,5 @@
 GL_ATI_vertex_attrib_array_object
-http://www.opengl.org/registry/specs/ATI/vertex_attrib_array_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ATI/ATI_vertex_attrib_array_object.txt
 GL_ATI_vertex_attrib_array_object
 
 	void glGetVertexAttribArrayObjectfvATI (GLuint index, GLenum pname, GLfloat* params)

@@ -1,5 +1,5 @@
 GL_NV_texgen_emboss
-http://www.opengl.org/registry/specs/NV/texgen_emboss.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_texgen_emboss.txt
 GL_NV_texgen_emboss
 
 	GL_EMBOSS_LIGHT_NV 0x855D

@@ -1,5 +1,5 @@
 GL_SGIX_nonlinear_lighting_pervertex
-http://www.opengl.org/registry/specs/SGIX/nonlinear_lighting_pervertex.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_nonlinear_lighting_pervertex.txt
 GL_SGIX_nonlinear_lighting_pervertex
 
 	void glGetNonlinLightfvSGIX (GLenum light, GLenum pname, GLint* terms, GLfloat *data)

@@ -1,5 +1,5 @@
 WGL_EXT_pixel_format
-http://www.opengl.org/registry/specs/EXT/wgl_pixel_format.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/WGL_EXT_pixel_format.txt
 WGL_EXT_pixel_format
 
 	WGL_NUMBER_PIXEL_FORMATS_EXT 0x2000
@@ -47,6 +47,6 @@ WGL_EXT_pixel_format
 	WGL_SWAP_UNDEFINED_EXT 0x202A
 	WGL_TYPE_RGBA_EXT 0x202B
 	WGL_TYPE_COLORINDEX_EXT 0x202C
-	BOOL wglChoosePixelFormatEXT (HDC hdc, const int* piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats)
-	BOOL wglGetPixelFormatAttribfvEXT (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int* piAttributes, FLOAT *pfValues)
-	BOOL wglGetPixelFormatAttribivEXT (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int* piAttributes, int *piValues)
+	BOOL wglChoosePixelFormatEXT (HDC hdc, const int* piAttribIList, const FLOAT* pfAttribFList, UINT nMaxFormats, int* piFormats, UINT* nNumFormats)
+	BOOL wglGetPixelFormatAttribfvEXT (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int* piAttributes, FLOAT* pfValues)
+	BOOL wglGetPixelFormatAttribivEXT (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, int* piAttributes, int* piValues)

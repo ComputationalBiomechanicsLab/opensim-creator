@@ -1,5 +1,5 @@
 GL_ARB_ES3_2_compatibility
-http://www.opengl.org/registry/specs/ARB/ES3_2_compatibility.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_ES3_2_compatibility.txt
 GL_ARB_ES3_2_compatibility
 
 	GL_PRIMITIVE_BOUNDING_BOX_ARB 0x92BE

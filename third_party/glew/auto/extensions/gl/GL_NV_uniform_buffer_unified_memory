@@ -1,5 +1,5 @@
 GL_NV_uniform_buffer_unified_memory
-http://www.opengl.org/registry/specs/NV/uniform_buffer_unified_memory.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_uniform_buffer_unified_memory.txt
 GL_NV_uniform_buffer_unified_memory
 
 	GL_UNIFORM_BUFFER_UNIFIED_NV 0x936E

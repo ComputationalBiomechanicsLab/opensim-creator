@@ -1,5 +1,5 @@
 GLX_NV_copy_buffer
-http://www.opengl.org/registry/specs/NV/glx_copy_buffer.txt
+https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 GLX_NV_copy_buffer
 
 	void glXCopyBufferSubDataNV (Display* dpy, GLXContext readCtx, GLXContext writeCtx, GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)

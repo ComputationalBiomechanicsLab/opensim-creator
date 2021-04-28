@@ -1,5 +1,5 @@
 GL_NV_point_sprite
-http://www.opengl.org/registry/specs/NV/point_sprite.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_point_sprite.txt
 GL_NV_point_sprite
 
 	GL_POINT_SPRITE_NV 0x8861

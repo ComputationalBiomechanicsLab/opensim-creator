@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ##
+## Copyright (C) 2008-2019, Nigel Stewart <nigels[]users sourceforge net>
 ## Copyright (C) 2002-2008, Marcelo E. Magallon <mmagallo[]debian org>
 ## Copyright (C) 2002-2008, Milan Ikits <milan ikits[]ieee org>
 ##
@@ -77,10 +78,6 @@ EOT
 # fix GL_NV_occlusion_query and GL_HP_occlusion_test
     grep -v '_HP' $1/GL_NV_occlusion_query > tmp
     mv tmp $1/GL_NV_occlusion_query
-    perl -e's/OCCLUSION_TEST_HP.*/OCCLUSION_TEST_HP 0x8165/' -pi \
-	$1/GL_HP_occlusion_test
-    perl -e's/OCCLUSION_TEST_RESULT_HP.*/OCCLUSION_TEST_RESULT_HP 0x8166/' -pi \
-	$1/GL_HP_occlusion_test
 
 # add deprecated constants to GL_ATI_fragment_shader
     cat >> $1/GL_ATI_fragment_shader <<EOT
@@ -151,9 +148,14 @@ EOT
 	typedef struct __GLXFBConfigRec *GLXFBConfigSGIX
 EOT
 
+# Skip GLX_SGIX_dmbuffer and GLX_SGIX_video_source
+# unknown DMparams, DMbuffer, etc
+    rm -f $1/GLX_SGIX_dmbuffer
+    rm -f $1/GLX_SGIX_video_source
+
 # add typedefs to GLX_SGIX_pbuffer
     cat >> $1/GLX_SGIX_pbuffer <<EOT
-	typedef XID GLXPbufferSGIX
+    typedef XID GLXPbufferSGIX
 	typedef struct { int type; unsigned long serial; Bool send_event; Display *display; GLXDrawable drawable; int event_type; int draw_type; unsigned int mask; int x, y; int width, height; int count; } GLXBufferClobberEventSGIX
 EOT
 
@@ -287,9 +289,9 @@ EOT
   BOOL wglCopyImageSubDataNV (HGLRC hSrcRC, GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, HGLRC hDstRC, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei width, GLsizei height, GLsizei depth)
 EOT
 
-# Filter glProgramParameteri from GL_ARB_separate_shader_objects
-#    grep -v "glProgramParameteri" $1/GL_ARB_separate_shader_objects > tmp
-#    mv tmp $1/GL_ARB_separate_shader_objects
+# Filter glProgramUniform from GL_EXT_separate_shader_objects
+    cat $1/GL_EXT_separate_shader_objects | grep -v "glProgramUniform" | grep -v "glProgramParameteri" > tmp
+    mv tmp $1/GL_EXT_separate_shader_objects
 
 # Filter out EXT functions from GL_ARB_viewport_array
     grep -v "EXT" $1/GL_ARB_viewport_array > tmp
@@ -337,11 +339,6 @@ EOT
 # Remove glGetPointerv from GL_KHR_debug
     grep -v "glGetPointerv" $1/GL_KHR_debug > tmp
     mv tmp $1/GL_KHR_debug
-
-# Remove GL_ARB_debug_group, GL_ARB_debug_label and GL_ARB_debug_output2, for now
-    rm -f $1/GL_ARB_debug_group
-    rm -f $1/GL_ARB_debug_label
-    rm -f $1/GL_ARB_debug_output2
 
 # add typedefs to GL_ARB_cl_event
 # parse_spec.pl can't parse typedefs from New Types section, but ought to
@@ -500,10 +497,6 @@ EOT
     grep -v 'GL_NONE' $1/GL_KHR_context_flush_control > tmp
     mv tmp $1/GL_KHR_context_flush_control
 
-# Filter out GL_NONE enum from GL_EGL_KHR_context_flush_control
-    grep -v 'GL_NONE' $1/GL_EGL_KHR_context_flush_control > tmp
-    mv tmp $1/GL_EGL_KHR_context_flush_control
-
 # Filter out CoverageModulation from NV_framebuffer_mixed_samples
 # Superset of EXT_raster_multisample
 
@@ -558,6 +551,50 @@ EOT
     grep -v "TextureStorage" $1/GL_ARB_texture_storage > tmp
     mv tmp $1/GL_ARB_texture_storage
 
+# Filter out functions from GL_EXT_occlusion_query_boolean
+
+    grep -v "(" $1/GL_EXT_occlusion_query_boolean > tmp
+    mv tmp $1/GL_EXT_occlusion_query_boolean
+
+# Filter out duplicate enums from GL_EXT_protected_textures
+
+    cat $1/GL_EXT_protected_textures | grep -v GL_TRUE | grep -v GL_FALSE > tmp
+    mv tmp $1/GL_EXT_protected_textures
+
+# Filter out duplicate enums from GL_EXT_robustness
+
+    cat $1/GL_EXT_robustness | grep -v GL_NO_ERROR > tmp
+    mv tmp $1/GL_EXT_robustness
+
+# Filter  GL_EXT_shader_framebuffer_fetch_non_coherent
+
+    grep -v "FramebufferFetchBarrierEXT" $1/GL_EXT_shader_framebuffer_fetch_non_coherent > tmp
+    mv tmp $1/GL_EXT_shader_framebuffer_fetch_non_coherent
+
+# Filter GL_EXT_tessellation_shader
+
+    grep -v "PatchParameteriEXT" $1/GL_EXT_tessellation_shader > tmp
+    mv tmp $1/GL_EXT_tessellation_shader
+
+# Filter GL_EXT_texture_buffer
+
+    grep -v "TexBuffer" $1/GL_EXT_texture_buffer > tmp
+    mv tmp $1/GL_EXT_texture_buffer
+
+# Filter GL_EXT_texture_border_clamp
+
+    grep -v "TexParameter" $1/GL_EXT_texture_border_clamp > tmp
+    mv tmp $1/GL_EXT_texture_border_clamp
+
+# Filter GL_EXT_disjoint_timer_query
+
+    cat $1/GL_EXT_disjoint_timer_query | grep -v GetQueryObjecti64v | grep -v GetQueryObjectui64v > tmp
+    mv tmp $1/GL_EXT_disjoint_timer_query
+
+# Filter GL_NV_read_buffer_front
+
+    grep -v "ReadBufferNV" $1/GL_NV_read_buffer_front > tmp
+    mv tmp $1/GL_NV_read_buffer_front
 
 # Append GLVULKANPROCNV to GL_NV_draw_vulkan_image
 # Probably ought to be explicitly mentioned in the spec language
@@ -565,6 +602,12 @@ EOT
     cat >> $1/GL_NV_draw_vulkan_image <<EOT
     typedef void (APIENTRY *GLVULKANPROCNV)(void)
 EOT
+
+# GLU extensions are not relevant here
+    rm -f $1/GL_GLU_*
+
+# Not complete
+    rm -f $1/GL_SGIX_color_type
 
 # clean up
     rm -f patterns $1/*.bak

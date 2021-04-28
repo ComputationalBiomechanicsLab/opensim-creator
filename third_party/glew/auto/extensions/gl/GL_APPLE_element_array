@@ -1,5 +1,5 @@
 GL_APPLE_element_array
-http://www.opengl.org/registry/specs/APPLE/element_array.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_element_array.txt
 GL_APPLE_element_array
 
 	GL_ELEMENT_ARRAY_APPLE 0x8A0C

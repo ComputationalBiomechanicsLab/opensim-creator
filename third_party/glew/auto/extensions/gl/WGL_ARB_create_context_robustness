@@ -1,5 +1,5 @@
 WGL_ARB_create_context_robustness
-http://www.opengl.org/registry/specs/ARB/wgl_create_context_robustness.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/WGL_ARB_create_context_robustness.txt
 WGL_ARB_create_context_robustness
 
 	WGL_CONTEXT_ROBUST_ACCESS_BIT_ARB 0x00000004

@@ -1,5 +1,5 @@
 GL_ARB_invalidate_subdata
-http://www.opengl.org/registry/specs/ARB/invalidate_subdata.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_invalidate_subdata.txt
 GL_ARB_invalidate_subdata
 
 	void glInvalidateBufferData (GLuint buffer)

@@ -1,5 +1,5 @@
 GL_EXT_framebuffer_object
-http://www.opengl.org/registry/specs/EXT/framebuffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_framebuffer_object.txt
 GL_EXT_framebuffer_object
 
 	GL_INVALID_FRAMEBUFFER_OPERATION_EXT 0x0506

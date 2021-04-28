@@ -1,5 +1,5 @@
 GL_NV_pixel_data_range
-http://www.opengl.org/registry/specs/NV/pixel_data_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_pixel_data_range.txt
 GL_NV_pixel_data_range
 
 	GL_WRITE_PIXEL_DATA_RANGE_NV 0x8878

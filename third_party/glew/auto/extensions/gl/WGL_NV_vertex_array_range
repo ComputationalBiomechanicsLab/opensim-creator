@@ -1,6 +1,6 @@
 WGL_NV_vertex_array_range
-http://oss.sgi.com/projects/ogl-sample/registry/NV/vertex_array_range.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/WGL_NV_vertex_array_range.txt
 WGL_NV_vertex_array_range
 
-	void * wglAllocateMemoryNV (GLsizei size, GLfloat readFrequency, GLfloat writeFrequency, GLfloat priority)
-	void wglFreeMemoryNV (void *pointer)
+	void* wglAllocateMemoryNV (GLsizei size, GLfloat readfreq, GLfloat writefreq, GLfloat priority)
+	void wglFreeMemoryNV (void* pointer)

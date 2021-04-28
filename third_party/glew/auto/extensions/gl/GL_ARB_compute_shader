@@ -1,5 +1,5 @@
 GL_ARB_compute_shader
-http://www.opengl.org/registry/specs/ARB/compute_shader.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_compute_shader.txt
 GL_ARB_compute_shader
 
 	GL_COMPUTE_SHADER_BIT 0x00000020

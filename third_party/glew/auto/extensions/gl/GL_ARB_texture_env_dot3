@@ -1,5 +1,5 @@
 GL_ARB_texture_env_dot3
-http://www.opengl.org/registry/specs/ARB/texture_env_dot3.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_env_dot3.txt
 GL_ARB_texture_env_dot3
 
 	GL_DOT3_RGB_ARB 0x86AE

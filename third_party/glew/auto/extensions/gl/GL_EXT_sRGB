@@ -1,5 +1,5 @@
 GL_EXT_sRGB
-http://www.opengl.org/registry/specs/EXT/sRGB.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_sRGB.txt
 GL_EXT_sRGB
 
 	GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT 0x8210

@@ -1,5 +1,5 @@
 GL_ARB_framebuffer_object
-http://www.opengl.org/registry/specs/ARB/framebuffer_object.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_framebuffer_object.txt
 GL_ARB_framebuffer_object
 
 	GL_INVALID_FRAMEBUFFER_OPERATION 0x0506

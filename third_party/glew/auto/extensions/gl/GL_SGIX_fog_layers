@@ -1,5 +1,5 @@
 GL_SGIX_fog_layers
-http://www.opengl.org/registry/specs/SGIX/fog_layers.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_fog_layers.txt
 GL_SGIX_fog_layers
 
 	GL_FOG_TYPE_SGIX 0x8323

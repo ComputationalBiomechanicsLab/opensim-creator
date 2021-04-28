@@ -1,5 +1,5 @@
 GL_AMD_gpu_shader_half_float
-http://www.opengl.org/registry/specs/AMD/gpu_shader_half_float.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_gpu_shader_half_float.txt
 GL_AMD_gpu_shader_half_float
 
 	GL_FLOAT16_NV 0x8FF8

@@ -1,5 +1,5 @@
 GL_ARB_texture_compression_bptc
-http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_compression_bptc.txt
 GL_ARB_texture_compression_bptc
 
 	GL_COMPRESSED_RGBA_BPTC_UNORM_ARB 0x8E8C

@@ -1,5 +1,5 @@
 GL_NV_viewport_array
-http://www.opengl.org/registry/specs/NV/viewport_array.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_viewport_array.txt
 GL_NV_viewport_array
 
 	GL_DEPTH_RANGE 0x0B70

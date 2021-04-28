@@ -1,5 +1,5 @@
 GL_ARB_base_instance
-http://www.opengl.org/registry/specs/ARB/base_instance.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_base_instance.txt
 GL_ARB_base_instance
 
 	void glDrawArraysInstancedBaseInstance (GLenum mode, GLint first, GLsizei count, GLsizei primcount, GLuint baseinstance)

@@ -1,5 +1,5 @@
 GL_ANGLE_timer_query
-https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
+https://www.khronos.org/registry/OpenGL/extensions/ANGLE/timer_query.txt
 GL_ANGLE_timer_query
 
 	GL_QUERY_COUNTER_BITS_ANGLE 0x8864

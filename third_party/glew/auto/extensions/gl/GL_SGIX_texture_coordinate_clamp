@@ -1,5 +1,5 @@
 GL_SGIX_texture_coordinate_clamp
-http://www.opengl.org/registry/specs/SGIX/texture_coordinate_clamp.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_texture_coordinate_clamp.txt
 GL_SGIX_texture_coordinate_clamp
 
 	GL_TEXTURE_MAX_CLAMP_S_SGIX 0x8369

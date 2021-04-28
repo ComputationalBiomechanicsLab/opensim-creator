@@ -1,5 +1,5 @@
 GL_NV_half_float
-http://www.opengl.org/registry/specs/NV/half_float.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_half_float.txt
 GL_NV_half_float
 
 	GL_HALF_FLOAT_NV 0x140B

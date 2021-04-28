@@ -2,5 +2,5 @@ EGL_NV_system_time
 https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 EGL_NV_system_time
 
-	EGLuint64NV  eglGetSystemTimeFrequencyNV ( void )
-	EGLuint64NV  eglGetSystemTimeNV ( void )
+	EGLuint64NV eglGetSystemTimeFrequencyNV (void)
+	EGLuint64NV eglGetSystemTimeNV (void)

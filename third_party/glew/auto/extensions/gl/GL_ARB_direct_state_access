@@ -1,5 +1,5 @@
 GL_ARB_direct_state_access
-http://www.opengl.org/registry/specs/ARB/direct_state_access.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_direct_state_access.txt
 GL_ARB_direct_state_access
 
 	GL_TEXTURE_TARGET 0x1006
@@ -10,7 +10,7 @@ GL_ARB_direct_state_access
 	void glClearNamedBufferData (GLuint buffer, GLenum internalformat, GLenum format, GLenum type, const void *data)
 	void glClearNamedBufferSubData (GLuint buffer, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data)
 	void glClearNamedFramebufferfi (GLuint framebuffer, GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil)
-	void glClearNamedFramebufferfv (GLuint framebuffer, GLenum buffer, GLint drawbuffer, GLfloat* value)
+	void glClearNamedFramebufferfv (GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLfloat* value)
 	void glClearNamedFramebufferiv (GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLint* value)
 	void glClearNamedFramebufferuiv (GLuint framebuffer, GLenum buffer, GLint drawbuffer, const GLuint* value)
 	void glCompressedTextureSubImage1D (GLuint texture, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const void *data)

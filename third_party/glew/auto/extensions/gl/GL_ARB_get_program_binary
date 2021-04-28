@@ -1,5 +1,5 @@
 GL_ARB_get_program_binary
-http://www.opengl.org/registry/specs/ARB/get_program_binary.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_get_program_binary.txt
 GL_ARB_get_program_binary
 
 	GL_PROGRAM_BINARY_RETRIEVABLE_HINT 0x8257

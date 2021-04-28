@@ -1,5 +1,5 @@
 GL_ARB_texture_float
-http://www.opengl.org/registry/specs/ARB/texture_float.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_float.txt
 GL_ARB_texture_float
 
 	GL_RGBA32F_ARB 0x8814

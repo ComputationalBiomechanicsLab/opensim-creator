@@ -2,7 +2,6 @@ EGL_VERSION_1_2
 https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 
 
-	EGL_UNKNOWN ((EGLint)-1)
 	EGL_OPENGL_ES_BIT 0x0001
 	EGL_OPENVG_BIT 0x0002
 	EGL_LUMINANCE_SIZE 0x303D
@@ -31,6 +30,7 @@ https://www.khronos.org/registry/egl/specs/eglspec.1.5.pdf
 	EGL_OPENGL_ES_API 0x30A0
 	EGL_OPENVG_API 0x30A1
 	EGL_DISPLAY_SCALING 10000
+	EGL_UNKNOWN EGL_CAST(EGLint,-1)
 	EGLBoolean  eglBindAPI (EGLenum  api)
 	EGLSurface  eglCreatePbufferFromClientBuffer (EGLDisplay  dpy, EGLenum  buftype, EGLClientBuffer  buffer, EGLConfig  config, const EGLint * attrib_list)
 	EGLenum  eglQueryAPI ( void )

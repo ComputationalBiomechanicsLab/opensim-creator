@@ -1,5 +1,5 @@
 GL_ARB_timer_query
-http://www.opengl.org/registry/specs/ARB/timer_query.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_timer_query.txt
 GL_ARB_timer_query
 
 	GL_TIME_ELAPSED 0x88BF

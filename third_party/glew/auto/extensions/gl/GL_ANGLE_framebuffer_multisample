@@ -1,5 +1,5 @@
 GL_ANGLE_framebuffer_multisample
-https://code.google.com/p/angleproject/source/browse/#git%2Fextensions
+https://www.khronos.org/registry/OpenGL/extensions/ANGLE/framebuffer_multisample.txt
 GL_ANGLE_framebuffer_multisample
 
 	GL_RENDERBUFFER_SAMPLES_ANGLE 0x8CAB

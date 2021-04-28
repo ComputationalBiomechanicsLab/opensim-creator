@@ -1,5 +1,5 @@
 GL_EXT_buffer_storage
-http://www.opengl.org/registry/specs/EXT/buffer_storage.txt
+https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_buffer_storage.txt
 GL_EXT_buffer_storage
 
 	GL_MAP_READ_BIT 0x0001

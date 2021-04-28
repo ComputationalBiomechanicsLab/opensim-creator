@@ -1,5 +1,5 @@
 GL_SGI_color_matrix
-http://www.opengl.org/registry/specs/SGI/color_matrix.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGI/SGI_color_matrix.txt
 GL_SGI_color_matrix
 
 	GL_COLOR_MATRIX_SGI 0x80B1

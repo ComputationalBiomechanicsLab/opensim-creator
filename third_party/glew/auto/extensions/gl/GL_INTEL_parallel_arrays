@@ -1,5 +1,5 @@
 GL_INTEL_parallel_arrays
-http://www.opengl.org/registry/specs/INTEL/parallel_arrays.txt
+https://www.khronos.org/registry/OpenGL/extensions/INTEL/INTEL_parallel_arrays.txt
 GL_INTEL_parallel_arrays
 
 	GL_PARALLEL_ARRAYS_INTEL 0x83F4

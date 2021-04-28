@@ -1,5 +1,5 @@
 GL_AMD_debug_output
-http://www.opengl.org/registry/specs/AMD/debug_output.txt
+https://www.khronos.org/registry/OpenGL/extensions/AMD/AMD_debug_output.txt
 GL_AMD_debug_output
 
 	GL_MAX_DEBUG_MESSAGE_LENGTH_AMD 0x9143

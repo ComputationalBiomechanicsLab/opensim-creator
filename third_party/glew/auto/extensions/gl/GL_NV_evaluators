@@ -1,5 +1,5 @@
 GL_NV_evaluators
-http://www.opengl.org/registry/specs/NV/evaluators.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/NV_evaluators.txt
 GL_NV_evaluators
 
 	GL_EVAL_2D_NV 0x86C0

@@ -1,5 +1,5 @@
 GL_APPLE_clip_distance
-http://www.opengl.org/registry/specs/APPLE/clip_distance.txt
+https://www.khronos.org/registry/OpenGL/extensions/APPLE/APPLE_clip_distance.txt
 GL_APPLE_clip_distance
 
 	GL_MAX_CLIP_DISTANCES_APPLE 0x0D32

@@ -1,5 +1,5 @@
 GL_ARB_sample_shading
-http://www.opengl.org/registry/specs/ARB/sample_shading.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_sample_shading.txt
 GL_ARB_sample_shading
 
 	GL_SAMPLE_SHADING_ARB 0x8C36

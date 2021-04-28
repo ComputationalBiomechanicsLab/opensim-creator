@@ -1,5 +1,5 @@
 WGL_NV_multisample_coverage
-http://www.opengl.org/registry/specs/NV/multisample_coverage.txt
+https://www.khronos.org/registry/OpenGL/extensions/NV/WGL_NV_multisample_coverage.txt
 WGL_NV_multisample_coverage
 
 	WGL_COVERAGE_SAMPLES_NV 0x2042

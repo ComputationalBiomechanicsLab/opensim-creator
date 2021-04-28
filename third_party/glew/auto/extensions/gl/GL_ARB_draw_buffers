@@ -1,5 +1,5 @@
 GL_ARB_draw_buffers
-http://www.opengl.org/registry/specs/ARB/draw_buffers.txt
+https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_draw_buffers.txt
 GL_ARB_draw_buffers
 
 	GL_MAX_DRAW_BUFFERS_ARB 0x8824

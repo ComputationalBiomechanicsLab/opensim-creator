@@ -1,5 +1,5 @@
 GL_SGIX_igloo_interface
-http://www.opengl.org/registry/specs/SGIX/igloo_interface.txt
+https://www.khronos.org/registry/OpenGL/extensions/SGIX/SGIX_igloo_interface.txt
 GL_SGIX_igloo_interface
 
 	GL_IGLOO_FULLSCREEN_SGIX 0x819E
