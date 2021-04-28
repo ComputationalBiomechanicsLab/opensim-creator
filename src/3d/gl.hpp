@@ -659,7 +659,7 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray(Vertex_array& vao) {
+    inline void BindVertexArray(Vertex_array const& vao) {
         glBindVertexArray(vao.get());
     }
 

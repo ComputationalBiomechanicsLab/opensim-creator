@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/3d/gl.hpp"
+#include "src/assertions.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -419,7 +420,7 @@ namespace osc::todo {
         int passthrough_pbo_cur;
 
         // outputs
-        gl::Texture_2d scene_rgba_resolved;
+        gl::Texture_2d scene_tex_resolved;
         gl::Frame_buffer scene_fbo_resolved;
         gl::Texture_2d passthrough_tex_resolved;
         gl::Frame_buffer passthrough_fbo_resolved;
@@ -480,5 +481,5 @@ namespace osc::todo {
     };
 
     // draw a scene into the specified render target
-    void draw_scene(GPU_storage const&, Render_params const&, Drawlist const&, Render_target&);
+    void draw_scene(GPU_storage&, Render_params const&, Drawlist const&, Render_target&);
 }
