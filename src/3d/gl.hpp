@@ -156,16 +156,16 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void UseProgram() {
+    inline void UseProgram() noexcept {
         glUseProgram(static_cast<GLuint>(0));
     }
 
-    inline void AttachShader(Program& p, Shader_handle const& sh) {
+    inline void AttachShader(Program& p, Shader_handle const& sh) noexcept {
         glAttachShader(p.get(), sh.get());
     }
 
     template<GLuint ShaderType>
-    inline void AttachShader(Program& p, Shader<ShaderType> const& s) {
+    inline void AttachShader(Program& p, Shader<ShaderType> const& s) noexcept {
         glAttachShader(p.get(), s.get());
     }
 
@@ -410,7 +410,7 @@ namespace gl {
     // this is a higher-level version of `glEnableVertexAttribArray`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) {
+    inline void EnableVertexAttribArray(Attribute<TGlsl> const& loc) noexcept {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
         if constexpr (TGlsl::size <= 4) {
@@ -430,7 +430,7 @@ namespace gl {
     // this is a higher-level version of `glVertexAttribDivisor`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) {
+    inline void VertexAttribDivisor(Attribute<TGlsl> const& loc, GLuint divisor) noexcept {
         static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
 
         if constexpr (TGlsl::size <= 4) {
@@ -495,16 +495,16 @@ namespace gl {
     }
 
     template<GLenum BufferType>
-    inline void BindBuffer(Typed_buffer_handle<BufferType> const& handle) {
+    inline void BindBuffer(Typed_buffer_handle<BufferType> const& handle) noexcept {
         glBindBuffer(BufferType, handle.get());
     }
 
     template<GLenum BufferType>
-    inline void UnbindBuffer(Typed_buffer_handle<BufferType> const&) {
+    inline void UnbindBuffer(Typed_buffer_handle<BufferType> const&) noexcept {
         glBindBuffer(BufferType, 0);
     }
 
-    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
+    inline void BufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage) noexcept {
         glBufferData(target, size, data, usage);
     }
 
@@ -606,7 +606,7 @@ namespace gl {
     // argument, so that the index type to an element-based drawcall can
     // be computed at compile-time
     template<typename T>
-    inline constexpr GLenum index_type() {
+    inline constexpr GLenum index_type() noexcept {
         static_assert(std::is_integral_v<T>, "element indices are integers");
         static_assert(std::is_unsigned_v<T>, "element indices are unsigned data types (in the GL spec)");
         static_assert(sizeof(T) <= 4);
@@ -626,7 +626,7 @@ namespace gl {
     // utility overload of index_type specifically for EBOs (the most common
     // use-case in downstream code)
     template<typename T>
-    inline constexpr GLenum index_type(gl::Element_array_buffer<T> const&) {
+    inline constexpr GLenum index_type(gl::Element_array_buffer<T> const&) noexcept {
         return index_type<T>();
     }
 
@@ -669,12 +669,12 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray(Vertex_array const& vao) {
+    inline void BindVertexArray(Vertex_array const& vao) noexcept {
         glBindVertexArray(vao.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void BindVertexArray() {
+    inline void BindVertexArray() noexcept {
         glBindVertexArray(static_cast<GLuint>(0));
     }
 
@@ -717,17 +717,17 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
-    inline void ActiveTexture(GLenum texture) {
+    inline void ActiveTexture(GLenum texture) noexcept {
         glActiveTexture(texture);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture(GLenum target, Texture_handle const& texture) {
+    inline void BindTexture(GLenum target, Texture_handle const& texture) noexcept {
         glBindTexture(target, texture.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void BindTexture() {
+    inline void BindTexture() noexcept {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -800,7 +800,7 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void BindFramebuffer(GLenum target, Frame_buffer const& fb) {
+    inline void BindFramebuffer(GLenum target, Frame_buffer const& fb) noexcept {
         glBindFramebuffer(target, fb.get());
     }
 
@@ -857,36 +857,36 @@ namespace gl {
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer(Render_buffer& rb) {
+    inline void BindRenderBuffer(Render_buffer& rb) noexcept {
         glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void BindRenderBuffer() {
+    inline void BindRenderBuffer() noexcept {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
-    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, Render_buffer const& rb) {
+    inline void FramebufferRenderbuffer(GLenum target, GLenum attachment, Render_buffer const& rb) noexcept {
         glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
-    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
+    inline void RenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) noexcept {
         glRenderbufferStorage(target, internalformat, width, height);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glClear.xhtml
-    inline void Clear(GLbitfield mask) {
+    inline void Clear(GLbitfield mask) noexcept {
         glClear(mask);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
-    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) {
+    inline void DrawArrays(GLenum mode, GLint first, GLsizei count) noexcept {
         glDrawArrays(mode, first, count);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArraysInstanced.xhtml
-    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) {
+    inline void DrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount) noexcept {
         glDrawArraysInstanced(mode, first, count, instancecount);
     }
 
@@ -897,20 +897,20 @@ namespace gl {
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
-    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) {
+    inline void DrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices) noexcept {
         glDrawElements(mode, count, type, indices);
     }
 
-    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+    inline void ClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) noexcept {
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) {
+    inline void Viewport(GLint x, GLint y, GLsizei w, GLsizei h) noexcept {
         glViewport(x, y, w, h);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-    inline void TexParameteri(GLenum target, GLenum pname, GLint param) {
+    inline void TexParameteri(GLenum target, GLenum pname, GLint param) noexcept {
         glTexParameteri(target, pname, param);
     }
 
@@ -923,29 +923,29 @@ namespace gl {
         GLint border,
         GLenum format,
         GLenum type,
-        const void* pixels) {
+        const void* pixels) noexcept {
         glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
     template<typename Texture>
-    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) {
+    inline void TextureParameteri(Texture const& texture, GLenum pname, GLint param) noexcept {
         glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
     template<GLenum E>
-    inline constexpr unsigned texture_index() {
+    inline constexpr unsigned texture_index() noexcept {
         static_assert(GL_TEXTURE0 <= E && E <= GL_TEXTURE30);
         return E - GL_TEXTURE0;
     }
 
     template<typename... T>
-    inline void DrawBuffers(T... vs) {
+    inline void DrawBuffers(T... vs) noexcept {
         GLenum attachments[sizeof...(vs)] = {static_cast<GLenum>(vs)...};
         glDrawBuffers(sizeof...(vs), attachments);
     }
 
-    inline bool is_current_fbo_complete() {
+    inline bool is_current_fbo_complete() noexcept {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
@@ -960,11 +960,11 @@ namespace gl {
         GLint dstX1,
         GLint dstY1,
         GLbitfield mask,
-        GLenum filter) {
+        GLenum filter) noexcept {
         glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
     }
 
-    inline void DrawBuffer(GLenum mode) {
+    inline void DrawBuffer(GLenum mode) noexcept {
         glDrawBuffer(mode);
     }
 
@@ -975,21 +975,21 @@ namespace gl {
 
     Error_span pop_opengl_errors();
 
-    inline int GetInteger(GLenum pname) {
+    inline int GetInteger(GLenum pname) noexcept {
         GLint out;
         glGetIntegerv(pname, &out);
         return out;
     }
 
-    inline GLenum GetEnum(GLenum pname) {
+    inline GLenum GetEnum(GLenum pname) noexcept {
         return static_cast<GLenum>(GetInteger(pname));
     }
 
-    inline void Enable(GLenum cap) {
+    inline void Enable(GLenum cap) noexcept {
         glEnable(cap);
     }
 
-    inline void Disable(GLenum cap) {
+    inline void Disable(GLenum cap) noexcept {
         glDisable(cap);
     }
 }
