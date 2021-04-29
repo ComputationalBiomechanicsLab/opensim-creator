@@ -33,7 +33,7 @@ namespace osc {
     using elidx_t = GLushort;
 
     template<typename TVert>
-    struct CPU_mesh final {
+    struct CPU_mesh {
         std::vector<TVert> verts;
         std::vector<elidx_t> indices;
 
@@ -42,6 +42,9 @@ namespace osc {
             indices.clear();
         }
     };
+
+    struct Untextured_mesh : public CPU_mesh<Untextured_vert> {};
+    struct Textured_mesh : public CPU_mesh<Textured_vert> {};
 
     template<typename TVert>
     void generate_1to1_indices_for_verts(CPU_mesh<TVert>& mesh) {
@@ -55,9 +58,6 @@ namespace osc {
             mesh.indices[i] = static_cast<elidx_t>(i);
         }
     }
-
-    using Untextured_mesh = CPU_mesh<Untextured_vert>;
-    using Textured_mesh = CPU_mesh<Textured_vert>;
 
     struct Rgba32 final {
         GLubyte r;
@@ -214,7 +214,7 @@ namespace osc {
         return glm::inverse(glm::transpose(top_left));
     }
 
-    struct alignas(16) Mesh_instance final {
+    struct Mesh_instance final {
         glm::mat4x3 model_xform;
         glm::mat3 normal_xform;
         Rgba32 rgba;
@@ -235,6 +235,10 @@ namespace osc {
         Meshidx meshidx;
 
         Mesh_instance() noexcept : passthrough_as_color{0x00, 0x00, 0x00} {
+        }
+
+        [[nodiscard]] constexpr bool is_opaque() const noexcept {
+            return rgba.a == 0xff || texidx.is_valid();
         }
     };
 
@@ -257,8 +261,7 @@ namespace osc {
         }
 
         void push_back(Mesh_instance const& mi) {
-            std::vector<std::vector<Mesh_instance>>& lut =
-                (!mi.texidx.is_valid() && mi.rgba.a < 1.0f) ? _nonopaque_by_meshidx : _opaque_by_meshidx;
+            auto& lut = mi.is_opaque() ? _opaque_by_meshidx : _nonopaque_by_meshidx;
 
             size_t meshidx = mi.meshidx.as_index();
 

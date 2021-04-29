@@ -657,6 +657,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
             for (auto const& lst : drawlist._opaque_by_meshidx) {
                 draw_els_with_same_meshidx(lst);
             }
+
             for (auto const& lst : drawlist._nonopaque_by_meshidx) {
                 draw_els_with_same_meshidx(lst);
             }

@@ -421,7 +421,7 @@ public:
         glEnable(GL_MULTISAMPLE);
 
         // all vertices in the render are backface-culled
-        //glEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
 
         // print OpenGL information if in debug mode
         log::info(

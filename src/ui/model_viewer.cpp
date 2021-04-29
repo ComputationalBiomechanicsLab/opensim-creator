@@ -62,7 +62,7 @@ static void apply_standard_rim_coloring(
 struct osc::Model_viewer_widget::Impl final {
     GPU_storage& cache;
     Render_target render_target{100, 100, Application::current().samples()};
-    Model_drawlist geometry;
+    Model_drawlist drawlist;
 
     int hovertest_x = -1;
     int hovertest_y = -1;
@@ -101,13 +101,13 @@ struct osc::Model_viewer_widget::Impl final {
         }
 
         // draw scene
-        draw_scene(cache, params, geometry.raw_drawlist(), render_target);
+        draw_scene(cache, params, drawlist.raw_drawlist(), render_target);
 
         // post-draw: check if the hit-test passed
         // TODO:: optimized indices are from the previous frame, which might
         //        contain now-stale components
         if (mouse_over_render) {
-            hovered_component = geometry.component_from_passthrough(render_target.hittest_result);
+            hovered_component = drawlist.component_from_passthrough(render_target.hittest_result);
         }
 
         return render_target.main();
@@ -334,7 +334,7 @@ void Model_viewer_widget::draw(
 
             // generate OpenSim scene geometry
             {
-                impl->geometry.clear();
+                impl->drawlist.clear();
                 ModelDrawlistFlags flags = ModelDrawlistFlags_None;
                 if (impl->flags & ModelViewerWidgetFlags_DrawStaticDecorations) {
                     flags |= ModelDrawlistFlags_StaticGeometry;
@@ -349,7 +349,7 @@ void Model_viewer_widget::draw(
                 cpy.upd_show_debug_geometry() = impl->flags & ModelViewerWidgetFlags_DrawDebugGeometry;
                 cpy.upd_show_labels() = impl->flags & ModelViewerWidgetFlags_DrawLabels;
 
-                generate_decoration_drawlist(model, state, cpy, impl->cache, impl->geometry, flags);
+                generate_decoration_drawlist(model, state, cpy, impl->cache, impl->drawlist, flags);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
@@ -371,7 +371,7 @@ void Model_viewer_widget::draw(
                 mi.meshidx = impl->cache.floor_quad_idx;
                 mi.texidx = impl->cache.chequer_idx;
                 mi.flags.set_skip_shading();
-                impl->geometry.push_back(nullptr, mi);
+                impl->drawlist.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXZGrid) {
@@ -393,7 +393,7 @@ void Model_viewer_widget::draw(
                 mi.meshidx = impl->cache.grid_25x25_idx;
                 mi.flags.set_draw_lines();
                 mi.flags.set_skip_shading();
-                impl->geometry.push_back(nullptr, mi);
+                impl->drawlist.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXYGrid) {
@@ -414,7 +414,7 @@ void Model_viewer_widget::draw(
                 mi.meshidx = impl->cache.grid_25x25_idx;
                 mi.flags.set_draw_lines();
                 mi.flags.set_skip_shading();
-                impl->geometry.push_back(nullptr, mi);
+                impl->drawlist.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawYZGrid) {
@@ -436,7 +436,7 @@ void Model_viewer_widget::draw(
                 mi.meshidx = impl->cache.grid_25x25_idx;
                 mi.flags.set_draw_lines();
                 mi.flags.set_skip_shading();
-                impl->geometry.push_back(nullptr, mi);
+                impl->drawlist.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
@@ -464,7 +464,7 @@ void Model_viewer_widget::draw(
                     mi.rgba = {0x00, 0xff, 0x00, 0xff};
                     mi.meshidx = impl->cache.yline_idx;
                     mi.flags = flags;
-                    impl->geometry.push_back(nullptr, mi);
+                    impl->drawlist.push_back(nullptr, mi);
                 }
 
                 // x axis
@@ -476,9 +476,9 @@ void Model_viewer_widget::draw(
                     mi.model_xform = base_model_mtx * rotate_y_to_x * make_line_one_sided;
                     mi.normal_xform = normal_matrix(mi.model_xform);
                     mi.rgba = {0xff, 0x00, 0x00, 0xff};
-                    mi.meshidx = impl->cache.grid_25x25_idx;
+                    mi.meshidx = impl->cache.yline_idx;
                     mi.flags = flags;
-                    impl->geometry.push_back(nullptr, mi);
+                    impl->drawlist.push_back(nullptr, mi);
                 }
 
                 // z axis
@@ -490,19 +490,19 @@ void Model_viewer_widget::draw(
                     mi.model_xform = base_model_mtx * rotate_y_to_z * make_line_one_sided;
                     mi.normal_xform = normal_matrix(mi.model_xform);
                     mi.rgba = {0x00, 0x00, 0xff, 0xff};
-                    mi.meshidx = impl->cache.grid_25x25_idx;
+                    mi.meshidx = impl->cache.yline_idx;
                     mi.flags = flags;
-                    impl->geometry.push_back(nullptr, mi);
+                    impl->drawlist.push_back(nullptr, mi);
                 }
             }
 
             if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {
-                optimize(impl->geometry);
+                optimize(impl->drawlist);
             }
 
             // perform screen-specific geometry fixups
             if (impl->flags & ModelViewerWidgetFlags_CanOnlyInteractWithMuscles) {
-                impl->geometry.for_each(
+                impl->drawlist.for_each(
                     [&model](OpenSim::Component const*& associated_component, Mesh_instance const&) {
                         // for this screen specifically, the "owner"s should be fixed up to point to
                         // muscle objects, rather than direct (e.g. GeometryPath) objects
@@ -522,7 +522,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
-                impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
+                impl->drawlist.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (!musc) {
                         return;
@@ -536,7 +536,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
-                impl->geometry.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
+                impl->drawlist.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (!musc) {
                         return;
@@ -550,7 +550,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->rendering_flags & DrawcallFlags_DrawRims) {
-                apply_standard_rim_coloring(impl->geometry, current_hover, current_selection);
+                apply_standard_rim_coloring(impl->drawlist, current_hover, current_selection);
             }
 
             // draw the scene to an OpenGL texture
