@@ -9,20 +9,43 @@
 
 #include <cstddef>
 #include <iostream>
+#include <algorithm>
 
 using namespace osc;
 
-static glm::vec3 normals(glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
-    // https://stackoverflow.com/questions/19350792/calculate-normal-of-a-single-triangle-in-3d-space/23709352
-    glm::vec3 a{p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
-    glm::vec3 b{p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
+/**
+ * what you are about to see (using SFINAE to test whether a class has a texcoord member)
+ * is better described with a diagram:
 
-    float x = a.y * b.z - a.z * b.y;
-    float y = a.z * b.x - a.x * b.z;
-    float z = a.x * b.y - a.y * b.x;
+        _            _.,----,
+__  _.-._ / '-.        -  ,._  \)
+|  `-)_   '-.   \       / < _ )/" }
+/__    '-.   \   '-, ___(c-(6)=(6)
+, `'.    `._ '.  _,'   >\    "  )
+:;;,,'-._   '---' (  ( "/`. -='/
+;:;;:;;,  '..__    ,`-.`)'- '--'
+;';:;;;;;'-._ /'._|   Y/   _/' \
+  '''"._ F    |  _/ _.'._   `\
+         L    \   \/     '._  \
+  .-,-,_ |     `.  `'---,  \_ _|
+  //    'L    /  \,   ("--',=`)7
+ | `._       : _,  \  /'`-._L,_'-._
+ '--' '-.\__/ _L   .`'         './/
+             [ (  /
+              ) `{
+   snd        \__)
 
-    return glm::vec3{x, y, z};
+ */
+template<typename>
+struct sfinae_true : std::true_type {};
+namespace detail {
+    template<typename T>
+    static auto test_has_texcoord(int) -> sfinae_true<decltype(std::declval<T>().texcoord)>;
+    template<typename T>
+    static auto test_has_texcoord(long) -> std::false_type;
 }
+template<typename T>
+struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
 
 osc::GPU_mesh::GPU_mesh(Untextured_mesh const& um) :
     verts(reinterpret_cast<GLubyte const*>(um.verts.data()), sizeof(Untextured_vert) * um.verts.size()),
@@ -266,7 +289,7 @@ static void simbody_brick_triangles(Untextured_mesh& out) {
 static void generate_floor_quad(Textured_mesh& out) {
     out.clear();
 
-    for (Textured_vert v : _shaded_textured_quad_verts) {
+    for (Textured_vert const& v : _shaded_textured_quad_verts) {
         Textured_vert& tv = out.verts.emplace_back(v);
         tv.texcoord *= 200.0f;
     }
@@ -575,7 +598,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
         gl::UseProgram(shader.program);
         gl::Uniform(shader.uProjMat, params.projection_matrix);
         gl::Uniform(shader.uViewMat, params.view_matrix);
-        gl::Uniform(shader.uLightPos, params.light_pos);
+        gl::Uniform(shader.uLightDir, params.light_dir);
         gl::Uniform(shader.uLightColor, params.light_rgb);
         gl::Uniform(shader.uViewPos, params.view_pos);
 

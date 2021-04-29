@@ -30,7 +30,7 @@ namespace osc {
 
         gl::Uniform_mat4 uProjMat = gl::GetUniformLocation(program, "uProjMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
-        gl::Uniform_vec3 uLightPos = gl::GetUniformLocation(program, "uLightPos");
+        gl::Uniform_vec3 uLightDir = gl::GetUniformLocation(program, "uLightDir");
         gl::Uniform_vec3 uLightColor = gl::GetUniformLocation(program, "uLightColor");
         gl::Uniform_vec3 uViewPos = gl::GetUniformLocation(program, "uViewPos");
         gl::Uniform_bool uIsTextured = gl::GetUniformLocation(program, "uIsTextured");
@@ -231,7 +231,7 @@ namespace osc {
                 slurp_into_string(config::shader_path("draw_normals.geom")).c_str()));
 
         static constexpr gl::Attribute_vec3 aPos{0};
-        static constexpr gl::Attribute_vec2 aNormal{1};
+        static constexpr gl::Attribute_vec3 aNormal{1};
 
         gl::Uniform_mat4 uModelMat = gl::GetUniformLocation(program, "uModelMat");
         gl::Uniform_mat4 uViewMat = gl::GetUniformLocation(program, "uViewMat");
@@ -248,7 +248,6 @@ namespace osc {
             gl::VertexAttribPointer(aNormal, false, sizeof(T), offsetof(T, normal));
             gl::EnableVertexAttribArray(aNormal);
             gl::BindVertexArray();
-
             return vao;
         }
     };

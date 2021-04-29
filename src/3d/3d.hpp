@@ -28,40 +28,6 @@ namespace osc {
         glm::vec2 texcoord;
     };
 
-    /**
-     * what you are about to see (using SFINAE to test whether a class has a texcoord member)
-     * is better described with a diagram:
-
-            _            _.,----,
-    __  _.-._ / '-.        -  ,._  \)
-    |  `-)_   '-.   \       / < _ )/" }
-    /__    '-.   \   '-, ___(c-(6)=(6)
-    , `'.    `._ '.  _,'   >\    "  )
-    :;;,,'-._   '---' (  ( "/`. -='/
-    ;:;;:;;,  '..__    ,`-.`)'- '--'
-    ;';:;;;;;'-._ /'._|   Y/   _/' \
-      '''"._ F    |  _/ _.'._   `\
-             L    \   \/     '._  \
-      .-,-,_ |     `.  `'---,  \_ _|
-      //    'L    /  \,   ("--',=`)7
-     | `._       : _,  \  /'`-._L,_'-._
-     '--' '-.\__/ _L   .`'         './/
-                 [ (  /
-                  ) `{
-       snd        \__)
-
-     */
-    template<typename>
-    struct sfinae_true : std::true_type {};
-    namespace detail {
-        template<typename T>
-        static auto test_has_texcoord(int) -> sfinae_true<decltype(std::declval<T>().texcoord)>;
-        template<typename T>
-        static auto test_has_texcoord(long) -> std::false_type;
-    }
-    template<typename T>
-    struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
-
     // important: puts an upper limit on the number of verts that a single
     // mesh may contain
     using elidx_t = GLushort;
@@ -192,7 +158,7 @@ namespace osc {
         value_type v;
 
     public:
-        static [[nodiscard]] constexpr Derived from_index(size_t i) {
+        [[nodiscard]] static constexpr Derived from_index(size_t i) {
             if (i > std::numeric_limits<T>::max()) {
                 throw std::runtime_error{"tried to create a Safe_index with a value that is too high for the underlying storage"};
             }
@@ -268,7 +234,7 @@ namespace osc {
         Texidx texidx;
         Meshidx meshidx;
 
-        constexpr Mesh_instance() noexcept : passthrough_as_color{0x00, 0x00, 0x00} {
+        Mesh_instance() noexcept : passthrough_as_color{0x00, 0x00, 0x00} {
         }
     };
 
@@ -484,7 +450,7 @@ namespace osc {
         glm::mat4 view_matrix;
         glm::mat4 projection_matrix;
         glm::vec3 view_pos;
-        glm::vec3 light_pos;
+        glm::vec3 light_dir;
         glm::vec3 light_rgb;
         glm::vec4 background_rgba;
         glm::vec4 rim_rgba;

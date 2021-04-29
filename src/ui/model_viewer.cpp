@@ -69,7 +69,7 @@ struct osc::Model_viewer_widget::Impl final {
     OpenSim::Component const* hovered_component = nullptr;
     Camera_state camera_state = Camera_state::Viewing;
     Polar_perspective_camera camera;
-    glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
+    glm::vec3 light_dir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
@@ -89,7 +89,7 @@ struct osc::Model_viewer_widget::Impl final {
         params.view_matrix = view_matrix(camera);
         params.projection_matrix = projection_matrix(camera, render_target.aspect_ratio());
         params.view_pos = pos(camera);
-        params.light_pos = light_pos;
+        params.light_dir = light_dir;
         params.light_rgb = light_rgb;
         params.background_rgba = background_rgba;
         params.rim_rgba = rim_rgba;
@@ -279,9 +279,9 @@ void Model_viewer_widget::draw(
 
                 ImGui::Separator();
 
-                ImGui::SliderFloat("light_x", &impl->light_pos.x, -30.0f, 30.0f);
-                ImGui::SliderFloat("light_y", &impl->light_pos.y, -30.0f, 30.0f);
-                ImGui::SliderFloat("light_z", &impl->light_pos.z, -30.0f, 30.0f);
+                ImGui::SliderFloat("light_dir_x", &impl->light_dir.x, -1.0f, 1.0f);
+                ImGui::SliderFloat("light_dir_y", &impl->light_dir.y, -1.0f, 1.0f);
+                ImGui::SliderFloat("light_dir_z", &impl->light_dir.z, -1.0f, 1.0f);
                 ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl->light_rgb));
                 ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl->background_rgba));
 
@@ -362,7 +362,7 @@ void Model_viewer_widget::draw(
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
                     rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-                    rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+                    rv = glm::scale(rv, {100.0f, 100.0f, 100.0f});
 
                     return rv;
                 }();
@@ -384,7 +384,7 @@ void Model_viewer_widget::draw(
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
                     rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
 
                     return rv;
                 }();
@@ -405,7 +405,7 @@ void Model_viewer_widget::draw(
                     // floor down *slightly* to prevent Z fighting from planes rendered from the
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
-                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
 
                     return rv;
                 }();
@@ -427,7 +427,7 @@ void Model_viewer_widget::draw(
                     // model itself (the contact planes, etc.)
                     rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
                     rv = glm::rotate(rv, osc::pi_f / 2, {0.0, -1.0, 0.0});
-                    rv = glm::scale(rv, {1.25f, 1.25f, 0.0f});
+                    rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
 
                     return rv;
                 }();

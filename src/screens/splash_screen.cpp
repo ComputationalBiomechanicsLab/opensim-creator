@@ -50,7 +50,7 @@ struct Splash_screen::Impl final {
     Drawlist drawlist;
 
     Polar_perspective_camera camera;
-    glm::vec3 light_pos = {1.5f, 3.0f, 0.0f};
+    glm::vec3 light_dir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
@@ -65,7 +65,7 @@ struct Splash_screen::Impl final {
             // model itself (the contact planes, etc.)
             rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
             rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {100.0f, 100.0f, 0.0f});
+            rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
 
             return rv;
         }();
@@ -142,7 +142,7 @@ void osc::Splash_screen::draw() {
         params.view_matrix = view_matrix(impl->camera);
         params.projection_matrix = projection_matrix(impl->camera, impl->render_target.aspect_ratio());
         params.view_pos = pos(impl->camera);
-        params.light_pos = impl->light_pos;
+        params.light_dir = impl->light_dir;
         params.light_rgb = impl->light_rgb;
         params.background_rgba = impl->background_rgba;
         params.rim_rgba = impl->rim_rgba;
