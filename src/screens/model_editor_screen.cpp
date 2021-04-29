@@ -1,6 +1,6 @@
 #include "model_editor_screen.hpp"
 
-#include "src/3d/gpu_cache.hpp"
+#include "src/3d/3d.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
@@ -254,15 +254,12 @@ struct Model_editor_screen::Impl final {
     // model + state being edited by the user
     Model_ui_state ms;
 
-    // cache of meshes, textures, etc. currently held on the GPU
-    Gpu_cache gpu_cache;
-
     // sequence of undo/redo states that the user can transition the screen to
     Circular_buffer<Undo_redo_entry, 32> undo;
     Circular_buffer<Undo_redo_entry, 32> redo;
 
     // state for a 3D model viewer
-    Model_viewer_widget model_viewer{gpu_cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
+    Model_viewer_widget model_viewer{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
     // state of any sub-panels the editor screen draws
     struct {

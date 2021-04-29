@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3d/untextured_vert.hpp"
+#include "src/3d/3d.hpp"
 
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 
@@ -13,22 +13,16 @@ namespace SimTK {
 }
 
 namespace osc {
-    struct Gpu_cache;
-    struct Mesh_instance;
-    struct Plain_mesh;
-}
-
-namespace osc {
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
-        Plain_mesh& mesh_swap;
-        Gpu_cache& gpu_cache;
+        Untextured_mesh& mesh_swap;
+        GPU_storage& gpu_cache;
         SimTK::SimbodyMatterSubsystem const& matter_subsys;
         SimTK::State const& state;
 
     public:
         constexpr Simbody_geometry_visitor(
-            Plain_mesh& _mesh_swap,
-            Gpu_cache& _cache,
+            Untextured_mesh& _mesh_swap,
+            GPU_storage& _cache,
             SimTK::SimbodyMatterSubsystem const& _matter,
             SimTK::State const& _state) noexcept :
 
@@ -41,13 +35,7 @@ namespace osc {
         }
 
     private:
-        // called when the implementation emits a mesh instance
-        virtual void on_instance_created(Mesh_instance const&) = 0;
-
-        template<typename... Args>
-        void emplace_instance(Args&&... args) {
-            on_instance_created(Mesh_instance{std::forward<Args>(args)...});
-        }
+        virtual void on_instance_created(Mesh_instance const& mi) = 0;
 
         // implementation details
         void implementPointGeometry(SimTK::DecorativePoint const&) override final;

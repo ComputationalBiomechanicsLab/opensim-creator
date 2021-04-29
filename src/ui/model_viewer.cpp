@@ -2,10 +2,7 @@
 
 #include "src/3d/cameras.hpp"
 #include "src/3d/gl.hpp"
-#include "src/3d/gpu_cache.hpp"
-#include "src/3d/mesh_instance.hpp"
-#include "src/3d/render_target.hpp"
-#include "src/3d/renderer.hpp"
+#include "src/3d/3d.hpp"
 #include "src/application.hpp"
 #include "src/constants.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
@@ -48,7 +45,7 @@ static void apply_standard_rim_coloring(
     OpenSim::Component const* selected = nullptr) {
 
     drawlist.for_each([selected, hovered](OpenSim::Component const* c, Mesh_instance& mi) {
-        unsigned char rim_alpha;
+        GLubyte rim_alpha;
 
         if (is_subcomponent_of(selected, c)) {
             rim_alpha = 255;
@@ -58,14 +55,13 @@ static void apply_standard_rim_coloring(
             rim_alpha = 0;
         }
 
-        mi.set_rim_alpha(rim_alpha);
+        mi.passthrough_color.b = rim_alpha;
     });
 }
 
 struct osc::Model_viewer_widget::Impl final {
-    Gpu_cache& cache;
+    GPU_storage& cache;
     Render_target render_target{100, 100, Application::current().samples()};
-    Renderer renderer;
     Model_drawlist geometry;
 
     int hovertest_x = -1;
@@ -83,11 +79,11 @@ struct osc::Model_viewer_widget::Impl final {
 
     bool mouse_over_render = false;
 
-    Impl(Gpu_cache& _cache, ModelViewerWidgetFlags _flags) : cache{_cache}, flags{_flags} {
+    Impl(GPU_storage& _cache, ModelViewerWidgetFlags _flags) : cache{_cache}, flags{_flags} {
     }
 
     gl::Texture_2d& draw(DrawcallFlags drawflags) {
-        Raw_drawcall_params params;
+        Render_params params;
         params.passthrough_hittest_x = hovertest_x;
         params.passthrough_hittest_y = hovertest_y;
         params.view_matrix = view_matrix(camera);
@@ -105,20 +101,20 @@ struct osc::Model_viewer_widget::Impl final {
         }
 
         // draw scene
-        Passthrough_data passthrough = renderer.draw(cache.storage, params, geometry.raw_drawlist(), render_target);
+        draw_scene(cache, params, geometry.raw_drawlist(), render_target);
 
         // post-draw: check if the hit-test passed
         // TODO:: optimized indices are from the previous frame, which might
         //        contain now-stale components
         if (mouse_over_render) {
-            hovered_component = geometry.component_from_passthrough(passthrough);
+            hovered_component = geometry.component_from_passthrough(render_target.hittest_result);
         }
 
         return render_target.main();
     }
 };
 
-Model_viewer_widget::Model_viewer_widget(Gpu_cache& cache, ModelViewerWidgetFlags flags) :
+Model_viewer_widget::Model_viewer_widget(GPU_storage& cache, ModelViewerWidgetFlags flags) :
     impl{new Impl{cache, flags}} {
 }
 
@@ -357,7 +353,8 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
-                glm::mat4 model_mtx = []() {
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
                     // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
@@ -369,15 +366,16 @@ void Model_viewer_widget::draw(
 
                     return rv;
                 }();
-
-                Rgba32 color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
-                Mesh_instance& mi = impl->geometry.emplace_back(
-                    nullptr, model_mtx, color, impl->cache.floor_quad, impl->cache.chequered_texture);
-                mi.flags.is_shaded = false;
+                mi.normal_xform = normal_matrix(mi.model_xform);
+                mi.rgba = {0xff, 0x00, 0xff, 0xff};
+                mi.meshidx = impl->cache.floor_quad_idx;
+                mi.texidx = impl->cache.chequer_idx;
+                mi.flags |= Mesh_instance::skip_shading_mask;
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXZGrid) {
-                glm::mat4 model_mtx = []() {
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
                     // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
@@ -389,15 +387,16 @@ void Model_viewer_widget::draw(
 
                     return rv;
                 }();
-
-                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
-                mi.flags.mode = Instance_flags::mode_lines;
-                mi.flags.is_shaded = false;
+                mi.normal_xform = normal_matrix(mi.model_xform);
+                mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
+                mi.meshidx = impl->cache.grid_25x25_idx;
+                mi.flags |= Mesh_instance::draw_lines_mask;
+                mi.flags |= Mesh_instance::skip_shading_mask;
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXYGrid) {
-                glm::mat4 model_mtx = []() {
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
                     // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
@@ -408,15 +407,16 @@ void Model_viewer_widget::draw(
 
                     return rv;
                 }();
-
-                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
-                mi.flags.mode = Instance_flags::mode_lines;
-                mi.flags.is_shaded = false;
+                mi.normal_xform = normal_matrix(mi.model_xform);
+                mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
+                mi.meshidx = impl->cache.grid_25x25_idx;
+                mi.flags |= Mesh_instance::draw_lines_mask;
+                mi.flags |= Mesh_instance::skip_shading_mask;
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawYZGrid) {
-                glm::mat4 model_mtx = []() {
+                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
                     // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
@@ -428,11 +428,11 @@ void Model_viewer_widget::draw(
 
                     return rv;
                 }();
-
-                Rgba32 color{glm::vec4{0.7f, 0.7f, 0.7f, 0.15f}};
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr, model_mtx, color, impl->cache._25x25grid);
-                mi.flags.mode = Instance_flags::mode_lines;
-                mi.flags.is_shaded = false;
+                mi.normal_xform = normal_matrix(mi.model_xform);
+                mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
+                mi.meshidx = impl->cache.grid_25x25_idx;
+                mi.flags |= Mesh_instance::draw_lines_mask;
+                mi.flags |= Mesh_instance::skip_shading_mask;
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
@@ -447,32 +447,46 @@ void Model_viewer_widget::draw(
                 glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
                 glm::mat4 base_model_mtx = translator * scaler * model2view;
 
-                Instance_flags flags;
-                flags.is_shaded = false;
-                flags.skip_view_projection = true;
-                flags.mode = Instance_flags::mode_lines;
+                GLubyte flags = 0x00;
+                flags |= Mesh_instance::skip_shading_mask;
+                flags |= Mesh_instance::skip_vp_mask;
+                flags |= Mesh_instance::draw_lines_mask;
 
-                static constexpr Rgba32 red = {0xff, 0x00, 0x00, 0xff};
-                static constexpr Rgba32 green = {0x00, 0xff, 0x00, 0xff};
-                static constexpr Rgba32 blue = {0x00, 0x00, 0xff, 0xff};
+                // y axis
+                {
+                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    mi.model_xform = base_model_mtx * make_line_one_sided;
+                    mi.normal_xform = normal_matrix(mi.model_xform);
+                    mi.rgba = {0x00, 0xff, 0x00, 0xff};
+                    mi.meshidx = impl->cache.yline_idx;
+                    mi.flags = flags;
+                }
 
-                // Y axis
-                impl->geometry.emplace_back(
-                    nullptr, base_model_mtx * make_line_one_sided, green, impl->cache.y_line, flags);
+                // x axis
+                {
+                    glm::mat4 rotate_y_to_x =
+                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, -1.0f});
 
-                glm::mat4 rotate_y_to_x =
-                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, -1.0f});
+                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    mi.model_xform = base_model_mtx * rotate_y_to_x * make_line_one_sided;
+                    mi.normal_xform = normal_matrix(mi.model_xform);
+                    mi.rgba = {0xff, 0x00, 0x00, 0xff};
+                    mi.meshidx = impl->cache.grid_25x25_idx;
+                    mi.flags = flags;
+                }
 
-                // X axis
-                impl->geometry.emplace_back(
-                    nullptr, base_model_mtx * rotate_y_to_x * make_line_one_sided, red, impl->cache.y_line, flags);
+                // z axis
+                {
+                    glm::mat4 rotate_y_to_z =
+                        glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
 
-                glm::mat4 rotate_y_to_z =
-                    glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
-
-                // Z axis
-                impl->geometry.emplace_back(
-                    nullptr, base_model_mtx * rotate_y_to_z * make_line_one_sided, blue, impl->cache.y_line, flags);
+                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    mi.model_xform = base_model_mtx * rotate_y_to_z * make_line_one_sided;
+                    mi.normal_xform = normal_matrix(mi.model_xform);
+                    mi.rgba = {0x00, 0x00, 0xff, 0xff};
+                    mi.meshidx = impl->cache.grid_25x25_idx;
+                    mi.flags = flags;
+                }
             }
 
             if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {

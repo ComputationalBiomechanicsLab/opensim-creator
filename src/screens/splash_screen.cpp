@@ -2,15 +2,11 @@
 
 #include "osc_build_config.hpp"
 #include "src/3d/cameras.hpp"
-#include "src/3d/drawlist.hpp"
+#include "src/3d/3d.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_extensions.hpp"
-#include "src/3d/gpu_cache.hpp"
-#include "src/3d/mesh_generation.hpp"
-#include "src/3d/mesh_instance.hpp"
-#include "src/3d/render_target.hpp"
-#include "src/3d/renderer.hpp"
 #include "src/3d/texturing.hpp"
+#include "src/3d/shaders.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/constants.hpp"
@@ -43,40 +39,6 @@
 namespace fs = std::filesystem;
 using namespace osc;
 
-namespace {
-    //
-    // useful for rendering quads etc.
-    struct Plain_texture_shader final {
-        gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("plain_texture.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("plain_texture.frag")).c_str()));
-
-        static constexpr gl::Attribute_vec3 aPos{0};
-        static constexpr gl::Attribute_vec2 aTexCoord{1};
-
-        gl::Uniform_mat4 uMVP = gl::GetUniformLocation(p, "uMVP");
-        gl::Uniform_float uTextureScaler = gl::GetUniformLocation(p, "uTextureScaler");
-        gl::Uniform_sampler2d uSampler0 = gl::GetUniformLocation(p, "uSampler0");
-
-        template<typename Vbo, typename T = typename Vbo::value_type>
-        static gl::Vertex_array create_vao(Vbo& vbo) {
-            gl::Vertex_array vao;
-
-            gl::BindVertexArray(vao);
-            gl::BindBuffer(vbo);
-            gl::VertexAttribPointer(aPos, false, sizeof(T), offsetof(T, pos));
-            gl::EnableVertexAttribArray(aPos);
-            gl::VertexAttribPointer(aTexCoord, false, sizeof(T), offsetof(T, texcoord));
-            gl::EnableVertexAttribArray(aTexCoord);
-            gl::BindVertexArray();
-
-            return vao;
-        }
-    };
-}
-
 struct Splash_screen::Impl final {
     ui::main_menu::file_tab::State mm_state;
     gl::Texture_2d logo =
@@ -85,7 +47,6 @@ struct Splash_screen::Impl final {
         osc::config::resource_path("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     gl::Texture_2d tud_logo =
         osc::load_tex(osc::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    Gpu_cache cache;
     Drawlist drawlist;
 
     Polar_perspective_camera camera;
@@ -94,10 +55,6 @@ struct Splash_screen::Impl final {
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
     Render_target render_target{1, 1, 1};
-    Renderer renderer;
-    Plain_texture_shader pts;
-    gl::Array_buffer<Textured_vert> quad_vbo{osc::shaded_textured_quad_verts().vert_data};
-    gl::Vertex_array quad_vao = Plain_texture_shader::create_vao(quad_vbo);
 
     Impl() {
         glm::mat4 model_mtx = []() {
@@ -113,9 +70,13 @@ struct Splash_screen::Impl final {
             return rv;
         }();
 
-        Rgba32 color{glm::vec4{1.0f, 0.0f, 1.0f, 1.0f}};
-        Mesh_instance& mi = drawlist.emplace_back(model_mtx, color, cache.floor_quad, cache.chequered_texture);
-        mi.flags.is_shaded = false;
+        Mesh_instance& mi = drawlist.emplace_back();
+        mi.model_xform = model_mtx;
+        mi.normal_xform = normal_matrix(mi.model_xform);
+        auto& gpu_storage = Application::current().get_gpu_storage();
+        mi.meshidx = gpu_storage.floor_quad_idx;
+        mi.texidx = gpu_storage.chequer_idx;
+        mi.flags |= Mesh_instance::skip_shading_mask;
     }
 };
 
@@ -168,11 +129,13 @@ void osc::Splash_screen::draw() {
         window_dims.y = static_cast<float>(h);
     }
 
+    GPU_storage& gs = Application::current().get_gpu_storage();
+
     // draw chequered floor background
     {
         impl->render_target.reconfigure(app.window_dimensions().w, app.window_dimensions().h, app.samples());
 
-        Raw_drawcall_params params;
+        Render_params params;
         params.passthrough_hittest_x = -1;
         params.passthrough_hittest_y = -1;
         params.view_matrix = view_matrix(impl->camera);
@@ -185,15 +148,16 @@ void osc::Splash_screen::draw() {
         params.flags = RawRendererFlags_Default;
         params.flags &= ~RawRendererFlags_DrawDebugQuads;
 
-        (void)impl->renderer.draw(impl->cache.storage, params, impl->drawlist, impl->render_target);
+        draw_scene(gs, params, impl->drawlist, impl->render_target);
 
-        gl::UseProgram(impl->pts.p);
-        gl::Uniform(impl->pts.uMVP, gl::identity_val);
+        Plain_texture_shader& pts = *gs.shader_pts;
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.uMVP, gl::identity_val);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(impl->render_target.main());
-        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(impl->quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(gs.pts_quad_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
         gl::BindVertexArray();
     }
 
@@ -207,17 +171,18 @@ void osc::Splash_screen::draw() {
                 glm::identity<glm::mat4>(), glm::vec3{0.0f, (menu_dims.y + logo_dims.y) / window_dims.y, 0.0f}),
             glm::vec3{scale.x, scale.y, 1.0f});
 
-        gl::UseProgram(impl->pts.p);
-        gl::Uniform(impl->pts.uMVP, mtx);
+        Plain_texture_shader& pts = *gs.shader_pts;
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.uMVP, mtx);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(impl->logo);
-        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(impl->quad_vao);
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(gs.pts_quad_vao);
+        gl::Disable(GL_DEPTH_TEST);
+        gl::Enable(GL_BLEND);
+        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
+        gl::Disable(GL_BLEND);
+        gl::Enable(GL_DEPTH_TEST);
         gl::BindVertexArray();
     }
 
@@ -293,15 +258,16 @@ void osc::Splash_screen::draw() {
                 glm::vec3{-logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
             glm::vec3{scale.x, scale.y, 1.0f});
 
-        gl::UseProgram(impl->pts.p);
-        gl::Uniform(impl->pts.uMVP, mtx);
+        Plain_texture_shader& pts = *gs.shader_pts;
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.uMVP, mtx);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(impl->tud_logo);
-        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(impl->quad_vao);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(gs.pts_quad_vao);
         gl::Disable(GL_DEPTH_TEST);
         gl::Enable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
         gl::Disable(GL_BLEND);
         gl::Enable(GL_DEPTH_TEST);
         gl::BindVertexArray();
@@ -318,15 +284,16 @@ void osc::Splash_screen::draw() {
                 glm::vec3{logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
             glm::vec3{scale.x, scale.y, 1.0f});
 
-        gl::UseProgram(impl->pts.p);
-        gl::Uniform(impl->pts.uMVP, mtx);
+        Plain_texture_shader& pts = *gs.shader_pts;
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.uMVP, mtx);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(impl->cz_logo);
-        gl::Uniform(impl->pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(impl->quad_vao);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(gs.pts_quad_vao);
         gl::Disable(GL_DEPTH_TEST);
         gl::Enable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl->quad_vbo.sizei());
+        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
         gl::Disable(GL_BLEND);
         gl::Enable(GL_DEPTH_TEST);
         gl::BindVertexArray();

@@ -2,6 +2,7 @@
 
 #include "osc_build_config.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/3d.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/screens/error_screen.hpp"
@@ -433,6 +434,9 @@ public:
         return ctx;
     }()};
 
+    // GPU storage (cache)
+    osc::GPU_storage gpu_storage{};
+
     // ImGui application-wide context
     igx::Context imgui_ctx{};
 
@@ -770,4 +774,8 @@ void Application::enable_vsync() {
 
 void Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
+}
+
+osc::GPU_storage& Application::get_gpu_storage() noexcept {
+    return impl->gpu_storage;
 }

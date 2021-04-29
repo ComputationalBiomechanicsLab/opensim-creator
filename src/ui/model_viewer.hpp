@@ -15,7 +15,7 @@ namespace SimTK {
 }
 
 namespace osc {
-    struct Gpu_cache;
+    struct GPU_storage;
 }
 
 namespace osc {
@@ -52,7 +52,7 @@ namespace osc {
         Impl* impl;
 
     public:
-        Model_viewer_widget(Gpu_cache&, ModelViewerWidgetFlags = ModelViewerWidgetFlags_None);
+        Model_viewer_widget(GPU_storage&, ModelViewerWidgetFlags = ModelViewerWidgetFlags_None);
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;
