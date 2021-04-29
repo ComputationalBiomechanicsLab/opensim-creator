@@ -45,6 +45,10 @@ namespace osc {
 
     template<typename TVert>
     void generate_1to1_indices_for_verts(CPU_mesh<TVert>& mesh) {
+        if (mesh.verts.size() > std::numeric_limits<elidx_t>::max()) {
+            throw std::runtime_error{"cannot generate indices for a mesh: has too many vertices"};
+        }
+
         size_t n = mesh.verts.size();
         mesh.indices.resize(n);
         for (size_t i = 0; i < n; ++i) {
@@ -98,14 +102,6 @@ namespace osc {
         texidx_t texidx = -1;
         meshidx_t meshidx = -1;
     };
-
-    static GLenum draw_mode(Mesh_instance const& mi) {
-        if (mi.flags & Mesh_instance::draw_lines_mask) {
-            return GL_LINES;
-        } else {
-            return GL_TRIANGLES;
-        }
-    }
 
     // list of instances to draw in one renderer drawcall
     struct Drawlist final {

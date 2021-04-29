@@ -4,6 +4,7 @@
 #include <exception>
 #include <initializer_list>
 #include <string>
+#include <limits>
 
 #define GL_STRINGIFY(x) #x
 #define GL_TOSTRING(x) GL_STRINGIFY(x)
@@ -517,7 +518,8 @@ namespace gl {
     // data transfers onto the GPU
     template<typename T, GLenum BufferType, GLenum Usage>
     class Buffer : public Typed_buffer_handle<BufferType> {
-        size_t size_;
+        using size_type = uint32_t;
+        size_type size_;
 
     public:
         static_assert(std::is_trivially_copyable<T>::value);
@@ -528,7 +530,11 @@ namespace gl {
 
         Buffer() = default;
 
-        Buffer(T const* begin, size_t n) : Typed_buffer_handle<BufferType>{}, size_{n} {
+        Buffer(T const* begin, size_t n) : Typed_buffer_handle<BufferType>{}, size_{static_cast<size_type>(n)} {
+            if (n > std::numeric_limits<size_type>::max()) {
+                throw Opengl_exception{"tried to allocate a bufer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
+            }
+
             BindBuffer(*this);
             BufferData(buffer_type, sizeof(T) * n, begin, Usage);
         }
@@ -552,14 +558,18 @@ namespace gl {
             return static_cast<GLsizei>(size_);
         }
 
-        void assign(T const* begin, size_t n) noexcept {
+        void assign(T const* begin, size_t n) {
+            if (n > std::numeric_limits<size_type>::max()) {
+                throw Opengl_exception{"tried to assign a buffer that is bigger than the max supported size: if you need buffer this big, contact the developer"};
+            }
+
             BindBuffer(*this);
             BufferData(buffer_type, sizeof(T) * n, begin, Usage);
-            size_ = n;
+            size_ = static_cast<size_type>(n);
         }
 
         template<typename Container>
-        void assign(Container const& c) noexcept {
+        void assign(Container const& c) {
             assign(c.data(), c.size());
         }
 
