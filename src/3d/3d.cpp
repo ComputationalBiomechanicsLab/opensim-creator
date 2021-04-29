@@ -3,7 +3,6 @@
 #include "src/3d/shaders.hpp"
 #include "src/config.hpp"
 #include "src/utils/helpers.hpp"
-#include "src/utils/sfinae.hpp"
 #include "src/constants.hpp"
 #include "src/3d/texturing.hpp"
 #include "src/3d/gl_extensions.hpp"
@@ -343,27 +342,27 @@ osc::GPU_storage::GPU_storage() :
 
         unit_sphere_triangles(utm);
         meshes.emplace_back(utm);
-        simbody_sphere_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        simbody_sphere_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
 
         simbody_cylinder_triangles(utm);
         meshes.emplace_back(utm);
-        simbody_cylinder_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        simbody_cylinder_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
 
         simbody_brick_triangles(utm);
         meshes.emplace_back(utm);
-        simbody_cube_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        simbody_cube_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
 
         generate_NxN_grid(25, utm);
         meshes.emplace_back(utm);
-        grid_25x25_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        grid_25x25_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
 
         generate_y_line(utm);
         meshes.emplace_back(utm);
-        yline_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        yline_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
     }
 
@@ -373,7 +372,7 @@ osc::GPU_storage::GPU_storage() :
 
         generate_floor_quad(tm);
         meshes.emplace_back(tm);
-        floor_quad_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        floor_quad_idx = Meshidx::from_index(meshes.size() - 1);
         tm.clear();
 
         for (Textured_vert const& tv : _shaded_textured_quad_verts) {
@@ -381,13 +380,13 @@ osc::GPU_storage::GPU_storage() :
         }
         generate_1to1_indices_for_verts(tm);
         meshes.emplace_back(tm);
-        quad_idx = static_cast<meshidx_t>(meshes.size() - 1);
+        quad_idx = Meshidx::from_index(meshes.size() - 1);
         quad_vbo = gl::Array_buffer<Textured_vert>(tm.verts);
     }
 
     // preallocated textures
     textures.push_back(generate_chequered_floor_texture());
-    chequer_idx = static_cast<texidx_t>(textures.size() - 1);
+    chequer_idx = Texidx::from_index(textures.size() - 1);
 
     eds_quad_vao = Edge_detection_shader::create_vao(quad_vbo);
     skip_msxaa_quad_vao = Skip_msxaa_blitter_shader::create_vao(quad_vbo);
@@ -529,28 +528,15 @@ static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2)
 }
 
 void osc::optimize(Drawlist& drawlist) noexcept {
-    std::sort(drawlist._instances.begin(), drawlist._instances.end(), optimal_orderering);
+    for (auto& lst : drawlist._nonopaque_by_meshidx) {
+        std::sort(lst.begin(), lst.end(), optimal_orderering);
+    }
+    for (auto& lst : drawlist._opaque_by_meshidx) {
+        std::sort(lst.begin(), lst.end(), optimal_orderering);
+    }
 }
 
-void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist const& drawlist, Render_target& out) {
-
-    // overview:
-    //
-    // drawing the scene efficiently is a fairly involved process. I apologize for that, but
-    // rendering scenes efficiently with OpenGL requires has to keep OpenGL, GPUs, and API
-    // customization in-mind - while also playing ball with the OpenSim API.
-    //
-    // this is a forward (as opposed to deferred) renderer that borrows some ideas from deferred
-    // rendering techniques. It *mostly* draws the entire scene in one pass (forward rending) but
-    // the rendering step *also* writes to a multi-render-target (MRT) FBO that extra information
-    // such as what's currently selected, and it uses that information in downstream sampling steps
-    // (kind of like how deferred rendering puts everything into information-dense buffers). The
-    // reason this rendering pipeline isn't fully deferred (gbuffers, albeido, etc.) is because
-    // the scene is lit by a single directional light and the shading is fairly simple.
-
-    Mesh_instance const* meshes = drawlist._instances.data();
-    size_t nmeshes = drawlist._instances.size();
-
+void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist& drawlist, Render_target& out) {
     gl::Viewport(0, 0, out.w, out.h);
 
     // bind to an off-screen framebuffer object (FBO)
@@ -609,77 +595,82 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
         glDisablei(GL_BLEND, 1);
 
         if (params.flags & RawRendererFlags_UseInstancedRenderer) {
-            size_t pos = 0;
-            while (pos < nmeshes) {
-                meshidx_t meshidx = meshes[pos].meshidx;
-                texidx_t texidx = meshes[pos].texidx;
-                GLubyte flags = meshes[pos].flags;
-                size_t end = pos + 1;
+            auto draw_els_with_same_meshidx = [&](std::vector<Mesh_instance> const& instances) {
+                size_t nmeshes = instances.size();
+                Mesh_instance const* meshes = instances.data();
+                size_t pos = 0;
 
-                while (end < nmeshes && meshes[end].meshidx == meshidx && meshes[end].texidx == texidx &&
-                       meshes[end].flags == flags) {
+                while (pos < nmeshes) {
+                    Meshidx meshidx = meshes[pos].meshidx;
+                    Texidx texidx = meshes[pos].texidx;
+                    Instance_flags flags = meshes[pos].flags;
+                    size_t end = pos + 1;
 
-                    ++end;
+                    while (meshes[end].texidx == texidx && meshes[end].flags == flags) {
+                        ++end;
+                    }
+
+                    // [pos, end) contains instances with the same meshid + textureid + flags
+
+                    // texture-related stuff
+                    if (texidx.is_valid()) {
+                        gl::Uniform(shader.uIsTextured, true);
+                        gl::ActiveTexture(GL_TEXTURE0);
+                        gl::BindTexture(storage.textures[texidx.as_index()]);
+                        gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
+                    } else {
+                        gl::Uniform(shader.uIsTextured, false);
+                    }
+
+                    // flag-related stuff
+                    gl::Uniform(shader.uIsShaded, !flags.skip_shading());
+                    gl::Uniform(shader.uSkipVP, flags.skip_vp());
+                    GLenum mode = flags.mode();
+
+                    GPU_mesh& gm = storage.meshes[meshidx.as_index()];
+                    gm.instances.assign(meshes + pos, end - pos);
+                    gl::BindVertexArray(gm.main_vao);
+
+                    glDrawElementsInstanced(
+                        mode, gm.indices.sizei(), gl::index_type(gm.indices), nullptr, static_cast<GLsizei>(end - pos));
+                    gl::BindVertexArray();
+
+                    pos = end;
                 }
+            };
 
-                // [pos, end) contains instances with the same meshid + textureid + flags
-
-                // texture-related stuff
-                if (texidx >= 0) {
-                    gl::Uniform(shader.uIsTextured, true);
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(storage.textures[texidx]);
-                    gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-                } else {
-                    gl::Uniform(shader.uIsTextured, false);
-                }
-
-                // flag-related stuff
-                gl::Uniform(shader.uIsShaded, !(flags & Mesh_instance::skip_shading_mask));
-                gl::Uniform(shader.uSkipVP, flags & Mesh_instance::skip_vp_mask);
-                GLenum mode = flags & Mesh_instance::draw_lines_mask ? GL_LINES : GL_TRIANGLES;
-
-                OSC_ASSERT(meshidx >= 0);
-                GPU_mesh& gm = storage.meshes[meshidx];
-                gm.instances.assign(meshes + pos, end - pos);
-                gl::BindVertexArray(gm.main_vao);
-
-                glDrawElementsInstanced(
-                    mode, gm.indices.sizei(), gl::index_type(gm.indices), nullptr, static_cast<GLsizei>(end - pos));
-                gl::BindVertexArray();
-
-                pos = end;
+            for (auto const& lst : drawlist._opaque_by_meshidx) {
+                draw_els_with_same_meshidx(lst);
+            }
+            for (auto const& lst : drawlist._nonopaque_by_meshidx) {
+                draw_els_with_same_meshidx(lst);
             }
         } else {
             // perform (slower) one-drawcall-per-item rendering
             //
             // this is here mostly for perf comparison and debugging
-
-            for (size_t i = 0; i < nmeshes; ++i) {
-                Mesh_instance const& mi = meshes[i];
-
+            drawlist.for_each([&](Mesh_instance const& mi) {
                 // texture-related stuff
-                if (mi.texidx >= 0) {
+                if (mi.texidx.is_valid()) {
                     gl::Uniform(shader.uIsTextured, true);
                     gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(storage.textures[mi.texidx]);
+                    gl::BindTexture(storage.textures[mi.texidx.as_index()]);
                     gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
                 } else {
                     gl::Uniform(shader.uIsTextured, false);
                 }
 
                 // flag-related stuff
-                gl::Uniform(shader.uIsShaded, !(mi.flags & Mesh_instance::skip_shading_mask));
-                gl::Uniform(shader.uSkipVP, mi.flags & Mesh_instance::skip_vp_mask);
-                GLenum mode = mi.flags & Mesh_instance::draw_lines_mask ? GL_LINES : GL_TRIANGLES;
+                gl::Uniform(shader.uIsShaded, !mi.flags.skip_shading());
+                gl::Uniform(shader.uSkipVP, mi.flags.skip_vp());
+                GLenum mode = mi.flags.mode();
 
-                OSC_ASSERT(mi.meshidx >= 0);
-                GPU_mesh& gm = storage.meshes[mi.meshidx];
-                gm.instances.assign(meshes + i, 1);
+                GPU_mesh& gm = storage.meshes[mi.meshidx.as_index()];
+                gm.instances.assign(&mi, 1);
                 gl::BindVertexArray(gm.main_vao);
                 glDrawElementsInstanced(mode, gm.indices.sizei(), gl::index_type(gm.indices), nullptr, static_cast<GLsizei>(1));
                 gl::BindVertexArray();
-            }
+            });
         }
 
         glDisablei(GL_BLEND, 0);
@@ -695,15 +686,14 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
         gl::Uniform(shader.uProjMat, params.projection_matrix);
         gl::Uniform(shader.uViewMat, params.view_matrix);
 
-        for (size_t i = 0; i < nmeshes; ++i) {
-            Mesh_instance const& mi = meshes[i];
-            OSC_ASSERT(mi.meshidx >= 0);
-            GPU_mesh& gm = storage.meshes[mi.meshidx];
+        drawlist.for_each([&](Mesh_instance const& mi) {
+            GPU_mesh& gm = storage.meshes[mi.meshidx.as_index()];
             gl::Uniform(shader.uModelMat, mi.model_xform);
             gl::Uniform(shader.uNormalMat, mi.normal_xform);
             gl::BindVertexArray(gm.normal_vao);
             gl::DrawArrays(GL_TRIANGLES, 0, gm.verts.sizei() / (gm.is_textured ? sizeof(Textured_vert) : sizeof(Untextured_vert)));
-        }
+        });
+
         gl::BindVertexArray();
     }
 

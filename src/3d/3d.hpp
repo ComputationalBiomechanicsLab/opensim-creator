@@ -28,6 +28,40 @@ namespace osc {
         glm::vec2 texcoord;
     };
 
+    /**
+     * what you are about to see (using SFINAE to test whether a class has a texcoord member)
+     * is better described with a diagram:
+
+            _            _.,----,
+    __  _.-._ / '-.        -  ,._  \)
+    |  `-)_   '-.   \       / < _ )/" }
+    /__    '-.   \   '-, ___(c-(6)=(6)
+    , `'.    `._ '.  _,'   >\    "  )
+    :;;,,'-._   '---' (  ( "/`. -='/
+    ;:;;:;;,  '..__    ,`-.`)'- '--'
+    ;';:;;;;;'-._ /'._|   Y/   _/' \
+      '''"._ F    |  _/ _.'._   `\
+             L    \   \/     '._  \
+      .-,-,_ |     `.  `'---,  \_ _|
+      //    'L    /  \,   ("--',=`)7
+     | `._       : _,  \  /'`-._L,_'-._
+     '--' '-.\__/ _L   .`'         './/
+                 [ (  /
+                  ) `{
+       snd        \__)
+
+     */
+    template<typename>
+    struct sfinae_true : std::true_type {};
+    namespace detail {
+        template<typename T>
+        static auto test_has_texcoord(int) -> sfinae_true<decltype(std::declval<T>().texcoord)>;
+        template<typename T>
+        static auto test_has_texcoord(long) -> std::false_type;
+    }
+    template<typename T>
+    struct has_texcoord : decltype(detail::test_has_texcoord<T>(0)) {};
+
     // important: puts an upper limit on the number of verts that a single
     // mesh may contain
     using elidx_t = GLushort;
@@ -46,7 +80,7 @@ namespace osc {
     template<typename TVert>
     void generate_1to1_indices_for_verts(CPU_mesh<TVert>& mesh) {
         if (mesh.verts.size() > std::numeric_limits<elidx_t>::max()) {
-            throw std::runtime_error{"cannot generate indices for a mesh: has too many vertices"};
+            throw std::runtime_error{"cannot generate indices for a mesh: the mesh has too many vertices: if you need to support this many vertices then contact the developers"};
         }
 
         size_t n = mesh.verts.size();
@@ -64,17 +98,148 @@ namespace osc {
         GLubyte g;
         GLubyte b;
         GLubyte a;
+
+        Rgba32() = default;
+
+        constexpr Rgba32(GLubyte r_, GLubyte g_, GLubyte b_, GLubyte a_) noexcept :
+            r{r_},
+            g{g_},
+            b{b_},
+            a{a_} {
+        }
+
+        explicit constexpr Rgba32(glm::vec4 const& v) noexcept :
+            r{static_cast<GLubyte>(255.0f * v.r)},
+            g{static_cast<GLubyte>(255.0f * v.g)},
+            b{static_cast<GLubyte>(255.0f * v.b)},
+            a{static_cast<GLubyte>(255.0f * v.a)} {
+        }
     };
 
     struct Rgb24 final {
         GLubyte r;
         GLubyte g;
         GLubyte b;
+
+        Rgb24() = default;
+
+        constexpr Rgb24(GLubyte r_, GLubyte g_, GLubyte b_) noexcept :
+            r{r_},
+            g{g_},
+            b{b_} {
+        }
+
+        explicit constexpr Rgb24(glm::vec3 const& v) noexcept :
+            r{static_cast<GLubyte>(255.0f * v.r)},
+            g{static_cast<GLubyte>(255.0f * v.g)},
+            b{static_cast<GLubyte>(255.0f * v.b)} {
+        }
     };
 
-    // negative numbers are senteniels for "not in use" or "invalid"
-    using meshidx_t = short;
-    using texidx_t = short;
+    class Instance_flags final {
+        GLubyte flags = 0x00;
+        static constexpr GLubyte draw_lines_mask = 0x80;
+        static constexpr GLubyte skip_shading_mask = 0x40;
+        static constexpr GLubyte skip_vp_mask = 0x20;
+
+    public:
+        [[nodiscard]] constexpr GLenum mode() const noexcept {
+            return flags & draw_lines_mask ? GL_LINES : GL_TRIANGLES;
+        }
+
+        void set_draw_lines() noexcept {
+            flags |= draw_lines_mask;
+        }
+
+        [[nodiscard]] constexpr bool skip_shading() const noexcept {
+            return flags & skip_shading_mask;
+        }
+
+        void set_skip_shading() noexcept {
+            flags |= skip_shading_mask;
+        }
+
+        [[nodiscard]] constexpr bool skip_vp() const noexcept {
+            return flags & skip_vp_mask;
+        }
+
+        void set_skip_vp() noexcept {
+            flags |= skip_vp_mask;
+        }
+
+        [[nodiscard]] constexpr bool operator<(Instance_flags other) const noexcept {
+            return flags < other.flags;
+        }
+
+        [[nodiscard]] constexpr bool operator==(Instance_flags other) const noexcept {
+            return flags == other.flags;
+        }
+
+        [[nodiscard]] constexpr bool operator!=(Instance_flags other) const noexcept {
+            return flags != other.flags;
+        }
+    };
+
+    template<typename T, typename Derived>
+    class Safe_index {
+    public:
+        using value_type = T;
+        static constexpr value_type invalid_value = -1;
+        static_assert(std::is_signed_v<value_type>);
+        static_assert(std::is_integral_v<value_type>);
+
+    private:
+        value_type v;
+
+    public:
+        static [[nodiscard]] constexpr Derived from_index(size_t i) {
+            if (i > std::numeric_limits<T>::max()) {
+                throw std::runtime_error{"tried to create a Safe_index with a value that is too high for the underlying storage"};
+            }
+            return Derived{static_cast<T>(i)};
+        }
+
+        constexpr Safe_index() noexcept : v{invalid_value} {
+        }
+
+        explicit constexpr Safe_index(value_type v_) noexcept : v{v_} {
+        }
+
+        [[nodiscard]] constexpr value_type get() const noexcept {
+            return v;
+        }
+
+        [[nodiscard]] constexpr bool is_valid() const noexcept {
+            return v >= 0;
+        }
+
+        [[nodiscard]] constexpr size_t as_index() const {
+            if (!is_valid()) {
+                throw std::runtime_error{"tried to convert a Safe_index with an invalid value into an index: this could cause runtime errors and has been disallowed"};
+            }
+            return static_cast<size_t>(v);
+        }
+
+        [[nodiscard]] constexpr bool operator<(Safe_index<T, Derived> other) const noexcept {
+            return v < other.v;
+        }
+
+        [[nodiscard]] constexpr bool operator==(Safe_index<T, Derived> other) const noexcept {
+            return v == other.v;
+        }
+
+        [[nodiscard]] constexpr bool operator!=(Safe_index<T, Derived> other) const noexcept {
+            return v != other.v;
+        }
+    };
+
+    class Meshidx : public Safe_index<short, Meshidx> {
+        using Safe_index<short, Meshidx>::Safe_index;
+    };
+
+    class Texidx : public Safe_index<short, Texidx> {
+        using Safe_index<short, Texidx>::Safe_index;
+    };
 
     // create a normal transform from a model transform matrix
     template<typename Mtx>
@@ -88,45 +253,78 @@ namespace osc {
         glm::mat3 normal_xform;
         Rgba32 rgba;
 
-        // blue: reserved for rim highlighting
-        //
-        // callers can encode whatever they want into the red and
-        // green channels for runtime hit testing
-        Rgb24 passthrough_color = {0x00, 0x00, 0x00};
+        union {
+            struct {
+                GLubyte b0;
+                GLubyte b1;
+                GLubyte rim_alpha;
+            } passthrough;
+            Rgb24 passthrough_as_color;
 
-        GLubyte flags = 0x00;
-        static constexpr GLubyte draw_lines_mask = 0x80;
-        static constexpr GLubyte skip_shading_mask = 0x40;
-        static constexpr GLubyte skip_vp_mask = 0x20;
+            static_assert(sizeof(passthrough_as_color) == sizeof(passthrough));
+        };
 
-        texidx_t texidx = -1;
-        meshidx_t meshidx = -1;
+        Instance_flags flags;
+        Texidx texidx;
+        Meshidx meshidx;
+
+        Mesh_instance() : passthrough_as_color{0x00, 0x00, 0x00} {
+        }
     };
 
     // list of instances to draw in one renderer drawcall
     struct Drawlist final {
-        // note: treat as private
-        //
-        // it might be that we switch this with memory mapping, etc.
-        std::vector<Mesh_instance> _instances;
+        // note: treat as private, because the implementation might
+        // optimize this in various ways
+        std::vector<std::vector<Mesh_instance>> _opaque_by_meshidx;
+        std::vector<std::vector<Mesh_instance>> _nonopaque_by_meshidx;
 
         [[nodiscard]] size_t size() const noexcept {
-            return _instances.size();
+            size_t acc = 0;
+            for (auto const& lst : _opaque_by_meshidx) {
+                acc += lst.size();
+            }
+            for (auto const& lst : _nonopaque_by_meshidx) {
+                acc += lst.size();
+            }
+            return acc;
         }
 
-        template<typename... Args>
-        Mesh_instance& emplace_back(Args... args) {
-            return _instances.emplace_back(std::forward<Args>(args)...);
+        Mesh_instance& push_back(Mesh_instance const& mi) {
+            std::vector<std::vector<Mesh_instance>>& lut =
+                (!mi.texidx.is_valid() && mi.rgba.a < 1.0f) ? _nonopaque_by_meshidx : _opaque_by_meshidx;
+
+            size_t meshidx = mi.meshidx.as_index();
+
+            size_t minsize = meshidx + 1;
+            if (lut.size() < minsize) {
+                lut.resize(minsize);
+            }
+
+            lut[meshidx].push_back(mi);
+            return lut[meshidx].back();
         }
 
         void clear() {
-            _instances.clear();
+            for (auto& lst : _opaque_by_meshidx) {
+                lst.clear();
+            }
+            for (auto& lst : _nonopaque_by_meshidx) {
+                lst.clear();
+            }
         }
 
         template<typename Callback>
         void for_each(Callback f) {
-            for (Mesh_instance& mi : _instances) {
-                f(mi);
+            for (auto& lst : _opaque_by_meshidx) {
+                for (auto& mi : lst) {
+                    f(mi);
+                }
+            }
+            for (auto& lst : _nonopaque_by_meshidx) {
+                for (auto& mi : lst) {
+                    f(mi);
+                }
             }
         }
     };
@@ -172,19 +370,19 @@ namespace osc {
 
         std::vector<GPU_mesh> meshes;
         std::vector<gl::Texture_2d> textures;
-        std::unordered_map<std::string, meshidx_t> path_to_meshidx;
+        std::unordered_map<std::string, Meshidx> path_to_meshidx;
 
         // preallocated meshes
-        meshidx_t simbody_sphere_idx;
-        meshidx_t simbody_cylinder_idx;
-        meshidx_t simbody_cube_idx;
-        meshidx_t floor_quad_idx;
-        meshidx_t grid_25x25_idx;
-        meshidx_t yline_idx;
-        meshidx_t quad_idx;
+        Meshidx simbody_sphere_idx;
+        Meshidx simbody_cylinder_idx;
+        Meshidx simbody_cube_idx;
+        Meshidx floor_quad_idx;
+        Meshidx grid_25x25_idx;
+        Meshidx yline_idx;
+        Meshidx quad_idx;
 
         // preallocated textures
-        texidx_t chequer_idx;
+        Texidx chequer_idx;
 
         // debug quad
         gl::Array_buffer<Textured_vert> quad_vbo;
@@ -298,5 +496,5 @@ namespace osc {
     };
 
     // draw a scene into the specified render target
-    void draw_scene(GPU_storage&, Render_params const&, Drawlist const&, Render_target&);
+    void draw_scene(GPU_storage&, Render_params const&, Drawlist&, Render_target&);
 }

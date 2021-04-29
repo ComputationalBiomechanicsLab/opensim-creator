@@ -7,7 +7,7 @@
 #include "src/log.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
-#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/os.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 
@@ -372,7 +372,7 @@ public:
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
         // be <700 px high)
-        static constexpr char const* title = "osc";
+        static constexpr char const* title = "OpenSim Creator v" OSC_VERSION_STRING;
         static constexpr int x = SDL_WINDOWPOS_CENTERED;
         static constexpr int y = SDL_WINDOWPOS_CENTERED;
         static constexpr int width = 800;

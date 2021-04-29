@@ -152,11 +152,9 @@ add_executable(osc
     src/screens/splash_screen.hpp
     src/screens/splash_screen.cpp
 
-    src/utils/bitwise_algs.hpp
     src/utils/concurrency.hpp
     src/utils/shims.hpp
     src/utils/sdl_wrapper.hpp
-    src/utils/sdl_wrapper.cpp
     src/utils/os.hpp
     src/utils/os.cpp
     src/utils/scope_guard.hpp
@@ -164,7 +162,6 @@ add_executable(osc
     src/utils/file_change_poller.hpp
     src/utils/helpers.hpp
     src/utils/helpers.cpp
-    src/utils/sfinae.hpp
 
     src/config.hpp
     src/config.cpp

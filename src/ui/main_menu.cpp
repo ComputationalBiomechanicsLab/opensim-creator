@@ -10,7 +10,7 @@
 #include "src/screens/opengl_test_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/ui/help_marker.hpp"
-#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
 
 #include <GL/glew.h>

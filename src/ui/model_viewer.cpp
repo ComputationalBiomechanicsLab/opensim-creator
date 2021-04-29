@@ -55,7 +55,7 @@ static void apply_standard_rim_coloring(
             rim_alpha = 0;
         }
 
-        mi.passthrough_color.b = rim_alpha;
+        mi.passthrough.rim_alpha = rim_alpha;
     });
 }
 
@@ -353,7 +353,7 @@ void Model_viewer_widget::draw(
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -370,11 +370,12 @@ void Model_viewer_widget::draw(
                 mi.rgba = {0xff, 0x00, 0xff, 0xff};
                 mi.meshidx = impl->cache.floor_quad_idx;
                 mi.texidx = impl->cache.chequer_idx;
-                mi.flags |= Mesh_instance::skip_shading_mask;
+                mi.flags.set_skip_shading();
+                impl->geometry.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXZGrid) {
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -390,12 +391,13 @@ void Model_viewer_widget::draw(
                 mi.normal_xform = normal_matrix(mi.model_xform);
                 mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
                 mi.meshidx = impl->cache.grid_25x25_idx;
-                mi.flags |= Mesh_instance::draw_lines_mask;
-                mi.flags |= Mesh_instance::skip_shading_mask;
+                mi.flags.set_draw_lines();
+                mi.flags.set_skip_shading();
+                impl->geometry.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawXYGrid) {
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -410,12 +412,13 @@ void Model_viewer_widget::draw(
                 mi.normal_xform = normal_matrix(mi.model_xform);
                 mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
                 mi.meshidx = impl->cache.grid_25x25_idx;
-                mi.flags |= Mesh_instance::draw_lines_mask;
-                mi.flags |= Mesh_instance::skip_shading_mask;
+                mi.flags.set_draw_lines();
+                mi.flags.set_skip_shading();
+                impl->geometry.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawYZGrid) {
-                Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -431,8 +434,9 @@ void Model_viewer_widget::draw(
                 mi.normal_xform = normal_matrix(mi.model_xform);
                 mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
                 mi.meshidx = impl->cache.grid_25x25_idx;
-                mi.flags |= Mesh_instance::draw_lines_mask;
-                mi.flags |= Mesh_instance::skip_shading_mask;
+                mi.flags.set_draw_lines();
+                mi.flags.set_skip_shading();
+                impl->geometry.push_back(nullptr, mi);
             }
 
             if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
@@ -447,19 +451,20 @@ void Model_viewer_widget::draw(
                 glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
                 glm::mat4 base_model_mtx = translator * scaler * model2view;
 
-                GLubyte flags = 0x00;
-                flags |= Mesh_instance::skip_shading_mask;
-                flags |= Mesh_instance::skip_vp_mask;
-                flags |= Mesh_instance::draw_lines_mask;
+                Instance_flags flags;
+                flags.set_skip_shading();
+                flags.set_skip_vp();
+                flags.set_draw_lines();
 
                 // y axis
                 {
-                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    Mesh_instance mi;
                     mi.model_xform = base_model_mtx * make_line_one_sided;
                     mi.normal_xform = normal_matrix(mi.model_xform);
                     mi.rgba = {0x00, 0xff, 0x00, 0xff};
                     mi.meshidx = impl->cache.yline_idx;
                     mi.flags = flags;
+                    impl->geometry.push_back(nullptr, mi);
                 }
 
                 // x axis
@@ -467,12 +472,13 @@ void Model_viewer_widget::draw(
                     glm::mat4 rotate_y_to_x =
                         glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{0.0f, 0.0f, -1.0f});
 
-                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    Mesh_instance mi;
                     mi.model_xform = base_model_mtx * rotate_y_to_x * make_line_one_sided;
                     mi.normal_xform = normal_matrix(mi.model_xform);
                     mi.rgba = {0xff, 0x00, 0x00, 0xff};
                     mi.meshidx = impl->cache.grid_25x25_idx;
                     mi.flags = flags;
+                    impl->geometry.push_back(nullptr, mi);
                 }
 
                 // z axis
@@ -480,12 +486,13 @@ void Model_viewer_widget::draw(
                     glm::mat4 rotate_y_to_z =
                         glm::rotate(glm::identity<glm::mat4>(), pi_f / 2.0f, glm::vec3{1.0f, 0.0f, 0.0f});
 
-                    Mesh_instance& mi = impl->geometry.emplace_back(nullptr);
+                    Mesh_instance mi;
                     mi.model_xform = base_model_mtx * rotate_y_to_z * make_line_one_sided;
                     mi.normal_xform = normal_matrix(mi.model_xform);
                     mi.rgba = {0x00, 0x00, 0xff, 0xff};
                     mi.meshidx = impl->cache.grid_25x25_idx;
                     mi.flags = flags;
+                    impl->geometry.push_back(nullptr, mi);
                 }
             }
 

@@ -76,7 +76,15 @@ namespace sdl {
     //
     // CreateWindoww is a typo because `CreateWindow` is defined in the
     // preprocessor
-    Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags);
+    inline Window CreateWindoww(const char* title, int x, int y, int w, int h, Uint32 flags) {
+        SDL_Window* win = SDL_CreateWindow(title, x, y, w, h, flags);
+
+        if (win == nullptr) {
+            throw std::runtime_error{std::string{"SDL_CreateWindow failed: "} + SDL_GetError()};
+        }
+
+        return Window{win};
+    }
 
     // RAII wrapper around an SDL_Renderer that calls SDL_DestroyRenderer on dtor
     //     https://wiki.libsdl.org/SDL_Renderer
@@ -104,7 +112,15 @@ namespace sdl {
 
     // RAII'ed version of SDL_CreateRenderer
     //     https://wiki.libsdl.org/SDL_CreateRenderer
-    Renderer CreateRenderer(SDL_Window* w, int index, Uint32 flags);
+    inline Renderer CreateRenderer(SDL_Window* w, int index, Uint32 flags) {
+        SDL_Renderer* r = SDL_CreateRenderer(w, index, flags);
+
+        if (r == nullptr) {
+            throw std::runtime_error{std::string{"SDL_CreateRenderer: failed: "} + SDL_GetError()};
+        }
+
+        return Renderer{r};
+    }
 
     // RAII wrapper around SDL_GLContext that calls SDL_GL_DeleteContext on dtor
     //     https://wiki.libsdl.org/SDL_GL_DeleteContext
@@ -134,7 +150,15 @@ namespace sdl {
     };
 
     // https://wiki.libsdl.org/SDL_GL_CreateContext
-    GLContext GL_CreateContext(SDL_Window* w);
+    inline GLContext GL_CreateContext(SDL_Window* w) {
+        SDL_GLContext ctx = SDL_GL_CreateContext(w);
+
+        if (ctx == nullptr) {
+            throw std::runtime_error{std::string{"SDL_GL_CreateContext failed: "} + SDL_GetError()};
+        }
+
+        return GLContext{ctx};
+    }
 
     // RAII wrapper for SDL_Surface that calls SDL_FreeSurface on dtor:
     //     https://wiki.libsdl.org/SDL_Surface
@@ -166,8 +190,16 @@ namespace sdl {
 
     // RAII'ed version of SDL_CreateRGBSurface:
     //     https://wiki.libsdl.org/SDL_CreateRGBSurface
-    Surface CreateRGBSurface(
-        Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
+    inline Surface CreateRGBSurface(
+            Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask) {
+        SDL_Surface* handle = SDL_CreateRGBSurface(flags, width, height, depth, Rmask, Gmask, Bmask, Amask);
+
+        if (handle == nullptr) {
+            throw std::runtime_error{std::string{"SDL_CreateRGBSurface: "} + SDL_GetError()};
+        }
+
+        return Surface{handle};
+    }
 
     // RAII wrapper around SDL_LockSurface/SDL_UnlockSurface:
     //     https://wiki.libsdl.org/SDL_LockSurface
@@ -176,7 +208,11 @@ namespace sdl {
         SDL_Surface* ptr;
 
     public:
-        Surface_lock(SDL_Surface* s);
+        Surface_lock(SDL_Surface* s) : ptr{s} {
+            if (SDL_LockSurface(ptr) != 0) {
+                throw std::runtime_error{std::string{"SDL_LockSurface failed: "} + SDL_GetError()};
+            }
+        }
         Surface_lock(Surface_lock const&) = delete;
         Surface_lock(Surface_lock&&) = delete;
         Surface_lock& operator=(Surface_lock const&) = delete;
@@ -188,7 +224,9 @@ namespace sdl {
 
     // RAII'ed version of SDL_LockSurface:
     //     https://wiki.libsdl.org/SDL_LockSurface
-    Surface_lock LockSurface(SDL_Surface* s);
+    inline Surface_lock LockSurface(SDL_Surface* s) {
+        return Surface_lock{s};
+    }
 
     // RAII wrapper around SDL_Texture that calls SDL_DestroyTexture on dtor:
     //     https://wiki.libsdl.org/SDL_Texture
@@ -216,13 +254,28 @@ namespace sdl {
 
     // RAII'ed version of SDL_CreateTextureFromSurface:
     //     https://wiki.libsdl.org/SDL_CreateTextureFromSurface
-    Texture CreateTextureFromSurface(SDL_Renderer* r, SDL_Surface* s);
+    inline Texture CreateTextureFromSurface(SDL_Renderer* r, SDL_Surface* s) {
+        SDL_Texture* t = SDL_CreateTextureFromSurface(r, s);
+        if (t == nullptr) {
+            throw std::runtime_error{std::string{"SDL_CreateTextureFromSurface failed: "} + SDL_GetError()};
+        }
+        return Texture{t};
+    }
 
     // https://wiki.libsdl.org/SDL_RenderCopy
-    void RenderCopy(SDL_Renderer* r, SDL_Texture* t, SDL_Rect* src, SDL_Rect* dest);
+    inline void RenderCopy(SDL_Renderer* r, SDL_Texture* t, SDL_Rect* src, SDL_Rect* dest) {
+        int rv = SDL_RenderCopy(r, t, src, dest);
+        if (rv != 0) {
+            throw std::runtime_error{std::string{"SDL_RenderCopy failed: "} + SDL_GetError()};
+        }
+    }
 
     // https://wiki.libsdl.org/SDL_RenderPresent
-    void RenderPresent(SDL_Renderer* r);
+    inline void RenderPresent(SDL_Renderer* r) {
+        // this method exists just so that the namespace-based naming is
+        // consistent
+        SDL_RenderPresent(r);
+    }
 
     struct Window_dimensions {
         int w;
@@ -242,7 +295,11 @@ namespace sdl {
     }
 
     // https://wiki.libsdl.org/SDL_GetWindowSize
-    Window_dimensions GetWindowSize(SDL_Window* window);
+    inline Window_dimensions GetWindowSize(SDL_Window* window) {
+        Window_dimensions d;
+        SDL_GetWindowSize(window, &d.w, &d.h);
+        return d;
+    }
 
     struct Mouse_state final {
         int x;
@@ -280,5 +337,12 @@ namespace sdl {
         }
     };
 
-    Timer AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param);
+    inline Timer AddTimer(Uint32 interval, SDL_TimerCallback callback, void* param) {
+        SDL_TimerID handle = SDL_AddTimer(interval, callback, param);
+        if (handle == 0) {
+            throw std::runtime_error{std::string{"SDL_AddTimer failed: "} + SDL_GetError()};
+        }
+
+        return Timer{handle};
+    }
 }

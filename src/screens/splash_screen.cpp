@@ -70,13 +70,14 @@ struct Splash_screen::Impl final {
             return rv;
         }();
 
-        Mesh_instance& mi = drawlist.emplace_back();
+        Mesh_instance mi;
         mi.model_xform = model_mtx;
         mi.normal_xform = normal_matrix(mi.model_xform);
         auto& gpu_storage = Application::current().get_gpu_storage();
         mi.meshidx = gpu_storage.floor_quad_idx;
         mi.texidx = gpu_storage.chequer_idx;
-        mi.flags |= Mesh_instance::skip_shading_mask;
+        mi.flags.set_skip_shading();
+        drawlist.push_back(mi);
     }
 };
 

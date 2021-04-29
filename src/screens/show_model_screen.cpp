@@ -17,7 +17,7 @@
 #include "src/ui/main_menu.hpp"
 #include "src/ui/model_viewer.hpp"
 #include "src/ui/muscles_table.hpp"
-#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/file_change_poller.hpp"
 
 #include <OpenSim/Common/Component.h>

@@ -28,7 +28,7 @@ namespace osc {
         }
 
         template<typename... Args>
-        Mesh_instance& emplace_back(OpenSim::Component const* c, Args&&... args) {
+        Mesh_instance& push_back(OpenSim::Component const* c, Mesh_instance const& mi) {
             size_t idx = associated_components.size();
 
             if (idx >= std::numeric_limits<uint16_t>::max()) {
@@ -40,10 +40,10 @@ namespace osc {
             uint16_t passthrough_id = static_cast<uint16_t>(idx + 1);
 
             associated_components.emplace_back(c);
-            Mesh_instance& mesh_instance = drawlist.emplace_back(std::forward<Args>(args)...);
+            Mesh_instance& mesh_instance = drawlist.push_back(mi);
 
-            mesh_instance.passthrough_color.r = static_cast<GLubyte>(passthrough_id);
-            mesh_instance.passthrough_color.g = static_cast<GLubyte>(passthrough_id >> 8);
+            mesh_instance.passthrough.b0 = static_cast<GLubyte>(passthrough_id);
+            mesh_instance.passthrough.b1 = static_cast<GLubyte>(passthrough_id >> 8);
 
             return mesh_instance;
         }
@@ -73,7 +73,7 @@ namespace osc {
             OSC_ASSERT(drawlist.size() == associated_components.size());
 
             drawlist.for_each([&](Mesh_instance& mi) {
-                uint16_t id = decode_le_u16(mi.passthrough_color.r, mi.passthrough_color.g);
+                uint16_t id = decode_le_u16(mi.passthrough.b0, mi.passthrough.b1);
                 OSC_ASSERT(id != 0 && "zero ID inserted into drawlist (emplace_back should prevent this)");
                 f(associated_components[id - 1], mi);
             });
@@ -87,6 +87,10 @@ namespace osc {
         }
 
         Drawlist const& raw_drawlist() const noexcept {
+            return drawlist;
+        }
+
+        Drawlist& raw_drawlist() noexcept {
             return drawlist;
         }
     };

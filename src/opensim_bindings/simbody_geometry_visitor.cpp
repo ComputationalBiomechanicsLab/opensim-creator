@@ -345,7 +345,7 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
     if (inserted) {
         load_mesh_data(geom.getMesh(), mesh_swap);
         gpu_cache.meshes.emplace_back(mesh_swap);
-        it->second = static_cast<meshidx_t>(gpu_cache.meshes.size() - 1);
+        it->second = Meshidx::from_index(gpu_cache.meshes.size() - 1);
     }
 
     Mesh_instance mi;

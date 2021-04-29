@@ -30,7 +30,7 @@ void osc::generate_decoration_drawlist(
 
     // called whenever the backend emits geometry
     auto on_instance_created = [&current_component, &drawlist](Mesh_instance const& mi) {
-        drawlist.emplace_back(current_component, mi);
+        drawlist.push_back(current_component, mi);
     };
 
     auto visitor = Lambda_geometry_visitor{std::move(on_instance_created), mesh_swap, gpu_cache, matter, state};

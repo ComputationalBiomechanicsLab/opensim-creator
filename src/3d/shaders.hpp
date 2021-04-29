@@ -82,7 +82,7 @@ namespace osc {
             gl::VertexAttribDivisor(aRgba0, 1);
 
             gl::VertexAttribPointer<decltype(aRgb1)::glsl_type, GL_UNSIGNED_BYTE>(
-                aRgb1, true, sizeof(Mesh_instance), offsetof(Mesh_instance, passthrough_color));
+                aRgb1, true, sizeof(Mesh_instance), offsetof(Mesh_instance, passthrough));
             gl::EnableVertexAttribArray(aRgb1);
             gl::VertexAttribDivisor(aRgb1, 1);
 
