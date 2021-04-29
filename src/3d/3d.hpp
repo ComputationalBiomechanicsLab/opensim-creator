@@ -268,7 +268,7 @@ namespace osc {
         Texidx texidx;
         Meshidx meshidx;
 
-        Mesh_instance() : passthrough_as_color{0x00, 0x00, 0x00} {
+        constexpr Mesh_instance() noexcept : passthrough_as_color{0x00, 0x00, 0x00} {
         }
     };
 
@@ -290,7 +290,7 @@ namespace osc {
             return acc;
         }
 
-        Mesh_instance& push_back(Mesh_instance const& mi) {
+        void push_back(Mesh_instance const& mi) {
             std::vector<std::vector<Mesh_instance>>& lut =
                 (!mi.texidx.is_valid() && mi.rgba.a < 1.0f) ? _nonopaque_by_meshidx : _opaque_by_meshidx;
 
@@ -302,7 +302,6 @@ namespace osc {
             }
 
             lut[meshidx].push_back(mi);
-            return lut[meshidx].back();
         }
 
         void clear() {

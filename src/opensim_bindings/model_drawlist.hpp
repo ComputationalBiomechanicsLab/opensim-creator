@@ -27,8 +27,7 @@ namespace osc {
             associated_components.clear();
         }
 
-        template<typename... Args>
-        Mesh_instance& push_back(OpenSim::Component const* c, Mesh_instance const& mi) {
+        void push_back(OpenSim::Component const* c, Mesh_instance const& mi) {
             size_t idx = associated_components.size();
 
             if (idx >= std::numeric_limits<uint16_t>::max()) {
@@ -36,16 +35,15 @@ namespace osc {
                     "precondition error: tried to render more than the maximum number of components osc can render"};
             }
 
-            // this is safe because of the above assert
+
             uint16_t passthrough_id = static_cast<uint16_t>(idx + 1);
 
+            Mesh_instance copy = mi;
+            copy.passthrough.b0 = static_cast<GLubyte>(passthrough_id);
+            copy.passthrough.b1 = static_cast<GLubyte>(passthrough_id >> 8);
+
             associated_components.emplace_back(c);
-            Mesh_instance& mesh_instance = drawlist.push_back(mi);
-
-            mesh_instance.passthrough.b0 = static_cast<GLubyte>(passthrough_id);
-            mesh_instance.passthrough.b1 = static_cast<GLubyte>(passthrough_id >> 8);
-
-            return mesh_instance;
+            drawlist.push_back(copy);
         }
 
         [[nodiscard]] static constexpr uint16_t decode_le_u16(GLubyte b0, GLubyte b1) noexcept {

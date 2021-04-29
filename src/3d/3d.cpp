@@ -502,15 +502,7 @@ void osc::Render_target::reconfigure(int w_, int h_, int samples_) {
 }
 
 static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2) {
-    if (m1.rgba.a != m2.rgba.a) {
-        // first, sort by opacity descending: opaque elements should be drawn before
-        // blended elements
-        return m1.rgba.a > m2.rgba.a;
-    } else if (m1.meshidx != m2.meshidx) {
-        // second, sort by mesh, because instanced rendering is essentially the
-        // process of batching draw calls by mesh
-        return m1.meshidx < m2.meshidx;
-    } else if (m1.texidx != m2.texidx) {
+    if (m1.texidx != m2.texidx) {
         // third, sort by texture, because even though we *could* render a batch of
         // instances with the same mesh in one draw call, some of those meshes might
         // be textured, and textures can't be instanced (so the drawcall must be split
@@ -606,7 +598,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
                     Instance_flags flags = meshes[pos].flags;
                     size_t end = pos + 1;
 
-                    while (meshes[end].texidx == texidx && meshes[end].flags == flags) {
+                    while (end < nmeshes && meshes[end].texidx == texidx && meshes[end].flags == flags) {
                         ++end;
                     }
 
