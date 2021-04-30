@@ -192,17 +192,7 @@ static Rgba32 extract_rgba(DecorativeGeometry const& geom) {
     Real ar = geom.getOpacity();
     ar = ar < 0.0 ? 1.0 : ar;
 
-    Rgba32 rv;
-    int r = std::min(255, static_cast<int>(255.0 * rgb[0]));
-    int g = std::min(255, static_cast<int>(255.0 * rgb[1]));
-    int b = std::min(255, static_cast<int>(255.0 * rgb[2]));
-    int a = std::min(255, static_cast<int>(255.0 * ar));
-    rv.r = static_cast<unsigned char>(r);
-    rv.g = static_cast<unsigned char>(g);
-    rv.b = static_cast<unsigned char>(b);
-    rv.a = static_cast<unsigned char>(a);
-
-    return rv;
+    return Rgba32::from_d4(rgb[0], rgb[1], rgb[2], ar);
 }
 
 static glm::vec4 to_vec4(Vec3 const& v, float w = 1.0f) {
@@ -338,11 +328,10 @@ void Simbody_geometry_visitor::implementMeshGeometry(SimTK::DecorativeMesh const
 }
 
 void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFile const& geom) {
+    auto [it, inserted] = gpu_cache.path_to_meshidx.emplace(geom.getMeshFile(), Meshidx{});
 
-    // find the mesh in the lookup, if it isn't found then load the
-    // mesh onto the GPU first
-    auto [it, inserted] = gpu_cache.path_to_meshidx.emplace(geom.getMeshFile(), -1);
     if (inserted) {
+        // cache miss: go load the mesh
         load_mesh_data(geom.getMesh(), mesh_swap);
         gpu_cache.meshes.emplace_back(mesh_swap);
         it->second = Meshidx::from_index(gpu_cache.meshes.size() - 1);
