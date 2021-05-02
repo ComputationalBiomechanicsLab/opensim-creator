@@ -66,7 +66,7 @@ namespace osc {
         GLubyte a;
 
         [[nodiscard]] static constexpr Rgba32 from_vec4(glm::vec4 const& v) noexcept {
-            Rgba32 rv;
+            Rgba32 rv{};
             rv.r = static_cast<GLubyte>(255.0f * v.r);
             rv.g = static_cast<GLubyte>(255.0f * v.g);
             rv.b = static_cast<GLubyte>(255.0f * v.b);
@@ -75,7 +75,7 @@ namespace osc {
         }
 
         [[nodiscard]] static constexpr Rgba32 from_d4(double r, double g, double b, double a) noexcept {
-            Rgba32 rv;
+            Rgba32 rv{};
             rv.r = static_cast<GLubyte>(255.0 * r);
             rv.g = static_cast<GLubyte>(255.0 * g);
             rv.b = static_cast<GLubyte>(255.0 * b);
