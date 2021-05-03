@@ -1,6 +1,7 @@
 #include "helpers.hpp"
 
 #include <fstream>
+#include <sstream>
 
 std::string osc::slurp_into_string(std::filesystem::path const& p) {
     std::ifstream f;
