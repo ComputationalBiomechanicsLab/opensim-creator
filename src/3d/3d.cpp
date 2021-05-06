@@ -581,6 +581,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
                 Mesh_instance const* meshes = instances.data();
                 size_t pos = 0;
 
+                // batch instances into as few drawcalls as possible
                 while (pos < nmeshes) {
                     Meshidx meshidx = meshes[pos].meshidx;
                     Texidx texidx = meshes[pos].texidx;
@@ -593,7 +594,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
 
                     // [pos, end) contains instances with the same meshid + textureid + flags
 
-                    // texture-related stuff
+                    // assign texture (if necessary)
                     if (texidx.is_valid()) {
                         gl::Uniform(shader.uIsTextured, true);
                         gl::ActiveTexture(GL_TEXTURE0);
@@ -603,18 +604,18 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
                         gl::Uniform(shader.uIsTextured, false);
                     }
 
-                    // flag-related stuff
+                    // assign flags
                     gl::Uniform(shader.uIsShaded, !flags.skip_shading());
                     gl::Uniform(shader.uSkipVP, flags.skip_vp());
-                    GLenum mode = flags.mode();
 
+                    // upload instance data
                     GPU_mesh& gm = storage.meshes[meshidx.as_index()];
                     gm.instances.assign(meshes + pos, end - pos);
-                    gl::BindVertexArray(gm.main_vao);
 
+                    // do drawcall
+                    gl::BindVertexArray(gm.main_vao);
                     glDrawElementsInstanced(
-                        mode, gm.indices.sizei(), gl::index_type(gm.indices), nullptr, static_cast<GLsizei>(end - pos));
-                    gl::BindVertexArray();
+                        flags.mode(), gm.indices.sizei(), gl::index_type(gm.indices), nullptr, static_cast<GLsizei>(end - pos));
 
                     pos = end;
                 }
@@ -627,6 +628,8 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
             for (auto const& lst : drawlist._nonopaque_by_meshidx) {
                 draw_els_with_same_meshidx(lst);
             }
+
+            gl::BindVertexArray();
         } else {
             // perform (slower) one-drawcall-per-item rendering
             //
@@ -688,7 +691,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
     // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
     // model information (e.g. "a component index") into screenspace
 
-    out.hittest_result = {0x00, 0x00, 0x00};
+    out.hittest_result = Rgb24{0x00, 0x00, 0x00};
     if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location

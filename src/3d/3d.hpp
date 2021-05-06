@@ -1,12 +1,13 @@
 #pragma once
 
 #include "src/3d/gl.hpp"
-#include "src/assertions.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
 
 #include <vector>
 #include <limits>
@@ -28,8 +29,11 @@ namespace osc {
         glm::vec2 texcoord;
     };
 
-    // important: puts an upper limit on the number of verts that a single
-    // mesh may contain
+    // datatype for vertex indices
+    //
+    // meshes are rendered by supplying vertex data (e.g. xy positions, texcoords) and
+    // a list of indices to the vertex data. This is so that vertices can be shared
+    // between geometry primitives (e.g. corners of a triangle can be shared).
     using elidx_t = GLushort;
 
     template<typename TVert>
@@ -59,6 +63,7 @@ namespace osc {
         }
     }
 
+    // 4 color channels (RGBA), 8 bits per channel
     struct Rgba32 final {
         GLubyte r;
         GLubyte g;
@@ -93,10 +98,19 @@ namespace osc {
         }
     };
 
+    // 3 color channels (RGB), 8 bits per channel
     struct Rgb24 final {
         GLubyte r;
         GLubyte g;
         GLubyte b;
+
+        [[nodiscard]] static constexpr Rgb24 from_vec3(glm::vec3 const& v) noexcept {
+            Rgb24 rv{};
+            rv.r = static_cast<GLubyte>(255.0f * v.r);
+            rv.g = static_cast<GLubyte>(255.0f * v.g);
+            rv.b = static_cast<GLubyte>(255.0f * v.b);
+            return rv;
+        }
 
         Rgb24() = default;
 
@@ -105,14 +119,10 @@ namespace osc {
             g{g_},
             b{b_} {
         }
-
-        explicit constexpr Rgb24(glm::vec3 const& v) noexcept :
-            r{static_cast<GLubyte>(255.0f * v.r)},
-            g{static_cast<GLubyte>(255.0f * v.g)},
-            b{static_cast<GLubyte>(255.0f * v.b)} {
-        }
     };
 
+    // flags for a single mesh instance (e.g. what draw mode it should be rendered with,
+    // what shading it should/shouln't have, etc.)
     class Instance_flags final {
         GLubyte flags = 0x00;
         static constexpr GLubyte draw_lines_mask = 0x80;
@@ -157,8 +167,17 @@ namespace osc {
         }
     };
 
+    // a runtime-checked "index" value with support for senteniel values (negative values)
+    // that indicate "invalid index"
+    //
+    // the utility of this is for using undersized index types (e.g. `short`, 32-bit ints,
+    // etc.). The perf hit from runtime checking is typically outweighed by the reduction
+    // of memory uses (fewer cache misses, etc.)
+    //
+    // the `Derived` template param is to implement the "curously recurring template
+    // pattern" (CRTP) - google it
     template<typename T, typename Derived>
-    class Safe_index {
+    class Checked_index {
     public:
         using value_type = T;
         static constexpr value_type invalid_value = -1;
@@ -169,17 +188,18 @@ namespace osc {
         value_type v;
 
     public:
+        // curously-recurring template pattern
         [[nodiscard]] static constexpr Derived from_index(size_t i) {
-            if (i > std::numeric_limits<T>::max()) {
-                throw std::runtime_error{"tried to create a Safe_index with a value that is too high for the underlying storage"};
+            if (i > std::numeric_limits<value_type>::max()) {
+                throw std::runtime_error{"tried to create a Safe_index with a value that is too high for the underlying value type"};
             }
             return Derived{static_cast<T>(i)};
         }
 
-        constexpr Safe_index() noexcept : v{invalid_value} {
+        constexpr Checked_index() noexcept : v{invalid_value} {
         }
 
-        explicit constexpr Safe_index(value_type v_) noexcept : v{v_} {
+        explicit constexpr Checked_index(value_type v_) noexcept : v{v_} {
         }
 
         [[nodiscard]] constexpr value_type get() const noexcept {
@@ -192,30 +212,30 @@ namespace osc {
 
         [[nodiscard]] constexpr size_t as_index() const {
             if (!is_valid()) {
-                throw std::runtime_error{"tried to convert a Safe_index with an invalid value into an index: this could cause runtime errors and has been disallowed"};
+                throw std::runtime_error{"tried to convert a Safe_index with an invalid value into an index"};
             }
             return static_cast<size_t>(v);
         }
 
-        [[nodiscard]] constexpr bool operator<(Safe_index<T, Derived> other) const noexcept {
+        [[nodiscard]] constexpr bool operator<(Checked_index<T, Derived> other) const noexcept {
             return v < other.v;
         }
 
-        [[nodiscard]] constexpr bool operator==(Safe_index<T, Derived> other) const noexcept {
+        [[nodiscard]] constexpr bool operator==(Checked_index<T, Derived> other) const noexcept {
             return v == other.v;
         }
 
-        [[nodiscard]] constexpr bool operator!=(Safe_index<T, Derived> other) const noexcept {
+        [[nodiscard]] constexpr bool operator!=(Checked_index<T, Derived> other) const noexcept {
             return v != other.v;
         }
     };
 
-    class Meshidx : public Safe_index<short, Meshidx> {
-        using Safe_index<short, Meshidx>::Safe_index;
+    class Meshidx : public Checked_index<short, Meshidx> {
+        using Checked_index<short, Meshidx>::Checked_index;
     };
 
-    class Texidx : public Safe_index<short, Texidx> {
-        using Safe_index<short, Texidx>::Safe_index;
+    class Texidx : public Checked_index<short, Texidx> {
+        using Checked_index<short, Texidx>::Checked_index;
     };
 
     // create a normal transform from a model transform matrix
@@ -225,6 +245,7 @@ namespace osc {
         return glm::inverse(glm::transpose(top_left));
     }
 
+    // single instance of a mesh (assume instanced rendering)
     struct Mesh_instance final {
         glm::mat4x3 model_xform;
         glm::mat3 normal_xform;
@@ -255,8 +276,10 @@ namespace osc {
 
     // list of instances to draw in one renderer drawcall
     struct Drawlist final {
-        // note: treat as private, because the implementation might
-        // optimize this in various ways
+        // note: treat these data members as private, because the implementation
+        // might rearrange them in various ways
+        //
+        // (and I hate friend classes/methods: just don't use these, you jerk)
         std::vector<std::vector<Mesh_instance>> _opaque_by_meshidx;
         std::vector<std::vector<Mesh_instance>> _nonopaque_by_meshidx;
 
@@ -285,6 +308,8 @@ namespace osc {
         }
 
         void clear() {
+            // don't clear the top-level vectors, so that heap recyling works.
+
             for (auto& lst : _opaque_by_meshidx) {
                 lst.clear();
             }
