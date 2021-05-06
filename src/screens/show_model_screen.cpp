@@ -1,7 +1,7 @@
 #include "show_model_screen.hpp"
 
 #include "src/3d/gl.hpp"
-#include "src/3d/gpu_cache.hpp"
+#include "src/3d/3d.hpp"
 #include "src/application.hpp"
 #include "src/assertions.hpp"
 #include "src/log.hpp"
@@ -17,7 +17,7 @@
 #include "src/ui/main_menu.hpp"
 #include "src/ui/model_viewer.hpp"
 #include "src/ui/muscles_table.hpp"
-#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/file_change_poller.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -593,9 +593,8 @@ struct Show_model_screen::Impl final {
     std::unique_ptr<SimTK::State> latest_state;
 
     Selected_component selected_component;
-    Gpu_cache cache;
     std::array<Model_viewer_widget, 1> model_viewers = {
-        Model_viewer_widget{cache, ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        Model_viewer_widget{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
         // Model_viewer_widget{cache, ModelViewerWidgetFlags_Default |
         // ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
     };

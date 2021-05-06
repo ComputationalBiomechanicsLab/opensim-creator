@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3d/drawlist.hpp"
+#include "src/3d/3d.hpp"
 #include "src/assertions.hpp"
 
 #include <cstddef>
@@ -27,8 +27,7 @@ namespace osc {
             associated_components.clear();
         }
 
-        template<typename... Args>
-        Mesh_instance& emplace_back(OpenSim::Component const* c, Args&&... args) {
+        void push_back(OpenSim::Component const* c, Mesh_instance const& mi) {
             size_t idx = associated_components.size();
 
             if (idx >= std::numeric_limits<uint16_t>::max()) {
@@ -36,31 +35,34 @@ namespace osc {
                     "precondition error: tried to render more than the maximum number of components osc can render"};
             }
 
-            // this is safe because of the above assert
+
             uint16_t passthrough_id = static_cast<uint16_t>(idx + 1);
 
+            Mesh_instance copy = mi;
+            copy.passthrough.b0 = static_cast<GLubyte>(passthrough_id);
+            copy.passthrough.b1 = static_cast<GLubyte>(passthrough_id >> 8);
+
             associated_components.emplace_back(c);
-            Mesh_instance& mesh_instance = drawlist.emplace_back(std::forward<Args>(args)...);
-
-            // encode index+1 into the passthrough data, so that:
-            //
-            // - mesh instances can be re-ordered (e.g. for draw call optimization) and
-            //   still know which component they are associated with
-            //
-            // - the renderer can pass through which component (index) is associated
-            //   with a screen pixel, but callers can reassign the *components* to other
-            //   components (the *index* is encoded, not the component)
-            //
-            // must be >0 (so idx+1), because zeroed passthrough data implies "no information",
-            // rather than "information, which is zero"
-            mesh_instance.set_passthrough_data(Passthrough_data::from_u16(passthrough_id));
-
-            return mesh_instance;
+            drawlist.push_back(copy);
         }
 
-        OpenSim::Component const* component_from_passthrough(Passthrough_data d) {
-            uint16_t id = d.to_u16();
-            return id == 0 ? nullptr : associated_components[id - 1];
+        [[nodiscard]] static constexpr uint16_t decode_le_u16(GLubyte b0, GLubyte b1) noexcept {
+            uint16_t rv = static_cast<uint16_t>(b0);
+            rv |= static_cast<uint16_t>(b1) << 8;
+            return rv;
+        }
+
+        OpenSim::Component const* component_from_passthrough(Rgb24 d) {
+            static_assert(sizeof(d.r) == 1);
+            static_assert(sizeof(d.g) == 1);
+
+            uint16_t data = decode_le_u16(d.r, d.g);
+
+            if (data > 0) {
+                return associated_components[data - 1];
+            } else {
+                return nullptr;
+            }
         }
 
         template<typename Callback>
@@ -69,7 +71,7 @@ namespace osc {
             OSC_ASSERT(drawlist.size() == associated_components.size());
 
             drawlist.for_each([&](Mesh_instance& mi) {
-                uint16_t id = mi.passthrough_data().to_u16();
+                uint16_t id = decode_le_u16(mi.passthrough.b0, mi.passthrough.b1);
                 OSC_ASSERT(id != 0 && "zero ID inserted into drawlist (emplace_back should prevent this)");
                 f(associated_components[id - 1], mi);
             });
@@ -83,6 +85,10 @@ namespace osc {
         }
 
         Drawlist const& raw_drawlist() const noexcept {
+            return drawlist;
+        }
+
+        Drawlist& raw_drawlist() noexcept {
             return drawlist;
         }
     };

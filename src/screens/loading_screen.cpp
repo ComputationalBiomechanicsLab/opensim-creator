@@ -82,7 +82,7 @@ void Loading_screen::draw() {
     if (impl->error.empty()) {
         bool b = true;
         if (ImGui::Begin("Loading message", &b, ImGuiWindowFlags_MenuBar)) {
-            ImGui::Text("loading: %s", impl->path.c_str());
+            ImGui::Text("loading: %s", impl->path.string().c_str());
             ImGui::End();
         }
     } else {

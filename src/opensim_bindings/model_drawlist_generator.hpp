@@ -10,7 +10,7 @@ namespace SimTK {
 }
 
 namespace osc {
-    struct Gpu_cache;
+    struct GPU_storage;
     class Model_drawlist;
 }
 
@@ -27,7 +27,7 @@ namespace osc {
         OpenSim::Component const&,
         SimTK::State const&,
         OpenSim::ModelDisplayHints const&,
-        Gpu_cache&,
+        GPU_storage&,
         Model_drawlist&,
         ModelDrawlistFlags = ModelDrawlistFlags_Default);
 }

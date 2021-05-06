@@ -81,28 +81,13 @@ add_executable(osc
     src/3d/gl.cpp
     src/3d/gl_extensions.hpp
     src/3d/gl_extensions.cpp
-    src/3d/textured_vert.hpp
-    src/3d/untextured_vert.hpp
-    src/3d/mesh.hpp
-    src/3d/mesh.cpp
-    src/3d/mesh_generation.hpp
-    src/3d/mesh_generation.cpp
     src/3d/texturing.hpp
     src/3d/texturing.cpp
-    src/3d/gpu_data_reference.hpp
-    src/3d/mesh_instance.hpp
-    src/3d/mesh_storage.hpp
-    src/3d/texture_storage.hpp
-    src/3d/shader_cache.hpp
-    src/3d/gpu_storage.hpp
-    src/3d/gpu_cache.hpp
-    src/3d/gpu_cache.cpp
-    src/3d/drawlist.hpp
-    src/3d/render_target.hpp
-    src/3d/renderer.hpp
     src/3d/cameras.hpp
     src/3d/cameras.cpp
-    src/3d/backend.cpp
+    src/3d/shaders.hpp
+    src/3d/3d.hpp
+    src/3d/3d.cpp
 
     src/opensim_bindings/simbody_geometry_visitor.hpp
     src/opensim_bindings/simbody_geometry_visitor.cpp
@@ -167,11 +152,9 @@ add_executable(osc
     src/screens/splash_screen.hpp
     src/screens/splash_screen.cpp
 
-    src/utils/bitwise_algs.hpp
     src/utils/concurrency.hpp
     src/utils/shims.hpp
     src/utils/sdl_wrapper.hpp
-    src/utils/sdl_wrapper.cpp
     src/utils/os.hpp
     src/utils/os.cpp
     src/utils/scope_guard.hpp
@@ -179,7 +162,6 @@ add_executable(osc
     src/utils/file_change_poller.hpp
     src/utils/helpers.hpp
     src/utils/helpers.cpp
-    src/utils/sfinae.hpp
 
     src/config.hpp
     src/config.cpp

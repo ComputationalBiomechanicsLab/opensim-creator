@@ -2,11 +2,12 @@
 
 #include "osc_build_config.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/3d.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/screens/error_screen.hpp"
 #include "src/screens/screen.hpp"
-#include "src/utils/bitwise_algs.hpp"
+#include "src/utils/helpers.hpp"
 #include "src/utils/os.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 
@@ -255,15 +256,16 @@ static void glOnDebugMessage(
     throw std::runtime_error{std::move(ss).str()};
 }
 
-static int get_max_multisamples() {
+static short get_max_multisamples() {
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
 
     // OpenGL spec: "the value must be at least 4"
     // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
     OSC_ASSERT(v > 4);
+    OSC_ASSERT(v < 1<<16);
 
-    return v;
+    return static_cast<short>(v);
 }
 
 static bool is_in_opengl_debug_mode() {
@@ -352,29 +354,97 @@ static int highest_refresh_rate_display() {
 class Application::Impl final {
 public:
     // SDL's application-wide context (inits video subsystem etc.)
-    sdl::Context context;
+    //
+    // initialized for video only (no sound)
+    sdl::Context context{SDL_INIT_VIDEO};
 
     // SDL active window
-    sdl::Window window;
+    //
+    // initialized as a standard SDL window /w OpenGL support
+    sdl::Window window{[]() {
+        log::info("initializing main application (OpenGL 3.3) window");
+
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+        // careful about setting resolution, position, etc. - some people have *very* shitty
+        // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
+        // be <700 px high)
+        static constexpr char const* title = "OpenSim Creator v" OSC_VERSION_STRING;
+        static constexpr int x = SDL_WINDOWPOS_CENTERED;
+        static constexpr int y = SDL_WINDOWPOS_CENTERED;
+        static constexpr int width = 800;
+        static constexpr int height = 600;
+        static constexpr Uint32 flags =
+            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
+
+        return sdl::CreateWindoww(title, x, y, width, height, flags);
+    }()};
 
     // SDL OpenGL context
-    sdl::GLContext gl;
+    //
+    // initialized using standard OpenGL flags (glew init, enable depth test, etc.)
+    sdl::GLContext gl{[& window = this->window]() {
+        log::info("initializing application OpenGL context");
 
-    // the maximum num multisamples that the OpenGL backend supports
-    int max_samples = 1;
+        sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
-    // num multisamples that multisampled renderers should use
-    static constexpr int default_samples = 8;
-    int samples = 1;
+        // enable the context
+        if (SDL_GL_MakeCurrent(window, ctx) != 0) {
+            throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
+        }
+
+        // enable vsync by default
+        //
+        // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
+        // on *constrained* systems (e.g. laptops, which the majority of users are using)
+        if (SDL_GL_SetSwapInterval(-1) != 0) {
+            SDL_GL_SetSwapInterval(1);
+        }
+
+        // initialize GLEW
+        //
+        // effectively, enables the OpenGL API used by this application
+        if (auto err = glewInit(); err != GLEW_OK) {
+            std::stringstream ss;
+            ss << "glewInit() failed: ";
+            ss << glewGetErrorString(err);
+            throw std::runtime_error{ss.str()};
+        }
+
+        // depth testing used to ensure geometry overlaps correctly
+        glEnable(GL_DEPTH_TEST);
+
+        // MSXAA is used to smooth out the model
+        glEnable(GL_MULTISAMPLE);
+
+        // all vertices in the render are backface-culled
+        glEnable(GL_CULL_FACE);
+
+        // print OpenGL information if in debug mode
+        log::info(
+            "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
+            glGetString(GL_VENDOR),
+            glGetString(GL_RENDERER),
+            glGetString(GL_VERSION),
+            glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+        return ctx;
+    }()};
+
+    // GPU storage (cache)
+    osc::GPU_storage gpu_storage{};
 
     // ImGui application-wide context
-    igx::Context imgui_ctx;
+    igx::Context imgui_ctx{};
 
     // ImGui SDL-specific initialization
-    igx::SDL2_Context imgui_sdl2_ctx;
+    igx::SDL2_Context imgui_sdl2_ctx{window, gl};
 
     // ImGui OpenGL-specific initialization
-    igx::OpenGL3_Context imgui_sdl2_ogl2_ctx;
+    igx::OpenGL3_Context imgui_sdl2_ogl2_ctx{OSC_GLSL_VERSION};
 
     // the current screen being drawn by the application
     std::unique_ptr<Screen> current_screen = nullptr;
@@ -384,6 +454,13 @@ public:
     // this is typically set when a screen calls `request_transition`
     std::unique_ptr<Screen> requested_screen = nullptr;
 
+    // the maximum num multisamples that the OpenGL backend supports
+    short max_samples = get_max_multisamples();
+
+    // num multisamples that multisampled renderers should use
+    static constexpr short default_samples = 8;
+    short samples = std::min(max_samples, default_samples);
+
     // flag that is set whenever a screen requests that the application should quit
     bool should_quit = false;
 
@@ -392,94 +469,6 @@ public:
     // downstream, this flag is used to determine whether to install OpenGL debug handles, draw
     // debug quads, debug UI elements, etc.
     bool debug_mode = false;
-
-    Impl() :
-        // initialize SDL library
-        context{SDL_INIT_VIDEO},
-
-        // initialize minimal SDL Window with OpenGL support
-        window{[]() {
-            log::info("initializing main application (OpenGL 3.3) window");
-
-            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-            OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
-            // careful about setting resolution, position, etc. - some people have *very* shitty
-            // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
-            // be <700 px high)
-            static constexpr char const* title = "osc";
-            static constexpr int x = SDL_WINDOWPOS_CENTERED;
-            static constexpr int y = SDL_WINDOWPOS_CENTERED;
-            static constexpr int width = 800;
-            static constexpr int height = 600;
-            static constexpr Uint32 flags =
-                SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-
-            return sdl::CreateWindoww(title, x, y, width, height, flags);
-        }()},
-
-        // initialize GL context for the application window
-        gl{[& window = this->window]() {
-            log::info("initializing application OpenGL context");
-
-            sdl::GLContext ctx = sdl::GL_CreateContext(window);
-
-            // enable the context
-            if (SDL_GL_MakeCurrent(window, ctx) != 0) {
-                throw std::runtime_error{"SDL_GL_MakeCurrent failed: "s + SDL_GetError()};
-            }
-
-            // enable vsync by default
-            //
-            // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
-            // on *constrained* systems (e.g. laptops, which the majority of users are using)
-            if (SDL_GL_SetSwapInterval(-1) != 0) {
-                SDL_GL_SetSwapInterval(1);
-            }
-
-            // initialize GLEW
-            //
-            // effectively, enables the OpenGL API used by this application
-            if (auto err = glewInit(); err != GLEW_OK) {
-                std::stringstream ss;
-                ss << "glewInit() failed: ";
-                ss << glewGetErrorString(err);
-                throw std::runtime_error{ss.str()};
-            }
-
-            // depth testing used to ensure geometry overlaps correctly
-            glEnable(GL_DEPTH_TEST);
-
-            // MSXAA is used to smooth out the model
-            glEnable(GL_MULTISAMPLE);
-
-            // all vertices in the render are backface-culled
-            glEnable(GL_CULL_FACE);
-
-            // print OpenGL information if in debug mode
-            log::info(
-                "OpenGL initialized: info: %s, %s, (%s), GLSL %s",
-                glGetString(GL_VENDOR),
-                glGetString(GL_RENDERER),
-                glGetString(GL_VERSION),
-                glGetString(GL_SHADING_LANGUAGE_VERSION));
-
-            return ctx;
-        }()},
-
-        // find out the maximum number of samples the OpenGL backend supports
-        max_samples{get_max_multisamples()},
-
-        // set the number of samples multisampled renderers in osc should use
-        samples{std::min(max_samples, default_samples)},
-
-        // initialize ImGui
-        imgui_ctx{},
-        imgui_sdl2_ctx{window, gl},
-        imgui_sdl2_ogl2_ctx{OSC_GLSL_VERSION} {
-    }
 
     void internal_start_render_loop(std::unique_ptr<Screen> s) {
         current_screen = std::move(s);
@@ -785,4 +774,8 @@ void Application::enable_vsync() {
 
 void Application::disable_vsync() {
     SDL_GL_SetSwapInterval(0);
+}
+
+osc::GPU_storage& Application::get_gpu_storage() noexcept {
+    return impl->gpu_storage;
 }

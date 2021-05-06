@@ -7,6 +7,7 @@
 
 namespace osc {
     class Screen;
+    struct GPU_storage;
 }
 
 // application: top-level application state
@@ -85,5 +86,7 @@ namespace osc {
         [[nodiscard]] bool is_vsync_enabled() const noexcept;
         void enable_vsync();
         void disable_vsync();
+
+        GPU_storage& get_gpu_storage() noexcept;
     };
 }

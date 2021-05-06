@@ -7,7 +7,7 @@
 
 uniform mat4 uProjMat;
 uniform mat4 uViewMat;
-uniform vec3 uLightPos;
+uniform vec3 uLightDir;
 uniform vec3 uLightColor;
 uniform vec3 uViewPos;
 uniform bool uSkipVP = false;
@@ -41,8 +41,8 @@ void main() {
 
     vec3 normalDir = normalize(aNormalMat * aNormal);
     vec3 fragPos = vec3(modelMat * vec4(aLocation, 1.0));
-    vec3 frag2lightDir = normalize(uLightPos - fragPos);
     vec3 frag2viewDir = normalize(uViewPos - fragPos);
+    vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
 
     vec3 ambientComponent = ambientStrength * uLightColor;
 
