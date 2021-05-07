@@ -234,7 +234,7 @@ namespace {
     };
 
     struct Integrator_stat_sparkline final {
-        using extrator_fn = float(Simulation_stats const&);
+        using extrator_fn = float(fd::Stats const&);
 
         Evenly_spaced_sparkline<256> plot{};
         const char* name;
@@ -249,7 +249,7 @@ namespace {
             plot.clear();
         }
 
-        void push_datapoint(float x, Simulation_stats const& stats) {
+        void push_datapoint(float x, fd::Stats const& stats) {
             plot.push_datapoint(x, extractor(stats));
         }
 
@@ -344,38 +344,30 @@ namespace {
     };
 
     struct Simulator_tab final {
-        std::optional<Fd_simulation> simulator;
+        std::optional<fd::Simulation> simulator;
 
         Evenly_spaced_sparkline<256> prescribeQcalls;
         Evenly_spaced_sparkline<256> simTimeDividedByWallTime;
 
         std::array<Integrator_stat_sparkline, 15> integrator_plots{
-            {{"accuracyInUse", [](Simulation_stats const& is) { return static_cast<float>(is.accuracyInUse); }},
-             {"predictedNextStepSize",
-              [](Simulation_stats const& is) { return static_cast<float>(is.predictedNextStepSize); }},
-             {"numStepsAttempted", [](Simulation_stats const& is) { return static_cast<float>(is.numStepsAttempted); }},
-             {"numStepsTaken", [](Simulation_stats const& is) { return static_cast<float>(is.numStepsTaken); }},
-             {"numRealizations", [](Simulation_stats const& is) { return static_cast<float>(is.numRealizations); }},
-             {"numQProjections", [](Simulation_stats const& is) { return static_cast<float>(is.numQProjections); }},
-             {"numUProjections", [](Simulation_stats const& is) { return static_cast<float>(is.numUProjections); }},
-             {"numErrorTestFailures",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numErrorTestFailures); }},
-             {"numConvergenceTestFailures",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numConvergenceTestFailures); }},
-             {"numRealizationFailures",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numRealizationFailures); }},
-             {"numQProjectionFailures",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numQProjectionFailures); }},
-             {"numProjectionFailures",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numProjectionFailures); }},
-             {"numConvergentIterations",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numConvergentIterations); }},
-             {"numDivergentIterations",
-              [](Simulation_stats const& is) { return static_cast<float>(is.numDivergentIterations); }},
-             {"numIterations", [](Simulation_stats const& is) { return static_cast<float>(is.numIterations); }}}};
+            {{"accuracyInUse", [](fd::Stats const& s) { return static_cast<float>(s.accuracyInUse); }},
+             {"predictedNextStepSize", [](fd::Stats const& s) { return static_cast<float>(s.predictedNextStepSize); }},
+             {"numStepsAttempted", [](fd::Stats const& s) { return static_cast<float>(s.numStepsAttempted); }},
+             {"numStepsTaken", [](fd::Stats const& s) { return static_cast<float>(s.numStepsTaken); }},
+             {"numRealizations", [](fd::Stats const& s) { return static_cast<float>(s.numRealizations); }},
+             {"numQProjections", [](fd::Stats const& s) { return static_cast<float>(s.numQProjections); }},
+             {"numUProjections", [](fd::Stats const& s) { return static_cast<float>(s.numUProjections); }},
+             {"numErrorTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numErrorTestFailures); }},
+             {"numConvergenceTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numConvergenceTestFailures); }},
+             {"numRealizationFailures", [](fd::Stats const& s) { return static_cast<float>(s.numRealizationFailures); }},
+             {"numQProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numQProjectionFailures); }},
+             {"numProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numProjectionFailures); }},
+             {"numConvergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numConvergentIterations); }},
+             {"numDivergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numDivergentIterations); }},
+             {"numIterations", [](fd::Stats const& s) { return static_cast<float>(s.numIterations); }}}};
 
         float fd_final_time = 0.4f;
-        IntegratorMethod integrator_method = IntegratorMethod_OpenSimManagerDefault;
+        fd::IntegratorMethod integrator_method = fd::IntegratorMethod_OpenSimManagerDefault;
 
         void clear() {
             prescribeQcalls.clear();
@@ -398,12 +390,12 @@ namespace {
             clear();
         }
 
-        void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st) {
+        void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st, fd::Stats const& stats) {
             if (!simulator) {
                 return;
             }
+
             // get latest integrator stats
-            Simulation_stats stats = simulator->stats();
             float sim_time = static_cast<float>(st.getTime());
             float wall_time = static_cast<float>(simulator->wall_duration().count());
 
@@ -427,10 +419,13 @@ namespace {
             } else {
                 ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
                 if (ImGui::Button("start [SPC]")) {
-                    Fd_simulation_params params{shown_model,
-                                                shown_state,
-                                                std::chrono::duration<double>{static_cast<double>(fd_final_time)},
-                                                integrator_method};
+                    fd::Params params{
+                        shown_model,
+                        shown_state,
+                        std::chrono::duration<double>{static_cast<double>(fd_final_time)},
+                        integrator_method
+                    };
+
                     simulator.emplace(std::move(params));
                 }
                 ImGui::PopStyleColor();
@@ -456,9 +451,9 @@ namespace {
                 if (ImGui::Combo(
                         "##integration method combo",
                         &method,
-                        integrator_method_names,
-                        IntegratorMethod_NumIntegratorMethods)) {
-                    integrator_method = static_cast<IntegratorMethod>(method);
+                        fd::integrator_method_names,
+                        fd::IntegratorMethod_NumIntegratorMethods)) {
+                    integrator_method = static_cast<fd::IntegratorMethod>(method);
                 }
             }
             ImGui::Columns();
@@ -471,65 +466,65 @@ namespace {
                 double frac_completed = sim_secs / simulator->sim_final_time();
 
                 ImGui::Dummy(ImVec2{0.0f, 20.0f});
-                ImGui::Text("simulator stats:");
+                ImGui::TextUnformatted("simulator stats:");
                 ImGui::Dummy(ImVec2{0.0f, 2.5f});
                 ImGui::Separator();
 
                 ImGui::Columns(2);
-                ImGui::Text("status");
+                ImGui::TextUnformatted("status");
                 ImGui::NextColumn();
-                ImGui::Text("%s", simulator->status_description());
+                ImGui::TextUnformatted(simulator->status_description());
                 ImGui::NextColumn();
 
-                ImGui::Text("progress");
+                ImGui::TextUnformatted("progress");
                 ImGui::NextColumn();
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 ImGui::ProgressBar(static_cast<float>(frac_completed), ImVec2(0.0f, 0.0f));
                 ImGui::NextColumn();
 
-                ImGui::Text("simulation time");
+                ImGui::TextUnformatted("simulation time");
                 ImGui::NextColumn();
                 ImGui::Text("%.2f s", sim_secs.count());
                 ImGui::NextColumn();
 
-                ImGui::Text("wall time");
+                ImGui::TextUnformatted("wall time");
                 ImGui::NextColumn();
                 ImGui::Text("%.2f s", wall_secs);
                 ImGui::NextColumn();
 
-                ImGui::Text("sim time / wall time (avg.)");
+                ImGui::TextUnformatted("sim time / wall time (avg.)");
                 ImGui::NextColumn();
                 ImGui::Text("%.3f", (sim_secs / wall_secs).count());
                 ImGui::NextColumn();
 
-                ImGui::Text("`SimTK::State`s popped");
+                ImGui::TextUnformatted("Reports popped");
                 ImGui::NextColumn();
-                ImGui::Text("%i", simulator->num_states_popped());
+                ImGui::Text("%i", simulator->num_latest_reports_popped());
                 ImGui::NextColumn();
 
                 ImGui::Columns();
 
                 ImGui::Dummy({0.0f, 20.0f});
-                ImGui::Text("plots:");
+                ImGui::TextUnformatted("plots:");
                 ImGui::Dummy({0.0f, 2.5f});
                 ImGui::Separator();
 
                 ImGui::Columns(2);
 
-                ImGui::Text("prescribeQcalls");
+                ImGui::TextUnformatted("prescribeQcalls");
                 ImGui::NextColumn();
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 prescribeQcalls.draw(30.0f);
                 ImGui::NextColumn();
 
-                ImGui::Text("sim time / wall time");
+                ImGui::TextUnformatted("sim time / wall time");
                 ImGui::NextColumn();
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                 simTimeDividedByWallTime.draw(30.0f);
                 ImGui::NextColumn();
 
                 for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
-                    ImGui::Text("%s", integrator_plot.name);
+                    ImGui::TextUnformatted(integrator_plot.name);
                     ImGui::NextColumn();
                     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
                     integrator_plot.draw(30.0f);
@@ -583,20 +578,13 @@ namespace {
 }
 
 struct Show_model_screen::Impl final {
-
-    // scratch: shared space that has no content guarantees
-    struct {
-        char text[1024];
-    } scratch;
-
     std::unique_ptr<OpenSim::Model> model;
-    std::unique_ptr<SimTK::State> latest_state;
+    SimTK::State latest_state;
 
     Selected_component selected_component;
-    std::array<Model_viewer_widget, 1> model_viewers = {
+    std::array<Model_viewer_widget, 2> model_viewers = {
         Model_viewer_widget{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
-        // Model_viewer_widget{cache, ModelViewerWidgetFlags_Default |
-        // ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        Model_viewer_widget{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
     };
     OpenSim::Component const* current_hover = nullptr;
 
@@ -617,9 +605,9 @@ struct Show_model_screen::Impl final {
         model{std::move(_model)},
         latest_state{[this]() {
             model->finalizeFromProperties();
-            auto p = std::make_unique<SimTK::State>(model->initSystem());
-            model->realizeReport(*p);
-            return p;
+            SimTK::State s = model->initSystem();
+            model->realizeReport(s);
+            return s;
         }()},
         file_poller{1000ms, model->getDocumentFileName()} {
     }
@@ -636,19 +624,25 @@ struct Show_model_screen::Impl final {
 
     void action_reset_model_to_initial_state() {
         // R: reset the model to its initial state
-        *latest_state = model->initSystem();
+        latest_state = model->initSystem();
         on_user_edited_state();
     }
 
     void action_toggle_sim_start_or_stop() {
-        if (simulator_tab.simulator && simulator_tab.simulator->is_running()) {
+        bool sim_running =
+            simulator_tab.simulator && simulator_tab.simulator->is_running();
+
+        if (sim_running) {
             simulator_tab.simulator->request_stop();
         } else {
-            simulator_tab.simulator.emplace(
-                Fd_simulation_params{*model,
-                                     *latest_state,
-                                     std::chrono::duration<double>{static_cast<double>(simulator_tab.fd_final_time)},
-                                     simulator_tab.integrator_method});
+            fd::Params p{
+                *model,
+                latest_state,
+                std::chrono::duration<double>{static_cast<double>(simulator_tab.fd_final_time)},
+                simulator_tab.integrator_method
+            };
+
+            simulator_tab.simulator.emplace(std::move(p));
         }
     }
 
@@ -754,15 +748,15 @@ struct Show_model_screen::Impl final {
         // grab the latest state (if any) from the simulator and (if updated)
         // update the UI to reflect the latest state
         if (simulator_tab.simulator) {
-            std::unique_ptr<SimTK::State> latest = simulator_tab.simulator->try_pop_state();
+            std::unique_ptr<fd::Report> latest_report = simulator_tab.simulator->try_pop_latest_report();
 
-            if (latest) {
-                latest_state = std::move(latest);
+            if (latest_report) {
+                latest_state = std::move(latest_report->state);
 
-                model->realizeReport(*latest_state);
-                outputs_tab.on_ui_state_update(*latest_state);
-                simulator_tab.on_ui_state_update(*model, *latest_state);
-                selected_component.on_ui_state_update(*latest_state);
+                model->realizeReport(latest_state);
+                outputs_tab.on_ui_state_update(latest_state);
+                simulator_tab.on_ui_state_update(*model, latest_state, latest_report->stats);
+                selected_component.on_ui_state_update(latest_state);
             }
         }
 
@@ -792,15 +786,15 @@ struct Show_model_screen::Impl final {
         outputs_tab.on_user_edited_model();
         simulator_tab.on_user_edited_model();
 
-        *latest_state = model->initSystem();
-        model->realizeReport(*latest_state);
+        latest_state = model->initSystem();
+        model->realizeReport(latest_state);
     }
 
     void on_user_edited_state() {
         // kill the simulator whenever a user-initiated state change happens
         simulator_tab.simulator = std::nullopt;
 
-        model->realizeReport(*latest_state);
+        model->realizeReport(latest_state);
 
         outputs_tab.on_user_edited_state();
         simulator_tab.on_user_edited_state();
@@ -881,7 +875,7 @@ struct Show_model_screen::Impl final {
             };
 
             viewer.draw(
-                buf, *model, *latest_state, selected_component, current_hover, on_selection_change, on_hover_change);
+                buf, *model, latest_state, selected_component, current_hover, on_selection_change, on_hover_change);
         }
 
         if (ImGui::Begin("Hierarchy")) {
@@ -901,7 +895,7 @@ struct Show_model_screen::Impl final {
         ImGui::End();
 
         if (ImGui::Begin("Muscles")) {
-            auto resp = muscles_table::draw(muscles_table_st, *model, *latest_state);
+            auto resp = muscles_table::draw(muscles_table_st, *model, latest_state);
             switch (resp.type) {
             case muscles_table::Response::SelectionChanged:
                 selected_component = resp.ptr;
@@ -931,14 +925,14 @@ struct Show_model_screen::Impl final {
         ImGui::End();
 
         if (ImGui::Begin("Coordinates")) {
-            if (ui::coordinate_editor::draw(coords_tab_st, *model, *latest_state)) {
+            if (ui::coordinate_editor::draw(coords_tab_st, *model, latest_state)) {
                 on_user_edited_state();
             }
         }
         ImGui::End();
 
         if (ImGui::Begin("Simulate")) {
-            simulator_tab.draw(selected_component, *model, *latest_state);
+            simulator_tab.draw(selected_component, *model, latest_state);
         }
         ImGui::End();
 
@@ -953,7 +947,7 @@ struct Show_model_screen::Impl final {
         plot->x_end = static_cast<float>(pair.second->getRangeMax());
 
         // populate y values
-        compute_moment_arms(*pair.first, *latest_state, *pair.second, plot->y_vals.data(), plot->y_vals.size());
+        compute_moment_arms(*pair.first, latest_state, *pair.second, plot->y_vals.data(), plot->y_vals.size());
         float min = std::numeric_limits<float>::max();
         float max = std::numeric_limits<float>::min();
         for (float v : plot->y_vals) {
@@ -1032,17 +1026,19 @@ struct Show_model_screen::Impl final {
             }
         }
 
+        char buf[1024];
+
         // apply user filters
         {
             auto it = std::remove_if(
                 outputs_tab.available.begin(), outputs_tab.available.end(), [&](OpenSim::AbstractOutput const* ao) {
                     std::snprintf(
-                        scratch.text,
-                        sizeof(scratch.text),
+                        buf,
+                        sizeof(buf),
                         "%s/%s",
                         ao->getOwner().getName().c_str(),
                         ao->getName().c_str());
-                    return std::strstr(scratch.text, outputs_tab.filter) == nullptr;
+                    return std::strstr(buf, outputs_tab.filter) == nullptr;
                 });
             outputs_tab.available.erase(it, outputs_tab.available.end());
         }
@@ -1056,12 +1052,12 @@ struct Show_model_screen::Impl final {
         if (ImGui::BeginChild("AvailableOutputsSelection", ImVec2(0.0f, 150.0f), true, window_flags)) {
             for (auto const& ao : outputs_tab.available) {
                 snprintf(
-                    scratch.text,
-                    sizeof(scratch.text),
+                    buf,
+                    sizeof(buf),
                     "%s/%s",
                     ao->getOwner().getName().c_str(),
                     ao->getName().c_str());
-                if (ImGui::Selectable(scratch.text, ao == outputs_tab.selected)) {
+                if (ImGui::Selectable(buf, ao == outputs_tab.selected)) {
                     outputs_tab.selected = ao;
                 }
             }
@@ -1093,7 +1089,7 @@ struct Show_model_screen::Impl final {
             ImGui::Text("watches:");
             ImGui::Separator();
             for (OpenSim::AbstractOutput const* ao : outputs_tab.watches) {
-                std::string v = ao->getValueAsString(*latest_state);
+                std::string v = ao->getValueAsString(latest_state);
                 ImGui::Text("    %s/%s: %s", ao->getOwner().getName().c_str(), ao->getName().c_str(), v.c_str());
             }
         }
@@ -1124,7 +1120,7 @@ struct Show_model_screen::Impl final {
         }
 
         // draw standard selection info
-        if (auto resp = ui::component_details::draw(*latest_state, selected_component.get());
+        if (auto resp = ui::component_details::draw(latest_state, selected_component.get());
             resp.type == component_details::SelectionChanged) {
             selected_component = resp.ptr;
         }
@@ -1143,7 +1139,7 @@ struct Show_model_screen::Impl final {
 
                 ImGui::Text("%s", ao->getName().c_str());
                 ImGui::PushStyleColor(ImGuiCol_Text, 0xaaaaaaaa);
-                ImGui::Text("%s", ao->getValueAsString(*latest_state).c_str());
+                ImGui::Text("%s", ao->getValueAsString(latest_state).c_str());
                 ImGui::PopStyleColor();
                 ImGui::NextColumn();
 

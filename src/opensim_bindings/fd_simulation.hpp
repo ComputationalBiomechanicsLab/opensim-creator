@@ -1,18 +1,17 @@
 #pragma once
 
+#include <SimTKcommon.h>
+
 #include <chrono>
 #include <memory>
-
-namespace SimTK {
-    class State;
-}
 
 namespace OpenSim {
     class Model;
 }
 
-namespace osc {
+namespace osc::fd {
 
+    // available integration methods
     enum IntegratorMethod {
         IntegratorMethod_OpenSimManagerDefault = 0,
         IntegratorMethod_ExplicitEuler,
@@ -29,12 +28,12 @@ namespace osc {
     extern char const* const integrator_method_names[IntegratorMethod_NumIntegratorMethods];
 
     // input parameters for a forward-dynamic simulation
-    struct Fd_simulation_params final {
+    struct Params final {
         // model to simulate
-        std::unique_ptr<OpenSim::Model> model;
+        std::unique_ptr<OpenSim::Model> model = nullptr;
 
         // initial state when the simulation starts
-        std::unique_ptr<SimTK::State> state;
+        std::unique_ptr<SimTK::State> state = nullptr;
 
         // final time for the simulation
         std::chrono::duration<double> final_time{10.0};
@@ -83,7 +82,7 @@ namespace osc {
         // is set
         bool update_latest_state_on_every_step = true;
 
-        Fd_simulation_params(
+        Params(
             OpenSim::Model const& _model,
             SimTK::State const& _state,
             std::chrono::duration<double> _final_time,
@@ -96,12 +95,8 @@ namespace osc {
         }
     };
 
-    // aggregated stats for a simulation
-    struct Simulation_stats final {
-        // top-level stats
-        std::chrono::duration<double> time;
-        float ui_overhead_estimated_ratio = 0.0f;
-
+    // stats collected whenever the simulation updates/reports
+    struct Stats final {
         // integrator stats
         float accuracyInUse = 0.0f;
         float predictedNextStepSize = 0.0f;
@@ -124,52 +119,76 @@ namespace osc {
         int numPrescribeQcalls = 0;
     };
 
-    // a simulator that runs a forward-dynamic simulation on a background thread
-    class Fd_simulation final {
+    // report produced whenever
+    //
+    // - the "latest state" is empty (for .try_pop_latest_report)
+    // - the next reporting interval is hit (for .pop_regular_reports)
+    struct Report final {
+        SimTK::State state;
+        Stats stats;
+    };
+
+    // fd simulation that immediately starts running on a background thread
+    class Simulation final {
         struct Impl;
         std::unique_ptr<Impl> impl;
 
     public:
         // starts the simulation on construction
-        Fd_simulation(Fd_simulation_params);
+        Simulation(Params);
 
         // automatically cancels + joins the simulation thread
-        ~Fd_simulation() noexcept;
-
-        // returns the latest state available state, populated by the sim thread, or
-        // `nullptr` if no state is available.
         //
-        // internally, the simulator's state is copied into a "message space" that the simulator
-        // thread will fill whenever it sees that the space is empty. Therefore, the state that
-        // is popped is *not* the latest state, but is effectively the "the first state after the
-        // last successful pop"
-        //
-        // the reason why it isn't guaranteed to be the latest state is an optimization: the
-        // simulator thread only has to do extra work if some other thread is continually popping
-        // states off of it. So if you do not call this, then it has (almost) no overhead.
-        [[nodiscard]] std::unique_ptr<SimTK::State> try_pop_state();
-        [[nodiscard]] int num_states_popped() const noexcept;
+        // rougly equivalent to calling .stop() on the simulator
+        ~Simulation() noexcept;
 
-        // below: these getters reflect the latest state of the simulation, accurate
-        // to within one integration step (unlike state popping, which has the listed
-        // caveats)
+        // tries to pop the latest report from the simulator
+        //
+        // returns std::nullopt if the simulator thread hasn't populated a report
+        // yet (i.e. if an integration/reporting step hasn't happened since the
+        // last call)
+        [[nodiscard]] std::unique_ptr<Report> try_pop_latest_report();
+        [[nodiscard]] int num_latest_reports_popped() const noexcept;
+
+        // these values are accurate to within one report, or integration step
+        // (because the backend can only update them that often)
 
         [[nodiscard]] bool is_running() const noexcept;
         [[nodiscard]] std::chrono::duration<double> wall_duration() const noexcept;
         [[nodiscard]] std::chrono::duration<double> sim_current_time() const noexcept;
         [[nodiscard]] std::chrono::duration<double> sim_final_time() const noexcept;
         [[nodiscard]] char const* status_description() const noexcept;
-        [[nodiscard]] Simulation_stats stats() const noexcept;
 
-        // requests that the simulator stop
+        // pushes regular reports onto the end of the outparam and returns the number
+        // of reports popped
         //
-        // - this is only a *request*: the simulation may still be running after this method
-        //   returns because it may take a nonzero amount of time to propagate the request
+        // - "regular reports" means the reports that are collected during the sim
+        //   at `params.reporting_interval` intervals
+        //
+        // - this only pops the number of reports that the simulator has collected
+        //   up to now. It may pop zero reports (e.g. if the caller pops more
+        //   frequently than the simulator can report)
+        //
+        // - the sequence of reports, if all reports are popped, should be:
+        //
+        //       t0
+        //       t0 + params.reporting_interval
+        //       t0 + 2*params.reporting_interval
+        //       ... t0 + n*params.reporting_interval ...
+        //       tfinal (always reported - even if it is not a regular part of the sequence)
+        int pop_regular_reports(std::vector<std::unique_ptr<Report>>& append_out);
+
+        // TODO: pop regular reports
+
+        // requests that the simulator stops
+        //
+        // this is only a request: the simulation may still be running some time after
+        // this method returns
         void request_stop() noexcept;
 
-        // stop the simulation
+        // synchronously stop the simulation
         //
-        // this method waits until the simulation stops
+        // this method blocks until the simulation thread stops completely
         void stop() noexcept;
     };
 }
