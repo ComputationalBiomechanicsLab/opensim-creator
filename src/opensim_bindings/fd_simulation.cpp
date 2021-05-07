@@ -110,7 +110,7 @@ static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::In
     double scaled_epsilon =
         std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
 
-    return std::abs(a - b) < (5000000000.0 * scaled_epsilon);
+    return std::abs(a - b) < scaled_epsilon;
 }
 
 static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
