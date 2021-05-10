@@ -4,6 +4,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <imgui.h>
 
 #include <algorithm>
@@ -11,132 +12,227 @@
 #include <cstddef>
 #include <string>
 
+static size_t framegeom_hash = typeid(OpenSim::FrameGeometry).hash_code();
+static size_t wos_hash = typeid(OpenSim::WrapObjectSet).hash_code();
+static constexpr size_t max_depth = 16;
+
+// poor-man's abstraction for a constant-sized array
+template<typename T, size_t N>
+struct Sized_array final {
+    static_assert(std::is_trivially_destructible_v<T>);
+
+    std::array<T, N> els;
+    size_t n = 0;
+
+    Sized_array& operator=(Sized_array const& rhs) {
+        std::copy(rhs.begin(), rhs.end(), els.begin());
+        n = rhs.size();
+        return *this;
+    }
+
+    void push_back(T v) {
+        if (n >= N) {
+            throw std::runtime_error{"cannot render a component_hierarchy widget: the Model/Component tree is too deep"};
+        }
+        els[n++] = v;
+    }
+
+    auto begin() const -> decltype(els.begin()) {
+        return els.begin();
+    }
+
+    auto begin() -> decltype(els.begin()) {
+        return els.begin();
+    }
+
+    auto end() const -> decltype(els.begin() + n) {
+        return els.begin() + n;
+    }
+
+    auto end() -> decltype(els.begin() + n) {
+        return els.begin() + n;
+    }
+
+    size_t size() const {
+        return n;
+    }
+
+    bool empty() const {
+        return n == 0;
+    }
+
+    void resize(size_t newsize) {
+        n = newsize;
+    }
+
+    void clear() {
+        n = 0;
+    }
+
+    T& operator[](size_t n) {
+        return els[n];
+    }
+
+    T const& operator[](size_t n) const {
+        return els[n];
+    }
+};
+
+// appends components to the outparam with a sequence of Open
+// that lead from `root` to `cr`
+static void component_path_ptrs(OpenSim::Component const* root,
+                                OpenSim::Component const* cr,
+                                Sized_array<OpenSim::Component const*, max_depth>& out) {
+    if (!cr) {
+        return;
+    }
+
+    // child --> parent
+    OpenSim::Component const* c = cr;
+    while (c != root && c->hasOwner()) {
+        out.push_back(c);
+        c = &c->getOwner();
+    }
+
+    // parent --> child
+    std::reverse(out.begin(), out.end());
+}
+
 osc::ui::component_hierarchy::Response osc::ui::component_hierarchy::draw(
     OpenSim::Component const* root,
     OpenSim::Component const* current_selection,
     OpenSim::Component const* current_hover) {
 
-    OpenSim::Component const* selection_top_level_parent = nullptr;
-    if (current_selection) {
-        OpenSim::Component const* c = current_selection;
-        while (c != root && &c->getOwner() != root) {
-            c = &c->getOwner();
-        }
-        selection_top_level_parent = c;
-    }
+    // precompute selection + hover paths
+    //
+    // this is so that we can query whether something in the hierarchy
+    // intersects the selection/hover path (for highlighting, auto-opening,
+    // etc.)
+    Sized_array<OpenSim::Component const*, max_depth> selection_path;
+    component_path_ptrs(root, current_selection, selection_path);
+    Sized_array<OpenSim::Component const*, max_depth> hover_path;
+    component_path_ptrs(root, current_hover, hover_path);
 
-    std::string swap;
-    std::array<OpenSim::Component const*, 32> prev_path_els;
-    size_t prev_num_path_els = 0;
-    int id = 0;
-    bool header_showing = false;
-
+    Sized_array<OpenSim::Component const*, max_depth> prev;
+    OpenSim::Component const* prev_component = nullptr;
+    Sized_array<OpenSim::Component const*, max_depth> cur;
+    Sized_array<bool, max_depth> enabled_nodes;
+    int imgui_id = 0;
     Response response;
 
+    // this implementation is strongly dependent on OpenSim's component
+    // list traversal algorithm, which is a depth-first traversal that
+    // stops at each parent *before* traversing
+
     for (OpenSim::Component const& cr : root->getComponentList()) {
-
-        // break the path up into individual components
-        std::array<OpenSim::Component const*, 32> path_els;
-        static_assert(path_els.size() == prev_path_els.size());
-        size_t num_path_els = 0;
+        // apply filters
         {
-            // push each element in the tree into a stack (child --> parent)
-            OpenSim::Component const* c = &cr;
-            while (c != root && c->hasOwner()) {
-                OSC_ASSERT(num_path_els < path_els.size());
-                path_els[num_path_els++] = c;
-                c = &c->getOwner();
-            }
-
-            // reverse the stack to yield a linear sequence (parent --> child)
-            std::reverse(path_els.begin(), path_els.begin() + num_path_els);
-        }
-
-        // figure out the disjoint location between this path and the previous one
-        size_t disjoint_begin = 0;
-        {
-            size_t len = std::min(prev_num_path_els, num_path_els);
-            while (disjoint_begin < len && prev_path_els[disjoint_begin] == path_els[disjoint_begin]) {
-                ++disjoint_begin;
+            auto cr_hash = typeid(cr).hash_code();
+            if (cr_hash == framegeom_hash || cr_hash == wos_hash) {
+                continue;
             }
         }
 
-        if (bool is_root_header = disjoint_begin == 0; is_root_header) {
-            if (header_showing) {
-                ImGui::TreePop();  // from last push
-            }
+        // compute path
+        component_path_ptrs(root, &cr, cur);
 
-            OpenSim::Component const* comp = path_els[0];
+        // everything we are doing next assumes there is a *previous* path
+        if (prev.empty()) {
+            prev = cur;
+            prev_component = &cr;
+            cur.clear();
+            continue;
+        }
 
-            int style_pushes = 0;
-            if (comp == current_selection) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
-                ++style_pushes;
-            }
+        OSC_ASSERT_ALWAYS(enabled_nodes.size() == prev.size()-1);
 
-            if (comp == selection_top_level_parent) {
-                ImGui::SetNextItemOpen(true);
+        // figure out if `prev` should actually shown in the UI
+        //
+        // this is because the user can collapse parent headers etc.
+        bool prev_should_show =
+            !std::any_of(enabled_nodes.begin(), enabled_nodes.end(), [](bool b) { return !b; });
+
+        if (prev_should_show) {
+            // figure out if a component in the current selection/hover is
+            // the `prev` component being rendered, so that automatic tree
+            // opening etc. works
+
+
+            ImGui::PushID(imgui_id++);
+
+            bool prev_in_selection_pth =
+                std::find(selection_path.begin(), selection_path.end(), prev_component) != selection_path.end();
+
+            if (prev.size() < cur.size() || prev.size() == 1) {
+                if (prev_in_selection_pth) {
+                    ImGui::SetNextItemOpen(true);
+                }
+                int styles = 0;
+                if (prev_component == current_selection) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                    ++styles;
+                }
+
+                bool shown = ImGui::TreeNode(prev_component->getName().c_str());
+                enabled_nodes.push_back(shown);
+
+                ImGui::PopStyleColor(styles);
+            } else {
+
+                bool prev_in_hover_pth =
+                    std::find(hover_path.begin(), hover_path.end(), prev_component) != hover_path.end();
+
+                int styles = 0;
+                if (prev_in_hover_pth) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
+                    ++styles;
+                }
+                if (prev_in_selection_pth) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                    ++styles;
+                }
+
+                ImGui::TextUnformatted(prev_component->getName().c_str());
+
+                ImGui::PopStyleColor(styles);
             }
-            header_showing = ImGui::TreeNode(path_els[0]->getName().c_str());
-            ++disjoint_begin;
 
             if (ImGui::IsItemHovered()) {
                 response.type = HoverChanged;
-                response.ptr = comp;
+                response.ptr = prev_component;
             }
+
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                 response.type = SelectionChanged;
-                response.ptr = comp;
+                response.ptr = prev_component;
             }
 
-            ImGui::PopStyleColor(style_pushes);
+            ImGui::PopID();
+        } else {
+            if (prev.size() < cur.size()) {
+                enabled_nodes.push_back(false);
+            }
         }
 
-        if (header_showing) {
-            for (size_t i = disjoint_begin; i < num_path_els; ++i) {
-                OpenSim::Component const* comp = path_els[i];
-
-                swap.clear();
-                for (size_t k = 0; k < disjoint_begin; ++k) {
-                    swap += "  ";
+        if ((prev.size() > cur.size() || prev.size() == 1) && cur.size() > 0) {
+            for (auto it = enabled_nodes.begin() + (cur.size()-1); it != enabled_nodes.end(); ++it) {
+                if (*it) {
+                    ImGui::TreePop();
                 }
-                swap += comp->getName().c_str();
-
-                int style_pushes = 0;
-                if (comp == current_hover) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
-                    ++style_pushes;
-                }
-                if (comp == current_selection) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
-                    ++style_pushes;
-                }
-
-                ImGui::PushID(id++);
-                ImGui::Text("%s", swap.c_str());
-                ImGui::PopID();
-                if (ImGui::IsItemHovered()) {
-                    response.type = HoverChanged;
-                    response.ptr = comp;
-                }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    response.type = SelectionChanged;
-                    response.ptr = comp;
-                }
-
-                ImGui::PopStyleColor(style_pushes);
             }
+            enabled_nodes.resize(cur.size()-1);
         }
 
         // update loop invariants
-        {
-            std::copy(path_els.begin(), path_els.begin() + num_path_els, prev_path_els.begin());
-            prev_num_path_els = num_path_els;
-        }
+        prev = cur;
+        prev_component = &cr;
+        cur.clear();
     }
 
-    if (header_showing) {
-        ImGui::TreePop();
+    for (bool b : enabled_nodes) {
+        if (b) {
+            ImGui::TreePop();
+        }
     }
 
     return response;
