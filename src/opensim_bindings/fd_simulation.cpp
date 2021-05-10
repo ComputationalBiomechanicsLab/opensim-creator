@@ -3,6 +3,7 @@
 #include "src/log.hpp"
 #include "src/utils/concurrency.hpp"
 #include "src/utils/shims.hpp"
+#include "src/assertions.hpp"
 
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
@@ -362,6 +363,21 @@ char const* osc::fd::Simulation::status_description() const noexcept {
     default:
         return "UNKNOWN STATUS: DEV ERROR";
     }
+}
+
+int osc::fd::Simulation::pop_regular_reports(std::vector<std::unique_ptr<Report>>& append_out) {
+    auto guard = impl->shared->lock();
+
+    for (auto& ptr : guard->regular_reports) {
+        append_out.push_back(std::move(ptr));
+    }
+
+    OSC_ASSERT(guard->regular_reports.size() < std::numeric_limits<int>::max());
+    int popped = static_cast<int>(guard->regular_reports.size());
+
+    guard->regular_reports.clear();
+
+    return popped;
 }
 
 void osc::fd::Simulation::request_stop() noexcept {
