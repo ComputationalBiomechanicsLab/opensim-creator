@@ -56,9 +56,13 @@ using std::chrono_literals::operator""s;
 using std::chrono_literals::operator""ms;
 
 static void compute_moment_arms(
-    OpenSim::Muscle const& muscle, SimTK::State const& st, OpenSim::Coordinate const& c, float* out, size_t steps) {
+    OpenSim::Muscle const& muscle,
+    OpenSim::Coordinate const& c,
+    SimTK::State const& base_state,
+    float* out,
+    size_t n) {
 
-    SimTK::State state = st;
+    SimTK::State state = base_state;
     muscle.getModel().realizeReport(state);
 
     bool prev_locked = c.getLocked(state);
@@ -68,16 +72,24 @@ static void compute_moment_arms(
 
     double start = c.getRangeMin();
     double end = c.getRangeMax();
-    double step = (end - start) / steps;
+    double step = (end - start) / n;
 
-    for (size_t i = 0; i < steps; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         double v = start + (i * step);
         c.setValue(state, v);
-        out[i] = static_cast<float>(muscle.getGeometryPath().computeMomentArm(state, c));
+        double ma = muscle.getGeometryPath().computeMomentArm(state, c);
+        out[i] = static_cast<float>(ma);
     }
 
     c.setLocked(state, prev_locked);
     c.setValue(state, prev_val);
+}
+
+static bool sort_components_by_name(
+    OpenSim::Component const* c1,
+    OpenSim::Component const* c2) {
+
+    return c1->getName() < c2->getName();
 }
 
 struct Add_moment_arm_plot_modal_state final {
@@ -87,15 +99,12 @@ struct Add_moment_arm_plot_modal_state final {
     OpenSim::Coordinate const* selected_coord = nullptr;
 };
 
-static bool sort_by_name(OpenSim::Component const* c1, OpenSim::Component const* c2) {
-    return c1->getName() < c2->getName();
-}
-
 static void draw_add_moment_arm_plot_modal(
     Add_moment_arm_plot_modal_state& st,
     char const* modal_name,
     OpenSim::Model const& model,
     std::function<void(std::pair<OpenSim::Muscle const*, OpenSim::Coordinate const*>)> const& on_add_plot_requested) {
+
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -124,7 +133,7 @@ static void draw_add_moment_arm_plot_modal(
         }
 
         // usability: sort by name
-        std::sort(muscles.begin(), muscles.end(), sort_by_name);
+        std::sort(muscles.begin(), muscles.end(), sort_components_by_name);
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild(
@@ -150,7 +159,7 @@ static void draw_add_moment_arm_plot_modal(
         get_coordinates(model, coords);
 
         // usability: sort by name
-        std::sort(coords.begin(), coords.end(), sort_by_name);
+        std::sort(coords.begin(), coords.end(), sort_components_by_name);
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
         ImGui::BeginChild(
@@ -185,397 +194,401 @@ static void draw_add_moment_arm_plot_modal(
     ImGui::EndPopup();
 }
 
-namespace {
+struct Output_plot final {
+    OpenSim::AbstractOutput const* ao;
+    osc::Evenly_spaced_sparkline<256> plot;
 
-    struct Output_plot final {
-        OpenSim::AbstractOutput const* ao;
-        osc::Evenly_spaced_sparkline<256> plot;
+    explicit Output_plot(OpenSim::AbstractOutput const* _ao) : ao{_ao} {
+    }
 
-        explicit Output_plot(OpenSim::AbstractOutput const* _ao) : ao{_ao} {
-        }
+    void clear() {
+        plot.clear();
+    }
 
-        void clear() {
-            plot.clear();
-        }
+    void push_datapoint(float x, float y) {
+        plot.push_datapoint(x, y);
+    }
 
-        void push_datapoint(float x, float y) {
-            plot.push_datapoint(x, y);
-        }
+    OpenSim::AbstractOutput const* handle() const noexcept {
+        return ao;
+    }
 
-        OpenSim::AbstractOutput const* handle() const noexcept {
-            return ao;
-        }
+    std::string const& getName() const {
+        return ao->getName();
+    }
 
-        std::string const& getName() const {
-            return ao->getName();
-        }
+    std::string const& getOwnerName() const {
+        return ao->getOwner().getName();
+    }
+};
 
-        std::string const& getOwnerName() const {
-            return ao->getOwner().getName();
-        }
-    };
+struct Moment_arm_plot final {
+    std::string muscle_name;
+    std::string coord_name;
+    float x_begin;
+    float x_end;
+    std::array<float, 50> y_vals;
+    float min;
+    float max;
+};
 
-    struct Moment_arm_plot final {
-        std::string muscle_name;
-        std::string coord_name;
-        float x_begin;
-        float x_end;
-        std::array<float, 50> y_vals;
-        float min;
-        float max;
-    };
+struct Coordinates_tab_data final {
+    char filter[64]{};
+    bool sort_by_name = true;
+    bool show_rotational = true;
+    bool show_translational = true;
+    bool show_coupled = true;
+};
 
-    struct Coordinates_tab_data final {
-        char filter[64]{};
-        bool sort_by_name = true;
-        bool show_rotational = true;
-        bool show_translational = true;
-        bool show_coupled = true;
-    };
+struct Integrator_stat_sparkline final {
+    using extrator_fn = float(fd::Stats const&);
 
-    struct Integrator_stat_sparkline final {
-        using extrator_fn = float(fd::Stats const&);
+    Evenly_spaced_sparkline<256> plot{};
+    const char* name;
+    extrator_fn* extractor;
 
-        Evenly_spaced_sparkline<256> plot{};
-        const char* name;
-        extrator_fn* extractor;
+    constexpr Integrator_stat_sparkline(const char* _name, extrator_fn* _extractor) :
+        name{_name},
+        extractor{_extractor} {
+    }
 
-        constexpr Integrator_stat_sparkline(const char* _name, extrator_fn* _extractor) :
-            name{_name},
-            extractor{_extractor} {
-        }
+    void clear() {
+        plot.clear();
+    }
 
-        void clear() {
-            plot.clear();
-        }
+    void push_datapoint(float x, fd::Stats const& stats) {
+        plot.push_datapoint(x, extractor(stats));
+    }
 
-        void push_datapoint(float x, fd::Stats const& stats) {
-            plot.push_datapoint(x, extractor(stats));
-        }
+    void draw(float height = 50.0f) {
+        plot.draw(height);
+    }
+};
 
-        void draw(float height = 50.0f) {
-            plot.draw(height);
-        }
-    };
+class Selected_component final {
+    OpenSim::Component const* ptr = nullptr;
 
-    class Selected_component final {
-        OpenSim::Component const* ptr = nullptr;
+public:
+    // TODO: make private
+    std::vector<Evenly_spaced_sparkline<512>> output_sinks;
 
-    public:
-        // TODO: make private
-        std::vector<Evenly_spaced_sparkline<512>> output_sinks;
-
-        Selected_component& operator=(OpenSim::Component const* _ptr) {
-            if (_ptr == ptr) {
-                return *this;
-            }
-
-            ptr = _ptr;
-            output_sinks.clear();
-
-            if (ptr == nullptr) {
-                return *this;
-            }
-
-            // if the user selects something, preallocate some output
-            // sparklines for the selection
-
-            size_t n_outputs = 0;
-            for (auto const& p : ptr->getOutputs()) {
-                if (dynamic_cast<OpenSim::Output<double> const*>(p.second.get())) {
-                    ++n_outputs;
-                }
-            }
-
-            output_sinks.resize(n_outputs);
-
+    Selected_component& operator=(OpenSim::Component const* _ptr) {
+        if (_ptr == ptr) {
             return *this;
         }
 
-        operator bool() const noexcept {
-            return ptr != nullptr;
+        ptr = _ptr;
+        output_sinks.clear();
+
+        if (ptr == nullptr) {
+            return *this;
         }
 
-        operator OpenSim::Component const*() const noexcept {
-            return ptr;
-        }
+        // if the user selects something, preallocate some output
+        // sparklines for the selection
 
-        OpenSim::Component const* operator->() const noexcept {
-            return ptr;
-        }
-
-        OpenSim::Component const& operator*() const noexcept {
-            return *ptr;
-        }
-
-        OpenSim::Component const* get() const noexcept {
-            return ptr;
-        }
-
-        void on_ui_state_update(SimTK::State const& st) {
-            // if the user currently has something selected, live-update
-            // all outputs
-
-            if (ptr == nullptr) {
-                return;
-            }
-
-            float sim_time = static_cast<float>(st.getTime());
-
-            size_t i = 0;
-            for (auto const& p : ptr->getOutputs()) {
-                OpenSim::AbstractOutput const* ao = p.second.get();
-
-                // only certain types of output are plottable at the moment
-                auto* o = dynamic_cast<OpenSim::Output<double> const*>(ao);
-                if (o) {
-                    double v = o->getValue(st);
-                    float fv = static_cast<float>(v);
-                    output_sinks[i++].push_datapoint(sim_time, fv);
-                }
+        size_t n_outputs = 0;
+        for (auto const& p : ptr->getOutputs()) {
+            if (dynamic_cast<OpenSim::Output<double> const*>(p.second.get())) {
+                ++n_outputs;
             }
         }
 
-        void on_user_edited_state() {
-            for (auto& pl : output_sinks) {
-                pl.clear();
-            }
-        }
-    };
+        output_sinks.resize(n_outputs);
 
-    struct Simulator_tab final {
-        std::optional<fd::Simulation> simulator;
+        return *this;
+    }
 
-        Evenly_spaced_sparkline<256> prescribeQcalls;
-        Evenly_spaced_sparkline<256> simTimeDividedByWallTime;
+    operator bool() const noexcept {
+        return ptr != nullptr;
+    }
 
-        std::array<Integrator_stat_sparkline, 15> integrator_plots{
-            {{"accuracyInUse", [](fd::Stats const& s) { return static_cast<float>(s.accuracyInUse); }},
-             {"predictedNextStepSize", [](fd::Stats const& s) { return static_cast<float>(s.predictedNextStepSize); }},
-             {"numStepsAttempted", [](fd::Stats const& s) { return static_cast<float>(s.numStepsAttempted); }},
-             {"numStepsTaken", [](fd::Stats const& s) { return static_cast<float>(s.numStepsTaken); }},
-             {"numRealizations", [](fd::Stats const& s) { return static_cast<float>(s.numRealizations); }},
-             {"numQProjections", [](fd::Stats const& s) { return static_cast<float>(s.numQProjections); }},
-             {"numUProjections", [](fd::Stats const& s) { return static_cast<float>(s.numUProjections); }},
-             {"numErrorTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numErrorTestFailures); }},
-             {"numConvergenceTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numConvergenceTestFailures); }},
-             {"numRealizationFailures", [](fd::Stats const& s) { return static_cast<float>(s.numRealizationFailures); }},
-             {"numQProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numQProjectionFailures); }},
-             {"numProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numProjectionFailures); }},
-             {"numConvergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numConvergentIterations); }},
-             {"numDivergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numDivergentIterations); }},
-             {"numIterations", [](fd::Stats const& s) { return static_cast<float>(s.numIterations); }}}};
+    operator OpenSim::Component const*() const noexcept {
+        return ptr;
+    }
 
-        float fd_final_time = 0.4f;
-        fd::IntegratorMethod integrator_method = fd::IntegratorMethod_OpenSimManagerDefault;
+    OpenSim::Component const* operator->() const noexcept {
+        return ptr;
+    }
 
-        void clear() {
-            prescribeQcalls.clear();
-            simTimeDividedByWallTime.clear();
+    OpenSim::Component const& operator*() const noexcept {
+        return *ptr;
+    }
 
-            for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
-                integrator_plot.clear();
-            }
+    OpenSim::Component const* get() const noexcept {
+        return ptr;
+    }
+
+    void on_ui_state_update(SimTK::State const& st) {
+        // if the user currently has something selected, live-update
+        // all outputs
+
+        if (ptr == nullptr) {
+            return;
         }
 
-        void on_user_edited_model() {
-            // if the user edits the model, kill the current simulation, because
-            // it won't match what the user sees
-            simulator = std::nullopt;
+        float sim_time = static_cast<float>(st.getTime());
 
-            clear();
-        }
+        size_t i = 0;
+        for (auto const& p : ptr->getOutputs()) {
+            OpenSim::AbstractOutput const* ao = p.second.get();
 
-        void on_user_edited_state() {
-            clear();
-        }
-
-        void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st, fd::Stats const& stats) {
-            if (!simulator) {
-                return;
-            }
-
-            // get latest integrator stats
-            float sim_time = static_cast<float>(st.getTime());
-            float wall_time = static_cast<float>(simulator->wall_duration().count());
-
-            prescribeQcalls.push_datapoint(sim_time, static_cast<float>(stats.numPrescribeQcalls));
-            simTimeDividedByWallTime.push_datapoint(sim_time, sim_time / wall_time);
-
-            // push 0d integrator stats onto sparklines
-            for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
-                integrator_plot.push_datapoint(sim_time, stats);
+            // only certain types of output are plottable at the moment
+            auto* o = dynamic_cast<OpenSim::Output<double> const*>(ao);
+            if (o) {
+                double v = o->getValue(st);
+                float fv = static_cast<float>(v);
+                output_sinks[i++].push_datapoint(sim_time, fv);
             }
         }
+    }
 
-        void draw(Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
-            // start/stop button
-            if (simulator && simulator->is_running()) {
-                ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
-                if (ImGui::Button("stop [SPC]")) {
-                    simulator->request_stop();
-                }
-                ImGui::PopStyleColor();
-            } else {
-                ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
-                if (ImGui::Button("start [SPC]")) {
-                    fd::Params params{
-                        shown_model,
-                        shown_state,
-                        std::chrono::duration<double>{static_cast<double>(fd_final_time)},
-                        integrator_method
-                    };
+    void on_user_edited_state() {
+        for (auto& pl : output_sinks) {
+            pl.clear();
+        }
+    }
+};
 
-                    simulator.emplace(std::move(params));
-                }
-                ImGui::PopStyleColor();
+struct Simulator_tab final {
+    std::optional<fd::Simulation> simulator;
+
+    Evenly_spaced_sparkline<256> prescribeQcalls;
+    Evenly_spaced_sparkline<256> simTimeDividedByWallTime;
+
+    std::array<Integrator_stat_sparkline, 15> integrator_plots{
+        {{"accuracyInUse", [](fd::Stats const& s) { return static_cast<float>(s.accuracyInUse); }},
+         {"predictedNextStepSize", [](fd::Stats const& s) { return static_cast<float>(s.predictedNextStepSize); }},
+         {"numStepsAttempted", [](fd::Stats const& s) { return static_cast<float>(s.numStepsAttempted); }},
+         {"numStepsTaken", [](fd::Stats const& s) { return static_cast<float>(s.numStepsTaken); }},
+         {"numRealizations", [](fd::Stats const& s) { return static_cast<float>(s.numRealizations); }},
+         {"numQProjections", [](fd::Stats const& s) { return static_cast<float>(s.numQProjections); }},
+         {"numUProjections", [](fd::Stats const& s) { return static_cast<float>(s.numUProjections); }},
+         {"numErrorTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numErrorTestFailures); }},
+         {"numConvergenceTestFailures", [](fd::Stats const& s) { return static_cast<float>(s.numConvergenceTestFailures); }},
+         {"numRealizationFailures", [](fd::Stats const& s) { return static_cast<float>(s.numRealizationFailures); }},
+         {"numQProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numQProjectionFailures); }},
+         {"numProjectionFailures", [](fd::Stats const& s) { return static_cast<float>(s.numProjectionFailures); }},
+         {"numConvergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numConvergentIterations); }},
+         {"numDivergentIterations", [](fd::Stats const& s) { return static_cast<float>(s.numDivergentIterations); }},
+         {"numIterations", [](fd::Stats const& s) { return static_cast<float>(s.numIterations); }}}};
+
+    float fd_final_time = 0.4f;
+    fd::IntegratorMethod integrator_method = fd::IntegratorMethod_OpenSimManagerDefault;
+
+    void clear() {
+        prescribeQcalls.clear();
+        simTimeDividedByWallTime.clear();
+
+        for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
+            integrator_plot.clear();
+        }
+    }
+
+    void on_user_edited_model() {
+        // if the user edits the model, kill the current simulation, because
+        // it won't match what the user sees
+        simulator = std::nullopt;
+
+        clear();
+    }
+
+    void on_user_edited_state() {
+        clear();
+    }
+
+    void on_ui_state_update(OpenSim::Model const&, SimTK::State const& st, fd::Stats const& stats) {
+        if (!simulator) {
+            return;
+        }
+
+        // get latest integrator stats
+        float sim_time = static_cast<float>(st.getTime());
+        float wall_time = static_cast<float>(simulator->wall_duration().count());
+
+        prescribeQcalls.push_datapoint(sim_time, static_cast<float>(stats.numPrescribeQcalls));
+        simTimeDividedByWallTime.push_datapoint(sim_time, sim_time / wall_time);
+
+        // push 0d integrator stats onto sparklines
+        for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
+            integrator_plot.push_datapoint(sim_time, stats);
+        }
+    }
+
+    void draw(Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
+        // start/stop button
+        if (simulator && simulator->is_running()) {
+            ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
+            if (ImGui::Button("stop [SPC]")) {
+                simulator->request_stop();
             }
+            ImGui::PopStyleColor();
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
+            if (ImGui::Button("start [SPC]")) {
+                fd::Params params{
+                    shown_model,
+                    shown_state,
+                    std::chrono::duration<double>{static_cast<double>(fd_final_time)},
+                    integrator_method
+                };
+
+                simulator.emplace(std::move(params));
+            }
+            ImGui::PopStyleColor();
+        }
+
+        ImGui::Dummy({0.0f, 20.0f});
+        ImGui::Text("simulation config:");
+        ImGui::Dummy({0.0f, 2.5f});
+        ImGui::Separator();
+
+        ImGui::Columns(2);
+
+        ImGui::Text("final time");
+        ImGui::NextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::SliderFloat("##final time float", &fd_final_time, 0.01f, 20.0f);
+        ImGui::NextColumn();
+
+        ImGui::Text("integration method");
+        ImGui::NextColumn();
+        {
+            int method = integrator_method;
+            if (ImGui::Combo(
+                    "##integration method combo",
+                    &method,
+                    fd::integrator_method_names,
+                    fd::IntegratorMethod_NumIntegratorMethods)) {
+                integrator_method = static_cast<fd::IntegratorMethod>(method);
+            }
+        }
+        ImGui::Columns();
+
+        if (simulator) {
+            std::chrono::milliseconds wall_ms =
+                std::chrono::duration_cast<std::chrono::milliseconds>(simulator->wall_duration());
+            double wall_secs = static_cast<double>(wall_ms.count()) / 1000.0;
+            std::chrono::duration<double> sim_secs = simulator->sim_current_time();
+            double frac_completed = sim_secs / simulator->sim_final_time();
+
+            ImGui::Dummy(ImVec2{0.0f, 20.0f});
+            ImGui::TextUnformatted("simulator stats:");
+            ImGui::Dummy(ImVec2{0.0f, 2.5f});
+            ImGui::Separator();
+
+            ImGui::Columns(2);
+            ImGui::TextUnformatted("status");
+            ImGui::NextColumn();
+            ImGui::TextUnformatted(simulator->status_description());
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("progress");
+            ImGui::NextColumn();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ImGui::ProgressBar(static_cast<float>(frac_completed), ImVec2(0.0f, 0.0f));
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("simulation time");
+            ImGui::NextColumn();
+            ImGui::Text("%.2f s", sim_secs.count());
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("wall time");
+            ImGui::NextColumn();
+            ImGui::Text("%.2f s", wall_secs);
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("sim time / wall time (avg.)");
+            ImGui::NextColumn();
+            ImGui::Text("%.3f", (sim_secs / wall_secs).count());
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("Reports popped");
+            ImGui::NextColumn();
+            ImGui::Text("%i", simulator->num_latest_reports_popped());
+            ImGui::NextColumn();
+
+            ImGui::TextUnformatted("States collected");
+            ImGui::NextColumn();
+            static std::vector<std::unique_ptr<osc::fd::Report>> reports;
+            simulator->pop_regular_reports(reports);
+            ImGui::Text("%zu", reports.size());
+            ImGui::NextColumn();
+
+            ImGui::Columns();
 
             ImGui::Dummy({0.0f, 20.0f});
-            ImGui::Text("simulation config:");
+            ImGui::TextUnformatted("plots:");
             ImGui::Dummy({0.0f, 2.5f});
             ImGui::Separator();
 
             ImGui::Columns(2);
 
-            ImGui::Text("final time");
+            ImGui::TextUnformatted("prescribeQcalls");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::SliderFloat("##final time float", &fd_final_time, 0.01f, 20.0f);
+            prescribeQcalls.draw(30.0f);
             ImGui::NextColumn();
 
-            ImGui::Text("integration method");
+            ImGui::TextUnformatted("sim time / wall time");
             ImGui::NextColumn();
-            {
-                int method = integrator_method;
-                if (ImGui::Combo(
-                        "##integration method combo",
-                        &method,
-                        fd::integrator_method_names,
-                        fd::IntegratorMethod_NumIntegratorMethods)) {
-                    integrator_method = static_cast<fd::IntegratorMethod>(method);
-                }
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            simTimeDividedByWallTime.draw(30.0f);
+            ImGui::NextColumn();
+
+            for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
+                ImGui::TextUnformatted(integrator_plot.name);
+                ImGui::NextColumn();
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                integrator_plot.draw(30.0f);
+                ImGui::NextColumn();
             }
+
             ImGui::Columns();
-
-            if (simulator) {
-                std::chrono::milliseconds wall_ms =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(simulator->wall_duration());
-                double wall_secs = static_cast<double>(wall_ms.count()) / 1000.0;
-                std::chrono::duration<double> sim_secs = simulator->sim_current_time();
-                double frac_completed = sim_secs / simulator->sim_final_time();
-
-                ImGui::Dummy(ImVec2{0.0f, 20.0f});
-                ImGui::TextUnformatted("simulator stats:");
-                ImGui::Dummy(ImVec2{0.0f, 2.5f});
-                ImGui::Separator();
-
-                ImGui::Columns(2);
-                ImGui::TextUnformatted("status");
-                ImGui::NextColumn();
-                ImGui::TextUnformatted(simulator->status_description());
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("progress");
-                ImGui::NextColumn();
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                ImGui::ProgressBar(static_cast<float>(frac_completed), ImVec2(0.0f, 0.0f));
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("simulation time");
-                ImGui::NextColumn();
-                ImGui::Text("%.2f s", sim_secs.count());
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("wall time");
-                ImGui::NextColumn();
-                ImGui::Text("%.2f s", wall_secs);
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("sim time / wall time (avg.)");
-                ImGui::NextColumn();
-                ImGui::Text("%.3f", (sim_secs / wall_secs).count());
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("Reports popped");
-                ImGui::NextColumn();
-                ImGui::Text("%i", simulator->num_latest_reports_popped());
-                ImGui::NextColumn();
-
-                ImGui::Columns();
-
-                ImGui::Dummy({0.0f, 20.0f});
-                ImGui::TextUnformatted("plots:");
-                ImGui::Dummy({0.0f, 2.5f});
-                ImGui::Separator();
-
-                ImGui::Columns(2);
-
-                ImGui::TextUnformatted("prescribeQcalls");
-                ImGui::NextColumn();
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                prescribeQcalls.draw(30.0f);
-                ImGui::NextColumn();
-
-                ImGui::TextUnformatted("sim time / wall time");
-                ImGui::NextColumn();
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                simTimeDividedByWallTime.draw(30.0f);
-                ImGui::NextColumn();
-
-                for (Integrator_stat_sparkline& integrator_plot : integrator_plots) {
-                    ImGui::TextUnformatted(integrator_plot.name);
-                    ImGui::NextColumn();
-                    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                    integrator_plot.draw(30.0f);
-                    ImGui::NextColumn();
-                }
-
-                ImGui::Columns();
-            }
         }
-    };
+    }
+};
 
-    struct Momentarms_tab_data final {
-        std::string const* selected_musc = nullptr;
-        std::string const* selected_coord = nullptr;
-        std::vector<std::unique_ptr<Moment_arm_plot>> plots;
-    };
+struct Momentarms_tab_data final {
+    std::string const* selected_musc = nullptr;
+    std::string const* selected_coord = nullptr;
+    std::vector<std::unique_ptr<Moment_arm_plot>> plots;
+};
 
-    struct Outputs_tab_data final {
-        char filter[64]{};
-        std::vector<OpenSim::AbstractOutput const*> available;
-        std::optional<OpenSim::AbstractOutput const*> selected;
-        std::vector<OpenSim::AbstractOutput const*> watches;
-        std::vector<Output_plot> plots;
+struct Outputs_tab_data final {
+    char filter[64]{};
+    std::vector<OpenSim::AbstractOutput const*> available;
+    std::optional<OpenSim::AbstractOutput const*> selected;
+    std::vector<OpenSim::AbstractOutput const*> watches;
+    std::vector<Output_plot> plots;
 
-        void on_ui_state_update(SimTK::State const& st) {
-            float sim_millis = 1000.0f * static_cast<float>(st.getTime());
+    void on_ui_state_update(SimTK::State const& st) {
+        float sim_millis = 1000.0f * static_cast<float>(st.getTime());
 
-            for (Output_plot& p : plots) {
+        for (Output_plot& p : plots) {
 
-                // only certain types of output are plottable at the moment
-                auto* o = dynamic_cast<OpenSim::Output<double> const*>(p.handle());
-                OSC_ASSERT(o != nullptr && "unexpected output type (expected OpenSim::Output<double>)");
-                double v = o->getValue(st);
-                float fv = static_cast<float>(v);
+            // only certain types of output are plottable at the moment
+            auto* o = dynamic_cast<OpenSim::Output<double> const*>(p.handle());
+            OSC_ASSERT(o != nullptr && "unexpected output type (expected OpenSim::Output<double>)");
+            double v = o->getValue(st);
+            float fv = static_cast<float>(v);
 
-                p.push_datapoint(sim_millis, fv);
-            }
+            p.push_datapoint(sim_millis, fv);
         }
+    }
 
-        void on_user_edited_model() {
-            selected = std::nullopt;
-            plots.clear();
-        }
+    void on_user_edited_model() {
+        selected = std::nullopt;
+        plots.clear();
+    }
 
-        void on_user_edited_state() {
-            for (Output_plot& p : plots) {
-                p.clear();
-            }
+    void on_user_edited_state() {
+        for (Output_plot& p : plots) {
+            p.clear();
         }
-    };
-}
+    }
+};
 
 struct Show_model_screen::Impl final {
     std::unique_ptr<OpenSim::Model> model;
@@ -947,7 +960,7 @@ struct Show_model_screen::Impl final {
         plot->x_end = static_cast<float>(pair.second->getRangeMax());
 
         // populate y values
-        compute_moment_arms(*pair.first, latest_state, *pair.second, plot->y_vals.data(), plot->y_vals.size());
+        compute_moment_arms(*pair.first, *pair.second, latest_state, plot->y_vals.data(), plot->y_vals.size());
         float min = std::numeric_limits<float>::max();
         float max = std::numeric_limits<float>::min();
         for (float v : plot->y_vals) {
@@ -1164,6 +1177,8 @@ struct Show_model_screen::Impl final {
         }
     }
 };
+
+// public API
 
 Show_model_screen::Show_model_screen(std::unique_ptr<OpenSim::Model> model) : impl{new Impl{std::move(model)}} {
 }
