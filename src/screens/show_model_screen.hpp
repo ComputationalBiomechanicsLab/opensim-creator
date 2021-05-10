@@ -13,7 +13,9 @@ namespace OpenSim {
 // model /w UX, manipulators, etc.
 namespace osc {
     class Show_model_screen final : public Screen {
+    public:
         struct Impl;
+    private:
         Impl* impl;
 
     public:
