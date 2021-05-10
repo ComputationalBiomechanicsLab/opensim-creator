@@ -20,8 +20,8 @@ namespace osc::log {
 #define OSC_LOG_LVL_NAMES                                                                                             \
     { "trace", "debug", "info", "warning", "error", "critical", "off" }
 
-        extern std::string_view const name_views[];
-        extern char const* const name_cstrings[];
+        extern std::string_view const name_views[NUM_LEVELS];
+        extern char const* const name_cstrings[NUM_LEVELS];
     }
 
     [[nodiscard]] inline std::string_view const& to_string_view(level::Level_enum lvl) noexcept {
