@@ -59,17 +59,3 @@ void gl::LinkProgram(gl::Program& prog) {
     ss << errmsg.data();
     throw std::runtime_error{ss.str()};
 }
-
-gl::Error_span gl::pop_opengl_errors() {
-    current_errors.clear();
-
-    for (GLenum err = glGetError(); err != GL_NO_ERROR; err = glGetError()) {
-        // errors are iso8859 encoded
-        current_errors.push_back(reinterpret_cast<char const*>(gluErrorString(err)));
-    }
-
-    Error_span rv;
-    rv.n = current_errors.size();
-    rv.first = current_errors.data();
-    return rv;
-}

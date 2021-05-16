@@ -973,8 +973,6 @@ namespace gl {
         char const** first;
     };
 
-    Error_span pop_opengl_errors();
-
     inline int GetInteger(GLenum pname) noexcept {
         GLint out;
         glGetIntegerv(pname, &out);
