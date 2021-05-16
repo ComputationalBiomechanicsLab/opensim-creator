@@ -69,8 +69,8 @@ struct Sized_array final {
         n = 0;
     }
 
-    T& operator[](size_t n) {
-        return els[n];
+    T& operator[](size_t idx) {
+        return els[idx];
     }
 
     T const& operator[](size_t i) const {
