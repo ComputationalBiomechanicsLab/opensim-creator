@@ -30,9 +30,9 @@ endif()
 get_property(OSC_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 if(${OSC_USING_MODERN_CMAKE})
-    cmake_policy(SET CMP0072 NEW)  # use newer OpenGL linking strategy
+    cmake_policy(SET CMP0072 OLD)  # use newer OpenGL linking strategy
 endif()
-set(OpenGL_GL_PREFERENCE "GLVND")  # use newer OpenGL linking strategy
+set(OpenGL_GL_PREFERENCE "LEGACY")  # use newer OpenGL linking strategy
 
 if(UNIX AND NOT APPLE)
     if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
