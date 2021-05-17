@@ -438,7 +438,9 @@ struct Simulator_tab final {
             }
             ImGui::PopStyleColor();
         } else {
+            /*
             ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.6f, 0.0f, 1.0f});
+
             if (ImGui::Button("start [SPC]")) {
                 fd::Params params{
                     shown_model,
@@ -450,6 +452,7 @@ struct Simulator_tab final {
                 simulator.emplace(std::move(params));
             }
             ImGui::PopStyleColor();
+            */
         }
 
         ImGui::Dummy({0.0f, 20.0f});
@@ -598,78 +601,120 @@ struct Outputs_tab_state final {
     }
 };
 
-struct Show_model_screen::Impl final {
+// translate a pointer to a component in model A to a pointer to a component in model B
+//
+// returns nullptr if the pointer cannot be cleanly translated
+static OpenSim::Component const*
+    relocate_component_pointer_to_new_model(OpenSim::Model const& model, OpenSim::Component const* ptr) {
+
+    if (!ptr) {
+        return nullptr;
+    }
+
+    try {
+        return const_cast<OpenSim::Component*>(model.findComponent(ptr->getAbsolutePath()));
+    } catch (OpenSim::Exception const&) {
+        // finding fails with exception when ambiguous (fml)
+        return nullptr;
+    }
+}
+
+struct Ui_simulation final {
+    // simulation-side: a simulation running on a background thread
+    fd::Simulation simulation;
+
+    // UI-side: copy of the simulation-side model
     std::unique_ptr<OpenSim::Model> model;
 
-    SimTK::State state = [this]() {
-        model->finalizeFromProperties();
-        SimTK::State s = model->initSystem();
-        model->realizeReport(s);
+    // UI-side: spot report: latest (usually per-integration-step) report
+    // popped from the simulator
+    std::unique_ptr<fd::Report> spot_report;
+
+    // UI-side: regular reports popped from the simulator
+    //
+    // the simulator is guaranteed to produce reports at some regular
+    // interval (in simulation time). These are what should be plotted
+    // etc.
+    std::vector<std::unique_ptr<fd::Report>> regular_reports;
+};
+
+struct Show_model_screen::Impl final {
+    // edited model + state
+    std::unique_ptr<OpenSim::Model> edited_model;
+    SimTK::State edited_state = [this]() {
+        edited_model->finalizeFromProperties();
+        SimTK::State s = edited_model->initSystem();
+        edited_model->realizeReport(s);
         return s;
     }();
 
-    Selected_component selected_component;
-    OpenSim::Component const* hovered_component = nullptr;
+    // simulation models + states
+    std::vector<Ui_simulation> simulations;
 
+    // 3D viewers
     std::array<Model_viewer_widget, 2> model_viewers = {
-        Model_viewer_widget{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
-        Model_viewer_widget{Application::current().get_gpu_storage(), ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        Model_viewer_widget{
+            Application::current().get_gpu_storage(),
+            ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        Model_viewer_widget{
+            Application::current().get_gpu_storage(),
+            ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
     };
 
     ui::main_menu::file_tab::State mm_filetab_st;
-
     coordinate_editor::State coords_tab_st;
     muscles_table::State muscles_table_st;
     log_viewer::State log_viewer_st;
-    Simulator_tab simulator_tab;
+    // Simulator_tab simulator_tab;
     Outputs_tab_state outputs_tab;
     Ma_tab_state mas_tab;
     Ma_add_plot_modal_state add_moment_arm_modal_st;
 
-    File_change_poller file_poller{1000ms, model->getDocumentFileName()};
+    File_change_poller file_poller{1000ms, edited_model->getDocumentFileName()};
 
-    Impl(std::unique_ptr<OpenSim::Model> _model) : model{std::move(_model)} {
+    int selected_idx = -1;
+    OpenSim::Component const* selected_component = nullptr;
+    OpenSim::Component const* hovered_component = nullptr;
+
+    // helpers
+
+    // set which model is selected in the GUI while maintaining other invariants
+    // (e.g. update pointers)
+
+    OpenSim::Model& active_model() {
+        if (selected_idx == -1) {
+            return *edited_model;
+        } else {
+            return *simulations.at(selected_idx).model;
+        }
+    }
+
+    SimTK::State& active_state() {
+        if (selected_idx == -1) {
+            return edited_state;
+        } else {
+            return simulations.at(selected_idx).spot_report->state;
+        }
+    }
+
+    void select_model(int idx) {
+        selected_idx = idx;
+        OpenSim::Model& m = active_model();
+        selected_component = relocate_component_pointer_to_new_model(m, selected_component);
+        hovered_component = relocate_component_pointer_to_new_model(m, hovered_component);
+    }
+
+    Impl(std::unique_ptr<OpenSim::Model> _model) : edited_model{std::move(_model)} {
     }
 };
 
-static void on_user_edited_state(Show_model_screen::Impl& impl) {
-    // kill the simulator whenever a user-initiated state change happens
-    impl.simulator_tab.simulator = std::nullopt;
-
-    impl.model->realizeReport(impl.state);
-
-    impl.outputs_tab.on_user_edited_state();
-    impl.simulator_tab.on_user_edited_state();
-    impl.selected_component.on_user_edited_state();
-}
-
 static void action_reset_model_to_initial_state(Show_model_screen::Impl& impl) {
-    // R: reset the model to its initial state
-    impl.state = impl.model->initSystem();
-    on_user_edited_state(impl);
-}
-
-static bool is_simulator_running(Show_model_screen::Impl& impl) {
-    return impl.simulator_tab.simulator && impl.simulator_tab.simulator->is_running();
-}
-
-static void action_toggle_sim_start_or_stop(Show_model_screen::Impl& impl) {
-    if (is_simulator_running(impl)) {
-        impl.simulator_tab.simulator->request_stop();
-    } else {
-        fd::Params p{
-            *impl.model,
-            impl.state,
-            std::chrono::duration<double>{static_cast<double>(impl.simulator_tab.fd_final_time)},
-            impl.simulator_tab.integrator_method
-        };
-
-        impl.simulator_tab.simulator.emplace(std::move(p));
-    }
+    impl.edited_state = impl.edited_model->initSystem();
 }
 
 static void action_switch_to_editor(Show_model_screen::Impl& impl) {
-    Application::current().request_screen_transition<Model_editor_screen>(std::make_unique<OpenSim::Model>(*impl.model));
+    auto copy = std::make_unique<OpenSim::Model>(*impl.edited_model);
+    Application::current().request_screen_transition<Model_editor_screen>(std::move(copy));
 }
 
 static void action_clear_selection(Show_model_screen::Impl& impl) {
@@ -680,34 +725,70 @@ static void action_quit_application() {
     Application::current().request_quit_application();
 }
 
-static void action_double_simulation_time(Show_model_screen::Impl& impl) {
-    impl.simulator_tab.fd_final_time *= 2.0f;
-}
-
-static void action_half_simulation_time(Show_model_screen::Impl& impl) {
-    impl.simulator_tab.fd_final_time /= 2.0f;
-}
-
-static void on_user_edited_model(Show_model_screen::Impl& impl) {
-    // these might be invalidated by changing the model because they might
-    // contain (e.g.) pointers into the model
-    impl.selected_component = nullptr;
-
-    impl.outputs_tab.on_user_edited_model();
-    impl.simulator_tab.on_user_edited_model();
-
-    impl.state = impl.model->initSystem();
-    impl.model->realizeReport(impl.state);
-}
-
 static bool action_try_reload_model_file(Show_model_screen::Impl& impl) {
-    std::string file = impl.model->getDocumentFileName();
-    if (!file.empty()) {
-        impl.model = std::make_unique<OpenSim::Model>(file);
-        on_user_edited_model(impl);
-        return true;
+    std::string file = impl.edited_model->getDocumentFileName();
+
+    if (file.empty()) {
+        return false;
     }
-    return false;
+
+    std::unique_ptr<OpenSim::Model> model = nullptr;
+
+    try {
+        model = std::make_unique<OpenSim::Model>(file);
+    } catch (std::exception& ex) {
+        log::error("error reloading model: %s", ex.what());
+        return false;
+    }
+
+    if (!model) {
+        return false;
+    }
+
+    impl.selected_component = relocate_component_pointer_to_new_model(*model, impl.selected_component);
+    impl.hovered_component = relocate_component_pointer_to_new_model(*model, impl.hovered_component);
+    impl.edited_model = std::move(model);
+    impl.edited_state = impl.edited_model->initSystem();
+    impl.edited_model->realizeReport(impl.edited_state);
+    impl.selected_idx = -1;
+
+    return true;
+}
+
+static void action_start_simulation(Show_model_screen::Impl& impl) {
+    // make a copy of the current (edited) model for the GUI
+    auto gui_model = std::make_unique<OpenSim::Model>(*impl.edited_model);
+    gui_model->finalizeFromProperties();
+    SimTK::State& guistate = gui_model->initSystem();
+
+    // make a "fake" report so that the simulator at least starts with
+    // one report before the first spot report is sent by the simulator
+    // thread
+    std::unique_ptr<fd::Report> report = std::make_unique<fd::Report>();
+    report->state = guistate;
+    report->stats = {};
+    gui_model->realizeReport(report->state);
+
+    // the screen's `impl.state` may contain user edits, like coordinate edits,
+    // etc. so a copy of that should be used as the initial state, rather than the
+    // model's default initial state
+    std::unique_ptr<SimTK::State> simstate = std::make_unique<SimTK::State>(impl.edited_state);
+    auto sim_model = std::make_unique<OpenSim::Model>(*impl.edited_model);
+    sim_model->initSystem();
+    sim_model->setPropertiesFromState(*simstate);
+    sim_model->realizePosition(*simstate);
+    sim_model->equilibrateMuscles(*simstate);
+    sim_model->realizeAcceleration(*simstate);
+
+    fd::Params params{std::move(sim_model), std::move(simstate)};
+    params.final_time = std::chrono::duration<double>{0.4};
+    fd::Simulation sim{std::move(params)};
+
+    Ui_simulation uisim{std::move(sim), std::move(gui_model), std::move(report), {}};
+    impl.simulations.push_back(std::move(uisim));
+
+    // change focus to newly-started simulation
+    impl.select_model(static_cast<int>(impl.simulations.size()) - 1);
 }
 
 static bool handle_keyboard_event(Show_model_screen::Impl& impl, SDL_KeyboardEvent const& e) {
@@ -733,14 +814,16 @@ static bool handle_keyboard_event(Show_model_screen::Impl& impl, SDL_KeyboardEve
         action_reset_model_to_initial_state(impl);
         return true;
     case SDLK_SPACE:
-        action_toggle_sim_start_or_stop(impl);
+        action_start_simulation(impl);
         return true;
+    /* TODO
     case SDLK_EQUALS:
         action_double_simulation_time(impl);
         return true;
     case SDLK_MINUS:
         action_half_simulation_time(impl);
         return true;
+    */
     }
 
     return false;
@@ -783,73 +866,55 @@ static bool handle_event(Show_model_screen::Impl& impl, SDL_Event const& e) {
     return false;
 }
 
+static void check_for_backing_file_changes(Show_model_screen::Impl& impl) {
+    std::string filename = impl.edited_model->getDocumentFileName();
+
+    if (!impl.file_poller.change_detected(filename)) {
+        return;
+    }
+
+    std::unique_ptr<OpenSim::Model> p = nullptr;
+
+    try {
+        p = std::make_unique<OpenSim::Model>(filename);
+    } catch (std::exception const& ex) {
+        log::error("an error occurred while trying to automatically load a model file");
+        log::error(ex.what());
+        return;
+    }
+
+    if (p == nullptr) {
+        return;
+    }
+
+    impl.edited_state = p->initSystem();
+    p->realizeReport(impl.edited_state);
+
+    std::swap(p, impl.edited_model);
+    impl.selected_idx = -1;
+    impl.selected_component = relocate_component_pointer_to_new_model(*impl.edited_model, impl.selected_component);
+    impl.hovered_component = relocate_component_pointer_to_new_model(*impl.edited_model, impl.hovered_component);
+}
+
+static void pop_all_simulator_updates(Show_model_screen::Impl& impl) {
+    for (auto& simulation : impl.simulations) {
+        // pop regular reports
+        simulation.simulation.pop_regular_reports(simulation.regular_reports);
+
+        // pop latest spot report
+        std::unique_ptr<fd::Report> new_spot_report = simulation.simulation.try_pop_latest_report();
+        if (new_spot_report) {
+            simulation.spot_report = std::move(new_spot_report);
+            simulation.model->realizeReport(simulation.spot_report->state);
+        }
+    }
+}
+
 // "tick" the UI state (usually, used for updating animations etc.)
 static void tick(Show_model_screen::Impl& impl) {
-    // grab the latest state (if any) from the simulator and (if updated)
-    // update the UI to reflect the latest state
-    if (impl.simulator_tab.simulator) {
-        std::unique_ptr<fd::Report> latest_report = impl.simulator_tab.simulator->try_pop_latest_report();
-
-        if (latest_report) {
-            impl.state = std::move(latest_report->state);
-
-            impl.model->realizeReport(impl.state);
-            impl.outputs_tab.on_ui_state_update(impl.state);
-            impl.simulator_tab.on_ui_state_update(*impl.model, impl.state, latest_report->stats);
-            impl.selected_component.on_ui_state_update(impl.state);
-        }
-    }
-
-    if (impl.file_poller.change_detected(impl.model->getDocumentFileName())) {
-        std::unique_ptr<OpenSim::Model> p;
-        try {
-            p = std::make_unique<OpenSim::Model>(impl.model->getDocumentFileName());
-        } catch (std::exception const& ex) {
-            log::error("an error occurred while trying to automatically load a model file");
-            log::error(ex.what());
-        }
-
-        if (p) {
-            impl.model = std::move(p);
-            on_user_edited_model(impl);
-        }
-    }
+    pop_all_simulator_updates(impl);
+    check_for_backing_file_changes(impl);
 }
-
-static void draw_main_menu_actions_tab(Show_model_screen::Impl& impl) {
-    if (ImGui::BeginMenu("Actions")) {
-        if (ImGui::MenuItem("Start/Stop Simulation", "Space")) {
-            action_toggle_sim_start_or_stop(impl);
-        }
-
-        if (ImGui::MenuItem("Reset Model to Initial State", "R")) {
-            action_reset_model_to_initial_state(impl);
-        }
-
-        if (ImGui::MenuItem("Reload Model File", "Ctrl+R")) {
-            action_try_reload_model_file(impl);
-        }
-
-        if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
-            action_clear_selection(impl);
-        }
-
-        if (ImGui::MenuItem("Switch to Editor", "Ctrl+E")) {
-            action_switch_to_editor(impl);
-        }
-
-        if (ImGui::MenuItem("Half Simulation Time", "-")) {
-            action_half_simulation_time(impl);
-        }
-
-        if (ImGui::MenuItem("Double Simulation Time", "=")) {
-            action_double_simulation_time(impl);
-        }
-
-        ImGui::EndMenu();
-    }
-}
-
 
 static void on_user_wants_to_add_ma_plot(Show_model_screen::Impl& impl, OpenSim::Muscle const& muscle, OpenSim::Coordinate const& coord) {
     auto plot = std::make_unique<Ma_plot>();
@@ -859,7 +924,7 @@ static void on_user_wants_to_add_ma_plot(Show_model_screen::Impl& impl, OpenSim:
     plot->x_end = static_cast<float>(coord.getRangeMax());
 
     // populate y values
-    ma_compute_momentarms(muscle, coord, impl.state, plot->y_vals.data(), plot->y_vals.size());
+    ma_compute_momentarms(muscle, coord, impl.active_state(), plot->y_vals.data(), plot->y_vals.size());
     float min = std::numeric_limits<float>::max();
     float max = std::numeric_limits<float>::min();
     for (float v : plot->y_vals) {
@@ -881,7 +946,7 @@ static void draw_moment_arms_tab(Show_model_screen::Impl& impl) {
             ImGui::OpenPopup(modal_name);
         }
 
-        auto resp = ma_add_plot_modal_draw(impl.add_moment_arm_modal_st, modal_name, *impl.model);
+        auto resp = ma_add_plot_modal_draw(impl.add_moment_arm_modal_st, modal_name, impl.active_model());
         if (resp.muscle && resp.coord) {
             on_user_wants_to_add_ma_plot(impl, *resp.muscle, *resp.coord);
         }
@@ -922,6 +987,7 @@ static void draw_moment_arms_tab(Show_model_screen::Impl& impl) {
     ImGui::Columns();
 }
 
+/* TODO
 static void draw_outputs_tab(Show_model_screen::Impl& impl) {
     impl.outputs_tab.available.clear();
 
@@ -1026,24 +1092,34 @@ static void draw_outputs_tab(Show_model_screen::Impl& impl) {
         ImGui::Columns(1);
     }
 }
+*/
 
 static void draw_selection_tab(Show_model_screen::Impl& impl) {
     if (!impl.selected_component) {
-        ImGui::Text("nothing selected: right click something");
+        ImGui::TextUnformatted("nothing selected, you can select things by:\n    - clicking something in the 3D viewer\n    - clicking something in the hierarchy browser");
         return;
     }
 
+    SimTK::State& st = impl.active_state();
+
     // draw standard selection info
-    if (auto resp = ui::component_details::draw(impl.state, impl.selected_component.get());
-        resp.type == component_details::SelectionChanged) {
-        impl.selected_component = resp.ptr;
+    {
+        auto resp = ui::component_details::draw(st, impl.selected_component);
+
+        if (resp.type == component_details::SelectionChanged) {
+            impl.selected_component = resp.ptr;
+        }
     }
 
+
+        /* TODO
     // draw selection outputs (screen-specific)
 
     OpenSim::Component const& c = *impl.selected_component;
 
     // outputs
+
+
     if (ImGui::CollapsingHeader("outputs")) {
         size_t i = 0;
         for (auto const& ptr : c.getOutputs()) {
@@ -1051,9 +1127,9 @@ static void draw_selection_tab(Show_model_screen::Impl& impl) {
 
             ImGui::Columns(2);
 
-            ImGui::Text("%s", ao->getName().c_str());
+            ImGui::TextUnformatted(ao->getName().c_str());
             ImGui::PushStyleColor(ImGuiCol_Text, 0xaaaaaaaa);
-            ImGui::Text("%s", ao->getValueAsString(impl.state).c_str());
+            ImGui::TextUnformatted(ao->getValueAsString(st).c_str());
             ImGui::PopStyleColor();
             ImGui::NextColumn();
 
@@ -1076,19 +1152,91 @@ static void draw_selection_tab(Show_model_screen::Impl& impl) {
             ImGui::Separator();
         }
     }
+    */
+}
+
+static void draw_simulation_tab(Show_model_screen::Impl& impl) {
+    if (ImGui::Button("Run")) {
+        action_start_simulation(impl);
+    }
+
+    ImGui::TextUnformatted("mode:");
+    ImGui::SameLine();    
+
+    if (ImGui::Button("back to edited model")) {
+        impl.select_model(-1);
+    }
+
+    for (size_t i = 0; i < impl.simulations.size(); ++i) {
+        Ui_simulation& simulation = impl.simulations[i];
+
+        ImGui::PushID(static_cast<int>(i));
+        double cur = simulation.simulation.sim_current_time().count();
+        double tot = simulation.simulation.sim_final_time().count();
+        float pct = static_cast<float>(cur) / static_cast<float>(tot);
+
+        if (ImGui::Button("select")) {
+            impl.select_model(static_cast<int>(i));
+        }
+        
+        ImGui::SameLine();
+        ImGui::Text("%i", i);
+        
+        ImGui::SameLine();        
+        if (ImGui::Button("x")) {
+            if (impl.selected_idx >= static_cast<int>(i)) {
+                impl.select_model(impl.selected_idx - 1);
+            }
+
+            impl.simulations.erase(impl.simulations.begin() + i);
+        }
+
+        ImGui::SameLine();
+        ImGui::ProgressBar(pct);
+
+        ImGui::PopID();
+    }
 }
 
 // draw a frame of the UI
 static void draw(Show_model_screen::Impl& impl) {
+
     // draw top menu bar
     if (ImGui::BeginMainMenuBar()) {
+        // File tab
         ui::main_menu::file_tab::draw(impl.mm_filetab_st);
-        draw_main_menu_actions_tab(impl);
+
+        // Actions tab
+        if (ImGui::BeginMenu("Actions")) {
+            if (ImGui::MenuItem("Start/Stop Simulation", "Space")) {
+                action_start_simulation(impl);
+            }
+
+            if (ImGui::MenuItem("Reset Model to Initial State", "R")) {
+                action_reset_model_to_initial_state(impl);
+            }
+
+            if (ImGui::MenuItem("Reload Model File", "Ctrl+R")) {
+                action_try_reload_model_file(impl);
+            }
+
+            if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
+                action_clear_selection(impl);
+            }
+
+            if (ImGui::MenuItem("Switch to Editor", "Ctrl+E")) {
+                action_switch_to_editor(impl);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        // About tab
         ui::main_menu::about_tab::draw();
 
         if (ImGui::Button("Switch to editor (Ctrl+E)")) {
-            Application::current().request_screen_transition<Model_editor_screen>(
-                std::make_unique<OpenSim::Model>(*impl.model));
+            auto copy = std::make_unique<OpenSim::Model>(*impl.edited_model);
+            Application::current().request_screen_transition<Model_editor_screen>(std::move(copy));
         }
 
         ImGui::EndMainMenuBar();
@@ -1096,66 +1244,70 @@ static void draw(Show_model_screen::Impl& impl) {
 
     // draw model viewer(s)
     for (size_t i = 0; i < impl.model_viewers.size(); ++i) {
-
-        char buf[64];
+        char buf[16];
         std::snprintf(buf, sizeof(buf), "viewer_%zu", i);
 
         auto& viewer = impl.model_viewers[i];
 
-        auto on_selection_change = [&](OpenSim::Component const* new_selection) {
-            if (viewer.is_moused_over()) {
-                impl.selected_component = new_selection;
-            }
-        };
+        auto resp = viewer.draw(
+            buf, 
+            impl.active_model(), 
+            impl.active_state(), 
+            impl.selected_component, 
+            impl.hovered_component);
 
-        auto on_hover_change = [&](OpenSim::Component const* new_hover) {
-            if (viewer.is_moused_over()) {
-                impl.hovered_component = new_hover;
-            }
-        };
+        if (resp.type == Response::Type::HoverChanged && viewer.is_moused_over()) {
+            impl.hovered_component = resp.ptr;
+        }
 
-        viewer.draw(
-            buf, *impl.model, impl.state, impl.selected_component, impl.hovered_component, on_selection_change, on_hover_change);
+        if (resp.type == Response::Type::SelectionChanged && viewer.is_moused_over()) {
+            impl.selected_component = resp.ptr;
+        }
     }
 
+    // only ever shows `edited` model
     if (ImGui::Begin("Hierarchy")) {
-        auto resp = component_hierarchy::draw(&impl.model->getRoot(), impl.selected_component.get(), impl.hovered_component);
+        OpenSim::Component const* selected = impl.selected_component;
+        OpenSim::Component const* hovered = impl.hovered_component;
 
-        switch (resp.type) {
-        case component_hierarchy::SelectionChanged:
-            impl.selected_component = resp.ptr;
-            break;
-        case component_hierarchy::HoverChanged:
-            impl.hovered_component = resp.ptr;
-            break;
-        default:
-            break;
+        // map selection/hover to `edited` model
+        if (impl.selected_idx != -1) {
+            selected = relocate_component_pointer_to_new_model(*impl.edited_model, selected);
+            hovered = relocate_component_pointer_to_new_model(*impl.edited_model, hovered);
+        }
+
+        auto resp = component_hierarchy::draw(impl.edited_model.get(), selected, hovered);
+
+        // map selection/hover from `edited` model
+        if (resp.type == component_hierarchy::SelectionChanged) {
+            if (impl.selected_idx != -1) {
+                impl.selected_component = relocate_component_pointer_to_new_model(impl.active_model(), resp.ptr);
+            } else {
+                impl.selected_component = resp.ptr;
+            }
+        }
+
+        if (resp.type == component_hierarchy::HoverChanged) {
+            if (impl.selected_idx != -1) {
+                impl.hovered_component = relocate_component_pointer_to_new_model(impl.active_model(), resp.ptr);
+            } else {
+                impl.hovered_component = resp.ptr;
+            }
+            
         }
     }
     ImGui::End();
 
     if (ImGui::Begin("Muscles")) {
-        auto resp = muscles_table::draw(impl.muscles_table_st, *impl.model, impl.state);
-        switch (resp.type) {
-        case muscles_table::Response::SelectionChanged:
+        auto resp = muscles_table::draw(impl.muscles_table_st, impl.active_model(), impl.active_state());
+
+        if (resp.type == muscles_table::Response::SelectionChanged) {
             impl.selected_component = resp.ptr;
-            break;
-        case muscles_table::Response::HoverChanged:
-            impl.hovered_component = resp.ptr;
-            break;
-        default:
-            break;
         }
-    }
-    ImGui::End();
 
-    if (ImGui::Begin("Outputs")) {
-        draw_outputs_tab(impl);
-    }
-    ImGui::End();
-
-    if (ImGui::Begin("Moment Arms")) {
-        draw_moment_arms_tab(impl);
+        if (resp.type == muscles_table::Response::HoverChanged) {
+            impl.hovered_component = resp.ptr;
+        }
     }
     ImGui::End();
 
@@ -1165,20 +1317,20 @@ static void draw(Show_model_screen::Impl& impl) {
     ImGui::End();
 
     if (ImGui::Begin("Coordinates")) {
-        if (ui::coordinate_editor::draw(impl.coords_tab_st, *impl.model, impl.state)) {
-            on_user_edited_state(impl);
+        if (ui::coordinate_editor::draw(impl.coords_tab_st, *impl.edited_model, impl.edited_state)) {
+            impl.edited_model->realizeReport(impl.edited_state);
+            impl.select_model(-1);
         }
     }
     ImGui::End();
 
-    if (ImGui::Begin("Simulate")) {
-        impl.simulator_tab.draw(impl.selected_component, *impl.model, impl.state);
+    if (ImGui::Begin("Simulation")) {
+        draw_simulation_tab(impl);
     }
     ImGui::End();
 
     ui::log_viewer::draw(impl.log_viewer_st, "Log");
 }
-
 
 // public API
 

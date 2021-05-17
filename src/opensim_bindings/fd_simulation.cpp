@@ -70,7 +70,6 @@ struct Shared_state final {
 
 static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::Integrator const& integrator) {
     std::unique_ptr<Report> out = std::make_unique<Report>();
-
     out->state = integrator.getState();
 
     Stats& stats = out->stats;
@@ -108,8 +107,7 @@ static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::In
     // effectively, epsilon is "machine epsilon", and is only relevant for
     // numbers < 1.0. It has to be scaled up to the magnitude of the operands
 
-    double scaled_epsilon =
-        std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
+    double scaled_epsilon = std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
 
     return std::abs(a - b) < scaled_epsilon;
 }
@@ -117,13 +115,6 @@ static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::In
 static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
                                          Params params,
                                          std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
-
-    params.model->setPropertiesFromState(*params.state);
-    SimTK::State& st = params.model->initSystem();
-    params.model->realizePosition(st);
-    params.model->equilibrateMuscles(st);
-    params.model->realizeAcceleration(st);
-
     std::unique_ptr<SimTK::Integrator> integ =
         fdsim_make_integrator(params.model->getMultibodySystem(), params.integrator_method);
     integ->setInternalStepLimit(params.integrator_step_limit);
@@ -132,7 +123,7 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
     integ->setAccuracy(params.integrator_accuracy);
     integ->setFinalTime(params.final_time.count());
     integ->setReturnEveryInternalStep(params.update_latest_state_on_every_step);
-    integ->initialize(st);
+    integ->initialize(*params.state);
 
     SimTK::TimeStepper ts{params.model->getMultibodySystem(), *integ};
     ts.initialize(integ->getState());
@@ -145,12 +136,8 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 
     // report t0
     {
-        auto regular_report = fdsim_make_report(params, *integ);
-        std::unique_ptr<Report> spot_report = nullptr;
-
-        if (shared->lock()->latest_report == nullptr) {
-            spot_report = std::make_unique<Report>(*regular_report);
-        }
+        std::unique_ptr<Report> regular_report = fdsim_make_report(params, *integ);
+        std::unique_ptr<Report> spot_report = fdsim_make_report(params, *integ);
 
         auto guard = shared->lock();
         guard->regular_reports.push_back(std::move(regular_report));
@@ -160,7 +147,6 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 
     // integrate (t0..tfinal]
     for (double t = t0; t < tfinal; t = integ->getTime()) {
-
         // handle cancellation requests
         if (stop_token.stop_requested()) {
             return Fdsim_status::Cancelled;
@@ -216,13 +202,7 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 
             // create spot report (if necessary)
             if (shared->lock()->latest_report == nullptr) {
-                if (regular_report) {
-                    // just copy the already-created regular report
-                    spot_report = std::make_unique<Report>(*regular_report);
-                } else {
-                    // make new report
-                    spot_report = fdsim_make_report(params, *integ);
-                }
+                spot_report = fdsim_make_report(params, *integ);
             }
 
             // throw the reports over the fence to the calling thread
@@ -309,7 +289,11 @@ struct osc::fd::Simulation::Impl final {
 osc::fd::Simulation::Simulation(Params p) : impl{new Impl{std::move(p)}} {
 }
 
+osc::fd::Simulation::Simulation(Simulation&&) noexcept = default;
+
 osc::fd::Simulation::~Simulation() noexcept = default;
+
+osc::fd::Simulation& osc::fd::Simulation::operator=(Simulation&&) noexcept = default;
 
 std::unique_ptr<Report> osc::fd::Simulation::try_pop_latest_report() {
     std::unique_ptr<Report> rv = nullptr;

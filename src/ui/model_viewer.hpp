@@ -47,6 +47,13 @@ namespace osc {
                                          ModelViewerWidgetFlags_DefaultMuscleColoring
     };
 
+    struct Response final {
+        enum Type { NothingChanged, HoverChanged, SelectionChanged };
+
+        Type type = NothingChanged;
+        OpenSim::Component const* ptr = nullptr;
+    };
+
     class Model_viewer_widget final {
         struct Impl;
         Impl* impl;
@@ -59,23 +66,19 @@ namespace osc {
 
         bool on_event(SDL_Event const&);
 
-        void draw(
+        Response draw(
             char const* panel_name,
             OpenSim::Component const&,
             OpenSim::ModelDisplayHints const&,
             SimTK::State const&,
             OpenSim::Component const* current_selection,
-            OpenSim::Component const* current_hover,
-            std::function<void(OpenSim::Component const*)> const& on_selection_changed,
-            std::function<void(OpenSim::Component const*)> const& on_hover_changed);
+            OpenSim::Component const* current_hover);
 
-        void draw(
+        Response draw(
             char const* panel_name,
             OpenSim::Model const&,
             SimTK::State const&,
             OpenSim::Component const* current_selection,
-            OpenSim::Component const* current_hover,
-            std::function<void(OpenSim::Component const*)> const& on_selection_changed,
-            std::function<void(OpenSim::Component const*)> const& on_hover_changed);
+            OpenSim::Component const* current_hover);
     };
 }

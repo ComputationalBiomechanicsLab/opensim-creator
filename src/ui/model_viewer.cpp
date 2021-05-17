@@ -181,15 +181,15 @@ bool Model_viewer_widget::on_event(const SDL_Event& e) {
     return false;
 }
 
-void Model_viewer_widget::draw(
+Response Model_viewer_widget::draw(
     char const* panel_name,
     OpenSim::Component const& model,
     OpenSim::ModelDisplayHints const& mdh,
     SimTK::State const& state,
     OpenSim::Component const* current_selection,
-    OpenSim::Component const* current_hover,
-    std::function<void(OpenSim::Component const*)> const& on_selection_changed,
-    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
+    OpenSim::Component const* current_hover) {
+
+    Response resp;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -593,12 +593,14 @@ void Model_viewer_widget::draw(
                 }
 
                 if (current_hover != impl->hovered_component) {
-                    on_hover_changed(impl->hovered_component);
+                    resp.type = Response::Type::HoverChanged;
+                    resp.ptr = impl->hovered_component;
                 }
 
                 if (impl->hovered_component && mouse_right_clicked_render &&
                     current_selection != impl->hovered_component) {
-                    on_selection_changed(impl->hovered_component);
+                    resp.type = Response::Type::SelectionChanged;
+                    resp.ptr = impl->hovered_component;
                 }
             }
 
@@ -625,24 +627,22 @@ void Model_viewer_widget::draw(
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
+
+    return resp;
 }
 
-void Model_viewer_widget::draw(
+Response Model_viewer_widget::draw(
     char const* panel_name,
     OpenSim::Model const& model,
     SimTK::State const& st,
     OpenSim::Component const* current_selection,
-    OpenSim::Component const* current_hover,
-    std::function<void(OpenSim::Component const*)> const& on_selection_changed,
-    std::function<void(OpenSim::Component const*)> const& on_hover_changed) {
+    OpenSim::Component const* current_hover) {
 
-    draw(
+    return draw(
         panel_name,
         model,
         model.getDisplayHints(),
         st,
         current_selection,
-        current_hover,
-        on_selection_changed,
-        on_hover_changed);
+        current_hover);
 }

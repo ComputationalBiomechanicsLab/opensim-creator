@@ -32,7 +32,7 @@ namespace osc::fd {
         // model to simulate
         std::unique_ptr<OpenSim::Model> model = nullptr;
 
-        // initial state when the simulation starts
+        // initial state of the model (e.g. after coordinate edits)
         std::unique_ptr<SimTK::State> state = nullptr;
 
         // final time for the simulation
@@ -82,16 +82,8 @@ namespace osc::fd {
         // is set
         bool update_latest_state_on_every_step = true;
 
-        Params(
-            OpenSim::Model const& _model,
-            SimTK::State const& _state,
-            std::chrono::duration<double> _final_time,
-            IntegratorMethod _method) :
-
-            model{std::make_unique<OpenSim::Model>(_model)},
-            state{std::make_unique<SimTK::State>(_state)},
-            final_time{_final_time},
-            integrator_method{_method} {
+        Params(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
+            model{std::move(_model)}, state{std::move(_state)} {
         }
     };
 
@@ -136,11 +128,16 @@ namespace osc::fd {
     public:
         // starts the simulation on construction
         Simulation(Params);
+        Simulation(Simulation const&) = delete;
+        Simulation(Simulation&&) noexcept;
 
         // automatically cancels + joins the simulation thread
         //
         // rougly equivalent to calling .stop() on the simulator
         ~Simulation() noexcept;
+
+        Simulation& operator=(Simulation const&) = delete;
+        Simulation& operator=(Simulation&&) noexcept;
 
         // tries to pop the latest report from the simulator
         //

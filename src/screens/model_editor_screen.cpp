@@ -1288,33 +1288,31 @@ void osc::Model_editor_screen::draw() {
 
     // draw 3D model viewer
     {
-        auto on_selection_change = [this](OpenSim::Component const* new_selection) {
-            impl->set_selection(const_cast<OpenSim::Component*>(new_selection));
-        };
-
-        auto on_hover_change = [this](OpenSim::Component const* new_hover) {
-            impl->set_hover(const_cast<OpenSim::Component*>(new_hover));
-        };
+        Response resp;
 
         if (impl->isolated()) {
-            impl->model_viewer.draw(
+            resp = impl->model_viewer.draw(
                 "render",
                 *impl->isolated(),
                 impl->model().getDisplayHints(),
                 impl->get_state(),
                 impl->selection(),
-                impl->hover(),
-                on_selection_change,
-                on_hover_change);
+                impl->hover());
         } else {
-            impl->model_viewer.draw(
+            resp = impl->model_viewer.draw(
                 "render",
                 impl->model(),
                 impl->get_state(),
                 impl->selection(),
-                impl->hover(),
-                on_selection_change,
-                on_hover_change);
+                impl->hover());
+        }
+
+        if (resp.type == Response::Type::HoverChanged) {
+            impl->set_hover(const_cast<OpenSim::Component*>(resp.ptr));
+        }
+
+        if (resp.type == Response::Type::SelectionChanged) {
+            impl->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
         }
     }
 
