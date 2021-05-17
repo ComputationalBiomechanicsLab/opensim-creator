@@ -115,7 +115,7 @@ if(TRUE)
     add_library(glew STATIC ${GLEW_PUBLIC_HEADER_FILES} ${GLEW_SRC_FILES})
     target_include_directories(glew PUBLIC ${GLEW_DIR}/include/)
     target_compile_definitions(glew PRIVATE -DGLEW_NO_GLU)
-    target_link_libraries(glew PUBLIC ${OPENGL_LIBRARIES})
+    target_link_libraries(glew PUBLIC OpenGL::GL)
     set_target_properties(glew PROPERTIES
         VERSION ${GLEW_VERSION}
         COMPILE_DEFINITIONS "GLEW_STATIC"
@@ -368,7 +368,7 @@ add_library(osc-all-deps INTERFACE)
 target_link_libraries(osc-all-deps INTERFACE
 
     # linking to the OSes OpenGL driver/loader
-    ${OPENGL_LIBRARIES}
+    OpenGL::GL
 
     # for loading the OpenGL API at runtime
     glew
