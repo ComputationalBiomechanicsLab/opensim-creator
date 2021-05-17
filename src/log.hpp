@@ -109,7 +109,7 @@ namespace osc::log {
             }
 
             // create the log message
-            char buf[512];
+            char buf[1024];
             size_t n = 0;
             {
                 va_list args;
