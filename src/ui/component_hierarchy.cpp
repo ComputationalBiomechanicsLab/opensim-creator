@@ -12,227 +12,240 @@
 #include <cstddef>
 #include <string>
 
-static size_t framegeom_hash = typeid(OpenSim::FrameGeometry).hash_code();
-static size_t wos_hash = typeid(OpenSim::WrapObjectSet).hash_code();
-static constexpr size_t max_depth = 16;
-
 // poor-man's abstraction for a constant-sized array
 template<typename T, size_t N>
 struct Sized_array final {
-    static_assert(std::is_trivially_destructible_v<T>);
+    static_assert(std::is_trivial_v<T>);
+    static_assert(N <= std::numeric_limits<int>::max());
 
     std::array<T, N> els;
-    size_t n = 0;
+    int n = 0;
 
     Sized_array& operator=(Sized_array const& rhs) {
-        std::copy(rhs.begin(), rhs.end(), els.begin());
-        n = rhs.size();
+        std::copy(rhs.els.begin(), rhs.els.begin() + size(), els.begin());
+        n = rhs.n;
         return *this;
     }
 
     void push_back(T v) {
-        if (n >= N) {
+        if (static_cast<size_t>(n) >= N) {
             throw std::runtime_error{"cannot render a component_hierarchy widget: the Model/Component tree is too deep"};
         }
         els[n++] = v;
     }
 
-    auto begin() const -> decltype(els.begin()) {
-        return els.begin();
+    T const* begin() const noexcept {
+        return els.data();
     }
 
-    auto begin() -> decltype(els.begin()) {
-        return els.begin();
+    T* begin() noexcept {
+        return els.data();
     }
 
-    auto end() const -> decltype(els.begin() + n) {
-        return els.begin() + n;
+    T const* end() const noexcept {
+        return els.data() + static_cast<size_t>(n);
     }
 
-    auto end() -> decltype(els.begin() + n) {
-        return els.begin() + n;
+    T* end() noexcept {
+        return els.data() + static_cast<size_t>(n);
     }
 
-    size_t size() const {
+    size_t size() const noexcept {
+        return static_cast<size_t>(n);
+    }
+
+    int sizei() const noexcept {
         return n;
     }
 
-    bool empty() const {
+    bool empty() const noexcept {
         return n == 0;
     }
 
-    void resize(size_t newsize) {
+    void resize(size_t newsize) noexcept {
         n = newsize;
     }
 
-    void clear() {
+    void clear() noexcept {
         n = 0;
     }
 
-    T& operator[](size_t n) {
+    T& operator[](size_t n) noexcept {
         return els[n];
     }
 
-    T const& operator[](size_t i) const {
+    T const& operator[](size_t i) const noexcept {
         return els[i];
     }
 };
 
-// appends components to the outparam with a sequence of Open
-// that lead from `root` to `cr`
-static void component_path_ptrs(OpenSim::Component const* root,
-                                OpenSim::Component const* cr,
-                                Sized_array<OpenSim::Component const*, max_depth>& out) {
-    if (!cr) {
-        return;
-    }
+using Component_path = Sized_array<OpenSim::Component const*, 16>;
+
+static size_t framegeom_hash = typeid(OpenSim::FrameGeometry).hash_code();
+static size_t wos_hash = typeid(OpenSim::WrapObjectSet).hash_code();
+
+// populates `out` with the sequence of nodes between (ancestor..child]
+static void compute_path(OpenSim::Component const* ancestor, OpenSim::Component const* child, Component_path& out) {
+    out.clear();
 
     // child --> parent
-    OpenSim::Component const* c = cr;
-    while (c != root && c->hasOwner()) {
-        out.push_back(c);
-        c = &c->getOwner();
+    while (child != ancestor && child->hasOwner()) {
+        out.push_back(child);
+        child = &child->getOwner();
     }
 
     // parent --> child
     std::reverse(out.begin(), out.end());
 }
 
+static bool path_contains(Component_path const& p, OpenSim::Component const* c) {
+    return std::find(p.begin(), p.end(), c) != p.end();
+}
+
+static bool should_render(OpenSim::Component const& c) {
+    auto hc = typeid(c).hash_code();
+    return hc != framegeom_hash && hc != wos_hash;
+}
+
 osc::ui::component_hierarchy::Response osc::ui::component_hierarchy::draw(
     OpenSim::Component const* root,
-    OpenSim::Component const* current_selection,
-    OpenSim::Component const* current_hover) {
+    OpenSim::Component const* selection,
+    OpenSim::Component const* hover) {
 
-    // precompute selection + hover paths
-    //
-    // this is so that we can query whether something in the hierarchy
-    // intersects the selection/hover path (for highlighting, auto-opening,
-    // etc.)
-    Sized_array<OpenSim::Component const*, max_depth> selection_path;
-    component_path_ptrs(root, current_selection, selection_path);
-    Sized_array<OpenSim::Component const*, max_depth> hover_path;
-    component_path_ptrs(root, current_hover, hover_path);
-
-    Sized_array<OpenSim::Component const*, max_depth> prev;
-    OpenSim::Component const* prev_component = nullptr;
-    Sized_array<OpenSim::Component const*, max_depth> cur;
-    Sized_array<bool, max_depth> enabled_nodes;
-    int imgui_id = 0;
     Response response;
 
-    // this implementation is strongly dependent on OpenSim's component
-    // list traversal algorithm, which is a depth-first traversal that
-    // stops at each parent *before* traversing
+    if (!root) {
+        return response;
+    }
 
-    for (OpenSim::Component const& cr : root->getComponentList()) {
-        // apply filters
-        {
-            auto cr_hash = typeid(cr).hash_code();
-            if (cr_hash == framegeom_hash || cr_hash == wos_hash) {
-                continue;
+    Component_path selection_path;
+    if (selection) {
+        compute_path(root, selection, selection_path);
+    }
+
+    Component_path hover_path;
+    if (hover) {
+        compute_path(root, hover, hover_path);
+    }
+
+    // init iterators: this alg. is single-pass with a 1-token lookahead
+    auto const lst = root->getComponentList();
+    auto it = lst.begin();
+    auto const end = lst.end();
+
+    // initially populate lookahead (+ path)
+    OpenSim::Component const* lookahead = nullptr;
+    Component_path lookahead_path;
+    while (it != end) {
+        OpenSim::Component const& c = *it++;
+
+        if (should_render(c)) {
+            lookahead = &c;
+            compute_path(root, &c, lookahead_path);
+            break;
+        }
+    }
+
+    OpenSim::Component const* cur = nullptr;
+    Component_path cur_path;
+
+    int imgui_tree_depth = 0;
+    int imgui_id = 0;
+
+    while (lookahead) {
+        // important: ensure all nodes have a unique ID: regardess of filtering
+        ++imgui_id;
+
+        // populate current (+ path) from lookahead
+        cur = lookahead;
+        cur_path = lookahead_path;
+
+        OSC_ASSERT(cur && "cur ptr should *definitely* be populated at this point");
+        OSC_ASSERT(!cur_path.empty() && "current path cannot be empty (even a root element has a path)");
+
+        // update lookahead (+ path)
+        lookahead = nullptr;
+        lookahead_path.clear();
+        while (it != end) {
+            OpenSim::Component const& c = *it++;
+
+            if (should_render(c)) {
+                lookahead = &c;
+                compute_path(root, &c, lookahead_path);
+                break;
             }
         }
+        OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
-        // compute path
-        component_path_ptrs(root, &cr, cur);
-
-        // everything we are doing next assumes there is a *previous* path
-        if (prev.empty()) {
-            prev = cur;
-            prev_component = &cr;
-            cur.clear();
+        // skip rendering if a parent node is collapsed
+        if (imgui_tree_depth < cur_path.sizei() - 1) {
             continue;
         }
 
-        OSC_ASSERT_ALWAYS(enabled_nodes.size() == prev.size()-1);
-
-        // figure out if `prev` should actually shown in the UI
-        //
-        // this is because the user can collapse parent headers etc.
-        bool prev_should_show =
-            !std::any_of(enabled_nodes.begin(), enabled_nodes.end(), [](bool b) { return !b; });
-
-        if (prev_should_show) {
-            // figure out if a component in the current selection/hover is
-            // the `prev` component being rendered, so that automatic tree
-            // opening etc. works
+        // pop tree nodes down to the current depth
+        while (imgui_tree_depth >= cur_path.sizei()) {
+            ImGui::TreePop();
+            --imgui_tree_depth;
+        }
+        OSC_ASSERT(imgui_tree_depth == cur_path.sizei() - 1);
 
 
-            ImGui::PushID(imgui_id++);
+        if (cur_path.size() < 2 || lookahead_path.size() > cur_path.size()) {
+            // render as an expandable tree node
 
-            bool prev_in_selection_pth =
-                std::find(selection_path.begin(), selection_path.end(), prev_component) != selection_path.end();
-
-            if (prev.size() < cur.size() || prev.size() == 1) {
-                if (prev_in_selection_pth) {
-                    ImGui::SetNextItemOpen(true);
-                }
-                int styles = 0;
-                if (prev_component == current_selection) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
-                    ++styles;
-                }
-
-                bool shown = ImGui::TreeNode(prev_component->getName().c_str());
-                enabled_nodes.push_back(shown);
-
-                ImGui::PopStyleColor(styles);
-            } else {
-
-                bool prev_in_hover_pth =
-                    std::find(hover_path.begin(), hover_path.end(), prev_component) != hover_path.end();
-
-                int styles = 0;
-                if (prev_in_hover_pth) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
-                    ++styles;
-                }
-                if (prev_in_selection_pth) {
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
-                    ++styles;
-                }
-
-                ImGui::TextUnformatted(prev_component->getName().c_str());
-
-                ImGui::PopStyleColor(styles);
+            int styles = 0;
+            if (cur == hover) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
+                ++styles;
+            }
+            if (cur == selection) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                ++styles;
             }
 
-            if (ImGui::IsItemHovered()) {
-                response.type = HoverChanged;
-                response.ptr = prev_component;
+            if (path_contains(selection_path, cur)) {
+                ImGui::SetNextItemOpen(true);
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                response.type = SelectionChanged;
-                response.ptr = prev_component;
+            ImGui::PushID(imgui_id);
+            if (ImGui::TreeNode(cur->getName().c_str())) {
+                ++imgui_tree_depth;
             }
-
             ImGui::PopID();
+            ImGui::PopStyleColor(styles);
         } else {
-            if (prev.size() < cur.size()) {
-                enabled_nodes.push_back(false);
+            // render as plain text
+
+            int styles = 0;
+            if (path_contains(hover_path, cur)) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
+                ++styles;
             }
+            if (path_contains(selection_path, cur)) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                ++styles;
+            }
+
+            ImGui::PushID(imgui_id);
+            ImGui::TextUnformatted(cur->getName().c_str());
+            ImGui::PopID();
+            ImGui::PopStyleColor(styles);
         }
 
-        if ((prev.size() > cur.size() || prev.size() == 1) && cur.size() > 0) {
-            for (auto it = enabled_nodes.begin() + (cur.size()-1); it != enabled_nodes.end(); ++it) {
-                if (*it) {
-                    ImGui::TreePop();
-                }
-            }
-            enabled_nodes.resize(cur.size()-1);
+        if (ImGui::IsItemHovered()) {
+            response.type = HoverChanged;
+            response.ptr = cur;
         }
 
-        // update loop invariants
-        prev = cur;
-        prev_component = &cr;
-        cur.clear();
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+            response.type = SelectionChanged;
+            response.ptr = cur;
+        }
     }
 
-    for (bool b : enabled_nodes) {
-        if (b) {
-            ImGui::TreePop();
-        }
+    // pop remaining dangling tree elements
+    while (imgui_tree_depth-- > 0) {
+        ImGui::TreePop();
     }
 
     return response;
