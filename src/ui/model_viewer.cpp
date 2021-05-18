@@ -60,7 +60,7 @@ static void apply_standard_rim_coloring(
 }
 
 struct osc::Model_viewer_widget::Impl final {
-    GPU_storage& cache;
+    GPU_storage& cache = Application::current().get_gpu_storage();
     Render_target render_target{100, 100, Application::current().samples()};
     Model_drawlist drawlist;
 
@@ -79,7 +79,7 @@ struct osc::Model_viewer_widget::Impl final {
 
     bool mouse_over_render = false;
 
-    Impl(GPU_storage& _cache, ModelViewerWidgetFlags _flags) : cache{_cache}, flags{_flags} {
+    Impl(ModelViewerWidgetFlags _flags) : flags{_flags} {
     }
 
     gl::Texture_2d& draw(DrawcallFlags drawflags) {
@@ -101,7 +101,7 @@ struct osc::Model_viewer_widget::Impl final {
         }
 
         // draw scene
-        draw_scene(cache, params, drawlist.raw_drawlist(), render_target);
+        draw_scene(Application::current().get_gpu_storage(), params, drawlist.raw_drawlist(), render_target);
 
         // post-draw: check if the hit-test passed
         // TODO:: optimized indices are from the previous frame, which might
@@ -114,8 +114,7 @@ struct osc::Model_viewer_widget::Impl final {
     }
 };
 
-Model_viewer_widget::Model_viewer_widget(GPU_storage& cache, ModelViewerWidgetFlags flags) :
-    impl{new Impl{cache, flags}} {
+Model_viewer_widget::Model_viewer_widget(ModelViewerWidgetFlags flags) : impl{new Impl{flags}} {
 }
 
 Model_viewer_widget::~Model_viewer_widget() noexcept {

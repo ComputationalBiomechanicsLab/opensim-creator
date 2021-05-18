@@ -59,7 +59,9 @@ namespace osc {
         Impl* impl;
 
     public:
-        Model_viewer_widget(GPU_storage&, ModelViewerWidgetFlags = ModelViewerWidgetFlags_None);
+        Model_viewer_widget() : Model_viewer_widget{ModelViewerWidgetFlags_None} {
+        }
+        Model_viewer_widget(ModelViewerWidgetFlags);
         ~Model_viewer_widget() noexcept;
 
         bool is_moused_over() const noexcept;

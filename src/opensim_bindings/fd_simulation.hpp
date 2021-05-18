@@ -175,8 +175,6 @@ namespace osc::fd {
         //       tfinal (always reported - even if it is not a regular part of the sequence)
         int pop_regular_reports(std::vector<std::unique_ptr<Report>>& append_out);
 
-        // TODO: pop regular reports
-
         // requests that the simulator stops
         //
         // this is only a request: the simulation may still be running some time after

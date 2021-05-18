@@ -652,13 +652,11 @@ struct Show_model_screen::Impl final {
     std::vector<Ui_simulation> simulations;
 
     // 3D viewers
+    static constexpr ModelViewerWidgetFlags viewer_flags =
+        ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles;
     std::array<Model_viewer_widget, 2> model_viewers = {
-        Model_viewer_widget{
-            Application::current().get_gpu_storage(),
-            ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
-        Model_viewer_widget{
-            Application::current().get_gpu_storage(),
-            ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles},
+        Model_viewer_widget{viewer_flags},
+        Model_viewer_widget{viewer_flags}
     };
 
     ui::main_menu::file_tab::State mm_filetab_st;
@@ -756,7 +754,7 @@ static bool action_try_reload_model_file(Show_model_screen::Impl& impl) {
 }
 
 static void action_start_simulation(Show_model_screen::Impl& impl) {
-    // make a copy of the current (edited) model for the GUI
+    // make a copy of the current (edited) model that is shown in the GUI
     auto gui_model = std::make_unique<OpenSim::Model>(*impl.edited_model);
     gui_model->finalizeFromProperties();
     SimTK::State& guistate = gui_model->initSystem();

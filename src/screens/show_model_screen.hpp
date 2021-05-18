@@ -2,7 +2,6 @@
 
 #include "src/screens/screen.hpp"
 
-#include <SDL_events.h>
 #include <memory>
 
 namespace OpenSim {
