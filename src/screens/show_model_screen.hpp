@@ -8,9 +8,10 @@ namespace OpenSim {
     class Model;
 }
 
-// show model screen: main UI screen that shows a loaded OpenSim
-// model /w UX, manipulators, etc.
 namespace osc {
+
+    // a screen that shows the model and enables the user to simulate the model
+    // in a forward-dynamic simulation
     class Show_model_screen final : public Screen {
     public:
         struct Impl;

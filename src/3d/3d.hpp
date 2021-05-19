@@ -17,6 +17,11 @@
 #include <unordered_map>
 #include <array>
 
+// 3d: low-level 3D rendering primitives based on OpenGL
+//
+// these are the low-level datastructures/functions used for rendering
+// 3D elements in OSC. The renderer is not dependent on SimTK/OpenSim at
+// all and has a very low-level view of view of things (verts, drawlists)
 namespace osc {
     struct Untextured_vert final {
         glm::vec3 pos;

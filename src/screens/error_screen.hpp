@@ -6,8 +6,13 @@
 
 #include <stdexcept>
 
-// blank screen that shows the exception message in-UI
 namespace osc {
+
+    // A plain screen for showing an error message + log to the user
+    //
+    // this is typically the screen the top-level Application automatically
+    // transitions into if an exception bubbles all the way to the top of the
+    // main draw loop. It's the best it can do: tell the user as much as possible
     class Error_screen final : public Screen {
         struct Impl;
         Impl* impl;

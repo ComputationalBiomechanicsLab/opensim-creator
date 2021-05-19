@@ -5,6 +5,10 @@
 #include <SDL_events.h>
 
 namespace osc {
+
+    // top-level splash screen
+    //
+    // this is shown when OSC boots and contains a list of previously opened files, etc.
     class Splash_screen final : public Screen {
         struct Impl;
         Impl* impl;

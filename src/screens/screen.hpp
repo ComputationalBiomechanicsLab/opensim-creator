@@ -2,15 +2,22 @@
 
 #include <SDL_events.h>
 
-// screen: thin abstraction over an application screen
-//
-// this exists to separate top-level application concerns (e.g. event pumping,
-// framerate throttling, exit handling, etc. etc.) from specific per-screen
-// concerns (e.g. drawing stuff, handling screen-specific events, etc.)
-
 namespace osc {
-    // basic state machine for a screen that may draw itself onto the
-    // current window
+
+    // top-level "screen" abstraction
+    //
+    // the OSC GUI shows exactly one concrete instance of a `Screen`. This is
+    // a low-level API for drawing things in the application. While showing a
+    // `Screen`, the top-level application will:
+    //
+    // - pump GUI events and pump relevant ones through `on_event(e)` until all
+    //   events are pumped
+    // 
+    // - call `tick()` once
+    //
+    // - call `draw()` once
+    //
+    // - go back to event pumping
     class Screen {
     public:
         // called by the application whenever an external event is received (e.g. mousemove)

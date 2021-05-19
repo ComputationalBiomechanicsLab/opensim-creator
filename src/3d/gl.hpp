@@ -10,6 +10,7 @@
 #define GL_TOSTRING(x) GL_STRINGIFY(x)
 #define GL_SOURCELOC __FILE__ ":" GL_TOSTRING(__LINE__)
 
+// gl: convenience C++ bindings to OpenGL
 namespace gl {
 
     // an exception that specifically means something has gone wrong in

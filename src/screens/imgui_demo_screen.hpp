@@ -4,8 +4,12 @@
 
 #include <SDL_events.h>
 
-// show the official ImGui demo inside the osc UI so that devs can see what widgets are available
 namespace osc {
+
+    // shows the official ImGui demo
+    //
+    // this is useful or seeing what widgets are available and how they will
+    // look in OSC's application stack
     class Imgui_demo_screen final : public Screen {
     public:
         bool on_event(SDL_Event const&) override;

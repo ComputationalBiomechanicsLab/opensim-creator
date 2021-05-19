@@ -135,6 +135,7 @@ add_executable(osc
     src/ui/select_2_pfs_popup.cpp
     src/ui/model_actions.hpp
     src/ui/model_actions.cpp
+    src/ui/select_component_popup.hpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp
@@ -163,6 +164,8 @@ add_executable(osc
     src/utils/helpers.hpp
     src/utils/helpers.cpp
 
+    src/main_editor_state.hpp
+    src/main_editor_state.cpp
     src/config.hpp
     src/config.cpp
     src/application.hpp

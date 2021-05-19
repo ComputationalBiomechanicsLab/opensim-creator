@@ -6,7 +6,7 @@
 #include <filesystem>
 
 namespace osc {
-    // loading screen: screen shown when UI has just booted and is loading (e.g.) an osim file
+    // shows a basic loading message while an .osim file loads
     class Loading_screen final : public Screen {
         struct Impl;
         Impl* impl;

@@ -8,7 +8,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-// gl_extensions: stuff that isn't strictly required to use OpenGL, but it nice to have
+// gl_extensions: stuff that isn't strictly required to use OpenGL, but is nice to have
 namespace gl {
     inline void Uniform(Uniform_int const& u, GLsizei n, GLint const* data) noexcept {
         glUniform1iv(u.geti(), n, data);
