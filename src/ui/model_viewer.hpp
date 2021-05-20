@@ -80,7 +80,7 @@ namespace osc {
             char const* panel_name,
             OpenSim::Model const&,
             SimTK::State const&,
-            OpenSim::Component const* current_selection,
-            OpenSim::Component const* current_hover);
+            OpenSim::Component const* current_selection = nullptr,
+            OpenSim::Component const* current_hover = nullptr);
     };
 }

@@ -194,10 +194,55 @@ void osc::Undoable_ui_model::after_modifying_model() {
     carefully_try_init_system_and_realize_on_current(*this);
 }
 
+static osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s) {
+    auto model_copy = std::make_unique<OpenSim::Model>(m);
+    auto state_copy = std::make_unique<SimTK::State>(s);
+
+    model_copy->initSystem();
+    model_copy->setPropertiesFromState(*state_copy);
+    model_copy->realizePosition(*state_copy);
+    model_copy->equilibrateMuscles(*state_copy);
+    model_copy->realizeAcceleration(*state_copy);
+
+    auto params = osc::fd::Params{std::move(model_copy), std::move(state_copy)};
+    params.final_time = std::chrono::duration<double>{0.4};
+
+    return osc::fd::Simulation{std::move(params)};
+}
+
+static std::unique_ptr<OpenSim::Model> create_initialized_model(OpenSim::Model const& m) {
+    auto rv = std::make_unique<OpenSim::Model>(m);
+    rv->finalizeFromProperties();
+    rv->initSystem();
+    return rv;
+}
+
+static std::unique_ptr<osc::fd::Report> create_dummy_report(OpenSim::Model const& m) {
+    SimTK::State const& s = m.getWorkingState();
+
+    auto rv = std::make_unique<osc::fd::Report>();
+    rv->state = m.getWorkingState();
+    rv->stats = {};
+    m.realizeReport(rv->state);
+
+    return rv;
+}
+
+osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s) :
+    simulation{create_fd_sim(m, s)},
+    model{create_initialized_model(m)},
+    spot_report{create_dummy_report(*this->model)},
+    regular_reports{} {
+}
+
 osc::Main_editor_state::Main_editor_state() : 
     edited_model{std::make_unique<OpenSim::Model>()} {
 }
 
 osc::Main_editor_state::Main_editor_state(std::unique_ptr<OpenSim::Model> model) :
     edited_model{std::move(model)} {
+}
+
+void osc::Main_editor_state::set_model(std::unique_ptr<OpenSim::Model> new_model) {
+    edited_model.set_model(std::move(new_model));
 }

@@ -1,13 +1,12 @@
 #pragma once
 
 #include "src/utils/circular_buffer.hpp"
-#include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/log.hpp"
+#include "src/opensim_bindings/fd_simulation.hpp"
 
 #include <memory>
 #include <chrono>
 #include <optional>
-#include <vector>
 
 namespace SimTK {
     class State;
@@ -161,8 +160,6 @@ namespace osc {
         }
     };
     
-    /*
-    // a running/finished simulation in the UI
     struct Ui_simulation final {
         // sim-side: the simulation, running on a background thread
         fd::Simulation simulation;
@@ -180,13 +177,22 @@ namespace osc {
         // the simulator is guaranteed to produce reports at some regular
         // interval (in simulation time).
         std::vector<std::unique_ptr<fd::Report>> regular_reports;
+
+        // start a new simulation by *copying* the provided OpenSim::Model and
+        // State pair
+        Ui_simulation(OpenSim::Model const&, SimTK::State const&);
     };
-    */
 
     // top-level UI state
     struct Main_editor_state final {
         // the model that the user is currently editing
         Undoable_ui_model edited_model;
+
+        // simulations that are running/finished
+        std::vector<std::unique_ptr<Ui_simulation>> simulations;
+
+        // simulation currently focused on in the ui, if any
+        int focused_simulation = -1;
 
         // construct with a blank OpenSim::Model
         Main_editor_state();
@@ -220,9 +226,7 @@ namespace osc {
             return edited_model.model();
         }
 
-        void set_model(std::unique_ptr<OpenSim::Model> new_model) {
-            edited_model.set_model(std::move(new_model));
-        }
+        void set_model(std::unique_ptr<OpenSim::Model> new_model);
 
         void before_modifying_model() {
             edited_model.before_modifying_model();

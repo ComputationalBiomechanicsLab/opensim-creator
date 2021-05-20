@@ -128,6 +128,7 @@ namespace osc::fd {
     public:
         // starts the simulation on construction
         Simulation(Params);
+
         Simulation(Simulation const&) = delete;
         Simulation(Simulation&&) noexcept;
 

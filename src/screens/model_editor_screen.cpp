@@ -10,6 +10,7 @@
 #include "src/main_editor_state.hpp"
 #include "src/screens/show_model_screen.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/screens/simulator_screen.hpp"
 #include "src/ui/add_body_popup.hpp"
 #include "src/ui/attach_geometry_popup.hpp"
 #include "src/ui/component_details.hpp"
@@ -964,6 +965,18 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
             impl.ui.model_actions_panel, impl.st->model(), on_set_selection, before_modify_model, after_modify_model);
     }
 
+    bool do_transition = false;
+    if (ImGui::Begin("panel")) {
+        if (ImGui::Button("transition")) {
+            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
+            do_transition = true;
+        }
+    }
+    ImGui::End();
+    if (do_transition) {
+        return;
+    }
+
     // draw 3D model viewer
     {
         Response resp;
@@ -1038,6 +1051,10 @@ Model_editor_screen::Model_editor_screen() :
 
 Model_editor_screen::Model_editor_screen(std::unique_ptr<OpenSim::Model> _model) : 
     impl{new Impl(std::make_unique<Main_editor_state>(std::move(_model)))} {
+}
+
+Model_editor_screen::Model_editor_screen(std::unique_ptr<Main_editor_state> st) :
+    impl{new Impl {std::move(st)}} {
 }
 
 Model_editor_screen::~Model_editor_screen() noexcept {
