@@ -3,7 +3,7 @@
 #include "src/3d/gl.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"
-#include "src/screens/show_model_screen.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 
 #include <GL/glew.h>
@@ -67,7 +67,7 @@ void Loading_screen::tick() {
     try {
         if (impl->result.wait_for(0ms) == std::future_status::ready) {
             config::add_recent_file(impl->path);
-            Application::current().request_screen_transition<Show_model_screen>(impl->result.get());
+            Application::current().request_screen_transition<Model_editor_screen>(impl->result.get());
             return;
         }
     } catch (std::exception const& ex) {

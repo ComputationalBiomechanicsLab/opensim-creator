@@ -47,7 +47,7 @@ namespace osc::fd {
         // the time interval between report updates
         //
         // defaults to 60 FPS
-        std::chrono::duration<double> reporting_interval{1.0/60.0};
+        std::chrono::duration<double> reporting_interval{1.0/120.0};
 
         // max number of *internal* steps that may be taken within a single call
         // to the integrator's stepTo or stepBy function
@@ -156,6 +156,9 @@ namespace osc::fd {
         [[nodiscard]] std::chrono::duration<double> sim_current_time() const noexcept;
         [[nodiscard]] std::chrono::duration<double> sim_final_time() const noexcept;
         [[nodiscard]] char const* status_description() const noexcept;
+
+        // progress of simulation, which falls in the range [0.0, 1.0]
+        [[nodiscard]] float progress() const noexcept;
 
         // pushes regular reports onto the end of the outparam and returns the number
         // of reports popped

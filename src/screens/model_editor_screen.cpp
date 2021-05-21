@@ -778,11 +778,6 @@ static void action_redo(Model_editor_screen::Impl& impl) {
     }
 }
 
-static void action_switch_to_simulator(Model_editor_screen::Impl& impl) {
-    auto copy = std::make_unique<OpenSim::Model>(impl.st->model());
-    Application::current().request_screen_transition<Show_model_screen>(std::move(copy));
-}
-
 static void action_disable_all_wrapping_surfs(Model_editor_screen::Impl& impl) {
     OpenSim::Model& m = impl.st->model();
     impl.st->before_modifying_model();
@@ -818,10 +813,6 @@ static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
 
         if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", false, impl.st->can_redo())) {
             action_redo(impl);
-        }
-
-        if (ImGui::MenuItem("Switch to simulator", "Ctrl+R")) {
-            action_switch_to_simulator(impl);
         }
 
         if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
@@ -883,7 +874,9 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
             action_undo(impl);
             return true;
         case SDLK_r:
-            action_switch_to_simulator(impl);
+            // Ctrl + r
+            impl.st->start_simulating_edited_model();
+            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
             return true;
         case SDLK_a:
             impl.st->set_selection(nullptr);
@@ -946,10 +939,21 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         draw_main_menu_actions_tab(impl);
         ui::main_menu::about_tab::draw();
 
+        ImGui::Dummy(ImVec2{2.0f, 0.0f});
+        if (ImGui::Button("Show simulations")) {
+            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
+            ImGui::EndMainMenuBar();
+            return;
+        }
+
         // colored "switch to simulator" menu button
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
-        if (ImGui::Button("Switch to simulator (Ctrl+R)")) {
-            action_switch_to_simulator(impl);
+        if (ImGui::Button("Simulate (Ctrl+R)")) {
+            impl.st->start_simulating_edited_model();
+            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
+            ImGui::PopStyleColor();
+            ImGui::EndMainMenuBar();
+            return;
         }
         ImGui::PopStyleColor();
 
@@ -963,18 +967,6 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         auto after_modify_model = [&]() { impl.st->after_modifying_model(); };
         ui::model_actions::draw(
             impl.ui.model_actions_panel, impl.st->model(), on_set_selection, before_modify_model, after_modify_model);
-    }
-
-    bool do_transition = false;
-    if (ImGui::Begin("panel")) {
-        if (ImGui::Button("transition")) {
-            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
-            do_transition = true;
-        }
-    }
-    ImGui::End();
-    if (do_transition) {
-        return;
     }
 
     // draw 3D model viewer

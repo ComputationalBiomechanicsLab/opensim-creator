@@ -12,8 +12,6 @@
 #include "src/constants.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
-#include "src/screens/model_editor_screen.hpp"
-#include "src/screens/opengl_test_screen.hpp"
 #include "src/ui/main_menu.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"

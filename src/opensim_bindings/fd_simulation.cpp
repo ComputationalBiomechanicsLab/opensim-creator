@@ -349,6 +349,12 @@ char const* osc::fd::Simulation::status_description() const noexcept {
     }
 }
 
+float osc::fd::Simulation::progress() const noexcept {
+    double cur = sim_current_time().count();
+    double end = impl->final_time.count();
+    return static_cast<float>(cur) / static_cast<float>(end);
+}
+
 int osc::fd::Simulation::pop_regular_reports(std::vector<std::unique_ptr<Report>>& append_out) {
     auto guard = impl->shared->lock();
 

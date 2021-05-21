@@ -7,6 +7,7 @@
 #include <memory>
 #include <chrono>
 #include <optional>
+#include <string>
 
 namespace SimTK {
     class State;
@@ -161,38 +162,64 @@ namespace osc {
     };
     
     struct Ui_simulation final {
-        // sim-side: the simulation, running on a background thread
+        // the simulation, running on a background thread
         fd::Simulation simulation;
 
-        // UI-side: copy of the model being simulated
+        // copy of the model being simulated in the bg thread
         std::unique_ptr<OpenSim::Model> model;
 
-        // UI-side: spot report
-        // 
-        // latest (usually per-integration-step) report popped from `simulation`
+        // current user selection, if any
+        OpenSim::Component* selected = nullptr;
+
+        // current user hover, if any
+        OpenSim::Component* hovered = nullptr;
+
+        // latest (usually per-integration-step) report popped from
+        // the bg thread
         std::unique_ptr<fd::Report> spot_report;
 
         // UI-side: regular reports popped from the simulator
         //
-        // the simulator is guaranteed to produce reports at some regular
-        // interval (in simulation time).
+        // the simulator will produce reports at some regular interval
+        // (in simulation time).
         std::vector<std::unique_ptr<fd::Report>> regular_reports;
 
         // start a new simulation by *copying* the provided OpenSim::Model and
         // State pair
         Ui_simulation(OpenSim::Model const&, SimTK::State const&);
+
+        // start a new simulation by *copying* the provided Ui_model
+        Ui_simulation(Ui_model const&);
+    };
+
+    struct Desired_output final {
+        std::string component_path;
+        std::string output_name;
+
+        Desired_output(std::string cp, std::string on) :
+            component_path{std::move(cp)},
+            output_name{std::move(on)} {
+        }
     };
 
     // top-level UI state
+    //
+    // this is the main state that gets shared between the top-level editor
+    // and simulation screens that the user is *typically* interacting with
     struct Main_editor_state final {
+
         // the model that the user is currently editing
         Undoable_ui_model edited_model;
 
-        // simulations that are running/finished
+        // running/finished simulations
         std::vector<std::unique_ptr<Ui_simulation>> simulations;
 
-        // simulation currently focused on in the ui, if any
+        // simulation this is currently focused on in the ui, if any
         int focused_simulation = -1;
+
+        // model outputs the user has expressed interest in
+        std::vector<Desired_output> desired_outputs;
+
 
         // construct with a blank OpenSim::Model
         Main_editor_state();
@@ -266,6 +293,12 @@ namespace osc {
 
         void clear_any_damaged_models() {
             edited_model.clear_any_damaged_models();
+        }
+
+        void start_simulating_edited_model() {
+            int new_focus = static_cast<int>(simulations.size());
+            simulations.emplace_back(new Ui_simulation{edited_model.current});
+            focused_simulation = new_focus;
         }
     };
 }

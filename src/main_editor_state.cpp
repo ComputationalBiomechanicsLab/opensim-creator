@@ -235,6 +235,10 @@ osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s
     regular_reports{} {
 }
 
+osc::Ui_simulation::Ui_simulation(Ui_model const& uim) :
+    Ui_simulation{*uim.model, *uim.state} {
+}
+
 osc::Main_editor_state::Main_editor_state() : 
     edited_model{std::make_unique<OpenSim::Model>()} {
 }
