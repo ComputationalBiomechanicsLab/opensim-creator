@@ -173,7 +173,8 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
         }
 
         // compute an integration step
-        auto timestep_rv = ts.stepTo(std::min(tnext_regular_report, tfinal));
+        auto next_timepoint = std::min(tnext_regular_report, tfinal);
+        auto timestep_rv = ts.stepTo(next_timepoint);
 
         // handle integration errors
         if (integ->isSimulationOver() &&
@@ -199,7 +200,7 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
             std::unique_ptr<Report> spot_report = nullptr;
 
             // create regular report (if necessary)
-            if (eq(tnext_regular_report, integ->getTime())) {
+            if (eq(next_timepoint, integ->getTime())) {
                 regular_report = fdsim_make_report(model, *integ);
                 tnext_regular_report = integ->getTime() + params.reporting_interval.count();
             }

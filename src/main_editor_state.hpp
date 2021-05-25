@@ -231,6 +231,13 @@ namespace osc {
         // current simulation focus in the UI, if any
         int focused_simulation = -1;
 
+        // simulation time the user is scrubbed to, if they have scrubbed
+        //
+        // if the scrubbing time doesn't fall within the currently-available
+        // simulation states ("frames") then the implementation will just use
+        // the latest state
+        float focused_simulation_scrubbing_time = -1.0f;
+
         // model outputs the user has expressed interest in
         std::vector<Desired_output> desired_outputs;
 
