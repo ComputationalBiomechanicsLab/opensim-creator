@@ -11,7 +11,7 @@
 #include <vector>
 
 namespace osc::log {
-    // this implementation is a gruesome simplification of spdlog: go read spdlog
+    // this implementation is a gruesome simplification of spdlog: go read the spdlog
     // sources if you want to see good software engineering
 
     namespace level {

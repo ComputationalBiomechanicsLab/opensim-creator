@@ -37,7 +37,7 @@ namespace osc {
         // this enables transitioning between top-level screens while
         // maintaining useful state between them (simulations, 
         // undo/redo, etc.)
-        Model_editor_screen(std::unique_ptr<Main_editor_state>);
+        Model_editor_screen(std::shared_ptr<Main_editor_state>);
 
         Model_editor_screen(Model_editor_screen const&) = delete;
         Model_editor_screen(Model_editor_screen&&) = delete;

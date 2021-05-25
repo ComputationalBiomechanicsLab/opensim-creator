@@ -218,8 +218,6 @@ static std::unique_ptr<OpenSim::Model> create_initialized_model(OpenSim::Model c
 }
 
 static std::unique_ptr<osc::fd::Report> create_dummy_report(OpenSim::Model const& m) {
-    SimTK::State const& s = m.getWorkingState();
-
     auto rv = std::make_unique<osc::fd::Report>();
     rv->state = m.getWorkingState();
     rv->stats = {};

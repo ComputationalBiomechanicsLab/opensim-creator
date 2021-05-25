@@ -12,6 +12,7 @@
 #include "src/ui/help_marker.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
+#include "src/main_editor_state.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -180,14 +181,18 @@ void osc::ui::main_menu::about_tab::draw() {
     ImGui::EndMenu();
 }
 
-static void do_open_file_via_dialog() {
+static void do_open_file_via_dialog(std::shared_ptr<Main_editor_state> st) {
     nfdchar_t* outpath = nullptr;
 
     nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
     OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
     if (result == NFD_OKAY) {
-        Application::current().request_screen_transition<Loading_screen>(outpath);
+        if (st) {
+            Application::current().request_screen_transition<Loading_screen>(st, outpath);
+        } else {
+            Application::current().request_screen_transition<Loading_screen>(outpath);
+        }
     }
 }
 
@@ -257,12 +262,17 @@ static void save_model(OpenSim::Model& model, std::string const& save_loc) {
     }
 }
 
-void osc::ui::main_menu::action_new_model() {
-    Application::current().request_screen_transition<Model_editor_screen>();
+void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> st) {
+    if (st) {
+        st->edited_model = Undoable_ui_model{std::make_unique<OpenSim::Model>()};
+        Application::current().request_screen_transition<Model_editor_screen>(st);
+    } else {
+        Application::current().request_screen_transition<Model_editor_screen>();
+    }
 }
 
-void osc::ui::main_menu::action_open_model() {
-    do_open_file_via_dialog();
+void osc::ui::main_menu::action_open_model(std::shared_ptr<Main_editor_state> st) {
+    do_open_file_via_dialog(st);
 }
 
 void osc::ui::main_menu::action_save(OpenSim::Model& model) {
@@ -281,63 +291,73 @@ void osc::ui::main_menu::action_save_as(OpenSim::Model& model) {
     }
 }
 
-void osc::ui::main_menu::file_tab::draw(State& st, OpenSim::Model* opened_model) {
-    if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("New", "Ctrl+N")) {
-            action_new_model();
-        }
+static void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
+    if (st) {
+        Application::current().request_screen_transition<Loading_screen>(st, p);
+    } else {
+        Application::current().request_screen_transition<Loading_screen>(p);
+    }
+}
 
-        if (ImGui::MenuItem("Open", "Ctrl+O")) {
-            action_open_model();
-        }
+void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> editor_state) {
+    if (!ImGui::BeginMenu("File")) {
+        return;
+    }
 
-        int id = 0;
+    if (ImGui::MenuItem("New", "Ctrl+N")) {
+        action_new_model(editor_state);
+    }
 
-        if (ImGui::BeginMenu("Open Recent")) {
-            // iterate in reverse: recent files are stored oldest --> newest
-            for (auto it = st.recent_files.rbegin(); it != st.recent_files.rend(); ++it) {
-                config::Recent_file const& rf = *it;
-                ImGui::PushID(++id);
-                if (ImGui::MenuItem(rf.path.filename().string().c_str())) {
-                    Application::current().request_screen_transition<Loading_screen>(rf.path);
-                }
-                ImGui::PopID();
+    if (ImGui::MenuItem("Open", "Ctrl+O")) {
+        action_open_model(editor_state);
+    }
+
+    int imgui_id = 0;
+
+    if (ImGui::BeginMenu("Open Recent")) {
+        // iterate in reverse: recent files are stored oldest --> newest
+        for (auto it = st.recent_files.rbegin(); it != st.recent_files.rend(); ++it) {
+            config::Recent_file const& rf = *it;
+            ImGui::PushID(++imgui_id);
+            if (ImGui::MenuItem(rf.path.filename().string().c_str())) {
+                transition_to_loading_existing_path(editor_state, rf.path);
             }
-
-            ImGui::EndMenu();
+            ImGui::PopID();
         }
 
-        if (ImGui::BeginMenu("Open Example")) {
-            for (std::filesystem::path const& ex : st.example_osims) {
-                ImGui::PushID(++id);
-                if (ImGui::MenuItem(ex.filename().string().c_str())) {
-                    Application::current().request_screen_transition<Loading_screen>(ex);
-                }
-                ImGui::PopID();
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::MenuItem("Save", "Ctrl+S", false, opened_model)) {
-            if (opened_model) {
-                action_save(*opened_model);
-            }
-        }
-
-        if (ImGui::MenuItem("Save As", "Shift+Ctrl+S", false, opened_model)) {
-            if (opened_model) {
-                action_save_as(*opened_model);
-            }
-        }
-
-        if (ImGui::MenuItem("Show Splash Screen")) {
-            Application::current().request_screen_transition<Splash_screen>();
-        }
-
-        if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
-            Application::current().request_quit_application();
-        }
         ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("Open Example")) {
+        for (std::filesystem::path const& ex : st.example_osims) {
+            ImGui::PushID(++imgui_id);
+            if (ImGui::MenuItem(ex.filename().string().c_str())) {
+                transition_to_loading_existing_path(editor_state, ex);
+            }
+            ImGui::PopID();
+        }
+
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::MenuItem("Save", "Ctrl+S", false, editor_state != nullptr)) {
+        if (editor_state) {
+            action_save(editor_state->model());
+        }
+    }
+
+    if (ImGui::MenuItem("Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
+        if (editor_state) {
+            action_save_as(editor_state->model());
+        }
+    }
+
+    if (ImGui::MenuItem("Show Splash Screen")) {
+        Application::current().request_screen_transition<Splash_screen>();
+    }
+
+    if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
+        Application::current().request_quit_application();
+    }
+    ImGui::EndMenu();
 }

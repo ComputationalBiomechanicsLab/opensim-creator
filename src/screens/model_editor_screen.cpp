@@ -90,7 +90,7 @@ static T const* find_ancestor(OpenSim::Component const* c) {
 }
 
 struct Model_editor_screen::Impl final {
-    std::unique_ptr<Main_editor_state> st;
+    std::shared_ptr<Main_editor_state> st;
     Model_viewer_widget viewer{ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
     // state of any sub-panels the editor screen draws
@@ -108,7 +108,7 @@ struct Model_editor_screen::Impl final {
     // poller that checks (with debouncing) when model being edited has changed on the filesystem
     File_change_poller file_poller{1000ms, st->model().getInputFileName()};
 
-    explicit Impl(std::unique_ptr<Main_editor_state> _st) : st{std::move(_st)} {
+    explicit Impl(std::shared_ptr<Main_editor_state> _st) : st{std::move(_st)} {
     }
 };
 
@@ -859,10 +859,10 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
 
         switch (e.keysym.sym) {
         case SDLK_n:
-            ui::main_menu::action_new_model();
+            ui::main_menu::action_new_model(impl.st);
             return true;
         case SDLK_o:
-            ui::main_menu::action_open_model();
+            ui::main_menu::action_open_model(impl.st);
             return true;
         case SDLK_s:
             ui::main_menu::action_save(impl.st->model());
@@ -935,7 +935,7 @@ static bool on_event(osc::Model_editor_screen::Impl& impl, SDL_Event const& e) {
 static void draw(osc::Model_editor_screen::Impl& impl) {
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
-        ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, &impl.st->model());
+        ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
         draw_main_menu_actions_tab(impl);
         ui::main_menu::about_tab::draw();
 
@@ -1045,7 +1045,7 @@ Model_editor_screen::Model_editor_screen(std::unique_ptr<OpenSim::Model> _model)
     impl{new Impl(std::make_unique<Main_editor_state>(std::move(_model)))} {
 }
 
-Model_editor_screen::Model_editor_screen(std::unique_ptr<Main_editor_state> st) :
+Model_editor_screen::Model_editor_screen(std::shared_ptr<Main_editor_state> st) :
     impl{new Impl {std::move(st)}} {
 }
 

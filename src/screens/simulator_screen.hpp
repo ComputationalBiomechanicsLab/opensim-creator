@@ -16,7 +16,7 @@ namespace osc {
         Impl* impl;
 
     public:
-        Simulator_screen(std::unique_ptr<Main_editor_state>);
+        Simulator_screen(std::shared_ptr<Main_editor_state>);
         Simulator_screen(Simulator_screen const&) = delete;
         Simulator_screen(Simulator_screen&&) = delete;
         Simulator_screen& operator=(Simulator_screen const&) = delete;

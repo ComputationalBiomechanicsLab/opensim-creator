@@ -6,13 +6,17 @@
 #include <filesystem>
 #include <vector>
 
+namespace osc {
+    struct Main_editor_state;
+}
+
 namespace OpenSim {
     class Model;
 }
 
 namespace osc::ui::main_menu {
-    void action_new_model();
-    void action_open_model();
+    void action_new_model(std::shared_ptr<Main_editor_state> = nullptr);
+    void action_open_model(std::shared_ptr<Main_editor_state> = nullptr);
     void action_save(OpenSim::Model&);
     void action_save_as(OpenSim::Model&);
 
@@ -22,7 +26,7 @@ namespace osc::ui::main_menu {
             std::vector<config::Recent_file> recent_files = osc::config::recent_files();
         };
 
-        void draw(State&, OpenSim::Model* opened_model = nullptr);
+        void draw(State&, std::shared_ptr<Main_editor_state> = nullptr);
     }
 
     namespace about_tab {

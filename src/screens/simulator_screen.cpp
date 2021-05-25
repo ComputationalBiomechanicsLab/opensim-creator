@@ -20,7 +20,7 @@ using namespace osc;
 
 struct osc::Simulator_screen::Impl final {
     // top-level state: shared between edit+sim screens
-    std::unique_ptr<Main_editor_state> st;
+    std::shared_ptr<Main_editor_state> st;
 
     // scratch space for plots
     std::vector<float> plotscratch;
@@ -31,7 +31,7 @@ struct osc::Simulator_screen::Impl final {
     
     Model_viewer_widget viewer{ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
 
-    Impl(std::unique_ptr<Main_editor_state> _st) : st {std::move(_st)} {
+    Impl(std::shared_ptr<Main_editor_state> _st) : st {std::move(_st)} {
     }
 };
 
@@ -60,68 +60,100 @@ static void pop_all_simulator_updates(osc::Main_editor_state& impl) {
     }
 }
 
-static void draw_simulation_tab(osc::Main_editor_state& impl) {
-    if (ImGui::Button("Run")) {
-        action_start_simulation(impl);
+static void draw_simulation(osc::Main_editor_state& impl, int i) {
+    Ui_simulation& simulation = *impl.simulations[i];
+
+    ImGui::PushID(static_cast<int>(i));
+
+    float progress = simulation.simulation.progress();
+    ImVec4 base_color = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
+    if (static_cast<int>(i) == impl.focused_simulation) {
+        base_color.w = 1.0f;
     }
 
-    for (size_t i = 0; i < impl.simulations.size(); ++i) {
-        Ui_simulation& simulation = *impl.simulations[i];
+    bool should_erase = false;
 
-        ImGui::PushID(static_cast<int>(i));
+    if (ImGui::Button("x")) {
+        should_erase = true;
+    }
 
-        float progress = simulation.simulation.progress();
-        ImVec4 base_color = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
-        if (i == impl.focused_simulation) {
-            base_color.w = 1.0f;
-        }
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, base_color);
+    ImGui::ProgressBar(progress);
+    ImGui::PopStyleColor();
 
-        bool should_erase = false;
-
-        if (ImGui::Button("x")) {
+    if (ImGui::IsItemHovered()) {
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
             should_erase = true;
         }
 
-        ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, base_color);
-        ImGui::ProgressBar(progress);
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+        ImGui::TextUnformatted(simulation.model->getName().c_str());
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
+        ImGui::Text("Wall time (sec): %.1f", simulation.simulation.wall_duration().count());
+        ImGui::Text("Sim time (sec): %.1f", simulation.simulation.sim_current_time().count());
+        ImGui::Text("Sim final time (sec): %.1f", simulation.simulation.sim_final_time().count());
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::TextUnformatted("Left-click: Select this simulation");
+        ImGui::TextUnformatted("Delete: cancel this simulation");
         ImGui::PopStyleColor();
-
-        if (ImGui::IsItemHovered()) {
-            if (ImGui::IsKeyDown(SDL_SCANCODE_DELETE)) {
-                should_erase = true;
-            }
-
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-            ImGui::TextUnformatted(simulation.model->getName().c_str());
-            ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
-            ImGui::Text("Wall time (sec): %.1f", simulation.simulation.wall_duration().count());
-            ImGui::Text("Sim time (sec): %.1f", simulation.simulation.sim_current_time().count());
-            ImGui::Text("Sim final time (sec): %.1f", simulation.simulation.sim_final_time().count());
-            ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::TextUnformatted("Left-click: Select this simulation");
-            ImGui::TextUnformatted("Delete: cancel this simulation");
-            ImGui::PopStyleColor();
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-            OSC_ASSERT(i <= std::numeric_limits<int>::max());
-            impl.focused_simulation = static_cast<int>(i);
-        }
-
-        if (should_erase) {
-            impl.simulations.erase(impl.simulations.begin() + i);
-            if (i <= impl.focused_simulation) {
-                --impl.focused_simulation;
-            }
-        }
-
-        ImGui::PopID();
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
     }
+
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        OSC_ASSERT(i <= std::numeric_limits<int>::max());
+        impl.focused_simulation = static_cast<int>(i);
+    }
+
+    if (should_erase) {
+        impl.simulations.erase(impl.simulations.begin() + i);
+        if (static_cast<int>(i) <= impl.focused_simulation) {
+            --impl.focused_simulation;
+        }
+    }
+
+    ImGui::PopID();
+}
+
+static void draw_simulation_tab(osc::Main_editor_state& impl) {
+    for (size_t i = 0; i < impl.simulations.size(); ++i) {
+        draw_simulation(impl, static_cast<int>(i));
+    }
+}
+
+#define OSC_MAKE_SIMSTAT_PLOT(statname) \
+    {                                                                                                                  \
+        scratch.clear();                                                                                               \
+        for (auto const& report : focused.regular_reports) {                                                           \
+            auto const& stats = report->stats;                                                                         \
+            scratch.push_back(static_cast<float>(stats.statname));                                                     \
+        }                                                                                                              \
+        ImGui::PlotLines(#statname, scratch.data(), static_cast<int>(scratch.size()), 0, nullptr, std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), ImVec2(0.0f, 30.0f));                                 \
+    }
+
+static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused) {
+
+    std::vector<float>& scratch = impl.plotscratch;
+
+    OSC_MAKE_SIMSTAT_PLOT(accuracyInUse);
+    OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize);
+    OSC_MAKE_SIMSTAT_PLOT(numStepsAttempted);
+    OSC_MAKE_SIMSTAT_PLOT(numStepsTaken);
+    OSC_MAKE_SIMSTAT_PLOT(numRealizations);
+    OSC_MAKE_SIMSTAT_PLOT(numQProjections);
+    OSC_MAKE_SIMSTAT_PLOT(numUProjections);
+    OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numConvergenceTestFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numRealizationFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numUProjectionFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures);
+    OSC_MAKE_SIMSTAT_PLOT(numConvergentIterations);
+    OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations);
+    OSC_MAKE_SIMSTAT_PLOT(numIterations);
 }
 
 static bool on_keydown(osc::Simulator_screen::Impl& impl, SDL_KeyboardEvent const& e) {
@@ -292,7 +324,7 @@ static void draw_outputs_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& f
 static void draw(osc::Simulator_screen::Impl& impl) {
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
-        ui::main_menu::file_tab::draw(impl.mm_filetab_st, &impl.st->model());
+        ui::main_menu::file_tab::draw(impl.mm_filetab_st, impl.st);
         ui::main_menu::about_tab::draw();
 
         if (ImGui::Button("Switch to editor (Ctrl+E)")) {
@@ -408,10 +440,21 @@ static void draw(osc::Simulator_screen::Impl& impl) {
         ImGui::End();
     }
 
-    ui::log_viewer::draw(impl.log_viewer_st, "Log");
+    // draw simulation stats tab
+    {
+        if (ImGui::Begin("Simulation stats")) {
+            draw_simulation_stats_tab(impl, focused_sim);
+        }
+        ImGui::End();
+    }
+
+    // draw log tab
+    {
+        ui::log_viewer::draw(impl.log_viewer_st, "Log");
+    }
 }
 
-osc::Simulator_screen::Simulator_screen(std::unique_ptr<Main_editor_state> st) : 
+osc::Simulator_screen::Simulator_screen(std::shared_ptr<Main_editor_state> st) :
     impl{new Impl{std::move(st)}} {
 }
 

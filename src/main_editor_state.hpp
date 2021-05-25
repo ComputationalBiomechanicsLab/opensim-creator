@@ -22,7 +22,7 @@ namespace osc {
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
     //
     // this is what most of the components, screen elements, etc. are
-    // accessing - usually indirectly
+    // accessing - usually indirectly (e.g. via a reference to the Model)
     struct Ui_model final {
         // the model, finalized from its properties
         std::unique_ptr<OpenSim::Model> model;
@@ -39,10 +39,14 @@ namespace osc {
         // current isolation, if any
         //
         // "isolation" here means that the user is only interested in this
-        // particular subcomponent in the model
+        // particular subcomponent in the model, so visualizers etc. should
+        // probably only show that component
         OpenSim::Component* isolated;
 
-        // timestamp, indicating construction/modification time
+        // generic timestamp
+        //
+        // can indicate creation or latest modification, it's here to roughly
+        // track how old/new the instance is
         std::chrono::system_clock::time_point timestamp;
 
         explicit Ui_model(std::unique_ptr<OpenSim::Model>);
@@ -50,6 +54,7 @@ namespace osc {
         Ui_model(Ui_model const&, std::chrono::system_clock::time_point t);
         Ui_model(Ui_model&&) noexcept;
         ~Ui_model() noexcept;
+
         Ui_model& operator=(Ui_model const&) = delete;
         Ui_model& operator=(Ui_model&&);
 
@@ -68,8 +73,8 @@ namespace osc {
     // edits to the model, the current/undo/redo states are being updated. This
     // class also has light support for handling "rollbacks", which is where the
     // implementation detects that the user modified the model into an invalid state
-    // and the implementation tried to fix the problem by rolling back to an undo
-    // state
+    // and the implementation tried to fix the problem by rolling back to an earlier
+    // (hopefully, valid) undo state
     struct Undoable_ui_model final {
         Ui_model current;
         Circular_buffer<Ui_model, 32> undo;
@@ -79,18 +84,19 @@ namespace osc {
         //
         // this is set whenever the implementation detects that the current
         // model was damaged by a modification (i.e. the model does not survive a
-        // call to .initSystem with its modified properties). The implementation
-        // will try to recover from damage by popping models from undo, and will
-        // store the damaged model here for later cleanup
+        // call to .initSystem with its modified properties).
         //
-        // the damaged model is kept here so that any pointers into the model are 
+        // The implementation will try to recover from the damage by making models
+        // in `undo` `current`. It will then store the damaged model here for later
+        // cleanup (by the user of this class, which should `std::move` out the
+        // damaged instance)
+        //
+        // the damaged model is kept "alive" so that any pointers into the model are
         // still valid. The reason this is important is because the damage may have
-        // been done midway through frame draw and there may be local (stack-allocated)
-        // pointers into components of the damaged model. It is *probably* safer to
-        // let the drawcall finish with a damaged model than potentially segfault.
-        //
-        // users of this class are responsible for nuking `damaged` at an appropriate
-        // time
+        // been done midway through a larger process (e.g. rendering) and there may
+        // be local (stack-allocated) pointers into the damaged model's components.
+        // In that case, it is *probably* safer to let the process finish with a
+        // damaged model than potentially segfault.
         std::optional<Ui_model> damaged;
 
         explicit Undoable_ui_model(std::unique_ptr<OpenSim::Model> model);
@@ -160,8 +166,14 @@ namespace osc {
             }            
         }
     };
-    
+
+    // a forward-dynamic simulation
+    //
+    // the simulation's computation runs on a background thread, but
+    // this struct also contains information that is kept UI-side for
+    // UI feedback/interaction
     struct Ui_simulation final {
+
         // the simulation, running on a background thread
         fd::Simulation simulation;
 
@@ -178,20 +190,22 @@ namespace osc {
         // the bg thread
         std::unique_ptr<fd::Report> spot_report;
 
-        // UI-side: regular reports popped from the simulator
+        // regular reports popped from the simulator thread
         //
         // the simulator will produce reports at some regular interval
         // (in simulation time).
         std::vector<std::unique_ptr<fd::Report>> regular_reports;
 
         // start a new simulation by *copying* the provided OpenSim::Model and
-        // State pair
+        // SimTK::State pair
         Ui_simulation(OpenSim::Model const&, SimTK::State const&);
 
         // start a new simulation by *copying* the provided Ui_model
         Ui_simulation(Ui_model const&);
     };
 
+    // the path + name of an OpenSim::AbstractOutput that the user has
+    // expressed interest in
     struct Desired_output final {
         std::string component_path;
         std::string output_name;
@@ -214,20 +228,19 @@ namespace osc {
         // running/finished simulations
         std::vector<std::unique_ptr<Ui_simulation>> simulations;
 
-        // simulation this is currently focused on in the ui, if any
+        // current simulation focus in the UI, if any
         int focused_simulation = -1;
 
         // model outputs the user has expressed interest in
         std::vector<Desired_output> desired_outputs;
 
 
-        // construct with a blank OpenSim::Model
+        // construct with a blank (new) OpenSim::Model
         Main_editor_state();
 
         // construct with an existing OpenSim::Model
         Main_editor_state(std::unique_ptr<OpenSim::Model>);
 
-        // forward relevant methods from members (law of Demeter, or something...)
 
         OpenSim::Model& model() {
             return edited_model.model();
