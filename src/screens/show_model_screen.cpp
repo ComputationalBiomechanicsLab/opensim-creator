@@ -778,9 +778,9 @@ static void action_start_simulation(Show_model_screen::Impl& impl) {
     sim_model->equilibrateMuscles(*simstate);
     sim_model->realizeAcceleration(*simstate);
 
-    fd::Params params{std::move(sim_model), std::move(simstate)};
-    params.final_time = std::chrono::duration<double>{0.4};
-    fd::Simulation sim{std::move(params)};
+    auto sim_input = std::make_unique<fd::Input>(std::move(sim_model), std::move(simstate));
+    sim_input->params.final_time = std::chrono::duration<double>{0.4};
+    fd::Simulation sim{std::move(sim_input)};
 
     Ui_simulation uisim{std::move(sim), std::move(gui_model), std::move(report), {}};
     impl.simulations.push_back(std::move(uisim));

@@ -194,7 +194,7 @@ void osc::Undoable_ui_model::after_modifying_model() {
     carefully_try_init_system_and_realize_on_current(*this);
 }
 
-static osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s) {
+static osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, osc::fd::Params const& p) {
     auto model_copy = std::make_unique<OpenSim::Model>(m);
     auto state_copy = std::make_unique<SimTK::State>(s);
 
@@ -204,10 +204,10 @@ static osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State c
     model_copy->equilibrateMuscles(*state_copy);
     model_copy->realizeAcceleration(*state_copy);
 
-    auto params = osc::fd::Params{std::move(model_copy), std::move(state_copy)};
-    params.final_time = std::chrono::duration<double>{0.4};
+    auto sim_input = std::make_unique<osc::fd::Input>(std::move(model_copy), std::move(state_copy));
+    sim_input->params = p;
 
-    return osc::fd::Simulation{std::move(params)};
+    return osc::fd::Simulation{std::move(sim_input)};
 }
 
 static std::unique_ptr<OpenSim::Model> create_initialized_model(OpenSim::Model const& m) {
@@ -226,15 +226,15 @@ static std::unique_ptr<osc::fd::Report> create_dummy_report(OpenSim::Model const
     return rv;
 }
 
-osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s) :
-    simulation{create_fd_sim(m, s)},
+osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s, fd::Params const& p) :
+    simulation{create_fd_sim(m, s, p)},
     model{create_initialized_model(m)},
     spot_report{create_dummy_report(*this->model)},
     regular_reports{} {
 }
 
-osc::Ui_simulation::Ui_simulation(Ui_model const& uim) :
-    Ui_simulation{*uim.model, *uim.state} {
+osc::Ui_simulation::Ui_simulation(Ui_model const& uim, fd::Params const& p) :
+    Ui_simulation{*uim.model, *uim.state, p} {
 }
 
 osc::Main_editor_state::Main_editor_state() : 

@@ -27,16 +27,11 @@ namespace osc::fd {
     extern IntegratorMethod const integrator_methods[IntegratorMethod_NumIntegratorMethods];
     extern char const* const integrator_method_names[IntegratorMethod_NumIntegratorMethods];
 
-    // input parameters for a forward-dynamic simulation
+    // simulation parameters
     struct Params final {
-        // model to simulate
-        std::unique_ptr<OpenSim::Model> model = nullptr;
-
-        // initial state of the model (e.g. after coordinate edits)
-        std::unique_ptr<SimTK::State> state = nullptr;
 
         // final time for the simulation
-        std::chrono::duration<double> final_time{10.0};
+        std::chrono::duration<double> final_time{1.0};
 
         // true if the simulation should slow down whenever it runs faster than wall-time
         bool throttle_to_wall_time = true;
@@ -81,8 +76,15 @@ namespace osc::fd {
         // else: the update is only posted whenever the regular reporting interval
         // is set
         bool update_latest_state_on_every_step = true;
+    };
 
-        Params(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
+    // simulation input
+    struct Input final {
+        std::unique_ptr<OpenSim::Model> model;
+        std::unique_ptr<SimTK::State> state;
+        Params params;
+
+        Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
             model{std::move(_model)}, state{std::move(_state)} {
         }
     };
@@ -127,7 +129,7 @@ namespace osc::fd {
 
     public:
         // starts the simulation on construction
-        Simulation(Params);
+        Simulation(std::unique_ptr<Input>);
 
         Simulation(Simulation const&) = delete;
         Simulation(Simulation&&) noexcept;

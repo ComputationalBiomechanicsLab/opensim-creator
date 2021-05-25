@@ -198,10 +198,10 @@ namespace osc {
 
         // start a new simulation by *copying* the provided OpenSim::Model and
         // SimTK::State pair
-        Ui_simulation(OpenSim::Model const&, SimTK::State const&);
+        Ui_simulation(OpenSim::Model const&, SimTK::State const&, fd::Params const&);
 
         // start a new simulation by *copying* the provided Ui_model
-        Ui_simulation(Ui_model const&);
+        Ui_simulation(Ui_model const&, fd::Params const&);
     };
 
     // the path + name of an OpenSim::AbstractOutput that the user has
@@ -233,6 +233,11 @@ namespace osc {
 
         // model outputs the user has expressed interest in
         std::vector<Desired_output> desired_outputs;
+
+        // general simulator params
+        //
+        // these are the params that are used whenever a user hits "simulate"
+        fd::Params sim_params;
 
 
         // construct with a blank (new) OpenSim::Model
@@ -310,7 +315,7 @@ namespace osc {
 
         void start_simulating_edited_model() {
             int new_focus = static_cast<int>(simulations.size());
-            simulations.emplace_back(new Ui_simulation{edited_model.current});
+            simulations.emplace_back(new Ui_simulation{edited_model.current, sim_params});
             focused_simulation = new_focus;
         }
     };

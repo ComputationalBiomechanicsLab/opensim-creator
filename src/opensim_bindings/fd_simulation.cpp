@@ -68,7 +68,7 @@ struct Shared_state final {
     std::vector<std::unique_ptr<Report>> regular_reports;
 };
 
-static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::Integrator const& integrator) {
+static std::unique_ptr<Report> fdsim_make_report(OpenSim::Model const& model, SimTK::Integrator const& integrator) {
     std::unique_ptr<Report> out = std::make_unique<Report>();
     out->state = integrator.getState();
 
@@ -93,7 +93,7 @@ static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::In
     stats.numIterations = integrator.getNumIterations();
 
     // system stats
-    stats.numPrescribeQcalls =  params.model->getSystem().getNumPrescribeQCalls();
+    stats.numPrescribeQcalls =  model.getSystem().getNumPrescribeQCalls();
 
     return out;
 }
@@ -113,19 +113,23 @@ static std::unique_ptr<Report> fdsim_make_report(Params const& params, SimTK::In
 }
 
 static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
-                                         Params params,
+                                         std::unique_ptr<Input> input,
                                          std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
+    OpenSim::Model& model = *input->model;
+    SimTK::State& state = *input->state;
+    fd::Params const& params = input->params;
+
     std::unique_ptr<SimTK::Integrator> integ =
-        fdsim_make_integrator(params.model->getMultibodySystem(), params.integrator_method);
+        fdsim_make_integrator(input->model->getMultibodySystem(), input->params.integrator_method);
     integ->setInternalStepLimit(params.integrator_step_limit);
     integ->setMinimumStepSize(params.integrator_minimum_step_size.count());
     integ->setMaximumStepSize(params.integrator_maximum_step_size.count());
     integ->setAccuracy(params.integrator_accuracy);
     integ->setFinalTime(params.final_time.count());
     integ->setReturnEveryInternalStep(params.update_latest_state_on_every_step);
-    integ->initialize(*params.state);
+    integ->initialize(state);
 
-    SimTK::TimeStepper ts{params.model->getMultibodySystem(), *integ};
+    SimTK::TimeStepper ts{model.getMultibodySystem(), *integ};
     ts.initialize(integ->getState());
     ts.setReportAllSignificantStates(params.update_latest_state_on_every_step);
 
@@ -136,8 +140,8 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 
     // report t0
     {
-        std::unique_ptr<Report> regular_report = fdsim_make_report(params, *integ);
-        std::unique_ptr<Report> spot_report = fdsim_make_report(params, *integ);
+        std::unique_ptr<Report> regular_report = fdsim_make_report(model, *integ);
+        std::unique_ptr<Report> spot_report = fdsim_make_report(model, *integ);
 
         auto guard = shared->lock();
         guard->regular_reports.push_back(std::move(regular_report));
@@ -196,13 +200,13 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 
             // create regular report (if necessary)
             if (eq(tnext_regular_report, integ->getTime())) {
-                regular_report = fdsim_make_report(params, *integ);
+                regular_report = fdsim_make_report(model, *integ);
                 tnext_regular_report = integ->getTime() + params.reporting_interval.count();
             }
 
             // create spot report (if necessary)
             if (shared->lock()->latest_report == nullptr) {
-                spot_report = fdsim_make_report(params, *integ);
+                spot_report = fdsim_make_report(model, *integ);
             }
 
             // throw the reports over the fence to the calling thread
@@ -224,13 +228,13 @@ static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
 // executes in the background.
 static int fdsim_main(
     stop_token stop_token,
-    Params params,
+    std::unique_ptr<Input> input,
     std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
 
     Fdsim_status status = Fdsim_status::Error;
 
     try {
-        status = fdsim_main_unguarded(std::move(stop_token), std::move(params), shared);
+        status = fdsim_main_unguarded(std::move(stop_token), std::move(input), shared);
     } catch (OpenSim::Exception const& ex) {
         log::error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
     } catch (std::exception const& ex) {
@@ -274,19 +278,20 @@ struct osc::fd::Simulation::Impl final {
     jthread simulator_thread;
     int states_popped;
 
-    Impl(Params p) :
-        final_time{p.final_time},
+    Impl(std::unique_ptr<Input> input) :
+        final_time{input->params.final_time},
 
         shared{new Mutex_guarded<Shared_state>{}},
 
         // starts the simulation
-        simulator_thread{fdsim_main, std::move(p), shared},
+        simulator_thread{fdsim_main, std::move(input), shared},
 
         states_popped{0} {
     }
 };
 
-osc::fd::Simulation::Simulation(Params p) : impl{new Impl{std::move(p)}} {
+osc::fd::Simulation::Simulation(std::unique_ptr<Input> input) :
+    impl{new Impl{std::move(input)}} {
 }
 
 osc::fd::Simulation::Simulation(Simulation&&) noexcept = default;

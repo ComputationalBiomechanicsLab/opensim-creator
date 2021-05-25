@@ -36,7 +36,7 @@ struct osc::Simulator_screen::Impl final {
 };
 
 static void action_start_simulation(osc::Main_editor_state& impl) {
-    impl.simulations.emplace_back(new Ui_simulation{impl.model(), impl.state()});
+    impl.simulations.emplace_back(new Ui_simulation{impl.model(), impl.state(), impl.sim_params});
 }
 
 static void pop_all_simulator_updates(osc::Main_editor_state& impl) {
