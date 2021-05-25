@@ -108,8 +108,8 @@ add_executable(osc
     src/ui/component_hierarchy.cpp
     src/ui/component_details.cpp
     src/ui/component_details.hpp
-    src/ui/model_viewer.hpp
-    src/ui/model_viewer.cpp
+    src/ui/component_3d_viewer.hpp
+    src/ui/component_3d_viewer.cpp
     src/ui/properties_editor.hpp
     src/ui/properties_editor.cpp
     src/ui/reassign_socket_popup.hpp

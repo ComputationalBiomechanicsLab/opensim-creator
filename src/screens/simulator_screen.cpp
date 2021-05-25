@@ -3,7 +3,7 @@
 #include "src/main_editor_state.hpp"
 #include "src/opensim_bindings/fd_simulation.hpp"
 #include "src/ui/log_viewer.hpp"
-#include "src/ui/model_viewer.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/main_menu.hpp"
 #include "src/ui/component_details.hpp"
 #include "src/ui/component_hierarchy.hpp"
@@ -29,7 +29,7 @@ struct osc::Simulator_screen::Impl final {
     osc::ui::log_viewer::State log_viewer_st;
     osc::ui::main_menu::file_tab::State mm_filetab_st;
     
-    Model_viewer_widget viewer{ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
+    Component_3d_viewer viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
 
     Impl(std::shared_ptr<Main_editor_state> _st) : st {std::move(_st)} {
     }
@@ -468,10 +468,10 @@ static void draw(osc::Simulator_screen::Impl& impl) {
             focused_report.state,
             focused_sim.selected,
             focused_sim.hovered);
-        if (resp.type == Response::SelectionChanged) {
+        if (resp.type == Component3DViewerResponse::SelectionChanged) {
             focused_sim.selected = const_cast<OpenSim::Component*>(resp.ptr);
         }
-        if (resp.type == Response::HoverChanged) {
+        if (resp.type == Component3DViewerResponse::HoverChanged) {
             focused_sim.hovered = const_cast<OpenSim::Component*>(resp.ptr);
         }
     }

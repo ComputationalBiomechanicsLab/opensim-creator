@@ -15,7 +15,7 @@
 #include "src/ui/evenly_spaced_sparkline.hpp"
 #include "src/ui/log_viewer.hpp"
 #include "src/ui/main_menu.hpp"
-#include "src/ui/model_viewer.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/muscles_table.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/file_change_poller.hpp"
@@ -652,11 +652,11 @@ struct Show_model_screen::Impl final {
     std::vector<Ui_simulation> simulations;
 
     // 3D viewers
-    static constexpr ModelViewerWidgetFlags viewer_flags =
-        ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_CanOnlyInteractWithMuscles;
-    std::array<Model_viewer_widget, 2> model_viewers = {
-        Model_viewer_widget{viewer_flags},
-        Model_viewer_widget{viewer_flags}
+    static constexpr Component3DViewerFlags viewer_flags =
+        Component3DViewerFlags_Default | Component3DViewerFlags_CanOnlyInteractWithMuscles;
+    std::array<Component_3d_viewer, 2> model_viewers = {
+        Component_3d_viewer{viewer_flags},
+        Component_3d_viewer{viewer_flags}
     };
 
     ui::main_menu::file_tab::State mm_filetab_st;
@@ -1254,11 +1254,11 @@ static void draw(Show_model_screen::Impl& impl) {
             impl.selected_component, 
             impl.hovered_component);
 
-        if (resp.type == Response::Type::HoverChanged && viewer.is_moused_over()) {
+        if (resp.type == Component3DViewerResponse::Type::HoverChanged && viewer.is_moused_over()) {
             impl.hovered_component = resp.ptr;
         }
 
-        if (resp.type == Response::Type::SelectionChanged && viewer.is_moused_over()) {
+        if (resp.type == Component3DViewerResponse::Type::SelectionChanged && viewer.is_moused_over()) {
             impl.selected_component = resp.ptr;
         }
     }

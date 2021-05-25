@@ -20,7 +20,7 @@
 #include "src/ui/log_viewer.hpp"
 #include "src/ui/main_menu.hpp"
 #include "src/ui/model_actions.hpp"
-#include "src/ui/model_viewer.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/properties_editor.hpp"
 #include "src/ui/reassign_socket_popup.hpp"
 #include "src/ui/select_2_pfs_popup.hpp"
@@ -92,7 +92,7 @@ static T const* find_ancestor(OpenSim::Component const* c) {
 
 struct Model_editor_screen::Impl final {
     std::shared_ptr<Main_editor_state> st;
-    Model_viewer_widget viewer{ModelViewerWidgetFlags_Default | ModelViewerWidgetFlags_DrawFrames};
+    Component_3d_viewer viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
 
     // state of any sub-panels the editor screen draws
     struct {
@@ -983,7 +983,7 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
 
     // draw 3D model viewer
     {
-        Response resp;
+        Component3DViewerResponse resp;
 
         if (impl.st->isolated()) {
             resp = impl.viewer.draw(
@@ -1002,9 +1002,9 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
                 impl.st->hovered());
         }
 
-        if (resp.type == Response::Type::HoverChanged) {
+        if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
             impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
-        } else if (resp.type == Response::Type::SelectionChanged) {
+        } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
             impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
         }
     }

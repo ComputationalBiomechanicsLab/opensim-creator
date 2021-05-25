@@ -1,4 +1,4 @@
-#include "model_viewer.hpp"
+#include "component_3d_viewer.hpp"
 
 #include "src/3d/cameras.hpp"
 #include "src/3d/gl.hpp"
@@ -59,7 +59,7 @@ static void apply_standard_rim_coloring(
     });
 }
 
-struct osc::Model_viewer_widget::Impl final {
+struct osc::Component_3d_viewer::Impl final {
     GPU_storage& cache = Application::current().get_gpu_storage();
     Render_target render_target{100, 100, Application::current().samples()};
     Model_drawlist drawlist;
@@ -74,12 +74,12 @@ struct osc::Model_viewer_widget::Impl final {
     glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
 
-    ModelViewerWidgetFlags flags;
+    Component3DViewerFlags flags;
     DrawcallFlags rendering_flags = RawRendererFlags_Default;
 
     bool mouse_over_render = false;
 
-    Impl(ModelViewerWidgetFlags _flags) : flags{_flags} {
+    Impl(Component3DViewerFlags _flags) : flags{_flags} {
     }
 
     gl::Texture_2d& draw(DrawcallFlags drawflags) {
@@ -114,18 +114,18 @@ struct osc::Model_viewer_widget::Impl final {
     }
 };
 
-Model_viewer_widget::Model_viewer_widget(ModelViewerWidgetFlags flags) : impl{new Impl{flags}} {
+Component_3d_viewer::Component_3d_viewer(Component3DViewerFlags flags) : impl{new Impl{flags}} {
 }
 
-Model_viewer_widget::~Model_viewer_widget() noexcept {
+Component_3d_viewer::~Component_3d_viewer() noexcept {
     delete impl;
 }
 
-bool Model_viewer_widget::is_moused_over() const noexcept {
+bool Component_3d_viewer::is_moused_over() const noexcept {
     return impl->mouse_over_render;
 }
 
-bool Model_viewer_widget::on_event(const SDL_Event& e) {
+bool Component_3d_viewer::on_event(const SDL_Event& e) {
     if (!(impl->mouse_over_render || e.type == SDL_MOUSEBUTTONUP)) {
         return false;
     }
@@ -180,7 +180,7 @@ bool Model_viewer_widget::on_event(const SDL_Event& e) {
     return false;
 }
 
-Response Model_viewer_widget::draw(
+Component3DViewerResponse Component_3d_viewer::draw(
     char const* panel_name,
     OpenSim::Component const& model,
     OpenSim::ModelDisplayHints const& mdh,
@@ -188,7 +188,7 @@ Response Model_viewer_widget::draw(
     OpenSim::Component const* current_selection,
     OpenSim::Component const* current_hover) {
 
-    Response resp;
+    Component3DViewerResponse resp;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
     if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
@@ -198,18 +198,18 @@ Response Model_viewer_widget::draw(
                 ImGui::Text("Selection logic:");
 
                 ImGui::CheckboxFlags(
-                    "coerce selection to muscle", &impl->flags, ModelViewerWidgetFlags_CanOnlyInteractWithMuscles);
+                    "coerce selection to muscle", &impl->flags, Component3DViewerFlags_CanOnlyInteractWithMuscles);
 
                 ImGui::CheckboxFlags(
-                    "draw dynamic geometry", &impl->flags, ModelViewerWidgetFlags_DrawDynamicDecorations);
+                    "draw dynamic geometry", &impl->flags, Component3DViewerFlags_DrawDynamicDecorations);
 
                 ImGui::CheckboxFlags(
-                    "draw static geometry", &impl->flags, ModelViewerWidgetFlags_DrawStaticDecorations);
+                    "draw static geometry", &impl->flags, Component3DViewerFlags_DrawStaticDecorations);
 
-                ImGui::CheckboxFlags("draw frames", &impl->flags, ModelViewerWidgetFlags_DrawFrames);
+                ImGui::CheckboxFlags("draw frames", &impl->flags, Component3DViewerFlags_DrawFrames);
 
-                ImGui::CheckboxFlags("draw debug geometry", &impl->flags, ModelViewerWidgetFlags_DrawDebugGeometry);
-                ImGui::CheckboxFlags("draw labels", &impl->flags, ModelViewerWidgetFlags_DrawLabels);
+                ImGui::CheckboxFlags("draw debug geometry", &impl->flags, Component3DViewerFlags_DrawDebugGeometry);
+                ImGui::CheckboxFlags("draw labels", &impl->flags, Component3DViewerFlags_DrawLabels);
 
                 ImGui::Separator();
 
@@ -224,12 +224,12 @@ Response Model_viewer_widget::draw(
                     &impl->rendering_flags,
                     RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
                 ImGui::CheckboxFlags("draw scene geometry", &impl->rendering_flags, RawRendererFlags_DrawSceneGeometry);
-                ImGui::CheckboxFlags("draw floor", &impl->flags, ModelViewerWidgetFlags_DrawFloor);
-                ImGui::CheckboxFlags("show XZ grid", &impl->flags, ModelViewerWidgetFlags_DrawXZGrid);
-                ImGui::CheckboxFlags("show XY grid", &impl->flags, ModelViewerWidgetFlags_DrawXYGrid);
-                ImGui::CheckboxFlags("show YZ grid", &impl->flags, ModelViewerWidgetFlags_DrawYZGrid);
-                ImGui::CheckboxFlags("show alignment axes", &impl->flags, ModelViewerWidgetFlags_DrawAlignmentAxes);
-                ImGui::CheckboxFlags("optimize draw order", &impl->flags, ModelViewerWidgetFlags_OptimizeDrawOrder);
+                ImGui::CheckboxFlags("draw floor", &impl->flags, Component3DViewerFlags_DrawFloor);
+                ImGui::CheckboxFlags("show XZ grid", &impl->flags, Component3DViewerFlags_DrawXZGrid);
+                ImGui::CheckboxFlags("show XY grid", &impl->flags, Component3DViewerFlags_DrawXYGrid);
+                ImGui::CheckboxFlags("show YZ grid", &impl->flags, Component3DViewerFlags_DrawYZGrid);
+                ImGui::CheckboxFlags("show alignment axes", &impl->flags, Component3DViewerFlags_DrawAlignmentAxes);
+                ImGui::CheckboxFlags("optimize draw order", &impl->flags, Component3DViewerFlags_OptimizeDrawOrder);
                 ImGui::CheckboxFlags(
                     "use instanced (optimized) renderer",
                     &impl->rendering_flags,
@@ -298,28 +298,28 @@ Response Model_viewer_widget::draw(
                 ImGui::Dummy(ImVec2{5.0f, 0.0f});
                 ImGui::SetNextItemWidth(font_dims.x);
                 int choice = 0;
-                if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
+                if (impl->flags & Component3DViewerFlags_RecolorMusclesByStrain) {
                     choice = 1;
-                } else if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
+                } else if (impl->flags & Component3DViewerFlags_RecolorMusclesByLength) {
                     choice = 2;
                 }
 
                 if (ImGui::Combo("muscle coloring", &choice, options.data(), static_cast<int>(options.size()))) {
                     switch (choice) {
                     case 0:
-                        impl->flags |= ModelViewerWidgetFlags_DefaultMuscleColoring;
-                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByLength;
-                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        impl->flags |= Component3DViewerFlags_DefaultMuscleColoring;
+                        impl->flags &= ~Component3DViewerFlags_RecolorMusclesByLength;
+                        impl->flags &= ~Component3DViewerFlags_RecolorMusclesByStrain;
                         break;
                     case 1:
-                        impl->flags &= ~ModelViewerWidgetFlags_DefaultMuscleColoring;
-                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByLength;
-                        impl->flags |= ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        impl->flags &= ~Component3DViewerFlags_DefaultMuscleColoring;
+                        impl->flags &= ~Component3DViewerFlags_RecolorMusclesByLength;
+                        impl->flags |= Component3DViewerFlags_RecolorMusclesByStrain;
                         break;
                     case 2:
-                        impl->flags &= ~ModelViewerWidgetFlags_DefaultMuscleColoring;
-                        impl->flags |= ModelViewerWidgetFlags_RecolorMusclesByLength;
-                        impl->flags &= ~ModelViewerWidgetFlags_RecolorMusclesByStrain;
+                        impl->flags &= ~Component3DViewerFlags_DefaultMuscleColoring;
+                        impl->flags |= Component3DViewerFlags_RecolorMusclesByLength;
+                        impl->flags &= ~Component3DViewerFlags_RecolorMusclesByStrain;
                         break;
                     }
                 }
@@ -335,23 +335,23 @@ Response Model_viewer_widget::draw(
             {
                 impl->drawlist.clear();
                 ModelDrawlistFlags flags = ModelDrawlistFlags_None;
-                if (impl->flags & ModelViewerWidgetFlags_DrawStaticDecorations) {
+                if (impl->flags & Component3DViewerFlags_DrawStaticDecorations) {
                     flags |= ModelDrawlistFlags_StaticGeometry;
                 }
-                if (impl->flags & ModelViewerWidgetFlags_DrawDynamicDecorations) {
+                if (impl->flags & Component3DViewerFlags_DrawDynamicDecorations) {
                     flags |= ModelDrawlistFlags_DynamicGeometry;
                 }
 
                 OpenSim::ModelDisplayHints cpy{mdh};
 
-                cpy.upd_show_frames() = impl->flags & ModelViewerWidgetFlags_DrawFrames;
-                cpy.upd_show_debug_geometry() = impl->flags & ModelViewerWidgetFlags_DrawDebugGeometry;
-                cpy.upd_show_labels() = impl->flags & ModelViewerWidgetFlags_DrawLabels;
+                cpy.upd_show_frames() = impl->flags & Component3DViewerFlags_DrawFrames;
+                cpy.upd_show_debug_geometry() = impl->flags & Component3DViewerFlags_DrawDebugGeometry;
+                cpy.upd_show_labels() = impl->flags & Component3DViewerFlags_DrawLabels;
 
                 generate_decoration_drawlist(model, state, cpy, impl->cache, impl->drawlist, flags);
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_DrawFloor) {
+            if (impl->flags & Component3DViewerFlags_DrawFloor) {
                 Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
@@ -373,7 +373,7 @@ Response Model_viewer_widget::draw(
                 impl->drawlist.push_back(nullptr, mi);
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_DrawXZGrid) {
+            if (impl->flags & Component3DViewerFlags_DrawXZGrid) {
                 Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
@@ -395,7 +395,7 @@ Response Model_viewer_widget::draw(
                 impl->drawlist.push_back(nullptr, mi);
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_DrawXYGrid) {
+            if (impl->flags & Component3DViewerFlags_DrawXYGrid) {
                 Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
@@ -416,7 +416,7 @@ Response Model_viewer_widget::draw(
                 impl->drawlist.push_back(nullptr, mi);
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_DrawYZGrid) {
+            if (impl->flags & Component3DViewerFlags_DrawYZGrid) {
                 Mesh_instance mi;
                 mi.model_xform = []() {
                     glm::mat4 rv = glm::identity<glm::mat4>();
@@ -438,7 +438,7 @@ Response Model_viewer_widget::draw(
                 impl->drawlist.push_back(nullptr, mi);
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_DrawAlignmentAxes) {
+            if (impl->flags & Component3DViewerFlags_DrawAlignmentAxes) {
                 glm::mat4 model2view = view_matrix(impl->camera);
 
                 // we only care about rotation of the axes, not scaling
@@ -495,12 +495,12 @@ Response Model_viewer_widget::draw(
                 }
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_OptimizeDrawOrder) {
+            if (impl->flags & Component3DViewerFlags_OptimizeDrawOrder) {
                 optimize(impl->drawlist);
             }
 
             // perform screen-specific geometry fixups
-            if (impl->flags & ModelViewerWidgetFlags_CanOnlyInteractWithMuscles) {
+            if (impl->flags & Component3DViewerFlags_CanOnlyInteractWithMuscles) {
                 impl->drawlist.for_each(
                     [&model](OpenSim::Component const*& associated_component, Mesh_instance const&) {
                         // for this screen specifically, the "owner"s should be fixed up to point to
@@ -520,7 +520,7 @@ Response Model_viewer_widget::draw(
                     });
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByStrain) {
+            if (impl->flags & Component3DViewerFlags_RecolorMusclesByStrain) {
                 impl->drawlist.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (!musc) {
@@ -534,7 +534,7 @@ Response Model_viewer_widget::draw(
                 });
             }
 
-            if (impl->flags & ModelViewerWidgetFlags_RecolorMusclesByLength) {
+            if (impl->flags & Component3DViewerFlags_RecolorMusclesByLength) {
                 impl->drawlist.for_each([&state](OpenSim::Component const* c, Mesh_instance& mi) {
                     OpenSim::Muscle const* musc = dynamic_cast<OpenSim::Muscle const*>(c);
                     if (!musc) {
@@ -592,13 +592,13 @@ Response Model_viewer_widget::draw(
                 }
 
                 if (current_hover != impl->hovered_component) {
-                    resp.type = Response::Type::HoverChanged;
+                    resp.type = Component3DViewerResponse::Type::HoverChanged;
                     resp.ptr = impl->hovered_component;
                 }
 
                 if (impl->hovered_component && mouse_right_clicked_render &&
                     current_selection != impl->hovered_component) {
-                    resp.type = Response::Type::SelectionChanged;
+                    resp.type = Component3DViewerResponse::Type::SelectionChanged;
                     resp.ptr = impl->hovered_component;
                 }
             }
@@ -630,7 +630,7 @@ Response Model_viewer_widget::draw(
     return resp;
 }
 
-Response Model_viewer_widget::draw(
+Component3DViewerResponse Component_3d_viewer::draw(
     char const* panel_name,
     OpenSim::Model const& model,
     SimTK::State const& st,
