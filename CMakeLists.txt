@@ -136,6 +136,8 @@ add_executable(osc
     src/ui/model_actions.hpp
     src/ui/model_actions.cpp
     src/ui/select_component_popup.hpp
+    src/ui/fd_params_editor_popup.hpp
+    src/ui/fd_params_editor_popup.cpp
 
     src/screens/screen.hpp
     src/screens/error_screen.hpp

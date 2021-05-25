@@ -272,6 +272,10 @@ char const* const osc::fd::integrator_method_names[IntegratorMethod_NumIntegrato
     "Verlet",
 };
 
+osc::fd::Input::Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
+    model{std::move(_model)}, state{std::move(_state)} {
+}
+
 struct osc::fd::Simulation::Impl final {
     std::chrono::duration<double> final_time;
     std::shared_ptr<Mutex_guarded<Shared_state>> shared;

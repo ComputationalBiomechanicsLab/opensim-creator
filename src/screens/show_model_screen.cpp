@@ -473,7 +473,7 @@ struct Simulator_tab final {
         {
             int method = integrator_method;
             if (ImGui::Combo(
-                    "##integration method combo",
+                    "##integration method",
                     &method,
                     fd::integrator_method_names,
                     fd::IntegratorMethod_NumIntegratorMethods)) {

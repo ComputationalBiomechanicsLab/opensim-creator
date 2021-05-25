@@ -84,9 +84,7 @@ namespace osc::fd {
         std::unique_ptr<SimTK::State> state;
         Params params;
 
-        Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
-            model{std::move(_model)}, state{std::move(_state)} {
-        }
+        Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state);
     };
 
     // stats collected whenever the simulation updates/reports

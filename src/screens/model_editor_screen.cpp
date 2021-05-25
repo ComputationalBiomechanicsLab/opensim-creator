@@ -15,6 +15,7 @@
 #include "src/ui/attach_geometry_popup.hpp"
 #include "src/ui/component_details.hpp"
 #include "src/ui/component_hierarchy.hpp"
+#include "src/ui/fd_params_editor_popup.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/log_viewer.hpp"
 #include "src/ui/main_menu.hpp"
@@ -933,6 +934,8 @@ static bool on_event(osc::Model_editor_screen::Impl& impl, SDL_Event const& e) {
 }
 
 static void draw(osc::Model_editor_screen::Impl& impl) {
+    bool show_sim_editor = false;
+
     // draw main menu
     if (ImGui::BeginMainMenuBar()) {
         ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
@@ -957,8 +960,17 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         }
         ImGui::PopStyleColor();
 
+        if (ImGui::Button("Edit sim settings")) {
+            show_sim_editor = true;
+        }
+
         ImGui::EndMainMenuBar();
     }
+
+    if (show_sim_editor) {
+        ImGui::OpenPopup("simulation parameters");
+    }
+    osc::ui::fd_params_editor_popup::draw("simulation parameters", impl.st->sim_params);
 
     // draw editor actions panel
     {
