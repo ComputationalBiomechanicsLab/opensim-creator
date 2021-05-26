@@ -135,6 +135,15 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
         if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.2f", ImGuiSliderFlags_AlwaysClamp)) {
             st.focused_simulation_scrubbing_time = v;
         }
+
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
+            ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
     }
 
     ImGui::Dummy(ImVec2{0.0f, 1.0f});

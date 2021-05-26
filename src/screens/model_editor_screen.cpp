@@ -71,6 +71,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <array>
 
 namespace fs = std::filesystem;
 using namespace osc;
@@ -90,9 +91,23 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
+static Component_3d_viewer create_viewer() {
+    return Component_3d_viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
+}
+
 struct Model_editor_screen::Impl final {
+    // top-level state this screen can handle
     std::shared_ptr<Main_editor_state> st;
-    Component_3d_viewer viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
+
+    // 3d viewers
+    //
+    // user can be viewing up to 4 of these, if they want
+    std::array<std::optional<Component_3d_viewer>, 4> viewers = {
+        create_viewer(),
+        std::nullopt,
+        std::nullopt,
+        std::nullopt,
+    };
 
     // internal state of any sub-panels the editor screen draws
     struct {
@@ -106,6 +121,7 @@ struct Model_editor_screen::Impl final {
         ui::log_viewer::State log_viewer;
     } ui;
 
+    // which panels are currently showing
     struct {
         bool hierarchy = true;
         bool selection_details = true;
@@ -114,6 +130,7 @@ struct Model_editor_screen::Impl final {
         bool actions = true;
     } showing;
 
+    // state that is reset at the start of each frame
     struct {
         bool edit_sim_params_requested = false;
         bool subpanel_requested_early_exit = false;
@@ -938,14 +955,19 @@ static bool on_event(osc::Model_editor_screen::Impl& impl, SDL_Event const& e) {
         handled = on_keydown(impl, e.key);
     }
 
-    // if the screen didn't handle the event, forward it into the 3D viewer
-    if (!handled && impl.viewer.is_moused_over()) {
-        handled = impl.viewer.on_event(e);
+    // if the screen didn't handle the event, forward it into the 3D viewers
+    for (auto& viewer : impl.viewers) {
+        if (!handled && viewer && viewer->is_moused_over()) {
+            handled = viewer->on_event(e);
+        }
     }
 
     return handled;
 }
 
+// draw editor screen main menu
+//
+// this is the bar that appears at the top of the screen
 static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     if (!ImGui::BeginMainMenuBar()) {
         return;
@@ -965,6 +987,22 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
         ImGui::MenuItem("Log", nullptr, &impl.showing.log);
         ImGui::MenuItem("Property Editor", nullptr, &impl.showing.property_editor);
         ImGui::MenuItem("Selection Details", nullptr, &impl.showing.selection_details);
+
+        for (size_t i = 0; i < impl.viewers.size(); ++i) {
+            char buf[64];
+            std::snprintf(buf, sizeof(buf), "viewer%zu", i);
+
+            bool is_enabled = impl.viewers[i].has_value();
+            if (ImGui::MenuItem(buf, nullptr, &is_enabled)) {
+                if (is_enabled) {
+                    // was enabled by user click
+                    impl.viewers[i] = create_viewer();
+                } else {
+                    // was disabled by user click
+                    impl.viewers[i] = std::nullopt;
+                }
+            }
+        }
 
         ImGui::EndMenu();
     }
@@ -999,6 +1037,53 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     ImGui::EndMainMenuBar();
 }
 
+// draw a single 3D model viewer
+static void draw_3d_viewer(osc::Model_editor_screen::Impl& impl, Component_3d_viewer& viewer, char const* name) {
+    Component3DViewerResponse resp;
+
+    if (impl.st->isolated()) {
+        resp = viewer.draw(
+            name,
+            *impl.st->isolated(),
+            impl.st->model().getDisplayHints(),
+            impl.st->state(),
+            impl.st->selection(),
+            impl.st->hovered());
+    } else {
+        resp = viewer.draw(
+            name,
+            impl.st->model(),
+            impl.st->state(),
+            impl.st->selection(),
+            impl.st->hovered());
+    }
+
+    if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
+        impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
+    } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
+        impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+    }
+}
+
+// draw all user-enabled 3D model viewers
+static void draw_3d_viewers(osc::Model_editor_screen::Impl& impl) {
+    for (size_t i = 0; i < impl.viewers.size(); ++i) {
+        std::optional<Component_3d_viewer>& maybe_viewer = impl.viewers[i];
+
+        if (!maybe_viewer) {
+            continue;
+        }
+
+        Component_3d_viewer& viewer = *maybe_viewer;
+
+        char buf[64];
+        std::snprintf(buf, sizeof(buf), "viewer%zu", i);
+
+        draw_3d_viewer(impl, viewer, buf);
+    }
+}
+
+// top-level draw function for the editor screen
 static void draw(osc::Model_editor_screen::Impl& impl) {
     impl.reset_per_frame = {};
 
@@ -1007,39 +1092,21 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         draw_main_menu(impl);
     }
 
+    // check for early exit request
+    //
+    // (the main menu may have requested a screen transition)
     if (impl.reset_per_frame.subpanel_requested_early_exit) {
         return;
     }
 
-    // draw 3D model viewer
+    // draw 3D viewers (if any)
     {
-        Component3DViewerResponse resp;
-
-        if (impl.st->isolated()) {
-            resp = impl.viewer.draw(
-                "render",
-                *impl.st->isolated(),
-                impl.st->model().getDisplayHints(),
-                impl.st->state(),
-                impl.st->selection(),
-                impl.st->hovered());
-        } else {
-            resp = impl.viewer.draw(
-                "render",
-                impl.st->model(),
-                impl.st->state(),
-                impl.st->selection(),
-                impl.st->hovered());
-        }
-
-        if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
-            impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
-        } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
-            impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
-        }
+        draw_3d_viewers(impl);
     }
 
-    // draw editor actions panel (add body, add joint, etc.)
+    // draw editor actions panel
+    //
+    // contains top-level actions (e.g. "add body")
     if (impl.showing.actions) {
         if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
             auto on_set_selection = [&](OpenSim::Component* c) { impl.st->set_selection(c); };
@@ -1051,11 +1118,7 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         ImGui::End();
     }
 
-    if (impl.reset_per_frame.subpanel_requested_early_exit) {
-        return;
-    }
-
-    // draw model hierarchy viewer
+    // draw hierarchy viewer
     if (impl.showing.hierarchy) {
         if (ImGui::Begin("Hierarchy", &impl.showing.hierarchy)) {
             auto resp = ui::component_hierarchy::draw(
@@ -1072,10 +1135,6 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         ImGui::End();
     }
 
-    if (impl.reset_per_frame.subpanel_requested_early_exit) {
-        return;
-    }
-
     // draw selection details
     if (impl.showing.selection_details) {
         if (ImGui::Begin("Selection", &impl.showing.selection_details)) {
@@ -1088,20 +1147,12 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         ImGui::End();
     }
 
-    if (impl.reset_per_frame.subpanel_requested_early_exit) {
-        return;
-    }
-
     // draw property editor
     if (impl.showing.property_editor) {
         if (ImGui::Begin("Edit Props", &impl.showing.property_editor)) {
             draw_selection_editor(impl);
         }
         ImGui::End();
-    }
-
-    if (impl.reset_per_frame.subpanel_requested_early_exit) {
-        return;
     }
 
     // draw application log
@@ -1112,11 +1163,7 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         ImGui::End();
     }
 
-    if (impl.reset_per_frame.subpanel_requested_early_exit) {
-        return;
-    }
-
-    // if applicable, draw sim params editor popup
+    // draw sim params editor popup (if applicable)
     {
         if (impl.reset_per_frame.edit_sim_params_requested) {
             ImGui::OpenPopup("simulation parameters");
@@ -1129,7 +1176,7 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         return;
     }
 
-    // if applicable, garbage-collect any models damaged by in-UI modifications
+    // garbage-collect any models damaged by in-UI modifications (if applicable)
     {
         impl.st->clear_any_damaged_models();
     }

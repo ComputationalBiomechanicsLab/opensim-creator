@@ -2,6 +2,8 @@
 
 #include <SDL_events.h>
 
+#include <utility>
+
 namespace OpenSim {
     class Model;
     class Component;
@@ -109,7 +111,18 @@ namespace osc {
         Component_3d_viewer() : Component_3d_viewer{Component3DViewerFlags_None} {
         }
         Component_3d_viewer(Component3DViewerFlags);
+        Component_3d_viewer(Component_3d_viewer&& tmp) : impl{tmp.impl} {
+            tmp.impl = nullptr;
+        }
+        Component_3d_viewer(Component_3d_viewer const&) = delete;
         ~Component_3d_viewer() noexcept;
+
+        Component_3d_viewer& operator=(Component_3d_viewer const&) = delete;
+
+        Component_3d_viewer& operator=(Component_3d_viewer&& tmp) {
+            std::swap(impl, tmp.impl);
+            return *this;
+        }
 
         bool is_moused_over() const noexcept;
 
