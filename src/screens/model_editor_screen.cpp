@@ -1067,10 +1067,12 @@ static void draw_3d_viewer(osc::Model_editor_screen::Impl& impl, Component_3d_vi
             impl.st->hovered());
     }
 
-    if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
-        impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
-    } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
-        impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+    if (viewer.is_moused_over()) {
+        if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
+            impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
+        } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
+            impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+        }
     }
 }
 
