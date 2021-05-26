@@ -27,12 +27,6 @@
 
 using namespace osc;
 
-static void draw_header(char const* str) {
-    ImGui::TextUnformatted(str);
-    ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0f, 0.5f));
-}
-
 void osc::ui::main_menu::about_tab::draw() {
     if (!ImGui::BeginMenu("About")) {
         return;
@@ -41,16 +35,22 @@ void osc::ui::main_menu::about_tab::draw() {
     static constexpr float menu_width = 400;
     ImGui::Dummy(ImVec2(menu_width, 0));
 
-    draw_header("graphics");
+    ImGui::TextUnformatted("graphics");
+    ImGui::SameLine();
+    ui::help_marker::draw("OSMV's global graphical settings");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 0.5f));
     {
         ImGui::Columns(2);
 
-        ImGui::Text("FPS");
+        ImGui::TextUnformatted("FPS");
         ImGui::NextColumn();
         ImGui::Text("%.1f", static_cast<double>(ImGui::GetIO().Framerate));
         ImGui::NextColumn();
 
-        ImGui::Text("MSXAA");
+        ImGui::TextUnformatted("MSXAA");
+        ImGui::SameLine();
+        ui::help_marker::draw("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ImGui::NextColumn();
         {
             static constexpr std::array<char const*, 8> aa_lvls = {"x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
@@ -64,7 +64,7 @@ void osc::ui::main_menu::about_tab::draw() {
         }
         ImGui::NextColumn();
 
-        ImGui::Text("window");
+        ImGui::TextUnformatted("window");
         ImGui::NextColumn();
 
         if (ImGui::Button("fullscreen")) {
@@ -76,7 +76,9 @@ void osc::ui::main_menu::about_tab::draw() {
         }
         ImGui::NextColumn();
 
-        ImGui::Text("VSYNC");
+        ImGui::TextUnformatted("VSYNC");
+        ImGui::SameLine();
+        ui::help_marker::draw("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ImGui::NextColumn();
         if (ImGui::Button("enable")) {
             Application::current().enable_vsync();
@@ -90,37 +92,41 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::Columns();
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
-    draw_header("properties");
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
+    ImGui::TextUnformatted("properties");
+    ImGui::SameLine();
+    ui::help_marker::draw("general software properties: useful information for bug reporting etc.");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 0.5f));
     {
         ImGui::Columns(2);
 
-        ImGui::Text("OSC_VERSION");
+        ImGui::TextUnformatted("OSC_VERSION");
         ImGui::NextColumn();
-        ImGui::Text("%s", OSC_VERSION_STRING);
-        ImGui::NextColumn();
-
-        ImGui::Text("OSC_BUILD_ID");
-        ImGui::NextColumn();
-        ImGui::Text("%s", OSC_BUILD_ID);
+        ImGui::TextUnformatted(OSC_VERSION_STRING);
         ImGui::NextColumn();
 
-        ImGui::Text("GL_VENDOR");
+        ImGui::TextUnformatted("OSC_BUILD_ID");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(OSC_BUILD_ID);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("GL_VENDOR");
         ImGui::NextColumn();
         ImGui::Text("%s", glGetString(GL_VENDOR));
         ImGui::NextColumn();
 
-        ImGui::Text("GL_RENDERER");
+        ImGui::TextUnformatted("GL_RENDERER");
         ImGui::NextColumn();
         ImGui::Text("%s", glGetString(GL_RENDERER));
         ImGui::NextColumn();
 
-        ImGui::Text("GL_VERSION");
+        ImGui::TextUnformatted("GL_VERSION");
         ImGui::NextColumn();
         ImGui::Text("%s", glGetString(GL_VERSION));
         ImGui::NextColumn();
 
-        ImGui::Text("GL_SHADING_LANGUAGE_VERSION");
+        ImGui::TextUnformatted("GL_SHADING_LANGUAGE_VERSION");
         ImGui::NextColumn();
         ImGui::Text("%s", glGetString(GL_SHADING_LANGUAGE_VERSION));
         ImGui::NextColumn();
@@ -128,12 +134,16 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::Columns(1);
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
-    draw_header("utils");
+    ImGui::Dummy(ImVec2(0.0f, 2.5f));
+    ImGui::TextUnformatted("debugging utilities");
+    ImGui::SameLine();
+    ui::help_marker::draw("standard utilities that can help with development, debugging, etc.");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 0.5f));
     {
         ImGui::Columns(2);
 
-        ImGui::Text("ImGui demo");
+        ImGui::TextUnformatted("ImGui demo");
         ImGui::SameLine();
         ui::help_marker::draw(
             "shows the standard ImGui demo screen (ImGui::ShowDemoWindow). Useful for finding an ImGui feature.");
@@ -146,7 +156,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::PopID();
         ImGui::NextColumn();
 
-        ImGui::Text("OpenGL experiments");
+        ImGui::TextUnformatted("OpenGL experiments");
         ImGui::SameLine();
         ui::help_marker::draw(
             "opens a test screen for low-level OpenGL features - you probably don't care about this, but it's useful for testing hardware features in prod");
@@ -158,7 +168,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::PopID();
         ImGui::NextColumn();
 
-        ImGui::Text("Debug mode");
+        ImGui::TextUnformatted("Debug mode");
         ImGui::SameLine();
         ui::help_marker::draw(
             "Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
