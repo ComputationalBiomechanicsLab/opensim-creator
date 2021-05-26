@@ -19,4 +19,12 @@ namespace osc {
     //
     // note: this is a noop on some OSes
     void install_backtrace_handler();
+
+    // tries to open the specified path in the OSes default application for that
+    // path
+    //
+    // how, or what, the OS does is implementation-defined. E.g. Windows opens
+    // filesystem paths by searching the file's extension against a list of default
+    // applications. It opens URLs in the default browser, etc.
+    void open_path_in_default_application(std::filesystem::path const&);
 }

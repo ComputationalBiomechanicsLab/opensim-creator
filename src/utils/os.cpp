@@ -276,3 +276,19 @@ void osc::install_backtrace_handler() {
     SetUnhandledExceptionFilter(crash_handler);  // when the application crashes, call this handler
 }
 #endif
+
+#ifdef __LINUX__
+void osc::open_path_in_default_application(std::filesystem::path const&) {
+    log::error("unsupported action: cannot open external programs in Linux (yet!)");
+}
+#elif defined(__APPLE__)
+void osc::open_path_in_default_application(std::filesystem::path const&) {
+    log::error("unsupported action: cannot open external programs in Mac OSX (yet!)");
+}
+#elif defined(WIN32)
+void osc::open_path_in_default_application(std::filesystem::path const& p) {
+    ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
+}
+#else
+#error "Unsupported platform?"
+#endif

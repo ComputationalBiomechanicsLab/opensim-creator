@@ -29,6 +29,7 @@
 #include "src/utils/file_change_poller.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/sdl_wrapper.hpp"
+#include "src/utils/os.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -835,6 +836,10 @@ static void action_enable_all_wrapping_surfs(Model_editor_screen::Impl& impl) {
     impl.st->after_modifying_model();
 }
 
+static bool has_backing_file(OpenSim::Model const& m) {
+    return m.getInputFileName() != "Unassigned";
+}
+
 static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
     if (ImGui::BeginMenu("Edit")) {
 
@@ -861,6 +866,10 @@ static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
 
             if (ImGui::MenuItem("Enable all wrapping surfaces")) {
                 action_enable_all_wrapping_surfs(impl);
+            }
+
+            if (ImGui::MenuItem("Open Model in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
+                open_path_in_default_application(impl.st->model().getInputFileName());
             }
 
             ImGui::EndMenu();
