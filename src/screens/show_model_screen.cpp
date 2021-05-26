@@ -1327,7 +1327,10 @@ static void draw(Show_model_screen::Impl& impl) {
     }
     ImGui::End();
 
-    ui::log_viewer::draw(impl.log_viewer_st, "Log");
+
+    if (ImGui::Begin("Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+        ui::log_viewer::draw(impl.log_viewer_st);
+    }
 }
 
 // public API

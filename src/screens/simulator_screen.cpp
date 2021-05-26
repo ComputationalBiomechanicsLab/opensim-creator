@@ -154,29 +154,42 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
             auto const& stats = report->stats;                                                                         \
             scratch.push_back(static_cast<float>(stats.statname));                                                     \
         }                                                                                                              \
-        ImGui::PlotLines(#statname, scratch.data(), static_cast<int>(scratch.size()), 0, nullptr, std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), ImVec2(0.0f, 30.0f));                                 \
+        ImGui::TextUnformatted(#statname); \
+        ImGui::NextColumn();  \
+        ImGui::PushID(imgui_id++);  \
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());  \
+        ImGui::PlotLines("##"#statname, scratch.data(), static_cast<int>(scratch.size()), 0, nullptr, std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), ImVec2(0.0f, .0f));                                 \
+        ImGui::PopID(); \
+        ImGui::NextColumn(); \
     }
 
 static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused) {
 
-    std::vector<float>& scratch = impl.plotscratch;
+    // draw simulation stat plots
+    {
+        std::vector<float>& scratch = impl.plotscratch;
+        int imgui_id = 0;
 
-    OSC_MAKE_SIMSTAT_PLOT(accuracyInUse);
-    OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize);
-    OSC_MAKE_SIMSTAT_PLOT(numStepsAttempted);
-    OSC_MAKE_SIMSTAT_PLOT(numStepsTaken);
-    OSC_MAKE_SIMSTAT_PLOT(numRealizations);
-    OSC_MAKE_SIMSTAT_PLOT(numQProjections);
-    OSC_MAKE_SIMSTAT_PLOT(numUProjections);
-    OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numConvergenceTestFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numRealizationFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numUProjectionFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures);
-    OSC_MAKE_SIMSTAT_PLOT(numConvergentIterations);
-    OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations);
-    OSC_MAKE_SIMSTAT_PLOT(numIterations);
+        ImGui::Columns(2);
+        OSC_MAKE_SIMSTAT_PLOT(accuracyInUse);
+        OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize);
+        OSC_MAKE_SIMSTAT_PLOT(numStepsAttempted);
+        OSC_MAKE_SIMSTAT_PLOT(numStepsTaken);
+        OSC_MAKE_SIMSTAT_PLOT(numRealizations);
+        OSC_MAKE_SIMSTAT_PLOT(numQProjections);
+        OSC_MAKE_SIMSTAT_PLOT(numUProjections);
+        OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numConvergenceTestFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numRealizationFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numUProjectionFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures);
+        OSC_MAKE_SIMSTAT_PLOT(numConvergentIterations);
+        OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations);
+        OSC_MAKE_SIMSTAT_PLOT(numIterations);
+        ImGui::Columns();
+    }
+
 }
 
 static bool on_keydown(osc::Simulator_screen::Impl& impl, SDL_KeyboardEvent const& e) {
@@ -242,7 +255,7 @@ static void draw_output_plots(
 
         ImGui::PushID(imgui_id++);
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        ImGui::PlotLines("##nolabel", impl.plotscratch.data(), static_cast<int>(impl.plotscratch.size()));
+        ImGui::PlotLines("##nolabel", impl.plotscratch.data(), static_cast<int>(impl.plotscratch.size()), 0, nullptr, FLT_MAX, FLT_MAX, ImVec2{0.0f, 20.0f});
 
         if (ImGui::BeginPopupContextItem(od.getName().c_str())) {
             if (ImGui::MenuItem("Add to outputs watch")) {
@@ -268,6 +281,11 @@ static void draw_selection_tab(osc::Simulator_screen::Impl& impl, Ui_simulation&
 
     if (ImGui::CollapsingHeader("outputs")) {
         draw_output_plots(impl, focused_sim, focused_report, selected);
+    }
+    if (ImGui::BeginPopupContextItem("ouptut actions")) {
+        if (ImGui::MenuItem("do something")) {
+
+        }
     }
 }
 
@@ -519,7 +537,10 @@ static void draw(osc::Simulator_screen::Impl& impl) {
 
     // draw log tab
     {
-        ui::log_viewer::draw(impl.log_viewer_st, "Log");
+        if (ImGui::Begin("Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+            ui::log_viewer::draw(impl.log_viewer_st);
+        }
+        ImGui::End();
     }
 }
 

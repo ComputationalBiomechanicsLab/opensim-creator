@@ -94,7 +94,7 @@ struct Model_editor_screen::Impl final {
     std::shared_ptr<Main_editor_state> st;
     Component_3d_viewer viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
 
-    // state of any sub-panels the editor screen draws
+    // internal state of any sub-panels the editor screen draws
     struct {
         ui::main_menu::file_tab::State main_menu_tab;
         ui::add_body_popup::State abm;
@@ -105,6 +105,19 @@ struct Model_editor_screen::Impl final {
         ui::model_actions::State model_actions_panel;
         ui::log_viewer::State log_viewer;
     } ui;
+
+    struct {
+        bool hierarchy = true;
+        bool selection_details = true;
+        bool property_editor = true;
+        bool log = true;
+        bool actions = true;
+    } showing;
+
+    struct {
+        bool edit_sim_params_requested = false;
+        bool subpanel_requested_early_exit = false;
+    } reset_per_frame;
 
     // poller that checks (with debouncing) when model being edited has changed on the filesystem
     File_change_poller file_poller{1000ms, st->model().getInputFileName()};
@@ -933,52 +946,69 @@ static bool on_event(osc::Model_editor_screen::Impl& impl, SDL_Event const& e) {
     return handled;
 }
 
+static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
+    if (!ImGui::BeginMainMenuBar()) {
+        return;
+    }
+
+    // draw "file" tab
+    ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
+
+    // draw "actions" tab
+    draw_main_menu_actions_tab(impl);
+
+    // draw "window" tab
+    if (ImGui::BeginMenu("Window")) {
+
+        ImGui::MenuItem("Actions", nullptr, &impl.showing.actions);
+        ImGui::MenuItem("Hierarchy", nullptr, &impl.showing.hierarchy);
+        ImGui::MenuItem("Log", nullptr, &impl.showing.log);
+        ImGui::MenuItem("Property Editor", nullptr, &impl.showing.property_editor);
+        ImGui::MenuItem("Selection Details", nullptr, &impl.showing.selection_details);
+
+        ImGui::EndMenu();
+    }
+
+    // draw "about" tab
+    ui::main_menu::about_tab::draw();
+
+    ImGui::Dummy(ImVec2{2.0f, 0.0f});
+    if (ImGui::Button("Show simulations")) {
+        Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
+        ImGui::EndMainMenuBar();
+        impl.reset_per_frame.subpanel_requested_early_exit = true;
+        return;
+    }
+
+    // "switch to simulator" menu button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+    if (ImGui::Button("Simulate (Ctrl+R)")) {
+        impl.st->start_simulating_edited_model();
+        Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
+        ImGui::PopStyleColor();
+        ImGui::EndMainMenuBar();
+        impl.reset_per_frame.subpanel_requested_early_exit = true;
+        return;
+    }
+    ImGui::PopStyleColor();
+
+    if (ImGui::Button("Edit sim settings")) {
+        impl.reset_per_frame.edit_sim_params_requested = true;
+    }
+
+    ImGui::EndMainMenuBar();
+}
+
 static void draw(osc::Model_editor_screen::Impl& impl) {
-    bool show_sim_editor = false;
+    impl.reset_per_frame = {};
 
     // draw main menu
-    if (ImGui::BeginMainMenuBar()) {
-        ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
-        draw_main_menu_actions_tab(impl);
-        ui::main_menu::about_tab::draw();
-
-        ImGui::Dummy(ImVec2{2.0f, 0.0f});
-        if (ImGui::Button("Show simulations")) {
-            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
-            ImGui::EndMainMenuBar();
-            return;
-        }
-
-        // colored "switch to simulator" menu button
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
-        if (ImGui::Button("Simulate (Ctrl+R)")) {
-            impl.st->start_simulating_edited_model();
-            Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
-            ImGui::PopStyleColor();
-            ImGui::EndMainMenuBar();
-            return;
-        }
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button("Edit sim settings")) {
-            show_sim_editor = true;
-        }
-
-        ImGui::EndMainMenuBar();
-    }
-
-    if (show_sim_editor) {
-        ImGui::OpenPopup("simulation parameters");
-    }
-    osc::ui::fd_params_editor_popup::draw("simulation parameters", impl.st->sim_params);
-
-    // draw editor actions panel
     {
-        auto on_set_selection = [&](OpenSim::Component* c) { impl.st->set_selection(c); };
-        auto before_modify_model = [&]() { impl.st->before_modifying_model(); };
-        auto after_modify_model = [&]() { impl.st->after_modifying_model(); };
-        ui::model_actions::draw(
-            impl.ui.model_actions_panel, impl.st->model(), on_set_selection, before_modify_model, after_modify_model);
+        draw_main_menu(impl);
+    }
+
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
     }
 
     // draw 3D model viewer
@@ -1009,45 +1039,103 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
         }
     }
 
+    // draw editor actions panel (add body, add joint, etc.)
+    if (impl.showing.actions) {
+        if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
+            auto on_set_selection = [&](OpenSim::Component* c) { impl.st->set_selection(c); };
+            auto before_modify_model = [&]() { impl.st->before_modifying_model(); };
+            auto after_modify_model = [&]() { impl.st->after_modifying_model(); };
+            ui::model_actions::draw(
+                impl.ui.model_actions_panel, impl.st->model(), on_set_selection, before_modify_model, after_modify_model);
+        }
+        ImGui::End();
+    }
+
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
+    }
+
     // draw model hierarchy viewer
-    if (ImGui::Begin("Hierarchy")) {
-        auto resp = ui::component_hierarchy::draw(
-            &impl.st->model().getRoot(), 
-            impl.st->selection(), 
-            impl.st->hovered());
+    if (impl.showing.hierarchy) {
+        if (ImGui::Begin("Hierarchy", &impl.showing.hierarchy)) {
+            auto resp = ui::component_hierarchy::draw(
+                &impl.st->model().getRoot(),
+                impl.st->selection(),
+                impl.st->hovered());
 
-        if (resp.type == component_hierarchy::SelectionChanged) {
-            impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
-        } else if (resp.type == component_hierarchy::HoverChanged) {
-            impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
+            if (resp.type == component_hierarchy::SelectionChanged) {
+                impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+            } else if (resp.type == component_hierarchy::HoverChanged) {
+                impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
+            }
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    // draw selection viewer
-    if (ImGui::Begin("Selection")) {
-        auto resp = component_details::draw(impl.st->state(), impl.st->selection());
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
+    }
 
-        if (resp.type == component_details::SelectionChanged) {
-            impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+    // draw selection details
+    if (impl.showing.selection_details) {
+        if (ImGui::Begin("Selection", &impl.showing.selection_details)) {
+            auto resp = component_details::draw(impl.st->state(), impl.st->selection());
+
+            if (resp.type == component_details::SelectionChanged) {
+                impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+            }
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    // draw property editor panel
-    if (ImGui::Begin("Edit Props")) {
-        draw_selection_editor(impl);
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
     }
-    ImGui::End();
 
-    // draw log viewer
-    ui::log_viewer::draw(impl.ui.log_viewer, "Log");
+    // draw property editor
+    if (impl.showing.property_editor) {
+        if (ImGui::Begin("Edit Props", &impl.showing.property_editor)) {
+            draw_selection_editor(impl);
+        }
+        ImGui::End();
+    }
 
-    // garbage-collect damaged model
-    impl.st->clear_any_damaged_models();
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
+    }
+
+    // draw application log
+    if (impl.showing.log) {
+        if (ImGui::Begin("Log", &impl.showing.log, ImGuiWindowFlags_MenuBar)) {
+            ui::log_viewer::draw(impl.ui.log_viewer);
+        }
+        ImGui::End();
+    }
+
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
+    }
+
+    // if applicable, draw sim params editor popup
+    {
+        if (impl.reset_per_frame.edit_sim_params_requested) {
+            ImGui::OpenPopup("simulation parameters");
+        }
+
+        osc::ui::fd_params_editor_popup::draw("simulation parameters", impl.st->sim_params);
+    }
+
+    if (impl.reset_per_frame.subpanel_requested_early_exit) {
+        return;
+    }
+
+    // if applicable, garbage-collect any models damaged by in-UI modifications
+    {
+        impl.st->clear_any_damaged_models();
+    }
 }
 
-// Model_editor_screen public interface
+// Model_editor_screen interface
 
 Model_editor_screen::Model_editor_screen() : 
     impl{new Impl(std::make_unique<Main_editor_state>())} {

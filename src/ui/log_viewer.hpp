@@ -5,5 +5,6 @@ namespace osc::ui::log_viewer {
         bool autoscroll = true;
     };
 
-    void draw(State&, char const* panel_name);
+    // assumes caller handles `ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
+    void draw(State&);
 }

@@ -46,56 +46,51 @@ static void copy_traceback_log_to_clipboard() {
     }
 }
 
-void osc::ui::log_viewer::draw(State& st, char const* panel_name) {
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0, 0.0));
-    if (ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
-        if (ImGui::BeginMenuBar()) {
-            // level selector
-            {
-                int lvl = static_cast<int>(log::get_traceback_level());
-                ImGui::SetNextItemWidth(200.0f);
-                if (ImGui::Combo("level", &lvl, log::level::name_cstrings, log::level::NUM_LEVELS)) {
-                    log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
-                }
+void osc::ui::log_viewer::draw(State& st) {
+    if (ImGui::BeginMenuBar()) {
+        // level selector
+        {
+            int lvl = static_cast<int>(log::get_traceback_level());
+            ImGui::SetNextItemWidth(200.0f);
+            if (ImGui::Combo("level", &lvl, log::level::name_cstrings, log::level::NUM_LEVELS)) {
+                log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
             }
-
-            ImGui::SameLine();
-            ImGui::Checkbox("autoscroll", &st.autoscroll);
-
-            ImGui::SameLine();
-            if (ImGui::Button("clear")) {
-                log::get_traceback_log().lock()->clear();
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("turn off")) {
-                log::set_traceback_level(log::level::off);
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("copy to clipboard")) {
-                copy_traceback_log_to_clipboard();
-            }
-
-            ImGui::Dummy(ImVec2{0.0f, 10.0f});
-
-            ImGui::EndMenuBar();
         }
 
-        auto& guarded_content = log::get_traceback_log();
-        auto const& content = guarded_content.lock();
-        for (log::Owned_log_msg const& msg : *content) {
-            ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
-            ImGui::Text("[%s]", log::to_c_str(msg.level));
-            ImGui::PopStyleColor();
-            ImGui::SameLine();
-            ImGui::TextWrapped("%s", msg.payload.c_str());
+        ImGui::SameLine();
+        ImGui::Checkbox("autoscroll", &st.autoscroll);
 
-            if (st.autoscroll) {
-                ImGui::SetScrollHereY();
-            }
+        ImGui::SameLine();
+        if (ImGui::Button("clear")) {
+            log::get_traceback_log().lock()->clear();
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("turn off")) {
+            log::set_traceback_level(log::level::off);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("copy to clipboard")) {
+            copy_traceback_log_to_clipboard();
+        }
+
+        ImGui::Dummy(ImVec2{0.0f, 10.0f});
+
+        ImGui::EndMenuBar();
+    }
+
+    auto& guarded_content = log::get_traceback_log();
+    auto const& content = guarded_content.lock();
+    for (log::Owned_log_msg const& msg : *content) {
+        ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
+        ImGui::Text("[%s]", log::to_c_str(msg.level));
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        ImGui::TextWrapped("%s", msg.payload.c_str());
+
+        if (st.autoscroll) {
+            ImGui::SetScrollHereY();
         }
     }
-    ImGui::End();
-    ImGui::PopStyleVar();
 }

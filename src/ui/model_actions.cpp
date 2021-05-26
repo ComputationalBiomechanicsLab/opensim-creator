@@ -229,11 +229,8 @@ void osc::ui::model_actions::draw(
     std::function<void()> const& on_before_modify_model,
     std::function<void()> const& on_after_modify_model) {
 
-    if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
-        if (ImGui::BeginMenuBar()) {
-            render_actions_panel_content(st, model, on_set_selection, on_before_modify_model, on_after_modify_model);
-            ImGui::EndMenuBar();
-        }
+    if (ImGui::BeginMenuBar()) {
+        render_actions_panel_content(st, model, on_set_selection, on_before_modify_model, on_after_modify_model);
+        ImGui::EndMenuBar();
     }
-    ImGui::End();
 }
