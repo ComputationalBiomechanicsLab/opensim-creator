@@ -1,6 +1,7 @@
 #include "config.hpp"
 
 #include "src/utils/os.hpp"
+#include "osc_build_config.hpp"
 
 #include <toml.hpp>
 
@@ -21,6 +22,8 @@ struct App_config final {
     std::filesystem::path resource_dir;
     bool use_multi_viewport;
 };
+
+// config defaults when a config file/property isn't present
 
 static App_config load_application_config() {
     // the "system-wide" application config is searched recursively by stepping
@@ -56,20 +59,18 @@ static App_config load_application_config() {
 
     // no config: return an in-memory config that has reasonable defaults
     if (!exists) {
-        fs::path default_resource_dir = fs::path{".."} / "resources";
-        bool use_multi_viewport = false;
-        return App_config{default_resource_dir, use_multi_viewport};
+        return App_config{OSC_DEFAULT_RESOURCE_DIR, OSC_DEFAULT_USE_MULTI_VIEWPORT};
     }
 
     // warning: can throw
     auto config = toml::parse_file(p.c_str());
-    std::string_view resource_dir = config["resources"].value_or("../resources");
+    std::string_view resource_dir = config["resources"].value_or(OSC_DEFAULT_RESOURCE_DIR);
 
     // configuration resource_dir is relative *to the configuration file*
     fs::path config_file_dir = p.parent_path();
     fs::path resource_dir_path = config_file_dir / resource_dir;
 
-    bool use_multi_viewport = config["experimental_feature_flags"]["multiple_viewports"].value_or(false);
+    bool use_multi_viewport = config["experimental_feature_flags"]["multiple_viewports"].value_or(OSC_DEFAULT_USE_MULTI_VIEWPORT);
 
     return App_config{resource_dir_path, use_multi_viewport};
 }

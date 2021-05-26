@@ -11,6 +11,8 @@ set(OSC_IWYU_PATH "include-what-you-use" CACHE STRING "path to the `iwyu` execut
 set(OSC_FORCE_ASSERTS_ENABLED ON CACHE BOOL "enable OSC's runtime assertions - even if building a release build")
 set(OSC_FORCE_UNDEFINE_NDEBUG OFF CACHE BOOL "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions (standard lib, SimTK, OpenSim)")
 set(OSC_USE_ASAN OFF CACHE BOOL "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks")
+set(OSC_DEFAULT_USE_MULTI_VIEWPORT OFF CACHE BOOL "enable/disable osc using multi viewport when not explicitly specified a the user/config")
+set(OSC_DEFAULT_RESOURCE_DIR "../resources" CACHE STRING "default location of runtime resources dir when not specified by user/config")
 
 
 # -------------- top-level build configuration (vars etc.) ---------------- #
@@ -57,6 +59,12 @@ else()
     string(RANDOM RANDOM_ID)
     set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}")
     unset(RANDOM_ID)
+endif()
+
+if(${OSC_DEFAULT_USE_MULTI_VIEWPORT})
+    set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "true")
+else()
+    set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "false")
 endif()
 
 
