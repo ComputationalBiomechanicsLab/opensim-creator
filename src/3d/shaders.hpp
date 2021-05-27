@@ -1,8 +1,7 @@
 #pragma once
 
-#include "src/3d/gl.hpp"
-#include "src/config.hpp"
-#include "src/utils/helpers.hpp"
+#include "src/3d/3d.hpp"
+#include "src/resources.hpp"
 
 /**
  * what you are about to see (using SFINAE to test whether a class has a texcoord member)
@@ -46,10 +45,8 @@ namespace osc {
     // - COLOR1: RGB passthrough (selection logic + rim alphas)
     struct Gouraud_mrt_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("gouraud_mrt.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("gouraud_mrt.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/gouraud_mrt.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/gouraud_mrt.frag")));
 
         // vertex attrs
         static constexpr gl::Attribute_vec3 aLocation{0};
@@ -131,10 +128,8 @@ namespace osc {
     // useful for rendering quads etc.
     struct Colormapped_plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("colormapped_plain_texture.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("colormapped_plain_texture.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/colormapped_plain_texture.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/colormapped_plain_texture.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
         static constexpr gl::Attribute_vec2 aTexCoord{1};
@@ -161,10 +156,8 @@ namespace osc {
 
     struct Plain_texture_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("plain_texture.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("plain_texture.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/plain_texture.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/plain_texture.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
         static constexpr gl::Attribute_vec2 aTexCoord{1};
@@ -192,10 +185,8 @@ namespace osc {
     // A specialized edge-detection shader for rim highlighting
     struct Edge_detection_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("edge_detect.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("edge_detect.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/edge_detect.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/edge_detect.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
         static constexpr gl::Attribute_vec2 aTexCoord{1};
@@ -225,10 +216,8 @@ namespace osc {
 
     struct Skip_msxaa_blitter_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("skip_msxaa_blitter.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("skip_msxaa_blitter.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/skip_msxaa_blitter.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/skip_msxaa_blitter.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
         static constexpr gl::Attribute_vec2 aTexCoord{1};
@@ -257,12 +246,9 @@ namespace osc {
     // uses a geometry shader to render normals as lines
     struct Normals_shader final {
         gl::Program program = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("draw_normals.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("draw_normals.frag")).c_str()),
-            gl::CompileFromSource<gl::Geometry_shader>(
-                slurp_into_string(config::shader_path("draw_normals.geom")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/draw_normals.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/draw_normals.frag")),
+            gl::CompileFromSource<gl::Geometry_shader>(slurp_resource("shaders/draw_normals.geom")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
         static constexpr gl::Attribute_vec3 aNormal{1};

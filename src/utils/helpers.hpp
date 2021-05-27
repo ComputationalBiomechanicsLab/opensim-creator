@@ -25,4 +25,8 @@ namespace osc {
     }
 
     std::string slurp_into_string(std::filesystem::path const&);
+
+    [[nodiscard]] inline bool filename_lexographically_gt(std::filesystem::path const& p1, std::filesystem::path const& p2) {
+        return p1.filename() < p2.filename();
+    }
 }

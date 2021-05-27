@@ -17,20 +17,22 @@ namespace osc {
 // application-level upkeep (event pumping, throttling, etc.) while deferring
 // actual per-screen rendering work to a (changing) `Screen` instance
 namespace osc {
+
+
     class Application final {
-        static Application* gCurrent;
+        static Application* g_Current;
 
         class Impl;
         std::unique_ptr<Impl> impl;
 
     public:
         static void set_current(Application* ptr) noexcept {
-            gCurrent = ptr;
+            g_Current = ptr;
         }
 
         [[nodiscard]] static Application& current() noexcept {
-            OSC_ASSERT(gCurrent != nullptr);
-            return *gCurrent;
+            OSC_ASSERT(g_Current != nullptr);
+            return *g_Current;
         }
 
         Application();

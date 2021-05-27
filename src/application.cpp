@@ -10,6 +10,7 @@
 #include "src/utils/helpers.hpp"
 #include "src/utils/os.hpp"
 #include "src/utils/sdl_wrapper.hpp"
+#include "src/resources.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>
@@ -48,13 +49,13 @@ using std::literals::chrono_literals::operator""ms;
 using namespace osc;
 
 // globals
-osc::Application* osc::Application::gCurrent = nullptr;
+osc::Application* osc::Application::g_Current = nullptr;
 
 struct ImGuiContext;
 
 namespace igx {
     struct Context final {
-        std::string default_ini = osc::config::resource_path("imgui_base_config.ini").string();
+        std::string default_ini = resource("imgui_base_config.ini").string();
         std::string user_ini = (osc::user_data_dir() / "imgui.ini").string();
 
         ImGuiContext* handle;
@@ -72,7 +73,7 @@ namespace igx {
 
         void configure_context(ImGuiIO& io) {
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-            if (osc::config::should_use_multi_viewport()) {
+            if (config().use_multi_viewport) {
                 io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
             }
         }

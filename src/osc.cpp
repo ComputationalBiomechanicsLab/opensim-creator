@@ -5,6 +5,7 @@
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/os.hpp"
+#include "src/resources.hpp"
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
@@ -68,6 +69,9 @@ int main(int argc, char** argv) {
 
     // pre-launch global inits
     {
+        // load config file
+        osc::init_load_config();
+
         // install backtrace dumper
         //
         // useful if the application fails in prod: can provide some basic backtrace
@@ -118,7 +122,7 @@ int main(int argc, char** argv) {
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
         osc::log::info("registering OpenSim geometry search path to use osc resources");
-        std::filesystem::path geometry_dir = osc::config::resource_path("geometry");
+        std::filesystem::path geometry_dir = osc::resource("geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometry_dir.string());
         osc::log::info("added geometry search path entry: %s", geometry_dir.string().c_str());
     }
@@ -128,12 +132,18 @@ int main(int argc, char** argv) {
     osc::Application app;
     osc::Application::set_current(&app);
 
-    if (argc <= 0) {
-        // no args: show splash screen
-        app.start_render_loop<osc::Splash_screen>();
-    } else {
-        // args: load args as osim files
-        app.start_render_loop<osc::Loading_screen>(argv[0]);
+    try {
+        if (argc <= 0) {
+            // no args: show splash screen
+            app.start_render_loop<osc::Splash_screen>();
+        } else {
+            // args: load args as osim files
+            app.start_render_loop<osc::Loading_screen>(argv[0]);
+        }
+    } catch (std::exception const& ex) {
+        std::cerr << "osc: encountered fatal exception: " << ex.what() << std::endl;
+        std::cerr << "terminating applicaiton" << std::endl;
+        throw;
     }
 
     osc::log::info("exited main application event loop: shutting down application");

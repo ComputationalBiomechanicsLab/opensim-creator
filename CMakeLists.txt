@@ -186,6 +186,8 @@ add_executable(osc
     src/log.cpp
     src/assertions.hpp
     src/assertions.cpp
+    src/resources.hpp
+    src/resources.cpp
     src/osc.cpp
 
     # Windows: also link a resources file (rc)

@@ -1,42 +1,56 @@
 #pragma once
 
-#include <chrono>
-#include <filesystem>
+#include "src/assertions.hpp"
+
 #include <utility>
-#include <vector>
+#include <filesystem>
+#include <memory>
 
-namespace osc::config {
-    std::filesystem::path resource_path(std::filesystem::path const&);
+namespace osc {
 
-    template<typename... Els>
-    std::filesystem::path resource_path(Els... els) {
-        std::filesystem::path p;
-        (p /= ... /= els);
-        return resource_path(p);
-    }
+    template<typename T>
+    struct Config_option final {
+        T value;
+        bool is_dirty = false;
 
-    std::filesystem::path shader_path(char const* shader_name);
+        explicit Config_option(T value_) : value{std::move(value_)} {
+        }
 
-    struct Recent_file final {
-        bool exists;
-        std::chrono::seconds last_opened_unix_timestamp;
-        std::filesystem::path path;
+        operator T&() noexcept {
+            return value;
+        }
 
-        Recent_file(bool _exists, std::chrono::seconds _last_opened_unix_timestamp, std::filesystem::path _path) :
-            exists{_exists},
-            last_opened_unix_timestamp{std::move(_last_opened_unix_timestamp)},
-            path{std::move(_path)} {
+        operator T const&() const noexcept {
+            return value;
         }
     };
 
-    std::vector<Recent_file> recent_files();
+    // runtime configuration for the application
+    struct Config {
+        Config_option<std::filesystem::path> resource_dir;
+        Config_option<bool> use_multi_viewport;
 
-    // persist a recently used file
+        // default-init with compiled-in values
+        Config();
+    };
+
+    // global for the application
     //
-    // duplicates paths are automatically removed on insertion
-    void add_recent_file(std::filesystem::path const&);
+    // statically initialized with compiled-in defaults for each config option
+    extern std::unique_ptr<Config> g_ApplicationConfig;
 
-    bool should_use_multi_viewport();
+    // loads configuration via environment, files, etc.
+    void init_load_config();
 
-    std::vector<std::filesystem::path> example_osim_files();
+    // get runtime config
+    [[nodiscard]] static inline Config const& config() noexcept {
+        OSC_ASSERT(g_ApplicationConfig != nullptr);
+        return *g_ApplicationConfig;
+    }
+
+    // get (mutable access to) runtime config
+    [[nodiscard]] static inline Config& upd_config() noexcept {
+        OSC_ASSERT(g_ApplicationConfig != nullptr);
+        return *g_ApplicationConfig;
+    }
 }

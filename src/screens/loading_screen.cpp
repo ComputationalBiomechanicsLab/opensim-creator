@@ -2,7 +2,7 @@
 
 #include "src/3d/gl.hpp"
 #include "src/application.hpp"
-#include "src/config.hpp"
+#include "src/resources.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/main_editor_state.hpp"
@@ -89,7 +89,7 @@ static void tick(Loading_screen::Impl& impl) {
     }
 
     if (result) {
-        config::add_recent_file(impl.path);
+        add_recent_file(impl.path);
 
         if (impl.editor_state) {
             // there is an existing editor state

@@ -39,12 +39,9 @@ using namespace osc;
 
 struct Splash_screen::Impl final {
     ui::main_menu::file_tab::State mm_state;
-    gl::Texture_2d logo =
-        osc::load_tex(osc::config::resource_path("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    gl::Texture_2d cz_logo = osc::load_tex(
-        osc::config::resource_path("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    gl::Texture_2d tud_logo =
-        osc::load_tex(osc::config::resource_path("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d logo = osc::load_tex(resource("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d cz_logo = osc::load_tex(resource("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d tud_logo = osc::load_tex(resource("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
     Drawlist drawlist;
 
     Polar_perspective_camera camera;
@@ -228,7 +225,7 @@ void osc::Splash_screen::draw() {
 
             // iterate in reverse: recent files are stored oldest --> newest
             for (auto it = impl->mm_state.recent_files.rbegin(); it != impl->mm_state.recent_files.rend(); ++it) {
-                config::Recent_file const& rf = *it;
+                Recent_file const& rf = *it;
                 ImGui::PushID(++id);
                 if (ImGui::Button(rf.path.filename().string().c_str())) {
                     app.request_screen_transition<osc::Loading_screen>(rf.path);

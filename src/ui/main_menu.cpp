@@ -27,6 +27,15 @@
 
 using namespace osc;
 
+osc::ui::main_menu::file_tab::State::State() :
+    example_osims{find_files_with_extensions(resource("models"), ".osim")},
+    recent_files{osc::recent_files()} {
+
+    std::sort(example_osims.begin(), example_osims.end(), filename_lexographically_gt);
+
+    // TODO: sort etc.
+}
+
 void osc::ui::main_menu::about_tab::draw() {
     if (!ImGui::BeginMenu("About")) {
         return;
@@ -226,8 +235,7 @@ static bool is_subpath(std::filesystem::path const& dir, std::filesystem::path c
 }
 
 static bool is_example_file(std::filesystem::path const& path) {
-    std::filesystem::path examples_dir = config::resource_path("models");
-    return is_subpath(examples_dir, path);
+    return is_subpath(resource("models"), path);
 }
 
 template<typename T, typename MappingFunction>
@@ -266,7 +274,7 @@ static void save_model(OpenSim::Model& model, std::string const& save_loc) {
         model.print(save_loc);
         model.setInputFileName(save_loc);
         log::info("saved model to %s", save_loc.c_str());
-        config::add_recent_file(save_loc);
+        add_recent_file(save_loc);
     } catch (OpenSim::Exception const& ex) {
         log::error("error saving model: %s", ex.what());
     }
@@ -327,7 +335,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
     if (ImGui::BeginMenu("Open Recent")) {
         // iterate in reverse: recent files are stored oldest --> newest
         for (auto it = st.recent_files.rbegin(); it != st.recent_files.rend(); ++it) {
-            config::Recent_file const& rf = *it;
+            Recent_file const& rf = *it;
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str())) {
                 transition_to_loading_existing_path(editor_state, rf.path);

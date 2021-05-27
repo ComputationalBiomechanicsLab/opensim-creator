@@ -324,6 +324,7 @@ namespace osc {
             int new_focus = static_cast<int>(simulations.size());
             simulations.emplace_back(new Ui_simulation{edited_model.current, sim_params});
             focused_simulation = new_focus;
+            focused_simulation_scrubbing_time = -1.0f;
         }
     };
 }

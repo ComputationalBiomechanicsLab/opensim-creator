@@ -1,6 +1,6 @@
 #include "attach_geometry_popup.hpp"
 
-#include "src/config.hpp"
+#include "src/resources.hpp"
 #include "src/utils/scope_guard.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -20,41 +20,8 @@ static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
 }
 
 std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
-    fs::path geometry_dir = osc::config::resource_path("geometry");
-
-    std::vector<fs::path> rv;
-
-    if (!fs::exists(geometry_dir)) {
-        // application installation is probably mis-configured, or missing
-        // the geometry dir (e.g. the user deleted it)
-        return rv;
-    }
-
-    if (!fs::is_directory(geometry_dir)) {
-        // something horrible has happened, such as the user creating a file
-        // called "geometry" in the application resources dir. Silently eat
-        // this for now
-        return rv;
-    }
-
-    // ensure the number of files iterated over does not exeed some (arbitrary)
-    // limit to protect the application from the edge-case that the implementation
-    // selects (e.g.) a root directory and ends up recursing over the entire
-    // filesystem
-    int i = 0;
-    static constexpr int file_limit = 10000;
-
-    for (fs::directory_entry const& entry : fs::recursive_directory_iterator{geometry_dir}) {
-        if (i++ > file_limit) {
-            // TODO: log warning
-            return rv;
-        }
-
-        if (entry.path().extension() == ".vtp") {
-            rv.push_back(entry.path());
-        }
-    }
-
+    fs::path geometry_dir = osc::resource("geometry");
+    std::vector<fs::path> rv = find_files_with_extensions(geometry_dir, ".vtp");
     std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
 
     return rv;

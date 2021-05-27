@@ -114,6 +114,11 @@ namespace gl {
         return rv;
     }
 
+    template<typename TShader, typename Str>
+    inline TShader CompileFromSource(Str const& src) {
+        return CompileFromSource<TShader>(src.c_str());
+    }
+
     // an OpenGL program (i.e. n shaders linked into one pipeline)
     class Program final {
         GLuint handle;

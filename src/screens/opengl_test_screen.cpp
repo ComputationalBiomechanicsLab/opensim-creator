@@ -3,7 +3,7 @@
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_extensions.hpp"
 #include "src/application.hpp"
-#include "src/config.hpp"
+#include "src/resources.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/helpers.hpp"
 
@@ -25,10 +25,8 @@ using namespace osc;
 namespace {
     struct Plain_color_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(
-                slurp_into_string(config::shader_path("plain_color.vert")).c_str()),
-            gl::CompileFromSource<gl::Fragment_shader>(
-                slurp_into_string(config::shader_path("plain_color.frag")).c_str()));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/plain_color.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/plain_color.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
 

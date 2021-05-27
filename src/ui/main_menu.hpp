@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/application.hpp"
-#include "src/config.hpp"
+#include "src/resources.hpp"
 
 #include <filesystem>
 #include <vector>
@@ -22,8 +22,10 @@ namespace osc::ui::main_menu {
 
     namespace file_tab {
         struct State final {
-            std::vector<std::filesystem::path> example_osims = osc::config::example_osim_files();
-            std::vector<config::Recent_file> recent_files = osc::config::recent_files();
+            std::vector<std::filesystem::path> example_osims;
+            std::vector<Recent_file> recent_files;
+
+            State();
         };
 
         void draw(State&, std::shared_ptr<Main_editor_state> = nullptr);
