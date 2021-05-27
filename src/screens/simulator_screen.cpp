@@ -7,6 +7,7 @@
 #include "src/ui/main_menu.hpp"
 #include "src/ui/component_details.hpp"
 #include "src/ui/component_hierarchy.hpp"
+#include "src/ui/help_marker.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/assertions.hpp"
 
@@ -156,7 +157,7 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
     }
 }
 
-#define OSC_MAKE_SIMSTAT_PLOT(statname) \
+#define OSC_MAKE_SIMSTAT_PLOT(statname, docstring) \
     {                                                                                                                  \
         scratch.clear();                                                                                               \
         for (auto const& report : focused.regular_reports) {                                                           \
@@ -164,6 +165,8 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
             scratch.push_back(static_cast<float>(stats.statname));                                                     \
         }                                                                                                              \
         ImGui::TextUnformatted(#statname); \
+        ImGui::SameLine();  \
+        ui::help_marker::draw(docstring);  \
         ImGui::NextColumn();  \
         ImGui::PushID(imgui_id++);  \
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());  \
@@ -174,28 +177,35 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
 
 static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused) {
 
+    ImGui::Dummy(ImVec2{0.0f, 1.0f});
+    ImGui::TextUnformatted("plots");
+    ImGui::SameLine();
+    ui::help_marker::draw("These plots are collected from the underlying simulation engine as the simulation runs. The data is heavily affected by the model's structure, choice of integrator, and simulation settings");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 2.0f});
+
     // draw simulation stat plots
     {
         std::vector<float>& scratch = impl.plotscratch;
         int imgui_id = 0;
 
         ImGui::Columns(2);
-        OSC_MAKE_SIMSTAT_PLOT(accuracyInUse);
-        OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize);
-        OSC_MAKE_SIMSTAT_PLOT(numStepsAttempted);
-        OSC_MAKE_SIMSTAT_PLOT(numStepsTaken);
-        OSC_MAKE_SIMSTAT_PLOT(numRealizations);
-        OSC_MAKE_SIMSTAT_PLOT(numQProjections);
-        OSC_MAKE_SIMSTAT_PLOT(numUProjections);
-        OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numConvergenceTestFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numRealizationFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numUProjectionFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures);
-        OSC_MAKE_SIMSTAT_PLOT(numConvergentIterations);
-        OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations);
-        OSC_MAKE_SIMSTAT_PLOT(numIterations);
+        OSC_MAKE_SIMSTAT_PLOT(accuracyInUse, "Get the accuracy which is being used for error control.  Usually this is the same value that was specified to setAccuracy()");
+        OSC_MAKE_SIMSTAT_PLOT(numConvergenceTestFailures, "Get the number of attempted steps that failed due to non-convergence of internal step iterations. This is most common with iterative methods but can occur if for some reason a step can't be completed.");
+        OSC_MAKE_SIMSTAT_PLOT(numConvergentIterations, "For iterative methods, get the number of internal step iterations in steps that led to convergence (not necessarily successful steps).");
+        OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations, "For iterative methods, get the number of internal step iterations in steps that did not lead to convergence.");
+        OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures, "Get the number of attempted steps that have failed due to the error being unacceptably high");
+        OSC_MAKE_SIMSTAT_PLOT(numIterations, "For iterative methods, this is the total number of internal step iterations taken regardless of whether those iterations led to convergence or to successful steps. This is the sum of the number of convergent and divergent iterations which are available separately.");
+        OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures, "Get the number of attempted steps that have failed due to an error                               /// when projecting the state (either a Q- or U-projection)");
+        OSC_MAKE_SIMSTAT_PLOT(numQProjections, "Get the total number of times a state positions Q have been projected");
+        OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state positions (Q)");
+        OSC_MAKE_SIMSTAT_PLOT(numRealizations, "Get the total number of state realizations that have been performed");
+        OSC_MAKE_SIMSTAT_PLOT(numRealizationFailures, "Get the number of attempted steps that have failed due to an error when realizing the state");
+        OSC_MAKE_SIMSTAT_PLOT(numStepsAttempted, "Get the total number of steps that have been attempted (successfully or unsuccessfully)");
+        OSC_MAKE_SIMSTAT_PLOT(numStepsTaken, "Get the total number of steps that have been successfully taken");
+        OSC_MAKE_SIMSTAT_PLOT(numUProjections, "Get the total number of times a state velocities U have been projected");
+        OSC_MAKE_SIMSTAT_PLOT(numUProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state velocities (U)");
+        OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize, "Get the step size that will be attempted first on the next call to stepTo() or stepBy().");
         ImGui::Columns();
     }
 
