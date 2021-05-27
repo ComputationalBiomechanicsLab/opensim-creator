@@ -204,6 +204,17 @@ void osc::Splash_screen::draw() {
 
     bool b = true;
     if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+        if (ImGui::Button("New Model (Ctrl+N)")) {
+            ui::main_menu::action_new_model();
+        }
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        if (ImGui::Button("Open Model (Ctrl+O)")) {
+            ui::main_menu::action_open_model();
+        }
+        ImGui::Dummy(ImVec2{0.0f, 10.0f});
+
         // de-dupe imgui IDs because these lists may contain duplicate
         // names
         int id = 0;
