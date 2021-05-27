@@ -32,8 +32,6 @@ osc::ui::main_menu::file_tab::State::State() :
     recent_files{osc::recent_files()} {
 
     std::sort(example_osims.begin(), example_osims.end(), filename_lexographically_gt);
-
-    // TODO: sort etc.
 }
 
 void osc::ui::main_menu::about_tab::draw() {
