@@ -291,11 +291,6 @@ static void draw_selection_tab(osc::Simulator_screen::Impl& impl, Ui_simulation&
     if (ImGui::CollapsingHeader("outputs")) {
         draw_output_plots(impl, focused_sim, focused_report, selected);
     }
-    if (ImGui::BeginPopupContextItem("ouptut actions")) {
-        if (ImGui::MenuItem("do something")) {
-
-        }
-    }
 }
 
 static void draw_outputs_tab(
