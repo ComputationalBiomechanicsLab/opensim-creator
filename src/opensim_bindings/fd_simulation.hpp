@@ -39,9 +39,7 @@ namespace osc::fd {
         // which integration method to use for the simulation
         IntegratorMethod integrator_method = IntegratorMethod_OpenSimManagerDefault;
 
-        // the time interval between report updates
-        //
-        // defaults to 60 FPS
+        // the time interval, in simulation time, between report updates
         std::chrono::duration<double> reporting_interval{1.0/120.0};
 
         // max number of *internal* steps that may be taken within a single call
@@ -177,6 +175,9 @@ namespace osc::fd {
         //       t0 + 2*params.reporting_interval
         //       ... t0 + n*params.reporting_interval ...
         //       tfinal (always reported - even if it is not a regular part of the sequence)
+        //
+        // - e.g. simulating 1 second with a reporting interval of 0.1 seconds results in
+        //        11 reports
         int pop_regular_reports(std::vector<std::unique_ptr<Report>>& append_out);
 
         // requests that the simulator stops
@@ -189,5 +190,8 @@ namespace osc::fd {
         //
         // this method blocks until the simulation thread stops completely
         void stop() noexcept;
+
+        // get the params used to run this simulation
+        [[nodiscard]] Params const& params() const noexcept;
     };
 }

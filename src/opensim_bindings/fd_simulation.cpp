@@ -278,13 +278,20 @@ osc::fd::Input::Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<Si
 }
 
 struct osc::fd::Simulation::Impl final {
-    std::chrono::duration<double> final_time;
+    // caller-side copy of sim params
+    Params params;
+
+    // mutex-guarded state shared between the caller and sim thread
     std::shared_ptr<Mutex_guarded<Shared_state>> shared;
+
+    // the sim thread
     jthread simulator_thread;
+
+    // number of states popped from the sim thread
     int states_popped;
 
     Impl(std::unique_ptr<Input> input) :
-        final_time{input->params.final_time},
+        params{input->params},
 
         shared{new Mutex_guarded<Shared_state>{}},
 
@@ -341,7 +348,7 @@ std::chrono::duration<double> osc::fd::Simulation::sim_current_time() const noex
 }
 
 std::chrono::duration<double> osc::fd::Simulation::sim_final_time() const noexcept {
-    return impl->final_time;
+    return impl->params.final_time;
 }
 
 char const* osc::fd::Simulation::status_description() const noexcept {
@@ -361,7 +368,7 @@ char const* osc::fd::Simulation::status_description() const noexcept {
 
 float osc::fd::Simulation::progress() const noexcept {
     double cur = sim_current_time().count();
-    double end = impl->final_time.count();
+    double end = impl->params.final_time.count();
     return static_cast<float>(cur) / static_cast<float>(end);
 }
 
@@ -387,4 +394,8 @@ void osc::fd::Simulation::request_stop() noexcept {
 void osc::fd::Simulation::stop() noexcept {
     impl->simulator_thread.request_stop();
     impl->simulator_thread.join();
+}
+
+Params const& osc::fd::Simulation::params() const noexcept {
+    return impl->params;
 }

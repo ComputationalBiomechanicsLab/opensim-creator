@@ -178,7 +178,86 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
 static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused) {
 
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
-    ImGui::TextUnformatted("plots");
+    ImGui::TextUnformatted("parameters:");
+    ImGui::SameLine();
+    ui::help_marker::draw("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 2.0f});
+
+    // draw simulation parameters
+    {
+        fd::Params const& p = focused.simulation.params();
+
+        ImGui::Columns(2);
+
+        ImGui::TextUnformatted("final_time");
+        ImGui::SameLine();
+        ui::help_marker::draw("The final time that the simulation should run until");
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.final_time.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("throttle_to_wall_time");
+        ImGui::SameLine();
+        ui::help_marker::draw("Whether the simulation should slow down whenever it runs faster than wall-time");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(p.throttle_to_wall_time ? "true" : "false");
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("integrator_method");
+        ImGui::SameLine();
+        ui::help_marker::draw("The integration method used by the underlying simulation engine");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(fd::integrator_method_names[p.integrator_method]);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("reporting_interval");
+        ImGui::SameLine();
+        ui::help_marker::draw("The time interval, in simulation time, between data reports (e.g. for plots)");
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.reporting_interval.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("integrator_step_limit");
+        ImGui::SameLine();
+        ui::help_marker::draw("The maximum number of internal integration steps that the simulation may take within a single call to the integrator's stepTo or stepBy function");
+        ImGui::NextColumn();
+        ImGui::Text("%i", p.integrator_step_limit);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("integrator_minimum_step_size");
+        ImGui::SameLine();
+        ui::help_marker::draw("The minimum step, in simulation time, that the integrator should attempt. Note: some integrators ignore this");
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.integrator_minimum_step_size.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("integrator_maximum_step_size");
+        ImGui::SameLine();
+        ui::help_marker::draw("The maximum step, in simulation time, that the integrator can attempt. E.g. even if the integrator wants to take a larger step than this (because error control deemed so) the integrator can only take up to this limit. This does not affect reporting/plotting, which always happens at a regular time interval.");
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.integrator_maximum_step_size.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("integrator_accuracy");
+        ImGui::SameLine();
+        ui::help_marker::draw("Accuracy of the integrator. This only does something if the integrator is error-controlled and able to dynamically improve simulation accuracy to match this parameter");
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.integrator_accuracy);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("update_latest_state_on_every_step");
+        ImGui::SameLine();
+        ui::help_marker::draw("Whether the simulator should report to the UI on every integration step, rather than only at the reporting_interval. This is a tradeoff between perf. and UX. Updating the UI as often as possible results in a smooth 3D animation in the UI, but has more overhead. The cost of doing this is proportional to the FPS of the UI");
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(p.update_latest_state_on_every_step ? "true" : "false");
+        ImGui::NextColumn();
+
+        ImGui::Columns();
+    }
+
+    ImGui::Dummy(ImVec2{0.0f, 10.0f});
+    ImGui::TextUnformatted("plots:");
     ImGui::SameLine();
     ui::help_marker::draw("These plots are collected from the underlying simulation engine as the simulation runs. The data is heavily affected by the model's structure, choice of integrator, and simulation settings");
     ImGui::Separator();
