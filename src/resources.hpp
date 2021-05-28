@@ -15,7 +15,7 @@ namespace osc {
     }
 
     // recursively find all files in `root` with any of the given extensions
-    [[nodiscard]] void find_files_with_extensions(
+    void find_files_with_extensions(
         std::filesystem::path const& root,
         std::string_view const* extensions,
         size_t n,
