@@ -33,13 +33,13 @@ namespace osc {
     }
 
     // convenience form of the above
-    template<typename... Exts>
+    template<typename... ExensionStrings>
     [[nodiscard]] static inline std::vector<std::filesystem::path> find_files_with_extensions(
-        std::filesystem::path const& root, Exts&&... exts) {
+        std::filesystem::path const& root, ExensionStrings&&... exts) {
 
-        std::string_view extensions[] = {std::forward<Exts>(exts)...};
+        std::string_view extensions[] = {std::forward<ExensionStrings>(exts)...};
         std::vector<std::filesystem::path> rv;
-        find_files_with_extensions(root, extensions, sizeof...(exts), rv);
+        find_files_with_extensions(root, static_cast<std::string_view const*>(extensions), sizeof...(exts), rv);
         return rv;
     }
 
