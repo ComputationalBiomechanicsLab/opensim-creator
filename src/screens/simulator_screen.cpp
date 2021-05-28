@@ -275,7 +275,7 @@ static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simu
         OSC_MAKE_SIMSTAT_PLOT(numDivergentIterations, "For iterative methods, get the number of internal step iterations in steps that did not lead to convergence.");
         OSC_MAKE_SIMSTAT_PLOT(numErrorTestFailures, "Get the number of attempted steps that have failed due to the error being unacceptably high");
         OSC_MAKE_SIMSTAT_PLOT(numIterations, "For iterative methods, this is the total number of internal step iterations taken regardless of whether those iterations led to convergence or to successful steps. This is the sum of the number of convergent and divergent iterations which are available separately.");
-        OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures, "Get the number of attempted steps that have failed due to an error                               /// when projecting the state (either a Q- or U-projection)");
+        OSC_MAKE_SIMSTAT_PLOT(numProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state (either a Q- or U-projection)");
         OSC_MAKE_SIMSTAT_PLOT(numQProjections, "Get the total number of times a state positions Q have been projected");
         OSC_MAKE_SIMSTAT_PLOT(numQProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state positions (Q)");
         OSC_MAKE_SIMSTAT_PLOT(numRealizations, "Get the total number of state realizations that have been performed");

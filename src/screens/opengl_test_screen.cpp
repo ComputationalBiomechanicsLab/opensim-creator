@@ -1,7 +1,7 @@
 #include "opengl_test_screen.hpp"
 
 #include "src/3d/gl.hpp"
-#include "src/3d/gl_extensions.hpp"
+#include "src/3d/gl_glm.hpp"
 #include "src/application.hpp"
 #include "src/resources.hpp"
 #include "src/screens/splash_screen.hpp"

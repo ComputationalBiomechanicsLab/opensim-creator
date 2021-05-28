@@ -325,6 +325,40 @@ namespace gl {
         glUniform1i(u.geti(), value);
     }
 
+    // set the value of an array-like uniform `int`
+    inline void Uniform(Uniform_int const& u, GLsizei n, GLint const* data) noexcept {
+        glUniform1iv(u.geti(), n, data);
+    }
+
+    // set the value of a `vec3` uniform
+    inline void Uniform(Uniform_vec3& u, float x, float y, float z) noexcept {
+        glUniform3f(u.geti(), x, y, z);
+    }
+
+    // set the value of a `vec3` uniform
+    inline void Uniform(Uniform_vec3& u, float const vs[3]) noexcept {
+        glUniform3fv(u.geti(), 1, vs);
+    }
+
+    // set the value of a `sampler2D` uniform
+    inline void Uniform(Uniform_sampler2d& u, GLint v) noexcept {
+        glUniform1i(u.geti(), v);
+    }
+
+    // set the value of an `sampler2DMS` uniform
+    inline void Uniform(Uniform_sampler2DMS& u, GLint v) noexcept {
+        glUniform1i(u.geti(), v);
+    }
+
+    // set the value of a `bool` uniform
+    inline void Uniform(Uniform_bool& u, bool v) noexcept {
+        glUniform1i(u.geti(), v);
+    }
+
+    // tag-type for resetting a uniform to an "identity value"
+    struct Uniform_identity_val_tag {};
+    inline Uniform_identity_val_tag identity_val;
+
     // a uniform that points to a statically-sized array of values in the shader
     //
     // This is just a uniform that points to the first element. The utility of

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl.hpp"
+#include "src/3d/gl.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat3x3.hpp>
@@ -8,11 +8,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-// gl_extensions: stuff that isn't strictly required to use OpenGL, but is nice to have
+// gl_glm: extensions for using glm types in OpenGL
 namespace gl {
-    inline void Uniform(Uniform_int const& u, GLsizei n, GLint const* data) noexcept {
-        glUniform1iv(u.geti(), n, data);
-    }
 
     inline void Uniform(Uniform_mat3& u, glm::mat3 const& mat) noexcept {
         glUniformMatrix3fv(u.geti(), 1, false, glm::value_ptr(mat));
@@ -24,14 +21,6 @@ namespace gl {
 
     inline void Uniform(Uniform_vec3& u, glm::vec3 const& v) noexcept {
         glUniform3fv(u.geti(), 1, glm::value_ptr(v));
-    }
-
-    inline void Uniform(Uniform_vec3& u, float x, float y, float z) noexcept {
-        glUniform3f(u.geti(), x, y, z);
-    }
-
-    inline void Uniform(Uniform_vec3& u, float const vs[3]) noexcept {
-        glUniform3fv(u.geti(), 1, vs);
     }
 
     inline void Uniform(Uniform_vec3& u, GLsizei n, glm::vec3 const* vs) noexcept {
@@ -56,9 +45,6 @@ namespace gl {
         glUniformMatrix4fv(u.geti(), n, false, glm::value_ptr(*first));
     }
 
-    struct Uniform_identity_val_tag {};
-    inline Uniform_identity_val_tag identity_val;
-
     inline void Uniform(Uniform_mat4& u, Uniform_identity_val_tag) noexcept {
         Uniform(u, glm::identity<glm::mat4>());
     }
@@ -76,18 +62,6 @@ namespace gl {
     inline std::enable_if_t<std::is_same_v<glm::vec2, typename Container::value_type>, void>
         Uniform(Uniform_array<glsl::vec2, N>& u, Container const& container) noexcept {
         glUniform2fv(u.geti(), static_cast<GLsizei>(container.size()), glm::value_ptr(container.data()));
-    }
-
-    inline void Uniform(Uniform_sampler2d& u, GLint v) noexcept {
-        glUniform1i(u.geti(), v);
-    }
-
-    inline void Uniform(Uniform_sampler2DMS& u, GLint v) noexcept {
-        glUniform1i(u.geti(), v);
-    }
-
-    inline void Uniform(Uniform_bool& u, bool v) noexcept {
-        glUniform1i(u.geti(), v);
     }
 
     inline void ClearColor(glm::vec4 const& v) noexcept {

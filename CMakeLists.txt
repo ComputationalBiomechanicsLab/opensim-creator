@@ -88,7 +88,6 @@ add_executable(osc
     src/3d/gl.hpp
     src/3d/gl.cpp
     src/3d/gl_extensions.hpp
-    src/3d/gl_extensions.cpp
     src/3d/texturing.hpp
     src/3d/texturing.cpp
     src/3d/cameras.hpp

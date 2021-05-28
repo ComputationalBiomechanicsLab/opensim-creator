@@ -5,7 +5,7 @@
 #include "src/utils/helpers.hpp"
 #include "src/constants.hpp"
 #include "src/3d/texturing.hpp"
-#include "src/3d/gl_extensions.hpp"
+#include "src/3d/gl_glm.hpp"
 
 #include <cstddef>
 #include <iostream>
