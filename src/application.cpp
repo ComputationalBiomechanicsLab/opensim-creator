@@ -540,6 +540,12 @@ public:
         //
         // implemented an immediate GUI, rather than retained, which is
         // inefficient but makes it easier to add new UI features.
+
+        // current frequency counter
+        //
+        // used to compute delta time between frames
+        Uint64 prev_perf_counter = 0;
+
         while (true) {
             // pump events
             for (SDL_Event e; SDL_PollEvent(&e);) {
@@ -583,7 +589,12 @@ public:
             }
 
             // osc::Screen: run `tick`
-            current_screen->tick();
+            static Uint64 fq = SDL_GetPerformanceFrequency();
+            Uint64 current_fq_counter = SDL_GetPerformanceCounter();
+
+            float dt = prev_perf_counter > 0 ? static_cast<float>(static_cast<double>(current_fq_counter - prev_perf_counter) / fq) : 1.0f/60.0f;
+            prev_perf_counter = current_fq_counter;
+            current_screen->tick(dt);
 
             // osc::Screen: handle any possible indirect side-effects the Screen's
             //               `on_event` handler may have had on the application state

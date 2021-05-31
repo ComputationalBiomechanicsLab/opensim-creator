@@ -13,7 +13,7 @@ namespace osc {
     // - pump GUI events and pump relevant ones through `on_event(e)` until all
     //   events are pumped
     // 
-    // - call `tick()` once
+    // - call `tick(dt)` once
     //
     // - call `draw()` once
     //
@@ -29,7 +29,7 @@ namespace osc {
 
         // called by the application each time a frame is about to be drawn: useful for handling
         // state changes that happen over time (e.g. animations, background processing)
-        virtual void tick() {
+        virtual void tick(float dt) {
         }
 
         // called by the application whenever it wants the implementation to draw a frame into

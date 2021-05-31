@@ -1093,7 +1093,7 @@ static void draw_3d_selection_context_menu(
                 }
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
-                    ImGui::TextUnformatted(o.second->getTypeName().c_str());
+                    ImGui::Text("Output Type = %s", o.second->getTypeName().c_str());
                     ImGui::EndTooltip();
                 }
             }
@@ -1293,7 +1293,7 @@ bool Model_editor_screen::on_event(SDL_Event const& e) {
     return ::on_event(*impl, e);
 }
 
-void osc::Model_editor_screen::tick() {
+void osc::Model_editor_screen::tick(float) {
     ::tick(*impl);
 }
 

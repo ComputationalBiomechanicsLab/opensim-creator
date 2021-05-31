@@ -114,6 +114,10 @@ bool osc::Splash_screen::on_event(SDL_Event const& e) {
     return false;
 }
 
+void osc::Splash_screen::tick(float dt) {
+    impl->camera.theta += dt * 0.015f;
+}
+
 void osc::Splash_screen::draw() {
     Application& app = Application::current();
 

@@ -27,7 +27,7 @@ namespace osc {
         ~Show_model_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
-        void tick() override;
+        void tick(float) override;
         void draw() override;
     };
 }

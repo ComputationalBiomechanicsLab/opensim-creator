@@ -46,7 +46,7 @@ namespace osc {
         ~Model_editor_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
-        void tick() override;
+        void tick(float) override;
         void draw() override;
     };
 }

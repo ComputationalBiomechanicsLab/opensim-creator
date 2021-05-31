@@ -648,7 +648,7 @@ bool osc::Simulator_screen::on_event(SDL_Event const& e) {
     return ::on_event(*impl, e);
 }
 
-void osc::Simulator_screen::tick() {
+void osc::Simulator_screen::tick(float) {
     pop_all_simulator_updates(*impl->st);
 }
 

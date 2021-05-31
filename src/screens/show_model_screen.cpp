@@ -1347,7 +1347,7 @@ bool Show_model_screen::on_event(SDL_Event const& e) {
     return handle_event(*impl, e);
 }
 
-void Show_model_screen::tick() {
+void Show_model_screen::tick(float) {
     ::tick(*impl);
 }
 

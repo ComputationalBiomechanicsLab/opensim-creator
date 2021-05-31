@@ -34,7 +34,7 @@ namespace osc {
         Loading_screen& operator=(Loading_screen&&) = delete;
 
         bool on_event(SDL_Event const&) override;
-        void tick() override;
+        void tick(float) override;
         void draw() override;
     };
 }

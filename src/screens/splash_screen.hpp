@@ -22,6 +22,7 @@ namespace osc {
         ~Splash_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
+        void tick(float) override;
         void draw() override;
     };
 }

@@ -143,7 +143,7 @@ bool Loading_screen::on_event(SDL_Event const& e) {
     return ::on_event(*impl, e);
 }
 
-void Loading_screen::tick() {
+void Loading_screen::tick(float) {
     ::tick(*impl);
 }
 
