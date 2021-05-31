@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 static std::vector<osc::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
     std::vector<osc::Recent_file> rv;
