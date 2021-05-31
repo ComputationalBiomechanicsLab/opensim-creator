@@ -579,11 +579,12 @@ static void draw(osc::Simulator_screen::Impl& impl) {
             focused_report.state,
             focused_sim.selected,
             focused_sim.hovered);
-        if (resp.type == Component3DViewerResponse::SelectionChanged) {
-            focused_sim.selected = const_cast<OpenSim::Component*>(resp.ptr);
+
+        if (resp.is_left_clicked && resp.hovertest_result) {
+            focused_sim.selected = const_cast<OpenSim::Component*>(resp.hovertest_result);
         }
-        if (resp.type == Component3DViewerResponse::HoverChanged) {
-            focused_sim.hovered = const_cast<OpenSim::Component*>(resp.ptr);
+        if (resp.hovertest_result != focused_sim.hovered) {
+            focused_sim.hovered = const_cast<OpenSim::Component*>(resp.hovertest_result);
         }
     }
 

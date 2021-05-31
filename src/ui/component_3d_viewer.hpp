@@ -2,7 +2,7 @@
 
 #include <SDL_events.h>
 
-#include <utility>
+#include <memory>
 
 namespace OpenSim {
     class Model;
@@ -92,10 +92,10 @@ namespace osc {
     // this lets higher-level callers know of any potentially-relevant state
     // changes the viewer has detected
     struct Component3DViewerResponse final {
-        enum Type { NothingChanged, HoverChanged, SelectionChanged };
-
-        Type type = NothingChanged;
-        OpenSim::Component const* ptr = nullptr;
+        OpenSim::Component const* hovertest_result = nullptr;
+        bool is_moused_over = false;
+        bool is_left_clicked = false;
+        bool is_right_clicked = false;
     };
 
     // a 3D viewer for a single OpenSim::Component or OpenSim::Model
@@ -103,26 +103,23 @@ namespace osc {
     // internally handles rendering, hit testing, etc. and exposes and API that lets
     // callers only have to handle `OpenSim::Model`s, `OpenSim::Component`s, etc.
     class Component_3d_viewer final {
-
+    public:
         struct Impl;
+    private:
         Impl* impl;
 
     public:
-        Component_3d_viewer() : Component_3d_viewer{Component3DViewerFlags_None} {
+
+        Component_3d_viewer() :
+            Component_3d_viewer{Component3DViewerFlags_None} {
         }
         Component_3d_viewer(Component3DViewerFlags);
-        Component_3d_viewer(Component_3d_viewer&& tmp) : impl{tmp.impl} {
-            tmp.impl = nullptr;
-        }
+        Component_3d_viewer(Component_3d_viewer&&);
         Component_3d_viewer(Component_3d_viewer const&) = delete;
         ~Component_3d_viewer() noexcept;
 
         Component_3d_viewer& operator=(Component_3d_viewer const&) = delete;
-
-        Component_3d_viewer& operator=(Component_3d_viewer&& tmp) {
-            std::swap(impl, tmp.impl);
-            return *this;
-        }
+        Component_3d_viewer& operator=(Component_3d_viewer&&);
 
         bool is_moused_over() const noexcept;
 

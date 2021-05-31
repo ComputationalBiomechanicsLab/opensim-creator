@@ -1254,12 +1254,12 @@ static void draw(Show_model_screen::Impl& impl) {
             impl.selected_component, 
             impl.hovered_component);
 
-        if (resp.type == Component3DViewerResponse::Type::HoverChanged && viewer.is_moused_over()) {
-            impl.hovered_component = resp.ptr;
+        if (resp.is_moused_over && resp.hovertest_result != impl.hovered_component) {
+            impl.hovered_component = resp.hovertest_result;
         }
 
-        if (resp.type == Component3DViewerResponse::Type::SelectionChanged && viewer.is_moused_over()) {
-            impl.selected_component = resp.ptr;
+        if (resp.is_moused_over && resp.is_left_clicked) {
+            impl.selected_component = resp.hovertest_result;
         }
     }
 

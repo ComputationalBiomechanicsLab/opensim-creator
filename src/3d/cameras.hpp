@@ -4,13 +4,6 @@
 #include <glm/vec3.hpp>
 
 namespace osc {
-    // not included in the camera structs themselves because callers should
-    // handle state caller-side.
-    //
-    // this is because transitioning the state requires integration with the
-    // caller's event system, 3D state, etc.
-    enum class Camera_state { Viewing, Dragging, Panning };
-
     struct Polar_perspective_camera final {
         // polar coords
         float radius = 5.0f;

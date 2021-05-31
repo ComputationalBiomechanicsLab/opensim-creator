@@ -7,7 +7,6 @@
 #include <memory>
 
 namespace osc {
-
     template<typename T>
     struct Config_option final {
         T value;

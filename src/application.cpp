@@ -568,18 +568,6 @@ public:
                     }
                 }
 
-                // else: it's an event that *could* be handled by other things
-                // in the application (other event handlers, screens, 3D, etc.)
-
-                // DEBUG MODE: toggled with F1
-                if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F1) {
-                    if (is_in_debug_mode()) {
-                        disable_debug_mode();
-                    } else {
-                        enable_debug_mode();
-                    }
-                }
-
                 // osc::Screen: feed event into the currently-showing osc screen
                 current_screen->on_event(e);
 

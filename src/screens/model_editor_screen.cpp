@@ -122,7 +122,7 @@ struct Model_editor_screen::Impl final {
         ui::log_viewer::State log_viewer;
     } ui;
 
-    // which panels are currently showing
+    // which windows are currently showing
     struct {
         bool hierarchy = true;
         bool selection_details = true;
@@ -1046,8 +1046,69 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     ImGui::EndMainMenuBar();
 }
 
+static void draw_3d_hover_tooltips(OpenSim::Component const& hovered) {
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+
+    ImGui::TextUnformatted(hovered.getName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled(" (%s)", hovered.getConcreteClassName().c_str());
+    ImGui::Dummy(ImVec2{0.0f, 5.0f});
+    ImGui::TextDisabled("(right-click for actions)");
+
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
+}
+
+static void draw_3d_selection_context_menu(
+        osc::Model_editor_screen::Impl& impl,
+        OpenSim::Component const& selected) {
+
+    if (ImGui::BeginMenu("Select Owner")) {
+        OpenSim::Component const* c = &selected;
+        while (c->hasOwner()) {
+            c = &c->getOwner();
+
+            char buf[128];
+            std::snprintf(buf, sizeof(buf), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
+
+            if (ImGui::MenuItem(buf)) {
+                impl.st->set_selection(const_cast<OpenSim::Component*>(c));
+            }
+        }
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Request Outputs")) {
+        help_marker::draw("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
+
+        OpenSim::Component const* c = &selected;
+        while (c) {
+            ImGui::Dummy(ImVec2{0.0f, 2.0f});
+            ImGui::TextDisabled("%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
+            ImGui::Separator();
+            for (auto const& o : c->getOutputs()) {
+                if (ImGui::MenuItem(o.second->getName().c_str())) {
+                   impl.st->desired_outputs.emplace_back(c->getAbsolutePath().toString(), o.second->getName());
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted(o.second->getTypeName().c_str());
+                    ImGui::EndTooltip();
+                }
+            }
+            c = c->hasOwner() ? &c->getOwner() : nullptr;
+        }
+        ImGui::EndMenu();
+    }
+}
+
 // draw a single 3D model viewer
-static void draw_3d_viewer(osc::Model_editor_screen::Impl& impl, Component_3d_viewer& viewer, char const* name) {
+static void draw_3d_viewer(
+        osc::Model_editor_screen::Impl& impl,
+        Component_3d_viewer& viewer,
+        char const* name) {
+
     Component3DViewerResponse resp;
 
     if (impl.st->isolated()) {
@@ -1067,12 +1128,29 @@ static void draw_3d_viewer(osc::Model_editor_screen::Impl& impl, Component_3d_vi
             impl.st->hovered());
     }
 
-    if (viewer.is_moused_over()) {
-        if (resp.type == Component3DViewerResponse::Type::HoverChanged) {
-            impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
-        } else if (resp.type == Component3DViewerResponse::Type::SelectionChanged) {
-            impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
-        }
+    // update hover
+    if (resp.is_moused_over && resp.hovertest_result != impl.st->hovered()) {
+        impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.hovertest_result));
+    }
+
+    // if left-clicked, update selection
+    if (resp.is_moused_over && resp.is_left_clicked) {
+        impl.st->set_selection(const_cast<OpenSim::Component*>(resp.hovertest_result));
+    }
+
+    // if hovered, draw hover tooltip
+    if (resp.is_moused_over && resp.hovertest_result) {
+        draw_3d_hover_tooltips(*resp.hovertest_result);
+    }
+
+    // if right-clicked, draw context menu
+    if (resp.is_moused_over && resp.hovertest_result && resp.is_right_clicked) {
+        impl.st->set_selection(const_cast<OpenSim::Component*>(resp.hovertest_result));
+        ImGui::OpenPopup("3dviewercontextmenu");
+    }
+    if (impl.st->selection() && ImGui::BeginPopup("3dviewercontextmenu")) {
+        draw_3d_selection_context_menu(impl, *impl.st->selection());
+        ImGui::EndPopup();
     }
 }
 
