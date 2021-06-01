@@ -1178,7 +1178,7 @@ static void draw_simulation_tab(Show_model_screen::Impl& impl) {
         }
         
         ImGui::SameLine();
-        ImGui::Text("%i", i);
+        ImGui::Text("%zu", i);
         
         ImGui::SameLine();        
         if (ImGui::Button("x")) {
