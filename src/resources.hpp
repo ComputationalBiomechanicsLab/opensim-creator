@@ -10,7 +10,7 @@
 
 namespace osc {
     // get path to a runtime resource
-    [[nodiscard]] static inline std::filesystem::path resource(std::filesystem::path const& p) {
+    [[nodiscard]] inline std::filesystem::path resource(std::filesystem::path const& p) {
         return config().resource_dir.value / p;
     }
 
@@ -22,7 +22,7 @@ namespace osc {
         std::vector<std::filesystem::path>& append_out);
 
     // convenience form of the above
-    [[nodiscard]] static inline std::vector<std::filesystem::path> find_files_with_extensions(
+    [[nodiscard]] inline std::vector<std::filesystem::path> find_files_with_extensions(
         std::filesystem::path const& root,
         std::string_view const* extensions,
         size_t n) {
@@ -34,7 +34,7 @@ namespace osc {
 
     // convenience form of the above
     template<typename... ExensionStrings>
-    [[nodiscard]] static inline std::vector<std::filesystem::path> find_files_with_extensions(
+    [[nodiscard]] inline std::vector<std::filesystem::path> find_files_with_extensions(
         std::filesystem::path const& root, ExensionStrings&&... exts) {
 
         std::string_view extensions[] = {std::forward<ExensionStrings>(exts)...};
@@ -45,7 +45,7 @@ namespace osc {
 
     [[nodiscard]] std::string slurp(std::filesystem::path const&);
 
-    [[nodiscard]] static inline std::string slurp_resource(std::filesystem::path const& p) {
+    [[nodiscard]] inline std::string slurp_resource(std::filesystem::path const& p) {
         return slurp(resource(p));
     }
 
