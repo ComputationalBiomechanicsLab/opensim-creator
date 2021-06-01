@@ -40,7 +40,7 @@ namespace osc {
         //
         // "isolation" here means that the user is only interested in this
         // particular subcomponent in the model, so visualizers etc. should
-        // probably only show that component
+        // try to only show that component
         OpenSim::Component* isolated;
 
         // generic timestamp
@@ -86,16 +86,16 @@ namespace osc {
         // model was damaged by a modification (i.e. the model does not survive a
         // call to .initSystem with its modified properties).
         //
-        // The implementation will try to recover from the damage by making models
-        // in `undo` `current`. It will then store the damaged model here for later
-        // cleanup (by the user of this class, which should `std::move` out the
-        // damaged instance)
+        // The implementation will try to recover from the damage by popping models
+        // from the undo buffer and making them `current`. It will then store the
+        // damaged model here for later cleanup (by the user of this class, which
+        // should `std::move` out the damaged instance)
         //
         // the damaged model is kept "alive" so that any pointers into the model are
         // still valid. The reason this is important is because the damage may have
         // been done midway through a larger process (e.g. rendering) and there may
         // be local (stack-allocated) pointers into the damaged model's components.
-        // In that case, it is *probably* safer to let the process finish with a
+        // In that case, it is *probably* safer to let that process finish with a
         // damaged model than potentially segfault.
         std::optional<Ui_model> damaged;
 
@@ -190,10 +190,8 @@ namespace osc {
         // the bg thread
         std::unique_ptr<fd::Report> spot_report;
 
-        // regular reports popped from the simulator thread
-        //
-        // the simulator will produce reports at some regular interval
-        // (in simulation time).
+        // regular reports that are popped from the simulator thread by
+        // the (polling) UI thread
         std::vector<std::unique_ptr<fd::Report>> regular_reports;
 
         // start a new simulation by *copying* the provided OpenSim::Model and

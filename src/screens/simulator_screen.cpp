@@ -10,10 +10,13 @@
 #include "src/ui/help_marker.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/assertions.hpp"
+#include "src/utils/scope_guard.hpp"
+#include "src/utils/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <imgui.h>
+#include <nfd.h>
 
 #include <limits>
 
@@ -382,6 +385,141 @@ static void draw_selection_tab(osc::Simulator_screen::Impl& impl, Ui_simulation&
     }
 }
 
+static std::string export_timeseries_to_csv(float const* ts, float const* vs, size_t n, char const* vname) {
+    nfdchar_t* outpath = nullptr;
+    nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+    if (result != NFD_OKAY) {
+        return "";  // user cancelled out
+    }
+
+    std::ofstream fout{outpath};
+
+    if (!fout) {
+        log::error("%s: error opening file for writing", outpath);
+        return "";  // error opening output file for writing
+    }
+
+    fout << "t," << vname << '\n';
+    for (size_t i = 0; i < n; ++i) {
+        fout << ts[i] << ',' << vs[i] << '\n';
+    }
+
+    if (!fout) {
+        log::error("%s: error encountered while writing CSV data to file", outpath);
+        return "";  // error writing
+    }
+
+    log::info("%: successfully wrote CSV data to output file", outpath);
+
+    return std::string{outpath};
+}
+
+static std::string export_all_plotted_outputs_to_csv(
+        osc::Simulator_screen::Impl& impl,
+        Ui_simulation& focused_sim) {
+
+    // try prompt user for save location
+
+    nfdchar_t* outpath = nullptr;
+    nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+    if (result != NFD_OKAY) {
+        return "";  // user cancelled out
+    }
+
+    // try open output file
+
+    std::ofstream fout{outpath};
+
+    if (!fout) {
+        log::error("%s: error opening file for writing", outpath);
+        return "";  // error opening output file for writing
+    }
+
+    // collect plottable outputs
+
+    struct Plottable_output final {
+        OpenSim::Component const& component;
+        OpenSim::Output<double> const& output;
+
+        Plottable_output(OpenSim::Component const& c, OpenSim::Output<double> const& o) :
+            component{c}, output{o} {
+        }
+    };
+
+    std::vector<Plottable_output> plottable_outputs;
+    for (Desired_output const& de : impl.st->desired_outputs) {
+        OpenSim::Component const* cp = nullptr;
+        try {
+            cp = &focused_sim.model->getComponent(de.component_path);
+        } catch (...) {
+            // OpenSim, innit
+            //
+            // avoid OpenSim::Component::findComponent like the plague
+            // because it's written by someone who seems to be pathalogically
+            // allergic to performance
+        }
+
+        if (!cp) {
+            continue;
+        }
+
+        OpenSim::Component const& c = *cp;
+
+        OpenSim::AbstractOutput const* aop = nullptr;
+        try {
+            aop = &c.getOutput(de.output_name);
+        } catch (...) {
+            // OpenSim, innit
+        }
+
+        if (!aop) {
+            continue;
+        }
+
+        auto const* odp = dynamic_cast<OpenSim::Output<double> const*>(aop);
+
+        if (!odp) {
+            continue;
+        }
+
+        plottable_outputs.emplace_back(c, *odp);
+    }
+
+    // write header
+
+    fout << "time";
+    for (Plottable_output const& po : plottable_outputs) {
+        fout << ',' << po.component.getName() << '_' << po.output.getName();
+    }
+    fout << '\n';
+
+    // write data
+
+    for (auto const& report : focused_sim.regular_reports) {
+        SimTK::State const& stkst = report->state;
+
+        // write time
+        fout << stkst.getTime();
+        for (Plottable_output const& po : plottable_outputs) {
+            fout << ',' << po.output.getValue(stkst);
+        }
+        fout << '\n';
+    }
+
+    // check writing was ok
+    //
+    // this is just a sanity check: it will be written regardless
+    if (!fout) {
+        log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", outpath);
+    }
+
+    return std::string{outpath};
+}
+
 static void draw_outputs_tab(
         osc::Simulator_screen::Impl& impl,
         Ui_simulation& focused_sim,
@@ -394,6 +532,21 @@ static void draw_outputs_tab(
         ImGui::TextUnformatted("No outputs being plotted: right-click them in the model editor");
         return;
     }
+
+    if (ImGui::Button("Save all to CSV")) {
+        export_all_plotted_outputs_to_csv(impl, focused_sim);
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Save all to CSV & Open")) {
+        std::string path = export_all_plotted_outputs_to_csv(impl, focused_sim);
+        if (!path.empty()) {
+            open_path_in_default_application(path);
+        }
+    }
+
+    ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
     ImGui::Columns(2);
     for (Desired_output const& de : st.desired_outputs) {
@@ -458,6 +611,33 @@ static void draw_outputs_tab(
         ImGui::PushID(imgui_id++);
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         ImGui::PlotLines("##nolabel", impl.plotscratch.data(), static_cast<int>(impl.plotscratch.size()));
+        if (ImGui::BeginPopupContextItem("outputplotscontextmenu")) {
+            if (ImGui::MenuItem("Save as CSV")) {
+                std::vector<float> ts;
+                ts.reserve(focused_sim.regular_reports.size());
+                for (auto const& report : focused_sim.regular_reports) {
+                    ts.push_back(static_cast<float>(report->state.getTime()));
+                }
+                OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
+                export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), od.getName().c_str());
+            }
+
+            if (ImGui::MenuItem("Save as CSV & Open")) {
+                std::vector<float> ts;
+                ts.reserve(focused_sim.regular_reports.size());
+                for (auto const& report : focused_sim.regular_reports) {
+                    ts.push_back(static_cast<float>(report->state.getTime()));
+                }
+                OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
+                std::string outpath = export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), od.getName().c_str());
+
+                if (!outpath.empty()) {
+                    open_path_in_default_application(outpath);
+                }
+            }
+
+            ImGui::EndPopup();
+        }
         ImGui::PopID();
         ImGui::NextColumn();
     }
@@ -623,7 +803,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
 
     // draw simulation stats tab
     {
-        if (ImGui::Begin("Simulation stats")) {
+        if (ImGui::Begin("Simulation Details")) {
             draw_simulation_stats_tab(impl, focused_sim);
         }
         ImGui::End();
