@@ -6,6 +6,13 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
 
 static std::vector<osc::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
     std::vector<osc::Recent_file> rv;
