@@ -243,6 +243,35 @@ namespace osc {
         using Checked_index<short, Texidx>::Checked_index;
     };
 
+    // generate a basic chequered floor texture in-memory
+    gl::Texture_2d generate_chequered_floor_texture();
+
+    enum Tex_flags {
+        TexFlag_None = 0,
+        TexFlag_SRGB = 1,
+
+        // BEWARE: this flips pixels vertically (in Y) but leaves the pixel's
+        // contents untouched. This is fine if the pixels represent colors,
+        // but can cause surprising behavior if the pixels represent vectors
+        //
+        // therefore, if you are flipping (e.g.) normal maps, you may *also* need
+        // to flip the pixel content appropriately (e.g. if RGB represents XYZ then
+        // you'll need to negate each G)
+        TexFlag_Flip_Pixels_Vertically = 2,
+    };
+
+    // read an image file into an OpenGL 2D texture
+    gl::Texture_2d load_tex(char const* path, Tex_flags = TexFlag_None);
+
+    // read 6 image files into a single OpenGL cubemap (GL_TEXTURE_CUBE_MAP)
+    gl::Texture_cubemap load_cubemap(
+        char const* path_pos_x,
+        char const* path_neg_x,
+        char const* path_pos_y,
+        char const* path_neg_y,
+        char const* path_pos_z,
+        char const* path_neg_z);
+
     // create a normal transform from a model transform matrix
     template<typename Mtx>
     static constexpr glm::mat3 normal_matrix(Mtx&& m) noexcept {

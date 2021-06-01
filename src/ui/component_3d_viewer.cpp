@@ -369,6 +369,7 @@ static void draw_viewport_3d_render(
         return;  // panel not visible
     }
 
+    // this renderer pulls cached assets (e.g. meshes) from GPU storage
     GPU_storage& cache = Application::current().get_gpu_storage();
 
     // generate OpenSim scene geometry
@@ -391,63 +392,54 @@ static void draw_viewport_3d_render(
         generate_decoration_drawlist(model, state, cpy, cache, impl.drawlist, flags);
     }
 
+    // if applicable, draw chequered floor
     if (impl.flags & Component3DViewerFlags_DrawFloor) {
         Mesh_instance mi;
-        mi.model_xform = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
 
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
-            rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {100.0f, 100.0f, 100.0f});
+        mi.model_xform = []() {
+            // rotate from XY (+Z dir) to ZY (+Y dir)
+            glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -pi_f/2.0f, {1.0f, 0.0f, 0.0f});
+
+            // make floor extend far in all directions
+            rv = glm::scale(glm::mat4{1.0f}, {100.0f, 1.0f, 100.0f}) * rv;
+
+            // lower slightly, so that it doesn't conflict with OpenSim model planes
+            // that happen to lie at Z==0
+            rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
 
             return rv;
         }();
+
         mi.normal_xform = normal_matrix(mi.model_xform);
-        mi.rgba = {0xff, 0x00, 0xff, 0xff};
+
+        // drawn as a quad
         mi.meshidx = cache.floor_quad_idx;
+
+        // that is textured with the chequer texture
         mi.texidx = cache.chequer_idx;
+
+        // and isn't subject to shading (from the light)
         mi.flags.set_skip_shading();
+
         impl.drawlist.push_back(nullptr, mi);
     }
 
-    if (impl.flags & Component3DViewerFlags_DrawXZGrid) {
-        Mesh_instance mi;
-        mi.model_xform = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
-
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
-            rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
-
-            return rv;
-        }();
-        mi.normal_xform = normal_matrix(mi.model_xform);
-        mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
-        mi.meshidx = cache.grid_25x25_idx;
-        mi.flags.set_draw_lines();
-        mi.flags.set_skip_shading();
-        impl.drawlist.push_back(nullptr, mi);
-    }
-
+    // if applicable, draw a XY (worldspace) grid
     if (impl.flags & Component3DViewerFlags_DrawXYGrid) {
         Mesh_instance mi;
-        mi.model_xform = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
 
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
-            rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
+        mi.model_xform = []() {
+            // scale from [-1.0f, +1.0f] to [-1.25f, +1.25f] so that each cell
+            // has dimensions (0.1f, 0.1f) in worldspace
+            glm::mat4 rv = glm::scale(glm::mat4{1.0f}, {1.25f, 1.25f, 1.0f});
+
+            // translate from [-1.25f, +1.25f] to [0.0f, +2.5f] so that the grid
+            // is entirely in +Y, which is where OpenSim models are typically built
+            rv = glm::translate(glm::mat4{1.0f}, {0.0f, 1.25f, 0.0f}) * rv;
 
             return rv;
         }();
+
         mi.normal_xform = normal_matrix(mi.model_xform);
         mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
         mi.meshidx = cache.grid_25x25_idx;
@@ -456,20 +448,48 @@ static void draw_viewport_3d_render(
         impl.drawlist.push_back(nullptr, mi);
     }
 
+    // if applicable, draw a XZ (worldspace) grid
+    if (impl.flags & Component3DViewerFlags_DrawXZGrid) {
+        Mesh_instance mi;
+
+        mi.model_xform = []() {
+            // rotate from XY (+Z dir) to XZ (+Y dir)
+            glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::pi_f/2.0f, {1.0f, 0.0f, 0.0f});
+
+            // rescale from [-1.0f, +1.0f] to [-1.25f, +1.25f] so that each cell
+            // has dimensions (0.1f, 0.1f) in worldspace
+            rv = glm::scale(glm::mat4{1.0f}, {1.25f, 1.0f, 1.25f}) * rv;
+
+            return rv;
+        }();
+
+        mi.normal_xform = normal_matrix(mi.model_xform);
+        mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
+        mi.meshidx = cache.grid_25x25_idx;
+        mi.flags.set_draw_lines();
+        mi.flags.set_skip_shading();
+        impl.drawlist.push_back(nullptr, mi);
+    }
+
+    // if applicable, draw a YZ (worldspace) grid
     if (impl.flags & Component3DViewerFlags_DrawYZGrid) {
         Mesh_instance mi;
-        mi.model_xform = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
 
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, 1.25f, 0.0f});
-            rv = glm::rotate(rv, osc::pi_f / 2, {0.0, -1.0, 0.0});
-            rv = glm::scale(rv, {1.25f, 1.25f, 1.0f});
+        mi.model_xform = []() {
+            // rotate from XY (+Z dir) to YZ (+X dir)
+            glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, osc::pi_f/2.0f, {0.0f, 1.0f, 0.0f});
+
+            // rescale from [-1.0f, +1.0f] to [-1.25f, +1.25f] so that each cell
+            // has dimensions (0.1f, 0.1f) in worldspace
+            rv = glm::scale(glm::mat4{1.0f}, {1.0f, 1.25f, 1.25f}) * rv;
+
+            // translate from [-1.25f, +1.25f] to [0.0f, +2.5f] so that the grid
+            // is entirely in +Y, which is where OpenSim models are typically built
+            rv = glm::translate(glm::mat4{1.0f}, {0.0f, 1.25f, 0.0f}) * rv;
 
             return rv;
         }();
+
         mi.normal_xform = normal_matrix(mi.model_xform);
         mi.rgba = {0xb2, 0xb2, 0xb2, 0x26};
         mi.meshidx = cache.grid_25x25_idx;
@@ -478,6 +498,10 @@ static void draw_viewport_3d_render(
         impl.drawlist.push_back(nullptr, mi);
     }
 
+    // if applicable, draw alignment axes
+    //
+    // these are the little axes overlays that appear in a corner of the viewport and help
+    // the user orient their screen
     if (impl.flags & Component3DViewerFlags_DrawAlignmentAxes) {
         glm::mat4 model2view = view_matrix(impl.camera);
 
@@ -535,6 +559,7 @@ static void draw_viewport_3d_render(
         }
     }
 
+    // if applicable, optimize the drawlist for optimal rendering
     if (impl.flags & Component3DViewerFlags_OptimizeDrawOrder) {
         optimize(impl.drawlist);
     }
@@ -588,6 +613,7 @@ static void draw_viewport_3d_render(
         });
     }
 
+    // if applicable, apply rim coloring to selected items
     if (impl.rendering_flags & DrawcallFlags_DrawRims) {
         apply_standard_rim_coloring(impl.drawlist, current_hover, current_selection);
     }

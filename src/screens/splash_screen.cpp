@@ -5,7 +5,6 @@
 #include "src/3d/3d.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
-#include "src/3d/texturing.hpp"
 #include "src/3d/shaders.hpp"
 #include "src/application.hpp"
 #include "src/config.hpp"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+
 #include <exception>
 #include <initializer_list>
 #include <string>

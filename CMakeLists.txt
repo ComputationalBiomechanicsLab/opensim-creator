@@ -88,8 +88,6 @@ add_executable(osc
     src/3d/gl.hpp
     src/3d/gl.cpp
     src/3d/gl_glm.hpp
-    src/3d/texturing.hpp
-    src/3d/texturing.cpp
     src/3d/cameras.hpp
     src/3d/cameras.cpp
     src/3d/shaders.hpp
@@ -174,6 +172,8 @@ add_executable(osc
     src/utils/file_change_poller.hpp
     src/utils/helpers.hpp
     src/utils/helpers.cpp
+    src/utils/stbi_wrapper.hpp
+    src/utils/stbi_wrapper.cpp
 
     src/main_editor_state.hpp
     src/main_editor_state.cpp

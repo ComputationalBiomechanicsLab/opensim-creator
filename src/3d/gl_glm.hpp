@@ -8,6 +8,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <type_traits>
+
 // gl_glm: extensions for using glm types in OpenGL
 namespace gl {
 
