@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <optional>
+#include <cstddef>
 
 namespace OpenSim {
     class Joint;
