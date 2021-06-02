@@ -3,6 +3,7 @@
 #include "src/screens/screen.hpp"
 
 #include <SDL_events.h>
+
 #include <filesystem>
 #include <memory>
 

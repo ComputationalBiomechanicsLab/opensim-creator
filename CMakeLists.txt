@@ -94,15 +94,13 @@ add_executable(osc
     src/3d/3d.hpp
     src/3d/3d.cpp
 
-    src/opensim_bindings/simbody_geometry_visitor.hpp
-    src/opensim_bindings/simbody_geometry_visitor.cpp
-    src/opensim_bindings/lambda_geometry_visitor.hpp
+    src/simtk_bindings/simtk_bindings.hpp
+    src/simtk_bindings/simtk_bindings.cpp
+
     src/opensim_bindings/model_drawlist.hpp
-    src/opensim_bindings/model_drawlist_generator.hpp
-    src/opensim_bindings/model_drawlist_generator.cpp
-    src/opensim_bindings/fd_simulation.hpp
-    src/opensim_bindings/fd_simulation.cpp
-    src/opensim_bindings/conversions.hpp
+    src/opensim_bindings/model_drawlist.cpp
+    src/opensim_bindings/simulation.hpp
+    src/opensim_bindings/simulation.cpp
     src/opensim_bindings/type_registry.hpp
     src/opensim_bindings/type_registry.cpp
     src/opensim_bindings/opensim_helpers.hpp

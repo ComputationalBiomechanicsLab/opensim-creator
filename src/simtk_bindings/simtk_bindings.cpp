@@ -1,4 +1,4 @@
-#include "simbody_geometry_visitor.hpp"
+#include "simtk_bindings.hpp"
 
 #include "src/3d/3d.hpp"
 #include "src/constants.hpp"

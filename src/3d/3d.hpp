@@ -279,6 +279,32 @@ namespace osc {
         return glm::inverse(glm::transpose(top_left));
     }
 
+    struct Passthrough_data final {
+        GLubyte b0;
+        GLubyte b1;
+        GLubyte rim_alpha;
+
+        Passthrough_data() = default;
+
+        constexpr Passthrough_data(GLubyte _b0, GLubyte _b1, GLubyte _rim_alpha) noexcept :
+            b0{_b0}, b1{_b1}, rim_alpha{_rim_alpha} {
+        }
+
+        constexpr void assign_u16(uint16_t v) noexcept {
+            b0 = v & 0xff;
+            b1 = (v >> 8) & 0xff;
+        }
+
+        [[nodiscard]] constexpr uint16_t get_u16() const noexcept {
+            uint16_t v = static_cast<uint16_t>(b0);
+            v |= static_cast<uint16_t>(b1) << 8;
+            return v;
+        }
+    };
+    static_assert(std::is_trivial_v<Rgb24>);
+    static_assert(std::is_trivial_v<Passthrough_data>);
+    static_assert(sizeof(Rgb24) == sizeof(Passthrough_data));
+
     // single instance of a mesh (assume instanced rendering)
     struct Mesh_instance final {
         glm::mat4x3 model_xform;
@@ -286,14 +312,8 @@ namespace osc {
         Rgba32 rgba;
 
         union {
-            struct {
-                GLubyte b0;
-                GLubyte b1;
-                GLubyte rim_alpha;
-            } passthrough;
+            Passthrough_data passthrough;
             Rgb24 passthrough_as_color;
-
-            static_assert(sizeof(passthrough_as_color) == sizeof(passthrough));
         };
 
         Instance_flags flags;
@@ -465,7 +485,7 @@ namespace osc {
         gl::Frame_buffer scene_fbo_resolved;
         gl::Texture_2d passthrough_tex_resolved;
         gl::Frame_buffer passthrough_fbo_resolved;
-        Rgb24 hittest_result;
+        Passthrough_data hittest_result;
 
         Render_target(int w, int h, int samples);
         void reconfigure(int w, int h, int samples);

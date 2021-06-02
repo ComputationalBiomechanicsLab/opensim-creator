@@ -1,4 +1,4 @@
-#include "fd_simulation.hpp"
+#include "simulation.hpp"
 
 #include "src/log.hpp"
 #include "src/utils/concurrency.hpp"

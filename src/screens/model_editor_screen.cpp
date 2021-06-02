@@ -4,7 +4,7 @@
 #include "src/application.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
-#include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/simulation.hpp"
 #include "src/opensim_bindings/opensim_helpers.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/main_editor_state.hpp"
@@ -303,10 +303,10 @@ static void draw_joint_type_switcher(Undoable_ui_model& st, OpenSim::Joint& sele
     ImGui::NextColumn();
 
     // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-    std::optional<size_t> maybe_type_idx = joint::index_of(selection);
+    std::optional<size_t> maybe_type_idx = Joint_registry::index_of(selection);
     int type_idx = maybe_type_idx ? static_cast<int>(*maybe_type_idx) : -1;
 
-    auto known_joint_names = joint::names();
+    auto known_joint_names = Joint_registry::names();
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     if (ImGui::Combo(
@@ -317,7 +317,7 @@ static void draw_joint_type_switcher(Undoable_ui_model& st, OpenSim::Joint& sele
         type_idx >= 0) {
 
         // copy + fixup  a prototype of the user's selection
-        std::unique_ptr<OpenSim::Joint> new_joint{joint::prototypes()[static_cast<size_t>(type_idx)]->clone()};
+        std::unique_ptr<OpenSim::Joint> new_joint{Joint_registry::prototypes()[static_cast<size_t>(type_idx)]->clone()};
         auto ptr = new_joint.get();
         copy_common_joint_properties(selection, *new_joint);
 

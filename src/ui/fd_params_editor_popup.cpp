@@ -1,6 +1,6 @@
 #include "fd_params_editor_popup.hpp"
 
-#include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/simulation.hpp"
 
 #include <imgui.h>
 

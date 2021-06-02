@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <utility>
 #include <new>
+#include <type_traits>
 
 template<typename T, size_t N>
 class Circular_buffer final {
@@ -33,7 +34,8 @@ class Circular_buffer final {
     // - this behavior makes the implementation simpler, because
     //   you don't have to handle _begin == _end edge cases and
     //   one-past-the end out-of-bounds checks
-    alignas(T) std::array<char, N * sizeof(T)> raw_storage;
+    using storage_bytes = std::aligned_storage_t<sizeof(T), alignof(T)>;
+    std::array<storage_bytes, N> raw_storage;
 
     // index (T-based, not raw byte based) of the first element
     int _begin = 0;
@@ -226,29 +228,15 @@ public:
 
     [[nodiscard]] constexpr reference operator[](size_type pos) noexcept {
         size_type idx = (static_cast<size_type>(_begin) + pos) % N;
-        size_type raw_idx = idx * sizeof(T);
-
-        char* raw_data = raw_storage.data() + raw_idx;
-
-        return *std::launder(reinterpret_cast<T*>(raw_data));
+        return *std::launder(reinterpret_cast<T*>(raw_storage.data() + idx));
     }
 
     [[nodiscard]] constexpr reference front() noexcept {
-        size_type idx = static_cast<size_type>(_begin);
-        size_type raw_idx = idx * sizeof(T);
-
-        char* raw_data = raw_storage.data() + raw_idx;
-
-        return *std::launder(reinterpret_cast<T*>(raw_data));
+        return *std::launder(reinterpret_cast<T*>(raw_storage.data() + static_cast<size_type>(_begin)));
     }
 
     [[nodiscard]] constexpr const_reference front() const noexcept {
-        size_type idx = static_cast<size_type>(_begin);
-        size_type raw_idx = idx * sizeof(T);
-
-        char const* raw_data = raw_storage.data() + raw_idx;
-
-        return *std::launder(reinterpret_cast<T const*>(raw_data));
+        *std::launder(reinterpret_cast<T*>(raw_storage.data() + static_cast<size_type>(_begin)));
     }
 
     [[nodiscard]] constexpr reference back() noexcept {
@@ -264,14 +252,11 @@ public:
     [[nodiscard]] constexpr const_iterator begin() const noexcept {
         // the iterator is designed to handle const-ness
         T const* const_ptr = std::launder(reinterpret_cast<T const*>(raw_storage.data()));
-        T* ptr = const_cast<T*>(const_ptr);
-
-        return const_iterator{ptr, _begin};
+        return const_iterator{const_cast<T*>(const_ptr), _begin};
     }
 
     [[nodiscard]] constexpr iterator begin() noexcept {
         T* ptr = std::launder(reinterpret_cast<T*>(raw_storage.data()));
-
         return iterator{ptr, _begin};
     }
 
@@ -282,14 +267,11 @@ public:
     [[nodiscard]] constexpr const_iterator end() const noexcept {
         // the iterator is designed to handle const-ness
         T const* const_ptr = std::launder(reinterpret_cast<T const*>(raw_storage.data()));
-        T* ptr = const_cast<T*>(const_ptr);
-
-        return const_iterator{ptr, _end};
+        return const_iterator{const_cast<T*>(const_ptr), _end};
     }
 
     [[nodiscard]] constexpr iterator end() noexcept {
         T* ptr = std::launder(reinterpret_cast<T*>(raw_storage.data()));
-
         return iterator{ptr, _end};
     }
 
@@ -367,9 +349,8 @@ public:
         }
 
         // construct T in the old "dead" element location
-        size_type raw_idx = _end * sizeof(T);
-        char* raw_ptr = raw_storage.data() + raw_idx;
-        T* constructed_el = new (raw_ptr) T{std::forward<Args>(args)...};
+        storage_bytes* ptr = raw_storage.data() + _end;
+        T* constructed_el = new (ptr) T{std::forward<Args>(args)...};
 
         _end = new_end;
 

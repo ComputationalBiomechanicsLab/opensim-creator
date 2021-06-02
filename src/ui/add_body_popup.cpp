@@ -1,6 +1,6 @@
 #include "add_body_popup.hpp"
 
-#include "src/opensim_bindings/conversions.hpp"
+#include "src/simtk_bindings/simtk_bindings.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/lockable_f3_editor.hpp"
@@ -126,7 +126,7 @@ std::optional<osc::ui::add_body_popup::New_body>
     ui::help_marker::draw("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
     ImGui::NextColumn();
     {
-        auto names = osc::joint::names();
+        auto names = osc::Joint_registry::names();
         ImGui::Combo("##jointtype", &st.joint_idx, names.data(), static_cast<int>(names.size()));
     }
     ImGui::NextColumn();
@@ -181,7 +181,7 @@ std::optional<osc::ui::add_body_popup::New_body>
         auto com = stk_vec3_from(st.com);
         auto inertia = stk_inertia_from(st.inertia);
         auto body = std::make_unique<OpenSim::Body>(st.body_name, 1.0, com, inertia);
-        auto joint = make_joint(st, *body, *osc::joint::prototypes()[static_cast<size_t>(st.joint_idx)]);
+        auto joint = make_joint(st, *body, *osc::Joint_registry::prototypes()[static_cast<size_t>(st.joint_idx)]);
 
         if (st.attach_geom.selected) {
             body->attachGeometry(st.attach_geom.selected.release());

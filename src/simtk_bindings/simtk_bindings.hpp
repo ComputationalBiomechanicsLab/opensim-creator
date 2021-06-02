@@ -1,18 +1,38 @@
 #pragma once
 
-#include "src/3d/3d.hpp"
+#include <SimTKcommon.h>
 
-#include <SimTKcommon/internal/DecorativeGeometry.h>
-
-#include <utility>
-#include <vector>
+namespace osc {
+    struct Untextured_mesh;
+    struct GPU_storage;
+    struct Mesh_instance;
+}
 
 namespace SimTK {
     class SimbodyMatterSubsystem;
-    class State;
 }
 
 namespace osc {
+
+    // create a SimTK::Vec3 from three packed floats
+    [[nodiscard]] inline SimTK::Vec3 stk_vec3_from(float v[3]) noexcept {
+        return {
+            static_cast<double>(v[0]),
+            static_cast<double>(v[1]),
+            static_cast<double>(v[2]),
+        };
+    }
+
+    // create a SimTK::Inertia from three packed floats
+    [[nodiscard]] inline SimTK::Inertia stk_inertia_from(float v[3]) noexcept {
+        return {
+            static_cast<double>(v[0]),
+            static_cast<double>(v[1]),
+            static_cast<double>(v[2]),
+        };
+    }
+
+    // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
         Untextured_mesh& mesh_swap;
         GPU_storage& gpu_cache;
@@ -35,6 +55,7 @@ namespace osc {
         }
 
     private:
+        // called whenever the implementation emits a mesh instance
         virtual void on_instance_created(Mesh_instance const& mi) = 0;
 
         // implementation details
@@ -52,5 +73,23 @@ namespace osc {
         void implementArrowGeometry(SimTK::DecorativeArrow const&) override final;
         void implementTorusGeometry(SimTK::DecorativeTorus const&) override final;
         void implementConeGeometry(SimTK::DecorativeCone const&) override final;
+    };
+
+    // C++ lambda implementation of the above
+    template<typename OnInstanceCreatedCallback>
+    class Lambda_geometry_visitor final : public Simbody_geometry_visitor {
+        OnInstanceCreatedCallback callback;
+
+    public:
+        template<typename... BaseCtorArgs>
+        Lambda_geometry_visitor(OnInstanceCreatedCallback _callback, BaseCtorArgs&&... args) :
+            Simbody_geometry_visitor{std::forward<BaseCtorArgs>(args)...},
+            callback(std::move(_callback)) {
+        }
+
+    private:
+        void on_instance_created(Mesh_instance const& mi) override {
+            callback(mi);
+        }
     };
 }

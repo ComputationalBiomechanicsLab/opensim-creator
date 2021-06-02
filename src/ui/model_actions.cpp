@@ -68,13 +68,13 @@ static void render_actions_panel_content(
     {
         int joint_idx = -1;
         if (ImGui::BeginMenu("add joint")) {
-            auto names = joint::names();
+            auto names = Joint_registry::names();
             for (size_t i = 0; i < names.size(); ++i) {
                 if (ImGui::MenuItem(names[i])) {
                     joint_idx = static_cast<int>(i);
                 }
                 if (ImGui::IsItemHovered()) {
-                    draw_tooltip(names[i], joint::descriptions()[i]);
+                    draw_tooltip(names[i], Joint_registry::descriptions()[i]);
                 }
             }
             ImGui::EndMenu();
@@ -89,9 +89,9 @@ static void render_actions_panel_content(
         if (auto resp = ui::select_2_pfs::draw(st.select_2_pfs, modal_name, model, "parent", "child"); resp) {
             OSC_ASSERT(
                 st.joint_idx_for_pfs_popup >= 0 &&
-                static_cast<size_t>(st.joint_idx_for_pfs_popup) < joint::prototypes().size());
+                static_cast<size_t>(st.joint_idx_for_pfs_popup) < Joint_registry::prototypes().size());
 
-            OpenSim::Joint const& prototype = *joint::prototypes()[static_cast<size_t>(st.joint_idx_for_pfs_popup)];
+            OpenSim::Joint const& prototype = *Joint_registry::prototypes()[static_cast<size_t>(st.joint_idx_for_pfs_popup)];
 
             std::unique_ptr<OpenSim::Joint> copy{prototype.clone()};
             copy->connectSocket_parent_frame(resp->first);
@@ -112,17 +112,17 @@ static void render_actions_panel_content(
         bool open_popup = false;  // has to be outside ImGui::Menu
 
         if (ImGui::BeginMenu("add contact geometry")) {
-            auto names = contact_geom::names();
+            auto names = Contact_geom_registry::names();
 
             for (size_t i = 0; i < names.size(); ++i) {
                 if (ImGui::MenuItem(names[i])) {
-                    std::unique_ptr<OpenSim::ContactGeometry> copy{contact_geom::prototypes()[i]->clone()};
+                    std::unique_ptr<OpenSim::ContactGeometry> copy{Contact_geom_registry::prototypes()[i]->clone()};
                     st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Contact Geometry";
                     open_popup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    draw_tooltip(names[i], contact_geom::descriptions()[i]);
+                    draw_tooltip(names[i], Contact_geom_registry::descriptions()[i]);
                 }
             }
 
@@ -139,17 +139,17 @@ static void render_actions_panel_content(
         bool open_popup = false;  // has to be outside ImGui::Menu
 
         if (ImGui::BeginMenu("add constraint")) {
-            auto names = constraint::names();
+            auto names = Constraint_registry::names();
             for (size_t i = 0; i < names.size(); ++i) {
 
                 if (ImGui::MenuItem(names[i])) {
-                    std::unique_ptr<OpenSim::Constraint> copy{constraint::prototypes()[i]->clone()};
+                    std::unique_ptr<OpenSim::Constraint> copy{Constraint_registry::prototypes()[i]->clone()};
                     st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Constraint";
                     open_popup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    draw_tooltip(names[i], constraint::descriptions()[i]);
+                    draw_tooltip(names[i], Constraint_registry::descriptions()[i]);
                 }
             }
 
@@ -164,17 +164,17 @@ static void render_actions_panel_content(
     {
         bool open_popup = false;  // has to be outside ImGui::Menu
         if (ImGui::BeginMenu("add force")) {
-            auto names = force::names();
+            auto names = Force_registry::names();
             for (size_t i = 0; i < names.size(); ++i) {
 
                 if (ImGui::MenuItem(names[i])) {
-                    std::unique_ptr<OpenSim::Force> copy{force::prototypes()[i]->clone()};
+                    std::unique_ptr<OpenSim::Force> copy{Force_registry::prototypes()[i]->clone()};
                     st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
                     st.add_component_popup_name = "Add Force";
                     open_popup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    draw_tooltip(names[i], force::descriptions()[i]);
+                    draw_tooltip(names[i], Force_registry::descriptions()[i]);
                 }
             }
 

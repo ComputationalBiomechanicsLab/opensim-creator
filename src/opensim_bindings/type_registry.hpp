@@ -27,8 +27,8 @@ namespace osc {
         [[nodiscard]] static std::optional<size_t> index_of(T const& v);
     };
 
-    struct joint : Type_registry<OpenSim::Joint> {};
-    struct contact_geom : Type_registry<OpenSim::ContactGeometry> {};
-    struct constraint : Type_registry<OpenSim::Constraint> {};
-    struct force : Type_registry<OpenSim::Force> {};
+    struct Joint_registry : Type_registry<OpenSim::Joint> {};
+    struct Contact_geom_registry : Type_registry<OpenSim::ContactGeometry> {};
+    struct Constraint_registry : Type_registry<OpenSim::Constraint> {};
+    struct Force_registry : Type_registry<OpenSim::Force> {};
 }

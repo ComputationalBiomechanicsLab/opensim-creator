@@ -5,7 +5,7 @@
 #include "src/application.hpp"
 #include "src/assertions.hpp"
 #include "src/log.hpp"
-#include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/simulation.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"

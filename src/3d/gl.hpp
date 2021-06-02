@@ -4,6 +4,7 @@
 
 #include <exception>
 #include <initializer_list>
+#include <type_traits>
 #include <string>
 #include <limits>
 
@@ -28,9 +29,9 @@ namespace gl {
     };
 
     constexpr void swap(GLuint& a, GLuint& b) noexcept {
-        GLuint v = a;
+        GLuint tmp = a;
         a = b;
-        b = v;
+        b = tmp;
     }
 
     constexpr void swap(GLint& a, GLint& b) noexcept {

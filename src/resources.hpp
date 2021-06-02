@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <vector>
 #include <chrono>
+#include <string>
 
 namespace osc {
     // get path to a runtime resource

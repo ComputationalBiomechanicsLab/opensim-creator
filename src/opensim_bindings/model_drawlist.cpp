@@ -1,7 +1,7 @@
-#include "model_drawlist_generator.hpp"
+#include "model_drawlist.hpp"
 
 #include "src/3d/3d.hpp"
-#include "src/opensim_bindings/lambda_geometry_visitor.hpp"
+#include "src/simtk_bindings/simtk_bindings.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
 
 #include <OpenSim/Common/Component.h>
@@ -16,12 +16,12 @@ namespace osc {
     struct Mesh_instance;
 }
 
-void osc::generate_decoration_drawlist(
+void osc::generate_component_decorations(
     OpenSim::Component const& root,
     SimTK::State const& state,
     OpenSim::ModelDisplayHints const& hints,
     GPU_storage& gpu_cache,
-    Model_drawlist& drawlist,
+    Component_drawlist& drawlist,
     ModelDrawlistFlags flags) {
 
     Untextured_mesh mesh_swap;
@@ -40,19 +40,19 @@ void osc::generate_decoration_drawlist(
         current_component = &c;
 
         if (flags & ModelDrawlistFlags_StaticGeometry) {
-            dg.clear();
             c.generateDecorations(true, hints, state, dg);
             for (SimTK::DecorativeGeometry const& geom : dg) {
                 geom.implementGeometry(visitor);
             }
+            dg.clear();
         }
 
         if (flags & ModelDrawlistFlags_DynamicGeometry) {
-            dg.clear();
             c.generateDecorations(false, hints, state, dg);
             for (SimTK::DecorativeGeometry const& geom : dg) {
                 geom.implementGeometry(visitor);
             }
+            dg.clear();
         }
     }
 }

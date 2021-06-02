@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <memory>
+#include <vector>
 
 namespace OpenSim {
     class Model;

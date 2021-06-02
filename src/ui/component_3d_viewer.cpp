@@ -6,7 +6,6 @@
 #include "src/application.hpp"
 #include "src/constants.hpp"
 #include "src/opensim_bindings/model_drawlist.hpp"
-#include "src/opensim_bindings/model_drawlist_generator.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/log.hpp"
 
@@ -38,7 +37,7 @@ struct osc::Component_3d_viewer::Impl final {
     // a list of mesh instances the backend renderer should draw
     //
     // recycled per frame (by scanning over the model)
-    Model_drawlist drawlist;
+    Component_drawlist drawlist;
 
     // X+Y locations in screen that the backend should test for hover collisions
     int hovertest_x = -1;
@@ -105,7 +104,7 @@ static bool is_subcomponent_of(OpenSim::Component const* parent, OpenSim::Compon
 }
 
 static void apply_standard_rim_coloring(
-    Model_drawlist& drawlist,
+    Component_drawlist& drawlist,
     OpenSim::Component const* hovered = nullptr,
     OpenSim::Component const* selected = nullptr) {
 
@@ -389,7 +388,7 @@ static void draw_viewport_3d_render(
         cpy.upd_show_debug_geometry() = impl.flags & Component3DViewerFlags_DrawDebugGeometry;
         cpy.upd_show_labels() = impl.flags & Component3DViewerFlags_DrawLabels;
 
-        generate_decoration_drawlist(model, state, cpy, cache, impl.drawlist, flags);
+        generate_component_decorations(model, state, cpy, cache, impl.drawlist, flags);
     }
 
     // if applicable, draw chequered floor
@@ -405,7 +404,7 @@ static void draw_viewport_3d_render(
 
             // lower slightly, so that it doesn't conflict with OpenSim model planes
             // that happen to lie at Z==0
-            rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
+            rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.001f, 0.0f}) * rv;
 
             return rv;
         }();

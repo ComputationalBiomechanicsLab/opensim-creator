@@ -840,7 +840,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
     // this makes it possible for renderer users (e.g. OpenSim model renderer) to encode
     // model information (e.g. "a component index") into screenspace
 
-    out.hittest_result = Rgb24{0x00, 0x00, 0x00};
+    out.hittest_result = Passthrough_data{0x00, 0x00, 0x00};
     if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
@@ -914,8 +914,9 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
             GLubyte* src = static_cast<GLubyte*>(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
             // note: these values are the *last frame*'s
-            out.hittest_result.r = src[0];
-            out.hittest_result.g = src[1];
+            out.hittest_result.b0 = src[0];
+            out.hittest_result.b1 = src[1];
+            out.hittest_result.rim_alpha = src[2];
 
             glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
@@ -932,8 +933,9 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
             glReadPixels(
                 params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, rgba);
 
-            out.hittest_result.r = rgba[0];
-            out.hittest_result.g = rgba[1];
+            out.hittest_result.b0 = rgba[0];
+            out.hittest_result.b1 = rgba[1];
+            out.hittest_result.rim_alpha = rgba[2];
         }
     }
 

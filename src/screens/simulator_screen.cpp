@@ -1,7 +1,7 @@
 #include "simulator_screen.hpp"
 
 #include "src/main_editor_state.hpp"
-#include "src/opensim_bindings/fd_simulation.hpp"
+#include "src/opensim_bindings/simulation.hpp"
 #include "src/ui/log_viewer.hpp"
 #include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/main_menu.hpp"

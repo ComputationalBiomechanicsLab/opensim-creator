@@ -1,8 +1,6 @@
 #pragma once
 
 #include <optional>
-#include <cstdlib>
-#include <utility>
 
 namespace osc::stbi {
 
@@ -28,7 +26,7 @@ namespace osc::stbi {
     public:
         Image(Image const&) = delete;
 
-        Image(Image&& tmp) noexcept :
+        constexpr Image(Image&& tmp) noexcept :
             width{tmp.width},
             height{tmp.height},
             channels{tmp.channels},
@@ -45,11 +43,14 @@ namespace osc::stbi {
 
         Image& operator=(Image const&) = delete;
 
-        Image& operator=(Image&& tmp) noexcept {
+        constexpr Image& operator=(Image&& tmp) noexcept {
             width = tmp.width;
             height = tmp.height;
             channels = tmp.channels;
-            std::swap(data, tmp.data);
+
+            unsigned char* ptr = data;
+            data = tmp.data;
+            tmp.data = ptr;
 
             return *this;
         }
