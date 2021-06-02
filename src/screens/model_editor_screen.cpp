@@ -153,7 +153,7 @@ static void draw_top_level_editor(Undoable_ui_model& st) {
 
     ImGui::Columns(2);
 
-    ImGui::Text("name");
+    ImGui::TextUnformatted("name");
     ImGui::NextColumn();
 
     char nambuf[128];
@@ -176,7 +176,7 @@ static void draw_top_level_editor(Undoable_ui_model& st) {
 static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenSim::PhysicalFrame& selection) {
     ImGui::Columns(2);
 
-    ImGui::Text("geometry");
+    ImGui::TextUnformatted("geometry");
     ImGui::NextColumn();
 
     static constexpr char const* modal_name = "attach geometry";
@@ -208,7 +208,7 @@ static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenS
     }
     ImGui::NextColumn();
 
-    ImGui::Text("offset frame");
+    ImGui::TextUnformatted("offset frame");
     ImGui::NextColumn();
     if (ImGui::Button("add offset frame")) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
@@ -299,7 +299,7 @@ static void draw_joint_type_switcher(Undoable_ui_model& st, OpenSim::Joint& sele
         return;
     }
 
-    ImGui::Text("joint type");
+    ImGui::TextUnformatted("joint type");
     ImGui::NextColumn();
 
     // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
@@ -380,7 +380,7 @@ static void draw_hcf_contextual_actions(Undoable_ui_model& uim, OpenSim::HuntCro
     OpenSim::HuntCrossleyForce::ContactParameters& params = selection.upd_contact_parameters()[0];
 
     ImGui::Columns(2);
-    ImGui::Text("add contact geometry");
+    ImGui::TextUnformatted("add contact geometry");
     ImGui::SameLine();
     ui::help_marker::draw(
         "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
@@ -430,12 +430,12 @@ static void draw_hcf_contextual_actions(Undoable_ui_model& uim, OpenSim::HuntCro
 
 static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
     if (!impl.st->selection()) {
-        ImGui::Text("cannot draw contextual actions: selection is blank (shouldn't be)");
+        ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
         return;
     }
 
     ImGui::Columns(2);
-    ImGui::Text("isolate in visualizer");
+    ImGui::TextUnformatted("isolate in visualizer");
     ImGui::NextColumn();
     if (impl.st->selection() != impl.st->hovered()) {
         if (ImGui::Button("isolate")) {
@@ -475,7 +475,7 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
 static void draw_socket_editor(Model_editor_screen::Impl& impl) {
 
     if (!impl.st->selection()) {
-        ImGui::Text("cannot draw socket editor: selection is blank (shouldn't be)");
+        ImGui::TextUnformatted("cannot draw socket editor: selection is blank (shouldn't be)");
         return;
     }
 
@@ -495,7 +495,7 @@ static void draw_socket_editor(Model_editor_screen::Impl& impl) {
 
     ImGui::Columns(2);
     for (std::string const& sn : socknames) {
-        ImGui::Text("%s", sn.c_str());
+        ImGui::TextUnformatted(sn.c_str());
         ImGui::NextColumn();
 
         OpenSim::AbstractSocket const& socket = selection.getSocket(sn);
@@ -578,19 +578,19 @@ static void draw_selection_breadcrumbs(Undoable_ui_model& uim) {
 
 static void draw_selection_editor(Model_editor_screen::Impl& impl) {
     if (!impl.st->selection()) {
-        ImGui::Text("(nothing selected)");
+        ImGui::TextUnformatted("(nothing selected)");
         return;
     }
 
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
-    ImGui::Text("hierarchy:");
+    ImGui::TextUnformatted("hierarchy:");
     ImGui::SameLine();
     ui::help_marker::draw("Where the selected component is in the model's component hierarchy");
     ImGui::Separator();
     draw_selection_breadcrumbs(impl.st->edited_model);
 
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
-    ImGui::Text("top-level attributes:");
+    ImGui::TextUnformatted("top-level attributes:");
     ImGui::SameLine();
     ui::help_marker::draw("Top-level properties on the OpenSim::Component itself");
     ImGui::Separator();
@@ -598,7 +598,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
 
     // contextual actions
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
-    ImGui::Text("contextual actions:");
+    ImGui::TextUnformatted("contextual actions:");
     ImGui::SameLine();
     ui::help_marker::draw("Actions that are specific to the type of OpenSim::Component that is currently selected");
     ImGui::Separator();
@@ -611,7 +611,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
 
     // property editor
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
-    ImGui::Text("properties:");
+    ImGui::TextUnformatted("properties:");
     ImGui::SameLine();
     ui::help_marker::draw(
         "Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
@@ -627,7 +627,7 @@ static void draw_selection_editor(Model_editor_screen::Impl& impl) {
 
     // socket editor
     ImGui::Dummy(ImVec2(0.0f, 2.0f));
-    ImGui::Text("sockets:");
+    ImGui::TextUnformatted("sockets:");
     ImGui::SameLine();
     ui::help_marker::draw(
         "What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");

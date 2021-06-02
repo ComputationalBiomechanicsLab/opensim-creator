@@ -126,7 +126,7 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
                                 Ui_simulation& focused_sim,
                                 fd::Report& focused_report) {
 
-    ImGui::Text("Scrubber:");
+    ImGui::TextUnformatted("Scrubber:");
     ImGui::Separator();
     ImGui::Dummy(ImVec2{0.0f, 0.3f});
     {
@@ -151,7 +151,7 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
     }
 
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
-    ImGui::Text("Simulations:");
+    ImGui::TextUnformatted("Simulations:");
     ImGui::Separator();
     ImGui::Dummy(ImVec2{0.0f, 0.3f});
 
@@ -695,7 +695,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     // show a "you need to run something, fool" dialog
     if (impl.st->simulations.empty()) {
         if (ImGui::Begin("Warning")) {
-            ImGui::Text("No simulations are currently running");
+            ImGui::TextUnformatted("No simulations are currently running");
             if (ImGui::Button("Run new simulation")) {
                 action_start_simulation(*impl.st);
             }

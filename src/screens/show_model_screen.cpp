@@ -128,7 +128,7 @@ static Ma_add_plot_modal_response ma_add_plot_modal_draw(
 
     // lhs: muscle selection
     {
-        ImGui::Text("muscles:");
+        ImGui::TextUnformatted("muscles:");
         ImGui::Dummy({0.0f, 5.0f});
 
         auto& muscles = st.muscles_scratch;
@@ -156,7 +156,7 @@ static Ma_add_plot_modal_response ma_add_plot_modal_draw(
 
     // rhs: coord selection
     {
-        ImGui::Text("coordinates:");
+        ImGui::TextUnformatted("coordinates:");
         ImGui::Dummy({0.0f, 5.0f});
 
         auto& coords = st.coords_scratch;
@@ -456,19 +456,19 @@ struct Simulator_tab final {
         }
 
         ImGui::Dummy({0.0f, 20.0f});
-        ImGui::Text("simulation config:");
+        ImGui::TextUnformatted("simulation config:");
         ImGui::Dummy({0.0f, 2.5f});
         ImGui::Separator();
 
         ImGui::Columns(2);
 
-        ImGui::Text("final time");
+        ImGui::TextUnformatted("final time");
         ImGui::NextColumn();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         ImGui::SliderFloat("##final time float", &fd_final_time, 0.01f, 20.0f);
         ImGui::NextColumn();
 
-        ImGui::Text("integration method");
+        ImGui::TextUnformatted("integration method");
         ImGui::NextColumn();
         {
             int method = integrator_method;

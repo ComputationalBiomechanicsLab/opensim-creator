@@ -223,7 +223,7 @@ void osc::Splash_screen::draw() {
 
         // left column: recent files
         if (!impl->mm_state.recent_files.empty()) {
-            ImGui::Text("Recent files:");
+            ImGui::TextUnformatted("Recent files:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
             // iterate in reverse: recent files are stored oldest --> newest
@@ -240,7 +240,7 @@ void osc::Splash_screen::draw() {
 
         // right column: example model files
         if (!impl->mm_state.example_osims.empty()) {
-            ImGui::Text("Examples:");
+            ImGui::TextUnformatted("Examples:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
             for (fs::path const& ex : impl->mm_state.example_osims) {

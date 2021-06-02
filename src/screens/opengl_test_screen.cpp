@@ -114,7 +114,7 @@ void Opengl_test_screen::draw() {
 
     if (ImGui::Begin("main panel")) {
         for (size_t i = 0; i < impl->demos.size(); ++i) {
-            ImGui::Text("%s", impl->demos[i].c_str());
+            ImGui::TextUnformatted(impl->demos[i].c_str());
             if (i != impl->demo_shown) {
                 ImGui::SameLine();
                 if (ImGui::Button("show")) {
