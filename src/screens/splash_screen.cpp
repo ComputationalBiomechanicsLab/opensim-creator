@@ -38,9 +38,9 @@ using namespace osc;
 
 struct Splash_screen::Impl final {
     ui::main_menu::file_tab::State mm_state;
-    gl::Texture_2d logo = osc::load_tex(resource("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    gl::Texture_2d cz_logo = osc::load_tex(resource("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
-    gl::Texture_2d tud_logo = osc::load_tex(resource("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically);
+    gl::Texture_2d logo = load_image_as_texture(resource("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
+    gl::Texture_2d cz_logo = load_image_as_texture(resource("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
+    gl::Texture_2d tud_logo = load_image_as_texture(resource("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
     Drawlist drawlist;
 
     Polar_perspective_camera camera;
@@ -117,22 +117,33 @@ void osc::Splash_screen::tick(float dt) {
     impl->camera.theta += dt * 0.015f;
 }
 
+static constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
+
+static void render_quad(osc::GPU_storage& gs, glm::mat4 const& mvp, gl::Texture_2d& tex) {
+    Plain_texture_shader& pts = *gs.shader_pts;
+    gl::UseProgram(pts.p);
+    gl::Uniform(pts.uMVP, mvp);
+    gl::ActiveTexture(GL_TEXTURE0);
+    gl::BindTexture(tex);
+    gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+    gl::BindVertexArray(gs.pts_quad_vao);
+    gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
+    gl::BindVertexArray();
+}
+
 void osc::Splash_screen::draw() {
     Application& app = Application::current();
+    GPU_storage& gs = app.get_gpu_storage();
 
-    constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
-    glm::vec2 window_dims;
-    {
-        auto [w, h] = app.window_dimensions();
-        window_dims.x = static_cast<float>(w);
-        window_dims.y = static_cast<float>(h);
-    }
+    auto [w, h] = app.window_dimensionsf();
+    glm::vec2 window_dims{w, h};
 
-    GPU_storage& gs = Application::current().get_gpu_storage();
+    gl::Enable(GL_BLEND);
 
     // draw chequered floor background
     {
-        impl->render_target.reconfigure(app.window_dimensions().w, app.window_dimensions().h, app.samples());
+        auto [wi, hi] = app.window_dimensionsi();
+        impl->render_target.reconfigure(wi, hi, app.samples());
 
         Render_params params;
         params.passthrough_hittest_x = -1;
@@ -148,41 +159,23 @@ void osc::Splash_screen::draw() {
         params.flags &= ~RawRendererFlags_DrawDebugQuads;
 
         draw_scene(gs, params, impl->drawlist, impl->render_target);
-
-        Plain_texture_shader& pts = *gs.shader_pts;
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, gl::identity_val);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(impl->render_target.main());
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(gs.pts_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
-        gl::BindVertexArray();
+        render_quad(gs, glm::mat4{1.0f}, impl->render_target.main());
     }
 
     // draw logo just above the menu
     {
-        constexpr glm::vec2 logo_dims = {125.0f, 125.0f};
-        glm::vec2 scale = logo_dims / window_dims;
+        glm::vec2 desired_logo_dims = {128.0f, 128.0f};
+        glm::vec2 scale = desired_logo_dims / window_dims;
+        float y_above_menu = (menu_dims.y + desired_logo_dims.y + 64.0f) / window_dims.y;
 
-        glm::mat4 mtx = glm::scale(
-            glm::translate(
-                glm::identity<glm::mat4>(), glm::vec3{0.0f, (menu_dims.y + logo_dims.y) / window_dims.y, 0.0f}),
-            glm::vec3{scale.x, scale.y, 1.0f});
+        glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {0.0f, y_above_menu, 0.0f});
+        glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
 
-        Plain_texture_shader& pts = *gs.shader_pts;
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, mtx);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(impl->logo);
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(gs.pts_quad_vao);
+        glm::mat4 model = translate_xform * scale_xform;
+
         gl::Disable(GL_DEPTH_TEST);
         gl::Enable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
-        gl::Disable(GL_BLEND);
-        gl::Enable(GL_DEPTH_TEST);
-        gl::BindVertexArray();
+        render_quad(gs, model, impl->logo);
     }
 
     if (ImGui::BeginMainMenuBar()) {
@@ -193,11 +186,8 @@ void osc::Splash_screen::draw() {
 
     // center the menu
     {
-        auto d = app.window_dimensions();
-        float menu_x = static_cast<float>((d.w - menu_dims.x) / 2);
-        float menu_y = static_cast<float>((d.h - menu_dims.y) / 2);
-
-        ImGui::SetNextWindowPos(ImVec2(menu_x, menu_y));
+        glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
+        ImGui::SetNextWindowPos(menu_pos);
         ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
         ImGui::SetNextWindowSizeConstraints(menu_dims, menu_dims);
     }
@@ -257,55 +247,37 @@ void osc::Splash_screen::draw() {
     }
     ImGui::End();
 
-    // draw logo just above the menu
+    // draw TUD logo below menu, slightly to the left
     {
-        constexpr glm::vec2 logo_dims = {128.0f, 128.0f};
-        glm::vec2 scale = logo_dims / window_dims;
+        glm::vec2 desired_logo_dims = {128.0f, 128.0f};
+        glm::vec2 scale = desired_logo_dims / window_dims;
+        float x_leftwards_by_logo_width = -desired_logo_dims.x / window_dims.x;
+        float y_below_menu = -(menu_dims.y + desired_logo_dims.y) / window_dims.y;
 
-        glm::mat4 mtx = glm::scale(
-            glm::translate(
-                glm::identity<glm::mat4>(),
-                glm::vec3{-logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
-            glm::vec3{scale.x, scale.y, 1.0f});
+        glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {x_leftwards_by_logo_width, y_below_menu, 0.0f});
+        glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
 
-        Plain_texture_shader& pts = *gs.shader_pts;
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, mtx);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(impl->tud_logo);
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(gs.pts_quad_vao);
-        gl::Disable(GL_DEPTH_TEST);
+        glm::mat4 model = translate_xform * scale_xform;
+
         gl::Enable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
-        gl::Disable(GL_BLEND);
-        gl::Enable(GL_DEPTH_TEST);
-        gl::BindVertexArray();
+        gl::Disable(GL_DEPTH_TEST);
+        render_quad(gs, model, impl->tud_logo);
     }
 
-    // draw logo just above the menu
+    // draw CZI logo below menu, slightly to the right
     {
-        constexpr glm::vec2 logo_dims = {128.0f, 128.0f};
-        glm::vec2 scale = logo_dims / window_dims;
+        glm::vec2 desired_logo_dims = {128.0f, 128.0f};
+        glm::vec2 scale = desired_logo_dims / window_dims;
+        float x_rightwards_by_logo_width = desired_logo_dims.x / window_dims.x;
+        float y_below_menu = -(menu_dims.y + desired_logo_dims.y) / window_dims.y;
 
-        glm::mat4 mtx = glm::scale(
-            glm::translate(
-                glm::identity<glm::mat4>(),
-                glm::vec3{logo_dims.x / window_dims.x, -(menu_dims.y + logo_dims.y + 10.0f) / window_dims.y, 0.0f}),
-            glm::vec3{scale.x, scale.y, 1.0f});
+        glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {x_rightwards_by_logo_width, y_below_menu, 0.0f});
+        glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
 
-        Plain_texture_shader& pts = *gs.shader_pts;
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, mtx);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(impl->cz_logo);
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(gs.pts_quad_vao);
+        glm::mat4 model = translate_xform * scale_xform;
+
         gl::Disable(GL_DEPTH_TEST);
         gl::Enable(GL_BLEND);
-        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
-        gl::Disable(GL_BLEND);
-        gl::Enable(GL_DEPTH_TEST);
-        gl::BindVertexArray();
+        render_quad(gs, model, impl->cz_logo);
     }
 }

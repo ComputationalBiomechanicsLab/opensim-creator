@@ -58,12 +58,11 @@ namespace osc {
 
         void request_quit_application();
 
-        struct Window_dimensions final {
-            int w;
-            int h;
-        };
+        struct Window_dimensionsi final { int w, h; };
+        [[nodiscard]] Window_dimensionsi window_dimensionsi() const noexcept;
 
-        [[nodiscard]] Window_dimensions window_dimensions() const noexcept;
+        struct Window_dimensionsf final { float w, h; };
+        [[nodiscard]] Window_dimensionsf window_dimensionsf() const noexcept;
 
         // returns the number of samples (MSXAA) that multisampled renderers should use
         [[nodiscard]] int samples() const noexcept;

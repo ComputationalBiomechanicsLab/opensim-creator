@@ -260,8 +260,20 @@ namespace osc {
         TexFlag_Flip_Pixels_Vertically = 2,
     };
 
+    struct Image_texture final {
+        // OpenGL handle for the texture
+        gl::Texture_2d texture;
+
+        // dimensions
+        int width;
+        int height;
+
+        // in most cases, 3 == RGB, 4 == RGBA
+        int channels;
+    };
+
     // read an image file into an OpenGL 2D texture
-    gl::Texture_2d load_tex(char const* path, Tex_flags = TexFlag_None);
+    Image_texture load_image_as_texture(char const* path, Tex_flags = TexFlag_None);
 
     // read 6 image files into a single OpenGL cubemap (GL_TEXTURE_CUBE_MAP)
     gl::Texture_cubemap load_cubemap(

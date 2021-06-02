@@ -51,7 +51,7 @@ gl::Texture_2d osc::generate_chequered_floor_texture() {
     return rv;
 }
 
-gl::Texture_2d osc::load_tex(char const* path, Tex_flags flags) {
+Image_texture osc::load_image_as_texture(char const* path, Tex_flags flags) {
     gl::Texture_2d t;
 
     if (flags & TexFlag_Flip_Pixels_Vertically) {
@@ -92,7 +92,7 @@ gl::Texture_2d osc::load_tex(char const* path, Tex_flags flags) {
     gl::TexImage2D(t.type, 0, internalFormat, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
     glGenerateMipmap(t.type);
 
-    return t;
+    return Image_texture{std::move(t), img->width, img->height, img->channels};
 }
 
 // helper method: load a file into an image and send it to OpenGL

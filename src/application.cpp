@@ -765,9 +765,14 @@ void Application::request_quit_application() {
 }
 
 // dimensions of the main application window in pixels
-Application::Window_dimensions Application::window_dimensions() const noexcept {
+Application::Window_dimensionsi Application::window_dimensionsi() const noexcept {
     auto [w, h] = sdl::GetWindowSize(impl->window);
     return {w, h};
+}
+
+Application::Window_dimensionsf Application::window_dimensionsf() const noexcept {
+    auto [w, h] = sdl::GetWindowSize(impl->window);
+    return {static_cast<float>(w), static_cast<float>(h)};
 }
 
 int Application::samples() const noexcept {
