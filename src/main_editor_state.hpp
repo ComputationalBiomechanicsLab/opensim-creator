@@ -165,6 +165,25 @@ namespace osc {
                 damaged = std::nullopt;
             }            
         }
+
+        // declare the death of a component pointer
+        //
+        // this happens when we know that OpenSim has destructed a component in
+        // the model indirectly (e.g. it was destructed by an OpenSim container)
+        // and that we want to ensure the pointer isn't still held by this state
+        void declare_death_of(OpenSim::Component const* c) noexcept {
+            if (current.selected == c) {
+                current.selected = nullptr;
+            }
+
+            if (current.hovered == c) {
+                current.hovered = nullptr;
+            }
+
+            if (current.isolated == c) {
+                current.isolated = nullptr;
+            }
+        }
     };
 
     // a forward-dynamic simulation

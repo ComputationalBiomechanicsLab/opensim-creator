@@ -345,11 +345,7 @@ static gl::Texture_2d& perform_backend_render_drawcall(osc::Component_3d_viewer:
 
     // draw scene
     draw_scene(Application::current().get_gpu_storage(), params, impl.drawlist.raw_drawlist(), impl.render_target);
-
-    // post-draw: check if the hit-test passed
-    if (impl.mouse_over_render) {
-        impl.hovered_component = impl.drawlist.component_from_passthrough(impl.render_target.hittest_result);
-    }
+    impl.hovered_component = impl.drawlist.component_from_passthrough(impl.render_target.hittest_result);
 
     return impl.render_target.main();
 }
@@ -707,9 +703,9 @@ static osc::Component3DViewerResponse draw(
 Component_3d_viewer::Component_3d_viewer(Component3DViewerFlags flags) : impl{new Impl{flags}} {
 }
 
-Component_3d_viewer::Component_3d_viewer(Component_3d_viewer&&) = default;
+Component_3d_viewer::Component_3d_viewer(Component_3d_viewer&&) noexcept = default;
 
-Component_3d_viewer& Component_3d_viewer::operator=(Component_3d_viewer&&) = default;
+Component_3d_viewer& Component_3d_viewer::operator=(Component_3d_viewer&&) noexcept = default;
 
 Component_3d_viewer::~Component_3d_viewer() noexcept = default;
 

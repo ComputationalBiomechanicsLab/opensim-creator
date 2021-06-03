@@ -66,7 +66,7 @@ namespace osc {
         OpenSim::Component const* component_from_passthrough(Passthrough_data d) {
             uint16_t passthrough_id = d.get_u16();
 
-            if (passthrough_id > 0) {
+            if (passthrough_id > 0 && passthrough_id <= associated_components.size()) {
                 return associated_components[passthrough_id - 1];
             } else {
                 return nullptr;

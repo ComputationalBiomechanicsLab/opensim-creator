@@ -109,17 +109,13 @@ namespace osc {
         Impl* impl;
 
     public:
-
-        Component_3d_viewer() :
-            Component_3d_viewer{Component3DViewerFlags_None} {
-        }
-        Component_3d_viewer(Component3DViewerFlags);
-        Component_3d_viewer(Component_3d_viewer&&);
+        Component_3d_viewer(Component3DViewerFlags = Component3DViewerFlags_None);
+        Component_3d_viewer(Component_3d_viewer&&) noexcept;
         Component_3d_viewer(Component_3d_viewer const&) = delete;
         ~Component_3d_viewer() noexcept;
 
         Component_3d_viewer& operator=(Component_3d_viewer const&) = delete;
-        Component_3d_viewer& operator=(Component_3d_viewer&&);
+        Component_3d_viewer& operator=(Component_3d_viewer&&) noexcept;
 
         bool is_moused_over() const noexcept;
 

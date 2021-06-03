@@ -76,19 +76,9 @@ osc::Ui_model::~Ui_model() noexcept = default;
 osc::Ui_model& osc::Ui_model::operator=(Ui_model&&) = default;
 
 void osc::Ui_model::on_model_modified() {
-    this->selected = relocate_component_pointer_to_new_model(*model, selected);
-    this->hovered = relocate_component_pointer_to_new_model(*model, hovered);
-    this->isolated = relocate_component_pointer_to_new_model(*model, isolated);
+    *this->state = model->initSystem();
+    model->realizePosition(*this->state);
     this->timestamp = std::chrono::system_clock::now();
-
-    // note: expensive and potentially throwing
-    //
-    // this should be done last, so that the rest of the class is in a somewhat
-    // valid state if this throws
-    {
-        *this->state = model->initSystem();
-        model->realizePosition(*this->state);
-    }
 }
 
 // Undoable_ui_model impl

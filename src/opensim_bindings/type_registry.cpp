@@ -22,7 +22,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
+// #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>  seems to be broken on buildSystem after switching from another joint
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
@@ -105,7 +105,7 @@ static std::optional<size_t> index_of(Container const& c, T const& v) {
 
 // Joint LUTs
 
-static std::array<std::unique_ptr<OpenSim::Joint const>, 11> joint_prototypes = {
+static std::array<std::unique_ptr<OpenSim::Joint const>, 10> joint_prototypes = {
     joint_with_coords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
     joint_with_coords<OpenSim::PinJoint>({"rz"}),
     joint_with_coords<OpenSim::UniversalJoint>({"rx", "ry"}),
@@ -115,8 +115,8 @@ static std::array<std::unique_ptr<OpenSim::Joint const>, 11> joint_prototypes = 
     joint_with_coords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
     joint_with_coords<OpenSim::SliderJoint>({"tx"}),
     joint_with_coords<OpenSim::WeldJoint>({}),
-    joint_with_coords<OpenSim::CustomJoint>({}),
-    joint_with_coords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"})
+    joint_with_coords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
+    // joint_with_coords<OpenSim::CustomJoint>({}), // broken: see above
 };
 static auto const joint_names = extract_names(joint_prototypes);
 static constexpr std::array<char const*, joint_prototypes.size()> joint_descriptions = {
@@ -130,7 +130,7 @@ static constexpr std::array<char const*, joint_prototypes.size()> joint_descript
     "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
     "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.",
     "A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon which the joint frame of scapul rides.",
-    "A class implementing a custom joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc.) as well as more complex biomechanical joints. The behavior of a custom joint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis has a function of joint coordinates that describes the motion about or along the transform axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is handled by transform axis functions that depend on the same coordinate(s).",
+    // "A class implementing a custom joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::FunctionBased. Custom joints offer a generic joint representation, which can be used to model both conventional (pins, slider, universal, etc.) as well as more complex biomechanical joints. The behavior of a custom joint is specified by its SpatialTransform. A SpatialTransform is comprised of 6 TransformAxes (3 rotations and 3 translations) that define the spatial position of Child in Parent as a function of coordinates. Each transform axis has a function of joint coordinates that describes the motion about or along the transform axis. The order of the spatial transform is fixed with rotations first followed by translations. Subsequently, coupled motion (i.e., describing motion of two degrees of freedom as a function of one coordinate) is handled by transform axis functions that depend on the same coordinate(s).",  // broken: see above
 };
 static auto const joint_hashes = extract_type_hashes(joint_prototypes);
 
