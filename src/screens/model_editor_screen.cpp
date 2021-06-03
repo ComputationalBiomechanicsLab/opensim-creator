@@ -1052,6 +1052,10 @@ static void draw_3d_selection_context_menu(
         osc::Model_editor_screen::Impl& impl,
         OpenSim::Component const& selected) {
 
+    ImGui::TextDisabled("%s (%s)", selected.getName().c_str(), selected.getConcreteClassName().c_str());
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 3.0f});
+
     if (ImGui::BeginMenu("Select Owner")) {
         OpenSim::Component const* c = &selected;
         while (c->hasOwner()) {
@@ -1076,7 +1080,10 @@ static void draw_3d_selection_context_menu(
             ImGui::TextDisabled("%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
             ImGui::Separator();
             for (auto const& o : c->getOutputs()) {
-                if (ImGui::MenuItem(o.second->getName().c_str())) {
+                char buf[256];
+                std::snprintf(buf, sizeof(buf), "  %s", o.second->getName().c_str());
+
+                if (ImGui::MenuItem(buf)) {
                    impl.st->desired_outputs.emplace_back(c->getAbsolutePath().toString(), o.second->getName());
                 }
                 if (ImGui::IsItemHovered()) {
@@ -1084,6 +1091,9 @@ static void draw_3d_selection_context_menu(
                     ImGui::Text("Output Type = %s", o.second->getTypeName().c_str());
                     ImGui::EndTooltip();
                 }
+            }
+            if (c->getNumOutputs() == 0) {
+                ImGui::TextDisabled("  (has no outputs)");
             }
             c = c->hasOwner() ? &c->getOwner() : nullptr;
         }
