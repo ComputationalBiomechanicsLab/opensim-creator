@@ -1058,6 +1058,7 @@ static void draw_3d_selection_context_menu(
 
     if (ImGui::BeginMenu("Select Owner")) {
         OpenSim::Component const* c = &selected;
+        impl.st->set_hovered(nullptr);
         while (c->hasOwner()) {
             c = &c->getOwner();
 
@@ -1066,6 +1067,9 @@ static void draw_3d_selection_context_menu(
 
             if (ImGui::MenuItem(buf)) {
                 impl.st->set_selection(const_cast<OpenSim::Component*>(c));
+            }
+            if (ImGui::IsItemHovered()) {
+                impl.st->set_hovered(const_cast<OpenSim::Component*>(c));
             }
         }
         ImGui::EndMenu();
@@ -1143,11 +1147,13 @@ static void draw_3d_viewer(
 
     // if right-clicked, draw context menu
     {
+        char buf[128];
+        std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
         if (resp.is_moused_over && resp.hovertest_result && resp.is_right_clicked) {
             impl.st->set_selection(const_cast<OpenSim::Component*>(resp.hovertest_result));
-            ImGui::OpenPopup("3dviewercontextmenu");
+            ImGui::OpenPopup(buf);
         }
-        if (impl.st->selection() && ImGui::BeginPopup("3dviewercontextmenu")) {
+        if (impl.st->selection() && ImGui::BeginPopup(buf)) {
             draw_3d_selection_context_menu(impl, *impl.st->selection());
             ImGui::EndPopup();
         }
