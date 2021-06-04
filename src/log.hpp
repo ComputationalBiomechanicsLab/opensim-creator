@@ -10,9 +10,11 @@
 #include <string_view>
 #include <vector>
 
+// log: logging implementation
+//
+// this implementation takes heavy inspiration from `spdlog`
+
 namespace osc::log {
-    // this implementation is a gruesome simplification of spdlog: go read the spdlog
-    // sources if you want to see good software engineering
 
     namespace level {
         enum Level_enum { trace = 0, debug, info, warn, err, critical, off, NUM_LEVELS };

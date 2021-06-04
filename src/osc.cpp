@@ -141,8 +141,8 @@ int main(int argc, char** argv) {
             app.start_render_loop<osc::Loading_screen>(argv[0]);
         }
     } catch (std::exception const& ex) {
-        std::cerr << "osc: encountered fatal exception: " << ex.what() << std::endl;
-        std::cerr << "terminating applicaiton" << std::endl;
+        osc::log::error("osc: encountered fatal exception: %s", ex.what());
+        osc::log::error("osc: terminating due to fatal exception");
         throw;
     }
 
