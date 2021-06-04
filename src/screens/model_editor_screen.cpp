@@ -718,11 +718,11 @@ static void action_delete_selection_from_model(osc::Undoable_ui_model& uim) {
         delete_item_from_set_in_model(*cs, static_cast<OpenSim::Controller*>(selected));
         uim.declare_death_of(selected);
         uim.after_modifying_model();
-    } else if (auto* cs = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
+    } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
         // delete an OpenSim::Constraint from its owning OpenSim::ConstraintSet
 
         uim.before_modifying_model();
-        delete_item_from_set_in_model(*cs, static_cast<OpenSim::Constraint*>(selected));
+        delete_item_from_set_in_model(*conss, static_cast<OpenSim::Constraint*>(selected));
         uim.declare_death_of(selected);
         uim.after_modifying_model();
     } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
