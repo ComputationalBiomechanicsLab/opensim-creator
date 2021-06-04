@@ -827,6 +827,24 @@ static void action_delete_selection_from_model(osc::Undoable_ui_model& uim) {
             uim.declare_death_of(selected);
             uim.after_modifying_model();
         }
+    } else if (auto* pp = dynamic_cast<OpenSim::PathPoint*>(selected); pp) {
+        if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner); gp) {
+
+            OpenSim::PathPointSet const& pps = gp->getPathPointSet();
+            int idx = -1;
+            for (int i = 0; i < pps.getSize(); ++i) {
+                if (&pps.get(i) == pp) {
+                    idx = i;
+                }
+            }
+
+            if (idx != -1) {
+                uim.before_modifying_model();
+                gp->deletePathPoint(uim.state(), idx);
+                uim.declare_death_of(selected);
+                uim.after_modifying_model();
+            }
+        }
     }
 }
 
