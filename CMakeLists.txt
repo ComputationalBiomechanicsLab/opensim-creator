@@ -136,6 +136,8 @@ add_executable(osc
     src/ui/muscles_table.cpp
     src/ui/select_2_pfs_popup.hpp
     src/ui/select_2_pfs_popup.cpp
+    src/ui/select_1_pf_popup.hpp
+    src/ui/select_1_pf_popup.cpp
     src/ui/model_actions.hpp
     src/ui/model_actions.cpp
     src/ui/select_component_popup.hpp

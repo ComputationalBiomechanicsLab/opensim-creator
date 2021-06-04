@@ -23,6 +23,7 @@
 #include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/properties_editor.hpp"
 #include "src/ui/reassign_socket_popup.hpp"
+#include "src/ui/select_1_pf_popup.hpp"
 #include "src/ui/select_2_pfs_popup.hpp"
 #include "src/ui/select_component_popup.hpp"
 #include "src/utils/circular_buffer.hpp"
@@ -432,6 +433,46 @@ static void draw_hcf_contextual_actions(Undoable_ui_model& uim, OpenSim::HuntCro
     }
 }
 
+static void draw_pa_contextual_actions(Undoable_ui_model& uim, OpenSim::PathActuator& selection) {
+    ImGui::Columns(2);
+
+    char const* modal_name = "select physical frame";
+
+    ImGui::TextUnformatted("add path point to end");
+    ImGui::NextColumn();
+
+    if (ImGui::Button("add")) {
+        ImGui::OpenPopup(modal_name);
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(
+            "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+
+    // handle popup
+    {
+        OpenSim::PhysicalFrame const* pf = ui::select_1_pf::draw(modal_name, uim.model());
+        if (pf) {
+            int n = selection.getGeometryPath().getPathPointSet().getSize();
+            char buf[128];
+            std::snprintf(buf, sizeof(buf), "%s-P%i", selection.getName().c_str(), n + 1);
+            std::string name{buf};
+            SimTK::Vec3 pos{0.0f, 0.0f, 0.0f};
+
+            uim.before_modifying_model();
+            selection.addNewPathPoint(name, *pf, pos);
+            uim.after_modifying_model();
+        }
+    }
+
+    ImGui::NextColumn();
+    ImGui::Columns();
+}
+
 static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
     if (!impl.st->selection()) {
         ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
@@ -468,6 +509,8 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
         draw_joint_contextual_actions(impl.st->edited_model, *joint);
     } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(impl.st->selection()); hcf) {
         draw_hcf_contextual_actions(impl.st->edited_model, *hcf);
+    } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(impl.st->selection()); pa) {
+        draw_pa_contextual_actions(impl.st->edited_model, *pa);
     } else {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.5f, 1.0f});
         ImGui::Text(
@@ -690,10 +733,11 @@ static void action_delete_selection_from_model(osc::Undoable_ui_model& uim) {
             selected->getName().c_str());
 
         // segfaults:
-        //uim.before_modifying_model();
-        //delete_item_from_set_in_model(*bs, static_cast<OpenSim::Body*>(selected));
-        //uim.declare_death_of(selected);
-        //uim.after_modifying_model();
+        // uim.before_modifying_model();
+        // delete_item_from_set_in_model(*bs, static_cast<OpenSim::Body*>(selected));
+        // uim.model().clearConnections();
+        // uim.declare_death_of(selected);
+        // uim.after_modifying_model();
     } else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner); wos) {
         // delete an OpenSim::WrapObject from its owning OpenSim::WrapObjectSet
 

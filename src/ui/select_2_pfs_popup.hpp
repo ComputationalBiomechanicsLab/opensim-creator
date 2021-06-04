@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/assertions.hpp"
-
 #include <optional>
 
 namespace OpenSim {

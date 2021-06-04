@@ -62,7 +62,7 @@ namespace osc::ui::add_component_popup {
             pf_connectees(pf_sockets.size()),
             pps{} {
 
-            OSC_ASSERT(pf_sockets.size() == physframe_connectee_choices.size());
+            OSC_ASSERT(pf_sockets.size() == pf_connectees.size());
         }
     };
 
