@@ -21,8 +21,7 @@ namespace gl {
         std::string msg;
 
     public:
-        template<typename Str>
-        Opengl_exception(Str&& _msg) : msg{_msg} {
+        Opengl_exception(std::string s) : msg{std::move(s)} {
         }
 
         char const* what() const noexcept override;
