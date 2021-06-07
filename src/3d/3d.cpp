@@ -251,7 +251,7 @@ static void unit_sphere_triangles(Untextured_mesh& out) {
 }
 
 static void simbody_cylinder_triangles(Untextured_mesh& out) {
-    size_t num_sides = 12;
+    size_t num_sides = 16;
 
     out.clear();
     out.verts.reserve(2 * num_sides + 2 * num_sides);

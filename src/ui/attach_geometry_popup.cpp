@@ -2,6 +2,7 @@
 
 #include "src/resources.hpp"
 #include "src/utils/scope_guard.hpp"
+#include "src/ui/help_marker.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -55,6 +56,29 @@ static std::unique_ptr<OpenSim::Mesh>
     return nullptr;
 }
 
+using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
+
+static constexpr std::array<Geom_ctor_fn const, 4> g_GeomCtors = {
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Brick{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Sphere{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cylinder{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
+
+    /* TODO: needs rendering support
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}}; },
+    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Torus{}}; },
+    */
+};
+static constexpr std::array<char const* const, 4> g_GeomNames = {
+    "Brick",
+    "Sphere",
+    "Cylinder",
+    "LineGeometry"
+};
+static_assert(g_GeomCtors.size() == g_GeomNames.size());
+
 static std::optional<std::filesystem::path> prompt_open_vtp() {
     nfdchar_t* outpath = nullptr;
     nfdresult_t result = NFD_OpenDialog("vtp", nullptr, &outpath);
@@ -63,7 +87,8 @@ static std::optional<std::filesystem::path> prompt_open_vtp() {
     return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
 }
 
-std::unique_ptr<OpenSim::Mesh> osc::ui::attach_geometry_popup::draw(State& st, char const* modal_name) {
+std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(State& st, char const* modal_name) {
+    std::unique_ptr<OpenSim::Geometry> rv = nullptr;
 
     // center the modal
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -71,53 +96,83 @@ std::unique_ptr<OpenSim::Mesh> osc::ui::attach_geometry_popup::draw(State& st, c
 
     // try to show the modal (depends on caller calling ImGui::OpenPopup)
     if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        return nullptr;
+        return rv;
     }
 
-    // let user type a search
+    // premade geometry section
+    //
+    // let user select from a shorter sequence of analytical geometry that can be
+    // generated without a mesh file
+    {
+        ImGui::TextUnformatted("Generated geometry");
+        ImGui::SameLine();
+        ui::help_marker::draw("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2{0.0f, 2.0f});
+
+        int item = -1;
+        if (ImGui::Combo("##premade", &item, g_GeomNames.data(), static_cast<int>(g_GeomNames.size()))) {
+            auto const& ctor = g_GeomCtors[static_cast<size_t>(item)];
+            rv = ctor();
+            st.search[0] = '\0';
+            ImGui::CloseCurrentPopup();
+        }
+    }
+
+    // mesh file selection
+    //
+    // let the user select a mesh file that the implementation should load + use
+    ImGui::Dummy(ImVec2{0.0f, 3.0f});
+    ImGui::TextUnformatted("mesh file");
+    ImGui::SameLine();
+    ui::help_marker::draw("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 2.0f});
+
+    // let the user search through mesh files in pre-established Geometry/ dirs
     ImGui::InputText("search", st.search.data(), st.search.size());
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
 
-    std::unique_ptr<OpenSim::Mesh> rv = nullptr;
+    ImGui::BeginChild(
+        "mesh list", ImVec2(ImGui::GetContentRegionAvail().x, 256), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-    // show previous (recent) user choices
+
     if (!st.recent_user_choices.empty()) {
-        ImGui::Text("recent:");
-        ImGui::BeginChild(
-            "recent meshes", ImVec2(ImGui::GetContentRegionAvail().x, 64), false, ImGuiWindowFlags_HorizontalScrollbar);
-
-        for (std::filesystem::path const& p : st.recent_user_choices) {
-            auto resp = try_draw_file_choice(st, p);
-            if (resp) {
-                rv = std::move(resp);
-            }
+        ImGui::TextDisabled("  (recent)");
+    }
+    for (std::filesystem::path const& p : st.recent_user_choices) {
+        auto resp = try_draw_file_choice(st, p);
+        if (resp) {
+            rv = std::move(resp);
         }
-
-        ImGui::EndChild();
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
     }
 
-    // show list of VTPs (probably loaded from resource dir)
-    {
-        ImGui::Text("all:");
-        ImGui::BeginChild(
-            "all meshes", ImVec2(ImGui::GetContentRegionAvail().x, 256), false, ImGuiWindowFlags_HorizontalScrollbar);
-
-        for (std::filesystem::path const& p : st.vtps) {
-            auto resp = try_draw_file_choice(st, p);
-            if (resp) {
-                rv = std::move(resp);
-            }
+    if (!st.recent_user_choices.empty()) {
+        ImGui::TextDisabled("  (from Geometry/ dir)");
+    }
+    for (std::filesystem::path const& p : st.vtps) {
+        auto resp = try_draw_file_choice(st, p);
+        if (resp) {
+            rv = std::move(resp);
         }
-
-        ImGui::EndChild();
     }
 
-    if (ImGui::Button("Open")) {
+    ImGui::EndChild();
+
+    if (ImGui::Button("Open Mesh File")) {
         if (auto maybe_vtp = prompt_open_vtp(); maybe_vtp) {
             rv = on_vtp_choice_made(st, std::move(maybe_vtp).value());
         }
     }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Open a mesh file on the filesystem");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+
+    ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
     if (ImGui::Button("Cancel")) {
         st.search[0] = '\0';

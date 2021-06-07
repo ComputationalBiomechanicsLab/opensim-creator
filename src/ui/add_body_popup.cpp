@@ -154,7 +154,17 @@ std::optional<osc::ui::add_body_popup::New_body>
     ImGui::NextColumn();
     {
         static constexpr char const* attach_modal_name = "addbody_attachgeometry";
-        char const* label = st.attach_geom.selected ? st.attach_geom.selected->get_mesh_file().c_str() : "attach";
+
+        char const* label = "attach";
+        if (st.attach_geom.selected) {
+            OpenSim::Geometry const& attached = *st.attach_geom.selected;
+            if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&attached); mesh) {
+                label = mesh->getGeometryFilename().c_str();
+            } else {
+                label = attached.getConcreteClassName().c_str();
+            }
+        }
+
         if (ImGui::Button(label)) {
             ImGui::OpenPopup(attach_modal_name);
         }

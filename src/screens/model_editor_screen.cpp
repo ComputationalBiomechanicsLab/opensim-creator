@@ -178,32 +178,25 @@ static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenS
     ImGui::Columns(2);
 
     ImGui::TextUnformatted("geometry");
+    ImGui::SameLine();
+    help_marker::draw("Geometry that is attached to this physical frame. Multiple pieces of geometry can be attached to the frame");
     ImGui::NextColumn();
 
-    static constexpr char const* modal_name = "attach geometry";
+    static constexpr char const* modal_name = "select geometry to add";
 
-    if (selection.getProperty_attached_geometry().empty()) {
-        if (ImGui::Button("add geometry")) {
-            ImGui::OpenPopup(modal_name);
-        }
-    } else {
-        std::string name;
-        if (selection.getProperty_attached_geometry().size() > 1) {
-            name = "multiple";
-        } else if (auto const* mesh = dynamic_cast<OpenSim::Mesh const*>(&selection.get_attached_geometry(0)); mesh) {
-            name = mesh->get_mesh_file();
-        } else {
-            name = selection.get_attached_geometry(0).getConcreteClassName();
-        }
-
-        if (ImGui::Button(name.c_str())) {
-            ImGui::OpenPopup(modal_name);
-        }
+    if (ImGui::Button("add geometry")) {
+        ImGui::OpenPopup(modal_name);
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Add geometry to this component. Geometry can be removed by selecting it in the hierarchy editor and pressing DELETE");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
     }
 
     if (auto attached = attach_geometry_popup::draw(impl.ui.attach_geometry_modal, modal_name); attached) {
         impl.st->before_modifying_model();
-        selection.updProperty_attached_geometry().clear();
         selection.attachGeometry(attached.release());
         impl.st->after_modifying_model();
     }
@@ -213,16 +206,25 @@ static void draw_frame_contextual_actions(Model_editor_screen::Impl& impl, OpenS
     ImGui::NextColumn();
     if (ImGui::Button("add offset frame")) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        pof->setName(selection.getName() + "_frame");
+        pof->setName(selection.getName() + "_offsetframe");
         pof->setParentFrame(selection);
 
         impl.st->before_modifying_model();
+        auto pofptr = pof.get();
         selection.addComponent(pof.release());
+        impl.st->set_selection(pofptr);
         impl.st->after_modifying_model();
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
     }
     ImGui::NextColumn();
 
-    ImGui::Columns(1);
+    ImGui::Columns();
 }
 
 static void copy_common_joint_properties(OpenSim::Joint const& src, OpenSim::Joint& dest) {
@@ -482,13 +484,18 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
     ImGui::Columns(2);
     ImGui::TextUnformatted("isolate in visualizer");
     ImGui::NextColumn();
-    if (impl.st->selection() != impl.st->hovered()) {
+
+    if (impl.st->selection() != impl.st->isolated()) {
         if (ImGui::Button("isolate")) {
+            impl.st->before_modifying_model();
             impl.st->set_isolated(impl.st->selection());
+            impl.st->after_modifying_model();
         }
     } else {
         if (ImGui::Button("un-isolate")) {
+            impl.st->before_modifying_model();
             impl.st->set_isolated(nullptr);
+            impl.st->after_modifying_model();
         }
     }
 
@@ -615,12 +622,16 @@ static void draw_selection_breadcrumbs(Undoable_ui_model& uim) {
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
+        ImGui::SameLine();
+        ImGui::TextDisabled("(%s)", (*it)->getConcreteClassName().c_str());
         indent += 15.0f;
     }
 
     ImGui::Dummy(ImVec2{indent, 0.0f});
     ImGui::SameLine();
     ImGui::TextUnformatted((*(lst.end() - 1))->getName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("(%s)", (*(lst.end() - 1))->getConcreteClassName().c_str());
 }
 
 static void draw_selection_editor(Model_editor_screen::Impl& impl) {

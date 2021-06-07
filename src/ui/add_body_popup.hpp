@@ -19,7 +19,7 @@ namespace osc::ui::add_body_popup {
         // sub-modal for attaching geometry to the body
         struct {
             attach_geometry_popup::State state;
-            std::unique_ptr<OpenSim::Mesh> selected = nullptr;
+            std::unique_ptr<OpenSim::Geometry> selected = nullptr;
         } attach_geom;
 
         OpenSim::PhysicalFrame const* selected_pf = nullptr;
