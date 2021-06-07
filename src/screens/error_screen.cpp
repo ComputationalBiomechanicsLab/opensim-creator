@@ -69,7 +69,7 @@ void Error_screen::draw() {
         ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
     }
 
-    if (ImGui::Begin("Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+    if (ImGui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar)) {
         ui::log_viewer::draw(impl->log);
     }
     ImGui::End();
