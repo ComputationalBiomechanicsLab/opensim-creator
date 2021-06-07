@@ -32,6 +32,7 @@ template<typename T>
 static std::optional<property_editor::Response>
     draw_property_editor(property_editor::State&, OpenSim::Property<T> const&);
 
+// std::string property editor
 template<>
 std::optional<property_editor::Response>
     draw_property_editor<std::string>(property_editor::State&, OpenSim::Property<std::string> const& prop) {
@@ -63,6 +64,7 @@ std::optional<property_editor::Response>
     return rv;
 }
 
+// double property editor
 template<>
 std::optional<property_editor::Response>
     draw_property_editor<double>(property_editor::State& st, OpenSim::Property<double> const& prop) {
@@ -127,6 +129,7 @@ std::optional<property_editor::Response>
     return rv;
 }
 
+// bool property editor
 template<>
 std::optional<property_editor::Response>
     draw_property_editor<bool>(property_editor::State&, OpenSim::Property<bool> const& prop) {
@@ -151,6 +154,7 @@ std::optional<property_editor::Response>
     return std::nullopt;
 }
 
+// SimTK::Vec3 property editor
 template<>
 std::optional<property_editor::Response>
     draw_property_editor<SimTK::Vec3>(property_editor::State& st, OpenSim::Property<SimTK::Vec3> const& prop) {
@@ -184,6 +188,7 @@ std::optional<property_editor::Response>
     return std::nullopt;
 }
 
+// SimTK::Vec6 property editor
 template<>
 std::optional<property_editor::Response>
     draw_property_editor<SimTK::Vec6>(property_editor::State&, OpenSim::Property<SimTK::Vec6> const& prop) {
@@ -240,6 +245,7 @@ std::optional<property_editor::Response>
     return std::nullopt;
 }
 
+// OpenSim::Appearance property editor
 template<>
 std::optional<property_editor::Response> draw_property_editor<OpenSim::Appearance>(
     property_editor::State&, OpenSim::Property<OpenSim::Appearance> const& prop) {
