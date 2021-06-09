@@ -2,6 +2,7 @@
 
 #include "src/3d/3d.hpp"
 #include "src/constants.hpp"
+#include "src/log.hpp"
 
 #include <SimTKcommon/Orientation.h>
 #include <glm/ext/matrix_transform.hpp>
@@ -225,7 +226,11 @@ static glm::vec4 to_vec4(Vec3 const& v, float w = 1.0f) {
 }
 
 void Simbody_geometry_visitor::implementPointGeometry(SimTK::DecorativePoint const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementLineGeometry(SimTK::DecorativeLine const& geom) {
@@ -269,7 +274,11 @@ void Simbody_geometry_visitor::implementCylinderGeometry(SimTK::DecorativeCylind
 }
 
 void Simbody_geometry_visitor::implementCircleGeometry(SimTK::DecorativeCircle const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementCircleGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementSphereGeometry(SimTK::DecorativeSphere const& geom) {
@@ -284,7 +293,11 @@ void Simbody_geometry_visitor::implementSphereGeometry(SimTK::DecorativeSphere c
 }
 
 void Simbody_geometry_visitor::implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementEllipsoidGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame const& geom) {
@@ -345,11 +358,19 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
 }
 
 void Simbody_geometry_visitor::implementTextGeometry(SimTK::DecorativeText const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementMeshGeometry(SimTK::DecorativeMesh const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementMeshGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFile const& geom) {
@@ -371,13 +392,25 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
 }
 
 void Simbody_geometry_visitor::implementArrowGeometry(SimTK::DecorativeArrow const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementArrowGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementTorusGeometry(SimTK::DecorativeTorus const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementTorusGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
 
 void Simbody_geometry_visitor::implementConeGeometry(SimTK::DecorativeCone const&) {
-    // nyi
+    static bool shown_nyi_warning = []() {
+        log::warn("this model uses implementConeGeometry, which is not yet implemented in OSC");
+        return true;
+    }();
+    (void)shown_nyi_warning;
 }
