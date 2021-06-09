@@ -28,7 +28,6 @@ using std::chrono_literals::operator""ms;
 //
 // this is ran on a background thread
 static std::unique_ptr<OpenSim::Model> load_opensim_model(std::string path) {
-    std::this_thread::sleep_for(std::chrono::seconds{10});
     return std::make_unique<OpenSim::Model>(path);
 }
 
