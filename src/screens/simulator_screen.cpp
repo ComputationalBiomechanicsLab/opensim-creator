@@ -22,6 +22,10 @@
 
 using namespace osc;
 
+static std::unique_ptr<Component_3d_viewer> create_viewer() {
+    return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
+}
+
 struct osc::Simulator_screen::Impl final {
     // top-level state: shared between edit+sim screens
     std::shared_ptr<Main_editor_state> st;
@@ -32,10 +36,12 @@ struct osc::Simulator_screen::Impl final {
     // ui component state
     osc::ui::log_viewer::State log_viewer_st;
     osc::ui::main_menu::file_tab::State mm_filetab_st;
-    
-    Component_3d_viewer viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
 
     Impl(std::shared_ptr<Main_editor_state> _st) : st {std::move(_st)} {
+        // lazily init at least one viewer
+        if (!st->viewers.front()) {
+            st->viewers.front() = create_viewer();
+        }
     }
 };
 
@@ -386,10 +392,14 @@ static bool on_event(osc::Simulator_screen::Impl& impl, SDL_Event const& e) {
         }
     }
 
-    if (impl.viewer.is_moused_over()) {
-        return impl.viewer.on_event(e);
+    bool handled = false;
+    for (auto& viewer : impl.st->viewers) {
+        if (!handled && viewer && viewer->is_moused_over()) {
+            handled = viewer->on_event(e);
+        }
     }
-    return false;
+
+    return handled;
 }
 
 static void draw_output_plots(
@@ -741,7 +751,25 @@ static void draw_hierarchy_tab(Simulator_screen::Impl& impl) {
     }
 }
 
-static void draw_viewer(Simulator_screen::Impl& impl) {
+// draw a single 3D model viewer
+static void draw_3d_viewer(
+        Ui_simulation& sim,
+        fd::Report const& report,
+        Component_3d_viewer& viewer,
+        char const* name) {
+
+    Component3DViewerResponse resp =
+        viewer.draw(name, *sim.model, report.state, sim.selected, sim.hovered);
+
+    if (resp.is_left_clicked && resp.hovertest_result) {
+        sim.selected = const_cast<OpenSim::Component*>(resp.hovertest_result);
+    }
+    if (resp.is_moused_over && resp.hovertest_result != sim.hovered) {
+        sim.hovered = const_cast<OpenSim::Component*>(resp.hovertest_result);
+    }
+}
+
+static void draw_viewers(Simulator_screen::Impl& impl) {
     Ui_simulation* maybe_sim = impl.st->get_focused_sim();
 
     if (!maybe_sim) {
@@ -754,14 +782,21 @@ static void draw_viewer(Simulator_screen::Impl& impl) {
 
     Ui_simulation& sim = *maybe_sim;
     fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
+    Main_editor_state& st = *impl.st;
 
-    auto resp = impl.viewer.draw("render", *sim.model, report.state, sim.selected, sim.hovered);
+    for (size_t i = 0; i < st.viewers.size(); ++i) {
+        auto& maybe_viewer = st.viewers[i];
 
-    if (resp.is_left_clicked && resp.hovertest_result) {
-        sim.selected = const_cast<OpenSim::Component*>(resp.hovertest_result);
-    }
-    if (resp.hovertest_result != sim.hovered) {
-        sim.hovered = const_cast<OpenSim::Component*>(resp.hovertest_result);
+        if (!maybe_viewer) {
+            continue;
+        }
+
+        Component_3d_viewer& viewer = *maybe_viewer;
+
+        char buf[64];
+        std::snprintf(buf, sizeof(buf), "viewer%zu", i);
+
+        draw_3d_viewer(sim, report, viewer, buf);
     }
 }
 
@@ -802,7 +837,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     ImGui::End();
 
     // draw 3d viewer
-    draw_viewer(impl);
+    draw_viewers(impl);
 
     // draw hierarchy tab
     {

@@ -8,6 +8,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <array>
 
 namespace SimTK {
     class State;
@@ -16,6 +17,10 @@ namespace SimTK {
 namespace OpenSim {
     class Model;
     class Component;
+}
+
+namespace osc {
+    class Component_3d_viewer;
 }
 
 namespace osc {
@@ -272,12 +277,26 @@ namespace osc {
         // these are the params that are used whenever a user hits "simulate"
         fd::Params sim_params;
 
+        // available 3D viewers
+        //
+        // the user can open a limited number of 3D viewers. They are kept on
+        // this top-level state so that they, and their settings, can be
+        // cached between screens
+        //
+        // the viewers can be null, which should be interpreted as "not yet initialized"
+        std::array<std::unique_ptr<Component_3d_viewer>, 4> viewers;
+
         // construct with a blank (new) OpenSim::Model
         Main_editor_state();
 
         // construct with an existing OpenSim::Model
         Main_editor_state(std::unique_ptr<OpenSim::Model>);
 
+        Main_editor_state(Main_editor_state const&) = delete;
+        Main_editor_state(Main_editor_state&&) = delete;
+
+        Main_editor_state& operator=(Main_editor_state const&) = delete;
+        Main_editor_state& operator=(Main_editor_state&&) = delete;
 
         OpenSim::Model& model() {
             return edited_model.model();

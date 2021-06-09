@@ -1,6 +1,7 @@
 #include "main_editor_state.hpp"
 
 #include "src/log.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Component.h>
@@ -237,12 +238,22 @@ osc::Ui_simulation::Ui_simulation(Ui_model const& uim, fd::Params const& p) :
     Ui_simulation{*uim.model, *uim.state, p} {
 }
 
+static std::unique_ptr<osc::Component_3d_viewer> create_viewer() {
+    return std::make_unique<osc::Component_3d_viewer>(osc::Component3DViewerFlags_Default | osc::Component3DViewerFlags_DrawFrames);
+}
+
 osc::Main_editor_state::Main_editor_state() : 
-    edited_model{std::make_unique<OpenSim::Model>()} {
+    Main_editor_state{std::make_unique<OpenSim::Model>()} {
 }
 
 osc::Main_editor_state::Main_editor_state(std::unique_ptr<OpenSim::Model> model) :
-    edited_model{std::move(model)} {
+    edited_model{std::move(model)},
+    simulations{},
+    focused_simulation{-1},
+    focused_simulation_scrubbing_time{-1.0f},
+    desired_outputs{},
+    sim_params{},
+    viewers{create_viewer(), nullptr, nullptr, nullptr} {
 }
 
 void osc::Main_editor_state::set_model(std::unique_ptr<OpenSim::Model> new_model) {

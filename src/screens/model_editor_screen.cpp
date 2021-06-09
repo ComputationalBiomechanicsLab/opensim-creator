@@ -93,23 +93,13 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-static Component_3d_viewer create_viewer() {
-    return Component_3d_viewer{Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames};
+static std::unique_ptr<Component_3d_viewer> create_viewer() {
+    return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
 }
 
 struct Model_editor_screen::Impl final {
     // top-level state this screen can handle
     std::shared_ptr<Main_editor_state> st;
-
-    // 3d viewers
-    //
-    // user can be viewing up to 4 of these, if they want
-    std::array<std::optional<Component_3d_viewer>, 4> viewers = {
-        create_viewer(),
-        std::nullopt,
-        std::nullopt,
-        std::nullopt,
-    };
 
     // internal state of any sub-panels the editor screen draws
     struct {
@@ -1024,7 +1014,7 @@ static bool on_event(osc::Model_editor_screen::Impl& impl, SDL_Event const& e) {
     }
 
     // if the screen didn't handle the event, forward it into the 3D viewers
-    for (auto& viewer : impl.viewers) {
+    for (auto& viewer : impl.st->viewers) {
         if (!handled && viewer && viewer->is_moused_over()) {
             handled = viewer->on_event(e);
         }
@@ -1056,18 +1046,20 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
         ImGui::MenuItem("Property Editor", nullptr, &impl.showing.property_editor);
         ImGui::MenuItem("Selection Details", nullptr, &impl.showing.selection_details);
 
-        for (size_t i = 0; i < impl.viewers.size(); ++i) {
+        for (size_t i = 0; i < impl.st->viewers.size(); ++i) {
+            Component_3d_viewer* viewer = impl.st->viewers[i].get();
+
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);
 
-            bool is_enabled = impl.viewers[i].has_value();
-            if (ImGui::MenuItem(buf, nullptr, &is_enabled)) {
-                if (is_enabled) {
+            bool enabled = viewer != nullptr;
+            if (ImGui::MenuItem(buf, nullptr, &enabled)) {
+                if (enabled) {
                     // was enabled by user click
-                    impl.viewers[i] = create_viewer();
+                    impl.st->viewers[i] = create_viewer();
                 } else {
                     // was disabled by user click
-                    impl.viewers[i] = std::nullopt;
+                    impl.st->viewers[i] = nullptr;
                 }
             }
         }
@@ -1233,8 +1225,8 @@ static void draw_3d_viewer(
 
 // draw all user-enabled 3D model viewers
 static void draw_3d_viewers(osc::Model_editor_screen::Impl& impl) {
-    for (size_t i = 0; i < impl.viewers.size(); ++i) {
-        std::optional<Component_3d_viewer>& maybe_viewer = impl.viewers[i];
+    for (size_t i = 0; i < impl.st->viewers.size(); ++i) {
+        auto& maybe_viewer = impl.st->viewers[i];
 
         if (!maybe_viewer) {
             continue;
