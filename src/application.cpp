@@ -54,79 +54,140 @@ osc::Application* osc::Application::g_Current = nullptr;
 struct ImGuiContext;
 
 namespace igx {
-    struct Context final {
-        std::string default_ini = resource("imgui_base_config.ini").string();
-        std::string user_ini = (osc::user_data_dir() / "imgui.ini").string();
+    static void configure_imgui_from_osc_config() {
+        ImGuiIO& io = ImGui::GetIO();
 
-        ImGuiContext* handle;
-
-        Context() : handle{ImGui::CreateContext()} {
-            configure_context(ImGui::GetIO());
-            ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
-            ImGui::LoadIniSettingsFromDisk(user_ini.c_str());
-            ImGui::GetIO().IniFilename = user_ini.c_str();
-        }
-        Context(Context const&) = delete;
-        Context(Context&&) = delete;
-        Context& operator=(Context const&) = delete;
-        Context& operator=(Context&&) = delete;
-
-        void configure_context(ImGuiIO& io) {
+        // configure ImGui from OSC's (toml) configuration
+        {
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
             if (config().use_multi_viewport) {
                 io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
             }
         }
 
-        void reset() {
-            ImGui::DestroyContext(handle);
-            handle = ImGui::CreateContext();
-            configure_context(ImGui::GetIO());
+        // load application-level ImGui config, then the user one,
+        // so that the user config takes precedence
+        {
+            std::string default_ini = resource("imgui_base_config.ini").string();
             ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
+            std::string user_ini = (osc::user_data_dir() / "imgui.ini").string();
             ImGui::LoadIniSettingsFromDisk(user_ini.c_str());
-            ImGui::GetIO().IniFilename = user_ini.c_str();
+            io.IniFilename = user_ini.c_str();
         }
 
-        ~Context() noexcept {
-            ImGui::DestroyContext(handle);
+        // add FontAwesome icon support
+        {
+            io.Fonts->AddFontDefault();
+            ImFontConfig config;
+            config.MergeMode = true;
+            config.GlyphMinAdvanceX = 13.0f;  // monospaced
+            static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+            std::string fa_font = resource("fontawesome-webfont.ttf").string();
+            ImGui::GetIO().Fonts->AddFontFromFileTTF(fa_font.c_str(), 13.0f, &config, icon_ranges);
+        }
+    }
+
+    struct RawContext final {
+        ImGuiContext* handle;
+
+        RawContext() : handle{ImGui::CreateContext()} {
+        }
+        RawContext(RawContext const&) = delete;
+        RawContext(RawContext&& tmp) : handle{tmp.handle} {
+            tmp.handle = nullptr;
+        }
+        ~RawContext() noexcept {
+            if (handle) {
+                ImGui::DestroyContext();
+            }
+        }
+
+        RawContext& operator=(RawContext const&) = delete;
+        RawContext& operator=(RawContext&& tmp) noexcept {
+            std::swap(handle, tmp.handle);
+            return *this;
+        }
+
+        void reset() {
+            ImGuiContext* p = handle;
+            handle = nullptr;
+            ImGui::DestroyContext(p);
+            handle = ImGui::CreateContext();
+        }
+    };
+
+    struct Context final {
+        RawContext ctx;
+
+        Context() {
+            configure_imgui_from_osc_config();
+        }
+
+        void reset() {
+            ctx.reset();
+            configure_imgui_from_osc_config();
         }
     };
 
     struct SDL2_Context final {
-        SDL2_Context(SDL_Window* w, void* gl) {
+        bool initialized;
+
+        SDL2_Context(SDL_Window* w, void* gl) : initialized{true} {
             ImGui_ImplSDL2_InitForOpenGL(w, gl);
         }
         SDL2_Context(SDL2_Context const&) = delete;
-        SDL2_Context(SDL2_Context&&) = delete;
+        SDL2_Context(SDL2_Context&& tmp) noexcept : initialized{tmp.initialized} {
+            tmp.initialized = false;
+        }
+
         SDL2_Context& operator=(SDL2_Context const&) = delete;
-        SDL2_Context& operator=(SDL2_Context&&) = delete;
+        SDL2_Context& operator=(SDL2_Context&& tmp) noexcept {
+            std::swap(initialized, tmp.initialized);
+            return *this;
+        }
 
         void reset(SDL_Window* w, void* gl) {
+            initialized = false;
             ImGui_ImplSDL2_Shutdown();
             ImGui_ImplSDL2_InitForOpenGL(w, gl);
+            initialized = true;
         }
 
         ~SDL2_Context() noexcept {
-            ImGui_ImplSDL2_Shutdown();
+            if (initialized) {
+                ImGui_ImplSDL2_Shutdown();
+            }
         }
     };
 
     struct OpenGL3_Context final {
-        OpenGL3_Context(char const* version) {
+        bool initialized;
+
+        OpenGL3_Context(char const* version) : initialized{true} {
             ImGui_ImplOpenGL3_Init(version);
         }
         OpenGL3_Context(OpenGL3_Context const&) = delete;
-        OpenGL3_Context(OpenGL3_Context&&) = delete;
+        OpenGL3_Context(OpenGL3_Context&& tmp) noexcept : initialized{tmp.initialized} {
+            tmp.initialized = false;
+        }
+
         OpenGL3_Context& operator=(OpenGL3_Context const&) = delete;
-        OpenGL3_Context& operator=(OpenGL3_Context&&) = delete;
+        OpenGL3_Context& operator=(OpenGL3_Context&& tmp) {
+            std::swap(initialized, tmp.initialized);
+            return *this;
+        }
 
         void reset(char const* version) {
+            initialized = false;
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplOpenGL3_Init(version);
+            initialized=  true;
         }
 
         ~OpenGL3_Context() noexcept {
-            ImGui_ImplOpenGL3_Shutdown();
+            if (initialized) {
+                ImGui_ImplOpenGL3_Shutdown();
+            }
         }
     };
 }
@@ -533,6 +594,15 @@ public:
         apply_imgui_dark_theme_style();
     }
 
+    void reset_imgui_state() {
+        imgui_sdl2_ogl2_ctx.reset(OSC_GLSL_VERSION);
+        imgui_sdl2_ctx.reset(window, gl);
+        imgui_ctx.reset();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
+    }
+
     void internal_start_render_loop(std::unique_ptr<Screen> s) {
         current_screen = std::move(s);
 
@@ -637,9 +707,7 @@ public:
 
                 gl::UseProgram();
 
-                imgui_sdl2_ogl2_ctx.reset(OSC_GLSL_VERSION);
-                imgui_sdl2_ctx.reset(window, gl);
-                imgui_ctx.reset();
+                reset_imgui_state();
 
                 SDL_GL_SwapWindow(window);
 
@@ -845,4 +913,8 @@ void Application::disable_vsync() {
 
 osc::GPU_storage& Application::get_gpu_storage() noexcept {
     return impl->gpu_storage;
+}
+
+void Application::reset_imgui_state() {
+    impl->reset_imgui_state();
 }

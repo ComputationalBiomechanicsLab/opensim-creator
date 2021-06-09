@@ -21,7 +21,6 @@ namespace osc {
         Splash_screen& operator=(Splash_screen&&) = delete;
         ~Splash_screen() noexcept override;
 
-        bool on_event(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
     };

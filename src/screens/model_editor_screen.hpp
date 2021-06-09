@@ -35,7 +35,7 @@ namespace osc {
         // create the screen with existing top-level state
         //
         // this enables transitioning between top-level screens while
-        // maintaining useful state between them (simulations, 
+        // maintaining useful state between them (simulations, open panels,
         // undo/redo, etc.)
         Model_editor_screen(std::shared_ptr<Main_editor_state>);
 

@@ -57,6 +57,7 @@ osc::Ui_model::Ui_model(Ui_model const& other, std::chrono::system_clock::time_p
     }()},
     state{[this]() {
         std::unique_ptr<SimTK::State> rv = std::make_unique<SimTK::State>(model->initSystem());
+        model->equilibrateMuscles(*this->state);
         model->realizePosition(*rv);
         return rv;
     }()},
@@ -77,6 +78,7 @@ osc::Ui_model& osc::Ui_model::operator=(Ui_model&&) = default;
 
 void osc::Ui_model::on_model_modified() {
     *this->state = model->initSystem();
+    model->equilibrateMuscles(*this->state);
     model->realizePosition(*this->state);
     this->timestamp = std::chrono::system_clock::now();
 }
@@ -126,24 +128,7 @@ static void do_debounced_undo_push(osc::Undoable_ui_model& uim) {
     }
 }
 
-static void carefully_try_init_system_and_realize_on_current(osc::Undoable_ui_model& uim) {
-    // this code is messy because it has to handle the messy situation where
-    // the `current` model has been modified into an invalid state that OpenSim
-    // refuses to initialize a system for
-    //
-    // this code has to balance being super-aggressive (i.e. immediately terminating with
-    // a horrible error message) against letting the UI limp along with the broken
-    // model *just* long enough for a recovery effort to complete. Typical end-users
-    // are going to *strongly* prefer the latter, because they might have unsaved
-    // changes in the UI that should not be lost by a crash.
-
-    try {
-        uim.current.on_model_modified();
-        return;
-    } catch (std::exception const& ex) {
-        osc::log::error("exception thrown when initializing updated model: %s", ex.what());
-    }
-
+static void rollback_model_to_earlier_state(osc::Undoable_ui_model& uim) {
     if (uim.undo.empty()) {
         osc::log::error("the model cannot be fixed: no earlier versions of the model exist, throwing an exception");
         throw std::runtime_error{
@@ -164,6 +149,27 @@ static void carefully_try_init_system_and_realize_on_current(osc::Undoable_ui_mo
     }
 }
 
+static void carefully_try_init_system_and_realize_on_current(osc::Undoable_ui_model& uim) {
+    // this code is messy because it has to handle the messy situation where
+    // the `current` model has been modified into an invalid state that OpenSim
+    // refuses to initialize a system for
+    //
+    // this code has to balance being super-aggressive (i.e. immediately terminating with
+    // a horrible error message) against letting the UI limp along with the broken
+    // model *just* long enough for a recovery effort to complete. Typical end-users
+    // are going to *strongly* prefer the latter, because they might have unsaved
+    // changes in the UI that should not be lost by a crash.
+
+    try {
+        uim.current.on_model_modified();
+        return;
+    } catch (std::exception const& ex) {
+        osc::log::error("exception thrown when initializing updated model: %s", ex.what());
+    }
+
+    rollback_model_to_earlier_state(uim);
+}
+
 void osc::Undoable_ui_model::set_model(std::unique_ptr<OpenSim::Model> new_model) {
     // care: this step can throw, because it initializes a system etc.
     //       so, do this *before* potentially breaking these sequecnes
@@ -182,6 +188,10 @@ void osc::Undoable_ui_model::before_modifying_model() {
 void osc::Undoable_ui_model::after_modifying_model() {
     osc::log::debug("ended model modification");
     carefully_try_init_system_and_realize_on_current(*this);
+}
+
+void osc::Undoable_ui_model::forcibly_rollback_to_earlier_state() {
+    rollback_model_to_earlier_state(*this);
 }
 
 static osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, osc::fd::Params const& p) {

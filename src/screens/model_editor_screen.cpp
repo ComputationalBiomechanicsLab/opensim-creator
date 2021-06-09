@@ -492,7 +492,7 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
             impl.st->after_modifying_model();
         }
     } else {
-        if (ImGui::Button("un-isolate")) {
+        if (ImGui::Button("clear isolation")) {
             impl.st->before_modifying_model();
             impl.st->set_isolated(nullptr);
             impl.st->after_modifying_model();
@@ -503,7 +503,7 @@ static void draw_contextual_actions(Model_editor_screen::Impl& impl) {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
         ImGui::TextUnformatted(
-            "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Show all components)");
+            "Only show this component in the visualizer\n\nThis can be disabled from the Edit menu (Edit -> Clear Isolation)");
         ImGui::PopTextWrapPos();
         ImGui::EndTooltip();
     }
@@ -912,12 +912,32 @@ static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
             action_redo(impl);
         }
 
-        if (ImGui::MenuItem("Clear Selection", "Ctrl+A")) {
-            impl.st->set_selection(nullptr);
+        if (ImGui::MenuItem("Clear Isolation", nullptr, false, impl.st->isolated() != nullptr)) {
+            impl.st->set_isolated(nullptr);
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("Clear currently isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
+            if (impl.st->isolated() == nullptr) {
+                ImGui::TextDisabled("\n(disabled because nothing is currently isolated)");
+            }
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
 
-        if (ImGui::MenuItem("Show all components")) {
-            impl.st->set_isolated(nullptr);
+        if (ImGui::MenuItem("Open in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
+            open_path_in_default_application(impl.st->model().getInputFileName());
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
+            if (!has_backing_file(impl.st->model())) {
+                ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
+            }
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
 
         if (ImGui::BeginMenu("Utilities")) {
@@ -927,10 +947,6 @@ static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
 
             if (ImGui::MenuItem("Enable all wrapping surfaces")) {
                 action_enable_all_wrapping_surfs(impl);
-            }
-
-            if (ImGui::MenuItem("Open Model in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
-                open_path_in_default_application(impl.st->model().getInputFileName());
             }
 
             ImGui::EndMenu();
@@ -948,9 +964,6 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
             // CTRL+SHIFT
 
             switch (e.keysym.sym) {
-            case SDLK_s:
-                ui::main_menu::action_save_as(impl.st->model());
-                return true;
             case SDLK_z:
                 action_redo(impl);
                 return false;
@@ -959,18 +972,6 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
         }
 
         switch (e.keysym.sym) {
-        case SDLK_n:
-            ui::main_menu::action_new_model(impl.st);
-            return true;
-        case SDLK_o:
-            ui::main_menu::action_open_model(impl.st);
-            return true;
-        case SDLK_s:
-            ui::main_menu::action_save(impl.st->model());
-            return true;
-        case SDLK_q:
-            Application::current().request_quit_application();
-            return true;
         case SDLK_z:
             action_undo(impl);
             return true;
@@ -990,9 +991,6 @@ static bool on_keydown(osc::Model_editor_screen::Impl& impl, SDL_KeyboardEvent c
     switch (e.keysym.sym) {
     case SDLK_DELETE:
         action_delete_selection_from_model(impl.st->edited_model);
-        return true;
-    case SDLK_F12:
-        ui::main_menu::action_save_as(impl.st->model());
         return true;
     }
 
@@ -1081,7 +1079,7 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     ui::main_menu::about_tab::draw();
 
     ImGui::Dummy(ImVec2{2.0f, 0.0f});
-    if (ImGui::Button("Show simulations")) {
+    if (ImGui::Button(ICON_FA_LIST_ALT " Show simulations")) {
         Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
         ImGui::EndMainMenuBar();
         impl.reset_per_frame.subpanel_requested_early_exit = true;
@@ -1090,7 +1088,7 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
 
     // "switch to simulator" menu button
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
-    if (ImGui::Button("Simulate (Ctrl+R)")) {
+    if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)")) {
         impl.st->start_simulating_edited_model();
         Application::current().request_screen_transition<Simulator_screen>(std::move(impl.st));
         ImGui::PopStyleColor();
@@ -1100,7 +1098,7 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     }
     ImGui::PopStyleColor();
 
-    if (ImGui::Button("Edit sim settings")) {
+    if (ImGui::Button(ICON_FA_EDIT " Edit sim settings")) {
         impl.reset_per_frame.edit_sim_params_requested = true;
     }
 
@@ -1251,8 +1249,7 @@ static void draw_3d_viewers(osc::Model_editor_screen::Impl& impl) {
     }
 }
 
-// top-level draw function for the editor screen
-static void draw(osc::Model_editor_screen::Impl& impl) {
+static void draw_editor_screen_unguarded(osc::Model_editor_screen::Impl& impl) {
     impl.reset_per_frame = {};
 
     // draw main menu
@@ -1350,6 +1347,20 @@ static void draw(osc::Model_editor_screen::Impl& impl) {
     }
 }
 
+// top-level draw function for the editor screen
+static void draw_editor_screen(osc::Model_editor_screen::Impl& impl) {
+    try {
+        draw_editor_screen_unguarded(impl);
+    } catch (OpenSim::Exception const& ex) {
+        log::error("an OpenSim::Exception was thrown while drawing the editor");
+        log::error("message = %s", ex.what());
+        log::error("this usually happens because the model was damaged by an edit (that the UI editor didn't account for)");
+        log::error("attempting to rollback model to an earlier version and reset the UI into a sane state");
+        impl.st->edited_model.forcibly_rollback_to_earlier_state();
+        Application::current().reset_imgui_state();
+    }
+}
+
 // Model_editor_screen interface
 
 Model_editor_screen::Model_editor_screen() : 
@@ -1377,5 +1388,5 @@ void osc::Model_editor_screen::tick(float) {
 }
 
 void osc::Model_editor_screen::draw() {
-    ::draw(*impl);
+    ::draw_editor_screen(*impl);
 }

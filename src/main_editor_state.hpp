@@ -131,6 +131,10 @@ namespace osc {
         // in a way that will "rollback" if comitting the change throws an exception
         void after_modifying_model();
 
+        // tries to rollback the model to an earlier state, throwing an exception if
+        // that isn't possible (e.g. because there are no earlier states)
+        void forcibly_rollback_to_earlier_state();
+
         [[nodiscard]] OpenSim::Component* selection() noexcept {
             return current.selected;
         }
@@ -243,26 +247,30 @@ namespace osc {
         Undoable_ui_model edited_model;
 
         // running/finished simulations
+        //
+        // the models being simulated are separate from the model being edited
         std::vector<std::unique_ptr<Ui_simulation>> simulations;
 
-        // current simulation focus in the UI, if any
+        // currently-focused simulation
         int focused_simulation = -1;
 
-        // simulation time the user is scrubbed to, if they have scrubbed
+        // simulation time the user is scrubbed to - if they have scrubbed to
+        // a specific time
         //
         // if the scrubbing time doesn't fall within the currently-available
         // simulation states ("frames") then the implementation will just use
-        // the latest state
+        // the latest available time
         float focused_simulation_scrubbing_time = -1.0f;
 
-        // model outputs the user has expressed interest in
+        // the model outputs that the user has expressed interest in
+        //
+        // e.g. the user may want to plot `force` from a model's muscle
         std::vector<Desired_output> desired_outputs;
 
-        // general simulator params
+        // parameters used when launching a new simulation
         //
         // these are the params that are used whenever a user hits "simulate"
         fd::Params sim_params;
-
 
         // construct with a blank (new) OpenSim::Model
         Main_editor_state();
@@ -342,6 +350,18 @@ namespace osc {
             simulations.emplace_back(new Ui_simulation{edited_model.current, sim_params});
             focused_simulation = new_focus;
             focused_simulation_scrubbing_time = -1.0f;
+        }
+
+        Ui_simulation* get_focused_sim() noexcept {
+            if (!(0 <= focused_simulation && focused_simulation < static_cast<int>(simulations.size()))) {
+                return nullptr;
+            } else {
+                return simulations[static_cast<size_t>(focused_simulation)].get();
+            }
+        }
+
+        Ui_simulation const* get_focused_sim() const noexcept {
+            return const_cast<Main_editor_state*>(this)->get_focused_sim();
         }
     };
 }

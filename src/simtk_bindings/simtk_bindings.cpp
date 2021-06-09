@@ -20,16 +20,41 @@ using namespace osc;
 // create an xform that transforms the unit cylinder into a line between
 // two points
 static glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {
+    // P1 -> P2
     glm::vec3 p1_to_p2 = p2 - p1;
-    glm::vec3 c1_to_c2 = glm::vec3{0.0f, 2.0f, 0.0f};
-    auto rotation = glm::rotate(
-        glm::identity<glm::mat4>(),
-        glm::acos(glm::dot(glm::normalize(c1_to_c2), glm::normalize(p1_to_p2))),
-        glm::cross(glm::normalize(c1_to_c2), glm::normalize(p1_to_p2)));
-    float scale = glm::length(p1_to_p2) / glm::length(c1_to_c2);
-    auto scale_xform = glm::scale(glm::identity<glm::mat4>(), glm::vec3{line_width, scale, line_width});
-    auto translation = glm::translate(glm::identity<glm::mat4>(), p1 + p1_to_p2 / 2.0f);
-    return translation * rotation * scale_xform;
+
+    // cylinder bottom -> cylinder top
+    //
+    // defined to be 2.0f in Y (by the known design of the cylinder mesh instance)
+    constexpr glm::vec3 cbot_to_ctop = glm::vec3{0.0f, 2.0f, 0.0f};
+
+    // our goal is to compute a transform that transforms the unit cylinder's
+    // top-to-bottom vector such that it aligns along P1 -> P2. This is so that
+    // the same (instanced) cylinder mesh can be reused by just applying this
+    // transform
+
+    glm::vec3 perpendicular_axis = glm::cross(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
+
+    // rotate C_bot -> C_top to be parallel to P1 -> P2
+    glm::mat4 rotation_xform;
+    if (glm::length(perpendicular_axis) == 0.0f) {
+        rotation_xform = glm::identity<glm::mat4>();  // already aligned
+    } else {
+        float cos_angle = glm::dot(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
+        float angle = glm::acos(cos_angle);
+        rotation_xform = glm::rotate(glm::identity<glm::mat4>(), angle, perpendicular_axis);
+    }
+
+    // scale C_bot -> C_top to be equal to P1 -> P2
+    float line_length_scale = glm::length(p1_to_p2) / glm::length(cbot_to_ctop);
+    glm::vec3 scale_amt = {line_width, line_length_scale, line_width};
+    glm::mat4 scale_xform = glm::scale(glm::identity<glm::mat4>(), scale_amt);
+
+    // translate cylinder origin (0, 0) to P1 -> P2 origin
+    glm::mat4 translation_xform = glm::translate(glm::mat4{1.0f}, p1 + p1_to_p2/2.0f);
+
+    // scale it around origin, rotate it around origin, then translate to correct location
+    return translation_xform * rotation_xform * scale_xform;
 }
 
 // load a SimTK::PolygonalMesh into an osc::Untextured_vert mesh ready for GPU upload
@@ -134,8 +159,8 @@ static glm::mat4 to_mat4(Transform const& t) {
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
     //     (and just Google "glm column major?")
     //
-    // SimTK is whoknowswtf-major (actually, row), carefully read the
-    // sourcecode for `SimTK::Transform`.
+    // SimTK is row-major, carefully read the sourcecode for
+    // `SimTK::Transform`.
 
     glm::mat4 m;
 

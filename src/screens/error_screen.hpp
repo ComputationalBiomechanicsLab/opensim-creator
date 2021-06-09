@@ -18,7 +18,9 @@ namespace osc {
         Impl* impl;
 
     public:
+        // create an error screen that shows an exception message
         Error_screen(std::exception const& ex);
+
         Error_screen(Error_screen const&) = delete;
         Error_screen(Error_screen&&) = delete;
         Error_screen& operator=(Error_screen const&) = delete;

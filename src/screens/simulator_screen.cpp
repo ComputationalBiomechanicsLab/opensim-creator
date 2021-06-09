@@ -39,8 +39,8 @@ struct osc::Simulator_screen::Impl final {
     }
 };
 
-static void action_start_simulation(osc::Main_editor_state& impl) {
-    impl.simulations.emplace_back(new Ui_simulation{impl.model(), impl.state(), impl.sim_params});
+static void action_start_simulation_from_edited_model(osc::Main_editor_state& impl) {
+    impl.start_simulating_edited_model();
 }
 
 static void pop_all_simulator_updates(osc::Main_editor_state& impl) {
@@ -64,14 +64,75 @@ static void pop_all_simulator_updates(osc::Main_editor_state& impl) {
     }
 }
 
-static void draw_simulation(osc::Main_editor_state& impl, int i) {
-    Ui_simulation& simulation = *impl.simulations[i];
+static void draw_simulation_scrubber(osc::Main_editor_state& st,
+                                     Ui_simulation& focused_sim,
+                                     fd::Report& focused_report) {
+
+    double t0 = 0.0f;
+    double tf = focused_sim.simulation.sim_final_time().count();
+    double treport = focused_report.state.getTime();
+
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    float v = static_cast<float>(treport);
+    if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.2f", ImGuiSliderFlags_AlwaysClamp)) {
+        st.focused_simulation_scrubbing_time = v;
+    }
+
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
+        ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+static fd::Report& select_report_based_on_scrubbing(Ui_simulation const& focused, float scrub_time) {
+    auto& rr = focused.regular_reports;
+
+    // if there are no regular reports, use the spot report
+    if (rr.empty()) {
+        return *focused.spot_report;
+    }
+
+    // if the scrub time is negative (a senteniel), use the
+    // spot report
+    if (scrub_time < 0.0) {
+        return *focused.spot_report;
+    }
+
+    // search through the regular reports for the first report that
+    // finishes equal-to or after the scrub time
+    auto starts_after_or_eq_scrub_t = [&](std::unique_ptr<fd::Report> const& report) {
+        return report->state.getTime() >= scrub_time;
+    };
+
+    auto it = std::find_if(rr.begin(), rr.end(), starts_after_or_eq_scrub_t);
+
+    // if no such report is found, use the spot report
+    if (it == rr.end()) {
+        return *focused.spot_report;
+    }
+
+    return **it;
+}
+
+
+static void draw_simulation_progress_bar_etc(Simulator_screen::Impl& impl, int i) {
+    Main_editor_state& st = *impl.st;
+
+    if (!(0 <= i && i < static_cast<int>(st.simulations.size()))) {
+        ImGui::TextUnformatted("(invalid simulation index)");
+        return;
+    }
+    Ui_simulation& simulation = *st.simulations[i];
 
     ImGui::PushID(static_cast<int>(i));
 
     float progress = simulation.simulation.progress();
     ImVec4 base_color = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
-    if (static_cast<int>(i) == impl.focused_simulation) {
+    if (static_cast<int>(i) == st.focused_simulation) {
         base_color.w = 1.0f;
     }
 
@@ -108,55 +169,60 @@ static void draw_simulation(osc::Main_editor_state& impl, int i) {
     }
 
     if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-        OSC_ASSERT(i <= std::numeric_limits<int>::max());
-        impl.focused_simulation = static_cast<int>(i);
+        st.focused_simulation = static_cast<int>(i);
+    }
+
+    if (ImGui::BeginPopupContextItem("simcontextmenu")) {
+        st.focused_simulation = static_cast<int>(i);
+
+        if (ImGui::MenuItem("edit model")) {
+            auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
+            st.set_model(std::move(copy));
+            Application::current().request_screen_transition<Model_editor_screen>(impl.st);
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+            ImGui::TextUnformatted("Make the model initially used in this simulation into the model being edited in the editor");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+
+        ImGui::EndPopup();
     }
 
     if (should_erase) {
-        impl.simulations.erase(impl.simulations.begin() + i);
-        if (static_cast<int>(i) <= impl.focused_simulation) {
-            --impl.focused_simulation;
+        st.simulations.erase(st.simulations.begin() + i);
+        if (static_cast<int>(i) <= st.focused_simulation) {
+            --st.focused_simulation;
         }
     }
 
     ImGui::PopID();
 }
 
-static void draw_simulation_tab(osc::Main_editor_state& st,
-                                Ui_simulation& focused_sim,
-                                fd::Report& focused_report) {
+static void draw_simulation_tab(Simulator_screen::Impl& impl) {
+     osc::Main_editor_state& st = *impl.st;
 
+    // draw scrubber for currently-selected sim
     ImGui::TextUnformatted("Scrubber:");
     ImGui::Separator();
     ImGui::Dummy(ImVec2{0.0f, 0.3f});
-    {
-        double t0 = 0.0f;
-        double tf = focused_sim.simulation.sim_final_time().count();
-        double treport = focused_report.state.getTime();
-
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        float v = static_cast<float>(treport);
-        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.2f", ImGuiSliderFlags_AlwaysClamp)) {
-            st.focused_simulation_scrubbing_time = v;
-        }
-
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
-            ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+    Ui_simulation* sim = st.get_focused_sim();
+    if (sim) {
+        fd::Report& report = select_report_based_on_scrubbing(*sim, st.focused_simulation_scrubbing_time);
+        draw_simulation_scrubber(st, *sim, report);
+    } else {
+        ImGui::TextDisabled("(no simulation selected)");
     }
 
+    // draw simulations list
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
     ImGui::TextUnformatted("Simulations:");
     ImGui::Separator();
     ImGui::Dummy(ImVec2{0.0f, 0.3f});
-
     for (size_t i = 0; i < st.simulations.size(); ++i) {
-        draw_simulation(st, static_cast<int>(i));
+        draw_simulation_progress_bar_etc(impl, static_cast<int>(i));
     }
 }
 
@@ -178,7 +244,14 @@ static void draw_simulation_tab(osc::Main_editor_state& st,
         ImGui::NextColumn(); \
     }
 
-static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused) {
+static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl) {
+    Ui_simulation const* maybe_focused = impl.st->get_focused_sim();
+
+    if (!maybe_focused) {
+        ImGui::TextDisabled("(no simulation selected)");
+        return;
+    }
+    Ui_simulation const& focused = *maybe_focused;
 
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
     ImGui::TextUnformatted("parameters:");
@@ -290,7 +363,6 @@ static void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl, Ui_simu
         OSC_MAKE_SIMSTAT_PLOT(predictedNextStepSize, "Get the step size that will be attempted first on the next call to stepTo() or stepBy().");
         ImGui::Columns();
     }
-
 }
 
 static bool on_keydown(osc::Simulator_screen::Impl& impl, SDL_KeyboardEvent const& e) {
@@ -322,7 +394,7 @@ static bool on_event(osc::Simulator_screen::Impl& impl, SDL_Event const& e) {
 
 static void draw_output_plots(
         osc::Simulator_screen::Impl& impl,
-        Ui_simulation& focused_sim,
+        Ui_simulation const& focused_sim,
         fd::Report const& focused_report,
         OpenSim::Component const& selected) {
 
@@ -371,17 +443,26 @@ static void draw_output_plots(
     ImGui::Columns();
 }
 
-static void draw_selection_tab(osc::Simulator_screen::Impl& impl, Ui_simulation& focused_sim, fd::Report& focused_report) {
-    if (!focused_sim.selected) {
-        ImGui::TextUnformatted("nothing selected");
+static void draw_selection_tab(osc::Simulator_screen::Impl& impl) {
+    Ui_simulation const* maybe_sim = impl.st->get_focused_sim();
+
+    if (!maybe_sim) {
+        ImGui::TextDisabled("(no simulation selected)");
         return;
     }
-    OpenSim::Component const& selected = *focused_sim.selected;
+    Ui_simulation const& sim = *maybe_sim;
 
-    ui::component_details::draw(focused_report.state, focused_sim.selected);
+    if (!sim.selected) {
+        ImGui::TextDisabled("(no component selected)");
+        return;
+    }
+
+    fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
+
+    ui::component_details::draw(report.state, sim.selected);
 
     if (ImGui::CollapsingHeader("outputs")) {
-        draw_output_plots(impl, focused_sim, focused_report, selected);
+        draw_output_plots(impl, sim, report, *sim.selected);
     }
 }
 
@@ -416,12 +497,9 @@ static std::string export_timeseries_to_csv(float const* ts, float const* vs, si
     return std::string{outpath};
 }
 
-static std::string export_all_plotted_outputs_to_csv(
-        osc::Simulator_screen::Impl& impl,
-        Ui_simulation& focused_sim) {
+static std::string export_all_plotted_outputs_to_csv(Simulator_screen::Impl const& impl, Ui_simulation const& sim) {
 
     // try prompt user for save location
-
     nfdchar_t* outpath = nullptr;
     nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
     OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
@@ -430,16 +508,12 @@ static std::string export_all_plotted_outputs_to_csv(
         return "";  // user cancelled out
     }
 
-    // try open output file
-
+    // try to open the output file
     std::ofstream fout{outpath};
-
     if (!fout) {
         log::error("%s: error opening file for writing", outpath);
         return "";  // error opening output file for writing
     }
-
-    // collect plottable outputs
 
     struct Plottable_output final {
         OpenSim::Component const& component;
@@ -450,11 +524,12 @@ static std::string export_all_plotted_outputs_to_csv(
         }
     };
 
+    // collect plottable outputs
     std::vector<Plottable_output> plottable_outputs;
     for (Desired_output const& de : impl.st->desired_outputs) {
         OpenSim::Component const* cp = nullptr;
         try {
-            cp = &focused_sim.model->getComponent(de.component_path);
+            cp = &sim.model->getComponent(de.component_path);
         } catch (...) {
             // OpenSim, innit
             //
@@ -489,17 +564,15 @@ static std::string export_all_plotted_outputs_to_csv(
         plottable_outputs.emplace_back(c, *odp);
     }
 
-    // write header
-
+    // write header line
     fout << "time";
     for (Plottable_output const& po : plottable_outputs) {
         fout << ',' << po.component.getName() << '_' << po.output.getName();
     }
     fout << '\n';
 
-    // write data
-
-    for (auto const& report : focused_sim.regular_reports) {
+    // write data lines
+    for (auto const& report : sim.regular_reports) {
         SimTK::State const& stkst = report->state;
 
         // write time
@@ -510,7 +583,7 @@ static std::string export_all_plotted_outputs_to_csv(
         fout << '\n';
     }
 
-    // check writing was ok
+    // check writing was successful
     //
     // this is just a sanity check: it will be written regardless
     if (!fout) {
@@ -520,10 +593,16 @@ static std::string export_all_plotted_outputs_to_csv(
     return std::string{outpath};
 }
 
-static void draw_outputs_tab(
-        osc::Simulator_screen::Impl& impl,
-        Ui_simulation& focused_sim,
-        fd::Report& focused_report) {
+static void draw_outputs_tab(osc::Simulator_screen::Impl& impl) {
+
+    Ui_simulation const* maybe_sim = impl.st->get_focused_sim();
+    if (!maybe_sim) {
+        ImGui::TextDisabled("(no simulation selected)");
+        return;
+    }
+    Ui_simulation const& sim = *maybe_sim;
+
+    fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
 
     int imgui_id = 0;
     Main_editor_state& st = *impl.st;
@@ -534,13 +613,13 @@ static void draw_outputs_tab(
     }
 
     if (ImGui::Button("Save all to CSV")) {
-        export_all_plotted_outputs_to_csv(impl, focused_sim);
+        export_all_plotted_outputs_to_csv(impl, sim);
     }
 
     ImGui::SameLine();
 
     if (ImGui::Button("Save all to CSV & Open")) {
-        std::string path = export_all_plotted_outputs_to_csv(impl, focused_sim);
+        std::string path = export_all_plotted_outputs_to_csv(impl, sim);
         if (!path.empty()) {
             open_path_in_default_application(path);
         }
@@ -555,7 +634,7 @@ static void draw_outputs_tab(
 
         OpenSim::Component const* cp = nullptr;
         try {
-            cp = &focused_sim.model->getComponent(de.component_path);
+            cp = &sim.model->getComponent(de.component_path);
         } catch (...) {
             // OpenSim, innit
             //
@@ -591,7 +670,7 @@ static void draw_outputs_tab(
 
         if (!odp) {
             // unplottable arbitary output
-            ImGui::TextUnformatted(ao.getValueAsString(focused_report.state).c_str());
+            ImGui::TextUnformatted(ao.getValueAsString(report.state).c_str());
             ImGui::NextColumn();
             continue;
         }
@@ -600,10 +679,10 @@ static void draw_outputs_tab(
 
         // else: it's a plottable output
 
-        size_t npoints = focused_sim.regular_reports.size();
+        size_t npoints = sim.regular_reports.size();
         impl.plotscratch.resize(npoints);
         size_t i = 0;
-        for (auto const& report : focused_sim.regular_reports) {
+        for (auto const& report : sim.regular_reports) {
             double v = od.getValue(report->state);
             impl.plotscratch[i++] = static_cast<float>(v);
         }
@@ -614,8 +693,8 @@ static void draw_outputs_tab(
         if (ImGui::BeginPopupContextItem("outputplotscontextmenu")) {
             if (ImGui::MenuItem("Save as CSV")) {
                 std::vector<float> ts;
-                ts.reserve(focused_sim.regular_reports.size());
-                for (auto const& report : focused_sim.regular_reports) {
+                ts.reserve(sim.regular_reports.size());
+                for (auto const& report : sim.regular_reports) {
                     ts.push_back(static_cast<float>(report->state.getTime()));
                 }
                 OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
@@ -624,8 +703,8 @@ static void draw_outputs_tab(
 
             if (ImGui::MenuItem("Save as CSV & Open")) {
                 std::vector<float> ts;
-                ts.reserve(focused_sim.regular_reports.size());
-                for (auto const& report : focused_sim.regular_reports) {
+                ts.reserve(sim.regular_reports.size());
+                for (auto const& report : sim.regular_reports) {
                     ts.push_back(static_cast<float>(report->state.getTime()));
                 }
                 OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
@@ -644,34 +723,46 @@ static void draw_outputs_tab(
     ImGui::Columns();
 }
 
-static fd::Report& select_report_based_on_scrubbing(Ui_simulation& focused, float scrub_time) {
-    auto& rr = focused.regular_reports;
+static void draw_hierarchy_tab(Simulator_screen::Impl& impl) {
+    Ui_simulation* maybe_sim = impl.st->get_focused_sim();
 
-    // if there are no regular reports, use the spot report
-    if (rr.empty()) {
-        return *focused.spot_report;
+    if (!maybe_sim) {
+        ImGui::TextDisabled("(no simulation selected)");
+        return;
+    }
+    Ui_simulation& sim = *maybe_sim;
+
+    auto resp = ui::component_hierarchy::draw(sim.model.get(), sim.selected, sim.hovered);
+
+    if (resp.type == ui::component_hierarchy::SelectionChanged) {
+        sim.selected = const_cast<OpenSim::Component*>(resp.ptr);
+    } else if (resp.type == ui::component_hierarchy::HoverChanged) {
+        sim.hovered = const_cast<OpenSim::Component*>(resp.ptr);
+    }
+}
+
+static void draw_viewer(Simulator_screen::Impl& impl) {
+    Ui_simulation* maybe_sim = impl.st->get_focused_sim();
+
+    if (!maybe_sim) {
+        if (ImGui::Begin("render")) {
+            ImGui::TextDisabled("(no simulation selected)");
+        }
+        ImGui::End();
+        return;
     }
 
-    // if the scrub time is negative (a senteniel), use the
-    // spot report
-    if (scrub_time < 0.0) {
-        return *focused.spot_report;
+    Ui_simulation& sim = *maybe_sim;
+    fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
+
+    auto resp = impl.viewer.draw("render", *sim.model, report.state, sim.selected, sim.hovered);
+
+    if (resp.is_left_clicked && resp.hovertest_result) {
+        sim.selected = const_cast<OpenSim::Component*>(resp.hovertest_result);
     }
-
-    // search through the regular reports for the first report that
-    // finishes equal-to or after the scrub time
-    auto starts_after_or_eq_scrub_t = [&](std::unique_ptr<fd::Report> const& report) {
-        return report->state.getTime() >= scrub_time;
-    };
-
-    auto it = std::find_if(rr.begin(), rr.end(), starts_after_or_eq_scrub_t);
-
-    // if no such report is found, use the spot report
-    if (it == rr.end()) {
-        return *focused.spot_report;
+    if (resp.hovertest_result != sim.hovered) {
+        sim.hovered = const_cast<OpenSim::Component*>(resp.hovertest_result);
     }
-
-    return **it;
 }
 
 static void draw(osc::Simulator_screen::Impl& impl) {
@@ -697,90 +788,26 @@ static void draw(osc::Simulator_screen::Impl& impl) {
         if (ImGui::Begin("Warning")) {
             ImGui::TextUnformatted("No simulations are currently running");
             if (ImGui::Button("Run new simulation")) {
-                action_start_simulation(*impl.st);
+                action_start_simulation_from_edited_model(*impl.st);
             }
         }
         ImGui::End();
         return;
     }
 
-    OSC_ASSERT(!impl.st->simulations.empty() && "the simulation screen shouldn't render if there are no simulations running");
-
-    // coerce the current simulation selection if it still has
-    // its default value
-    if (impl.st->focused_simulation == -1) {
-        impl.st->focused_simulation = 0;
+    // draw simulations tab
+    if (ImGui::Begin("Simulations")) {
+        draw_simulation_tab(impl);
     }
-
-    OSC_ASSERT(!impl.st->simulations.empty() && impl.st->focused_simulation != -1);
-
-    // BEWARE: this UI element in particular enables the user to 
-    // delete simulations, which can cause all kinds of havoc if
-    // the renderer is midway through rendering the simulation
-    //
-    // so double-check the top-level assumptions and exit early if the
-    // user has deleted something
-    {
-        Ui_simulation& focused_sim =
-            *impl.st->simulations.at(static_cast<size_t>(impl.st->focused_simulation));
-        fd::Report& focused_report =
-            select_report_based_on_scrubbing(focused_sim, impl.st->focused_simulation_scrubbing_time);
-
-        if (ImGui::Begin("Simulations")) {
-            draw_simulation_tab(*impl.st, focused_sim, focused_report);
-        }
-        ImGui::End();
-
-        if (impl.st->simulations.empty()) {
-            impl.st->focused_simulation = -1;
-            return;
-        }
-
-        if (impl.st->focused_simulation == -1) {
-            impl.st->focused_simulation = 0;
-        }
-    }
-
-    OSC_ASSERT(!impl.st->simulations.empty() && impl.st->focused_simulation != -1);
-
-    // now: nothing should be able to delete/move the simulations for the
-    // rest of the drawcall, so we can render whatever we like
-
-    Ui_simulation& focused_sim =
-        *impl.st->simulations.at(static_cast<size_t>(impl.st->focused_simulation));
-    fd::Report& focused_report =
-        select_report_based_on_scrubbing(focused_sim, impl.st->focused_simulation_scrubbing_time);
+    ImGui::End();
 
     // draw 3d viewer
-    {
-        auto resp = impl.viewer.draw(
-            "render",
-            *focused_sim.model,
-            focused_report.state,
-            focused_sim.selected,
-            focused_sim.hovered);
-
-        if (resp.is_left_clicked && resp.hovertest_result) {
-            focused_sim.selected = const_cast<OpenSim::Component*>(resp.hovertest_result);
-        }
-        if (resp.hovertest_result != focused_sim.hovered) {
-            focused_sim.hovered = const_cast<OpenSim::Component*>(resp.hovertest_result);
-        }
-    }
+    draw_viewer(impl);
 
     // draw hierarchy tab
     {
         if (ImGui::Begin("Hierarchy")) {
-            auto resp = ui::component_hierarchy::draw(
-                focused_sim.model.get(),
-                focused_sim.selected,
-                focused_sim.hovered);
-
-            if (resp.type == ui::component_hierarchy::SelectionChanged) {
-                focused_sim.selected = const_cast<OpenSim::Component*>(resp.ptr);
-            } else if (resp.type == ui::component_hierarchy::HoverChanged) {
-                focused_sim.hovered = const_cast<OpenSim::Component*>(resp.ptr);
-            }
+            draw_hierarchy_tab(impl);
         }
         ImGui::End();
     }
@@ -788,7 +815,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     // draw selection tab
     {
         if (ImGui::Begin("Selection")) {
-            draw_selection_tab(impl, focused_sim, focused_report);
+            draw_selection_tab(impl);
         }
         ImGui::End();
     }
@@ -796,7 +823,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     // draw outputs tab
     {
         if (ImGui::Begin("Outputs")) {
-            draw_outputs_tab(impl, focused_sim, focused_report);
+            draw_outputs_tab(impl);
         }
         ImGui::End();
     }
@@ -804,7 +831,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     // draw simulation stats tab
     {
         if (ImGui::Begin("Simulation Details")) {
-            draw_simulation_stats_tab(impl, focused_sim);
+            draw_simulation_stats_tab(impl);
         }
         ImGui::End();
     }

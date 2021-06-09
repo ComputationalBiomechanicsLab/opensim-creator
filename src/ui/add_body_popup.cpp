@@ -4,6 +4,7 @@
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/lockable_f3_editor.hpp"
+#include "src/application.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -63,130 +64,160 @@ std::optional<osc::ui::add_body_popup::New_body>
         return std::nullopt;
     }
 
+    // coerce selected joint pf to ground if user hasn't selected anything
     if (st.selected_pf == nullptr) {
         st.selected_pf = &model.getGround();
     }
 
-    // collect user input
     ImGui::Columns(2);
 
-    ImGui::Text("body name");
-    ImGui::SameLine();
-    ui::help_marker::draw("Name used to identify the OpenSim::Body in the model");
-    ImGui::NextColumn();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    ImGui::InputText("##bodyname", st.body_name, sizeof(st.body_name));
-    ImGui::NextColumn();
-
-    ImGui::Text("mass (kg)");
-    ImGui::SameLine();
-    ui::help_marker::draw("The mass of the body in kilograms");
-    ImGui::NextColumn();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    ImGui::InputFloat("##mass", &st.mass);
-    ImGui::NextColumn();
-
-    ImGui::Text("center of mass");
-    ImGui::SameLine();
-    ui::help_marker::draw("The location (Vec3) of the mass center in the body frame");
-    ImGui::NextColumn();
-    ui::lockable_f3_editor::draw("##comlockbtn", "##comeditor", st.com, &st.com_locked);
-    ImGui::NextColumn();
-
-    ImGui::Text("inertia");
-    ImGui::SameLine();
-    ui::help_marker::draw(
-        "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin");
-    ImGui::NextColumn();
-    ui::lockable_f3_editor::draw("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertia_locked);
-    ImGui::NextColumn();
-
-    ImGui::Text("join body to");
-    ImGui::SameLine();
-    ui::help_marker::draw(
-        "What the added body is joined to. Every OpenSim::Body in the model must be joined to another body in the Model. `ground` is a good default if you have no other bodies to connect to");
-    ImGui::NextColumn();
-    ImGui::BeginChild("join", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
-        int styles_pushed = 0;
-        if (&pf == st.selected_pf) {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.3f, 1.0f, 0.3f, 1.0f});
-            ++styles_pushed;
-        }
-        if (ImGui::Selectable(pf.getName().c_str())) {
-            st.selected_pf = &pf;
-        }
-        ImGui::PopStyleColor(styles_pushed);
-    }
-    ImGui::EndChild();
-    ImGui::NextColumn();
-
-    ImGui::Text("joint type");
-    ImGui::SameLine();
-    ui::help_marker::draw("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
-    ImGui::NextColumn();
+    // prompt name
     {
-        auto names = osc::Joint_registry::names();
-        ImGui::Combo("##jointtype", &st.joint_idx, names.data(), static_cast<int>(names.size()));
+        ImGui::Text("body name");
+        ImGui::SameLine();
+        ui::help_marker::draw("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
+        ImGui::NextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::InputText("##bodyname", st.body_name, sizeof(st.body_name));
+        ImGui::NextColumn();
     }
-    ImGui::NextColumn();
 
-    ImGui::Text("joint name");
-    ImGui::SameLine();
-    ui::help_marker::draw("The name of the OpenSim::Joint specified above");
-    ImGui::NextColumn();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    ImGui::InputText("##jointnameinput", st.joint_name, sizeof(st.joint_name));
-    ImGui::NextColumn();
-
-    ImGui::Text("add offset frames?");
-    ImGui::SameLine();
-    ui::help_marker::draw(
-        "Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the the two bodies (this added one, plus the selected one) directly. However, most model designs have the joint attach to offset frames which, themselves, attach to the bodies. The utility of this is that the offset frames can later be moved/adjusted.");
-    ImGui::NextColumn();
-    ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
-    ImGui::NextColumn();
-
-    ImGui::Text("geometry");
-    ImGui::SameLine();
-    ui::help_marker::draw(
-        "Visual geometry attached to this body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
-    ImGui::NextColumn();
+    // prompt mass
     {
-        static constexpr char const* attach_modal_name = "addbody_attachgeometry";
+        ImGui::Text("mass (kg)");
+        ImGui::SameLine();
+        ui::help_marker::draw("The mass of the body in kilograms");
+        ImGui::NextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::InputFloat("##mass", &st.mass);
+        ImGui::NextColumn();
+    }
 
-        char const* label = "attach";
-        if (st.attach_geom.selected) {
-            OpenSim::Geometry const& attached = *st.attach_geom.selected;
-            if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&attached); mesh) {
-                label = mesh->getGeometryFilename().c_str();
-            } else {
-                label = attached.getConcreteClassName().c_str();
+    // prompt center of mass
+    {
+        ImGui::Text("center of mass");
+        ImGui::SameLine();
+        ui::help_marker::draw("The location of the mass center in the body frame.");
+        ImGui::NextColumn();
+        ui::lockable_f3_editor::draw("##comlockbtn", "##comeditor", st.com, &st.com_locked);
+        ImGui::NextColumn();
+    }
+
+    // prompt inertia
+    {
+        ImGui::Text("inertia (tensor)");
+        ImGui::SameLine();
+        ui::help_marker::draw(
+            "The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
+        ImGui::NextColumn();
+        ui::lockable_f3_editor::draw("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertia_locked);
+        ImGui::NextColumn();
+    }
+
+    // prompt body/ground that new body will connect to (via a joint)
+    {
+        ImGui::Text("join to");
+        ImGui::SameLine();
+        ui::help_marker::draw(
+            "What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
+        ImGui::NextColumn();
+
+        ImGui::BeginChild("join targets", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
+        for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
+            if (ImGui::Selectable(pf.getName().c_str(), &pf == st.selected_pf)) {
+                st.selected_pf = &pf;
             }
         }
-
-        if (ImGui::Button(label)) {
-            ImGui::OpenPopup(attach_modal_name);
-        }
-
-        if (auto attached = ui::attach_geometry_popup::draw(st.attach_geom.state, attach_modal_name); attached) {
-            st.attach_geom.selected = std::move(attached);
-        }
+        ImGui::EndChild();
+        ImGui::NextColumn();
     }
-    ImGui::NextColumn();
+
+    // prompt joint type for the above
+    {
+        ImGui::Text("joint type");
+        ImGui::SameLine();
+        ui::help_marker::draw("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
+        ImGui::NextColumn();
+        {
+            auto names = osc::Joint_registry::names();
+            ImGui::Combo("##jointtype", &st.joint_idx, names.data(), static_cast<int>(names.size()));
+        }
+        ImGui::NextColumn();
+    }
+
+    // prompt joint name
+    {
+        ImGui::Text("joint name");
+        ImGui::SameLine();
+        ui::help_marker::draw("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
+        ImGui::NextColumn();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ImGui::InputText("##jointnameinput", st.joint_name, sizeof(st.joint_name));
+        ImGui::NextColumn();
+    }
+
+    // prompt adding offset frames
+    {
+        ImGui::Text("add offset frames");
+        ImGui::SameLine();
+        ui::help_marker::draw(
+            "Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
+        ImGui::NextColumn();
+        ImGui::Checkbox("##addoffsetframescheckbox", &st.add_offset_frames_to_the_joint);
+        ImGui::NextColumn();
+
+    }
+
+    // prompt geometry
+    {
+        ImGui::Text("geometry");
+        ImGui::SameLine();
+        ui::help_marker::draw(
+            "Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
+        ImGui::NextColumn();
+        {
+            static constexpr char const* attach_modal_name = "addbody_attachgeometry";
+
+            char const* label = "attach";
+            if (st.attach_geom.selected) {
+                OpenSim::Geometry const& attached = *st.attach_geom.selected;
+                if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&attached); mesh) {
+                    label = mesh->getGeometryFilename().c_str();
+                } else {
+                    label = attached.getConcreteClassName().c_str();
+                }
+            }
+
+            if (ImGui::Button(label)) {
+                ImGui::OpenPopup(attach_modal_name);
+            }
+
+            if (auto attached = ui::attach_geometry_popup::draw(st.attach_geom.state, attach_modal_name); attached) {
+                st.attach_geom.selected = std::move(attached);
+            }
+        }
+        ImGui::NextColumn();
+    }
 
     ImGui::Columns();
+
+    // end of input prompting
+
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
 
+    std::optional<New_body> rv = std::nullopt;
+
+    // show cancel button
     if (ImGui::Button("cancel")) {
+
         st = {};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
+
     ImGui::SameLine();
 
-    std::optional<New_body> rv = std::nullopt;
-    if (ImGui::Button("add")) {
-
+    // show add button
+    if (ImGui::Button(ICON_FA_PLUS " add body")) {
         // create user-requested body
         auto com = stk_vec3_from(st.com);
         auto inertia = stk_inertia_from(st.inertia);
@@ -198,6 +229,7 @@ std::optional<osc::ui::add_body_popup::New_body>
         }
 
         rv = New_body{std::move(body), std::move(joint)};
+
         st = {};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }

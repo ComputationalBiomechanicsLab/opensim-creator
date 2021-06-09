@@ -59,9 +59,22 @@ static std::unique_ptr<OpenSim::Mesh>
 using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
 
 static constexpr std::array<Geom_ctor_fn const, 4> g_GeomCtors = {
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Brick{}}; },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Sphere{}}; },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cylinder{}}; },
+    []() { 
+        auto ptr = std::make_unique<OpenSim::Brick>();
+        ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
+        return std::unique_ptr<OpenSim::Geometry>(std::move(ptr));
+    },
+    []() {
+        auto ptr = std::make_unique<OpenSim::Sphere>();
+        ptr->set_radius(0.1);
+        return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+    },
+    []() {
+        auto ptr = std::make_unique<OpenSim::Cylinder>();
+        ptr->set_radius(0.1);
+        ptr->set_half_height(0.1);
+        return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+    },
     []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
 
     /* TODO: needs rendering support

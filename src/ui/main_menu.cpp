@@ -52,7 +52,7 @@ void osc::ui::main_menu::about_tab::draw() {
 
         ImGui::TextUnformatted("FPS");
         ImGui::NextColumn();
-        ImGui::Text("%.1f", static_cast<double>(ImGui::GetIO().Framerate));
+        ImGui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
         ImGui::NextColumn();
 
         ImGui::TextUnformatted("MSXAA");
@@ -74,11 +74,11 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::TextUnformatted("window");
         ImGui::NextColumn();
 
-        if (ImGui::Button("fullscreen")) {
+        if (ImGui::Button(ICON_FA_EXPAND " fullscreen")) {
             Application::current().make_fullscreen();
         }
         ImGui::SameLine();
-        if (ImGui::Button("windowed")) {
+        if (ImGui::Button(ICON_FA_WINDOW_RESTORE " windowed")) {
             Application::current().make_windowed();
         }
         ImGui::NextColumn();
@@ -87,12 +87,15 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::SameLine();
         ui::help_marker::draw("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ImGui::NextColumn();
-        if (ImGui::Button("enable")) {
-            Application::current().enable_vsync();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("disable")) {
-            Application::current().disable_vsync();
+
+        if (Application::current().is_vsync_enabled()) {
+            if (ImGui::Button("disable")) {
+                Application::current().disable_vsync();
+            }
+        } else {
+            if (ImGui::Button("enable")) {
+                Application::current().enable_vsync();
+            }
         }
         ImGui::NextColumn();
 
@@ -157,7 +160,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         int id = 0;
         ImGui::PushID(id++);
-        if (ImGui::Button("show")) {
+        if (ImGui::Button(ICON_FA_EYE " show")) {
             Application::current().request_screen_transition<Imgui_demo_screen>();
         }
         ImGui::PopID();
@@ -169,7 +172,7 @@ void osc::ui::main_menu::about_tab::draw() {
             "opens a test screen for low-level OpenGL features - you probably don't care about this, but it's useful for testing hardware features in prod");
         ImGui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button("show")) {
+        if (ImGui::Button(ICON_FA_EYE " show")) {
             Application::current().request_screen_transition<Opengl_test_screen>();
         }
         ImGui::PopID();
@@ -316,6 +319,36 @@ static void transition_to_loading_existing_path(std::shared_ptr<Main_editor_stat
 }
 
 void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> editor_state) {
+    // handle hotkeys enabled by just drawing the menu
+    { 
+        auto const& io = ImGui::GetIO();
+        bool mod = io.KeyCtrl || io.KeySuper;
+
+        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N)) {
+            action_new_model(editor_state);
+        }
+
+        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O)) {
+            action_open_model(editor_state);
+        }
+
+        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+            action_save(editor_state->model());
+        }
+
+        if (editor_state && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+            action_save_as(editor_state->model());
+        }
+
+        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
+            Application::current().request_screen_transition<Splash_screen>();
+        }
+
+        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_Q)) {
+            Application::current().request_quit_application();
+        }
+    }
+
     if (!ImGui::BeginMenu("File")) {
         return;
     }
@@ -368,7 +401,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         }
     }
 
-    if (ImGui::MenuItem("Show Splash Screen")) {
+    if (ImGui::MenuItem("Close", "Ctrl+W", false, editor_state != nullptr)) {
         Application::current().request_screen_transition<Splash_screen>();
     }
 

@@ -3,6 +3,7 @@
 #include "src/assertions.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/properties_editor.hpp"
+#include "src/application.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -223,16 +224,22 @@ std::unique_ptr<OpenSim::Component> osc::ui::add_component_popup::draw(
     // != nullptr if user clicks "OK"
     std::unique_ptr<OpenSim::Component> rv = nullptr;
 
-    bool component_can_be_added =
-        !st.name.empty() &&
-        all_sockets_assigned(st) &&
-        (!prototype_as_pa || st.pps.size() >= 2);
+    // draw "cancel" button
+    if (ImGui::Button("cancel")) {
+        ImGui::CloseCurrentPopup();
+    }
 
+    // figure out if the user can add the new Component yet
 
-    // draw "ok" button (if the user has performed all necessary steps)
-    if (component_can_be_added) {
+    bool has_name = !st.name.empty();
+    bool all_socks_assigned = all_sockets_assigned(st);
+    bool has_enough_pathpoints = !prototype_as_pa || st.pps.size() >= 2;
 
-        if (ImGui::Button("ok")) {
+    // draw "add" button (if the user has performed all necessary steps)
+    if (has_name && all_socks_assigned && has_enough_pathpoints) {
+
+        ImGui::SameLine();
+        if (ImGui::Button(ICON_FA_PLUS " add")) {
             // clone the prototype into the return value
             rv.reset(st.prototype->clone());
 
@@ -270,14 +277,6 @@ std::unique_ptr<OpenSim::Component> osc::ui::add_component_popup::draw(
 
             ImGui::CloseCurrentPopup();
         }
-
-        // "ok" button is on same line as "cancel" button
-        ImGui::SameLine();
-    }
-
-    // draw "cancel" button
-    if (ImGui::Button("cancel")) {
-        ImGui::CloseCurrentPopup();
     }
 
     ImGui::EndPopup();

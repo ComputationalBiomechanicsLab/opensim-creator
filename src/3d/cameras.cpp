@@ -60,5 +60,6 @@ glm::vec3 osc::pos(Polar_perspective_camera const& cam) noexcept {
     float x = cam.radius * sinf(cam.theta) * cosf(cam.phi);
     float y = cam.radius * sinf(cam.phi);
     float z = cam.radius * cosf(cam.theta) * cosf(cam.phi);
+
     return glm::vec3{x, y, z};
 }

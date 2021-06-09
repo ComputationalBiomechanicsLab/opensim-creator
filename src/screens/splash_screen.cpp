@@ -84,35 +84,6 @@ osc::Splash_screen::~Splash_screen() noexcept {
     delete impl;
 }
 
-static bool on_keydown(SDL_KeyboardEvent const& e) {
-    SDL_Keycode sym = e.keysym.sym;
-
-    if (e.keysym.mod & KMOD_CTRL) {
-        // CTRL
-
-        switch (sym) {
-        case SDLK_n:
-            ui::main_menu::action_new_model();
-            return true;
-        case SDLK_o:
-            ui::main_menu::action_open_model();
-            return true;
-        case SDLK_q:
-            Application::current().request_quit_application();
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool osc::Splash_screen::on_event(SDL_Event const& e) {
-    if (e.type == SDL_KEYDOWN) {
-        return on_keydown(e.key);
-    }
-    return false;
-}
-
 void osc::Splash_screen::tick(float dt) {
     impl->camera.theta += dt * 0.015f;
 }
@@ -194,15 +165,25 @@ void osc::Splash_screen::draw() {
 
     bool b = true;
     if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
-        if (ImGui::Button("New Model (Ctrl+N)")) {
-            ui::main_menu::action_new_model();
+
+        // `new` button
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+            if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
+                ui::main_menu::action_new_model();
+            }
+            ImGui::PopStyleColor();
         }
-        ImGui::PopStyleColor();
+
         ImGui::SameLine();
-        if (ImGui::Button("Open Model (Ctrl+O)")) {
-            ui::main_menu::action_open_model();
+
+        // `open` button
+        {
+            if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
+                ui::main_menu::action_open_model();
+            }
         }
+
         ImGui::Dummy(ImVec2{0.0f, 10.0f});
 
         // de-dupe imgui IDs because these lists may contain duplicate

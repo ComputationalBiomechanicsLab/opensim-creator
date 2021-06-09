@@ -23,11 +23,14 @@
 // 3D elements in OSC. The renderer is not dependent on SimTK/OpenSim at
 // all and has a very low-level view of view of things (verts, drawlists)
 namespace osc {
+
+    // a basic position in space + normal (for shading calculations)
     struct Untextured_vert final {
         glm::vec3 pos;
         glm::vec3 normal;
     };
 
+    // as above, but with texture coordinate data also (for texture mapping)
     struct Textured_vert final {
         glm::vec3 pos;
         glm::vec3 normal;
@@ -39,11 +42,18 @@ namespace osc {
     // meshes are rendered by supplying vertex data (e.g. xy positions, texcoords) and
     // a list of indices to the vertex data. This is so that vertices can be shared
     // between geometry primitives (e.g. corners of a triangle can be shared).
+    //
+    // note: this puts an upper limit on the number of elements a single mesh can contain
     using elidx_t = GLushort;
 
+    // raw mesh data, held in main-memory and accessible to the CPU
     template<typename TVert>
     struct CPU_mesh {
+
+        // raw vert data
         std::vector<TVert> verts;
+
+        // indices into the above
         std::vector<elidx_t> indices;
 
         void clear() {
@@ -52,11 +62,17 @@ namespace osc {
         }
     };
 
+    // specializations of CPU_mesh
     struct Untextured_mesh : public CPU_mesh<Untextured_vert> {};
     struct Textured_mesh : public CPU_mesh<Textured_vert> {};
 
+    // generate 1:1 indices for each vert in a CPU_mesh
+    //
+    // effectively, generate the indices [0, 1, ..., size-1]
     template<typename TVert>
     void generate_1to1_indices_for_verts(CPU_mesh<TVert>& mesh) {
+
+        // edge-case: ensure the caller isn't trying to used oversized indices
         if (mesh.verts.size() > std::numeric_limits<elidx_t>::max()) {
             throw std::runtime_error{"cannot generate indices for a mesh: the mesh has too many vertices: if you need to support this many vertices then contact the developers"};
         }
@@ -126,8 +142,9 @@ namespace osc {
         }
     };
 
-    // flags for a single mesh instance (e.g. what draw mode it should be rendered with,
-    // what shading it should/shouln't have, etc.)
+    // flags for a single mesh instance
+    //
+    // e.g. what draw mode it should be rendered with, what shading it should/shouln't have, etc.
     class Instance_flags final {
         GLubyte flags = 0x00;
         static constexpr GLubyte draw_lines_mask = 0x80;
@@ -176,8 +193,8 @@ namespace osc {
     // that indicate "invalid index"
     //
     // the utility of this is for using undersized index types (e.g. `short`, 32-bit ints,
-    // etc.). The perf hit from runtime checking is typically outweighed by the reduction
-    // of memory uses (fewer cache misses, etc.)
+    // etc.). The perf hit from runtime-checking is typically outweighed by the reduction
+    // of memory use, resulting in fewer cache misses, etc..
     //
     // the `Derived` template param is to implement the "curously recurring template
     // pattern" (CRTP) - google it
@@ -243,9 +260,12 @@ namespace osc {
         using Checked_index<short, Texidx>::Checked_index;
     };
 
-    // generate a basic chequered floor texture in-memory
+    // generate a chequered floor texture
+    //
+    // this is typically used as a default scene floor for visualization
     gl::Texture_2d generate_chequered_floor_texture();
 
+    // flags for loading textures from disk
     enum Tex_flags {
         TexFlag_None = 0,
         TexFlag_SRGB = 1,
@@ -260,8 +280,8 @@ namespace osc {
         TexFlag_Flip_Pixels_Vertically = 2,
     };
 
+    // an image loaded onto the GPU, plus CPU-side metadata (dimensions, channels)
     struct Image_texture final {
-        // OpenGL handle for the texture
         gl::Texture_2d texture;
 
         // dimensions
@@ -272,10 +292,12 @@ namespace osc {
         int channels;
     };
 
-    // read an image file into an OpenGL 2D texture
+    // read an image file (.PNG, .JPEG, etc.) directly into an OpenGL (GPU) texture
     Image_texture load_image_as_texture(char const* path, Tex_flags = TexFlag_None);
 
     // read 6 image files into a single OpenGL cubemap (GL_TEXTURE_CUBE_MAP)
+    //
+    // useful for skyboxes, precomputed point-shadow maps, etc.
     gl::Texture_cubemap load_cubemap(
         char const* path_pos_x,
         char const* path_neg_x,
@@ -291,6 +313,11 @@ namespace osc {
         return glm::inverse(glm::transpose(top_left));
     }
 
+    // raw data that can be serialized through the entire rendering pipeline
+    //
+    // this enables labelling pixels in the screen. E.g. a pixel could be
+    // labelled with an index into a LUT of `OpenSim::Component`s, for selection
+    // logic hit-testing
     struct Passthrough_data final {
         GLubyte b0;
         GLubyte b1;
@@ -317,7 +344,12 @@ namespace osc {
     static_assert(std::is_trivial_v<Passthrough_data>);
     static_assert(sizeof(Rgb24) == sizeof(Passthrough_data));
 
-    // single instance of a mesh (assume instanced rendering)
+    // single instance of a mesh
+    //
+    // the backend renderer supports batched/instanced rendering. This means that
+    // it can group mesh instances in such a way that a single OpenGL drawcall draws
+    // multiple meshes - this is useful for OpenSim models, which typically contain
+    // a lot of repetitive geometry (e.g. spheres in muscles)
     struct Mesh_instance final {
         glm::mat4x3 model_xform;
         glm::mat3 normal_xform;
@@ -340,12 +372,20 @@ namespace osc {
         }
     };
 
-    // list of instances to draw in one renderer drawcall
+    // a structured list of mesh instances
+    //
+    // this structure is optimized with knowledge about GPU instancing - don't
+    // directly access the data members because their layout is subject to change
+    // as the renderer evolves (e.g. OpenGL4 has many direct memory access APIs
+    // that might benefit from switching std::vector for direct pointers into
+    // memory-mapped GPU buffers)
     struct Drawlist final {
-        // note: treat these data members as private, because the implementation
-        // might rearrange them in various ways
+
+        // don't screw with these.
         //
-        // (and I hate friend classes/methods: just don't use these, you jerk)
+        // yes, I know the `private:` keyword, but I can't be assed writing the necessary
+        // supporting code to handle the fact that there may be many functions internally
+        // inside the renderer that need non-private access to the drawlist
         std::vector<std::vector<Mesh_instance>> _opaque_by_meshidx;
         std::vector<std::vector<Mesh_instance>> _nonopaque_by_meshidx;
 
@@ -407,20 +447,23 @@ namespace osc {
 
     // a mesh, stored on the GPU
     //
-    // not in any particular format - depends on which CPU data was passed
-    // into its constructor
+    // this "uploads" a CPU-side mesh onto the GPU in a format that the renderer
+    // knows how to use
     struct GPU_mesh final {
         gl::Array_buffer<GLubyte> verts;
         gl::Element_array_buffer<elidx_t> indices;
         gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW> instances;
         gl::Vertex_array main_vao;
         gl::Vertex_array normal_vao;
-        bool is_textured : 1;
+        bool is_textured;
 
         GPU_mesh(Untextured_mesh const&);
         GPU_mesh(Textured_mesh const&);
     };
 
+    // shader forward-decls
+    //
+    // include the shader's header if you need to actually access these
     struct Gouraud_mrt_shader;
     struct Normals_shader;
     struct Plain_texture_shader;
@@ -428,9 +471,13 @@ namespace osc {
     struct Edge_detection_shader;
     struct Skip_msxaa_blitter_shader;
 
-    // storage for GPU data. Used by renderer to load relevant data at runtime
-    // (e.g. shaders, programs, mesh data)
+    // aggregate of elements in GPU storage
+    //
+    // this is a single class that just holds everything that's been uploaded
+    // to the GPU. It's utility is that it provides a one-stop shop to grab
+    // GPU data
     struct GPU_storage final {
+        // initialized shaders
         std::unique_ptr<Gouraud_mrt_shader> shader_gouraud;
         std::unique_ptr<Normals_shader> shader_normals;
         std::unique_ptr<Plain_texture_shader> shader_pts;
@@ -438,11 +485,22 @@ namespace osc {
         std::unique_ptr<Edge_detection_shader> shader_eds;
         std::unique_ptr<Skip_msxaa_blitter_shader> shader_skip_msxaa;
 
+        // raw mesh storage: `Meshidx` is effectively an index into this
         std::vector<GPU_mesh> meshes;
+
+        // raw texture storage: `Texidx` is effectively an index into this
         std::vector<gl::Texture_2d> textures;
+
+        // maps filesystem paths (e.g. .VTP files) to mesh indexes that are
+        // already loaded on the GPU
+        //
+        // used for runtime data caching
         std::unordered_map<std::string, Meshidx> path_to_meshidx;
 
         // preallocated meshes
+        //
+        // the ctor will automatically populate these appropriately, so
+        // downstream code can just use the indices directly
         Meshidx simbody_sphere_idx;
         Meshidx simbody_cylinder_idx;
         Meshidx simbody_cube_idx;
@@ -471,7 +529,11 @@ namespace osc {
         ~GPU_storage() noexcept;
     };
 
-    // output target for a scene drawcall
+    // output target for the renderer
+    //
+    // these are what the renderer writes to. Most of these are internal
+    // details but are exposed anyway because it's useful to view them
+    // (e.g. debugging)
     struct Render_target final {
         // dimensions of buffers
         int w;
@@ -500,6 +562,8 @@ namespace osc {
         Passthrough_data hittest_result;
 
         Render_target(int w, int h, int samples);
+
+        // will reinitialize the buffers accordingly
         void reconfigure(int w, int h, int samples);
 
         [[nodiscard]] constexpr float aspect_ratio() const noexcept {
@@ -515,7 +579,7 @@ namespace osc {
         }
     };
 
-    // flags for a scene drawcall
+    // flags for a renderer drawcall
     using DrawcallFlags = int;
     enum DrawcallFlags_ {
         DrawcallFlags_None = 0 << 0,
@@ -550,7 +614,7 @@ namespace osc {
                                    RawRendererFlags_DrawSceneGeometry | RawRendererFlags_UseInstancedRenderer
     };
 
-    // parameters for a scene drawcall
+    // parameters for a renderer drawcall
     struct Render_params final {
         glm::mat4 view_matrix;
         glm::mat4 projection_matrix;
@@ -566,5 +630,8 @@ namespace osc {
     };
 
     // draw a scene into the specified render target
+    //
+    // - GPU_storage is mutable because the renderer might mutate instanced mesh data
+    // - Drawlist is mutable because the renderer might need to cull/optimize it
     void draw_scene(GPU_storage&, Render_params const&, Drawlist&, Render_target&);
 }

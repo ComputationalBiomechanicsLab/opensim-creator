@@ -39,21 +39,23 @@ static void render_actions_panel_content(
     std::function<void()> const& on_before_modify_model,
     std::function<void()> const& on_after_modify_model) {
 
-    // draw add body button
+    // action: add body
     {
         static constexpr char const* add_body_modal_name = "add body";
 
+        // draw button
         if (ImGui::MenuItem("add body")) {
             ImGui::OpenPopup(add_body_modal_name);
         }
 
-        // tooltip
+        // draw tooltip (if hovered)
         if (ImGui::IsItemHovered()) {
             draw_tooltip(
-                "Add an OpenSim::Body to the model",
-                "An OpenSim::Body is a PhysicalFrame (reference frame) with associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
+                "Add an OpenSim::Body into the model",
+                "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
         }
 
+        // draw popup (if requested)
         if (auto maybe_new_body = ui::add_body_popup::draw(st.abm, add_body_modal_name, model); maybe_new_body) {
             on_before_modify_model();
             model.addJoint(maybe_new_body->joint.release());
@@ -64,53 +66,47 @@ static void render_actions_panel_content(
         }
     }
 
-    // draw add joint dropdown
+    // action: add joint
     {
-        int joint_idx = -1;
+        bool open_popup = false;  // has to be outside ImGui::Menu
+
+        // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
         if (ImGui::BeginMenu("add joint")) {
             auto names = Joint_registry::names();
+
             for (size_t i = 0; i < names.size(); ++i) {
                 if (ImGui::MenuItem(names[i])) {
-                    joint_idx = static_cast<int>(i);
+                    std::unique_ptr<OpenSim::Joint> copy{Joint_registry::prototypes()[i]->clone()};
+                    st.add_component_popup = ui::add_component_popup::State{std::move(copy)};
+                    st.add_component_popup_name = "Add Joint";
+                    open_popup = true;
                 }
                 if (ImGui::IsItemHovered()) {
                     draw_tooltip(names[i], Joint_registry::descriptions()[i]);
                 }
             }
+
             ImGui::EndMenu();
         }
 
-        static constexpr char const* modal_name = "select joint pfs";
-        if (joint_idx != -1) {
-            st.joint_idx_for_pfs_popup = joint_idx;
-            ImGui::OpenPopup(modal_name);
+        // draw general OpenSim::Joint tooltip (if top-level menu hovered)
+        if (ImGui::IsItemHovered()) {
+            draw_tooltip(
+                "Add an OpenSim::Joint into the model",
+                "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates.");
         }
 
-        if (auto resp = ui::select_2_pfs::draw(st.select_2_pfs, modal_name, model, "parent", "child"); resp) {
-            OSC_ASSERT(
-                st.joint_idx_for_pfs_popup >= 0 &&
-                static_cast<size_t>(st.joint_idx_for_pfs_popup) < Joint_registry::prototypes().size());
-
-            OpenSim::Joint const& prototype = *Joint_registry::prototypes()[static_cast<size_t>(st.joint_idx_for_pfs_popup)];
-
-            std::unique_ptr<OpenSim::Joint> copy{prototype.clone()};
-            copy->connectSocket_parent_frame(resp->first);
-            copy->connectSocket_child_frame(resp->second);
-
-            auto ptr = copy.get();
-            on_before_modify_model();
-            model.addJoint(copy.release());
-            on_set_selection(ptr);
-            on_after_modify_model();
-
-            st.joint_idx_for_pfs_popup = -1;
+        // draw popup (if requested)
+        if (open_popup) {
+            ImGui::OpenPopup(st.add_component_popup_name);
         }
     }
 
-    // draw add contact geometry dropdown
+    // action: add contact geometry
     {
         bool open_popup = false;  // has to be outside ImGui::Menu
 
+        // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
         if (ImGui::BeginMenu("add contact geometry")) {
             auto names = Contact_geom_registry::names();
 
@@ -129,15 +125,24 @@ static void render_actions_panel_content(
             ImGui::EndMenu();
         }
 
+        // draw general OpenSim::ContactGeometry tooltip (if top-level menu hovered)
+        if (ImGui::IsItemHovered()) {
+            draw_tooltip(
+                "Add an OpenSim::ContactGeometry into the model",
+                "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame.");
+        }
+
+        // draw popup (if requested)
         if (open_popup) {
             ImGui::OpenPopup(st.add_component_popup_name);
         }
     }
 
-    // draw add constraint dropdown
+    // action: add constraint
     {
         bool open_popup = false;  // has to be outside ImGui::Menu
 
+        // draw dropdown menu (containing concrete `OpenSim::Constraint`s)
         if (ImGui::BeginMenu("add constraint")) {
             auto names = Constraint_registry::names();
             for (size_t i = 0; i < names.size(); ++i) {
@@ -156,14 +161,24 @@ static void render_actions_panel_content(
             ImGui::EndMenu();
         }
 
+        // draw general OpenSim::Constraint tooltip (if top-level menu hovered)
+        if (ImGui::IsItemHovered()) {
+            draw_tooltip(
+                "Add an OpenSim::Constraint into the model",
+                "Add a constraint into the model. A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover.");
+        }
+
         if (open_popup) {
             ImGui::OpenPopup(st.add_component_popup_name);
         }
     }
 
+    // action: add force
     {
         bool open_popup = false;  // has to be outside ImGui::Menu
-        if (ImGui::BeginMenu("add force")) {
+
+        // draw dropdown menu (containing concrete `OpenSim::Force`s)
+        if (ImGui::BeginMenu("add force/muscle")) {
             auto names = Force_registry::names();
             for (size_t i = 0; i < names.size(); ++i) {
 
@@ -180,6 +195,14 @@ static void render_actions_panel_content(
 
             ImGui::EndMenu();
         }
+
+        // draw general OpenSim::Force tooltip (if top-level menu hovered)
+        if (ImGui::IsItemHovered()) {
+            draw_tooltip(
+                "Add an OpenSim::Force into the model",
+                "Add a force into the model. During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features.");
+        }
+
 
         if (open_popup) {
             ImGui::OpenPopup(st.add_component_popup_name);

@@ -2,6 +2,8 @@
 
 #include "src/assertions.hpp"
 
+#include "third_party/IconsFontAwesome5.h"
+
 #include <memory>
 #include <utility>
 
@@ -89,5 +91,12 @@ namespace osc {
         void disable_vsync();
 
         GPU_storage& get_gpu_storage() noexcept;
+
+        // try to forcibly reset ImGui's state
+        //
+        // this is necessary when (e.g.) an exception throws all the way through
+        // ImGui `End` methods (e.g. `EndChild`) and has potentially clobbered ImGui
+        // (which is not exception-safe)
+        void reset_imgui_state();
     };
 }
