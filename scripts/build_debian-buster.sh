@@ -17,7 +17,7 @@ set -xeuo pipefail
 # where to clone the OpenSim source from
 #
 # handy to override if you are developing against a fork, locally, etc.
-OSC_OPENSIM_REPO=https://github.com/opensim-org/opensim-core
+OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch identifier from opensim-core
 OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_VERSION:-4.2}
