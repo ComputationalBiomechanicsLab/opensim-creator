@@ -165,7 +165,7 @@ static void update_camera_from_user_input(osc::Component_3d_viewer::Impl& impl) 
     if (impl.mouse_over_render && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
         ImVec2 screendims = impl.render_target.dimensions();
         float aspect_ratio = screendims.x / screendims.y;
-        ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+        ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.0f);
         ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
 
         // relative vectors
