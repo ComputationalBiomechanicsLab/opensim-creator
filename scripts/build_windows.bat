@@ -57,7 +57,7 @@ dir .
 mkdir osc-build
 cd osc-build
 cmake .. %GENFLAGS% -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
-cmake --build . --config %CONFIG% --target package -j%NUMBER_OF_PROCESSORS% || exit /b
+cmake --build . --config RelWithDebInfo --target package -j%NUMBER_OF_PROCESSORS% || exit /b
 echo "Printing DIR (for build debugging)"
 dir .
 cd ..
