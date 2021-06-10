@@ -692,8 +692,8 @@ static void draw_outputs_tab(osc::Simulator_screen::Impl& impl) {
         size_t npoints = sim.regular_reports.size();
         impl.plotscratch.resize(npoints);
         size_t i = 0;
-        for (auto const& report : sim.regular_reports) {
-            double v = od.getValue(report->state);
+        for (auto const& r : sim.regular_reports) {
+            double v = od.getValue(r->state);
             impl.plotscratch[i++] = static_cast<float>(v);
         }
 
