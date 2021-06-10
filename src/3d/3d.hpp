@@ -350,7 +350,7 @@ namespace osc {
     // it can group mesh instances in such a way that a single OpenGL drawcall draws
     // multiple meshes - this is useful for OpenSim models, which typically contain
     // a lot of repetitive geometry (e.g. spheres in muscles)
-    struct Mesh_instance final {
+    struct alignas(16) Mesh_instance final {
         glm::mat4x3 model_xform;
         glm::mat3 normal_xform;
         Rgba32 rgba;
