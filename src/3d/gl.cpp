@@ -3,8 +3,6 @@
 #include <sstream>
 #include <vector>
 
-using std::literals::operator""s;
-
 static std::vector<char const*> current_errors;
 
 char const* gl::Opengl_exception::what() const noexcept {
@@ -32,8 +30,8 @@ void gl::CompileFromSource(Shader_handle const& s, const char* src) {
     glGetShaderInfoLog(s.get(), log_len, &log_len, errmsg.data());
 
     std::stringstream ss;
-    ss << errmsg.data();
-    throw std::runtime_error{"gl::CompileShader failed: "s + ss.str()};
+    ss << "gl::CompilesShader failed: " << errmsg.data();
+    throw std::runtime_error{std::move(ss).str()};
 }
 
 void gl::LinkProgram(gl::Program& prog) {
