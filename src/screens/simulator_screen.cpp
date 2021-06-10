@@ -805,6 +805,7 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     if (ImGui::BeginMainMenuBar()) {
         ui::main_menu::file_tab::draw(impl.mm_filetab_st, impl.st);
         ui::main_menu::about_tab::draw();
+        ui::main_menu::window_tab::draw(*impl.st);
 
         if (ImGui::Button("Switch to editor (Ctrl+E)")) {
 
@@ -817,13 +818,15 @@ static void draw(osc::Simulator_screen::Impl& impl) {
         ImGui::EndMainMenuBar();
     }
 
+    Main_editor_state& st = *impl.st;
+
     // edge-case: there are no simulations available, so 
     // show a "you need to run something, fool" dialog
-    if (impl.st->simulations.empty()) {
+    if (!st.has_simulations()) {
         if (ImGui::Begin("Warning")) {
             ImGui::TextUnformatted("No simulations are currently running");
             if (ImGui::Button("Run new simulation")) {
-                action_start_simulation_from_edited_model(*impl.st);
+                action_start_simulation_from_edited_model(st);
             }
         }
         ImGui::End();
@@ -831,54 +834,60 @@ static void draw(osc::Simulator_screen::Impl& impl) {
     }
 
     // draw simulations tab
-    if (ImGui::Begin("Simulations")) {
-        draw_simulation_tab(impl);
+    if (st.showing.simulations) {
+        if (ImGui::Begin("Simulations", &st.showing.simulations)) {
+            draw_simulation_tab(impl);
+        }
+        ImGui::End();
     }
-    ImGui::End();
 
-    // draw 3d viewer
-    draw_viewers(impl);
+    // draw 3d viewers
+    {
+        draw_viewers(impl);
+    }
 
     // draw hierarchy tab
-    {
-        if (ImGui::Begin("Hierarchy")) {
+    if (st.showing.hierarchy) {
+        if (ImGui::Begin("Hierarchy", &st.showing.hierarchy)) {
             draw_hierarchy_tab(impl);
         }
         ImGui::End();
     }
 
     // draw selection tab
-    {
-        if (ImGui::Begin("Selection")) {
+    if (st.showing.selection_details) {
+        if (ImGui::Begin("Selection", &st.showing.selection_details)) {
             draw_selection_tab(impl);
         }
         ImGui::End();
     }
 
     // draw outputs tab
-    {
-        if (ImGui::Begin("Outputs")) {
+    if (st.showing.outputs) {
+        if (ImGui::Begin("Outputs", &st.showing.outputs)) {
             draw_outputs_tab(impl);
         }
         ImGui::End();
     }
 
     // draw simulation stats tab
-    {
-        if (ImGui::Begin("Simulation Details")) {
+    if (st.showing.simulation_stats) {
+        if (ImGui::Begin("Simulation Details", &st.showing.simulation_stats)) {
             draw_simulation_stats_tab(impl);
         }
         ImGui::End();
     }
 
     // draw log tab
-    {
-        if (ImGui::Begin("Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+    if (st.showing.log) {
+        if (ImGui::Begin("Log", &st.showing.log, ImGuiWindowFlags_MenuBar)) {
             ui::log_viewer::draw(impl.log_viewer_st);
         }
         ImGui::End();
     }
 }
+
+// Simulator_screen: public impl.
 
 osc::Simulator_screen::Simulator_screen(std::shared_ptr<Main_editor_state> st) :
     impl{new Impl{std::move(st)}} {

@@ -34,4 +34,8 @@ namespace osc::ui::main_menu {
     namespace about_tab {
         void draw();
     }
+
+    namespace window_tab {
+        void draw(Main_editor_state&);
+    }
 }

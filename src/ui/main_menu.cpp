@@ -13,6 +13,7 @@
 #include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/main_editor_state.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -409,4 +410,64 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         Application::current().request_quit_application();
     }
     ImGui::EndMenu();
+}
+
+static std::unique_ptr<Component_3d_viewer> create_viewer() {
+    return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
+}
+
+void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
+    // draw "window" tab
+    if (ImGui::BeginMenu("Window")) {
+
+        ImGui::MenuItem("Actions", nullptr, &st.showing.actions);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when editing a model");
+            ImGui::EndTooltip();
+        }
+        ImGui::MenuItem("Hierarchy", nullptr, &st.showing.hierarchy);
+        ImGui::MenuItem("Log", nullptr, &st.showing.log);
+        ImGui::MenuItem("Outputs", nullptr, &st.showing.outputs);
+        ImGui::MenuItem("Property Editor", nullptr, &st.showing.property_editor);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when editing a model");
+            ImGui::EndTooltip();
+        }
+        ImGui::MenuItem("Selection Details", nullptr, &st.showing.selection_details);
+        ImGui::MenuItem("Simulations", nullptr, &st.showing.simulations);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when simulating a model");
+            ImGui::EndTooltip();
+        }
+        ImGui::MenuItem("Simulation Stats", nullptr, &st.showing.simulation_stats);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when editing a model");
+            ImGui::EndTooltip();
+        }
+
+        for (size_t i = 0; i < st.viewers.size(); ++i) {
+            Component_3d_viewer* viewer = st.viewers[i].get();
+
+            char buf[64];
+            std::snprintf(buf, sizeof(buf), "viewer%zu", i);
+
+            bool enabled = viewer != nullptr;
+            if (ImGui::MenuItem(buf, nullptr, &enabled)) {
+                if (enabled) {
+                    // was enabled by user click
+                    st.viewers[i] = create_viewer();
+                } else {
+                    // was disabled by user click
+                    st.viewers[i] = nullptr;
+                }
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+
 }

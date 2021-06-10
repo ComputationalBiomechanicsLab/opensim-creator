@@ -286,6 +286,20 @@ namespace osc {
         // the viewers can be null, which should be interpreted as "not yet initialized"
         std::array<std::unique_ptr<Component_3d_viewer>, 4> viewers;
 
+        // which panels should be shown
+        //
+        // the user can enable/disable these in the "window" entry in the main menu
+        struct {
+            bool actions = true;
+            bool hierarchy = true;
+            bool log = true;
+            bool outputs = true;
+            bool property_editor = true;
+            bool selection_details = true;
+            bool simulations = true;
+            bool simulation_stats = true;
+        } showing;
+
         // construct with a blank (new) OpenSim::Model
         Main_editor_state();
 
@@ -298,11 +312,11 @@ namespace osc {
         Main_editor_state& operator=(Main_editor_state const&) = delete;
         Main_editor_state& operator=(Main_editor_state&&) = delete;
 
-        OpenSim::Model& model() {
+        [[nodiscard]] OpenSim::Model& model() noexcept {
             return edited_model.model();
         }
 
-        bool can_undo() {
+        [[nodiscard]] bool can_undo() const noexcept {
             return edited_model.can_undo();
         }
 
@@ -310,7 +324,7 @@ namespace osc {
             edited_model.do_undo();
         }
 
-        bool can_redo() {
+        [[nodiscard]] bool can_redo() const noexcept {
             return edited_model.can_redo();
         }
 
@@ -371,7 +385,7 @@ namespace osc {
             focused_simulation_scrubbing_time = -1.0f;
         }
 
-        Ui_simulation* get_focused_sim() noexcept {
+        [[nodiscard]] Ui_simulation* get_focused_sim() noexcept {
             if (!(0 <= focused_simulation && focused_simulation < static_cast<int>(simulations.size()))) {
                 return nullptr;
             } else {
@@ -379,8 +393,12 @@ namespace osc {
             }
         }
 
-        Ui_simulation const* get_focused_sim() const noexcept {
+        [[nodiscard]] Ui_simulation const* get_focused_sim() const noexcept {
             return const_cast<Main_editor_state*>(this)->get_focused_sim();
+        }
+
+        [[nodiscard]] bool has_simulations() const noexcept {
+            return !simulations.empty();
         }
     };
 }

@@ -93,10 +93,6 @@ static T const* find_ancestor(OpenSim::Component const* c) {
     return nullptr;
 }
 
-static std::unique_ptr<Component_3d_viewer> create_viewer() {
-    return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
-}
-
 struct Model_editor_screen::Impl final {
     // top-level state this screen can handle
     std::shared_ptr<Main_editor_state> st;
@@ -112,15 +108,6 @@ struct Model_editor_screen::Impl final {
         ui::model_actions::State model_actions_panel;
         ui::log_viewer::State log_viewer;
     } ui;
-
-    // which windows are currently showing
-    struct {
-        bool hierarchy = true;
-        bool selection_details = true;
-        bool property_editor = true;
-        bool log = true;
-        bool actions = true;
-    } showing;
 
     // state that is reset at the start of each frame
     struct {
@@ -1037,35 +1024,8 @@ static void draw_main_menu(osc::Model_editor_screen::Impl& impl) {
     // draw "actions" tab
     draw_main_menu_actions_tab(impl);
 
-    // draw "window" tab
-    if (ImGui::BeginMenu("Window")) {
-
-        ImGui::MenuItem("Actions", nullptr, &impl.showing.actions);
-        ImGui::MenuItem("Hierarchy", nullptr, &impl.showing.hierarchy);
-        ImGui::MenuItem("Log", nullptr, &impl.showing.log);
-        ImGui::MenuItem("Property Editor", nullptr, &impl.showing.property_editor);
-        ImGui::MenuItem("Selection Details", nullptr, &impl.showing.selection_details);
-
-        for (size_t i = 0; i < impl.st->viewers.size(); ++i) {
-            Component_3d_viewer* viewer = impl.st->viewers[i].get();
-
-            char buf[64];
-            std::snprintf(buf, sizeof(buf), "viewer%zu", i);
-
-            bool enabled = viewer != nullptr;
-            if (ImGui::MenuItem(buf, nullptr, &enabled)) {
-                if (enabled) {
-                    // was enabled by user click
-                    impl.st->viewers[i] = create_viewer();
-                } else {
-                    // was disabled by user click
-                    impl.st->viewers[i] = nullptr;
-                }
-            }
-        }
-
-        ImGui::EndMenu();
-    }
+    // draw window tab
+    ui::main_menu::window_tab::draw(*impl.st);
 
     // draw "about" tab
     ui::main_menu::about_tab::draw();
@@ -1264,7 +1224,7 @@ static void draw_editor_screen_unguarded(osc::Model_editor_screen::Impl& impl) {
     // draw editor actions panel
     //
     // contains top-level actions (e.g. "add body")
-    if (impl.showing.actions) {
+    if (impl.st->showing.actions) {
         if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
             auto on_set_selection = [&](OpenSim::Component* c) { impl.st->set_selection(c); };
             auto before_modify_model = [&]() { impl.st->before_modifying_model(); };
@@ -1276,8 +1236,8 @@ static void draw_editor_screen_unguarded(osc::Model_editor_screen::Impl& impl) {
     }
 
     // draw hierarchy viewer
-    if (impl.showing.hierarchy) {
-        if (ImGui::Begin("Hierarchy", &impl.showing.hierarchy)) {
+    if (impl.st->showing.hierarchy) {
+        if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
             auto resp = ui::component_hierarchy::draw(
                 &impl.st->model().getRoot(),
                 impl.st->selection(),
@@ -1293,8 +1253,8 @@ static void draw_editor_screen_unguarded(osc::Model_editor_screen::Impl& impl) {
     }
 
     // draw selection details
-    if (impl.showing.selection_details) {
-        if (ImGui::Begin("Selection", &impl.showing.selection_details)) {
+    if (impl.st->showing.selection_details) {
+        if (ImGui::Begin("Selection", &impl.st->showing.selection_details)) {
             auto resp = component_details::draw(impl.st->state(), impl.st->selection());
 
             if (resp.type == component_details::SelectionChanged) {
@@ -1305,16 +1265,16 @@ static void draw_editor_screen_unguarded(osc::Model_editor_screen::Impl& impl) {
     }
 
     // draw property editor
-    if (impl.showing.property_editor) {
-        if (ImGui::Begin("Edit Props", &impl.showing.property_editor)) {
+    if (impl.st->showing.property_editor) {
+        if (ImGui::Begin("Edit Props", &impl.st->showing.property_editor)) {
             draw_selection_editor(impl);
         }
         ImGui::End();
     }
 
     // draw application log
-    if (impl.showing.log) {
-        if (ImGui::Begin("Log", &impl.showing.log, ImGuiWindowFlags_MenuBar)) {
+    if (impl.st->showing.log) {
+        if (ImGui::Begin("Log", &impl.st->showing.log, ImGuiWindowFlags_MenuBar)) {
             ui::log_viewer::draw(impl.ui.log_viewer);
         }
         ImGui::End();
