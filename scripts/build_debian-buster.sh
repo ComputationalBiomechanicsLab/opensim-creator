@@ -62,7 +62,7 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 #     OSC_SKIP_OSC
 
 
-if [[ ! -z ${OSC_SKIP_APT+x} ]]; then
+if [[ -z ${OSC_SKIP_APT+x} ]]; then
     echo "----- getting system-level dependencies -----"
 
     # if root is running this script then do not use `sudo` (some distros
@@ -87,7 +87,7 @@ else
 fi
 
 
-if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
+if [[ -z ${OSC_SKIP_OPENSIM+x} ]]; then
     echo "----- downloading, building, and installing (locally) OpenSim -----"
 
     # clone sources
@@ -131,7 +131,7 @@ else
     echo "----- skipping OpenSim build (OSC_SKIP_OPENSIM is set) -----"
 fi
 
-if [[ ! -z ${OSC_SKIP_OSC+x} ]]; then
+if [[ ! ${OSC_SKIP_OSC+x} ]]; then
     echo "----- building OSC -----"
 
     mkdir -p osc-build/
