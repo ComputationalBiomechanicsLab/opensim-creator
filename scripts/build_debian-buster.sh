@@ -37,7 +37,7 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 # maximum number of build jobs to run concurrently
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(nproc)}
 
-# which build target to build
+# which OSC build target to build
 #
 #     osc        just build the osc binary
 #     package    package everything into a .deb installer
@@ -62,8 +62,9 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 #     OSC_SKIP_OSC
 
 
-# ----- get system-level dependencies ----- #
 if [[ ! -z ${OSC_SKIP_APT+x} ]]; then
+    echo "----- getting system-level dependencies -----"
+
     # if root is running this script then do not use `sudo` (some distros
     # do not have 'sudo' available)
     if [[ "${UID}" == 0 ]]; then
@@ -79,11 +80,15 @@ if [[ ! -z ${OSC_SKIP_APT+x} ]]; then
 
     # osc: main dependencies
     ${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev
+
+    echo "----- finished getting system-level dependencies -----"
+else
+    echo "----- skipping getting system-level dependencies (OSC_SKIP_APT is set) -----"
 fi
 
 
-# ----- download, build, and install OpenSim ----- #
 if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
+    echo "----- downloading, building, and installing (locally) OpenSim -----"
 
     # clone sources
     if [[ ! -d opensim-core/ ]]; then
@@ -94,7 +99,7 @@ if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
             "${OSC_OPENSIM_REPO}"
     fi
 
-    # build OpenSim's dependencies
+    echo "--- building OpenSim's dependencies ---"
     mkdir -p opensim-dependencies-build/
     cd opensim-dependencies-build/
     cmake ../opensim-core/dependencies \
@@ -105,7 +110,7 @@ if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
     ls .
     cd -
 
-    # build + install OpenSim
+    echo "--- building OpenSim ---"
     mkdir -p opensim-build/
     cd opensim-build/
     cmake ../opensim-core/ \
@@ -120,10 +125,15 @@ if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
     echo "DEBUG: listing contents of OpenSim build dir"
     ls .
     cd -
+
+    echo "----- finished downloading, building, and installing OpenSim -----"
+else
+    echo "----- skipping OpenSim build (OSC_SKIP_OPENSIM is set) -----"
 fi
 
-# ----- build osc ----- #
 if [[ ! -z ${OSC_SKIP_OSC+x} ]]; then
+    echo "----- building OSC -----"
+
     mkdir -p osc-build/
     cd osc-build/
     cmake .. -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
@@ -131,14 +141,11 @@ if [[ ! -z ${OSC_SKIP_OSC+x} ]]; then
     echo "DEBUG: listing contents of final build dir"
     ls .
     cd -
+
+    echo "----- finished building OSC (yay!) -----"
+    echo ""
+    echo "  depending on what target you built, you should be able to run commands like:"
+    echo ""
+    echo "      osc-build/osc  # run the osc binary"
+    echo "      apt-get install -yf osc-build/osc-*.deb  # install the package, then run 'osc'"
 fi
-
-
-# ----- install (example) -----
-
-# apt-get install -yf ./osc-*.deb
-
-# ----- boot (example) -----
-
-# ./osc  # boot from the build dir
-# osc    # boot the installed DEB (at /opt/osc/bin/osc)
