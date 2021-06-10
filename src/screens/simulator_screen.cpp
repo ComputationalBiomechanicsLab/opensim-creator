@@ -704,8 +704,8 @@ static void draw_outputs_tab(osc::Simulator_screen::Impl& impl) {
             if (ImGui::MenuItem("Save as CSV")) {
                 std::vector<float> ts;
                 ts.reserve(sim.regular_reports.size());
-                for (auto const& report : sim.regular_reports) {
-                    ts.push_back(static_cast<float>(report->state.getTime()));
+                for (auto const& r : sim.regular_reports) {
+                    ts.push_back(static_cast<float>(r->state.getTime()));
                 }
                 OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
                 export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), od.getName().c_str());
