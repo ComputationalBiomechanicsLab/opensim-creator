@@ -63,7 +63,7 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 
 
 # ----- get system-level dependencies ----- #
-if [[ ! -z "${OSC_SKIP_APT}" ]]; then
+if [[ ! -z ${OSC_SKIP_APT+x} ]]; then
     # if root is running this script then do not use `sudo` (some distros
     # do not have 'sudo' available)
     if [[ "${UID}" == 0 ]]; then
@@ -83,7 +83,7 @@ fi
 
 
 # ----- download, build, and install OpenSim ----- #
-if [[ ! -z "${OSC_SKIP_OPENSIM}" ]]; then
+if [[ ! -z ${OSC_SKIP_OPENSIM+x} ]]; then
 
     # clone sources
     if [[ ! -d opensim-core/ ]]; then
@@ -123,7 +123,7 @@ if [[ ! -z "${OSC_SKIP_OPENSIM}" ]]; then
 fi
 
 # ----- build osc ----- #
-if [[ ! -z "${OSC_SKIP_OSC}" ]]; then
+if [[ ! -z ${OSC_SKIP_OSC+x} ]]; then
     mkdir -p osc-build/
     cd osc-build/
     cmake .. -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
