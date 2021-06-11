@@ -10,7 +10,9 @@ namespace osc {
     //
     // this is shown when OSC boots and contains a list of previously opened files, etc.
     class Splash_screen final : public Screen {
+    public:
         struct Impl;
+    private:
         Impl* impl;
 
     public:

@@ -74,7 +74,7 @@ struct osc::Component_3d_viewer::Impl final {
     Component3DViewerFlags flags;
 
     // backend rendering flags
-    DrawcallFlags rendering_flags = RawRendererFlags_Default;
+    DrawcallFlags rendering_flags = DrawcallFlags_Default;
 
     // set to true at the end of a drawcall if the mouse is known to be over the
     // render rect
@@ -215,12 +215,12 @@ static void draw_viewport_main_menu(osc::Component_3d_viewer::Impl& impl) {
         ImGui::CheckboxFlags("wireframe mode", &impl.rendering_flags, DrawcallFlags_WireframeMode);
         ImGui::CheckboxFlags("show normals", &impl.rendering_flags, DrawcallFlags_ShowMeshNormals);
         ImGui::CheckboxFlags("draw rims", &impl.rendering_flags, DrawcallFlags_DrawRims);
-        ImGui::CheckboxFlags("hit testing", &impl.rendering_flags, RawRendererFlags_PerformPassthroughHitTest);
+        ImGui::CheckboxFlags("hit testing", &impl.rendering_flags, DrawcallFlags_PerformPassthroughHitTest);
         ImGui::CheckboxFlags(
             "optimized hit testing",
             &impl.rendering_flags,
-            RawRendererFlags_UseOptimizedButDelayed1FrameHitTest);
-        ImGui::CheckboxFlags("draw scene geometry", &impl.rendering_flags, RawRendererFlags_DrawSceneGeometry);
+            DrawcallFlags_UseOptimizedButDelayed1FrameHitTest);
+        ImGui::CheckboxFlags("draw scene geometry", &impl.rendering_flags, DrawcallFlags_DrawSceneGeometry);
         ImGui::CheckboxFlags("draw floor", &impl.flags, Component3DViewerFlags_DrawFloor);
         ImGui::CheckboxFlags("show XZ grid", &impl.flags, Component3DViewerFlags_DrawXZGrid);
         ImGui::CheckboxFlags("show XY grid", &impl.flags, Component3DViewerFlags_DrawXYGrid);
@@ -230,7 +230,7 @@ static void draw_viewport_main_menu(osc::Component_3d_viewer::Impl& impl) {
         ImGui::CheckboxFlags(
             "use instanced (optimized) renderer",
             &impl.rendering_flags,
-            RawRendererFlags_UseInstancedRenderer);
+            DrawcallFlags_UseInstancedRenderer);
 
         ImGui::EndMenu();
     }
@@ -327,8 +327,8 @@ static void draw_viewport_main_menu(osc::Component_3d_viewer::Impl& impl) {
 
 static gl::Texture_2d& perform_backend_render_drawcall(osc::Component_3d_viewer::Impl& impl) {
     Render_params params;
-    params.passthrough_hittest_x = impl.hovertest_x;
-    params.passthrough_hittest_y = impl.hovertest_y;
+    params.hittest.x = impl.hovertest_x;
+    params.hittest.y = impl.hovertest_y;
     params.view_matrix = view_matrix(impl.camera);
     params.projection_matrix = projection_matrix(impl.camera, impl.render_target.aspect_ratio());
     params.view_pos = pos(impl.camera);
@@ -338,9 +338,9 @@ static gl::Texture_2d& perform_backend_render_drawcall(osc::Component_3d_viewer:
     params.rim_rgba = impl.rim_rgba;
     params.flags = impl.rendering_flags;
     if (Application::current().is_in_debug_mode()) {
-        params.flags |= RawRendererFlags_DrawDebugQuads;
+        params.flags |= DrawcallFlags_DrawDebugQuads;
     } else {
-        params.flags &= ~RawRendererFlags_DrawDebugQuads;
+        params.flags &= ~DrawcallFlags_DrawDebugQuads;
     }
 
     // draw scene

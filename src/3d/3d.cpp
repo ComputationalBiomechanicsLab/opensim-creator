@@ -666,7 +666,7 @@ void osc::optimize(Drawlist& drawlist) noexcept {
     }
 }
 
-void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist& drawlist, Render_target& out) {
+void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist const& drawlist, Render_target& out) {
     gl::Viewport(0, 0, out.w, out.h);
 
     // bind to an off-screen framebuffer object (FBO)
@@ -706,7 +706,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
     // - COLOR1: RGB passthrough: written to output as-is
     //     - the input color encodes the selected component index (RG) and the rim
     //       alpha (B). It's used in downstream steps
-    if (params.flags & RawRendererFlags_DrawSceneGeometry) {
+    if (params.flags & DrawcallFlags_DrawSceneGeometry) {
         Gouraud_mrt_shader& shader = *storage.shader_gouraud;
 
         gl::DrawBuffers(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1);
@@ -724,7 +724,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
         glEnablei(GL_BLEND, 0);
         glDisablei(GL_BLEND, 1);
 
-        if (params.flags & RawRendererFlags_UseInstancedRenderer) {
+        if (params.flags & DrawcallFlags_UseInstancedRenderer) {
             auto draw_els_with_same_meshidx = [&](std::vector<Mesh_instance> const& instances) {
                 size_t nmeshes = instances.size();
                 Mesh_instance const* meshes = instances.data();
@@ -841,13 +841,17 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
     // model information (e.g. "a component index") into screenspace
 
     out.hittest_result = Passthrough_data{0x00, 0x00, 0x00};
-    if (params.flags & RawRendererFlags_PerformPassthroughHitTest) {
+
+    if (params.hittest.x >= 0 &&
+        params.hittest.y >= 0 &&
+        params.flags & DrawcallFlags_PerformPassthroughHitTest) {
+
         // (temporarily) set the OpenGL viewport to a small square around the hit testing
         // location
         //
         // this causes the subsequent draw call to only run the fragment shader around where
         // we actually care about
-        glViewport(params.passthrough_hittest_x - 1, params.passthrough_hittest_y - 1, 3, 3);
+        gl::Viewport(params.hittest.x - 1, params.hittest.y - 1, 3, 3);
 
         // bind to a non-MSXAAed FBO
         gl::BindFramebuffer(GL_FRAMEBUFFER, out.passthrough_fbo);
@@ -900,14 +904,13 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
         //      stall the pipeline. However, that pipeline stall will be on the *previous* frame
         //      which is less costly to stall on
 
-        if (params.flags & RawRendererFlags_UseOptimizedButDelayed1FrameHitTest) {
+        if (params.flags & DrawcallFlags_UseOptimizedButDelayed1FrameHitTest) {
             size_t reader = out.passthrough_pbo_cur % out.passthrough_pbos.size();
             size_t mapper = (out.passthrough_pbo_cur + 1) % out.passthrough_pbos.size();
 
             // launch asynchronous request for this frame's pixel
             gl::BindBuffer(out.passthrough_pbos[reader]);
-            glReadPixels(
-                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+            glReadPixels(params.hittest.x, params.hittest.y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
             // synchrnously read *last frame's* pixel
             gl::BindBuffer(out.passthrough_pbos[mapper]);
@@ -930,8 +933,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
 
             glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
             GLubyte rgba[3]{};
-            glReadPixels(
-                params.passthrough_hittest_x, params.passthrough_hittest_y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, rgba);
+            glReadPixels(params.hittest.x, params.hittest.y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, rgba);
 
             out.hittest_result.b0 = rgba[0];
             out.hittest_result.b1 = rgba[1];
@@ -1009,7 +1011,7 @@ void osc::draw_scene(GPU_storage& storage, Render_params const& params, Drawlist
     }
 
     // render debug quads onto output (if applicable)
-    if (params.flags & RawRendererFlags_DrawDebugQuads) {
+    if (params.flags & DrawcallFlags_DrawDebugQuads) {
         Colormapped_plain_texture_shader& cpts = *storage.shader_cpts;
         gl::UseProgram(cpts.p);
         gl::BindVertexArray(storage.pts_quad_vao);

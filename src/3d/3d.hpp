@@ -437,6 +437,20 @@ namespace osc {
                 }
             }
         }
+
+        template<typename Callback>
+        void for_each(Callback f) const {
+            for (auto const& lst : _opaque_by_meshidx) {
+                for (auto const& mi : lst) {
+                    f(mi);
+                }
+            }
+            for (auto const& lst : _nonopaque_by_meshidx) {
+                for (auto const& mi : lst) {
+                    f(mi);
+                }
+            }
+        }
     };
 
     // optimize a drawlist
@@ -561,6 +575,12 @@ namespace osc {
         gl::Frame_buffer passthrough_fbo_resolved;
         Passthrough_data hittest_result;
 
+        // create a "blank" render target
+        //
+        // callers should `reconfigure` this before use
+        Render_target() : Render_target{1, 1, 1} {}
+
+        // create a valid render target with specified dimensions + samples
         Render_target(int w, int h, int samples);
 
         // will reinitialize the buffers accordingly
@@ -594,44 +614,66 @@ namespace osc {
         DrawcallFlags_DrawRims = 1 << 2,
 
         // draw debug quads (development)
-        RawRendererFlags_DrawDebugQuads = 1 << 3,
+        DrawcallFlags_DrawDebugQuads = 1 << 3,
 
         // perform hit testing on Raw_mesh_instance passthrough data
-        RawRendererFlags_PerformPassthroughHitTest = 1 << 4,
+        DrawcallFlags_PerformPassthroughHitTest = 1 << 4,
 
         // use optimized hit testing (which might arrive a frame late)
-        RawRendererFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 5,
+        DrawcallFlags_UseOptimizedButDelayed1FrameHitTest = 1 << 5,
 
         // draw the scene
-        RawRendererFlags_DrawSceneGeometry = 1 << 6,
+        DrawcallFlags_DrawSceneGeometry = 1 << 6,
 
         // use instanced (optimized) rendering
-        RawRendererFlags_UseInstancedRenderer = 1 << 7,
+        DrawcallFlags_UseInstancedRenderer = 1 << 7,
 
-        RawRendererFlags_Default = DrawcallFlags_DrawRims | RawRendererFlags_DrawDebugQuads |
-                                   RawRendererFlags_PerformPassthroughHitTest |
-                                   RawRendererFlags_UseOptimizedButDelayed1FrameHitTest |
-                                   RawRendererFlags_DrawSceneGeometry | RawRendererFlags_UseInstancedRenderer
+        DrawcallFlags_Default = DrawcallFlags_DrawRims |
+                                DrawcallFlags_PerformPassthroughHitTest |
+                                DrawcallFlags_UseOptimizedButDelayed1FrameHitTest |
+                                DrawcallFlags_DrawSceneGeometry |
+                                DrawcallFlags_UseInstancedRenderer
     };
 
     // parameters for a renderer drawcall
     struct Render_params final {
-        glm::mat4 view_matrix;
-        glm::mat4 projection_matrix;
-        glm::vec3 view_pos;
-        glm::vec3 light_dir;
-        glm::vec3 light_rgb;
-        glm::vec4 background_rgba;
-        glm::vec4 rim_rgba;
+        // worldspace -> viewspace transform matrix
+        glm::mat4 view_matrix = glm::mat4{1.0f};
 
-        DrawcallFlags flags;
-        int passthrough_hittest_x;
-        int passthrough_hittest_y;
+        // viewspace -> clipspace transform matrix
+        glm::mat4 projection_matrix = glm::mat4{1.0f};
+
+        // worldspace position of the viewer
+        glm::vec3 view_pos = {0.0f, 0.0f, 0.0f};
+
+        // worldspace direction of the light
+        glm::vec3 light_dir = {-0.34f, -0.25f, 0.05f};
+
+        // rgb color of the light
+        glm::vec3 light_rgb = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+
+        // solid background color
+        glm::vec4 background_rgba = {0.89f, 0.89f, 0.89f, 1.0f};
+
+        // color of any rim highlights
+        glm::vec4 rim_rgba = {1.0f, 0.4f, 0.0f, 0.85f};
+
+        // screenspace coordinates for hit testing
+        //
+        // - the renderer will write the hittest result to the Render_target
+        // - negative values indicate "skip testing"
+        // - the hittest result is whatever passthrough_data was set in the
+        //   mesh instances in the drawlist
+        // - e.g. set the passthrough_data to an ID, set these coords to mouse
+        //   location, then you can figure out which ID is under the mouse
+        glm::ivec2 hittest = {-1, -1};
+
+        // any modal flags to apply during the rendering process
+        DrawcallFlags flags = DrawcallFlags_Default;
     };
 
     // draw a scene into the specified render target
     //
     // - GPU_storage is mutable because the renderer might mutate instanced mesh data
-    // - Drawlist is mutable because the renderer might need to cull/optimize it
-    void draw_scene(GPU_storage&, Render_params const&, Drawlist&, Render_target&);
+    void draw_scene(GPU_storage&, Render_params const&, Drawlist const&, Render_target&);
 }

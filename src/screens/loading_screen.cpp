@@ -73,8 +73,17 @@ struct Loading_screen::Impl final {
     }
 };
 
+static bool on_event(Loading_screen::Impl&, SDL_Event const& e) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        Application::current().request_screen_transition<Splash_screen>();
+        return true;
+    }
+
+    return false;
+}
+
 static void tick(Loading_screen::Impl& impl, float dt) {
-    // tick the progress up a little bit
+    // tick the progress bar up a little bit
     impl.progress += (dt * (1.0f - impl.progress))/2.0f;
 
     // if there's an error, then the result came through (it's an error)
@@ -131,17 +140,29 @@ static void draw(Loading_screen::Impl& impl) {
     {
         glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
         ImGui::SetNextWindowPos(menu_pos);
+        ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
     }
 
     if (impl.error.empty()) {
-        if (ImGui::Begin("Loading message")) {
+        if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
             ImGui::Text("loading: %s", impl.path.string().c_str());
             ImGui::ProgressBar(impl.progress);
         }
         ImGui::End();
     } else {
-        if (ImGui::Begin("Error loading")) {
-            ImGui::TextUnformatted(impl.error.c_str());
+        if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+            ImGui::TextWrapped("An error occurred while loading the file:");
+            ImGui::Dummy(ImVec2{0.0f, 5.0f});
+            ImGui::TextWrapped("%s", impl.error.c_str());
+            ImGui::Dummy(ImVec2{0.0f, 5.0f});
+
+            if (ImGui::Button("back to splash screen (ESC)")) {
+                Application::current().request_screen_transition<Splash_screen>();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("try again")) {
+                Application::current().request_screen_transition<Loading_screen>(impl.editor_state, impl.path);
+            }
         }
         ImGui::End();
     }
@@ -159,6 +180,10 @@ Loading_screen::Loading_screen(std::shared_ptr<Main_editor_state> _st, std::file
 
 Loading_screen::~Loading_screen() noexcept {
     delete impl;
+}
+
+bool Loading_screen::on_event(SDL_Event const& e) {
+    return ::on_event(*impl, e);
 }
 
 void Loading_screen::tick(float dt) {
