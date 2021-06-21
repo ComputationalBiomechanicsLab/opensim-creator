@@ -77,8 +77,9 @@ std::filesystem::path const& osc::user_data_dir() {
 #include <string.h>
 #include <ucontext.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-// TODO
 void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
@@ -278,8 +279,43 @@ void osc::install_backtrace_handler() {
 #endif
 
 #ifdef __LINUX__
-void osc::open_path_in_default_application(std::filesystem::path const&) {
-    log::error("unsupported action: cannot open external programs in Linux (yet!)");
+void osc::open_path_in_default_application(std::filesystem::path const& fp) {
+    // fork a subprocess
+    pid_t pid = fork();
+
+    if (pid == -1) {
+        // failed to fork a process
+        log::error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
+        return;
+    } else if (pid != 0) {
+        // fork successful and this thread is inside the parent
+        //
+        // have the parent thread `wait` for the child thread to finish
+        // what it's doing (xdg-open, itself, forks + detaches)
+        log::info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
+
+        int rv;
+        waitpid(pid, &rv, 0);
+
+        if (rv) {
+            log::error("fork()ed subprocess returned an error code of %i", rv);
+        }
+
+        return;
+    } else {
+        // fork successful and we're inside the child
+        //
+        // immediately `exec` into `xdg-open`, which will aggro-replace this process
+        // image (+ this thread) with xdg-open
+        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), (char*)NULL);
+
+        // this thread only reaches here if there is some kind of error in `exec`
+        //
+        // aggressively exit this thread, returning the status code. Do **not**
+        // return from this thread, because it should'nt behave as-if it were
+        // the calling thread
+        exit(rv);
+    }
 }
 #elif defined(__APPLE__)
 void osc::open_path_in_default_application(std::filesystem::path const&) {
