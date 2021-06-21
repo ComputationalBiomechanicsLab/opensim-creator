@@ -14,6 +14,7 @@
 #include "src/utils/scope_guard.hpp"
 #include "src/main_editor_state.hpp"
 #include "src/ui/component_3d_viewer.hpp"
+#include "src/utils/os.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -151,6 +152,7 @@ void osc::ui::main_menu::about_tab::draw() {
     ui::help_marker::draw("standard utilities that can help with development, debugging, etc.");
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    int id = 0;
     {
         ImGui::Columns(2);
 
@@ -159,7 +161,6 @@ void osc::ui::main_menu::about_tab::draw() {
         ui::help_marker::draw(
             "shows the standard ImGui demo screen (ImGui::ShowDemoWindow). Useful for finding an ImGui feature.");
         ImGui::NextColumn();
-        int id = 0;
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
             Application::current().request_screen_transition<Imgui_demo_screen>();
@@ -195,6 +196,36 @@ void osc::ui::main_menu::about_tab::draw() {
                 }
             }
         }
+
+        ImGui::Columns();
+    }
+
+    ImGui::Dummy(ImVec2(0.0f, 2.5f));
+    ImGui::TextUnformatted("useful links:");
+    ImGui::SameLine();
+    ui::help_marker::draw("links to external sites that might be useful");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 0.5f));
+    {
+        ImGui::Columns(2);
+
+        ImGui::TextUnformatted("OpenSim Creator GitHub");
+        ImGui::NextColumn();
+        ImGui::PushID(id++);
+        if (ImGui::Button(ICON_FA_LINK " open")) {
+            open_path_in_default_application(OSC_REPO_URL);
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("OpenSim Documentation");
+        ImGui::NextColumn();
+        ImGui::PushID(id++);
+        if (ImGui::Button(ICON_FA_LINK " open")) {
+            open_path_in_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
 
         ImGui::Columns();
     }

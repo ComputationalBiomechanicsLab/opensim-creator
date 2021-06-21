@@ -317,13 +317,25 @@ void osc::open_path_in_default_application(std::filesystem::path const& fp) {
         exit(rv);
     }
 }
+
+void osc::open_url_in_default_browser(std::string_view vw) {
+    // HACK: we know that xdg-open handles this automatically
+    open_path_in_default_application(vw);
+}
+
 #elif defined(__APPLE__)
 void osc::open_path_in_default_application(std::filesystem::path const&) {
     log::error("unsupported action: cannot open external programs in Mac OSX (yet!)");
 }
+void osc::open_url_in_default_browser(std::string_view) {
+    log::error("unsupported action: cannot open external URLs in Mac OSX (yet!)");
+}
 #elif defined(WIN32)
 void osc::open_path_in_default_application(std::filesystem::path const& p) {
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
+}
+void osc::open_url_in_default_browser(std::string_view) {
+    log::error("unsupported action: cannot open external URLs in Windows (yet!)");
 }
 #else
 #error "Unsupported platform?"
