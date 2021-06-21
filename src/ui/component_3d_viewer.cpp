@@ -5,7 +5,7 @@
 #include "src/3d/3d.hpp"
 #include "src/application.hpp"
 #include "src/constants.hpp"
-#include "src/opensim_bindings/model_drawlist.hpp"
+#include "src/opensim_bindings/component_drawlist.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/log.hpp"
 

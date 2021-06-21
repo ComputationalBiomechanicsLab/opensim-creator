@@ -1,8 +1,8 @@
-#include "model_drawlist.hpp"
+#include "component_drawlist.hpp"
 
 #include "src/3d/3d.hpp"
 #include "src/simtk_bindings/simtk_bindings.hpp"
-#include "src/opensim_bindings/model_drawlist.hpp"
+#include "src/opensim_bindings/component_drawlist.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

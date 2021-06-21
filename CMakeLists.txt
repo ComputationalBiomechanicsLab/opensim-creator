@@ -97,8 +97,8 @@ add_executable(osc
     src/simtk_bindings/simtk_bindings.hpp
     src/simtk_bindings/simtk_bindings.cpp
 
-    src/opensim_bindings/model_drawlist.hpp
-    src/opensim_bindings/model_drawlist.cpp
+    src/opensim_bindings/component_drawlist.hpp
+    src/opensim_bindings/component_drawlist.cpp
     src/opensim_bindings/simulation.hpp
     src/opensim_bindings/simulation.cpp
     src/opensim_bindings/type_registry.hpp
