@@ -39,8 +39,6 @@ using namespace osc;
 static constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
 
 static Drawlist create_drawlist_with_chequered_floor() {
-    Drawlist rv;
-
     glm::mat4 model_mtx = []() {
         glm::mat4 rv = glm::identity<glm::mat4>();
 
@@ -61,9 +59,10 @@ static Drawlist create_drawlist_with_chequered_floor() {
     mi.meshidx = gpu_storage.floor_quad_idx;
     mi.texidx = gpu_storage.chequer_idx;
     mi.flags.set_skip_shading();
-    rv.push_back(mi);
 
-    return rv;
+    Drawlist dl;
+    dl.push_back(mi);
+    return dl;
 }
 
 static void render_quad(osc::GPU_storage& gs, glm::mat4 const& mvp, gl::Texture_2d& tex) {
