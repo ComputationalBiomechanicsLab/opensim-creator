@@ -20,7 +20,7 @@ set -xeuo pipefail
 OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch identifier from opensim-core
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_VERSION:-4.2}
+OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.2}
 
 # base build type: used if one of the below isn't overridden
 OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-RelWithDebInfo}
@@ -61,6 +61,28 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 #
 #     OSC_SKIP_OSC
 
+set +x
+echo "----- starting build -----"
+echo ""
+echo "----- printing build parameters -----"
+echo ""
+echo "    OSC_OPENSIM_REPO = ${OSC_OPENSIM_REPO}"
+echo "    OSC_OPENSIM_REPO_BRANCH = ${OSC_OPENSIM_REPO_BRANCH}"
+echo "    OSC_BASE_BUILD_TYPE = ${OSC_BASE_BUILD_TYPE}"
+echo "    OSC_OPENSIM_DEPS_BUILD_TYPE = ${OSC_OPENSIM_DEPS_BUILD_TYPE}"
+echo "    OSC_OPENSIM_BUILD_TYPE = ${OSC_OPENSIM_BUILD_TYPE}"
+echo "    OSC_BUILD_TYPE = ${OSC_BUILD_TYPE}"
+echo "    OSC_BUILD_CONCURRENCY = ${OSC_BUILD_CONCURRENCY}"
+echo "    OSC_BUILD_TARGET = ${OSC_BUILD_TARGET}"
+echo ""
+set -x
+
+
+echo "----- printing system (pre-dependency install) info -----"
+df  # print disk usage
+ls -la .  # print build dir contents
+uname -a  # print distro details
+
 
 if [[ -z ${OSC_SKIP_APT+x} ]]; then
     echo "----- getting system-level dependencies -----"
@@ -85,6 +107,13 @@ if [[ -z ${OSC_SKIP_APT+x} ]]; then
 else
     echo "----- skipping getting system-level dependencies (OSC_SKIP_APT is set) -----"
 fi
+
+
+echo "----- printing system (post-dependency install) info -----"
+cc --version
+c++ --version
+cmake --version
+make --version
 
 
 if [[ -z ${OSC_SKIP_OPENSIM+x} ]]; then
