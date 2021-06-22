@@ -7,7 +7,7 @@
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/model_editor_screen.hpp"
-#include "src/screens/opengl_test_screen.hpp"
+#include "src/screens/experiments_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/utils/helpers.hpp"
@@ -168,14 +168,14 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::PopID();
         ImGui::NextColumn();
 
-        ImGui::TextUnformatted("OpenGL experiments");
+        ImGui::TextUnformatted("Experimental Screens");
         ImGui::SameLine();
         ui::help_marker::draw(
-            "opens a test screen for low-level OpenGL features - you probably don't care about this, but it's useful for testing hardware features in prod");
+            "opens a test screen for experimental features - you probably don't care about this, but it's useful for testing hardware features in prod");
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
-            Application::current().request_screen_transition<Opengl_test_screen>();
+            Application::current().request_screen_transition<Experiments_screen>();
         }
         ImGui::PopID();
         ImGui::NextColumn();

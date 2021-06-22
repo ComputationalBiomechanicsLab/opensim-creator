@@ -1,4 +1,4 @@
-#include "opengl_test_screen.hpp"
+#include "experiments_screen.hpp"
 
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
@@ -60,7 +60,7 @@ namespace {
     }};
 }
 
-struct Opengl_test_screen::Impl final {
+struct Experiments_screen::Impl final {
     std::array<std::string, 1> demos = {"hello triangle"};
     size_t demo_shown = 0;
 
@@ -88,14 +88,7 @@ struct Opengl_test_screen::Impl final {
     } hellotriangle;
 };
 
-Opengl_test_screen::Opengl_test_screen() : impl{new Impl{}} {
-}
-
-Opengl_test_screen::~Opengl_test_screen() noexcept {
-    delete impl;
-}
-
-bool Opengl_test_screen::on_event(SDL_Event const& e) {
+static bool on_event_opengl_test_screen(osc::Experiments_screen::Impl& impl, SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
         Application::current().request_screen_transition<osc::Splash_screen>();
         return true;
@@ -103,25 +96,38 @@ bool Opengl_test_screen::on_event(SDL_Event const& e) {
     return false;
 }
 
-void Opengl_test_screen::draw() {
-    switch (impl->demo_shown) {
+static void on_draw_opengl_test_screen(osc::Experiments_screen::Impl& impl) {
+    switch (impl.demo_shown) {
     case 0:
-        impl->hellotriangle.draw();
+        impl.hellotriangle.draw();
         break;
     default:
         OSC_ASSERT(false && "invalid demo index selected: this is a developer error");
     }
 
     if (ImGui::Begin("main panel")) {
-        for (size_t i = 0; i < impl->demos.size(); ++i) {
-            ImGui::TextUnformatted(impl->demos[i].c_str());
-            if (i != impl->demo_shown) {
+        for (size_t i = 0; i < impl.demos.size(); ++i) {
+            ImGui::TextUnformatted(impl.demos[i].c_str());
+            if (i != impl.demo_shown) {
                 ImGui::SameLine();
                 if (ImGui::Button("show")) {
-                    impl->demo_shown = i;
+                    impl.demo_shown = i;
                 }
             }
         }
     }
     ImGui::End();
+}
+
+// public API
+
+Experiments_screen::Experiments_screen() : impl{new Impl{}} {
+}
+Experiments_screen::~Experiments_screen() noexcept = default;
+
+bool Experiments_screen::on_event(SDL_Event const& e) {
+    return ::on_event_opengl_test_screen(*impl, e);
+}
+void Experiments_screen::draw() {
+    ::on_draw_opengl_test_screen(*impl);
 }
