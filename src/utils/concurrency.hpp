@@ -4,9 +4,9 @@
 
 namespace osc {
     // a mutex guard over a reference to `T`
-    template<typename T>
+    template<typename T, typename TGuard = std::lock_guard<std::mutex>>
     class Mutex_guard final {
-        std::lock_guard<std::mutex> guard;
+        TGuard guard;
         T& ref;
 
     public:
@@ -28,6 +28,10 @@ namespace osc {
         T const* operator->() const noexcept {
             return &ref;
         }
+
+        TGuard& raw_guard() noexcept {
+            return guard;
+        }
     };
 
     // represents a `T` value that can only be accessed via a mutex guard
@@ -47,6 +51,10 @@ namespace osc {
 
         Mutex_guard<T> lock() {
             return Mutex_guard<T>{mutex, value};
+        }
+
+        Mutex_guard<T, std::unique_lock<std::mutex>> unique_lock() {
+            return Mutex_guard<T, std::unique_lock<std::mutex>>{mutex, value};
         }
     };
 }

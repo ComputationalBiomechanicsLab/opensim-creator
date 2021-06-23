@@ -146,6 +146,11 @@ static void load_mesh_data(PolygonalMesh const& mesh, Untextured_mesh& out) {
     generate_1to1_indices_for_verts(out);
 }
 
+void osc::load_mesh_file_with_simtk_backend(std::filesystem::path const& p, Untextured_mesh& out) {
+    SimTK::DecorativeMeshFile dmf{p.string()};
+    load_mesh_data(dmf.getMesh(), out);
+}
+
 static Transform ground_to_decoration_xform(
     SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
     MobilizedBody const& mobod = ms.getMobilizedBody(MobilizedBodyIndex(geom.getBodyId()));

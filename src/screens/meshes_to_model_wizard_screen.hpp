@@ -21,6 +21,8 @@ namespace osc {
         Meshes_to_model_wizard_screen();
         ~Meshes_to_model_wizard_screen() noexcept override;
 
+        bool on_event(SDL_Event const&) override;
+        void tick(float) override;
         void draw() override;
     };
 }

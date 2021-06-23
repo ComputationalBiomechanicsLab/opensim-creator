@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SimTKcommon.h>
+#include <filesystem>
 
 namespace osc {
     struct Untextured_mesh;
@@ -31,6 +32,11 @@ namespace osc {
             static_cast<double>(v[2]),
         };
     }
+
+    // load a mesh file, using the SimTK backend, into an OSC-friendly Untextured_mesh
+    //
+    // the mesh is cleared by the implementation before appending the loaded verts
+    void load_mesh_file_with_simtk_backend(std::filesystem::path const&, Untextured_mesh&);
 
     // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
