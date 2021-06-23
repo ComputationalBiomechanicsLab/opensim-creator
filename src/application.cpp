@@ -54,39 +54,6 @@ osc::Application* osc::Application::g_Current = nullptr;
 struct ImGuiContext;
 
 namespace igx {
-    static void configure_imgui_from_osc_config() {
-        ImGuiIO& io = ImGui::GetIO();
-
-        // configure ImGui from OSC's (toml) configuration
-        {
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-            if (config().use_multi_viewport) {
-                io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-            }
-        }
-
-        // load application-level ImGui config, then the user one,
-        // so that the user config takes precedence
-        {
-            std::string default_ini = resource("imgui_base_config.ini").string();
-            ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
-            std::string user_ini = (osc::user_data_dir() / "imgui.ini").string();
-            ImGui::LoadIniSettingsFromDisk(user_ini.c_str());
-            io.IniFilename = user_ini.c_str();
-        }
-
-        // add FontAwesome icon support
-        {
-            io.Fonts->AddFontDefault();
-            ImFontConfig config;
-            config.MergeMode = true;
-            config.GlyphMinAdvanceX = 13.0f;  // monospaced
-            static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-            std::string fa_font = resource("fontawesome-webfont.ttf").string();
-            ImGui::GetIO().Fonts->AddFontFromFileTTF(fa_font.c_str(), 13.0f, &config, icon_ranges);
-        }
-    }
-
     struct RawContext final {
         ImGuiContext* handle;
 
@@ -98,7 +65,8 @@ namespace igx {
         }
         ~RawContext() noexcept {
             if (handle) {
-                ImGui::DestroyContext();
+                log::info("DESTROY %s", ImGui::GetIO().IniFilename ? ImGui::GetIO().IniFilename : "NULL");
+                ImGui::DestroyContext(handle);
             }
         }
 
@@ -117,15 +85,52 @@ namespace igx {
     };
 
     struct Context final {
+        // IMPORTANT: must outlive the context, because the context holds onto
+        // a pointer to this string
+        std::string user_inifile;
+
         RawContext ctx;
 
         Context() {
-            configure_imgui_from_osc_config();
+            configure();
+        }
+
+        void configure() {
+            ImGuiIO& io = ImGui::GetIO();
+
+            // configure ImGui from OSC's (toml) configuration
+            {
+                io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+                if (config().use_multi_viewport) {
+                    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+                }
+            }
+
+            // load application-level ImGui config, then the user one,
+            // so that the user config takes precedence
+            {
+                std::string default_ini = resource("imgui_base_config.ini").string();
+                ImGui::LoadIniSettingsFromDisk(default_ini.c_str());
+                user_inifile = (osc::user_data_dir() / "imgui.ini").string();
+                ImGui::LoadIniSettingsFromDisk(user_inifile.c_str());
+                io.IniFilename = user_inifile.c_str();
+            }
+
+            // add FontAwesome icon support
+            {
+                io.Fonts->AddFontDefault();
+                ImFontConfig config;
+                config.MergeMode = true;
+                config.GlyphMinAdvanceX = 13.0f;  // monospaced
+                static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+                std::string fa_font = resource("fontawesome-webfont.ttf").string();
+                ImGui::GetIO().Fonts->AddFontFromFileTTF(fa_font.c_str(), 13.0f, &config, icon_ranges);
+            }
         }
 
         void reset() {
             ctx.reset();
-            configure_imgui_from_osc_config();
+            configure();
         }
     };
 
@@ -181,7 +186,7 @@ namespace igx {
             initialized = false;
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplOpenGL3_Init(version);
-            initialized=  true;
+            initialized = true;
         }
 
         ~OpenGL3_Context() noexcept {
