@@ -65,7 +65,6 @@ namespace igx {
         }
         ~RawContext() noexcept {
             if (handle) {
-                log::info("DESTROY %s", ImGui::GetIO().IniFilename ? ImGui::GetIO().IniFilename : "NULL");
                 ImGui::DestroyContext(handle);
             }
         }
