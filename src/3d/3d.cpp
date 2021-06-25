@@ -465,6 +465,76 @@ static void generate_y_line(Untextured_mesh& out) {
     generate_1to1_indices_for_verts(out);
 }
 
+// a cube wire mesh, suitable for GL_LINES drawing
+//
+// a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
+static constexpr std::array<Untextured_vert, 24> g_cube_edge_lines = {{
+    // back
+
+    // back bottom left -> back bottom right
+    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back bottom right -> back top right
+    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back top right -> back top left
+    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back top left -> back bottom left
+    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // front
+
+    // front bottom left -> front bottom right
+    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front bottom right -> front top right
+    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front top right -> front top left
+    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front top left -> front bottom left
+    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front-to-back edges
+
+    // front bottom left -> back bottom left
+    {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
+    {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
+
+    // front bottom right -> back bottom right
+    {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
+    {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
+
+    // front top left -> back top left
+    {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
+    {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
+
+    // front top right -> back top right
+    {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
+    {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
+}};
+
+static void generate_cube_lines(Untextured_mesh& out) {
+    out.clear();
+    out.indices.reserve(g_cube_edge_lines.size());
+    out.verts.reserve(g_cube_edge_lines.size());
+
+    for (size_t i = 0; i < g_cube_edge_lines.size(); ++i) {
+        out.indices.push_back(static_cast<elidx_t>(i));
+        out.verts.push_back(g_cube_edge_lines[i]);
+    }
+}
+
 osc::GPU_storage::GPU_storage() :
     // shaders
     shader_gouraud{new Gouraud_mrt_shader{}},
@@ -501,6 +571,11 @@ osc::GPU_storage::GPU_storage() :
         generate_y_line(utm);
         meshes.emplace_back(utm);
         yline_idx = Meshidx::from_index(meshes.size() - 1);
+        utm.clear();
+
+        generate_cube_lines(utm);
+        meshes.emplace_back(utm);
+        cube_lines_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
     }
 

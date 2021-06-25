@@ -521,6 +521,7 @@ namespace osc {
         Meshidx floor_quad_idx;
         Meshidx grid_25x25_idx;
         Meshidx yline_idx;
+        Meshidx cube_lines_idx;
         Meshidx quad_idx;
 
         // preallocated textures
