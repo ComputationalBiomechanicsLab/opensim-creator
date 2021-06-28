@@ -163,6 +163,8 @@ add_executable(osc
     src/screens/simulator_screen.cpp
     src/screens/meshes_to_model_wizard_screen.hpp
     src/screens/meshes_to_model_wizard_screen.cpp
+    src/screens/meshes_to_model_wizard_screen_step2.hpp
+    src/screens/meshes_to_model_wizard_screen_step2.cpp
 
     src/utils/concurrency.hpp
     src/utils/shims.hpp

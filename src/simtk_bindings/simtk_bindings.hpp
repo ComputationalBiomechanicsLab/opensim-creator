@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SimTKcommon.h>
+#include <glm/mat4x4.hpp>
+
 #include <filesystem>
 
 namespace osc {
@@ -37,6 +39,8 @@ namespace osc {
     //
     // the mesh is cleared by the implementation before appending the loaded verts
     void load_mesh_file_with_simtk_backend(std::filesystem::path const&, Untextured_mesh&);
+
+    glm::mat4 to_mat4(SimTK::Transform const& t);
 
     // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {

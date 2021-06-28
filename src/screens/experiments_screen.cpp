@@ -102,6 +102,7 @@ struct ImGuizmo_test_screen final : public Screen {
         return rv;
     }();
 
+    bool translate = false;
     glm::mat4 cube_mtx{1.0f};
 
     void draw() override {
@@ -120,10 +121,12 @@ struct ImGuizmo_test_screen final : public Screen {
 
         float snap[] = {1.0f};
 
+        ImGui::Checkbox("translate", &translate);
+
         ImGuizmo::Manipulate(
             glm::value_ptr(view),
             glm::value_ptr(projection),
-            ImGuizmo::ROTATE,
+            translate ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
             ImGuizmo::LOCAL,
             glm::value_ptr(cube_mtx),
             NULL,

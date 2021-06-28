@@ -8,6 +8,7 @@
 #include "src/3d/3d.hpp"
 #include "src/3d/cameras.hpp"
 #include "src/application.hpp"
+#include "src/screens/meshes_to_model_wizard_screen_step2.hpp"
 
 #include <imgui.h>
 #include <nfd.h>
@@ -17,101 +18,6 @@
 #include <glm/gtx/norm.hpp>
 
 using namespace osc;
-
-// axis-aligned bounding box
-struct AABB final {
-    glm::vec3 p1;
-    glm::vec3 p2;
-};
-
-// print a vec3
-//
-// useful for debugging
-static std::ostream& operator<<(std::ostream& o, glm::vec3 const& v) {
-    return o << '(' << v.x << ", " << v.y << ", " << v.z << ')';
-}
-
-// print a AABB
-//
-// useful for debugging
-static std::ostream& operator<<(std::ostream& o, AABB const& aabb) {
-    return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
-}
-
-// compute an AABB from a sequence of vertices in 3D space
-template<typename TVert>
-[[nodiscard]] static constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
-    AABB rv;
-
-    // edge-case: no points provided
-    if (n == 0) {
-        rv.p1 = {0.0f, 0.0f, 0.0f};
-        rv.p2 = {0.0f, 0.0f, 0.0f};
-        return rv;
-    }
-
-    rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-    rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-
-    // otherwise, compute bounds
-    for (size_t i = 0; i < n; ++i) {
-        glm::vec3 const& pos = vs[i].pos;
-
-        rv.p1[0] = std::min(rv.p1[0], pos[0]);
-        rv.p1[1] = std::min(rv.p1[1], pos[1]);
-        rv.p1[2] = std::min(rv.p1[2], pos[2]);
-
-        rv.p2[0] = std::max(rv.p2[0], pos[0]);
-        rv.p2[1] = std::max(rv.p2[1], pos[1]);
-        rv.p2[2] = std::max(rv.p2[2], pos[2]);
-    }
-
-    return rv;
-}
-
-// returns a vector that points to the center of the AABB
-[[nodiscard]] static constexpr glm::vec3 aabb_center(AABB const& aabb) noexcept {
-    return (aabb.p1 + aabb.p2) / 2.0f;
-}
-
-// a sphere, used to store bounding sphere calcs
-struct Sphere final {
-    glm::vec3 origin;
-    float radius;
-};
-
-// hackily computes the bounding sphere around verts
-//
-// see: https://en.wikipedia.org/wiki/Bounding_sphere for better algs
-template<typename TVert>
-[[nodiscard]] static constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
-    Sphere rv;
-    rv.origin = aabb_center(aabb_compute_from_verts(vs, n));
-    rv.radius = 0.0f;
-
-    // edge-case: no points provided
-    if (n == 0) {
-        return rv;
-    }
-
-    float biggest_r2 = 0.0f;
-    for (size_t i = 0; i < n; ++i) {
-        glm::vec3 const& pos = vs[i].pos;
-        float r2 = glm::distance2(rv.origin, pos);
-        biggest_r2 = std::max(biggest_r2, r2);
-    }
-
-    rv.radius = glm::sqrt(biggest_r2);
-
-    return rv;
-}
-
-// loads a mesh via SimTK
-[[nodiscard]] static Untextured_mesh load_mesh(std::filesystem::path const& p) {
-    Untextured_mesh rv;
-    load_mesh_file_with_simtk_backend(p, rv);
-    return rv;
-}
 
 // mesh data loaded in background (file loading, IO, etc.)
 struct Background_loaded_mesh final {
@@ -125,10 +31,15 @@ struct Background_loaded_mesh final {
     // bounding sphere of the mesh data
     Sphere bounding_sphere;
 
-    Background_loaded_mesh(std::filesystem::path const& p) :
-        um{load_mesh(p)},
-        aabb{aabb_compute_from_verts(um.verts.data(), um.verts.size())},
-        bounding_sphere{sphere_compute_bounding_sphere_from_verts(um.verts.data(), um.verts.size())} {
+    // immediately start loading the mesh on this thread
+    explicit Background_loaded_mesh(std::filesystem::path const& p) :
+        um{[&p]() {
+            Untextured_mesh rv;
+            load_mesh_file_with_simtk_backend(p, rv);
+            return rv;
+        }()},
+        aabb{aabb_from_mesh(um)},
+        bounding_sphere{bounding_sphere_from_mesh(um)} {
     }
 };
 
@@ -138,7 +49,8 @@ struct Foreground_loaded_mesh final {
     // index of mesh, loaded into GPU_storage
     Meshidx idx;
 
-    Foreground_loaded_mesh(Background_loaded_mesh const& blm) {
+    // immediately start uploading the mesh to the GPU on this thread
+    explicit Foreground_loaded_mesh(Background_loaded_mesh const& blm) {
         GPU_storage& gs = Application::current().get_gpu_storage();
         idx = Meshidx::from_index(gs.meshes.size());
         gs.meshes.emplace_back(blm.um);
@@ -185,7 +97,7 @@ struct User_mesh final {
     }
 };
 
-// top-level function for mesh loader thread
+// top-level function for mesh loader thread (declaration)
 static int mesh_loader_thread_main(
         osc::stop_token tok,
         osc::Meshes_to_model_wizard_screen::Impl*);
@@ -195,8 +107,8 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // loading/loaded meshes
     //
-    // mutex guarded because the mesh loader can mutate
-    // this also
+    // mutex guarded because the mesh loader thread can
+    // concurrently mutate this
     Mutex_guarded<std::vector<User_mesh>> meshes;
 
     // used to provide a unique ID to each mesh so that
@@ -395,7 +307,7 @@ static void draw_usermesh_tooltip(User_mesh const& um) {
 
         ImGui::Text("AABB.p1 = (%.2f, %.2f, %.2f)", b.aabb.p1.x, b.aabb.p1.y, b.aabb.p1.z);
         ImGui::Text("AABB.p2 = (%.2f, %.2f, %.2f)", b.aabb.p2.x, b.aabb.p2.y, b.aabb.p2.z);
-        glm::vec3 center = aabb_center(b.aabb);
+        glm::vec3 center = (b.aabb.p1 + b.aabb.p2) / 2.0f;
         ImGui::Text("center(AABB) = (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
 
         ImGui::Text("sphere = O(%.2f, %.2f, %.2f), r(%.2f)", b.bounding_sphere.origin.x, b.bounding_sphere.origin.y, b.bounding_sphere.origin.z, b.bounding_sphere.radius);
@@ -403,8 +315,26 @@ static void draw_usermesh_tooltip(User_mesh const& um) {
     ImGui::EndTooltip();
 }
 
+// create a Loaded_user_mesh by stealing data from a User_mesh
+[[nodiscard]] static Loaded_user_mesh pilfer_loaded_mesh_from(User_mesh&& um) {
+    OSC_ASSERT(um.bgdata != nullptr);
+    OSC_ASSERT(um.fgdata != nullptr);
+
+    Loaded_user_mesh rv;
+    rv.location = std::move(um.location);
+    rv.meshdata = std::move(um.bgdata->um);
+    rv.aabb = std::move(um.bgdata->aabb);
+    rv.bounding_sphere = std::move(um.bgdata->bounding_sphere);
+    rv.gpu_meshidx = std::move(um.fgdata->idx);
+    rv.is_hovered = um.is_hovered;
+    rv.is_selected = um.is_selected;
+    return rv;
+}
+
 // DRAW meshlist
-static void draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& impl) {
+//
+// returns nonempty vector if the user clicks "Next step" in the UI
+static std::vector<Loaded_user_mesh> draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& impl) {
 
     ImGui::Dummy(ImVec2{0.0f, 5.0f});
     ImGui::TextUnformatted("Mesh Importer Wizard");
@@ -428,11 +358,21 @@ static void draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& imp
     ImGui::PopStyleColor();
 
     auto guard = impl.meshes.lock();
+    auto is_fully_loaded = [](User_mesh const& um) {
+        return um.fgdata && um.bgdata;
+    };
 
-    if (!guard->empty()) {
+    if (!guard->empty() && std::all_of(guard->begin(), guard->end(), is_fully_loaded)) {
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_ARROW_RIGHT "Next step (body assignment)")) {
-            // transition
+            // reorgnaize the various pieces of mesh data into the input
+            // for the next screen
+            std::vector<Loaded_user_mesh> loaded_meshes;
+            loaded_meshes.reserve(guard->size());
+            for (User_mesh& um : *guard) {
+                loaded_meshes.push_back(pilfer_loaded_mesh_from(std::move(um)));
+            }
+            return loaded_meshes;
         }
     }
 
@@ -482,6 +422,8 @@ static void draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& imp
             mesh.is_selected = true;
         }
     }
+
+    return {};
 }
 
 // DRAW 3d viewer
@@ -583,7 +525,12 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
 // DRAW wizard screen
 static void draw_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Impl& impl) {
     if (ImGui::Begin("Mesh list")) {
-        draw_meshlist_panel_content(impl);
+        auto maybe_meshes = draw_meshlist_panel_content(impl);
+        if (!maybe_meshes.empty()) {
+            ImGui::End();
+            Application::current().request_screen_transition<Meshes_to_model_wizard_screen_step2>(std::move(maybe_meshes));
+            return;
+        }
     }
     ImGui::End();
 
@@ -704,7 +651,6 @@ static void tick_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Im
         guard->erase(it, guard->end());
     }
 }
-
 
 // public API
 

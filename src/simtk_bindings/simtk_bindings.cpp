@@ -160,7 +160,7 @@ static Transform ground_to_decoration_xform(
     return ground_to_body_xform * body_to_decoration_xform;
 }
 
-static glm::mat4 to_mat4(Transform const& t) {
+glm::mat4 osc::to_mat4(Transform const& t) {
     // glm::mat4 is column major:
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
     //     (and just Google "glm column major?")
@@ -206,7 +206,7 @@ static glm::mat4 to_mat4(Transform const& t) {
     return m;
 }
 
-static glm::mat4 to_mat4(SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
+static glm::mat4 geom_to_mat4(SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
     return to_mat4(ground_to_decoration_xform(ms, state, geom));
 }
 
@@ -239,7 +239,7 @@ void Simbody_geometry_visitor::implementPointGeometry(SimTK::DecorativePoint con
 }
 
 void Simbody_geometry_visitor::implementLineGeometry(SimTK::DecorativeLine const& geom) {
-    glm::mat4 xform = to_mat4(matter_subsys, state, geom);
+    glm::mat4 xform = geom_to_mat4(matter_subsys, state, geom);
     glm::vec3 p1 = xform * to_vec4(geom.getPoint1());
     glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
 
@@ -253,7 +253,7 @@ void Simbody_geometry_visitor::implementLineGeometry(SimTK::DecorativeLine const
 
 void Simbody_geometry_visitor::implementBrickGeometry(SimTK::DecorativeBrick const& geom) {
     SimTK::Vec3 dims = geom.getHalfLengths();
-    glm::mat4 base_xform = to_mat4(matter_subsys, state, geom);
+    glm::mat4 base_xform = geom_to_mat4(matter_subsys, state, geom);
 
     Mesh_instance mi;
     mi.model_xform = glm::scale(base_xform, glm::vec3{dims[0], dims[1], dims[2]});
@@ -264,7 +264,7 @@ void Simbody_geometry_visitor::implementBrickGeometry(SimTK::DecorativeBrick con
 }
 
 void Simbody_geometry_visitor::implementCylinderGeometry(SimTK::DecorativeCylinder const& geom) {
-    glm::mat4 m = to_mat4(matter_subsys, state, geom);
+    glm::mat4 m = geom_to_mat4(matter_subsys, state, geom);
     glm::vec3 s = scale_factors(geom);
     s.x *= static_cast<float>(geom.getRadius());
     s.y *= static_cast<float>(geom.getHalfHeight());
@@ -290,7 +290,7 @@ void Simbody_geometry_visitor::implementSphereGeometry(SimTK::DecorativeSphere c
     float r = static_cast<float>(geom.getRadius());
 
     Mesh_instance mi;
-    mi.model_xform = glm::scale(to_mat4(matter_subsys, state, geom), glm::vec3{r, r, r});
+    mi.model_xform = glm::scale(geom_to_mat4(matter_subsys, state, geom), glm::vec3{r, r, r});
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = gpu_cache.simbody_sphere_idx;
@@ -306,7 +306,7 @@ void Simbody_geometry_visitor::implementEllipsoidGeometry(SimTK::DecorativeEllip
 }
 
 void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame const& geom) {
-    glm::mat4 xform = to_mat4(matter_subsys, state, geom);
+    glm::mat4 xform = geom_to_mat4(matter_subsys, state, geom);
 
     glm::mat4 scaler = [&geom]() {
         glm::vec3 s = scale_factors(geom);
@@ -389,7 +389,7 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
     }
 
     Mesh_instance mi;
-    mi.model_xform = glm::scale(to_mat4(matter_subsys, state, geom), scale_factors(geom));
+    mi.model_xform = glm::scale(geom_to_mat4(matter_subsys, state, geom), scale_factors(geom));
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = it->second;

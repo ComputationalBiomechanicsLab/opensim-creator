@@ -16,6 +16,7 @@
 #include <memory>
 #include <unordered_map>
 #include <array>
+#include <iostream>
 
 // 3d: low-level 3D rendering primitives based on OpenGL
 //
@@ -23,6 +24,10 @@
 // 3D elements in OSC. The renderer is not dependent on SimTK/OpenSim at
 // all and has a very low-level view of view of things (verts, drawlists)
 namespace osc {
+    // helpers for printing glm types
+    //
+    // handy for debugging 3D maths
+    std::ostream& operator<<(std::ostream& o, glm::vec3 const& v);
 
     // a basic position in space + normal (for shading calculations)
     struct Untextured_vert final {
@@ -83,6 +88,25 @@ namespace osc {
             mesh.indices[i] = static_cast<elidx_t>(i);
         }
     }
+
+    // axis-aligned bounding box
+    struct AABB final {
+        glm::vec3 p1;  // lowest coordinate tuple
+        glm::vec3 p2;  // highest coordinate tuple
+    };
+
+    std::ostream& operator<<(std::ostream& o, AABB const& aabb);
+
+    // computes an AABB from a mesh
+    [[nodiscard]] AABB aabb_from_mesh(Untextured_mesh const&) noexcept;
+
+    // sphere (principally, for bounding-sphere calcs)
+    struct Sphere final {
+        glm::vec3 origin;
+        float radius;
+    };
+
+    [[nodiscard]] Sphere bounding_sphere_from_mesh(Untextured_mesh const&) noexcept;
 
     // 4 color channels (RGBA), 8 bits per channel
     struct Rgba32 final {
@@ -213,7 +237,7 @@ namespace osc {
         // curously-recurring template pattern
         [[nodiscard]] static constexpr Derived from_index(size_t i) {
             if (i > std::numeric_limits<value_type>::max()) {
-                throw std::runtime_error{"tried to create a Safe_index with a value that is too high for the underlying value type"};
+                throw std::runtime_error{"OSMV error: tried to create a Safe_index with a value that is too high for the underlying value type"};
             }
             return Derived{static_cast<T>(i)};
         }
@@ -234,7 +258,7 @@ namespace osc {
 
         [[nodiscard]] constexpr size_t as_index() const {
             if (!is_valid()) {
-                throw std::runtime_error{"tried to convert a Safe_index with an invalid value into an index"};
+                throw std::runtime_error{"OSMV error: tried to convert a Safe_index with an invalid value into an index"};
             }
             return static_cast<size_t>(v);
         }

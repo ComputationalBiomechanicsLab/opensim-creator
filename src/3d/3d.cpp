@@ -7,6 +7,8 @@
 #include "src/constants.hpp"
 #include "src/3d/gl_glm.hpp"
 
+#include <glm/gtx/norm.hpp>
+
 #include <cstddef>
 #include <iostream>
 #include <algorithm>
@@ -16,6 +18,81 @@
 #include <utility>
 
 using namespace osc;
+
+std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v) {
+    return o << '(' << v.x << ", " << v.y << ", " << v.z << ')';
+}
+
+std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
+    return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
+}
+
+// compute an AABB from a sequence of vertices in 3D space
+template<typename TVert>
+[[nodiscard]] static constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
+    AABB rv;
+
+    // edge-case: no points provided
+    if (n == 0) {
+        rv.p1 = {0.0f, 0.0f, 0.0f};
+        rv.p2 = {0.0f, 0.0f, 0.0f};
+        return rv;
+    }
+
+    rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+
+    // otherwise, compute bounds
+    for (size_t i = 0; i < n; ++i) {
+        glm::vec3 const& pos = vs[i].pos;
+
+        rv.p1[0] = std::min(rv.p1[0], pos[0]);
+        rv.p1[1] = std::min(rv.p1[1], pos[1]);
+        rv.p1[2] = std::min(rv.p1[2], pos[2]);
+
+        rv.p2[0] = std::max(rv.p2[0], pos[0]);
+        rv.p2[1] = std::max(rv.p2[1], pos[1]);
+        rv.p2[2] = std::max(rv.p2[2], pos[2]);
+    }
+
+    return rv;
+}
+
+// hackily computes the bounding sphere around verts
+//
+// see: https://en.wikipedia.org/wiki/Bounding_sphere for better algs
+template<typename TVert>
+[[nodiscard]] static constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
+    AABB aabb = aabb_compute_from_verts(vs, n);
+
+    Sphere rv;
+    rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
+    rv.radius = 0.0f;
+
+    // edge-case: no points provided
+    if (n == 0) {
+        return rv;
+    }
+
+    float biggest_r2 = 0.0f;
+    for (size_t i = 0; i < n; ++i) {
+        glm::vec3 const& pos = vs[i].pos;
+        float r2 = glm::distance2(rv.origin, pos);
+        biggest_r2 = std::max(biggest_r2, r2);
+    }
+
+    rv.radius = glm::sqrt(biggest_r2);
+
+    return rv;
+}
+
+osc::AABB osc::aabb_from_mesh(Untextured_mesh const& m) noexcept {
+    return aabb_compute_from_verts(m.verts.data(), m.verts.size());
+}
+
+osc::Sphere osc::bounding_sphere_from_mesh(Untextured_mesh const& m) noexcept {
+    return sphere_compute_bounding_sphere_from_verts(m.verts.data(), m.verts.size());
+}
 
 gl::Texture_2d osc::generate_chequered_floor_texture() {
     struct Rgb {
