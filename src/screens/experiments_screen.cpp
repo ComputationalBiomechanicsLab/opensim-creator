@@ -7,12 +7,14 @@
 #include "src/screens/splash_screen.hpp"
 #include "src/screens/meshes_to_model_wizard_screen.hpp"
 #include "src/utils/helpers.hpp"
+#include "src/3d/cameras.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
 #include <glm/vec3.hpp>
 #include <imgui.h>
+#include <ImGuizmo.h>
 
 #include <array>
 #include <cassert>
@@ -91,6 +93,46 @@ struct Triangle_test_screen final : public Screen {
     }
 };
 
+struct ImGuizmo_test_screen final : public Screen {
+    Polar_perspective_camera camera = []() {
+        Polar_perspective_camera rv;
+        rv.pan = {0.0f, 0.0f, 0.0f};
+        rv.phi = 1.0f;
+        rv.theta = 0.0f;
+        return rv;
+    }();
+
+    glm::mat4 cube_mtx{1.0f};
+
+    void draw() override {
+        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT);
+
+        glm::mat4 view = view_matrix(camera);
+        auto [w, h] = Application::current().window_dimensionsf();
+        glm::mat4 projection = projection_matrix(camera, w/h);
+
+        ImGuizmo::BeginFrame();
+        ImGuizmo::SetRect(0, 0, w, h);
+        glm::mat4 identity{1.0f};
+        ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
+        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(cube_mtx), 1);
+
+        float snap[] = {1.0f};
+
+        ImGuizmo::Manipulate(
+            glm::value_ptr(view),
+            glm::value_ptr(projection),
+            ImGuizmo::ROTATE,
+            ImGuizmo::LOCAL,
+            glm::value_ptr(cube_mtx),
+            NULL,
+            NULL, //&snap[0],   // snap
+            NULL,   // bound sizing?
+            NULL);  // bound sizing snap
+    }
+};
+
 struct Experiments_screen::Impl final {
 };
 
@@ -123,6 +165,10 @@ static void on_draw_opengl_test_screen(osc::Experiments_screen::Impl&) {
 
     if (ImGui::Button("OpenSim: Meshes to model wizard")) {
         Application::current().request_screen_transition<Meshes_to_model_wizard_screen>();
+    }
+
+    if (ImGui::Button("ImGuizmo test screen")) {
+        Application::current().request_screen_transition<ImGuizmo_test_screen>();
     }
 
     ImGui::End();
