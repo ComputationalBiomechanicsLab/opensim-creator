@@ -45,7 +45,7 @@ static Drawlist create_drawlist_with_chequered_floor() {
         // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
         // floor down *slightly* to prevent Z fighting from planes rendered from the
         // model itself (the contact planes, etc.)
-        rv = glm::translate(rv, {0.0f, -0.001f, 0.0f});
+        rv = glm::translate(rv, {0.0f, -0.005f, 0.0f});
         rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
         rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
 

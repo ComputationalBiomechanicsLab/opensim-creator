@@ -95,6 +95,11 @@ namespace osc {
         glm::vec3 p2;  // highest coordinate tuple
     };
 
+    inline constexpr glm::vec3 aabb_center(AABB const& a) noexcept {
+        return (a.p1 + a.p2)/2.0f;
+    }
+
+    // for debug printing
     std::ostream& operator<<(std::ostream& o, AABB const& aabb);
 
     // computes an AABB from a mesh

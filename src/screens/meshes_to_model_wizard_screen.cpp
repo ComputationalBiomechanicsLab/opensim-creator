@@ -16,6 +16,8 @@
 #include <filesystem>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <ImGuizmo.h>
 
 using namespace osc;
 
@@ -67,6 +69,12 @@ struct User_mesh final {
 
     // any errors during the loading/GPU transfer process
     std::string error;
+
+    // in-UI transforms to the mesh
+    //
+    // this is modified when the user edits the mesh's location/orientation in
+    // the wizard itself
+    glm::mat4 model_mtx{1.0f};
 
     // mesh data loaded by background thread
     //
@@ -124,7 +132,7 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // worker thread that loads meshes
     //
-    // starts immediately on construction
+    // starts immediately on constructionz
     osc::jthread mesh_loader_thread{mesh_loader_thread_main, this};
 
     // rendering params
@@ -139,8 +147,11 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // scene camera
     osc::Polar_perspective_camera camera;
 
-    // true if implementation thinks mouse is over the render
+    // true if the implementation thinks the user's mouse is over the render
     bool mouse_over_render = true;
+
+    // true if the implementation thinks the user's mouse is over a gizmo
+    bool mouse_over_gizmo = false;
 
     // true if renderer should draw AABBs
     bool draw_aabbs = false;
@@ -326,8 +337,10 @@ static void draw_usermesh_tooltip(User_mesh const& um) {
     rv.aabb = std::move(um.bgdata->aabb);
     rv.bounding_sphere = std::move(um.bgdata->bounding_sphere);
     rv.gpu_meshidx = std::move(um.fgdata->idx);
+    rv.model_mtx = um.model_mtx;
     rv.is_hovered = um.is_hovered;
     rv.is_selected = um.is_selected;
+    rv.assigned_body = -1;
     return rv;
 }
 
@@ -392,7 +405,6 @@ static std::vector<Loaded_user_mesh> draw_meshlist_panel_content(Meshes_to_model
         ImGui::PushID(i);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.6f, 0.0f, 0.0f, 1.0f});
         if (ImGui::Button("X")) {
-            log::info("erase");
             guard->erase(guard->begin() + i);
             --i;
             ImGui::PopStyleColor();
@@ -449,11 +461,14 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     impl.render_target.reconfigure(
         static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples());
 
+
+    ImVec2 wp = ImGui::GetWindowPos();
+    ImVec2 cp = ImGui::GetCursorPos();
+    ImVec2 imgstart{wp.x + cp.x, wp.y + cp.y};
+
     // update hovertest location
     {
-        ImVec2 cp = ImGui::GetCursorPos();
         ImVec2 mp = ImGui::GetMousePos();
-        ImVec2 wp = ImGui::GetWindowPos();
         impl.renderparams.hittest.x = static_cast<int>((mp.x - wp.x) - cp.x);
         impl.renderparams.hittest.y = static_cast<int>(dims.y - ((mp.y - wp.y) - cp.y));
     }
@@ -480,7 +495,13 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
             });
     }
 
-    if (it != guard->end()) {
+    // handle mouse
+    if (impl.mouse_over_gizmo) {
+        // mouse is being handled by ImGuizmo
+
+    } else if (it != guard->end()) {
+        // mouse is over a piece of 3D geometry in the scene
+
         it->is_hovered = true;
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
@@ -495,7 +516,8 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
             it->is_selected = true;
         }
     } else {
-        // clicked in middle of nowhere?
+        // mouse is over nothing
+
         if (impl.mouse_over_render && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             bool lshift_down = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT);
             bool rshift_down = ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
@@ -520,10 +542,73 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     if (it != guard->end()) {
         draw_usermesh_tooltip(*it);
     }
+
+    // draw manipulation gizmos
+    {
+        int nselected = 0;
+        glm::vec3 avg_center = {0.0f, 0.0f, 0.0f};
+        for (User_mesh const& um : *guard) {
+            if (!um.is_selected) {
+                continue;
+            }
+
+            if (!um.bgdata) {
+                continue;
+            }
+
+            glm::vec3 raw_center = aabb_center(um.bgdata->aabb);
+            glm::vec3 center = glm::vec3{um.model_mtx * glm::vec4{raw_center, 1.0f}};
+
+            avg_center += center;
+            ++nselected;
+        }
+        avg_center /= static_cast<float>(nselected);
+
+        if (nselected > 0) {
+            glm::mat4 translator = glm::translate(glm::mat4{1.0f}, avg_center);
+            glm::mat4 manipulated_mtx = translator;
+
+            ImGuizmo::SetRect(imgstart.x, imgstart.y, static_cast<float>(impl.render_target.w), static_cast<float>(impl.render_target.h));
+            ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+
+            bool manipulated = ImGuizmo::Manipulate(
+                glm::value_ptr(impl.renderparams.view_matrix),
+                glm::value_ptr(impl.renderparams.projection_matrix),
+                ImGuizmo::TRANSLATE,
+                ImGuizmo::WORLD,
+                glm::value_ptr(manipulated_mtx),
+                nullptr,
+                nullptr,
+                nullptr,
+                nullptr);
+
+            if (manipulated) {
+                glm::mat4 inv_translator = glm::translate(glm::mat4{1.0f}, -avg_center);
+                glm::mat4 raw_xform = inv_translator * manipulated_mtx;
+                glm::mat4 applied_xform = translator * raw_xform * inv_translator;
+
+                for (User_mesh& um : *guard) {
+                    if (!um.is_selected) {
+                        continue;
+                    }
+
+                    if (!um.bgdata) {
+                        continue;
+                    }
+
+                    um.model_mtx = applied_xform * um.model_mtx;
+                }
+            }
+        }
+
+        impl.mouse_over_gizmo = ImGuizmo::IsOver();
+    }
 }
 
 // DRAW wizard screen
 static void draw_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Impl& impl) {
+    ImGuizmo::BeginFrame();
+
     if (ImGui::Begin("Mesh list")) {
         auto maybe_meshes = draw_meshlist_panel_content(impl);
         if (!maybe_meshes.empty()) {
@@ -602,8 +687,8 @@ static void tick_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Im
         // draw the geometry
         {
             Mesh_instance mi;
-            mi.model_xform = glm::mat4{1.0f};
-            mi.normal_xform = glm::mat4{1.0f};
+            mi.model_xform = mesh.model_mtx;
+            mi.normal_xform = normal_matrix(mi.model_xform);
             mi.rgba = Rgba32::from_vec4({1.0f, 1.0f, 1.0f, 1.0f});
             mi.meshidx = fgdata.idx;
             mi.passthrough.rim_alpha = mesh.is_selected ? 0xff : mesh.is_hovered ? 0x60 : 0x00;
@@ -618,7 +703,7 @@ static void tick_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Im
             glm::vec3 o = (aabb.p1 + aabb.p2)/2.0f;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, o - aabb.p1);
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, o);
-            mi2.model_xform = translate * scaler;
+            mi2.model_xform = mesh.model_mtx * translate * scaler;
             mi2.normal_xform = normal_matrix(mi2.model_xform);
             mi2.rgba = Rgba32::from_vec4({1.0f, 0.0f, 0.0f, 1.0f});
             mi2.meshidx = s.cube_lines_idx;
@@ -632,7 +717,7 @@ static void tick_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Im
             Sphere const& sph = bgdata.bounding_sphere;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {sph.radius, sph.radius, sph.radius});
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, sph.origin);
-            mi2.model_xform = translate * scaler;
+            mi2.model_xform = mesh.model_mtx * translate * scaler;
             mi2.normal_xform = normal_matrix(mi2.model_xform);
             mi2.rgba = Rgba32::from_vec4({0.0f, 1.0f, 0.0f, 0.3f});
             mi2.meshidx = s.simbody_sphere_idx;

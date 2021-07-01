@@ -22,8 +22,15 @@ namespace osc {
         // bounding sphere (modelspace) for meshdata
         Sphere bounding_sphere;
 
-        // index of meshdata on GPU
+        // index of mesh data on GPU
         Meshidx gpu_meshidx;
+
+        // additional transforms performed by user in the UI
+        glm::mat4 model_mtx;
+
+        // -1 if not yet assigned to a body; otherwise, the ID/index
+        // of the body the mesh was assigned to
+        int assigned_body;
 
         // true if the mesh is hovered
         bool is_hovered;
