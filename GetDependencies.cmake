@@ -274,6 +274,7 @@ if(TRUE)
     )
     target_link_libraries(imguizmo PUBLIC imgui)
     target_include_directories(imguizmo PUBLIC third_party/ third_party/ImGuizmo)
+    target_compile_features(imguizmo PUBLIC cxx_std_11)
 endif()
 
 # DEPENDENCY: stb
