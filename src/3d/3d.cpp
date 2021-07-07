@@ -7,6 +7,8 @@
 #include "src/constants.hpp"
 #include "src/3d/gl_glm.hpp"
 
+#include <glm/gtx/norm.hpp>
+
 #include <cstddef>
 #include <iostream>
 #include <algorithm>
@@ -16,6 +18,88 @@
 #include <utility>
 
 using namespace osc;
+
+std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v) {
+    return o << '(' << v.x << ", " << v.y << ", " << v.z << ')';
+}
+
+std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
+    return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
+}
+
+bool osc::are_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+    float eps = std::numeric_limits<float>::epsilon();
+    float eps2 = eps * eps;
+    float len2 = glm::length2(a - b);
+    return len2 > eps2;
+}
+
+// compute an AABB from a sequence of vertices in 3D space
+template<typename TVert>
+[[nodiscard]] static constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
+    AABB rv;
+
+    // edge-case: no points provided
+    if (n == 0) {
+        rv.p1 = {0.0f, 0.0f, 0.0f};
+        rv.p2 = {0.0f, 0.0f, 0.0f};
+        return rv;
+    }
+
+    rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+
+    // otherwise, compute bounds
+    for (size_t i = 0; i < n; ++i) {
+        glm::vec3 const& pos = vs[i].pos;
+
+        rv.p1[0] = std::min(rv.p1[0], pos[0]);
+        rv.p1[1] = std::min(rv.p1[1], pos[1]);
+        rv.p1[2] = std::min(rv.p1[2], pos[2]);
+
+        rv.p2[0] = std::max(rv.p2[0], pos[0]);
+        rv.p2[1] = std::max(rv.p2[1], pos[1]);
+        rv.p2[2] = std::max(rv.p2[2], pos[2]);
+    }
+
+    return rv;
+}
+
+// hackily computes the bounding sphere around verts
+//
+// see: https://en.wikipedia.org/wiki/Bounding_sphere for better algs
+template<typename TVert>
+[[nodiscard]] static constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
+    AABB aabb = aabb_compute_from_verts(vs, n);
+
+    Sphere rv;
+    rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
+    rv.radius = 0.0f;
+
+    // edge-case: no points provided
+    if (n == 0) {
+        return rv;
+    }
+
+    float biggest_r2 = 0.0f;
+    for (size_t i = 0; i < n; ++i) {
+        glm::vec3 const& pos = vs[i].pos;
+        float r2 = glm::distance2(rv.origin, pos);
+        biggest_r2 = std::max(biggest_r2, r2);
+    }
+
+    rv.radius = glm::sqrt(biggest_r2);
+
+    return rv;
+}
+
+osc::AABB osc::aabb_from_mesh(Untextured_mesh const& m) noexcept {
+    return aabb_compute_from_verts(m.verts.data(), m.verts.size());
+}
+
+osc::Sphere osc::bounding_sphere_from_mesh(Untextured_mesh const& m) noexcept {
+    return sphere_compute_bounding_sphere_from_verts(m.verts.data(), m.verts.size());
+}
 
 gl::Texture_2d osc::generate_chequered_floor_texture() {
     struct Rgb {
@@ -465,6 +549,76 @@ static void generate_y_line(Untextured_mesh& out) {
     generate_1to1_indices_for_verts(out);
 }
 
+// a cube wire mesh, suitable for GL_LINES drawing
+//
+// a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
+static constexpr std::array<Untextured_vert, 24> g_cube_edge_lines = {{
+    // back
+
+    // back bottom left -> back bottom right
+    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back bottom right -> back top right
+    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back top right -> back top left
+    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // back top left -> back bottom left
+    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+    // front
+
+    // front bottom left -> front bottom right
+    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front bottom right -> front top right
+    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front top right -> front top left
+    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front top left -> front bottom left
+    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+    // front-to-back edges
+
+    // front bottom left -> back bottom left
+    {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
+    {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
+
+    // front bottom right -> back bottom right
+    {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
+    {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
+
+    // front top left -> back top left
+    {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
+    {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
+
+    // front top right -> back top right
+    {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
+    {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
+}};
+
+static void generate_cube_lines(Untextured_mesh& out) {
+    out.clear();
+    out.indices.reserve(g_cube_edge_lines.size());
+    out.verts.reserve(g_cube_edge_lines.size());
+
+    for (size_t i = 0; i < g_cube_edge_lines.size(); ++i) {
+        out.indices.push_back(static_cast<elidx_t>(i));
+        out.verts.push_back(g_cube_edge_lines[i]);
+    }
+}
+
 osc::GPU_storage::GPU_storage() :
     // shaders
     shader_gouraud{new Gouraud_mrt_shader{}},
@@ -501,6 +655,11 @@ osc::GPU_storage::GPU_storage() :
         generate_y_line(utm);
         meshes.emplace_back(utm);
         yline_idx = Meshidx::from_index(meshes.size() - 1);
+        utm.clear();
+
+        generate_cube_lines(utm);
+        meshes.emplace_back(utm);
+        cube_lines_idx = Meshidx::from_index(meshes.size() - 1);
         utm.clear();
     }
 

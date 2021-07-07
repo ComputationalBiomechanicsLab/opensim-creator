@@ -263,6 +263,20 @@ if(TRUE)
     target_include_directories(imgui PUBLIC third_party/ third_party/imgui/)
 endif()
 
+# DEPENDENCY: ImGuizmo
+#     small library for rendering manipulation gizmos (move, rotate) on a 3D scene
+#
+#     - built from source
+if(TRUE)
+    add_library(imguizmo STATIC
+        third_party/ImGuizmo/ImGuizmo.cpp
+        third_party/ImGuizmo/ImGuizmo.h
+    )
+    target_link_libraries(imguizmo PUBLIC imgui)
+    target_include_directories(imguizmo PUBLIC third_party/ third_party/ImGuizmo)
+    target_compile_features(imguizmo PUBLIC cxx_std_11)
+endif()
+
 # DEPENDENCY: stb
 #     header-only library, used to read/write asset files (images, sounds)
 if(TRUE)
@@ -408,6 +422,9 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # GUI component rendering (text boxes, sliders, etc.)
     imgui
+
+    # GUI support for gizmos
+    imguizmo
 
     # GUI asset parsing (image files, sound files, etc.)
     stb
