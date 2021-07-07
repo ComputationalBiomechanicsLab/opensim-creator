@@ -27,6 +27,13 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
     return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
 }
 
+bool osc::are_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+    float eps = std::numeric_limits<float>::epsilon();
+    float eps2 = eps * eps;
+    float len2 = glm::length2(a - b);
+    return len2 > eps2;
+}
+
 // compute an AABB from a sequence of vertices in 3D space
 template<typename TVert>
 [[nodiscard]] static constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {

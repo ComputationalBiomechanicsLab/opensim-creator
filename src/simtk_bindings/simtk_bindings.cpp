@@ -160,7 +160,7 @@ static Transform ground_to_decoration_xform(
     return ground_to_body_xform * body_to_decoration_xform;
 }
 
-glm::mat4 osc::to_mat4(Transform const& t) {
+glm::mat4 osc::to_mat4(Transform const& t) noexcept {
     // glm::mat4 is column major:
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
     //     (and just Google "glm column major?")
@@ -204,6 +204,22 @@ glm::mat4 osc::to_mat4(Transform const& t) {
     m[3][3] = 1.0f;
 
     return m;
+}
+
+SimTK::Transform osc::to_transform(glm::mat4 const& m) noexcept {
+    // glm::mat4 is column-major, SimTK::Transform is effectively
+    // row-major
+
+    SimTK::Mat33 mtx{
+        m[0][0], m[1][0], m[2][0],
+        m[0][1], m[1][1], m[2][1],
+        m[0][2], m[1][2], m[2][2],
+    };
+    SimTK::Vec3 translation{m[3][0], m[3][1], m[3][2]};
+
+    SimTK::Rotation rot{mtx};
+
+    return SimTK::Transform{rot, translation};
 }
 
 static glm::mat4 geom_to_mat4(SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {

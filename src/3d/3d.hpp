@@ -16,7 +16,7 @@
 #include <memory>
 #include <unordered_map>
 #include <array>
-#include <iostream>
+#include <iosfwd>
 
 // 3d: low-level 3D rendering primitives based on OpenGL
 //
@@ -28,6 +28,9 @@ namespace osc {
     //
     // handy for debugging 3D maths
     std::ostream& operator<<(std::ostream& o, glm::vec3 const& v);
+
+    // returns true if the provided vectors are at the same location
+    [[nodiscard]] bool are_colocated(glm::vec3 const&, glm::vec3 const&) noexcept;
 
     // a basic position in space + normal (for shading calculations)
     struct Untextured_vert final {
@@ -113,6 +116,18 @@ namespace osc {
 
     [[nodiscard]] Sphere bounding_sphere_from_mesh(Untextured_mesh const&) noexcept;
 
+    [[nodiscard]] GLubyte inline constexpr f32_to_u8_color(float v) noexcept {
+        return static_cast<GLubyte>(255.0f * v);
+    }
+
+    [[nodiscard]] float inline constexpr u8_to_f32_color(GLubyte b) noexcept {
+        return static_cast<float>(b) / 255.0f;
+    }
+
+    [[nodiscard]] GLubyte inline constexpr f64_to_u8_color(double v) noexcept {
+        return static_cast<GLubyte>(255.0 * v);
+    }
+
     // 4 color channels (RGBA), 8 bits per channel
     struct Rgba32 final {
         GLubyte r;
@@ -122,19 +137,37 @@ namespace osc {
 
         [[nodiscard]] static constexpr Rgba32 from_vec4(glm::vec4 const& v) noexcept {
             Rgba32 rv{};
-            rv.r = static_cast<GLubyte>(255.0f * v.r);
-            rv.g = static_cast<GLubyte>(255.0f * v.g);
-            rv.b = static_cast<GLubyte>(255.0f * v.b);
-            rv.a = static_cast<GLubyte>(255.0f * v.a);
+            rv.r = f32_to_u8_color(v.r);
+            rv.g = f32_to_u8_color(v.g);
+            rv.b = f32_to_u8_color(v.b);
+            rv.a = f32_to_u8_color(v.a);
             return rv;
         }
 
         [[nodiscard]] static constexpr Rgba32 from_d4(double r, double g, double b, double a) noexcept {
             Rgba32 rv{};
-            rv.r = static_cast<GLubyte>(255.0 * r);
-            rv.g = static_cast<GLubyte>(255.0 * g);
-            rv.b = static_cast<GLubyte>(255.0 * b);
-            rv.a = static_cast<GLubyte>(255.0 * a);
+            rv.r = f64_to_u8_color(r);
+            rv.g = f64_to_u8_color(g);
+            rv.b = f64_to_u8_color(b);
+            rv.a = f64_to_u8_color(a);
+            return rv;
+        }
+
+        [[nodiscard]] static constexpr Rgba32 from_f4(float r, float g, float b, float a) noexcept {
+            Rgba32 rv{};
+            rv.r = f32_to_u8_color(r);
+            rv.g = f32_to_u8_color(g);
+            rv.b = f32_to_u8_color(b);
+            rv.a = f32_to_u8_color(a);
+            return rv;
+        }
+
+        [[nodiscard]] static constexpr Rgba32 from_u32(uint32_t v) noexcept {
+            Rgba32 rv{};
+            rv.r = static_cast<GLubyte>((v >> 24) & 0xff);
+            rv.g = static_cast<GLubyte>((v >> 16) & 0xff);
+            rv.b = static_cast<GLubyte>((v >> 8) & 0xff);
+            rv.a = static_cast<GLubyte>(v & 0xff);
             return rv;
         }
 
@@ -145,6 +178,23 @@ namespace osc {
             g{g_},
             b{b_},
             a{a_} {
+        }
+
+        [[nodiscard]] constexpr uint32_t to_u32() const noexcept {
+            uint32_t rv = static_cast<uint32_t>(r);
+            rv |= static_cast<uint32_t>(g) << 8;
+            rv |= static_cast<uint32_t>(b) << 16;
+            rv |= static_cast<uint32_t>(a) << 24;
+            return rv;
+        }
+
+        [[nodiscard]] constexpr glm::vec4 to_vec4() const noexcept {
+            glm::vec4 rv{};
+            rv.r = u8_to_f32_color(r);
+            rv.g = u8_to_f32_color(g);
+            rv.b = u8_to_f32_color(b);
+            rv.a = u8_to_f32_color(a);
+            return rv;
         }
     };
 

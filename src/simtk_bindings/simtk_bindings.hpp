@@ -4,6 +4,7 @@
 #include <glm/mat4x4.hpp>
 
 #include <filesystem>
+#include <glm/vec3.hpp>
 
 namespace osc {
     struct Untextured_mesh;
@@ -17,7 +18,7 @@ namespace SimTK {
 
 namespace osc {
 
-    // create a SimTK::Vec3 from three packed floats
+    // convert 3 packed floats to a SimTK::Vec3
     [[nodiscard]] inline SimTK::Vec3 stk_vec3_from(float v[3]) noexcept {
         return {
             static_cast<double>(v[0]),
@@ -26,7 +27,16 @@ namespace osc {
         };
     }
 
-    // create a SimTK::Inertia from three packed floats
+    // convert a glm::vec3 to a SimTK::Vec3
+    [[nodiscard]] inline SimTK::Vec3 stk_vec3_from(glm::vec3 const& v) noexcept {
+        return {
+            static_cast<double>(v.x),
+            static_cast<double>(v.y),
+            static_cast<double>(v.z),
+        };
+    }
+
+    // convert 3 packed floats to a SimTK::Inertia
     [[nodiscard]] inline SimTK::Inertia stk_inertia_from(float v[3]) noexcept {
         return {
             static_cast<double>(v[0]),
@@ -35,12 +45,16 @@ namespace osc {
         };
     }
 
+    // convert a SimTK::Transform to a glm::mat4
+    [[nodiscard]] glm::mat4 to_mat4(SimTK::Transform const& t) noexcept;
+
+    // convert a glm::mat4 to a SimTK::Transform
+    [[nodiscard]] SimTK::Transform to_transform(glm::mat4 const&) noexcept;
+
     // load a mesh file, using the SimTK backend, into an OSC-friendly Untextured_mesh
     //
     // the mesh is cleared by the implementation before appending the loaded verts
     void load_mesh_file_with_simtk_backend(std::filesystem::path const&, Untextured_mesh&);
-
-    glm::mat4 to_mat4(SimTK::Transform const& t);
 
     // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
