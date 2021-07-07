@@ -13,11 +13,16 @@
 #include <imgui.h>
 #include <nfd.h>
 #include "third_party/IconsFontAwesome5.h"
-#include <filesystem>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <glm/gtx/norm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <ImGuizmo.h>
+
+#include <filesystem>
+#include <condition_variable>
+#include <mutex>
+#include <string>
+#include <memory>
 
 using namespace osc;
 
