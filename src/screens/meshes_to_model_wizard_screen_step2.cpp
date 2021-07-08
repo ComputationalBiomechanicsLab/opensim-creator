@@ -305,11 +305,57 @@ static void update_camera_from_user_input(Meshes_to_model_wizard_screen_step2::I
 
 // delete all selected elements
 static void action_delete_selected(Meshes_to_model_wizard_screen_step2::Impl& impl) {
+
+    // nothing refers to meshes, so they can be removed straightforwardly
     auto& meshes = impl.meshes;
     auto it = std::remove_if(meshes.begin(), meshes.end(), [](auto const& m) { return m.is_selected; });
     meshes.erase(it, meshes.end());
 
+    // bodies/frames, and meshes, can refer to other bodies/frames (they're a tree)
+    // so deletion needs to update the `assigned_body` and `parent` fields of every
+    // other body/frame/mesh to be correct post-deletion
+
     auto& bodies = impl.bodies;
+
+    // perform parent/assigned_body fixups
+    //
+    // collect a list of to-be-deleted indices, going from big to small
+    std::vector<int> deleted_indices;
+    for (int i = static_cast<int>(bodies.size()) - 1; i >= 0; --i) {
+        Body_or_frame& b = bodies[i];
+        if (b.is_selected) {
+            deleted_indices.push_back(static_cast<int>(i));
+        }
+    }
+
+    // for each index in the (big to small) list, fixup the entries
+    // to point to a fixed-up location
+    //
+    // the reason it needs to be big-to-small is to prevent the sitation
+    // where decrementing an index makes it point at a location that appears
+    // to be equal to a to-be-deleted location
+    for (int idx : deleted_indices) {
+        for (Body_or_frame& b : bodies) {
+            if (b.parent == idx) {
+                b.parent = bodies[static_cast<size_t>(idx)].parent;
+            }
+            if (b.parent > idx) {
+                --b.parent;
+            }
+        }
+
+        for (Loaded_user_mesh& lum : meshes) {
+            if (lum.assigned_body == idx) {
+                lum.assigned_body = bodies[static_cast<size_t>(idx)].parent;
+            }
+            if (lum.assigned_body > idx) {
+                --lum.assigned_body;
+            }
+        }
+    }
+
+    // with the fixups done, we can now just remove the selected elements as
+    // normal
     auto it2 = std::remove_if(bodies.begin(), bodies.end(), [](auto const& b) { return b.is_selected; });
     bodies.erase(it2, bodies.end());
 }
