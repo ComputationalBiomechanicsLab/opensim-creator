@@ -201,7 +201,7 @@ static void draw(Splash_screen::Impl& impl) {
 
         // right column: example model files
         if (!impl.mm_state.example_osims.empty()) {
-            ImGui::TextUnformatted("Examples:");
+            ImGui::TextUnformatted("Example files:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
             for (fs::path const& ex : impl.mm_state.example_osims) {

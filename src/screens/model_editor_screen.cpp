@@ -881,15 +881,15 @@ static bool has_backing_file(OpenSim::Model const& m) {
 static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
     if (ImGui::BeginMenu("Edit")) {
 
-        if (ImGui::MenuItem("Undo", "Ctrl+Z", false, impl.st->can_undo())) {
+        if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, impl.st->can_undo())) {
             action_undo(impl);
         }
 
-        if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", false, impl.st->can_redo())) {
+        if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, impl.st->can_redo())) {
             action_redo(impl);
         }
 
-        if (ImGui::MenuItem("Clear Isolation", nullptr, false, impl.st->isolated() != nullptr)) {
+        if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, impl.st->isolated() != nullptr)) {
             impl.st->set_isolated(nullptr);
         }
         if (ImGui::IsItemHovered()) {
@@ -903,7 +903,7 @@ static void draw_main_menu_actions_tab(osc::Model_editor_screen::Impl& impl) {
             ImGui::EndTooltip();
         }
 
-        if (ImGui::MenuItem("Open in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
+        if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
             open_path_in_default_application(impl.st->model().getInputFileName());
         }
         if (ImGui::IsItemHovered()) {

@@ -385,17 +385,17 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         return;
     }
 
-    if (ImGui::MenuItem("New", "Ctrl+N")) {
+    if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N")) {
         action_new_model(editor_state);
     }
 
-    if (ImGui::MenuItem("Open", "Ctrl+O")) {
+    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O")) {
         action_open_model(editor_state);
     }
 
     int imgui_id = 0;
 
-    if (ImGui::BeginMenu("Open Recent")) {
+    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent")) {
         // iterate in reverse: recent files are stored oldest --> newest
         for (auto it = st.recent_files.rbegin(); it != st.recent_files.rend(); ++it) {
             Recent_file const& rf = *it;
@@ -409,7 +409,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Open Example")) {
+    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Example")) {
         for (std::filesystem::path const& ex : st.example_osims) {
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str())) {
@@ -421,23 +421,23 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         ImGui::EndMenu();
     }
 
-    if (ImGui::MenuItem("Save", "Ctrl+S", false, editor_state != nullptr)) {
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
             action_save(editor_state->model());
         }
     }
 
-    if (ImGui::MenuItem("Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
             action_save_as(editor_state->model());
         }
     }
 
-    if (ImGui::MenuItem("Close", "Ctrl+W", false, editor_state != nullptr)) {
+    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
         Application::current().request_screen_transition<Splash_screen>();
     }
 
-    if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
+    if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
         Application::current().request_quit_application();
     }
     ImGui::EndMenu();
