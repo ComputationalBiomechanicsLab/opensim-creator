@@ -30,7 +30,7 @@ namespace osc {
     std::ostream& operator<<(std::ostream& o, glm::vec3 const& v);
 
     // returns true if the provided vectors are at the same location
-    [[nodiscard]] bool are_colocated(glm::vec3 const&, glm::vec3 const&) noexcept;
+    [[nodiscard]] bool is_colocated(glm::vec3 const&, glm::vec3 const&) noexcept;
 
     // a basic position in space + normal (for shading calculations)
     struct Untextured_vert final {

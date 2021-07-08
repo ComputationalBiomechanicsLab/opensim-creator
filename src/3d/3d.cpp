@@ -27,7 +27,7 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
     return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
 }
 
-bool osc::are_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+bool osc::is_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float eps = std::numeric_limits<float>::epsilon();
     float eps2 = eps * eps;
     float len2 = glm::length2(a - b);
