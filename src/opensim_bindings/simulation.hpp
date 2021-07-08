@@ -32,7 +32,7 @@ namespace osc::fd {
     struct Params final {
 
         // final time for the simulation
-        std::chrono::duration<double> final_time{1.0};
+        std::chrono::duration<double> final_time{10.0};
 
         // true if the simulation should slow down whenever it runs faster than wall-time
         bool throttle_to_wall_time = true;
