@@ -177,4 +177,6 @@ if [[ ! ${OSC_SKIP_OSC+x} ]]; then
     echo ""
     echo "      osc-build/osc  # run the osc binary"
     echo "      apt-get install -yf osc-build/osc-*.deb  # install the package, then run 'osc'"
+else
+    echo "----- skipping OSC build (OSC_SKIP_OSC is set) -----"
 fi
