@@ -23,11 +23,121 @@
 #include <mutex>
 #include <string>
 #include <memory>
+#include <variant>
 
 using namespace osc;
 
-// mesh data loaded in background (file loading, IO, etc.)
-struct Background_loaded_mesh final {
+// a request (usually made by UI thread) to load some mesh data
+struct Mesh_load_request final {
+    // unique mesh ID
+    int id;
+
+    // filesystem path of the mesh
+    std::filesystem::path filepath;
+};
+
+// an OK response to a mesh loading request
+struct Mesh_load_OK_response final {
+    // unique mesh ID
+    int id;
+
+    // filesystem path of the mesh
+    std::filesystem::path filepath;
+
+    // CPU-side mesh data
+    Untextured_mesh um;
+
+    // AABB of the mesh data
+    AABB aabb;
+
+    // bounding sphere of the mesh data
+    Sphere bounding_sphere;
+};
+
+// an ERROR response to a mesh loading request
+struct Mesh_load_ERORR_response final {
+    // unique mesh ID
+    int id;
+
+    // filesystem path of the mesh (that errored while loading)
+    std::filesystem::path filepath;
+
+    // the error
+    std::string error;
+};
+
+// the response from a mesh loading request
+using Mesh_load_response = std::variant<Mesh_load_OK_response, Mesh_load_ERORR_response>;
+
+// MESH LOADER THREAD: respond to load request (and handle errors)
+static Mesh_load_response create_response(Mesh_load_request const& msg) {
+    try {
+        Mesh_load_OK_response rv;
+        rv.id = msg.id;
+        rv.filepath = msg.filepath;
+        load_mesh_file_with_simtk_backend(msg.filepath, rv.um);
+        rv.aabb = aabb_from_mesh(rv.um);
+        rv.bounding_sphere = bounding_sphere_from_mesh(rv.um);
+        return rv;
+    } catch (std::exception const& ex) {
+        return Mesh_load_ERORR_response{msg.id, msg.filepath, ex.what()};
+    }
+}
+
+// MESH LOADER THREAD: implementation code
+static int mesh_loader_thread_main(spsc::Receiver<Mesh_load_request> rx, spsc::Sender<Mesh_load_response> tx) {
+    while (!tx.is_receiver_hung_up()) {
+        std::optional<Mesh_load_request> msg = rx.recv();
+
+        if (!msg) {
+            return 0;  // sender hung up
+        }
+
+        tx.send(create_response(*msg));
+    }
+    return 0;
+}
+
+// state associated with the mesh loader
+struct Mesh_loader final {
+    // worker (background thread)
+    osc::jthread worker;
+
+    // request transmitter (UI thread)
+    spsc::Sender<Mesh_load_request> tx;
+
+    // response receiver (UI thread)
+    spsc::Receiver<Mesh_load_response> rx;
+
+    // create, and immediately start, the mesh loader
+    static Mesh_loader create() {
+        auto [req_tx, req_rx] = spsc::channel<Mesh_load_request>();
+        auto [resp_tx, resp_rx] = spsc::channel<Mesh_load_response>();
+        osc::jthread worker{mesh_loader_thread_main, std::move(req_rx), std::move(resp_tx)};
+        return Mesh_loader{std::move(worker), std::move(req_tx), std::move(resp_rx)};
+    }
+
+    // send a request to the mesh loader
+    void send(Mesh_load_request req) {
+        tx.send(std::move(req));
+    }
+
+    // poll for any new responses from the mesh loader
+    std::optional<Mesh_load_response> poll() {
+        return rx.try_recv();
+    }
+};
+
+// a fully-loaded mesh
+//
+// this differs from the `Mesh_load_OK_response` in that it contains GPU data
+// that *must* be loaded in the main thread (OpenGL limitation)
+struct Loaded_mesh final {
+    // unique mesh ID
+    int id;
+
+    // filesystem path of the mesh
+    std::filesystem::path filepath;
 
     // CPU-side mesh data
     Untextured_mesh um;
@@ -38,118 +148,58 @@ struct Background_loaded_mesh final {
     // bounding sphere of the mesh data
     Sphere bounding_sphere;
 
-    // immediately start loading the mesh on this thread
-    explicit Background_loaded_mesh(std::filesystem::path const& p) :
-        um{[&p]() {
-            Untextured_mesh rv;
-            load_mesh_file_with_simtk_backend(p, rv);
-            return rv;
-        }()},
-        aabb{aabb_from_mesh(um)},
-        bounding_sphere{bounding_sphere_from_mesh(um)} {
-    }
-};
-
-// mesh data loaded in foreground (GPU buffers, etc.)
-struct Foreground_loaded_mesh final {
-
     // index of mesh, loaded into GPU_storage
     Meshidx idx;
 
-    // immediately start uploading the mesh to the GPU on this thread
-    explicit Foreground_loaded_mesh(Background_loaded_mesh const& blm) {
-        GPU_storage& gs = Application::current().get_gpu_storage();
-        idx = Meshidx::from_index(gs.meshes.size());
-        gs.meshes.emplace_back(blm.um);
-    }
-};
-
-// a loading/loaded user mesh
-struct User_mesh final {
-    // unique ID for the mesh
-    int id;
-
-    // location of the mesh file on disk
-    std::filesystem::path location;
-
-    // any errors during the loading/GPU transfer process
-    std::string error;
-
-    // in-UI transforms to the mesh
-    //
-    // this is modified when the user edits the mesh's location/orientation in
-    // the wizard itself
-    glm::mat4 model_mtx{1.0f};
-
-    // mesh data loaded by background thread
-    //
-    // `nullptr` if not loaded by the background thread or
-    // there was an error
-    std::unique_ptr<Background_loaded_mesh> bgdata;
-
-    // GPU data transferred by UI thread (required by OpenGL API)
-    //
-    // `nullptr` if the mesh has not been loaded by the foreground
-    // thread or there was an error
-    std::unique_ptr<Foreground_loaded_mesh> fgdata;
-
-    // is this mesh hovered by the user?
+    // true if the mesh is hovered by the user's mouse
     bool is_hovered;
 
-    // is this mesh selected by the user?
+    // true if the mesh is selected
     bool is_selected;
 
-    explicit User_mesh(int _id, std::filesystem::path _loc) :
-        id{_id},
-        location{std::move(_loc)},
-        error{},
-        bgdata{nullptr},
-        fgdata{nullptr},
+    // create this by stealing from an OK background response
+    explicit Loaded_mesh(Mesh_load_OK_response&& tmp) :
+        id{tmp.id},
+        filepath{std::move(tmp.filepath)},
+        um{std::move(tmp.um)},
+        aabb{tmp.aabb},
+        bounding_sphere{tmp.bounding_sphere},
+        idx{[this]() {
+            GPU_storage& gs = Application::current().get_gpu_storage();
+            Meshidx rv = Meshidx::from_index(gs.meshes.size());
+            gs.meshes.emplace_back(um);
+            return rv;
+        }()},
         is_hovered{false},
         is_selected{false} {
     }
 };
 
-// top-level function for mesh loader thread (declaration)
-static int mesh_loader_thread_main(
-        osc::stop_token tok,
-        osc::Meshes_to_model_wizard_screen::Impl*);
-
-// data associated with the screen
+// top-level state associated with the whole screen
 struct osc::Meshes_to_model_wizard_screen::Impl final {
+    // loader that loads mesh data in a background thread
+    Mesh_loader mesh_loader;
 
-    // loading/loaded meshes
-    //
-    // mutex guarded because the mesh loader thread can
-    // concurrently mutate this
-    Mutex_guarded<std::vector<User_mesh>> meshes;
+    // loaded meshes
+    std::vector<Loaded_mesh> meshes;
 
-    // used to provide a unique ID to each mesh so that
-    // the worker thread can (fail to) locate a mesh in
-    // `meshes` after it has finished loading a mesh
+    // meshes queued up to be loaded by the background worker
+    std::vector<Mesh_load_request> loading_meshes;
+
+    // latest mesh ID - should be incremented each time a new
+    // mesh is loaded so that all meshes get a unique ID
     int latest_id = 1;
 
-    // condition variable for waking up the worker thread
-    //
-    // used to communicate if the worker is cancelled or
-    // there are new meshes
-    std::condition_variable worker_cv;
-
-    // worker thread that loads meshes
-    //
-    // starts immediately on constructionz
-    osc::jthread mesh_loader_thread{mesh_loader_thread_main, this};
-
-    // rendering params
+    // 3D rendering params
     osc::Render_params renderparams;
 
-    // drawlist that is rendered
+    // 3D drawlist that is rendered
     osc::Drawlist drawlist;
 
-    // output render target from renderer
+    // 3D output render target from renderer
     osc::Render_target render_target;
 
-    // scene camera
+    // 3D scene camera
     osc::Polar_perspective_camera camera;
 
     // true if the implementation thinks the user's mouse is over the render
@@ -163,128 +213,7 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // true if renderer should draw bounding spheres
     bool draw_bounding_spheres = false;
-
-    ~Impl() {
-        // on destruction, signal the worker to stop and wake it up
-        // so that it has a chance to stop
-        mesh_loader_thread.request_stop();
-        worker_cv.notify_all();
-    }
 };
-
-// returns true if the a user mesh needs data to be loaded
-[[nodiscard]] static bool needs_mesh_data(User_mesh const& um) {
-    return um.bgdata.get() == nullptr;
-}
-
-// returns true if any user mesh needs mesh data to be loaded
-[[nodiscard]] static bool contains_meshes_that_need_to_load_data(std::vector<User_mesh> const& ums) {
-    return std::any_of(ums.begin(), ums.end(), needs_mesh_data);
-}
-
-// WORKER THREAD: step
-//
-// the worker thread continually does this in a loop while the
-// screen meshes screen is open
-static void mesh_loader_step(osc::stop_token const& tok, osc::Meshes_to_model_wizard_screen::Impl& impl) {
-    int id_to_load;
-    std::filesystem::path location_to_load;
-
-    {
-        // wait for meshes to arrive, or cancellation
-        auto guard = impl.meshes.unique_lock();
-        impl.worker_cv.wait(guard.raw_guard(), [&]() {
-            return tok.stop_requested() ||
-                   contains_meshes_that_need_to_load_data(*guard);
-        });
-
-        // cancellation requested
-        if (tok.stop_requested()) {
-            return;
-        }
-
-        // else: find the mesh to load
-        auto it = std::find_if(guard->begin(), guard->end(), needs_mesh_data);
-
-        // edge-case that shouldn't happen
-        if (it == guard->end()) {
-            return;
-        }
-
-        id_to_load = it->id;
-        location_to_load = it->location;
-
-        // drop mutex guard here
-        //
-        // the worker thread will independently load the mesh etc. without
-        // blocking the UI, followed by reacquiring the mutex, checking to
-        // ensure the UI didn't delete the User_mesh in the meantime, etc.
-    }
-
-    OSC_ASSERT(id_to_load != -1);
-    OSC_ASSERT(!location_to_load.empty());
-
-
-    // try loading the data in this thread with no mutex acquired
-
-    std::unique_ptr<Background_loaded_mesh> loaded = nullptr;
-    std::string error;
-
-    try {
-        loaded = std::make_unique<Background_loaded_mesh>(location_to_load);
-    } catch (std::exception const& ex) {
-        error = ex.what();
-    }
-
-    // then acquire the mutex, so we can send the update to the UI
-
-    auto guard = impl.meshes.lock();
-    auto it = std::find_if(guard->begin(), guard->end(), [id_to_load](User_mesh const& um) {
-        return um.id == id_to_load;
-    });
-
-    if (it == guard->end()) {
-        // edge-case: the user deleted the element while this
-        // thread loaded it
-        return;
-    }
-
-    User_mesh& um = *it;
-
-    if (!error.empty()) {
-        // edge-case: there was an error, update the user mesh to reflect this
-        um.error = std::move(error);
-        return;
-    }
-
-    OSC_ASSERT(loaded.get() != nullptr);
-
-    // assign the data to the user model, so the UI thread can see the update
-    um.bgdata = std::move(loaded);
-
-    // mutex drops here
-}
-
-
-// WORKER THREAD: main
-//
-// see step (above) for implementation details
-static int mesh_loader_thread_main(osc::stop_token tok,
-                            osc::Meshes_to_model_wizard_screen::Impl* impl) {
-    try {
-        while (!tok.stop_requested()) {
-            mesh_loader_step(tok, *impl);
-        }
-    } catch (std::exception const& ex) {
-        log::error("exception thrown in the meshloader background thread: %s", ex.what());
-        throw;
-    } catch (...) {
-        log::error("exception of unknown type thrown in the meshloader background thread");
-        throw;
-    }
-
-    return 0;
-}
 
 // synchronously prompt the user to select multiple mesh files through
 // a native OS file dialog
@@ -296,12 +225,15 @@ static void prompt_user_to_select_multiple_mesh_files(Meshes_to_model_wizard_scr
         OSC_SCOPE_GUARD({ NFD_PathSet_Free(&s); });
 
         size_t len = NFD_PathSet_GetCount(&s);
-        auto guard = impl.meshes.lock();
+
         for (size_t i = 0; i < len; ++i) {
-            nfdchar_t* path = NFD_PathSet_GetPath(&s, i);
-            guard->emplace_back(impl.latest_id++, std::filesystem::path{path});
+            int id = impl.latest_id++;
+            std::filesystem::path fspath{NFD_PathSet_GetPath(&s, i)};
+
+            Mesh_load_request req{id, fspath};
+            impl.loading_meshes.push_back(req);
+            impl.mesh_loader.send(req);
         }
-        impl.worker_cv.notify_all();
     } else if (result == NFD_CANCEL) {
         // do nothing
     } else {

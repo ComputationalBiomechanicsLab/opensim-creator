@@ -119,8 +119,6 @@ struct ImGuizmo_test_screen final : public Screen {
         ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
         ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(cube_mtx), 1);
 
-        float snap[] = {1.0f};
-
         ImGui::Checkbox("translate", &translate);
 
         ImGuizmo::Manipulate(

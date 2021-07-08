@@ -441,6 +441,11 @@ static void update_impl_from_user_input(Meshes_to_model_wizard_screen_step2::Imp
     if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
         impl.assignment_st.assigner = -1;
     }
+
+    // CTRL+A: select all
+    if ((ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
+        set_is_selected_of_all_to(impl, true);
+    }
 }
 
 // convert a 3D worldspace coordinate into a 2D screenspace coordinate
