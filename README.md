@@ -28,9 +28,9 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 > 🚧 **ALPHA-STAGE SOFTWARE** 🚧: OpenSim Creator is currently in development, so
 > things are prone to breaking. If a release doesn't work for you,
-> report it on the [issues](issues)
-> page, try a different [release](releases)
-> or try downloading the latest passing build from [the actions page](actions)
+> report it on the [issues](../../issues)
+> page, try a different [release](../../releases)
+> or try downloading the latest passing build from [the actions page](../../actions)
 
 Below is a list of the latest releases of `osc`. This list is updated manually whenever a new
 release is published. If you want bleeding-edge releases, download a passing build from
@@ -41,10 +41,10 @@ installed. If you find they do, [report it](issues).
 
 | OS | Link | Comments |
 | - | - | - |
-| Windows 10 | [.exe](releases/download/0.0.2/osmv-0.0.2-win64.exe) | |
-| Mac (Catalina onwards) | [.dmg](releases/download/0.0.2/osmv-0.0.2-Darwin.dmg) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osc -> open -> go past the security warning |
-| Ubuntu Focal (20) | [.deb](releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
-| Debian Buster (10) | [.deb](releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
+| Windows 10 | [.exe](../../releases/download/0.0.2/osmv-0.0.2-win64.exe) | |
+| Mac (Catalina onwards) | [.dmg](../../releases/download/0.0.2/osmv-0.0.2-Darwin.dmg) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osc -> open -> go past the security warning |
+| Ubuntu Focal (20) | [.deb](../../releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
+| Debian Buster (10) | [.deb](../../releases/download/0.0.2/osmv_0.0.2_amd64.deb) | |
 
 
 # 🏗️  Building
