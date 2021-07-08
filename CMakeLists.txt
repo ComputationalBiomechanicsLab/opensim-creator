@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(osc VERSION 0.0.2 LANGUAGES C CXX)
+project(osc VERSION 0.0.3 LANGUAGES C CXX)
 
 
 # -------------- gather client build config options ---------------- #
