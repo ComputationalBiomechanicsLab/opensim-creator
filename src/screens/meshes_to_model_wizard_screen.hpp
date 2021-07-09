@@ -3,25 +3,33 @@
 #include "src/screens/screen.hpp"
 
 #include <memory>
+#include <vector>
+#include <filesystem>
 
 namespace osc {
-    // shows a wizard for importing mesh files (e.g. VTPs, OBJs) and mapping
-    // them into a new osim model
+    // meshes-to-model wizard
     //
-    // useful for when a user has a bunch of anatomical meshes--e.g. from a
-    // scanner, MRI, whatever--and the user wants to just map those meshes
-    // onto a basic OpenSim model
-    class Meshes_to_model_wizard_screen final : public Screen {
+    // a screen that helps users import 3D meshes into a new OpenSim model.
+    // This is a separate screen from the main UI because it involves letting
+    // the user manipulate meshes/bodies/joints in free/ground 3D space *before*
+    // committing to OpenSim's constraints
+    class Meshes_to_model_wizard_screen_v2 final : public Screen {
     public:
         struct Impl;
     private:
         std::unique_ptr<Impl> impl;
 
     public:
-        Meshes_to_model_wizard_screen();
-        ~Meshes_to_model_wizard_screen() noexcept override;
+        // shows blank scene that a user can import meshes into
+        Meshes_to_model_wizard_screen_v2();
 
-        void tick(float) override;
+        // shows the blank scene, but immediately starts importing the provided
+        // mesh filepaths
+        Meshes_to_model_wizard_screen_v2(std::vector<std::filesystem::path>);
+
+        ~Meshes_to_model_wizard_screen_v2() noexcept override;
+
         void draw() override;
+        void tick(float) override;
     };
 }

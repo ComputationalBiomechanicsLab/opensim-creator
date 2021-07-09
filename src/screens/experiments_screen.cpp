@@ -165,7 +165,7 @@ static void on_draw_opengl_test_screen(osc::Experiments_screen::Impl&) {
     }
 
     if (ImGui::Button("OpenSim: Meshes to model wizard")) {
-        Application::current().request_screen_transition<Meshes_to_model_wizard_screen>();
+        Application::current().request_screen_transition<Meshes_to_model_wizard_screen_v2>();
     }
 
     if (ImGui::Button("ImGuizmo test screen")) {
