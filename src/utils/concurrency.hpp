@@ -81,7 +81,8 @@ namespace osc {
             std::atomic<int> sender_count = 0;
             std::atomic<int> receiver_count = 0;
 
-            friend std::pair<Sender<T>, Receiver<T>> channel();
+            template<typename U>
+            friend std::pair<Sender<U>, Receiver<U>> channel();
             friend class Sender<T>;
             friend class Receiver<T>;
         };
@@ -89,6 +90,9 @@ namespace osc {
         template<typename T>
         class Sender final {
             std::shared_ptr<Impl<T>> impl;
+
+            template<typename U>
+            friend std::pair<Sender<U>, Receiver<U>> channel();
 
             Sender(std::shared_ptr<Impl<T>> _impl) : impl{std::move(_impl)} {
                 ++impl->sender_count;
@@ -124,6 +128,9 @@ namespace osc {
         class Receiver final {
             std::shared_ptr<Impl<T>> impl;
 
+            template<typename U>
+            friend std::pair<Sender<U>, Receiver<U>> channel();
+
             Receiver(std::shared_ptr<Impl<T>> _impl) : impl{std::move(_impl)} {
                 ++impl->receiver_count;
             }
@@ -153,7 +160,7 @@ namespace osc {
 
             // blocking: only empty if the sender hung up
             std::optional<T> recv() {
-                std::lock_guard l{impl->mutex};
+                std::unique_lock l{impl->mutex};
 
                 // easy case: queue is not empty
                 if (!impl->queue.empty()) {
@@ -190,7 +197,7 @@ namespace osc {
         // create a new channel
         template<typename T>
         std::pair<Sender<T>, Receiver<T>> channel() {
-            auto impl = std::make_shared<Impl>();
+            auto impl = std::make_shared<Impl<T>>();
             return {Sender<T>{impl}, Receiver<T>{impl}};
         }
     }

@@ -9,6 +9,7 @@
 #include "src/3d/cameras.hpp"
 #include "src/application.hpp"
 #include "src/screens/meshes_to_model_wizard_screen_step2.hpp"
+#include "src/utils/algs.hpp"
 
 #include <imgui.h>
 #include <nfd.h>
@@ -75,7 +76,7 @@ static Mesh_load_response create_response(Mesh_load_request const& msg) {
         Mesh_load_OK_response rv;
         rv.id = msg.id;
         rv.filepath = msg.filepath;
-        load_mesh_file_with_simtk_backend(msg.filepath, rv.um);
+        load_mesh_file_with_simtk_backend(msg.filepath, rv.um);  // can throw
         rv.aabb = aabb_from_mesh(rv.um);
         rv.bounding_sphere = bounding_sphere_from_mesh(rv.um);
         return rv;
@@ -85,7 +86,7 @@ static Mesh_load_response create_response(Mesh_load_request const& msg) {
 }
 
 // MESH LOADER THREAD: implementation code
-static int mesh_loader_thread_main(spsc::Receiver<Mesh_load_request> rx, spsc::Sender<Mesh_load_response> tx) {
+static int mesh_loader_thread_main(osc::stop_token, spsc::Receiver<Mesh_load_request> rx, spsc::Sender<Mesh_load_response> tx) {
     while (!tx.is_receiver_hung_up()) {
         std::optional<Mesh_load_request> msg = rx.recv();
 
@@ -148,6 +149,9 @@ struct Loaded_mesh final {
     // bounding sphere of the mesh data
     Sphere bounding_sphere;
 
+    // model matrix
+    glm::mat4 model_mtx;
+
     // index of mesh, loaded into GPU_storage
     Meshidx idx;
 
@@ -164,6 +168,7 @@ struct Loaded_mesh final {
         um{std::move(tmp.um)},
         aabb{tmp.aabb},
         bounding_sphere{tmp.bounding_sphere},
+        model_mtx{1.0f},
         idx{[this]() {
             GPU_storage& gs = Application::current().get_gpu_storage();
             Meshidx rv = Meshidx::from_index(gs.meshes.size());
@@ -178,7 +183,7 @@ struct Loaded_mesh final {
 // top-level state associated with the whole screen
 struct osc::Meshes_to_model_wizard_screen::Impl final {
     // loader that loads mesh data in a background thread
-    Mesh_loader mesh_loader;
+    Mesh_loader mesh_loader = Mesh_loader::create();
 
     // loaded meshes
     std::vector<Loaded_mesh> meshes;
@@ -235,45 +240,39 @@ static void prompt_user_to_select_multiple_mesh_files(Meshes_to_model_wizard_scr
             impl.mesh_loader.send(req);
         }
     } else if (result == NFD_CANCEL) {
-        // do nothing
+        // do nothing: the user cancelled
     } else {
         log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
     }
 }
 
 // DRAW popover tooltip that shows a mesh's details
-static void draw_usermesh_tooltip(User_mesh const& um) {
+static void draw_tooltip(Loaded_mesh const& um) {
     ImGui::BeginTooltip();
     ImGui::Text("id = %i", um.id);
-    ImGui::Text("filename = %s", um.location.filename().string().c_str());
+    ImGui::Text("filename = %s", um.filepath.filename().string().c_str());
     ImGui::Text("is_hovered = %s", um.is_hovered ? "true" : "false");
     ImGui::Text("is_selected = %s", um.is_selected ? "true" : "false");
-    if (um.bgdata) {
-        Background_loaded_mesh const& b = *um.bgdata;
-        ImGui::Text("verts = %zu", b.um.verts.size());
-        ImGui::Text("elements = %zu", b.um.indices.size());
+    ImGui::Text("verts = %zu", um.um.verts.size());
+    ImGui::Text("elements = %zu", um.um.indices.size());
 
-        ImGui::Text("AABB.p1 = (%.2f, %.2f, %.2f)", b.aabb.p1.x, b.aabb.p1.y, b.aabb.p1.z);
-        ImGui::Text("AABB.p2 = (%.2f, %.2f, %.2f)", b.aabb.p2.x, b.aabb.p2.y, b.aabb.p2.z);
-        glm::vec3 center = (b.aabb.p1 + b.aabb.p2) / 2.0f;
-        ImGui::Text("center(AABB) = (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
+    ImGui::Text("AABB.p1 = (%.2f, %.2f, %.2f)", um.aabb.p1.x, um.aabb.p1.y, um.aabb.p1.z);
+    ImGui::Text("AABB.p2 = (%.2f, %.2f, %.2f)", um.aabb.p2.x, um.aabb.p2.y, um.aabb.p2.z);
+    glm::vec3 center = (um.aabb.p1 + um.aabb.p2) / 2.0f;
+    ImGui::Text("center(AABB) = (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
 
-        ImGui::Text("sphere = O(%.2f, %.2f, %.2f), r(%.2f)", b.bounding_sphere.origin.x, b.bounding_sphere.origin.y, b.bounding_sphere.origin.z, b.bounding_sphere.radius);
-    }
+    ImGui::Text("sphere = O(%.2f, %.2f, %.2f), r(%.2f)", um.bounding_sphere.origin.x, um.bounding_sphere.origin.y, um.bounding_sphere.origin.z, um.bounding_sphere.radius);
     ImGui::EndTooltip();
 }
 
 // create a Loaded_user_mesh by stealing data from a User_mesh
-[[nodiscard]] static Loaded_user_mesh pilfer_loaded_mesh_from(User_mesh&& um) {
-    OSC_ASSERT(um.bgdata != nullptr);
-    OSC_ASSERT(um.fgdata != nullptr);
-
+[[nodiscard]] static Loaded_user_mesh pilfer_loaded_mesh_from(Loaded_mesh&& um) {
     Loaded_user_mesh rv;
-    rv.location = std::move(um.location);
-    rv.meshdata = std::move(um.bgdata->um);
-    rv.aabb = std::move(um.bgdata->aabb);
-    rv.bounding_sphere = std::move(um.bgdata->bounding_sphere);
-    rv.gpu_meshidx = std::move(um.fgdata->idx);
+    rv.location = std::move(um.filepath);
+    rv.meshdata = std::move(um.um);
+    rv.aabb = std::move(um.aabb);
+    rv.bounding_sphere = std::move(um.bounding_sphere);
+    rv.gpu_meshidx = std::move(um.idx);
     rv.model_mtx = um.model_mtx;
     rv.is_hovered = um.is_hovered;
     rv.is_selected = um.is_selected;
@@ -284,7 +283,8 @@ static void draw_usermesh_tooltip(User_mesh const& um) {
 // DRAW meshlist
 //
 // returns nonempty vector if the user clicks "Next step" in the UI
-static std::vector<Loaded_user_mesh> draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& impl) {
+enum class Meshlist_panel_response { Ok, ShouldTransition };
+static Meshlist_panel_response draw_meshlist_panel_content(Meshes_to_model_wizard_screen::Impl& impl) {
 
     ImGui::Dummy(ImVec2{0.0f, 5.0f});
     ImGui::TextUnformatted("Mesh Importer Wizard");
@@ -307,42 +307,30 @@ static std::vector<Loaded_user_mesh> draw_meshlist_panel_content(Meshes_to_model
     }
     ImGui::PopStyleColor();
 
-    auto guard = impl.meshes.lock();
-    auto is_fully_loaded = [](User_mesh const& um) {
-        return um.fgdata && um.bgdata;
-    };
-
-    if (!guard->empty() && std::all_of(guard->begin(), guard->end(), is_fully_loaded)) {
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_ARROW_RIGHT "Next step (body assignment)")) {
-            // reorgnaize the various pieces of mesh data into the input
-            // for the next screen
-            std::vector<Loaded_user_mesh> loaded_meshes;
-            loaded_meshes.reserve(guard->size());
-            for (User_mesh& um : *guard) {
-                loaded_meshes.push_back(pilfer_loaded_mesh_from(std::move(um)));
-            }
-            return loaded_meshes;
-        }
+    if (ImGui::Button(ICON_FA_ARROW_RIGHT "Next step (body assignment)")) {
+        // caller should handle the transition
+        return Meshlist_panel_response::ShouldTransition;
     }
 
     ImGui::Dummy(ImVec2{0.0f, 5.0f});
-    ImGui::Text("meshes (%zu):", guard->size());
+    ImGui::Text("meshes (%zu):", impl.meshes.size());
     ImGui::Separator();
 
-    if (guard->empty()) {
+    if (impl.meshes.empty()) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.6f, 0.6f, 0.6f, 1.0f});
         ImGui::TextUnformatted("  (no meshes added yet)");
         ImGui::PopStyleColor();
     }
 
-    for (int i = 0; i < static_cast<int>(guard->size()); ++i) {
-        User_mesh& mesh = (*guard)[i];
+    for (int i = 0; i < static_cast<int>(impl.meshes.size()); ++i) {
+        Loaded_mesh& m = impl.meshes[static_cast<size_t>(i)];
 
+
+        // perform deletion, if the user requests it
         ImGui::PushID(i);
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.6f, 0.0f, 0.0f, 1.0f});
         if (ImGui::Button("X")) {
-            guard->erase(guard->begin() + i);
+            impl.meshes.erase(impl.meshes.begin() + i);
             --i;
             ImGui::PopStyleColor();
             continue;
@@ -350,33 +338,89 @@ static std::vector<Loaded_user_mesh> draw_meshlist_panel_content(Meshes_to_model
         ImGui::PopStyleColor();
         ImGui::PopID();
 
-        std::string filename = mesh.location.filename().string();
+        // show mesh filename
+        std::string filename = m.filepath.filename().string();
         ImGui::SameLine();
-        ImGui::Text("%s%s", filename.c_str(), mesh.fgdata ? "" : mesh.bgdata ? "(rendering)" : "(loading)");
+        ImGui::Text("%s", filename.c_str());
 
-        mesh.is_hovered = ImGui::IsItemHovered();
-        if (mesh.is_hovered) {
-            draw_usermesh_tooltip(mesh);
+        // show tooltip if user hovers filename
+        m.is_hovered = ImGui::IsItemHovered();
+        if (m.is_hovered) {
+            draw_tooltip(m);
         }
 
+        // select mesh if user clicks filename
         if (ImGui::IsItemClicked()) {
             bool lshift_down = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT);
             bool rshift_down = ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
+
             if (!(lshift_down || rshift_down)) {
-                for (auto& um : *guard) {
-                    um.is_selected = false;
+                for (Loaded_mesh& lm : impl.meshes) {
+                    lm.is_selected = false;
                 }
             }
 
-            mesh.is_selected = true;
+            m.is_selected = true;
         }
     }
 
-    return {};
+    return Meshlist_panel_response::Ok;
+}
+
+// populate the screen's drawlist with the meshes
+static void populate_3d_drawlist(Meshes_to_model_wizard_screen::Impl& impl) {
+    GPU_storage const& storage = Application::current().get_gpu_storage();
+
+    impl.drawlist.clear();
+    for (auto const& mesh : impl.meshes) {
+
+        // draw the geometry
+        {
+            Mesh_instance mi;
+            mi.model_xform = mesh.model_mtx;
+            mi.normal_xform = normal_matrix(mi.model_xform);
+            mi.rgba = Rgba32::from_vec4({1.0f, 1.0f, 1.0f, 1.0f});
+            mi.meshidx = mesh.idx;
+            mi.passthrough.rim_alpha = mesh.is_selected ? 0xff : mesh.is_hovered ? 0x60 : 0x00;
+            mi.passthrough.assign_u16(static_cast<uint16_t>(mesh.id));
+            impl.drawlist.push_back(mi);
+        }
+
+        // also, draw the aabb
+        if (impl.draw_aabbs) {
+            Mesh_instance mi2;
+            AABB const& aabb = mesh.aabb;
+            glm::vec3 o = (aabb.p1 + aabb.p2)/2.0f;
+            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, o - aabb.p1);
+            glm::mat4 translate = glm::translate(glm::mat4{1.0f}, o);
+            mi2.model_xform = mesh.model_mtx * translate * scaler;
+            mi2.normal_xform = normal_matrix(mi2.model_xform);
+            mi2.rgba = Rgba32::from_vec4({1.0f, 0.0f, 0.0f, 1.0f});
+            mi2.meshidx = storage.cube_lines_idx;
+            mi2.flags.set_draw_lines();
+            impl.drawlist.push_back(mi2);
+        }
+
+        // also, draw the bounding sphere
+        if (impl.draw_bounding_spheres) {
+            Mesh_instance mi2;
+            Sphere const& sph = mesh.bounding_sphere;
+            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {sph.radius, sph.radius, sph.radius});
+            glm::mat4 translate = glm::translate(glm::mat4{1.0f}, sph.origin);
+            mi2.model_xform = mesh.model_mtx * translate * scaler;
+            mi2.normal_xform = normal_matrix(mi2.model_xform);
+            mi2.rgba = Rgba32::from_vec4({0.0f, 1.0f, 0.0f, 0.3f});
+            mi2.meshidx = storage.simbody_sphere_idx;
+            mi2.flags.set_draw_lines();
+            impl.drawlist.push_back(mi2);
+        }
+    }
 }
 
 // DRAW 3d viewer
 static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& impl) {
+    populate_3d_drawlist(impl);
+
     ImGui::Checkbox("draw aabbs", &impl.draw_aabbs);
     ImGui::SameLine();
     ImGui::Checkbox("draw bounding spheres", &impl.draw_bounding_spheres);
@@ -397,7 +441,6 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     // resized by the user at any time)
     impl.render_target.reconfigure(
         static_cast<int>(dims.x), static_cast<int>(dims.y), Application::current().samples());
-
 
     ImVec2 wp = ImGui::GetWindowPos();
     ImVec2 cp = ImGui::GetCursorPos();
@@ -421,13 +464,14 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
 
     // update UI state from hittest, if there was a hit
     int hovered_meshid = static_cast<int>(impl.render_target.hittest_result.get_u16());
-    auto guard = impl.meshes.lock();
 
-    decltype(guard->end()) it;
+    std::vector<Loaded_mesh>& meshes = impl.meshes;
+
+    decltype(meshes.end()) it;
     if (hovered_meshid == 0) {
-        it = guard->end();
+        it = meshes.end();
     } else {
-        it = std::find_if(guard->begin(), guard->end(), [hovered_meshid](User_mesh const& um) {
+        it = std::find_if(meshes.begin(), meshes.end(), [hovered_meshid](Loaded_mesh const& um) {
                 return um.id == hovered_meshid;
             });
     }
@@ -436,7 +480,7 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     if (impl.mouse_over_gizmo) {
         // mouse is being handled by ImGuizmo
 
-    } else if (it != guard->end()) {
+    } else if (it != meshes.end()) {
         // mouse is over a piece of 3D geometry in the scene
 
         it->is_hovered = true;
@@ -445,7 +489,7 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
             bool lshift_down = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT);
             bool rshift_down = ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             if (!(lshift_down || rshift_down)) {
-                for (auto& um : *guard) {
+                for (Loaded_mesh& um : meshes) {
                     um.is_selected = false;
                 }
             }
@@ -459,7 +503,7 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
             bool lshift_down = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT);
             bool rshift_down = ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             if (!(lshift_down || rshift_down)) {
-                for (auto& um : *guard) {
+                for (Loaded_mesh& um : meshes) {
                     um.is_selected = false;
                 }
             }
@@ -476,24 +520,20 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     impl.mouse_over_render = ImGui::IsItemHovered();
 
     // draw hover-over tooltips
-    if (it != guard->end()) {
-        draw_usermesh_tooltip(*it);
+    if (it != meshes.end()) {
+        draw_tooltip(*it);
     }
 
     // draw manipulation gizmos
     {
         int nselected = 0;
         glm::vec3 avg_center = {0.0f, 0.0f, 0.0f};
-        for (User_mesh const& um : *guard) {
+        for (Loaded_mesh const& um : meshes) {
             if (!um.is_selected) {
                 continue;
             }
 
-            if (!um.bgdata) {
-                continue;
-            }
-
-            glm::vec3 raw_center = aabb_center(um.bgdata->aabb);
+            glm::vec3 raw_center = aabb_center(um.aabb);
             glm::vec3 center = glm::vec3{um.model_mtx * glm::vec4{raw_center, 1.0f}};
 
             avg_center += center;
@@ -524,12 +564,8 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
                 glm::mat4 raw_xform = inv_translator * manipulated_mtx;
                 glm::mat4 applied_xform = translator * raw_xform * inv_translator;
 
-                for (User_mesh& um : *guard) {
+                for (Loaded_mesh& um : meshes) {
                     if (!um.is_selected) {
-                        continue;
-                    }
-
-                    if (!um.bgdata) {
                         continue;
                     }
 
@@ -542,20 +578,32 @@ static void draw_3d_viewer_panel_content(Meshes_to_model_wizard_screen::Impl& im
     }
 }
 
-// DRAW wizard screen
+[[nodiscard]] static std::vector<Loaded_user_mesh> pilfer_meshes_from(std::vector<Loaded_mesh>&& ms) {
+    std::vector<Loaded_user_mesh> rv;
+    rv.reserve(ms.size());
+    for (Loaded_mesh& m : ms) {
+        rv.push_back(pilfer_loaded_mesh_from(std::move(m)));
+    }
+    return rv;
+}
+
+// SCREEN DRAW
 static void draw_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Impl& impl) {
+
+    // ImGuizmo: requires this be called each frame to enable 3D manipulation handlers
     ImGuizmo::BeginFrame();
 
+    // draw the mesh list (a thin panel containing buttons, etc.)
     if (ImGui::Begin("Mesh list")) {
-        auto maybe_meshes = draw_meshlist_panel_content(impl);
-        if (!maybe_meshes.empty()) {
+        if (draw_meshlist_panel_content(impl) == Meshlist_panel_response::ShouldTransition) {
             ImGui::End();
-            Application::current().request_screen_transition<Meshes_to_model_wizard_screen_step2>(std::move(maybe_meshes));
+            Application::current().request_screen_transition<Meshes_to_model_wizard_screen_step2>(pilfer_meshes_from(std::move(impl.meshes)));
             return;
         }
     }
     ImGui::End();
 
+    // draw 3D viewer
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
     if (ImGui::Begin("some3dviewer")) {
         draw_3d_viewer_panel_content(impl);
@@ -564,7 +612,7 @@ static void draw_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Im
     ImGui::PopStyleVar();
 }
 
-// update the camera
+// update the 3D scene camera based on any (ImGui-polled) user input
 static void update_camera_from_user_input(Meshes_to_model_wizard_screen::Impl& impl) {
     if (!impl.mouse_over_render) {
         return;
@@ -596,88 +644,45 @@ static void update_camera_from_user_input(Meshes_to_model_wizard_screen::Impl& i
     }
 }
 
-// tick: perform any UI updates (e.g. uploading things to the GPU)
+// SCREEN TICK
 static void tick_meshes_to_model_wizard_screen(Meshes_to_model_wizard_screen::Impl& impl) {
 
-    GPU_storage const& s = Application::current().get_gpu_storage();
+    // pop anything from the mesh loader's output queue
+    for (auto maybe_resp = impl.mesh_loader.poll(); maybe_resp; maybe_resp = impl.mesh_loader.poll()) {
+        Mesh_load_response& resp = *maybe_resp;
 
-    auto guard = impl.meshes.lock();
+        if (std::holds_alternative<Mesh_load_OK_response>(resp)) {
+            Mesh_load_OK_response& ok = std::get<Mesh_load_OK_response>(resp);
 
-    // upload any background-loaded (CPU-side) mesh data to the GPU
-    for (auto& mesh : *guard) {
-        if (mesh.bgdata && !mesh.fgdata) {
-            mesh.fgdata = std::make_unique<Foreground_loaded_mesh>(*mesh.bgdata);
+            // remove it from the "currently loading" list
+            osc::remove_erase(impl.loading_meshes, [id = ok.id](auto const& m) { return m.id == id; });
+
+            // add it to the "loaded" mesh list
+            impl.meshes.emplace_back(std::move(ok));
+        } else {
+            Mesh_load_ERORR_response& err = std::get<Mesh_load_ERORR_response>(resp);
+
+            // remove it from the "currently loading" list
+            osc::remove_erase(impl.loading_meshes, [id = err.id](auto const& m) { return m.id == id; });
+
+            // log the error (it's the best we can do for now)
+            log::error("%s: error loading mesh file: %s", err.filepath.string().c_str(), err.error.c_str());
         }
     }
 
-    // generate a rendering drawlist that reflects the UI state
-    impl.drawlist.clear();
-    for (auto& mesh : *guard) {
-
-
-        if (!mesh.bgdata || !mesh.fgdata) {
-            continue;  // skip meshes that haven't loaded yet
-        }
-        auto const& bgdata = *mesh.bgdata;
-        auto const& fgdata = *mesh.fgdata;
-
-        // draw the geometry
-        {
-            Mesh_instance mi;
-            mi.model_xform = mesh.model_mtx;
-            mi.normal_xform = normal_matrix(mi.model_xform);
-            mi.rgba = Rgba32::from_vec4({1.0f, 1.0f, 1.0f, 1.0f});
-            mi.meshidx = fgdata.idx;
-            mi.passthrough.rim_alpha = mesh.is_selected ? 0xff : mesh.is_hovered ? 0x60 : 0x00;
-            mi.passthrough.assign_u16(static_cast<uint16_t>(mesh.id));
-            impl.drawlist.push_back(mi);
-        }
-
-        // also, draw the aabb
-        if (impl.draw_aabbs) {
-            Mesh_instance mi2;
-            AABB const& aabb = bgdata.aabb;
-            glm::vec3 o = (aabb.p1 + aabb.p2)/2.0f;
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, o - aabb.p1);
-            glm::mat4 translate = glm::translate(glm::mat4{1.0f}, o);
-            mi2.model_xform = mesh.model_mtx * translate * scaler;
-            mi2.normal_xform = normal_matrix(mi2.model_xform);
-            mi2.rgba = Rgba32::from_vec4({1.0f, 0.0f, 0.0f, 1.0f});
-            mi2.meshidx = s.cube_lines_idx;
-            mi2.flags.set_draw_lines();
-            impl.drawlist.push_back(mi2);
-        }
-
-        // also, draw the bounding sphere
-        if (impl.draw_bounding_spheres) {
-            Mesh_instance mi2;
-            Sphere const& sph = bgdata.bounding_sphere;
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {sph.radius, sph.radius, sph.radius});
-            glm::mat4 translate = glm::translate(glm::mat4{1.0f}, sph.origin);
-            mi2.model_xform = mesh.model_mtx * translate * scaler;
-            mi2.normal_xform = normal_matrix(mi2.model_xform);
-            mi2.rgba = Rgba32::from_vec4({0.0f, 1.0f, 0.0f, 0.3f});
-            mi2.meshidx = s.simbody_sphere_idx;
-            mi2.flags.set_draw_lines();
-            impl.drawlist.push_back(mi2);
-        }
-    }
-
+    // update the camera
     update_camera_from_user_input(impl);
 
-    // perform deletions, if necessary
+    // handle keyboard input
     if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
-        auto it = std::remove_if(guard->begin(), guard->end(), [](User_mesh const& um) {
-            return um.is_selected;
-        });
-        guard->erase(it, guard->end());
+        osc::remove_erase(impl.meshes, [](Loaded_mesh const& m) { return m.is_selected; });
     }
 }
 
 // public API
 
 osc::Meshes_to_model_wizard_screen::Meshes_to_model_wizard_screen() :
-    impl{new Impl} {
+    impl{new Impl{}} {
 }
 
 osc::Meshes_to_model_wizard_screen::~Meshes_to_model_wizard_screen() noexcept = default;
