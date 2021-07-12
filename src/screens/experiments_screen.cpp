@@ -119,8 +119,6 @@ struct ImGuizmo_test_screen final : public Screen {
         ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
         ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(cube_mtx), 1);
 
-        float snap[] = {1.0f};
-
         ImGui::Checkbox("translate", &translate);
 
         ImGuizmo::Manipulate(
@@ -167,7 +165,7 @@ static void on_draw_opengl_test_screen(osc::Experiments_screen::Impl&) {
     }
 
     if (ImGui::Button("OpenSim: Meshes to model wizard")) {
-        Application::current().request_screen_transition<Meshes_to_model_wizard_screen>();
+        Application::current().request_screen_transition<Meshes_to_model_wizard_screen_v2>();
     }
 
     if (ImGui::Button("ImGuizmo test screen")) {
