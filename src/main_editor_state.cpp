@@ -199,7 +199,7 @@ namespace subfield_magic {  // necessary due to an MSVC internal linkage compile
     }
 
     // create a constant-time lookup for an OpenSim::Output<T>'s available subfields
-    std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> create_subfield_lut() {
+    static std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> create_subfield_lut() {
         std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> rv;
 
         // SimTK::Vec3
@@ -214,7 +214,7 @@ namespace subfield_magic {  // necessary due to an MSVC internal linkage compile
     }
 
     // returns top-level extractor function for an AO, or nullptr if it isn't plottable
-    extrator_fn_t extractor_fn_for(OpenSim::AbstractOutput const& ao) {
+    static extrator_fn_t extractor_fn_for(OpenSim::AbstractOutput const& ao) {
         auto const* dp = dynamic_cast<OpenSim::Output<double> const*>(&ao);
         if (dp) {
             return extract_erased<OpenSim::Output<double>>;
