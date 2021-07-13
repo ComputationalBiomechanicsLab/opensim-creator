@@ -188,10 +188,10 @@ namespace {
             ImGui::Columns(2);
 
             // left column: recent files
-            if (!impl.mm_state.recent_files.empty()) {
-                ImGui::TextUnformatted("Recent files:");
-                ImGui::Dummy(ImVec2{0.0f, 3.0f});
+            ImGui::TextUnformatted("Recent files:");
+            ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
+            if (!impl.mm_state.recent_files.empty()) {
                 // iterate in reverse: recent files are stored oldest --> newest
                 for (auto it = impl.mm_state.recent_files.rbegin(); it != impl.mm_state.recent_files.rend(); ++it) {
                     Recent_file const& rf = *it;
@@ -201,6 +201,14 @@ namespace {
                     }
                     ImGui::PopID();
                 }
+            } else {
+                auto const& style = ImGui::GetStyle();
+                ImGui::PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
+                ImGui::TextWrapped("No files opened recently. Try:");
+                ImGui::BulletText("Creating a new model (Ctrl+N)");
+                ImGui::BulletText("Opening an existing model (Ctrl+O)");
+                ImGui::BulletText("Opening an example (right-side)");
+                ImGui::PopStyleColor();
             }
             ImGui::NextColumn();
 

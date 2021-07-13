@@ -405,7 +405,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
 
     int imgui_id = 0;
 
-    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent")) {
+    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !st.recent_files.empty())) {
         // iterate in reverse: recent files are stored oldest --> newest
         for (auto it = st.recent_files.rbegin(); it != st.recent_files.rend(); ++it) {
             Recent_file const& rf = *it;
