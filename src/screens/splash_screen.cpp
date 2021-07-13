@@ -228,7 +228,7 @@ namespace {
             glm::vec2 desired_logo_dims = {128.0f, 128.0f};
             glm::vec2 scale = desired_logo_dims / window_dims;
             float x_leftwards_by_logo_width = -desired_logo_dims.x / window_dims.x;
-            float y_below_menu = -(menu_dims.y + desired_logo_dims.y) / window_dims.y;
+            float y_below_menu = -(25.0f + menu_dims.y + desired_logo_dims.y) / window_dims.y;
 
             glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {x_leftwards_by_logo_width, y_below_menu, 0.0f});
             glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
@@ -245,7 +245,7 @@ namespace {
             glm::vec2 desired_logo_dims = {128.0f, 128.0f};
             glm::vec2 scale = desired_logo_dims / window_dims;
             float x_rightwards_by_logo_width = desired_logo_dims.x / window_dims.x;
-            float y_below_menu = -(menu_dims.y + desired_logo_dims.y) / window_dims.y;
+            float y_below_menu = -(25.0f + menu_dims.y + desired_logo_dims.y) / window_dims.y;
 
             glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {x_rightwards_by_logo_width, y_below_menu, 0.0f});
             glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
