@@ -17,6 +17,7 @@ namespace SimTK {
 namespace OpenSim {
     class Model;
     class Component;
+    class AbstractOutput;
 }
 
 namespace osc {
@@ -230,16 +231,63 @@ namespace osc {
         Ui_simulation(Ui_model const&, fd::Params const&);
     };
 
-    // the path + name of an OpenSim::AbstractOutput that the user has
-    // expressed interest in
+    // typedef for a function that can extract a double from some output
+    using extrator_fn_t = double(*)(OpenSim::AbstractOutput const&, SimTK::State const&);
+
+    // enables specifying which subfield of an output the user desires
+    //
+    // not providing this causes the implementation to assume the
+    // user desires the top-level output
+    struct Plottable_output_subfield {
+        // user-readable name for the subfield
+        char const* name;
+
+        // extractor function for this particular subfield
+        extrator_fn_t extractor;
+
+        // typehash of the parent abstract output
+        //
+        // (used for runtime double-checking)
+        size_t parent_typehash;
+    };
+
+    // returns plottable subfields in the provided output, or empty if the
+    // output has no such fields
+    std::vector<Plottable_output_subfield> const& get_subfields(
+            OpenSim::AbstractOutput const&);
+
+    // an output the user is interested in
     struct Desired_output final {
+
+        // absolute path to the component that holds the output
         std::string component_path;
+
+        // name of the output on the component
         std::string output_name;
 
-        Desired_output(std::string cp, std::string on) :
-            component_path{std::move(cp)},
-            output_name{std::move(on)} {
-        }
+        // if != nullptr
+        //     pointer to a function function that can extract a double from the output
+        // else
+        //     output is not plottable: call toString on it to "watch" it
+        extrator_fn_t extractor;
+
+        // hash of the typeid of the output type
+        //
+        // this *must* match the typeid of the looked-up output in the model
+        // *before* using an `extractor`. Assume the `extractor` does not check
+        // the type of `AbstractOutput` at all at runtime.
+        size_t typehash;
+
+        // user desires top-level output
+        Desired_output(
+                OpenSim::Component const&,
+                OpenSim::AbstractOutput const&);
+
+        // user desires subfield of an output
+        Desired_output(
+                OpenSim::Component const&,
+                OpenSim::AbstractOutput const&,
+                Plottable_output_subfield const&);
     };
 
     // top-level UI state

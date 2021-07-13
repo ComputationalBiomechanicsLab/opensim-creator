@@ -1166,14 +1166,36 @@ namespace {
                     char buf[256];
                     std::snprintf(buf, sizeof(buf), "  %s", o.second->getName().c_str());
 
-                    if (ImGui::MenuItem(buf)) {
-                       impl.st->desired_outputs.emplace_back(c->getAbsolutePath().toString(), o.second->getName());
+                    auto const& suboutputs = get_subfields(*o.second);
+                    if (suboutputs.empty()) {
+                        // can only plot top-level of output
+
+                        if (ImGui::MenuItem(buf)) {
+                           impl.st->desired_outputs.emplace_back(*c, *o.second);
+                        }
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("Output Type = %s", o.second->getTypeName().c_str());
+                            ImGui::EndTooltip();
+                        }
+                    } else {
+                        // can plot suboutputs
+                        if (ImGui::BeginMenu(buf)) {
+                            for (Plottable_output_subfield const& pos : suboutputs) {
+                                if (ImGui::MenuItem(pos.name)) {
+                                    impl.st->desired_outputs.emplace_back(*c, *o.second, pos);
+                                }
+                            }
+                            ImGui::EndMenu();
+                        }
+
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("Output Type = %s", o.second->getTypeName().c_str());
+                            ImGui::EndTooltip();
+                        }
                     }
-                    if (ImGui::IsItemHovered()) {
-                        ImGui::BeginTooltip();
-                        ImGui::Text("Output Type = %s", o.second->getTypeName().c_str());
-                        ImGui::EndTooltip();
-                    }
+
                 }
                 if (c->getNumOutputs() == 0) {
                     ImGui::TextDisabled("  (has no outputs)");

@@ -10,6 +10,7 @@
 #include <chrono>
 #include <utility>
 
+using namespace osc;
 using std::chrono_literals::operator""s;
 
 namespace {
@@ -36,14 +37,14 @@ namespace {
         bool should_undo;
     };
 
-    Debounce_rv can_push_new_undo_state_with_debounce(osc::Undoable_ui_model const& uim) {
+    Debounce_rv can_push_new_undo_state_with_debounce(Undoable_ui_model const& uim) {
         Debounce_rv rv;
         rv.valid_at = std::chrono::system_clock::now();
         rv.should_undo = uim.undo.empty() || uim.undo.back().timestamp + 5s <= rv.valid_at;
         return rv;
     }
 
-    void do_debounced_undo_push(osc::Undoable_ui_model& uim) {
+    void do_debounced_undo_push(Undoable_ui_model& uim) {
         auto [valid_at, should_undo] = can_push_new_undo_state_with_debounce(uim);
 
         if (should_undo) {
@@ -52,28 +53,28 @@ namespace {
         }
     }
 
-    void rollback_model_to_earlier_state(osc::Undoable_ui_model& uim) {
+    void rollback_model_to_earlier_state(Undoable_ui_model& uim) {
         if (uim.undo.empty()) {
-            osc::log::error("the model cannot be fixed: no earlier versions of the model exist, throwing an exception");
+            log::error("the model cannot be fixed: no earlier versions of the model exist, throwing an exception");
             throw std::runtime_error{
                 "an OpenSim::Model was put into an invalid state: probably by a modification. We tried to recover from this error, but couldn't - view the logs"};
         }
 
         // otherwise, we have undo entries we can pop
-        osc::log::error(
+        log::error(
             "attempting to rollback to an earlier (pre-modification) of the model that was saved into the undo buffer");
         try {
             uim.damaged.emplace(std::move(uim.current));
             uim.current = uim.undo.pop_back();
             return;
         } catch (...) {
-            osc::log::error(
+            log::error(
                 "error encountered when trying to rollback to an earlier version of the model, this will be thrown as an exception");
             throw;
         }
     }
 
-    void carefully_try_init_system_and_realize_on_current(osc::Undoable_ui_model& uim) {
+    void carefully_try_init_system_and_realize_on_current(Undoable_ui_model& uim) {
         // this code is messy because it has to handle the messy situation where
         // the `current` model has been modified into an invalid state that OpenSim
         // refuses to initialize a system for
@@ -88,13 +89,13 @@ namespace {
             uim.current.on_model_modified();
             return;
         } catch (std::exception const& ex) {
-            osc::log::error("exception thrown when initializing updated model: %s", ex.what());
+            log::error("exception thrown when initializing updated model: %s", ex.what());
         }
 
         rollback_model_to_earlier_state(uim);
     }
 
-    osc::fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, osc::fd::Params const& p) {
+    fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, fd::Params const& p) {
         auto model_copy = std::make_unique<OpenSim::Model>(m);
         auto state_copy = std::make_unique<SimTK::State>(s);
 
@@ -104,10 +105,10 @@ namespace {
         model_copy->equilibrateMuscles(*state_copy);
         model_copy->realizeAcceleration(*state_copy);
 
-        auto sim_input = std::make_unique<osc::fd::Input>(std::move(model_copy), std::move(state_copy));
+        auto sim_input = std::make_unique<fd::Input>(std::move(model_copy), std::move(state_copy));
         sim_input->params = p;
 
-        return osc::fd::Simulation{std::move(sim_input)};
+        return fd::Simulation{std::move(sim_input)};
     }
 
     std::unique_ptr<OpenSim::Model> create_initialized_model(OpenSim::Model const& m) {
@@ -117,8 +118,8 @@ namespace {
         return rv;
     }
 
-    std::unique_ptr<osc::fd::Report> create_dummy_report(OpenSim::Model const& m) {
-        auto rv = std::make_unique<osc::fd::Report>();
+    std::unique_ptr<fd::Report> create_dummy_report(OpenSim::Model const& m) {
+        auto rv = std::make_unique<fd::Report>();
         rv->state = m.getWorkingState();
         rv->stats = {};
         m.realizeReport(rv->state);
@@ -126,8 +127,100 @@ namespace {
         return rv;
     }
 
-    std::unique_ptr<osc::Component_3d_viewer> create_3dviewer() {
+    std::unique_ptr<Component_3d_viewer> create_3dviewer() {
         return std::make_unique<osc::Component_3d_viewer>(osc::Component3DViewerFlags_Default | osc::Component3DViewerFlags_DrawFrames);
+    }
+
+}
+
+namespace subfield_magic {  // necessary due to an MSVC internal linkage compiler bug
+
+    enum Subfield_ {
+        Subfield_x,
+        Subfield_y,
+        Subfield_z,
+        Subfield_mag,
+    };
+
+    // top-level output extractor declaration
+    template<typename ConcreteOutput>
+    double extract(ConcreteOutput const&, SimTK::State const&);
+
+    // subfield output extractor declaration
+    template<Subfield_ sf, typename ConcreteOutput>
+    double extract(ConcreteOutput const&, SimTK::State const&);
+
+    // extract a `double` from an `OpenSim::Property<double>`
+    template<>
+    double extract<>(OpenSim::Output<double> const& o, SimTK::State const& s) {
+        return o.getValue(s);
+    }
+
+    // extract X from `SimTK::Vec3`
+    template<>
+    double extract<Subfield_x>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s) {
+        return o.getValue(s).get(0);
+    }
+
+    // extract Y from `SimTK::Vec3`
+    template<>
+    double extract<Subfield_y>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s) {
+        return o.getValue(s).get(1);
+    }
+
+    // extract Z from `SimTK::Vec3`
+    template<>
+    double extract<Subfield_z>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s) {
+        return o.getValue(s).get(2);
+    }
+
+    // extract magnitude from `SimTK::Vec3`
+    template<>
+    double extract<Subfield_mag>(OpenSim::Output<SimTK::Vec3> const& o, SimTK::State const& s) {
+        return o.getValue(s).norm();
+    }
+
+    // type-erase a concrete extractor function
+    template<typename OutputType>
+    double extract_erased(OpenSim::AbstractOutput const& o, SimTK::State const& s) {
+        return extract<>(dynamic_cast<OutputType const&>(o), s);
+    }
+
+    // type-erase a concrete *subfield* extractor function
+    template<Subfield_ sf, typename OutputType>
+    double extract_erased(OpenSim::AbstractOutput const& o, SimTK::State const& s) {
+        return extract<sf>(dynamic_cast<OutputType const&>(o), s);
+    }
+
+    // helper function that wires the above together for the lookup
+    template<Subfield_ sf, typename TValue>
+    Plottable_output_subfield subfield(char const* name) {
+        return {name, extract_erased<sf, OpenSim::Output<TValue>>, typeid(OpenSim::Output<TValue>).hash_code()};
+    }
+
+    // create a constant-time lookup for an OpenSim::Output<T>'s available subfields
+    std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> create_subfield_lut() {
+        std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> rv;
+
+        // SimTK::Vec3
+        rv[typeid(OpenSim::Output<SimTK::Vec3>).hash_code()] = {
+            subfield<Subfield_x, SimTK::Vec3>("x"),
+            subfield<Subfield_y, SimTK::Vec3>("y"),
+            subfield<Subfield_z, SimTK::Vec3>("z"),
+            subfield<Subfield_mag, SimTK::Vec3>("magnitude"),
+        };
+
+        return rv;
+    }
+
+    // returns top-level extractor function for an AO, or nullptr if it isn't plottable
+    extrator_fn_t extractor_fn_for(OpenSim::AbstractOutput const& ao) {
+        auto const* dp = dynamic_cast<OpenSim::Output<double> const*>(&ao);
+        if (dp) {
+            return extract_erased<OpenSim::Output<double>>;
+        } else {
+            return nullptr;
+        }
     }
 }
 
@@ -243,6 +336,47 @@ osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s
 
 osc::Ui_simulation::Ui_simulation(Ui_model const& uim, fd::Params const& p) :
     Ui_simulation{*uim.model, *uim.state, p} {
+}
+
+std::vector<Plottable_output_subfield> const& osc::get_subfields(
+        OpenSim::AbstractOutput const& ao) {
+
+    static std::unordered_map<size_t, std::vector<osc::Plottable_output_subfield>> const g_SubfieldLut =
+            subfield_magic::create_subfield_lut();
+    static std::vector<osc::Plottable_output_subfield> const g_EmptyResponse = {};
+
+    size_t arg_typeid = typeid(ao).hash_code();
+    auto it = g_SubfieldLut.find(arg_typeid);
+
+    if (it != g_SubfieldLut.end()) {
+        return it->second;
+    } else {
+        return g_EmptyResponse;
+    }
+}
+
+osc::Desired_output::Desired_output(
+        OpenSim::Component const& c,
+        OpenSim::AbstractOutput const& ao) :
+
+    component_path{c.getAbsolutePathString()},
+    output_name{ao.getName()},
+    extractor{subfield_magic::extractor_fn_for(ao)},
+    typehash{typeid(ao).hash_code()} {
+}
+
+osc::Desired_output::Desired_output(
+        OpenSim::Component const& c,
+        OpenSim::AbstractOutput const& ao,
+        Plottable_output_subfield const& pls) :
+    component_path{c.getAbsolutePathString()},
+    output_name{ao.getName()},
+    extractor{pls.extractor},
+    typehash{typeid(ao).hash_code()} {
+
+    if (pls.parent_typehash != typehash) {
+        throw std::runtime_error{"output subfield mismatch: the provided Plottable_output_field does not match the provided AbstractOutput: this is a developer error"};
+    }
 }
 
 

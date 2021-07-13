@@ -465,7 +465,7 @@ namespace {
 
             if (ImGui::BeginPopupContextItem(od.getName().c_str())) {
                 if (ImGui::MenuItem("Add to outputs watch")) {
-                    impl.st->desired_outputs.emplace_back(selected.getAbsolutePath().toString(), od.getName());
+                    impl.st->desired_outputs.emplace_back(selected, od);
                 }
                 ImGui::EndPopup();
             }
@@ -562,16 +562,27 @@ namespace {
 
         struct Plottable_output final {
             OpenSim::Component const& component;
-            OpenSim::Output<double> const& output;
+            OpenSim::AbstractOutput const& output;
+            extrator_fn_t extractor;
 
-            Plottable_output(OpenSim::Component const& c, OpenSim::Output<double> const& o) :
-                component{c}, output{o} {
+            Plottable_output(
+                OpenSim::Component const& _component,
+                OpenSim::AbstractOutput const& _output,
+                extrator_fn_t _extractor) :
+
+                component{_component},
+                output{_output},
+                extractor{_extractor} {
             }
         };
 
         // collect plottable outputs
         std::vector<Plottable_output> plottable_outputs;
         for (Desired_output const& de : impl.st->desired_outputs) {
+            if (!de.extractor) {
+                continue;  // no extractor function
+            }
+
             OpenSim::Component const* cp = nullptr;
             try {
                 cp = &sim.model->getComponent(de.component_path);
@@ -584,7 +595,7 @@ namespace {
             }
 
             if (!cp) {
-                continue;
+                continue;  // the component doesn't exist
             }
 
             OpenSim::Component const& c = *cp;
@@ -597,16 +608,16 @@ namespace {
             }
 
             if (!aop) {
-                continue;
+                continue;  // the output doesn't exist on the component
             }
 
-            auto const* odp = dynamic_cast<OpenSim::Output<double> const*>(aop);
+            size_t typehash = typeid(*aop).hash_code();
 
-            if (!odp) {
-                continue;
+            if (typehash != de.typehash) {
+                continue;  // the output is there, but now has a different type
             }
 
-            plottable_outputs.emplace_back(c, *odp);
+            plottable_outputs.emplace_back(c, *aop, de.extractor);
         }
 
         // write header line
@@ -623,7 +634,7 @@ namespace {
             // write time
             fout << stkst.getTime();
             for (Plottable_output const& po : plottable_outputs) {
-                fout << ',' << po.output.getValue(stkst);
+                fout << ',' << po.extractor(po.output, stkst);
             }
             fout << '\n';
         }
@@ -675,7 +686,7 @@ namespace {
 
         ImGui::Columns(2);
         for (Desired_output const& de : st.desired_outputs) {
-            ImGui::Text("%s/%s", de.component_path.c_str(), de.output_name.c_str());
+            ImGui::Text("%s[%s]", de.component_path.c_str(), de.output_name.c_str());
             ImGui::NextColumn();
 
             OpenSim::Component const* cp = nullptr;
@@ -711,17 +722,20 @@ namespace {
             }
 
             OpenSim::AbstractOutput const& ao = *aop;
+            size_t typehash = typeid(ao).hash_code();
 
-            auto const* odp = dynamic_cast<OpenSim::Output<double> const*>(&ao);
-
-            if (!odp) {
-                // unplottable arbitary output
-                ImGui::TextUnformatted(ao.getValueAsString(report.state).c_str());
+            if (typehash != de.typehash) {
+                ImGui::TextUnformatted("output type changed");
                 ImGui::NextColumn();
                 continue;
             }
 
-            OpenSim::Output<double> const& od = *odp;
+            if (!de.extractor) {
+                // no extractor function, so unplottable
+                ImGui::TextUnformatted(ao.getValueAsString(report.state).c_str());
+                ImGui::NextColumn();
+                continue;
+            }
 
             // else: it's a plottable output
 
@@ -729,7 +743,7 @@ namespace {
             impl.plotscratch.resize(npoints);
             size_t i = 0;
             for (auto const& r : sim.regular_reports) {
-                double v = od.getValue(r->state);
+                double v = de.extractor(ao, r->state);
                 impl.plotscratch[i++] = static_cast<float>(v);
             }
 
@@ -744,7 +758,7 @@ namespace {
                         ts.push_back(static_cast<float>(r->state.getTime()));
                     }
                     OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
-                    export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), od.getName().c_str());
+                    export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), ao.getName().c_str());
                 }
 
                 if (ImGui::MenuItem("Save as CSV & Open")) {
@@ -754,7 +768,7 @@ namespace {
                         ts.push_back(static_cast<float>(r->state.getTime()));
                     }
                     OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
-                    std::string outpath = export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), od.getName().c_str());
+                    std::string outpath = export_timeseries_to_csv(ts.data(), impl.plotscratch.data(), ts.size(), ao.getName().c_str());
 
                     if (!outpath.empty()) {
                         open_path_in_default_application(outpath);
