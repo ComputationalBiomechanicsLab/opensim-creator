@@ -111,6 +111,14 @@ namespace {
         bool translate = false;
         glm::mat4 cube_mtx{1.0f};
 
+        bool on_event(SDL_Event const& e) override {
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                Application::current().request_transition<Experiments_screen>();
+                return true;
+            }
+            return false;
+        }
+
         void draw() override {
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl::Clear(GL_COLOR_BUFFER_BIT);
