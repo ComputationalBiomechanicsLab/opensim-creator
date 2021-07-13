@@ -887,7 +887,7 @@ namespace {
     // convert a 3D worldspace coordinate into a 2D screenspace coordinate
     //
     // used to draw 2D overlays for items that are in 3D
-    glm::vec2 world2screen(Impl& impl, glm::vec3 const& v) {
+    glm::vec2 world2ndc(Impl& impl, glm::vec3 const& v) {
         glm::mat4 const& view = impl.renderparams.view_matrix;
         glm::mat4 const& persp = impl.renderparams.projection_matrix;
 
@@ -927,8 +927,10 @@ namespace {
             parent_pos = parent.pos;
         }
 
-        ImVec2 p1 = world2screen(impl, bof.pos);
-        ImVec2 p2 = world2screen(impl, parent_pos);
+        auto screen_topleft = impl.render_topleft_in_screen;
+
+        ImVec2 p1 = screen_topleft + world2ndc(impl, bof.pos);
+        ImVec2 p2 = screen_topleft + world2ndc(impl, parent_pos);
         ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
 
         dl.AddLine(p1, p2, color);
@@ -1379,8 +1381,8 @@ namespace {
             glm::vec3 c = center(bof);
 
             // draw a line between the thing being assigned and this body
-            ImVec2 p1 = world2screen(impl, assigner_loc);
-            ImVec2 p2 = world2screen(impl, c);
+            ImVec2 p1 = impl.render_topleft_in_screen + world2ndc(impl, assigner_loc);
+            ImVec2 p2 = impl.render_topleft_in_screen + world2ndc(impl, c);
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
             dl.AddLine(p1, p2, color);
 
@@ -1402,8 +1404,8 @@ namespace {
             glm::vec3 c = {0.0f, 0.0f, 0.0f};
 
             // draw a line between the thing being assigned and the hovered ground
-            ImVec2 p1 = world2screen(impl, assigner_loc);
-            ImVec2 p2 = world2screen(impl, c);
+            ImVec2 p1 = world2ndc(impl, assigner_loc);
+            ImVec2 p2 = world2ndc(impl, c);
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
             dl.AddLine(p1, p2, color);
 
