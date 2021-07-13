@@ -181,7 +181,7 @@ namespace {
     [[nodiscard]] constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
         AABB aabb = aabb_compute_from_verts(vs, n);
 
-        Sphere rv;
+        Sphere rv{};
         rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
         rv.radius = 0.0f;
 
