@@ -538,6 +538,10 @@ namespace {
             case SDLK_a:
                 impl.st->set_selection(nullptr);
                 return true;
+            case SDLK_e:
+                // Ctrl+E
+                Application::current().request_transition<Simulator_screen>(std::move(impl.st));
+                return true;
             }
 
             return false;
@@ -1096,7 +1100,7 @@ namespace {
         ui::main_menu::about_tab::draw();
 
         ImGui::Dummy(ImVec2{2.0f, 0.0f});
-        if (ImGui::Button(ICON_FA_LIST_ALT " Show simulations")) {
+        if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)")) {
             Application::current().request_transition<Simulator_screen>(std::move(impl.st));
             ImGui::EndMainMenuBar();
             impl.reset_per_frame.subpanel_requested_early_exit = true;
@@ -1115,7 +1119,7 @@ namespace {
         }
         ImGui::PopStyleColor();
 
-        if (ImGui::Button(ICON_FA_EDIT " Edit sim settings")) {
+        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings")) {
             impl.reset_per_frame.edit_sim_params_requested = true;
         }
 

@@ -847,10 +847,12 @@ namespace {
         // draw main menu
         if (ImGui::BeginMainMenuBar()) {
             ui::main_menu::file_tab::draw(impl.mm_filetab_st, impl.st);
-            ui::main_menu::about_tab::draw();
             ui::main_menu::window_tab::draw(*impl.st);
+            ui::main_menu::about_tab::draw();
 
-            if (ImGui::Button("Switch to editor (Ctrl+E)")) {
+            ImGui::Dummy(ImVec2{5.0f, 0.0f});
+
+            if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)")) {
 
                 // request the transition then exit this drawcall ASAP
                 Application::current().request_transition<Model_editor_screen>(std::move(impl.st));
