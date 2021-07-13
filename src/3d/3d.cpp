@@ -146,7 +146,7 @@ namespace {
     // compute an AABB from a sequence of vertices in 3D space
     template<typename TVert>
     [[nodiscard]] constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
-        AABB rv;
+        AABB rv{};
 
         // edge-case: no points provided
         if (n == 0) {
