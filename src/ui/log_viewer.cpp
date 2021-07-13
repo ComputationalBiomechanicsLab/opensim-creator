@@ -7,52 +7,60 @@
 
 #include <sstream>
 
-static ImVec4 color(osc::log::level::Level_enum lvl) {
-    using namespace osc::log::level;
+namespace {
+    [[nodiscard]] ImVec4 color(osc::log::level::Level_enum lvl) noexcept {
+        using namespace osc::log::level;
 
-    switch (lvl) {
-    case trace:
-        return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
-    case debug:
-        return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
-    case info:
-        return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
-    case warn:
-        return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
-    case err:
-        return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
-    case critical:
-        return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
-    default:
-        return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
-    }
-}
-
-static void copy_traceback_log_to_clipboard() {
-    std::stringstream ss;
-
-    auto& guarded_content = osc::log::get_traceback_log();
-    {
-        auto const& content = guarded_content.lock();
-        for (osc::log::Owned_log_msg const& msg : *content) {
-            ss << '[' << osc::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
+        switch (lvl) {
+        case trace:
+            return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
+        case debug:
+            return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
+        case info:
+            return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
+        case warn:
+            return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
+        case err:
+            return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
+        case critical:
+            return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
+        default:
+            return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
         }
     }
 
-    std::string full_log_content = std::move(ss).str();
+    void copy_traceback_log_to_clipboard() {
+        std::stringstream ss;
 
-    if (SDL_SetClipboardText(full_log_content.c_str()) != 0) {
-        osc::log::error("error copying log to clipboard %s", SDL_GetError());
+        auto& guarded_content = osc::log::get_traceback_log();
+        {
+            auto const& content = guarded_content.lock();
+            for (osc::log::Owned_log_msg const& msg : *content) {
+                ss << '[' << osc::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
+            }
+        }
+
+        std::string full_log_content = std::move(ss).str();
+
+        if (SDL_SetClipboardText(full_log_content.c_str()) != 0) {
+            osc::log::error("error copying log to clipboard %s", SDL_GetError());
+        }
     }
 }
 
+
+// public API
+
 void osc::ui::log_viewer::draw(State& st) {
+
+    // draw top menu bar
     if (ImGui::BeginMenuBar()) {
-        // level selector
+
+        // draw level selector
         {
             int lvl = static_cast<int>(log::get_traceback_level());
             ImGui::SetNextItemWidth(200.0f);
-            if (ImGui::Combo("level", &lvl, log::level::name_cstrings, log::level::NUM_LEVELS)) {
+            if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS)) {
                 log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
             }
         }
@@ -80,6 +88,7 @@ void osc::ui::log_viewer::draw(State& st) {
         ImGui::EndMenuBar();
     }
 
+    // draw log content lines
     auto& guarded_content = log::get_traceback_log();
     auto const& content = guarded_content.lock();
     for (log::Owned_log_msg const& msg : *content) {

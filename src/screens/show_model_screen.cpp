@@ -475,7 +475,7 @@ struct Simulator_tab final {
             if (ImGui::Combo(
                     "##integration method",
                     &method,
-                    fd::integrator_method_names,
+                    fd::g_IntegratorMethodNames,
                     fd::IntegratorMethod_NumIntegratorMethods)) {
                 integrator_method = static_cast<fd::IntegratorMethod>(method);
             }
@@ -712,7 +712,7 @@ static void action_reset_model_to_initial_state(Show_model_screen::Impl& impl) {
 
 static void action_switch_to_editor(Show_model_screen::Impl& impl) {
     auto copy = std::make_unique<OpenSim::Model>(*impl.edited_model);
-    Application::current().request_screen_transition<Model_editor_screen>(std::move(copy));
+    Application::current().request_transition<Model_editor_screen>(std::move(copy));
 }
 
 static void action_clear_selection(Show_model_screen::Impl& impl) {
@@ -720,7 +720,7 @@ static void action_clear_selection(Show_model_screen::Impl& impl) {
 }
 
 static void action_quit_application() {
-    Application::current().request_quit_application();
+    Application::current().request_quit();
 }
 
 static bool action_try_reload_model_file(Show_model_screen::Impl& impl) {
@@ -909,7 +909,7 @@ static void pop_all_simulator_updates(Show_model_screen::Impl& impl) {
 }
 
 // "tick" the UI state (usually, used for updating animations etc.)
-static void tick(Show_model_screen::Impl& impl) {
+static void meshes2model_tick(Show_model_screen::Impl& impl) {
     pop_all_simulator_updates(impl);
     check_for_backing_file_changes(impl);
 }
@@ -1234,7 +1234,7 @@ static void draw(Show_model_screen::Impl& impl) {
 
         if (ImGui::Button("Switch to editor (Ctrl+E)")) {
             auto copy = std::make_unique<OpenSim::Model>(*impl.edited_model);
-            Application::current().request_screen_transition<Model_editor_screen>(std::move(copy));
+            Application::current().request_transition<Model_editor_screen>(std::move(copy));
         }
 
         ImGui::EndMainMenuBar();
@@ -1348,7 +1348,7 @@ bool Show_model_screen::on_event(SDL_Event const& e) {
 }
 
 void Show_model_screen::tick(float) {
-    ::tick(*impl);
+    ::meshes2model_tick(*impl);
 }
 
 void Show_model_screen::draw() {

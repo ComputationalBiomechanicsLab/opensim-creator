@@ -25,6 +25,10 @@ namespace osc::ui::select_2_pfs {
     };
 
     // assumes caller has handled calling ImGui::OpenPopup(modal_name)
-    std::optional<Response>
-        draw(State&, char const* modal_name, OpenSim::Model const&, char const* first_label, char const* second_label);
+    std::optional<Response> draw(
+            State&, char
+            const* modal_name,
+            OpenSim::Model const&,
+            char const* first_label,
+            char const* second_label);
 }

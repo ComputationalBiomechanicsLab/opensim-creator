@@ -35,7 +35,7 @@ bool osc::ui::fd_params_editor_popup::draw(char const* modal_name, fd::Params& p
         if (ImGui::Combo(
                 "integration method",
                 &method,
-                fd::integrator_method_names,
+                fd::g_IntegratorMethodNames,
                 fd::IntegratorMethod_NumIntegratorMethods)) {
             p.integrator_method = static_cast<fd::IntegratorMethod>(method);
             edited = true;

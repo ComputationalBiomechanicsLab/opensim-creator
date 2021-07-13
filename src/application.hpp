@@ -22,19 +22,19 @@ namespace osc {
 
 
     class Application final {
-        static Application* g_Current;
+        static Application* g_CurrentApplication;
 
         class Impl;
         std::unique_ptr<Impl> impl;
 
     public:
         static void set_current(Application* ptr) noexcept {
-            g_Current = ptr;
+            g_CurrentApplication = ptr;
         }
 
         [[nodiscard]] static Application& current() noexcept {
-            OSC_ASSERT(g_Current != nullptr);
-            return *g_Current;
+            OSC_ASSERT(g_CurrentApplication != nullptr);
+            return *g_CurrentApplication;
         }
 
         Application();
@@ -44,21 +44,21 @@ namespace osc {
         Application& operator=(Application&&) = delete;
         ~Application() noexcept;
 
-        void start_render_loop(std::unique_ptr<Screen>);
+        void show(std::unique_ptr<Screen>);
 
         template<typename T, typename... Args>
-        void start_render_loop(Args&&... args) {
-            start_render_loop(std::make_unique<T>(std::forward<Args>(args)...));
+        void show(Args&&... args) {
+            show(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        void request_screen_transition(std::unique_ptr<osc::Screen>);
+        void request_transition(std::unique_ptr<osc::Screen>);
 
         template<typename Screen, typename... Args>
-        void request_screen_transition(Args&&... args) {
-            request_screen_transition(std::make_unique<Screen>(std::forward<Args>(args)...));
+        void request_transition(Args&&... args) {
+            request_transition(std::make_unique<Screen>(std::forward<Args>(args)...));
         }
 
-        void request_quit_application();
+        void request_quit();
 
         struct Window_dimensionsi final { int w, h; };
         [[nodiscard]] Window_dimensionsi window_dimensionsi() const noexcept;

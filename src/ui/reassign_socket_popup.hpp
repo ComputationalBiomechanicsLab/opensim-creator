@@ -9,6 +9,7 @@ namespace OpenSim {
 }
 
 namespace osc::ui::reassign_socket {
+
     struct State final {
         std::string error;
         char search[128]{};
@@ -18,5 +19,9 @@ namespace osc::ui::reassign_socket {
     //
     // returns != nullptr with a pointer to the new connectee if viewer chooses
     // one in UI
-    OpenSim::Object const* draw(State&, char const* modal_name, OpenSim::Model const&, OpenSim::AbstractSocket const&);
+    OpenSim::Object const* draw(
+            State&,
+            char const* modal_name,
+            OpenSim::Model const&,
+            OpenSim::AbstractSocket const&);
 }

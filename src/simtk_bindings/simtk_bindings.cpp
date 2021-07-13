@@ -18,149 +18,182 @@
 using namespace SimTK;
 using namespace osc;
 
-// create an xform that transforms the unit cylinder into a line between
-// two points
-static glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {
-    // P1 -> P2
-    glm::vec3 p1_to_p2 = p2 - p1;
+namespace {
+    // create an xform that transforms the unit cylinder into a line between
+    // two points
+    glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {
+        // P1 -> P2
+        glm::vec3 p1_to_p2 = p2 - p1;
 
-    // cylinder bottom -> cylinder top
-    //
-    // defined to be 2.0f in Y (by the known design of the cylinder mesh instance)
-    constexpr glm::vec3 cbot_to_ctop = glm::vec3{0.0f, 2.0f, 0.0f};
+        // cylinder bottom -> cylinder top
+        //
+        // defined to be 2.0f in Y (by the known design of the cylinder mesh instance)
+        constexpr glm::vec3 cbot_to_ctop = glm::vec3{0.0f, 2.0f, 0.0f};
 
-    // our goal is to compute a transform that transforms the unit cylinder's
-    // top-to-bottom vector such that it aligns along P1 -> P2. This is so that
-    // the same (instanced) cylinder mesh can be reused by just applying this
-    // transform
+        // our goal is to compute a transform that transforms the unit cylinder's
+        // top-to-bottom vector such that it aligns along P1 -> P2. This is so that
+        // the same (instanced) cylinder mesh can be reused by just applying this
+        // transform
 
-    glm::vec3 perpendicular_axis = glm::cross(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
+        glm::vec3 perpendicular_axis = glm::cross(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
 
-    // rotate C_bot -> C_top to be parallel to P1 -> P2
-    glm::mat4 rotation_xform;
-    if (glm::length(perpendicular_axis) == 0.0f) {
-        rotation_xform = glm::identity<glm::mat4>();  // already aligned
-    } else {
-        float cos_angle = glm::dot(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
-        float angle = glm::acos(cos_angle);
-        rotation_xform = glm::rotate(glm::identity<glm::mat4>(), angle, perpendicular_axis);
+        // rotate C_bot -> C_top to be parallel to P1 -> P2
+        glm::mat4 rotation_xform;
+        if (glm::length(perpendicular_axis) == 0.0f) {
+            rotation_xform = glm::identity<glm::mat4>();  // already aligned
+        } else {
+            float cos_angle = glm::dot(glm::normalize(cbot_to_ctop), glm::normalize(p1_to_p2));
+            float angle = glm::acos(cos_angle);
+            rotation_xform = glm::rotate(glm::identity<glm::mat4>(), angle, perpendicular_axis);
+        }
+
+        // scale C_bot -> C_top to be equal to P1 -> P2
+        float line_length_scale = glm::length(p1_to_p2) / glm::length(cbot_to_ctop);
+        glm::vec3 scale_amt = {line_width, line_length_scale, line_width};
+        glm::mat4 scale_xform = glm::scale(glm::identity<glm::mat4>(), scale_amt);
+
+        // translate cylinder origin (0, 0) to P1 -> P2 origin
+        glm::mat4 translation_xform = glm::translate(glm::mat4{1.0f}, p1 + p1_to_p2/2.0f);
+
+        // scale it around origin, rotate it around origin, then translate to correct location
+        return translation_xform * rotation_xform * scale_xform;
     }
 
-    // scale C_bot -> C_top to be equal to P1 -> P2
-    float line_length_scale = glm::length(p1_to_p2) / glm::length(cbot_to_ctop);
-    glm::vec3 scale_amt = {line_width, line_length_scale, line_width};
-    glm::mat4 scale_xform = glm::scale(glm::identity<glm::mat4>(), scale_amt);
+    // load a SimTK::PolygonalMesh into an osc::Untextured_vert mesh ready for GPU upload
+    void load_mesh_data(PolygonalMesh const& mesh, Untextured_mesh& out) {
 
-    // translate cylinder origin (0, 0) to P1 -> P2 origin
-    glm::mat4 translation_xform = glm::translate(glm::mat4{1.0f}, p1 + p1_to_p2/2.0f);
+        // helper function: gets a vertex for a face
+        auto get_face_vert_pos = [&](int face, int vert) {
+            SimTK::Vec3 pos = mesh.getVertexPosition(mesh.getFaceVertex(face, vert));
+            return glm::vec3{pos[0], pos[1], pos[2]};
+        };
 
-    // scale it around origin, rotate it around origin, then translate to correct location
-    return translation_xform * rotation_xform * scale_xform;
-}
+        // helper function: compute the normal of the triangle p1, p2, p3
+        auto make_normal = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
+            return glm::normalize(glm::cross(p2 - p1, p3 - p1));
+        };
 
-// load a SimTK::PolygonalMesh into an osc::Untextured_vert mesh ready for GPU upload
-static void load_mesh_data(PolygonalMesh const& mesh, Untextured_mesh& out) {
+        out.clear();
+        std::vector<Untextured_vert>& triangles = out.verts;
 
-    // helper function: gets a vertex for a face
-    auto get_face_vert_pos = [&](int face, int vert) {
-        SimTK::Vec3 pos = mesh.getVertexPosition(mesh.getFaceVertex(face, vert));
-        return glm::vec3{pos[0], pos[1], pos[2]};
-    };
+        // iterate over each face in the PolygonalMesh and transform each into a sequence of
+        // GPU-friendly triangle verts
+        for (auto face = 0; face < mesh.getNumFaces(); ++face) {
+            auto num_vertices = mesh.getNumVerticesForFace(face);
 
-    // helper function: compute the normal of the triangle p1, p2, p3
-    auto make_normal = [](glm::vec3 const& p1, glm::vec3 const& p2, glm::vec3 const& p3) {
-        return glm::normalize(glm::cross(p2 - p1, p3 - p1));
-    };
+            if (num_vertices < 3) {
+                // line?: ignore for now
+            } else if (num_vertices == 3) {
+                // triangle: use as-is
+                glm::vec3 p1 = get_face_vert_pos(face, 0);
+                glm::vec3 p2 = get_face_vert_pos(face, 1);
+                glm::vec3 p3 = get_face_vert_pos(face, 2);
+                glm::vec3 normal = make_normal(p1, p2, p3);
 
-    out.clear();
-    std::vector<Untextured_vert>& triangles = out.verts;
+                triangles.push_back({p1, normal});
+                triangles.push_back({p2, normal});
+                triangles.push_back({p3, normal});
+            } else if (num_vertices == 4) {
+                // quad: split into two triangles
 
-    // iterate over each face in the PolygonalMesh and transform each into a sequence of
-    // GPU-friendly triangle verts
-    for (auto face = 0; face < mesh.getNumFaces(); ++face) {
-        auto num_vertices = mesh.getNumVerticesForFace(face);
+                glm::vec3 p1 = get_face_vert_pos(face, 0);
+                glm::vec3 p2 = get_face_vert_pos(face, 1);
+                glm::vec3 p3 = get_face_vert_pos(face, 2);
+                glm::vec3 p4 = get_face_vert_pos(face, 3);
 
-        if (num_vertices < 3) {
-            // line?: ignore for now
-        } else if (num_vertices == 3) {
-            // triangle: use as-is
-            glm::vec3 p1 = get_face_vert_pos(face, 0);
-            glm::vec3 p2 = get_face_vert_pos(face, 1);
-            glm::vec3 p3 = get_face_vert_pos(face, 2);
-            glm::vec3 normal = make_normal(p1, p2, p3);
+                glm::vec3 t1_norm = make_normal(p1, p2, p3);
+                glm::vec3 t2_norm = make_normal(p3, p4, p1);
 
-            triangles.push_back({p1, normal});
-            triangles.push_back({p2, normal});
-            triangles.push_back({p3, normal});
-        } else if (num_vertices == 4) {
-            // quad: split into two triangles
+                triangles.push_back({p1, t1_norm});
+                triangles.push_back({p2, t1_norm});
+                triangles.push_back({p3, t1_norm});
 
-            glm::vec3 p1 = get_face_vert_pos(face, 0);
-            glm::vec3 p2 = get_face_vert_pos(face, 1);
-            glm::vec3 p3 = get_face_vert_pos(face, 2);
-            glm::vec3 p4 = get_face_vert_pos(face, 3);
+                triangles.push_back({p3, t2_norm});
+                triangles.push_back({p4, t2_norm});
+                triangles.push_back({p1, t2_norm});
+            } else {
+                // polygon (>3 edges):
+                //
+                // create a vertex at the average center point and attach
+                // every two verices to the center as triangles.
 
-            glm::vec3 t1_norm = make_normal(p1, p2, p3);
-            glm::vec3 t2_norm = make_normal(p3, p4, p1);
+                auto center = glm::vec3{0.0f, 0.0f, 0.0f};
+                for (int vert = 0; vert < num_vertices; ++vert) {
+                    center += get_face_vert_pos(face, vert);
+                }
+                center /= num_vertices;
 
-            triangles.push_back({p1, t1_norm});
-            triangles.push_back({p2, t1_norm});
-            triangles.push_back({p3, t1_norm});
+                for (int vert = 0; vert < num_vertices - 1; ++vert) {
+                    glm::vec3 p1 = get_face_vert_pos(face, vert);
+                    glm::vec3 p2 = get_face_vert_pos(face, vert + 1);
+                    glm::vec3 normal = make_normal(p1, p2, center);
 
-            triangles.push_back({p3, t2_norm});
-            triangles.push_back({p4, t2_norm});
-            triangles.push_back({p1, t2_norm});
-        } else {
-            // polygon (>3 edges):
-            //
-            // create a vertex at the average center point and attach
-            // every two verices to the center as triangles.
+                    triangles.push_back({p1, normal});
+                    triangles.push_back({p2, normal});
+                    triangles.push_back({center, normal});
+                }
 
-            auto center = glm::vec3{0.0f, 0.0f, 0.0f};
-            for (int vert = 0; vert < num_vertices; ++vert) {
-                center += get_face_vert_pos(face, vert);
-            }
-            center /= num_vertices;
-
-            for (int vert = 0; vert < num_vertices - 1; ++vert) {
-                glm::vec3 p1 = get_face_vert_pos(face, vert);
-                glm::vec3 p2 = get_face_vert_pos(face, vert + 1);
+                // complete the polygon loop
+                glm::vec3 p1 = get_face_vert_pos(face, num_vertices - 1);
+                glm::vec3 p2 = get_face_vert_pos(face, 0);
                 glm::vec3 normal = make_normal(p1, p2, center);
 
                 triangles.push_back({p1, normal});
                 triangles.push_back({p2, normal});
                 triangles.push_back({center, normal});
             }
-
-            // complete the polygon loop
-            glm::vec3 p1 = get_face_vert_pos(face, num_vertices - 1);
-            glm::vec3 p2 = get_face_vert_pos(face, 0);
-            glm::vec3 normal = make_normal(p1, p2, center);
-
-            triangles.push_back({p1, normal});
-            triangles.push_back({p2, normal});
-            triangles.push_back({center, normal});
         }
+
+        generate_1to1_indices_for_verts(out);
     }
 
-    generate_1to1_indices_for_verts(out);
+    Transform ground_to_decoration_xform(
+        SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
+        MobilizedBody const& mobod = ms.getMobilizedBody(MobilizedBodyIndex(geom.getBodyId()));
+        Transform const& ground_to_body_xform = mobod.getBodyTransform(state);
+        Transform const& body_to_decoration_xform = geom.getTransform();
+
+        return ground_to_body_xform * body_to_decoration_xform;
+    }
+
+    glm::mat4 geom_to_mat4(
+            SimbodyMatterSubsystem const& ms,
+            SimTK::State const& state,
+            DecorativeGeometry const& geom) {
+
+        return stk_xform_to_mat4(ground_to_decoration_xform(ms, state, geom));
+    }
+
+    glm::vec3 scale_factors(DecorativeGeometry const& geom) {
+        Vec3 sf = geom.getScaleFactors();
+        for (int i = 0; i < 3; ++i) {
+            sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
+        }
+        return glm::vec3{sf[0], sf[1], sf[2]};
+    }
+
+    Rgba32 extract_rgba(DecorativeGeometry const& geom) {
+        Vec3 const& rgb = geom.getColor();
+        Real ar = geom.getOpacity();
+        ar = ar < 0.0 ? 1.0 : ar;
+
+        return Rgba32::from_d4(rgb[0], rgb[1], rgb[2], ar);
+    }
+
+    glm::vec4 to_vec4(Vec3 const& v, float w = 1.0f) {
+        return glm::vec4{v[0], v[1], v[2], w};
+    }
 }
 
-void osc::load_mesh_file_with_simtk_backend(std::filesystem::path const& p, Untextured_mesh& out) {
+
+// public API
+
+void osc::stk_load_meshfile(std::filesystem::path const& p, Untextured_mesh& out) {
     SimTK::DecorativeMeshFile dmf{p.string()};
     load_mesh_data(dmf.getMesh(), out);
 }
 
-static Transform ground_to_decoration_xform(
-    SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
-    MobilizedBody const& mobod = ms.getMobilizedBody(MobilizedBodyIndex(geom.getBodyId()));
-    Transform const& ground_to_body_xform = mobod.getBodyTransform(state);
-    Transform const& body_to_decoration_xform = geom.getTransform();
-
-    return ground_to_body_xform * body_to_decoration_xform;
-}
-
-glm::mat4 osc::to_mat4(Transform const& t) noexcept {
+glm::mat4 osc::stk_xform_to_mat4(Transform const& t) noexcept {
     // glm::mat4 is column major:
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
     //     (and just Google "glm column major?")
@@ -206,7 +239,7 @@ glm::mat4 osc::to_mat4(Transform const& t) noexcept {
     return m;
 }
 
-SimTK::Transform osc::to_transform(glm::mat4 const& m) noexcept {
+SimTK::Transform osc::std_mat4_to_xform(glm::mat4 const& m) noexcept {
     // glm::mat4 is column-major, SimTK::Transform is effectively
     // row-major
 
@@ -220,30 +253,6 @@ SimTK::Transform osc::to_transform(glm::mat4 const& m) noexcept {
     SimTK::Rotation rot{mtx};
 
     return SimTK::Transform{rot, translation};
-}
-
-static glm::mat4 geom_to_mat4(SimbodyMatterSubsystem const& ms, SimTK::State const& state, DecorativeGeometry const& geom) {
-    return to_mat4(ground_to_decoration_xform(ms, state, geom));
-}
-
-static glm::vec3 scale_factors(DecorativeGeometry const& geom) {
-    Vec3 sf = geom.getScaleFactors();
-    for (int i = 0; i < 3; ++i) {
-        sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
-    }
-    return glm::vec3{sf[0], sf[1], sf[2]};
-}
-
-static Rgba32 extract_rgba(DecorativeGeometry const& geom) {
-    Vec3 const& rgb = geom.getColor();
-    Real ar = geom.getOpacity();
-    ar = ar < 0.0 ? 1.0 : ar;
-
-    return Rgba32::from_d4(rgb[0], rgb[1], rgb[2], ar);
-}
-
-static glm::vec4 to_vec4(Vec3 const& v, float w = 1.0f) {
-    return glm::vec4{v[0], v[1], v[2], w};
 }
 
 void Simbody_geometry_visitor::implementPointGeometry(SimTK::DecorativePoint const&) {

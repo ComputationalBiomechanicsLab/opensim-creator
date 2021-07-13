@@ -22,236 +22,10 @@ using namespace osc;
 using namespace osc::fd;
 using sim_clock = std::chrono::steady_clock;
 
-enum class Fdsim_status {
-    Running = 1,
-    Completed,
-    Cancelled,
-    Error,
-};
 
-static SimTK::Integrator* fdsim_make_integator_unguarded(SimTK::System const& system, IntegratorMethod method) {
-    switch (method) {
-    case IntegratorMethod_OpenSimManagerDefault:
-        return new SimTK::RungeKuttaMersonIntegrator{system};
-    case IntegratorMethod_ExplicitEuler:
-        return new SimTK::ExplicitEulerIntegrator{system};
-    case IntegratorMethod_RungeKutta2:
-        return new SimTK::RungeKutta2Integrator{system};
-    case IntegratorMethod_RungeKutta3:
-        return new SimTK::RungeKutta3Integrator{system};
-    case IntegratorMethod_RungeKuttaFeldberg:
-        return new SimTK::RungeKuttaFeldbergIntegrator{system};
-    case IntegratorMethod_RungeKuttaMerson:
-        return new SimTK::RungeKuttaMersonIntegrator{system};
-    case IntegratorMethod_SemiExplicitEuler2:
-        return new SimTK::SemiExplicitEuler2Integrator{system};
-    case IntegratorMethod_Verlet:
-        return new SimTK::VerletIntegrator{system};
-    default:
-        return new SimTK::RungeKuttaMersonIntegrator{system};
-    }
-}
+// data
 
-static std::unique_ptr<SimTK::Integrator> fdsim_make_integrator(SimTK::System const& system, IntegratorMethod method) {
-    return std::unique_ptr<SimTK::Integrator>{fdsim_make_integator_unguarded(system, method)};
-}
-
-// state that is shared between UI and simulation thread
-struct Shared_state final {
-    Fdsim_status status = Fdsim_status::Running;
-
-    sim_clock::time_point wall_start = sim_clock::now();
-    sim_clock::time_point wall_end = sim_clock::now();  // only updated at the end
-    std::chrono::duration<double> latest_sim_time{0};
-
-    std::unique_ptr<Report> latest_report = nullptr;
-    std::vector<std::unique_ptr<Report>> regular_reports;
-};
-
-static std::unique_ptr<Report> fdsim_make_report(OpenSim::Model const& model, SimTK::Integrator const& integrator) {
-    std::unique_ptr<Report> out = std::make_unique<Report>();
-    out->state = integrator.getState();
-
-    Stats& stats = out->stats;
-
-    // integrator stats
-    stats.accuracyInUse = static_cast<float>(integrator.getAccuracyInUse());
-    stats.predictedNextStepSize = static_cast<float>(integrator.getPredictedNextStepSize());
-    stats.numStepsAttempted = integrator.getNumStepsAttempted();
-    stats.numStepsTaken = integrator.getNumStepsTaken();
-    stats.numRealizations = integrator.getNumRealizations();
-    stats.numQProjections = integrator.getNumQProjections();
-    stats.numUProjections = integrator.getNumUProjections();
-    stats.numErrorTestFailures = integrator.getNumErrorTestFailures();
-    stats.numConvergenceTestFailures = integrator.getNumConvergenceTestFailures();
-    stats.numRealizationFailures = integrator.getNumRealizationFailures();
-    stats.numQProjectionFailures = integrator.getNumQProjectionFailures();
-    stats.numUProjectionFailures = integrator.getNumUProjectionFailures();
-    stats.numProjectionFailures = integrator.getNumProjectionFailures();
-    stats.numConvergentIterations = integrator.getNumConvergentIterations();
-    stats.numDivergentIterations = integrator.getNumDivergentIterations();
-    stats.numIterations = integrator.getNumIterations();
-
-    // system stats
-    stats.numPrescribeQcalls =  model.getSystem().getNumPrescribeQCalls();
-
-    return out;
-}
-
-[[nodiscard]] static bool eq(double a, double b) noexcept {
-    // why:
-    //
-    //     http://realtimecollisiondetection.net/blog/?p=89
-    //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-    //
-    // effectively, epsilon is "machine epsilon", and is only relevant for
-    // numbers < 1.0. It has to be scaled up to the magnitude of the operands
-
-    double scaled_epsilon = std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
-
-    return std::abs(a - b) < scaled_epsilon;
-}
-
-static Fdsim_status fdsim_main_unguarded(stop_token stop_token,
-                                         std::unique_ptr<Input> input,
-                                         std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
-    OpenSim::Model& model = *input->model;
-    SimTK::State& state = *input->state;
-    fd::Params const& params = input->params;
-
-    std::unique_ptr<SimTK::Integrator> integ =
-        fdsim_make_integrator(input->model->getMultibodySystem(), input->params.integrator_method);
-    integ->setInternalStepLimit(params.integrator_step_limit);
-    integ->setMinimumStepSize(params.integrator_minimum_step_size.count());
-    integ->setMaximumStepSize(params.integrator_maximum_step_size.count());
-    integ->setAccuracy(params.integrator_accuracy);
-    integ->setFinalTime(params.final_time.count());
-    integ->setReturnEveryInternalStep(params.update_latest_state_on_every_step);
-    integ->initialize(state);
-
-    SimTK::TimeStepper ts{model.getMultibodySystem(), *integ};
-    ts.initialize(integ->getState());
-    ts.setReportAllSignificantStates(params.update_latest_state_on_every_step);
-
-    double t0 = integ->getTime();
-    auto t0_wall = sim_clock::now();
-    double tfinal = params.final_time.count();
-    double tnext_regular_report = t0;
-
-    // report t0
-    {
-        std::unique_ptr<Report> regular_report = fdsim_make_report(model, *integ);
-        std::unique_ptr<Report> spot_report = fdsim_make_report(model, *integ);
-
-        auto guard = shared->lock();
-        guard->regular_reports.push_back(std::move(regular_report));
-        guard->latest_report = std::move(spot_report);
-        tnext_regular_report = t0 + params.reporting_interval.count();
-    }
-
-    // integrate (t0..tfinal]
-    for (double t = t0; t < tfinal; t = integ->getTime()) {
-        // handle cancellation requests
-        if (stop_token.stop_requested()) {
-            return Fdsim_status::Cancelled;
-        }
-
-        // handle CPU throttling
-        if (params.throttle_to_wall_time) {
-            double dt = t - t0;
-            std::chrono::microseconds dt_sim_micros =
-                std::chrono::microseconds{static_cast<long>(1000000.0 * dt)};
-
-            auto t_wall = sim_clock::now();
-            auto dt_wall = t_wall - t0_wall;
-            auto dt_wall_micros =
-                std::chrono::duration_cast<std::chrono::microseconds>(dt_wall);
-
-            if (dt_sim_micros > dt_wall_micros) {
-                std::this_thread::sleep_for(dt_sim_micros - dt_wall_micros);
-            }
-        }
-
-        // compute an integration step
-        auto next_timepoint = std::min(tnext_regular_report, tfinal);
-        auto timestep_rv = ts.stepTo(next_timepoint);
-
-        // handle integration errors
-        if (integ->isSimulationOver() &&
-            integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime) {
-
-            std::string reason = integ->getTerminationReasonString(integ->getTerminationReason());
-            log::error("simulation error: integration failed: %s", reason.c_str());
-            return Fdsim_status::Error;
-        }
-
-        // skip uninteresting integration steps
-        if (timestep_rv != SimTK::Integrator::TimeHasAdvanced &&
-            timestep_rv != SimTK::Integrator::ReachedScheduledEvent &&
-            timestep_rv != SimTK::Integrator::ReachedReportTime &&
-            timestep_rv != SimTK::Integrator::ReachedStepLimit) {
-
-            continue;
-        }
-
-        // report integration step
-        {
-            std::unique_ptr<Report> regular_report = nullptr;
-            std::unique_ptr<Report> spot_report = nullptr;
-
-            // create regular report (if necessary)
-            if (eq(next_timepoint, integ->getTime())) {
-                regular_report = fdsim_make_report(model, *integ);
-                tnext_regular_report = integ->getTime() + params.reporting_interval.count();
-            }
-
-            // create spot report (if necessary)
-            if (shared->lock()->latest_report == nullptr) {
-                spot_report = fdsim_make_report(model, *integ);
-            }
-
-            // throw the reports over the fence to the calling thread
-            auto guard = shared->lock();
-            guard->latest_sim_time = std::chrono::duration<double>{integ->getTime()};
-            if (regular_report) {
-                guard->regular_reports.push_back(std::move(regular_report));
-            }
-            if (spot_report) {
-                guard->latest_report = std::move(spot_report);
-            }
-        }
-    }
-
-    return Fdsim_status::Completed;
-}
-
-// MAIN: simulator thread: this is the top-level function that the simulator thread
-// executes in the background.
-static int fdsim_main(
-    stop_token stop_token,
-    std::unique_ptr<Input> input,
-    std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
-
-    Fdsim_status status = Fdsim_status::Error;
-
-    try {
-        status = fdsim_main_unguarded(std::move(stop_token), std::move(input), shared);
-    } catch (OpenSim::Exception const& ex) {
-        log::error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
-    } catch (std::exception const& ex) {
-        log::error("std::exception occurred when running a simulation: %s", ex.what());
-    } catch (...) {
-        log::error("an exception with unknown type occurred when running a simulation (no error message available)");
-    }
-
-    auto guard = shared->lock();
-    guard->wall_end = sim_clock::now();
-    guard->status = status;
-
-    return 0;
-}
-
-IntegratorMethod const osc::fd::integrator_methods[IntegratorMethod_NumIntegratorMethods] = {
+IntegratorMethod const osc::fd::g_IntegratorMethods[IntegratorMethod_NumIntegratorMethods] = {
     IntegratorMethod_OpenSimManagerDefault,
     IntegratorMethod_ExplicitEuler,
     IntegratorMethod_RungeKutta2,
@@ -262,7 +36,7 @@ IntegratorMethod const osc::fd::integrator_methods[IntegratorMethod_NumIntegrato
     IntegratorMethod_Verlet,
 };
 
-char const* const osc::fd::integrator_method_names[IntegratorMethod_NumIntegratorMethods] = {
+char const* const osc::fd::g_IntegratorMethodNames[IntegratorMethod_NumIntegratorMethods] = {
     "OpenSim::Manager Default",
     "Explicit Euler",
     "Runge Kutta 2",
@@ -273,11 +47,256 @@ char const* const osc::fd::integrator_method_names[IntegratorMethod_NumIntegrato
     "Verlet",
 };
 
-osc::fd::Input::Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
-    model{std::move(_model)}, state{std::move(_state)} {
+// private impl details
+namespace {
+
+    // simulation status - returned by simulator thread
+    enum class Fdsim_status {
+        Running = 1,
+        Completed,
+        Cancelled,
+        Error,
+    };
+
+    // convert an IntegratorMethod (enum) into a SimTK::Integrator
+    [[nodiscard]] SimTK::Integrator* fdsim_make_integator_unguarded(SimTK::System const& system, IntegratorMethod method) {
+        switch (method) {
+        case IntegratorMethod_OpenSimManagerDefault:
+            return new SimTK::RungeKuttaMersonIntegrator{system};
+        case IntegratorMethod_ExplicitEuler:
+            return new SimTK::ExplicitEulerIntegrator{system};
+        case IntegratorMethod_RungeKutta2:
+            return new SimTK::RungeKutta2Integrator{system};
+        case IntegratorMethod_RungeKutta3:
+            return new SimTK::RungeKutta3Integrator{system};
+        case IntegratorMethod_RungeKuttaFeldberg:
+            return new SimTK::RungeKuttaFeldbergIntegrator{system};
+        case IntegratorMethod_RungeKuttaMerson:
+            return new SimTK::RungeKuttaMersonIntegrator{system};
+        case IntegratorMethod_SemiExplicitEuler2:
+            return new SimTK::SemiExplicitEuler2Integrator{system};
+        case IntegratorMethod_Verlet:
+            return new SimTK::VerletIntegrator{system};
+        default:
+            return new SimTK::RungeKuttaMersonIntegrator{system};
+        }
+    }
+
+    // convert an IntegratorMethod (enum) into a std::unique_ptr<SimTK::Integrator>
+    [[nodiscard]] std::unique_ptr<SimTK::Integrator> fdsim_make_integrator(SimTK::System const& system, IntegratorMethod method) {
+        return std::unique_ptr<SimTK::Integrator>{fdsim_make_integator_unguarded(system, method)};
+    }
+
+    // state that is shared between UI and simulation thread
+    struct Shared_state final {
+        Fdsim_status status = Fdsim_status::Running;
+
+        sim_clock::time_point wall_start = sim_clock::now();
+        sim_clock::time_point wall_end = sim_clock::now();  // only updated at the end
+        std::chrono::duration<double> latest_sim_time{0};
+
+        std::unique_ptr<Report> latest_report = nullptr;
+        std::vector<std::unique_ptr<Report>> regular_reports;
+    };
+
+    // generate a report from the integrator's current state
+    [[nodiscard]] std::unique_ptr<Report> fdsim_make_report(OpenSim::Model const& model, SimTK::Integrator const& integrator) {
+        std::unique_ptr<Report> out = std::make_unique<Report>();
+        out->state = integrator.getState();
+
+        Stats& stats = out->stats;
+
+        // integrator stats
+        stats.accuracyInUse = static_cast<float>(integrator.getAccuracyInUse());
+        stats.predictedNextStepSize = static_cast<float>(integrator.getPredictedNextStepSize());
+        stats.numStepsAttempted = integrator.getNumStepsAttempted();
+        stats.numStepsTaken = integrator.getNumStepsTaken();
+        stats.numRealizations = integrator.getNumRealizations();
+        stats.numQProjections = integrator.getNumQProjections();
+        stats.numUProjections = integrator.getNumUProjections();
+        stats.numErrorTestFailures = integrator.getNumErrorTestFailures();
+        stats.numConvergenceTestFailures = integrator.getNumConvergenceTestFailures();
+        stats.numRealizationFailures = integrator.getNumRealizationFailures();
+        stats.numQProjectionFailures = integrator.getNumQProjectionFailures();
+        stats.numUProjectionFailures = integrator.getNumUProjectionFailures();
+        stats.numProjectionFailures = integrator.getNumProjectionFailures();
+        stats.numConvergentIterations = integrator.getNumConvergentIterations();
+        stats.numDivergentIterations = integrator.getNumDivergentIterations();
+        stats.numIterations = integrator.getNumIterations();
+
+        // system stats
+        stats.numPrescribeQcalls =  model.getSystem().getNumPrescribeQCalls();
+
+        return out;
+    }
+
+    // returns true if `a` and `b` are effectively equal
+    [[nodiscard]] bool eq(double a, double b) noexcept {
+        // why:
+        //
+        //     http://realtimecollisiondetection.net/blog/?p=89
+        //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // effectively, epsilon is "machine epsilon", and is only relevant for
+        // numbers < 1.0. It has to be scaled up to the magnitude of the operands
+
+        double scaled_epsilon = std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
+        return std::abs(a - b) < scaled_epsilon;
+    }
+
+    // MAIN function for the simulator thread
+    //
+    // unguarded from exceptions
+    [[nodiscard]] Fdsim_status fdsim_MAIN_UNGUARDED(
+            stop_token stop_token,
+            std::unique_ptr<Input> input,
+            std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
+
+        OpenSim::Model& model = *input->model;
+        SimTK::State& state = *input->state;
+        fd::Params const& params = input->params;
+
+        // create + init an integrator
+        std::unique_ptr<SimTK::Integrator> integ =
+            fdsim_make_integrator(input->model->getMultibodySystem(), input->params.integrator_method);
+        integ->setInternalStepLimit(params.integrator_step_limit);
+        integ->setMinimumStepSize(params.integrator_minimum_step_size.count());
+        integ->setMaximumStepSize(params.integrator_maximum_step_size.count());
+        integ->setAccuracy(params.integrator_accuracy);
+        integ->setFinalTime(params.final_time.count());
+        integ->setReturnEveryInternalStep(params.update_latest_state_on_every_step);
+        integ->initialize(state);
+
+        // create + init a timestepper for the integrator
+        SimTK::TimeStepper ts{model.getMultibodySystem(), *integ};
+        ts.initialize(integ->getState());
+        ts.setReportAllSignificantStates(params.update_latest_state_on_every_step);
+
+        // figure out timesteps the sim should use
+        double t0 = integ->getTime();
+        auto t0_wall = sim_clock::now();
+        double tfinal = params.final_time.count();
+        double tnext_regular_report = t0;
+
+        // immediately report t0
+        {
+            std::unique_ptr<Report> regular_report = fdsim_make_report(model, *integ);
+            std::unique_ptr<Report> spot_report = fdsim_make_report(model, *integ);
+
+            auto guard = shared->lock();
+            guard->regular_reports.push_back(std::move(regular_report));
+            guard->latest_report = std::move(spot_report);
+            tnext_regular_report = t0 + params.reporting_interval.count();
+        }
+
+        // integrate (t0..tfinal]
+        for (double t = t0; t < tfinal; t = integ->getTime()) {
+
+            // check for thread cancellation requests
+            if (stop_token.stop_requested()) {
+                return Fdsim_status::Cancelled;
+            }
+
+            // handle CPU throttling
+            if (params.throttle_to_wall_time) {
+                double dt = t - t0;
+                std::chrono::microseconds dt_sim_micros =
+                    std::chrono::microseconds{static_cast<long>(1000000.0 * dt)};
+
+                auto t_wall = sim_clock::now();
+                auto dt_wall = t_wall - t0_wall;
+                auto dt_wall_micros =
+                    std::chrono::duration_cast<std::chrono::microseconds>(dt_wall);
+
+                if (dt_sim_micros > dt_wall_micros) {
+                    std::this_thread::sleep_for(dt_sim_micros - dt_wall_micros);
+                }
+            }
+
+            // compute an integration step
+            auto next_timepoint = std::min(tnext_regular_report, tfinal);
+            auto timestep_rv = ts.stepTo(next_timepoint);
+
+            // handle integration errors
+            if (integ->isSimulationOver() &&
+                integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime) {
+
+                std::string reason = integ->getTerminationReasonString(integ->getTerminationReason());
+                log::error("simulation error: integration failed: %s", reason.c_str());
+                return Fdsim_status::Error;
+            }
+
+            // skip uninteresting integration steps
+            if (timestep_rv != SimTK::Integrator::TimeHasAdvanced &&
+                timestep_rv != SimTK::Integrator::ReachedScheduledEvent &&
+                timestep_rv != SimTK::Integrator::ReachedReportTime &&
+                timestep_rv != SimTK::Integrator::ReachedStepLimit) {
+
+                continue;
+            }
+
+            // report interesting integration steps
+            {
+                std::unique_ptr<Report> regular_report = nullptr;
+                std::unique_ptr<Report> spot_report = nullptr;
+
+                // create regular report (if necessary)
+                if (eq(next_timepoint, integ->getTime())) {
+                    regular_report = fdsim_make_report(model, *integ);
+                    tnext_regular_report = integ->getTime() + params.reporting_interval.count();
+                }
+
+                // create spot report (if necessary)
+                if (shared->lock()->latest_report == nullptr) {
+                    spot_report = fdsim_make_report(model, *integ);
+                }
+
+                // throw the reports over the fence to the calling thread
+                auto guard = shared->lock();
+                guard->latest_sim_time = std::chrono::duration<double>{integ->getTime()};
+                if (regular_report) {
+                    guard->regular_reports.push_back(std::move(regular_report));
+                }
+                if (spot_report) {
+                    guard->latest_report = std::move(spot_report);
+                }
+            }
+        }
+
+        return Fdsim_status::Completed;
+    }
+
+    // MAIN function for the simulator thread
+    //
+    // guarded against exceptions (which are handled as simulation failures)
+    int fdsim_MAIN(
+        stop_token stop_token,
+        std::unique_ptr<Input> input,
+        std::shared_ptr<Mutex_guarded<Shared_state>> shared) {
+
+        Fdsim_status status = Fdsim_status::Error;
+
+        try {
+            status = fdsim_MAIN_UNGUARDED(std::move(stop_token), std::move(input), shared);
+        } catch (OpenSim::Exception const& ex) {
+            log::error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
+        } catch (std::exception const& ex) {
+            log::error("std::exception occurred when running a simulation: %s", ex.what());
+        } catch (...) {
+            log::error("an exception with unknown type occurred when running a simulation (no error message available)");
+        }
+
+        auto guard = shared->lock();
+        guard->wall_end = sim_clock::now();
+        guard->status = status;
+
+        return 0;
+    }
 }
 
+// simulation: internal state
 struct osc::fd::Simulation::Impl final {
+
     // caller-side copy of sim params
     Params params;
 
@@ -296,11 +315,18 @@ struct osc::fd::Simulation::Impl final {
         shared{new Mutex_guarded<Shared_state>{}},
 
         // starts the simulation
-        simulator_thread{fdsim_main, std::move(input), shared},
+        simulator_thread{fdsim_MAIN, std::move(input), shared},
 
         states_popped{0} {
     }
 };
+
+
+// public API
+
+osc::fd::Input::Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
+    model{std::move(_model)}, state{std::move(_state)} {
+}
 
 osc::fd::Simulation::Simulation(std::unique_ptr<Input> input) :
     impl{new Impl{std::move(input)}} {

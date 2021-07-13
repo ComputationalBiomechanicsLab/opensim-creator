@@ -46,15 +46,15 @@ namespace osc {
     }
 
     // convert a SimTK::Transform to a glm::mat4
-    [[nodiscard]] glm::mat4 to_mat4(SimTK::Transform const& t) noexcept;
+    [[nodiscard]] glm::mat4 stk_xform_to_mat4(SimTK::Transform const& t) noexcept;
 
     // convert a glm::mat4 to a SimTK::Transform
-    [[nodiscard]] SimTK::Transform to_transform(glm::mat4 const&) noexcept;
+    [[nodiscard]] SimTK::Transform std_mat4_to_xform(glm::mat4 const&) noexcept;
 
     // load a mesh file, using the SimTK backend, into an OSC-friendly Untextured_mesh
     //
     // the mesh is cleared by the implementation before appending the loaded verts
-    void load_mesh_file_with_simtk_backend(std::filesystem::path const&, Untextured_mesh&);
+    void stk_load_meshfile(std::filesystem::path const&, Untextured_mesh&);
 
     // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {

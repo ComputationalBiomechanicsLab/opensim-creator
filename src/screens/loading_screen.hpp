@@ -12,6 +12,7 @@ namespace osc {
 }
 
 namespace osc {
+
     // shows a basic loading message while an .osim file loads
     class Loading_screen final : public Screen {
     public:

@@ -15,7 +15,8 @@ namespace OpenSim {
 }
 
 namespace osc::ui::add_body_popup {
-    struct State {
+    struct State final {
+
         // sub-modal for attaching geometry to the body
         struct {
             attach_geometry_popup::State state;
@@ -39,7 +40,8 @@ namespace osc::ui::add_body_popup {
         std::unique_ptr<OpenSim::Body> body;
         std::unique_ptr<OpenSim::Joint> joint;
 
-        New_body(std::unique_ptr<OpenSim::Body> b, std::unique_ptr<OpenSim::Joint> j) :
+        New_body(std::unique_ptr<OpenSim::Body> b,
+                 std::unique_ptr<OpenSim::Joint> j) :
             body{std::move(b)},
             joint{std::move(j)} {
 

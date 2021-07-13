@@ -6,7 +6,10 @@
 #include <imgui.h>
 
 OpenSim::Object const* osc::ui::reassign_socket::draw(
-    State& st, char const* modal_name, OpenSim::Model const& model, OpenSim::AbstractSocket const&) {
+    State& st,
+    char const* modal_name,
+    OpenSim::Model const& model,
+    OpenSim::AbstractSocket const&) {
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));

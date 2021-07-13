@@ -97,8 +97,6 @@ add_executable(osc
     src/simtk_bindings/simtk_bindings.hpp
     src/simtk_bindings/simtk_bindings.cpp
 
-    src/opensim_bindings/component_drawlist.hpp
-    src/opensim_bindings/component_drawlist.cpp
     src/opensim_bindings/simulation.hpp
     src/opensim_bindings/simulation.cpp
     src/opensim_bindings/type_registry.hpp
@@ -166,6 +164,7 @@ add_executable(osc
 
     src/utils/algs.hpp
     src/utils/concurrency.hpp
+    src/utils/spsc.hpp
     src/utils/shims.hpp
     src/utils/sdl_wrapper.hpp
     src/utils/os.hpp

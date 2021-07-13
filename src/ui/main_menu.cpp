@@ -29,6 +29,104 @@
 
 using namespace osc;
 
+namespace {
+    void do_open_file_via_dialog(std::shared_ptr<Main_editor_state> st) {
+        nfdchar_t* outpath = nullptr;
+
+        nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
+        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+        if (result == NFD_OKAY) {
+            if (st) {
+                Application::current().request_transition<Loading_screen>(st, outpath);
+            } else {
+                Application::current().request_transition<Loading_screen>(outpath);
+            }
+        }
+    }
+
+    std::optional<std::filesystem::path> prompt_save_single_file() {
+        nfdchar_t* outpath = nullptr;
+        nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
+        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+        return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+    }
+
+    bool is_subpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
+        auto dir_n = std::distance(dir.begin(), dir.end());
+        auto pth_n = std::distance(pth.begin(), pth.end());
+
+        if (pth_n < dir_n) {
+            return false;
+        }
+
+        return std::equal(dir.begin(), dir.end(), pth.begin());
+    }
+
+    bool is_example_file(std::filesystem::path const& path) {
+        return is_subpath(resource("models"), path);
+    }
+
+    // fmap an optional from T -> f(T)
+    template<typename T, typename MappingFunction>
+    static auto map_optional(MappingFunction f, std::optional<T> opt)
+        -> std::optional<decltype(f(std::move(opt).value()))> {
+
+        return opt ? std::optional{f(std::move(opt).value())} : std::optional<decltype(f(std::move(opt).value()))>{};
+    }
+
+    std::string path2string(std::filesystem::path p) {
+        return p.string();
+    }
+
+    std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
+
+        if (std::string const& backing_path = m.getInputFileName();
+            backing_path != "Unassigned" && backing_path.size() > 0) {
+
+            // the model has an associated file
+            //
+            // we can save over this document - *IF* it's not an example file
+            if (is_example_file(backing_path)) {
+                return map_optional(path2string, prompt_save_single_file());
+            } else {
+                return backing_path;
+            }
+        } else {
+            // the model has no associated file, so prompt the user for a save
+            // location
+            return map_optional(path2string, prompt_save_single_file());
+        }
+    }
+
+    void save_model(OpenSim::Model& model, std::string const& save_loc) {
+        try {
+            model.print(save_loc);
+            model.setInputFileName(save_loc);
+            log::info("saved model to %s", save_loc.c_str());
+            add_recent_file(save_loc);
+        } catch (OpenSim::Exception const& ex) {
+            log::error("error saving model: %s", ex.what());
+        }
+    }
+
+    void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
+        if (st) {
+            Application::current().request_transition<Loading_screen>(st, p);
+        } else {
+            Application::current().request_transition<Loading_screen>(p);
+        }
+    }
+
+    std::unique_ptr<Component_3d_viewer> create_3dviewer() {
+        return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
+    }
+}
+
+
+// public API
+
 osc::ui::main_menu::file_tab::State::State() :
     example_osims{find_files_with_extensions(resource("models"), ".osim")},
     recent_files{osc::recent_files()} {
@@ -163,7 +261,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
-            Application::current().request_screen_transition<Imgui_demo_screen>();
+            Application::current().request_transition<Imgui_demo_screen>();
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -175,7 +273,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
-            Application::current().request_screen_transition<Experiments_screen>();
+            Application::current().request_transition<Experiments_screen>();
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -233,92 +331,12 @@ void osc::ui::main_menu::about_tab::draw() {
     ImGui::EndMenu();
 }
 
-static void do_open_file_via_dialog(std::shared_ptr<Main_editor_state> st) {
-    nfdchar_t* outpath = nullptr;
-
-    nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
-    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    if (result == NFD_OKAY) {
-        if (st) {
-            Application::current().request_screen_transition<Loading_screen>(st, outpath);
-        } else {
-            Application::current().request_screen_transition<Loading_screen>(outpath);
-        }
-    }
-}
-
-static std::optional<std::filesystem::path> prompt_save_single_file() {
-    nfdchar_t* outpath = nullptr;
-    nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
-    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
-}
-
-static bool is_subpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
-    auto dir_n = std::distance(dir.begin(), dir.end());
-    auto pth_n = std::distance(pth.begin(), pth.end());
-
-    if (pth_n < dir_n) {
-        return false;
-    }
-
-    return std::equal(dir.begin(), dir.end(), pth.begin());
-}
-
-static bool is_example_file(std::filesystem::path const& path) {
-    return is_subpath(resource("models"), path);
-}
-
-template<typename T, typename MappingFunction>
-static auto map_optional(MappingFunction f, std::optional<T> opt)
-    -> std::optional<decltype(f(std::move(opt).value()))> {
-
-    return opt ? std::optional{f(std::move(opt).value())} : std::optional<decltype(f(std::move(opt).value()))>{};
-}
-
-static std::string path2string(std::filesystem::path p) {
-    return p.string();
-}
-
-static std::optional<std::string> try_get_save_location(OpenSim::Model const& m) {
-
-    if (std::string const& backing_path = m.getInputFileName();
-        backing_path != "Unassigned" && backing_path.size() > 0) {
-
-        // the model has an associated file
-        //
-        // we can save over this document - *IF* it's not an example file
-        if (is_example_file(backing_path)) {
-            return map_optional(path2string, prompt_save_single_file());
-        } else {
-            return backing_path;
-        }
-    } else {
-        // the model has no associated file, so prompt the user for a save
-        // location
-        return map_optional(path2string, prompt_save_single_file());
-    }
-}
-
-static void save_model(OpenSim::Model& model, std::string const& save_loc) {
-    try {
-        model.print(save_loc);
-        model.setInputFileName(save_loc);
-        log::info("saved model to %s", save_loc.c_str());
-        add_recent_file(save_loc);
-    } catch (OpenSim::Exception const& ex) {
-        log::error("error saving model: %s", ex.what());
-    }
-}
-
 void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> st) {
     if (st) {
         st->edited_model = Undoable_ui_model{std::make_unique<OpenSim::Model>()};
-        Application::current().request_screen_transition<Model_editor_screen>(st);
+        Application::current().request_transition<Model_editor_screen>(st);
     } else {
-        Application::current().request_screen_transition<Model_editor_screen>();
+        Application::current().request_transition<Model_editor_screen>();
     }
 }
 
@@ -339,14 +357,6 @@ void osc::ui::main_menu::action_save_as(OpenSim::Model& model) {
 
     if (maybe_path) {
         save_model(model, *maybe_path);
-    }
-}
-
-static void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
-    if (st) {
-        Application::current().request_screen_transition<Loading_screen>(st, p);
-    } else {
-        Application::current().request_screen_transition<Loading_screen>(p);
     }
 }
 
@@ -373,11 +383,11 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
-            Application::current().request_screen_transition<Splash_screen>();
+            Application::current().request_transition<Splash_screen>();
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_Q)) {
-            Application::current().request_quit_application();
+            Application::current().request_quit();
         }
     }
 
@@ -434,17 +444,13 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
-        Application::current().request_screen_transition<Splash_screen>();
+        Application::current().request_transition<Splash_screen>();
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
-        Application::current().request_quit_application();
+        Application::current().request_quit();
     }
     ImGui::EndMenu();
-}
-
-static std::unique_ptr<Component_3d_viewer> create_viewer() {
-    return std::make_unique<Component_3d_viewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
 }
 
 void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
@@ -490,7 +496,7 @@ void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
             if (ImGui::MenuItem(buf, nullptr, &enabled)) {
                 if (enabled) {
                     // was enabled by user click
-                    st.viewers[i] = create_viewer();
+                    st.viewers[i] = create_3dviewer();
                 } else {
                     // was disabled by user click
                     st.viewers[i] = nullptr;
@@ -500,5 +506,4 @@ void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
 
         ImGui::EndMenu();
     }
-
 }

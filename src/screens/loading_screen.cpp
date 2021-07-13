@@ -22,13 +22,12 @@
 #include <utility>
 
 using namespace osc;
-using std::chrono_literals::operator""ms;
 
-// the function that loads the OpenSim model
-//
-// this is ran on a background thread
-static std::unique_ptr<OpenSim::Model> load_opensim_model(std::string path) {
-    return std::make_unique<OpenSim::Model>(path);
+namespace {
+    // the function that loads the OpenSim model
+    [[nodiscard]] std::unique_ptr<OpenSim::Model> load_opensim_model(std::string path) {
+        return std::make_unique<OpenSim::Model>(path);
+    }
 }
 
 struct Loading_screen::Impl final {
@@ -73,102 +72,105 @@ struct Loading_screen::Impl final {
     }
 };
 
-static bool on_event(Loading_screen::Impl&, SDL_Event const& e) {
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        Application::current().request_screen_transition<Splash_screen>();
-        return true;
-    }
-
-    return false;
-}
-
-static void tick(Loading_screen::Impl& impl, float dt) {
-    // tick the progress bar up a little bit
-    impl.progress += (dt * (1.0f - impl.progress))/2.0f;
-
-    // if there's an error, then the result came through (it's an error)
-    // and this screen should just continuously show the error until the
-    // user decides to transition back
-    if (!impl.error.empty()) {
-        return;
-    }
-
-    // otherwise, poll for the result and catch any exceptions that bubble
-    // up from the background thread
-    std::unique_ptr<OpenSim::Model> result = nullptr;
-    try {
-        if (impl.result.wait_for(0ms) == std::future_status::ready) {
-            result = impl.result.get();
+// private impl details for loading screen
+namespace {
+    [[nodiscard]] bool loadingscreen_on_event(Loading_screen::Impl&, SDL_Event const& e) {
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+            Application::current().request_transition<Splash_screen>();
+            return true;
         }
-    } catch (std::exception const& ex) {
-        impl.error = ex.what();
-        return;
-    } catch (...) {
-        impl.error = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
-        return;
+
+        return false;
     }
 
-    // if there was a result, handle that
-    if (result) {
-        add_recent_file(impl.path);
+    void loadingscreen_tick(Loading_screen::Impl& impl, float dt) {
+        // tick the progress bar up a little bit
+        impl.progress += (dt * (1.0f - impl.progress))/2.0f;
 
-        if (impl.editor_state) {
-            // there is an existing editor state
-            //
-            // recycle it so that users can keep their running sims, local edits, etc.
-            impl.editor_state->edited_model = osc::Undoable_ui_model{std::move(result)};
-            Application::current().request_screen_transition<Model_editor_screen>(std::move(impl.editor_state));
+        // if there's an error, then the result came through (it's an error)
+        // and this screen should just continuously show the error until the
+        // user decides to transition back
+        if (!impl.error.empty()) {
+            return;
+        }
+
+        // otherwise, poll for the result and catch any exceptions that bubble
+        // up from the background thread
+        std::unique_ptr<OpenSim::Model> result = nullptr;
+        try {
+            if (impl.result.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+                result = impl.result.get();
+            }
+        } catch (std::exception const& ex) {
+            impl.error = ex.what();
+            return;
+        } catch (...) {
+            impl.error = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
+            return;
+        }
+
+        // if there was a result, handle that
+        if (result) {
+            add_recent_file(impl.path);
+
+            if (impl.editor_state) {
+                // there is an existing editor state
+                //
+                // recycle it so that users can keep their running sims, local edits, etc.
+                impl.editor_state->edited_model = osc::Undoable_ui_model{std::move(result)};
+                Application::current().request_transition<Model_editor_screen>(std::move(impl.editor_state));
+            } else {
+                // there is no existing editor state
+                //
+                // transitiong into "fresh" editor
+                Application::current().request_transition<Model_editor_screen>(std::move(result));
+            }
+        }
+    }
+
+    void loadingscreen_draw(Loading_screen::Impl& impl) {
+        constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
+
+        gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto [w, h] = Application::current().window_dimensionsf();
+        glm::vec2 window_dims{w, h};
+
+        // center the menu
+        {
+            glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
+            ImGui::SetNextWindowPos(menu_pos);
+            ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
+        }
+
+        if (impl.error.empty()) {
+            if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+                ImGui::Text("loading: %s", impl.path.string().c_str());
+                ImGui::ProgressBar(impl.progress);
+            }
+            ImGui::End();
         } else {
-            // there is no existing editor state
-            //
-            // transitiong into "fresh" editor
-            Application::current().request_screen_transition<Model_editor_screen>(std::move(result));
+            if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+                ImGui::TextWrapped("An error occurred while loading the file:");
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                ImGui::TextWrapped("%s", impl.error.c_str());
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+
+                if (ImGui::Button("back to splash screen (ESC)")) {
+                    Application::current().request_transition<Splash_screen>();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("try again")) {
+                    Application::current().request_transition<Loading_screen>(impl.editor_state, impl.path);
+                }
+            }
+            ImGui::End();
         }
     }
 }
 
-static constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
-
-static void draw(Loading_screen::Impl& impl) {
-    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    auto [w, h] = Application::current().window_dimensionsf();
-    glm::vec2 window_dims{w, h};
-
-    // center the menu
-    {
-        glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
-        ImGui::SetNextWindowPos(menu_pos);
-        ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
-    }
-
-    if (impl.error.empty()) {
-        if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-            ImGui::Text("loading: %s", impl.path.string().c_str());
-            ImGui::ProgressBar(impl.progress);
-        }
-        ImGui::End();
-    } else {
-        if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-            ImGui::TextWrapped("An error occurred while loading the file:");
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            ImGui::TextWrapped("%s", impl.error.c_str());
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-            if (ImGui::Button("back to splash screen (ESC)")) {
-                Application::current().request_screen_transition<Splash_screen>();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("try again")) {
-                Application::current().request_screen_transition<Loading_screen>(impl.editor_state, impl.path);
-            }
-        }
-        ImGui::End();
-    }
-}
-
-// Loading_screen implementation: forwards to IMPL implementations
+// public API
 
 Loading_screen::Loading_screen(std::filesystem::path _path) :
     impl{new Impl{std::move(_path)}} {
@@ -183,13 +185,13 @@ Loading_screen::~Loading_screen() noexcept {
 }
 
 bool Loading_screen::on_event(SDL_Event const& e) {
-    return ::on_event(*impl, e);
+    return ::loadingscreen_on_event(*impl, e);
 }
 
 void Loading_screen::tick(float dt) {
-    ::tick(*impl, dt);
+    ::loadingscreen_tick(*impl, dt);
 }
 
 void Loading_screen::draw() {
-    ::draw(*impl);
+    ::loadingscreen_draw(*impl);
 }

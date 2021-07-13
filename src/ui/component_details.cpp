@@ -10,8 +10,10 @@
 #include <string>
 #include <vector>
 
-osc::ui::component_details::Response
-    osc::ui::component_details::draw(SimTK::State const& state, OpenSim::Component const* current_selection) {
+osc::ui::component_details::Response osc::ui::component_details::draw(
+        SimTK::State const& state,
+        OpenSim::Component
+        const* current_selection) {
 
     Response rv;
 

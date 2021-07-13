@@ -16,8 +16,83 @@
 
 namespace fs = std::filesystem;
 
-static bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
-    return a.filename() < b.filename();
+namespace {
+    using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
+    constexpr std::array<Geom_ctor_fn const, 4> g_GeomCtors = {
+        []() {
+            auto ptr = std::make_unique<OpenSim::Brick>();
+            ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
+            return std::unique_ptr<OpenSim::Geometry>(std::move(ptr));
+        },
+        []() {
+            auto ptr = std::make_unique<OpenSim::Sphere>();
+            ptr->set_radius(0.1);
+            return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+        },
+        []() {
+            auto ptr = std::make_unique<OpenSim::Cylinder>();
+            ptr->set_radius(0.1);
+            ptr->set_half_height(0.1);
+            return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
+        },
+        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
+
+        /* TODO: needs rendering support
+        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}}; },
+        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}}; },
+        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}}; },
+        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Torus{}}; },
+        */
+    };
+    constexpr std::array<char const* const, 4> g_GeomNames = {
+        "Brick",
+        "Sphere",
+        "Cylinder",
+        "LineGeometry"
+    };
+    static_assert(g_GeomCtors.size() == g_GeomNames.size());
+
+    bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
+        return a.filename() < b.filename();
+    }
+
+    std::unique_ptr<OpenSim::Mesh> on_vtp_choice_made(
+            osc::ui::attach_geometry_popup::State& st,
+            std::filesystem::path path) {
+
+        auto rv = std::make_unique<OpenSim::Mesh>(path.string());
+
+        // add to recent list
+        st.recent_user_choices.push_back(std::move(path));
+
+        // reset search (for next popup open)
+        st.search[0] = '\0';
+
+        ImGui::CloseCurrentPopup();
+
+        return rv;
+    }
+
+    std::unique_ptr<OpenSim::Mesh> try_draw_file_choice(
+            osc::ui::attach_geometry_popup::State& st,
+            std::filesystem::path const& p) {
+
+        if (p.filename().string().find(st.search.data()) != std::string::npos) {
+            if (ImGui::Selectable(p.filename().string().c_str())) {
+                return on_vtp_choice_made(st, p.filename());
+            }
+        }
+
+        return nullptr;
+    }
+
+    std::optional<std::filesystem::path> prompt_open_vtp() {
+        nfdchar_t* outpath = nullptr;
+        nfdresult_t result = NFD_OpenDialog("vtp", nullptr, &outpath);
+        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+
+        return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+    }
 }
 
 std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
@@ -28,79 +103,10 @@ std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
     return rv;
 }
 
-static std::unique_ptr<OpenSim::Mesh>
-    on_vtp_choice_made(osc::ui::attach_geometry_popup::State& st, std::filesystem::path path) {
+std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(
+        State& st,
+        char const* modal_name) {
 
-    auto rv = std::make_unique<OpenSim::Mesh>(path.string());
-
-    // add to recent list
-    st.recent_user_choices.push_back(std::move(path));
-
-    // reset search (for next popup open)
-    st.search[0] = '\0';
-
-    ImGui::CloseCurrentPopup();
-
-    return rv;
-}
-
-static std::unique_ptr<OpenSim::Mesh>
-    try_draw_file_choice(osc::ui::attach_geometry_popup::State& st, std::filesystem::path const& p) {
-
-    if (p.filename().string().find(st.search.data()) != std::string::npos) {
-        if (ImGui::Selectable(p.filename().string().c_str())) {
-            return on_vtp_choice_made(st, p.filename());
-        }
-    }
-
-    return nullptr;
-}
-
-using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
-
-static constexpr std::array<Geom_ctor_fn const, 4> g_GeomCtors = {
-    []() { 
-        auto ptr = std::make_unique<OpenSim::Brick>();
-        ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
-        return std::unique_ptr<OpenSim::Geometry>(std::move(ptr));
-    },
-    []() {
-        auto ptr = std::make_unique<OpenSim::Sphere>();
-        ptr->set_radius(0.1);
-        return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
-    },
-    []() {
-        auto ptr = std::make_unique<OpenSim::Cylinder>();
-        ptr->set_radius(0.1);
-        ptr->set_half_height(0.1);
-        return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
-    },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
-
-    /* TODO: needs rendering support
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}}; },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}}; },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}}; },
-    []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Torus{}}; },
-    */
-};
-static constexpr std::array<char const* const, 4> g_GeomNames = {
-    "Brick",
-    "Sphere",
-    "Cylinder",
-    "LineGeometry"
-};
-static_assert(g_GeomCtors.size() == g_GeomNames.size());
-
-static std::optional<std::filesystem::path> prompt_open_vtp() {
-    nfdchar_t* outpath = nullptr;
-    nfdresult_t result = NFD_OpenDialog("vtp", nullptr, &outpath);
-    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
-}
-
-std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(State& st, char const* modal_name) {
     std::unique_ptr<OpenSim::Geometry> rv = nullptr;
 
     // center the modal

@@ -19,6 +19,39 @@
 
 namespace fs = std::filesystem;
 
+namespace {
+    std::optional<std::filesystem::path> try_locate_system_config() {
+        fs::path p = osc::current_exe_dir();
+        bool exists = false;
+        while (p.has_filename()) {
+            fs::path maybe_config = p / "osc.toml";
+            if (fs::exists(maybe_config)) {
+                p = maybe_config;
+                exists = true;
+                break;
+            }
+            // HACK: there is a file at "MacOS/osc.toml", which is where the config
+            // is relative to SDL_GetBasePath. current_exe_dir should be fixed
+            // accordingly.
+            fs::path maybe_macos_config = p / "MacOS" / "osc.toml";
+            if (fs::exists(maybe_macos_config)) {
+                p = maybe_macos_config;
+                exists = true;
+                break;
+            }
+            p = p.parent_path();
+        }
+
+        if (exists) {
+            return p;
+        } else {
+            return std::nullopt;
+        }
+    }
+}
+
+// public API
+
 // static init with compiled-in defaults
 //
 // this handles the edge-case where the user boots the application without
@@ -28,35 +61,6 @@ std::unique_ptr<osc::Config> osc::g_ApplicationConfig = std::make_unique<osc::Co
 osc::Config::Config() :
     resource_dir{OSC_DEFAULT_RESOURCE_DIR},
     use_multi_viewport{OSC_DEFAULT_USE_MULTI_VIEWPORT} {
-}
-
-static std::optional<std::filesystem::path> try_locate_system_config() {
-    fs::path p = osc::current_exe_dir();
-    bool exists = false;
-    while (p.has_filename()) {
-        fs::path maybe_config = p / "osc.toml";
-        if (fs::exists(maybe_config)) {
-            p = maybe_config;
-            exists = true;
-            break;
-        }
-        // HACK: there is a file at "MacOS/osc.toml", which is where the config
-        // is relative to SDL_GetBasePath. current_exe_dir should be fixed
-        // accordingly.
-        fs::path maybe_macos_config = p / "MacOS" / "osc.toml";
-        if (fs::exists(maybe_macos_config)) {
-            p = maybe_macos_config;
-            exists = true;
-            break;
-        }
-        p = p.parent_path();
-    }
-
-    if (exists) {
-        return p;
-    } else {
-        return std::nullopt;
-    }
 }
 
 void osc::init_load_config() {

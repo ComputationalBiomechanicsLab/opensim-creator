@@ -16,40 +16,51 @@
 
 using namespace osc;
 
-static std::unique_ptr<OpenSim::Joint>
-    make_joint(osc::ui::add_body_popup::State& st, OpenSim::Body const& b, OpenSim::Joint const& joint_prototype) {
+namespace {
 
-    std::unique_ptr<OpenSim::Joint> copy{joint_prototype.clone()};
-    copy->setName(st.joint_name);
+    // create a "standard" OpenSim::Joint
+    std::unique_ptr<OpenSim::Joint> make_joint(
+            osc::ui::add_body_popup::State& st,
+            OpenSim::Body const& b,
+            OpenSim::Joint const& joint_prototype) {
 
-    if (!st.add_offset_frames_to_the_joint) {
-        copy->connectSocket_parent_frame(*st.selected_pf);
-        copy->connectSocket_child_frame(b);
-    } else {
-        // add first offset frame as joint's parent
-        {
-            auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pof1->setParentFrame(*st.selected_pf);
-            pof1->setName(st.selected_pf->getName() + "_offset");
-            copy->addFrame(pof1.get());
-            copy->connectSocket_parent_frame(*pof1.release());
+        std::unique_ptr<OpenSim::Joint> copy{joint_prototype.clone()};
+        copy->setName(st.joint_name);
+
+        if (!st.add_offset_frames_to_the_joint) {
+            copy->connectSocket_parent_frame(*st.selected_pf);
+            copy->connectSocket_child_frame(b);
+        } else {
+            // add first offset frame as joint's parent
+            {
+                auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+                pof1->setParentFrame(*st.selected_pf);
+                pof1->setName(st.selected_pf->getName() + "_offset");
+                copy->addFrame(pof1.get());
+                copy->connectSocket_parent_frame(*pof1.release());
+            }
+
+            // add second offset frame as joint's child
+            {
+                auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+                pof2->setParentFrame(b);
+                pof2->setName(b.getName() + "_offset");
+                copy->addFrame(pof2.get());
+                copy->connectSocket_child_frame(*pof2.release());
+            }
         }
 
-        // add second offset frame as joint's child
-        {
-            auto pof2 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pof2->setParentFrame(b);
-            pof2->setName(b.getName() + "_offset");
-            copy->addFrame(pof2.get());
-            copy->connectSocket_child_frame(*pof2.release());
-        }
+        return copy;
     }
-
-    return copy;
 }
 
-std::optional<osc::ui::add_body_popup::New_body>
-    osc::ui::add_body_popup::draw(State& st, char const* modal_name, OpenSim::Model const& model) {
+
+// public API
+
+std::optional<osc::ui::add_body_popup::New_body> osc::ui::add_body_popup::draw(
+        State& st,
+        char const* modal_name,
+        OpenSim::Model const& model) {
 
     // center the modal
     {

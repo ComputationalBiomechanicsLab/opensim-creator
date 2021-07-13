@@ -14,44 +14,53 @@
 #include <cstdint>
 #include <string_view>
 
-static std::vector<osc::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
-    std::vector<osc::Recent_file> rv;
-    std::ifstream fd{p, std::ios::in};
+namespace {
 
-    if (!fd) {
-        // do not throw, because it probably shouldn't crash the application if this
-        // is an issue
-        osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+    // load the "recent files" file that osc persists to disk
+    std::vector<osc::Recent_file> load_recent_files_file(std::filesystem::path const& p) {
+        std::vector<osc::Recent_file> rv;
+        std::ifstream fd{p, std::ios::in};
+
+        if (!fd) {
+            // do not throw, because it probably shouldn't crash the application if this
+            // is an issue
+            osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+            return rv;
+        }
+
+        std::string line;
+        while (std::getline(fd, line)) {
+            std::istringstream ss{line};
+
+            // read line content
+            uint64_t timestamp;
+            std::filesystem::path path;
+            ss >> timestamp;
+            ss >> path;
+
+            // calc tertiary data
+            bool exists = std::filesystem::exists(path);
+            std::chrono::seconds timestamp_secs{timestamp};
+
+            rv.emplace_back(exists, std::move(timestamp_secs), std::move(path));
+        }
+
         return rv;
     }
 
-    std::string line;
-    while (std::getline(fd, line)) {
-        std::istringstream ss{line};
-
-        // read line content
-        uint64_t timestamp;
-        std::filesystem::path path;
-        ss >> timestamp;
-        ss >> path;
-
-        // calc tertiary data
-        bool exists = std::filesystem::exists(path);
-        std::chrono::seconds timestamp_secs{timestamp};
-
-        rv.emplace_back(exists, std::move(timestamp_secs), std::move(path));
+    // returns a unix timestamp in seconds since the epoch
+    std::chrono::seconds unix_timestamp() {
+        return std::chrono::seconds(std::time(nullptr));
     }
 
-    return rv;
+    // returns the filesystem path to the "recent files" file
+    std::filesystem::path recent_files_path() {
+        return osc::user_data_dir() / "recent_files.txt";
+    }
 }
 
-static std::chrono::seconds unix_timestamp() {
-    return std::chrono::seconds(std::time(nullptr));
-}
 
-static std::filesystem::path recent_files_path() {
-    return osc::user_data_dir() / "recent_files.txt";
-}
+// public API
 
 void osc::find_files_with_extensions(
         std::filesystem::path const& root,

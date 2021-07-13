@@ -3,15 +3,19 @@
 #include <SimTKcommon.h>
 #include <imgui.h>
 
-template<typename Coll1, typename Coll2>
-static float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
-    for (int i = 0; i < static_cast<int>(n); ++i) {
-        if (static_cast<float>(older[i]) != static_cast<float>(newer[i])) {
-            return newer[i];
+namespace {
+    template<typename Coll1, typename Coll2>
+    float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
+        for (int i = 0; i < static_cast<int>(n); ++i) {
+            if (static_cast<float>(older[i]) != static_cast<float>(newer[i])) {
+                return newer[i];
+            }
         }
+        return static_cast<float>(older[0]);
     }
-    return static_cast<float>(older[0]);
 }
+
+// public API
 
 bool osc::ui::lockable_f3_editor::draw(char const* lock_id, char const* editor_id, float* v, bool* is_locked) {
     bool changed = false;

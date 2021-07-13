@@ -16,6 +16,14 @@
 using namespace osc;
 using namespace osc::ui;
 
+[[nodiscard]] static bool all_sockets_assigned(add_component_popup::State const& st) noexcept {
+    return std::all_of(st.pf_connectees.begin(), st.pf_connectees.end(), [](auto* ptr) {
+        return ptr != nullptr;
+    });
+}
+
+// public API
+
 std::vector<OpenSim::AbstractSocket const*> osc::ui::add_component_popup::get_pf_sockets(OpenSim::Component& c) {
 
     std::vector<OpenSim::AbstractSocket const*> rv;
@@ -27,12 +35,6 @@ std::vector<OpenSim::AbstractSocket const*> osc::ui::add_component_popup::get_pf
     }
 
     return rv;
-}
-
-[[nodiscard]] static bool all_sockets_assigned(add_component_popup::State const& st) noexcept {
-    return std::all_of(st.pf_connectees.begin(), st.pf_connectees.end(), [](auto* ptr) {
-        return ptr != nullptr;
-    });
 }
 
 std::unique_ptr<OpenSim::Component> osc::ui::add_component_popup::draw(

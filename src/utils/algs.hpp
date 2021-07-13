@@ -11,5 +11,4 @@ namespace osc {
         c.erase(it, c.end());
     }
 
-
 }

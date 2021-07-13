@@ -6,7 +6,11 @@
 #include <imgui.h>
 
 std::optional<osc::ui::select_2_pfs::Response> osc::ui::select_2_pfs::draw(
-    State& st, char const* modal_name, OpenSim::Model const& model, char const* first_label, char const* second_label) {
+    State& st,
+    char const* modal_name,
+    OpenSim::Model const& model,
+    char const* first_label,
+    char const* second_label) {
 
     // center the modal
     {

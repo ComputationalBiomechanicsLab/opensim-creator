@@ -21,6 +21,8 @@ struct Error_screen::Impl final {
     }
 };
 
+// public API
+
 Error_screen::Error_screen(std::exception const& ex) : impl{new Impl{ex.what()}} {
 }
 
@@ -30,7 +32,7 @@ Error_screen::~Error_screen() noexcept {
 
 bool Error_screen::on_event(SDL_Event const& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        Application::current().request_screen_transition<Splash_screen>();
+        Application::current().request_transition<Splash_screen>();
         return true;
     }
     return false;
@@ -56,7 +58,7 @@ void Error_screen::draw() {
         ImGui::Dummy(ImVec2{0.0f, 10.0f});
 
         if (ImGui::Button("Return to splash screen (Escape)")) {
-            Application::current().request_screen_transition<Splash_screen>();
+            Application::current().request_transition<Splash_screen>();
         }
     }
     ImGui::End();

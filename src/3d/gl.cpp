@@ -3,8 +3,6 @@
 #include <sstream>
 #include <vector>
 
-static std::vector<char const*> current_errors;
-
 char const* gl::Opengl_exception::what() const noexcept {
     return msg.c_str();
 }

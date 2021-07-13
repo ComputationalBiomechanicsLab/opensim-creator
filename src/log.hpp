@@ -22,16 +22,16 @@ namespace osc::log {
 #define OSC_LOG_LVL_NAMES                                                                                             \
     { "trace", "debug", "info", "warning", "error", "critical", "off" }
 
-        extern std::string_view const name_views[NUM_LEVELS];
-        extern char const* const name_cstrings[NUM_LEVELS];
+        extern std::string_view const g_LogLevelStringViews[NUM_LEVELS];
+        extern char const* const g_LogLevelCStrings[NUM_LEVELS];
     }
 
     [[nodiscard]] inline std::string_view const& to_string_view(level::Level_enum lvl) noexcept {
-        return level::name_views[lvl];
+        return level::g_LogLevelStringViews[lvl];
     }
 
     [[nodiscard]] inline char const* to_c_str(level::Level_enum lvl) noexcept {
-        return level::name_cstrings[lvl];
+        return level::g_LogLevelCStrings[lvl];
     }
 
     // a log message
@@ -212,9 +212,9 @@ namespace osc::log {
         default_logger_raw()->critical(fmt, args...);
     }
 
-    static constexpr size_t max_traceback_log_messages = 256;
+    static constexpr size_t g_MaxLogTracebackMessages = 256;
 
     [[nodiscard]] level::Level_enum get_traceback_level();
     void set_traceback_level(level::Level_enum);
-    [[nodiscard]] Mutex_guarded<Circular_buffer<Owned_log_msg, max_traceback_log_messages>>& get_traceback_log();
+    [[nodiscard]] Mutex_guarded<Circular_buffer<Owned_log_msg, g_MaxLogTracebackMessages>>& get_traceback_log();
 }

@@ -7,7 +7,7 @@
 
 #include <imgui.h>
 
-static constexpr char const* names[] = OSC_MUSCLE_SORT_NAMES;
+static constexpr char const* const g_MuscleNames[] = OSC_MUSCLE_SORT_NAMES;
 
 osc::ui::muscles_table::Response
     osc::ui::muscles_table::draw(State& st, OpenSim::Model const& model, SimTK::State const& stkst) {
@@ -54,10 +54,10 @@ osc::ui::muscles_table::Response
     ImGui::PushID("muscles sort by checkbox");
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-    if (ImGui::BeginCombo(" ", names[st.sort_choice], ImGuiComboFlags_None)) {
+    if (ImGui::BeginCombo(" ", g_MuscleNames[st.sort_choice], ImGuiComboFlags_None)) {
         for (int n = 0; n < SortChoice_NUM_CHOICES; n++) {
             bool is_selected = (st.sort_choice == n);
-            if (ImGui::Selectable(names[n], is_selected)) {
+            if (ImGui::Selectable(g_MuscleNames[n], is_selected)) {
                 st.sort_choice = n;
             }
 

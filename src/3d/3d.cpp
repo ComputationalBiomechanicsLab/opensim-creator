@@ -19,6 +19,473 @@
 
 using namespace osc;
 
+// private implementation details
+namespace {
+
+    // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
+    // (0, 0) bottom-left, (1, 1) top-right for each (quad) face
+    constexpr std::array<Textured_vert, 36> g_ShadedTexturedCubeVerts = {{
+        // back face
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},  // top-left
+        // front face
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        // left face
+        {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
+        {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
+        {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
+        {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
+        // right face
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
+        {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-left
+        // bottom face
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
+        {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
+        // top face
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
+    }};
+
+    // standard textured quad
+    // - dimensions [-1, +1] in xy and [0, 0] in z
+    // - uv coords are (0, 0) bottom-left, (1, 1) top-right
+    // - normal is +1 in Z, meaning that it faces toward the camera
+    constexpr std::array<Textured_vert, 6> g_ShadedTexturedQuadVerts = {{
+        // CCW winding (culling)
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+        {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+
+        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
+        {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
+        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
+    }};
+
+    // a cube wire mesh, suitable for GL_LINES drawing
+    //
+    // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
+    constexpr std::array<Untextured_vert, 24> g_CubeEdgeLines = {{
+        // back
+
+        // back bottom left -> back bottom right
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back bottom right -> back top right
+        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back top right -> back top left
+        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // back top left -> back bottom left
+        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
+
+        // front
+
+        // front bottom left -> front bottom right
+        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front bottom right -> front top right
+        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front top right -> front top left
+        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front top left -> front bottom left
+        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
+
+        // front-to-back edges
+
+        // front bottom left -> back bottom left
+        {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
+
+        // front bottom right -> back bottom right
+        {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
+        {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
+
+        // front top left -> back top left
+        {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
+        {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
+
+        // front top right -> back top right
+        {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
+        {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
+    }};
+
+    // compute an AABB from a sequence of vertices in 3D space
+    template<typename TVert>
+    [[nodiscard]] constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
+        AABB rv;
+
+        // edge-case: no points provided
+        if (n == 0) {
+            rv.p1 = {0.0f, 0.0f, 0.0f};
+            rv.p2 = {0.0f, 0.0f, 0.0f};
+            return rv;
+        }
+
+        rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+
+        // otherwise, compute bounds
+        for (size_t i = 0; i < n; ++i) {
+            glm::vec3 const& pos = vs[i].pos;
+
+            rv.p1[0] = std::min(rv.p1[0], pos[0]);
+            rv.p1[1] = std::min(rv.p1[1], pos[1]);
+            rv.p1[2] = std::min(rv.p1[2], pos[2]);
+
+            rv.p2[0] = std::max(rv.p2[0], pos[0]);
+            rv.p2[1] = std::max(rv.p2[1], pos[1]);
+            rv.p2[2] = std::max(rv.p2[2], pos[2]);
+        }
+
+        return rv;
+    }
+
+    // hackily computes the bounding sphere around verts
+    //
+    // see: https://en.wikipedia.org/wiki/Bounding_sphere for better algs
+    template<typename TVert>
+    [[nodiscard]] constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
+        AABB aabb = aabb_compute_from_verts(vs, n);
+
+        Sphere rv;
+        rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
+        rv.radius = 0.0f;
+
+        // edge-case: no points provided
+        if (n == 0) {
+            return rv;
+        }
+
+        float biggest_r2 = 0.0f;
+        for (size_t i = 0; i < n; ++i) {
+            glm::vec3 const& pos = vs[i].pos;
+            float r2 = glm::distance2(rv.origin, pos);
+            biggest_r2 = std::max(biggest_r2, r2);
+        }
+
+        rv.radius = glm::sqrt(biggest_r2);
+
+        return rv;
+    }
+
+    // helper method: load a file into an image and send it to OpenGL
+    void load_cubemap_surface(char const* path, GLenum target) {
+        auto img = osc::stbi::Image::load(path);
+
+        if (!img) {
+            std::stringstream ss;
+            ss << path << ": error loading cubemap surface: " << osc::stbi::failure_reason();
+            throw std::runtime_error{std::move(ss).str()};
+        }
+
+        GLenum format;
+        if (img->channels == 1) {
+            format = GL_RED;
+        } else if (img->channels == 3) {
+            format = GL_RGB;
+        } else if (img->channels == 4) {
+            format = GL_RGBA;
+        } else {
+            std::stringstream msg;
+            msg << path << ": error: contains " << img->channels
+                << " color channels (the implementation doesn't know how to handle this)";
+            throw std::runtime_error{std::move(msg).str()};
+        }
+
+        glTexImage2D(target, 0, format, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
+    }
+
+    // Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
+    void unit_sphere_triangles(Untextured_mesh& out) {
+        out.clear();
+
+        // this is a shitty alg that produces a shitty UV sphere. I don't have
+        // enough time to implement something better, like an isosphere, or
+        // something like a patched sphere:
+        //
+        // https://www.iquilezles.org/www/articles/patchedsphere/patchedsphere.htm
+        //
+        // This one is adapted from:
+        //    http://www.songho.ca/opengl/gl_sphere.html#example_cubesphere
+
+        size_t sectors = 12;
+        size_t stacks = 12;
+
+        // polar coords, with [0, 0, -1] pointing towards the screen with polar
+        // coords theta = 0, phi = 0. The coordinate [0, 1, 0] is theta = (any)
+        // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
+        std::vector<Untextured_vert> points;
+
+        float theta_step = 2.0f * pi_f / sectors;
+        float phi_step = pi_f / stacks;
+
+        for (size_t stack = 0; stack <= stacks; ++stack) {
+            float phi = pi_f / 2.0f - static_cast<float>(stack) * phi_step;
+            float y = sinf(phi);
+
+            for (unsigned sector = 0; sector <= sectors; ++sector) {
+                float theta = sector * theta_step;
+                float x = sinf(theta) * cosf(phi);
+                float z = -cosf(theta) * cosf(phi);
+                glm::vec3 pos{x, y, z};
+                glm::vec3 normal{pos};
+                points.push_back({pos, normal});
+            }
+        }
+
+        // the points are not triangles. They are *points of a triangle*, so the
+        // points must be triangulated
+
+        for (size_t stack = 0; stack < stacks; ++stack) {
+            size_t k1 = stack * (sectors + 1);
+            size_t k2 = k1 + sectors + 1;
+
+            for (size_t sector = 0; sector < sectors; ++sector, ++k1, ++k2) {
+                // 2 triangles per sector - excluding the first and last stacks
+                // (which contain one triangle, at the poles)
+                Untextured_vert p1 = points.at(k1);
+                Untextured_vert p2 = points.at(k2);
+                Untextured_vert p1_plus1 = points.at(k1 + 1u);
+                Untextured_vert p2_plus1 = points.at(k2 + 1u);
+
+                if (stack != 0) {
+                    out.verts.push_back(p1);
+                    out.verts.push_back(p1_plus1);
+                    out.verts.push_back(p2);
+                }
+
+                if (stack != (stacks - 1)) {
+                    out.verts.push_back(p1_plus1);
+                    out.verts.push_back(p2_plus1);
+                    out.verts.push_back(p2);
+                }
+            }
+        }
+
+        generate_1to1_indices_for_verts(out);
+    }
+
+    void simbody_cylinder_triangles(Untextured_mesh& out) {
+        size_t num_sides = 16;
+
+        out.clear();
+        out.verts.reserve(2 * num_sides + 2 * num_sides);
+
+        float step_angle = (2.0f * pi_f) / num_sides;
+        float top_y = +1.0f;
+        float bottom_y = -1.0f;
+
+        // top
+        {
+            glm::vec3 normal = {0.0f, 1.0f, 0.0f};
+            Untextured_vert top_middle{{0.0f, top_y, 0.0f}, normal};
+            for (auto i = 0U; i < num_sides; ++i) {
+                float theta_start = i * step_angle;
+                float theta_end = (i + 1) * step_angle;
+
+                // note: these are wound CCW for backface culling
+                out.verts.push_back(top_middle);
+                out.verts.push_back({glm::vec3(cosf(theta_end), top_y, sinf(theta_end)), normal});
+                out.verts.push_back({glm::vec3(cosf(theta_start), top_y, sinf(theta_start)), normal});
+            }
+        }
+
+        // bottom
+        {
+            glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
+            Untextured_vert top_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
+            for (auto i = 0U; i < num_sides; ++i) {
+                float theta_start = i * step_angle;
+                float theta_end = (i + 1) * step_angle;
+
+                // note: these are wound CCW for backface culling
+                out.verts.push_back(top_middle);
+                out.verts.push_back({
+                    glm::vec3(cosf(theta_start), bottom_y, sinf(theta_start)),
+                    bottom_normal,
+                });
+                out.verts.push_back({
+                    glm::vec3(cosf(theta_end), bottom_y, sinf(theta_end)),
+                    bottom_normal,
+                });
+            }
+        }
+
+        // sides
+        {
+            float norm_start = step_angle / 2.0f;
+            for (auto i = 0U; i < num_sides; ++i) {
+                float theta_start = i * step_angle;
+                float theta_end = theta_start + step_angle;
+                float norm_theta = theta_start + norm_start;
+
+                glm::vec3 normal(cosf(norm_theta), 0.0f, sinf(norm_theta));
+                glm::vec3 top1(cosf(theta_start), top_y, sinf(theta_start));
+                glm::vec3 top2(cosf(theta_end), top_y, sinf(theta_end));
+
+                glm::vec3 bottom1 = top1;
+                bottom1.y = bottom_y;
+                glm::vec3 bottom2 = top2;
+                bottom2.y = bottom_y;
+
+                // draw 2 triangles per quad cylinder side
+                //
+                // note: these are wound CCW for backface culling
+                out.verts.push_back({top1, normal});
+                out.verts.push_back({top2, normal});
+                out.verts.push_back({bottom1, normal});
+
+                out.verts.push_back({bottom2, normal});
+                out.verts.push_back({bottom1, normal});
+                out.verts.push_back({top2, normal});
+            }
+        }
+
+        generate_1to1_indices_for_verts(out);
+    }
+
+
+    void simbody_brick_triangles(Untextured_mesh& out) {
+        out.clear();
+
+        for (Textured_vert v : g_ShadedTexturedCubeVerts) {
+            out.verts.push_back({v.pos, v.normal});
+        }
+
+        generate_1to1_indices_for_verts(out);
+    }
+
+    void generate_floor_quad(Textured_mesh& out) {
+        out.clear();
+
+        for (Textured_vert const& v : g_ShadedTexturedQuadVerts) {
+            Textured_vert& tv = out.verts.emplace_back(v);
+            tv.texcoord *= 200.0f;
+        }
+
+        generate_1to1_indices_for_verts(out);
+    }
+
+    void generate_NxN_grid(size_t n, Untextured_mesh& out) {
+        static constexpr float z = 0.0f;
+        static constexpr float min = -1.0f;
+        static constexpr float max = 1.0f;
+
+        size_t lines_per_dimension = n;
+        float step_size = (max - min) / static_cast<float>(lines_per_dimension - 1);
+        size_t num_lines = 2 * lines_per_dimension;
+        size_t num_points = 2 * num_lines;
+
+        out.clear();
+        out.verts.resize(num_points);
+
+        glm::vec3 normal = {0.0f, 0.0f, 0.0f};  // same for all
+
+        size_t idx = 0;
+
+        // lines parallel to X axis
+        for (size_t i = 0; i < lines_per_dimension; ++i) {
+            float y = min + i * step_size;
+
+            Untextured_vert& p1 = out.verts[idx++];
+            p1.pos = {-1.0f, y, z};
+            p1.normal = normal;
+
+            Untextured_vert& p2 = out.verts[idx++];
+            p2.pos = {1.0f, y, z};
+            p2.normal = normal;
+        }
+
+        // lines parallel to Y axis
+        for (size_t i = 0; i < lines_per_dimension; ++i) {
+            float x = min + i * step_size;
+
+            Untextured_vert& p1 = out.verts[idx++];
+            p1.pos = {x, -1.0f, z};
+            p1.normal = normal;
+
+            Untextured_vert& p2 = out.verts[idx++];
+            p2.pos = {x, 1.0f, z};
+            p2.normal = normal;
+        }
+
+        generate_1to1_indices_for_verts(out);
+    }
+
+    void generate_y_line(Untextured_mesh& out) {
+        out.clear();
+        out.verts.push_back({{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+        out.verts.push_back({{0.0f, +1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+        generate_1to1_indices_for_verts(out);
+    }
+
+    void generate_cube_lines(Untextured_mesh& out) {
+        out.clear();
+        out.indices.reserve(g_CubeEdgeLines.size());
+        out.verts.reserve(g_CubeEdgeLines.size());
+
+        for (size_t i = 0; i < g_CubeEdgeLines.size(); ++i) {
+            out.indices.push_back(static_cast<elidx_t>(i));
+            out.verts.push_back(g_CubeEdgeLines[i]);
+        }
+    }
+
+
+    [[nodiscard]] constexpr bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2) {
+        if (m1.texidx != m2.texidx) {
+            // third, sort by texture, because even though we *could* render a batch of
+            // instances with the same mesh in one draw call, some of those meshes might
+            // be textured, and textures can't be instanced (so the drawcall must be split
+            // into separate calls etc.)
+            return m1.texidx < m2.texidx;
+        } else {
+            // fourth, sort by flags, because the flags can change a draw call (e.g.
+            // although we are drawing the same mesh with the same texture, this
+            // partiular *instance* should be drawn with GL_TRIANGLES or GL_POINTS)
+            //
+            // like textures, if the drawcall-affecting flags are different, we have
+            // to split the drawcall (e.g. draw TRIANGLES then draw POINTS)
+            return m1.flags < m2.flags;
+        }
+    }
+}
+
+// public API
+
 std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v) {
     return o << '(' << v.x << ", " << v.y << ", " << v.z << ')';
 }
@@ -32,65 +499,6 @@ bool osc::is_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float eps2 = eps * eps;
     float len2 = glm::length2(a - b);
     return len2 > eps2;
-}
-
-// compute an AABB from a sequence of vertices in 3D space
-template<typename TVert>
-[[nodiscard]] static constexpr AABB aabb_compute_from_verts(TVert const* vs, size_t n) noexcept {
-    AABB rv;
-
-    // edge-case: no points provided
-    if (n == 0) {
-        rv.p1 = {0.0f, 0.0f, 0.0f};
-        rv.p2 = {0.0f, 0.0f, 0.0f};
-        return rv;
-    }
-
-    rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-    rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-
-    // otherwise, compute bounds
-    for (size_t i = 0; i < n; ++i) {
-        glm::vec3 const& pos = vs[i].pos;
-
-        rv.p1[0] = std::min(rv.p1[0], pos[0]);
-        rv.p1[1] = std::min(rv.p1[1], pos[1]);
-        rv.p1[2] = std::min(rv.p1[2], pos[2]);
-
-        rv.p2[0] = std::max(rv.p2[0], pos[0]);
-        rv.p2[1] = std::max(rv.p2[1], pos[1]);
-        rv.p2[2] = std::max(rv.p2[2], pos[2]);
-    }
-
-    return rv;
-}
-
-// hackily computes the bounding sphere around verts
-//
-// see: https://en.wikipedia.org/wiki/Bounding_sphere for better algs
-template<typename TVert>
-[[nodiscard]] static constexpr Sphere sphere_compute_bounding_sphere_from_verts(TVert const* vs, size_t n) noexcept {
-    AABB aabb = aabb_compute_from_verts(vs, n);
-
-    Sphere rv;
-    rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
-    rv.radius = 0.0f;
-
-    // edge-case: no points provided
-    if (n == 0) {
-        return rv;
-    }
-
-    float biggest_r2 = 0.0f;
-    for (size_t i = 0; i < n; ++i) {
-        glm::vec3 const& pos = vs[i].pos;
-        float r2 = glm::distance2(rv.origin, pos);
-        biggest_r2 = std::max(biggest_r2, r2);
-    }
-
-    rv.radius = glm::sqrt(biggest_r2);
-
-    return rv;
 }
 
 osc::AABB osc::aabb_from_mesh(Untextured_mesh const& m) noexcept {
@@ -179,33 +587,6 @@ Image_texture osc::load_image_as_texture(char const* path, Tex_flags flags) {
     return Image_texture{std::move(t), img->width, img->height, img->channels};
 }
 
-// helper method: load a file into an image and send it to OpenGL
-static void load_cubemap_surface(char const* path, GLenum target) {
-    auto img = osc::stbi::Image::load(path);
-
-    if (!img) {
-        std::stringstream ss;
-        ss << path << ": error loading cubemap surface: " << osc::stbi::failure_reason();
-        throw std::runtime_error{std::move(ss).str()};
-    }
-
-    GLenum format;
-    if (img->channels == 1) {
-        format = GL_RED;
-    } else if (img->channels == 3) {
-        format = GL_RGB;
-    } else if (img->channels == 4) {
-        format = GL_RGBA;
-    } else {
-        std::stringstream msg;
-        msg << path << ": error: contains " << img->channels
-            << " color channels (the implementation doesn't know how to handle this)";
-        throw std::runtime_error{std::move(msg).str()};
-    }
-
-    glTexImage2D(target, 0, format, img->width, img->height, 0, format, GL_UNSIGNED_BYTE, img->data);
-}
-
 gl::Texture_cubemap osc::load_cubemap(
     char const* path_pos_x,
     char const* path_neg_x,
@@ -264,361 +645,6 @@ osc::GPU_mesh::GPU_mesh(Textured_mesh const& tm) :
     is_textured{true} {
 }
 
-// Returns triangles of a "unit" (radius = 1.0f, origin = 0,0,0) sphere
-static void unit_sphere_triangles(Untextured_mesh& out) {
-    out.clear();
-
-    // this is a shitty alg that produces a shitty UV sphere. I don't have
-    // enough time to implement something better, like an isosphere, or
-    // something like a patched sphere:
-    //
-    // https://www.iquilezles.org/www/articles/patchedsphere/patchedsphere.htm
-    //
-    // This one is adapted from:
-    //    http://www.songho.ca/opengl/gl_sphere.html#example_cubesphere
-
-    size_t sectors = 12;
-    size_t stacks = 12;
-
-    // polar coords, with [0, 0, -1] pointing towards the screen with polar
-    // coords theta = 0, phi = 0. The coordinate [0, 1, 0] is theta = (any)
-    // phi = PI/2. The coordinate [1, 0, 0] is theta = PI/2, phi = 0
-    std::vector<Untextured_vert> points;
-
-    float theta_step = 2.0f * pi_f / sectors;
-    float phi_step = pi_f / stacks;
-
-    for (size_t stack = 0; stack <= stacks; ++stack) {
-        float phi = pi_f / 2.0f - static_cast<float>(stack) * phi_step;
-        float y = sinf(phi);
-
-        for (unsigned sector = 0; sector <= sectors; ++sector) {
-            float theta = sector * theta_step;
-            float x = sinf(theta) * cosf(phi);
-            float z = -cosf(theta) * cosf(phi);
-            glm::vec3 pos{x, y, z};
-            glm::vec3 normal{pos};
-            points.push_back({pos, normal});
-        }
-    }
-
-    // the points are not triangles. They are *points of a triangle*, so the
-    // points must be triangulated
-
-    for (size_t stack = 0; stack < stacks; ++stack) {
-        size_t k1 = stack * (sectors + 1);
-        size_t k2 = k1 + sectors + 1;
-
-        for (size_t sector = 0; sector < sectors; ++sector, ++k1, ++k2) {
-            // 2 triangles per sector - excluding the first and last stacks
-            // (which contain one triangle, at the poles)
-            Untextured_vert p1 = points.at(k1);
-            Untextured_vert p2 = points.at(k2);
-            Untextured_vert p1_plus1 = points.at(k1 + 1u);
-            Untextured_vert p2_plus1 = points.at(k2 + 1u);
-
-            if (stack != 0) {
-                out.verts.push_back(p1);
-                out.verts.push_back(p1_plus1);
-                out.verts.push_back(p2);
-            }
-
-            if (stack != (stacks - 1)) {
-                out.verts.push_back(p1_plus1);
-                out.verts.push_back(p2_plus1);
-                out.verts.push_back(p2);
-            }
-        }
-    }
-
-    generate_1to1_indices_for_verts(out);
-}
-
-static void simbody_cylinder_triangles(Untextured_mesh& out) {
-    size_t num_sides = 16;
-
-    out.clear();
-    out.verts.reserve(2 * num_sides + 2 * num_sides);
-
-    float step_angle = (2.0f * pi_f) / num_sides;
-    float top_y = +1.0f;
-    float bottom_y = -1.0f;
-
-    // top
-    {
-        glm::vec3 normal = {0.0f, 1.0f, 0.0f};
-        Untextured_vert top_middle{{0.0f, top_y, 0.0f}, normal};
-        for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i * step_angle;
-            float theta_end = (i + 1) * step_angle;
-
-            // note: these are wound CCW for backface culling
-            out.verts.push_back(top_middle);
-            out.verts.push_back({glm::vec3(cosf(theta_end), top_y, sinf(theta_end)), normal});
-            out.verts.push_back({glm::vec3(cosf(theta_start), top_y, sinf(theta_start)), normal});
-        }
-    }
-
-    // bottom
-    {
-        glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
-        Untextured_vert top_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
-        for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i * step_angle;
-            float theta_end = (i + 1) * step_angle;
-
-            // note: these are wound CCW for backface culling
-            out.verts.push_back(top_middle);
-            out.verts.push_back({
-                glm::vec3(cosf(theta_start), bottom_y, sinf(theta_start)),
-                bottom_normal,
-            });
-            out.verts.push_back({
-                glm::vec3(cosf(theta_end), bottom_y, sinf(theta_end)),
-                bottom_normal,
-            });
-        }
-    }
-
-    // sides
-    {
-        float norm_start = step_angle / 2.0f;
-        for (auto i = 0U; i < num_sides; ++i) {
-            float theta_start = i * step_angle;
-            float theta_end = theta_start + step_angle;
-            float norm_theta = theta_start + norm_start;
-
-            glm::vec3 normal(cosf(norm_theta), 0.0f, sinf(norm_theta));
-            glm::vec3 top1(cosf(theta_start), top_y, sinf(theta_start));
-            glm::vec3 top2(cosf(theta_end), top_y, sinf(theta_end));
-
-            glm::vec3 bottom1 = top1;
-            bottom1.y = bottom_y;
-            glm::vec3 bottom2 = top2;
-            bottom2.y = bottom_y;
-
-            // draw 2 triangles per quad cylinder side
-            //
-            // note: these are wound CCW for backface culling
-            out.verts.push_back({top1, normal});
-            out.verts.push_back({top2, normal});
-            out.verts.push_back({bottom1, normal});
-
-            out.verts.push_back({bottom2, normal});
-            out.verts.push_back({bottom1, normal});
-            out.verts.push_back({top2, normal});
-        }
-    }
-
-    generate_1to1_indices_for_verts(out);
-}
-
-// standard textured cube with dimensions [-1, +1] in xyz and uv coords of
-// (0, 0) bottom-left, (1, 1) top-right for each (quad) face
-static constexpr std::array<Textured_vert, 36> shaded_textured_cube_verts = {{
-    // back face
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},  // top-left
-    // front face
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    // left face
-    {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
-    {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-left
-    {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
-    {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-right
-    // right face
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
-    {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},  // bottom-right
-    {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // top-left
-    {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-left
-    // bottom face
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
-    {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}},  // top-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-left
-    {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}},  // bottom-right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}},  // top-right
-    // top face
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},  // top-right
-    {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
-}};
-
-// standard textured quad
-// - dimensions [-1, +1] in xy and [0, 0] in z
-// - uv coords are (0, 0) bottom-left, (1, 1) top-right
-// - normal is +1 in Z, meaning that it faces toward the camera
-static constexpr std::array<Textured_vert, 6> _shaded_textured_quad_verts = {{
-    // CCW winding (culling)
-    {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-
-    {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-    {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
-    {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-}};
-
-static void simbody_brick_triangles(Untextured_mesh& out) {
-    out.clear();
-
-    for (Textured_vert v : shaded_textured_cube_verts) {
-        out.verts.push_back({v.pos, v.normal});
-    }
-
-    generate_1to1_indices_for_verts(out);
-}
-
-static void generate_floor_quad(Textured_mesh& out) {
-    out.clear();
-
-    for (Textured_vert const& v : _shaded_textured_quad_verts) {
-        Textured_vert& tv = out.verts.emplace_back(v);
-        tv.texcoord *= 200.0f;
-    }
-
-    generate_1to1_indices_for_verts(out);
-}
-
-static void generate_NxN_grid(size_t n, Untextured_mesh& out) {
-    static constexpr float z = 0.0f;
-    static constexpr float min = -1.0f;
-    static constexpr float max = 1.0f;
-
-    size_t lines_per_dimension = n;
-    float step_size = (max - min) / static_cast<float>(lines_per_dimension - 1);
-    size_t num_lines = 2 * lines_per_dimension;
-    size_t num_points = 2 * num_lines;
-
-    out.clear();
-    out.verts.resize(num_points);
-
-    glm::vec3 normal = {0.0f, 0.0f, 0.0f};  // same for all
-
-    size_t idx = 0;
-
-    // lines parallel to X axis
-    for (size_t i = 0; i < lines_per_dimension; ++i) {
-        float y = min + i * step_size;
-
-        Untextured_vert& p1 = out.verts[idx++];
-        p1.pos = {-1.0f, y, z};
-        p1.normal = normal;
-
-        Untextured_vert& p2 = out.verts[idx++];
-        p2.pos = {1.0f, y, z};
-        p2.normal = normal;
-    }
-
-    // lines parallel to Y axis
-    for (size_t i = 0; i < lines_per_dimension; ++i) {
-        float x = min + i * step_size;
-
-        Untextured_vert& p1 = out.verts[idx++];
-        p1.pos = {x, -1.0f, z};
-        p1.normal = normal;
-
-        Untextured_vert& p2 = out.verts[idx++];
-        p2.pos = {x, 1.0f, z};
-        p2.normal = normal;
-    }
-
-    generate_1to1_indices_for_verts(out);
-}
-
-static void generate_y_line(Untextured_mesh& out) {
-    out.clear();
-    out.verts.push_back({{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
-    out.verts.push_back({{0.0f, +1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
-    generate_1to1_indices_for_verts(out);
-}
-
-// a cube wire mesh, suitable for GL_LINES drawing
-//
-// a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
-static constexpr std::array<Untextured_vert, 24> g_cube_edge_lines = {{
-    // back
-
-    // back bottom left -> back bottom right
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back bottom right -> back top right
-    {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back top right -> back top left
-    {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // back top left -> back bottom left
-    {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-    {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-    // front
-
-    // front bottom left -> front bottom right
-    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front bottom right -> front top right
-    {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front top right -> front top left
-    {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front top left -> front bottom left
-    {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-    {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-    // front-to-back edges
-
-    // front bottom left -> back bottom left
-    {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
-    {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
-
-    // front bottom right -> back bottom right
-    {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
-    {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
-
-    // front top left -> back top left
-    {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
-    {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
-
-    // front top right -> back top right
-    {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
-    {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
-}};
-
-static void generate_cube_lines(Untextured_mesh& out) {
-    out.clear();
-    out.indices.reserve(g_cube_edge_lines.size());
-    out.verts.reserve(g_cube_edge_lines.size());
-
-    for (size_t i = 0; i < g_cube_edge_lines.size(); ++i) {
-        out.indices.push_back(static_cast<elidx_t>(i));
-        out.verts.push_back(g_cube_edge_lines[i]);
-    }
-}
-
 osc::GPU_storage::GPU_storage() :
     // shaders
     shader_gouraud{new Gouraud_mrt_shader{}},
@@ -672,7 +698,7 @@ osc::GPU_storage::GPU_storage() :
         floor_quad_idx = Meshidx::from_index(meshes.size() - 1);
         tm.clear();
 
-        for (Textured_vert const& tv : _shaded_textured_quad_verts) {
+        for (Textured_vert const& tv : g_ShadedTexturedQuadVerts) {
             tm.verts.push_back(tv);
         }
         generate_1to1_indices_for_verts(tm);
@@ -795,24 +821,6 @@ osc::Render_target::Render_target(int w_, int h_, int samples_) :
 void osc::Render_target::reconfigure(int w_, int h_, int samples_) {
     if (w != w_ || h != h_ || samples != samples_) {
         *this = Render_target{w_, h_, samples_};
-    }
-}
-
-static bool optimal_orderering(Mesh_instance const& m1, Mesh_instance const& m2) {
-    if (m1.texidx != m2.texidx) {
-        // third, sort by texture, because even though we *could* render a batch of
-        // instances with the same mesh in one draw call, some of those meshes might
-        // be textured, and textures can't be instanced (so the drawcall must be split
-        // into separate calls etc.)
-        return m1.texidx < m2.texidx;
-    } else {
-        // fourth, sort by flags, because the flags can change a draw call (e.g.
-        // although we are drawing the same mesh with the same texture, this
-        // partiular *instance* should be drawn with GL_TRIANGLES or GL_POINTS)
-        //
-        // like textures, if the drawcall-affecting flags are different, we have
-        // to split the drawcall (e.g. draw TRIANGLES then draw POINTS)
-        return m1.flags < m2.flags;
     }
 }
 

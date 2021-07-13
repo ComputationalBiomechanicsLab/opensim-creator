@@ -13,7 +13,7 @@ namespace osc {
     // This is a separate screen from the main UI because it involves letting
     // the user manipulate meshes/bodies/joints in free/ground 3D space *before*
     // committing to OpenSim's constraints
-    class Meshes_to_model_wizard_screen_v2 final : public Screen {
+    class Meshes_to_model_wizard_screen final : public Screen {
     public:
         struct Impl;
     private:
@@ -21,13 +21,13 @@ namespace osc {
 
     public:
         // shows blank scene that a user can import meshes into
-        Meshes_to_model_wizard_screen_v2();
+        Meshes_to_model_wizard_screen();
 
         // shows the blank scene, but immediately starts importing the provided
         // mesh filepaths
-        Meshes_to_model_wizard_screen_v2(std::vector<std::filesystem::path>);
+        Meshes_to_model_wizard_screen(std::vector<std::filesystem::path>);
 
-        ~Meshes_to_model_wizard_screen_v2() noexcept override;
+        ~Meshes_to_model_wizard_screen() noexcept override;
 
         void draw() override;
         void tick(float) override;

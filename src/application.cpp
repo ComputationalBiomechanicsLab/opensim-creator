@@ -48,9 +48,6 @@ using std::literals::string_literals::operator""s;
 using std::literals::chrono_literals::operator""ms;
 using namespace osc;
 
-// globals
-osc::Application* osc::Application::g_Current = nullptr;
-
 struct ImGuiContext;
 
 namespace igx {
@@ -819,24 +816,28 @@ public:
     }
 };
 
+
+// public API
+
+osc::Application* osc::Application::g_CurrentApplication = nullptr;
+
 Application::Application() : impl{new Impl{}} {
 }
 
 Application::~Application() noexcept = default;
 
-void Application::start_render_loop(std::unique_ptr<Screen> s) {
+void Application::show(std::unique_ptr<Screen> s) {
     impl->start_render_loop(std::move(s));
 }
 
-void Application::request_screen_transition(std::unique_ptr<Screen> s) {
+void Application::request_transition(std::unique_ptr<Screen> s) {
     impl->requested_screen = std::move(s);
 }
 
-void Application::request_quit_application() {
+void Application::request_quit() {
     impl->should_quit = true;
 }
 
-// dimensions of the main application window in pixels
 Application::Window_dimensionsi Application::window_dimensionsi() const noexcept {
     auto [w, h] = sdl::GetWindowSize(impl->window);
     return {w, h};
