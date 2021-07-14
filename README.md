@@ -2,7 +2,7 @@
 
 > A thin UI for building OpenSim models
 
-Download v0.0.3: [Windows (.exe)](../../releases/download/0.0.3/osc-0.0.3-win64.exe) / [Mac (.dmg)](../../releases/download/0.0.3/osc-0.0.3-Darwin.dmg) / [Ubuntu (.deb)](../../releases/download/0.0.3/osc_0.0.3_amd64.deb)
+📥 Download v0.0.3: [Windows (.exe)](../../releases/download/0.0.3/osc-0.0.3-win64.exe) / [Mac (.dmg)](../../releases/download/0.0.3/osc-0.0.3-Darwin.dmg) / [Ubuntu (.deb)](../../releases/download/0.0.3/osc_0.0.3_amd64.deb)
 
 ![screenshot](screenshot.png)
 
@@ -21,9 +21,27 @@ department at [TU Delft](https://www.tudelft.nl/). It is funded by the
 Chan Zuckerberg Initiative's "Essential Open Source Software for
 Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
-| <img src="resources/tud_logo.png" alt="TUD logo" width="128" height="128" /> | <img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" /> |
-| - | - |
-| [Biomechanical Engineering at TU Delft](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering) | [The Chan Zuckerberg Initiative](https://chanzuckerberg.com/) |
+<table align="center">
+  <tr>
+    <td colspan="2" align="center">Project Sponsors</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering">
+        <img src="resources/tud_logo.png" alt="TUD logo" width="128" height="128" />
+        <br />
+        Biomechanical Engineering at TU Delft
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://chanzuckerberg.com/">
+        <img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
+        <br />
+        Biomechanical Engineering at TU Delft
+      </a>
+    </td>
+  </tr>
+</table>
 
 
 # 🚀 Installation
@@ -42,8 +60,8 @@ any additional software to be installed.
 
 *Latest release: 0.0.3 (released 14th Jul 2021, uses OpenSim 4.2)*
 
-| OS | Link | Comments |
-| - | - | - |
+| OS | 📥 Download Link | Comments |
+| :-: | :-: | :-: |
 | Windows 10 | [.exe](../../releases/download/0.0.3/osc-0.0.3-win64.exe) | |
 | Mac (Catalina onwards) | [.dmg](../../releases/download/0.0.3/osc-0.0.3-Darwin.dmg) | The DMG is unsigned, so you will probably need to open Finder -> Applications -> right click osc -> open -> go past the security warning |
 | Ubuntu Focal (20) | [.deb](../../releases/download/0.0.3/osc_0.0.3_amd64.deb) | |
@@ -61,8 +79,8 @@ any additional software to be installed.
 The build scripts below should work on a standard C++ developer's machine (as long as you have 
 a C/C++ compiler, CMake, etc. installed):
 
-| OS | Build Script | Usage Example |
-| - | - | - |
+| OS | ⚙️ Build Script | Usage Example |
+| :-: | :-: | :-: |
 | Windows | [.bat](scripts/build_windows.bat) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts\build_windows.bat` |
 | Mac | [.sh](scripts/build_mac-catalina.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/build_mac-catalina.sh` |
 | Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/build_debian-buster.sh` |
