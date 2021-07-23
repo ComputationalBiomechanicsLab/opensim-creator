@@ -308,6 +308,14 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // radius of rendered bof spheres
     float bof_sphere_radius = 0.005f;
 
+    // the transform matrix that the gizmo is manipulating (if active)
+    //
+    // this is set when the user initially starts interacting with a gizmo
+    glm::mat4 gizmo_mtx;
+
+    // the transformation operation that the gizmo should be doing
+    ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
+
     // 3D rendering params
     osc::Render_params renderparams;
 
@@ -882,6 +890,21 @@ namespace {
         if ((ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
             set_is_selected_of_all_to(impl, true);
         }
+
+        // S: set manipulation mode to "scale"
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+            impl.gizmo_op = ImGuizmo::SCALE;
+        }
+
+        // R: set manipulation mode to "rotate"
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
+            impl.gizmo_op = ImGuizmo::ROTATE;
+        }
+
+        // G: set manipulation mode to "grab" (translate)
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
+            impl.gizmo_op = ImGuizmo::TRANSLATE;
+        }
     }
 
     // convert a 3D worldspace coordinate into a 2D screenspace coordinate
@@ -974,9 +997,9 @@ namespace {
         ImGui::Text("verts = %zu", m.meshdata.verts.size());
         ImGui::Text("elements = %zu", m.meshdata.indices.size());
 
-        ImGui::Text("AABB.p1 = (%.2f, %.2f, %.2f)", m.aabb.p1.x, m.aabb.p1.y, m.aabb.p1.z);
-        ImGui::Text("AABB.p2 = (%.2f, %.2f, %.2f)", m.aabb.p2.x, m.aabb.p2.y, m.aabb.p2.z);
-        glm::vec3 center = (m.aabb.p1 + m.aabb.p2) / 2.0f;
+        ImGui::Text("AABB.p1 = (%.2f, %.2f, %.2f)", m.aabb.min.x, m.aabb.min.y, m.aabb.min.z);
+        ImGui::Text("AABB.p2 = (%.2f, %.2f, %.2f)", m.aabb.max.x, m.aabb.max.y, m.aabb.max.z);
+        glm::vec3 center = (m.aabb.min + m.aabb.max) / 2.0f;
         ImGui::Text("center(AABB) = (%.2f, %.2f, %.2f)", center.x, center.y, center.z);
 
         ImGui::Text("sphere = O(%.2f, %.2f, %.2f), r(%.2f)",
@@ -1033,29 +1056,36 @@ namespace {
     // draw manipulation gizmos (the little handles that the user can click
     // to move things in 3D)
     void draw_3dviewer_manipulation_gizmos(Impl& impl) {
-        int nselected = 0;
-        glm::vec3 avg_center = {0.0f, 0.0f, 0.0f};
+        // if the user isn't manipulating anything, create an up-to-date
+        // manipulation matrix
+        if (!ImGuizmo::IsUsing()) {
+            // only draw gizmos if this is >0
+            int nselected = 0;
 
-        for (Loaded_mesh const& m : impl.meshes) {
-            if (m.is_selected) {
-                avg_center += center(m);
-                ++nselected;
+            AABB aabb{{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+
+            for (Loaded_mesh const& m : impl.meshes) {
+                if (m.is_selected) {
+                    ++nselected;
+                    aabb = aabb_union(aabb, m.model_mtx * m.aabb);
+                }
             }
-        }
-        for (Body_or_frame const& b : impl.bofs) {
-            if (b.is_selected) {
-                avg_center += center(b);
-                ++nselected;
+            for (Body_or_frame const& b : impl.bofs) {
+                if (b.is_selected) {
+                    ++nselected;
+                    aabb = aabb_union(aabb, AABB{b.pos, b.pos});
+                }
             }
-        }
-        avg_center /= static_cast<float>(nselected);
 
-        if (nselected == 0) {
-            return;  // do not draw manipulation widgets
+            if (nselected == 0) {
+                return;  // early exit: nothing's selected
+            }
+
+            glm::vec3 center = aabb_center(aabb);
+            impl.gizmo_mtx = glm::translate(glm::mat4{1.0f}, center);
         }
 
-        glm::mat4 translator = glm::translate(glm::mat4{1.0f}, avg_center);
-        glm::mat4 manipulated_mtx = translator;
+        // else: is using OR nselected > 0 (so draw it)
 
         ImGuizmo::SetRect(
             impl.render_topleft_in_screen.x,
@@ -1064,38 +1094,32 @@ namespace {
             static_cast<float>(impl.render_target.h));
         ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
+        glm::mat4 delta;
         bool manipulated = ImGuizmo::Manipulate(
             glm::value_ptr(impl.renderparams.view_matrix),
             glm::value_ptr(impl.renderparams.projection_matrix),
-            ImGuizmo::TRANSLATE,
+            impl.gizmo_op,
             ImGuizmo::WORLD,
-            glm::value_ptr(manipulated_mtx),
-            nullptr,
+            glm::value_ptr(impl.gizmo_mtx),
+            glm::value_ptr(delta),
             nullptr,
             nullptr,
             nullptr);
-
-        // used to detect whether the mouse is "busy" with a gizmo
-        //impl.is_using_gizmo = ImGuizmo::IsUsing();
 
         if (!manipulated) {
             return;
         }
         // else: apply manipulation
 
-        glm::mat4 inverse_translator = glm::translate(glm::mat4{1.0f}, -avg_center);
-        glm::mat4 raw_xform = inverse_translator * manipulated_mtx;
-        glm::mat4 applied_xform = translator * raw_xform * inverse_translator;
-
         // update relevant positions/model matrices
         for (Loaded_mesh& m : impl.meshes) {
             if (m.is_selected) {
-                m.model_mtx = applied_xform * m.model_mtx;
+                m.model_mtx = delta * m.model_mtx;
             }
         }
         for (Body_or_frame& b : impl.bofs) {
             if (b.is_selected) {
-                b.pos = glm::vec3{applied_xform * glm::vec4{b.pos, 1.0f}};
+                b.pos = glm::vec3{glm::vec4{b.pos, 1.0f} * delta};
             }
         }
     }

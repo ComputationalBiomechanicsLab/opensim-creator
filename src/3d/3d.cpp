@@ -150,25 +150,25 @@ namespace {
 
         // edge-case: no points provided
         if (n == 0) {
-            rv.p1 = {0.0f, 0.0f, 0.0f};
-            rv.p2 = {0.0f, 0.0f, 0.0f};
+            rv.min = {0.0f, 0.0f, 0.0f};
+            rv.max = {0.0f, 0.0f, 0.0f};
             return rv;
         }
 
-        rv.p1 = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-        rv.p2 = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+        rv.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        rv.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
 
         // otherwise, compute bounds
         for (size_t i = 0; i < n; ++i) {
             glm::vec3 const& pos = vs[i].pos;
 
-            rv.p1[0] = std::min(rv.p1[0], pos[0]);
-            rv.p1[1] = std::min(rv.p1[1], pos[1]);
-            rv.p1[2] = std::min(rv.p1[2], pos[2]);
+            rv.min[0] = std::min(rv.min[0], pos[0]);
+            rv.min[1] = std::min(rv.min[1], pos[1]);
+            rv.min[2] = std::min(rv.min[2], pos[2]);
 
-            rv.p2[0] = std::max(rv.p2[0], pos[0]);
-            rv.p2[1] = std::max(rv.p2[1], pos[1]);
-            rv.p2[2] = std::max(rv.p2[2], pos[2]);
+            rv.max[0] = std::max(rv.max[0], pos[0]);
+            rv.max[1] = std::max(rv.max[1], pos[1]);
+            rv.max[2] = std::max(rv.max[2], pos[2]);
         }
 
         return rv;
@@ -182,7 +182,7 @@ namespace {
         AABB aabb = aabb_compute_from_verts(vs, n);
 
         Sphere rv{};
-        rv.origin = (aabb.p1 + aabb.p2) / 2.0f;
+        rv.origin = (aabb.min + aabb.max) / 2.0f;
         rv.radius = 0.0f;
 
         // edge-case: no points provided
@@ -491,7 +491,7 @@ std::ostream& osc::operator<<(std::ostream& o, glm::vec3 const& v) {
 }
 
 std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
-    return o << "p1 = " << aabb.p1 << ", p2 = " << aabb.p2;
+    return o << "p1 = " << aabb.min << ", p2 = " << aabb.max;
 }
 
 bool osc::is_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {

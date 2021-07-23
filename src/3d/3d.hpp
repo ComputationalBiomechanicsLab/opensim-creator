@@ -2,6 +2,7 @@
 
 #include "src/3d/gl.hpp"
 
+#include <glm/glm.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -92,14 +93,72 @@ namespace osc {
         }
     }
 
+    inline constexpr glm::vec3 lower_bound(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+        return glm::vec3{std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z)};
+    }
+
+    inline constexpr glm::vec3 upper_bound(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+        return glm::vec3{std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z)};
+    }
+
     // axis-aligned bounding box
     struct AABB final {
-        glm::vec3 p1;  // lowest coordinate tuple
-        glm::vec3 p2;  // highest coordinate tuple
+        glm::vec3 min;
+        glm::vec3 max;
     };
 
+    // returns the centerpoint of an AABB
     inline constexpr glm::vec3 aabb_center(AABB const& a) noexcept {
-        return (a.p1 + a.p2)/2.0f;
+        return (a.min + a.max)/2.0f;
+    }
+
+    // returns the smallest AABB that spans both of the provided AABBs
+    inline constexpr AABB aabb_union(AABB const& a, AABB const& b) noexcept {
+        return AABB{lower_bound(a.min, b.min), upper_bound(a.max, b.max)};
+    }
+
+    // returns the dimensions of an AABB
+    inline constexpr glm::vec3 aabb_dims(AABB const& a) noexcept {
+        return a.max - a.min;
+    }
+
+    // returns the eight corner points of the cuboid representation of the AABB
+    inline std::array<glm::vec3, 8> aabb_verts(AABB const& aabb) noexcept {
+
+        glm::vec3 d = aabb_dims(aabb);
+
+        // effectively, span each dimension from each AABB corner
+        return std::array<glm::vec3, 8>{{
+            aabb.min,
+            aabb.min + d.x,
+            aabb.min + d.y,
+            aabb.min + d.z,
+            aabb.max,
+            aabb.max - d.x,
+            aabb.max - d.y,
+            aabb.max - d.z,
+        }};
+    }
+
+    // apply a transformation matrix to the AABB, returning a new AABB that
+    // spans the existing AABB's cuboid
+    //
+    // note: repeatably doing this can keep growing the AABB, even if the
+    // underlying data wouldn't logically grow. Think about what would happen
+    // if you rotated an AABB 45 degrees in one axis, successively returning
+    // a new AABB that had to expand to accomodate the diagonal growth.
+    inline AABB operator*(glm::mat4 const& m, AABB const& aabb) noexcept {
+        auto verts = aabb_verts(aabb);
+        for (auto& vert : verts) {
+            vert = m * glm::vec4{vert, 1.0f};
+        }
+
+        AABB rv{verts[0], verts[0]};
+        for (int i = 1; i < verts.size(); ++i) {
+            rv.min = lower_bound(rv.min, verts[i]);
+            rv.max = upper_bound(rv.max, verts[i]);
+        }
+        return rv;
     }
 
     // for debug printing
