@@ -63,3 +63,11 @@ glm::vec3 osc::pos(Polar_perspective_camera const& cam) noexcept {
 
     return glm::vec3{x, y, z};
 }
+
+void osc::autoscale_znear_zfar(Polar_perspective_camera& cam) noexcept {
+    // znear and zfar are only really dicated by the camera's radius, because
+    // the radius is effectively the distance from the camera's focal point
+
+    cam.znear = 0.02f * cam.radius;
+    cam.zfar = 20.0f * cam.radius;
+}

@@ -112,6 +112,22 @@ namespace osc {
         return (a.min + a.max)/2.0f;
     }
 
+    // returns the smallest AABB that spans all AABBs in the range [it, end)
+    //
+    // `AABBGetter` should be a callable with signature: `AABB const&(*)(decltype(*it))`
+    template<typename ForwardIterator, typename AABBGetter>
+    inline constexpr AABB aabb_union(ForwardIterator it, ForwardIterator end, AABBGetter getter) noexcept {
+        if (it == end) {
+            return AABB{};  // instead of throwing, which might be better behavior...
+        }
+
+        AABB rv = getter(*it++);
+        while (it != end) {
+            rv = aabb_union(rv, getter(*it++));
+        }
+        return rv;
+    }
+
     // returns the smallest AABB that spans both of the provided AABBs
     inline constexpr AABB aabb_union(AABB const& a, AABB const& b) noexcept {
         return AABB{lower_bound(a.min, b.min), upper_bound(a.max, b.max)};
@@ -175,15 +191,19 @@ namespace osc {
 
     [[nodiscard]] Sphere bounding_sphere_from_mesh(Untextured_mesh const&) noexcept;
 
-    [[nodiscard]] GLubyte inline constexpr f32_to_u8_color(float v) noexcept {
+    [[nodiscard]] inline constexpr float longest_dimension(glm::vec3 const& v) noexcept {
+        return std::max(std::max(v.x, v.y), v.z);
+    }
+
+    [[nodiscard]] inline constexpr GLubyte f32_to_u8_color(float v) noexcept {
         return static_cast<GLubyte>(255.0f * v);
     }
 
-    [[nodiscard]] float inline constexpr u8_to_f32_color(GLubyte b) noexcept {
+    [[nodiscard]] inline constexpr float u8_to_f32_color(GLubyte b) noexcept {
         return static_cast<float>(b) / 255.0f;
     }
 
-    [[nodiscard]] GLubyte inline constexpr f64_to_u8_color(double v) noexcept {
+    [[nodiscard]] inline constexpr GLubyte f64_to_u8_color(double v) noexcept {
         return static_cast<GLubyte>(255.0 * v);
     }
 

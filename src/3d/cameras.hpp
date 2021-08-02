@@ -33,6 +33,14 @@ namespace osc {
     //       the camera and the origin remains constant
     void drag(Polar_perspective_camera& cam, glm::vec2 delta) noexcept;
 
+    // autoscale znear and zfar based on the camera's distance from what it's looking at
+    //
+    // important for looking at extremely small/large scenes. znear and zfar dictates
+    // both the culling planes of the camera *and* rescales the Z values of elements
+    // in the scene. If the znear-to-zfar range is too large then Z-fighting will happen
+    // and the scene will look wrong.
+    void autoscale_znear_zfar(Polar_perspective_camera& cam) noexcept;
+
     [[nodiscard]] glm::mat4 view_matrix(Polar_perspective_camera const&) noexcept;
     [[nodiscard]] glm::mat4 projection_matrix(Polar_perspective_camera const&, float aspect_ratio) noexcept;
     [[nodiscard]] glm::vec3 pos(Polar_perspective_camera const&) noexcept;

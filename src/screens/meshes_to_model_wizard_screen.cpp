@@ -229,32 +229,6 @@ namespace {
         return glm::vec3{lm.model_mtx * glm::vec4{c, 1.0f}};
     }
 
-    // returns a mesh instance that represents a chequered floor in the scene
-    [[nodiscard]] Mesh_instance create_chequered_floor_meshinstance() {
-        glm::mat4 model_mtx = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
-
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
-            rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
-
-            return rv;
-        }();
-
-        Mesh_instance mi;
-        mi.model_xform = model_mtx;
-        mi.normal_xform = normal_matrix(mi.model_xform);
-        auto& gpu_storage = Application::current().get_gpu_storage();
-        mi.meshidx = gpu_storage.floor_quad_idx;
-        mi.texidx = gpu_storage.chequer_idx;
-        mi.flags.set_skip_shading();
-
-        return mi;
-    }
-
     // draw an ImGui color picker for an OSC Rgba32
     void Rgba32_ColorEdit4(char const* label, Rgba32* rgba) {
         ImVec4 col = ImGui::ColorConvertU32ToFloat4(rgba->to_u32());
@@ -308,6 +282,15 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // radius of rendered bof spheres
     float bof_sphere_radius = 0.005f;
 
+    // scale factor for all non-mesh, non-overlay scene elements (e.g.
+    // the floor, bodies)
+    //
+    // this is necessary because some meshes can be extremely small/large and
+    // scene elements need to be scaled accordingly (e.g. without this, a body
+    // sphere end up being much larger than a mesh instance). Imagine if the
+    // mesh was the leg of a fly, in meters.
+    float scene_scale_factor = 1.0f;
+
     // the transform matrix that the gizmo is manipulating (if active)
     //
     // this is set when the user initially starts interacting with a gizmo
@@ -326,7 +309,11 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     osc::Render_target render_target;
 
     // 3D scene camera
-    osc::Polar_perspective_camera camera;
+    osc::Polar_perspective_camera camera = []() {
+        Polar_perspective_camera rv;
+        rv.pan = {};  // make sure the camera is focused on (0,0,0)
+        return rv;
+    }();
 
     // context menu state
     //
@@ -692,7 +679,7 @@ namespace {
         }
 
         // handle scroll zooming
-        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/5.0f;
+        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
 
         // handle panning/zooming/dragging with middle mouse
         if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
@@ -799,6 +786,28 @@ namespace {
         bf.is_frame = false;
         bf.is_selected = true;
         bf.is_hovered = false;
+    }
+
+    void action_center_camera_on(Impl& impl, Loaded_mesh const& lum) {
+        impl.camera.pan = aabb_center(lum.aabb);
+    }
+
+    void action_autoscale_scene(Impl& impl) {
+        if (impl.meshes.empty()) {
+            impl.scene_scale_factor = 1.0f;
+            return;
+        }
+
+        AABB scene_aabb = aabb_union(impl.meshes.cbegin(),
+                                     impl.meshes.cend(),
+                                     [](auto const& m) { return m.model_mtx * m.aabb; });
+
+        glm::vec3 dims = aabb_dims(scene_aabb);
+        float longest_dim = longest_dimension(dims);
+
+        impl.scene_scale_factor = 5.0f * longest_dim;
+        impl.camera.pan = {};
+        impl.camera.radius = 5.0f * longest_dim;
     }
 
     // polls the mesh loader's output queue for any newly-loaded meshes and pushes
@@ -1031,9 +1040,11 @@ namespace {
         if (ImGui::MenuItem("add body")) {
             action_add_body(impl, center(lum));
         }
-
         if (ImGui::MenuItem("add frame")) {
             action_add_frame(impl, center(lum));
+        }
+        if (ImGui::MenuItem("center camera on this mesh")) {
+            action_center_camera_on(impl, lum);
         }
     }
 
@@ -1042,7 +1053,6 @@ namespace {
         if (ImGui::MenuItem("add body")) {
             action_add_body(impl, {0.0f, 0.0f, 0.0f});
         }
-
         if (ImGui::MenuItem("add frame")) {
             action_add_frame(impl, {0.0f, 0.0f, 0.0f});
         }
@@ -1119,9 +1129,31 @@ namespace {
         }
         for (Body_or_frame& b : impl.bofs) {
             if (b.is_selected) {
-                b.pos = glm::vec3{glm::vec4{b.pos, 1.0f} * delta};
+                b.pos = glm::vec3{delta * glm::vec4{b.pos, 1.0f}};
             }
         }
+    }
+
+    // returns a mesh instance that represents a chequered floor in the scene
+    [[nodiscard]] Mesh_instance create_chequered_floor_meshinstance(Impl& impl) {
+        glm::mat4 model_mtx = glm::identity<glm::mat4>();
+
+        // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
+        // floor down *slightly* to prevent Z fighting from planes rendered from the
+        // model itself (the contact planes, etc.)
+        model_mtx = glm::translate(model_mtx, {0.0f, -0.0001f, 0.0f});
+        model_mtx = glm::rotate(model_mtx, osc::pi_f / 2, {-1.0, 0.0, 0.0});
+        model_mtx = glm::scale(model_mtx, {impl.scene_scale_factor * 100.0f,  impl.scene_scale_factor * 100.0f, 1.0f});
+
+        Mesh_instance mi;
+        mi.model_xform = model_mtx;
+        mi.normal_xform = normal_matrix(mi.model_xform);
+        auto& gpu_storage = Application::current().get_gpu_storage();
+        mi.meshidx = gpu_storage.floor_quad_idx;
+        mi.texidx = gpu_storage.chequer_idx;
+        mi.flags.set_skip_shading();
+
+        return mi;
     }
 
     // draw 3D scene into remainder of the ImGui panel's content region
@@ -1144,6 +1176,11 @@ namespace {
             glm::vec2 wp = ImGui::GetWindowPos();
             glm::vec2 cp = ImGui::GetCursorPos();
             impl.render_topleft_in_screen = wp + cp;
+        }
+
+        // ensure camera clipping planes are correct for current zoom level
+        {
+            autoscale_znear_zfar(impl.camera);
         }
 
         // populate 3D drawlist
@@ -1181,7 +1218,7 @@ namespace {
 
         // add ground (defined to be at 0, 0, 0) to 3D scene
         if (impl.show_ground) {
-            float r = impl.ground_sphere_radius;
+            float r = impl.scene_scale_factor * impl.ground_sphere_radius;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
 
             Mesh_instance mi;
@@ -1201,7 +1238,7 @@ namespace {
 
         // add bodies/frames to 3D scene
         if (impl.show_bofs) {
-            float r = impl.bof_sphere_radius;
+            float r = impl.scene_scale_factor * impl.bof_sphere_radius;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
 
             for (Body_or_frame const& bf : impl.bofs) {
@@ -1227,7 +1264,7 @@ namespace {
 
         // add chequered floor to 3D scene
         if (impl.show_floor) {
-            dl.push_back(create_chequered_floor_meshinstance());
+            dl.push_back(create_chequered_floor_meshinstance(impl));
         }
 
         // make renderer hittest location match the mouse's location
@@ -1428,8 +1465,8 @@ namespace {
             glm::vec3 c = {0.0f, 0.0f, 0.0f};
 
             // draw a line between the thing being assigned and the hovered ground
-            ImVec2 p1 = world2ndc(impl, assigner_loc);
-            ImVec2 p2 = world2ndc(impl, c);
+            ImVec2 p1 = impl.render_topleft_in_screen + world2ndc(impl, assigner_loc);
+            ImVec2 p2 = impl.render_topleft_in_screen + world2ndc(impl, c);
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
             dl.AddLine(p1, p2, color);
 
@@ -1576,6 +1613,11 @@ namespace {
         Rgba32_ColorEdit4("ground color", &impl.ground_color);
         Rgba32_ColorEdit4("body color", &impl.body_color);
         Rgba32_ColorEdit4("frame color", &impl.frame_color);
+
+        ImGui::InputFloat("scene_scale_factor", &impl.scene_scale_factor);
+        if (ImGui::Button("autoscale scene_scale_factor")) {
+            action_autoscale_scene(impl);
+        }
 
         // draw actions (buttons, etc.)
         if (ImGui::Button("add frame")) {

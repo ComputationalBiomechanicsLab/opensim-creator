@@ -133,7 +133,8 @@ namespace {
 
 }
 
-namespace subfield_magic {  // necessary due to an MSVC internal linkage compiler bug
+// named namespace is due to an MSVC internal linkage compiler bug
+namespace subfield_magic {
 
     enum Subfield_ {
         Subfield_x,
