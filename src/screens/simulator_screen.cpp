@@ -42,7 +42,7 @@ namespace {
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         float v = static_cast<float>(treport);
-        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.2f", ImGuiSliderFlags_AlwaysClamp)) {
+        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.8f", ImGuiSliderFlags_AlwaysClamp)) {
             st.focused_simulation_scrubbing_time = v;
         }
 
