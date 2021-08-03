@@ -554,7 +554,7 @@ namespace {
 
                 // lower slightly, so that it doesn't conflict with OpenSim model planes
                 // that happen to lie at Z==0
-                rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.001f, 0.0f}) * rv;
+                rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
 
                 return rv;
             }();
