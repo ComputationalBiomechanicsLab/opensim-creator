@@ -1183,14 +1183,11 @@ namespace {
                     } else {
                         // can plot suboutputs
                         if (ImGui::BeginMenu(buf)) {
-                            int i = 0;
                             for (Plottable_output_subfield const& pos : suboutputs) {
                                 if (ImGui::MenuItem(pos.name)) {
                                     impl.st->desired_outputs.emplace_back(*c, *o.second, pos);
                                 }
-                                ++i;
                             }
-                            log::info("%i", i);
                             ImGui::EndMenu();
                         }
 
