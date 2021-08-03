@@ -1158,7 +1158,9 @@ namespace {
             help_marker::draw("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
 
             OpenSim::Component const* c = &selected;
+            int imgui_id = 0;
             while (c) {
+                ImGui::PushID(imgui_id++);
                 ImGui::Dummy(ImVec2{0.0f, 2.0f});
                 ImGui::TextDisabled("%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
                 ImGui::Separator();
@@ -1181,11 +1183,14 @@ namespace {
                     } else {
                         // can plot suboutputs
                         if (ImGui::BeginMenu(buf)) {
+                            int i = 0;
                             for (Plottable_output_subfield const& pos : suboutputs) {
                                 if (ImGui::MenuItem(pos.name)) {
                                     impl.st->desired_outputs.emplace_back(*c, *o.second, pos);
                                 }
+                                ++i;
                             }
+                            log::info("%i", i);
                             ImGui::EndMenu();
                         }
 
@@ -1195,11 +1200,11 @@ namespace {
                             ImGui::EndTooltip();
                         }
                     }
-
                 }
                 if (c->getNumOutputs() == 0) {
                     ImGui::TextDisabled("  (has no outputs)");
                 }
+                ImGui::PopID();
                 c = c->hasOwner() ? &c->getOwner() : nullptr;
             }
             ImGui::EndMenu();
