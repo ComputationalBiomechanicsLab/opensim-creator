@@ -134,9 +134,12 @@ namespace {
         OpenSim::ModelDisplayHints const& hints,
         GPU_storage& gpu_cache,
         Component_drawlist& drawlist,
-        ModelDrawlistFlags flags) {
+        ModelDrawlistFlags flags,
+        Untextured_mesh& mesh_swap,
+        SimTK::Array_<SimTK::DecorativeGeometry> dg,
+        float fixup_scale_factor) {
 
-        Untextured_mesh mesh_swap;
+        mesh_swap.clear();
         OpenSim::Component const* current_component = nullptr;
         SimTK::SimbodyMatterSubsystem const& matter = root.getSystem().getMatterSubsystem();
 
@@ -145,9 +148,9 @@ namespace {
             drawlist.push_back(current_component, mi);
         };
 
-        auto visitor = Lambda_geometry_visitor{std::move(on_instance_created), mesh_swap, gpu_cache, matter, state};
+        auto visitor = Lambda_geometry_visitor{std::move(on_instance_created), mesh_swap, gpu_cache, matter, state, fixup_scale_factor};
 
-        SimTK::Array_<SimTK::DecorativeGeometry> dg;
+        dg.clear();
         for (OpenSim::Component const& c : root.getComponentList()) {
             current_component = &c;
 
@@ -204,6 +207,12 @@ struct osc::Component_3d_viewer::Impl final {
     // the buffers + textures that the backend renderer renders the scene into
     Render_target render_target{16, 16, Application::current().samples()};
 
+    // reusable buffer for loaded meshes
+    Untextured_mesh mesh_swap;
+
+    // reusable buffer for SimTK decorations
+    SimTK::Array_<SimTK::DecorativeGeometry> dg;
+
     // a list of mesh instances the backend renderer should draw
     //
     // recycled per frame (by scanning over the model)
@@ -219,6 +228,11 @@ struct osc::Component_3d_viewer::Impl final {
 
     // the main viewport camera
     Polar_perspective_camera camera;
+
+    // fixup scale factor (for super-small/super-large models)
+    //
+    // how much to scale *some* geometry in the scene by
+    float fixup_scale_factor = 1.0f;
 
     // direction of the main scene light
     //
@@ -271,21 +285,13 @@ namespace {
     }
 
     bool action_step_zoom_in(Component_3d_viewer::Impl& impl) {
-        if (impl.camera.radius >= 0.1f) {
-            impl.camera.radius *= 0.9f;
-            return true;
-        } else {
-            return false;
-        }
+        impl.camera.radius *= 0.9f;
+        return true;
     }
 
     bool action_step_zoom_out(Component_3d_viewer::Impl& impl) {
-        if (impl.camera.radius < 100.0f) {
-            impl.camera.radius /= 0.9f;
-            return true;
-        } else {
-            return false;
-        }
+        impl.camera.radius /= 0.9f;
+        return true;
     }
 
     bool on_event(Component_3d_viewer::Impl& impl, SDL_Event const& e) {
@@ -423,6 +429,10 @@ namespace {
             ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.light_rgb));
             ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.background_rgba));
 
+            ImGui::Separator();
+
+            ImGui::InputFloat("fixup scale factor", &impl.fixup_scale_factor);
+
             ImGui::EndMenu();
         }
 
@@ -468,6 +478,8 @@ namespace {
     }
 
     gl::Texture_2d& perform_backend_render_drawcall(Component_3d_viewer::Impl& impl) {
+        autoscale_znear_zfar(impl.camera);
+
         Render_params params;
         params.hittest.x = impl.hovertest_x;
         params.hittest.y = impl.hovertest_y;
@@ -526,19 +538,19 @@ namespace {
             cpy.upd_show_debug_geometry() = impl.flags & Component3DViewerFlags_DrawDebugGeometry;
             cpy.upd_show_labels() = impl.flags & Component3DViewerFlags_DrawLabels;
 
-            generate_component_decorations(model, state, cpy, cache, impl.drawlist, flags);
+            generate_component_decorations(model, state, cpy, cache, impl.drawlist, flags, impl.mesh_swap, impl.dg, impl.fixup_scale_factor);
         }
 
         // if applicable, draw chequered floor
         if (impl.flags & Component3DViewerFlags_DrawFloor) {
             Mesh_instance mi;
 
-            mi.model_xform = []() {
+            mi.model_xform = [&impl]() {
                 // rotate from XY (+Z dir) to ZY (+Y dir)
                 glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -pi_f/2.0f, {1.0f, 0.0f, 0.0f});
 
                 // make floor extend far in all directions
-                rv = glm::scale(glm::mat4{1.0f}, {100.0f, 1.0f, 100.0f}) * rv;
+                rv = glm::scale(glm::mat4{1.0f}, {impl.fixup_scale_factor * 100.0f, 1.0f, impl.fixup_scale_factor * 100.0f}) * rv;
 
                 // lower slightly, so that it doesn't conflict with OpenSim model planes
                 // that happen to lie at Z==0

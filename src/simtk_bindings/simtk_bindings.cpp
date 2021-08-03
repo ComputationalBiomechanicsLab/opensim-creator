@@ -269,10 +269,11 @@ void Simbody_geometry_visitor::implementLineGeometry(SimTK::DecorativeLine const
     glm::vec3 p2 = xform * to_vec4(geom.getPoint2());
 
     Mesh_instance mi;
-    mi.model_xform = cylinder_to_line_xform(0.005f, p1, p2);
+    mi.model_xform = cylinder_to_line_xform(fixup_scale_factor * 0.005f, p1, p2);
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = gpu_cache.simbody_cylinder_idx;
+
     on_instance_created(mi);
 }
 
@@ -285,6 +286,7 @@ void Simbody_geometry_visitor::implementBrickGeometry(SimTK::DecorativeBrick con
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = gpu_cache.simbody_cube_idx;
+
     on_instance_created(mi);
 }
 
@@ -300,6 +302,7 @@ void Simbody_geometry_visitor::implementCylinderGeometry(SimTK::DecorativeCylind
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = gpu_cache.simbody_cylinder_idx;
+
     on_instance_created(mi);
 }
 
@@ -312,13 +315,14 @@ void Simbody_geometry_visitor::implementCircleGeometry(SimTK::DecorativeCircle c
 }
 
 void Simbody_geometry_visitor::implementSphereGeometry(SimTK::DecorativeSphere const& geom) {
-    float r = static_cast<float>(geom.getRadius());
+    float r = fixup_scale_factor * static_cast<float>(geom.getRadius());
 
     Mesh_instance mi;
     mi.model_xform = glm::scale(geom_to_mat4(matter_subsys, state, geom), glm::vec3{r, r, r});
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = gpu_cache.simbody_sphere_idx;
+
     on_instance_created(mi);
 }
 
@@ -333,10 +337,10 @@ void Simbody_geometry_visitor::implementEllipsoidGeometry(SimTK::DecorativeEllip
 void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame const& geom) {
     glm::mat4 xform = geom_to_mat4(matter_subsys, state, geom);
 
-    glm::mat4 scaler = [&geom]() {
+    glm::mat4 scaler = [&]() {
         glm::vec3 s = scale_factors(geom);
         s *= static_cast<float>(geom.getAxisLength());
-        return glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.015f * s.x, 0.1f * s.y, 0.015f * s.z});
+        return glm::scale(glm::identity<glm::mat4>(), glm::vec3{fixup_scale_factor * 0.015f * s.x, fixup_scale_factor * 0.1f * s.y, fixup_scale_factor * 0.015f * s.z});
     }();
 
     glm::mat4 mover = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
@@ -345,10 +349,11 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
     // origin
     {
         Mesh_instance origin;
-        origin.model_xform = glm::scale(xform, glm::vec3{0.0075f});
+        origin.model_xform = glm::scale(xform, fixup_scale_factor * glm::vec3{0.0075f});
         origin.normal_xform = normal_matrix(origin.model_xform);
         origin.rgba = {0xff, 0xff, 0xff, 0xff};
         origin.meshidx = gpu_cache.simbody_sphere_idx;
+
         on_instance_created(origin);
     }
 
@@ -359,6 +364,7 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
         y.normal_xform = normal_matrix(y.model_xform);
         y.rgba = {0x00, 191, 0x00, 0xff};
         y.meshidx = gpu_cache.simbody_cylinder_idx;
+
         on_instance_created(y);
     }
 
@@ -372,6 +378,7 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
         x.normal_xform = normal_matrix(x.model_xform);
         x.rgba = {191, 0x00, 0x00, 0xff};
         x.meshidx = gpu_cache.simbody_cylinder_idx;
+
         on_instance_created(x);
     }
 
@@ -383,6 +390,7 @@ void Simbody_geometry_visitor::implementFrameGeometry(SimTK::DecorativeFrame con
         z.normal_xform = normal_matrix(z.model_xform);
         z.rgba = {0x00, 0x00, 191, 0xff};
         z.meshidx = gpu_cache.simbody_cylinder_idx;
+
         on_instance_created(z);
     }
 }
@@ -409,6 +417,8 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
     if (inserted) {
         // cache miss: go load the mesh
         load_mesh_data(geom.getMesh(), mesh_swap);
+
+        // and stuff it into the GPU cache + path-to-mesh lookup
         gpu_cache.meshes.emplace_back(mesh_swap);
         it->second = Meshidx::from_index(gpu_cache.meshes.size() - 1);
     }
@@ -418,6 +428,7 @@ void Simbody_geometry_visitor::implementMeshFileGeometry(SimTK::DecorativeMeshFi
     mi.normal_xform = normal_matrix(mi.model_xform);
     mi.rgba = extract_rgba(geom);
     mi.meshidx = it->second;
+
     on_instance_created(mi);
 }
 

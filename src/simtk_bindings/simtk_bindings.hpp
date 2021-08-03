@@ -56,33 +56,52 @@ namespace osc {
     // the mesh is cleared by the implementation before appending the loaded verts
     void stk_load_meshfile(std::filesystem::path const&, Untextured_mesh&);
 
-    // SimTK::DecorativeGeometryImplementation that can emit instanced geometry
+    // a SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
+
+        // buffer where meshes are temporarily loaded before being uploaded to the GPU
         Untextured_mesh& mesh_swap;
+
+        // GPU storage that mesh data is loaded to/from
         GPU_storage& gpu_cache;
+
+        // matter subsystem for the model or SimTK system
         SimTK::SimbodyMatterSubsystem const& matter_subsys;
+
+        // current state (of the subsystem)
         SimTK::State const& state;
+
+        // how much *some* geometry elements should be scaled by before being emitted
+        //
+        // changes volumetric things, like sphere and cylinder radii, which are typically
+        // hard-coded by the OpenSim decoration generation backend
+        //
+        // fixups are necessary in extremely small/large OpenSim models that contain muscle
+        // paths; otherwise, the generated geometry is way too large/small to even see
+        float fixup_scale_factor;
 
     public:
         constexpr Simbody_geometry_visitor(
             Untextured_mesh& _mesh_swap,
             GPU_storage& _cache,
             SimTK::SimbodyMatterSubsystem const& _matter,
-            SimTK::State const& _state) noexcept :
+            SimTK::State const& _state,
+            float _fixup_scale_factor) noexcept :
 
             SimTK::DecorativeGeometryImplementation{},
 
             mesh_swap{_mesh_swap},
             gpu_cache{_cache},
             matter_subsys{_matter},
-            state{_state} {
+            state{_state},
+            fixup_scale_factor{_fixup_scale_factor} {
         }
 
     private:
         // called whenever the implementation emits a mesh instance
         virtual void on_instance_created(Mesh_instance const& mi) = 0;
 
-        // implementation details
+        // SimTK::DecorativeGeometryImplementation details
         void implementPointGeometry(SimTK::DecorativePoint const&) override final;
         void implementLineGeometry(SimTK::DecorativeLine const&) override final;
         void implementBrickGeometry(SimTK::DecorativeBrick const&) override final;
@@ -99,12 +118,19 @@ namespace osc {
         void implementConeGeometry(SimTK::DecorativeCone const&) override final;
     };
 
-    // C++ lambda implementation of the above
+    // C++ callable (lambda, function pointer) specialization of the above
+    //
+    // this lets downstream code just provide a callable that will receive each
+    // `Mesh_instance` from the backend
     template<typename OnInstanceCreatedCallback>
     class Lambda_geometry_visitor final : public Simbody_geometry_visitor {
+
+        // callable (lambda, function pointer, etc.) with `void operator()(Mesh_instance const&)`
         OnInstanceCreatedCallback callback;
 
     public:
+
+        // forwarding ctor
         template<typename... BaseCtorArgs>
         Lambda_geometry_visitor(OnInstanceCreatedCallback _callback, BaseCtorArgs&&... args) :
             Simbody_geometry_visitor{std::forward<BaseCtorArgs>(args)...},

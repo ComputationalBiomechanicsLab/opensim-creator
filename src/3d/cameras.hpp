@@ -12,7 +12,7 @@ namespace osc {
         float phi = 0.4f;
 
         // how much to pan the scene by, relative to worldspace
-        glm::vec3 pan = {0.3f, -0.5f, 0.0f};
+        glm::vec3 pan = {0.0f, 0.0f, 0.0f};
 
         // clipspace properties
         float fov = 120.0f;

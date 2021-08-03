@@ -309,11 +309,7 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     osc::Render_target render_target;
 
     // 3D scene camera
-    osc::Polar_perspective_camera camera = []() {
-        Polar_perspective_camera rv;
-        rv.pan = {};  // make sure the camera is focused on (0,0,0)
-        return rv;
-    }();
+    osc::Polar_perspective_camera camera;
 
     // context menu state
     //
