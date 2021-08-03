@@ -108,21 +108,53 @@ namespace osc::fd {
     struct Stats final {
         // integrator stats
         float accuracyInUse = 0.0f;
+        static constexpr char const* accuracyInUse_desc = "Get the accuracy which is being used for error control.  Usually this is the same value that was specified to setAccuracy()";
+
         float predictedNextStepSize = 0.0f;
+        static constexpr char const* predictedNextStepSize_desc = "Get the step size that will be attempted first on the next call to stepTo() or stepBy().";
+
         int numStepsAttempted = 0;
+        static constexpr char const* numStepsAttempted_desc = "Get the total number of steps that have been attempted (successfully or unsuccessfully)";
+
         int numStepsTaken = 0;
+        static constexpr char const* numStepsTaken_desc = "Get the total number of steps that have been successfully taken";
+
         int numRealizations = 0;
+        static constexpr char const* numRealizations_desc = "Get the total number of state realizations that have been performed";
+
         int numQProjections = 0;
+        static constexpr char const* numQProjections_desc = "Get the total number of times a state positions Q have been projected";
+
         int numUProjections = 0;
+        static constexpr char const* numUProjections_desc = "Get the total number of times a state velocities U have been projected";
+
         int numErrorTestFailures = 0;
+        static constexpr char const* numErrorTestFailures_desc = "Get the number of attempted steps that have failed due to the error being unacceptably high";
+
         int numConvergenceTestFailures = 0;
+        static constexpr char const* numConvergenceTestFailures_desc = "Get the number of attempted steps that failed due to non-convergence of internal step iterations. This is most common with iterative methods but can occur if for some reason a step can't be completed.";
+
         int numRealizationFailures = 0;
+        static constexpr char const* numRealizationFailures_desc = "Get the number of attempted steps that have failed due to an error when realizing the state";
+
         int numQProjectionFailures = 0;
+        static constexpr char const* numQProjectionFailures_desc = "Get the number of attempted steps that have failed due to an error when projecting the state positions (Q)";
+
         int numUProjectionFailures = 0;
+        static constexpr char const* numUProjectionFailures_desc = "Get the number of attempted steps that have failed due to an error when projecting the state velocities (U)";
+
         int numProjectionFailures = 0;
+        static constexpr char const* numProjectionFailures_desc = "Get the number of attempted steps that have failed due to an error when projecting the state (either a Q- or U-projection)";
+
         int numConvergentIterations = 0;
+        static constexpr char const* numConvergentIterations_desc = "For iterative methods, get the number of internal step iterations in steps that led to convergence (not necessarily successful steps).";
+
         int numDivergentIterations = 0;
+        static constexpr char const* numDivergentIterations_desc = "For iterative methods, get the number of internal step iterations in steps that did not lead to convergence.";
+
         int numIterations = 0;
+        static constexpr char const* numIterations_desc = "For iterative methods, this is the total number of internal step iterations taken regardless of whether those iterations led to convergence or to successful steps. This is the sum of the number of convergent and divergent iterations which are available separately.";
+
 
         // system stats
         int numPrescribeQcalls = 0;

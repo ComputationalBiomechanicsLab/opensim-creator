@@ -40,12 +40,14 @@ namespace {
         double tf = focused_sim.simulation.sim_final_time().count();
         double treport = focused_report.state.getTime();
 
+        // draw the scrubber (slider)
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         float v = static_cast<float>(treport);
         if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.8f", ImGuiSliderFlags_AlwaysClamp)) {
             st.focused_simulation_scrubbing_time = v;
         }
 
+        // draw hover-over tooltip for scrubber
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -91,8 +93,10 @@ namespace {
     }
 }
 
+// simulator screeen (private) state
 struct osc::Simulator_screen::Impl final {
-    // top-level state: shared between edit+sim screens
+
+    // top-level state: shared between editor+sim screens
     std::shared_ptr<Main_editor_state> st;
 
     // scratch space for plots
@@ -250,7 +254,7 @@ namespace {
     }
 
 // draw a plot for an integrator stat
-#define OSC_DRAW_SIMSTAT_PLOT(statname, docstring) \
+#define OSC_DRAW_SIMSTAT_PLOT(statname) \
     {                                                                                                                  \
         scratch.clear();                                                                                               \
         for (auto const& report : focused.regular_reports) {                                                           \
@@ -259,7 +263,7 @@ namespace {
         }                                                                                                              \
         ImGui::TextUnformatted(#statname); \
         ImGui::SameLine();  \
-        ui::help_marker::draw(docstring);  \
+        ui::help_marker::draw(fd::Stats::statname ## _desc);  \
         ImGui::NextColumn();  \
         ImGui::PushID(imgui_id++);  \
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());  \
@@ -292,65 +296,65 @@ namespace {
 
             ImGui::Columns(2);
 
-            ImGui::TextUnformatted("final_time");
+            ImGui::TextUnformatted(p.final_time_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The final time that the simulation should run until");
+            ui::help_marker::draw(p.final_time_desc);
             ImGui::NextColumn();
             ImGui::Text("%f", p.final_time.count());
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("throttle_to_wall_time");
+            ImGui::TextUnformatted(p.throttle_to_wall_time_title);
             ImGui::SameLine();
-            ui::help_marker::draw("Whether the simulation should slow down whenever it runs faster than wall-time");
+            ui::help_marker::draw(p.throttle_to_wall_time_desc);
             ImGui::NextColumn();
             ImGui::TextUnformatted(p.throttle_to_wall_time ? "true" : "false");
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("integrator_method");
+            ImGui::TextUnformatted(p.integrator_method_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The integration method used by the underlying simulation engine");
+            ui::help_marker::draw(p.integrator_method_desc);
             ImGui::NextColumn();
             ImGui::TextUnformatted(fd::g_IntegratorMethodNames[p.integrator_method]);
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("reporting_interval");
+            ImGui::TextUnformatted(p.reporting_interval_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The time interval, in simulation time, between data reports (e.g. for plots)");
+            ui::help_marker::draw(p.reporting_interval_desc);
             ImGui::NextColumn();
             ImGui::Text("%f", p.reporting_interval.count());
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("integrator_step_limit");
+            ImGui::TextUnformatted(p.integrator_step_limit_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The maximum number of internal integration steps that the simulation may take within a single call to the integrator's stepTo or stepBy function");
+            ui::help_marker::draw(p.integrator_step_limit_desc);
             ImGui::NextColumn();
             ImGui::Text("%i", p.integrator_step_limit);
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("integrator_minimum_step_size");
+            ImGui::TextUnformatted(p.integrator_minimum_step_size_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The minimum step, in simulation time, that the integrator should attempt. Note: some integrators ignore this");
+            ui::help_marker::draw(p.integrator_minimum_step_size_desc);
             ImGui::NextColumn();
             ImGui::Text("%f", p.integrator_minimum_step_size.count());
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("integrator_maximum_step_size");
+            ImGui::TextUnformatted(p.integrator_maximum_step_size_title);
             ImGui::SameLine();
-            ui::help_marker::draw("The maximum step, in simulation time, that the integrator can attempt. E.g. even if the integrator wants to take a larger step than this (because error control deemed so) the integrator can only take up to this limit. This does not affect reporting/plotting, which always happens at a regular time interval.");
+            ui::help_marker::draw(p.integrator_maximum_step_size_desc);
             ImGui::NextColumn();
             ImGui::Text("%f", p.integrator_maximum_step_size.count());
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("integrator_accuracy");
+            ImGui::TextUnformatted(p.integrator_accuracy_title);
             ImGui::SameLine();
-            ui::help_marker::draw("Accuracy of the integrator. This only does something if the integrator is error-controlled and able to dynamically improve simulation accuracy to match this parameter");
+            ui::help_marker::draw(p.integrator_accuracy_desc);
             ImGui::NextColumn();
             ImGui::Text("%f", p.integrator_accuracy);
             ImGui::NextColumn();
 
-            ImGui::TextUnformatted("update_latest_state_on_every_step");
+            ImGui::TextUnformatted(p.update_latest_state_on_every_step_title);
             ImGui::SameLine();
-            ui::help_marker::draw("Whether the simulator should report to the UI on every integration step, rather than only at the reporting_interval. This is a tradeoff between perf. and UX. Updating the UI as often as possible results in a smooth 3D animation in the UI, but has more overhead. The cost of doing this is proportional to the FPS of the UI");
+            ui::help_marker::draw(p.update_latest_state_on_every_step_desc);
             ImGui::NextColumn();
             ImGui::TextUnformatted(p.update_latest_state_on_every_step ? "true" : "false");
             ImGui::NextColumn();
@@ -371,22 +375,22 @@ namespace {
             int imgui_id = 0;
 
             ImGui::Columns(2);
-            OSC_DRAW_SIMSTAT_PLOT(accuracyInUse, "Get the accuracy which is being used for error control.  Usually this is the same value that was specified to setAccuracy()");
-            OSC_DRAW_SIMSTAT_PLOT(numConvergenceTestFailures, "Get the number of attempted steps that failed due to non-convergence of internal step iterations. This is most common with iterative methods but can occur if for some reason a step can't be completed.");
-            OSC_DRAW_SIMSTAT_PLOT(numConvergentIterations, "For iterative methods, get the number of internal step iterations in steps that led to convergence (not necessarily successful steps).");
-            OSC_DRAW_SIMSTAT_PLOT(numDivergentIterations, "For iterative methods, get the number of internal step iterations in steps that did not lead to convergence.");
-            OSC_DRAW_SIMSTAT_PLOT(numErrorTestFailures, "Get the number of attempted steps that have failed due to the error being unacceptably high");
-            OSC_DRAW_SIMSTAT_PLOT(numIterations, "For iterative methods, this is the total number of internal step iterations taken regardless of whether those iterations led to convergence or to successful steps. This is the sum of the number of convergent and divergent iterations which are available separately.");
-            OSC_DRAW_SIMSTAT_PLOT(numProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state (either a Q- or U-projection)");
-            OSC_DRAW_SIMSTAT_PLOT(numQProjections, "Get the total number of times a state positions Q have been projected");
-            OSC_DRAW_SIMSTAT_PLOT(numQProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state positions (Q)");
-            OSC_DRAW_SIMSTAT_PLOT(numRealizations, "Get the total number of state realizations that have been performed");
-            OSC_DRAW_SIMSTAT_PLOT(numRealizationFailures, "Get the number of attempted steps that have failed due to an error when realizing the state");
-            OSC_DRAW_SIMSTAT_PLOT(numStepsAttempted, "Get the total number of steps that have been attempted (successfully or unsuccessfully)");
-            OSC_DRAW_SIMSTAT_PLOT(numStepsTaken, "Get the total number of steps that have been successfully taken");
-            OSC_DRAW_SIMSTAT_PLOT(numUProjections, "Get the total number of times a state velocities U have been projected");
-            OSC_DRAW_SIMSTAT_PLOT(numUProjectionFailures, "Get the number of attempted steps that have failed due to an error when projecting the state velocities (U)");
-            OSC_DRAW_SIMSTAT_PLOT(predictedNextStepSize, "Get the step size that will be attempted first on the next call to stepTo() or stepBy().");
+            OSC_DRAW_SIMSTAT_PLOT(accuracyInUse);
+            OSC_DRAW_SIMSTAT_PLOT(numConvergenceTestFailures);
+            OSC_DRAW_SIMSTAT_PLOT(numConvergentIterations);
+            OSC_DRAW_SIMSTAT_PLOT(numDivergentIterations);
+            OSC_DRAW_SIMSTAT_PLOT(numErrorTestFailures);
+            OSC_DRAW_SIMSTAT_PLOT(numIterations);
+            OSC_DRAW_SIMSTAT_PLOT(numProjectionFailures);
+            OSC_DRAW_SIMSTAT_PLOT(numQProjections);
+            OSC_DRAW_SIMSTAT_PLOT(numQProjectionFailures);
+            OSC_DRAW_SIMSTAT_PLOT(numRealizations);
+            OSC_DRAW_SIMSTAT_PLOT(numRealizationFailures);
+            OSC_DRAW_SIMSTAT_PLOT(numStepsAttempted);
+            OSC_DRAW_SIMSTAT_PLOT(numStepsTaken);
+            OSC_DRAW_SIMSTAT_PLOT(numUProjections);
+            OSC_DRAW_SIMSTAT_PLOT(numUProjectionFailures);
+            OSC_DRAW_SIMSTAT_PLOT(predictedNextStepSize);
             ImGui::Columns();
         }
     }
