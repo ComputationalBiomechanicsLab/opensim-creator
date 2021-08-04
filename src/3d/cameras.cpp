@@ -1,6 +1,6 @@
 #include "cameras.hpp"
 
-#include "src/constants.hpp"
+#include "src/utils/shims.hpp"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -8,6 +8,8 @@
 #include <glm/vec4.hpp>
 
 #include <cmath>
+
+inline constexpr float pi = osc::numbers::pi_v<float>;
 
 void osc::pan(Polar_perspective_camera& cam, float aspect_ratio, glm::vec2 delta) noexcept {
     // how much panning is done depends on how far the camera is from the
@@ -30,8 +32,8 @@ void osc::pan(Polar_perspective_camera& cam, float aspect_ratio, glm::vec2 delta
 }
 
 void osc::drag(Polar_perspective_camera& cam, glm::vec2 delta) noexcept {
-    cam.theta += 2.0f * pi_f * -delta.x;
-    cam.phi += 2.0f * pi_f * delta.y;
+    cam.theta += 2.0f * pi * -delta.x;
+    cam.phi += 2.0f * pi * delta.y;
 }
 
 glm::mat4 osc::view_matrix(Polar_perspective_camera const& cam) noexcept {

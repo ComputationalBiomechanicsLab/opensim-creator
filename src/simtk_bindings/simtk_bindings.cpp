@@ -1,8 +1,8 @@
 #include "simtk_bindings.hpp"
 
 #include "src/3d/3d.hpp"
-#include "src/constants.hpp"
 #include "src/log.hpp"
+#include "src/utils/shims.hpp"
 
 #include <SimTKcommon/Orientation.h>
 #include <glm/ext/matrix_transform.hpp>
@@ -19,6 +19,8 @@ using namespace SimTK;
 using namespace osc;
 
 namespace {
+    inline constexpr float pi_f = osc::numbers::pi_v<float>;
+
     // create an xform that transforms the unit cylinder into a line between
     // two points
     glm::mat4 cylinder_to_line_xform(float line_width, glm::vec3 const& p1, glm::vec3 const& p2) {

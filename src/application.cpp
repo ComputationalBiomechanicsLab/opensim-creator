@@ -11,6 +11,7 @@
 #include "src/utils/os.hpp"
 #include "src/utils/sdl_wrapper.hpp"
 #include "src/resources.hpp"
+#include "src/styling.hpp"
 
 #include <GL/glew.h>
 #include <SDL.h>

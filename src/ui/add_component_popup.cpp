@@ -3,7 +3,7 @@
 #include "src/assertions.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/properties_editor.hpp"
-#include "src/application.hpp"
+#include "src/styling.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>

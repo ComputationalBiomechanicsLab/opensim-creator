@@ -4,7 +4,7 @@
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/lockable_f3_editor.hpp"
-#include "src/application.hpp"
+#include "src/styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>

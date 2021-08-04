@@ -2,6 +2,7 @@
 
 #include "src/3d/3d.hpp"
 #include "src/application.hpp"
+#include "src/styling.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/opensim_bindings/simulation.hpp"
@@ -845,7 +846,7 @@ namespace {
         } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(impl.st->selection()); pa) {
             draw_pa_contextual_actions(impl.st->edited_model, *pa);
         } else {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.5f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
             ImGui::Text(
                 "    (OpenSim::%s has no contextual actions)", impl.st->selection()->getConcreteClassName().c_str());
             ImGui::PopStyleColor();
@@ -866,7 +867,7 @@ namespace {
         std::vector<std::string> socknames = selection.getSocketNames();
 
         if (socknames.empty()) {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.5f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
             ImGui::Text("    (OpenSim::%s has no sockets)", impl.st->selection()->getConcreteClassName().c_str());
             ImGui::PopStyleColor();
             return;
@@ -1108,7 +1109,7 @@ namespace {
         }
 
         // "switch to simulator" menu button
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)")) {
             impl.st->start_simulating_edited_model();
             Application::current().request_transition<Simulator_screen>(std::move(impl.st));

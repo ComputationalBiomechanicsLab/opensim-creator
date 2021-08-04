@@ -7,13 +7,14 @@
 #include "src/3d/gl_glm.hpp"
 #include "src/3d/shaders.hpp"
 #include "src/application.hpp"
+#include "src/styling.hpp"
 #include "src/config.hpp"
-#include "src/constants.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/ui/main_menu.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
+#include "src/utils/shims.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -37,6 +38,8 @@ namespace fs = std::filesystem;
 using namespace osc;
 
 namespace {
+    inline constexpr float pi_f = osc::numbers::pi_v<float>;
+
     Drawlist create_drawlist_with_chequered_floor() {
         glm::mat4 model_mtx = []() {
             glm::mat4 rv = glm::identity<glm::mat4>();
@@ -45,7 +48,7 @@ namespace {
             // floor down *slightly* to prevent Z fighting from planes rendered from the
             // model itself (the contact planes, etc.)
             rv = glm::translate(rv, {0.0f, -0.005f, 0.0f});
-            rv = glm::rotate(rv, osc::pi_f / 2, {-1.0, 0.0, 0.0});
+            rv = glm::rotate(rv, pi_f / 2, {-1.0, 0.0, 0.0});
             rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
 
             return rv;
@@ -163,11 +166,12 @@ namespace {
 
             // `new` button
             {
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+                ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
                     ui::main_menu::action_new_model();
                 }
-                ImGui::PopStyleColor();
+                ImGui::PopStyleColor(2);
             }
 
             ImGui::SameLine();
@@ -202,8 +206,7 @@ namespace {
                     ImGui::PopID();
                 }
             } else {
-                auto const& style = ImGui::GetStyle();
-                ImGui::PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]);
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
                 ImGui::TextWrapped("No files opened recently. Try:");
                 ImGui::BulletText("Creating a new model (Ctrl+N)");
                 ImGui::BulletText("Opening an existing model (Ctrl+O)");

@@ -4,7 +4,7 @@
 #include "src/config.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/stbi_wrapper.hpp"
-#include "src/constants.hpp"
+#include "src/utils/shims.hpp"
 #include "src/3d/gl_glm.hpp"
 
 #include <glm/gtx/norm.hpp>
@@ -21,6 +21,8 @@ using namespace osc;
 
 // private implementation details
 namespace {
+
+    inline constexpr float pi_f = osc::numbers::pi_v<float>;
 
     // standard textured cube with dimensions [-1, +1] in xyz and uv coords of
     // (0, 0) bottom-left, (1, 1) top-right for each (quad) face

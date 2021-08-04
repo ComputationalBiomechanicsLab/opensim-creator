@@ -1,7 +1,9 @@
 #include "resources.hpp"
 
 #include "src/utils/os.hpp"
+#include "src/utils/algs.hpp"
 #include "src/log.hpp"
+
 
 #include <fstream>
 #include <filesystem>
@@ -116,10 +118,7 @@ void osc::add_recent_file(std::filesystem::path const& p) {
     }
 
     // clear potentially duplicate entries from existing list
-    {
-        auto it = std::remove_if(rfs.begin(), rfs.end(), [&p](Recent_file const& rf) { return rf.path == p; });
-        rfs.erase(it, rfs.end());
-    }
+    osc::remove_erase(rfs, [&p](Recent_file const& rf) { return rf.path == p; });
 
     // write by truncating existing list file
     std::ofstream fd{rfs_path, std::ios::trunc};

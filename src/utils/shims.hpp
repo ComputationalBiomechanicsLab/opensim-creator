@@ -101,4 +101,10 @@ namespace osc {
             return t.join();
         }
     };
+
+    // C++20: <numbers>
+    namespace numbers {
+        template<typename T> inline constexpr T pi_v = static_cast<T>(3.14159265358979323846);
+        inline constexpr double pi = pi_v<double>;
+    }
 }

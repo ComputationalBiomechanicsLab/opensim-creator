@@ -2,8 +2,6 @@
 
 #include "src/assertions.hpp"
 
-#include "third_party/IconsFontAwesome5.h"
-
 #include <memory>
 #include <utility>
 

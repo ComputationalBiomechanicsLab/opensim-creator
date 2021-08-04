@@ -12,6 +12,7 @@
 #include "src/assertions.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/os.hpp"
+#include "src/styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
@@ -182,7 +183,7 @@ namespace {
             ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
             ImGui::TextUnformatted(simulation.model->getName().c_str());
             ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
             ImGui::Text("Wall time (sec): %.1f", simulation.simulation.wall_duration().count());
             ImGui::Text("Sim time (sec): %.1f", simulation.simulation.sim_current_time().count());
             ImGui::Text("Sim final time (sec): %.1f", simulation.simulation.sim_final_time().count());

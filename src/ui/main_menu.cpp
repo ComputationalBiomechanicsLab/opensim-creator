@@ -2,6 +2,7 @@
 
 #include "osc_build_config.hpp"
 #include "src/application.hpp"
+#include "src/styling.hpp"
 #include "src/config.hpp"
 #include "src/log.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
@@ -313,6 +314,13 @@ void osc::ui::main_menu::about_tab::draw() {
         if (ImGui::Button(ICON_FA_LINK " open")) {
             open_path_in_default_application(OSC_REPO_URL);
         }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("this will open the GitHub homepage in a separate browser window");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
         ImGui::PopID();
         ImGui::NextColumn();
 
@@ -321,6 +329,13 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_LINK " open")) {
             open_path_in_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("this will open the documentation in a separate browser window");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
         ImGui::PopID();
         ImGui::NextColumn();

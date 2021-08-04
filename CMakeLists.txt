@@ -179,6 +179,7 @@ add_executable(osc
 
     src/main_editor_state.hpp
     src/main_editor_state.cpp
+    src/styling.hpp
     src/config.hpp
     src/config.cpp
     src/application.hpp

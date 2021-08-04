@@ -6,9 +6,9 @@
 #include "src/utils/shims.hpp"
 #include "src/utils/spsc.hpp"
 #include "src/application.hpp"
+#include "src/styling.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/log.hpp"
-#include "src/constants.hpp"
 #include "src/utils/algs.hpp"
 #include "src/screens/model_editor_screen.hpp"
 
@@ -35,6 +35,8 @@ using namespace osc;
 
 // private impl details
 namespace {
+
+    inline constexpr float pi_f = osc::numbers::pi_v<float>;
 
     // a request, usually made by UI thread, to load a mesh file
     struct Mesh_load_request final {
@@ -142,6 +144,7 @@ namespace {
             bounding_sphere{tmp.bounding_sphere},
             model_mtx{1.0f},
             gpu_meshidx{[this]() {
+                // load the mesh data onto the GPU
                 GPU_storage& gs = Application::current().get_gpu_storage();
                 Meshidx rv = Meshidx::from_index(gs.meshes.size());
                 gs.meshes.emplace_back(meshdata);
@@ -709,8 +712,7 @@ namespace {
 
         // nothing refers to meshes, so they can be removed straightforwardly
         auto& meshes = impl.meshes;
-        auto it = std::remove_if(meshes.begin(), meshes.end(), [](auto const& m) { return m.is_selected; });
-        meshes.erase(it, meshes.end());
+        osc::remove_erase(meshes, [](auto const& m) { return m.is_selected; });
 
         // bodies/frames, and meshes, can refer to other bodies/frames (they're a tree)
         // so deletion needs to update the `assigned_body` and `parent` fields of every
@@ -794,13 +796,18 @@ namespace {
             return;
         }
 
+        // get bounding box of the scene in modelspace
         AABB scene_aabb = aabb_union(impl.meshes.cbegin(),
                                      impl.meshes.cend(),
                                      [](auto const& m) { return m.model_mtx * m.aabb; });
 
+        // we only care about the dimensions of the AABB, not its position
         glm::vec3 dims = aabb_dims(scene_aabb);
+
+        // figure out the longest dimension, scale relative to that
         float longest_dim = longest_dimension(dims);
 
+        // update relevant state
         impl.scene_scale_factor = 5.0f * longest_dim;
         impl.camera.pan = {};
         impl.camera.radius = 5.0f * longest_dim;
@@ -809,11 +816,17 @@ namespace {
     // polls the mesh loader's output queue for any newly-loaded meshes and pushes
     // them into the screen's state
     void pop_mesh_loader_output_queue(Impl& impl) {
+
         // pop anything from the mesh loader's output queue
-        for (auto maybe_resp = impl.mesh_loader.poll(); maybe_resp; maybe_resp = impl.mesh_loader.poll()) {
+        for (auto maybe_resp = impl.mesh_loader.poll();
+             maybe_resp.has_value();
+             maybe_resp = impl.mesh_loader.poll()) {
+
             Mesh_load_response& resp = *maybe_resp;
 
             if (std::holds_alternative<Mesh_load_OK_response>(resp)) {
+                // handle OK message from loader
+
                 Mesh_load_OK_response& ok = std::get<Mesh_load_OK_response>(resp);
 
                 // remove it from the "currently loading" list
@@ -822,6 +835,8 @@ namespace {
                 // add it to the "loaded" mesh list
                 impl.meshes.emplace_back(std::move(ok));
             } else {
+                // handle ERROR message from loader
+
                 Mesh_load_ERORR_response& err = std::get<Mesh_load_ERORR_response>(resp);
 
                 // remove it from the "currently loading" list
@@ -835,7 +850,8 @@ namespace {
 
     // update the screen state (impl) based on (ImGui's) user input
     void update_impl_from_user_input(Impl& impl) {
-        // DELETE: delete any selecte elements
+
+        // DELETE: delete any selected elements
         if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
             action_delete_selected(impl);
         }
@@ -912,7 +928,7 @@ namespace {
         }
     }
 
-    // convert a 3D worldspace coordinate into a 2D screenspace coordinate
+    // convert a 3D worldspace coordinate into a 2D screenspace (NDC) coordinate
     //
     // used to draw 2D overlays for items that are in 3D
     glm::vec2 world2ndc(Impl& impl, glm::vec3 const& v) {
@@ -949,7 +965,8 @@ namespace {
 
         glm::vec3 parent_pos;
         if (bof.parent < 0) {
-            parent_pos = {0.0f, 0.0f, 0.0f};  // ground pos
+            // its parent is "ground": use ground pos
+            parent_pos = {0.0f, 0.0f, 0.0f};
         } else {
             Body_or_frame const& parent = impl.bofs.at(static_cast<size_t>(bof.parent));
             parent_pos = parent.pos;
@@ -971,8 +988,8 @@ namespace {
         for (size_t i = 0; i < impl.bofs.size(); ++i) {
             Body_or_frame const& bof = impl.bofs[i];
 
-            // only draw connection lines if "all" requested *or* if it is
-            // hovered
+            // only draw connection lines if "draw all connection lines" is
+            // enabled, or if this bof in particular is hovered
             if (!(impl.show_all_connection_lines || bof.is_hovered)) {
                 continue;
             }
@@ -1062,6 +1079,7 @@ namespace {
     // draw manipulation gizmos (the little handles that the user can click
     // to move things in 3D)
     void draw_3dviewer_manipulation_gizmos(Impl& impl) {
+
         // if the user isn't manipulating anything, create an up-to-date
         // manipulation matrix
         if (!ImGuizmo::IsUsing()) {
@@ -1138,7 +1156,7 @@ namespace {
         // floor down *slightly* to prevent Z fighting from planes rendered from the
         // model itself (the contact planes, etc.)
         model_mtx = glm::translate(model_mtx, {0.0f, -0.0001f, 0.0f});
-        model_mtx = glm::rotate(model_mtx, osc::pi_f / 2, {-1.0, 0.0, 0.0});
+        model_mtx = glm::rotate(model_mtx, pi_f / 2, {-1.0, 0.0, 0.0});
         model_mtx = glm::scale(model_mtx, {impl.scene_scale_factor * 100.0f,  impl.scene_scale_factor * 100.0f, 1.0f});
 
         Mesh_instance mi;
@@ -1625,7 +1643,7 @@ namespace {
         if (ImGui::Button("clear selection")) {
             set_is_hovered_of_all_to(impl, false);
         }
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.0f, 0.6f, 0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLUS "Import Meshes")) {
             prompt_user_to_select_multiple_mesh_files(impl);
         }

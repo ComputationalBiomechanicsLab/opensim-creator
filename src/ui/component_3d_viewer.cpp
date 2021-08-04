@@ -4,9 +4,9 @@
 #include "src/3d/gl.hpp"
 #include "src/3d/3d.hpp"
 #include "src/application.hpp"
-#include "src/constants.hpp"
 #include "src/simtk_bindings/simtk_bindings.hpp"
 #include "src/utils/sdl_wrapper.hpp"
+#include "src/utils/shims.hpp"
 #include "src/log.hpp"
 
 #include <SimTKcommon.h>
@@ -34,6 +34,8 @@
 using namespace osc;
 
 namespace {
+    inline constexpr float pi_f = osc::numbers::pi_v<float>;
+
     // 3D drawlist generated from an OpenSim::Component
     //
     // associates each geometry instance in the drawlist with each (sub-)Component
@@ -603,7 +605,7 @@ namespace {
 
             mi.model_xform = []() {
                 // rotate from XY (+Z dir) to XZ (+Y dir)
-                glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::pi_f/2.0f, {1.0f, 0.0f, 0.0f});
+                glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -pi_f/2.0f, {1.0f, 0.0f, 0.0f});
 
                 // rescale from [-1.0f, +1.0f] to [-1.25f, +1.25f] so that each cell
                 // has dimensions (0.1f, 0.1f) in worldspace
@@ -626,7 +628,7 @@ namespace {
 
             mi.model_xform = []() {
                 // rotate from XY (+Z dir) to YZ (+X dir)
-                glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, osc::pi_f/2.0f, {0.0f, 1.0f, 0.0f});
+                glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, pi_f/2.0f, {0.0f, 1.0f, 0.0f});
 
                 // rescale from [-1.0f, +1.0f] to [-1.25f, +1.25f] so that each cell
                 // has dimensions (0.1f, 0.1f) in worldspace

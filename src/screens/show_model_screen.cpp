@@ -19,6 +19,7 @@
 #include "src/ui/muscles_table.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/file_change_poller.hpp"
+#include "src/styling.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -432,7 +433,7 @@ struct Simulator_tab final {
     void draw(Selected_component&, OpenSim::Model& shown_model, SimTK::State& shown_state) {
         // start/stop button
         if (simulator && simulator->is_running()) {
-            ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEGATIVE_RGBA);
             if (ImGui::Button("stop [SPC]")) {
                 simulator->request_stop();
             }
