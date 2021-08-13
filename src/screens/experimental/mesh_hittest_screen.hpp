@@ -5,15 +5,15 @@
 #include <memory>
 
 namespace osc {
-    class Tut4_hittesting_screen final : public Screen {
+    class Mesh_hittesting final : public Screen {
     public:
         struct Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
 
     public:
-        Tut4_hittesting_screen();
-        ~Tut4_hittesting_screen() noexcept;
+        Mesh_hittesting();
+        ~Mesh_hittesting() noexcept override;
 
         void on_mount() override;
         void on_unmount() override;

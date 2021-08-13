@@ -1,4 +1,4 @@
-#include "tut1_hellotriangle_screen.hpp"
+#include "hellotriangle_screen.hpp"
 
 #include "src/app.hpp"
 #include "src/3d/gl.hpp"
@@ -53,7 +53,7 @@ namespace {
     }
 }
 
-struct osc::Tut1_hellotriangle_screen::Impl final {
+struct osc::Hellotriangle_screen::Impl final {
     Shader shader;
 
     gl::Array_buffer<glm::vec3> points = {
@@ -70,13 +70,13 @@ struct osc::Tut1_hellotriangle_screen::Impl final {
 
 // public API
 
-osc::Tut1_hellotriangle_screen::Tut1_hellotriangle_screen() :
+osc::Hellotriangle_screen::Hellotriangle_screen() :
     impl{new Impl{}} {
 }
 
-osc::Tut1_hellotriangle_screen::~Tut1_hellotriangle_screen() noexcept = default;
+osc::Hellotriangle_screen::~Hellotriangle_screen() noexcept = default;
 
-void osc::Tut1_hellotriangle_screen::tick(float dt) {
+void osc::Hellotriangle_screen::tick(float dt) {
     // change color over time
 
     if (impl->color.r < 0.0f || impl->color.r > 1.0f) {
@@ -86,7 +86,7 @@ void osc::Tut1_hellotriangle_screen::tick(float dt) {
     impl->color.r -= dt * impl->fade_speed;
 }
 
-void osc::Tut1_hellotriangle_screen::draw() {
+void osc::Hellotriangle_screen::draw() {
     gl::Viewport(0, 0, App::cur().idims().x, App::cur().idims().y);
     gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

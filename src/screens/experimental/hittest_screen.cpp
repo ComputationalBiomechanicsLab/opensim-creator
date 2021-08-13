@@ -1,4 +1,4 @@
-#include "tut4_hittesting_screen.hpp"
+#include "hittest_screen.hpp"
 
 #include "src/app.hpp"
 #include "src/log.hpp"
@@ -100,7 +100,7 @@ static std::vector<Scene_sphere> generate_scene_spheres() {
 }
 
 // screen impl.
-struct osc::Tut4_hittesting_screen::Impl final {
+struct osc::Hittest_screen::Impl final {
     Shader shader;
 
     // sphere datas
@@ -141,25 +141,25 @@ struct osc::Tut4_hittesting_screen::Impl final {
 
 // public API
 
-osc::Tut4_hittesting_screen::Tut4_hittesting_screen() :
+osc::Hittest_screen::Hittest_screen() :
     m_Impl{new Impl{}} {
 }
 
-osc::Tut4_hittesting_screen::~Tut4_hittesting_screen() noexcept = default;
+osc::Hittest_screen::~Hittest_screen() noexcept = default;
 
-void osc::Tut4_hittesting_screen::on_mount() {
+void osc::Hittest_screen::on_mount() {
     osc::ImGuiInit();
 }
 
-void osc::Tut4_hittesting_screen::on_unmount() {
+void osc::Hittest_screen::on_unmount() {
     osc::ImGuiShutdown();
 }
 
-void osc::Tut4_hittesting_screen::on_event(SDL_Event const& e) {
+void osc::Hittest_screen::on_event(SDL_Event const& e) {
     osc::ImGuiOnEvent(e);
 }
 
-void osc::Tut4_hittesting_screen::tick(float) {
+void osc::Hittest_screen::tick(float) {
     auto& camera = m_Impl->camera;
     auto& io = ImGui::GetIO();
 
@@ -229,7 +229,7 @@ void osc::Tut4_hittesting_screen::tick(float) {
 
 }
 
-void osc::Tut4_hittesting_screen::draw() {
+void osc::Hittest_screen::draw() {
     osc::ImGuiNewFrame();
 
     App& app = App::cur();

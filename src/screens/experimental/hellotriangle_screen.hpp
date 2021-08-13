@@ -6,15 +6,15 @@
 
 namespace osc {
 
-    class Tut1_hellotriangle_screen final : public Screen {
+    class Hellotriangle_screen final : public Screen {
     public:
         struct Impl;
     private:
         std::unique_ptr<Impl> impl;
 
     public:
-        Tut1_hellotriangle_screen();
-        ~Tut1_hellotriangle_screen() noexcept;
+        Hellotriangle_screen();
+        ~Hellotriangle_screen() noexcept override;
 
         void tick(float) override;
         void draw() override;

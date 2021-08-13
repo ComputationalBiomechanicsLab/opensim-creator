@@ -1,4 +1,4 @@
-#include "src/screens/tut2_mesh_instance_meshdata_screen.hpp"
+#include "mesh_instance_meshdata_screen.hpp"
 
 #include "src/app.hpp"
 #include "src/log.hpp"
@@ -58,20 +58,20 @@ static gl::Vertex_array make_vao(Basic_shader& shader, Mesh_instance_meshdata& m
     return rv;
 }
 
-struct osc::Tut2_mesh_instance_meshdata_screen::Impl final {
+struct osc::Mesh_instance_meshdata_screen::Impl final {
     Basic_shader shader;
     Untextured_mesh mesh = generate_cube<Untextured_mesh>();
     Mesh_instance_meshdata gpu_mesh{mesh};
     gl::Vertex_array vao = make_vao(shader, gpu_mesh);
 };
 
-osc::Tut2_mesh_instance_meshdata_screen::Tut2_mesh_instance_meshdata_screen() :
+osc::Mesh_instance_meshdata_screen::Mesh_instance_meshdata_screen() :
     m_Impl{new Impl{}} {
 }
 
-osc::Tut2_mesh_instance_meshdata_screen::~Tut2_mesh_instance_meshdata_screen() noexcept = default;
+osc::Mesh_instance_meshdata_screen::~Mesh_instance_meshdata_screen() noexcept = default;
 
-void osc::Tut2_mesh_instance_meshdata_screen::draw() {
+void osc::Mesh_instance_meshdata_screen::draw() {
     App::cur().enable_debug_mode();
     Impl& impl = *m_Impl;
     Basic_shader& shader = impl.shader;

@@ -143,6 +143,9 @@ namespace osc {
     // computes an AABB from points in space
     AABB aabb_from_points(glm::vec3 const* first, size_t n);
 
+    // computes an AABB from points of a triangle
+    AABB aabb_from_triangle(glm::vec3 const* first);
+
 
 
     // analytical geometry

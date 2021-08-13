@@ -1,4 +1,4 @@
-#include "tut5_mesh_hittesting.hpp"
+#include "mesh_hittest_screen.hpp"
 
 #include "src/app.hpp"
 #include "src/log.hpp"
@@ -63,7 +63,7 @@ static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_ver
     return rv;
 }
 
-struct osc::Tut5_mesh_hittesting::Impl final {
+struct osc::Mesh_hittesting::Impl final {
     Shader shader;
 
     Untextured_mesh mesh = []() {
@@ -105,27 +105,27 @@ struct osc::Tut5_mesh_hittesting::Impl final {
 
 // public Impl.
 
-osc::Tut5_mesh_hittesting::Tut5_mesh_hittesting() :
+osc::Mesh_hittesting::Mesh_hittesting() :
     m_Impl{new Impl{}} {
+}
 
+osc::Mesh_hittesting::~Mesh_hittesting() noexcept = default;
+
+void osc::Mesh_hittesting::on_mount() {
+    osc::ImGuiInit();
+    App::cur().disable_vsync();
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
-osc::Tut5_mesh_hittesting::~Tut5_mesh_hittesting() noexcept = default;
-
-void osc::Tut5_mesh_hittesting::on_mount() {
-    osc::ImGuiInit();
-}
-
-void osc::Tut5_mesh_hittesting::on_unmount() {
+void osc::Mesh_hittesting::on_unmount() {
     osc::ImGuiShutdown();
 }
 
-void osc::Tut5_mesh_hittesting::on_event(SDL_Event const& e) {
+void osc::Mesh_hittesting::on_event(SDL_Event const& e) {
     osc::ImGuiOnEvent(e);
 }
 
-void osc::Tut5_mesh_hittesting::tick(float) {
+void osc::Mesh_hittesting::tick(float) {
     Impl& impl = *m_Impl;
 
     impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
@@ -176,7 +176,7 @@ void osc::Tut5_mesh_hittesting::tick(float) {
 
         // location of mouse in viewspace (worldspace, but everything moved with viewer @ 0,0,0)
         glm::vec4 line_origin_view = glm::inverse(proj_mtx) * line_origin_ndc;
-        line_origin_view /= line_origin_view.w;
+        line_origin_view /= line_origin_view.w;  // perspective divide
 
         // location of mouse in worldspace
         glm::vec3 line_origin_world = glm::vec3{glm::inverse(view_mtx) * line_origin_view};
@@ -221,7 +221,7 @@ void osc::Tut5_mesh_hittesting::tick(float) {
     impl.raycast_dur = std::chrono::duration_cast<std::chrono::microseconds>(raycast_dt);
 }
 
-void osc::Tut5_mesh_hittesting::draw() {
+void osc::Mesh_hittesting::draw() {
     osc::ImGuiNewFrame();
 
     Impl& impl = *m_Impl;
@@ -230,7 +230,7 @@ void osc::Tut5_mesh_hittesting::draw() {
     // printout stats
     {
         ImGui::Begin("controls");
-        ImGui::Text("%lld", impl.raycast_dur.count());
+        ImGui::Text("%lld microseconds", impl.raycast_dur.count());
         auto r = impl.ray;
         ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", impl.camera.pos().x, impl.camera.pos().y, impl.camera.pos().z);
         ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.o.x, r.o.y, r.o.z, r.d.x, r.d.y, r.d.z);

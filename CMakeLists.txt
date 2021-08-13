@@ -85,34 +85,66 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_build_config.hpp.in" "osc_bu
 add_executable(osc
     ${CMAKE_BINARY_DIR}/osc_build_config.hpp
 
-    src/3d/3d.hpp
     src/3d/3d.cpp
-    src/3d/colormapped_plain_texture_shader.hpp
+    src/3d/3d.hpp
     src/3d/colormapped_plain_texture_shader.cpp
-    src/3d/edge_detection_shader.hpp
+    src/3d/colormapped_plain_texture_shader.hpp
     src/3d/edge_detection_shader.cpp
-    src/3d/gl.hpp
+    src/3d/edge_detection_shader.hpp
     src/3d/gl.cpp
+    src/3d/gl.hpp
     src/3d/gl_glm.hpp
-    src/3d/gouraud_mrt_shader.hpp
     src/3d/gouraud_mrt_shader.cpp
-    src/3d/instanced_renderer.hpp
+    src/3d/gouraud_mrt_shader.hpp
     src/3d/instanced_renderer.cpp
-    src/3d/normals_shader.hpp
+    src/3d/instanced_renderer.hpp
     src/3d/normals_shader.cpp
-    src/3d/plain_texture_shader.hpp
+    src/3d/normals_shader.hpp
     src/3d/plain_texture_shader.cpp
-    src/3d/skip_msxaa_blitter_shader.hpp
+    src/3d/plain_texture_shader.hpp
     src/3d/skip_msxaa_blitter_shader.cpp
+    src/3d/skip_msxaa_blitter_shader.hpp
 
-    #src/opensim_bindings/simulation.hpp
-    #src/opensim_bindings/simulation.cpp
-    #src/opensim_bindings/type_registry.hpp
-    #src/opensim_bindings/type_registry.cpp
-    #src/opensim_bindings/opensim_helpers.hpp
     #src/opensim_bindings/file_change_poller.hpp
+    #src/opensim_bindings/opensim_helpers.hpp
+    #src/opensim_bindings/simulation.cpp
+    #src/opensim_bindings/simulation.hpp
+    #src/opensim_bindings/type_registry.cpp
+    #src/opensim_bindings/type_registry.hpp
     #src/opensim_bindings/ui_types.hpp
     #src/opensim_bindings/ui_types.cpp
+
+    src/screens/experimental/experiments_screen.cpp
+    src/screens/experimental/experiments_screen.hpp
+    src/screens/experimental/hellotriangle_screen.cpp
+    src/screens/experimental/hellotriangle_screen.hpp
+    src/screens/experimental/hittest_screen.cpp
+    src/screens/experimental/hittest_screen.hpp
+    src/screens/experimental/mesh_hittest_screen.cpp
+    src/screens/experimental/mesh_hittest_screen.hpp
+    src/screens/experimental/mesh_hittest_with_bvh_screen.cpp
+    src/screens/experimental/mesh_hittest_with_bvh_screen.hpp
+    # src/screens/experimental/meshes_to_model_wizard_screen.cpp
+    # src/screens/experimental/meshes_to_model_wizard_screen.hpp
+    src/screens/experimental/mesh_instance_meshdata_screen.cpp
+    src/screens/experimental/mesh_instance_meshdata_screen.hpp
+    src/screens/experimental/instanced_renderer_screen.cpp
+    src/screens/experimental/instanced_renderer_screen.hpp
+
+    src/screens/error_screen.cpp
+    src/screens/error_screen.hpp
+    src/screens/imgui_demo_screen.cpp
+    src/screens/imgui_demo_screen.hpp
+    #src/screens/loading_screen.cpp
+    #src/screens/loading_screen.hpp
+    #src/screens/model_editor_screen.cpp
+    #src/screens/model_editor_screen.hpp
+    #src/screens/show_model_screen.cpp
+    #src/screens/show_model_screen.hpp
+    #src/screens/simulator_screen.cpp
+    #src/screens/simulator_screen.hpp
+    #src/screens/splash_screen.cpp
+    #src/screens/splash_screen.hpp
 
     src/simtk_bindings/simtk_bindings.hpp
     src/simtk_bindings/simtk_bindings.cpp
@@ -156,31 +188,6 @@ add_executable(osc
     #src/ui/fd_params_editor_popup.hpp
     #src/ui/fd_params_editor_popup.cpp
     #
-    src/screens/error_screen.hpp
-    src/screens/error_screen.cpp
-    src/screens/experiments_screen.hpp
-    src/screens/experiments_screen.cpp
-    src/screens/imgui_demo_screen.hpp
-    src/screens/imgui_demo_screen.cpp
-    src/screens/tut1_hellotriangle_screen.hpp
-    src/screens/tut1_hellotriangle_screen.cpp
-    src/screens/tut2_mesh_instance_meshdata_screen.hpp
-    src/screens/tut2_mesh_instance_meshdata_screen.cpp
-    src/screens/tut3_instanced_renderer_screen.hpp
-    src/screens/tut3_instanced_renderer_screen.cpp
-    src/screens/tut4_hittesting_screen.hpp
-    src/screens/tut4_hittesting_screen.cpp
-    src/screens/tut5_mesh_hittesting.hpp
-    src/screens/tut5_mesh_hittesting.cpp
-    #src/screens/meshes_to_model_wizard_screen.hpp
-    #src/screens/meshes_to_model_wizard_screen.cpp
-
-    #src/screens/loading_screen.hpp
-    #src/screens/loading_screen.cpp
-    #src/screens/model_editor_screen.hpp
-    #src/screens/model_editor_screen.cpp
-    #src/screens/splash_screen.hpp
-    #src/screens/splash_screen.cpp
 
     src/utils/algs.hpp
     src/utils/checked_index.hpp

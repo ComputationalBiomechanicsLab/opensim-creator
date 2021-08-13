@@ -1,4 +1,4 @@
-#include "tut3_instanced_renderer_screen.hpp"
+#include "instanced_renderer_screen.hpp"
 
 #include "src/app.hpp"
 #include "src/log.hpp"
@@ -46,7 +46,7 @@ static Mesh_instance_drawlist make_drawlist(int rows, int cols) {
     return rv;
 }
 
-struct osc::Tut3_instanced_renderer_screen::Impl final {
+struct osc::Instanced_render_screen::Impl final {
     Instanced_renderer renderer;
 
     int rows = 512;
@@ -75,28 +75,28 @@ struct osc::Tut3_instanced_renderer_screen::Impl final {
     bool draw_rims = true;
 };
 
-osc::Tut3_instanced_renderer_screen::Tut3_instanced_renderer_screen() :
+osc::Instanced_render_screen::Instanced_render_screen() :
     m_Impl{new Impl{}} {
 
     App::cur().disable_vsync();
     App::cur().enable_debug_mode();
 }
 
-osc::Tut3_instanced_renderer_screen::~Tut3_instanced_renderer_screen() noexcept = default;
+osc::Instanced_render_screen::~Instanced_render_screen() noexcept = default;
 
-void osc::Tut3_instanced_renderer_screen::on_mount() {
+void osc::Instanced_render_screen::on_mount() {
     osc::ImGuiInit();
 }
 
-void osc::Tut3_instanced_renderer_screen::on_unmount() {
+void osc::Instanced_render_screen::on_unmount() {
     osc::ImGuiShutdown();
 }
 
-void osc::Tut3_instanced_renderer_screen::on_event(SDL_Event const& e) {
+void osc::Instanced_render_screen::on_event(SDL_Event const& e) {
     osc::ImGuiOnEvent(e);
 }
 
-void osc::Tut3_instanced_renderer_screen::tick(float) {
+void osc::Instanced_render_screen::tick(float) {
     // connect input state to an euler (first-person-shooter style)
     // camera
 
@@ -136,7 +136,7 @@ void osc::Tut3_instanced_renderer_screen::tick(float) {
     camera.pitch = std::clamp(camera.pitch, -pi_f/2.0f + 0.5f, pi_f/2.0f - 0.5f);
 }
 
-void osc::Tut3_instanced_renderer_screen::draw() {
+void osc::Instanced_render_screen::draw() {
     osc::ImGuiNewFrame();
 
     {

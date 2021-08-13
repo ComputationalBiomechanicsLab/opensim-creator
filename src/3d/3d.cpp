@@ -384,6 +384,10 @@ AABB osc::aabb_from_points(glm::vec3 const* first, size_t n) {
     return aabb_compute_from_verts(first, n, [](auto const& v) { return v; });
 }
 
+AABB osc::aabb_from_triangle(glm::vec3 const* first) {
+    return aabb_compute_from_verts(first, 3, [](auto const& v) { return v; });
+}
+
 
 // analytical geometry
 

@@ -5,15 +5,15 @@
 #include <memory>
 
 namespace osc {
-    class Tut3_instanced_renderer_screen final : public Screen {
+    class Hittest_screen final : public Screen {
     public:
         struct Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
 
     public:
-        Tut3_instanced_renderer_screen();
-        ~Tut3_instanced_renderer_screen() noexcept;
+        Hittest_screen();
+        ~Hittest_screen() noexcept override;
 
         void on_mount() override;
         void on_unmount() override;
