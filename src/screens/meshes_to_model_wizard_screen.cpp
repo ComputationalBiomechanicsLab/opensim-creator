@@ -1,16 +1,33 @@
 #include "meshes_to_model_wizard_screen.hpp"
 
+#include "src/app.hpp"
+#include "src/3d/gl.hpp"
 #include "src/3d/3d.hpp"
-#include "src/3d/cameras.hpp"
+#include "src/3d/instanced_renderer.hpp"
 #include "src/simtk_bindings/simtk_bindings.hpp"
 #include "src/utils/shims.hpp"
 #include "src/utils/spsc.hpp"
-#include "src/application.hpp"
+
+#include <imgui.h>
+#include <ImGuizmo.h>
+
+#include <filesystem>
+#include <string>
+#include <variant>
+#include <stdexcept>
+#include <memory>
+
+/*
+
+#include "src/3d/3d.hpp"
+#include "src/simtk_bindings/simtk_bindings.hpp"
+#include "src/utils/algs.hpp"
+#include "src/utils/shims.hpp"
+#include "src/utils/spsc.hpp"
+#include "src/app.hpp"
 #include "src/styling.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/log.hpp"
-#include "src/utils/algs.hpp"
-#include "src/screens/model_editor_screen.hpp"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -30,6 +47,8 @@
 #include <memory>
 #include <cstddef>
 #include <algorithm>
+
+*/
 
 using namespace osc;
 
@@ -123,8 +142,8 @@ namespace {
         // model matrix
         glm::mat4 model_mtx;
 
-        // index of mesh, loaded into GPU_storage
-        Meshidx gpu_meshidx;
+        // mesh data on GPU
+        std::shared_ptr<Mesh_instance_meshdata> gpu_meshdata;
 
         // -1 if ground/unassigned; otherwise, a body/frame
         int parent;
@@ -143,13 +162,7 @@ namespace {
             aabb{tmp.aabb},
             bounding_sphere{tmp.bounding_sphere},
             model_mtx{1.0f},
-            gpu_meshidx{[this]() {
-                // load the mesh data onto the GPU
-                GPU_storage& gs = Application::current().get_gpu_storage();
-                Meshidx rv = Meshidx::from_index(gs.meshes.size());
-                gs.meshes.emplace_back(meshdata);
-                return rv;
-            }()},
+            gpu_meshdata{std::make_shared<Mesh_instance_meshdata>(meshdata)},
             parent{-1},
             is_hovered{false},
             is_selected{false} {
@@ -242,6 +255,7 @@ namespace {
 }
 
 struct osc::Meshes_to_model_wizard_screen::Impl final {
+
     // loader that loads mesh data in a background thread
     Mesh_loader mesh_loader = meshloader_create();
 
@@ -301,6 +315,8 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // the transformation operation that the gizmo should be doing
     ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
+
+        /*
 
     // 3D rendering params
     osc::Render_params renderparams;
@@ -375,8 +391,12 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     //
     // `nullptr` until the model is successfully created
     std::unique_ptr<OpenSim::Model> output_model = nullptr;
+
+    */
 };
 using Impl = osc::Meshes_to_model_wizard_screen::Impl;
+
+/*
 
 // private Impl functions
 namespace {
@@ -641,6 +661,7 @@ namespace {
             bof.is_selected = bof.is_hovered;
         }
     }
+    */
 
     // submit a meshfile load request to the mesh loader
     void submit_meshfile_load_request(Impl& impl, std::filesystem::path path) {
@@ -649,6 +670,8 @@ namespace {
         impl.loading_meshes.push_back(req);
         impl.mesh_loader.send(req);
     }
+
+    /*
 
     // synchronously prompts the user to select multiple mesh files through
     // a native OS file dialog
@@ -1183,7 +1206,7 @@ namespace {
         impl.render_target.reconfigure(
             static_cast<int>(dims.x),
             static_cast<int>(dims.y),
-            Application::current().samples());
+            App::cur().get_samples());
 
         // compute render position on the screen (needed by ImGuizmo)
         {
@@ -1698,10 +1721,16 @@ namespace {
 
         // if a model was produced by this step then transition into the editor
         if (impl.output_model) {
-            Application::current().request_transition<Model_editor_screen>(std::move(impl.output_model));
+            // TODO
+            //auto mes = std::make_shared<Main_editor_state>();
+            //mes->tabs.emplace_back(std::make_unique<Undoable_ui_model>(std::move(impl.output_model)));
+            //mes->cur_tab = static_cast<int>(mes->tabs.size()) - 1;
+            //Application::current().request_transition<Model_editor_screen>(mes);
         }
     }
 }
+
+*/
 
 // public API
 
@@ -1721,10 +1750,26 @@ osc::Meshes_to_model_wizard_screen::Meshes_to_model_wizard_screen(
 
 osc::Meshes_to_model_wizard_screen::~Meshes_to_model_wizard_screen() noexcept = default;
 
+void osc::Meshes_to_model_wizard_screen::on_mount() {
+    osc::ImGuiInit();
+}
+
+void osc::Meshes_to_model_wizard_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
+void osc::Meshes_to_model_wizard_screen::on_event(SDL_Event const& e) {
+    osc::ImGuiOnEvent(e);
+}
+
 void osc::Meshes_to_model_wizard_screen::draw() {
-    ::meshes2model_draw(*impl);
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    osc::ImGuiNewFrame();
+    // TODO  ::meshes2model_draw(*impl);
+    osc::ImGuiRender();
 }
 
 void osc::Meshes_to_model_wizard_screen::tick(float) {
-    ::meshes2model_tick(*impl);
+    // TODO  ::meshes2model_tick(*impl);
 }

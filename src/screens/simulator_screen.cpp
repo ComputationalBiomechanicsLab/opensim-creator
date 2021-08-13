@@ -98,7 +98,7 @@ namespace {
 struct osc::Simulator_screen::Impl final {
 
     // top-level state: shared between editor+sim screens
-    std::shared_ptr<Main_editor_state> st;
+    std::shared_ptr<Main_editor_state> mes;
 
     // scratch space for plots
     std::vector<float> plotscratch;
@@ -107,10 +107,11 @@ struct osc::Simulator_screen::Impl final {
     osc::ui::log_viewer::State log_viewer_st;
     osc::ui::main_menu::file_tab::State mm_filetab_st;
 
-    Impl(std::shared_ptr<Main_editor_state> _st) : st {std::move(_st)} {
+    Impl(std::shared_ptr<Main_editor_state> _mes) : mes{std::move(_mes)} {
+
         // lazily init at least one viewer
-        if (!st->viewers.front()) {
-            st->viewers.front() = create_3dviewer();
+        if (!mes->viewers.front()) {
+            mes->viewers.front() = create_3dviewer();
         }
     }
 };
@@ -147,7 +148,7 @@ namespace {
 
     // draw details of one simulation
     void draw_simulation_progress_bar_etc(Simulator_screen::Impl& impl, int i) {
-        Main_editor_state& st = *impl.st;
+        Main_editor_state& st = *impl.mes;
 
         if (!(0 <= i && i < static_cast<int>(st.simulations.size()))) {
             ImGui::TextUnformatted("(invalid simulation index)");
@@ -205,7 +206,7 @@ namespace {
             if (ImGui::MenuItem("edit model")) {
                 auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
                 st.set_model(std::move(copy));
-                Application::current().request_transition<Model_editor_screen>(impl.st);
+                Application::current().request_transition<Model_editor_screen>(impl.mes);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -230,7 +231,7 @@ namespace {
 
     // draw top-level "Simulation" tab that lists all simulations
     void draw_simulation_tab(Simulator_screen::Impl& impl) {
-         osc::Main_editor_state& st = *impl.st;
+         osc::Main_editor_state& st = *impl.mes;
 
         // draw scrubber for currently-selected sim
         ImGui::TextUnformatted("Scrubber:");
@@ -276,7 +277,7 @@ namespace {
     // draw top-level "simulation stats" tab that shows integrator stats etc. for
     // the focused simulation
     void draw_simulation_stats_tab(osc::Simulator_screen::Impl& impl) {
-        Ui_simulation const* maybe_focused = impl.st->get_focused_sim();
+        Ui_simulation const* maybe_focused = impl.mes->get_focused_sim();
 
         if (!maybe_focused) {
             ImGui::TextDisabled("(no simulation selected)");
@@ -404,7 +405,7 @@ namespace {
             switch (e.keysym.sym) {
             case SDLK_e:
                 // Ctrl + e
-                Application::current().request_transition<Model_editor_screen>(std::move(impl.st));
+                Application::current().request_transition<Model_editor_screen>(std::move(impl.mes));
                 return true;
             }
         }
@@ -420,7 +421,7 @@ namespace {
         }
 
         bool handled = false;
-        for (auto& viewer : impl.st->viewers) {
+        for (auto& viewer : impl.mes->viewers) {
             if (!handled && viewer && viewer->is_moused_over()) {
                 handled = viewer->on_event(e);
             }
@@ -470,7 +471,7 @@ namespace {
 
             if (ImGui::BeginPopupContextItem(od.getName().c_str())) {
                 if (ImGui::MenuItem("Add to outputs watch")) {
-                    impl.st->desired_outputs.emplace_back(selected, od);
+                    impl.mes->desired_outputs.emplace_back(selected, od);
                 }
                 ImGui::EndPopup();
             }
@@ -484,7 +485,7 @@ namespace {
     // draw "selection" tab, which shows details of current selection
     void draw_selection_tab(osc::Simulator_screen::Impl& impl) {
 
-        Ui_simulation const* maybe_sim = impl.st->get_focused_sim();
+        Ui_simulation const* maybe_sim = impl.mes->get_focused_sim();
 
         if (!maybe_sim) {
             ImGui::TextDisabled("(no simulation selected)");
@@ -497,7 +498,7 @@ namespace {
             return;
         }
 
-        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
+        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.mes->focused_simulation_scrubbing_time);
 
         ui::component_details::draw(report.state, sim.selected);
 
@@ -657,17 +658,17 @@ namespace {
     // draw "outputs" tab, which shows user-selected simulation outputs
     void draw_outputs_tab(osc::Simulator_screen::Impl& impl) {
 
-        Ui_simulation const* maybe_sim = impl.st->get_focused_sim();
+        Ui_simulation const* maybe_sim = impl.mes->get_focused_sim();
         if (!maybe_sim) {
             ImGui::TextDisabled("(no simulation selected)");
             return;
         }
         Ui_simulation const& sim = *maybe_sim;
 
-        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
+        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.mes->focused_simulation_scrubbing_time);
 
         int imgui_id = 0;
-        Main_editor_state& st = *impl.st;
+        Main_editor_state& st = *impl.mes;
 
         if (st.desired_outputs.empty()) {
             ImGui::TextUnformatted("No outputs being plotted: right-click them in the model editor");
@@ -791,7 +792,7 @@ namespace {
     // draw "hierarchy" tab, which shows the tree hierarchy structure for
     // the currently-focused sim
     void draw_hierarchy_tab(Simulator_screen::Impl& impl) {
-        Ui_simulation* maybe_sim = impl.st->get_focused_sim();
+        Ui_simulation* maybe_sim = impl.mes->get_focused_sim();
 
         if (!maybe_sim) {
             ImGui::TextDisabled("(no simulation selected)");
@@ -830,7 +831,7 @@ namespace {
     //
     // the user can (de)activate 3D viewers in the "Window" tab
     void draw_all_3dviewers(Simulator_screen::Impl& impl) {
-        Ui_simulation* maybe_sim = impl.st->get_focused_sim();
+        Ui_simulation* maybe_sim = impl.mes->get_focused_sim();
 
         if (!maybe_sim) {
             if (ImGui::Begin("render")) {
@@ -841,8 +842,8 @@ namespace {
         }
 
         Ui_simulation& sim = *maybe_sim;
-        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.st->focused_simulation_scrubbing_time);
-        Main_editor_state& st = *impl.st;
+        fd::Report const& report = select_report_based_on_scrubbing(sim, impl.mes->focused_simulation_scrubbing_time);
+        Main_editor_state& st = *impl.mes;
 
         for (size_t i = 0; i < st.viewers.size(); ++i) {
             auto& maybe_viewer = st.viewers[i];
@@ -865,8 +866,8 @@ namespace {
 
         // draw main menu
         if (ImGui::BeginMainMenuBar()) {
-            ui::main_menu::file_tab::draw(impl.mm_filetab_st, impl.st);
-            ui::main_menu::window_tab::draw(*impl.st);
+            ui::main_menu::file_tab::draw(impl.mm_filetab_st, impl.mes);
+            ui::main_menu::window_tab::draw(*impl.mes);
             ui::main_menu::about_tab::draw();
 
             ImGui::Dummy(ImVec2{5.0f, 0.0f});
@@ -874,7 +875,7 @@ namespace {
             if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)")) {
 
                 // request the transition then exit this drawcall ASAP
-                Application::current().request_transition<Model_editor_screen>(std::move(impl.st));
+                Application::current().request_transition<Model_editor_screen>(std::move(impl.mes));
                 ImGui::EndMainMenuBar();
                 return;
             }
@@ -882,7 +883,7 @@ namespace {
             ImGui::EndMainMenuBar();
         }
 
-        Main_editor_state& st = *impl.st;
+        Main_editor_state& st = *impl.mes;
 
         // edge-case: there are no simulations available, so
         // show a "you need to run something, fool" dialog
@@ -898,8 +899,8 @@ namespace {
         }
 
         // draw simulations tab
-        if (st.showing.simulations) {
-            if (ImGui::Begin("Simulations", &st.showing.simulations)) {
+        if (st.shown_panels.simulations) {
+            if (ImGui::Begin("Simulations", &st.shown_panels.simulations)) {
                 draw_simulation_tab(impl);
             }
             ImGui::End();
@@ -911,40 +912,40 @@ namespace {
         }
 
         // draw hierarchy tab
-        if (st.showing.hierarchy) {
-            if (ImGui::Begin("Hierarchy", &st.showing.hierarchy)) {
+        if (st.shown_panels.hierarchy) {
+            if (ImGui::Begin("Hierarchy", &st.shown_panels.hierarchy)) {
                 draw_hierarchy_tab(impl);
             }
             ImGui::End();
         }
 
         // draw selection tab
-        if (st.showing.selection_details) {
-            if (ImGui::Begin("Selection", &st.showing.selection_details)) {
+        if (st.shown_panels.selection_details) {
+            if (ImGui::Begin("Selection", &st.shown_panels.selection_details)) {
                 draw_selection_tab(impl);
             }
             ImGui::End();
         }
 
         // draw outputs tab
-        if (st.showing.outputs) {
-            if (ImGui::Begin("Outputs", &st.showing.outputs)) {
+        if (st.shown_panels.outputs) {
+            if (ImGui::Begin("Outputs", &st.shown_panels.outputs)) {
                 draw_outputs_tab(impl);
             }
             ImGui::End();
         }
 
         // draw simulation stats tab
-        if (st.showing.simulation_stats) {
-            if (ImGui::Begin("Simulation Details", &st.showing.simulation_stats)) {
+        if (st.shown_panels.simulation_stats) {
+            if (ImGui::Begin("Simulation Details", &st.shown_panels.simulation_stats)) {
                 draw_simulation_stats_tab(impl);
             }
             ImGui::End();
         }
 
         // draw log tab
-        if (st.showing.log) {
-            if (ImGui::Begin("Log", &st.showing.log, ImGuiWindowFlags_MenuBar)) {
+        if (st.shown_panels.log) {
+            if (ImGui::Begin("Log", &st.shown_panels.log, ImGuiWindowFlags_MenuBar)) {
                 ui::log_viewer::draw(impl.log_viewer_st);
             }
             ImGui::End();
@@ -954,8 +955,8 @@ namespace {
 
 // Simulator_screen: public impl.
 
-osc::Simulator_screen::Simulator_screen(std::shared_ptr<Main_editor_state> st) :
-    impl{new Impl{std::move(st)}} {
+osc::Simulator_screen::Simulator_screen(std::shared_ptr<Main_editor_state> mes) :
+    impl{new Impl{std::move(mes)}} {
 }
 
 osc::Simulator_screen::~Simulator_screen() noexcept = default;
@@ -965,7 +966,7 @@ bool osc::Simulator_screen::on_event(SDL_Event const& e) {
 }
 
 void osc::Simulator_screen::tick(float) {
-    pop_all_simulator_updates(*impl->st);
+    pop_all_simulator_updates(*impl->mes);
 }
 
 void osc::Simulator_screen::draw() {

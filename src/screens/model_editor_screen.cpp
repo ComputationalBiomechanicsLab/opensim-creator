@@ -65,6 +65,7 @@
 #include <SimTKcommon/Mechanics.h>
 #include <SimTKcommon/SmallMatrix.h>
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include <algorithm>
 #include <cstring>
@@ -183,7 +184,12 @@ namespace {
     // try to delete an undoable-model's current selection
     //
     // "try", because some things are difficult to delete from OpenSim models
-    void action_try_delete_selection_from_model(Undoable_ui_model& uim) {
+    void action_try_delete_selection_from_edtied_model(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // no editor currently focused
+        }
+
+        Undoable_ui_model& uim = *mes.focused_editor();
 
         OpenSim::Component* selected = uim.selection();
 
@@ -431,6 +437,101 @@ namespace {
         }
         ImGui::NextColumn();
     }
+
+
+    // try to undo currently edited model to earlier state
+    void action_undo_currently_edited_model(Main_editor_state& mes) {
+
+        if (!mes.focused_editor()) {
+            return;  // not currently focused on an editable model
+        }
+
+        Undoable_ui_model& uim = *mes.focused_editor();
+
+        if (!uim.can_undo()) {
+            return;  // can't undo
+        }
+
+        uim.do_undo();
+    }
+
+    // try to redo currently edited model to later state
+    void action_redo_currently_edited_model(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // not currently focused on an editable model
+        }
+
+        Undoable_ui_model& uim = *mes.focused_editor();
+
+        if (!uim.can_redo()) {
+            return;  // can't redo
+        }
+
+        uim.do_redo();
+    }
+
+    // disable all wrapping surfaces in the current model
+    void action_disable_all_wrapping_surfs(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // not currently focused on an editable model
+        }
+
+        Undoable_ui_model& uim = *mes.focused_editor();
+
+        OpenSim::Model& m = uim.model();
+
+        uim.before_modifying_model();
+        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+            for (int i = 0; i < wos.getSize(); ++i) {
+                OpenSim::WrapObject& wo = wos[i];
+                wo.set_active(false);
+                wo.upd_Appearance().set_visible(false);
+            }
+        }
+        uim.after_modifying_model();
+    }
+
+    // enable all wrapping surfaces in the current model
+    void action_enable_all_wrapping_surfs(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // not currently focused on an editable model
+        }
+
+        Undoable_ui_model& uim = *mes.focused_editor();
+
+        OpenSim::Model& m = uim.model();
+
+        uim.before_modifying_model();
+        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+            for (int i = 0; i < wos.getSize(); ++i) {
+                OpenSim::WrapObject& wo = wos[i];
+                wo.set_active(true);
+                wo.upd_Appearance().set_visible(true);
+            }
+        }
+        uim.after_modifying_model();
+    }
+
+    // try to start a new simulation from the currently-edited model
+    void action_start_sim_from_edited_model(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // no model focused right now
+        }
+
+        // create the simulation
+        auto sim = std::make_unique<Ui_simulation>(mes.focused_editor()->model(), mes.focused_editor()->state(), mes.sim_params);
+
+        // append sim to the tablist
+        mes.tabs.emplace_back(std::move(sim));
+    }
+
+    void action_clear_selection_from_edited_model(Main_editor_state& mes) {
+        if (!mes.focused_editor()) {
+            return;  // no model focused right now
+        }
+
+        mes.focused_editor()->set_selection(nullptr);
+    }
 }
 
 // editor (internal) screen state
@@ -457,91 +558,39 @@ struct Model_editor_screen::Impl final {
         bool subpanel_requested_early_exit = false;
     } reset_per_frame;
 
-    // poller that checks (with debouncing) when model being edited has changed on the filesystem
-    File_change_poller file_poller{1000ms, st->model().getInputFileName()};
-
-    explicit Impl(std::shared_ptr<Main_editor_state> _st) : st{std::move(_st)} {
+    explicit Impl(std::shared_ptr<Main_editor_state> _st) :
+        st{std::move(_st)} {
     }
 };
 
 namespace {
 
-    // try to undo model to earlier state
-    void action_undo(Model_editor_screen::Impl& impl) {
-        if (impl.st->can_undo()) {
-            impl.st->do_undo();
-        }
-    }
-
-    // try to redo model to later state
-    void action_redo(Model_editor_screen::Impl& impl) {
-        if (impl.st->can_redo()) {
-            impl.st->do_redo();
-        }
-    }
-
-    // disable all wrapping surfaces in the current model
-    void action_disable_all_wrapping_surfs(Model_editor_screen::Impl& impl) {
-        OpenSim::Model& m = impl.st->model();
-        impl.st->before_modifying_model();
-        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-            for (int i = 0; i < wos.getSize(); ++i) {
-                OpenSim::WrapObject& wo = wos[i];
-                wo.set_active(false);
-                wo.upd_Appearance().set_visible(false);
-            }
-        }
-        impl.st->after_modifying_model();
-    }
-
-    // enable all wrapping surfaces in the current model
-    void action_enable_all_wrapping_surfs(Model_editor_screen::Impl& impl) {
-        OpenSim::Model& m = impl.st->model();
-        impl.st->before_modifying_model();
-        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-            for (int i = 0; i < wos.getSize(); ++i) {
-                OpenSim::WrapObject& wo = wos[i];
-                wo.set_active(true);
-                wo.upd_Appearance().set_visible(true);
-            }
-        }
-        impl.st->after_modifying_model();
-    }
-
     // handle what happens when a user presses a key
-    bool modeleditor_on_keydown(
-            Model_editor_screen::Impl& impl,
-            SDL_KeyboardEvent const& e) {
+    bool modeleditor_on_keydown(Model_editor_screen::Impl& impl, SDL_KeyboardEvent const& e) {
 
-        if (e.keysym.mod & KMOD_CTRL) {
-            // CTRL
-
-            if (e.keysym.mod & KMOD_SHIFT) {
-                // CTRL+SHIFT
-
+        if (e.keysym.mod & KMOD_CTRL) {  // Ctrl
+            if (e.keysym.mod & KMOD_SHIFT) {  // Ctrl+Shift
                 switch (e.keysym.sym) {
-                case SDLK_z:
-                    action_redo(impl);
-                    return false;
+                case SDLK_z:  // Ctrl+Shift+Z : undo focused model
+                    action_redo_currently_edited_model(*impl.st);
+                    return true;
                 }
                 return false;
             }
 
             switch (e.keysym.sym) {
-            case SDLK_z:
-                action_undo(impl);
+            case SDLK_z:  // Ctrl+Z: undo focused model
+                action_undo_currently_edited_model(*impl.st);
                 return true;
-            case SDLK_r:
-                // Ctrl + r
-                impl.st->start_simulating_edited_model();
-                Application::current().request_transition<Simulator_screen>(std::move(impl.st));
+            case SDLK_r:  // Ctrl+R: start a new simulation from focused model
+                action_start_sim_from_edited_model(*impl.st);
                 return true;
-            case SDLK_a:
-                impl.st->set_selection(nullptr);
+            case SDLK_a:  // Ctrl+A: clear selection
+                action_clear_selection_from_edited_model(*impl.st);
                 return true;
-            case SDLK_e:
-                // Ctrl+E
-                Application::current().request_transition<Simulator_screen>(std::move(impl.st));
+            case SDLK_e:  // Ctrl+E: show simulation screen
+                // Ctrl+E : TODO
+                // Application::current().request_transition<Simulator_screen>(std::move(impl.st));
                 return true;
             }
 
@@ -549,13 +598,15 @@ namespace {
         }
 
         switch (e.keysym.sym) {
-        case SDLK_DELETE:
-            action_try_delete_selection_from_model(impl.st->edited_model);
+        case SDLK_DELETE:  // DELETE: delete selection
+            action_try_delete_selection_from_edtied_model(*impl.st);
             return true;
         }
 
         return false;
     }
+
+    /* TODO: auto-update from file
 
     // handle what happens when the underlying model file changes
     void modeleditor_on_backing_file_changed(Model_editor_screen::Impl& impl) {
@@ -570,6 +621,7 @@ namespace {
             log::error("the file will not be loaded into osc (you won't see the change in the UI)");
         }
     }
+    */
 
     // handle what happens when a generic event arrives in the screen
     bool modeleditor_on_event(Model_editor_screen::Impl& impl, SDL_Event const& e) {
@@ -590,15 +642,18 @@ namespace {
     }
 
     // tick the screen forward
-    void modeleditor_tick(Model_editor_screen::Impl& impl) {
+    void modeleditor_tick(Model_editor_screen::Impl&) {
+        /* TODO: polling N files
         if (impl.file_poller.change_detected(impl.st->model().getInputFileName())) {
             modeleditor_on_backing_file_changed(impl);
         }
+        */
     }
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void draw_physicalframe_contextual_actions(
             Model_editor_screen::Impl& impl,
+            Undoable_ui_model& uim,
             OpenSim::PhysicalFrame& selection) {
 
         ImGui::Columns(2);
@@ -622,9 +677,9 @@ namespace {
         }
 
         if (auto attached = attach_geometry_popup::draw(impl.ui.attach_geometry_modal, modal_name); attached) {
-            impl.st->before_modifying_model();
+            uim.before_modifying_model();
             selection.attachGeometry(attached.release());
-            impl.st->after_modifying_model();
+            uim.after_modifying_model();
         }
         ImGui::NextColumn();
 
@@ -635,11 +690,11 @@ namespace {
             pof->setName(selection.getName() + "_offsetframe");
             pof->setParentFrame(selection);
 
-            impl.st->before_modifying_model();
+            uim.before_modifying_model();
             auto pofptr = pof.get();
             selection.addComponent(pof.release());
-            impl.st->set_selection(pofptr);
-            impl.st->after_modifying_model();
+            uim.set_selection(pofptr);
+            uim.after_modifying_model();
         }
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -802,8 +857,9 @@ namespace {
     }
 
     // draw contextual actions for selection
-    void draw_contextual_actions(Model_editor_screen::Impl& impl) {
-        if (!impl.st->selection()) {
+    void draw_contextual_actions(Model_editor_screen::Impl& impl, Undoable_ui_model& uim) {
+
+        if (!uim.selection()) {
             ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
             return;
         }
@@ -812,17 +868,17 @@ namespace {
         ImGui::TextUnformatted("isolate in visualizer");
         ImGui::NextColumn();
 
-        if (impl.st->selection() != impl.st->isolated()) {
+        if (uim.selection() != uim.isolated()) {
             if (ImGui::Button("isolate")) {
-                impl.st->before_modifying_model();
-                impl.st->set_isolated(impl.st->selection());
-                impl.st->after_modifying_model();
+                uim.before_modifying_model();
+                uim.set_isolated(uim.selection());
+                uim.after_modifying_model();
             }
         } else {
             if (ImGui::Button("clear isolation")) {
-                impl.st->before_modifying_model();
-                impl.st->set_isolated(nullptr);
-                impl.st->after_modifying_model();
+                uim.before_modifying_model();
+                uim.set_isolated(nullptr);
+                uim.after_modifying_model();
             }
         }
 
@@ -837,38 +893,36 @@ namespace {
         ImGui::NextColumn();
         ImGui::Columns();
 
-        if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(impl.st->selection()); frame) {
-            draw_physicalframe_contextual_actions(impl, *frame);
-        } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(impl.st->selection()); joint) {
-            draw_joint_contextual_actions(impl.st->edited_model, *joint);
-        } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(impl.st->selection()); hcf) {
-            draw_hcf_contextual_actions(impl.st->edited_model, *hcf);
-        } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(impl.st->selection()); pa) {
-            draw_pa_contextual_actions(impl.st->edited_model, *pa);
+        if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(uim.selection()); frame) {
+            draw_physicalframe_contextual_actions(impl, uim, *frame);
+        } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(uim.selection()); joint) {
+            draw_joint_contextual_actions(uim, *joint);
+        } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(uim.selection()); hcf) {
+            draw_hcf_contextual_actions(uim, *hcf);
+        } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(uim.selection()); pa) {
+            draw_pa_contextual_actions(uim, *pa);
         } else {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
             ImGui::Text(
-                "    (OpenSim::%s has no contextual actions)", impl.st->selection()->getConcreteClassName().c_str());
+                "    (OpenSim::%s has no contextual actions)", uim.selection()->getConcreteClassName().c_str());
             ImGui::PopStyleColor();
         }
     }
 
 
     // draw socket editor for current selection
-    void draw_socket_editor(Model_editor_screen::Impl& impl) {
+    void draw_socket_editor(Model_editor_screen::Impl& impl, Undoable_ui_model& uim) {
 
-        if (!impl.st->selection()) {
+        if (uim.selection()) {
             ImGui::TextUnformatted("cannot draw socket editor: selection is blank (shouldn't be)");
             return;
         }
 
-        OpenSim::Component& selection = *impl.st->selection();
-
-        std::vector<std::string> socknames = selection.getSocketNames();
+        std::vector<std::string> socknames = uim.selection()->getSocketNames();
 
         if (socknames.empty()) {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-            ImGui::Text("    (OpenSim::%s has no sockets)", impl.st->selection()->getConcreteClassName().c_str());
+            ImGui::Text("    (OpenSim::%s has no sockets)", uim.selection()->getConcreteClassName().c_str());
             ImGui::PopStyleColor();
             return;
         }
@@ -881,7 +935,7 @@ namespace {
             ImGui::TextUnformatted(sn.c_str());
             ImGui::NextColumn();
 
-            OpenSim::AbstractSocket const& socket = selection.getSocket(sn);
+            OpenSim::AbstractSocket const& socket = uim.selection()->getSocket(sn);
             std::string sockname = socket.getConnecteePath();
             std::string popupname = std::string{"reassign"} + sockname;
 
@@ -900,23 +954,23 @@ namespace {
             }
 
             if (OpenSim::Object const* connectee =
-                    ui::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), impl.st->model(), socket);
+                    ui::reassign_socket::draw(impl.ui.reassign_socket, popupname.c_str(), uim.model(), socket);
                 connectee) {
 
                 ImGui::CloseCurrentPopup();
 
                 OpenSim::Object const& existing = socket.getConnecteeAsObject();
+                uim.before_modifying_model();
                 try {
-                    impl.st->before_modifying_model();
-                    selection.updSocket(sn).connect(*connectee);
+                    uim.selection()->updSocket(sn).connect(*connectee);
                     impl.ui.reassign_socket.search[0] = '\0';
                     impl.ui.reassign_socket.error.clear();
                     ImGui::CloseCurrentPopup();
                 } catch (std::exception const& ex) {
                     impl.ui.reassign_socket.error = ex.what();
-                    selection.updSocket(sn).connect(existing);
+                    uim.selection()->updSocket(sn).connect(existing);
                 }
-                impl.st->after_modifying_model();
+                uim.after_modifying_model();
             }
 
             ImGui::NextColumn();
@@ -967,8 +1021,8 @@ namespace {
     }
 
     // draw editor for current selection
-    void draw_selection_editor(Model_editor_screen::Impl& impl) {
-        if (!impl.st->selection()) {
+    void draw_selection_editor(Model_editor_screen::Impl& impl, Undoable_ui_model& uim) {
+        if (!uim.selection()) {
             ImGui::TextUnformatted("(nothing selected)");
             return;
         }
@@ -978,14 +1032,14 @@ namespace {
         ImGui::SameLine();
         ui::help_marker::draw("Where the selected component is in the model's component hierarchy");
         ImGui::Separator();
-        draw_selection_breadcrumbs(impl.st->edited_model);
+        draw_selection_breadcrumbs(uim);
 
         ImGui::Dummy(ImVec2(0.0f, 2.0f));
         ImGui::TextUnformatted("top-level attributes:");
         ImGui::SameLine();
         ui::help_marker::draw("Top-level properties on the OpenSim::Component itself");
         ImGui::Separator();
-        draw_top_level_members_editor(impl.st->edited_model);
+        draw_top_level_members_editor(uim);
 
         // contextual actions
         ImGui::Dummy(ImVec2(0.0f, 2.0f));
@@ -993,10 +1047,10 @@ namespace {
         ImGui::SameLine();
         ui::help_marker::draw("Actions that are specific to the type of OpenSim::Component that is currently selected");
         ImGui::Separator();
-        draw_contextual_actions(impl);
+        draw_contextual_actions(impl, uim);
 
         // a contextual action may have changed this
-        if (!impl.st->selection()) {
+        if (!uim.selection()) {
             return;
         }
 
@@ -1008,11 +1062,11 @@ namespace {
             "Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
         ImGui::Separator();
         {
-            auto maybe_updater = properties_editor::draw(impl.ui.properties_editor, *impl.st->selection());
+            auto maybe_updater = properties_editor::draw(impl.ui.properties_editor, *uim.selection());
             if (maybe_updater) {
-                impl.st->before_modifying_model();
+                uim.before_modifying_model();
                 maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
-                impl.st->after_modifying_model();
+                uim.after_modifying_model();
             }
         }
 
@@ -1023,110 +1077,179 @@ namespace {
         ui::help_marker::draw(
             "What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
-        draw_socket_editor(impl);
+        draw_socket_editor(impl, uim);
     }
 
     // draw the "Actions" tab of the main (top) menu
-    void draw_main_menu_actions_tab(Model_editor_screen::Impl& impl) {
+    void draw_main_menu_edit_tab(Model_editor_screen::Impl& impl) {
+
+        if (!impl.st->focused_editor()) {
+            return;  // either a sim or the splash screen is shown
+        }
+
+        Undoable_ui_model& uim = *impl.st->focused_editor();
+
         if (ImGui::BeginMenu("Edit")) {
 
-            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, impl.st->can_undo())) {
-                action_undo(impl);
+            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, uim.can_undo())) {
+                action_undo_currently_edited_model(*impl.st);
             }
 
-            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, impl.st->can_redo())) {
-                action_redo(impl);
+            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, uim.can_redo())) {
+                action_redo_currently_edited_model(*impl.st);
             }
 
-            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, impl.st->isolated() != nullptr)) {
-                impl.st->set_isolated(nullptr);
+            if (ImGui::MenuItem(ICON_FA_EYE_SLASH " Clear Isolation", nullptr, false, uim.isolated())) {
+                uim.set_isolated(nullptr);
             }
+
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Clear currently isolation setting. This is effectively the opposite of 'Isolate'ing a component.");
-                if (impl.st->isolated() == nullptr) {
+                if (!uim.isolated()) {
                     ImGui::TextDisabled("\n(disabled because nothing is currently isolated)");
                 }
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
             }
 
-            if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, has_backing_file(impl.st->model()))) {
-                open_path_in_default_application(impl.st->model().getInputFileName());
+            if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, impl.st->focused_editor() && has_backing_file(impl.st->focused_editor()->model()))) {
+                open_path_in_default_application(uim.model().getInputFileName());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!has_backing_file(impl.st->model())) {
+                if (!has_backing_file(uim.model())) {
                     ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
                 }
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
             }
 
-            if (ImGui::BeginMenu("Utilities")) {
-                if (ImGui::MenuItem("Disable all wrapping surfaces")) {
-                    action_disable_all_wrapping_surfs(impl);
-                }
+            ImGui::EndMenu();
+        }
+    }
 
-                if (ImGui::MenuItem("Enable all wrapping surfaces")) {
-                    action_enable_all_wrapping_surfs(impl);
-                }
+    void draw_main_menu_simulate_tab(Model_editor_screen::Impl& impl) {
+        if (ImGui::BeginMenu("Tools")) {
+            if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R", impl.st->focused_editor())) {
+                // start new sim
+                auto sim = std::make_unique<Ui_simulation>(
+                    impl.st->focused_editor()->current,
+                    impl.st->sim_params);
 
-                ImGui::EndMenu();
+                // append it to tabs
+                impl.st->tabs.emplace_back(std::move(sim));
+                impl.st->cur_tab = static_cast<int>(impl.st->tabs.size()) - 1;
+
+                // TODO: any other transitioning
+                impl.reset_per_frame.subpanel_requested_early_exit = true;
+            }
+
+            if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings")) {
+                impl.reset_per_frame.edit_sim_params_requested = true;
+            }
+
+            if (ImGui::MenuItem("Disable all wrapping surfaces"), impl.st->focused_editor()) {
+                action_disable_all_wrapping_surfs(*impl.st);
+            }
+
+            if (ImGui::MenuItem("Enable all wrapping surfaces")) {
+                action_enable_all_wrapping_surfs(*impl.st);
             }
 
             ImGui::EndMenu();
         }
     }
 
-    // draws the screen's main menu
-    void draw_main_menu(Model_editor_screen::Impl& impl) {
-        if (!ImGui::BeginMainMenuBar()) {
-            return;
-        }
+    bool BeginSubmenuBar()
+    {
+        ImGuiContext& g = *GImGui;
+        ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
 
-        // draw "file" tab
-        ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
+        // Notify of viewport change so GetFrameHeight() can be accurate in case of DPI change
+        ImGui::SetCurrentViewport(NULL, viewport);
 
-        // draw "actions" tab
-        draw_main_menu_actions_tab(impl);
+        // For the main menu bar, which cannot be moved, we honor g.Style.DisplaySafeAreaPadding to ensure text can be visible on a TV set.
+        // FIXME: This could be generalized as an opt-in way to clamp window->DC.CursorStartPos to avoid SafeArea?
+        // FIXME: Consider removing support for safe area down the line... it's messy. Nowadays consoles have support for TV calibration in OS settings.
+        g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+        float height = ImGui::GetFrameHeight();
+        bool is_open = ImGui::BeginViewportSideBar("##SubMenuBar", viewport, ImGuiDir_Up, height, window_flags);
+        g.NextWindowData.MenuBarOffsetMinVal = ImVec2(0.0f, 0.0f);
 
-        // draw window tab
-        ui::main_menu::window_tab::draw(*impl.st);
-
-        // draw "about" tab
-        ui::main_menu::about_tab::draw();
-
-        ImGui::Dummy(ImVec2{2.0f, 0.0f});
-        if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)")) {
-            Application::current().request_transition<Simulator_screen>(std::move(impl.st));
-            ImGui::EndMainMenuBar();
-            impl.reset_per_frame.subpanel_requested_early_exit = true;
-            return;
-        }
-
-        // "switch to simulator" menu button
-        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)")) {
-            impl.st->start_simulating_edited_model();
-            Application::current().request_transition<Simulator_screen>(std::move(impl.st));
-            ImGui::PopStyleColor();
-            ImGui::EndMainMenuBar();
-            impl.reset_per_frame.subpanel_requested_early_exit = true;
-            return;
-        }
-        ImGui::PopStyleColor();
-
-        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings")) {
-            impl.reset_per_frame.edit_sim_params_requested = true;
-        }
-
-        ImGui::EndMainMenuBar();
+        if (is_open)
+            ImGui::BeginMenuBar();
+        else
+            ImGui::End();
+        return is_open;
     }
 
+
+    // draws the screen's main menu
+    void draw_main_menu(Model_editor_screen::Impl& impl) {
+        if (ImGui::BeginMainMenuBar()) {
+            ui::main_menu::file_tab::draw(impl.ui.main_menu_tab, impl.st);
+            draw_main_menu_edit_tab(impl);
+            draw_main_menu_simulate_tab(impl);
+            ui::main_menu::window_tab::draw(*impl.st);
+            ui::main_menu::about_tab::draw();
+
+            ImGui::EndMainMenuBar();
+        }
+
+        // submenu bar
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{0.0f, 5.0f});
+        ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.21f, 0.25f, 0.27f, 1.00f));
+        if (BeginSubmenuBar()) {
+            ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+            if (ImGui::MenuItem(ICON_FA_PLAY " Simulate (Ctrl+R)")) {
+                // start new sim
+                auto sim = std::make_unique<Ui_simulation>(
+                    impl.st->focused_editor()->current,
+                    impl.st->sim_params);
+
+                // append it to tabs
+                impl.st->tabs.emplace_back(std::move(sim));
+                impl.st->cur_tab = static_cast<int>(impl.st->tabs.size()) - 1;
+
+                // TODO: any other transitioning
+                impl.reset_per_frame.subpanel_requested_early_exit = true;
+                ImGui::PopStyleColor();
+                ImGui::PopStyleColor();
+                ImGui::PopStyleVar();
+                ImGui::EndMainMenuBar();
+                return;
+            }
+            ImGui::PopStyleColor();
+
+            if (ImGui::MenuItem(ICON_FA_EDIT " Switch to simulator (Ctrl+E)")) {
+                //Application::current().request_transition<Simulator_screen>(std::move(impl.st));
+                ImGui::PopStyleColor();
+                ImGui::PopStyleVar();
+                ImGui::EndMainMenuBar();
+                impl.reset_per_frame.subpanel_requested_early_exit = true;
+                return;
+            }
+
+            if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings")) {
+                impl.reset_per_frame.edit_sim_params_requested = true;
+            }
+
+            ImGui::EndMenuBar();
+        }
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
+
+        ImGui::Begin("##styled");
+        ImGui::ShowStyleEditor();
+        ImGui::End();
+    }
+
+    /*
     // draw right-click context menu for the 3D viewer
     void draw_3dviewer_context_menu(
             Model_editor_screen::Impl& impl,
@@ -1208,6 +1331,7 @@ namespace {
             ImGui::EndMenu();
         }
     }
+    */
 
     // draw a single 3D model viewer
     void draw_3dviewer(
@@ -1215,7 +1339,20 @@ namespace {
             Component_3d_viewer& viewer,
             char const* name) {
 
+        Main_editor_state& mes = *impl.st;
+
+        if (!mes.focused_tab()) {
+            return;  // no tab open
+        }
+
+        Editable_model_or_simulation& emos = *mes.focused_tab();
+
+        /*
+
+
+
         Component3DViewerResponse resp;
+
 
         if (impl.st->isolated()) {
             resp = viewer.draw(
@@ -1262,6 +1399,8 @@ namespace {
                 ImGui::EndPopup();
             }
         }
+
+        */
     }
 
     // draw all user-enabled 3D model viewers
@@ -1309,57 +1448,57 @@ namespace {
         // draw editor actions panel
         //
         // contains top-level actions (e.g. "add body")
-        if (impl.st->showing.actions) {
+        if (impl.st->focused_editor() && impl.st->shown_panels.actions) {
             if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
-                auto on_set_selection = [&](OpenSim::Component* c) { impl.st->set_selection(c); };
-                auto before_modify_model = [&]() { impl.st->before_modifying_model(); };
-                auto after_modify_model = [&]() { impl.st->after_modifying_model(); };
+                auto on_set_selection = [&](OpenSim::Component* c) { impl.st->focused_editor()->set_selection(c); };
+                auto before_modify_model = [&]() { impl.st->focused_editor()->before_modifying_model(); };
+                auto after_modify_model = [&]() { impl.st->focused_editor()->after_modifying_model(); };
                 ui::model_actions::draw(
-                    impl.ui.model_actions_panel, impl.st->model(), on_set_selection, before_modify_model, after_modify_model);
+                    impl.ui.model_actions_panel, impl.st->focused_editor()->model(), on_set_selection, before_modify_model, after_modify_model);
             }
             ImGui::End();
         }
 
         // draw hierarchy viewer
-        if (impl.st->showing.hierarchy) {
-            if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
+        if (impl.st->focused_editor() && impl.st->shown_panels.hierarchy) {
+            if (ImGui::Begin("Hierarchy", &impl.st->shown_panels.hierarchy)) {
                 auto resp = ui::component_hierarchy::draw(
-                    &impl.st->model().getRoot(),
-                    impl.st->selection(),
-                    impl.st->hovered());
+                    &impl.st->focused_editor()->model().getRoot(),
+                    impl.st->focused_editor()->selection(),
+                    impl.st->focused_editor()->hovered());
 
                 if (resp.type == component_hierarchy::SelectionChanged) {
-                    impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+                    impl.st->focused_editor()->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
                 } else if (resp.type == component_hierarchy::HoverChanged) {
-                    impl.st->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
+                    impl.st->focused_editor()->set_hovered(const_cast<OpenSim::Component*>(resp.ptr));
                 }
             }
             ImGui::End();
         }
 
         // draw selection details
-        if (impl.st->showing.selection_details) {
-            if (ImGui::Begin("Selection", &impl.st->showing.selection_details)) {
-                auto resp = component_details::draw(impl.st->state(), impl.st->selection());
+        if (impl.st->focused_editor() && impl.st->shown_panels.selection_details) {
+            if (ImGui::Begin("Selection", &impl.st->shown_panels.selection_details)) {
+                auto resp = component_details::draw(impl.st->focused_editor()->state(), impl.st->focused_editor()->selection());
 
                 if (resp.type == component_details::SelectionChanged) {
-                    impl.st->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
+                    impl.st->focused_editor()->set_selection(const_cast<OpenSim::Component*>(resp.ptr));
                 }
             }
             ImGui::End();
         }
 
         // draw property editor
-        if (impl.st->showing.property_editor) {
-            if (ImGui::Begin("Edit Props", &impl.st->showing.property_editor)) {
-                draw_selection_editor(impl);
+        if (impl.st->focused_editor() && impl.st->shown_panels.property_editor) {
+            if (ImGui::Begin("Edit Props", &impl.st->shown_panels.property_editor)) {
+                draw_selection_editor(impl, *impl.st->focused_editor());
             }
             ImGui::End();
         }
 
         // draw application log
-        if (impl.st->showing.log) {
-            if (ImGui::Begin("Log", &impl.st->showing.log, ImGuiWindowFlags_MenuBar)) {
+        if (impl.st->shown_panels.log) {
+            if (ImGui::Begin("Log", &impl.st->shown_panels.log, ImGuiWindowFlags_MenuBar)) {
                 ui::log_viewer::draw(impl.ui.log_viewer);
             }
             ImGui::End();
@@ -1379,8 +1518,8 @@ namespace {
         }
 
         // garbage-collect any models damaged by in-UI modifications (if applicable)
-        {
-            impl.st->clear_any_damaged_models();
+        if (impl.st->focused_editor()) {
+            impl.st->focused_editor()->clear_any_damaged_models();
         }
     }
 
@@ -1395,7 +1534,9 @@ namespace {
             log::error("message = %s", ex.what());
             log::error("this usually happens because the model was damaged by an edit (that the UI editor didn't account for)");
             log::error("attempting to rollback model to an earlier version and reset the UI into a sane state");
-            impl.st->edited_model.forcibly_rollback_to_earlier_state();
+            if (impl.st->focused_editor()) {
+                impl.st->focused_editor()->forcibly_rollback_to_earlier_state();
+            }
             Application::current().reset_imgui_state();
         }
     }
@@ -1404,21 +1545,13 @@ namespace {
 
 // public API
 
-Model_editor_screen::Model_editor_screen() : 
-    impl{new Impl(std::make_unique<Main_editor_state>())} {
-}
-
-Model_editor_screen::Model_editor_screen(std::unique_ptr<OpenSim::Model> _model) : 
-    impl{new Impl(std::make_unique<Main_editor_state>(std::move(_model)))} {
-}
-
-Model_editor_screen::Model_editor_screen(std::shared_ptr<Main_editor_state> st) :
+osc::Model_editor_screen::Model_editor_screen(std::shared_ptr<Main_editor_state> st) :
     impl{new Impl {std::move(st)}} {
 }
 
-Model_editor_screen::~Model_editor_screen() noexcept {
-    delete impl;
-}
+osc::Model_editor_screen::Model_editor_screen(Model_editor_screen&&) noexcept = default;
+osc::Model_editor_screen& osc::Model_editor_screen::operator=(Model_editor_screen&&) noexcept = default;
+osc::Model_editor_screen::~Model_editor_screen() noexcept = default;
 
 bool Model_editor_screen::on_event(SDL_Event const& e) {
     return ::modeleditor_on_event(*impl, e);

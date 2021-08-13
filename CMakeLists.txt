@@ -85,112 +85,128 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_build_config.hpp.in" "osc_bu
 add_executable(osc
     ${CMAKE_BINARY_DIR}/osc_build_config.hpp
 
+    src/3d/3d.hpp
+    src/3d/3d.cpp
+    src/3d/colormapped_plain_texture_shader.hpp
+    src/3d/colormapped_plain_texture_shader.cpp
+    src/3d/edge_detection_shader.hpp
+    src/3d/edge_detection_shader.cpp
     src/3d/gl.hpp
     src/3d/gl.cpp
     src/3d/gl_glm.hpp
-    src/3d/cameras.hpp
-    src/3d/cameras.cpp
-    src/3d/shaders.hpp
-    src/3d/3d.hpp
-    src/3d/3d.cpp
+    src/3d/gouraud_mrt_shader.hpp
+    src/3d/gouraud_mrt_shader.cpp
+    src/3d/instanced_renderer.hpp
+    src/3d/instanced_renderer.cpp
+    src/3d/normals_shader.hpp
+    src/3d/normals_shader.cpp
+    src/3d/plain_texture_shader.hpp
+    src/3d/plain_texture_shader.cpp
+    src/3d/skip_msxaa_blitter_shader.hpp
+    src/3d/skip_msxaa_blitter_shader.cpp
+
+    #src/opensim_bindings/simulation.hpp
+    #src/opensim_bindings/simulation.cpp
+    #src/opensim_bindings/type_registry.hpp
+    #src/opensim_bindings/type_registry.cpp
+    #src/opensim_bindings/opensim_helpers.hpp
+    #src/opensim_bindings/file_change_poller.hpp
+    #src/opensim_bindings/ui_types.hpp
+    #src/opensim_bindings/ui_types.cpp
 
     src/simtk_bindings/simtk_bindings.hpp
     src/simtk_bindings/simtk_bindings.cpp
 
-    src/opensim_bindings/simulation.hpp
-    src/opensim_bindings/simulation.cpp
-    src/opensim_bindings/type_registry.hpp
-    src/opensim_bindings/type_registry.cpp
-    src/opensim_bindings/opensim_helpers.hpp
-
-    src/ui/add_component_popup.hpp
-    src/ui/add_component_popup.cpp
-    src/ui/component_hierarchy.hpp
-    src/ui/component_hierarchy.cpp
-    src/ui/component_details.cpp
-    src/ui/component_details.hpp
-    src/ui/component_3d_viewer.hpp
-    src/ui/component_3d_viewer.cpp
-    src/ui/properties_editor.hpp
-    src/ui/properties_editor.cpp
-    src/ui/reassign_socket_popup.hpp
-    src/ui/reassign_socket_popup.cpp
-    src/ui/attach_geometry_popup.hpp
-    src/ui/attach_geometry_popup.cpp
-    src/ui/add_body_popup.hpp
-    src/ui/add_body_popup.cpp
+    #src/ui/add_component_popup.hpp
+    #src/ui/add_component_popup.cpp
+    #src/ui/component_hierarchy.hpp
+    #src/ui/component_hierarchy.cpp
+    #src/ui/component_details.cpp
+    #src/ui/component_details.hpp
+    #src/ui/component_3d_viewer.hpp
+    #src/ui/component_3d_viewer.cpp
+    #src/ui/properties_editor.hpp
+    #src/ui/properties_editor.cpp
+    #src/ui/reassign_socket_popup.hpp
+    #src/ui/reassign_socket_popup.cpp
+    #src/ui/attach_geometry_popup.hpp
+    #src/ui/attach_geometry_popup.cpp
+    #src/ui/add_body_popup.hpp
+    #src/ui/add_body_popup.cpp
     src/ui/log_viewer.hpp
     src/ui/log_viewer.cpp
-    src/ui/lockable_f3_editor.hpp
-    src/ui/lockable_f3_editor.cpp
-    src/ui/main_menu.hpp
-    src/ui/main_menu.cpp
-    src/ui/help_marker.hpp
-    src/ui/help_marker.cpp
-    src/ui/evenly_spaced_sparkline.hpp
-    src/ui/coordinate_editor.hpp
-    src/ui/coordinate_editor.cpp
-    src/ui/muscles_table.hpp
-    src/ui/muscles_table.cpp
-    src/ui/select_2_pfs_popup.hpp
-    src/ui/select_2_pfs_popup.cpp
-    src/ui/select_1_pf_popup.hpp
-    src/ui/select_1_pf_popup.cpp
-    src/ui/model_actions.hpp
-    src/ui/model_actions.cpp
-    src/ui/select_component_popup.hpp
-    src/ui/fd_params_editor_popup.hpp
-    src/ui/fd_params_editor_popup.cpp
-
-    src/screens/screen.hpp
+    #src/ui/lockable_f3_editor.hpp
+    #src/ui/lockable_f3_editor.cpp
+    #src/ui/main_menu.hpp
+    #src/ui/main_menu.cpp
+    #src/ui/help_marker.hpp
+    #src/ui/help_marker.cpp
+    #src/ui/evenly_spaced_sparkline.hpp
+    #src/ui/coordinate_editor.hpp
+    #src/ui/coordinate_editor.cpp
+    #src/ui/muscles_table.hpp
+    #src/ui/muscles_table.cpp
+    #src/ui/select_2_pfs_popup.hpp
+    #src/ui/select_2_pfs_popup.cpp
+    #src/ui/select_1_pf_popup.hpp
+    #src/ui/select_1_pf_popup.cpp
+    #src/ui/model_actions.hpp
+    #src/ui/model_actions.cpp
+    #src/ui/select_component_popup.hpp
+    #src/ui/fd_params_editor_popup.hpp
+    #src/ui/fd_params_editor_popup.cpp
+    #
     src/screens/error_screen.hpp
     src/screens/error_screen.cpp
-    src/screens/show_model_screen.hpp
-    src/screens/show_model_screen.cpp
-    src/screens/loading_screen.hpp
-    src/screens/loading_screen.cpp
-    src/screens/imgui_demo_screen.hpp
-    src/screens/imgui_demo_screen.cpp
     src/screens/experiments_screen.hpp
     src/screens/experiments_screen.cpp
-    src/screens/model_editor_screen.hpp
-    src/screens/model_editor_screen.cpp
-    src/screens/splash_screen.hpp
-    src/screens/splash_screen.cpp
-    src/screens/simulator_screen.hpp
-    src/screens/simulator_screen.cpp
-    src/screens/meshes_to_model_wizard_screen.hpp
-    src/screens/meshes_to_model_wizard_screen.cpp
+    src/screens/imgui_demo_screen.hpp
+    src/screens/imgui_demo_screen.cpp
+    src/screens/tut1_hellotriangle_screen.hpp
+    src/screens/tut1_hellotriangle_screen.cpp
+    src/screens/tut2_mesh_instance_meshdata_screen.hpp
+    src/screens/tut2_mesh_instance_meshdata_screen.cpp
+    src/screens/tut3_instanced_renderer_screen.hpp
+    src/screens/tut3_instanced_renderer_screen.cpp
+    src/screens/tut4_hittesting_screen.hpp
+    src/screens/tut4_hittesting_screen.cpp
+    src/screens/tut5_mesh_hittesting.hpp
+    src/screens/tut5_mesh_hittesting.cpp
+    #src/screens/meshes_to_model_wizard_screen.hpp
+    #src/screens/meshes_to_model_wizard_screen.cpp
+
+    #src/screens/loading_screen.hpp
+    #src/screens/loading_screen.cpp
+    #src/screens/model_editor_screen.hpp
+    #src/screens/model_editor_screen.cpp
+    #src/screens/splash_screen.hpp
+    #src/screens/splash_screen.cpp
 
     src/utils/algs.hpp
-    src/utils/concurrency.hpp
-    src/utils/spsc.hpp
-    src/utils/shims.hpp
-    src/utils/sdl_wrapper.hpp
-    src/utils/os.hpp
-    src/utils/os.cpp
-    src/utils/scope_guard.hpp
+    src/utils/checked_index.hpp
     src/utils/circular_buffer.hpp
-    src/utils/file_change_poller.hpp
+    src/utils/concurrency.hpp
     src/utils/helpers.hpp
     src/utils/helpers.cpp
+    src/utils/scope_guard.hpp
+    src/utils/sdl_wrapper.hpp
+    src/utils/shims.hpp
+    src/utils/spsc.hpp
     src/utils/stbi_wrapper.hpp
     src/utils/stbi_wrapper.cpp
 
-    src/main_editor_state.hpp
-    src/main_editor_state.cpp
-    src/styling.hpp
-    src/config.hpp
-    src/config.cpp
-    src/application.hpp
-    src/application.cpp
     src/log.hpp
     src/log.cpp
     src/assertions.hpp
     src/assertions.cpp
-    src/resources.hpp
-    src/resources.cpp
-    src/osc.cpp
+    src/os.hpp
+    src/os.cpp
+    src/config.hpp
+    src/config.cpp
+    src/app.hpp
+    src/app.cpp
+
+    src/osc2.cpp
 
     # Windows: also link a resources file (rc)
     #

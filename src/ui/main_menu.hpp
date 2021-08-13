@@ -15,8 +15,8 @@ namespace OpenSim {
 }
 
 namespace osc::ui::main_menu {
-    void action_new_model(std::shared_ptr<Main_editor_state> = nullptr);
-    void action_open_model(std::shared_ptr<Main_editor_state> = nullptr);
+    void action_new_model(std::shared_ptr<Main_editor_state>);
+    void action_open_model(std::shared_ptr<Main_editor_state>);
     void action_save(OpenSim::Model&);
     void action_save_as(OpenSim::Model&);
 
@@ -28,7 +28,7 @@ namespace osc::ui::main_menu {
             State();
         };
 
-        void draw(State&, std::shared_ptr<Main_editor_state> = nullptr);
+        void draw(State&, std::shared_ptr<Main_editor_state>);
     }
 
     namespace about_tab {

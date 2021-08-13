@@ -18,11 +18,11 @@ layout (location = 2) in vec2 aTexCoord;
 layout (location = 3) in mat4x3 aModelMat;
 layout (location = 7) in mat3 aNormalMat;
 layout (location = 10) in vec4 aRgba0;
-layout (location = 11) in vec3 aRgb1;
+layout (location = 11) in float aRimIntensity;
 
 out vec4 GouraudBrightness;
 out vec4 Rgba0;
-out vec3 Rgb1;
+out float RimIntensity;
 out vec2 TexCoord;
 
 const float ambientStrength = 0.5f;
@@ -57,6 +57,6 @@ void main() {
 
     GouraudBrightness = vec4(uLightColor * lightStrength, 1.0);
     Rgba0 = aRgba0;
-    Rgb1 = aRgb1;
+    RimIntensity = aRimIntensity;
     TexCoord = aTexCoord;
 }

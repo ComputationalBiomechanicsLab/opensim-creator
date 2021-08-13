@@ -1,28 +1,28 @@
 #include "imgui_demo_screen.hpp"
 
-#include "src/application.hpp"
-#include "src/screens/splash_screen.hpp"
-
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
+#include "src/app.hpp"
 #include <imgui.h>
 
 using namespace osc;
 
-bool Imgui_demo_screen::on_event(SDL_Event const& e) {
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        Application::current().request_transition<Splash_screen>();
-        return true;
+void osc::Imgui_demo_screen::on_mount() {
+    osc::ImGuiInit();
+}
+
+void osc::Imgui_demo_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
+void Imgui_demo_screen::on_event(SDL_Event const& e) {
+    if (osc::ImGuiOnEvent(e)) {
+        return;
     }
-
-    // osc::Application already pumps the event into ImGui
-
-    return false;
 }
 
 void Imgui_demo_screen::draw() {
-    // ImGui handles the state of this screen internally
+    osc::ImGuiNewFrame();
 
-    bool show_demo = true;
-    ImGui::ShowDemoWindow(&show_demo);
+    ImGui::ShowDemoWindow();
+
+    osc::ImGuiRender();
 }

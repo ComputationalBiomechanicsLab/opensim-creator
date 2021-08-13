@@ -1,14 +1,16 @@
 #pragma once
 
+#include "src/3d/instanced_renderer.hpp"
+
 #include <SimTKcommon.h>
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 
 #include <filesystem>
-#include <glm/vec3.hpp>
+#include <unordered_map>
 
 namespace osc {
     struct Untextured_mesh;
-    struct GPU_storage;
     struct Mesh_instance;
 }
 
@@ -62,14 +64,14 @@ namespace osc {
         // buffer where meshes are temporarily loaded before being uploaded to the GPU
         Untextured_mesh& mesh_swap;
 
-        // GPU storage that mesh data is loaded to/from
-        GPU_storage& gpu_cache;
+        // cache which mesh data can be free-wheeled from
+        std::unordered_map<std::string, std::shared_ptr<Mesh_instance_meshdata>>& mesh_cache;
 
         // matter subsystem for the model or SimTK system
         SimTK::SimbodyMatterSubsystem const& matter_subsys;
 
         // current state (of the subsystem)
-        SimTK::State const& state;
+        SimTK::State const& state;        
 
         // how much *some* geometry elements should be scaled by before being emitted
         //
@@ -81,21 +83,12 @@ namespace osc {
         float fixup_scale_factor;
 
     public:
-        constexpr Simbody_geometry_visitor(
+        Simbody_geometry_visitor(
             Untextured_mesh& _mesh_swap,
-            GPU_storage& _cache,
+            std::unordered_map<std::string, std::shared_ptr<Mesh_instance_meshdata>>& _mesh_cache,
             SimTK::SimbodyMatterSubsystem const& _matter,
             SimTK::State const& _state,
-            float _fixup_scale_factor) noexcept :
-
-            SimTK::DecorativeGeometryImplementation{},
-
-            mesh_swap{_mesh_swap},
-            gpu_cache{_cache},
-            matter_subsys{_matter},
-            state{_state},
-            fixup_scale_factor{_fixup_scale_factor} {
-        }
+            float _fixup_scale_factor);
 
     private:
         // called whenever the implementation emits a mesh instance

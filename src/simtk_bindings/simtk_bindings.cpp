@@ -146,7 +146,11 @@ namespace {
             }
         }
 
-        generate_1to1_indices_for_verts(out);
+        out.indices.clear();
+        out.indices.reserve(out.verts.size());
+        for (size_t i = 0; i < out.verts.size(); ++i) {
+            out.indices.push_back(static_cast<GLushort>(i));
+        }
     }
 
     Transform ground_to_decoration_xform(
@@ -256,6 +260,23 @@ SimTK::Transform osc::std_mat4_to_xform(glm::mat4 const& m) noexcept {
 
     return SimTK::Transform{rot, translation};
 }
+
+/*
+osc::Simbody_geometry_visitor::Simbody_geometry_visitor(
+        Untextured_mesh& _mesh_swap,
+        std::unordered_map<std::string, std::shared_ptr<Mesh_instance_meshdata>>& _mesh_cache,
+        SimTK::SimbodyMatterSubsystem const& _matter,
+        SimTK::State const& _state,
+        float _fixup_scale_factor) :
+
+           SimTK::DecorativeGeometryImplementation{},
+
+           mesh_swap{_mesh_swap},
+           mesh_cache{_mesh_cache},
+           matter_subsys{_matter},
+           state{_state},
+           fixup_scale_factor{_fixup_scale_factor} {
+       }
 
 void Simbody_geometry_visitor::implementPointGeometry(SimTK::DecorativePoint const&) {
     static bool shown_nyi_warning = []() {
@@ -457,3 +478,4 @@ void Simbody_geometry_visitor::implementConeGeometry(SimTK::DecorativeCone const
     }();
     (void)shown_nyi_warning;
 }
+*/

@@ -218,6 +218,7 @@ void osc::install_backtrace_handler() {
 
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
 #include <cinttypes>  // PRIXPTR
+#include <signal.h>   // signal()
 
 void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     constexpr size_t skipped_frames = 0;
@@ -272,9 +273,21 @@ static LONG crash_handler(EXCEPTION_POINTERS* info) {
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+static void signal_handler(int signal) {
+    osc::log::error("signal caught by OSC: printing backtrace");
+    osc::write_backtrace_to_log(osc::log::level::err);
+}
+
 void osc::install_backtrace_handler() {
-    SetErrorMode(0);  // system default: display all errors
-    SetUnhandledExceptionFilter(crash_handler);  // when the application crashes, call this handler
+    // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
+
+    // system default: display all errors
+    SetErrorMode(0);
+
+    // when the application crashes due to an exception, call this handler
+    SetUnhandledExceptionFilter(crash_handler);
+
+    signal(SIGABRT, signal_handler);
 }
 #endif
 

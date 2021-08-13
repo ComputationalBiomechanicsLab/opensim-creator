@@ -2,6 +2,8 @@
 
 #include "src/screens/screen.hpp"
 
+#include <SDL_events.h>
+
 #include <memory>
 
 namespace osc {
@@ -13,15 +15,11 @@ namespace osc {
     public:
         struct Impl;
     private:
-        Impl* impl;
+        std::unique_ptr<Impl> impl;
 
     public:
         Simulator_screen(std::shared_ptr<Main_editor_state>);
-        Simulator_screen(Simulator_screen const&) = delete;
-        Simulator_screen(Simulator_screen&&) = delete;
-        Simulator_screen& operator=(Simulator_screen const&) = delete;
-        Simulator_screen& operator=(Simulator_screen&&) = delete;
-        ~Simulator_screen() noexcept;
+        ~Simulator_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;
         void tick(float) override;

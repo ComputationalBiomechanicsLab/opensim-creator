@@ -31,12 +31,13 @@ const float kernel[9] = float[](
 );
 
 void main(void) {
+
     float rimStrength = 0.0;
     for (int i = 0; i < 9; ++i) {
         vec2 offset = uRimThickness * offsets[i];
         vec2 coord = TexCoord + offset;
 
-        rimStrength += kernel[i] * texture(uSampler0, coord).b;
+        rimStrength += kernel[i] * texture(uSampler0, coord).r;
     }
 
     // the kernel:
@@ -47,6 +48,5 @@ void main(void) {
     // rimStrength = abs(rimStrength);  // if you want inner edge, but it's buggy
     rimStrength = clamp(rimStrength, 0.0, 1.0);
 
-    // alpha-over the compose the bg (sampler 1) behind the rims (sampler 0)
     FragColor = rimStrength * uRimRgba;
 }

@@ -38,11 +38,7 @@ namespace {
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
         if (result == NFD_OKAY) {
-            if (st) {
-                Application::current().request_transition<Loading_screen>(st, outpath);
-            } else {
-                Application::current().request_transition<Loading_screen>(outpath);
-            }
+            Application::current().request_transition<Loading_screen>(st, outpath);
         }
     }
 
@@ -113,11 +109,7 @@ namespace {
     }
 
     void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
-        if (st) {
-            Application::current().request_transition<Loading_screen>(st, p);
-        } else {
-            Application::current().request_transition<Loading_screen>(p);
-        }
+        Application::current().request_transition<Loading_screen>(st, p);
     }
 
     std::unique_ptr<Component_3d_viewer> create_3dviewer() {
@@ -346,17 +338,17 @@ void osc::ui::main_menu::about_tab::draw() {
     ImGui::EndMenu();
 }
 
-void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> st) {
-    if (st) {
-        st->edited_model = Undoable_ui_model{std::make_unique<OpenSim::Model>()};
-        Application::current().request_transition<Model_editor_screen>(st);
-    } else {
-        Application::current().request_transition<Model_editor_screen>();
-    }
+void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> mes) {
+    OSC_ASSERT(mes && "editor state should be set");
+
+    mes->tabs.emplace_back(std::make_unique<Undoable_ui_model>(std::make_unique<OpenSim::Model>()));
+    mes->cur_tab = static_cast<int>(mes->tabs.size()) - 1;
+    Application::current().request_transition<Model_editor_screen>(mes);
 }
 
-void osc::ui::main_menu::action_open_model(std::shared_ptr<Main_editor_state> st) {
-    do_open_file_via_dialog(st);
+void osc::ui::main_menu::action_open_model(std::shared_ptr<Main_editor_state> mes) {
+    OSC_ASSERT(mes && "editor state should be set");
+    do_open_file_via_dialog(mes);
 }
 
 void osc::ui::main_menu::action_save(OpenSim::Model& model) {
@@ -375,29 +367,31 @@ void osc::ui::main_menu::action_save_as(OpenSim::Model& model) {
     }
 }
 
-void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> editor_state) {
+void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> mes) {
+    OSC_ASSERT(mes && "editor state should be set");
+
     // handle hotkeys enabled by just drawing the menu
     { 
         auto const& io = ImGui::GetIO();
         bool mod = io.KeyCtrl || io.KeySuper;
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N)) {
-            action_new_model(editor_state);
+            action_new_model(mes);
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O)) {
-            action_open_model(editor_state);
+            action_open_model(mes);
         }
 
-        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            action_save(editor_state->model());
+        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_S) && mes->focused_editor()) {
+            action_save(mes->focused_editor()->model());
         }
 
-        if (editor_state && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            action_save_as(editor_state->model());
+        if (mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S) && mes->focused_editor()) {
+            action_save_as(mes->focused_editor()->model());
         }
 
-        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
+        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
             Application::current().request_transition<Splash_screen>();
         }
 
@@ -411,11 +405,11 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
     }
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N")) {
-        action_new_model(editor_state);
+        action_new_model(mes);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O")) {
-        action_open_model(editor_state);
+        action_open_model(mes);
     }
 
     int imgui_id = 0;
@@ -426,7 +420,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
             Recent_file const& rf = *it;
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str())) {
-                transition_to_loading_existing_path(editor_state, rf.path);
+                transition_to_loading_existing_path(mes, rf.path);
             }
             ImGui::PopID();
         }
@@ -438,7 +432,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         for (std::filesystem::path const& ex : st.example_osims) {
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str())) {
-                transition_to_loading_existing_path(editor_state, ex);
+                transition_to_loading_existing_path(mes, ex);
             }
             ImGui::PopID();
         }
@@ -446,19 +440,15 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         ImGui::EndMenu();
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, editor_state != nullptr)) {
-        if (editor_state) {
-            action_save(editor_state->model());
-        }
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, mes->focused_editor())) {
+        action_save(mes->focused_editor()->model());
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
-        if (editor_state) {
-            action_save_as(editor_state->model());
-        }
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, mes->focused_editor())) {
+        action_save_as(mes->focused_editor()->model());
     }
 
-    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
+    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, mes != nullptr)) {
         Application::current().request_transition<Splash_screen>();
     }
 
@@ -469,32 +459,40 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
 }
 
 void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
+
     // draw "window" tab
     if (ImGui::BeginMenu("Window")) {
 
-        ImGui::MenuItem("Actions", nullptr, &st.showing.actions);
+        ImGui::MenuItem("Actions", nullptr, &st.shown_panels.actions);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");
             ImGui::EndTooltip();
         }
-        ImGui::MenuItem("Hierarchy", nullptr, &st.showing.hierarchy);
-        ImGui::MenuItem("Log", nullptr, &st.showing.log);
-        ImGui::MenuItem("Outputs", nullptr, &st.showing.outputs);
-        ImGui::MenuItem("Property Editor", nullptr, &st.showing.property_editor);
+
+        ImGui::MenuItem("Hierarchy", nullptr, &st.shown_panels.hierarchy);
+
+        ImGui::MenuItem("Log", nullptr, &st.shown_panels.log);
+
+        ImGui::MenuItem("Outputs", nullptr, &st.shown_panels.outputs);
+
+        ImGui::MenuItem("Property Editor", nullptr, &st.shown_panels.property_editor);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");
             ImGui::EndTooltip();
         }
-        ImGui::MenuItem("Selection Details", nullptr, &st.showing.selection_details);
-        ImGui::MenuItem("Simulations", nullptr, &st.showing.simulations);
+
+        ImGui::MenuItem("Selection Details", nullptr, &st.shown_panels.selection_details);
+
+        ImGui::MenuItem("Simulations", nullptr, &st.shown_panels.simulations);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when simulating a model");
             ImGui::EndTooltip();
         }
-        ImGui::MenuItem("Simulation Stats", nullptr, &st.showing.simulation_stats);
+
+        ImGui::MenuItem("Simulation Stats", nullptr, &st.shown_panels.simulation_stats);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");

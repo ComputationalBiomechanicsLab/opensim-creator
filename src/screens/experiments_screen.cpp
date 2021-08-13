@@ -1,13 +1,14 @@
 #include "experiments_screen.hpp"
 
+#include "src/app.hpp"
+#include "src/3d/3d.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
-#include "src/application.hpp"
-#include "src/resources.hpp"
-#include "src/screens/splash_screen.hpp"
-#include "src/screens/meshes_to_model_wizard_screen.hpp"
 #include "src/utils/helpers.hpp"
-#include "src/3d/cameras.hpp"
+
+
+//#include "src/screens/splash_screen.hpp"
+//#include "src/screens/meshes_to_model_wizard_screen.hpp"
 
 #include <GL/glew.h>
 #include <SDL_keyboard.h>
@@ -28,6 +29,10 @@ using namespace osc;
 // private impl details
 namespace {
 
+    std::string slurp(char const* resource) {
+        return slurp_into_string(App::resource(resource));
+    }
+
     struct Basic_vert {
         glm::vec3 pos;
     };
@@ -41,8 +46,8 @@ namespace {
     // basic shader that colors primitives with no shading
     struct Plain_color_shader final {
         gl::Program p = gl::CreateProgramFrom(
-            gl::CompileFromSource<gl::Vertex_shader>(slurp_resource("shaders/plain_color.vert")),
-            gl::CompileFromSource<gl::Fragment_shader>(slurp_resource("shaders/plain_color.frag")));
+            gl::CompileFromSource<gl::Vertex_shader>(slurp("shaders/plain_color.vert")),
+            gl::CompileFromSource<gl::Fragment_shader>(slurp("shaders/plain_color.frag")));
 
         static constexpr gl::Attribute_vec3 aPos{0};
 
@@ -72,15 +77,32 @@ namespace {
         gl::Vertex_array vao = Plain_color_shader::create_vao(vbo);
         float rgb[3]{1.0f, 0.0f, 0.0f};
 
-        bool on_event(SDL_Event const& e) override {
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-                Application::current().request_transition<Experiments_screen>();
-                return true;
+        void on_mount() override {
+            osc::ImGuiInit();
+        }
+
+        void on_unmount() override {
+            osc::ImGuiShutdown();
+        }
+
+        void on_event(SDL_Event const& e) override {
+            if (osc::ImGuiOnEvent(e)) {
+                return;
             }
-            return false;
+
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                // TODO
+                //Application::current().request_transition<Experiments_screen>();
+                return;
+            }
         }
 
         void draw() override {
+            gl::Viewport(0, 0, App::cur().idims().x, App::cur().idims().y);
+            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            osc::ImGuiNewFrame();
+
             if (ImGui::Begin("editor")) {
                 ImGui::ColorEdit3("rgb", rgb);
                 ImGui::End();
@@ -94,6 +116,8 @@ namespace {
             gl::BindVertexArray(vao);
             gl::DrawArrays(GL_TRIANGLES, 0, vbo.sizei());
             gl::BindVertexArray();
+
+            osc::ImGuiRender();
         }
     };
 
@@ -111,24 +135,38 @@ namespace {
         bool translate = false;
         glm::mat4 cube_mtx{1.0f};
 
-        bool on_event(SDL_Event const& e) override {
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-                Application::current().request_transition<Experiments_screen>();
-                return true;
+        void on_mount() override {
+            osc::ImGuiInit();
+        }
+
+        void on_unmount() override {
+            osc::ImGuiShutdown();
+        }
+
+        void on_event(SDL_Event const& e) override {
+            if (osc::ImGuiOnEvent(e)) {
+                return;
             }
-            return false;
+
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                // TODO
+                //Application::current().request_transition<Experiments_screen>();
+                return;
+            }
         }
 
         void draw() override {
+            osc::ImGuiNewFrame();
+
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl::Clear(GL_COLOR_BUFFER_BIT);
 
-            glm::mat4 view = view_matrix(camera);
-            auto [w, h] = Application::current().window_dimensionsf();
-            glm::mat4 projection = projection_matrix(camera, w/h);
+            glm::mat4 view = camera.view_matrix();
+            glm::vec2 dims = App::cur().dims();
+            glm::mat4 projection = camera.projection_matrix(dims.x/dims.y);
 
             ImGuizmo::BeginFrame();
-            ImGuizmo::SetRect(0, 0, w, h);
+            ImGuizmo::SetRect(0, 0, dims.x, dims.y);
             glm::mat4 identity{1.0f};
             ImGuizmo::DrawGrid(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(identity), 100.f);
             ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(cube_mtx), 1);
@@ -145,6 +183,8 @@ namespace {
                 NULL, //&snap[0],   // snap
                 NULL,   // bound sizing?
                 NULL);  // bound sizing snap
+
+            osc::ImGuiRender();
         }
     };
 }
@@ -153,60 +193,65 @@ namespace {
 struct Experiments_screen::Impl final {
 };
 
-// private impl details for the experiments screen
-namespace {
-
-    // pump events into experiment screen
-    [[nodiscard]] bool experiments_on_event(osc::Experiments_screen::Impl&, SDL_Event const& e) {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            Application::current().request_transition<osc::Splash_screen>();
-            return true;
-        }
-        return false;
-    }
-
-    // draw experiments screen
-    void experiments_draw(osc::Experiments_screen::Impl&) {
-        auto [w, h] = Application::current().window_dimensionsf();
-        glm::vec2 window_dims{w, h};
-        glm::vec2 menu_dims = {700.0f, 500.0f};
-
-        // center the menu
-        {
-            glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
-            ImGui::SetNextWindowPos(menu_pos);
-            ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
-            ImGui::SetNextWindowSizeConstraints(menu_dims, menu_dims);
-        }
-
-        ImGui::Begin("select experiment");
-
-        if (ImGui::Button("OpenGl: hello triangle")){
-            Application::current().request_transition<Triangle_test_screen>();
-        }
-
-        if (ImGui::Button("OpenSim: Meshes to model wizard")) {
-            Application::current().request_transition<Meshes_to_model_wizard_screen>();
-        }
-
-        if (ImGui::Button("ImGuizmo test screen")) {
-            Application::current().request_transition<ImGuizmo_test_screen>();
-        }
-
-        ImGui::End();
-    }
-}
-
 // public API
 
-Experiments_screen::Experiments_screen() : impl{new Impl{}} {
+osc::Experiments_screen::Experiments_screen() : impl{new Impl{}} {
 }
 
-Experiments_screen::~Experiments_screen() noexcept = default;
+osc::Experiments_screen::~Experiments_screen() noexcept = default;
 
-bool Experiments_screen::on_event(SDL_Event const& e) {
-    return ::experiments_on_event(*impl, e);
+void osc::Experiments_screen::on_mount() {
+    osc::ImGuiInit();
 }
+
+void osc::Experiments_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
+void osc::Experiments_screen::on_event(SDL_Event const& e) {
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        // TODO
+        //Application::current().request_transition<osc::Splash_screen>();
+        return;
+    }
+}
+
 void Experiments_screen::draw() {
-    ::experiments_draw(*impl);
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    osc::ImGuiNewFrame();
+
+    glm::vec2 dims = App::cur().dims();
+    glm::vec2 menu_dims = {700.0f, 500.0f};
+
+    // center the menu
+    {
+        glm::vec2 menu_pos = (dims - menu_dims) / 2.0f;
+        ImGui::SetNextWindowPos(menu_pos);
+        ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
+        ImGui::SetNextWindowSizeConstraints(menu_dims, menu_dims);
+    }
+
+    ImGui::Begin("select experiment");
+
+    if (ImGui::Button("OpenGl: hello triangle")) {
+        App::cur().request_transition<Triangle_test_screen>();
+    }
+
+    if (ImGui::Button("OpenSim: Meshes to model wizard")) {
+        // TODO
+        // Application::current().request_transition<Meshes_to_model_wizard_screen>();
+    }
+
+    if (ImGui::Button("ImGuizmo test screen")) {
+        App::cur().request_transition<ImGuizmo_test_screen>();
+    }
+
+    ImGui::End();
+
+    osc::ImGuiRender();
 }

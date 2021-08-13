@@ -15,6 +15,7 @@
 #include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/shims.hpp"
+#include "src/main_editor_state.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -38,6 +39,7 @@ namespace fs = std::filesystem;
 using namespace osc;
 
 namespace {
+
     inline constexpr float pi_f = osc::numbers::pi_v<float>;
 
     Drawlist create_drawlist_with_chequered_floor() {
@@ -98,6 +100,13 @@ struct Splash_screen::Impl final {
     Drawlist drawlist = create_drawlist_with_chequered_floor();
     Render_target render_target;
     Polar_perspective_camera camera;
+
+    // top-level UI state that's shared between screens
+    std::shared_ptr<Main_editor_state> mes;
+
+    Impl(std::shared_ptr<Main_editor_state> mes_) : mes{std::move(mes_)} {
+        log::info("splash screen constructed");
+    }
 };
 
 // private Impl-related functions
@@ -148,7 +157,7 @@ namespace {
         }
 
         if (ImGui::BeginMainMenuBar()) {
-            ui::main_menu::file_tab::draw(impl.mm_state);
+            ui::main_menu::file_tab::draw(impl.mm_state, impl.mes);
             ui::main_menu::about_tab::draw();
             ImGui::EndMainMenuBar();
         }
@@ -169,7 +178,7 @@ namespace {
                 ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
-                    ui::main_menu::action_new_model();
+                    ui::main_menu::action_new_model(impl.mes);
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -179,7 +188,7 @@ namespace {
             // `open` button
             {
                 if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
-                    ui::main_menu::action_open_model();
+                    ui::main_menu::action_open_model(impl.mes);
                 }
             }
 
@@ -201,7 +210,7 @@ namespace {
                     Recent_file const& rf = *it;
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str())) {
-                        app.request_transition<osc::Loading_screen>(rf.path);
+                        app.request_transition<osc::Loading_screen>(impl.mes, rf.path);
                     }
                     ImGui::PopID();
                 }
@@ -223,7 +232,7 @@ namespace {
                 for (fs::path const& ex : impl.mm_state.example_osims) {
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str())) {
-                        app.request_transition<osc::Loading_screen>(ex);
+                        app.request_transition<osc::Loading_screen>(impl.mes, ex);
                     }
                     ImGui::PopID();
                 }
@@ -273,12 +282,15 @@ namespace {
 
 // public API
 
-osc::Splash_screen::Splash_screen() : impl{new Impl{}} {
+osc::Splash_screen::Splash_screen() :
+    impl{new Impl{std::make_shared<Main_editor_state>()}} {
 }
 
-osc::Splash_screen::~Splash_screen() noexcept {
-    delete impl;
+osc::Splash_screen::Splash_screen(std::shared_ptr<Main_editor_state> mes_) :
+    impl{new Impl{std::move(mes_)}} {
 }
+
+osc::Splash_screen::~Splash_screen() noexcept = default;
 
 void osc::Splash_screen::tick(float dt) {
     ::splashscreen_tick(*impl, dt);

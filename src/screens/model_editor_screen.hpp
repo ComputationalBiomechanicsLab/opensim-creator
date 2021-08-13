@@ -1,14 +1,8 @@
 #pragma once
 
-#include "src/screens/screen.hpp"
-
 #include <SDL_events.h>
 
 #include <memory>
-
-namespace OpenSim {
-    class Model;
-}
 
 namespace osc {
     struct Main_editor_state;
@@ -23,26 +17,15 @@ namespace osc {
     public:
         struct Impl;
     private:
-        Impl* impl;
+        std::unique_ptr<Impl> impl;
 
     public:
-        // create the screen with a new model
-        Model_editor_screen();
-
-        // create the screen with an existing model
-        Model_editor_screen(std::unique_ptr<OpenSim::Model>);
-
-        // create the screen with existing top-level state
-        //
-        // this enables transitioning between top-level screens while
-        // maintaining useful state between them (simulations, open panels,
-        // undo/redo, etc.)
         Model_editor_screen(std::shared_ptr<Main_editor_state>);
 
         Model_editor_screen(Model_editor_screen const&) = delete;
-        Model_editor_screen(Model_editor_screen&&) = delete;
+        Model_editor_screen(Model_editor_screen&&) noexcept;
         Model_editor_screen& operator=(Model_editor_screen const&) = delete;
-        Model_editor_screen& operator=(Model_editor_screen&&) = delete;
+        Model_editor_screen& operator=(Model_editor_screen&&) noexcept;
         ~Model_editor_screen() noexcept override;
 
         bool on_event(SDL_Event const&) override;

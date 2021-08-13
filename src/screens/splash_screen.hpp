@@ -2,7 +2,11 @@
 
 #include "src/screens/screen.hpp"
 
-#include <SDL_events.h>
+#include <memory>
+
+namespace osc {
+    struct Main_editor_state;
+}
 
 namespace osc {
 
@@ -13,14 +17,15 @@ namespace osc {
     public:
         struct Impl;
     private:
-        Impl* impl;
+        std::unique_ptr<Impl> impl;
 
     public:
+        // creates a fresh main editor state
         Splash_screen();
-        Splash_screen(Splash_screen const&) = delete;
-        Splash_screen(Splash_screen&&) = delete;
-        Splash_screen& operator=(Splash_screen const&) = delete;
-        Splash_screen& operator=(Splash_screen&&) = delete;
+
+        // recycles an existing main editor state (so the user's tabs etc. persist)
+        Splash_screen(std::shared_ptr<Main_editor_state>);
+
         ~Splash_screen() noexcept override;
 
         void tick(float) override;

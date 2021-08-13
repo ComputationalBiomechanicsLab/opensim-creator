@@ -18,22 +18,13 @@ namespace osc {
     public:
         struct Impl;
     private:
-        Impl* impl;
+        std::unique_ptr<Impl> impl;
 
     public:
         // load the supplied path (assumed to be an .osim) and then transition
         // to the editor screen
-        Loading_screen(std::filesystem::path);
-
-        // as above, but also recycles a top-level editor state so that the editor
-        // "remembers" information (e.g. previously running sims)
         Loading_screen(std::shared_ptr<Main_editor_state>, std::filesystem::path);
-
-        Loading_screen(Loading_screen const&) = delete;
         ~Loading_screen() noexcept override;
-
-        Loading_screen& operator=(Loading_screen const&) = delete;
-        Loading_screen& operator=(Loading_screen&&) = delete;
 
         bool on_event(SDL_Event const&) override;
         void tick(float) override;

@@ -1,7 +1,7 @@
-#include "main_editor_state.hpp"
+#include "ui_types.hpp"
 
 #include "src/log.hpp"
-#include "src/ui/component_3d_viewer.hpp"
+#include "src/opensim_bindings/simulation.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Component.h>
@@ -95,7 +95,7 @@ namespace {
         rollback_model_to_earlier_state(uim);
     }
 
-    fd::Simulation create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, fd::Params const& p) {
+    std::unique_ptr<fd::Simulation> create_fd_sim(OpenSim::Model const& m, SimTK::State const& s, fd::Params const& p) {
         auto model_copy = std::make_unique<OpenSim::Model>(m);
         auto state_copy = std::make_unique<SimTK::State>(s);
 
@@ -108,7 +108,7 @@ namespace {
         auto sim_input = std::make_unique<fd::Input>(std::move(model_copy), std::move(state_copy));
         sim_input->params = p;
 
-        return fd::Simulation{std::move(sim_input)};
+        return std::make_unique<fd::Simulation>(std::move(sim_input));
     }
 
     std::unique_ptr<OpenSim::Model> create_initialized_model(OpenSim::Model const& m) {
@@ -327,6 +327,12 @@ void osc::Undoable_ui_model::forcibly_rollback_to_earlier_state() {
     rollback_model_to_earlier_state(*this);
 }
 
+void osc::Undoable_ui_model::clear_any_damaged_models() {
+    if (damaged) {
+        log::error("destructing damaged model");
+        damaged = std::nullopt;
+    }
+}
 
 osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s, fd::Params const& p) :
     simulation{create_fd_sim(m, s, p)},
@@ -338,6 +344,10 @@ osc::Ui_simulation::Ui_simulation(OpenSim::Model const& m, SimTK::State const& s
 osc::Ui_simulation::Ui_simulation(Ui_model const& uim, fd::Params const& p) :
     Ui_simulation{*uim.model, *uim.state, p} {
 }
+
+osc::Ui_simulation::Ui_simulation(Ui_simulation&&) noexcept = default;
+osc::Ui_simulation::~Ui_simulation() noexcept = default;
+osc::Ui_simulation& osc::Ui_simulation::operator=(Ui_simulation&&) noexcept = default;
 
 std::vector<Plottable_output_subfield> const& osc::get_subfields(
         OpenSim::AbstractOutput const& ao) {
@@ -378,23 +388,4 @@ osc::Desired_output::Desired_output(
     if (pls.parent_typehash != typehash) {
         throw std::runtime_error{"output subfield mismatch: the provided Plottable_output_field does not match the provided AbstractOutput: this is a developer error"};
     }
-}
-
-
-osc::Main_editor_state::Main_editor_state() : 
-    Main_editor_state{std::make_unique<OpenSim::Model>()} {
-}
-
-osc::Main_editor_state::Main_editor_state(std::unique_ptr<OpenSim::Model> model) :
-    edited_model{std::move(model)},
-    simulations{},
-    focused_simulation{-1},
-    focused_simulation_scrubbing_time{-1.0f},
-    desired_outputs{},
-    sim_params{},
-    viewers{create_3dviewer(), nullptr, nullptr, nullptr} {
-}
-
-void osc::Main_editor_state::set_model(std::unique_ptr<OpenSim::Model> new_model) {
-    edited_model.set_model(std::move(new_model));
 }

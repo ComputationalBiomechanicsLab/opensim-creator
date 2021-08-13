@@ -2,6 +2,7 @@
 
 #include "src/config.hpp"
 #include "src/log.hpp"
+#include "src/main_editor_state.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/utils/os.hpp"
@@ -46,6 +47,51 @@ class Opensim_log_sink final : public OpenSim::LogSink {
     void sinkImpl(std::string const& msg) override {
         osc::log::info("%s", msg.c_str());
     }
+};
+
+
+// HACK
+#include "src/screens/meshes_to_model_wizard_screen.hpp"
+static std::vector<std::filesystem::path> g_HACK_meshes = {
+    /*
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\brandon-pratt-model\\femur_mesh_unscaled.stl",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\brandon-pratt-model\\tibia_mesh_unscaled.stl",
+        */
+
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\brandon-pratt-model\\femur_mesh_scaled.stl",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\brandon-pratt-model\\tibia_mesh_scaled.stl",
+
+    /*
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_1mc.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_2distph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_2mc.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_2midph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_2proxph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_3distph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_3mc.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_3midph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_3proxph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_4distph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_4mc.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_4midph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_4proxph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_5distph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_5mc.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_5midph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_5proxph.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_capitate.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_hamate.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_lunate.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_pisiform.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_radius.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_scaphoid.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_thumbdist.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_thumbprox.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_trapezium.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_trapezoid.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_triquetrum.vtp",
+    "C:\\Users\\adamk\\OneDrive\\Desktop\\osmv\\resources\\geometry\\arm_r_ulna.vtp"
+        */
 };
 
 int main(int argc, char** argv) {
@@ -136,13 +182,19 @@ int main(int argc, char** argv) {
     osc::Application::set_current(&app);
 
     try {
+        if (false) {
+        app.show(std::make_unique<Meshes_to_model_wizard_screen>(g_HACK_meshes));
+        }
+        else {
+
         if (argc <= 0) {
             // no args: show splash screen
             app.show<osc::Splash_screen>();
         } else {
             // args: load args as osim files
-            app.show<osc::Loading_screen>(argv[0]);
-        }
+            auto mes = std::make_shared<Main_editor_state>();
+            app.show<osc::Loading_screen>(mes, argv[0]);
+        }        }
     } catch (std::exception const& ex) {
         osc::log::error("osc: encountered fatal exception: %s", ex.what());
         osc::log::error("osc: terminating due to fatal exception");

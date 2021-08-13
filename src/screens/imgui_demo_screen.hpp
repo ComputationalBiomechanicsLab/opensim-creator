@@ -1,8 +1,6 @@
 #pragma once
 
-#include "src/screens/screen.hpp"
-
-#include <SDL_events.h>
+#include "src/screen.hpp"
 
 namespace osc {
 
@@ -12,7 +10,9 @@ namespace osc {
     // look in OSC's application stack
     class Imgui_demo_screen final : public Screen {
     public:
-        bool on_event(SDL_Event const&) override;
+        void on_mount() override;
+        void on_unmount() override;
+        void on_event(SDL_Event const&) override;
         void draw() override;
     };
 }

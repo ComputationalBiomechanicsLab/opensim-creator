@@ -31,6 +31,7 @@ namespace {
 }
 
 struct Loading_screen::Impl final {
+
     // filesystem path to the osim being loaded
     std::filesystem::path path;
 
@@ -41,9 +42,9 @@ struct Loading_screen::Impl final {
     // if not empty, any error encountered by the loading thread
     std::string error;
 
-    // if not nullptr, a main state that should be updated/recycled
-    // by this screen when transitioning into the editor
-    std::shared_ptr<Main_editor_state> editor_state;
+    // a main state that should be recycled by this screen when
+    // transitioning into the editor
+    std::shared_ptr<Main_editor_state> mes;
 
     // a fake progress indicator that never quite reaches 100 %
     //
@@ -52,7 +53,8 @@ struct Loading_screen::Impl final {
     // is "the background thread is deadlocked" ;)
     float progress;
 
-    Impl(std::filesystem::path _path, std::shared_ptr<Main_editor_state> _editor_state) :
+    Impl(std::filesystem::path _path, std::shared_ptr<Main_editor_state> _mes) :
+
         // save the path being loaded
         path{std::move(_path)},
 
@@ -63,12 +65,11 @@ struct Loading_screen::Impl final {
         error{},
 
         // save the editor state (if any): it will be forwarded after loading the model
-        editor_state{std::move(_editor_state)},
+        mes{std::move(_mes)},
 
         progress{0.0f} {
-    }
 
-    Impl(std::filesystem::path _path) : Impl{std::move(_path), nullptr} {
+        OSC_ASSERT(mes != nullptr);
     }
 };
 
@@ -109,22 +110,19 @@ namespace {
             return;
         }
 
-        // if there was a result, handle that
+        // if there was a result (a newly-loaded model), handle it
         if (result) {
+
+            // add newly-loaded model to the "Recent Files" list
             add_recent_file(impl.path);
 
-            if (impl.editor_state) {
-                // there is an existing editor state
-                //
-                // recycle it so that users can keep their running sims, local edits, etc.
-                impl.editor_state->edited_model = osc::Undoable_ui_model{std::move(result)};
-                Application::current().request_transition<Model_editor_screen>(std::move(impl.editor_state));
-            } else {
-                // there is no existing editor state
-                //
-                // transitiong into "fresh" editor
-                Application::current().request_transition<Model_editor_screen>(std::move(result));
-            }
+            // update main editor state with newly-loaded model
+            auto uim = std::make_unique<Undoable_ui_model>(std::move(result));
+            impl.mes->tabs.emplace_back(std::move(uim));
+            impl.mes->cur_tab = static_cast<int>(impl.mes->tabs.size()) - 1;
+
+            // transition to editor
+            Application::current().request_transition<Model_editor_screen>(impl.mes);
         }
     }
 
@@ -162,7 +160,7 @@ namespace {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("try again")) {
-                    Application::current().request_transition<Loading_screen>(impl.editor_state, impl.path);
+                    Application::current().request_transition<Loading_screen>(impl.mes, impl.path);
                 }
             }
             ImGui::End();
@@ -172,26 +170,23 @@ namespace {
 
 // public API
 
-Loading_screen::Loading_screen(std::filesystem::path _path) :
-    impl{new Impl{std::move(_path)}} {
-}
+osc::Loading_screen::Loading_screen(
+        std::shared_ptr<Main_editor_state> _st,
+        std::filesystem::path _path) :
 
-Loading_screen::Loading_screen(std::shared_ptr<Main_editor_state> _st, std::filesystem::path _path) :
     impl{new Impl{std::move(_path), std::move(_st)}} {
 }
 
-Loading_screen::~Loading_screen() noexcept {
-    delete impl;
-}
+osc::Loading_screen::~Loading_screen() noexcept = default;
 
-bool Loading_screen::on_event(SDL_Event const& e) {
+bool osc::Loading_screen::on_event(SDL_Event const& e) {
     return ::loadingscreen_on_event(*impl, e);
 }
 
-void Loading_screen::tick(float dt) {
+void osc::Loading_screen::tick(float dt) {
     ::loadingscreen_tick(*impl, dt);
 }
 
-void Loading_screen::draw() {
+void osc::Loading_screen::draw() {
     ::loadingscreen_draw(*impl);
 }
