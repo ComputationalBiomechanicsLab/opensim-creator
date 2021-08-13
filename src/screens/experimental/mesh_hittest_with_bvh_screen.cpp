@@ -251,6 +251,29 @@ static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_ver
     return rv;
 }
 
+// assumes vertex array is set. Only sets uModel and draws each frame
+static void BVH_DrawRecursive(BVH const& bvh, Shader& shader, int pos) {
+    BVH_Node const& n = bvh.nodes[pos];
+
+    glm::vec3 half_widths = aabb_dims(n.bounds) / 2.0f;
+    glm::vec3 center = aabb_center(n.bounds);
+
+    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, half_widths);
+    glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
+    glm::mat4 mmtx = mover * scaler;
+
+    gl::Uniform(shader.uModel, mmtx);
+    gl::DrawElements(GL_LINES, 24, GL_UNSIGNED_SHORT, nullptr);
+
+    if (n.lhs >= 0) {
+        BVH_DrawRecursive(bvh, shader, n.lhs);
+    }
+
+    if (n.rhs >= 0) {
+        BVH_DrawRecursive(bvh, shader, n.rhs);
+    }
+}
+
 struct osc::Mesh_hittest_with_bvh_screen::Impl final {
     Shader shader;
 
@@ -269,6 +292,12 @@ struct osc::Mesh_hittest_with_bvh_screen::Impl final {
     gl::Array_buffer<Untextured_vert> triangle_vbo;
     gl::Element_array_buffer<GLushort> triangle_ebo = {0, 1, 2};
     gl::Vertex_array triangle_vao = make_vao(shader, triangle_vbo, triangle_ebo);
+
+    // AABB wireframe
+    Untextured_mesh cube_wireframe = generate_cube_lines();
+    gl::Array_buffer<Untextured_vert> cube_wireframe_vbo{cube_wireframe.verts};
+    gl::Element_array_buffer<GLushort> cube_wireframe_ebo{cube_wireframe.indices};
+    gl::Vertex_array cube_vao = make_vao(shader, cube_wireframe_vbo, cube_wireframe_ebo);
 
     std::chrono::microseconds raycast_dur{0};
     Polar_perspective_camera camera;
@@ -431,7 +460,7 @@ void osc::Mesh_hittest_with_bvh_screen::draw() {
         gl::BindVertexArray();
     }
 
-    // draw hittest debug
+    // draw hittest triangle debug
     if (impl.is_moused_over) {
         gl::Disable(GL_DEPTH_TEST);
 
@@ -443,6 +472,16 @@ void osc::Mesh_hittest_with_bvh_screen::draw() {
         gl::BindVertexArray();
 
         gl::Enable(GL_DEPTH_TEST);
+    }
+
+    // draw BVH
+    if (impl.use_BVH && !impl.mesh_bvh.nodes.empty()) {
+        // uModel is set by the recursive call
+
+        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+        gl::BindVertexArray(impl.cube_vao);
+        BVH_DrawRecursive(impl.mesh_bvh, impl.shader, 0);
+        gl::BindVertexArray();
     }
 
     osc::ImGuiRender();
