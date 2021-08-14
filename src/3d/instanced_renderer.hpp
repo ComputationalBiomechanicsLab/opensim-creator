@@ -26,7 +26,7 @@ namespace osc {
 
     // generate a new, globally-unique for all Ts, ID for an item of type T
     template<typename T>
-    int make_id() {
+    inline int make_id() {
         static std::atomic<int> g_NextId = 0;
         return g_NextId;
     }

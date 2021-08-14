@@ -57,6 +57,9 @@ namespace osc {
     //
     // the mesh is cleared by the implementation before appending the loaded verts
     void stk_load_meshfile(std::filesystem::path const&, Untextured_mesh&);
+    Untextured_mesh stk_load_meshfile(std::filesystem::path const&);
+
+    /*
 
     // a SimTK::DecorativeGeometryImplementation that can emit instanced geometry
     class Simbody_geometry_visitor : public SimTK::DecorativeGeometryImplementation {
@@ -135,4 +138,5 @@ namespace osc {
             callback(mi);
         }
     };
+    */
 }

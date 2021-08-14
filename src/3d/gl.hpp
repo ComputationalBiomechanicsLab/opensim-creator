@@ -965,6 +965,7 @@ namespace gl {
         GLenum format,
         GLenum type,
         const void* pixels) noexcept {
+
         glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
 

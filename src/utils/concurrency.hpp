@@ -1,12 +1,7 @@
 #pragma once
 
 #include <mutex>
-#include <condition_variable>
-#include <optional>
-#include <memory>
 #include <utility>
-#include <list>
-#include <atomic>
 
 namespace osc {
     // a mutex guard over a reference to `T`

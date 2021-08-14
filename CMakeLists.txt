@@ -130,6 +130,8 @@ add_executable(osc
     src/screens/experimental/mesh_instance_meshdata_screen.hpp
     src/screens/experimental/instanced_renderer_screen.cpp
     src/screens/experimental/instanced_renderer_screen.hpp
+    src/screens/experimental/simbody_meshgen_screen.cpp
+    src/screens/experimental/simbody_meshgen_screen.hpp
 
     src/screens/error_screen.cpp
     src/screens/error_screen.hpp
@@ -146,6 +148,8 @@ add_executable(osc
     #src/screens/splash_screen.cpp
     #src/screens/splash_screen.hpp
 
+    src/simtk_bindings/geometry_generator.cpp
+    src/simtk_bindings/geometry_generator.hpp
     src/simtk_bindings/simtk_bindings.hpp
     src/simtk_bindings/simtk_bindings.cpp
 

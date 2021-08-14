@@ -273,6 +273,36 @@ std::ostream& osc::operator<<(std::ostream& o, glm::vec4 const& v) {
     return o << '(' << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ')';
 }
 
+std::ostream& osc::operator<<(std::ostream& o, glm::mat4 const& m) {
+    // prints in row-major, because that's how most people debug matrices
+    for (int row = 0; row < 4; ++row) {
+        char const* delim = "";
+        for (int col = 0; col < 4; ++col) {
+            o << delim << m[col][row];
+            delim = " ";
+        }
+        o << '\n';
+    }
+    return o;
+}
+
+std::ostream& osc::operator<<(std::ostream& o, glm::mat3 const& m) {
+    // prints in row-major, because that's how most people debug matrices
+    for (int row = 0; row < 3; ++row) {
+        char const* delim = "";
+        for (int col = 0; col < 3; ++col) {
+            o << delim << m[col][row];
+            delim = " ";
+        }
+        o << '\n';
+    }
+    return o;
+}
+
+std::ostream& osc::operator<<(std::ostream& o, glm::quat const& q) {
+    return o << "(w = " << q.w << ", x = " << q.x << ", y = " << q.y << ", z = " << q.z << ')';
+}
+
 bool osc::is_colocated(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float eps = std::numeric_limits<float>::epsilon();
     float eps2 = eps * eps;
@@ -952,6 +982,71 @@ void osc::generate_simbody_cylinder(size_t num_sides, Untextured_mesh& out) {
     }
 
     generate_1to1_indices_for_verts(out);
+}
+
+Untextured_mesh osc::generate_simbody_cylinder(size_t n) {
+    Untextured_mesh rv;
+    generate_simbody_cylinder(n, rv);
+    return rv;
+}
+
+static void generate_simbody_cone(size_t num_sides, Untextured_mesh& out) {
+    out.clear();
+    out.verts.reserve(2*3*num_sides);
+
+    float step_angle = (2.0f * pi_f) / num_sides;
+    float top_y = +1.0f;
+    float bottom_y = -1.0f;
+
+    // bottom
+    {
+        glm::vec3 bottom_normal{0.0f, -1.0f, 0.0f};
+        Untextured_vert bottom_middle{{0.0f, bottom_y, 0.0f}, bottom_normal};
+
+        for (auto i = 0U; i < num_sides; ++i) {
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
+
+            // note: these are wound CCW for backface culling
+            out.verts.push_back(bottom_middle);
+            out.verts.push_back({
+                glm::vec3(cosf(theta_start), bottom_y, sinf(theta_start)),
+                bottom_normal,
+            });
+            out.verts.push_back({
+                glm::vec3(cosf(theta_end), bottom_y, sinf(theta_end)),
+                bottom_normal,
+            });
+        }
+    }
+
+    // sides
+    {
+        for (size_t i = 0; i < num_sides; ++i) {
+            float theta_start = i * step_angle;
+            float theta_end = (i + 1) * step_angle;
+
+            glm::vec3 verts[3] = {
+                {0.0f, top_y, 0.0f},
+                glm::vec3(cosf(theta_start), bottom_y, sinf(theta_start)),
+                glm::vec3(cosf(theta_end), bottom_y, sinf(theta_end)),
+            };
+
+            glm::vec3 normal = triangle_normal(verts[0], verts[1], verts[2]);
+
+            out.verts.push_back({verts[0], normal});
+            out.verts.push_back({verts[1], normal});
+            out.verts.push_back({verts[2], normal});
+        }
+    }
+
+    generate_1to1_indices_for_verts(out);
+}
+
+Untextured_mesh osc::generate_simbody_cone(size_t num_sides) {
+    Untextured_mesh rv;
+    ::generate_simbody_cone(num_sides, rv);
+    return rv;
 }
 
 void osc::generate_NxN_grid(size_t n, Untextured_mesh& out) {

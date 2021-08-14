@@ -9,6 +9,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <vector>
 #include <limits>
@@ -30,6 +31,9 @@ namespace osc {
     std::ostream& operator<<(std::ostream&, glm::vec3 const&);
     std::ostream& operator<<(std::ostream&, glm::vec2 const&);
     std::ostream& operator<<(std::ostream&, glm::vec4 const&);
+    std::ostream& operator<<(std::ostream&, glm::mat4 const&);
+    std::ostream& operator<<(std::ostream&, glm::mat3 const&);
+    std::ostream& operator<<(std::ostream&, glm::quat const&);
 
     struct Textured_vert final {
         glm::vec3 pos;
@@ -371,6 +375,11 @@ namespace osc {
     // - top == {x, 1.0f, z}
     // - bottom == {x, -1.0f, z}
     void generate_simbody_cylinder(size_t num_sides, Untextured_mesh&);
+    Untextured_mesh generate_simbody_cylinder(size_t num_sides);
+
+    // generate a mesh for a cone with bottom middle of -1 in Y, top is +1 in
+    // Y and radius only applies to the bottom
+    Untextured_mesh generate_simbody_cone(size_t num_sides);
 
     // generate a 2D grid at Z == 0, min -1.0f, and max +1.0f in XY with `ticks`
     // lines in each dimension

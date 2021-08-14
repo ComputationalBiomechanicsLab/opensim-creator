@@ -199,6 +199,12 @@ void osc::stk_load_meshfile(std::filesystem::path const& p, Untextured_mesh& out
     load_mesh_data(dmf.getMesh(), out);
 }
 
+Untextured_mesh osc::stk_load_meshfile(std::filesystem::path const& p) {
+    Untextured_mesh rv;
+    stk_load_meshfile(p, rv);
+    return rv;
+}
+
 glm::mat4 osc::stk_xform_to_mat4(Transform const& t) noexcept {
     // glm::mat4 is column major:
     //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
