@@ -1,14 +1,33 @@
 #include "src/app.hpp"
 #include "src/log.hpp"
 
+#include "src/screens/cookiecutter_screen.hpp"
+#include "src/screens/experimental/hellotriangle_screen.hpp"
+#include "src/screens/experimental/hittest_screen.hpp"
+#include "src/screens/experimental/mesh_hittest_with_bvh_screen.hpp"
+#include "src/screens/experimental/instanced_renderer_screen.hpp"
+#include "src/screens/experimental/mesh_hittest_screen.hpp"
 #include "src/screens/experimental/simbody_meshgen_screen.hpp"
+#include "src/screens/experimental/imguizmo_demo_screen.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
+#include "src/screens/experimental/opensim_modelstate_decoration_generator_screen.hpp"
 
 using namespace osc;
 
 int main(int, char**) {
     try {
         App app;
-        app.show<Simbody_meshgen_screen>();
+        //app.show<Hellotriangle_screen>();
+        //app.show<Hittest_screen>();
+        //app.show<Mesh_hittest_with_bvh_screen>();
+        //app.show<Instanced_render_screen>();
+        //app.show<Mesh_hittest_with_bvh_screen>();
+        //app.show<Simbody_meshgen_screen>();
+        //app.show<Imguizmo_demo_screen>();
+        //app.show<cookiecutter_screen>();
+        app.show<Opensim_modelstate_decoration_generator_screen>();
+
+        //app.show<Experiments_screen>();
     } catch (std::exception const& ex) {
         log::info("exception thrown to root of application: %s", ex.what());
         return -1;

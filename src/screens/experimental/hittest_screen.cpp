@@ -2,9 +2,10 @@
 
 #include "src/app.hpp"
 #include "src/log.hpp"
-#include "src/3d/3d.hpp"
+#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
-#include "src/utils/shims.hpp"
+#include "src/3d/gl_glm.hpp"
+#include "src/3d/model.hpp"
 
 #include <imgui.h>
 #include <glm/vec3.hpp>
@@ -104,7 +105,7 @@ struct osc::Hittest_screen::Impl final {
     Shader shader;
 
     // sphere datas
-    std::vector<glm::vec3> sphere_verts = generate_uv_sphere<std::vector<glm::vec3>>();
+    std::vector<glm::vec3> sphere_verts = gen_untextured_uv_sphere(12, 12).verts;
     AABB sphere_aabbs = aabb_from_points(sphere_verts.data(), sphere_verts.size());
     Sphere sphere_bound = sphere_bounds_of_points(sphere_verts.data(), sphere_verts.size());
     gl::Array_buffer<glm::vec3> sphere_vbo{sphere_verts};
@@ -118,11 +119,11 @@ struct osc::Hittest_screen::Impl final {
     gl::Vertex_array crosshair_vao = make_vao(shader, crosshair_vbo);
 
     // wireframe cube
-    gl::Array_buffer<glm::vec3> cube_wireframe_vbo{generate_cube_lines_points()};
+    gl::Array_buffer<glm::vec3> cube_wireframe_vbo{gen_cube_lines().verts};
     gl::Vertex_array cube_wireframe_vao = make_vao(shader, cube_wireframe_vbo);
 
     // circle
-    gl::Array_buffer<glm::vec3> circle_vbo{generate_circle_tris(36)};
+    gl::Array_buffer<glm::vec3> circle_vbo{gen_circle(36).verts};
     gl::Vertex_array circle_vao = make_vao(shader, circle_vbo);
 
     // triangle
@@ -165,7 +166,6 @@ void osc::Hittest_screen::tick(float) {
 
     float speed = 10.0f;
     float sensitivity = 0.005f;
-    float pi_f = numbers::pi_v<float>;
 
     if (io.KeysDown[SDL_SCANCODE_ESCAPE]) {
         App::cur().request_quit();
@@ -197,7 +197,7 @@ void osc::Hittest_screen::tick(float) {
 
     camera.yaw += sensitivity * io.MouseDelta.x;
     camera.pitch  -= sensitivity * io.MouseDelta.y;
-    camera.pitch = std::clamp(camera.pitch, -pi_f/2.0f + 0.5f, pi_f/2.0f - 0.5f);
+    camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
 
 
     // compute hits
@@ -216,9 +216,9 @@ void osc::Hittest_screen::tick(float) {
         s.origin = ss.pos;
         s.radius = m_Impl->sphere_bound.radius;
 
-        Line_sphere_hittest_result res = line_intersects_sphere(s, camera_line);
-        if (res.intersected && res.t0 >= 0.0f && res.t0 < closest_t) {
-            closest_t = res.t0;
+        Ray_collision res = get_ray_collision_sphere(camera_line, s);
+        if (res.hit && res.distance >= 0.0f && res.distance < closest_t) {
+            closest_t = res.distance;
             closest_ss = &ss;
         }
     }
@@ -284,13 +284,15 @@ void osc::Hittest_screen::draw() {
         d.normal = {0.0f, 1.0f, 0.0f};
         d.radius = {10.0f};
 
-        Line_disc_hittest_result res = line_intersects_disc(d, camera_line);
+        Ray_collision res = get_ray_collision_disc(camera_line, d);
 
-        glm::vec4 color = res.intersected ?
+        glm::vec4 color = res.hit ?
             glm::vec4{0.0f, 0.0f, 1.0f, 1.0f} :
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
 
-        gl::Uniform(shader.uModel, circle_to_disc_xform(d));
+        Disc mesh_disc{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, 1.0f};
+
+        gl::Uniform(shader.uModel, disc_to_disc_xform(mesh_disc, d));
         gl::Uniform(shader.uColor, color);
         gl::BindVertexArray(impl.circle_vao);
         gl::DrawArrays(GL_TRIANGLES, 0, impl.circle_vbo.sizei());
@@ -299,9 +301,9 @@ void osc::Hittest_screen::draw() {
 
     // draw triangle
     if (true) {
-        Line_triangle_hittest_result res = line_intersects_triangle(impl.triangle.data(), camera_line);
+        Ray_collision res = get_ray_collision_triangle(camera_line, impl.triangle.data());
 
-        glm::vec4 color = res.intersected ?
+        glm::vec4 color = res.hit ?
             glm::vec4{0.0f, 0.0f, 1.0f, 1.0f} :
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
 

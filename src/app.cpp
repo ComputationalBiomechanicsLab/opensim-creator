@@ -470,6 +470,9 @@ struct osc::App::Impl final {
     // set to true if application is in debug mode
     bool debug_mode = false;
 
+    // current screen being shown (if any)
+    std::unique_ptr<Screen> cur_screen = nullptr;
+
     // the *next* screen the application should show
     //
     // this is what "requesting a transition" ultimately sets
@@ -480,20 +483,23 @@ struct osc::App::Impl final {
 namespace {
 
     // perform a screen transntion between two top-level `osc::Screen`s
-    void do_screen_transition(App::Impl& impl, std::unique_ptr<Screen>& cur) {
-        cur->on_unmount();
-        cur.reset();
-        cur = std::move(impl.next_screen);
-        cur->on_mount();
+    void do_screen_transition(App::Impl& impl) {
+        impl.cur_screen->on_unmount();
+        impl.cur_screen.reset();
+        impl.cur_screen = std::move(impl.next_screen);
+        Screen& sref = *impl.cur_screen;
+        log::info("mounting screen %s", typeid(sref).name());
+        impl.cur_screen->on_mount();
+        log::info("transitioned main screen to %s", typeid(sref).name());
     }
 
-    void show_UNGUARDED(App::Impl& impl, std::unique_ptr<Screen> screen) {
+    void show_UNGUARDED(App::Impl& impl) {
 
         // perform initial screen mount
-        screen->on_mount();
+        impl.cur_screen->on_mount();
 
         // ensure on_unmount is called before potentially destructing the screen
-        OSC_SCOPE_GUARD_IF(screen, { screen->on_unmount(); });
+        OSC_SCOPE_GUARD_IF(impl.cur_screen, { impl.cur_screen->on_unmount(); });
 
         Uint64 prev_counter = 0;
 
@@ -507,7 +513,7 @@ namespace {
                 }
 
                 // let screen handle the event
-                screen->on_event(e);
+                impl.cur_screen->on_event(e);
 
                 // event handling may have requested a quit
                 if (impl.should_quit) {
@@ -516,7 +522,7 @@ namespace {
 
                 // event handling may have requested a screen transition
                 if (impl.next_screen) {
-                    do_screen_transition(impl, screen);
+                    do_screen_transition(impl);
                 }
             }
 
@@ -532,7 +538,7 @@ namespace {
             prev_counter = counter;
 
             // "tick" the screen
-            screen->tick(dt);
+            impl.cur_screen->tick(dt);
 
             // "tick" may have requested a quit
             if (impl.should_quit) {
@@ -541,12 +547,12 @@ namespace {
 
             // "tick" may have requested a screen transition
             if (impl.next_screen) {
-                do_screen_transition(impl, screen);
+                do_screen_transition(impl);
                 continue;
             }
 
             // "draw" the screen into the window framebuffer
-            screen->draw();
+            impl.cur_screen->draw();
 
             // "present" the rendered screen to the user (can block on VSYNC)
             SDL_GL_SwapWindow(impl.window);
@@ -558,28 +564,33 @@ namespace {
 
             // "draw" may have requested a transition
             if (impl.next_screen) {
-                do_screen_transition(impl, screen);
+                do_screen_transition(impl);
                 continue;
             }
         }
     }
 
     void show(App::Impl& impl, std::unique_ptr<Screen> s) {
-        Screen& sref = *s;
-        log::info("starting application main render loop with screen %s", typeid(sref).name());
+        {
+            Screen& sref = *s;
+            log::info("starting application main render loop with screen %s", typeid(sref).name());
+        }
 
-        bool quit = false;
-        while (!quit) {
-            try {
-                show_UNGUARDED(impl, std::move(s));
-                quit = true;
-            } catch (std::exception const& ex) {
-                log::error("unhandled exception thrown in main render loop: %s", ex.what());
-                // TODO: disable debug mode
-                // TODO: transition to error screen
-                // s = error_screen
-                quit = true;
-            }
+        if (impl.cur_screen) {
+            throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `request_transition` instead"};
+        }
+
+        impl.cur_screen = std::move(s);
+        impl.next_screen.reset();
+
+        // ensure screens are cleaned up - regardless of how `show` is exited from
+        OSC_SCOPE_GUARD({ impl.cur_screen.reset(); impl.next_screen.reset(); });
+
+        try {
+            show_UNGUARDED(impl);
+        } catch (std::exception const& ex) {
+            log::error("unhandled exception thrown in main render loop: %s", ex.what());
+            throw;
         }
     }
 

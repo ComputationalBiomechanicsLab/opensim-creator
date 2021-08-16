@@ -85,58 +85,69 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_build_config.hpp.in" "osc_bu
 add_executable(osc
     ${CMAKE_BINARY_DIR}/osc_build_config.hpp
 
-    src/3d/3d.cpp
-    src/3d/3d.hpp
-    src/3d/colormapped_plain_texture_shader.cpp
-    src/3d/colormapped_plain_texture_shader.hpp
-    src/3d/edge_detection_shader.cpp
-    src/3d/edge_detection_shader.hpp
+    src/3d/bvh.cpp
+    src/3d/bvh.hpp
     src/3d/gl.cpp
     src/3d/gl.hpp
     src/3d/gl_glm.hpp
-    src/3d/gouraud_mrt_shader.cpp
-    src/3d/gouraud_mrt_shader.hpp
     src/3d/instanced_renderer.cpp
     src/3d/instanced_renderer.hpp
-    src/3d/normals_shader.cpp
-    src/3d/normals_shader.hpp
-    src/3d/plain_texture_shader.cpp
-    src/3d/plain_texture_shader.hpp
-    src/3d/skip_msxaa_blitter_shader.cpp
-    src/3d/skip_msxaa_blitter_shader.hpp
+    src/3d/model.cpp
+    src/3d/model.hpp
+    src/3d/texturing.cpp
+    src/3d/texturing.hpp
 
-    #src/opensim_bindings/file_change_poller.hpp
-    #src/opensim_bindings/opensim_helpers.hpp
-    #src/opensim_bindings/simulation.cpp
-    #src/opensim_bindings/simulation.hpp
-    #src/opensim_bindings/type_registry.cpp
-    #src/opensim_bindings/type_registry.hpp
+    src/3d/shaders/colormapped_plain_texture_shader.cpp
+    src/3d/shaders/colormapped_plain_texture_shader.hpp
+    src/3d/shaders/edge_detection_shader.cpp
+    src/3d/shaders/edge_detection_shader.hpp
+    src/3d/shaders/gouraud_mrt_shader.cpp
+    src/3d/shaders/gouraud_mrt_shader.hpp
+    src/3d/shaders/normals_shader.cpp
+    src/3d/shaders/normals_shader.hpp
+    src/3d/shaders/plain_texture_shader.cpp
+    src/3d/shaders/plain_texture_shader.hpp
+    src/3d/shaders/skip_msxaa_blitter_shader.cpp
+    src/3d/shaders/skip_msxaa_blitter_shader.hpp
+
+    src/opensim_bindings/file_change_poller.hpp
+    src/opensim_bindings/opensim_helpers.hpp
+    src/opensim_bindings/scene_generator.cpp
+    src/opensim_bindings/scene_generator.hpp
+    src/opensim_bindings/simulation.cpp
+    src/opensim_bindings/simulation.hpp
+    src/opensim_bindings/type_registry.cpp
+    src/opensim_bindings/type_registry.hpp
     #src/opensim_bindings/ui_types.hpp
     #src/opensim_bindings/ui_types.cpp
 
+    src/screens/cookiecutter_screen.cpp
+    src/screens/cookiecutter_screen.hpp
     src/screens/experimental/experiments_screen.cpp
     src/screens/experimental/experiments_screen.hpp
     src/screens/experimental/hellotriangle_screen.cpp
     src/screens/experimental/hellotriangle_screen.hpp
     src/screens/experimental/hittest_screen.cpp
     src/screens/experimental/hittest_screen.hpp
+    src/screens/experimental/imguizmo_demo_screen.cpp
+    src/screens/experimental/imguizmo_demo_screen.hpp
     src/screens/experimental/mesh_hittest_screen.cpp
     src/screens/experimental/mesh_hittest_screen.hpp
     src/screens/experimental/mesh_hittest_with_bvh_screen.cpp
     src/screens/experimental/mesh_hittest_with_bvh_screen.hpp
     # src/screens/experimental/meshes_to_model_wizard_screen.cpp
     # src/screens/experimental/meshes_to_model_wizard_screen.hpp
-    src/screens/experimental/mesh_instance_meshdata_screen.cpp
-    src/screens/experimental/mesh_instance_meshdata_screen.hpp
     src/screens/experimental/instanced_renderer_screen.cpp
     src/screens/experimental/instanced_renderer_screen.hpp
+    src/screens/experimental/opensim_modelstate_decoration_generator_screen.cpp
+    src/screens/experimental/opensim_modelstate_decoration_generator_screen.hpp
     src/screens/experimental/simbody_meshgen_screen.cpp
     src/screens/experimental/simbody_meshgen_screen.hpp
 
-    src/screens/error_screen.cpp
-    src/screens/error_screen.hpp
-    src/screens/imgui_demo_screen.cpp
-    src/screens/imgui_demo_screen.hpp
+    #src/screens/error_screen.cpp
+    #src/screens/error_screen.hpp
+    #src/screens/imgui_demo_screen.cpp
+    #src/screens/imgui_demo_screen.hpp
     #src/screens/loading_screen.cpp
     #src/screens/loading_screen.hpp
     #src/screens/model_editor_screen.cpp
@@ -148,10 +159,11 @@ add_executable(osc
     #src/screens/splash_screen.cpp
     #src/screens/splash_screen.hpp
 
-    src/simtk_bindings/geometry_generator.cpp
-    src/simtk_bindings/geometry_generator.hpp
-    src/simtk_bindings/simtk_bindings.hpp
-    src/simtk_bindings/simtk_bindings.cpp
+    src/simtk_bindings/stk_geometry_generator.cpp
+    src/simtk_bindings/stk_geometry_generator.hpp
+    src/simtk_bindings/stk_converters.hpp
+    src/simtk_bindings/stk_meshloader.cpp
+    src/simtk_bindings/stk_meshloader.hpp
 
     #src/ui/add_component_popup.hpp
     #src/ui/add_component_popup.cpp
@@ -169,8 +181,8 @@ add_executable(osc
     #src/ui/attach_geometry_popup.cpp
     #src/ui/add_body_popup.hpp
     #src/ui/add_body_popup.cpp
-    src/ui/log_viewer.hpp
-    src/ui/log_viewer.cpp
+    #src/ui/log_viewer.hpp
+    #src/ui/log_viewer.cpp
     #src/ui/lockable_f3_editor.hpp
     #src/ui/lockable_f3_editor.cpp
     #src/ui/main_menu.hpp
@@ -203,8 +215,6 @@ add_executable(osc
     src/utils/sdl_wrapper.hpp
     src/utils/shims.hpp
     src/utils/spsc.hpp
-    src/utils/stbi_wrapper.hpp
-    src/utils/stbi_wrapper.cpp
 
     src/log.hpp
     src/log.cpp

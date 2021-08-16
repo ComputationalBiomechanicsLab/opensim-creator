@@ -1,22 +1,24 @@
 #include "instanced_renderer_screen.hpp"
 
 #include "src/app.hpp"
-#include "src/log.hpp"
+#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
-#include "src/3d/3d.hpp"
+#include "src/3d/gl_glm.hpp"
 #include "src/3d/instanced_renderer.hpp"
-#include "src/3d/colormapped_plain_texture_shader.hpp"
-#include "src/utils/shims.hpp"
+#include "src/3d/model.hpp"
+#include "src/3d/shaders/colormapped_plain_texture_shader.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
 using namespace osc;
 
-static Mesh_instance_drawlist make_drawlist(int rows, int cols) {
+static Mesh_instance_drawlist make_drawlist(Instanced_renderer& r, int rows, int cols) {
     Mesh_instance_drawlist rv;
 
     // add cube meshdata
-    rv.meshes.emplace_back(std::make_shared<Mesh_instance_meshdata>(generate_cube<Untextured_mesh>()));
+    rv.meshes.emplace_back(r.allocate(gen_cube()));
 
     // add a scaled cube instance that indexes the cube meshdata
     int n = 0;
@@ -31,9 +33,10 @@ static Mesh_instance_drawlist make_drawlist(int rows, int cols) {
             float h = 0.5f / static_cast<float>(rows);
             float d = w;
 
-            Mesh_instance& inst = rv.instances.emplace_back();
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, {x, y, 0.0f});
             glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{w, h, d});
+
+            Mesh_instance& inst = rv.instances.emplace_back();
             inst.model_xform = translate * scale;
             inst.normal_xform = normal_matrix(inst.model_xform);
             inst.rgba = {0xff, 0x00, 0x00, 0xff};
@@ -51,20 +54,22 @@ struct osc::Instanced_render_screen::Impl final {
 
     int rows = 512;
     int cols = 512;
-    Mesh_instance_drawlist drawlist = make_drawlist(rows, cols);
+    Mesh_instance_drawlist drawlist = make_drawlist(renderer, rows, cols);
     Render_params params;
 
     Colormapped_plain_texture_shader cpt;
 
-    Textured_mesh quad_verts = generate_banner<Textured_mesh>();
-    gl::Array_buffer<Textured_vert> quad_vbo{quad_verts.verts};
+    NewMesh quad_mesh = gen_textured_quad();
+    gl::Array_buffer<glm::vec3> quad_positions{quad_mesh.verts};
+    gl::Array_buffer<glm::vec2> quad_texcoords{quad_mesh.texcoords};
     gl::Vertex_array quad_vao = [this]() {
         gl::Vertex_array rv;
         gl::BindVertexArray(rv);
-        gl::BindBuffer(quad_vbo);
-        gl::VertexAttribPointer(cpt.aPos, false, sizeof(Textured_vert), offsetof(Textured_vert, pos));
+        gl::BindBuffer(quad_positions);
+        gl::VertexAttribPointer(cpt.aPos, false, sizeof(glm::vec3), 0);
         gl::EnableVertexAttribArray(cpt.aPos);
-        gl::VertexAttribPointer(cpt.aTexCoord, false, sizeof(Textured_vert), offsetof(Textured_vert, texcoord));
+        gl::BindBuffer(quad_texcoords);
+        gl::VertexAttribPointer(cpt.aTexCoord, false, sizeof(glm::vec2), 0);
         gl::EnableVertexAttribArray(cpt.aTexCoord);
         gl::BindVertexArray();
         return rv;
@@ -105,7 +110,6 @@ void osc::Instanced_render_screen::tick(float) {
 
     float speed = 0.1f;
     float sensitivity = 0.01f;
-    float pi_f = numbers::pi_v<float>;
 
     if (io.KeysDown[SDL_SCANCODE_W]) {
         camera.pos += speed * camera.front() * io.DeltaTime;
@@ -133,7 +137,7 @@ void osc::Instanced_render_screen::tick(float) {
 
     camera.yaw += sensitivity * io.MouseDelta.x;
     camera.pitch  -= sensitivity * io.MouseDelta.y;
-    camera.pitch = std::clamp(camera.pitch, -pi_f/2.0f + 0.5f, pi_f/2.0f - 0.5f);
+    camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
 }
 
 void osc::Instanced_render_screen::draw() {
@@ -147,13 +151,13 @@ void osc::Instanced_render_screen::draw() {
         if (ImGui::InputInt("rows", &rows, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (rows > 0 && rows != m_Impl->rows) {
                 m_Impl->rows = rows;
-                m_Impl->drawlist = make_drawlist(m_Impl->rows, m_Impl->cols);
+                m_Impl->drawlist = make_drawlist(m_Impl->renderer, m_Impl->rows, m_Impl->cols);
             }
         }
         if (ImGui::InputInt("cols", &cols, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (cols > 0 && cols != m_Impl->cols) {
                 m_Impl->cols = cols;
-                m_Impl->drawlist = make_drawlist(m_Impl->cols, m_Impl->cols);
+                m_Impl->drawlist = make_drawlist(m_Impl->renderer, m_Impl->cols, m_Impl->cols);
             }
         }
         ImGui::Checkbox("rims", &m_Impl->draw_rims);
@@ -191,7 +195,7 @@ void osc::Instanced_render_screen::draw() {
     gl::Uniform(impl.cpt.uSampler0, gl::texture_index<GL_TEXTURE0>());
     gl::Uniform(impl.cpt.uSamplerMultiplier, gl::identity_val);
     gl::BindVertexArray(impl.quad_vao);
-    gl::DrawArrays(GL_TRIANGLES, 0, impl.quad_vbo.sizei());
+    gl::DrawArrays(GL_TRIANGLES, 0, impl.quad_positions.sizei());
     gl::BindVertexArray();
 
     osc::ImGuiRender();

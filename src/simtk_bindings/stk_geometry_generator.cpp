@@ -1,59 +1,18 @@
-#include "geometry_generator.hpp"
+#include "stk_geometry_generator.hpp"
 
 #include "src/log.hpp"
-#include "src/3d/3d.hpp"
+#include "src/3d/model.hpp"
+#include "src/simtk_bindings/stk_converters.hpp"
 
 #include <simbody/internal/SimbodyMatterSubsystem.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include <iosfwd>
 
+using namespace osc;
 
-static glm::mat4 stk_xform_to_mat4(SimTK::Transform const& t) {
-    // glm::mat4 is column major:
-    //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
-    //     (and just Google "glm column major?")
-    //
-    // SimTK is row-major, carefully read the sourcecode for
-    // `SimTK::Transform`.
 
-    glm::mat4 m;
-
-    // x0 y0 z0 w0
-    SimTK::Rotation const& r = t.R();
-    SimTK::Vec3 const& p = t.p();
-
-    {
-        auto const& row0 = r[0];
-        m[0][0] = static_cast<float>(row0[0]);
-        m[1][0] = static_cast<float>(row0[1]);
-        m[2][0] = static_cast<float>(row0[2]);
-        m[3][0] = static_cast<float>(p[0]);
-    }
-
-    {
-        auto const& row1 = r[1];
-        m[0][1] = static_cast<float>(row1[0]);
-        m[1][1] = static_cast<float>(row1[1]);
-        m[2][1] = static_cast<float>(row1[2]);
-        m[3][1] = static_cast<float>(p[1]);
-    }
-
-    {
-        auto const& row2 = r[2];
-        m[0][2] = static_cast<float>(row2[0]);
-        m[1][2] = static_cast<float>(row2[1]);
-        m[2][2] = static_cast<float>(row2[2]);
-        m[3][2] = static_cast<float>(p[2]);
-    }
-
-    m[0][3] = 0.0f;
-    m[1][3] = 0.0f;
-    m[2][3] = 0.0f;
-    m[3][3] = 1.0f;
-
-    return m;
-}
-
+// extract scale factors from geometry
 static glm::vec3 scale_factors(SimTK::DecorativeGeometry const& geom) {
     SimTK::Vec3 sf = geom.getScaleFactors();
     for (int i = 0; i < 3; ++i) {
@@ -61,7 +20,7 @@ static glm::vec3 scale_factors(SimTK::DecorativeGeometry const& geom) {
     }
     return glm::vec3{sf[0], sf[1], sf[2]};
 }
-
+// extract RGBA from geometry
 static glm::vec4 extract_rgba(SimTK::DecorativeGeometry const& geom) {
     SimTK::Vec3 const& rgb = geom.getColor();
     SimTK::Real ar = geom.getOpacity();
@@ -69,18 +28,11 @@ static glm::vec4 extract_rgba(SimTK::DecorativeGeometry const& geom) {
     return glm::vec4(rgb[0], rgb[1], rgb[2], ar);
 }
 
-static glm::vec3 to_vec3(SimTK::Vec3 const& v) {
-    return glm::vec3(v[0], v[1], v[2]);
-}
-
-static glm::vec4 to_vec4(SimTK::Vec3 const& v, float w = 1.0f) {
-    return glm::vec4{v[0], v[1], v[2], w};
-}
-
+// get modelspace to worldspace xform for a given decorative element
 static glm::mat4 geom_xform(SimTK::SimbodyMatterSubsystem const& matter, SimTK::State const& state, SimTK::DecorativeGeometry const& g) {
     SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-    glm::mat4 ground2body = stk_xform_to_mat4(mobod.getBodyTransform(state));
-    glm::mat4 body2decoration = stk_xform_to_mat4(g.getTransform());
+    glm::mat4 ground2body = stk_mat4x4_from_xform(mobod.getBodyTransform(state));
+    glm::mat4 body2decoration = stk_mat4x4_from_xform(g.getTransform());
     return ground2body * body2decoration;
 }
 
@@ -167,14 +119,14 @@ void osc::Geometry_generator::implementLineGeometry(SimTK::DecorativeLine const&
     Simbody_geometry g;
     g.geom_type = Simbody_geometry::Type::Line;
     g.line.rgba = extract_rgba(dl);
-    g.line.p1 = glm::vec3{m * to_vec4(dl.getPoint1())};
-    g.line.p2 = glm::vec3{m * to_vec4(dl.getPoint2())};
+    g.line.p1 = glm::vec3{m * stk_vec4_from_Vec3(dl.getPoint1())};
+    g.line.p2 = glm::vec3{m * stk_vec4_from_Vec3(dl.getPoint2())};
 
     on_emit(g);
 }
 
 void osc::Geometry_generator::implementBrickGeometry(SimTK::DecorativeBrick const& db) {
-    glm::vec3 halfdims = to_vec3(db.getHalfLengths());
+    glm::vec3 halfdims = stk_vec3_from_Vec3(db.getHalfLengths());
 
     Simbody_geometry g;
     g.geom_type = Simbody_geometry::Type::Brick;
@@ -222,7 +174,7 @@ void osc::Geometry_generator::implementSphereGeometry(SimTK::DecorativeSphere co
 void osc::Geometry_generator::implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& de) {
     glm::mat4 xform = geom_xform(m_Matter, m_St, de);
     glm::vec3 sfs = scale_factors(de);
-    glm::vec3 radii = to_vec3(de.getRadii());
+    glm::vec3 radii = stk_vec3_from_Vec3(de.getRadii());
 
     Simbody_geometry g;
     g.geom_type = Simbody_geometry::Type::Ellipsoid;
@@ -278,8 +230,8 @@ void osc::Geometry_generator::implementMeshFileGeometry(SimTK::DecorativeMeshFil
 void osc::Geometry_generator::implementArrowGeometry(SimTK::DecorativeArrow const& da) {
     glm::mat4 xform = glm::scale(geom_xform(m_Matter, m_St, da), scale_factors(da));
 
-    glm::vec3 base_startpoint = to_vec3(da.getStartPoint());
-    glm::vec3 base_endpoint = to_vec3(da.getEndPoint());
+    glm::vec3 base_startpoint = stk_vec3_from_Vec3(da.getStartPoint());
+    glm::vec3 base_endpoint = stk_vec3_from_Vec3(da.getEndPoint());
     glm::vec3 startpoint = glm::vec3{xform * glm::vec4{base_startpoint, 1.0f}};
     glm::vec3 endpoint = glm::vec3{xform * glm::vec4{base_endpoint, 1.0f}};
 
@@ -303,8 +255,8 @@ void osc::Geometry_generator::implementTorusGeometry(SimTK::DecorativeTorus cons
 void osc::Geometry_generator::implementConeGeometry(SimTK::DecorativeCone const& dc) {
     glm::mat4 xform = glm::scale(geom_xform(m_Matter, m_St, dc), scale_factors(dc));
 
-    glm::vec3 base_pos = to_vec3(dc.getOrigin());
-    glm::vec3 base_dir = to_vec3(dc.getDirection());
+    glm::vec3 base_pos = stk_vec3_from_Vec3(dc.getOrigin());
+    glm::vec3 base_dir = stk_vec3_from_Vec3(dc.getDirection());
 
     glm::vec3 worldpos = glm::vec3{xform * glm::vec4{base_pos, 1.0f}};
     glm::vec3 worlddir = glm::normalize(glm::vec3{xform * glm::vec4{base_dir, 0.0f}});

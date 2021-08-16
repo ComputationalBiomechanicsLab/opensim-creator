@@ -1,21 +1,18 @@
 #include "simbody_meshgen_screen.hpp"
 
 #include "src/app.hpp"
-#include "src/log.hpp"
-#include "src/3d/3d.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gl_glm.hpp"
+#include "src/3d/model.hpp"
+#include "src/simtk_bindings/stk_meshloader.hpp"
+#include "src/simtk_bindings/stk_geometry_generator.hpp"
 
-#include "src/simtk_bindings/simtk_bindings.hpp"
-#include "src/simtk_bindings/geometry_generator.hpp"
-
-#include <SimTKcommon.h>
-#include <simbody/internal/SimbodyMatterSubsystem.h>
-#include <imgui.h>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-
-#include <filesystem>
 
 using namespace osc;
 
@@ -60,24 +57,24 @@ namespace {
     };
 
 
-    gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_vert>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
+    gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<glm::vec3>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
         gl::Vertex_array rv;
         gl::BindVertexArray(rv);
         gl::BindBuffer(vbo);
         gl::BindBuffer(ebo);
-        gl::VertexAttribPointer(shader.aPos, false, sizeof(Untextured_vert), offsetof(Untextured_vert, pos));
+        gl::VertexAttribPointer(shader.aPos, false, sizeof(glm::vec3), 0);
         gl::EnableVertexAttribArray(shader.aPos);
         gl::BindVertexArray();
         return rv;
     }
 
     struct Loaded_geom final {
-        Untextured_mesh mesh;
-        gl::Array_buffer<Untextured_vert> vbo;
+        NewMesh mesh;
+        gl::Array_buffer<glm::vec3> vbo;
         gl::Element_array_buffer<GLushort> ebo;
         gl::Vertex_array vao;
 
-        Loaded_geom(Shader& s, Untextured_mesh mesh_) :
+        Loaded_geom(Shader& s, NewMesh mesh_) :
             mesh{std::move(mesh_)},
             vbo{mesh.verts},
             ebo{mesh.indices},
@@ -95,7 +92,7 @@ namespace meshgen {
         glm::vec4 rgba;
 
         Loaded_meshfile(Shader& s, Simbody_geometry::MeshFile const& mf) :
-            geom{s, stk_load_meshfile(*mf.path)},
+            geom{s, stk_load_mesh(*mf.path)},
             model_mtx{mf.model_mtx},
             rgba{mf.rgba} {
         }
@@ -185,52 +182,18 @@ namespace meshgen {
     }
 }
 
-static glm::mat4 simbody_cylinder_xform(glm::vec3 const& p1, glm::vec3 const& p2, float radius) {
-    glm::vec3 p1_to_p2 = p2 - p1;
-
-    float len = glm::length(p1_to_p2);
-    float len_div_2 = len/2.0f;
-
-    glm::vec3 line_dir = p1_to_p2 / len;
-    glm::vec3 cylinder_dir = {0.0, 1.0f, 0.0f};
-    float cos_ang = glm::dot(line_dir, cylinder_dir);
-
-    glm::mat4 reorient;
-    if (cos_ang < 0.9999f) {
-        // lines are non-parallel and need to be reoriented
-        glm::vec3 rotation_axis = glm::cross(cylinder_dir, line_dir);
-        float angle = glm::acos(cos_ang);
-        reorient = glm::rotate(glm::mat4{1.0f}, angle, rotation_axis);
-    } else {
-        // lines are basically parallel and do not need reorienting
-        reorient = glm::mat4{1.0f};
-    }
-
-    glm::mat4 rescale = glm::scale(glm::mat4{1.0f}, glm::vec3{radius, len_div_2, radius});
-    glm::vec3 line_center = (p1 + p2)/2.0f;
-    glm::mat4 move = glm::translate(glm::mat4{1.0f}, line_center);
-
-    return move * reorient * rescale;
-}
-
 struct osc::Simbody_meshgen_screen::Impl final {
     Shader shader;
 
-    Loaded_geom sphere{shader, generate_uv_sphere<Untextured_mesh>()};
-    Loaded_geom cylinder{shader, generate_simbody_cylinder(16)};
-    Loaded_geom line{shader, generate_y_line()};
-    Loaded_geom cube{shader, generate_cube<Untextured_mesh>()};
-    Loaded_geom cone{shader, generate_simbody_cone(16)};
+    Loaded_geom sphere{shader, gen_untextured_uv_sphere(12, 12)};
+    Loaded_geom cylinder{shader, gen_untextured_simbody_cylinder(16)};
+    Loaded_geom line{shader, gen_y_line()};
+    Loaded_geom cube{shader, gen_cube()};
+    Loaded_geom cone{shader, gen_untextured_simbody_cone(16)};
 
-    meshgen::Scene_geom geom =
-        meshgen::extract_geom(shader, R"(C:\Users\adamk\OneDrive\Desktop\geomtest.osim)");
-        //meshgen::extract_geom(shader, R"(C:\Users\adamk\OneDrive\Desktop\geomtest.osim)");
+    meshgen::Scene_geom geom = meshgen::extract_geom(shader, App::resource("models/GeometryBackendTest/full.osim"));
 
     Polar_perspective_camera camera;
-
-    Impl() {
-       log::info("spheres = %zu, lines = %zu", geom.spheres.size(), geom.lines.size());
-    }
 };
 
 // public Impl
@@ -329,7 +292,12 @@ void osc::Simbody_meshgen_screen::draw() {
     // draw lines
     gl::BindVertexArray(impl.cylinder.vao);
     for (auto const& c : impl.geom.lines) {
-        gl::Uniform(shader.uModel, simbody_cylinder_xform(c.p1, c.p2, 0.005f));
+        Segment cylinder{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+        Segment line{c.p1, c.p2};
+        glm::mat4 xform = segment_to_segment_xform(cylinder, line);
+        glm::mat4 radius_rescale = glm::scale(glm::mat4{1.0f}, glm::vec3{0.005f, 1.0f, 0.005f});
+
+        gl::Uniform(shader.uModel, xform * radius_rescale);
         gl::Uniform(shader.uColor, c.rgba);
         gl::DrawElements(GL_TRIANGLES, impl.cylinder.ebo.sizei(), gl::index_type(impl.cylinder.ebo), nullptr);
     }
@@ -347,24 +315,12 @@ void osc::Simbody_meshgen_screen::draw() {
     // draw cones
     gl::BindVertexArray(impl.cone.vao);
     for (auto const& c : impl.geom.cones) {
-        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {c.base_radius, 0.5f*c.height, c.base_radius});
-        glm::vec3 cone_dir = {0.0f, 1.0f, 0.0f};
-        float cos_theta = glm::dot(cone_dir, c.direction);
+        Segment conemesh{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+        Segment cone{c.pos, c.pos + c.direction*c.height};
+        glm::mat4 xform = segment_to_segment_xform(conemesh, cone);
+        glm::mat4 radius_rescale = glm::scale(glm::mat4{1.0f}, {c.base_radius, 1.0f, c.base_radius});
 
-        glm::mat4 rotator;
-        if (cos_theta < 0.999f) {
-            glm::vec3 axis = glm::cross(cone_dir, c.direction);
-            float ang = glm::acos(cos_theta);
-            rotator = glm::rotate(glm::mat4{1.0f}, ang, axis);
-        } else {
-            rotator = glm::mat4{1.0f};
-        }
-
-        glm::mat4 translator = glm::translate(glm::mat4{1.0f}, c.pos);
-
-        glm::mat4 model_mtx = translator * rotator * scaler;
-
-        gl::Uniform(shader.uModel, model_mtx);
+        gl::Uniform(shader.uModel, xform * radius_rescale);
         gl::Uniform(shader.uColor, c.rgba);
         gl::DrawElements(GL_TRIANGLES, impl.cone.ebo.sizei(), gl::index_type(impl.cone.ebo), nullptr);
     }
@@ -375,31 +331,18 @@ void osc::Simbody_meshgen_screen::draw() {
         glm::vec3 p1_to_p2 = a.p2 - a.p1;
         float len = glm::length(p1_to_p2);
         glm::vec3 dir = p1_to_p2/len;
+        constexpr float conelen = 0.2f;
 
-        float conelen = 0.2f;
-
+        Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+        glm::vec3 cylinder_start = a.p1;
         glm::vec3 cone_start = a.p2 - (conelen * len * dir);
-        glm::vec3 cylinder_midpoint = (a.p1 + cone_start) / 2.0f;
-        glm::vec3 cone_midpoint = (cone_start + a.p2) / 2.0f;
-
-        glm::vec3 mesh_dir = {0.0f, 1.0f, 0.0f};
-        float cos_theta = glm::dot(dir, mesh_dir);
-        glm::mat4 rotator;
-        if (cos_theta < 0.999f) {
-            glm::vec3 axis = glm::cross(mesh_dir, dir);
-            float ang = glm::acos(cos_theta);
-            rotator = glm::rotate(glm::mat4{1.0f}, ang, axis);
-        } else {
-            rotator = glm::mat4{1.0f};
-        }
+        glm::vec3 cone_end = a.p2;
 
         // draw cone head
         {
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {0.02f, 0.5f * conelen * len, 0.02f});
-            glm::mat4 translator = glm::translate(glm::mat4{1.0f}, cone_midpoint);
-            glm::mat4 model_mtx = translator * rotator * scaler;
-
-            gl::Uniform(shader.uModel, model_mtx);
+            glm::mat4 cone_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.02f, 1.0f, 0.02f});
+            glm::mat4 xform = segment_to_segment_xform(meshline, Segment{cone_start, cone_end});
+            gl::Uniform(shader.uModel, xform * cone_radius_rescaler);
             gl::Uniform(shader.uColor, a.rgba);
             gl::BindVertexArray(impl.cone.vao);
             gl::DrawElements(GL_TRIANGLES, impl.cone.ebo.sizei(), gl::index_type(impl.cone.ebo), nullptr);
@@ -408,12 +351,9 @@ void osc::Simbody_meshgen_screen::draw() {
 
         // draw cylinder body
         {
-            float scale = 0.5f * (1.0f - conelen) * len;
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {0.005f, scale, 0.005f});
-            glm::mat4 translator = glm::translate(glm::mat4{1.0f}, cylinder_midpoint);
-            glm::mat4 model_mtx = translator * rotator * scaler;
-
-            gl::Uniform(shader.uModel, model_mtx);
+            glm::mat4 cylinder_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.005f, 1.0f, 0.005f});
+            glm::mat4 xform = segment_to_segment_xform(meshline, Segment{cylinder_start, cone_start});
+            gl::Uniform(shader.uModel, xform * cylinder_radius_rescaler);
             gl::Uniform(shader.uColor, a.rgba);
             gl::BindVertexArray(impl.cylinder.vao);
             gl::DrawElements(GL_TRIANGLES, impl.cylinder.ebo.sizei(), gl::index_type(impl.cylinder.ebo), nullptr);
@@ -439,64 +379,47 @@ void osc::Simbody_meshgen_screen::draw() {
         gl::BindVertexArray();
     }
 
-    // xforms cylinder to [0, 1] in Y
-    constexpr float thickness = 0.0025f;
-    constexpr float axlen_rescale = 0.25f;
-    glm::mat4 move_cylinder_to_plusy =
-        glm::scale(glm::mat4{1.0f}, {1.0f, 0.5f, 1.0f}) * glm::translate(glm::mat4{1.0f}, {0.0f, 1.0f, 0.0f});
-
+    // draw frames
     for (auto const& f : impl.geom.frames) {
-        glm::mat4 rotate_to_output = f.rotation;
-        glm::mat4 translate_to_pos = glm::translate(glm::mat4{1.0f}, f.pos);
+        constexpr float axlen_rescale = 0.25f;
+        constexpr float ax_thickness = 0.0025f;
 
         // draw origin sphere
         {
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 0.05f * glm::vec3{axlen_rescale, axlen_rescale, axlen_rescale});
-            glm::mat4 full_xform = translate_to_pos * scaler;
-            gl::Uniform(shader.uModel, full_xform);
+            Sphere mesh_sphere{{0.0f, 0.0f, 0.0f}, 1.0f};
+            Sphere output_sphere{f.pos, 0.05f * axlen_rescale};
+            glm::mat4 xform = sphere_to_sphere_xform(mesh_sphere, output_sphere);
+            gl::Uniform(shader.uModel, xform);
             gl::Uniform(shader.uColor, {1.0f, 1.0f, 1.0f, 1.0f});
             gl::BindVertexArray(impl.sphere.vao);
             gl::DrawElements(GL_TRIANGLES, impl.sphere.ebo.sizei(), gl::index_type(impl.sphere.ebo), nullptr);
             gl::BindVertexArray();
         }
 
+        // draw outer lines
         gl::BindVertexArray(impl.cylinder.vao);
+        Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
 
-        // draw X
-        {
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {thickness, axlen_rescale * f.axis_lengths.x, thickness});
-            glm::mat4 rotate_to_x = glm::rotate(glm::mat4{1.0f}, -static_cast<float>(M_PI)/2.0f, {0.0f, 0.0f, 1.0f});
-            glm::mat4 full_xform = translate_to_pos * rotate_to_output * rotate_to_x * scaler * move_cylinder_to_plusy;
-            gl::Uniform(shader.uModel, full_xform);
-            gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-            gl::DrawElements(GL_TRIANGLES, impl.cylinder.ebo.sizei(), gl::index_type(impl.cylinder.ebo), nullptr);
+        for (int i = 0; i < 3; ++i) {
+            glm::vec3 dir = {0.0f, 0.0f, 0.0f};
+            dir[i] = axlen_rescale*f.axis_lengths[i];
+            Segment axisline{f.pos, f.pos + dir};
 
-        }
+            glm::vec3 prescale = {ax_thickness, 1.0f, ax_thickness};
+            glm::mat4 prescale_mtx = glm::scale(glm::mat4{1.0f}, prescale);
+            glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
+            color[i] = 1.0f;
 
-        // draw Y
-        {
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {thickness, axlen_rescale * f.axis_lengths.x, thickness});
-            glm::mat4 full_xform = translate_to_pos * rotate_to_output * scaler * move_cylinder_to_plusy;
-            gl::Uniform(shader.uModel, full_xform);
-            gl::Uniform(shader.uColor, {0.0f, 1.0f, 0.0f, 1.0f});
-            gl::DrawElements(GL_TRIANGLES, impl.cylinder.ebo.sizei(), gl::index_type(impl.cylinder.ebo), nullptr);
-
-        }
-
-        // draw Z
-        {
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {thickness, axlen_rescale * f.axis_lengths.x, thickness});
-            glm::mat4 rotate_to_z = glm::rotate(glm::mat4{1.0f}, -static_cast<float>(M_PI)/2.0f, {1.0f, 0.0f, 0.0f});
-            glm::mat4 full_xform = translate_to_pos * rotate_to_output * rotate_to_z * scaler * move_cylinder_to_plusy;
-            gl::Uniform(shader.uModel, full_xform);
-            gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
+            glm::mat4 xform = segment_to_segment_xform(cylinderline, axisline);
+            gl::Uniform(shader.uModel, xform * prescale_mtx);
+            gl::Uniform(shader.uColor, color);
             gl::DrawElements(GL_TRIANGLES, impl.cylinder.ebo.sizei(), gl::index_type(impl.cylinder.ebo), nullptr);
         }
 
         gl::BindVertexArray();
     }
 
-    // draw DEBUG lines
+    // draw DEBUG axis lines
     if (true) {
         gl::BindVertexArray(impl.line.vao);
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {1000.0f, 1000.0f, 1000.0f});

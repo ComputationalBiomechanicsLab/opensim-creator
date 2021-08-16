@@ -1,10 +1,12 @@
 #include "mesh_hittest_screen.hpp"
 
 #include "src/app.hpp"
-#include "src/log.hpp"
 #include "src/3d/gl.hpp"
-#include "src/simtk_bindings/simtk_bindings.hpp"
+#include "src/3d/gl_glm.hpp"
+#include "src/3d/model.hpp"
+#include "src/simtk_bindings/stk_meshloader.hpp"
 
+#include <glm/vec3.hpp>
 #include <imgui.h>
 
 #include <chrono>
@@ -52,12 +54,12 @@ namespace {
     };
 }
 
-static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_vert>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
+static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<glm::vec3>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
     gl::Vertex_array rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
     gl::BindBuffer(ebo);
-    gl::VertexAttribPointer(shader.aPos, false, sizeof(Untextured_vert), offsetof(Untextured_vert, pos));
+    gl::VertexAttribPointer(shader.aPos, false, sizeof(glm::vec3), 0);
     gl::EnableVertexAttribArray(shader.aPos);
     gl::BindVertexArray();
     return rv;
@@ -66,33 +68,27 @@ static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_ver
 struct osc::Mesh_hittesting::Impl final {
     Shader shader;
 
-    Untextured_mesh mesh = []() {
-        Untextured_mesh rv;
-        stk_load_meshfile(App::resource("geometry/hat_ribs.vtp"), rv);
-        return rv;
-    }();
-
-    gl::Array_buffer<Untextured_vert> mesh_vbo{mesh.verts};
+    NewMesh mesh = stk_load_mesh(App::resource("geometry/hat_ribs.vtp"));
+    gl::Array_buffer<glm::vec3> mesh_vbo{mesh.verts};
     gl::Element_array_buffer<GLushort> mesh_ebo{mesh.indices};
     gl::Vertex_array mesh_vao = make_vao(shader, mesh_vbo, mesh_ebo);
 
     // sphere (debug)
-    Untextured_mesh sphere = generate_uv_sphere<Untextured_mesh>();
-    gl::Array_buffer<Untextured_vert> sphere_vbo{sphere.verts};
+    NewMesh sphere = gen_untextured_uv_sphere(12, 12);
+    gl::Array_buffer<glm::vec3> sphere_vbo{sphere.verts};
     gl::Element_array_buffer<GLushort> sphere_ebo{sphere.indices};
     gl::Vertex_array sphere_vao = make_vao(shader, sphere_vbo, sphere_ebo);
 
     // triangle (debug)
-    Untextured_vert tris[3];
-    gl::Array_buffer<Untextured_vert> triangle_vbo;
+    glm::vec3 tris[3];
+    gl::Array_buffer<glm::vec3> triangle_vbo;
     gl::Element_array_buffer<GLushort> triangle_ebo = {0, 1, 2};
     gl::Vertex_array triangle_vao = make_vao(shader, triangle_vbo, triangle_ebo);
 
     // line (debug)
-    gl::Array_buffer<Untextured_vert> line_vbo;
+    gl::Array_buffer<glm::vec3> line_vbo;
     gl::Element_array_buffer<GLushort> line_ebo = {0, 1};
     gl::Vertex_array line_vao = make_vao(shader, line_vbo, line_ebo);
-
 
     std::chrono::microseconds raycast_dur{0};
     Polar_perspective_camera camera;
@@ -159,57 +155,22 @@ void osc::Mesh_hittesting::tick(float) {
     // handle hittest
     auto raycast_start = std::chrono::high_resolution_clock::now();
     {
-        glm::vec2 dims = App::cur().dims();
-        float aspect_ratio = dims.x/dims.y;
 
-        glm::mat4 proj_mtx = impl.camera.projection_matrix(aspect_ratio);
-        glm::mat4 view_mtx = impl.camera.view_matrix();
-
-        auto& io = ImGui::GetIO();
-
-        // left-handed
-        glm::vec2 mouse_pos_ndc = (2.0f * (glm::vec2{io.MousePos} / dims)) - 1.0f;
-        mouse_pos_ndc.y = -mouse_pos_ndc.y;
-
-        // location of mouse on NDC cube
-        glm::vec4 line_origin_ndc = {mouse_pos_ndc.x, mouse_pos_ndc.y, -1.0f, 1.0f};
-
-        // location of mouse in viewspace (worldspace, but everything moved with viewer @ 0,0,0)
-        glm::vec4 line_origin_view = glm::inverse(proj_mtx) * line_origin_ndc;
-        line_origin_view /= line_origin_view.w;  // perspective divide
-
-        // location of mouse in worldspace
-        glm::vec3 line_origin_world = glm::vec3{glm::inverse(view_mtx) * line_origin_view};
-
-        // direction vector from camera to mouse location (i.e. the projection)
-        glm::vec3 line_dir_world = glm::normalize(line_origin_world - impl.camera.pos());
-
-        Line l;
-        l.d = line_dir_world;
-        l.o = line_origin_world;
-        impl.ray = l;
-
-        std::vector<glm::vec3> tris;
-        tris.reserve(impl.mesh.verts.size());
-        for (auto const& v : impl.mesh.verts) {
-            tris.push_back(v.pos);
-        }
+        impl.ray = impl.camera.screenpos_to_world_ray(ImGui::GetIO().MousePos, App::cur().dims());
 
         impl.is_moused_over = false;
+        std::vector<glm::vec3> const& tris = impl.mesh.verts;
         for (size_t i = 0; i < tris.size(); i += 3) {
-            auto res = line_intersects_triangle(tris.data() + i, l);
-            if (res.intersected) {
-                impl.hitpos = l.o + res.t*l.d;
+            Ray_collision res = get_ray_collision_triangle(impl.ray, tris.data() + i);
+            if (res.hit) {
+                impl.hitpos = impl.ray.o + res.distance*impl.ray.d;
                 impl.is_moused_over = true;
-                impl.tris[0] = {tris[i], {}};
-                impl.tris[1] = {tris[i+1], {}};
-                impl.tris[2] = {tris[i+2], {}};
+                impl.tris[0] = tris[i];
+                impl.tris[1] = tris[i+1];
+                impl.tris[2] = tris[i+2];
                 impl.triangle_vbo.assign(impl.tris, 3);
 
-                Untextured_vert lineverts[2] = {
-                    {l.o, {}},
-                    {l.o + 100.0f*l.d, {}}
-                };
+                glm::vec3 lineverts[2] = {impl.ray.o, impl.ray.o + 100.0f*impl.ray.d};
                 impl.line_vbo.assign(lineverts, 2);
 
                 break;
@@ -236,9 +197,9 @@ void osc::Mesh_hittesting::draw() {
         ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.o.x, r.o.y, r.o.z, r.d.x, r.d.y, r.d.z);
         if (impl.is_moused_over) {
             ImGui::Text("hit = (%.2f, %.2f, %.2f)", impl.hitpos.x, impl.hitpos.y, impl.hitpos.z);
-            ImGui::Text("p1 = (%.2f, %.2f, %.2f)", impl.tris[0].pos.x, impl.tris[0].pos.y, impl.tris[0].pos.z);
-            ImGui::Text("p2 = (%.2f, %.2f, %.2f)", impl.tris[1].pos.x, impl.tris[1].pos.y, impl.tris[1].pos.z);
-            ImGui::Text("p3 = (%.2f, %.2f, %.2f)", impl.tris[2].pos.x, impl.tris[2].pos.y, impl.tris[2].pos.z);
+            ImGui::Text("p1 = (%.2f, %.2f, %.2f)", impl.tris[0].x, impl.tris[0].y, impl.tris[0].z);
+            ImGui::Text("p2 = (%.2f, %.2f, %.2f)", impl.tris[1].x, impl.tris[1].y, impl.tris[1].z);
+            ImGui::Text("p3 = (%.2f, %.2f, %.2f)", impl.tris[2].x, impl.tris[2].y, impl.tris[2].z);
 
         }
         ImGui::End();

@@ -1,9 +1,11 @@
 #include "mesh_hittest_with_bvh_screen.hpp"
 
 #include "src/app.hpp"
-#include "src/3d/3d.hpp"
+#include "src/3d/bvh.hpp"
 #include "src/3d/gl.hpp"
-#include "src/simtk_bindings/simtk_bindings.hpp"
+#include "src/3d/gl_glm.hpp"
+#include "src/3d/model.hpp"
+#include "src/simtk_bindings/stk_meshloader.hpp"
 
 #include <imgui.h>
 
@@ -12,6 +14,7 @@
 
 using namespace osc;
 
+/*
 namespace {
 
     // a node in the tree
@@ -109,22 +112,17 @@ namespace {
             bvh.nodes[bvh.nodes[internal_loc].rhs].bounds);
     }
 
-    void BVH_Build(BVH& bvh, std::vector<Untextured_vert> const& triangles) {
-        OSC_ASSERT(triangles.size()/3 <= std::numeric_limits<int>::max());
+    void BVH_Build(BVH& bvh, glm::vec3 const* vs, size_t n) {
+        OSC_ASSERT(n/3 <= std::numeric_limits<int>::max());
 
         // clear out any old data
         bvh.nodes.clear();
         bvh.prims.clear();
 
         // build up the prim list for each triangle
-        for (size_t i = 0; i < triangles.size(); i += 3) {
-            glm::vec3 verts[3] = {
-                triangles[i+0].pos,
-                triangles[i+1].pos,
-                triangles[i+2].pos,
-            };
+        for (size_t i = 0; i < n; i += 3) {
             BVH_Prim& prim = bvh.prims.emplace_back();
-            prim.bounds = aabb_from_triangle(verts);
+            prim.bounds = aabb_from_points(vs + i, 3);
             prim.id = static_cast<int>(i);
         }
 
@@ -132,56 +130,53 @@ namespace {
         BVH_Recurse(bvh, 0, static_cast<int>(bvh.prims.size()));
     }
 
-    BVH BVH_Create(std::vector<Untextured_vert> const& triangles) {
+    BVH BVH_Create(glm::vec3 const* vs, size_t n) {
         BVH rv;
-        BVH_Build(rv, triangles);
+        BVH_Build(rv, vs, n);
         return rv;
     }
 
-    Untextured_vert const* BVH_check_collision_recursive(BVH const& bvh, std::vector<Untextured_vert> const& tris, Line const& ray, int nodeidx) {
-        BVH_Node const& n = bvh.nodes[nodeidx];
+    glm::vec3 const* BVH_check_collision_recursive(BVH const& bvh, glm::vec3 const* vs, size_t n, Line const& ray, int nodeidx) {
+        BVH_Node const& node = bvh.nodes[nodeidx];
 
-        auto res = line_intersects_AABB(n.bounds, ray);
+        Ray_collision res = get_ray_collision_AABB(ray, node.bounds);
 
-        if (!res.intersected) {
+        if (!res.hit) {
             return nullptr;  // no intersection at all
         }
 
-        if (n.lhs == -1 && n.rhs == -1) {
+        if (node.lhs == -1 && node.rhs == -1) {
             // leaf node: check intersection with primitives
 
-            for (int i = n.firstPrimOffset, end = n.firstPrimOffset + n.nPrims; i < end; ++i) {
+            for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i) {
                 BVH_Prim const& p = bvh.prims[i];
 
-                Untextured_vert const* first = tris.data() + p.id;
-                glm::vec3 tri[3] = {first[0].pos, first[1].pos, first[2].pos};
-
-                auto raytri = line_intersects_triangle(tri, ray);
-                if (raytri.intersected) {
-                    return first;
+                Ray_collision rayrtri = get_ray_collision_triangle(ray, vs + p.id);
+                if (rayrtri.hit) {
+                    return vs + p.id;
                 }
             }
 
             return nullptr;
         } else {
-            // internal node: check intersection with direct children
+            // else: internal node: check intersection with direct children
 
             // lhs test
-            Untextured_vert const* lhs = BVH_check_collision_recursive(bvh, tris, ray, n.lhs);
+            glm::vec3 const* lhs = BVH_check_collision_recursive(bvh, vs, n, ray, node.lhs);
             if (lhs) {
                 return lhs;
             }
 
             // rhs test
-            return BVH_check_collision_recursive(bvh, tris, ray, n.rhs);
+            return BVH_check_collision_recursive(bvh, vs, n, ray, node.rhs);
         }
     }
 
     // returns pointer to first triangle that BVH detected intersects with ray
     //
     // note: no spatial ordering, just returns whatever was found first
-    Untextured_vert const* BVH_check_collision(BVH const& bvh, std::vector<Untextured_vert> const& tris, Line const& ray) {
-        OSC_ASSERT(bvh.prims.size() == tris.size()/3);
+    glm::vec3 const* BVH_check_collision(BVH const& bvh, glm::vec3 const* tris, size_t n, Line const& ray) {
+        OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
 
         if (bvh.nodes.empty()) {
             return nullptr;
@@ -191,13 +186,14 @@ namespace {
             return nullptr;
         }
 
-        if (tris.empty()) {
+        if (n == 0) {
             return nullptr;
         }
 
-        return BVH_check_collision_recursive(bvh, tris, ray, 0);
+        return BVH_check_collision_recursive(bvh, tris, n, ray, 0);
     }
 }
+*/
 
 static char const g_VertexShader[] = R"(
     #version 330 core
@@ -240,12 +236,12 @@ namespace {
     };
 }
 
-static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<Untextured_vert>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
+static gl::Vertex_array make_vao(Shader& shader, gl::Array_buffer<glm::vec3>& vbo, gl::Element_array_buffer<GLushort>& ebo) {
     gl::Vertex_array rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
     gl::BindBuffer(ebo);
-    gl::VertexAttribPointer(shader.aPos, false, sizeof(Untextured_vert), offsetof(Untextured_vert, pos));
+    gl::VertexAttribPointer(shader.aPos, false, sizeof(glm::vec3), 0);
     gl::EnableVertexAttribArray(shader.aPos);
     gl::BindVertexArray();
     return rv;
@@ -277,25 +273,21 @@ static void BVH_DrawRecursive(BVH const& bvh, Shader& shader, int pos) {
 struct osc::Mesh_hittest_with_bvh_screen::Impl final {
     Shader shader;
 
-    Untextured_mesh mesh = []() {
-        Untextured_mesh rv;
-        stk_load_meshfile(App::resource("geometry/hat_ribs.vtp"), rv);
-        return rv;
-    }();
-    gl::Array_buffer<Untextured_vert> mesh_vbo{mesh.verts};
+    NewMesh mesh = stk_load_mesh(App::resource("geometry/hat_ribs.vtp"));
+    gl::Array_buffer<glm::vec3> mesh_vbo{mesh.verts};
     gl::Element_array_buffer<GLushort> mesh_ebo{mesh.indices};
     gl::Vertex_array mesh_vao = make_vao(shader, mesh_vbo, mesh_ebo);
-    BVH mesh_bvh = BVH_Create(mesh.verts);
+    BVH mesh_bvh = BVH_CreateFromTriangles(mesh.verts.data(), mesh.verts.size());
 
     // triangle (debug)
-    Untextured_vert tris[3];
-    gl::Array_buffer<Untextured_vert> triangle_vbo;
+    glm::vec3 tris[3];
+    gl::Array_buffer<glm::vec3> triangle_vbo;
     gl::Element_array_buffer<GLushort> triangle_ebo = {0, 1, 2};
     gl::Vertex_array triangle_vao = make_vao(shader, triangle_vbo, triangle_ebo);
 
     // AABB wireframe
-    Untextured_mesh cube_wireframe = generate_cube_lines();
-    gl::Array_buffer<Untextured_vert> cube_wireframe_vbo{cube_wireframe.verts};
+    NewMesh cube_wireframe = gen_cube_lines();
+    gl::Array_buffer<glm::vec3> cube_wireframe_vbo{cube_wireframe.verts};
     gl::Element_array_buffer<GLushort> cube_wireframe_ebo{cube_wireframe.indices};
     gl::Vertex_array cube_vao = make_vao(shader, cube_wireframe_vbo, cube_wireframe_ebo);
 
@@ -361,61 +353,34 @@ void osc::Mesh_hittest_with_bvh_screen::tick(float) {
     // handle hittest
     auto raycast_start = std::chrono::high_resolution_clock::now();
     {
-        glm::vec2 dims = App::cur().dims();
-        float aspect_ratio = dims.x/dims.y;
-
-        glm::mat4 proj_mtx = impl.camera.projection_matrix(aspect_ratio);
-        glm::mat4 view_mtx = impl.camera.view_matrix();
-
-        auto& io = ImGui::GetIO();
-
-        // left-handed
-        glm::vec2 mouse_pos_ndc = (2.0f * (glm::vec2{io.MousePos} / dims)) - 1.0f;
-        mouse_pos_ndc.y = -mouse_pos_ndc.y;
-
-        // location of mouse on NDC cube
-        glm::vec4 line_origin_ndc = {mouse_pos_ndc.x, mouse_pos_ndc.y, -1.0f, 1.0f};
-
-        // location of mouse in viewspace (worldspace, but everything moved with viewer @ 0,0,0)
-        glm::vec4 line_origin_view = glm::inverse(proj_mtx) * line_origin_ndc;
-        line_origin_view /= line_origin_view.w;  // perspective divide
-
-        // location of mouse in worldspace
-        glm::vec3 line_origin_world = glm::vec3{glm::inverse(view_mtx) * line_origin_view};
-
-        // direction vector from camera to mouse location (i.e. the projection)
-        glm::vec3 line_dir_world = glm::normalize(line_origin_world - impl.camera.pos());
-
-        Line l;
-        l.d = line_dir_world;
-        l.o = line_origin_world;
+        Line l = impl.camera.screenpos_to_world_ray(ImGui::GetMousePos(), App::cur().dims());
 
         impl.is_moused_over = false;
 
         if (impl.use_BVH) {
-            Untextured_vert const* v = BVH_check_collision(impl.mesh_bvh, impl.mesh.verts, l);
-            if (v) {
+            int id = BVH_get_ray_collision_triangles(impl.mesh_bvh, impl.mesh.verts.data(), impl.mesh.verts.size(), l);
+            if (id >= 0) {
+                glm::vec3 const* v = impl.mesh.verts.data() + id;
                 impl.is_moused_over = true;
-                impl.tris[0] = {v[0].pos, {}};
-                impl.tris[1] = {v[1].pos, {}};
-                impl.tris[2] = {v[2].pos, {}};
+                impl.tris[0] = v[0];
+                impl.tris[1] = v[1];
+                impl.tris[2] = v[2];
                 impl.triangle_vbo.assign(impl.tris, 3);
             }
 
         } else {
             auto const& verts = impl.mesh.verts;
             for (size_t i = 0; i < verts.size(); i += 3) {
-                glm::vec3 tri[3] = {verts[i].pos, verts[i+1].pos, verts[i+2].pos};
-                auto res = line_intersects_triangle(tri, l);
-                if (res.intersected) {
+                glm::vec3 tri[3] = {verts[i], verts[i+1], verts[i+2]};
+                Ray_collision res = get_ray_collision_triangle(l, tri);
+                if (res.hit) {
                     impl.is_moused_over = true;
 
                     // draw triangle for hit
-                    impl.tris[0] = {tri[0], {}};
-                    impl.tris[1] = {tri[1], {}};
-                    impl.tris[2] = {tri[2], {}};
+                    impl.tris[0] = tri[0];
+                    impl.tris[1] = tri[1];
+                    impl.tris[2] = tri[2];
                     impl.triangle_vbo.assign(impl.tris, 3);
-
                     break;
                 }
             }
