@@ -459,17 +459,19 @@ std::array<glm::vec3, 8> osc::aabb_verts(AABB const& aabb) noexcept {
 
     glm::vec3 d = aabb_dims(aabb);
 
-    // effectively, span each dimension from each AABB corner
-    return std::array<glm::vec3, 8>{{
-        aabb.min,
-        aabb.min + d.x,
-        aabb.min + d.y,
-        aabb.min + d.z,
-        aabb.max,
-        aabb.max - d.x,
-        aabb.max - d.y,
-        aabb.max - d.z,
-    }};
+    std::array<glm::vec3, 8> rv;
+    rv[0] = aabb.min;
+    rv[1] = aabb.max;
+    int pos = 2;
+    for (int i = 0; i < 3; ++i) {
+        glm::vec3 min = aabb.min;
+        min[i] += d[i];
+        glm::vec3 max = aabb.max;
+        max[i] -= d[i];
+        rv[pos++] = min;
+        rv[pos++] = max;
+    }
+    return rv;
 }
 
 AABB osc::aabb_apply_xform(AABB const& aabb, glm::mat4 const& m) noexcept {
@@ -478,12 +480,7 @@ AABB osc::aabb_apply_xform(AABB const& aabb, glm::mat4 const& m) noexcept {
         vert = m * glm::vec4{vert, 1.0f};
     }
 
-    AABB rv{verts[0], verts[0]};
-    for (size_t i = 1; i < verts.size(); ++i) {
-        rv.min = vec_min(rv.min, verts[i]);
-        rv.max = vec_max(rv.max, verts[i]);
-    }
-    return rv;
+    return aabb_from_points(verts.data(), verts.size());
 }
 
 AABB osc::aabb_from_points(glm::vec3 const* vs, size_t n) noexcept {
@@ -502,14 +499,8 @@ AABB osc::aabb_from_points(glm::vec3 const* vs, size_t n) noexcept {
     // otherwise, compute bounds
     for (size_t i = 0; i < n; ++i) {
         glm::vec3 const& pos = vs[i];
-
-        rv.min[0] = std::min(rv.min[0], pos[0]);
-        rv.min[1] = std::min(rv.min[1], pos[1]);
-        rv.min[2] = std::min(rv.min[2], pos[2]);
-
-        rv.max[0] = std::max(rv.max[0], pos[0]);
-        rv.max[1] = std::max(rv.max[1], pos[1]);
-        rv.max[2] = std::max(rv.max[2], pos[2]);
+        rv.min = vec_min(rv.min, pos);
+        rv.max = vec_max(rv.max, pos);
     }
 
     return rv;
@@ -560,6 +551,13 @@ AABB osc::sphere_aabb(Sphere const& s) noexcept {
     AABB rv;
     rv.min = s.origin - s.radius;
     rv.max = s.origin + s.radius;
+    return rv;
+}
+
+Line osc::apply_xform_to_line(Line const& l, glm::mat4 const& m) noexcept {
+    Line rv;
+    rv.d = m * glm::vec4{l.d, 0.0f};
+    rv.o = m * glm::vec4{l.o, 1.0f};
     return rv;
 }
 

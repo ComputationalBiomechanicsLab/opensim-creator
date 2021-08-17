@@ -109,6 +109,8 @@ add_executable(osc
     src/3d/shaders/plain_texture_shader.hpp
     src/3d/shaders/skip_msxaa_blitter_shader.cpp
     src/3d/shaders/skip_msxaa_blitter_shader.hpp
+    src/3d/shaders/solid_color_shader.cpp
+    src/3d/shaders/solid_color_shader.hpp
 
     src/opensim_bindings/file_change_poller.hpp
     src/opensim_bindings/opensim_helpers.hpp

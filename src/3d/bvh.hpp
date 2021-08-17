@@ -28,6 +28,11 @@ namespace osc {
         void clear();
     };
 
+    struct BVH_Collision final {
+        int prim_id;
+        float distance;
+    };
+
     // effectively:
     //
     //     BVH bvh;
@@ -41,14 +46,17 @@ namespace osc {
     // prim.id will refer to the index of the AABB
     void BVH_BuildFromAABBs(BVH&, AABB const*, size_t naabbs);
 
-    // returns index of the triangle the line intersects, or -1 if no intersection
+    // appends all collisions along the ray into the outparam
     //
-    // assumes prim.id is an offset into the supplied (triangle) verts - you should
-    // use BVH_BuildFromTriangles to use this
-    int BVH_get_ray_collision_triangles(BVH const&, glm::vec3 const*, size_t n, Line const&);
+    // assumes prim.id in the BVH is an offset into the (supplied) triangle verts
+    //
+    // returns true if at least one collision was found and appended to the output
+    bool BVH_get_ray_collisions_triangles(BVH const&, glm::vec3 const*, size_t n, Line const&, std::vector<BVH_Collision>* appendTo);
 
     // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
     //
     // no assumptions about prim.id required here - it's using the BVH's AABBs
-    int BVH_get_ray_collision_AABB(BVH const&, Line const&);
+    //
+    // returns true if at least one collision was found and appended to the output
+    bool BVH_get_ray_collision_AABBs(BVH const&, Line const&, std::vector<BVH_Collision>* appendTo);
 }

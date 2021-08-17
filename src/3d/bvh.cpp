@@ -29,7 +29,7 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     }
 
     // else: compute internal node
-    OSC_ASSERT(n > 1);
+    OSC_ASSERT(n > 1 && "trying to treat a lone node as if it were an internal node - this shouldn't be possible (the implementation should have already handled the leaf case)");
 
     // compute bounding box of remaining prims
     AABB aabb{{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
@@ -67,7 +67,7 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
         mid = begin + n/2;
     }
 
-    OSC_ASSERT(begin < mid && mid < end);
+    OSC_ASSERT(begin < mid && mid < end && "BVH partitioning failed to create two partitions - this shouldn't be possible");
 
     // allocate internal node
     int internal_loc = static_cast<int>(bvh.nodes.size());  // careful: reallocations
@@ -89,12 +89,16 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
         bvh.nodes[bvh.nodes[internal_loc].rhs].bounds);
 }
 
-static int BVH_get_ray_collision_triangles_recursive(
+// returns true if something hit (the return value is only used in recursion)
+//
+// populates outparam with all triangle hits in depth-first order
+static bool BVH_get_ray_collisions_triangles_recursive(
         BVH const& bvh,
         glm::vec3 const* vs,
         size_t n,
         Line const& ray,
-        int nodeidx) {
+        int nodeidx,
+        std::vector<BVH_Collision>& out) {
 
     BVH_Node const& node = bvh.nodes[nodeidx];
 
@@ -102,62 +106,62 @@ static int BVH_get_ray_collision_triangles_recursive(
     Ray_collision res = get_ray_collision_AABB(ray, node.bounds);
 
     if (!res.hit) {
-        return -1;  // no intersection with this node at all
+        return false;  // no intersection with this node at all
     }
 
     if (node.lhs == -1 && node.rhs == -1) {
         // leaf node: check ray-triangle intersection
 
+        bool hit = false;
         for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i) {
             BVH_Prim const& p = bvh.prims[i];
 
             Ray_collision rayrtri = get_ray_collision_triangle(ray, vs + p.id);
             if (rayrtri.hit) {
-                return p.id;
+                out.push_back(BVH_Collision{p.id, rayrtri.distance});
+                hit = true;
             }
         }
-
-        return -1;
+        return hit;
     } else {
         // else: internal node: check intersection with direct children
 
-        // lhs test
-        int lhs = BVH_get_ray_collision_triangles_recursive(bvh, vs, n, ray, node.lhs);
-        if (lhs >= 0) {
-            return lhs;
-        }
-
-        // rhs test
-        return BVH_get_ray_collision_triangles_recursive(bvh, vs, n, ray, node.rhs);
+        bool lhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, node.lhs, out);
+        bool rhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, node.rhs, out);
+        return lhs || rhs;
     }
 }
 
-static int BVH_get_ray_collision_AABBs_recursive(BVH const& bvh, Line const& ray, int nodeidx) {
+// returns true if something hit (recursively)
+//
+// populates outparam with all AABB hits in depth-first order
+static bool BVH_get_ray_collision_AABBs_recursive(
+        BVH const& bvh,
+        Line const& ray,
+        int nodeidx,
+        std::vector<BVH_Collision>& out) {
+
     BVH_Node const& node = bvh.nodes[nodeidx];
 
     // check ray-AABB intersection with the BVH node
     Ray_collision res = get_ray_collision_AABB(ray, node.bounds);
 
     if (!res.hit) {
-        return -1;  // no intersection with this node at all
+        return false;  // no intersection with this node at all
     }
 
     if (node.lhs == -1 && node.rhs == -1) {
         // it's a leaf node, so we've sucessfully found the AABB that intersected
-        // and just need to return the ID
 
-        return bvh.prims[node.firstPrimOffset].id;
+        out.push_back(BVH_Collision{bvh.prims[node.firstPrimOffset].id, res.distance});
+        return true;
     }
 
     // else: we've "hit" an internal node and need to recurse to find the leaf
 
-    int lhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.lhs);
-    if (lhs >= 0) {
-        return lhs;
-    }
-
-    // rhs
-    return BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.rhs);
+    bool lhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.lhs, out);
+    bool rhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.rhs, out);
+    return lhs || rhs;
 }
 
 void osc::BVH::clear() {
@@ -202,32 +206,46 @@ void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n) {
     BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
 }
 
-int osc::BVH_get_ray_collision_triangles(BVH const& bvh, glm::vec3 const* vs, size_t n, Line const& ray) {
+bool osc::BVH_get_ray_collisions_triangles(
+        BVH const& bvh,
+        glm::vec3 const* vs,
+        size_t n,
+        Line const& ray,
+        std::vector<BVH_Collision>* appendTo) {
+
+    OSC_ASSERT(appendTo != nullptr);
     OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
 
     if (bvh.nodes.empty()) {
-        return -1;
+        return false;
     }
 
     if (bvh.prims.empty()) {
-        return -1;
+        return false;
     }
 
     if (n == 0) {
-        return -1;
+        return false;
     }
 
-    return BVH_get_ray_collision_triangles_recursive(bvh, vs, n, ray, 0);
+    return BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, 0, *appendTo);
 }
 
-int BVH_get_ray_collision_AABB(BVH const& bvh, Line const& ray) {
+bool osc::BVH_get_ray_collision_AABBs(
+        BVH const& bvh,
+        Line const& ray,
+        std::vector<BVH_Collision>* appendTo) {
+
+    OSC_ASSERT(appendTo != nullptr);
+
     if (bvh.nodes.empty()) {
-        return -1;
+        return false;
     }
 
     if (bvh.prims.empty()) {
-        return -1;
+        return false;
     }
 
-    return BVH_get_ray_collision_AABBs_recursive(bvh, ray, 0);
+    return BVH_get_ray_collision_AABBs_recursive(bvh, ray, 0, *appendTo);
 }
+

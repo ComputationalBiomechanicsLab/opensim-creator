@@ -17,7 +17,7 @@ namespace osc {
     // instance of a mesh to render
     //
     // there can be *many* (e.g. hundreds of thousands) of these in a single drawcall
-    struct alignas(32) Mesh_instance final {
+    struct Mesh_instance final {
         glm::mat4x3 model_xform;  // model --> world xform
         glm::mat3 normal_xform;  // normal xform for the above
         Rgba32 rgba;  // color, if untextured
@@ -107,6 +107,9 @@ namespace osc {
         // note: optimal performance depends on the ordering of instances in the drawlist
         //       see comment next to the drawlist
         void render(Render_params const&, Mesh_instance_drawlist const&);
+
+        gl::Frame_buffer const& output_fbo() const noexcept;
+        gl::Frame_buffer& output_fbo() noexcept;
 
         gl::Texture_2d const& output_texture() const noexcept;
         gl::Texture_2d& output_texture() noexcept;

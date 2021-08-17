@@ -384,12 +384,9 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT);
 
-    // handle whether to draw in wireframe mode or not
-    GLenum original_poly_mode = gl::GetEnum(GL_POLYGON_MODE);
+    // set wireframe mode on if requested
     if (p.flags & DrawcallFlags_WireframeMode) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
     // draw scene
@@ -404,8 +401,6 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
         gl::Uniform(shader.uLightDir, p.light_dir);
         gl::Uniform(shader.uLightColor, p.light_rgb);
         gl::Uniform(shader.uViewPos, p.view_pos);
-        gl::Uniform(shader.uIsShaded, true);
-        gl::Uniform(shader.uSkipVP, false);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnablei(GL_BLEND, 0);  // COLOR0
@@ -507,15 +502,16 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
         gl::BindVertexArray();
     }
 
-    // reset wireframe mode
-    glPolygonMode(GL_FRONT_AND_BACK, original_poly_mode);
+    if (p.flags & DrawcallFlags_WireframeMode) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     // blit scene to output texture
     gl::BindFramebuffer(GL_READ_FRAMEBUFFER, rt.render_msxaa_fbo);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, rt.output_fbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BlitFramebuffer(0, 0, rt.dims.x, rt.dims.y, 0, 0, rt.dims.x, rt.dims.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    gl::BlitFramebuffer(0, 0, rt.dims.x, rt.dims.y, 0, 0, rt.dims.x, rt.dims.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 
     // handle rim highlights (if necessary)
@@ -555,6 +551,14 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
     }
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
+}
+
+gl::Frame_buffer const& osc::Instanced_renderer::output_fbo() const noexcept {
+    return m_Impl->rt.output_fbo;
+}
+
+gl::Frame_buffer& osc::Instanced_renderer::output_fbo() noexcept {
+    return m_Impl->rt.output_fbo;
 }
 
 gl::Texture_2d const& osc::Instanced_renderer::output_texture() const noexcept {

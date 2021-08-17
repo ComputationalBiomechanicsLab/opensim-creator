@@ -125,6 +125,7 @@ namespace osc {
     // analytical geometry calculations
     Sphere sphere_bounds_of_points(glm::vec3 const*, size_t n) noexcept;
     AABB sphere_aabb(Sphere const&) noexcept;
+    Line apply_xform_to_line(Line const&, glm::mat4 const&) noexcept;
 
     // helpful for mapping analytical geometry into a scene
     glm::mat4 disc_to_disc_xform(Disc const&, Disc const&) noexcept;

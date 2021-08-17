@@ -16,21 +16,34 @@
 
 using namespace osc;
 
+// these geometries are always added by the scene generator into the meshdata list
+// in this order, so  that the implementation doesn't need to perform any hashtable
+// lookups for them at runtime (OpenSim models can emit a large number of spheres +
+// cylinders)
 static constexpr unsigned short g_SphereMeshidx = 0;
 static constexpr unsigned short g_CylinderMeshidx = 1;
 static constexpr unsigned short g_BrickMeshidx = 2;
 static constexpr unsigned short g_ConeMeshidx = 3;
-static constexpr float g_LineThickness = 0.005f;
 
+static constexpr float g_LineThickness = 0.005f;
+static constexpr float g_FrameAxisLengthRescale = 0.25f;
+static constexpr float g_FrameAxisThickness = 0.0025f;
+
+// preprocess (AABB, BVH, etc.) CPU-side data and upload it to the instanced renderer
 static Cached_meshdata create_cached_meshdata(Instanced_renderer& renderer, NewMesh src_mesh) {
+
+    // heap-allocate the meshdata into a shared pointer so that emitted drawlists can
+    // independently contain a (reference-counted) pointer to the data
     std::shared_ptr<CPU_mesh> cpumesh = std::make_shared<CPU_mesh>();
     cpumesh->data = std::move(src_mesh);
+
+    // precompute modelspace AABB
     cpumesh->aabb = aabb_from_points(cpumesh->data.verts.data(), cpumesh->data.verts.size());
+
+    // precompute modelspace BVH
     BVH_BuildFromTriangles(cpumesh->triangle_bvh, cpumesh->data.verts.data(), cpumesh->data.verts.size());
 
-    Refcounted_instance_meshdata rim = renderer.allocate(cpumesh->data);
-
-    return {cpumesh, rim};
+    return Cached_meshdata{cpumesh, renderer.allocate(cpumesh->data)};
 }
 
 static void handle_line_emission(
@@ -53,9 +66,10 @@ static void handle_line_emission(
 
     // emit worldspace aabb for the instance
     AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
 
-    // emit associated component
+    out.aabbs.push_back(aabb);
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -81,8 +95,8 @@ static void handle_sphere_emission(
     // emit worldspace aabb for the instance
     AABB aabb = aabb_apply_xform(out.meshes_data[g_SphereMeshidx]->aabb, ins.model_xform);
     out.aabbs.push_back(aabb);
-
-    // emit associated component
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -105,8 +119,8 @@ static void handle_cylinder_emission(
     // emit worldspace aabb for the instance
     AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
     out.aabbs.push_back(aabb);
-
-    // emit associated component
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -129,8 +143,8 @@ static void handle_brick_emission(
     // emit worldspace aabb for the instance
     AABB aabb = aabb_apply_xform(out.meshes_data[g_BrickMeshidx]->aabb, ins.model_xform);
     out.aabbs.push_back(aabb);
-
-    // emit associated component
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -186,10 +200,10 @@ static void handle_meshfile_emission(
     ins.data = data;
 
     // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_BrickMeshidx]->aabb, ins.model_xform);
+    AABB aabb = aabb_apply_xform(out.meshes_data[meshidx]->aabb, ins.model_xform);
     out.aabbs.push_back(aabb);
-
-    // emit associated component
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -217,8 +231,8 @@ static void handle_cone_emission(
     // emit worldspace aabb for the instance
     AABB aabb = aabb_apply_xform(out.meshes_data[g_ConeMeshidx]->aabb, ins.model_xform);
     out.aabbs.push_back(aabb);
-
-    // emit associated component
+    out.meshidxs.push_back(ins.meshidx);
+    out.model_mtxs.push_back(ins.model_xform);
     out.components.push_back(c);
 }
 
@@ -227,13 +241,10 @@ static void handle_frame_emission(
         Simbody_geometry::Frame const& frame,
         Scene_decorations& out) {
 
-    constexpr float axlen_rescale = 0.25f;
-    constexpr float ax_thickness = 0.0025f;
-
     // generate origin sphere
     {
         Sphere mesh_sphere{{0.0f, 0.0f, 0.0f}, 1.0f};
-        Sphere output_sphere{frame.pos, 0.05f * axlen_rescale};
+        Sphere output_sphere{frame.pos, 0.05f * g_FrameAxisLengthRescale};
 
         // emit instance data
         short data = static_cast<short>(out.drawlist.instances.size());
@@ -249,8 +260,8 @@ static void handle_frame_emission(
         // emit worldspace aabb for the instance
         AABB aabb = aabb_apply_xform(out.meshes_data[g_SphereMeshidx]->aabb, ins.model_xform);
         out.aabbs.push_back(aabb);
-
-        // emit associated component
+        out.meshidxs.push_back(ins.meshidx);
+        out.model_mtxs.push_back(ins.model_xform);
         out.components.push_back(c);
     }
 
@@ -258,10 +269,10 @@ static void handle_frame_emission(
     Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     for (int i = 0; i < 3; ++i) {
         glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-        dir[i] = axlen_rescale*frame.axis_lengths[i];
+        dir[i] = g_FrameAxisLengthRescale * frame.axis_lengths[i];
         Segment axisline{frame.pos, frame.pos + dir};
 
-        glm::vec3 prescale = {ax_thickness, 1.0f, ax_thickness};
+        glm::vec3 prescale = {g_FrameAxisThickness, 1.0f, g_FrameAxisThickness};
         glm::mat4 prescale_mtx = glm::scale(glm::mat4{1.0f}, prescale);
         glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
         color[i] = 1.0f;
@@ -281,13 +292,14 @@ static void handle_frame_emission(
         // emit worldspace aabb for the instance
         AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
         out.aabbs.push_back(aabb);
-
-        // emit associated component
+        out.meshidxs.push_back(ins.meshidx);
+        out.model_mtxs.push_back(ins.model_xform);
         out.components.push_back(c);
     }
 }
 
-static void handle_geom_emission(
+// this is effectively called whenever OpenSim emits a decoration element
+static void handle_geometry_emission(
         std::unordered_map<std::string, std::unique_ptr<Cached_meshdata>>& mesh_cache,
         std::unordered_map<Cached_meshdata*, int>& meshdata2idx,
         Instanced_renderer& r,
@@ -315,11 +327,13 @@ static void handle_geom_emission(
         handle_frame_emission(c, g.frame, out);
         break;
     case Simbody_geometry::Type::Ellipsoid:
+        // TODO
         break;
     case Simbody_geometry::Type::Cone:
         handle_cone_emission(c, g.cone, out);
         break;
     case Simbody_geometry::Type::Arrow:
+        // TODO
         break;
     }
 }
@@ -330,13 +344,15 @@ void osc::Scene_decorations::clear() {
     aabbs.clear();
     aabb_bvh.clear();
     components.clear();
+    meshidxs.clear();
+    model_mtxs.clear();
 }
 
 osc::Scene_generator::Scene_generator(Instanced_renderer& r) :
-    m_CachedSphere{create_cached_meshdata(r, gen_untextured_uv_sphere(16, 16))},
-    m_CachedCylinder{create_cached_meshdata(r, gen_untextured_simbody_cylinder(36))},
+    m_CachedSphere{create_cached_meshdata(r, gen_untextured_uv_sphere(12, 12))},
+    m_CachedCylinder{create_cached_meshdata(r, gen_untextured_simbody_cylinder(16))},
     m_CachedBrick{create_cached_meshdata(r, gen_cube())},
-    m_CachedCone{create_cached_meshdata(r, gen_untextured_simbody_cone(16))},
+    m_CachedCone{create_cached_meshdata(r, gen_untextured_simbody_cone(12))},
     m_CachedMeshes{} {
 }
 
@@ -350,6 +366,9 @@ void osc::Scene_generator::generate(
 
     // clear the pointer-to-meshidx cache that's used to dedupe mesh references
     m_MeshPtr2Meshidx.clear();
+
+    // clear this - it's required by OpenSim's generatedecorations thing
+    m_GeomListCache.clear();
 
     // clear any existing data in the drawlist
     out.clear();
@@ -370,15 +389,12 @@ void osc::Scene_generator::generate(
     // called whenever the simbody geometry generator emits new geometry
     OpenSim::Component const* current_component = nullptr;
     auto on_geometry_emission = [&r, &current_component, &out, this](Simbody_geometry const& g) {
-        handle_geom_emission(m_CachedMeshes, m_MeshPtr2Meshidx, r, current_component, g, out);
+        handle_geometry_emission(m_CachedMeshes, m_MeshPtr2Meshidx, r, current_component, g, out);
     };
     SimTK::SimbodyMatterSubsystem const& matter = c.getSystem().getMatterSubsystem();
 
     // create a visitor that visits each component
     auto visitor = Geometry_generator_lambda{matter, state, on_geometry_emission};
-
-    // OpenSim populates this whenever .generateDecorations is called
-    SimTK::Array_<SimTK::DecorativeGeometry> geom;
 
     // iterate through each component and walk through the geometry
     for (OpenSim::Component const& c : c.getComponentList()) {
@@ -386,20 +402,20 @@ void osc::Scene_generator::generate(
 
         // emit static geometry (if requested)
         if (flags & Modelstate_decoration_generator_flags_GenerateStaticDecorations) {
-            c.generateDecorations(true, hints, state, geom);
-            for (SimTK::DecorativeGeometry const& dg : geom) {
+            c.generateDecorations(true, hints, state, m_GeomListCache);
+            for (SimTK::DecorativeGeometry const& dg : m_GeomListCache) {
                 dg.implementGeometry(visitor);
             }
-            geom.clear();
+            m_GeomListCache.clear();
         }
 
         // emit dynamic geometry (if requested)
         if (flags & Modelstate_decoration_generator_flags_GenerateDynamicDecorations) {
-            c.generateDecorations(false, hints, state, geom);
-            for (SimTK::DecorativeGeometry const& dg : geom) {
+            c.generateDecorations(false, hints, state, m_GeomListCache);
+            for (SimTK::DecorativeGeometry const& dg : m_GeomListCache) {
                 dg.implementGeometry(visitor);
             }
-            geom.clear();
+            m_GeomListCache.clear();
         }
     }
 

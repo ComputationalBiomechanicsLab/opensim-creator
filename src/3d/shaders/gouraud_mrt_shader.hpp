@@ -26,9 +26,7 @@ namespace osc {
         gl::Uniform_vec3 uLightColor;
         gl::Uniform_vec3 uViewPos;
         gl::Uniform_bool uIsTextured;
-        gl::Uniform_bool uIsShaded;
         gl::Uniform_sampler2d uSampler0;
-        gl::Uniform_bool uSkipVP;
 
         Gouraud_mrt_shader();
     };

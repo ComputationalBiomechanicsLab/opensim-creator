@@ -4,6 +4,8 @@
 #include "src/3d/model.hpp"
 #include "src/3d/instanced_renderer.hpp"
 
+#include <SimTKcommon.h>
+
 #include <memory>
 #include <vector>
 #include <string>
@@ -51,8 +53,17 @@ namespace osc {
         // to map an instance into this
         std::vector<AABB> aabbs;
 
+        // instance mesh indexes
+        //
+        // ordered as instances were emitted, handy for mapping AABB collisions onto mesh
+        // data (e.g. for mesh hit testing)
+        std::vector<unsigned short> meshidxs;
+
+        // model matrices
+        std::vector<glm::mat4x3> model_mtxs;
+
         // scene-level BVH of the instances
-        BVH aabb_bvh;  // prim id indexes into aabbs
+        BVH aabb_bvh;  // prim id indexes into aabbs/mesh_idxs
 
         // components
         //
@@ -87,6 +98,9 @@ namespace osc {
         // this is used to ensure multiple instances of the same meshfile end up with the
         // same instance meshidx - cleared per-call
         std::unordered_map<Cached_meshdata*, int> m_MeshPtr2Meshidx;
+
+        // used to store intermediate data
+        SimTK::Array_<SimTK::DecorativeGeometry> m_GeomListCache;
 
     public:
         Scene_generator(Instanced_renderer&);
