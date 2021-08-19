@@ -1,8 +1,5 @@
 #pragma once
 
-#include "src/3d/gl.hpp"
-#include "src/3d/model.hpp"
-
 #include <glm/mat4x4.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
@@ -11,51 +8,68 @@
 #include <glm/vec4.hpp>
 
 #include <memory>
-#include <vector>
+#include <cstddef>
+
+namespace gl {
+    class Texture_2d;
+    class Frame_buffer;
+}
 
 namespace osc {
-    // instance of a mesh to render
-    //
-    // there can be *many* (e.g. hundreds of thousands) of these in a single drawcall
-    struct Mesh_instance final {
-        glm::mat4x3 model_xform;  // model --> world xform
-        glm::mat3 normal_xform;  // normal xform for the above
-        Rgba32 rgba;  // color, if untextured
-        GLushort meshidx;  // index into meshes array
-        GLshort texidx;  // index into textures array, or -1 if untextured
-        GLubyte rim_intensity;  // intensity of rim highlight (0x00 for no highlit, 0xff for full highlight)
-        short data;  // not used by the renderer - can be used by downstream for intrusive storage
-    };
+    struct NewMesh;
+    struct Rgba32;
+}
 
-    // handle to instanced-renderer-side data (VAOs, VBOs, etc.)
-    //
-    // these are shared by mesh instances via the index
-    class Refcounted_instance_meshdata final {
+namespace osc {
+
+    struct Drawlist_compiler_input;
+    class Instanced_drawlist;
+
+    // opaque handle to meshdata that has been uploaded to the backend
+    class Instanceable_meshdata final {
     public:
         struct Impl;
     private:
         friend class Instanced_renderer;
+        friend Instanceable_meshdata upload_meshdata_for_instancing(NewMesh const&);
+        friend void upload_inputs_to_drawlist(Drawlist_compiler_input const&, Instanced_drawlist&);
         std::shared_ptr<Impl> m_Impl;
-        Refcounted_instance_meshdata(std::shared_ptr<Impl>);
+        Instanceable_meshdata(std::shared_ptr<Impl>);
     public:
-        ~Refcounted_instance_meshdata() noexcept;
+        ~Instanceable_meshdata() noexcept;
     };
 
-    // list of instances to render
-    //
-    // instances are drawn in the supplied order. The instanced renderer automatically performs
-    // a front-to-back O(1) batching based on `meshidx` and `texidx`. You should sort the instance
-    // list by these *but* be sure to handle non-opaque objects correctly (draw them last,
-    // back-to-front)
-    struct Mesh_instance_drawlist final {
-        std::vector<Mesh_instance> instances;
-        std::vector<Refcounted_instance_meshdata> meshes;  // instance.meshidx can index this
-        std::vector<std::shared_ptr<gl::Texture_2d>> textures;  // instance.texidx can index this
+    // uploads mesh data to the backend
+    Instanceable_meshdata upload_meshdata_for_instancing(NewMesh const&);
 
-        void clear();
+    // data inputs the backend needs to generate an instance drawlist
+    struct Drawlist_compiler_input final {
+        size_t ninstances = 0;
+        glm::mat4x3 const* model_xforms = nullptr;
+        glm::mat3 const* normal_xforms = nullptr;
+        Rgba32 const* colors = nullptr;
+        Instanceable_meshdata const* meshes;
+        std::shared_ptr<gl::Texture_2d> const* textures;
+        unsigned char const* rim_intensity;
     };
 
-    // flags for a drawcall
+    // opaque handle to a drawlist the backend can render rapidly
+    class Instanced_drawlist final {
+    public:
+        struct Impl;
+    private:
+        friend class Instanced_renderer;
+        friend void upload_inputs_to_drawlist(Drawlist_compiler_input const&, Instanced_drawlist&);
+        std::shared_ptr<Impl> m_Impl;
+    public:
+        Instanced_drawlist();
+        ~Instanced_drawlist() noexcept;
+    };
+
+    // writes inputs into the drawlist
+    void upload_inputs_to_drawlist(Drawlist_compiler_input const&, Instanced_drawlist&);
+
+    // flags for a render drawcall
     using DrawcallFlags = int;
     enum DrawcallFlags_ {
         DrawcallFlags_None = 0 << 0,
@@ -63,12 +77,11 @@ namespace osc {
         DrawcallFlags_ShowMeshNormals = 1 << 1,  // render mesh normals
         DrawcallFlags_DrawRims = 1 << 2,  // render rim highlights
         DrawcallFlags_DrawSceneGeometry = 1 << 3,  // render the scene (development)
-        DrawcallFlags_UseInstancedRenderer = 1 << 4,  // disable instanced rendering (development)
 
-        DrawcallFlags_Default = DrawcallFlags_DrawRims | DrawcallFlags_DrawSceneGeometry | DrawcallFlags_UseInstancedRenderer
+        DrawcallFlags_Default = DrawcallFlags_DrawRims | DrawcallFlags_DrawSceneGeometry
     };
 
-    // parameters (incl. flags) for a drawcall
+    // parameters for a render drawcall
     struct Render_params final {
         glm::mat4 view_matrix = glm::mat4{1.0f};  // worldspace -> viewspace transform matrix
         glm::mat4 projection_matrix = glm::mat4{1.0f};  // viewspace -> clipspace transform matrix
@@ -91,8 +104,6 @@ namespace osc {
         Instanced_renderer(glm::ivec2 dims, int samples);
         ~Instanced_renderer() noexcept;
 
-        Refcounted_instance_meshdata allocate(NewMesh const&);  // allocate meshdata on GPU
-
         [[nodiscard]] glm::ivec2 dims() const noexcept;
         [[nodiscard]] glm::vec2 dimsf() const noexcept;
         void set_dims(glm::ivec2);
@@ -106,7 +117,7 @@ namespace osc {
         //
         // note: optimal performance depends on the ordering of instances in the drawlist
         //       see comment next to the drawlist
-        void render(Render_params const&, Mesh_instance_drawlist const&);
+        void render(Render_params const&, Instanced_drawlist const&);
 
         gl::Frame_buffer const& output_fbo() const noexcept;
         gl::Frame_buffer& output_fbo() noexcept;

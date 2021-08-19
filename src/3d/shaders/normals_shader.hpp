@@ -7,8 +7,8 @@ namespace osc {
     struct Normals_shader final {
         gl::Program program;
 
-        gl::Attribute_vec3 aPos;
-        gl::Attribute_vec3 aNormal;
+        static constexpr gl::Attribute_vec3 aPos = 0;
+        static constexpr gl::Attribute_vec3 aNormal = 1;
 
         gl::Uniform_mat4 uModelMat;
         gl::Uniform_mat4 uViewMat;

@@ -29,52 +29,22 @@ namespace osc {
         BVH triangle_bvh;  // prim id indexes into data.verts
     };
 
-    // precomputed meshdata that can be cached between geometry-generation calls
-    struct Cached_meshdata final {
-        std::shared_ptr<CPU_mesh> cpu_meshdata;
-        Refcounted_instance_meshdata instance_meshdata;
-    };
-
     // output from decoration generation
     struct Scene_decorations final {
-
-        // instanced drawlist
-        //
-        // .instances might be reordered arbitrarily. the `.data` field will be packed
-        // with the original index (24-bit little-endian)
-        Mesh_instance_drawlist drawlist;
-
-        // full (not just instancing-specific) meshdata, same order as drawlist.meshes
-        std::vector<std::shared_ptr<CPU_mesh>> meshes_data;
-
-        // instance AABBs in worldspace
-        //
-        // ordered as instances were emitted, you can use the .data field in the instance
-        // to map an instance into this
+        std::vector<glm::mat4x3> model_xforms;
+        std::vector<glm::mat3> normal_xforms;
+        std::vector<Rgba32> rgbas;
+        std::vector<Instanceable_meshdata> gpu_meshes;
+        std::vector<std::shared_ptr<CPU_mesh>> cpu_meshes;
         std::vector<AABB> aabbs;
-
-        // instance mesh indexes
-        //
-        // ordered as instances were emitted, handy for mapping AABB collisions onto mesh
-        // data (e.g. for mesh hit testing)
-        std::vector<unsigned short> meshidxs;
-
-        // model matrices
-        std::vector<glm::mat4x3> model_mtxs;
-
-        // scene-level BVH of the instances
-        BVH aabb_bvh;  // prim id indexes into aabbs/mesh_idxs
-
-        // components
-        //
-        // ordered as instances were emitted, you can use the .data field in the instance
-        // to map an instance into this
         std::vector<OpenSim::Component const*> components;
+        BVH aabb_bvh;
 
         // wipe everything in this struct, but retain memory
         void clear();
     };
 
+    // flags that affect what decorations get emitted into the output
     using Modelstate_decoration_generator_flags = int;
     enum Modelstate_decoration_generator_flags_ {
         Modelstate_decoration_generator_flags_None = 0<<0,
@@ -85,28 +55,20 @@ namespace osc {
             Modelstate_decoration_generator_flags_GenerateDynamicDecorations | Modelstate_decoration_generator_flags_GenerateStaticDecorations | Modelstate_decoration_generator_flags_GenerateFloor,
     };
 
+    struct Cached_meshdata final {
+        std::shared_ptr<CPU_mesh> cpu_meshdata;
+        Instanceable_meshdata instance_meshdata;
+    };
+
+    // class that can populate Scene_decorations lists
     class Scene_generator final {
-        // commonly-used analytic geometry: skip lookup
-        Cached_meshdata m_CachedSphere;
-        Cached_meshdata m_CachedCylinder;
-        Cached_meshdata m_CachedBrick;
-        Cached_meshdata m_CachedCone;
-
-        // mesh files are cached
         std::unordered_map<std::string, std::unique_ptr<Cached_meshdata>> m_CachedMeshes;
-
-        // this is used to ensure multiple instances of the same meshfile end up with the
-        // same instance meshidx - cleared per-call
-        std::unordered_map<Cached_meshdata*, int> m_MeshPtr2Meshidx;
-
-        // used to store intermediate data
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomListCache;
 
     public:
-        Scene_generator(Instanced_renderer&);
+        Scene_generator();
 
         void generate(
-            Instanced_renderer&,
             OpenSim::Component const&,
             SimTK::State const&,
             OpenSim::ModelDisplayHints const&,

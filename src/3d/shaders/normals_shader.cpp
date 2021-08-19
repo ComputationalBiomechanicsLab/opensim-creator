@@ -93,9 +93,6 @@ osc::Normals_shader::Normals_shader() :
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader),
         gl::CompileFromSource<gl::Geometry_shader>(g_GeomShader))},
 
-    aPos{0},
-    aNormal{1},
-
     uModelMat{gl::GetUniformLocation(program, "uModelMat")},
     uViewMat{gl::GetUniformLocation(program, "uViewMat")},
     uProjMat{gl::GetUniformLocation(program, "uProjMat")},

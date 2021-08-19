@@ -26,9 +26,13 @@ static gl::Vertex_array make_vao(Solid_color_shader& scs, gl::Array_buffer<glm::
 
 struct osc::Opensim_modelstate_decoration_generator_screen::Impl final {
     Instanced_renderer renderer;
+    Instanced_drawlist drawlist;
     Render_params render_params;
-    Scene_generator generator{renderer};
+
+    Scene_generator generator;
     Scene_decorations scene_decorations;
+    std::vector<unsigned char> rim_highlights;
+
     OpenSim::Model model{App::resource("models/RajagopalModel/Rajagopal2015.osim").string()};
     //OpenSim::Model model{App::resource("models/ToyLanding/ToyLandingModel.osim").string()};
     SimTK::State state = [this]() {
@@ -46,6 +50,7 @@ struct osc::Opensim_modelstate_decoration_generator_screen::Impl final {
     Basic_perf_timer timer_blit;
     Basic_perf_timer timer_scene_hittest;
     Basic_perf_timer timer_triangle_hittest;
+    Basic_perf_timer timer_e2e;
 
     Solid_color_shader scs;
     NewMesh wireframe_mesh = gen_cube_lines();
@@ -59,7 +64,6 @@ struct osc::Opensim_modelstate_decoration_generator_screen::Impl final {
     std::vector<BVH_Collision> hit_tris_bvhcache;
     struct Triangle_collision {
         int instanceidx;
-        int meshidx;
         BVH_Collision collision;
     };
     std::vector<Triangle_collision> hit_tris;
@@ -82,7 +86,7 @@ osc::Opensim_modelstate_decoration_generator_screen::Opensim_modelstate_decorati
     App::cur().disable_vsync();
     m_Impl->model.updDisplayHints().set_show_frames(true);
     m_Impl->model.updDisplayHints().set_show_wrap_geometry(true);
-    m_Impl->generator.generate(m_Impl->renderer, m_Impl->model, m_Impl->state, m_Impl->model.getDisplayHints(), m_Impl->scene_decorations);
+    m_Impl->generator.generate(m_Impl->model, m_Impl->state, m_Impl->model.getDisplayHints(), m_Impl->scene_decorations);
 }
 
 osc::Opensim_modelstate_decoration_generator_screen::~Opensim_modelstate_decoration_generator_screen() noexcept = default;
@@ -102,6 +106,8 @@ void osc::Opensim_modelstate_decoration_generator_screen::on_event(SDL_Event con
 }
 
 void osc::Opensim_modelstate_decoration_generator_screen::draw() {
+    auto guard = m_Impl->timer_e2e.measure();
+
     osc::ImGuiNewFrame();
 
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -145,14 +151,14 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
     // decoration generation
     if (s.generate_decorations_each_frame) {
         auto guard = s.timer_meshgen.measure();
-        s.generator.generate(s.renderer, s.model, s.state, s.model.getDisplayHints(), s.scene_decorations);
+        s.generator.generate(s.model, s.state, s.model.getDisplayHints(), s.scene_decorations);
     }
 
     // do scene hittest
     s.hit_aabbs.clear();
     if (s.do_scene_hittest) {
-        Line ray_worldspace = s.camera.screenpos_to_world_ray(ImGui::GetIO().MousePos, App::cur().dims());
         auto guard = s.timer_scene_hittest.measure();
+        Line ray_worldspace = s.camera.screenpos_to_world_ray(ImGui::GetIO().MousePos, App::cur().dims());
         Scene_decorations const& decs = s.scene_decorations;
         BVH_get_ray_collision_AABBs(decs.aabb_bvh, ray_worldspace, &s.hit_aabbs);
     }
@@ -169,27 +175,51 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
 
             // then use a triangle-level BVH to figure out which triangles intersect
-            unsigned short meshidx = s.scene_decorations.meshidxs[c.prim_id];
-            glm::mat4 const& model_mtx = s.scene_decorations.model_mtxs[c.prim_id];
-            CPU_mesh const& mesh = *s.scene_decorations.meshes_data[meshidx];
+            glm::mat4 const& model_mtx = s.scene_decorations.model_xforms[c.prim_id];
+            CPU_mesh const& mesh = *s.scene_decorations.cpu_meshes[c.prim_id];
 
             Line ray_modelspace = apply_xform_to_line(ray_worldspace, glm::inverse(model_mtx));
 
             if (BVH_get_ray_collisions_triangles(mesh.triangle_bvh, mesh.data.verts.data(), mesh.data.verts.size(), ray_modelspace, &s.hit_tris_bvhcache)) {
                 for (BVH_Collision const& tri_collision : s.hit_tris_bvhcache) {
-                    s.hit_tris.push_back(Impl::Triangle_collision{c.prim_id, meshidx, tri_collision});
+                    s.hit_tris.push_back(Impl::Triangle_collision{c.prim_id, tri_collision});
                 }
                 s.hit_tris_bvhcache.clear();
             }
         }
     }
 
-    // optimize draw order
-    if (s.optimize_draw_order) {
+    // perform object highlighting
+    if (s.draw_triangle_intersection && !s.hit_tris.empty()) {
+        // get closest triangle
+        auto& ts = s.hit_tris;
+        auto is_closest = [](Impl::Triangle_collision const& a, Impl::Triangle_collision const& b) {
+            return a.collision.distance < b.collision.distance;
+        };
+        std::sort(ts.begin(), ts.end(), is_closest);
+        Impl::Triangle_collision closest = ts.front();
+
+        // populate rim highlights
+        s.rim_highlights.clear();
+        s.rim_highlights.resize(s.scene_decorations.model_xforms.size(), 0x00);
+        s.rim_highlights[closest.instanceidx] = 0xff;
+    }
+
+    // GPU upload, with object highlighting
+    {
         auto guard = s.timer_sort.measure();
-        std::sort(s.scene_decorations.drawlist.instances.begin(), s.scene_decorations.drawlist.instances.end(), [](Mesh_instance const& mi1, Mesh_instance const& mi2) {
-            return mi1.meshidx < mi2.meshidx;
-        });
+
+        Drawlist_compiler_input inp;
+        inp.ninstances = s.scene_decorations.model_xforms.size();
+        inp.model_xforms = s.scene_decorations.model_xforms.data();
+        inp.normal_xforms = s.scene_decorations.normal_xforms.data();
+        inp.colors = s.scene_decorations.rgbas.data();
+        inp.meshes = s.scene_decorations.gpu_meshes.data();
+        inp.textures = nullptr;
+        s.rim_highlights.resize(s.scene_decorations.model_xforms.size());
+        inp.rim_intensity = s.rim_highlights.data();
+
+        upload_inputs_to_drawlist(inp, s.drawlist);
     }
 
     // draw the scene
@@ -207,7 +237,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         }
 
         auto guard = s.timer_render.measure();
-        s.renderer.render(s.render_params, s.scene_decorations.drawlist);
+        s.renderer.render(s.render_params, s.drawlist);
     }
 
     // draw the AABBs
@@ -256,10 +286,12 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         std::sort(ts.begin(), ts.end(), is_closest);
         Impl::Triangle_collision closest = ts.front();
 
+
+
         // upload triangle to GPU
-        CPU_mesh const& m = *s.scene_decorations.meshes_data[closest.meshidx];
+        CPU_mesh const& m = *s.scene_decorations.cpu_meshes[closest.instanceidx];
         glm::vec3 const* tristart = m.data.verts.data() + closest.collision.prim_id;
-        glm::mat4 model2world = s.scene_decorations.model_mtxs[closest.instanceidx];
+        glm::mat4 model2world = s.scene_decorations.model_xforms[closest.instanceidx];
         glm::vec3 tri_worldpsace[] = {
             model2world * glm::vec4{tristart[0], 1.0f},
             model2world * glm::vec4{tristart[1], 1.0f},
@@ -281,8 +313,6 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         gl::BindVertexArray();
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
     }
-
-
 
     // blit the scene
     {
@@ -311,22 +341,25 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         ImGui::PopStyleColor();
     }
 
-    ImGui::Begin("controls");
-    ImGui::Text("FPS = %.2f", ImGui::GetIO().Framerate);
-    ImGui::Text("decoration generation (us) = %.1f", s.timer_meshgen.micros());
-    ImGui::Text("instance batching sort (us) = %.1f", s.timer_sort.micros());
-    ImGui::Text("scene-level BVHed hittest (us) = %.1f", s.timer_scene_hittest.micros());
-    ImGui::Text("mesh-level triangle hittest (us) = %.1f", s.timer_triangle_hittest.micros());
-    ImGui::Text("instanced render call (us) = %.1f", s.timer_render.micros());
-    ImGui::Text("texture blit (us) = %.1f", s.timer_blit.micros());
-    ImGui::Checkbox("generate decorations each frame", &s.generate_decorations_each_frame);
-    ImGui::Checkbox("optimize draw order", &s.optimize_draw_order);
-    ImGui::Checkbox("draw scene", &s.draw_scene);
-    ImGui::Checkbox("draw rims", &s.draw_rims);
-    ImGui::Checkbox("draw AABBs", &s.draw_aabbs);
-    ImGui::Checkbox("do hittest", &s.do_scene_hittest);
-
-    ImGui::End();
+    // draw debug panels/controls
+    {
+        ImGui::Begin("controls");
+        ImGui::Text("FPS = %.2f", ImGui::GetIO().Framerate);
+        ImGui::Text("decoration generation (us) = %.1f", s.timer_meshgen.micros());
+        ImGui::Text("instance batching sort (us) = %.1f", s.timer_sort.micros());
+        ImGui::Text("scene-level BVHed hittest (us) = %.1f", s.timer_scene_hittest.micros());
+        ImGui::Text("mesh-level triangle hittest (us) = %.1f", s.timer_triangle_hittest.micros());
+        ImGui::Text("instanced render call (us) = %.1f", s.timer_render.micros());
+        ImGui::Text("texture blit (us) = %.1f", s.timer_blit.micros());
+        ImGui::Text("e2e (us) = %.1f", s.timer_e2e.micros());
+        ImGui::Checkbox("generate decorations each frame", &s.generate_decorations_each_frame);
+        ImGui::Checkbox("optimize draw order", &s.optimize_draw_order);
+        ImGui::Checkbox("draw scene", &s.draw_scene);
+        ImGui::Checkbox("draw rims", &s.draw_rims);
+        ImGui::Checkbox("draw AABBs", &s.draw_aabbs);
+        ImGui::Checkbox("do hittest", &s.do_scene_hittest);
+        ImGui::End();
+    }
 
     osc::ImGuiRender();
 }

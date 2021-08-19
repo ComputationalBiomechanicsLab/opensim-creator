@@ -2,6 +2,7 @@
 
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
+#include "src/3d/model.hpp"
 #include "src/3d/shaders/gouraud_mrt_shader.hpp"
 #include "src/3d/shaders/edge_detection_shader.hpp"
 #include "src/3d/shaders/normals_shader.hpp"
@@ -13,11 +14,14 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <algorithm>
+#include <iostream>
 
 using namespace osc;
 
 namespace {
 
+    // helper method for making a render buffer (used in Render_target)
     gl::Render_buffer mk_renderbuffer(int samples, GLenum format, int w, int h) {
         gl::Render_buffer rv;
         gl::BindRenderBuffer(rv);
@@ -25,6 +29,7 @@ namespace {
         return rv;
     }
 
+    // draw targets written to by the renderer
     struct Render_target final {
         glm::ivec2 dims;
         int samples;
@@ -103,117 +108,128 @@ namespace {
             }()} {
         }
     };
-}
 
-struct Untextured_vert final {
-    glm::vec3 pos;
-    glm::vec3 norm;
-};
+    // GPU format of mesh instance
+    struct GPU_meshinstance final {
+        glm::mat4x3 model_xform;
+        glm::mat3 normal_xform;
+        Rgba32 rgba;
+        GLubyte rim_intensity;
+    };
 
-struct Textured_vert final {
-    glm::vec3 pos;
-    glm::vec3 norm;
-    glm::vec2 uv;
-};
+    // GPU format of meshdata with no texcoords
+    struct GPU_untextured_meshdata final {
+        glm::vec3 pos;
+        glm::vec3 norm;
+    };
 
-static gl::Vertex_array create_Gouraud_vao(
-        Gouraud_mrt_shader& shader,
-        gl::Array_buffer<GLubyte>& data,  // if `is_textured` then Textured_vert, else Untextured_vert
-        gl::Element_array_buffer<GLushort>& ebo,
-        gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW>& instances,
-        bool is_textured) {
+    // GPU format of meshdata with texcoords
+    struct GPU_textured_meshdata final {
+        glm::vec3 pos;
+        glm::vec3 norm;
+        glm::vec2 uv;
+    };
 
-    size_t stride;
-    size_t offset_pos;
-    size_t offset_normal;
-    size_t offset_texcoord;
-    if (is_textured) {
-        stride = sizeof(Textured_vert);
-        offset_pos = offsetof(Textured_vert, pos);
-        offset_normal = offsetof(Textured_vert, norm);
-        offset_texcoord = offsetof(Textured_vert, uv);
-    } else {
-        stride = sizeof(Untextured_vert);
-        offset_pos = offsetof(Untextured_vert, pos);
-        offset_normal = offsetof(Untextured_vert, norm);
-        offset_texcoord = -1;
+    // create VAO for the Gouraud shader
+    gl::Vertex_array create_Gouraud_vao(
+            NewMesh const& mesh,
+            gl::Array_buffer<GLubyte>& data,
+            gl::Element_array_buffer<GLushort>& ebo,
+            gl::Array_buffer<GPU_meshinstance, GL_DYNAMIC_DRAW>& instances) {
+
+        static_assert(offsetof(GPU_untextured_meshdata, pos) == offsetof(GPU_textured_meshdata, pos));
+        static_assert(offsetof(GPU_untextured_meshdata, norm) == offsetof(GPU_textured_meshdata, norm));
+        static constexpr size_t offset_pos = offsetof(GPU_untextured_meshdata, pos);
+        static constexpr size_t offset_norm = offsetof(GPU_untextured_meshdata, norm);
+        using GMS = Gouraud_mrt_shader;
+
+        size_t stride = mesh.texcoords.empty() ? sizeof(GPU_untextured_meshdata) : sizeof(GPU_textured_meshdata);
+
+        gl::Vertex_array vao;
+        gl::BindVertexArray(vao);
+
+        // bind vertex data to (non-instanced) attrs
+        gl::BindBuffer(data);
+        gl::VertexAttribPointer(GMS::aLocation, false, stride, offset_pos);
+        gl::EnableVertexAttribArray(GMS::aLocation);
+        gl::VertexAttribPointer(GMS::aNormal, false, stride, offset_norm);
+        gl::EnableVertexAttribArray(GMS::aNormal);
+        if (!mesh.texcoords.empty()) {
+            gl::VertexAttribPointer(GMS::aTexCoord, false, stride, offsetof(GPU_textured_meshdata, uv));
+            gl::EnableVertexAttribArray(GMS::aTexCoord);
+        }
+
+        // bind EBO
+        gl::BindBuffer(ebo);
+
+        // bind instance data
+        gl::BindBuffer(instances);
+
+        gl::VertexAttribPointer(GMS::aModelMat, false, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, model_xform));
+        gl::VertexAttribDivisor(GMS::aModelMat, 1);
+        gl::EnableVertexAttribArray(GMS::aModelMat);
+
+        gl::VertexAttribPointer(GMS::aNormalMat, false, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, normal_xform));
+        gl::VertexAttribDivisor(GMS::aNormalMat, 1);
+        gl::EnableVertexAttribArray(GMS::aNormalMat);
+
+        // note: RGB is normalized CPU side ([0x00, 0xff]) and needs to be unpacked
+        // into a float
+        gl::VertexAttribPointer<gl::glsl::vec4, GL_UNSIGNED_BYTE>(GMS::aRgba0, true, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, rgba));
+        gl::VertexAttribDivisor(GMS::aRgba0, 1);
+        gl::EnableVertexAttribArray(GMS::aRgba0);
+
+        // note: RimIntensity is normalized from its CPU byte value into a float
+        gl::VertexAttribPointer<gl::glsl::float_, GL_UNSIGNED_BYTE>(GMS::aRimIntensity, true, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, rim_intensity));
+        gl::VertexAttribDivisor(GMS::aRimIntensity, 1);
+        gl::EnableVertexAttribArray(GMS::aRimIntensity);
+
+        gl::BindVertexArray();
+
+        return vao;
     }
 
-    gl::Vertex_array vao;
-    gl::BindVertexArray(vao);
+    // create VAO for the normals shader
+    gl::Vertex_array create_Normals_vao(
+            NewMesh const& mesh,
+            gl::Array_buffer<GLubyte>& vbo,
+            gl::Element_array_buffer<GLushort>& ebo) {
 
-    // bind vertex data to (non-instanced) attrs
-    gl::BindBuffer(data);
-    gl::VertexAttribPointer(shader.aLocation, false, stride, offset_pos);
-    gl::EnableVertexAttribArray(shader.aLocation);
-    gl::VertexAttribPointer(shader.aNormal, false, stride, offset_normal);
-    gl::EnableVertexAttribArray(shader.aNormal);
-    if (is_textured) {
-        gl::VertexAttribPointer(shader.aTexCoord, false, stride, offset_texcoord);
-        gl::EnableVertexAttribArray(shader.aTexCoord);
+        static_assert(offsetof(GPU_untextured_meshdata, pos) == offsetof(GPU_textured_meshdata, pos));
+        static_assert(offsetof(GPU_untextured_meshdata, norm) == offsetof(GPU_textured_meshdata, norm));
+        static constexpr size_t offset_pos = offsetof(GPU_untextured_meshdata, pos);
+        static constexpr size_t offset_norm = offsetof(GPU_untextured_meshdata, norm);
+        using NS = Normals_shader;
+
+        size_t stride = mesh.texcoords.empty() ? sizeof(GPU_untextured_meshdata) : sizeof(GPU_textured_meshdata);
+
+        gl::Vertex_array vao;
+        gl::BindVertexArray(vao);
+        gl::BindBuffer(vbo);
+        gl::BindBuffer(ebo);
+        gl::VertexAttribPointer(NS::aPos, false, stride, offset_pos);
+        gl::EnableVertexAttribArray(NS::aPos);
+        gl::VertexAttribPointer(NS::aNormal, false, stride, offset_norm);
+        gl::EnableVertexAttribArray(NS::aNormal);
+        gl::BindVertexArray();
+        return vao;
     }
-
-    // bind EBO
-    gl::BindBuffer(ebo);
-
-    // bind instance data
-    gl::BindBuffer(instances);
-
-    gl::VertexAttribPointer(shader.aModelMat, false, sizeof(Mesh_instance), offsetof(Mesh_instance, model_xform));
-    gl::VertexAttribDivisor(shader.aModelMat, 1);
-    gl::EnableVertexAttribArray(shader.aModelMat);
-
-    gl::VertexAttribPointer(shader.aNormalMat, false, sizeof(Mesh_instance), offsetof(Mesh_instance, normal_xform));
-    gl::VertexAttribDivisor(shader.aNormalMat, 1);
-    gl::EnableVertexAttribArray(shader.aNormalMat);
-
-    // note: RGB is normalized CPU side ([0x00, 0xff]) and needs to be unpacked
-    // into a float
-    gl::VertexAttribPointer<gl::glsl::vec4, GL_UNSIGNED_BYTE>(shader.aRgba0, true, sizeof(Mesh_instance), offsetof(Mesh_instance, rgba));
-    gl::VertexAttribDivisor(shader.aRgba0, 1);
-    gl::EnableVertexAttribArray(shader.aRgba0);
-
-    // note: RimIntensity is normalized from its CPU byte value into a float
-    gl::VertexAttribPointer<gl::glsl::float_, GL_UNSIGNED_BYTE>(shader.aRimIntensity, true, sizeof(Mesh_instance), offsetof(Mesh_instance, rim_intensity));
-    gl::VertexAttribDivisor(shader.aRimIntensity, 1);
-    gl::EnableVertexAttribArray(shader.aRimIntensity);
-
-    gl::BindVertexArray();
-
-    return vao;
 }
 
-static gl::Vertex_array create_Normals_vao(
-        Normals_shader& shader,
-        gl::Array_buffer<GLubyte>& vbo,  // if `is_textured` then Textured_vert, else Untextured_vert
-        gl::Element_array_buffer<GLushort>& ebo) {
-
-    static_assert(offsetof(Untextured_vert, pos) == offsetof(Textured_vert, pos));
-    static_assert(offsetof(Untextured_vert, norm) == offsetof(Textured_vert, norm));
-
-    gl::Vertex_array vao;
-    gl::BindVertexArray(vao);
-    gl::BindBuffer(vbo);
-    gl::BindBuffer(ebo);
-    gl::VertexAttribPointer(shader.aPos, false, sizeof(Untextured_vert), offsetof(Untextured_vert, pos));
-    gl::EnableVertexAttribArray(shader.aPos);
-    gl::VertexAttribPointer(shader.aNormal, false, sizeof(Untextured_vert), offsetof(Untextured_vert, norm));
-    gl::EnableVertexAttribArray(shader.aNormal);
-    gl::BindVertexArray();
-    return vao;
-}
-
-// backend implementation of the meshdata, uploaded in a GPU-friendly format
-struct osc::Refcounted_instance_meshdata::Impl final {
+// meshdata backend implementation
+//
+// effectively, preloads onto the GPU and preallocates space for the instance
+// buffer
+struct Instanceable_meshdata::Impl final {
     gl::Array_buffer<GLubyte> data;
     gl::Element_array_buffer<GLushort> indices;
-    gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW> instances;
+    gl::Array_buffer<GPU_meshinstance, GL_DYNAMIC_DRAW> instances;
     gl::Vertex_array gouraud_vao;
     gl::Vertex_array normals_vao;
 
     Impl(gl::Array_buffer<GLubyte> data_,
          gl::Element_array_buffer<GLushort> indices_,
-         gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW> instances_,
+         gl::Array_buffer<GPU_meshinstance, GL_DYNAMIC_DRAW> instances_,
          gl::Vertex_array gouraud_vao_,
          gl::Vertex_array normals_vao_) :
 
@@ -225,85 +241,166 @@ struct osc::Refcounted_instance_meshdata::Impl final {
     }
 };
 
+// produced by "compiling" a CPU-side "striped" list of things to draw and
+// pre-optimized for optimal rendering
+//
+// external users can't manipulate this
+struct Instanced_drawlist::Impl final {
+    std::vector<GPU_meshinstance> gpu_instances;
+    std::vector<Instanceable_meshdata> meshdata;
+    std::vector<std::shared_ptr<gl::Texture_2d>> textures;
+    std::vector<int> order;  // used during construction to reorder elements
+};
+
 struct osc::Instanced_renderer::Impl final {
-    std::vector<Untextured_vert> uv_swap;
-    std::vector<Textured_vert> tv_swap;
     Gouraud_mrt_shader gouraud;
     Edge_detection_shader edge_detect;
     Normals_shader normals_shader;
     Render_target rt;
 
-    gl::Array_buffer<Textured_vert> quad_vbo{[&]() {
+    gl::Array_buffer<GPU_textured_meshdata> quad_vbo{[&]() {
         NewMesh m = gen_textured_quad();
 
-        tv_swap.clear();
-        tv_swap.resize(m.indices.size());
+        std::vector<GPU_textured_meshdata> swap;
         for (size_t i = 0; i < m.indices.size(); ++i) {
             unsigned short idx = m.indices[i];
-            Textured_vert& tv = tv_swap.emplace_back();
+            GPU_textured_meshdata& tv = swap.emplace_back();
             tv.pos = m.verts[idx];
             tv.norm = m.normals[idx];
             tv.uv = m.texcoords[idx];
         }
 
-        return gl::Array_buffer<Textured_vert>{tv_swap};
+        return gl::Array_buffer<GPU_textured_meshdata>{swap};
     }()};
+
     gl::Vertex_array edgedetect_vao = [this]() {
         gl::Vertex_array rv;
         gl::BindVertexArray(rv);
         gl::BindBuffer(quad_vbo);
-        gl::VertexAttribPointer(edge_detect.aPos, false, sizeof(Textured_vert), offsetof(Textured_vert, pos));
+        gl::VertexAttribPointer(edge_detect.aPos, false, sizeof(GPU_textured_meshdata), offsetof(GPU_textured_meshdata, pos));
         gl::EnableVertexAttribArray(edge_detect.aPos);
-        gl::VertexAttribPointer(edge_detect.aTexCoord, false, sizeof(Textured_vert), offsetof(Textured_vert, uv));
+        gl::VertexAttribPointer(edge_detect.aTexCoord, false, sizeof(GPU_textured_meshdata), offsetof(GPU_textured_meshdata, uv));
         gl::EnableVertexAttribArray(edge_detect.aTexCoord);
         return rv;
     }();
 
     Impl(glm::ivec2 dims, int samples) : rt{dims, samples} {
     }
-
-    gl::Array_buffer<GLubyte> upload_mesh(NewMesh const& nm) {
-        if (nm.verts.size() != nm.normals.size()) {
-            throw std::runtime_error{"mismatch between number of verts and number of normals in a mesh"};
-        }
-
-        if (nm.texcoords.empty()) {
-            // pack into Untextured_vert
-            uv_swap.clear();
-            uv_swap.reserve(nm.verts.size());
-            for (size_t i = 0; i < nm.verts.size(); ++i) {
-                Untextured_vert& uv = uv_swap.emplace_back();
-                uv.pos = nm.verts[i];
-                uv.norm = nm.normals[i];
-            }
-            return {reinterpret_cast<GLubyte const*>(uv_swap.data()), sizeof(Untextured_vert) * uv_swap.size()};
-        } else {
-            // pack into Textured_vert
-            tv_swap.clear();
-            tv_swap.reserve(nm.verts.size());
-            for (size_t i = 0; i < nm.verts.size(); ++i) {
-                Textured_vert& tv = tv_swap.emplace_back();
-                tv.pos = nm.verts[i];
-                tv.norm = nm.normals[i];
-                tv.uv = nm.texcoords[i];
-            }
-            return {reinterpret_cast<GLubyte const*>(tv_swap.data()), sizeof(Textured_vert) * tv_swap.size()};
-        }
-    }
 };
 
 // public API
 
-osc::Refcounted_instance_meshdata::Refcounted_instance_meshdata(std::shared_ptr<Impl> impl) :
-    m_Impl{impl} {
+osc::Instanceable_meshdata::Instanceable_meshdata(std::shared_ptr<Impl> impl) : m_Impl{impl} {
 }
 
-osc::Refcounted_instance_meshdata::~Refcounted_instance_meshdata() noexcept = default;
+osc::Instanceable_meshdata::~Instanceable_meshdata() noexcept = default;
 
-void osc::Mesh_instance_drawlist::clear() {
+Instanceable_meshdata osc::upload_meshdata_for_instancing(NewMesh const& mesh) {
+    if (mesh.verts.size() != mesh.normals.size()) {
+        throw std::runtime_error{"mismatch between number of verts and number of normals in a mesh"};
+    }
+
+    if (!mesh.texcoords.empty() && mesh.texcoords.size() != mesh.verts.size()) {
+        throw std::runtime_error{"mismatch between number of tex coords in the mesh and the number of verts"};
+    }
+
+    // un-stripe and upload the mesh data
+    gl::Array_buffer<GLubyte> vbo;
+    if (mesh.texcoords.empty()) {
+        std::vector<GPU_untextured_meshdata> repacked;
+        repacked.reserve(mesh.verts.size());
+        for (size_t i = 0; i < mesh.verts.size(); ++i) {
+            repacked.push_back(GPU_untextured_meshdata{mesh.verts[i], mesh.normals[i]});
+        }
+        vbo.assign(reinterpret_cast<GLubyte const*>(repacked.data()), sizeof(GPU_untextured_meshdata) * repacked.size());
+    } else {
+        std::vector<GPU_textured_meshdata> repacked;
+        repacked.reserve(mesh.verts.size());
+        for (size_t i = 0; i < mesh.verts.size(); ++i) {
+            repacked.push_back(GPU_textured_meshdata{mesh.verts[i], mesh.normals[i], mesh.texcoords[i]});
+        }
+        vbo.assign(reinterpret_cast<GLubyte const*>(repacked.data()), sizeof(GPU_textured_meshdata) * repacked.size());
+    }
+
+    // make indices
+    gl::Element_array_buffer<GLushort> ebo{mesh.indices};
+
+    // preallocate instance buffer (used at render time)
+    gl::Array_buffer<GPU_meshinstance, GL_DYNAMIC_DRAW> instances;
+
+    // make Gouraud VAO
+    gl::Vertex_array gouraud_vao = create_Gouraud_vao(mesh, vbo, ebo, instances);
+    gl::Vertex_array normals_vao = create_Normals_vao(mesh, vbo, ebo);
+
+    // allocate the shared handle
+    auto impl = std::make_shared<Instanceable_meshdata::Impl>(
+                std::move(vbo),
+                std::move(ebo),
+                std::move(instances),
+                std::move(gouraud_vao),
+                std::move(normals_vao));
+
+    // wrap the handle in the externally-unmodifiable type
+    return Instanceable_meshdata{impl};
+}
+
+osc::Instanced_drawlist::Instanced_drawlist() : m_Impl{new Impl{}} {
+}
+
+osc::Instanced_drawlist::~Instanced_drawlist() noexcept = default;
+
+void osc::upload_inputs_to_drawlist(Drawlist_compiler_input const& inp, Instanced_drawlist& dl) {
+    auto& impl = *dl.m_Impl;
+
+    auto& instances = impl.gpu_instances;
+    auto& meshdata = impl.meshdata;
+    auto& textures = impl.textures;
+    auto& order = impl.order;
+
+    // clear any previous data
     instances.clear();
-    meshes.clear();
+    meshdata.clear();
     textures.clear();
+    order.clear();
+
+    // write the output ordering into `order`
+    order.reserve(inp.ninstances);
+    for (size_t i = 0; i < inp.ninstances; ++i) {
+        order.push_back(static_cast<int>(i));
+    }
+    auto draw_order = [&](int a, int b) {
+        // order by meshid, which is how the instanced renderer batches
+        return inp.meshes[a].m_Impl.get() < inp.meshes[b].m_Impl.get();
+    };
+    std::sort(order.begin(), order.end(), draw_order);
+
+    // de-stripe the input data into a drawlist
+    for (int o : order) {
+        // set up instance data
+        GPU_meshinstance& inst = instances.emplace_back();
+        inst.model_xform = inp.model_xforms[o];
+        inst.normal_xform = inp.normal_xforms[o];
+        if (inp.colors) {
+            inst.rgba = inp.colors[o];
+        } else {
+            inst.rgba = rgba32_from_u32(0xff0000ff);
+        }
+        if (inp.rim_intensity) {
+            inst.rim_intensity = inp.rim_intensity[o];
+        } else {
+            inst.rim_intensity = 0x00;
+        }
+
+        // set up texture (if applicable - might not be textured)
+        if (inp.textures && inp.textures[o]) {
+            textures.emplace_back(inp.textures[o]);
+        } else {
+            textures.emplace_back(nullptr);
+        }
+
+        // set up mesh (required)
+        meshdata.emplace_back(inp.meshes[o]);
+    }
 }
 
 osc::Instanced_renderer::Instanced_renderer() :
@@ -315,18 +412,6 @@ osc::Instanced_renderer::Instanced_renderer(glm::ivec2 dims, int samples) :
 }
 
 osc::Instanced_renderer::~Instanced_renderer() noexcept = default;
-
-Refcounted_instance_meshdata osc::Instanced_renderer::allocate(NewMesh const& m) {
-    gl::Array_buffer<GLubyte> vbo = m_Impl->upload_mesh(m);
-    gl::Element_array_buffer<GLushort> ebo{m.indices};
-    gl::Array_buffer<Mesh_instance, GL_DYNAMIC_DRAW> instances;
-    gl::Vertex_array vao = create_Gouraud_vao(m_Impl->gouraud, vbo, ebo, instances, !m.texcoords.empty());
-    gl::Vertex_array normals_vao = create_Normals_vao(m_Impl->normals_shader, vbo, ebo);
-
-    auto md = std::make_shared<Refcounted_instance_meshdata::Impl>(std::move(vbo), std::move(ebo), std::move(instances), std::move(vao), std::move(normals_vao));
-
-    return Refcounted_instance_meshdata{md};
-}
 
 glm::ivec2 osc::Instanced_renderer::dims() const noexcept {
     return m_Impl->rt.dims;
@@ -369,9 +454,10 @@ void osc::Instanced_renderer::set_msxaa_samples(int samps) {
     rt = Render_target{rt.dims, samps};
 }
 
-void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawlist const& dl) {
+void osc::Instanced_renderer::render(Render_params const& p, Instanced_drawlist const& dl) {
     Impl& impl = *m_Impl;
     Render_target& rt = impl.rt;
+    Instanced_drawlist::Impl& dimpl = *dl.m_Impl;
 
     gl::Viewport(0, 0, rt.dims.x, rt.dims.y);
     gl::BindFramebuffer(GL_FRAMEBUFFER, rt.render_msxaa_fbo);
@@ -406,82 +492,47 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
         glEnablei(GL_BLEND, 0);  // COLOR0
         glDisablei(GL_BLEND, 1);  // COLOR1
 
-        if (p.flags & DrawcallFlags_UseInstancedRenderer) {
-            // perform instanced render
+        size_t pos = 0;
+        size_t ninsts = dimpl.gpu_instances.size();
+        GPU_meshinstance const* insts = dimpl.gpu_instances.data();
+        Instanceable_meshdata const* meshes = dimpl.meshdata.data();
+        std::shared_ptr<gl::Texture_2d> const* textures = dimpl.textures.data();
 
-            size_t pos = 0;
-            size_t ninsts = dl.instances.size();
-            Mesh_instance const* insts = dl.instances.data();
+        // iterate through all instances
+        while (pos < ninsts) {
+            Instanceable_meshdata::Impl* mesh = meshes[pos].m_Impl.get();
+            gl::Texture_2d* tex = textures[pos].get();
 
-            // iterate through all instances
-            while (pos < ninsts) {
-                auto meshidx = insts[pos].meshidx;
-                auto texidx = insts[pos].texidx;
-
-                // group adjacent elements with the same mesh + texture
-                size_t end = pos + 1;
-                while (end < ninsts && insts[end].meshidx == meshidx && insts[end].texidx == texidx) {
-                    ++end;
-                }
-
-                // setup texture (if necessary)
-                if (texidx >= 0) {
-                    gl::Texture_2d& t = *dl.textures[texidx];
-                    gl::Uniform(shader.uIsTextured, true);
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(t);
-                    gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-                } else {
-                    gl::Uniform(shader.uIsTextured, false);
-                }
-
-                // upload instance data to GPU
-                Refcounted_instance_meshdata::Impl& gpudata = *dl.meshes[meshidx].m_Impl;
-                gpudata.instances.assign(insts + pos, end - pos);
-
-                // draw
-                gl::BindVertexArray(gpudata.gouraud_vao);
-                glDrawElementsInstanced(
-                    GL_TRIANGLES,
-                    gpudata.indices.sizei(),
-                    gl::index_type(gpudata.indices),
-                    nullptr,
-                    static_cast<GLsizei>(end - pos));
-                gl::BindVertexArray();
-
-                pos = end;
+            // group adjacent elements with the same mesh + texture
+            size_t end = pos + 1;
+            while (end < ninsts && meshes[end].m_Impl.get() == mesh && textures[end].get() == tex) {
+                ++end;
             }
 
-        } else {
-            // perform non-instanced render
-            for (auto& instance : dl.instances) {
-
-                // setup texture (if necessary)
-                if (instance.texidx >= 0) {
-                    gl::Texture_2d& t = *dl.textures[instance.texidx];
-
-                    gl::Uniform(shader.uIsTextured, true);
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(t);
-                    gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
-                } else {
-                    gl::Uniform(shader.uIsTextured, false);
-                }
-
-                // upload instance data to GPU
-                Refcounted_instance_meshdata::Impl& data = *dl.meshes[instance.meshidx].m_Impl;
-                data.instances.assign(&instance, 1);
-
-                // draw
-                gl::BindVertexArray(data.gouraud_vao);
-                glDrawElementsInstanced(
-                    GL_TRIANGLES,
-                    data.indices.sizei(),
-                    gl::index_type(data.indices),
-                    nullptr,
-                    1);
-                gl::BindVertexArray();
+            // setup texture (if necessary)
+            if (tex) {
+                gl::Uniform(shader.uIsTextured, true);
+                gl::ActiveTexture(GL_TEXTURE0);
+                gl::BindTexture(*tex);
+                gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
+            } else {
+                gl::Uniform(shader.uIsTextured, false);
             }
+
+            // upload instance data to GPU
+            mesh->instances.assign(insts + pos, end - pos);
+
+            // draw
+            gl::BindVertexArray(mesh->gouraud_vao);
+            glDrawElementsInstanced(
+                GL_TRIANGLES,
+                mesh->indices.sizei(),
+                gl::index_type(mesh->indices),
+                nullptr,
+                static_cast<GLsizei>(end - pos));
+            gl::BindVertexArray();
+
+            pos = end;
         }
     }
 
@@ -492,12 +543,11 @@ void osc::Instanced_renderer::render(Render_params const& p, Mesh_instance_drawl
         gl::Uniform(shader.uProjMat, p.projection_matrix);
         gl::Uniform(shader.uViewMat, p.view_matrix);
 
-        for (Mesh_instance const& mi : dl.instances) {
-            gl::Uniform(shader.uModelMat, mi.model_xform);
-            gl::Uniform(shader.uNormalMat, mi.normal_xform);
-            Refcounted_instance_meshdata::Impl const& meshdata = *dl.meshes[mi.meshidx].m_Impl;
-            gl::BindVertexArray(meshdata.normals_vao);
-            gl::DrawElements(GL_TRIANGLES, meshdata.indices.sizei(), gl::index_type(meshdata.indices), nullptr);
+        for (size_t i = 0; i < dimpl.gpu_instances.size(); ++i) {
+            gl::Uniform(shader.uModelMat, dimpl.gpu_instances[i].model_xform);
+            gl::Uniform(shader.uNormalMat, dimpl.gpu_instances[i].normal_xform);
+            gl::BindVertexArray(dimpl.meshdata[i].m_Impl->normals_vao);
+            gl::DrawElements(GL_TRIANGLES, dimpl.meshdata[i].m_Impl->indices.sizei(), gl::index_type(dimpl.meshdata[i].m_Impl->indices), nullptr);
         }
         gl::BindVertexArray();
     }

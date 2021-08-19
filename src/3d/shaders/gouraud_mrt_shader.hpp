@@ -9,15 +9,15 @@ namespace osc {
         gl::Program program;
 
         // vertex attrs - the thing being instanced
-        gl::Attribute_vec3 aLocation;
-        gl::Attribute_vec3 aNormal;
-        gl::Attribute_vec2 aTexCoord;
+        static constexpr gl::Attribute_vec3 aLocation = 0;
+        static constexpr gl::Attribute_vec3 aNormal = 1;
+        static constexpr gl::Attribute_vec2 aTexCoord = 2;
 
         // instancing attrs - the instances - should be set with relevant divisor etc.
-        gl::Attribute_mat4x3 aModelMat;
-        gl::Attribute_mat3 aNormalMat;
-        gl::Attribute_vec4 aRgba0;
-        gl::Attribute_float aRimIntensity;
+        static constexpr gl::Attribute_mat4x3 aModelMat = 3;
+        static constexpr gl::Attribute_mat3 aNormalMat = 7;
+        static constexpr gl::Attribute_vec4 aRgba0 = 10;
+        static constexpr gl::Attribute_float aRimIntensity = 11;
 
         // uniforms
         gl::Uniform_mat4 uProjMat;

@@ -16,21 +16,34 @@
 
 using namespace osc;
 
-// these geometries are always added by the scene generator into the meshdata list
-// in this order, so  that the implementation doesn't need to perform any hashtable
-// lookups for them at runtime (OpenSim models can emit a large number of spheres +
-// cylinders)
-static constexpr unsigned short g_SphereMeshidx = 0;
-static constexpr unsigned short g_CylinderMeshidx = 1;
-static constexpr unsigned short g_BrickMeshidx = 2;
-static constexpr unsigned short g_ConeMeshidx = 3;
-
+static constexpr char const* g_SphereID = "SPHERE_MESH";
+static constexpr char const* g_CylinderID = "CYLINDER_MESH";
+static constexpr char const* g_BrickID = "BRICK_MESH";
+static constexpr char const* g_ConeID = "CONE_MESH";
 static constexpr float g_LineThickness = 0.005f;
 static constexpr float g_FrameAxisLengthRescale = 0.25f;
 static constexpr float g_FrameAxisThickness = 0.0025f;
 
+namespace {
+    // common data that's handed to each emission function
+    struct Emitter_out final {
+        // meshdata
+        std::unordered_map<std::string, std::unique_ptr<Cached_meshdata>>& mesh_cache;
+        Cached_meshdata& sphere;
+        Cached_meshdata& cylinder;
+        Cached_meshdata& brick;
+        Cached_meshdata& cone;
+
+        // current component
+        OpenSim::Component const* c;
+
+        // output decoration list
+        Scene_decorations& decs;
+    };
+}
+
 // preprocess (AABB, BVH, etc.) CPU-side data and upload it to the instanced renderer
-static Cached_meshdata create_cached_meshdata(Instanced_renderer& renderer, NewMesh src_mesh) {
+static std::unique_ptr<Cached_meshdata> create_cached_meshdata(NewMesh src_mesh) {
 
     // heap-allocate the meshdata into a shared pointer so that emitted drawlists can
     // independently contain a (reference-counted) pointer to the data
@@ -43,68 +56,82 @@ static Cached_meshdata create_cached_meshdata(Instanced_renderer& renderer, NewM
     // precompute modelspace BVH
     BVH_BuildFromTriangles(cpumesh->triangle_bvh, cpumesh->data.verts.data(), cpumesh->data.verts.size());
 
-    return Cached_meshdata{cpumesh, renderer.allocate(cpumesh->data)};
+    return std::unique_ptr<Cached_meshdata>{new Cached_meshdata{cpumesh, upload_meshdata_for_instancing(cpumesh->data)}};
 }
 
-static void handle_line_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Line const& l,
-        Scene_decorations& out) {
+static void handle_line_emission(Simbody_geometry::Line const& l, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
+
     Segment mesh_line{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Segment emitted_line{l.p1, l.p2};
 
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform = segment_to_segment_xform(mesh_line, emitted_line) * glm::scale(glm::mat4{1.0f}, {g_LineThickness, 1.0f, g_LineThickness});
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(l.rgba);
-    ins.meshidx = g_CylinderMeshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
-
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
-
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
+    glm::mat4x3 const& xform = dout.model_xforms.emplace_back(
+        segment_to_segment_xform(mesh_line, emitted_line) * glm::scale(glm::mat4{1.0f}, {g_LineThickness, 1.0f, g_LineThickness}));
+    dout.normal_xforms.emplace_back(normal_matrix(xform));
+    dout.rgbas.emplace_back(rgba32_from_vec4(l.rgba));
+    dout.gpu_meshes.emplace_back(out.cylinder.instance_meshdata);
+    dout.cpu_meshes.emplace_back(out.cylinder.cpu_meshdata);
+    dout.aabbs.emplace_back(aabb_apply_xform(out.cylinder.cpu_meshdata->aabb, xform));
+    dout.components.emplace_back(out.c);
 }
 
-static void handle_sphere_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Sphere const& s,
-        Scene_decorations& out) {
+static void handle_sphere_emission(Simbody_geometry::Sphere const& s, Emitter_out& out) {
 
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, glm::vec3{s.radius, s.radius, s.radius});
-    glm::mat4 mover = glm::translate(glm::mat4{1.0f}, s.pos);
+    Scene_decorations& sd = out.decs;
 
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform = mover * scaler;
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(s.rgba);
-    ins.meshidx = g_SphereMeshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
+    // this code is fairly custom to make it faster
+    //
+    // - OpenSim scenes typically contain *a lot* of spheres
+    // - it's much cheaper to compute things like normal matrices and AABBs when
+    //   you know it's a sphere
+    glm::mat4 xform;
+    xform[0] = {s.radius, 0.0f, 0.0f, 0.0f};
+    xform[1] = {0.0f, s.radius, 0.0f, 0.0f};
+    xform[2] = {0.0f, 0.0f, s.radius, 0.0f};
+    xform[3] = glm::vec4{s.pos, 1.0f};
+    glm::mat4 normal_xform = glm::transpose(xform);
+    AABB aabb = sphere_aabb(Sphere{s.pos, s.radius});
 
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_SphereMeshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
+    sd.model_xforms.emplace_back(xform);
+    sd.normal_xforms.emplace_back(normal_xform);
+    sd.rgbas.emplace_back(rgba32_from_vec4(s.rgba));
+    sd.gpu_meshes.emplace_back(out.sphere.instance_meshdata);
+    sd.cpu_meshes.emplace_back(out.sphere.cpu_meshdata);
+    sd.aabbs.emplace_back(aabb);
+    sd.components.push_back(out.c);
 }
 
-static void handle_cylinder_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Cylinder const& cy,
-        Scene_decorations& out) {
+static void handle_meshfile_emission(Simbody_geometry::MeshFile const& mf, Emitter_out& out) {
 
+    auto [it, inserted] = out.mesh_cache.try_emplace(*mf.path, nullptr);
+
+    if (inserted) {
+        // mesh wasn't in the cache, go load it
+        try {
+            it->second = create_cached_meshdata(stk_load_mesh(*mf.path));
+        } catch (...) {
+            // problems loading it: ensure cache isn't corrupted with the nullptr
+            out.mesh_cache.erase(it);
+            throw;
+        }
+    }
+
+    // not null, because of the above insertion check
+    Cached_meshdata& cm = *it->second;
+
+    Scene_decorations& sd = out.decs;
+
+    glm::mat4x3 const& xform = sd.model_xforms.emplace_back(mf.model_mtx);
+    sd.normal_xforms.emplace_back(normal_matrix(xform));
+    sd.rgbas.emplace_back(rgba32_from_vec4(mf.rgba));
+    sd.gpu_meshes.emplace_back(cm.instance_meshdata);
+    sd.cpu_meshes.emplace_back(cm.cpu_meshdata);
+    sd.aabbs.emplace_back(aabb_apply_xform(cm.cpu_meshdata->aabb, xform));
+    sd.components.emplace_back(out.c);
+}
+
+/*
+static void handle_cylinder_emission(Simbody_geometry::Cylinder const& cy, Emitter_out& out) {
     // emit instance data
     short data = static_cast<short>(out.drawlist.instances.size());
     Mesh_instance& ins = out.drawlist.instances.emplace_back();
@@ -124,11 +151,7 @@ static void handle_cylinder_emission(
     out.components.push_back(c);
 }
 
-static void handle_brick_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Brick const& b,
-        Scene_decorations& out) {
-
+static void handle_brick_emission(Simbody_geometry::Brick const& b, Emitter_out& out) {
     // emit instance data
     short data = static_cast<short>(out.drawlist.instances.size());
     Mesh_instance& ins = out.drawlist.instances.emplace_back();
@@ -148,69 +171,7 @@ static void handle_brick_emission(
     out.components.push_back(c);
 }
 
-static void handle_meshfile_emission(
-        std::unordered_map<std::string, std::unique_ptr<Cached_meshdata>>& mesh_cache,
-        std::unordered_map<Cached_meshdata*, int>& meshdata2idx,
-        Instanced_renderer& r,
-        OpenSim::Component const* c,
-        Simbody_geometry::MeshFile const& mf,
-        Scene_decorations& out) {
-
-    auto [it, inserted] = mesh_cache.try_emplace(*mf.path, nullptr);
-
-    if (inserted) {
-        // mesh wasn't in the cache, go load it
-        try {
-            it->second = std::make_unique<Cached_meshdata>(create_cached_meshdata(r, stk_load_mesh(*mf.path)));
-        } catch (...) {
-            // problems loading it: ensure cache isn't corrupted with the nullptr
-            mesh_cache.erase(it);
-            throw;
-        }
-    }
-
-    // not null, because of the above insertion check
-    Cached_meshdata* cm = it->second.get();
-
-    // lookup the (assumed) index of the mesh in the existing drawlist
-    auto [it2, inserted_new_meshidx] = meshdata2idx.try_emplace(cm, -1);
-    if (inserted_new_meshidx) {
-        OSC_ASSERT(out.drawlist.meshes.size() == out.meshes_data.size());
-
-        // it isn't in the meshdata section of the output yet, so go allocate it
-        unsigned short meshidx = static_cast<unsigned short>(out.drawlist.meshes.size());
-        out.drawlist.meshes.push_back(cm->instance_meshdata);
-        out.meshes_data.push_back(cm->cpu_meshdata);
-
-        it2->second = meshidx;
-    }
-
-    // this is safe because of the above insertion check
-    unsigned short meshidx = it2->second;
-
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform = mf.model_mtx;
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(mf.rgba);
-    ins.meshidx = meshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
-
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[meshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
-}
-
-static void handle_cone_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Cone const& cone,
-        Scene_decorations& out) {
+static void handle_cone_emission(Simbody_geometry::Cone const& cone, Emitter_out& out) {
 
     Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     Segment coneline{cone.pos, cone.pos + cone.direction*cone.height};
@@ -236,10 +197,7 @@ static void handle_cone_emission(
     out.components.push_back(c);
 }
 
-static void handle_frame_emission(
-        OpenSim::Component const* c,
-        Simbody_geometry::Frame const& frame,
-        Scene_decorations& out) {
+static void handle_frame_emission(Simbody_geometry::Frame const& frame, Emitter_out& out) {
 
     // generate origin sphere
     {
@@ -297,40 +255,34 @@ static void handle_frame_emission(
         out.components.push_back(c);
     }
 }
+*/
 
 // this is effectively called whenever OpenSim emits a decoration element
-static void handle_geometry_emission(
-        std::unordered_map<std::string, std::unique_ptr<Cached_meshdata>>& mesh_cache,
-        std::unordered_map<Cached_meshdata*, int>& meshdata2idx,
-        Instanced_renderer& r,
-        OpenSim::Component const* c,
-        Simbody_geometry const& g,
-        Scene_decorations& out) {
-
+static void handle_geometry_emission(Simbody_geometry const& g, Emitter_out& out) {
     switch (g.geom_type) {
     case Simbody_geometry::Type::Sphere:
-        handle_sphere_emission(c, g.sphere, out);
+        handle_sphere_emission(g.sphere, out);
         break;
     case Simbody_geometry::Type::Line:
-        handle_line_emission(c, g.line, out);
+        handle_line_emission(g.line, out);
         break;
     case Simbody_geometry::Type::Cylinder:
-        handle_cylinder_emission(c, g.cylinder, out);
+        //handle_cylinder_emission(g.cylinder, out);
         break;
     case Simbody_geometry::Type::Brick:
-        handle_brick_emission(c, g.brick, out);
+        //handle_brick_emission(g.brick, out);
         break;
     case Simbody_geometry::Type::MeshFile:
-        handle_meshfile_emission(mesh_cache, meshdata2idx, r, c, g.meshfile, out);
+        handle_meshfile_emission(g.meshfile, out);
         break;
     case Simbody_geometry::Type::Frame:
-        handle_frame_emission(c, g.frame, out);
+        //handle_frame_emission(g.frame, out);
         break;
     case Simbody_geometry::Type::Ellipsoid:
         // TODO
         break;
     case Simbody_geometry::Type::Cone:
-        handle_cone_emission(c, g.cone, out);
+        //handle_cone_emission(g.cone, out);
         break;
     case Simbody_geometry::Type::Arrow:
         // TODO
@@ -339,58 +291,51 @@ static void handle_geometry_emission(
 }
 
 void osc::Scene_decorations::clear() {
-    drawlist.clear();
-    meshes_data.clear();
+    model_xforms.clear();
+    normal_xforms.clear();
+    rgbas.clear();
+    gpu_meshes.clear();
+    cpu_meshes.clear();
     aabbs.clear();
-    aabb_bvh.clear();
     components.clear();
-    meshidxs.clear();
-    model_mtxs.clear();
+    aabb_bvh.clear();
 }
 
-osc::Scene_generator::Scene_generator(Instanced_renderer& r) :
-    m_CachedSphere{create_cached_meshdata(r, gen_untextured_uv_sphere(12, 12))},
-    m_CachedCylinder{create_cached_meshdata(r, gen_untextured_simbody_cylinder(16))},
-    m_CachedBrick{create_cached_meshdata(r, gen_cube())},
-    m_CachedCone{create_cached_meshdata(r, gen_untextured_simbody_cone(12))},
-    m_CachedMeshes{} {
+osc::Scene_generator::Scene_generator() {
+    m_CachedMeshes[g_SphereID] = create_cached_meshdata(gen_untextured_uv_sphere(12, 12));
+    m_CachedMeshes[g_CylinderID] = create_cached_meshdata(gen_untextured_simbody_cylinder(16));
+    m_CachedMeshes[g_BrickID] = create_cached_meshdata(gen_cube());
+    m_CachedMeshes[g_ConeID] = create_cached_meshdata(gen_untextured_simbody_cone(12));
 }
 
 void osc::Scene_generator::generate(
-        Instanced_renderer& r,
         OpenSim::Component const& c,
         SimTK::State const& state,
         OpenSim::ModelDisplayHints const& hints,
         Scene_decorations& out,
         Modelstate_decoration_generator_flags flags) {
 
-    // clear the pointer-to-meshidx cache that's used to dedupe mesh references
-    m_MeshPtr2Meshidx.clear();
-
-    // clear this - it's required by OpenSim's generatedecorations thing
     m_GeomListCache.clear();
-
-    // clear any existing data in the drawlist
     out.clear();
 
-    // preallocate common meshes, so that we don't have to do redundant
-    // hashtable lookups (models can contain *a lot* of spheres+cylinders)
-    //
-    // CARE: these need to match the globals
-    out.drawlist.meshes.push_back(m_CachedSphere.instance_meshdata);
-    out.meshes_data.push_back(m_CachedSphere.cpu_meshdata);
-    out.drawlist.meshes.push_back(m_CachedCylinder.instance_meshdata);
-    out.meshes_data.push_back(m_CachedCylinder.cpu_meshdata);
-    out.drawlist.meshes.push_back(m_CachedBrick.instance_meshdata);
-    out.meshes_data.push_back(m_CachedBrick.cpu_meshdata);
-    out.drawlist.meshes.push_back(m_CachedCone.instance_meshdata);
-    out.meshes_data.push_back(m_CachedCone.cpu_meshdata);
-
-    // called whenever the simbody geometry generator emits new geometry
-    OpenSim::Component const* current_component = nullptr;
-    auto on_geometry_emission = [&r, &current_component, &out, this](Simbody_geometry const& g) {
-        handle_geometry_emission(m_CachedMeshes, m_MeshPtr2Meshidx, r, current_component, g, out);
+    // this is passed around a lot during emission - it's what each geometry emitter
+    // uses to find/write things
+    Emitter_out eo{
+        m_CachedMeshes,
+        *m_CachedMeshes[g_SphereID],
+        *m_CachedMeshes[g_CylinderID],
+        *m_CachedMeshes[g_BrickID],
+        *m_CachedMeshes[g_ConeID],
+        nullptr,
+        out
     };
+
+    // called whenever OpenSim emits geometry
+    auto on_geometry_emission = [&eo](Simbody_geometry const& g) {
+        handle_geometry_emission(g, eo);
+    };
+
+    // get component's matter subsystem
     SimTK::SimbodyMatterSubsystem const& matter = c.getSystem().getMatterSubsystem();
 
     // create a visitor that visits each component
@@ -398,7 +343,7 @@ void osc::Scene_generator::generate(
 
     // iterate through each component and walk through the geometry
     for (OpenSim::Component const& c : c.getComponentList()) {
-        current_component = &c;
+        eo.c = &c;
 
         // emit static geometry (if requested)
         if (flags & Modelstate_decoration_generator_flags_GenerateStaticDecorations) {

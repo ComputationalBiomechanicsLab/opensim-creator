@@ -87,16 +87,6 @@ osc::Gouraud_mrt_shader::Gouraud_mrt_shader() :
     program{gl::CreateProgramFrom(
         gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
-
-    aLocation{0},
-    aNormal{1},
-    aTexCoord{2},
-
-    aModelMat{3},
-    aNormalMat{7},
-    aRgba0{10},
-    aRimIntensity{11},
-
     uProjMat{gl::GetUniformLocation(program, "uProjMat")},
     uViewMat{gl::GetUniformLocation(program, "uViewMat")},
     uLightDir{gl::GetUniformLocation(program, "uLightDir")},

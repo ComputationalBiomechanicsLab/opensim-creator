@@ -14,11 +14,14 @@
 
 using namespace osc;
 
-static Mesh_instance_drawlist make_drawlist(Instanced_renderer& r, int rows, int cols) {
-    Mesh_instance_drawlist rv;
+static Instanced_drawlist make_drawlist(int rows, int cols) {
+    Instanceable_meshdata cube = upload_meshdata_for_instancing(gen_cube());
 
-    // add cube meshdata
-    rv.meshes.emplace_back(r.allocate(gen_cube()));
+    std::vector<glm::mat4x3> model_xforms;
+    std::vector<glm::mat3x3> normal_xforms;
+    std::vector<Rgba32> colors;
+    std::vector<Instanceable_meshdata> meshes;
+    std::vector<unsigned char> rims;
 
     // add a scaled cube instance that indexes the cube meshdata
     int n = 0;
@@ -35,17 +38,27 @@ static Mesh_instance_drawlist make_drawlist(Instanced_renderer& r, int rows, int
 
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, {x, y, 0.0f});
             glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{w, h, d});
+            glm::mat4 xform = translate * scale;
+            glm::mat4 normal_mtx = normal_matrix(xform);
 
-            Mesh_instance& inst = rv.instances.emplace_back();
-            inst.model_xform = translate * scale;
-            inst.normal_xform = normal_matrix(inst.model_xform);
-            inst.rgba = {0xff, 0x00, 0x00, 0xff};
-            inst.meshidx = 0;
-            inst.texidx = -1;
-            inst.rim_intensity = static_cast<unsigned char>(n++ * rim_per_step);
+            model_xforms.push_back(xform);
+            normal_xforms.push_back(normal_mtx);
+            colors.push_back({0xff, 0x00, 0x00, 0xff});
+            meshes.push_back(cube);
+            rims.push_back(static_cast<unsigned char>(n++ * rim_per_step));
         }
     }
 
+    Drawlist_compiler_input inp{};
+    inp.ninstances = model_xforms.size();
+    inp.model_xforms = model_xforms.data();
+    inp.normal_xforms = normal_xforms.data();
+    inp.colors = colors.data();
+    inp.meshes = meshes.data();
+    inp.rim_intensity = rims.data();
+
+    Instanced_drawlist rv;
+    upload_inputs_to_drawlist(inp, rv);
     return rv;
 }
 
@@ -54,7 +67,7 @@ struct osc::Instanced_render_screen::Impl final {
 
     int rows = 512;
     int cols = 512;
-    Mesh_instance_drawlist drawlist = make_drawlist(renderer, rows, cols);
+    Instanced_drawlist drawlist = make_drawlist(rows, cols);
     Render_params params;
 
     Colormapped_plain_texture_shader cpt;
@@ -151,13 +164,13 @@ void osc::Instanced_render_screen::draw() {
         if (ImGui::InputInt("rows", &rows, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (rows > 0 && rows != m_Impl->rows) {
                 m_Impl->rows = rows;
-                m_Impl->drawlist = make_drawlist(m_Impl->renderer, m_Impl->rows, m_Impl->cols);
+                m_Impl->drawlist = make_drawlist(m_Impl->rows, m_Impl->cols);
             }
         }
         if (ImGui::InputInt("cols", &cols, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             if (cols > 0 && cols != m_Impl->cols) {
                 m_Impl->cols = cols;
-                m_Impl->drawlist = make_drawlist(m_Impl->renderer, m_Impl->cols, m_Impl->cols);
+                m_Impl->drawlist = make_drawlist(m_Impl->cols, m_Impl->cols);
             }
         }
         ImGui::Checkbox("rims", &m_Impl->draw_rims);
