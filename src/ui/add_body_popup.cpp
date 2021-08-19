@@ -1,7 +1,7 @@
 #include "add_body_popup.hpp"
 
-#include "src/simtk_bindings/simtk_bindings.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
+#include "src/simtk_bindings/stk_converters.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/lockable_f3_editor.hpp"
 #include "src/styling.hpp"
@@ -181,6 +181,8 @@ std::optional<osc::ui::add_body_popup::New_body> osc::ui::add_body_popup::draw(
 
     // prompt geometry
     {
+        // TODO: doesn't populate the list by default anymore
+
         ImGui::Text("geometry");
         ImGui::SameLine();
         ui::help_marker::draw(

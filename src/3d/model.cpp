@@ -393,6 +393,10 @@ glm::vec3::length_type osc::vec_longest_dim_idx(glm::vec3 const& v) noexcept {
     }
 }
 
+float osc::vec_longest_dim(glm::vec3 const& v) noexcept {
+    return v[vec_longest_dim_idx(v)];
+}
+
 glm::vec3 osc::triangle_normal(glm::vec3 const* v) noexcept {
     glm::vec3 ab = v[1] - v[0];
     glm::vec3 ac = v[2] - v[0];

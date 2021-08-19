@@ -1,8 +1,7 @@
 #include "attach_geometry_popup.hpp"
 
-#include "src/resources.hpp"
-#include "src/utils/scope_guard.hpp"
 #include "src/ui/help_marker.hpp"
+#include "src/utils/scope_guard.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -52,10 +51,6 @@ namespace {
     };
     static_assert(g_GeomCtors.size() == g_GeomNames.size());
 
-    bool filename_lexographically_gt(fs::path const& a, fs::path const& b) {
-        return a.filename() < b.filename();
-    }
-
     std::unique_ptr<OpenSim::Mesh> on_vtp_choice_made(
             osc::ui::attach_geometry_popup::State& st,
             std::filesystem::path path) {
@@ -93,14 +88,6 @@ namespace {
 
         return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
     }
-}
-
-std::vector<std::filesystem::path> osc::find_all_vtp_resources() {
-    fs::path geometry_dir = osc::resource("geometry");
-    std::vector<fs::path> rv = find_files_with_extensions(geometry_dir, ".vtp");
-    std::sort(rv.begin(), rv.end(), filename_lexographically_gt);
-
-    return rv;
 }
 
 std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(

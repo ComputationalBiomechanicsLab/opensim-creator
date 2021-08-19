@@ -1,9 +1,7 @@
 #include "model_actions.hpp"
 
-#include "src/application.hpp"
 #include "src/log.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
-#include "src/screens/show_model_screen.hpp"
 #include "src/ui/add_body_popup.hpp"
 #include "src/ui/select_2_pfs_popup.hpp"
 

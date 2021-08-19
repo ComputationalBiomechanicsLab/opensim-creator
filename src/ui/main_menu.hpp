@@ -1,10 +1,10 @@
 #pragma once
 
-#include "src/application.hpp"
-#include "src/resources.hpp"
+#include "src/recent_file.hpp"
 
 #include <filesystem>
 #include <vector>
+#include <memory>
 
 namespace osc {
     struct Main_editor_state;

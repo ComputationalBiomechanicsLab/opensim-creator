@@ -9,8 +9,9 @@
 #include "src/styling.hpp"
 #include "src/3d/gl.hpp"
 
+#include "src/utils/algs.hpp"
+#include "src/utils/fs.hpp"
 #include "src/utils/sdl_wrapper.hpp"
-#include "src/utils/helpers.hpp"
 #include "src/utils/scope_guard.hpp"
 
 #include <GL/glew.h>
@@ -26,6 +27,8 @@
 #include <imgui.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <imgui/backends/imgui_impl_sdl.h>
+
+#include <fstream>
 
 
 using namespace osc;
@@ -433,6 +436,50 @@ R"(OpenGL Debug message:
         colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
         colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     }
+
+    // load the "recent files" file that osc persists to disk
+    std::vector<Recent_file> load_recent_files_file(std::filesystem::path const& p) {
+
+        std::ifstream fd{p, std::ios::in};
+
+        if (!fd) {
+            // do not throw, because it probably shouldn't crash the application if this
+            // is an issue
+            osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
+            return {};
+        }
+
+        std::vector<Recent_file> rv;
+        std::string line;
+
+        while (std::getline(fd, line)) {
+            std::istringstream ss{line};
+
+            // read line content
+            uint64_t timestamp;
+            std::filesystem::path path;
+            ss >> timestamp;
+            ss >> path;
+
+            // calc tertiary data
+            bool exists = std::filesystem::exists(path);
+            std::chrono::seconds timestamp_secs{timestamp};
+
+            rv.push_back(Recent_file{exists, std::move(timestamp_secs), std::move(path)});
+        }
+
+        return rv;
+    }
+
+    // returns a unix timestamp in seconds since the epoch
+    std::chrono::seconds unix_timestamp() {
+        return std::chrono::seconds(std::time(nullptr));
+    }
+
+    // returns the filesystem path to the "recent files" file
+    std::filesystem::path recent_files_path() {
+        return osc::user_data_dir() / "recent_files.txt";
+    }
 }
 
 struct osc::App::Impl final {
@@ -737,6 +784,50 @@ Config const& osc::App::get_config() const noexcept {
 
 std::filesystem::path osc::App::get_resource(std::string_view p) const noexcept {
     return ::get_resource(*impl->config, p);
+}
+
+std::string osc::App::slurp_resource(std::string_view p) const {
+    std::filesystem::path path = get_resource(p);
+    return slurp_into_string(path);
+}
+
+std::vector<Recent_file> osc::App::recent_files() const {
+    std::filesystem::path p = recent_files_path();
+
+    if (!std::filesystem::exists(p)) {
+        return {};
+    }
+
+    return load_recent_files_file(p);
+}
+
+void osc::App::add_recent_file(std::filesystem::path const& p) {
+    std::filesystem::path rfs_path = recent_files_path();
+
+    // load existing list
+    std::vector<Recent_file> rfs;
+    if (std::filesystem::exists(rfs_path)) {
+        rfs = load_recent_files_file(rfs_path);
+    }
+
+    // clear potentially duplicate entries from existing list
+    osc::remove_erase(rfs, [&p](Recent_file const& rf) { return rf.path == p; });
+
+    // write by truncating existing list file
+    std::ofstream fd{rfs_path, std::ios::trunc};
+
+    if (!fd) {
+        osc::log::error("%s: could not be opened for writing: cannot update recent files list", rfs_path.string().c_str());
+    }
+
+    // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
+    auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
+    for (auto it = begin; it != rfs.end(); ++it) {
+        fd << it->unix_timestamp.count() << ' ' << it->path << std::endl;
+    }
+
+    // append the new entry
+    fd << unix_timestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
 }
 
 void osc::ImGuiInit() {

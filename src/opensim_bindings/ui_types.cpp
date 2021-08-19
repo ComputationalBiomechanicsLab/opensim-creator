@@ -126,11 +126,6 @@ namespace {
 
         return rv;
     }
-
-    std::unique_ptr<Component_3d_viewer> create_3dviewer() {
-        return std::make_unique<osc::Component_3d_viewer>(osc::Component3DViewerFlags_Default | osc::Component3DViewerFlags_DrawFrames);
-    }
-
 }
 
 // named namespace is due to an MSVC internal linkage compiler bug

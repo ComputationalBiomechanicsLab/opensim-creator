@@ -29,7 +29,6 @@ namespace osc {
 
         ~Meshes_to_model_wizard_screen() noexcept override;
 
-        char const* name() override { return "Meshes_to_model_wizard_screen"; }
         void on_mount() override;
         void on_unmount() override;
         void on_event(SDL_Event const&) override;

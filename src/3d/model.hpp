@@ -37,8 +37,11 @@ namespace osc {
     // returns a vector containing max(a[dim], b[dim]) for each dimension
     glm::vec3 vec_max(glm::vec3 const&, glm::vec3 const&) noexcept;
 
-    // returns the *index* of a vectors longest dimension
+    // returns the *index* of a vector's longest dimension
     glm::vec3::length_type vec_longest_dim_idx(glm::vec3 const&) noexcept;
+
+    // returns the *value* of a vector's longest dimension
+    float vec_longest_dim(glm::vec3 const&) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 triangle_normal(glm::vec3 const*) noexcept;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/assertions.hpp"
+#include "src/recent_file.hpp"
 #include "src/screen.hpp"
 
 #include <SDL_events.h>
@@ -119,6 +120,19 @@ namespace osc {
 
         // get full path to runtime resource in `resources/` dir
         [[nodiscard]] std::filesystem::path get_resource(std::string_view) const noexcept;
+
+        // returns the contents of a resource in a string
+        [[nodiscard]] std::string slurp_resource(std::string_view) const;
+
+        // returns all files that were recently opened by the user in the app
+        //
+        // the list is persisted between app boots
+        [[nodiscard]] std::vector<Recent_file> recent_files() const;
+
+        // add a file to the recently opened files list
+        //
+        // this addition is persisted between app boots
+        void add_recent_file(std::filesystem::path const&);
     };
 
     // ImGui support

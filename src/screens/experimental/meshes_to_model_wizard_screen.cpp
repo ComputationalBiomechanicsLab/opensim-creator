@@ -1,63 +1,48 @@
 #include "meshes_to_model_wizard_screen.hpp"
 
 #include "src/app.hpp"
-#include "src/3d/gl.hpp"
-#include "src/3d/3d.hpp"
-#include "src/3d/instanced_renderer.hpp"
-#include "src/simtk_bindings/simtk_bindings.hpp"
-#include "src/utils/shims.hpp"
-#include "src/utils/spsc.hpp"
-
-#include <imgui.h>
-#include <ImGuizmo.h>
-
-#include <filesystem>
-#include <string>
-#include <variant>
-#include <stdexcept>
-#include <memory>
-
-/*
-
-#include "src/3d/3d.hpp"
-#include "src/simtk_bindings/simtk_bindings.hpp"
-#include "src/utils/algs.hpp"
-#include "src/utils/shims.hpp"
-#include "src/utils/spsc.hpp"
-#include "src/app.hpp"
-#include "src/styling.hpp"
-#include "src/utils/scope_guard.hpp"
 #include "src/log.hpp"
+#include "src/3d/constants.hpp"
+#include "src/3d/gl.hpp"
+#include "src/3d/instanced_renderer.hpp"
+#include "src/3d/model.hpp"
+#include "src/simtk_bindings/stk_meshloader.hpp"
+#include "src/simtk_bindings/stk_converters.hpp"
+#include "src/utils/algs.hpp"
+#include "src/utils/scope_guard.hpp"
+#include "src/utils/shims.hpp"
+#include "src/utils/spsc.hpp"
 
+#include <glm/mat4x4.hpp>
+#include <glm/vec4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <nfd.h>
-#include <glm/mat4x4.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <SimTKcommon.h>
 
-#include <filesystem>
-#include <string>
-#include <variant>
-#include <optional>
-#include <stdexcept>
-#include <vector>
-#include <memory>
 #include <cstddef>
-#include <algorithm>
-
-*/
+#include <filesystem>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include <variant>
 
 using namespace osc;
 
 // private impl details
 namespace {
 
-    inline constexpr float pi_f = osc::numbers::pi_v<float>;
-
-    // a request, usually made by UI thread, to load a mesh file
+    // a request, made by UI thread, to load a mesh file
     struct Mesh_load_request final {
         // unique mesh ID
         int id;
@@ -75,7 +60,7 @@ namespace {
         std::filesystem::path filepath;
 
         // CPU-side mesh data
-        Untextured_mesh um;
+        NewMesh um;
 
         // AABB of the mesh data
         AABB aabb;
@@ -103,23 +88,25 @@ namespace {
     >;
 
     // MESH LOADER FN: respond to load request (and handle errors)
-    [[nodiscard]] Mesh_load_response create_meshload_resp(Mesh_load_request const& msg) noexcept {
+    [[nodiscard]] Mesh_load_response respond_to_meshload_request(Mesh_load_request const& msg) noexcept {
         try {
             Mesh_load_OK_response rv;
             rv.id = msg.id;
             rv.filepath = msg.filepath;
-            stk_load_meshfile(msg.filepath, rv.um);  // can throw
-            rv.aabb = aabb_from_mesh(rv.um);
-            rv.bounding_sphere = bounding_sphere_from_mesh(rv.um);
+            rv.um = stk_load_mesh(msg.filepath);  // can throw
+            rv.aabb = aabb_from_points(rv.um.verts.data(), rv.um.verts.size());
+            rv.bounding_sphere = sphere_bounds_of_points(rv.um.verts.data(), rv.um.verts.size());
             return rv;
         } catch (std::exception const& ex) {
             return Mesh_load_ERORR_response{msg.id, msg.filepath, ex.what()};
         }
     }
 
-    using Mesh_loader = spsc::Worker<Mesh_load_request, Mesh_load_response, decltype(create_meshload_resp)>;
+    // a meshloader is just a worker on a background thread that listens for requests
+    using Mesh_loader = spsc::Worker<Mesh_load_request, Mesh_load_response, decltype(respond_to_meshload_request)>;
+
     Mesh_loader meshloader_create() {
-        return Mesh_loader::create(create_meshload_resp);
+        return Mesh_loader::create(respond_to_meshload_request);
     }
 
     // a fully-loaded mesh
@@ -131,7 +118,7 @@ namespace {
         std::filesystem::path filepath;
 
         // CPU-side mesh data
-        Untextured_mesh meshdata;
+        NewMesh meshdata;
 
         // AABB of the mesh data
         AABB aabb;
@@ -143,7 +130,7 @@ namespace {
         glm::mat4 model_mtx;
 
         // mesh data on GPU
-        std::shared_ptr<Mesh_instance_meshdata> gpu_meshdata;
+        Instanceable_meshdata gpu_meshdata;
 
         // -1 if ground/unassigned; otherwise, a body/frame
         int parent;
@@ -162,7 +149,7 @@ namespace {
             aabb{tmp.aabb},
             bounding_sphere{tmp.bounding_sphere},
             model_mtx{1.0f},
-            gpu_meshdata{std::make_shared<Mesh_instance_meshdata>(meshdata)},
+            gpu_meshdata{upload_meshdata_for_instancing(meshdata)},
             parent{-1},
             is_hovered{false},
             is_selected{false} {
@@ -247,9 +234,18 @@ namespace {
 
     // draw an ImGui color picker for an OSC Rgba32
     void Rgba32_ColorEdit4(char const* label, Rgba32* rgba) {
-        ImVec4 col = ImGui::ColorConvertU32ToFloat4(rgba->to_u32());
+        ImVec4 col{
+            static_cast<float>(rgba->r) / 255.0f,
+            static_cast<float>(rgba->g) / 255.0f,
+            static_cast<float>(rgba->b) / 255.0f,
+            static_cast<float>(rgba->a) / 255.0f,
+        };
+
         if (ImGui::ColorEdit4(label, reinterpret_cast<float*>(&col))) {
-            *rgba = Rgba32::from_f4(col.x, col.y, col.z, col.w);
+            rgba->r = static_cast<unsigned char>(col.x * 255.0f);
+            rgba->g = static_cast<unsigned char>(col.y * 255.0f);
+            rgba->b = static_cast<unsigned char>(col.z * 255.0f);
+            rgba->a = static_cast<unsigned char>(col.w * 255.0f);
         }
     }
 }
@@ -279,19 +275,19 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // color of assigned (i.e. attached to a body/frame) meshes
     // rendered in the 3D scene
-    Rgba32 assigned_mesh_color = Rgba32::from_f4(1.0f, 1.0f, 1.0f, 1.0f);
+    Rgba32 assigned_mesh_color = rgba32_from_f4(1.0f, 1.0f, 1.0f, 1.0f);
 
     // color of unassigned meshes rendered in the 3D scene
-    Rgba32 unassigned_mesh_color = Rgba32::from_u32(0xFFE4E4FF);
+    Rgba32 unassigned_mesh_color = rgba32_from_u32(0xFFE4E4FF);
 
     // color of ground (sphere @ 0,0,0) rendered in the 3D scene
-    Rgba32 ground_color = Rgba32::from_f4(0.0f, 0.0f, 1.0f, 1.0f);
+    Rgba32 ground_color = rgba32_from_f4(0.0f, 0.0f, 1.0f, 1.0f);
 
     // color of a body rendered in the 3D scene
-    Rgba32 body_color = Rgba32::from_f4(1.0f, 0.0f, 0.0f, 1.0f);
+    Rgba32 body_color = rgba32_from_f4(1.0f, 0.0f, 0.0f, 1.0f);
 
     // color of a frame rendered in the 3D scene
-    Rgba32 frame_color = Rgba32::from_f4(0.0f, 1.0f, 0.0f, 1.0f);
+    Rgba32 frame_color = rgba32_from_f4(0.0f, 1.0f, 0.0f, 1.0f);
 
     // radius of rendered ground sphere
     float ground_sphere_radius = 0.008f;
@@ -316,16 +312,14 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // the transformation operation that the gizmo should be doing
     ImGuizmo::OPERATION gizmo_op = ImGuizmo::TRANSLATE;
 
-        /*
-
     // 3D rendering params
     osc::Render_params renderparams;
 
     // 3D drawlist that is rendered
-    osc::Drawlist drawlist;
+    osc::Instanced_drawlist drawlist;
 
-    // 3D output render target from renderer
-    osc::Render_target render_target;
+    // 3D renderer for the drawlist
+    osc::Instanced_renderer renderer;
 
     // 3D scene camera
     osc::Polar_perspective_camera camera;
@@ -391,12 +385,8 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     //
     // `nullptr` until the model is successfully created
     std::unique_ptr<OpenSim::Model> output_model = nullptr;
-
-    */
 };
 using Impl = osc::Meshes_to_model_wizard_screen::Impl;
-
-/*
 
 // private Impl functions
 namespace {
@@ -566,7 +556,7 @@ namespace {
                 // the POF's object-to-ground transform. so vertices in the matrix are
                 // already in "object space" and we want to figure out how to transform
                 // them as if they were in our current (world) space
-                SimTK::Transform mmtx = std_mat4_to_xform(m.model_mtx);
+                SimTK::Transform mmtx = stk_xform_from_mat4x3(m.model_mtx);
 
                 mesh_pof->setOffsetTransform(xform_ground2parent * mmtx);
                 body->addComponent(mesh_pof);
@@ -661,7 +651,6 @@ namespace {
             bof.is_selected = bof.is_hovered;
         }
     }
-    */
 
     // submit a meshfile load request to the mesh loader
     void submit_meshfile_load_request(Impl& impl, std::filesystem::path path) {
@@ -670,8 +659,6 @@ namespace {
         impl.loading_meshes.push_back(req);
         impl.mesh_loader.send(req);
     }
-
-    /*
 
     // synchronously prompts the user to select multiple mesh files through
     // a native OS file dialog
@@ -707,7 +694,7 @@ namespace {
         if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
 
             // in pixels, e.g. [800, 600]
-            glm::vec2 screendims = impl.render_target.dimensions();
+            glm::vec2 screendims = impl.renderer.dimsf();
 
             // in pixels, e.g. [-80, 30]
             glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.0f);
@@ -719,13 +706,13 @@ namespace {
             if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
                 // shift + middle-mouse performs a pan
                 float aspect_ratio = screendims.x / screendims.y;
-                pan(impl.camera, aspect_ratio, relative_delta);
+                impl.camera.do_pan(aspect_ratio, relative_delta);
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
                 // shift + middle-mouse performs a zoom
                 impl.camera.radius *= 1.0f + relative_delta.y;
             } else {
                 // just middle-mouse performs a mouse drag
-                drag(impl.camera, relative_delta);
+                impl.camera.do_drag(relative_delta);
             }
         }
     }
@@ -819,16 +806,16 @@ namespace {
             return;
         }
 
-        // get bounding box of the scene in modelspace
-        AABB scene_aabb = aabb_union(impl.meshes.cbegin(),
-                                     impl.meshes.cend(),
-                                     [](auto const& m) { return m.model_mtx * m.aabb; });
+        AABB scene_aabb{{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+        for (Loaded_mesh const& mesh : impl.meshes) {
+            scene_aabb = aabb_union(scene_aabb, mesh.aabb);
+        }
 
         // we only care about the dimensions of the AABB, not its position
         glm::vec3 dims = aabb_dims(scene_aabb);
 
         // figure out the longest dimension, scale relative to that
-        float longest_dim = longest_dimension(dims);
+        float longest_dim = vec_longest_dim(dims);
 
         // update relevant state
         impl.scene_scale_factor = 5.0f * longest_dim;
@@ -971,10 +958,7 @@ namespace {
         };
 
         // current screen dimensions
-        glm::vec2 screen_dimensions{
-            static_cast<float>(impl.render_target.w),
-            static_cast<float>(impl.render_target.h)
-        };
+        glm::vec2 screen_dimensions = impl.renderer.dimsf();
 
         // range [0, w] (X) and [0, h] (Y)
         glm::vec2 screen_pos = screen_dimensions * relative_screenpos;
@@ -1114,7 +1098,8 @@ namespace {
             for (Loaded_mesh const& m : impl.meshes) {
                 if (m.is_selected) {
                     ++nselected;
-                    aabb = aabb_union(aabb, m.model_mtx * m.aabb);
+
+                    aabb = aabb_union(aabb, aabb_apply_xform(m.aabb, m.model_mtx));
                 }
             }
             for (Body_or_frame const& b : impl.bofs) {
@@ -1137,8 +1122,8 @@ namespace {
         ImGuizmo::SetRect(
             impl.render_topleft_in_screen.x,
             impl.render_topleft_in_screen.y,
-            static_cast<float>(impl.render_target.w),
-            static_cast<float>(impl.render_target.h));
+            impl.renderer.dimsf().x,
+            impl.renderer.dimsf().y);
         ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
         glm::mat4 delta;
@@ -1171,6 +1156,10 @@ namespace {
         }
     }
 
+}
+
+        /*
+
     // returns a mesh instance that represents a chequered floor in the scene
     [[nodiscard]] Mesh_instance create_chequered_floor_meshinstance(Impl& impl) {
         glm::mat4 model_mtx = glm::identity<glm::mat4>();
@@ -1192,6 +1181,8 @@ namespace {
 
         return mi;
     }
+
+
 
     // draw 3D scene into remainder of the ImGui panel's content region
     void draw_3dviewer_scene(Impl& impl) {

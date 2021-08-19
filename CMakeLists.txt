@@ -120,8 +120,8 @@ add_executable(osc
     src/opensim_bindings/simulation.hpp
     src/opensim_bindings/type_registry.cpp
     src/opensim_bindings/type_registry.hpp
-    #src/opensim_bindings/ui_types.hpp
-    #src/opensim_bindings/ui_types.cpp
+    src/opensim_bindings/ui_types.hpp
+    src/opensim_bindings/ui_types.cpp
 
     src/screens/cookiecutter_screen.cpp
     src/screens/cookiecutter_screen.hpp
@@ -137,8 +137,8 @@ add_executable(osc
     src/screens/experimental/mesh_hittest_screen.hpp
     src/screens/experimental/mesh_hittest_with_bvh_screen.cpp
     src/screens/experimental/mesh_hittest_with_bvh_screen.hpp
-    # src/screens/experimental/meshes_to_model_wizard_screen.cpp
-    # src/screens/experimental/meshes_to_model_wizard_screen.hpp
+    src/screens/experimental/meshes_to_model_wizard_screen.cpp
+    src/screens/experimental/meshes_to_model_wizard_screen.hpp
     src/screens/experimental/instanced_renderer_screen.cpp
     src/screens/experimental/instanced_renderer_screen.hpp
     src/screens/experimental/opensim_modelstate_decoration_generator_screen.cpp
@@ -146,10 +146,10 @@ add_executable(osc
     src/screens/experimental/simbody_meshgen_screen.cpp
     src/screens/experimental/simbody_meshgen_screen.hpp
 
-    #src/screens/error_screen.cpp
-    #src/screens/error_screen.hpp
-    #src/screens/imgui_demo_screen.cpp
-    #src/screens/imgui_demo_screen.hpp
+    src/screens/error_screen.cpp
+    src/screens/error_screen.hpp
+    src/screens/imgui_demo_screen.cpp
+    src/screens/imgui_demo_screen.hpp
     #src/screens/loading_screen.cpp
     #src/screens/loading_screen.hpp
     #src/screens/model_editor_screen.cpp
@@ -167,69 +167,71 @@ add_executable(osc
     src/simtk_bindings/stk_meshloader.cpp
     src/simtk_bindings/stk_meshloader.hpp
 
-    #src/ui/add_component_popup.hpp
-    #src/ui/add_component_popup.cpp
-    #src/ui/component_hierarchy.hpp
-    #src/ui/component_hierarchy.cpp
-    #src/ui/component_details.cpp
-    #src/ui/component_details.hpp
+    src/ui/add_component_popup.hpp
+    src/ui/add_component_popup.cpp
+    src/ui/component_hierarchy.hpp
+    src/ui/component_hierarchy.cpp
+    src/ui/component_details.cpp
+    src/ui/component_details.hpp
     #src/ui/component_3d_viewer.hpp
     #src/ui/component_3d_viewer.cpp
-    #src/ui/properties_editor.hpp
-    #src/ui/properties_editor.cpp
-    #src/ui/reassign_socket_popup.hpp
-    #src/ui/reassign_socket_popup.cpp
-    #src/ui/attach_geometry_popup.hpp
-    #src/ui/attach_geometry_popup.cpp
-    #src/ui/add_body_popup.hpp
-    #src/ui/add_body_popup.cpp
-    #src/ui/log_viewer.hpp
-    #src/ui/log_viewer.cpp
-    #src/ui/lockable_f3_editor.hpp
-    #src/ui/lockable_f3_editor.cpp
+    src/ui/properties_editor.hpp
+    src/ui/properties_editor.cpp
+    src/ui/reassign_socket_popup.hpp
+    src/ui/reassign_socket_popup.cpp
+    src/ui/attach_geometry_popup.hpp
+    src/ui/attach_geometry_popup.cpp
+    src/ui/add_body_popup.hpp
+    src/ui/add_body_popup.cpp
+    src/ui/log_viewer.hpp
+    src/ui/log_viewer.cpp
+    src/ui/lockable_f3_editor.hpp
+    src/ui/lockable_f3_editor.cpp
     #src/ui/main_menu.hpp
     #src/ui/main_menu.cpp
-    #src/ui/help_marker.hpp
-    #src/ui/help_marker.cpp
-    #src/ui/evenly_spaced_sparkline.hpp
-    #src/ui/coordinate_editor.hpp
-    #src/ui/coordinate_editor.cpp
-    #src/ui/muscles_table.hpp
-    #src/ui/muscles_table.cpp
-    #src/ui/select_2_pfs_popup.hpp
-    #src/ui/select_2_pfs_popup.cpp
-    #src/ui/select_1_pf_popup.hpp
-    #src/ui/select_1_pf_popup.cpp
-    #src/ui/model_actions.hpp
-    #src/ui/model_actions.cpp
-    #src/ui/select_component_popup.hpp
-    #src/ui/fd_params_editor_popup.hpp
-    #src/ui/fd_params_editor_popup.cpp
-    #
+    src/ui/help_marker.hpp
+    src/ui/help_marker.cpp
+    src/ui/evenly_spaced_sparkline.hpp
+    src/ui/coordinate_editor.hpp
+    src/ui/coordinate_editor.cpp
+    src/ui/muscles_table.hpp
+    src/ui/muscles_table.cpp
+    src/ui/select_2_pfs_popup.hpp
+    src/ui/select_2_pfs_popup.cpp
+    src/ui/select_1_pf_popup.hpp
+    src/ui/select_1_pf_popup.cpp
+    src/ui/model_actions.hpp
+    src/ui/model_actions.cpp
+    src/ui/select_component_popup.hpp
+    src/ui/fd_params_editor_popup.hpp
+    src/ui/fd_params_editor_popup.cpp
 
     src/utils/algs.hpp
     src/utils/checked_index.hpp
     src/utils/circular_buffer.hpp
     src/utils/concurrency.hpp
-    src/utils/helpers.hpp
-    src/utils/helpers.cpp
+    src/utils/fs.cpp
+    src/utils/fs.hpp
+    src/utils/perf.hpp
     src/utils/scope_guard.hpp
     src/utils/sdl_wrapper.hpp
     src/utils/shims.hpp
     src/utils/spsc.hpp
 
-    src/log.hpp
-    src/log.cpp
-    src/assertions.hpp
-    src/assertions.cpp
-    src/os.hpp
-    src/os.cpp
-    src/config.hpp
-    src/config.cpp
-    src/app.hpp
     src/app.cpp
-
+    src/app.hpp
+    src/assertions.cpp
+    src/assertions.hpp
+    src/config.cpp
+    src/config.hpp
+    src/log.cpp
+    src/log.hpp
+    src/os.cpp
+    src/os.hpp
     src/osc2.cpp
+    src/recent_file.hpp
+    src/screen.hpp
+    src/styling.hpp
 
     # Windows: also link a resources file (rc)
     #
