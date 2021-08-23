@@ -33,8 +33,8 @@ struct osc::Opensim_modelstate_decoration_generator_screen::Impl final {
     Scene_decorations scene_decorations;
     std::vector<unsigned char> rim_highlights;
 
-    OpenSim::Model model{App::resource("models/RajagopalModel/Rajagopal2015.osim").string()};
-    //OpenSim::Model model{App::resource("models/ToyLanding/ToyLandingModel.osim").string()};
+    //OpenSim::Model model{App::resource("models/RajagopalModel/Rajagopal2015.osim").string()};
+    OpenSim::Model model{App::resource("models/ToyLanding/ToyLandingModel.osim").string()};
     SimTK::State state = [this]() {
         model.finalizeFromProperties();
         model.finalizeConnections();
@@ -122,14 +122,14 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
 
         // handle panning/zooming/dragging with middle mouse
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
 
             // in pixels, e.g. [800, 600]
             glm::vec2 screendims = App::cur().dims();
 
             // in pixels, e.g. [-80, 30]
-            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.0f);
-            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
+            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
+            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
 
             // as a screensize-independent ratio, e.g. [-0.1, 0.05]
             glm::vec2 relative_delta = mouse_delta / screendims;
@@ -238,6 +238,8 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
         auto guard = s.timer_render.measure();
         s.renderer.render(s.render_params, s.drawlist);
+
+        glFlush();
     }
 
     // draw the AABBs

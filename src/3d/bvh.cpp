@@ -32,8 +32,8 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     OSC_ASSERT(n > 1 && "trying to treat a lone node as if it were an internal node - this shouldn't be possible (the implementation should have already handled the leaf case)");
 
     // compute bounding box of remaining prims
-    AABB aabb{{FLT_MAX, FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-    for (int i = begin; i < end; ++i) {
+    AABB aabb = bvh.prims[begin].bounds;
+    for (int i = begin + 1; i < end; ++i) {
         aabb = aabb_union(aabb, bvh.prims[i].bounds);
     }
 

@@ -9,6 +9,7 @@
 #include <array>
 #include <iostream>
 #include <cstddef>
+#include <limits>
 
 using namespace osc;
 
@@ -638,8 +639,8 @@ Ray_collision osc::get_ray_collision_sphere(Line const& l, Sphere const& s) noex
 Ray_collision osc::get_ray_collision_AABB(Line const& l, AABB const& bb) noexcept {
     Ray_collision rv;
 
-    float t0 = -FLT_MAX;
-    float t1 = FLT_MAX;
+    float t0 = std::numeric_limits<float>::lowest();
+    float t1 = std::numeric_limits<float>::max();
 
     // intersect the ray with each axis-aligned slab for each dimension
     //
