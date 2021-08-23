@@ -288,8 +288,6 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
         std::sort(ts.begin(), ts.end(), is_closest);
         Impl::Triangle_collision closest = ts.front();
 
-
-
         // upload triangle to GPU
         CPU_mesh const& m = *s.scene_decorations.cpu_meshes[closest.instanceidx];
         glm::vec3 const* tristart = m.data.verts.data() + closest.collision.prim_id;

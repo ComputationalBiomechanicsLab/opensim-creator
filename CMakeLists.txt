@@ -123,8 +123,8 @@ add_executable(osc
     src/opensim_bindings/ui_types.hpp
     src/opensim_bindings/ui_types.cpp
 
-    src/screens/cookiecutter_screen.cpp
-    src/screens/cookiecutter_screen.hpp
+    src/screens/experimental/component_3d_viewer_screen.cpp
+    src/screens/experimental/component_3d_viewer_screen.hpp
     src/screens/experimental/experiments_screen.cpp
     src/screens/experimental/experiments_screen.hpp
     src/screens/experimental/hellotriangle_screen.cpp
@@ -146,6 +146,8 @@ add_executable(osc
     src/screens/experimental/simbody_meshgen_screen.cpp
     src/screens/experimental/simbody_meshgen_screen.hpp
 
+    src/screens/cookiecutter_screen.cpp
+    src/screens/cookiecutter_screen.hpp
     src/screens/error_screen.cpp
     src/screens/error_screen.hpp
     src/screens/imgui_demo_screen.cpp
