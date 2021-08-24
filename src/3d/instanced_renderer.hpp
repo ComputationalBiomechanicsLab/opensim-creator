@@ -48,9 +48,9 @@ namespace osc {
         glm::mat4x3 const* model_xforms = nullptr;
         glm::mat3 const* normal_xforms = nullptr;
         Rgba32 const* colors = nullptr;
-        Instanceable_meshdata const* meshes;
-        std::shared_ptr<gl::Texture_2d> const* textures;
-        unsigned char const* rim_intensity;
+        Instanceable_meshdata const* meshes = nullptr;
+        std::shared_ptr<gl::Texture_2d> const* textures = nullptr;
+        unsigned char const* rim_intensity = nullptr;
     };
 
     // opaque handle to a drawlist the backend can render rapidly
