@@ -165,6 +165,67 @@ static void draw_main_menu_contents(osc::Component_3d_viewer::Impl& impl) {
     // TODO: muscle recoloring
 }
 
+static OpenSim::Component const* hittest_scene_decorations(osc::Component_3d_viewer::Impl& impl) {
+    if (!impl.render_hovered) {
+        return nullptr;
+    }
+
+    // figure out mouse pos in panel's NDC system
+    glm::vec2 window_scr_pos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
+    glm::vec2 mouse_scr_pos = ImGui::GetMousePos();  // where mouse is in the screen
+    glm::vec2 mouse_winpos = mouse_scr_pos - window_scr_pos;  // where mouse is in current window
+    glm::vec2 cursor_winpos = ImGui::GetCursorPos();  // where cursor is in current window
+    glm::vec2 mouse_itempos = mouse_winpos - cursor_winpos;  // where mouse is in current item
+    glm::vec2 item_dims = ImGui::GetContentRegionAvail();  // how big current window will be
+
+    // un-project the mouse position as a ray in worldspace
+    Line camera_ray = impl.camera.screenpos_to_world_ray(mouse_itempos, item_dims);
+
+    // use scene BVH to intersect that ray with the scene
+    impl.scene_hittest_results.clear();
+    BVH_get_ray_collision_AABBs(impl.decorations.aabb_bvh, camera_ray, &impl.scene_hittest_results);
+
+    // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
+    int closest_idx = -1;
+    float closest_distance = std::numeric_limits<float>::max();
+
+    // iterate through each scene-level hit and perform a triangle-level hittest
+    for (BVH_Collision const& c : impl.scene_hittest_results) {
+        int instance_idx = c.prim_id;
+        glm::mat4 const& instance_mmtx = impl.decorations.model_xforms[instance_idx];
+        CPU_mesh const& instance_mesh = *impl.decorations.cpu_meshes[instance_idx];
+
+        Line camera_ray_modelspace = apply_xform_to_line(camera_ray, glm::inverse(instance_mmtx));
+
+        // perform ray-triangle BVH hittest
+        impl.triangle_hittest_results.clear();
+        BVH_get_ray_collisions_triangles(
+                    instance_mesh.triangle_bvh,
+                    instance_mesh.data.verts.data(),
+                    instance_mesh.data.verts.size(),
+                    camera_ray_modelspace,
+                    &impl.triangle_hittest_results);
+
+        // check each triangle collision and take the closest
+        for (BVH_Collision const& tc : impl.triangle_hittest_results) {
+            if (tc.distance < closest_distance) {
+                closest_idx = instance_idx;
+                closest_distance = tc.distance;
+            }
+        }
+    }
+
+    return closest_idx >= 0 ? impl.decorations.components[closest_idx] : nullptr;
+}
+
+static void draw_overlays(osc::Component_3d_viewer::Impl& impl) {
+    // TODO:
+    // - draw XZ grid
+    // - draw XY grid
+    // - draw YZ grid
+    // - draw alignment axes
+}
+
 // public API
 
 osc::Component_3d_viewer::Component_3d_viewer(Component3DViewerFlags flags) :
@@ -257,6 +318,8 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         }
 
         impl.sg.generate(c, st, mdh, impl.decorations, flags);
+
+        // TODO: append the floor
     }
 
     // make rim highlights reflect selection/hover state
@@ -283,13 +346,6 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         upload_inputs_to_drawlist(dci, impl.drawlist);
     }
 
-    // TODO:
-    // - draw floor (in its own drawlist?)
-    // - draw XZ grid
-    // - draw XY grid
-    // - draw YZ grid
-    // - draw alignment axes
-
     // render scene with renderer
     ImVec2 content_region = ImGui::GetContentRegionAvail();
     if (content_region.x >= 1.0f && content_region.y >= 1.0f) {
@@ -303,61 +359,16 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         impl.renderer_params.projection_matrix = impl.camera.projection_matrix(content_region.x/content_region.y);
         impl.renderer_params.view_matrix = impl.camera.view_matrix();
         impl.renderer_params.view_pos = impl.camera.pos();
+
+        // TODO: somehow add floor into the main scene render (for shadows, etc.)
         impl.renderer.render(impl.renderer_params, impl.drawlist);
     }
 
+    // render overlay elements (grid axes, lines, etc.)
+    draw_overlays(impl);
+
     // perform hittest (AABB raycast, triangle raycast, BVH accelerated)
-    OpenSim::Component const* hittest_result = nullptr;
-    if (impl.render_hovered) {
-        // figure out mouse pos in panel's NDC system
-        glm::vec2 window_scr_pos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
-        glm::vec2 mouse_scr_pos = ImGui::GetMousePos();  // where mouse is in the screen
-        glm::vec2 mouse_winpos = mouse_scr_pos - window_scr_pos;  // where mouse is in current window
-        glm::vec2 cursor_winpos = ImGui::GetCursorPos();  // where cursor is in current window
-        glm::vec2 mouse_itempos = mouse_winpos - cursor_winpos;  // where mouse is in current item
-        glm::vec2 item_dims = ImGui::GetContentRegionAvail();  // how big current window will be
-
-        // un-project the mouse position as a ray in worldspace
-        Line camera_ray = impl.camera.screenpos_to_world_ray(mouse_itempos, item_dims);
-
-        // use scene BVH to intersect that ray with the scene
-        impl.scene_hittest_results.clear();
-        BVH_get_ray_collision_AABBs(impl.decorations.aabb_bvh, camera_ray, &impl.scene_hittest_results);
-
-        // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
-        int closest_idx = -1;
-        float closest_distance = std::numeric_limits<float>::max();
-
-        // iterate through each scene-level hit and perform a triangle-level hittest
-        for (BVH_Collision const& c : impl.scene_hittest_results) {
-            int instance_idx = c.prim_id;
-            glm::mat4 const& instance_mmtx = impl.decorations.model_xforms[instance_idx];
-            CPU_mesh const& instance_mesh = *impl.decorations.cpu_meshes[instance_idx];
-
-            Line camera_ray_modelspace = apply_xform_to_line(camera_ray, glm::inverse(instance_mmtx));
-
-            // perform ray-triangle BVH hittest
-            impl.triangle_hittest_results.clear();
-            BVH_get_ray_collisions_triangles(
-                        instance_mesh.triangle_bvh,
-                        instance_mesh.data.verts.data(),
-                        instance_mesh.data.verts.size(),
-                        camera_ray_modelspace,
-                        &impl.triangle_hittest_results);
-
-            // check each triangle collision and take the closest
-            for (BVH_Collision const& tc : impl.triangle_hittest_results) {
-                if (tc.distance < closest_distance) {
-                    closest_idx = instance_idx;
-                    closest_distance = tc.distance;
-                }
-            }
-        }
-
-        if (closest_idx >= 0) {
-            hittest_result = impl.decorations.components[closest_idx];
-        }
-    }
+    OpenSim::Component const* hittest_result = hittest_scene_decorations(impl);
 
     // blit scene render (texture) to screen with ImGui::Image
     {
