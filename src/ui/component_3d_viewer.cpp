@@ -1,6 +1,7 @@
 #include "component_3d_viewer.hpp"
 
 #include "src/app.hpp"
+#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"
@@ -71,6 +72,99 @@ static void update_camera(osc::Component_3d_viewer::Impl& impl) {
     }
 }
 
+static void draw_options_menu(osc::Component_3d_viewer::Impl& impl) {
+
+    ImGui::CheckboxFlags(
+        "draw dynamic geometry", &impl.flags, Component3DViewerFlags_DrawDynamicDecorations);
+
+    ImGui::CheckboxFlags(
+        "draw static geometry", &impl.flags, Component3DViewerFlags_DrawStaticDecorations);
+
+    ImGui::CheckboxFlags("draw frames", &impl.flags, Component3DViewerFlags_DrawFrames);
+
+    ImGui::CheckboxFlags("draw debug geometry", &impl.flags, Component3DViewerFlags_DrawDebugGeometry);
+    ImGui::CheckboxFlags("draw labels", &impl.flags, Component3DViewerFlags_DrawLabels);
+
+    ImGui::Separator();
+
+    ImGui::Text("Graphical Options:");
+
+    ImGui::CheckboxFlags("wireframe mode", &impl.renderer_params.flags, DrawcallFlags_WireframeMode);
+    ImGui::CheckboxFlags("show normals", &impl.renderer_params.flags, DrawcallFlags_ShowMeshNormals);
+    ImGui::CheckboxFlags("draw rims", &impl.renderer_params.flags, DrawcallFlags_DrawRims);
+    ImGui::CheckboxFlags("draw scene geometry", &impl.renderer_params.flags, DrawcallFlags_DrawSceneGeometry);
+    ImGui::CheckboxFlags("draw floor", &impl.flags, Component3DViewerFlags_DrawFloor);
+    ImGui::CheckboxFlags("show XZ grid", &impl.flags, Component3DViewerFlags_DrawXZGrid);
+    ImGui::CheckboxFlags("show XY grid", &impl.flags, Component3DViewerFlags_DrawXYGrid);
+    ImGui::CheckboxFlags("show YZ grid", &impl.flags, Component3DViewerFlags_DrawYZGrid);
+    ImGui::CheckboxFlags("show alignment axes", &impl.flags, Component3DViewerFlags_DrawAlignmentAxes);
+}
+
+static void draw_scene_menu(osc::Component_3d_viewer::Impl& impl) {
+    if (ImGui::Button("Top")) {
+        impl.camera.theta = 0.0f;
+        impl.camera.phi = fpi2;
+    }
+
+    if (ImGui::Button("Left")) {
+        // assumes models tend to point upwards in Y and forwards in +X
+        // (so sidewards is theta == 0 or PI)
+        impl.camera.theta = fpi;
+        impl.camera.phi = 0.0f;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Right")) {
+        // assumes models tend to point upwards in Y and forwards in +X
+        // (so sidewards is theta == 0 or PI)
+        impl.camera.theta = 0.0f;
+        impl.camera.phi = 0.0f;
+    }
+
+    if (ImGui::Button("Bottom")) {
+        impl.camera.theta = 0.0f;
+        impl.camera.phi = 3.0f * fpi2;
+    }
+
+    ImGui::NewLine();
+
+    ImGui::SliderFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
+    ImGui::SliderFloat("theta", &impl.camera.theta, 0.0f, 2.0f * fpi);
+    ImGui::SliderFloat("phi", &impl.camera.phi, 0.0f, 2.0f * fpi);
+    ImGui::InputFloat("fov", &impl.camera.fov);
+    ImGui::InputFloat("znear", &impl.camera.znear);
+    ImGui::InputFloat("zfar", &impl.camera.zfar);
+    ImGui::NewLine();
+    ImGui::SliderFloat("pan_x", &impl.camera.pan.x, -100.0f, 100.0f);
+    ImGui::SliderFloat("pan_y", &impl.camera.pan.y, -100.0f, 100.0f);
+    ImGui::SliderFloat("pan_z", &impl.camera.pan.z, -100.0f, 100.0f);
+
+    ImGui::Separator();
+
+    ImGui::SliderFloat("light_dir_x", &impl.renderer_params.light_dir.x, -1.0f, 1.0f);
+    ImGui::SliderFloat("light_dir_y", &impl.renderer_params.light_dir.y, -1.0f, 1.0f);
+    ImGui::SliderFloat("light_dir_z", &impl.renderer_params.light_dir.z, -1.0f, 1.0f);
+    ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.renderer_params.light_rgb));
+    ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.renderer_params.background_rgba));
+
+    ImGui::Separator();
+
+    // ImGui::InputFloat("fixup scale factor", &impl.fixup_scale_factor); TODO
+}
+
+static void draw_main_menu_contents(osc::Component_3d_viewer::Impl& impl) {
+    if (ImGui::BeginMenu("Options")) {
+        draw_options_menu(impl);
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Scene")) {
+        draw_scene_menu(impl);
+        ImGui::EndMenu();
+    }
+
+    // TODO: muscle recoloring
+}
+
 // public API
 
 osc::Component_3d_viewer::Component_3d_viewer(Component3DViewerFlags flags) :
@@ -97,41 +191,33 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
 
     Impl& impl = *m_Impl;
 
-    int nstyles = 0;
-    OSC_SCOPE_GUARD({ ImGui::PopStyleVar(nstyles); });
-
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-    ++nstyles;
+    OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
     // try to start drawing the main panel, but return early if it's closed
     // to prevent the UI from having to do redundant work
-    if (!ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)) {
-        // main viewer panel is closed, so don't try to render anything
-        ImGui::End();
-        return {};
-    }
-    // else: panel is opened and should be drawn into
+    bool opened = ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar);
     OSC_SCOPE_GUARD({ ImGui::End(); });
+
+    if (!opened) {
+        return {};  // main panel is closed, so skip the rest of the rendering etc.
+    }
 
     // update camera from user input
     update_camera(impl);
 
     // draw panel menu
     if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("todo")) {
-            ImGui::Text("%zu", impl.decorations.aabbs.size());
-            ImGui::EndMenu();
-        }
+        draw_main_menu_contents(impl);
         ImGui::EndMenuBar();
     }
-
-    // draw 3D scene
 
     // put 3D scene in an undraggable child panel, to prevent accidental panel
     // dragging when the user drags their mouse over the scene
     if (!ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
         return {};  // child not visible
     }
+    OSC_SCOPE_GUARD({ ImGui::EndChild(); });
 
     // generate scene decorations from the model + state
     {
@@ -197,6 +283,13 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         upload_inputs_to_drawlist(dci, impl.drawlist);
     }
 
+    // TODO:
+    // - draw floor (in its own drawlist?)
+    // - draw XZ grid
+    // - draw XY grid
+    // - draw YZ grid
+    // - draw alignment axes
+
     // render scene with renderer
     ImVec2 content_region = ImGui::GetContentRegionAvail();
     if (content_region.x >= 1.0f && content_region.y >= 1.0f) {
@@ -215,7 +308,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
 
     // perform hittest (AABB raycast, triangle raycast, BVH accelerated)
     OpenSim::Component const* hittest_result = nullptr;
-    {
+    if (impl.render_hovered) {
         // figure out mouse pos in panel's NDC system
         glm::vec2 window_scr_pos = ImGui::GetWindowPos();  // where current ImGui window is in the screen
         glm::vec2 mouse_scr_pos = ImGui::GetMousePos();  // where mouse is in the screen
@@ -243,6 +336,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
 
             Line camera_ray_modelspace = apply_xform_to_line(camera_ray, glm::inverse(instance_mmtx));
 
+            // perform ray-triangle BVH hittest
             impl.triangle_hittest_results.clear();
             BVH_get_ray_collisions_triangles(
                         instance_mesh.triangle_bvh,
@@ -251,6 +345,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
                         camera_ray_modelspace,
                         &impl.triangle_hittest_results);
 
+            // check each triangle collision and take the closest
             for (BVH_Collision const& tc : impl.triangle_hittest_results) {
                 if (tc.distance < closest_distance) {
                     closest_idx = instance_idx;
