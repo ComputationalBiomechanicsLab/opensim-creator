@@ -9,6 +9,7 @@
 #include "src/screens/experimental/mesh_hittest_screen.hpp"
 #include "src/screens/experimental/simbody_meshgen_screen.hpp"
 #include "src/screens/experimental/imguizmo_demo_screen.hpp"
+#include "src/screens/splash_screen.hpp"
 
 #include <imgui.h>
 
@@ -59,8 +60,7 @@ void osc::Experiments_screen::on_event(SDL_Event const& e) {
     }
 
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        // TODO
-        //Application::current().request_transition<osc::Splash_screen>();
+        App::cur().request_transition<Splash_screen>();
         return;
     }
 }

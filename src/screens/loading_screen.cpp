@@ -2,6 +2,7 @@
 
 #include "src/3d/gl.hpp"
 #include "src/opensim_bindings/ui_types.hpp"
+#include "src/screens/splash_screen.hpp"
 #include "src/app.hpp"
 #include "src/assertions.hpp"
 
@@ -73,8 +74,7 @@ struct Loading_screen::Impl final {
 namespace {
     bool loadingscreen_on_event(Loading_screen::Impl&, SDL_Event const& e) {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            // TODO
-            //Application::current().request_transition<Splash_screen>();
+            App::cur().request_transition<Splash_screen>();
             return true;
         }
 
@@ -161,8 +161,7 @@ namespace {
                 ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
                 if (ImGui::Button("back to splash screen (ESC)")) {
-                    // TODO
-                    // App::cur().request_transition<Splash_screen>();
+                    App::cur().request_transition<Splash_screen>();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("try again")) {

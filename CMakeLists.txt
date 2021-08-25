@@ -158,8 +158,8 @@ add_executable(osc
     #src/screens/model_editor_screen.hpp
     #src/screens/simulator_screen.cpp
     #src/screens/simulator_screen.hpp
-    #src/screens/splash_screen.cpp
-    #src/screens/splash_screen.hpp
+    src/screens/splash_screen.cpp
+    src/screens/splash_screen.hpp
 
     src/simtk_bindings/stk_geometry_generator.cpp
     src/simtk_bindings/stk_geometry_generator.hpp

@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 namespace {
     using Geom_ctor_fn = std::unique_ptr<OpenSim::Geometry>(*)(void);
-    constexpr std::array<Geom_ctor_fn const, 4> g_GeomCtors = {
+    constexpr std::array<Geom_ctor_fn const, 7> g_GeomCtors = {
         []() {
             auto ptr = std::make_unique<OpenSim::Brick>();
             ptr->set_half_lengths(SimTK::Vec3{0.1, 0.1, 0.1});
@@ -35,19 +35,18 @@ namespace {
             return std::unique_ptr<OpenSim::Geometry>{std::move(ptr)};
         },
         []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::LineGeometry{}}; },
-
-        /* TODO: needs rendering support
         []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Ellipsoid{}}; },
         []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Arrow{}}; },
         []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Cone{}}; },
-        []() { return std::unique_ptr<OpenSim::Geometry>{new OpenSim::Torus{}}; },
-        */
     };
-    constexpr std::array<char const* const, 4> g_GeomNames = {
+    constexpr std::array<char const* const, 7> g_GeomNames = {
         "Brick",
         "Sphere",
         "Cylinder",
-        "LineGeometry"
+        "LineGeometry",
+        "Ellipsoid",
+        "Arrow (CARE: may not work in OpenSim's main UI)",
+        "Cone",
     };
     static_assert(g_GeomCtors.size() == g_GeomNames.size());
 

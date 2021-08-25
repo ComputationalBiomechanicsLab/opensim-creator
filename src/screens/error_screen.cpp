@@ -3,6 +3,7 @@
 #include "src/app.hpp"
 #include "src/ui/log_viewer.hpp"
 #include "src/3d/gl.hpp"
+#include "src/screens/splash_screen.hpp"
 #include "src/log.hpp"
 
 #include <SDL_keyboard.h>
@@ -43,8 +44,7 @@ void osc::Error_screen::on_event(SDL_Event const& e) {
     }
 
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        // TODO
-        // Application::current().request_transition<Splash_screen>();
+        App::cur().request_transition<Splash_screen>();
     }
 }
 
@@ -70,8 +70,7 @@ void osc::Error_screen::draw() {
             ImGui::Dummy(ImVec2{0.0f, 10.0f});
 
             if (ImGui::Button("Return to splash screen (Escape)")) {
-                // TODO
-                // Application::current().request_transition<Splash_screen>();
+                App::cur().request_transition<Splash_screen>();
             }
         }
         ImGui::End();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/screens/screen.hpp"
+#include "src/screen.hpp"
 
 #include <memory>
 
@@ -28,6 +28,9 @@ namespace osc {
 
         ~Splash_screen() noexcept override;
 
+        void on_mount() override;
+        void on_unmount() override;
+        void on_event(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
     };

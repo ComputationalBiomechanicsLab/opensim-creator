@@ -1,104 +1,100 @@
 #include "splash_screen.hpp"
 
-#include "osc_build_config.hpp"
-#include "src/3d/cameras.hpp"
-#include "src/3d/3d.hpp"
+#include "src/3d/shaders/plain_texture_shader.hpp"
+#include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
-#include "src/3d/shaders.hpp"
-#include "src/application.hpp"
-#include "src/styling.hpp"
-#include "src/config.hpp"
-#include "src/screens/imgui_demo_screen.hpp"
+#include "src/3d/instanced_renderer.hpp"
+#include "src/3d/model.hpp"
+#include "src/3d/texturing.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/ui/main_menu.hpp"
-#include "src/utils/helpers.hpp"
-#include "src/utils/scope_guard.hpp"
-#include "src/utils/shims.hpp"
-#include "src/main_editor_state.hpp"
+#include "src/app.hpp"
+#include "src/log.hpp"
+#include "src/styling.hpp"
 
-#include <GL/glew.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
-#include <algorithm>
-#include <cstdio>
-#include <filesystem>
-#include <string>
-#include <vector>
+#include <memory>
 
-namespace fs = std::filesystem;
 using namespace osc;
 
-namespace {
+static gl::Texture_2d load_image_resource_into_texture(char const* res_pth) {
+    return load_image_as_texture(App::resource(res_pth).string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
+}
 
-    inline constexpr float pi_f = osc::numbers::pi_v<float>;
+struct Splash_screen::Impl final {
+    // used to render quads (e.g. logo banners)
+    Plain_texture_shader pts;
 
-    Drawlist create_drawlist_with_chequered_floor() {
-        glm::mat4 model_mtx = []() {
+    // TODO: fix this shit packing
+    gl::Array_buffer<glm::vec3> quad_vbo{gen_textured_quad().verts};
+    gl::Array_buffer<glm::vec2> quad_uv_vbo{gen_textured_quad().texcoords};
+    gl::Vertex_array quad_pts_vao = [this]() {
+        gl::Vertex_array rv;
+        gl::BindVertexArray(rv);
+        gl::BindBuffer(quad_vbo);
+        gl::VertexAttribPointer(pts.aPos, false, sizeof(glm::vec3), 0);
+        gl::EnableVertexAttribArray(pts.aPos);
+        gl::BindBuffer(quad_uv_vbo);
+        gl::VertexAttribPointer(pts.aTexCoord, false, sizeof(glm::vec2), 0);
+        gl::EnableVertexAttribArray(pts.aTexCoord);
+        gl::BindVertexArray();
+        return rv;
+    }();
+
+    // main menu (top bar) states
+    ui::main_menu::file_tab::State mm_state;
+
+    // main app logo, blitted to top of the screen
+    gl::Texture_2d logo = load_image_resource_into_texture("logo.png");
+
+    // CZI attributation logo, blitted to bottom of screen
+    gl::Texture_2d cz_logo = load_image_resource_into_texture("chanzuckerberg_logo.png");
+
+    // TUD attributation logo, blitted to bottom of screen
+    gl::Texture_2d tud_logo = load_image_resource_into_texture("tud_logo.png");
+
+    // 3D stuff: for the background image
+    Instanced_renderer renderer;
+    Instanced_drawlist drawlist = []() {
+        glm::mat4x3 mmtx = []() {
             glm::mat4 rv = glm::identity<glm::mat4>();
 
             // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
             // floor down *slightly* to prevent Z fighting from planes rendered from the
             // model itself (the contact planes, etc.)
             rv = glm::translate(rv, {0.0f, -0.005f, 0.0f});
-            rv = glm::rotate(rv, pi_f / 2, {-1.0, 0.0, 0.0});
+            rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
             rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
 
             return rv;
         }();
+        glm::mat3 norm_mtx = normal_matrix(mmtx);
+        Rgba32 color = rgba32_from_u32(0xffffffff);
+        Instanceable_meshdata md = upload_meshdata_for_instancing(gen_textured_quad());
+        std::shared_ptr<gl::Texture_2d> tex = std::make_shared<gl::Texture_2d>(generate_chequered_floor_texture());
 
-        Mesh_instance mi;
-        mi.model_xform = model_mtx;
-        mi.normal_xform = normal_matrix(mi.model_xform);
-        auto& gpu_storage = Application::current().get_gpu_storage();
-        mi.meshidx = gpu_storage.floor_quad_idx;
-        mi.texidx = gpu_storage.chequer_idx;
-        mi.flags.set_skip_shading();
+        Drawlist_compiler_input inp;
+        inp.ninstances = 1;
+        inp.model_xforms = &mmtx;
+        inp.normal_xforms = &norm_mtx;
+        inp.colors = &color;
+        inp.meshes = &md;
+        inp.textures = &tex;
+        inp.rim_intensity = nullptr;
 
-        Drawlist dl;
-        dl.push_back(mi);
-        return dl;
-    }
-
-    void draw_quad(osc::GPU_storage& gs, glm::mat4 const& mvp, gl::Texture_2d& tex) {
-        Plain_texture_shader& pts = *gs.shader_pts;
-        gl::UseProgram(pts.p);
-        gl::Uniform(pts.uMVP, mvp);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(tex);
-        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
-        gl::BindVertexArray(gs.pts_quad_vao);
-        gl::DrawArrays(GL_TRIANGLES, 0, gs.quad_vbo.sizei());
-        gl::BindVertexArray();
-    }
-}
-
-struct Splash_screen::Impl final {
-    // main menu (top bar) states
-    ui::main_menu::file_tab::State mm_state;
-
-    // main app logo, blitted to top of the screen
-    gl::Texture_2d logo = load_image_as_texture(resource("logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
-
-    // CZI attributation logo, blitted to bottom of screen
-    gl::Texture_2d cz_logo = load_image_as_texture(resource("chanzuckerberg_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
-
-    // TUD attributation logo, blitted to bottom of screen
-    gl::Texture_2d tud_logo = load_image_as_texture(resource("tud_logo.png").string().c_str(), TexFlag_Flip_Pixels_Vertically).texture;
-
-    // 3D stuff: for the background image
+        Instanced_drawlist rv;
+        upload_inputs_to_drawlist(inp, rv);
+        return rv;
+    }();
     Render_params params;
-    Drawlist drawlist = create_drawlist_with_chequered_floor();
-    Render_target render_target;
     Polar_perspective_camera camera;
 
     // top-level UI state that's shared between screens
@@ -106,6 +102,19 @@ struct Splash_screen::Impl final {
 
     Impl(std::shared_ptr<Main_editor_state> mes_) : mes{std::move(mes_)} {
         log::info("splash screen constructed");
+        camera.phi = fpi4;
+        camera.radius = 10.0f;
+    }
+
+    void draw_quad(glm::mat4 const& mvp, gl::Texture_2d& tex) {
+        gl::UseProgram(pts.p);
+        gl::Uniform(pts.uMVP, mvp);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(tex);
+        gl::Uniform(pts.uSampler0, gl::texture_index<GL_TEXTURE0>());
+        gl::BindVertexArray(quad_pts_vao);
+        gl::DrawArrays(GL_TRIANGLES, 0, quad_vbo.sizei());
+        gl::BindVertexArray();
     }
 };
 
@@ -117,27 +126,27 @@ namespace {
     }
 
     void splashscreen_draw(Splash_screen::Impl& impl) {
+        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         constexpr glm::vec2 menu_dims = {700.0f, 500.0f};
 
-        Application& app = Application::current();
-        GPU_storage& gs = app.get_gpu_storage();
-
-        auto [w, h] = app.window_dimensionsf();
-        glm::vec2 window_dims{w, h};
+        App& app = App::cur();
+        glm::ivec2 window_dimsi = app.idims();
+        glm::vec2 window_dims{window_dimsi};
 
         gl::Enable(GL_BLEND);
 
         // draw chequered floor background
         {
-            auto [wi, hi] = app.window_dimensionsi();
-            impl.render_target.reconfigure(wi, hi, app.samples());
+            impl.renderer.set_dims(app.idims());
+            impl.renderer.set_msxaa_samples(app.get_samples());
+            impl.params.view_matrix = impl.camera.view_matrix();
+            impl.params.projection_matrix = impl.camera.projection_matrix(impl.renderer.aspect_ratio());
+            impl.params.view_pos = impl.camera.pos();
 
-            impl.params.view_matrix = view_matrix(impl.camera);
-            impl.params.projection_matrix = projection_matrix(impl.camera, impl.render_target.aspect_ratio());
-            impl.params.view_pos = pos(impl.camera);
-
-            draw_scene(gs, impl.params, impl.drawlist, impl.render_target);
-            draw_quad(gs, glm::mat4{1.0f}, impl.render_target.main());
+            impl.renderer.render(impl.params, impl.drawlist);
+            impl.draw_quad(glm::mat4{1.0f}, impl.renderer.output_texture());
         }
 
         // draw logo just above the menu
@@ -153,7 +162,7 @@ namespace {
 
             gl::Disable(GL_DEPTH_TEST);
             gl::Enable(GL_BLEND);
-            draw_quad(gs, model, impl.logo);
+            impl.draw_quad(model, impl.logo);
         }
 
         if (ImGui::BeginMainMenuBar()) {
@@ -229,10 +238,10 @@ namespace {
                 ImGui::TextUnformatted("Example files:");
                 ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-                for (fs::path const& ex : impl.mm_state.example_osims) {
+                for (std::filesystem::path const& ex : impl.mm_state.example_osims) {
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str())) {
-                        app.request_transition<osc::Loading_screen>(impl.mes, ex);
+                        app.request_transition<Loading_screen>(impl.mes, ex);
                     }
                     ImGui::PopID();
                 }
@@ -257,7 +266,7 @@ namespace {
 
             gl::Enable(GL_BLEND);
             gl::Disable(GL_DEPTH_TEST);
-            draw_quad(gs, model, impl.tud_logo);
+            impl.draw_quad(model, impl.tud_logo);
         }
 
         // draw CZI logo below menu, slightly to the right
@@ -274,7 +283,7 @@ namespace {
 
             gl::Disable(GL_DEPTH_TEST);
             gl::Enable(GL_BLEND);
-            draw_quad(gs, model, impl.cz_logo);
+            impl.draw_quad(model, impl.cz_logo);
         }
     }
 }
@@ -292,10 +301,24 @@ osc::Splash_screen::Splash_screen(std::shared_ptr<Main_editor_state> mes_) :
 
 osc::Splash_screen::~Splash_screen() noexcept = default;
 
+void osc::Splash_screen::on_mount() {
+    osc::ImGuiInit();
+}
+
+void osc::Splash_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
+void osc::Splash_screen::on_event(SDL_Event const& e) {
+    osc::ImGuiOnEvent(e);
+}
+
 void osc::Splash_screen::tick(float dt) {
     ::splashscreen_tick(*impl, dt);
 }
 
 void osc::Splash_screen::draw() {
+    osc::ImGuiNewFrame();
     ::splashscreen_draw(*impl);
+    osc::ImGuiRender();
 }

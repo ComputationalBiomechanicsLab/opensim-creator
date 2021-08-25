@@ -2,6 +2,7 @@
 #include "src/log.hpp"
 
 #include "src/screens/cookiecutter_screen.hpp"
+#include "src/screens/splash_screen.hpp"
 #include "src/screens/experimental/hellotriangle_screen.hpp"
 #include "src/screens/experimental/hittest_screen.hpp"
 #include "src/screens/experimental/mesh_hittest_with_bvh_screen.hpp"
@@ -26,10 +27,10 @@ int main(int, char**) {
         //app.show<Simbody_meshgen_screen>();
         //app.show<Imguizmo_demo_screen>();
         //app.show<cookiecutter_screen>();
-        app.show<Opensim_modelstate_decoration_generator_screen>();
-        //app.show<Component_3d_viewer_screen>();
-
+        //app.show<Opensim_modelstate_decoration_generator_screen>();
         //app.show<Experiments_screen>();
+        //app.show<Component_3d_viewer_screen>();
+        app.show<Splash_screen>();
     } catch (std::exception const& ex) {
         log::info("exception thrown to root of application: %s", ex.what());
         return -1;

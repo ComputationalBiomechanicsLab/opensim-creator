@@ -3,6 +3,7 @@
 #include "src/3d/gl.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
+#include "src/screens/splash_screen.hpp"
 #include "src/screens/experimental/experiments_screen.hpp"
 #include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/help_marker.hpp"
@@ -393,8 +394,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
-            // TODO
-            // App::cur().request_transition<Splash_screen>();
+            App::cur().request_transition<Splash_screen>();
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_Q)) {
@@ -455,8 +455,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
-        // TODO
-        // App::cur().request_transition<Splash_screen>();
+        App::cur().request_transition<Splash_screen>();
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
