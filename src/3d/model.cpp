@@ -1102,11 +1102,13 @@ NewMesh osc::gen_NxN_grid(size_t n) {
     static constexpr float min = -1.0f;
     static constexpr float max = 1.0f;
 
-    float step_size = (max - min) / static_cast<float>(n - 1);
+    float step_size = (max - min) / static_cast<float>(n);
+
+    size_t nlines = n + 1;
 
     NewMesh rv;
-    rv.verts.reserve(4*n);
-    rv.indices.reserve(4*n);
+    rv.verts.reserve(4*nlines);
+    rv.indices.reserve(4*nlines);
 
     unsigned short index = 0;
     auto push = [&index, &rv](glm::vec3 const& pos) {
@@ -1115,7 +1117,7 @@ NewMesh osc::gen_NxN_grid(size_t n) {
     };
 
     // lines parallel to X axis
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nlines; ++i) {
         float y = min + i * step_size;
 
         push({-1.0f, y, z});
@@ -1123,7 +1125,7 @@ NewMesh osc::gen_NxN_grid(size_t n) {
     }
 
     // lines parallel to Y axis
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nlines; ++i) {
         float x = min + i * step_size;
 
         push({x, -1.0f, z});

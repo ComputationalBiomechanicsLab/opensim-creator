@@ -124,8 +124,8 @@ gl::Texture_2d osc::generate_chequered_floor_texture() {
     constexpr size_t h = 2 * chequer_height;
 
     struct Rgb { unsigned char r, g, b; };
-    constexpr Rgb on_color = {0xe5, 0xe5, 0xe5};
-    constexpr Rgb off_color = {0xde, 0xde, 0xde};
+    constexpr Rgb on_color = {0xff, 0xff, 0xff};
+    constexpr Rgb off_color = {0xf5, 0xf5, 0xf5};
 
     std::array<Rgb, w * h> pixels;
     for (size_t row = 0; row < h; ++row) {

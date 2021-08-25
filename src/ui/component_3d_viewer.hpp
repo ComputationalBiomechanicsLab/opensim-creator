@@ -88,8 +88,6 @@ namespace osc {
 
         bool is_moused_over() const noexcept;
 
-        bool on_event(SDL_Event const&);
-
         Component3DViewerResponse draw(
             char const* panel_name,
             OpenSim::Component const&,

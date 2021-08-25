@@ -1,15 +1,12 @@
 #pragma once
 
-#include "src/screens/screen.hpp"
+#include "src/screen.hpp"
+#include "src/main_editor_state.hpp"
 
 #include <SDL_events.h>
 
 #include <filesystem>
 #include <memory>
-
-namespace osc {
-    struct Main_editor_state;
-}
 
 namespace osc {
 

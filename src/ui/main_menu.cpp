@@ -1,32 +1,31 @@
 #include "main_menu.hpp"
 
-#include "osc_build_config.hpp"
-#include "src/application.hpp"
-#include "src/styling.hpp"
-#include "src/config.hpp"
-#include "src/log.hpp"
+#include "src/3d/gl.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
-#include "src/screens/loading_screen.hpp"
-#include "src/screens/model_editor_screen.hpp"
-#include "src/screens/experiments_screen.hpp"
-#include "src/screens/splash_screen.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/help_marker.hpp"
-#include "src/utils/helpers.hpp"
+#include "src/utils/algs.hpp"
+#include "src/utils/fs.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/main_editor_state.hpp"
-#include "src/ui/component_3d_viewer.hpp"
-#include "src/utils/os.hpp"
+#include "src/app.hpp"
+#include "src/log.hpp"
+#include "src/os.hpp"
+#include "src/styling.hpp"
+#include "osc_build_config.hpp"
 
-#include <GL/glew.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <imgui.h>
 #include <nfd.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
-#include <array>
+#include <algorithm>
 #include <filesystem>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 using namespace osc;
 
@@ -38,7 +37,8 @@ namespace {
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
         if (result == NFD_OKAY) {
-            Application::current().request_transition<Loading_screen>(st, outpath);
+            // TODO
+            // Application::current().request_transition<Loading_screen>(st, outpath);
         }
     }
 
@@ -62,7 +62,7 @@ namespace {
     }
 
     bool is_example_file(std::filesystem::path const& path) {
-        return is_subpath(resource("models"), path);
+        return is_subpath(App::resource("models"), path);
     }
 
     // fmap an optional from T -> f(T)
@@ -102,14 +102,15 @@ namespace {
             model.print(save_loc);
             model.setInputFileName(save_loc);
             log::info("saved model to %s", save_loc.c_str());
-            add_recent_file(save_loc);
+            App::cur().add_recent_file(save_loc);
         } catch (OpenSim::Exception const& ex) {
             log::error("error saving model: %s", ex.what());
         }
     }
 
     void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
-        Application::current().request_transition<Loading_screen>(st, p);
+        // TODO
+        // Application::current().request_transition<Loading_screen>(st, p);
     }
 
     std::unique_ptr<Component_3d_viewer> create_3dviewer() {
@@ -121,8 +122,8 @@ namespace {
 // public API
 
 osc::ui::main_menu::file_tab::State::State() :
-    example_osims{find_files_with_extensions(resource("models"), ".osim")},
-    recent_files{osc::recent_files()} {
+    example_osims{find_files_with_extensions(App::resource("models"), ".osim")},
+    recent_files{App::cur().recent_files()} {
 
     std::sort(example_osims.begin(), example_osims.end(), filename_lexographically_gt);
 }
@@ -154,12 +155,12 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         {
             static constexpr std::array<char const*, 8> aa_lvls = {"x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
-            int samples_idx = lsb_index(Application::current().samples());
-            int max_samples_idx = lsb_index(Application::current().max_samples());
+            int samples_idx = lsb_index(App::cur().get_samples());
+            int max_samples_idx = lsb_index(App::cur().max_samples());
             OSC_ASSERT(static_cast<size_t>(max_samples_idx) < aa_lvls.size());
 
             if (ImGui::Combo("##msxaa", &samples_idx, aa_lvls.data(), max_samples_idx + 1)) {
-                Application::current().set_samples(1 << samples_idx);
+                App::cur().set_samples(1 << samples_idx);
             }
         }
         ImGui::NextColumn();
@@ -168,11 +169,11 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
 
         if (ImGui::Button(ICON_FA_EXPAND " fullscreen")) {
-            Application::current().make_fullscreen();
+            App::cur().make_fullscreen();
         }
         ImGui::SameLine();
         if (ImGui::Button(ICON_FA_WINDOW_RESTORE " windowed")) {
-            Application::current().make_windowed();
+            App::cur().make_windowed();
         }
         ImGui::NextColumn();
 
@@ -181,13 +182,13 @@ void osc::ui::main_menu::about_tab::draw() {
         ui::help_marker::draw("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ImGui::NextColumn();
 
-        if (Application::current().is_vsync_enabled()) {
+        if (App::cur().is_vsync_enabled()) {
             if (ImGui::Button("disable")) {
-                Application::current().disable_vsync();
+                App::cur().disable_vsync();
             }
         } else {
             if (ImGui::Button("enable")) {
-                Application::current().enable_vsync();
+                App::cur().enable_vsync();
             }
         }
         ImGui::NextColumn();
@@ -254,7 +255,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
-            Application::current().request_transition<Imgui_demo_screen>();
+            App::cur().request_transition<Imgui_demo_screen>();
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -266,7 +267,7 @@ void osc::ui::main_menu::about_tab::draw() {
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
-            Application::current().request_transition<Experiments_screen>();
+            App::cur().request_transition<Experiments_screen>();
         }
         ImGui::PopID();
         ImGui::NextColumn();
@@ -277,7 +278,7 @@ void osc::ui::main_menu::about_tab::draw() {
             "Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ImGui::NextColumn();
         {
-            Application& app = Application::current();
+            App& app = App::cur();
             bool debug_mode = app.is_in_debug_mode();
             if (ImGui::Checkbox("##opengldebugmodecheckbox", &debug_mode)) {
                 if (debug_mode) {
@@ -338,12 +339,15 @@ void osc::ui::main_menu::about_tab::draw() {
     ImGui::EndMenu();
 }
 
-void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> mes) {
-    OSC_ASSERT(mes && "editor state should be set");
-
-    mes->tabs.emplace_back(std::make_unique<Undoable_ui_model>(std::make_unique<OpenSim::Model>()));
-    mes->cur_tab = static_cast<int>(mes->tabs.size()) - 1;
-    Application::current().request_transition<Model_editor_screen>(mes);
+void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> st) {
+    if (st) {
+        st->edited_model = Undoable_ui_model{std::make_unique<OpenSim::Model>()};
+        // TODO
+        // Application::current().request_transition<Model_editor_screen>(st);
+    } else {
+        // TODO
+        // Application::current().request_transition<Model_editor_screen>();
+    }
 }
 
 void osc::ui::main_menu::action_open_model(std::shared_ptr<Main_editor_state> mes) {
@@ -367,36 +371,35 @@ void osc::ui::main_menu::action_save_as(OpenSim::Model& model) {
     }
 }
 
-void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> mes) {
-    OSC_ASSERT(mes && "editor state should be set");
-
+void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_state> editor_state) {
     // handle hotkeys enabled by just drawing the menu
-    { 
+    {
         auto const& io = ImGui::GetIO();
         bool mod = io.KeyCtrl || io.KeySuper;
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_N)) {
-            action_new_model(mes);
+            action_new_model(editor_state);
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_O)) {
-            action_open_model(mes);
+            action_open_model(editor_state);
         }
 
-        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_S) && mes->focused_editor()) {
-            action_save(mes->focused_editor()->model());
+        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+            action_save(editor_state->model());
         }
 
-        if (mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S) && mes->focused_editor()) {
-            action_save_as(mes->focused_editor()->model());
+        if (editor_state && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+            action_save_as(editor_state->model());
         }
 
-        if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
-            Application::current().request_transition<Splash_screen>();
+        if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
+            // TODO
+            // App::cur().request_transition<Splash_screen>();
         }
 
         if (mod && ImGui::IsKeyPressed(SDL_SCANCODE_Q)) {
-            Application::current().request_quit();
+            App::cur().request_quit();
         }
     }
 
@@ -405,11 +408,11 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
     }
 
     if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N")) {
-        action_new_model(mes);
+        action_new_model(editor_state);
     }
 
     if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O")) {
-        action_open_model(mes);
+        action_open_model(editor_state);
     }
 
     int imgui_id = 0;
@@ -420,7 +423,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
             Recent_file const& rf = *it;
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(rf.path.filename().string().c_str())) {
-                transition_to_loading_existing_path(mes, rf.path);
+                transition_to_loading_existing_path(editor_state, rf.path);
             }
             ImGui::PopID();
         }
@@ -432,7 +435,7 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         for (std::filesystem::path const& ex : st.example_osims) {
             ImGui::PushID(++imgui_id);
             if (ImGui::MenuItem(ex.filename().string().c_str())) {
-                transition_to_loading_existing_path(mes, ex);
+                transition_to_loading_existing_path(editor_state, ex);
             }
             ImGui::PopID();
         }
@@ -440,59 +443,56 @@ void osc::ui::main_menu::file_tab::draw(State& st, std::shared_ptr<Main_editor_s
         ImGui::EndMenu();
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, mes->focused_editor())) {
-        action_save(mes->focused_editor()->model());
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, editor_state != nullptr)) {
+        if (editor_state) {
+            action_save(editor_state->model());
+        }
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, mes->focused_editor())) {
-        action_save_as(mes->focused_editor()->model());
+    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
+        if (editor_state) {
+            action_save_as(editor_state->model());
+        }
     }
 
-    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, mes != nullptr)) {
-        Application::current().request_transition<Splash_screen>();
+    if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
+        // TODO
+        // App::cur().request_transition<Splash_screen>();
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
-        Application::current().request_quit();
+        App::cur().request_quit();
     }
     ImGui::EndMenu();
 }
 
 void osc::ui::main_menu::window_tab::draw(Main_editor_state& st) {
-
     // draw "window" tab
     if (ImGui::BeginMenu("Window")) {
 
-        ImGui::MenuItem("Actions", nullptr, &st.shown_panels.actions);
+        ImGui::MenuItem("Actions", nullptr, &st.showing.actions);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");
             ImGui::EndTooltip();
         }
-
-        ImGui::MenuItem("Hierarchy", nullptr, &st.shown_panels.hierarchy);
-
-        ImGui::MenuItem("Log", nullptr, &st.shown_panels.log);
-
-        ImGui::MenuItem("Outputs", nullptr, &st.shown_panels.outputs);
-
-        ImGui::MenuItem("Property Editor", nullptr, &st.shown_panels.property_editor);
+        ImGui::MenuItem("Hierarchy", nullptr, &st.showing.hierarchy);
+        ImGui::MenuItem("Log", nullptr, &st.showing.log);
+        ImGui::MenuItem("Outputs", nullptr, &st.showing.outputs);
+        ImGui::MenuItem("Property Editor", nullptr, &st.showing.property_editor);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");
             ImGui::EndTooltip();
         }
-
-        ImGui::MenuItem("Selection Details", nullptr, &st.shown_panels.selection_details);
-
-        ImGui::MenuItem("Simulations", nullptr, &st.shown_panels.simulations);
+        ImGui::MenuItem("Selection Details", nullptr, &st.showing.selection_details);
+        ImGui::MenuItem("Simulations", nullptr, &st.showing.simulations);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when simulating a model");
             ImGui::EndTooltip();
         }
-
-        ImGui::MenuItem("Simulation Stats", nullptr, &st.shown_panels.simulation_stats);
+        ImGui::MenuItem("Simulation Stats", nullptr, &st.showing.simulation_stats);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("note: this only shows when editing a model");

@@ -2,6 +2,7 @@
 
 #include "src/opensim_bindings/ui_types.hpp"
 #include "src/opensim_bindings/simulation.hpp"
+#include "src/ui/component_3d_viewer.hpp"
 
 #include <array>
 #include <vector>

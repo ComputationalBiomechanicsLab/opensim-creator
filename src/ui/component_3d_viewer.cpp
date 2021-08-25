@@ -3,11 +3,15 @@
 #include "src/app.hpp"
 #include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
+#include "src/3d/gl_glm.hpp"
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"
+#include "src/3d/texturing.hpp"
+#include "src/3d/shaders/solid_color_shader.hpp"
 #include "src/opensim_bindings/scene_generator.hpp"
 #include "src/utils/scope_guard.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -15,6 +19,26 @@
 #include <limits>
 
 using namespace osc;
+
+static CPU_mesh gen_floor_mesh() {
+    CPU_mesh rv;
+    rv.data = gen_textured_quad();
+    for (auto& coord : rv.data.texcoords) {
+        coord *= 200.0f;
+    }
+    rv.aabb = aabb_from_points(rv.data.verts.data(), rv.data.verts.size());
+    BVH_BuildFromTriangles(rv.triangle_bvh, rv.data.verts.data(), rv.data.verts.size());
+    return rv;
+}
+
+static gl::Vertex_array make_vao(Solid_color_shader& shader, gl::Array_buffer<glm::vec3>& vbo) {
+    gl::Vertex_array rv;
+    gl::BindVertexArray(rv);
+    gl::BindBuffer(vbo);
+    gl::VertexAttribPointer(shader.aPos, false, sizeof(glm::vec3), 0);
+    gl::EnableVertexAttribArray(shader.aPos);
+    return rv;
+}
 
 struct osc::Component_3d_viewer::Impl final {
     Component3DViewerFlags flags;
@@ -28,13 +52,33 @@ struct osc::Component_3d_viewer::Impl final {
 
     Polar_perspective_camera camera;
 
+    // floor data
+    std::shared_ptr<CPU_mesh> floor_mesh = std::make_shared<CPU_mesh>(gen_floor_mesh());
+    std::shared_ptr<gl::Texture_2d> chequer_tex = std::make_shared<gl::Texture_2d>(generate_chequered_floor_texture());
+    Instanceable_meshdata floor_meshdata = upload_meshdata_for_instancing(floor_mesh->data);
+
+    // plain shader for drawing flat overlay elements
+    Solid_color_shader solid_color_shader;
+
+    // grid data
+    gl::Array_buffer<glm::vec3> grid_vbo{gen_NxN_grid(100).verts};
+    gl::Vertex_array grid_vao = make_vao(solid_color_shader, grid_vbo);
+
+    // line data
+    gl::Array_buffer<glm::vec3> line_vbo{gen_y_line().verts};
+    gl::Vertex_array line_vao = make_vao(solid_color_shader, line_vbo);
+
     std::vector<unsigned char> rims;
+    std::vector<std::shared_ptr<gl::Texture_2d>> textures;
     std::vector<BVH_Collision> scene_hittest_results;
     std::vector<BVH_Collision> triangle_hittest_results;
 
+    glm::vec2 render_dims = {0.0f, 0.0f};
     bool render_hovered = false;
     bool render_left_clicked = false;
     bool render_right_clicked = false;
+
+    float fixup_scale_factor = 1.0f;
 
     Impl(Component3DViewerFlags flags_) : flags{flags_} {
     }
@@ -43,6 +87,8 @@ struct osc::Component_3d_viewer::Impl final {
 static void update_camera(osc::Component_3d_viewer::Impl& impl) {
 
     impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
+
+    impl.camera.do_znear_zfar_autoscale();
 
     // update camera
     //
@@ -218,12 +264,141 @@ static OpenSim::Component const* hittest_scene_decorations(osc::Component_3d_vie
     return closest_idx >= 0 ? impl.decorations.components[closest_idx] : nullptr;
 }
 
+static void draw_xz_grid(osc::Component_3d_viewer::Impl& impl) {
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
+    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::BindVertexArray(impl.grid_vao);
+    gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    gl::BindVertexArray();
+}
+
+static void draw_xy_grid(osc::Component_3d_viewer::Impl& impl) {
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uModel, glm::scale(glm::mat4{1.0f}, {5.0f, 5.0f, 1.0f}));
+    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::BindVertexArray(impl.grid_vao);
+    gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    gl::BindVertexArray();
+}
+
+static void draw_yz_grid(osc::Component_3d_viewer::Impl& impl) {
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
+    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::BindVertexArray(impl.grid_vao);
+    gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    gl::BindVertexArray();
+}
+
+static void draw_alignment_axes(osc::Component_3d_viewer::Impl& impl) {
+    glm::mat4 model2view = impl.camera.view_matrix();
+
+    // we only care about rotation of the axes, not translation
+    model2view[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
+
+    // rescale + translate the y-line vertices
+    glm::mat4 make_line_one_sided = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
+    glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.025f});
+    glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
+    glm::mat4 base_model_mtx = translator * scaler * model2view;
+
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    // common shader stuff
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uProjection, gl::identity_val);
+    gl::Uniform(shader.uView, gl::identity_val);
+    gl::BindVertexArray(impl.line_vao);
+    gl::Disable(GL_DEPTH_TEST);
+
+    // y axis
+    {
+        gl::Uniform(shader.uColor, {0.0f, 1.0f, 0.0f, 1.0f});
+        gl::Uniform(shader.uModel, base_model_mtx * make_line_one_sided);
+        gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    }
+
+    // x axis
+    {
+        glm::mat4 rotate_y_to_x =
+            glm::rotate(glm::identity<glm::mat4>(), fpi2, glm::vec3{0.0f, 0.0f, -1.0f});
+
+        gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
+        gl::Uniform(shader.uModel, base_model_mtx * rotate_y_to_x * make_line_one_sided);
+        gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    }
+
+    // z axis
+    {
+        glm::mat4 rotate_y_to_z =
+            glm::rotate(glm::identity<glm::mat4>(), fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
+
+        gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
+        gl::Uniform(shader.uModel, base_model_mtx * rotate_y_to_z * make_line_one_sided);
+        gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+    }
+
+    gl::BindVertexArray();
+    gl::Enable(GL_DEPTH_TEST);
+}
+
+static void draw_floor_axes_lines(osc::Component_3d_viewer::Impl& impl) {
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    // common stuff
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::BindVertexArray(impl.line_vao);
+
+    // X
+    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 0.0f, 1.0f}));
+    gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
+    gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+
+    // Z
+    gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
+    gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
+    gl::DrawArrays(GL_LINES, 0, impl.grid_vbo.sizei());
+
+    gl::BindVertexArray();
+}
+
 static void draw_overlays(osc::Component_3d_viewer::Impl& impl) {
-    // TODO:
-    // - draw XZ grid
-    // - draw XY grid
-    // - draw YZ grid
-    // - draw alignment axes
+    gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderer.output_fbo());
+
+    if (impl.flags & Component3DViewerFlags_DrawXZGrid) {
+        draw_xz_grid(impl);
+    }
+
+    if (impl.flags & Component3DViewerFlags_DrawXYGrid) {
+        draw_xy_grid(impl);
+    }
+
+    if (impl.flags & Component3DViewerFlags_DrawYZGrid) {
+        draw_yz_grid(impl);
+    }
+
+    if (impl.flags & Component3DViewerFlags_DrawAlignmentAxes) {
+        draw_alignment_axes(impl);
+    }
+
+    draw_floor_axes_lines(impl);
+
+    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 }
 
 // public API
@@ -236,10 +411,6 @@ osc::Component_3d_viewer::~Component_3d_viewer() noexcept = default;
 
 bool osc::Component_3d_viewer::is_moused_over() const noexcept {
     return m_Impl->render_hovered;
-}
-
-bool osc::Component_3d_viewer::on_event(SDL_Event const&) {
-    return false;  // TODO
 }
 
 Component3DViewerResponse osc::Component_3d_viewer::draw(
@@ -318,17 +489,46 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         }
 
         impl.sg.generate(c, st, mdh, impl.decorations, flags);
+    }
 
-        // TODO: append the floor
+    // append the floor to the decorations list (the floor is "in" the scene, rather than an overlay)
+    {
+        Scene_decorations& decs = impl.decorations;
+
+        glm::mat4x3& model_xform = decs.model_xforms.emplace_back();
+        model_xform = [&impl]() {
+            // rotate from XY (+Z dir) to ZY (+Y dir)
+            glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -fpi2, {1.0f, 0.0f, 0.0f});
+
+            // make floor extend far in all directions
+            rv = glm::scale(glm::mat4{1.0f}, {impl.fixup_scale_factor * 100.0f, 1.0f, impl.fixup_scale_factor * 100.0f}) * rv;
+
+            // lower slightly, so that it doesn't conflict with OpenSim model planes
+            // that happen to lie at Z==0
+            rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
+
+            return glm::mat4x3{rv};
+        }();
+
+        decs.normal_xforms.push_back(normal_matrix(model_xform));
+        decs.rgbas.push_back(Rgba32{0x00, 0x00, 0x00, 0x00});
+        decs.gpu_meshes.push_back(impl.floor_meshdata);
+        decs.cpu_meshes.push_back(impl.floor_mesh);
+        decs.aabbs.push_back(aabb_apply_xform(impl.floor_mesh->aabb, model_xform));
+        decs.components.push_back(nullptr);
+
+        impl.textures.clear();
+        impl.textures.resize(decs.model_xforms.size(), nullptr);
+        impl.textures.back() = impl.chequer_tex;
     }
 
     // make rim highlights reflect selection/hover state
     impl.rims.clear();
     impl.rims.resize(impl.decorations.model_xforms.size(), 0x00);
     for (size_t i = 0; i < impl.decorations.model_xforms.size(); ++i) {
-        if (impl.decorations.components[i] == current_selection) {
+        if (current_selection && current_selection == impl.decorations.components[i]) {
             impl.rims[i] = 0xff;
-        } else if (impl.decorations.components[i] == current_hover) {
+        } else if (current_hover && current_hover == impl.decorations.components[i]) {
             impl.rims[i] = 0x77;
         }
     }
@@ -341,7 +541,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         dci.normal_xforms = impl.decorations.normal_xforms.data();
         dci.colors = impl.decorations.rgbas.data();
         dci.meshes = impl.decorations.gpu_meshes.data();
-        dci.textures = nullptr;
+        dci.textures = impl.textures.data();
         dci.rim_intensity = impl.rims.data();
         upload_inputs_to_drawlist(dci, impl.drawlist);
     }
@@ -360,7 +560,6 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         impl.renderer_params.view_matrix = impl.camera.view_matrix();
         impl.renderer_params.view_pos = impl.camera.pos();
 
-        // TODO: somehow add floor into the main scene render (for shadows, etc.)
         impl.renderer.render(impl.renderer_params, impl.drawlist);
     }
 
@@ -381,6 +580,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
 
         ImGui::Image(tex_imgui_handle, img_dims, texcoord_uv0, texcoord_uv1);
 
+        impl.render_dims = ImGui::GetItemRectSize();
         impl.render_hovered = ImGui::IsItemHovered();
         impl.render_left_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
         impl.render_right_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Right);

@@ -156,8 +156,6 @@ add_executable(osc
     #src/screens/loading_screen.hpp
     #src/screens/model_editor_screen.cpp
     #src/screens/model_editor_screen.hpp
-    #src/screens/show_model_screen.cpp
-    #src/screens/show_model_screen.hpp
     #src/screens/simulator_screen.cpp
     #src/screens/simulator_screen.hpp
     #src/screens/splash_screen.cpp
@@ -189,8 +187,8 @@ add_executable(osc
     src/ui/log_viewer.cpp
     src/ui/lockable_f3_editor.hpp
     src/ui/lockable_f3_editor.cpp
-    #src/ui/main_menu.hpp
-    #src/ui/main_menu.cpp
+    src/ui/main_menu.hpp
+    src/ui/main_menu.cpp
     src/ui/help_marker.hpp
     src/ui/help_marker.cpp
     src/ui/evenly_spaced_sparkline.hpp
@@ -228,6 +226,8 @@ add_executable(osc
     src/config.hpp
     src/log.cpp
     src/log.hpp
+    src/main_editor_state.cpp
+    src/main_editor_state.hpp
     src/os.cpp
     src/os.hpp
     src/osc2.cpp

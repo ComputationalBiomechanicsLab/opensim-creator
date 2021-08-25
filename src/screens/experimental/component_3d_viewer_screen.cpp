@@ -42,8 +42,6 @@ void osc::Component_3d_viewer_screen::on_event(SDL_Event const& e) {
     if (osc::ImGuiOnEvent(e)) {
         return;
     }
-
-    m_Impl->viewer.on_event(e);
 }
 
 void osc::Component_3d_viewer_screen::draw() {

@@ -589,7 +589,7 @@ void osc::Instanced_renderer::render(Render_params const& p, Instanced_drawlist 
         gl::BindTexture(rt.rims_tex);
         gl::Uniform(shader.uSampler0, gl::texture_index<GL_TEXTURE0>());
         gl::Uniform(shader.uRimRgba, {1.0f, 0.4f, 0.0f, 0.85f});
-        gl::Uniform(shader.uRimThickness, 5.0f / std::max(rt.dims.x, rt.dims.y));
+        gl::Uniform(shader.uRimThickness, 2.0f / std::max(rt.dims.x, rt.dims.y));
 
         // draw edges, directly writing into output texture
         gl::Enable(GL_BLEND);
