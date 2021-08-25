@@ -152,8 +152,8 @@ add_executable(osc
     src/screens/error_screen.hpp
     src/screens/imgui_demo_screen.cpp
     src/screens/imgui_demo_screen.hpp
-    #src/screens/loading_screen.cpp
-    #src/screens/loading_screen.hpp
+    src/screens/loading_screen.cpp
+    src/screens/loading_screen.hpp
     #src/screens/model_editor_screen.cpp
     #src/screens/model_editor_screen.hpp
     #src/screens/simulator_screen.cpp

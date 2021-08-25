@@ -1,23 +1,19 @@
 #include "loading_screen.hpp"
 
 #include "src/3d/gl.hpp"
-#include "src/application.hpp"
-#include "src/resources.hpp"
-#include "src/screens/model_editor_screen.hpp"
-#include "src/screens/splash_screen.hpp"
-#include "src/main_editor_state.hpp"
+#include "src/opensim_bindings/ui_types.hpp"
+#include "src/app.hpp"
+#include "src/assertions.hpp"
 
-#include <GL/glew.h>
+#include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SDL_keyboard.h>
-#include <SDL_keycode.h>
-#include <imgui/imgui.h>
+#include <SDL_events.h>
 
 #include <chrono>
-#include <exception>
 #include <filesystem>
 #include <future>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -75,9 +71,10 @@ struct Loading_screen::Impl final {
 
 // private impl details for loading screen
 namespace {
-    [[nodiscard]] bool loadingscreen_on_event(Loading_screen::Impl&, SDL_Event const& e) {
+    bool loadingscreen_on_event(Loading_screen::Impl&, SDL_Event const& e) {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            Application::current().request_transition<Splash_screen>();
+            // TODO
+            //Application::current().request_transition<Splash_screen>();
             return true;
         }
 
@@ -114,15 +111,24 @@ namespace {
         if (result) {
 
             // add newly-loaded model to the "Recent Files" list
-            add_recent_file(impl.path);
+            App::cur().add_recent_file(impl.path);
 
-            // update main editor state with newly-loaded model
-            auto uim = std::make_unique<Undoable_ui_model>(std::move(result));
-            impl.mes->tabs.emplace_back(std::move(uim));
-            impl.mes->cur_tab = static_cast<int>(impl.mes->tabs.size()) - 1;
+            if (impl.mes) {
+                // there is an existing editor state
+                //
+                // recycle it so that users can keep their running sims, local edits, etc.
+                impl.mes->edited_model = osc::Undoable_ui_model{std::move(result)};
 
-            // transition to editor
-            Application::current().request_transition<Model_editor_screen>(impl.mes);
+                // TODO
+                // App::cur().request_transition<Model_editor_screen>(std::move(impl.editor_state));
+            } else {
+                // there is no existing editor state
+                //
+                // transitiong into "fresh" editor
+
+                // TODO
+                // Application::current().request_transition<Model_editor_screen>(std::move(result));
+            }
         }
     }
 
@@ -132,8 +138,7 @@ namespace {
         gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto [w, h] = Application::current().window_dimensionsf();
-        glm::vec2 window_dims{w, h};
+        glm::vec2 window_dims = App::cur().dims();
 
         // center the menu
         {
@@ -156,11 +161,12 @@ namespace {
                 ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
                 if (ImGui::Button("back to splash screen (ESC)")) {
-                    Application::current().request_transition<Splash_screen>();
+                    // TODO
+                    // App::cur().request_transition<Splash_screen>();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("try again")) {
-                    Application::current().request_transition<Loading_screen>(impl.mes, impl.path);
+                    App::cur().request_transition<Loading_screen>(impl.mes, impl.path);
                 }
             }
             ImGui::End();
@@ -179,8 +185,8 @@ osc::Loading_screen::Loading_screen(
 
 osc::Loading_screen::~Loading_screen() noexcept = default;
 
-bool osc::Loading_screen::on_event(SDL_Event const& e) {
-    return ::loadingscreen_on_event(*impl, e);
+void osc::Loading_screen::on_event(SDL_Event const& e) {
+    ::loadingscreen_on_event(*impl, e);
 }
 
 void osc::Loading_screen::tick(float dt) {

@@ -114,7 +114,7 @@ typedef struct _sig_ucontext {
 #elif defined(__x86_64__)  // gcc specific
     void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
-#error Unsupported architecture. // TODO: Add support for other arch.
+#error Unsupported architecture.
 #endif
 
     fprintf(

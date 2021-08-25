@@ -34,7 +34,9 @@ struct osc::Opensim_modelstate_decoration_generator_screen::Impl final {
     std::vector<unsigned char> rim_highlights;
 
     //OpenSim::Model model{App::resource("models/RajagopalModel/Rajagopal2015.osim").string()};
-    OpenSim::Model model{App::resource("models/ToyLanding/ToyLandingModel.osim").string()};
+    //OpenSim::Model model{App::resource("models/GeometryBackendTest/full.osim").string()};
+    OpenSim::Model model{App::resource("models/Arm26/arm26.osim").string()};
+    //OpenSim::Model model{App::resource("models/ToyLanding/ToyLandingModel.osim").string()};
     SimTK::State state = [this]() {
         model.finalizeFromProperties();
         model.finalizeConnections();

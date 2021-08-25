@@ -26,8 +26,8 @@ int main(int, char**) {
         //app.show<Simbody_meshgen_screen>();
         //app.show<Imguizmo_demo_screen>();
         //app.show<cookiecutter_screen>();
-        //app.show<Opensim_modelstate_decoration_generator_screen>();
-        app.show<Component_3d_viewer_screen>();
+        app.show<Opensim_modelstate_decoration_generator_screen>();
+        //app.show<Component_3d_viewer_screen>();
 
         //app.show<Experiments_screen>();
     } catch (std::exception const& ex) {

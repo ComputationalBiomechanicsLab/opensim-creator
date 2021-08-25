@@ -23,7 +23,7 @@ namespace osc {
         Loading_screen(std::shared_ptr<Main_editor_state>, std::filesystem::path);
         ~Loading_screen() noexcept override;
 
-        bool on_event(SDL_Event const&) override;
+        void on_event(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
     };

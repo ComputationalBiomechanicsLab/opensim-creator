@@ -75,8 +75,36 @@ static void handle_line_emission(Simbody_geometry::Line const& l, Emitter_out& o
     dout.components.emplace_back(out.c);
 }
 
-static void handle_sphere_emission(Simbody_geometry::Sphere const& s, Emitter_out& out) {
+static void handle_cylinder_emission(Simbody_geometry::Cylinder const& cy, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
 
+    glm::mat4x3 const& xform = dout.model_xforms.emplace_back(cy.model_mtx);
+    dout.normal_xforms.push_back(normal_matrix(xform));
+    dout.rgbas.push_back(rgba32_from_vec4(cy.rgba));
+    dout.gpu_meshes.push_back(out.cylinder.instance_meshdata);
+    dout.cpu_meshes.push_back(out.cylinder.cpu_meshdata);
+    dout.aabbs.push_back(aabb_apply_xform(out.cylinder.cpu_meshdata->aabb, xform));
+    dout.components.push_back(out.c);
+}
+
+static void handle_cone_emission(Simbody_geometry::Cone const& cone, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
+
+    Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+    Segment coneline{cone.pos, cone.pos + cone.direction*cone.height};
+    glm::mat4 line_xform = segment_to_segment_xform(meshline, coneline);
+    glm::mat4 radius_rescale = glm::scale(glm::mat4{1.0f}, {cone.base_radius, 1.0f, cone.base_radius});
+
+    glm::mat4x3 const& xform = dout.model_xforms.emplace_back(line_xform * radius_rescale);
+    dout.normal_xforms.push_back(normal_matrix(xform));
+    dout.rgbas.push_back(rgba32_from_vec4(cone.rgba));
+    dout.gpu_meshes.push_back(out.cone.instance_meshdata);
+    dout.cpu_meshes.push_back(out.cone.cpu_meshdata);
+    dout.aabbs.push_back(aabb_apply_xform(out.cone.cpu_meshdata->aabb, xform));
+    dout.components.push_back(out.c);
+}
+
+static void handle_sphere_emission(Simbody_geometry::Sphere const& s, Emitter_out& out) {
     Scene_decorations& sd = out.decs;
 
     // this code is fairly custom to make it faster
@@ -99,6 +127,18 @@ static void handle_sphere_emission(Simbody_geometry::Sphere const& s, Emitter_ou
     sd.cpu_meshes.emplace_back(out.sphere.cpu_meshdata);
     sd.aabbs.emplace_back(aabb);
     sd.components.push_back(out.c);
+}
+
+static void handle_brick_emission(Simbody_geometry::Brick const& b, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
+
+    glm::mat4x3 const& xform = dout.model_xforms.emplace_back(b.model_mtx);
+    dout.normal_xforms.push_back(normal_matrix(xform));
+    dout.rgbas.push_back(rgba32_from_vec4(b.rgba));
+    dout.gpu_meshes.push_back(out.brick.instance_meshdata);
+    dout.cpu_meshes.push_back(out.brick.cpu_meshdata);
+    dout.aabbs.push_back(aabb_apply_xform(out.brick.cpu_meshdata->aabb, xform));
+    dout.components.push_back(out.c);
 }
 
 static void handle_meshfile_emission(Simbody_geometry::MeshFile const& mf, Emitter_out& out) {
@@ -130,100 +170,24 @@ static void handle_meshfile_emission(Simbody_geometry::MeshFile const& mf, Emitt
     sd.components.emplace_back(out.c);
 }
 
-/*
-static void handle_cylinder_emission(Simbody_geometry::Cylinder const& cy, Emitter_out& out) {
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform = cy.model_mtx;
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(cy.rgba);
-    ins.meshidx = g_CylinderMeshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
-
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
-}
-
-static void handle_brick_emission(Simbody_geometry::Brick const& b, Emitter_out& out) {
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform = b.model_mtx;
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(b.rgba);
-    ins.meshidx = g_BrickMeshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
-
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_BrickMeshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
-}
-
-static void handle_cone_emission(Simbody_geometry::Cone const& cone, Emitter_out& out) {
-
-    Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-    Segment coneline{cone.pos, cone.pos + cone.direction*cone.height};
-    glm::mat4 xform = segment_to_segment_xform(meshline, coneline);
-    glm::mat4 radius_rescale = glm::scale(glm::mat4{1.0f}, {cone.base_radius, 1.0f, cone.base_radius});
-
-    // emit instance data
-    short data = static_cast<short>(out.drawlist.instances.size());
-    Mesh_instance& ins = out.drawlist.instances.emplace_back();
-    ins.model_xform =  xform * radius_rescale;
-    ins.normal_xform = normal_matrix(ins.model_xform);
-    ins.rgba = rgba32_from_vec4(cone.rgba);
-    ins.meshidx = g_ConeMeshidx;
-    ins.texidx = -1;
-    ins.rim_intensity = 0x00;
-    ins.data = data;
-
-    // emit worldspace aabb for the instance
-    AABB aabb = aabb_apply_xform(out.meshes_data[g_ConeMeshidx]->aabb, ins.model_xform);
-    out.aabbs.push_back(aabb);
-    out.meshidxs.push_back(ins.meshidx);
-    out.model_mtxs.push_back(ins.model_xform);
-    out.components.push_back(c);
-}
-
 static void handle_frame_emission(Simbody_geometry::Frame const& frame, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
 
-    // generate origin sphere
+    // emit origin sphere
     {
         Sphere mesh_sphere{{0.0f, 0.0f, 0.0f}, 1.0f};
         Sphere output_sphere{frame.pos, 0.05f * g_FrameAxisLengthRescale};
 
-        // emit instance data
-        short data = static_cast<short>(out.drawlist.instances.size());
-        Mesh_instance& ins = out.drawlist.instances.emplace_back();
-        ins.model_xform = sphere_to_sphere_xform(mesh_sphere, output_sphere);
-        ins.normal_xform = normal_matrix(ins.model_xform);
-        ins.rgba = rgba32_from_u32(0xffffffff);
-        ins.meshidx = g_SphereMeshidx;
-        ins.texidx = -1;
-        ins.rim_intensity = 0x00;
-        ins.data = data;
-
-        // emit worldspace aabb for the instance
-        AABB aabb = aabb_apply_xform(out.meshes_data[g_SphereMeshidx]->aabb, ins.model_xform);
-        out.aabbs.push_back(aabb);
-        out.meshidxs.push_back(ins.meshidx);
-        out.model_mtxs.push_back(ins.model_xform);
-        out.components.push_back(c);
+        glm::mat4x3 const& xform = dout.model_xforms.emplace_back(sphere_to_sphere_xform(mesh_sphere, output_sphere));
+        dout.normal_xforms.push_back(normal_matrix(xform));
+        dout.rgbas.push_back(rgba32_from_u32(0xffffffff));
+        dout.gpu_meshes.push_back(out.sphere.instance_meshdata);
+        dout.cpu_meshes.push_back(out.sphere.cpu_meshdata);
+        dout.aabbs.push_back(aabb_apply_xform(out.sphere.cpu_meshdata->aabb, xform));
+        dout.components.push_back(out.c);
     }
 
-    // generate axis cylinders
+    // emit axis cylinders
     Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     for (int i = 0; i < 3; ++i) {
         glm::vec3 dir = {0.0f, 0.0f, 0.0f};
@@ -235,27 +199,67 @@ static void handle_frame_emission(Simbody_geometry::Frame const& frame, Emitter_
         glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
         color[i] = 1.0f;
 
-        glm::mat4 xform = segment_to_segment_xform(cylinderline, axisline);
-
-        short data = static_cast<short>(out.drawlist.instances.size());
-        Mesh_instance& ins = out.drawlist.instances.emplace_back();
-        ins.model_xform = xform * prescale_mtx;
-        ins.normal_xform = normal_matrix(ins.model_xform);
-        ins.rgba = rgba32_from_vec4(color);
-        ins.meshidx = g_CylinderMeshidx;
-        ins.texidx = -1;
-        ins.rim_intensity = 0x00;
-        ins.data = data;
-
-        // emit worldspace aabb for the instance
-        AABB aabb = aabb_apply_xform(out.meshes_data[g_CylinderMeshidx]->aabb, ins.model_xform);
-        out.aabbs.push_back(aabb);
-        out.meshidxs.push_back(ins.meshidx);
-        out.model_mtxs.push_back(ins.model_xform);
-        out.components.push_back(c);
+        glm::mat4x3 const& xform = dout.model_xforms.emplace_back(segment_to_segment_xform(cylinderline, axisline) * prescale_mtx);
+        dout.normal_xforms.push_back(normal_matrix(xform));
+        dout.rgbas.push_back(rgba32_from_vec4(color));
+        dout.gpu_meshes.push_back(out.cylinder.instance_meshdata);
+        dout.cpu_meshes.push_back(out.cylinder.cpu_meshdata);
+        dout.aabbs.push_back(aabb_apply_xform(out.cylinder.cpu_meshdata->aabb, xform));
+        dout.components.push_back(out.c);
     }
 }
-*/
+
+static void handle_ellipsoid_emission(Simbody_geometry::Ellipsoid const& elip, Emitter_out& out) {
+    Scene_decorations& sd = out.decs;
+
+    glm::mat4x3 const& xform = sd.model_xforms.emplace_back(elip.model_mtx);
+    sd.normal_xforms.push_back(normal_matrix(xform));
+    sd.rgbas.push_back(rgba32_from_vec4(elip.rgba));
+    sd.gpu_meshes.push_back(out.sphere.instance_meshdata);
+    sd.cpu_meshes.push_back(out.sphere.cpu_meshdata);
+    sd.aabbs.push_back(aabb_apply_xform(out.sphere.cpu_meshdata->aabb, xform));
+    sd.components.push_back(out.c);
+}
+
+static void handle_arrow_emission(Simbody_geometry::Arrow const& a, Emitter_out& out) {
+    Scene_decorations& dout = out.decs;
+
+    glm::vec3 p1_to_p2 = a.p2 - a.p1;
+    float len = glm::length(p1_to_p2);
+    glm::vec3 dir = p1_to_p2/len;
+    constexpr float conelen = 0.2f;
+
+    Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+    glm::vec3 cylinder_start = a.p1;
+    glm::vec3 cone_start = a.p2 - (conelen * len * dir);
+    glm::vec3 cone_end = a.p2;
+
+    // emit arrow's head (a cone)
+    {
+        glm::mat4 cone_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.02f, 1.0f, 0.02f});
+        glm::mat4x3 const& xform =
+            dout.model_xforms.emplace_back(segment_to_segment_xform(meshline, Segment{cone_start, cone_end}) * cone_radius_rescaler);
+        dout.normal_xforms.push_back(normal_matrix(xform));
+        dout.rgbas.push_back(rgba32_from_vec4(a.rgba));
+        dout.gpu_meshes.push_back(out.cone.instance_meshdata);
+        dout.cpu_meshes.push_back(out.cone.cpu_meshdata);
+        dout.aabbs.push_back(aabb_apply_xform(out.cone.cpu_meshdata->aabb, xform));
+        dout.components.push_back(out.c);
+    }
+
+    // emit arrow's tail (a cylinder)
+    {
+        glm::mat4 cylinder_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.005f, 1.0f, 0.005f});
+        glm::mat4x3 const& xform =
+            dout.model_xforms.emplace_back(segment_to_segment_xform(meshline, Segment{cylinder_start, cone_start}) * cylinder_radius_rescaler);
+        dout.normal_xforms.push_back(xform);
+        dout.rgbas.push_back(rgba32_from_vec4(a.rgba));
+        dout.gpu_meshes.push_back(out.cylinder.instance_meshdata);
+        dout.cpu_meshes.push_back(out.cylinder.cpu_meshdata);
+        dout.aabbs.push_back(aabb_apply_xform(out.cylinder.cpu_meshdata->aabb, xform));
+        dout.components.push_back(out.c);
+    }
+}
 
 // this is effectively called whenever OpenSim emits a decoration element
 static void handle_geometry_emission(Simbody_geometry const& g, Emitter_out& out) {
@@ -267,25 +271,25 @@ static void handle_geometry_emission(Simbody_geometry const& g, Emitter_out& out
         handle_line_emission(g.line, out);
         break;
     case Simbody_geometry::Type::Cylinder:
-        //handle_cylinder_emission(g.cylinder, out);
+        handle_cylinder_emission(g.cylinder, out);
         break;
     case Simbody_geometry::Type::Brick:
-        //handle_brick_emission(g.brick, out);
+        handle_brick_emission(g.brick, out);
         break;
     case Simbody_geometry::Type::MeshFile:
         handle_meshfile_emission(g.meshfile, out);
         break;
     case Simbody_geometry::Type::Frame:
-        //handle_frame_emission(g.frame, out);
+        handle_frame_emission(g.frame, out);
         break;
     case Simbody_geometry::Type::Ellipsoid:
-        // TODO
+        handle_ellipsoid_emission(g.ellipsoid, out);
         break;
     case Simbody_geometry::Type::Cone:
-        //handle_cone_emission(g.cone, out);
+        handle_cone_emission(g.cone, out);
         break;
     case Simbody_geometry::Type::Arrow:
-        // TODO
+        handle_arrow_emission(g.arrow, out);
         break;
     }
 }
@@ -363,6 +367,12 @@ void osc::Scene_generator::generate(
             m_GeomListCache.clear();
         }
     }
+
+    OSC_ASSERT_ALWAYS(out.model_xforms.size() == out.normal_xforms.size());
+    OSC_ASSERT_ALWAYS(out.normal_xforms.size() == out.rgbas.size());
+    OSC_ASSERT_ALWAYS(out.rgbas.size() == out.gpu_meshes.size());
+    OSC_ASSERT_ALWAYS(out.gpu_meshes.size() == out.cpu_meshes.size());
+    OSC_ASSERT_ALWAYS(out.cpu_meshes.size() == out.aabbs.size());
 
     // the geometry pass above populates everything but the scene BVH via the lambda
     BVH_BuildFromAABBs(out.aabb_bvh, out.aabbs.data(), out.aabbs.size());

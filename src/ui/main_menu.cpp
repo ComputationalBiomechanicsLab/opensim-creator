@@ -2,6 +2,7 @@
 
 #include "src/3d/gl.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
+#include "src/screens/loading_screen.hpp"
 #include "src/screens/experimental/experiments_screen.hpp"
 #include "src/ui/component_3d_viewer.hpp"
 #include "src/ui/help_marker.hpp"
@@ -37,8 +38,7 @@ namespace {
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
         if (result == NFD_OKAY) {
-            // TODO
-            // Application::current().request_transition<Loading_screen>(st, outpath);
+            App::cur().request_transition<Loading_screen>(st, outpath);
         }
     }
 
@@ -109,8 +109,7 @@ namespace {
     }
 
     void transition_to_loading_existing_path(std::shared_ptr<Main_editor_state> st, std::filesystem::path p) {
-        // TODO
-        // Application::current().request_transition<Loading_screen>(st, p);
+        App::cur().request_transition<Loading_screen>(st, p);
     }
 
     std::unique_ptr<Component_3d_viewer> create_3dviewer() {
