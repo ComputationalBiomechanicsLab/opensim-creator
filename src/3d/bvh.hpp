@@ -10,9 +10,8 @@
 namespace osc {
     struct BVH_Node final {
         AABB bounds;  // union of all AABBs below/including this one
-        int lhs;  // index of left-hand node, -1 if leaf
-        int rhs;  // index of right-hand node, -1 if leaf
-        int firstPrimOffset;  // offset into prim array
+        int nlhs;  // number of nodes in left-hand side, -1 if this node is a leaf
+        int firstPrimOffset;  // offset into prim array, -1 if this node is internal
         int nPrims;  // number of prims this node represents
     };
 
@@ -33,18 +32,15 @@ namespace osc {
         float distance;
     };
 
-    // effectively:
+    // triangle BVHes
     //
-    //     BVH bvh;
-    //     BVH_BuildFromTriangles(vs, n);
-    //     return bvh;
+    // these are BVHes where prim.id refers to the first index of a triangle
+
+    // convenience form of BVH_BuildFromTriangles
     BVH BVH_CreateFromTriangles(glm::vec3 const*, size_t nverts);
 
     // prim.id will refer to the index of the first vertex in the triangle
     void BVH_BuildFromTriangles(BVH&, glm::vec3 const*, size_t nverts);
-
-    // prim.id will refer to the index of the AABB
-    void BVH_BuildFromAABBs(BVH&, AABB const*, size_t naabbs);
 
     // appends all collisions along the ray into the outparam
     //
@@ -52,6 +48,18 @@ namespace osc {
     //
     // returns true if at least one collision was found and appended to the output
     bool BVH_get_ray_collisions_triangles(BVH const&, glm::vec3 const*, size_t n, Line const&, std::vector<BVH_Collision>* appendTo);
+
+    // populates `out` with the closest collision along the ray - if there is a collision
+    //
+    // returns `true` if there was a collision; otherwise, `false` and `out` if left untouched
+    bool BVH_get_closest_collision_triangle(BVH const&, glm::vec3 const*, size_t nverts, Line const&, BVH_Collision* out);
+
+    // AABB BVHes
+    //
+    // these are BVHes where prim.id refers to the index of the AABB the node was built from
+
+    // prim.id will refer to the index of the AABB
+    void BVH_BuildFromAABBs(BVH&, AABB const*, size_t naabbs);
 
     // returns prim.id of the AABB (leaf) that the line intersects, or -1 if no intersection
     //

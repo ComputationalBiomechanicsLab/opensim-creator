@@ -40,12 +40,9 @@ static void BVH_DrawRecursive(BVH const& bvh, Solid_color_shader& shader, int po
     gl::Uniform(shader.uModel, mmtx);
     gl::DrawElements(GL_LINES, 24, GL_UNSIGNED_SHORT, nullptr);
 
-    if (n.lhs >= 0) {
-        BVH_DrawRecursive(bvh, shader, n.lhs);
-    }
-
-    if (n.rhs >= 0) {
-        BVH_DrawRecursive(bvh, shader, n.rhs);
+    if (n.nlhs >= 0) {  // if it's an internal node
+        BVH_DrawRecursive(bvh, shader, pos+1);
+        BVH_DrawRecursive(bvh, shader, pos+n.nlhs+1);
     }
 }
 
@@ -132,16 +129,15 @@ void osc::Mesh_hittest_with_bvh_screen::tick(float) {
     // handle hittest
     auto raycast_start = std::chrono::high_resolution_clock::now();
     {
-        Line l = impl.camera.screenpos_to_world_ray(ImGui::GetMousePos(), App::cur().dims());
+        Line camera_ray_worldspace = impl.camera.screenpos_to_world_ray(ImGui::GetMousePos(), App::cur().dims());
+        // camera ray in worldspace == camera ray in model space because the model matrix is an identity matrix
 
         impl.is_moused_over = false;
 
         if (impl.use_BVH) {
-            std::vector<BVH_Collision> collisions;
-            BVH_get_ray_collisions_triangles(impl.mesh_bvh, impl.mesh.verts.data(), impl.mesh.verts.size(), l, &collisions);
-            if (!collisions.empty()) {
-                std::sort(collisions.begin(), collisions.end(), [](auto const& c1, auto const& c2) { return c1.distance < c2.distance; });
-                glm::vec3 const* v = impl.mesh.verts.data() + collisions[0].prim_id;
+            BVH_Collision res;
+            if (BVH_get_closest_collision_triangle(impl.mesh_bvh, impl.mesh.verts.data(), impl.mesh.verts.size(), camera_ray_worldspace, &res)) {
+                glm::vec3 const* v = impl.mesh.verts.data() + res.prim_id;
                 impl.is_moused_over = true;
                 impl.tris[0] = v[0];
                 impl.tris[1] = v[1];
@@ -153,7 +149,7 @@ void osc::Mesh_hittest_with_bvh_screen::tick(float) {
             auto const& verts = impl.mesh.verts;
             for (size_t i = 0; i < verts.size(); i += 3) {
                 glm::vec3 tri[3] = {verts[i], verts[i+1], verts[i+2]};
-                Ray_collision res = get_ray_collision_triangle(l, tri);
+                Ray_collision res = get_ray_collision_triangle(camera_ray_worldspace, tri);
                 if (res.hit) {
                     impl.is_moused_over = true;
 

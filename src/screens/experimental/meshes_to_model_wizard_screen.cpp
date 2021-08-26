@@ -357,9 +357,6 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // 3D scene camera
     osc::Polar_perspective_camera camera;
 
-    // swap space for collisions
-    std::vector<BVH_Collision> collisions_buf;
-
     // context menu state
     //
     // values in this member are set when the menu is initially
@@ -1263,9 +1260,10 @@ namespace {
 
                 if (res.hit && res.distance < closest) {
                     // got a ray-AABB hit, now see if the ray hits a triangle in the mesh
-                    impl.collisions_buf.clear();
-                    BVH_get_ray_collisions_triangles(mesh.triangle_bvh, mesh.meshdata.verts.data(), mesh.meshdata.verts.size(), camera_ray, &impl.collisions_buf);
-                    for (BVH_Collision const& collision : impl.collisions_buf) {
+                    Line camera_ray_modelspace = apply_xform_to_line(camera_ray, glm::inverse(mesh.model_mtx));
+
+                    BVH_Collision collision;
+                    if (BVH_get_closest_collision_triangle(mesh.triangle_bvh, mesh.meshdata.verts.data(), mesh.meshdata.verts.size(), camera_ray_modelspace, &collision)) {
                         if (collision.distance < closest) {
                             closest = collision.distance;
                             impl.hovertest_result.idx = static_cast<int>(i);

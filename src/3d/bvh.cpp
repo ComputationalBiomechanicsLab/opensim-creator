@@ -4,6 +4,7 @@
 #include "src/3d/model.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <cstddef>
 
@@ -21,8 +22,7 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     if (n == 1) {
         BVH_Node& leaf = bvh.nodes.emplace_back();
         leaf.bounds = bvh.prims[begin].bounds;
-        leaf.lhs = -1;
-        leaf.rhs = -1;
+        leaf.nlhs = -1;
         leaf.firstPrimOffset = begin;
         leaf.nPrims = 1;
         return;
@@ -41,8 +41,7 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     if (aabb_is_empty(aabb)) {
         BVH_Node& leaf = bvh.nodes.emplace_back();
         leaf.bounds = aabb;
-        leaf.lhs = -1;
-        leaf.rhs = -1;
+        leaf.nlhs = -1;
         leaf.firstPrimOffset = begin;
         leaf.nPrims = n;
         return;
@@ -75,18 +74,22 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     bvh.nodes[internal_loc].firstPrimOffset = -1;
     bvh.nodes[internal_loc].nPrims = 0;
 
-    // build left node
-    bvh.nodes[internal_loc].lhs = static_cast<int>(bvh.nodes.size());
+    // build left-hand subtree
     BVH_RecursiveBuild(bvh, begin, mid-begin);
 
+    // the left-hand build allocated nodes for the left hand side contiguously in memory
+    int lhs_sz = static_cast<int>(bvh.nodes.size() - 1) - internal_loc;
+    OSC_ASSERT(lhs_sz > 0);
+    bvh.nodes[internal_loc].nlhs = lhs_sz;
+
     // build right node
-    bvh.nodes[internal_loc].rhs = static_cast<int>(bvh.nodes.size());
     BVH_RecursiveBuild(bvh, mid, end - mid);
+    OSC_ASSERT(internal_loc+lhs_sz < static_cast<int>(bvh.nodes.size()));
 
     // compute internal node's bounds from the left+right side
-    bvh.nodes[internal_loc].bounds = aabb_union(
-        bvh.nodes[bvh.nodes[internal_loc].lhs].bounds,
-        bvh.nodes[bvh.nodes[internal_loc].rhs].bounds);
+    AABB const& aabb_lhs = bvh.nodes[internal_loc+1].bounds;
+    AABB const& aabb_rhs = bvh.nodes[internal_loc+1+lhs_sz].bounds;
+    bvh.nodes[internal_loc].bounds = aabb_union(aabb_lhs, aabb_rhs);
 }
 
 // returns true if something hit (the return value is only used in recursion)
@@ -109,7 +112,7 @@ static bool BVH_get_ray_collisions_triangles_recursive(
         return false;  // no intersection with this node at all
     }
 
-    if (node.lhs == -1 && node.rhs == -1) {
+    if (node.nlhs == -1) {
         // leaf node: check ray-triangle intersection
 
         bool hit = false;
@@ -126,8 +129,8 @@ static bool BVH_get_ray_collisions_triangles_recursive(
     } else {
         // else: internal node: check intersection with direct children
 
-        bool lhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, node.lhs, out);
-        bool rhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, node.rhs, out);
+        bool lhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, nodeidx+1, out);
+        bool rhs = BVH_get_ray_collisions_triangles_recursive(bvh, vs, n, ray, nodeidx+node.nlhs+1, out);
         return lhs || rhs;
     }
 }
@@ -150,7 +153,7 @@ static bool BVH_get_ray_collision_AABBs_recursive(
         return false;  // no intersection with this node at all
     }
 
-    if (node.lhs == -1 && node.rhs == -1) {
+    if (node.nlhs == -1) {
         // it's a leaf node, so we've sucessfully found the AABB that intersected
 
         out.push_back(BVH_Collision{bvh.prims[node.firstPrimOffset].id, res.distance});
@@ -159,8 +162,54 @@ static bool BVH_get_ray_collision_AABBs_recursive(
 
     // else: we've "hit" an internal node and need to recurse to find the leaf
 
-    bool lhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.lhs, out);
-    bool rhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, node.rhs, out);
+    bool lhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, nodeidx+1, out);
+    bool rhs = BVH_get_ray_collision_AABBs_recursive(bvh, ray, nodeidx+node.nlhs+1, out);
+    return lhs || rhs;
+}
+
+static bool BVH_get_closest_collision_triangle_recursive(
+        BVH const& bvh,
+        glm::vec3 const* verts,
+        size_t nverts,
+        Line const& ray,
+        float& closest,
+        int nodeidx,
+        BVH_Collision* out) {
+
+    BVH_Node const& node = bvh.nodes[nodeidx];
+    Ray_collision res = get_ray_collision_AABB(ray, node.bounds);
+
+    if (!res.hit) {
+        return false;  // didn't hit this node at all
+    }
+
+    if (res.distance > closest) {
+        return false;  // this AABB can't contain something closer
+    }
+
+    if (node.nlhs == -1) {
+        // leaf node: check ray-triangle intersection
+
+        bool hit = false;
+        for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i) {
+            BVH_Prim const& p = bvh.prims[i];
+
+            Ray_collision rayrtri = get_ray_collision_triangle(ray, verts + p.id);
+
+            if (rayrtri.hit && rayrtri.distance < closest) {
+                closest = rayrtri.distance;
+                out->prim_id = p.id;
+                out->distance = rayrtri.distance;
+                hit = true;
+            }
+        }
+
+        return hit;
+    }
+
+    // else: internal node: recurse
+    bool lhs = BVH_get_closest_collision_triangle_recursive(bvh, verts, nverts, ray, closest, nodeidx+1, out);
+    bool rhs = BVH_get_closest_collision_triangle_recursive(bvh, verts, nverts, ray, closest, nodeidx+node.nlhs+1, out);
     return lhs || rhs;
 }
 
@@ -247,5 +296,31 @@ bool osc::BVH_get_ray_collision_AABBs(
     }
 
     return BVH_get_ray_collision_AABBs_recursive(bvh, ray, 0, *appendTo);
+}
+
+bool osc::BVH_get_closest_collision_triangle(
+        BVH const& bvh,
+        glm::vec3 const* verts,
+        size_t nverts,
+        Line const& ray,
+        BVH_Collision* out) {
+
+    OSC_ASSERT(out != nullptr);
+    OSC_ASSERT(nverts/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
+
+    if (bvh.nodes.empty()) {
+        return false;
+    }
+
+    if (bvh.prims.empty()) {
+        return false;
+    }
+
+    if (nverts == 0) {
+        return false;
+    }
+
+    float closest = std::numeric_limits<float>::max();
+    return BVH_get_closest_collision_triangle_recursive(bvh, verts, nverts, ray, closest, 0, out);
 }
 
