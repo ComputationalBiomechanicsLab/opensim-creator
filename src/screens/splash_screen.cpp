@@ -35,14 +35,14 @@ struct Splash_screen::Impl final {
 
     // TODO: fix this shit packing
     gl::Array_buffer<glm::vec3> quad_vbo{gen_textured_quad().verts};
-    gl::Array_buffer<glm::vec2> quad_uv_vbo{gen_textured_quad().texcoords};
+    gl::Array_buffer<glm::vec2> quad_standard_uvs{gen_textured_quad().texcoords};
     gl::Vertex_array quad_pts_vao = [this]() {
         gl::Vertex_array rv;
         gl::BindVertexArray(rv);
         gl::BindBuffer(quad_vbo);
         gl::VertexAttribPointer(pts.aPos, false, sizeof(glm::vec3), 0);
         gl::EnableVertexAttribArray(pts.aPos);
-        gl::BindBuffer(quad_uv_vbo);
+        gl::BindBuffer(quad_standard_uvs);
         gl::VertexAttribPointer(pts.aTexCoord, false, sizeof(glm::vec2), 0);
         gl::EnableVertexAttribArray(pts.aTexCoord);
         gl::BindVertexArray();
@@ -78,7 +78,11 @@ struct Splash_screen::Impl final {
         }();
         glm::mat3 norm_mtx = normal_matrix(mmtx);
         Rgba32 color = rgba32_from_u32(0xffffffff);
-        Instanceable_meshdata md = upload_meshdata_for_instancing(gen_textured_quad());
+        NewMesh quad_data = gen_textured_quad();
+        for (auto& uv : quad_data.texcoords) {
+            uv *= 200.0f;
+        }
+        Instanceable_meshdata md = upload_meshdata_for_instancing(quad_data);
         std::shared_ptr<gl::Texture_2d> tex = std::make_shared<gl::Texture_2d>(generate_chequered_floor_texture());
 
         Drawlist_compiler_input inp;

@@ -36,9 +36,6 @@ osc::Plain_texture_shader::Plain_texture_shader() :
         gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
 
-    aPos{0},
-    aTexCoord{1},
-
     uMVP{gl::GetUniformLocation(p, "uMVP")},
     uTextureScaler{gl::GetUniformLocation(p, "uTextureScaler")},
     uSampler0{gl::GetUniformLocation(p, "uSampler0")} {

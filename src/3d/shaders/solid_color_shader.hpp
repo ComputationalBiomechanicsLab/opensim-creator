@@ -5,7 +5,8 @@
 namespace osc {
     struct Solid_color_shader final {
         gl::Program prog;
-        gl::Attribute_vec3 aPos;
+
+        static constexpr gl::Attribute_vec3 aPos = 0;
 
         gl::Uniform_mat4 uModel;
         gl::Uniform_mat4 uView;

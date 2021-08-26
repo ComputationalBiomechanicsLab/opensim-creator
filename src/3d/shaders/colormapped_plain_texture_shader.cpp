@@ -36,9 +36,6 @@ osc::Colormapped_plain_texture_shader::Colormapped_plain_texture_shader() :
         gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
 
-    aPos{0},
-    aTexCoord{1},
-
     uMVP{gl::GetUniformLocation(p, "uMVP")},
     uSampler0{gl::GetUniformLocation(p, "uSampler0")},
     uSamplerMultiplier{gl::GetUniformLocation(p, "uSamplerMultiplier")} {

@@ -30,7 +30,7 @@ osc::Solid_color_shader::Solid_color_shader() :
     prog{gl::CreateProgramFrom(
              gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
              gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
-    aPos{0},
+
     uModel{gl::GetUniformLocation(prog, "uModelMat")},
     uView{gl::GetUniformLocation(prog, "uViewMat")},
     uProjection{gl::GetUniformLocation(prog, "uProjMat")},

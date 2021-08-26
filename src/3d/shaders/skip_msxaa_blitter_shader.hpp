@@ -7,8 +7,8 @@ namespace osc {
     struct Skip_msxaa_blitter_shader final {
         gl::Program p;
 
-        gl::Attribute_vec3 aPos;
-        gl::Attribute_vec2 aTexCoord;
+        static constexpr gl::Attribute_vec3 aPos = 0;
+        static constexpr gl::Attribute_vec2 aTexCoord = 1;
 
         gl::Uniform_mat4 uModelMat;
         gl::Uniform_mat4 uViewMat;

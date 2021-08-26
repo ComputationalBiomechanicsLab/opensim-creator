@@ -3,6 +3,7 @@
 #include "src/3d/gl.hpp"
 
 namespace osc {
+
     // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
     // COLOR0 and labelling in COLOR1
     struct Gouraud_mrt_shader final {

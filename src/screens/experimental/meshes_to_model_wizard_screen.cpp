@@ -2,10 +2,13 @@
 
 #include "src/app.hpp"
 #include "src/log.hpp"
+#include "src/styling.hpp"
+#include "src/3d/bvh.hpp"
 #include "src/3d/constants.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"
+#include "src/3d/texturing.hpp"
 #include "src/simtk_bindings/stk_meshloader.hpp"
 #include "src/simtk_bindings/stk_converters.hpp"
 #include "src/utils/algs.hpp"
@@ -67,6 +70,9 @@ namespace {
 
         // bounding sphere of the mesh data
         Sphere bounding_sphere;
+
+        // triangle bvh of the mesh
+        BVH triangle_bvh;
     };
 
     // an ERROR response to a mesh loading request
@@ -88,7 +94,9 @@ namespace {
     >;
 
     // MESH LOADER FN: respond to load request (and handle errors)
-    [[nodiscard]] Mesh_load_response respond_to_meshload_request(Mesh_load_request const& msg) noexcept {
+    //
+    // this typically runs on a background thread
+    Mesh_load_response respond_to_meshload_request(Mesh_load_request const& msg) noexcept {
         try {
             Mesh_load_OK_response rv;
             rv.id = msg.id;
@@ -96,6 +104,7 @@ namespace {
             rv.um = stk_load_mesh(msg.filepath);  // can throw
             rv.aabb = aabb_from_points(rv.um.verts.data(), rv.um.verts.size());
             rv.bounding_sphere = sphere_bounds_of_points(rv.um.verts.data(), rv.um.verts.size());
+            BVH_BuildFromTriangles(rv.triangle_bvh, rv.um.verts.data(), rv.um.verts.size());
             return rv;
         } catch (std::exception const& ex) {
             return Mesh_load_ERORR_response{msg.id, msg.filepath, ex.what()};
@@ -126,6 +135,9 @@ namespace {
         // bounding sphere of the mesh data
         Sphere bounding_sphere;
 
+        // triangle BVH of mesh data
+        BVH triangle_bvh;
+
         // model matrix
         glm::mat4 model_mtx;
 
@@ -148,6 +160,7 @@ namespace {
             meshdata{std::move(tmp.um)},
             aabb{tmp.aabb},
             bounding_sphere{tmp.bounding_sphere},
+            triangle_bvh{std::move(tmp.triangle_bvh)},
             model_mtx{1.0f},
             gpu_meshdata{upload_meshdata_for_instancing(meshdata)},
             parent{-1},
@@ -167,7 +180,7 @@ namespace {
         // absolute position in space
         glm::vec3 pos;
 
-        // is a frame, rather than a body
+        // true if it is a frame, rather than a body
         bool is_frame;
 
         // true if it is selected in the UI
@@ -256,13 +269,13 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     Mesh_loader mesh_loader = meshloader_create();
 
     // fully-loaded meshes
-    std::vector<Loaded_mesh> meshes{};
+    std::vector<Loaded_mesh> meshes;
 
     // not-yet-loaded meshes
-    std::vector<Loading_mesh> loading_meshes{};
+    std::vector<Loading_mesh> loading_meshes;
 
     // the bodies/frames that the user adds during this step
-    std::vector<Body_or_frame> bofs{};
+    std::vector<Body_or_frame> bofs;
 
     // latest unique ID available
     //
@@ -315,6 +328,26 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     // 3D rendering params
     osc::Render_params renderparams;
 
+    // floor data
+    std::shared_ptr<gl::Texture_2d> floor_tex = std::make_shared<gl::Texture_2d>(generate_chequered_floor_texture());
+    NewMesh floor_mesh = []() {
+        NewMesh rv = gen_textured_quad();
+        for (auto& uv : rv.texcoords) {
+            uv *= 200.0f;
+        }
+        return rv;
+    }();
+    Instanceable_meshdata floor_meshdata = upload_meshdata_for_instancing(floor_mesh);
+    Instanceable_meshdata sphere_meshdata = upload_meshdata_for_instancing(gen_untextured_uv_sphere(12, 12));
+
+    // 3D rendering instance data
+    std::vector<glm::mat4x3> render_xforms;
+    std::vector<glm::mat3> render_normal_matrices;
+    std::vector<Rgba32> render_colors;
+    std::vector<Instanceable_meshdata> render_meshes;
+    std::vector<std::shared_ptr<gl::Texture_2d>> render_textures;
+    std::vector<unsigned char> render_rims;
+
     // 3D drawlist that is rendered
     osc::Instanced_drawlist drawlist;
 
@@ -323,6 +356,9 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
 
     // 3D scene camera
     osc::Polar_perspective_camera camera;
+
+    // swap space for collisions
+    std::vector<BVH_Collision> collisions_buf;
 
     // context menu state
     //
@@ -385,6 +421,10 @@ struct osc::Meshes_to_model_wizard_screen::Impl final {
     //
     // `nullptr` until the model is successfully created
     std::unique_ptr<OpenSim::Model> output_model = nullptr;
+
+    Impl() {
+        camera.phi = fpi2;
+    }
 };
 using Impl = osc::Meshes_to_model_wizard_screen::Impl;
 
@@ -425,7 +465,7 @@ namespace {
         for (Loaded_mesh const& m : impl.meshes) {
             if (m.parent < 0) {
                 // assigned to ground (bad practice)
-                // TODO impl.advancement_issues.push_back("a mesh is assigned to ground (it should be assigned to a body/frame)");
+                impl.advancement_issues.push_back("a mesh is assigned to ground (it should be assigned to a body/frame)");
             } else if (static_cast<size_t>(m.parent) >= impl.bofs.size()) {
                 // invalid index
                 impl.advancement_issues.push_back("a mesh is assigned to an invalid body");
@@ -439,9 +479,10 @@ namespace {
             if (bof.parent < 0) {
                 // ok: it's directly connected to ground
             } else if (static_cast<size_t>(bof.parent) >= impl.bofs.size()) {
+                // bad: it's connected to non-existent bs
                 impl.advancement_issues.push_back("a body/frame is connected to a non-existent body/frame");
-                // bad: connected to bullshit
             } else if (!is_bof_connected_to_ground(impl, static_cast<int>(i))) {
+                // bad: it's connected to something, but that thing doesn't connect to ground
                 impl.advancement_issues.push_back("a body/frame is not connected to ground");
             } else {
                 // ok: it's connected to a body/frame that is connected to ground
@@ -684,6 +725,12 @@ namespace {
     void update_camera_from_user_input(Impl& impl) {
 
         if (!impl.mouse_over_render) {
+            // ignore mouse if it isn't over the render
+            return;
+        }
+
+        if (ImGuizmo::IsUsing()) {
+            // ignore mouse if user currently dragging a gizmo
             return;
         }
 
@@ -691,14 +738,14 @@ namespace {
         impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
 
         // handle panning/zooming/dragging with middle mouse
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {  // TODO: middle mouse
 
             // in pixels, e.g. [800, 600]
             glm::vec2 screendims = impl.renderer.dimsf();
 
             // in pixels, e.g. [-80, 30]
-            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.0f);
-            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
+            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
+            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
 
             // as a screensize-independent ratio, e.g. [-0.1, 0.05]
             glm::vec2 relative_delta = mouse_delta / screendims;
@@ -1156,171 +1203,191 @@ namespace {
         }
     }
 
-}
-
-        /*
-
-    // returns a mesh instance that represents a chequered floor in the scene
-    [[nodiscard]] Mesh_instance create_chequered_floor_meshinstance(Impl& impl) {
-        glm::mat4 model_mtx = glm::identity<glm::mat4>();
+    glm::mat4x3 create_floor_mmtx(Impl& impl) {
+        glm::mat4 rv{1.0f};
 
         // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
         // floor down *slightly* to prevent Z fighting from planes rendered from the
         // model itself (the contact planes, etc.)
-        model_mtx = glm::translate(model_mtx, {0.0f, -0.0001f, 0.0f});
-        model_mtx = glm::rotate(model_mtx, pi_f / 2, {-1.0, 0.0, 0.0});
-        model_mtx = glm::scale(model_mtx, {impl.scene_scale_factor * 100.0f,  impl.scene_scale_factor * 100.0f, 1.0f});
+        rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
+        rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
+        rv = glm::scale(rv, {impl.scene_scale_factor * 100.0f, impl.scene_scale_factor * 100.0f, 1.0f});
 
-        Mesh_instance mi;
-        mi.model_xform = model_mtx;
-        mi.normal_xform = normal_matrix(mi.model_xform);
-        auto& gpu_storage = Application::current().get_gpu_storage();
-        mi.meshidx = gpu_storage.floor_quad_idx;
-        mi.texidx = gpu_storage.chequer_idx;
-        mi.flags.set_skip_shading();
-
-        return mi;
+        return rv;
     }
 
+    void perform_scene_hittest(Impl& impl) {
+        glm::vec2 mousepos_in_render = glm::vec2{ImGui::GetMousePos()} - impl.render_topleft_in_screen;
+        Line camera_ray =
+            impl.camera.screenpos_to_world_ray(mousepos_in_render, impl.renderer.dimsf());
 
+        // assumed result if nothing is hovered
+        impl.hovertest_result.idx = -1;
+        impl.hovertest_result.type = ElType::None;
+        float closest = std::numeric_limits<float>::max();
+
+        // perform ray-sphere hittest on the ground sphere
+        if (!impl.lock_ground) {
+            Sphere ground_sphere{{0.0f, 0.0f, 0.0f}, impl.scene_scale_factor * impl.ground_sphere_radius};
+            auto res = get_ray_collision_sphere(camera_ray, ground_sphere);
+            if (res.hit && res.distance < closest) {
+                closest = res.distance;
+                impl.hovertest_result.idx = -1;
+                impl.hovertest_result.type = ElType::Ground;
+            }
+        }
+
+        // perform ray-sphere hittest on the bof spheres
+        if (!impl.lock_bofs) {
+            float r = impl.scene_scale_factor * impl.bof_sphere_radius;
+            for (size_t i = 0; i < impl.bofs.size(); ++i) {
+                Body_or_frame const& bof = impl.bofs[i];
+                Sphere bof_sphere{bof.pos, r};
+                auto res = get_ray_collision_sphere(camera_ray, bof_sphere);
+                if (res.hit && res.distance < closest) {
+                    closest = res.distance;
+                    impl.hovertest_result.idx = static_cast<int>(i);
+                    impl.hovertest_result.type = ElType::Body;
+                }
+            }
+        }
+
+        // perform a *rough* ray-AABB hittest on the meshes - if there's
+        // a hit, perform a more precise (BVH-accelerated) ray-triangle test
+        // on the mesh
+        if (!impl.lock_meshes) {
+            for (size_t i = 0; i < impl.meshes.size(); ++i) {
+                Loaded_mesh const& mesh = impl.meshes[i];
+                AABB aabb = aabb_apply_xform(mesh.aabb, mesh.model_mtx);
+                auto res = get_ray_collision_AABB(camera_ray, aabb);
+
+                if (res.hit && res.distance < closest) {
+                    // got a ray-AABB hit, now see if the ray hits a triangle in the mesh
+                    impl.collisions_buf.clear();
+                    BVH_get_ray_collisions_triangles(mesh.triangle_bvh, mesh.meshdata.verts.data(), mesh.meshdata.verts.size(), camera_ray, &impl.collisions_buf);
+                    for (BVH_Collision const& collision : impl.collisions_buf) {
+                        if (collision.distance < closest) {
+                            closest = collision.distance;
+                            impl.hovertest_result.idx = static_cast<int>(i);
+                            impl.hovertest_result.type = ElType::Mesh;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // draw 3D scene into remainder of the ImGui panel's content region
     void draw_3dviewer_scene(Impl& impl) {
         ImVec2 dims = ImGui::GetContentRegionAvail();
 
-        // skip rendering steps if ImGui panel is too small
+        // skip rendering if the panel would be too small
         if (dims.x < 1.0f || dims.y < 1.0f) {
             return;
         }
 
-        // ensure render target dimensions match panel dimensions
-        impl.render_target.reconfigure(
-            static_cast<int>(dims.x),
-            static_cast<int>(dims.y),
-            App::cur().get_samples());
+        // populate drawlist
 
-        // compute render position on the screen (needed by ImGuizmo)
-        {
-            glm::vec2 wp = ImGui::GetWindowPos();
-            glm::vec2 cp = ImGui::GetCursorPos();
-            impl.render_topleft_in_screen = wp + cp;
+        // clear instance buffers
+        impl.render_xforms.clear();
+        impl.render_normal_matrices.clear();
+        impl.render_colors.clear();
+        impl.render_meshes.clear();
+        impl.render_textures.clear();
+        impl.render_rims.clear();
+
+        // add floor
+        if (impl.show_floor) {
+            auto const& mmtx = impl.render_xforms.emplace_back(create_floor_mmtx(impl));
+            impl.render_normal_matrices.push_back(normal_matrix(mmtx));
+            impl.render_colors.push_back({});
+            impl.render_meshes.push_back(impl.floor_meshdata);
+            impl.render_textures.push_back(impl.floor_tex);
+            impl.render_rims.push_back(0x00);
         }
 
-        // ensure camera clipping planes are correct for current zoom level
-        {
-            autoscale_znear_zfar(impl.camera);
-        }
-
-        // populate 3D drawlist
-        Drawlist& dl = impl.drawlist;
-        dl.clear();
-
-        // ID is a unique, accumulated, 1-based index into
-        //
-        // - meshes [1, nmeshes]
-        // - ground (nmeshes, nmeshes+1]
-        // - bodies/frames (nmeshes+1, nmeshes+1+nbodies]
-        uint16_t id = 1;
-
-        // add meshes to 3D scene
+        // add meshes
         if (impl.show_meshes) {
             for (Loaded_mesh const& m : impl.meshes) {
-                Mesh_instance mi;
-                mi.model_xform = m.model_mtx;
-                mi.normal_xform = normal_matrix(mi.model_xform);
-                mi.rgba = m.parent >= 0 ? impl.assigned_mesh_color : impl.unassigned_mesh_color;
-                mi.meshidx = m.gpu_meshidx;
-                mi.passthrough.rim_alpha = m.is_selected ? 0xff : m.is_hovered ? 0x60 : 0x00;
-                if (!impl.lock_meshes) {
-                    mi.passthrough.assign_u16(id);
-                }
-                ++id;
-                dl.push_back(mi);
+                auto const& mmtx = impl.render_xforms.emplace_back(m.model_mtx);
+                impl.render_normal_matrices.push_back(normal_matrix(mmtx));
+                impl.render_colors.push_back(m.parent >= 0 ? impl.assigned_mesh_color : impl.unassigned_mesh_color);
+                impl.render_meshes.push_back(m.gpu_meshdata);
+                impl.render_textures.push_back(nullptr);
+                impl.render_rims.push_back(m.is_selected ? 0xff : m.is_hovered ? 0x60 : 0x00);
             }
-        } else {
-            id += static_cast<int>(impl.meshes.size());
         }
 
-        // sphere data for drawing bodies/frames in 3D
-        Meshidx sphereidx = Application::current().get_gpu_storage().simbody_sphere_idx;
-
-        // add ground (defined to be at 0, 0, 0) to 3D scene
+        // add ground
         if (impl.show_ground) {
             float r = impl.scene_scale_factor * impl.ground_sphere_radius;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
 
-            Mesh_instance mi;
-            mi.model_xform = scaler;
-            mi.normal_xform = normal_matrix(mi.model_xform);
-            mi.rgba = impl.ground_color;
-            mi.meshidx = sphereidx;
-            mi.passthrough.rim_alpha = impl.ground_hovered ? 0x60 : 0x00;
-            if (!impl.lock_ground) {
-                mi.passthrough.assign_u16(id);
-            }
-            ++id;
-            dl.push_back(mi);
-        } else {
-            ++id;
+            auto const& mmtx = impl.render_xforms.emplace_back(scaler);
+            impl.render_normal_matrices.push_back(mmtx);
+            impl.render_colors.push_back(impl.ground_color);
+            impl.render_meshes.push_back(impl.sphere_meshdata);
+            impl.render_textures.push_back(nullptr);
+            impl.render_rims.push_back(impl.ground_hovered ? 0x60 : 0x00);
         }
 
-        // add bodies/frames to 3D scene
+        // add bodies/frames
         if (impl.show_bofs) {
             float r = impl.scene_scale_factor * impl.bof_sphere_radius;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
 
             for (Body_or_frame const& bf : impl.bofs) {
-                Mesh_instance mi;
-                mi.model_xform = glm::translate(glm::mat4{1.0f}, bf.pos) * scaler;
-                mi.normal_xform = normal_matrix(mi.model_xform);
-                if (bf.is_frame) {
-                    mi.rgba = impl.frame_color;
-                } else {
-                    mi.rgba = impl.body_color;
-                }
-                mi.meshidx = sphereidx;
-                mi.passthrough.rim_alpha = bf.is_selected ? 0xff : bf.is_hovered ? 0x60 : 0x00;
-                if (!impl.lock_bofs) {
-                    mi.passthrough.assign_u16(id);
-                }
-                ++id;
-                dl.push_back(mi);
+                auto const& mmtx = impl.render_xforms.emplace_back(glm::translate(glm::mat4{1.0f}, bf.pos) * scaler);
+                impl.render_normal_matrices.push_back(normal_matrix(mmtx));
+                impl.render_colors.push_back(bf.is_frame ? impl.frame_color : impl.body_color);
+                impl.render_meshes.push_back(impl.sphere_meshdata);
+                impl.render_textures.push_back(nullptr);
+                impl.render_rims.push_back(bf.is_selected ? 0xff : bf.is_hovered ? 0x60 : 0x00);
             }
-        } else {
-            id += static_cast<int>(impl.bofs.size());
         }
 
-        // add chequered floor to 3D scene
-        if (impl.show_floor) {
-            dl.push_back(create_chequered_floor_meshinstance(impl));
-        }
-
-        // make renderer hittest location match the mouse's location
+        // upload instance stripes to drawlist
         {
-            glm::vec2 mousepos = ImGui::GetMousePos();
-            glm::vec2 windowpos = ImGui::GetWindowPos();
-            glm::vec2 cursor_in_window_pos = ImGui::GetCursorPos();
-            glm::vec2 mouse_in_window_pos = mousepos - windowpos;
-            glm::vec2 mouse_in_img_pos = mouse_in_window_pos - cursor_in_window_pos;
+            OSC_ASSERT(impl.render_xforms.size() == impl.render_normal_matrices.size());
+            OSC_ASSERT(impl.render_normal_matrices.size() == impl.render_colors.size());
+            OSC_ASSERT(impl.render_colors.size() == impl.render_meshes.size());
+            OSC_ASSERT(impl.render_meshes.size() == impl.render_textures.size());
+            OSC_ASSERT(impl.render_textures.size() == impl.render_rims.size());
 
-            impl.renderparams.hittest.x = static_cast<int>(mouse_in_img_pos.x);
-            impl.renderparams.hittest.y = static_cast<int>(dims.y - mouse_in_img_pos.y);
+            Drawlist_compiler_input inp;
+            inp.ninstances = impl.render_xforms.size();
+            inp.model_xforms = impl.render_xforms.data();
+            inp.normal_xforms = impl.render_normal_matrices.data();
+            inp.colors = impl.render_colors.data();
+            inp.meshes = impl.render_meshes.data();
+            inp.textures = impl.render_textures.data();
+            inp.rim_intensity = impl.render_rims.data();
+
+            upload_inputs_to_drawlist(inp, impl.drawlist);
+        }
+
+        // ensure render target dimensions match panel dimensions
+        impl.renderer.set_dims({static_cast<int>(dims.x), static_cast<int>(dims.y)});
+        impl.renderer.set_msxaa_samples(App::cur().get_samples());
+
+        // ensure camera clipping planes are correct for current zoom level
+        impl.camera.do_znear_zfar_autoscale();
+
+        // compute render (ImGui::Image) position on the screen (needed by ImGuizmo + hittest)
+        {
+            impl.render_topleft_in_screen = ImGui::GetCursorScreenPos();
         }
 
         // update renderer view + projection matrices to match scene camera
-        impl.renderparams.view_matrix = view_matrix(impl.camera);
-        impl.renderparams.projection_matrix = projection_matrix(impl.camera, impl.render_target.aspect_ratio());
+        impl.renderparams.view_matrix = impl.camera.view_matrix();
+        impl.renderparams.projection_matrix = impl.camera.projection_matrix(impl.renderer.aspect_ratio());
 
-        // RENDER: draw scene onto render target
-        draw_scene(
-            Application::current().get_gpu_storage(),
-            impl.renderparams,
-            impl.drawlist,
-            impl.render_target);
+        // render the scene to a texture
+        impl.renderer.render(impl.renderparams, impl.drawlist);
 
-        // blit rendered 3D scene to ImGui::Image
+        // blit the texture in an ImGui::Image
         {
-            gl::Texture_2d& tex = impl.render_target.main();
+            gl::Texture_2d& tex = impl.renderer.output_texture();
             void* texture_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(tex.get()));
             ImVec2 image_dimensions{dims.x, dims.y};
             ImVec2 uv0{0.0f, 1.0f};
@@ -1329,31 +1396,7 @@ namespace {
             impl.mouse_over_render = ImGui::IsItemHovered();
         }
 
-        // handle hovertest
-        {
-            auto const& meshes = impl.meshes;
-            auto const& bofs = impl.bofs;
-
-            // assumed result if nothing is hovered
-            impl.hovertest_result.idx = -1;
-            impl.hovertest_result.type = ElType::None;
-
-            // set hovertest result based on hovered-over ID
-            uint16_t hovered = impl.render_target.hittest_result.get_u16();
-            if (0 < hovered && hovered <= meshes.size()) {
-                // hovered over mesh
-                impl.hovertest_result.idx = static_cast<int>(hovered - 1);
-                impl.hovertest_result.type = ElType::Mesh;
-            } else if (meshes.size() < hovered && hovered <= meshes.size()+1) {
-                // hovered over ground
-                impl.hovertest_result.idx = -1;
-                impl.hovertest_result.type = ElType::Ground;
-            } else if (meshes.size()+1 < hovered && hovered <= meshes.size()+1+bofs.size()) {
-                // hovered over body
-                impl.hovertest_result.idx = static_cast<int>(((hovered - meshes.size()) - 1) - 1);
-                impl.hovertest_result.type = ElType::Body;
-            }
-        }
+        perform_scene_hittest(impl);
     }
 
     // standard event handler for the 3D scene hover-over
@@ -1426,7 +1469,6 @@ namespace {
                 impl.ctx_menu.type = ElType::Body;
                 ImGui::OpenPopup("contextmenu");
             }
-
 
             // if left-clicked, select it
             if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing()) {
@@ -1721,8 +1763,6 @@ namespace {
     }
 }
 
-*/
-
 // public API
 
 osc::Meshes_to_model_wizard_screen::Meshes_to_model_wizard_screen() :
@@ -1757,10 +1797,11 @@ void osc::Meshes_to_model_wizard_screen::draw() {
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();
-    // TODO  ::meshes2model_draw(*impl);
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
+    ::meshes2model_draw(*impl);
     osc::ImGuiRender();
 }
 
 void osc::Meshes_to_model_wizard_screen::tick(float) {
-    // TODO  ::meshes2model_tick(*impl);
+    ::meshes2model_tick(*impl);
 }

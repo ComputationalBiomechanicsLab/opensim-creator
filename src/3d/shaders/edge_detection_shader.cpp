@@ -76,9 +76,6 @@ osc::Edge_detection_shader::Edge_detection_shader() :
           gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
           gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
 
-    aPos{0},
-    aTexCoord{1},
-
     uModelMat{gl::GetUniformLocation(p, "uModelMat")},
     uViewMat{gl::GetUniformLocation(p, "uViewMat")},
     uProjMat{gl::GetUniformLocation(p, "uProjMat")},

@@ -5,6 +5,7 @@
 #include "src/screens/splash_screen.hpp"
 #include "src/app.hpp"
 #include "src/assertions.hpp"
+#include "src/log.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -121,6 +122,7 @@ namespace {
 
                 // TODO
                 // App::cur().request_transition<Model_editor_screen>(std::move(impl.editor_state));
+                App::cur().request_transition<Splash_screen>(impl.mes);
             } else {
                 // there is no existing editor state
                 //
@@ -128,6 +130,7 @@ namespace {
 
                 // TODO
                 // Application::current().request_transition<Model_editor_screen>(std::move(result));
+                App::cur().request_transition<Splash_screen>(impl.mes);
             }
         }
     }
@@ -184,7 +187,18 @@ osc::Loading_screen::Loading_screen(
 
 osc::Loading_screen::~Loading_screen() noexcept = default;
 
+void osc::Loading_screen::on_mount() {
+    osc::ImGuiInit();
+}
+
+void osc::Loading_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
 void osc::Loading_screen::on_event(SDL_Event const& e) {
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
     ::loadingscreen_on_event(*impl, e);
 }
 
@@ -193,5 +207,7 @@ void osc::Loading_screen::tick(float dt) {
 }
 
 void osc::Loading_screen::draw() {
+    osc::ImGuiNewFrame();
     ::loadingscreen_draw(*impl);
+    osc::ImGuiRender();
 }
