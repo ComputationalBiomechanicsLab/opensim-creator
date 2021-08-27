@@ -3,6 +3,7 @@
 #include "src/app.hpp"
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -75,6 +76,12 @@ osc::Hellotriangle_screen::Hellotriangle_screen() :
 }
 
 osc::Hellotriangle_screen::~Hellotriangle_screen() noexcept = default;
+
+void osc::Hellotriangle_screen::on_event(SDL_Event const& e) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        App::cur().request_transition<Experiments_screen>();
+    }
+}
 
 void osc::Hellotriangle_screen::tick(float dt) {
     // change color over time

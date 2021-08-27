@@ -3,6 +3,7 @@
 #include "src/3d/gl.hpp"
 #include "src/screens/imgui_demo_screen.hpp"
 #include "src/screens/loading_screen.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/screens/experimental/experiments_screen.hpp"
 #include "src/ui/component_3d_viewer.hpp"
@@ -342,11 +343,9 @@ void osc::ui::main_menu::about_tab::draw() {
 void osc::ui::main_menu::action_new_model(std::shared_ptr<Main_editor_state> st) {
     if (st) {
         st->edited_model = Undoable_ui_model{std::make_unique<OpenSim::Model>()};
-        // TODO
-        // Application::current().request_transition<Model_editor_screen>(st);
+        App::cur().request_transition<Model_editor_screen>(st);
     } else {
-        // TODO
-        // Application::current().request_transition<Model_editor_screen>();
+        App::cur().request_transition<Model_editor_screen>(std::make_unique<Main_editor_state>());
     }
 }
 

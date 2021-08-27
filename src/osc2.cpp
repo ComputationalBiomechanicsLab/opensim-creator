@@ -1,4 +1,5 @@
 #include "src/screens/cookiecutter_screen.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/screens/experimental/hellotriangle_screen.hpp"
 #include "src/screens/experimental/hittest_screen.hpp"
@@ -13,6 +14,7 @@
 #include "src/screens/experimental/component_3d_viewer_screen.hpp"
 #include "src/app.hpp"
 #include "src/log.hpp"
+#include "src/main_editor_state.hpp"
 
 using namespace osc;
 
@@ -31,7 +33,8 @@ int main(int, char**) {
         //app.show<Experiments_screen>();
         //app.show<Component_3d_viewer_screen>();
         //app.show<Splash_screen>();
-        app.show<Meshes_to_model_wizard_screen>();
+        //app.show<Meshes_to_model_wizard_screen>();
+        app.show<Model_editor_screen>(std::make_shared<Main_editor_state>());
     } catch (std::exception const& ex) {
         log::info("exception thrown to root of application: %s", ex.what());
         return -1;

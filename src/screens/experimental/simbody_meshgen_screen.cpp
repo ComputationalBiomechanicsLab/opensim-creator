@@ -4,6 +4,7 @@
 #include "src/3d/gl.hpp"
 #include "src/3d/gl_glm.hpp"
 #include "src/3d/model.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
 #include "src/simtk_bindings/stk_meshloader.hpp"
 #include "src/simtk_bindings/stk_geometry_generator.hpp"
 
@@ -213,7 +214,14 @@ void osc::Simbody_meshgen_screen::on_unmount() {
 }
 
 void osc::Simbody_meshgen_screen::on_event(SDL_Event const& e) {
-    osc::ImGuiOnEvent(e);
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        App::cur().request_transition<Experiments_screen>();
+        return;
+    }
 }
 
 void osc::Simbody_meshgen_screen::tick(float) {

@@ -154,8 +154,8 @@ add_executable(osc
     src/screens/imgui_demo_screen.hpp
     src/screens/loading_screen.cpp
     src/screens/loading_screen.hpp
-    #src/screens/model_editor_screen.cpp
-    #src/screens/model_editor_screen.hpp
+    src/screens/model_editor_screen.cpp
+    src/screens/model_editor_screen.hpp
     #src/screens/simulator_screen.cpp
     #src/screens/simulator_screen.hpp
     src/screens/splash_screen.cpp

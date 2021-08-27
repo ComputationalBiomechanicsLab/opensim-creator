@@ -2,6 +2,7 @@
 
 #include "src/3d/gl.hpp"
 #include "src/opensim_bindings/ui_types.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/app.hpp"
 #include "src/assertions.hpp"
@@ -119,18 +120,13 @@ namespace {
                 //
                 // recycle it so that users can keep their running sims, local edits, etc.
                 impl.mes->edited_model = osc::Undoable_ui_model{std::move(result)};
-
-                // TODO
-                // App::cur().request_transition<Model_editor_screen>(std::move(impl.editor_state));
-                App::cur().request_transition<Splash_screen>(impl.mes);
+                App::cur().request_transition<Model_editor_screen>(impl.mes);
             } else {
                 // there is no existing editor state
                 //
                 // transitiong into "fresh" editor
-
-                // TODO
-                // Application::current().request_transition<Model_editor_screen>(std::move(result));
-                App::cur().request_transition<Splash_screen>(impl.mes);
+                auto mes = std::make_shared<Main_editor_state>(std::move(result));
+                App::cur().request_transition<Model_editor_screen>(mes);
             }
         }
     }

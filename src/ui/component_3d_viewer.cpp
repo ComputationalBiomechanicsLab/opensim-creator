@@ -86,7 +86,9 @@ struct osc::Component_3d_viewer::Impl final {
 
 static void update_camera(osc::Component_3d_viewer::Impl& impl) {
 
-    impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
+    if (impl.render_hovered) {
+        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
+    }
 
     impl.camera.do_znear_zfar_autoscale();
 

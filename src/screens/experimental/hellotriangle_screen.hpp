@@ -2,6 +2,8 @@
 
 #include "src/screen.hpp"
 
+#include <SDL_events.h>
+
 #include <memory>
 
 namespace osc {
@@ -16,6 +18,7 @@ namespace osc {
         Hellotriangle_screen();
         ~Hellotriangle_screen() noexcept override;
 
+        void on_event(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
     };

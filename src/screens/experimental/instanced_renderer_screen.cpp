@@ -7,6 +7,7 @@
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"
 #include "src/3d/shaders/colormapped_plain_texture_shader.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -111,7 +112,14 @@ void osc::Instanced_render_screen::on_unmount() {
 }
 
 void osc::Instanced_render_screen::on_event(SDL_Event const& e) {
-    osc::ImGuiOnEvent(e);
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        App::cur().request_transition<Experiments_screen>();
+        return;
+    }
 }
 
 void osc::Instanced_render_screen::tick(float) {

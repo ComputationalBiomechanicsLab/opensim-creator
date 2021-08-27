@@ -1,15 +1,18 @@
 #include "experiments_screen.hpp"
 
-#include "src/app.hpp"
 #include "src/3d/gl.hpp"
+#include "src/screens/experimental/component_3d_viewer_screen.hpp"
 #include "src/screens/experimental/hellotriangle_screen.hpp"
 #include "src/screens/experimental/hittest_screen.hpp"
 #include "src/screens/experimental/mesh_hittest_with_bvh_screen.hpp"
 #include "src/screens/experimental/instanced_renderer_screen.hpp"
 #include "src/screens/experimental/mesh_hittest_screen.hpp"
+#include "src/screens/experimental/meshes_to_model_wizard_screen.hpp"
+#include "src/screens/experimental/opensim_modelstate_decoration_generator_screen.hpp"
 #include "src/screens/experimental/simbody_meshgen_screen.hpp"
 #include "src/screens/experimental/imguizmo_demo_screen.hpp"
 #include "src/screens/splash_screen.hpp"
+#include "src/app.hpp"
 
 #include <imgui.h>
 
@@ -29,12 +32,15 @@ struct Entry final { std::string name; transition_fn f;  };
 // experiments screen impl
 struct Experiments_screen::Impl final {
     std::vector<Entry> entries = {
-        { "Hello triangle", transition<Hellotriangle_screen> },
-        { "Basic hit testing", transition<Hittest_screen> },
+        { "Component 3D Viewer Test", transition<Component_3d_viewer_screen> },
+        { "Hello Triangle (OpenGL test)", transition<Hellotriangle_screen> },
+        { "Hit testing analytical geometry (AABBs, Spheres, etc.)", transition<Hittest_screen> },
+        { "Hit testing ray-triangle intersections in a mesh", transition<Mesh_hittesting> },
+        { "Hit testing ray-triangle, but with BVH acceleration", transition<Mesh_hittest_with_bvh_screen> },
+        { "OpenSim mesh importer wizard", transition<Meshes_to_model_wizard_screen> },
+        { "OpenSim Model+State decoration generation", transition<Opensim_modelstate_decoration_generator_screen> },
+        { "Simbody mesh generation", transition<Simbody_meshgen_screen> },
         { "Instanced rendering", transition<Instanced_render_screen> },
-        { "Mesh hittesting", transition<Mesh_hittesting> },
-        { "Mesh hittesting with basic BVH", transition<Mesh_hittest_with_bvh_screen> },
-        { "OpenSim mesh generation", transition<Simbody_meshgen_screen> },
         { "ImGuizmo", transition<Imguizmo_demo_screen> },
     };
 };

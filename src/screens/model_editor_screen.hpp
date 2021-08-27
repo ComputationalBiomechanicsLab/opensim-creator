@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/screen.hpp"
+
 #include <SDL_events.h>
 
 #include <memory>
@@ -28,7 +30,9 @@ namespace osc {
         Model_editor_screen& operator=(Model_editor_screen&&) noexcept;
         ~Model_editor_screen() noexcept override;
 
-        bool on_event(SDL_Event const&) override;
+        void on_mount() override;
+        void on_unmount() override;
+        void on_event(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
     };

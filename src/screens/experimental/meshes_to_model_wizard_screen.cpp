@@ -2,6 +2,7 @@
 
 #include "src/app.hpp"
 #include "src/log.hpp"
+#include "src/main_editor_state.hpp"
 #include "src/styling.hpp"
 #include "src/3d/bvh.hpp"
 #include "src/3d/constants.hpp"
@@ -9,6 +10,7 @@
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"
 #include "src/3d/texturing.hpp"
+#include "src/screens/model_editor_screen.hpp"
 #include "src/simtk_bindings/stk_meshloader.hpp"
 #include "src/simtk_bindings/stk_converters.hpp"
 #include "src/utils/algs.hpp"
@@ -1752,11 +1754,8 @@ namespace {
 
         // if a model was produced by this step then transition into the editor
         if (impl.output_model) {
-            // TODO
-            //auto mes = std::make_shared<Main_editor_state>();
-            //mes->tabs.emplace_back(std::make_unique<Undoable_ui_model>(std::move(impl.output_model)));
-            //mes->cur_tab = static_cast<int>(mes->tabs.size()) - 1;
-            //Application::current().request_transition<Model_editor_screen>(mes);
+            auto mes = std::make_shared<Main_editor_state>(std::move(impl.output_model));
+            App::cur().request_transition<Model_editor_screen>(mes);
         }
     }
 }
@@ -1788,7 +1787,9 @@ void osc::Meshes_to_model_wizard_screen::on_unmount() {
 }
 
 void osc::Meshes_to_model_wizard_screen::on_event(SDL_Event const& e) {
-    osc::ImGuiOnEvent(e);
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
 }
 
 void osc::Meshes_to_model_wizard_screen::draw() {

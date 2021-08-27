@@ -5,6 +5,7 @@
 #include "src/3d/gl_glm.hpp"
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/shaders/solid_color_shader.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
 #include "src/opensim_bindings/scene_generator.hpp"
 #include "src/utils/perf.hpp"
 
@@ -103,6 +104,11 @@ void osc::Opensim_modelstate_decoration_generator_screen::on_unmount() {
 
 void osc::Opensim_modelstate_decoration_generator_screen::on_event(SDL_Event const& e) {
     if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        App::cur().request_transition<Experiments_screen>();
         return;
     }
 }
