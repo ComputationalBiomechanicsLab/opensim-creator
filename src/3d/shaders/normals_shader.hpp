@@ -8,7 +8,7 @@ namespace osc {
         gl::Program program;
 
         static constexpr gl::Attribute_vec3 aPos = 0;
-        static constexpr gl::Attribute_vec3 aNormal = 1;
+        static constexpr gl::Attribute_vec3 aNormal = 2;
 
         gl::Uniform_mat4 uModelMat;
         gl::Uniform_mat4 uViewMat;

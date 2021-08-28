@@ -3,12 +3,12 @@
 static char g_VertexShader[] = R"(
     #version 330 core
 
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
-
     uniform mat4 uModelMat;
     uniform mat4 uViewMat;
     uniform mat4 uProjMat;
+
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec2 aTexCoord;
 
     out vec2 TexCoord;
 
@@ -21,16 +21,17 @@ static char g_VertexShader[] = R"(
 static char g_FragmentShader[] = R"(
     #version 330 core
 
-    in vec2 TexCoord;
-    layout (location = 0) out vec4 FragColor;
-
     uniform sampler2D uSampler0;
     uniform vec4 uRimRgba;
     uniform float uRimThickness;
 
+    in vec2 TexCoord;
+
+    out vec4 FragColor;
+
     // sampling offsets to use when retrieving samples to feed
     // into the kernel
-    vec2 offsets[9] = vec2[](
+    const vec2 offsets[9] = vec2[](
         vec2(-1.0f,  1.0f), // top-left
         vec2( 0.0f,  1.0f), // top-center
         vec2( 1.0f,  1.0f), // top-right

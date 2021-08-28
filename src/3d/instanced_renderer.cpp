@@ -150,8 +150,8 @@ namespace {
 
         // bind vertex data to (non-instanced) attrs
         gl::BindBuffer(data);
-        gl::VertexAttribPointer(GMS::aLocation, false, stride, offset_pos);
-        gl::EnableVertexAttribArray(GMS::aLocation);
+        gl::VertexAttribPointer(GMS::aPos, false, stride, offset_pos);
+        gl::EnableVertexAttribArray(GMS::aPos);
         gl::VertexAttribPointer(GMS::aNormal, false, stride, offset_norm);
         gl::EnableVertexAttribArray(GMS::aNormal);
         if (!mesh.texcoords.empty()) {
@@ -175,9 +175,9 @@ namespace {
 
         // note: RGB is normalized CPU side ([0x00, 0xff]) and needs to be unpacked
         // into a float
-        gl::VertexAttribPointer<gl::glsl::vec4, GL_UNSIGNED_BYTE>(GMS::aRgba0, true, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, rgba));
-        gl::VertexAttribDivisor(GMS::aRgba0, 1);
-        gl::EnableVertexAttribArray(GMS::aRgba0);
+        gl::VertexAttribPointer<gl::glsl::vec4, GL_UNSIGNED_BYTE>(GMS::aDiffuseColor, true, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, rgba));
+        gl::VertexAttribDivisor(GMS::aDiffuseColor, 1);
+        gl::EnableVertexAttribArray(GMS::aDiffuseColor);
 
         // note: RimIntensity is normalized from its CPU byte value into a float
         gl::VertexAttribPointer<gl::glsl::float_, GL_UNSIGNED_BYTE>(GMS::aRimIntensity, true, sizeof(GPU_meshinstance), offsetof(GPU_meshinstance, rim_intensity));

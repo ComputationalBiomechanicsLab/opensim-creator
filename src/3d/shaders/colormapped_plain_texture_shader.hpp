@@ -7,13 +7,13 @@ namespace osc {
     //
     // useful for rendering quads etc.
     struct Colormapped_plain_texture_shader final {
-        gl::Program p;
+        gl::Program program;
 
         static constexpr gl::Attribute_vec3 aPos = 0;
         static constexpr gl::Attribute_vec2 aTexCoord = 1;
 
         gl::Uniform_mat4 uMVP;
-        gl::Uniform_sampler2d uSampler0;
+        gl::Uniform_sampler2d uSamplerAlbedo;
         gl::Uniform_mat4 uSamplerMultiplier;
 
         Colormapped_plain_texture_shader();

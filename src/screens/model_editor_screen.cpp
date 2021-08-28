@@ -1,9 +1,11 @@
 #include "model_editor_screen.hpp"
 
 #include "src/3d/gl.hpp"
+#include "src/opensim_bindings/file_change_poller.hpp"
 #include "src/opensim_bindings/opensim_helpers.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/opensim_bindings/ui_types.hpp"
+#include "src/screens/simulator_screen.hpp"
 #include "src/ui/add_body_popup.hpp"
 #include "src/ui/attach_geometry_popup.hpp"
 #include "src/ui/component_details.hpp"
@@ -219,16 +221,9 @@ namespace {
                 "cannot delete %s: deleting an OpenSim::WrapObject is not supported: faults in the OpenSim API until after AK's connection checking addition",
                 selected->getName().c_str());
 
-            // TODO: iterate over `PathWrap`s in the model and disconnect them from the
-            // GeometryPath that uses them: otherwise, the wrapping in the model is going
-            // to be invalid
-            /*
-            impl.before_modify_model();
-            delete_item_from_set_in_model(*wos, static_cast<OpenSim::WrapObject*>(selected));
-            impl.set_selection(nullptr);
-            impl.set_hover(nullptr);
-            impl.after_modify_model();
-            */
+            // also, this implementation needs to iterate over all pathwraps in the model
+            // and disconnect them from the GeometryPath that uses them; otherwise, the model
+            // will explode
         } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
             // delete an OpenSim::Controller from its owning OpenSim::ControllerSet
 
@@ -479,6 +474,9 @@ struct Model_editor_screen::Impl final {
     // top-level state this screen can handle
     std::shared_ptr<Main_editor_state> st;
 
+    // polls changes to a file
+    File_change_poller file_poller;
+
     // internal state of any sub-panels the editor screen draws
     struct {
         ui::main_menu::file_tab::State main_menu_tab;
@@ -498,7 +496,8 @@ struct Model_editor_screen::Impl final {
     } reset_per_frame;
 
     explicit Impl(std::shared_ptr<Main_editor_state> _st) :
-        st{std::move(_st)} {
+        st{std::move(_st)},
+        file_poller{std::chrono::milliseconds{1000}, st->edited_model.model().getInputFileName()} {
     }
 };
 
@@ -528,8 +527,7 @@ namespace {
                 action_clear_selection_from_edited_model(*impl.st);
                 return true;
             case SDLK_e:  // Ctrl+E: show simulation screen
-                // Ctrl+E : TODO
-                // Application::current().request_transition<Simulator_screen>(std::move(impl.st));
+                App::cur().request_transition<Simulator_screen>(std::move(impl.st));
                 return true;
             }
 
@@ -545,8 +543,6 @@ namespace {
         return false;
     }
 
-    /* TODO: auto-update from file
-
     // handle what happens when the underlying model file changes
     void modeleditor_on_backing_file_changed(Model_editor_screen::Impl& impl) {
         try {
@@ -560,7 +556,6 @@ namespace {
             log::error("the file will not be loaded into osc (you won't see the change in the UI)");
         }
     }
-    */
 
     // handle what happens when a generic event arrives in the screen
     bool modeleditor_on_event(Model_editor_screen::Impl& impl, SDL_Event const& e) {
@@ -574,12 +569,10 @@ namespace {
     }
 
     // tick the screen forward
-    void modeleditor_tick(Model_editor_screen::Impl&) {
-        /* TODO: polling N files
+    void modeleditor_tick(Model_editor_screen::Impl& impl) {
         if (impl.file_poller.change_detected(impl.st->model().getInputFileName())) {
             modeleditor_on_backing_file_changed(impl);
         }
-        */
     }
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
@@ -1064,8 +1057,7 @@ namespace {
         if (ImGui::BeginMenu("Tools")) {
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R")) {
                 impl.st->start_simulating_edited_model();
-
-                // TODO: any other transitioning
+                App::cur().request_transition<Simulator_screen>(impl.st);
                 impl.reset_per_frame.subpanel_requested_early_exit = true;
             }
 
@@ -1097,21 +1089,20 @@ namespace {
 
             ImGui::Dummy(ImVec2{2.0f, 0.0f});
             if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)")) {
-                // TODO Application::current().request_transition<Simulator_screen>(std::move(impl.st));
-                // TODO ImGui::EndMainMenuBar();
-                // TODO impl.reset_per_frame.subpanel_requested_early_exit = true;
-                // TODO return;
+                App::cur().request_transition<Simulator_screen>(std::move(impl.st));
+                ImGui::EndMainMenuBar();
+                impl.reset_per_frame.subpanel_requested_early_exit = true;
+                return;
             }
 
             // "switch to simulator" menu button
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
             if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)")) {
-
-                // TODO impl.st->start_simulating_edited_model();
-                // TODO Application::current().request_transition<Simulator_screen>(std::move(impl.st));
-                // TODO ImGui::PopStyleColor();
-                // TODO ImGui::EndMainMenuBar();
-                // TODO impl.reset_per_frame.subpanel_requested_early_exit = true;
+                impl.st->start_simulating_edited_model();
+                App::cur().request_transition<Simulator_screen>(std::move(impl.st));
+                ImGui::PopStyleColor();
+                ImGui::EndMainMenuBar();
+                impl.reset_per_frame.subpanel_requested_early_exit = true;
                 return;
             }
             ImGui::PopStyleColor();

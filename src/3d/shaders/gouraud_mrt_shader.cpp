@@ -14,20 +14,21 @@ static char g_VertexShader[] = R"(
     uniform vec3 uLightColor;
     uniform vec3 uViewPos;
 
-    layout (location = 0) in vec3 aLocation;
-    layout (location = 1) in vec3 aNormal;
-    layout (location = 2) in vec2 aTexCoord;
-    layout (location = 3) in mat4x3 aModelMat;
-    layout (location = 7) in mat3 aNormalMat;
-    layout (location = 10) in vec4 aRgba0;
-    layout (location = 11) in float aRimIntensity;
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec2 aTexCoord;
+    layout (location = 2) in vec3 aNormal;
+
+    layout (location = 6) in mat4x3 aModelMat;
+    layout (location = 10) in mat3 aNormalMat;
+    layout (location = 13) in vec4 aRgba0;
+    layout (location = 14) in float aRimIntensity;
 
     out vec4 GouraudBrightness;
     out vec4 Rgba0;
     out float RimIntensity;
     out vec2 TexCoord;
 
-    const float ambientStrength = 0.5f;
+    const float ambientStrength = 0.7f;
     const float diffuseStrength = 0.3f;
     const float specularStrength = 0.1f;
     const float shininess = 32;
@@ -35,10 +36,10 @@ static char g_VertexShader[] = R"(
     void main() {
         mat4 modelMat = mat4(vec4(aModelMat[0], 0), vec4(aModelMat[1], 0), vec4(aModelMat[2], 0), vec4(aModelMat[3], 1));
 
-        gl_Position = uProjMat * uViewMat * modelMat * vec4(aLocation, 1.0);
+        gl_Position = uProjMat * uViewMat * modelMat * vec4(aPos, 1.0);
 
         vec3 normalDir = normalize(aNormalMat * aNormal);
-        vec3 fragPos = vec3(modelMat * vec4(aLocation, 1.0));
+        vec3 fragPos = vec3(modelMat * vec4(aPos, 1.0));
         vec3 frag2viewDir = normalize(uViewPos - fragPos);
         vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
 
@@ -75,9 +76,9 @@ static char const g_FragmentShader[] = R"(
     layout (location = 1) out float Color1Out;
 
     void main() {
-        // write shaded geometry color
         vec4 color = uIsTextured ? texture(uSampler0, TexCoord) : Rgba0;
         color *= GouraudBrightness;
+
         Color0Out = color;
         Color1Out = RimIntensity;
     }
@@ -87,6 +88,7 @@ osc::Gouraud_mrt_shader::Gouraud_mrt_shader() :
     program{gl::CreateProgramFrom(
         gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
+
     uProjMat{gl::GetUniformLocation(program, "uProjMat")},
     uViewMat{gl::GetUniformLocation(program, "uViewMat")},
     uLightDir{gl::GetUniformLocation(program, "uLightDir")},

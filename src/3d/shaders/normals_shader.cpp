@@ -9,7 +9,7 @@ static char const g_VertexShader[] = R"(
     // then uses that information to draw lines for each normal.
 
     layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec3 aNormal;
+    layout (location = 2) in vec3 aNormal;
 
     out VS_OUT {
         vec3 normal;
@@ -30,17 +30,17 @@ static char const g_GeomShader[] = R"(
     // fragment shader then fills in each line, so that the viewer can see normals as lines
     // poking out of the mesh
 
-    layout (triangles) in;
-    layout (line_strip, max_vertices = 6) out;
-
-    in VS_OUT {
-        vec3 normal;
-    } gs_in[];
-
     uniform mat4 uModelMat;
     uniform mat4 uViewMat;
     uniform mat4 uProjMat;
     uniform mat4 uNormalMat;
+
+    layout (triangles) in;
+    in VS_OUT {
+        vec3 normal;
+    } gs_in[];
+
+    layout (line_strip, max_vertices = 6) out;
 
     const float NORMAL_LINE_LEN = 0.01f;
 

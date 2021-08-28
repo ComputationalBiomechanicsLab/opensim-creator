@@ -19,24 +19,24 @@ static char const g_VertexShader[] = R"(
 static char const g_FragmentShader[] = R"(
     #version 330 core
 
-    in vec2 texCoord;
-
-    layout (location = 0) out vec4 fragColor;
-
-    uniform sampler2D uSampler0;
+    uniform sampler2D uSamplerAlbedo;
     uniform mat4 uSamplerMultiplier = mat4(1.0);
 
+    in vec2 texCoord;
+
+    out vec4 fragColor;
+
     void main(void) {
-        fragColor = uSamplerMultiplier * texture(uSampler0, texCoord);
+        fragColor = uSamplerMultiplier * texture(uSamplerAlbedo, texCoord);
     }
 )";
 
 osc::Colormapped_plain_texture_shader::Colormapped_plain_texture_shader() :
-    p{gl::CreateProgramFrom(
+    program{gl::CreateProgramFrom(
         gl::CompileFromSource<gl::Vertex_shader>(g_VertexShader),
         gl::CompileFromSource<gl::Fragment_shader>(g_FragmentShader))},
 
-    uMVP{gl::GetUniformLocation(p, "uMVP")},
-    uSampler0{gl::GetUniformLocation(p, "uSampler0")},
-    uSamplerMultiplier{gl::GetUniformLocation(p, "uSamplerMultiplier")} {
+    uMVP{gl::GetUniformLocation(program, "uMVP")},
+    uSamplerAlbedo{gl::GetUniformLocation(program, "uSamplerAlbedo")},
+    uSamplerMultiplier{gl::GetUniformLocation(program, "uSamplerMultiplier")} {
 }

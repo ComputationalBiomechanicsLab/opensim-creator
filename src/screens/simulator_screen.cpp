@@ -1,6 +1,6 @@
 #include "simulator_screen.hpp"
 
-#include "src/main_editor_state.hpp"
+#include "src/3d/gl.hpp"
 #include "src/opensim_bindings/simulation.hpp"
 #include "src/ui/log_viewer.hpp"
 #include "src/ui/component_3d_viewer.hpp"
@@ -9,10 +9,12 @@
 #include "src/ui/component_hierarchy.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/screens/model_editor_screen.hpp"
-#include "src/assertions.hpp"
 #include "src/utils/scope_guard.hpp"
-#include "src/utils/os.hpp"
+#include "src/app.hpp"
+#include "src/assertions.hpp"
+#include "src/main_editor_state.hpp"
 #include "src/styling.hpp"
+#include "src/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
@@ -38,7 +40,7 @@ namespace {
             fd::Report& focused_report) {
 
         double t0 = 0.0f;
-        double tf = focused_sim.simulation.sim_final_time().count();
+        double tf = focused_sim.simulation->sim_final_time().count();
         double treport = focused_report.state.getTime();
 
         // draw the scrubber (slider)
@@ -130,7 +132,7 @@ namespace {
             // pop regular reports
             {
                 auto& rr = simulation->regular_reports;
-                int popped = simulation->simulation.pop_regular_reports(rr);
+                int popped = simulation->simulation->pop_regular_reports(rr);
 
                 for (size_t i = rr.size() - static_cast<size_t>(popped); i < rr.size(); ++i) {
                     simulation->model->realizeReport(rr[i]->state);
@@ -138,7 +140,7 @@ namespace {
             }
 
             // pop latest spot report
-            std::unique_ptr<fd::Report> new_spot_report = simulation->simulation.try_pop_latest_report();
+            std::unique_ptr<fd::Report> new_spot_report = simulation->simulation->try_pop_latest_report();
             if (new_spot_report) {
                 simulation->spot_report = std::move(new_spot_report);
                 simulation->model->realizeReport(simulation->spot_report->state);
@@ -158,7 +160,7 @@ namespace {
 
         ImGui::PushID(static_cast<int>(i));
 
-        float progress = simulation.simulation.progress();
+        float progress = simulation.simulation->progress();
         ImVec4 base_color = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
         if (static_cast<int>(i) == st.focused_simulation) {
             base_color.w = 1.0f;
@@ -185,9 +187,9 @@ namespace {
             ImGui::TextUnformatted(simulation.model->getName().c_str());
             ImGui::Dummy(ImVec2{0.0f, 1.0f});
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
-            ImGui::Text("Wall time (sec): %.1f", simulation.simulation.wall_duration().count());
-            ImGui::Text("Sim time (sec): %.1f", simulation.simulation.sim_current_time().count());
-            ImGui::Text("Sim final time (sec): %.1f", simulation.simulation.sim_final_time().count());
+            ImGui::Text("Wall time (sec): %.1f", simulation.simulation->wall_duration().count());
+            ImGui::Text("Sim time (sec): %.1f", simulation.simulation->sim_current_time().count());
+            ImGui::Text("Sim final time (sec): %.1f", simulation.simulation->sim_final_time().count());
             ImGui::Dummy(ImVec2{0.0f, 1.0f});
             ImGui::TextUnformatted("Left-click: Select this simulation");
             ImGui::TextUnformatted("Delete: cancel this simulation");
@@ -206,7 +208,7 @@ namespace {
             if (ImGui::MenuItem("edit model")) {
                 auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
                 st.set_model(std::move(copy));
-                Application::current().request_transition<Model_editor_screen>(impl.mes);
+                App::cur().request_transition<Model_editor_screen>(impl.mes);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -294,7 +296,7 @@ namespace {
 
         // draw simulation parameters
         {
-            fd::Params const& p = focused.simulation.params();
+            fd::Params const& p = focused.simulation->params();
 
             ImGui::Columns(2);
 
@@ -405,7 +407,7 @@ namespace {
             switch (e.keysym.sym) {
             case SDLK_e:
                 // Ctrl + e
-                Application::current().request_transition<Model_editor_screen>(std::move(impl.mes));
+                App::cur().request_transition<Model_editor_screen>(std::move(impl.mes));
                 return true;
             }
         }
@@ -419,15 +421,7 @@ namespace {
                 return true;
             }
         }
-
-        bool handled = false;
-        for (auto& viewer : impl.mes->viewers) {
-            if (!handled && viewer && viewer->is_moused_over()) {
-                handled = viewer->on_event(e);
-            }
-        }
-
-        return handled;
+        return false;
     }
 
     // draw output plots for the currently-focused sim
@@ -584,7 +578,7 @@ namespace {
 
         // collect plottable outputs
         std::vector<Plottable_output> plottable_outputs;
-        for (Desired_output const& de : impl.st->desired_outputs) {
+        for (Desired_output const& de : impl.mes->desired_outputs) {
             if (!de.extractor) {
                 continue;  // no extractor function
             }
@@ -875,7 +869,7 @@ namespace {
             if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)")) {
 
                 // request the transition then exit this drawcall ASAP
-                Application::current().request_transition<Model_editor_screen>(std::move(impl.mes));
+                App::cur().request_transition<Model_editor_screen>(std::move(impl.mes));
                 ImGui::EndMainMenuBar();
                 return;
             }
@@ -899,8 +893,8 @@ namespace {
         }
 
         // draw simulations tab
-        if (st.shown_panels.simulations) {
-            if (ImGui::Begin("Simulations", &st.shown_panels.simulations)) {
+        if (st.showing.simulations) {
+            if (ImGui::Begin("Simulations", &st.showing.simulations)) {
                 draw_simulation_tab(impl);
             }
             ImGui::End();
@@ -912,40 +906,40 @@ namespace {
         }
 
         // draw hierarchy tab
-        if (st.shown_panels.hierarchy) {
-            if (ImGui::Begin("Hierarchy", &st.shown_panels.hierarchy)) {
+        if (st.showing.hierarchy) {
+            if (ImGui::Begin("Hierarchy", &st.showing.hierarchy)) {
                 draw_hierarchy_tab(impl);
             }
             ImGui::End();
         }
 
         // draw selection tab
-        if (st.shown_panels.selection_details) {
-            if (ImGui::Begin("Selection", &st.shown_panels.selection_details)) {
+        if (st.showing.selection_details) {
+            if (ImGui::Begin("Selection", &st.showing.selection_details)) {
                 draw_selection_tab(impl);
             }
             ImGui::End();
         }
 
         // draw outputs tab
-        if (st.shown_panels.outputs) {
-            if (ImGui::Begin("Outputs", &st.shown_panels.outputs)) {
+        if (st.showing.outputs) {
+            if (ImGui::Begin("Outputs", &st.showing.outputs)) {
                 draw_outputs_tab(impl);
             }
             ImGui::End();
         }
 
         // draw simulation stats tab
-        if (st.shown_panels.simulation_stats) {
-            if (ImGui::Begin("Simulation Details", &st.shown_panels.simulation_stats)) {
+        if (st.showing.simulation_stats) {
+            if (ImGui::Begin("Simulation Details", &st.showing.simulation_stats)) {
                 draw_simulation_stats_tab(impl);
             }
             ImGui::End();
         }
 
         // draw log tab
-        if (st.shown_panels.log) {
-            if (ImGui::Begin("Log", &st.shown_panels.log, ImGuiWindowFlags_MenuBar)) {
+        if (st.showing.log) {
+            if (ImGui::Begin("Log", &st.showing.log, ImGuiWindowFlags_MenuBar)) {
                 ui::log_viewer::draw(impl.log_viewer_st);
             }
             ImGui::End();
@@ -961,8 +955,20 @@ osc::Simulator_screen::Simulator_screen(std::shared_ptr<Main_editor_state> mes) 
 
 osc::Simulator_screen::~Simulator_screen() noexcept = default;
 
-bool osc::Simulator_screen::on_event(SDL_Event const& e) {
-    return ::simscreen_on_event(*impl, e);
+void osc::Simulator_screen::on_mount() {
+    osc::ImGuiInit();
+}
+
+void osc::Simulator_screen::on_unmount() {
+    osc::ImGuiShutdown();
+}
+
+void osc::Simulator_screen::on_event(SDL_Event const& e) {
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    ::simscreen_on_event(*impl, e);
 }
 
 void osc::Simulator_screen::tick(float) {
@@ -970,5 +976,10 @@ void osc::Simulator_screen::tick(float) {
 }
 
 void osc::Simulator_screen::draw() {
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    osc::ImGuiNewFrame();
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
     ::simscreen_draw(*impl);
+    osc::ImGuiRender();
 }

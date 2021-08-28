@@ -209,11 +209,11 @@ void osc::Instanced_render_screen::draw() {
     renderer.render(impl.params, impl.drawlist);
 
     gl::Texture_2d& tex = renderer.output_texture();
-    gl::UseProgram(impl.cpt.p);
+    gl::UseProgram(impl.cpt.program);
     gl::Uniform(impl.cpt.uMVP, gl::identity_val);
     gl::ActiveTexture(GL_TEXTURE0);
     gl::BindTexture(tex);
-    gl::Uniform(impl.cpt.uSampler0, gl::texture_index<GL_TEXTURE0>());
+    gl::Uniform(impl.cpt.uSamplerAlbedo, gl::texture_index<GL_TEXTURE0>());
     gl::Uniform(impl.cpt.uSamplerMultiplier, gl::identity_val);
     gl::BindVertexArray(impl.quad_vao);
     gl::DrawArrays(GL_TRIANGLES, 0, impl.quad_positions.sizei());
