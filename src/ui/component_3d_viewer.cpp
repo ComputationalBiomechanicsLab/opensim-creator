@@ -208,8 +208,6 @@ static void draw_main_menu_contents(osc::Component_3d_viewer::Impl& impl) {
         draw_scene_menu(impl);
         ImGui::EndMenu();
     }
-
-    // TODO: muscle recoloring
 }
 
 static OpenSim::Component const* hittest_scene_decorations(osc::Component_3d_viewer::Impl& impl) {
@@ -527,10 +525,24 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
     impl.rims.clear();
     impl.rims.resize(impl.decorations.model_xforms.size(), 0x00);
     for (size_t i = 0; i < impl.decorations.model_xforms.size(); ++i) {
-        if (current_selection && current_selection == impl.decorations.components[i]) {
-            impl.rims[i] = 0xff;
-        } else if (current_hover && current_hover == impl.decorations.components[i]) {
-            impl.rims[i] = 0x77;
+        OpenSim::Component const* c = impl.decorations.components[i];
+
+        if (!c) {
+            continue;  // no association to rim highlight
+        }
+
+        while (c) {
+            if (c == current_selection) {
+                impl.rims[i] = 0xff;
+                break;
+            } else if (c == current_hover) {
+                impl.rims[i] = 0x66;
+                break;
+            } else if (!c->hasOwner()) {
+                break;
+            } else {
+                c = &c->getOwner();
+            }
         }
     }
 
