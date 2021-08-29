@@ -35,6 +35,10 @@ namespace osc {
         return rv;
     }
 
+    // recursively find all files in the supplied (root) directory and return
+    // them in a vector
+    std::vector<std::filesystem::path> files_in(std::filesystem::path const& root);
+
     // slurp a file's contents into a string
     std::string slurp_into_string(std::filesystem::path const&);
 }

@@ -19,6 +19,8 @@ namespace osc::ui::attach_geometry_popup {
 
         // C string that stores the user's current search term
         std::array<char, 128> search;
+
+        State();
     };
 
     // this assumes caller handles calling ImGui::OpenPopup(modal_name)

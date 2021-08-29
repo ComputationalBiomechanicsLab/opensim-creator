@@ -2,6 +2,8 @@
 
 #include "src/ui/help_marker.hpp"
 #include "src/utils/scope_guard.hpp"
+#include "src/utils/fs.hpp"
+#include "src/app.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -87,6 +89,10 @@ namespace {
 
         return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
     }
+}
+
+osc::ui::attach_geometry_popup::State::State() :
+    vtps{files_in(App::resource("geometry"))} {
 }
 
 std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(

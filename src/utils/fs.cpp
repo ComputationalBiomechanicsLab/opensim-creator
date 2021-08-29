@@ -39,6 +39,28 @@ std::vector<std::filesystem::path> osc::find_files_with_extensions(
     return rv;
 }
 
+std::vector<std::filesystem::path> osc::files_in(std::filesystem::path const& root) {
+    std::vector<std::filesystem::path> rv;
+
+    if (!std::filesystem::exists(root)) {
+        return rv;
+    }
+
+    if (!std::filesystem::is_directory(root)) {
+        return rv;
+    }
+
+    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root}) {
+        if (e.is_directory() || e.is_other() || e.is_socket()) {
+            continue;
+        }
+
+        rv.push_back(e.path());
+    }
+
+    return rv;
+}
+
 std::string osc::slurp_into_string(std::filesystem::path const& p) {
     std::ifstream f;
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
