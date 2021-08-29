@@ -141,7 +141,6 @@ static void draw_options_menu(osc::Component_3d_viewer::Impl& impl) {
     ImGui::CheckboxFlags("show normals", &impl.renderer_params.flags, DrawcallFlags_ShowMeshNormals);
     ImGui::CheckboxFlags("draw rims", &impl.renderer_params.flags, DrawcallFlags_DrawRims);
     ImGui::CheckboxFlags("draw scene geometry", &impl.renderer_params.flags, DrawcallFlags_DrawSceneGeometry);
-    ImGui::CheckboxFlags("draw floor", &impl.flags, Component3DViewerFlags_DrawFloor);
     ImGui::CheckboxFlags("show XZ grid", &impl.flags, Component3DViewerFlags_DrawXZGrid);
     ImGui::CheckboxFlags("show XY grid", &impl.flags, Component3DViewerFlags_DrawXYGrid);
     ImGui::CheckboxFlags("show YZ grid", &impl.flags, Component3DViewerFlags_DrawYZGrid);
@@ -490,7 +489,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
             flags &= ~Modelstate_decoration_generator_flags_GenerateStaticDecorations;
         }
 
-        impl.sg.generate(c, st, mdh, impl.decorations, flags);
+        impl.sg.generate(c, st, mdhcpy, impl.decorations, flags);
     }
 
     // append the floor to the decorations list (the floor is "in" the scene, rather than an overlay)

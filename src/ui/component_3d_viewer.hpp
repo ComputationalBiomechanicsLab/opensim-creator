@@ -29,36 +29,32 @@ namespace osc {
         // draw static decorations, as defined by OpenSim (e.g. meshes)
         Component3DViewerFlags_DrawStaticDecorations = 1 << 1,
 
-        // draw scene floor
-        Component3DViewerFlags_DrawFloor = 1 << 2,
-
         // draw model "frames", as defined by OpenSim (e.g. body frames)
-        Component3DViewerFlags_DrawFrames = 1 << 3,
+        Component3DViewerFlags_DrawFrames = 1 << 2,
 
         // draw debug geometry, as defined by OpenSim
-        Component3DViewerFlags_DrawDebugGeometry = 1 << 4,
+        Component3DViewerFlags_DrawDebugGeometry = 1 << 3,
 
         // draw labels, as defined by OpenSim
-        Component3DViewerFlags_DrawLabels = 1 << 5,
+        Component3DViewerFlags_DrawLabels = 1 << 4,
 
         // draw a 2D XZ grid
-        Component3DViewerFlags_DrawXZGrid = 1 << 6,
+        Component3DViewerFlags_DrawXZGrid = 1 << 5,
 
         // draw a 2D XY grid
-        Component3DViewerFlags_DrawXYGrid = 1 << 7,
+        Component3DViewerFlags_DrawXYGrid = 1 << 6,
 
         // draw a 2D YZ grid
-        Component3DViewerFlags_DrawYZGrid = 1 << 8,
+        Component3DViewerFlags_DrawYZGrid = 1 << 7,
 
         // draw alignment axes
         //
         // these are little red+green+blue demo axes in corner of the viewer that
         // show the user how the world axes align relative to the current view location
-        Component3DViewerFlags_DrawAlignmentAxes = 1 << 9,
+        Component3DViewerFlags_DrawAlignmentAxes = 1 << 8,
 
         Component3DViewerFlags_Default = Component3DViewerFlags_DrawDynamicDecorations |
-                                         Component3DViewerFlags_DrawStaticDecorations |
-                                         Component3DViewerFlags_DrawFloor,
+                                         Component3DViewerFlags_DrawStaticDecorations,
     };
 
     // viewer response
