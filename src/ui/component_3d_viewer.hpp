@@ -47,6 +47,15 @@ namespace osc {
         // draw a 2D YZ grid
         Component3DViewerFlags_DrawYZGrid = 1 << 7,
 
+        // draw axis lines (the red/green lines on the floor showing axes)
+        Component3DViewerFlags_DrawAxisLines = 1 << 8,
+
+        // draw AABBs (debugging)
+        Component3DViewerFlags_DrawAABBs = 1 << 9,
+
+        // draw scene BVH (debugging)
+        Component3DViewerFlags_DrawBVH = 1 << 10,
+
         // draw alignment axes
         //
         // these are little red+green+blue demo axes in corner of the viewer that

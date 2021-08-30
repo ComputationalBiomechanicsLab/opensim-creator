@@ -1,6 +1,7 @@
 #include "scene_generator.hpp"
 
 #include "src/assertions.hpp"
+#include "src/log.hpp"
 #include "src/3d/bvh.hpp"
 #include "src/3d/instanced_renderer.hpp"
 #include "src/3d/model.hpp"

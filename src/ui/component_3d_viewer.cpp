@@ -68,6 +68,10 @@ struct osc::Component_3d_viewer::Impl final {
     gl::Array_buffer<glm::vec3> line_vbo{gen_y_line().verts};
     gl::Vertex_array line_vao = make_vao(solid_color_shader, line_vbo);
 
+    // aabb data
+    gl::Array_buffer<glm::vec3> cubewire_vbo{gen_cube_lines().verts};
+    gl::Vertex_array cubewire_vao = make_vao(solid_color_shader, cubewire_vbo);
+
     std::vector<unsigned char> rims;
     std::vector<std::shared_ptr<gl::Texture_2d>> textures;
     std::vector<BVH_Collision> scene_hittest_results;
@@ -145,6 +149,9 @@ static void draw_options_menu(osc::Component_3d_viewer::Impl& impl) {
     ImGui::CheckboxFlags("show XY grid", &impl.flags, Component3DViewerFlags_DrawXYGrid);
     ImGui::CheckboxFlags("show YZ grid", &impl.flags, Component3DViewerFlags_DrawYZGrid);
     ImGui::CheckboxFlags("show alignment axes", &impl.flags, Component3DViewerFlags_DrawAlignmentAxes);
+    ImGui::CheckboxFlags("show grid lines", &impl.flags, Component3DViewerFlags_DrawAxisLines);
+    ImGui::CheckboxFlags("show AABBs", &impl.flags, Component3DViewerFlags_DrawAABBs);
+    ImGui::CheckboxFlags("show BVH", &impl.flags, Component3DViewerFlags_DrawBVH);
 }
 
 static void draw_scene_menu(osc::Component_3d_viewer::Impl& impl) {
@@ -376,6 +383,67 @@ static void draw_floor_axes_lines(osc::Component_3d_viewer::Impl& impl) {
     gl::BindVertexArray();
 }
 
+static void draw_aabbs(osc::Component_3d_viewer::Impl& impl) {
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    // common stuff
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+
+    gl::BindVertexArray(impl.cubewire_vao);
+    for (AABB const& aabb : impl.decorations.aabbs) {
+        glm::vec3 half_widths = aabb_dims(aabb) / 2.0f;
+        glm::vec3 center = aabb_center(aabb);
+
+        glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, half_widths);
+        glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
+        glm::mat4 mmtx = mover * scaler;
+
+        gl::Uniform(shader.uModel, mmtx);
+        gl::DrawArrays(GL_LINES, 0, impl.cubewire_vbo.sizei());
+    }
+    gl::BindVertexArray();
+}
+
+// assumes `pos` is in-bounds
+static void draw_BVH_recursive(osc::Component_3d_viewer::Impl& impl, int pos) {
+    BVH_Node const& n = impl.decorations.aabb_bvh.nodes[pos];
+
+    glm::vec3 half_widths = aabb_dims(n.bounds) / 2.0f;
+    glm::vec3 center = aabb_center(n.bounds);
+
+    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, half_widths);
+    glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
+    glm::mat4 mmtx = mover * scaler;
+    gl::Uniform(impl.solid_color_shader.uModel, mmtx);
+    gl::DrawArrays(GL_LINES, 0, impl.cubewire_vbo.sizei());
+
+    if (n.nlhs >= 0) {  // if it's an internal node
+        draw_BVH_recursive(impl, pos+1);
+        draw_BVH_recursive(impl, pos+n.nlhs+1);
+    }
+}
+
+static void draw_BVH(osc::Component_3d_viewer::Impl& impl) {
+    if (impl.decorations.aabb_bvh.nodes.empty()) {
+        return;
+    }
+
+    Solid_color_shader& shader = impl.solid_color_shader;
+
+    // common stuff
+    gl::UseProgram(shader.prog);
+    gl::Uniform(shader.uProjection, impl.camera.projection_matrix(impl.render_dims.x / impl.render_dims.y));
+    gl::Uniform(shader.uView, impl.camera.view_matrix());
+    gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+
+    gl::BindVertexArray(impl.cubewire_vao);
+    draw_BVH_recursive(impl, 0);
+    gl::BindVertexArray();
+}
+
 static void draw_overlays(osc::Component_3d_viewer::Impl& impl) {
     gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderer.output_fbo());
 
@@ -395,7 +463,17 @@ static void draw_overlays(osc::Component_3d_viewer::Impl& impl) {
         draw_alignment_axes(impl);
     }
 
-    draw_floor_axes_lines(impl);
+    if (impl.flags & Component3DViewerFlags_DrawAxisLines) {
+        draw_floor_axes_lines(impl);
+    }
+
+    if (impl.flags & Component3DViewerFlags_DrawAABBs) {
+        draw_aabbs(impl);
+    }
+
+    if (impl.flags & Component3DViewerFlags_DrawBVH) {
+        draw_BVH(impl);
+    }
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::window_fbo);
 }

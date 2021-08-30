@@ -451,9 +451,12 @@ AABB osc::aabb_union(AABB const& a, AABB const& b) noexcept {
 }
 
 bool osc::aabb_is_empty(AABB const& a) noexcept {
-    glm::vec3 dims = aabb_dims(a);
-    float volume = dims.x * dims.y * dims.z;
-    return volume <= std::numeric_limits<float>::epsilon();
+    for (int i = 0; i < 3; ++i) {
+        if (a.min[i] == a.max[i]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 glm::vec3::length_type osc::aabb_longest_dim_idx(AABB const& a) noexcept {
