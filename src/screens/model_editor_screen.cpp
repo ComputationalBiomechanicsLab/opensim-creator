@@ -412,7 +412,7 @@ namespace {
 
     // try to undo currently edited model to earlier state
     void action_undo_currently_edited_model(Main_editor_state& mes) {
-        if (mes.edited_model.can_redo()) {
+        if (mes.edited_model.can_undo()) {
             mes.edited_model.do_undo();
         }
     }
