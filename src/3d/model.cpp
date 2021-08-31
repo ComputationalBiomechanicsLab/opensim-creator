@@ -1178,7 +1178,7 @@ NewMesh osc::gen_circle(size_t nsides) {
     NewMesh rv;
     rv.verts.reserve(3*nsides);
 
-    unsigned short index;
+    unsigned short index = 0;
     auto push = [&rv, &index](float x, float y, float z) {
         rv.verts.push_back({x, y, z});
         rv.indices.push_back(index++);
