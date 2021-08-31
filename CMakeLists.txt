@@ -230,7 +230,7 @@ add_executable(osc
     src/main_editor_state.hpp
     src/os.cpp
     src/os.hpp
-    src/osc2.cpp
+    src/osc.cpp
     src/recent_file.hpp
     src/screen.hpp
     src/styling.hpp
