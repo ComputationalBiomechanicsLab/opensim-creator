@@ -208,7 +208,9 @@ namespace {
 
         // OpenGL spec: "the value must be at least 4"
         // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-        OSC_ASSERT(v > 4);
+        if (v < 4) {
+            osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
+        }
         OSC_ASSERT(v < 1<<16);
 
         return static_cast<short>(v);
