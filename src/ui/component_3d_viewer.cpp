@@ -101,11 +101,13 @@ static void update_camera(osc::Component_3d_viewer::Impl& impl) {
     // At the moment, all camera updates happen via the middle-mouse. The mouse
     // input is designed to mirror Blender fairly closely (because, imho, it has
     // decent UX for this problem space)
-    if (impl.render_hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left)) { // TODO: middle mouse
+    bool left_down = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+    bool right_down = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+    if (impl.render_hovered && (left_down || right_down)) {
         ImVec2 screendims = impl.renderer.dimsf();
         float aspect_ratio = screendims.x / screendims.y;
-        ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
-        ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
+        ImVec2 delta = ImGui::GetMouseDragDelta(left_down ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle, 0.0f);
+        ImGui::ResetMouseDragDelta(left_down ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle);
 
         // relative vectors
         float rdx = delta.x/screendims.x;
