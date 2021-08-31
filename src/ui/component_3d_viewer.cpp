@@ -663,7 +663,7 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
     // blit scene render (texture) to screen with ImGui::Image
     {
         GLint tex_gl_handle = impl.renderer.output_texture().get();
-        void* tex_imgui_handle = reinterpret_cast<void*>(tex_gl_handle);
+        void* tex_imgui_handle = reinterpret_cast<void*>(static_cast<uintptr_t>(tex_gl_handle));
 
         ImVec2 img_dims = ImGui::GetContentRegionAvail();
         ImVec2 texcoord_uv0 = {0.0f, 1.0f};
