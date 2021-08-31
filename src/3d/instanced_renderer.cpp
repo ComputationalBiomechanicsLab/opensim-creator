@@ -369,8 +369,11 @@ void osc::upload_inputs_to_drawlist(Drawlist_compiler_input const& inp, Instance
         order.push_back(static_cast<int>(i));
     }
     auto draw_order = [&](int a, int b) {
-        // order by meshid, which is how the instanced renderer batches
-        return inp.meshes[a].m_Impl.get() < inp.meshes[b].m_Impl.get();
+        // order by opacity reversed, then by meshid, which is how the instanced renderer batches
+        if (inp.colors[a].a == inp.colors[b].a) {
+            return inp.meshes[a].m_Impl.get() < inp.meshes[b].m_Impl.get();
+        }
+        return inp.colors[a].a > inp.colors[b].a;
     };
     std::sort(order.begin(), order.end(), draw_order);
 
