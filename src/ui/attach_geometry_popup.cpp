@@ -92,7 +92,9 @@ namespace {
 }
 
 osc::ui::attach_geometry_popup::State::State() :
-    vtps{files_in(App::resource("geometry"))} {
+    vtps{files_in(App::resource("geometry"))},
+    recent_user_choices{},
+    search{} {
 }
 
 std::unique_ptr<OpenSim::Geometry> osc::ui::attach_geometry_popup::draw(
