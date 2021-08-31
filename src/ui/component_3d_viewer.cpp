@@ -82,6 +82,13 @@ struct osc::Component_3d_viewer::Impl final {
     bool render_left_clicked = false;
     bool render_right_clicked = false;
 
+    // scale factor for all non-mesh, non-overlay scene elements (e.g.
+    // the floor, bodies)
+    //
+    // this is necessary because some meshes can be extremely small/large and
+    // scene elements need to be scaled accordingly (e.g. without this, a body
+    // sphere end up being much larger than a mesh instance). Imagine if the
+    // mesh was the leg of a fly, in meters.
     float fixup_scale_factor = 1.0f;
 
     Impl(Component3DViewerFlags flags_) : flags{flags_} {
@@ -204,7 +211,7 @@ static void draw_scene_menu(osc::Component_3d_viewer::Impl& impl) {
 
     ImGui::Separator();
 
-    // ImGui::InputFloat("fixup scale factor", &impl.fixup_scale_factor); TODO
+    ImGui::InputFloat("fixup scale factor", &impl.fixup_scale_factor);
 }
 
 static void draw_main_menu_contents(osc::Component_3d_viewer::Impl& impl) {
@@ -567,7 +574,13 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
             flags &= ~Modelstate_decoration_generator_flags_GenerateStaticDecorations;
         }
 
-        impl.sg.generate(c, st, mdhcpy, impl.decorations, flags);
+        impl.sg.generate(
+            c,
+            st,
+            mdhcpy,
+            flags,
+            impl.fixup_scale_factor,
+            impl.decorations);
     }
 
     // append the floor to the decorations list (the floor is "in" the scene, rather than an overlay)

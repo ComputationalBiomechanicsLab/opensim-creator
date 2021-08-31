@@ -89,7 +89,13 @@ osc::Opensim_modelstate_decoration_generator_screen::Opensim_modelstate_decorati
     App::cur().disable_vsync();
     m_Impl->model.updDisplayHints().set_show_frames(true);
     m_Impl->model.updDisplayHints().set_show_wrap_geometry(true);
-    m_Impl->generator.generate(m_Impl->model, m_Impl->state, m_Impl->model.getDisplayHints(), m_Impl->scene_decorations);
+    m_Impl->generator.generate(
+        m_Impl->model,
+        m_Impl->state,
+        m_Impl->model.getDisplayHints(),
+        Modelstate_decoration_generator_flags_Default,
+        1.0f,
+        m_Impl->scene_decorations);
 }
 
 osc::Opensim_modelstate_decoration_generator_screen::~Opensim_modelstate_decoration_generator_screen() noexcept = default;
@@ -159,7 +165,13 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
     // decoration generation
     if (s.generate_decorations_each_frame) {
         auto guard = s.timer_meshgen.measure();
-        s.generator.generate(s.model, s.state, s.model.getDisplayHints(), s.scene_decorations);
+        s.generator.generate(
+            s.model,
+            s.state,
+            s.model.getDisplayHints(),
+            Modelstate_decoration_generator_flags_Default,
+            1.0f,
+            s.scene_decorations);
     }
 
     // do scene hittest

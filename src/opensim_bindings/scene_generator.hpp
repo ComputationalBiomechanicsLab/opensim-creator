@@ -72,7 +72,8 @@ namespace osc {
             OpenSim::Component const&,
             SimTK::State const&,
             OpenSim::ModelDisplayHints const&,
-            Scene_decorations&,
-            Modelstate_decoration_generator_flags = Modelstate_decoration_generator_flags_Default);
+            Modelstate_decoration_generator_flags,
+            float fixup_scale_factor,
+            Scene_decorations&);
     };
 }

@@ -40,6 +40,9 @@ namespace {
 
         // output decoration list
         Scene_decorations& decs;
+
+        // fixup scale factor for muscles, spheres, etc.
+        float fixup_scale_factor;
     };
 }
 
@@ -67,7 +70,7 @@ static void handle_line_emission(Simbody_geometry::Line const& l, Emitter_out& o
     Segment emitted_line{l.p1, l.p2};
 
     glm::mat4x3 const& xform = dout.model_xforms.emplace_back(
-        segment_to_segment_xform(mesh_line, emitted_line) * glm::scale(glm::mat4{1.0f}, {g_LineThickness, 1.0f, g_LineThickness}));
+        segment_to_segment_xform(mesh_line, emitted_line) * glm::scale(glm::mat4{1.0f}, {g_LineThickness * out.fixup_scale_factor, 1.0f, g_LineThickness * out.fixup_scale_factor}));
     dout.normal_xforms.emplace_back(normal_matrix(xform));
     dout.rgbas.emplace_back(rgba32_from_vec4(l.rgba));
     dout.gpu_meshes.emplace_back(out.cylinder.instance_meshdata);
@@ -113,13 +116,14 @@ static void handle_sphere_emission(Simbody_geometry::Sphere const& s, Emitter_ou
     // - OpenSim scenes typically contain *a lot* of spheres
     // - it's much cheaper to compute things like normal matrices and AABBs when
     //   you know it's a sphere
+    float scaled_r = out.fixup_scale_factor * s.radius;
     glm::mat4 xform;
-    xform[0] = {s.radius, 0.0f, 0.0f, 0.0f};
-    xform[1] = {0.0f, s.radius, 0.0f, 0.0f};
-    xform[2] = {0.0f, 0.0f, s.radius, 0.0f};
+    xform[0] = {scaled_r, 0.0f, 0.0f, 0.0f};
+    xform[1] = {0.0f, scaled_r, 0.0f, 0.0f};
+    xform[2] = {0.0f, 0.0f, scaled_r, 0.0f};
     xform[3] = glm::vec4{s.pos, 1.0f};
     glm::mat4 normal_xform = glm::transpose(xform);
-    AABB aabb = sphere_aabb(Sphere{s.pos, s.radius});
+    AABB aabb = sphere_aabb(Sphere{s.pos, scaled_r});
 
     sd.model_xforms.emplace_back(xform);
     sd.normal_xforms.emplace_back(normal_xform);
@@ -177,7 +181,7 @@ static void handle_frame_emission(Simbody_geometry::Frame const& frame, Emitter_
     // emit origin sphere
     {
         Sphere mesh_sphere{{0.0f, 0.0f, 0.0f}, 1.0f};
-        Sphere output_sphere{frame.pos, 0.05f * g_FrameAxisLengthRescale};
+        Sphere output_sphere{frame.pos, 0.05f * g_FrameAxisLengthRescale * out.fixup_scale_factor};
 
         glm::mat4x3 const& xform = dout.model_xforms.emplace_back(sphere_to_sphere_xform(mesh_sphere, output_sphere));
         dout.normal_xforms.push_back(normal_matrix(xform));
@@ -192,10 +196,10 @@ static void handle_frame_emission(Simbody_geometry::Frame const& frame, Emitter_
     Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     for (int i = 0; i < 3; ++i) {
         glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-        dir[i] = g_FrameAxisLengthRescale * frame.axis_lengths[i];
+        dir[i] = g_FrameAxisLengthRescale * out.fixup_scale_factor * frame.axis_lengths[i];
         Segment axisline{frame.pos, frame.pos + dir};
 
-        glm::vec3 prescale = {g_FrameAxisThickness, 1.0f, g_FrameAxisThickness};
+        glm::vec3 prescale = {g_FrameAxisThickness * out.fixup_scale_factor, 1.0f, g_FrameAxisThickness * out.fixup_scale_factor};
         glm::mat4 prescale_mtx = glm::scale(glm::mat4{1.0f}, prescale);
         glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
         color[i] = 1.0f;
@@ -317,8 +321,9 @@ void osc::Scene_generator::generate(
         OpenSim::Component const& c,
         SimTK::State const& state,
         OpenSim::ModelDisplayHints const& hints,
-        Scene_decorations& out,
-        Modelstate_decoration_generator_flags flags) {
+        Modelstate_decoration_generator_flags flags,
+        float fixup_scale_factor,
+        Scene_decorations& out) {
 
     m_GeomListCache.clear();
     out.clear();
@@ -332,7 +337,8 @@ void osc::Scene_generator::generate(
         *m_CachedMeshes[g_BrickID],
         *m_CachedMeshes[g_ConeID],
         nullptr,
-        out
+        out,
+        fixup_scale_factor,
     };
 
     // called whenever OpenSim emits geometry
