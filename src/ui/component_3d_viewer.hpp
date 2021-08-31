@@ -60,7 +60,7 @@ namespace osc {
         //
         // these are little red+green+blue demo axes in corner of the viewer that
         // show the user how the world axes align relative to the current view location
-        Component3DViewerFlags_DrawAlignmentAxes = 1 << 8,
+        Component3DViewerFlags_DrawAlignmentAxes = 1 << 11,
 
         Component3DViewerFlags_Default = Component3DViewerFlags_DrawDynamicDecorations |
                                          Component3DViewerFlags_DrawStaticDecorations,
