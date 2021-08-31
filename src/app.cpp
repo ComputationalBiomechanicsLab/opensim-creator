@@ -211,7 +211,7 @@ namespace {
         if (v < 4) {
             osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
         }
-        OSC_ASSERT(v < 1<<16);
+        OSC_ASSERT(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
         return static_cast<short>(v);
     }
