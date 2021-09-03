@@ -523,6 +523,7 @@ namespace {
                 return true;
             case SDLK_r:  // Ctrl+R: start a new simulation from focused model
                 action_start_sim_from_edited_model(*impl.st);
+                App::cur().request_transition<Simulator_screen>(impl.st);
                 return true;
             case SDLK_a:  // Ctrl+A: clear selection
                 action_clear_selection_from_edited_model(*impl.st);
