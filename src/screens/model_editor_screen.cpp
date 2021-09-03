@@ -5,6 +5,7 @@
 #include "src/opensim_bindings/opensim_helpers.hpp"
 #include "src/opensim_bindings/type_registry.hpp"
 #include "src/opensim_bindings/ui_types.hpp"
+#include "src/screens/error_screen.hpp"
 #include "src/screens/simulator_screen.hpp"
 #include "src/ui/add_body_popup.hpp"
 #include "src/ui/attach_geometry_popup.hpp"
@@ -1369,23 +1370,6 @@ namespace {
         // garbage-collect any models damaged by in-UI modifications (if applicable)
         impl.st->clear_any_damaged_models();
     }
-
-    // draw model editor screen
-    //
-    // tries to guard against exception-throwing (in OpenSim) models
-    void modeleditor_draw(Model_editor_screen::Impl& impl) {
-        try {
-            modeleditor_draw_UNGUARDED(impl);
-        } catch (OpenSim::Exception const& ex) {
-            log::error("an OpenSim::Exception was thrown while drawing the editor");
-            log::error("message = %s", ex.what());
-            log::error("this usually happens because the model was damaged by an edit (that the UI editor didn't account for)");
-            log::error("attempting to rollback model to an earlier version and reset the UI into a sane state");
-            impl.st->edited_model.forcibly_rollback_to_earlier_state();
-            osc::ImGuiShutdown();
-            osc::ImGuiInit();
-        }
-    }
 }
 
 
@@ -1424,6 +1408,31 @@ void osc::Model_editor_screen::draw() {
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
-    ::modeleditor_draw(*impl);
+
+    try {
+        ::modeleditor_draw_UNGUARDED(*impl);
+    } catch (std::exception const& ex) {
+        log::error("an OpenSim::Exception was thrown while drawing the editor");
+        log::error("    message = %s", ex.what());
+        log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+
+        try {
+            if (impl->st->can_undo()) {
+                log::error("the editor has an `undo` history for this model, so it will try to rollback to that");
+                impl->st->edited_model.forcibly_rollback_to_earlier_state();
+                log::error("rollback succeeded");
+            } else {
+                throw;
+            }
+        } catch (std::exception const& ex2) {
+            App::cur().request_transition<Error_screen>(ex2);
+        }
+
+        // try to put ImGui into a clean state
+        osc::ImGuiShutdown();
+        osc::ImGuiInit();
+        osc::ImGuiNewFrame();
+    }
+
     osc::ImGuiRender();
 }

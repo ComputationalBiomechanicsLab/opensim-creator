@@ -22,11 +22,10 @@
 
 using namespace osc;
 
-namespace {
-    // the function that loads the OpenSim model
-    [[nodiscard]] std::unique_ptr<OpenSim::Model> load_opensim_model(std::string path) {
-        return std::make_unique<OpenSim::Model>(path);
-    }
+// the function that loads the OpenSim model
+static osc::Undoable_ui_model load_opensim_model(std::string path) {
+    auto model = std::make_unique<OpenSim::Model>(path);
+    return osc::Undoable_ui_model{std::move(model)};
 }
 
 struct Loading_screen::Impl final {
@@ -36,7 +35,7 @@ struct Loading_screen::Impl final {
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<OpenSim::Model>> result;
+    std::future<osc::Undoable_ui_model> result;
 
     // if not empty, any error encountered by the loading thread
     std::string error;
@@ -96,7 +95,7 @@ namespace {
 
         // otherwise, poll for the result and catch any exceptions that bubble
         // up from the background thread
-        std::unique_ptr<OpenSim::Model> result = nullptr;
+        std::optional<Undoable_ui_model> result = std::nullopt;
         try {
             if (impl.result.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
                 result = impl.result.get();
@@ -119,13 +118,13 @@ namespace {
                 // there is an existing editor state
                 //
                 // recycle it so that users can keep their running sims, local edits, etc.
-                impl.mes->edited_model = osc::Undoable_ui_model{std::move(result)};
+                impl.mes->edited_model = std::move(result).value();
                 App::cur().request_transition<Model_editor_screen>(impl.mes);
             } else {
                 // there is no existing editor state
                 //
                 // transitiong into "fresh" editor
-                auto mes = std::make_shared<Main_editor_state>(std::move(result));
+                auto mes = std::make_shared<Main_editor_state>(std::move(result).value());
                 App::cur().request_transition<Model_editor_screen>(mes);
             }
         }

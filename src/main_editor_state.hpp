@@ -68,12 +68,9 @@ namespace osc {
             bool simulation_stats = true;
         } showing;
 
-        // construct with a blank (new) OpenSim::Model
         Main_editor_state();
-
-        // construct with an existing OpenSim::Model
         Main_editor_state(std::unique_ptr<OpenSim::Model>);
-
+        Main_editor_state(Undoable_ui_model);
         Main_editor_state(Main_editor_state const&) = delete;
         Main_editor_state(Main_editor_state&&) = delete;
 

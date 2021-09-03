@@ -18,7 +18,11 @@ osc::Main_editor_state::Main_editor_state() :
 }
 
 osc::Main_editor_state::Main_editor_state(std::unique_ptr<OpenSim::Model> model) :
-    edited_model{std::move(model)},
+    Main_editor_state{Undoable_ui_model{std::move(model)}} {
+}
+
+osc::Main_editor_state::Main_editor_state(Undoable_ui_model uim) :
+    edited_model{uim},
     simulations{},
     focused_simulation{-1},
     focused_simulation_scrubbing_time{-1.0f},
