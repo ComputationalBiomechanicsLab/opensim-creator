@@ -13,6 +13,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
+#include <algorithm>
+#include <vector>
+
 using namespace osc;
 
 static Instanced_drawlist make_drawlist(int rows, int cols) {

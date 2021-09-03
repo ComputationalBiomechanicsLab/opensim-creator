@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <glm/vec3.hpp>
 
+#include <algorithm>
 #include <array>
 
 static char const g_VertexShader[] = R"(

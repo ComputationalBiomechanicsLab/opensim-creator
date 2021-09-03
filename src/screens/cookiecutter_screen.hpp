@@ -2,6 +2,8 @@
 
 #include "src/screen.hpp"
 
+#include <SDL_events.h>
+
 #include <memory>
 
 namespace osc {

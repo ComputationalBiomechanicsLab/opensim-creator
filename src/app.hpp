@@ -7,10 +7,11 @@
 #include <SDL_events.h>
 #include <glm/vec2.hpp>
 
-#include <memory>
-#include <utility>
-#include <string_view>
 #include <filesystem>
+#include <memory>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace osc {
     struct Config;

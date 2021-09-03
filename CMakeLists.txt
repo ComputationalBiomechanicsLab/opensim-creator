@@ -278,7 +278,6 @@ target_compile_options(osc PRIVATE
         -Wwrite-strings
         -Wdangling-else
         -Wdate-time
-        -Wmissing-declarations
         -Wno-multichar
         -Wredundant-decls
         -Wvla

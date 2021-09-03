@@ -164,7 +164,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
     // decoration generation
     if (s.generate_decorations_each_frame) {
-        auto guard = s.timer_meshgen.measure();
+        auto meshgen_timer_guard = s.timer_meshgen.measure();
         s.generator.generate(
             s.model,
             s.state,
@@ -177,7 +177,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
     // do scene hittest
     s.hit_aabbs.clear();
     if (s.do_scene_hittest) {
-        auto guard = s.timer_scene_hittest.measure();
+        auto scene_hittest_guard = s.timer_scene_hittest.measure();
         Line ray_worldspace = s.camera.screenpos_to_world_ray(ImGui::GetIO().MousePos, App::cur().dims());
         Scene_decorations const& decs = s.scene_decorations;
         BVH_get_ray_collision_AABBs(decs.aabb_bvh, ray_worldspace, &s.hit_aabbs);
@@ -186,7 +186,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
     // do triangle hittest
     s.hit_tris.clear();
     if (s.do_scene_hittest && s.do_triangle_hittest) {
-        auto guard = s.timer_triangle_hittest.measure();
+        auto triangle_hittest_guard = s.timer_triangle_hittest.measure();
 
         Line ray_worldspace = s.camera.screenpos_to_world_ray(ImGui::GetIO().MousePos, App::cur().dims());
 
@@ -227,7 +227,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
     // GPU upload, with object highlighting
     {
-        auto guard = s.timer_sort.measure();
+        auto sort_guard = s.timer_sort.measure();
 
         Drawlist_compiler_input inp;
         inp.ninstances = s.scene_decorations.model_xforms.size();
@@ -256,7 +256,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
             s.render_params.flags &= ~DrawcallFlags_DrawRims;
         }
 
-        auto guard = s.timer_render.measure();
+        auto render_guard = s.timer_render.measure();
         s.renderer.render(s.render_params, s.drawlist);
 
         glFlush();
@@ -336,7 +336,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
     // blit the scene
     {
-        auto guard = s.timer_blit.measure();
+        auto blit_guard = s.timer_blit.measure();
 
         gl::Texture_2d& render = s.renderer.output_texture();
 

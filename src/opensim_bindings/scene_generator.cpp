@@ -353,12 +353,12 @@ void osc::Scene_generator::generate(
     auto visitor = Geometry_generator_lambda{matter, state, on_geometry_emission};
 
     // iterate through each component and walk through the geometry
-    for (OpenSim::Component const& c : c.getComponentList()) {
-        eo.c = &c;
+    for (OpenSim::Component const& comp : c.getComponentList()) {
+        eo.c = &comp;
 
         // emit static geometry (if requested)
         if (flags & Modelstate_decoration_generator_flags_GenerateStaticDecorations) {
-            c.generateDecorations(true, hints, state, m_GeomListCache);
+            comp.generateDecorations(true, hints, state, m_GeomListCache);
             for (SimTK::DecorativeGeometry const& dg : m_GeomListCache) {
                 dg.implementGeometry(visitor);
             }
@@ -367,7 +367,7 @@ void osc::Scene_generator::generate(
 
         // emit dynamic geometry (if requested)
         if (flags & Modelstate_decoration_generator_flags_GenerateDynamicDecorations) {
-            c.generateDecorations(false, hints, state, m_GeomListCache);
+            comp.generateDecorations(false, hints, state, m_GeomListCache);
             for (SimTK::DecorativeGeometry const& dg : m_GeomListCache) {
                 dg.implementGeometry(visitor);
             }

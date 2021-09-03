@@ -618,23 +618,23 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
     impl.rims.clear();
     impl.rims.resize(impl.decorations.model_xforms.size(), 0x00);
     for (size_t i = 0; i < impl.decorations.model_xforms.size(); ++i) {
-        OpenSim::Component const* c = impl.decorations.components[i];
+        OpenSim::Component const* assocComponent = impl.decorations.components[i];
 
-        if (!c) {
+        if (!assocComponent) {
             continue;  // no association to rim highlight
         }
 
-        while (c) {
-            if (c == current_selection) {
+        while (assocComponent) {
+            if (assocComponent == current_selection) {
                 impl.rims[i] = 0xff;
                 break;
-            } else if (c == current_hover) {
+            } else if (assocComponent == current_hover) {
                 impl.rims[i] = 0x66;
                 break;
-            } else if (!c->hasOwner()) {
+            } else if (!assocComponent->hasOwner()) {
                 break;
             } else {
-                c = &c->getOwner();
+                assocComponent = &assocComponent->getOwner();
             }
         }
     }
