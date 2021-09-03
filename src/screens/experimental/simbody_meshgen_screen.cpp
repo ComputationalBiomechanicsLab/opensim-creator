@@ -7,6 +7,7 @@
 #include "src/screens/experimental/experiments_screen.hpp"
 #include "src/simtk_bindings/stk_meshloader.hpp"
 #include "src/simtk_bindings/stk_geometry_generator.hpp"
+#include "src/utils/imgui_utils.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -225,35 +226,7 @@ void osc::Simbody_meshgen_screen::on_event(SDL_Event const& e) {
 }
 
 void osc::Simbody_meshgen_screen::tick(float) {
-    Impl& impl = *m_Impl;
-
-    impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
-
-    // handle panning/zooming/dragging with middle mouse
-    if (ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
-
-        // in pixels, e.g. [800, 600]
-        glm::vec2 screendims = App::cur().dims();
-
-        // in pixels, e.g. [-80, 30]
-        glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.0f);
-        ImGui::ResetMouseDragDelta(ImGuiMouseButton_Middle);
-
-        // as a screensize-independent ratio, e.g. [-0.1, 0.05]
-        glm::vec2 relative_delta = mouse_delta / screendims;
-
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
-            // shift + middle-mouse performs a pan
-            float aspect_ratio = screendims.x / screendims.y;
-            impl.camera.do_pan(aspect_ratio, relative_delta);
-        } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-            // shift + middle-mouse performs a zoom
-            impl.camera.radius *= 1.0f + relative_delta.y;
-        } else {
-            // just middle-mouse performs a mouse drag
-            impl.camera.do_drag(relative_delta);
-        }
-    }
+    update_camera_from_user_input(App::cur().dims(), m_Impl->camera);
 }
 
 void osc::Simbody_meshgen_screen::draw() {

@@ -141,6 +141,8 @@ add_executable(osc
     src/screens/experimental/meshes_to_model_wizard_screen.hpp
     src/screens/experimental/instanced_renderer_screen.cpp
     src/screens/experimental/instanced_renderer_screen.hpp
+    src/screens/experimental/math_experiments_screen.cpp
+    src/screens/experimental/math_experiments_screen.hpp
     src/screens/experimental/opensim_modelstate_decoration_generator_screen.cpp
     src/screens/experimental/opensim_modelstate_decoration_generator_screen.hpp
     src/screens/experimental/simbody_meshgen_screen.cpp
@@ -212,6 +214,8 @@ add_executable(osc
     src/utils/concurrency.hpp
     src/utils/fs.cpp
     src/utils/fs.hpp
+    src/utils/imgui_utils.cpp
+    src/utils/imgui_utils.hpp
     src/utils/perf.hpp
     src/utils/scope_guard.hpp
     src/utils/sdl_wrapper.hpp

@@ -7,6 +7,7 @@
 #include "src/3d/shaders/solid_color_shader.hpp"
 #include "src/screens/experimental/experiments_screen.hpp"
 #include "src/opensim_bindings/scene_generator.hpp"
+#include "src/utils/imgui_utils.hpp"
 #include "src/utils/perf.hpp"
 
 #include <imgui.h>
@@ -129,38 +130,7 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
     Impl& s = *m_Impl;
 
-    // camera stuff
-    {
-        Impl& impl = *m_Impl;
-
-        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
-
-        // handle panning/zooming/dragging with middle mouse
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-
-            // in pixels, e.g. [800, 600]
-            glm::vec2 screendims = App::cur().dims();
-
-            // in pixels, e.g. [-80, 30]
-            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
-            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-
-            // as a screensize-independent ratio, e.g. [-0.1, 0.05]
-            glm::vec2 relative_delta = mouse_delta / screendims;
-
-            if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
-                // shift + middle-mouse performs a pan
-                float aspect_ratio = screendims.x / screendims.y;
-                impl.camera.do_pan(aspect_ratio, relative_delta);
-            } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-                // shift + middle-mouse performs a zoom
-                impl.camera.radius *= 1.0f + relative_delta.y;
-            } else {
-                // just middle-mouse performs a mouse drag
-                impl.camera.do_drag(relative_delta);
-            }
-        }
-    }
+    update_camera_from_user_input(App::cur().dims(), m_Impl->camera);
 
     // decoration generation
     if (s.generate_decorations_each_frame) {
@@ -192,7 +162,6 @@ void osc::Opensim_modelstate_decoration_generator_screen::draw() {
 
         // can just iterate through the scene-level hittest result
         for (BVH_Collision const& c : s.hit_aabbs) {
-
 
             // then use a triangle-level BVH to figure out which triangles intersect
             glm::mat4 const& model_mtx = s.scene_decorations.model_xforms[c.prim_id];

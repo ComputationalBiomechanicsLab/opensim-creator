@@ -2,6 +2,7 @@
 
 #include "src/app.hpp"
 #include "src/3d/gl.hpp"
+#include "src/screens/experimental/experiments_screen.hpp"
 
 #include <imgui.h>
 
@@ -17,6 +18,11 @@ void osc::Imgui_demo_screen::on_unmount() {
 
 void Imgui_demo_screen::on_event(SDL_Event const& e) {
     if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        App::cur().request_transition<Experiments_screen>();
         return;
     }
 }

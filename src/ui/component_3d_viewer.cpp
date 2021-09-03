@@ -9,6 +9,7 @@
 #include "src/3d/texturing.hpp"
 #include "src/3d/shaders/solid_color_shader.hpp"
 #include "src/opensim_bindings/scene_generator.hpp"
+#include "src/utils/imgui_utils.hpp"
 #include "src/utils/scope_guard.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -94,44 +95,6 @@ struct osc::Component_3d_viewer::Impl final {
     Impl(Component3DViewerFlags flags_) : flags{flags_} {
     }
 };
-
-static void update_camera(osc::Component_3d_viewer::Impl& impl) {
-
-    if (impl.render_hovered) {
-        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
-    }
-
-    impl.camera.do_znear_zfar_autoscale();
-
-    // update camera
-    //
-    // At the moment, all camera updates happen via the middle-mouse. The mouse
-    // input is designed to mirror Blender fairly closely (because, imho, it has
-    // decent UX for this problem space)
-    bool left_down = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool right_down = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
-    if (impl.render_hovered && (left_down || right_down)) {
-        ImVec2 screendims = impl.renderer.dimsf();
-        float aspect_ratio = screendims.x / screendims.y;
-        ImVec2 delta = ImGui::GetMouseDragDelta(left_down ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle, 0.0f);
-        ImGui::ResetMouseDragDelta(left_down ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle);
-
-        // relative vectors
-        float rdx = delta.x/screendims.x;
-        float rdy = delta.y/screendims.y;
-
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
-            // shift + middle-mouse: pan
-            impl.camera.do_pan(aspect_ratio, {rdx, rdy});
-        } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-            // shift + middle-mouse: zoom
-            impl.camera.radius *= 1.0f + rdy;
-        } else {
-            // middle: mouse drag
-            impl.camera.do_drag({rdx, rdy});
-        }
-    }
-}
 
 static void draw_options_menu(osc::Component_3d_viewer::Impl& impl) {
 
@@ -521,8 +484,9 @@ Component3DViewerResponse osc::Component_3d_viewer::draw(
         return {};  // main panel is closed, so skip the rest of the rendering etc.
     }
 
-    // update camera from user input
-    update_camera(impl);
+    if (impl.render_hovered) {
+        update_camera_from_user_input(App::cur().dims(), impl.camera);
+    }
 
     // draw panel menu
     if (ImGui::BeginMenuBar()) {

@@ -1,3 +1,4 @@
+#include "src/screens/experimental/math_experiments_screen.hpp"
 #include "src/screens/loading_screen.hpp"
 #include "src/screens/splash_screen.hpp"
 #include "src/app.hpp"

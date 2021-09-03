@@ -14,6 +14,7 @@
 #include "src/simtk_bindings/stk_meshloader.hpp"
 #include "src/simtk_bindings/stk_converters.hpp"
 #include "src/utils/algs.hpp"
+#include "src/utils/imgui_utils.hpp"
 #include "src/utils/scope_guard.hpp"
 #include "src/utils/shims.hpp"
 #include "src/utils/spsc.hpp"
@@ -733,34 +734,7 @@ namespace {
             return;
         }
 
-        // handle scroll zooming
-        impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
-
-        // handle panning/zooming/dragging with middle mouse
-        if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {  // TODO: middle mouse
-
-            // in pixels, e.g. [800, 600]
-            glm::vec2 screendims = impl.renderer.dimsf();
-
-            // in pixels, e.g. [-80, 30]
-            glm::vec2 mouse_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f);
-            ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-
-            // as a screensize-independent ratio, e.g. [-0.1, 0.05]
-            glm::vec2 relative_delta = mouse_delta / screendims;
-
-            if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
-                // shift + middle-mouse performs a pan
-                float aspect_ratio = screendims.x / screendims.y;
-                impl.camera.do_pan(aspect_ratio, relative_delta);
-            } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-                // shift + middle-mouse performs a zoom
-                impl.camera.radius *= 1.0f + relative_delta.y;
-            } else {
-                // just middle-mouse performs a mouse drag
-                impl.camera.do_drag(relative_delta);
-            }
-        }
+        update_camera_from_user_input(impl.renderer.dimsf(), impl.camera);
     }
 
     // delete all selected elements
