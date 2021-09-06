@@ -823,7 +823,7 @@ namespace {
     // draw socket editor for current selection
     void drawSocketEditor(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
 
-        if (uim.getSelection()) {
+        if (!uim.getSelection()) {
             ImGui::TextUnformatted("cannot draw socket editor: selection is blank (shouldn't be)");
             return;
         }
