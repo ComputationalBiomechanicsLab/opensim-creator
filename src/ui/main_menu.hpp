@@ -1,13 +1,13 @@
 #pragma once
 
-#include "src/recent_file.hpp"
+#include "src/RecentFile.hpp"
 
 #include <filesystem>
 #include <vector>
 #include <memory>
 
 namespace osc {
-    struct Main_editor_state;
+    struct MainEditorState;
 }
 
 namespace OpenSim {
@@ -15,20 +15,20 @@ namespace OpenSim {
 }
 
 namespace osc::ui::main_menu {
-    void action_new_model(std::shared_ptr<Main_editor_state>);
-    void action_open_model(std::shared_ptr<Main_editor_state>);
+    void action_new_model(std::shared_ptr<MainEditorState>);
+    void action_open_model(std::shared_ptr<MainEditorState>);
     void action_save(OpenSim::Model&);
     void action_save_as(OpenSim::Model&);
 
     namespace file_tab {
         struct State final {
             std::vector<std::filesystem::path> example_osims;
-            std::vector<Recent_file> recent_files;
+            std::vector<RecentFile> recent_files;
 
             State();
         };
 
-        void draw(State&, std::shared_ptr<Main_editor_state>);
+        void draw(State&, std::shared_ptr<MainEditorState>);
     }
 
     namespace about_tab {
@@ -36,6 +36,6 @@ namespace osc::ui::main_menu {
     }
 
     namespace window_tab {
-        void draw(Main_editor_state&);
+        void draw(MainEditorState&);
     }
 }

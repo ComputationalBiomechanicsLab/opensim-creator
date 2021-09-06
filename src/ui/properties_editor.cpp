@@ -1,6 +1,6 @@
 #include "properties_editor.hpp"
 
-#include "src/assertions.hpp"
+#include "src/Assertions.hpp"
 #include "src/ui/help_marker.hpp"
 #include "src/ui/lockable_f3_editor.hpp"
 

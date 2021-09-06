@@ -1,9 +1,9 @@
-#include "src/screens/experimental/math_experiments_screen.hpp"
-#include "src/screens/loading_screen.hpp"
-#include "src/screens/splash_screen.hpp"
-#include "src/app.hpp"
-#include "src/log.hpp"
-#include "src/main_editor_state.hpp"
+#include "src/screens/experimental/MathExperimentsScreen.hpp"
+#include "src/screens/LoadingScreen.hpp"
+#include "src/screens/SplashScreen.hpp"
+#include "src/App.hpp"
+#include "src/Log.hpp"
+#include "src/MainEditorState.hpp"
 
 using namespace osc;
 
@@ -15,7 +15,7 @@ static const char g_Help[] = R"(OPTIONS
         Show this help
 )";
 
-static bool skip_prefix(char const* prefix, char const* s, char const** out) {
+static bool skipPrefix(char const* prefix, char const* s, char const** out) {
     do {
         if (*prefix == '\0' && (*s == '\0' || *s == '=')) {
             *out = s;
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
             break;
         }
 
-        if (skip_prefix("--help", arg, &arg)) {
+        if (skipPrefix("--help", arg, &arg)) {
             std::cout << g_Usage << '\n' << g_Help << '\n';
             return EXIT_SUCCESS;
         }
@@ -55,10 +55,10 @@ int main(int argc, char** argv) {
         App app;
 
         if (argc <= 0) {
-            app.show<Splash_screen>();
+            app.show<SplashScreen>();
         } else {
-            auto mes = std::make_shared<Main_editor_state>();
-            app.show<Loading_screen>(mes, argv[0]);
+            auto mes = std::make_shared<MainEditorState>();
+            app.show<LoadingScreen>(mes, argv[0]);
         }
     } catch (std::exception const& ex) {
         log::error("osc: encountered fatal exception: %s", ex.what());

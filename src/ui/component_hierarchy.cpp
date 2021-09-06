@@ -1,6 +1,6 @@
 #include "component_hierarchy.hpp"
 
-#include "src/assertions.hpp"
+#include "src/Assertions.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

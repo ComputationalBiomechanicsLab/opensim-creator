@@ -78,113 +78,115 @@ include(GetDependencies.cmake)
 
 # ------------ osc build target configuration ---------- #
 
-# osc_build_config.hpp:
+# osc_config.hpp:
 #     configuration file that contains configuration-time vals (e.g. version, libs)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_build_config.hpp.in" "osc_build_config.hpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.hpp")
 
 add_executable(osc
-    ${CMAKE_BINARY_DIR}/osc_build_config.hpp
+    ${CMAKE_BINARY_DIR}/osc_config.hpp
 
-    src/3d/bvh.cpp
-    src/3d/bvh.hpp
-    src/3d/gl.cpp
-    src/3d/gl.hpp
-    src/3d/gl_glm.hpp
-    src/3d/instanced_renderer.cpp
-    src/3d/instanced_renderer.hpp
-    src/3d/model.cpp
-    src/3d/model.hpp
-    src/3d/texturing.cpp
-    src/3d/texturing.hpp
+    src/3d/shaders/ColormappedPlainTextureShader.cpp
+    src/3d/shaders/ColormappedPlainTextureShader.hpp
+    src/3d/shaders/EdgeDetectionShader.cpp
+    src/3d/shaders/EdgeDetectionShader.hpp
+    src/3d/shaders/GouraudMrtShader.cpp
+    src/3d/shaders/GouraudMrtShader.hpp
+    src/3d/shaders/NormalsShader.cpp
+    src/3d/shaders/NormalsShader.hpp
+    src/3d/shaders/PlainTextureShader.cpp
+    src/3d/shaders/PlainTextureShader.hpp
+    src/3d/shaders/SkipMSXAABlitterShader.cpp
+    src/3d/shaders/SkipMSXAABlitterShader.hpp
+    src/3d/shaders/SolidColorShader.cpp
+    src/3d/shaders/SolidColorShader.hpp
 
-    src/3d/shaders/colormapped_plain_texture_shader.cpp
-    src/3d/shaders/colormapped_plain_texture_shader.hpp
-    src/3d/shaders/edge_detection_shader.cpp
-    src/3d/shaders/edge_detection_shader.hpp
-    src/3d/shaders/gouraud_mrt_shader.cpp
-    src/3d/shaders/gouraud_mrt_shader.hpp
-    src/3d/shaders/normals_shader.cpp
-    src/3d/shaders/normals_shader.hpp
-    src/3d/shaders/plain_texture_shader.cpp
-    src/3d/shaders/plain_texture_shader.hpp
-    src/3d/shaders/skip_msxaa_blitter_shader.cpp
-    src/3d/shaders/skip_msxaa_blitter_shader.hpp
-    src/3d/shaders/solid_color_shader.cpp
-    src/3d/shaders/solid_color_shader.hpp
+    src/3d/BVH.cpp
+    src/3d/BVH.hpp
+    src/3d/Constants.hpp
+    src/3d/Gl.cpp
+    src/3d/Gl.hpp
+    src/3d/GlGlm.hpp
+    src/3d/InstancedRenderer.cpp
+    src/3d/InstancedRenderer.hpp
+    src/3d/Model.cpp
+    src/3d/Model.hpp
+    src/3d/Texturing.cpp
+    src/3d/Texturing.hpp
 
-    src/opensim_bindings/file_change_poller.hpp
-    src/opensim_bindings/opensim_helpers.hpp
-    src/opensim_bindings/scene_generator.cpp
-    src/opensim_bindings/scene_generator.hpp
-    src/opensim_bindings/simulation.cpp
-    src/opensim_bindings/simulation.hpp
-    src/opensim_bindings/type_registry.cpp
-    src/opensim_bindings/type_registry.hpp
-    src/opensim_bindings/ui_types.hpp
-    src/opensim_bindings/ui_types.cpp
+    src/opensim_bindings/FileChangePoller.cpp
+    src/opensim_bindings/FileChangePoller.hpp
+    src/opensim_bindings/OpenSimHelpers.hpp
+    src/opensim_bindings/SceneGenerator.cpp
+    src/opensim_bindings/SceneGenerator.hpp
+    src/opensim_bindings/Simulation.cpp
+    src/opensim_bindings/Simulation.hpp
+    src/opensim_bindings/TypeRegistry.cpp
+    src/opensim_bindings/TypeRegistry.hpp
+    src/opensim_bindings/UiTypes.hpp
+    src/opensim_bindings/UiTypes.cpp
 
-    src/screens/experimental/component_3d_viewer_screen.cpp
-    src/screens/experimental/component_3d_viewer_screen.hpp
-    src/screens/experimental/experiments_screen.cpp
-    src/screens/experimental/experiments_screen.hpp
-    src/screens/experimental/hellotriangle_screen.cpp
-    src/screens/experimental/hellotriangle_screen.hpp
-    src/screens/experimental/hittest_screen.cpp
-    src/screens/experimental/hittest_screen.hpp
-    src/screens/experimental/imguizmo_demo_screen.cpp
-    src/screens/experimental/imguizmo_demo_screen.hpp
-    src/screens/experimental/mesh_hittest_screen.cpp
-    src/screens/experimental/mesh_hittest_screen.hpp
-    src/screens/experimental/mesh_hittest_with_bvh_screen.cpp
-    src/screens/experimental/mesh_hittest_with_bvh_screen.hpp
-    src/screens/experimental/meshes_to_model_wizard_screen.cpp
-    src/screens/experimental/meshes_to_model_wizard_screen.hpp
-    src/screens/experimental/instanced_renderer_screen.cpp
-    src/screens/experimental/instanced_renderer_screen.hpp
-    src/screens/experimental/math_experiments_screen.cpp
-    src/screens/experimental/math_experiments_screen.hpp
-    src/screens/experimental/opensim_modelstate_decoration_generator_screen.cpp
-    src/screens/experimental/opensim_modelstate_decoration_generator_screen.hpp
-    src/screens/experimental/simbody_meshgen_screen.cpp
-    src/screens/experimental/simbody_meshgen_screen.hpp
+    src/screens/experimental/Component3DViewerScreen.cpp
+    src/screens/experimental/Component3DViewerScreen.hpp
+    src/screens/experimental/ExperimentsScreen.cpp
+    src/screens/experimental/ExperimentsScreen.hpp
+    src/screens/experimental/HelloTriangleScreen.cpp
+    src/screens/experimental/HelloTriangleScreen.hpp
+    src/screens/experimental/HittestScreen.cpp
+    src/screens/experimental/HittestScreen.hpp
+    src/screens/experimental/ImGuizmoDemoScreen.cpp
+    src/screens/experimental/ImGuizmoDemoScreen.hpp
+    src/screens/experimental/MeshHittestScreen.cpp
+    src/screens/experimental/MeshHittestScreen.hpp
+    src/screens/experimental/MeshHittestWithBVHScreen.cpp
+    src/screens/experimental/MeshHittestWithBVHScreen.hpp
+    src/screens/experimental/MeshesToModelWizardScreen.cpp
+    src/screens/experimental/MeshesToModelWizardScreen.hpp
+    src/screens/experimental/InstancedRendererScreen.cpp
+    src/screens/experimental/InstancedRendererScreen.hpp
+    src/screens/experimental/MathExperimentsScreen.cpp
+    src/screens/experimental/MathExperimentsScreen.hpp
+    src/screens/experimental/OpenSimModelstateDecorationGeneratorScreen.cpp
+    src/screens/experimental/OpenSimModelstateDecorationGeneratorScreen.hpp
+    src/screens/experimental/SimbodyMeshgenScreen.cpp
+    src/screens/experimental/SimbodyMeshgenScreen.hpp
 
-    src/screens/cookiecutter_screen.cpp
-    src/screens/cookiecutter_screen.hpp
-    src/screens/error_screen.cpp
-    src/screens/error_screen.hpp
-    src/screens/imgui_demo_screen.cpp
-    src/screens/imgui_demo_screen.hpp
-    src/screens/loading_screen.cpp
-    src/screens/loading_screen.hpp
-    src/screens/model_editor_screen.cpp
-    src/screens/model_editor_screen.hpp
-    src/screens/simulator_screen.cpp
-    src/screens/simulator_screen.hpp
-    src/screens/splash_screen.cpp
-    src/screens/splash_screen.hpp
+    src/screens/CookiecutterScreen.cpp
+    src/screens/CookiecutterScreen.hpp
+    src/screens/ErrorScreen.cpp
+    src/screens/ErrorScreen.hpp
+    src/screens/ImGuiDemoScreen.cpp
+    src/screens/ImGuiDemoScreen.hpp
+    src/screens/LoadingScreen.cpp
+    src/screens/LoadingScreen.hpp
+    src/screens/ModelEditorScreen.cpp
+    src/screens/ModelEditorScreen.hpp
+    src/screens/SimulatorScreen.cpp
+    src/screens/SimulatorScreen.hpp
+    src/screens/SplashScreen.cpp
+    src/screens/SplashScreen.hpp
 
-    src/simtk_bindings/stk_geometry_generator.cpp
-    src/simtk_bindings/stk_geometry_generator.hpp
-    src/simtk_bindings/stk_converters.hpp
-    src/simtk_bindings/stk_meshloader.cpp
-    src/simtk_bindings/stk_meshloader.hpp
+    src/simtk_bindings/SimTKGeometryGenerator.cpp
+    src/simtk_bindings/SimTKGeometryGenerator.hpp
+    src/simtk_bindings/SimTKConverters.hpp
+    src/simtk_bindings/SimTKLoadMesh.cpp
+    src/simtk_bindings/SimTKLoadMesh.hpp
 
-    src/ui/add_component_popup.hpp
-    src/ui/add_component_popup.cpp
+    src/ui/AddComponentPopup.hpp
+    src/ui/AddComponentPopup.cpp
     src/ui/component_hierarchy.hpp
     src/ui/component_hierarchy.cpp
     src/ui/component_details.cpp
     src/ui/component_details.hpp
-    src/ui/component_3d_viewer.hpp
-    src/ui/component_3d_viewer.cpp
+    src/ui/Component3DViewer.hpp
+    src/ui/Component3DViewer.cpp
     src/ui/properties_editor.hpp
     src/ui/properties_editor.cpp
     src/ui/reassign_socket_popup.hpp
     src/ui/reassign_socket_popup.cpp
-    src/ui/attach_geometry_popup.hpp
-    src/ui/attach_geometry_popup.cpp
-    src/ui/add_body_popup.hpp
-    src/ui/add_body_popup.cpp
+    src/ui/AttachGeometryPopup.hpp
+    src/ui/AttachGeometryPopup.cpp
+    src/ui/AddBodyPopup.cpp
+    src/ui/AddBodyPopup.hpp
     src/ui/log_viewer.hpp
     src/ui/log_viewer.cpp
     src/ui/lockable_f3_editor.hpp
@@ -208,36 +210,37 @@ add_executable(osc
     src/ui/fd_params_editor_popup.hpp
     src/ui/fd_params_editor_popup.cpp
 
-    src/utils/algs.hpp
-    src/utils/checked_index.hpp
-    src/utils/circular_buffer.hpp
-    src/utils/concurrency.hpp
-    src/utils/fs.cpp
-    src/utils/fs.hpp
-    src/utils/imgui_utils.cpp
-    src/utils/imgui_utils.hpp
-    src/utils/perf.hpp
-    src/utils/scope_guard.hpp
-    src/utils/sdl_wrapper.hpp
-    src/utils/shims.hpp
-    src/utils/spsc.hpp
+    src/utils/Algorithms.cpp
+    src/utils/Algorithms.hpp
+    src/utils/CheckedIndex.hpp
+    src/utils/CircularBuffer.hpp
+    src/utils/ConcurrencyHelpers.hpp
+    src/utils/FilesystemHelpers.cpp
+    src/utils/FilesystemHelpers.hpp
+    src/utils/ImGuiHelpers.cpp
+    src/utils/ImGuiHelpers.hpp
+    src/utils/Perf.hpp
+    src/utils/ScopeGuard.hpp
+    src/utils/Sdl2Bindings.hpp
+    src/utils/Cpp20Shims.hpp
+    src/utils/Spsc.hpp
 
-    src/app.cpp
-    src/app.hpp
-    src/assertions.cpp
-    src/assertions.hpp
-    src/config.cpp
-    src/config.hpp
-    src/log.cpp
-    src/log.hpp
-    src/main_editor_state.cpp
-    src/main_editor_state.hpp
+    src/App.cpp
+    src/App.hpp
+    src/Assertions.cpp
+    src/Assertions.hpp
+    src/Config.cpp
+    src/Config.hpp
+    src/Log.cpp
+    src/Log.hpp
+    src/MainEditorState.cpp
+    src/MainEditorState.hpp
     src/os.cpp
     src/os.hpp
     src/osc.cpp
-    src/recent_file.hpp
-    src/screen.hpp
-    src/styling.hpp
+    src/RecentFile.hpp
+    src/Screen.hpp
+    src/Styling.hpp
 
     # Windows: also link a resources file (rc)
     #
@@ -252,7 +255,7 @@ target_link_libraries(osc PRIVATE
     osc-all-deps  # see: GetDependencies.cmake
 )
 target_include_directories(osc PRIVATE
-    ${PROJECT_BINARY_DIR}  # so `#include "osc_build_config.hpp"` works
+    ${PROJECT_BINARY_DIR}  # so `#include "osc_config.hpp"` works
     ${CMAKE_CURRENT_SOURCE_DIR}  # so `#include "src/<path>.hpp"` works
 )
 target_compile_options(osc PRIVATE

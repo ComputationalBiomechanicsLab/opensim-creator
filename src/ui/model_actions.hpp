@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/ui/add_body_popup.hpp"
-#include "src/ui/add_component_popup.hpp"
+#include "src/ui/AddBodyPopup.hpp"
+#include "src/ui/AddComponentPopup.hpp"
 #include "src/ui/select_2_pfs_popup.hpp"
 
 #include <functional>
@@ -14,12 +14,12 @@ namespace OpenSim {
 
 namespace osc::ui::model_actions {
     struct State final {
-        ui::add_body_popup::State abm;
+        AddBodyPopup abm;
         ui::select_2_pfs::State select_2_pfs;
         int joint_idx_for_pfs_popup = -1;
 
         char const* add_component_popup_name = nullptr;
-        std::optional<add_component_popup::State> add_component_popup = std::nullopt;
+        std::optional<AddComponentPopup> add_component_popup = std::nullopt;
 
         State();
     };

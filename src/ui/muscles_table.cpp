@@ -1,6 +1,6 @@
 #include "muscles_table.hpp"
 
-#include "src/assertions.hpp"
+#include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>

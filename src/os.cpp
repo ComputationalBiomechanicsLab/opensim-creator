@@ -1,6 +1,6 @@
 #include "os.hpp"
 
-#include "src/log.hpp"
+#include "src/Log.hpp"
 
 #include <SDL_error.h>
 #include <SDL_filesystem.h>
@@ -15,7 +15,7 @@
 
 using std::literals::string_literals::operator""s;
 
-static std::filesystem::path convert_sdl_path_to_stdpath(char const* methodname, char* p) {
+static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p) {
     if (p == nullptr) {
         std::stringstream ss;
         ss << methodname;
@@ -39,25 +39,25 @@ static std::filesystem::path convert_sdl_path_to_stdpath(char const* methodname,
     return std::filesystem::path{p};
 }
 
-static std::filesystem::path get_current_exe_dir() {
+static std::filesystem::path getCurrentExeDir() {
     std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
-    return convert_sdl_path_to_stdpath("SDL_GetBasePath", p.get());
+    return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
 }
 
-std::filesystem::path const& osc::current_exe_dir() {
+static std::filesystem::path getUserDataDir() {
+    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
+    return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
+}
+
+std::filesystem::path const& osc::CurrentExeDir() {
     // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const d = get_current_exe_dir();
+    static std::filesystem::path const d = getCurrentExeDir();
     return d;
 }
 
-static std::filesystem::path get_user_data_dir() {
-    std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
-    return convert_sdl_path_to_stdpath("SDL_GetPrefPath", p.get());
-}
-
-std::filesystem::path const& osc::user_data_dir() {
+std::filesystem::path const& osc::GetUserDataDir() {
     // can be expensive to compute: cache after first retrieval
-    static std::filesystem::path const d = get_user_data_dir();
+    static std::filesystem::path const d = getUserDataDir();
     return d;
 }
 
@@ -80,7 +80,7 @@ std::filesystem::path const& osc::user_data_dir() {
 #include <sys/types.h>
 #include <sys/wait.h>
 
-void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
@@ -105,14 +105,14 @@ typedef struct _sig_ucontext {
     sigset_t uc_sigmask;
 } sig_ucontext_t;
 
-[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+[[noreturn]] static void onOSCriticalSignalReceived(int sig_num, siginfo_t* info, void* ucontext) {
     sig_ucontext_t* uc = static_cast<sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
     void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-    void* caller_address = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+    void* callerAddress = reinterpret_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
@@ -123,11 +123,11 @@ typedef struct _sig_ucontext {
         sig_num,
         strsignal(sig_num),
         info->si_addr,
-        caller_address);
+        callerAddress);
 
     void* array[50];
     int size = backtrace(array, 50);
-    array[1] = caller_address;  // overwrite sigaction with caller's address
+    array[1] = callerAddress;  // overwrite sigaction with caller's address
 
     char** messages = backtrace_symbols(array, size);
 
@@ -145,10 +145,10 @@ typedef struct _sig_ucontext {
     exit(EXIT_FAILURE);
 }
 
-void osc::install_backtrace_handler() {
+void osc::InstallBacktraceHandler() {
     struct sigaction sigact;
 
-    sigact.sa_sigaction = OSC_critical_error_handler;
+    sigact.sa_sigaction = onOSCriticalSignalReceived;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
     // install segfault handler
@@ -175,7 +175,7 @@ void osc::install_backtrace_handler() {
 #include <signal.h>  // sigaction(), struct sigaction, strsignal()
 #include <stdlib.h>  // exit(), free()
 
-void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
@@ -198,7 +198,7 @@ void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
     exit(EXIT_FAILURE);
 }
 
-void osc::install_backtrace_handler() {
+void osc::InstallBacktraceHandler() {
     struct sigaction sigact;
 
     sigact.sa_sigaction = OSC_critical_error_handler;
@@ -220,7 +220,7 @@ void osc::install_backtrace_handler() {
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-void osc::write_backtrace_to_log(log::level::Level_enum lvl) {
+void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
 
@@ -278,7 +278,7 @@ static void signal_handler(int signal) {
     osc::write_backtrace_to_log(osc::log::level::err);
 }
 
-void osc::install_backtrace_handler() {
+void osc::InstallBacktraceHandler() {
     // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
 
     // system default: display all errors
@@ -292,7 +292,7 @@ void osc::install_backtrace_handler() {
 #endif
 
 #ifdef __LINUX__
-void osc::open_path_in_default_application(std::filesystem::path const& fp) {
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
     // fork a subprocess
     pid_t pid = fork();
 
@@ -331,9 +331,9 @@ void osc::open_path_in_default_application(std::filesystem::path const& fp) {
     }
 }
 
-void osc::open_url_in_default_browser(std::string_view vw) {
+void osc::OpenURLInDefaultBrowser(std::string_view vw) {
     // HACK: we know that xdg-open handles this automatically
-    open_path_in_default_application(vw);
+    OpenPathInOSDefaultApplication(vw);
 }
 
 #elif defined(__APPLE__)

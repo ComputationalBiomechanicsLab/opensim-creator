@@ -19,7 +19,7 @@
 #include "src/ui/muscles_table.hpp"
 #include "src/utils/helpers.hpp"
 #include "src/utils/file_change_poller.hpp"
-#include "src/styling.hpp"
+#include "src/Styling.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

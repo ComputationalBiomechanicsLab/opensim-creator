@@ -1,6 +1,6 @@
 #include "log_viewer.hpp"
 
-#include "src/log.hpp"
+#include "src/Log.hpp"
 
 #include <SDL.h>
 #include <imgui.h>
@@ -8,7 +8,7 @@
 #include <sstream>
 
 namespace {
-    [[nodiscard]] ImVec4 color(osc::log::level::Level_enum lvl) noexcept {
+    [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl) noexcept {
         using namespace osc::log::level;
 
         switch (lvl) {
@@ -32,11 +32,11 @@ namespace {
     void copy_traceback_log_to_clipboard() {
         std::stringstream ss;
 
-        auto& guarded_content = osc::log::get_traceback_log();
+        auto& guarded_content = osc::log::getTracebackLog();
         {
             auto const& content = guarded_content.lock();
-            for (osc::log::Owned_log_msg const& msg : *content) {
-                ss << '[' << osc::log::to_c_str(msg.level) << "] " << msg.payload << '\n';
+            for (osc::log::OwnedLogMessage const& msg : *content) {
+                ss << '[' << osc::log::toCStr(msg.level) << "] " << msg.payload << '\n';
             }
         }
 
@@ -58,10 +58,10 @@ void osc::ui::log_viewer::draw(State& st) {
 
         // draw level selector
         {
-            int lvl = static_cast<int>(log::get_traceback_level());
+            int lvl = static_cast<int>(log::getTracebackLevel());
             ImGui::SetNextItemWidth(200.0f);
             if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS)) {
-                log::set_traceback_level(static_cast<log::level::Level_enum>(lvl));
+                log::setTracebackLevel(static_cast<log::level::LevelEnum>(lvl));
             }
         }
 
@@ -70,12 +70,12 @@ void osc::ui::log_viewer::draw(State& st) {
 
         ImGui::SameLine();
         if (ImGui::Button("clear")) {
-            log::get_traceback_log().lock()->clear();
+            log::getTracebackLog().lock()->clear();
         }
 
         ImGui::SameLine();
         if (ImGui::Button("turn off")) {
-            log::set_traceback_level(log::level::off);
+            log::setTracebackLevel(log::level::off);
         }
 
         ImGui::SameLine();
@@ -89,11 +89,11 @@ void osc::ui::log_viewer::draw(State& st) {
     }
 
     // draw log content lines
-    auto& guarded_content = log::get_traceback_log();
+    auto& guarded_content = log::getTracebackLog();
     auto const& content = guarded_content.lock();
-    for (log::Owned_log_msg const& msg : *content) {
+    for (log::OwnedLogMessage const& msg : *content) {
         ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
-        ImGui::Text("[%s]", log::to_c_str(msg.level));
+        ImGui::Text("[%s]", log::toCStr(msg.level));
         ImGui::PopStyleColor();
         ImGui::SameLine();
         ImGui::TextWrapped("%s", msg.payload.c_str());
