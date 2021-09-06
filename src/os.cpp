@@ -220,7 +220,7 @@ void osc::InstallBacktraceHandler() {
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
 
@@ -269,13 +269,13 @@ void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
 
 static LONG crash_handler(EXCEPTION_POINTERS* info) {
     osc::log::error("exception propagated to root of OSC: might be a segfault?");
-    osc::write_backtrace_to_log(osc::log::level::err);
+    osc::WriteTracebackToLog(osc::log::level::err);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
 static void signal_handler(int signal) {
     osc::log::error("signal caught by OSC: printing backtrace");
-    osc::write_backtrace_to_log(osc::log::level::err);
+    osc::WriteTracebackToLog(osc::log::level::err);
 }
 
 void osc::InstallBacktraceHandler() {
@@ -344,10 +344,10 @@ void osc::open_url_in_default_browser(std::string_view) {
     log::error("unsupported action: cannot open external URLs in Mac OSX (yet!)");
 }
 #elif defined(WIN32)
-void osc::open_path_in_default_application(std::filesystem::path const& p) {
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
 }
-void osc::open_url_in_default_browser(std::string_view) {
+void osc::OpenURLInDefaultBrowser(std::string_view) {
     log::error("unsupported action: cannot open external URLs in Windows (yet!)");
 }
 #else
