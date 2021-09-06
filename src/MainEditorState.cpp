@@ -1,6 +1,6 @@
 #include "MainEditorState.hpp"
 
-#include "src/ui/Component3DViewer.hpp"
+#include "src/UI/Component3DViewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 

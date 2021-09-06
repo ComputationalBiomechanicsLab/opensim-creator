@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/utils/CircularBuffer.hpp"
-#include "src/utils/ConcurrencyHelpers.hpp"
+#include "src/Utils/CircularBuffer.hpp"
+#include "src/Utils/ConcurrencyHelpers.hpp"
 
 #include <chrono>
 #include <cstdarg>

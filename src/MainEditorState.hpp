@@ -1,8 +1,8 @@
 #pragma once
 
-#include "src/opensim_bindings/UiTypes.hpp"
-#include "src/opensim_bindings/Simulation.hpp"
-#include "src/ui/Component3DViewer.hpp"
+#include "src/OpenSimBindings/UiTypes.hpp"
+#include "src/OpenSimBindings/Simulation.hpp"
+#include "src/UI/Component3DViewer.hpp"
 
 #include <array>
 #include <vector>

@@ -7,12 +7,12 @@
 #include "src/Log.hpp"
 #include "src/os.hpp"
 #include "src/Styling.hpp"
-#include "src/3d/Gl.hpp"
+#include "src/3D/Gl.hpp"
 
-#include "src/utils/Algorithms.hpp"
-#include "src/utils/FilesystemHelpers.hpp"
-#include "src/utils/Sdl2Bindings.hpp"
-#include "src/utils/ScopeGuard.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/FilesystemHelpers.hpp"
+#include "src/Utils/Sdl2Bindings.hpp"
+#include "src/Utils/ScopeGuard.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Common/Logger.h>
