@@ -175,7 +175,7 @@ void osc::InstallBacktraceHandler() {
 #include <signal.h>  // sigaction(), struct sigaction, strsignal()
 #include <stdlib.h>  // exit(), free()
 
-void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
@@ -194,7 +194,7 @@ void osc::WriteTracebackToLog(log::level::Level_enum lvl) {
 [[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
     osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
     osc::log::error("backtrace:");
-    osc::write_backtrace_to_log(osc::log::level::err);
+    osc::WriteTracebackToLog(osc::log::level::err);
     exit(EXIT_FAILURE);
 }
 
@@ -337,10 +337,10 @@ void osc::OpenURLInDefaultBrowser(std::string_view vw) {
 }
 
 #elif defined(__APPLE__)
-void osc::open_path_in_default_application(std::filesystem::path const&) {
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const&) {
     log::error("unsupported action: cannot open external programs in Mac OSX (yet!)");
 }
-void osc::open_url_in_default_browser(std::string_view) {
+void osc::OpenURLInDefaultBrowser(std::string_view) {
     log::error("unsupported action: cannot open external URLs in Mac OSX (yet!)");
 }
 #elif defined(WIN32)
