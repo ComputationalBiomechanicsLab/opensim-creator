@@ -110,6 +110,8 @@ add_executable(osc
     src/3D/InstancedRenderer.hpp
     src/3D/Model.cpp
     src/3D/Model.hpp
+    src/3D/SceneMesh.cpp
+    src/3D/SceneMesh.hpp
     src/3D/Texturing.cpp
     src/3D/Texturing.hpp
 
