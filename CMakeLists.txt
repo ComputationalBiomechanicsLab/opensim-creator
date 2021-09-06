@@ -78,118 +78,165 @@ include(GetDependencies.cmake)
 
 # ------------ osc build target configuration ---------- #
 
-# osc_build_config.hpp:
+# osc_config.hpp:
 #     configuration file that contains configuration-time vals (e.g. version, libs)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_build_config.hpp.in" "osc_build_config.hpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.hpp")
 
 add_executable(osc
-    ${CMAKE_BINARY_DIR}/osc_build_config.hpp
+    ${CMAKE_BINARY_DIR}/osc_config.hpp
 
-    src/3d/gl.hpp
-    src/3d/gl.cpp
-    src/3d/gl_glm.hpp
-    src/3d/cameras.hpp
-    src/3d/cameras.cpp
-    src/3d/shaders.hpp
-    src/3d/3d.hpp
-    src/3d/3d.cpp
+    src/3D/Shaders/ColormappedPlainTextureShader.cpp
+    src/3D/Shaders/ColormappedPlainTextureShader.hpp
+    src/3D/Shaders/EdgeDetectionShader.cpp
+    src/3D/Shaders/EdgeDetectionShader.hpp
+    src/3D/Shaders/GouraudMrtShader.cpp
+    src/3D/Shaders/GouraudMrtShader.hpp
+    src/3D/Shaders/NormalsShader.cpp
+    src/3D/Shaders/NormalsShader.hpp
+    src/3D/Shaders/PlainTextureShader.cpp
+    src/3D/Shaders/PlainTextureShader.hpp
+    src/3D/Shaders/SkipMSXAABlitterShader.cpp
+    src/3D/Shaders/SkipMSXAABlitterShader.hpp
+    src/3D/Shaders/SolidColorShader.cpp
+    src/3D/Shaders/SolidColorShader.hpp
 
-    src/simtk_bindings/simtk_bindings.hpp
-    src/simtk_bindings/simtk_bindings.cpp
+    src/3D/BVH.cpp
+    src/3D/BVH.hpp
+    src/3D/Constants.hpp
+    src/3D/Gl.cpp
+    src/3D/Gl.hpp
+    src/3D/GlGlm.hpp
+    src/3D/InstancedRenderer.cpp
+    src/3D/InstancedRenderer.hpp
+    src/3D/Model.cpp
+    src/3D/Model.hpp
+    src/3D/Texturing.cpp
+    src/3D/Texturing.hpp
 
-    src/opensim_bindings/simulation.hpp
-    src/opensim_bindings/simulation.cpp
-    src/opensim_bindings/type_registry.hpp
-    src/opensim_bindings/type_registry.cpp
-    src/opensim_bindings/opensim_helpers.hpp
+    src/OpenSimBindings/FileChangePoller.cpp
+    src/OpenSimBindings/FileChangePoller.hpp
+    src/OpenSimBindings/OpenSimHelpers.hpp
+    src/OpenSimBindings/SceneGenerator.cpp
+    src/OpenSimBindings/SceneGenerator.hpp
+    src/OpenSimBindings/Simulation.cpp
+    src/OpenSimBindings/Simulation.hpp
+    src/OpenSimBindings/TypeRegistry.cpp
+    src/OpenSimBindings/TypeRegistry.hpp
+    src/OpenSimBindings/UiTypes.cpp
+    src/OpenSimBindings/UiTypes.hpp
 
-    src/ui/add_component_popup.hpp
-    src/ui/add_component_popup.cpp
-    src/ui/component_hierarchy.hpp
-    src/ui/component_hierarchy.cpp
-    src/ui/component_details.cpp
-    src/ui/component_details.hpp
-    src/ui/component_3d_viewer.hpp
-    src/ui/component_3d_viewer.cpp
-    src/ui/properties_editor.hpp
-    src/ui/properties_editor.cpp
-    src/ui/reassign_socket_popup.hpp
-    src/ui/reassign_socket_popup.cpp
-    src/ui/attach_geometry_popup.hpp
-    src/ui/attach_geometry_popup.cpp
-    src/ui/add_body_popup.hpp
-    src/ui/add_body_popup.cpp
-    src/ui/log_viewer.hpp
-    src/ui/log_viewer.cpp
-    src/ui/lockable_f3_editor.hpp
-    src/ui/lockable_f3_editor.cpp
-    src/ui/main_menu.hpp
-    src/ui/main_menu.cpp
-    src/ui/help_marker.hpp
-    src/ui/help_marker.cpp
-    src/ui/evenly_spaced_sparkline.hpp
-    src/ui/coordinate_editor.hpp
-    src/ui/coordinate_editor.cpp
-    src/ui/muscles_table.hpp
-    src/ui/muscles_table.cpp
-    src/ui/select_2_pfs_popup.hpp
-    src/ui/select_2_pfs_popup.cpp
-    src/ui/select_1_pf_popup.hpp
-    src/ui/select_1_pf_popup.cpp
-    src/ui/model_actions.hpp
-    src/ui/model_actions.cpp
-    src/ui/select_component_popup.hpp
-    src/ui/fd_params_editor_popup.hpp
-    src/ui/fd_params_editor_popup.cpp
+    src/Screens/Experimental/Component3DViewerScreen.cpp
+    src/Screens/Experimental/Component3DViewerScreen.hpp
+    src/Screens/Experimental/ExperimentsScreen.cpp
+    src/Screens/Experimental/ExperimentsScreen.hpp
+    src/Screens/Experimental/HelloTriangleScreen.cpp
+    src/Screens/Experimental/HelloTriangleScreen.hpp
+    src/Screens/Experimental/HittestScreen.cpp
+    src/Screens/Experimental/HittestScreen.hpp
+    src/Screens/Experimental/ImGuizmoDemoScreen.cpp
+    src/Screens/Experimental/ImGuizmoDemoScreen.hpp
+    src/Screens/Experimental/InstancedRendererScreen.cpp
+    src/Screens/Experimental/InstancedRendererScreen.hpp
+    src/Screens/Experimental/MathExperimentsScreen.cpp
+    src/Screens/Experimental/MathExperimentsScreen.hpp
+    src/Screens/Experimental/MeshHittestScreen.cpp
+    src/Screens/Experimental/MeshHittestScreen.hpp
+    src/Screens/Experimental/MeshHittestWithBVHScreen.cpp
+    src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
+    src/Screens/Experimental/MeshesToModelWizardScreen.cpp
+    src/Screens/Experimental/MeshesToModelWizardScreen.hpp
+    src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.cpp
+    src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.hpp
+    src/Screens/Experimental/SimbodyMeshgenScreen.cpp
+    src/Screens/Experimental/SimbodyMeshgenScreen.hpp
 
-    src/screens/screen.hpp
-    src/screens/error_screen.hpp
-    src/screens/error_screen.cpp
-    src/screens/show_model_screen.hpp
-    src/screens/show_model_screen.cpp
-    src/screens/loading_screen.hpp
-    src/screens/loading_screen.cpp
-    src/screens/imgui_demo_screen.hpp
-    src/screens/imgui_demo_screen.cpp
-    src/screens/experiments_screen.hpp
-    src/screens/experiments_screen.cpp
-    src/screens/model_editor_screen.hpp
-    src/screens/model_editor_screen.cpp
-    src/screens/splash_screen.hpp
-    src/screens/splash_screen.cpp
-    src/screens/simulator_screen.hpp
-    src/screens/simulator_screen.cpp
-    src/screens/meshes_to_model_wizard_screen.hpp
-    src/screens/meshes_to_model_wizard_screen.cpp
+    src/Screens/CookiecutterScreen.cpp
+    src/Screens/CookiecutterScreen.hpp
+    src/Screens/ErrorScreen.cpp
+    src/Screens/ErrorScreen.hpp
+    src/Screens/ImGuiDemoScreen.cpp
+    src/Screens/ImGuiDemoScreen.hpp
+    src/Screens/LoadingScreen.cpp
+    src/Screens/LoadingScreen.hpp
+    src/Screens/ModelEditorScreen.cpp
+    src/Screens/ModelEditorScreen.hpp
+    src/Screens/SimulatorScreen.cpp
+    src/Screens/SimulatorScreen.hpp
+    src/Screens/SplashScreen.cpp
+    src/Screens/SplashScreen.hpp
 
-    src/utils/algs.hpp
-    src/utils/concurrency.hpp
-    src/utils/spsc.hpp
-    src/utils/shims.hpp
-    src/utils/sdl_wrapper.hpp
-    src/utils/os.hpp
-    src/utils/os.cpp
-    src/utils/scope_guard.hpp
-    src/utils/circular_buffer.hpp
-    src/utils/file_change_poller.hpp
-    src/utils/helpers.hpp
-    src/utils/helpers.cpp
-    src/utils/stbi_wrapper.hpp
-    src/utils/stbi_wrapper.cpp
+    src/SimTKBindings/SimTKConverters.hpp
+    src/SimTKBindings/SimTKGeometryGenerator.cpp
+    src/SimTKBindings/SimTKGeometryGenerator.hpp
+    src/SimTKBindings/SimTKLoadMesh.cpp
+    src/SimTKBindings/SimTKLoadMesh.hpp
 
-    src/main_editor_state.hpp
-    src/main_editor_state.cpp
-    src/styling.hpp
-    src/config.hpp
-    src/config.cpp
-    src/application.hpp
-    src/application.cpp
-    src/log.hpp
-    src/log.cpp
-    src/assertions.hpp
-    src/assertions.cpp
-    src/resources.hpp
-    src/resources.cpp
+    src/UI/AddBodyPopup.cpp
+    src/UI/AddBodyPopup.hpp
+    src/UI/AddComponentPopup.cpp
+    src/UI/AddComponentPopup.hpp
+    src/UI/AttachGeometryPopup.cpp
+    src/UI/AttachGeometryPopup.hpp
+    src/UI/Component3DViewer.cpp
+    src/UI/Component3DViewer.hpp
+    src/UI/ComponentDetails.cpp
+    src/UI/ComponentDetails.hpp
+    src/UI/ComponentHierarchy.cpp
+    src/UI/ComponentHierarchy.hpp
+    src/UI/CoordinateEditor.cpp
+    src/UI/CoordinateEditor.hpp
+    src/UI/F3Editor.cpp
+    src/UI/F3Editor.hpp
+    src/UI/FdParamsEditorPopup.cpp
+    src/UI/FdParamsEditorPopup.hpp
+    src/UI/HelpMarker.cpp
+    src/UI/HelpMarker.hpp
+    src/UI/LogViewer.cpp
+    src/UI/LogViewer.hpp
+    src/UI/MainMenu.cpp
+    src/UI/MainMenu.hpp
+    src/UI/ModelActionsMenuBar.cpp
+    src/UI/ModelActionsMenuBar.hpp
+    src/UI/PropertyEditors.cpp
+    src/UI/PropertyEditors.hpp
+    src/UI/ReassignSocketPopup.hpp
+    src/UI/ReassignSocketPopup.cpp
+    src/UI/Select1PFPopup.cpp
+    src/UI/Select1PFPopup.hpp
+    src/UI/Select2PFsPopup.cpp
+    src/UI/Select2PFsPopup.hpp
+    src/UI/SelectComponentPopup.hpp
+
+    src/Utils/Algorithms.cpp
+    src/Utils/Algorithms.hpp
+    src/Utils/CheckedIndex.hpp
+    src/Utils/CircularBuffer.hpp
+    src/Utils/ConcurrencyHelpers.hpp
+    src/Utils/Cpp20Shims.hpp
+    src/Utils/FilesystemHelpers.cpp
+    src/Utils/FilesystemHelpers.hpp
+    src/Utils/ImGuiHelpers.cpp
+    src/Utils/ImGuiHelpers.hpp
+    src/Utils/Perf.hpp
+    src/Utils/ScopeGuard.hpp
+    src/Utils/Sdl2Bindings.hpp
+    src/Utils/Spsc.hpp
+
+    src/App.cpp
+    src/App.hpp
+    src/Assertions.cpp
+    src/Assertions.hpp
+    src/Config.cpp
+    src/Config.hpp
+    src/Log.cpp
+    src/Log.hpp
+    src/MainEditorState.cpp
+    src/MainEditorState.hpp
+    src/RecentFile.hpp
+    src/Screen.hpp
+    src/Styling.hpp
+    src/os.cpp
+    src/os.hpp
     src/osc.cpp
 
     # Windows: also link a resources file (rc)
@@ -205,7 +252,7 @@ target_link_libraries(osc PRIVATE
     osc-all-deps  # see: GetDependencies.cmake
 )
 target_include_directories(osc PRIVATE
-    ${PROJECT_BINARY_DIR}  # so `#include "osc_build_config.hpp"` works
+    ${PROJECT_BINARY_DIR}  # so `#include "osc_config.hpp"` works
     ${CMAKE_CURRENT_SOURCE_DIR}  # so `#include "src/<path>.hpp"` works
 )
 target_compile_options(osc PRIVATE
@@ -235,7 +282,6 @@ target_compile_options(osc PRIVATE
         -Wwrite-strings
         -Wdangling-else
         -Wdate-time
-        -Wmissing-declarations
         -Wno-multichar
         -Wredundant-decls
         -Wvla
