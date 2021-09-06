@@ -197,7 +197,7 @@ static void handleFrameEmission(SimbodyGeometry::Frame const& frame, EmitterOut&
     for (int i = 0; i < 3; ++i) {
         glm::vec3 dir = {0.0f, 0.0f, 0.0f};
         dir[i] = g_FrameAxisLengthRescale * out.fixupScaleFactor * frame.axisLengths[i];
-        Segment axisline{frame.pos, frame.pos + dir};
+        Segment axisline{frame.pos, frame.pos + frame.rotation*dir};
 
         glm::vec3 prescale = {g_FrameAxisThickness * out.fixupScaleFactor, 1.0f, g_FrameAxisThickness * out.fixupScaleFactor};
         glm::mat4 prescaleMtx = glm::scale(glm::mat4{1.0f}, prescale);
