@@ -122,8 +122,8 @@ add_executable(osc
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
-    src/OpenSimBindings/UiTypes.hpp
     src/OpenSimBindings/UiTypes.cpp
+    src/OpenSimBindings/UiTypes.hpp
 
     src/Screens/Experimental/Component3DViewerScreen.cpp
     src/Screens/Experimental/Component3DViewerScreen.hpp
@@ -135,16 +135,16 @@ add_executable(osc
     src/Screens/Experimental/HittestScreen.hpp
     src/Screens/Experimental/ImGuizmoDemoScreen.cpp
     src/Screens/Experimental/ImGuizmoDemoScreen.hpp
+    src/Screens/Experimental/InstancedRendererScreen.cpp
+    src/Screens/Experimental/InstancedRendererScreen.hpp
+    src/Screens/Experimental/MathExperimentsScreen.cpp
+    src/Screens/Experimental/MathExperimentsScreen.hpp
     src/Screens/Experimental/MeshHittestScreen.cpp
     src/Screens/Experimental/MeshHittestScreen.hpp
     src/Screens/Experimental/MeshHittestWithBVHScreen.cpp
     src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
     src/Screens/Experimental/MeshesToModelWizardScreen.cpp
     src/Screens/Experimental/MeshesToModelWizardScreen.hpp
-    src/Screens/Experimental/InstancedRendererScreen.cpp
-    src/Screens/Experimental/InstancedRendererScreen.hpp
-    src/Screens/Experimental/MathExperimentsScreen.cpp
-    src/Screens/Experimental/MathExperimentsScreen.hpp
     src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.cpp
     src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.hpp
     src/Screens/Experimental/SimbodyMeshgenScreen.cpp
@@ -165,53 +165,54 @@ add_executable(osc
     src/Screens/SplashScreen.cpp
     src/Screens/SplashScreen.hpp
 
+    src/SimTKBindings/SimTKConverters.hpp
     src/SimTKBindings/SimTKGeometryGenerator.cpp
     src/SimTKBindings/SimTKGeometryGenerator.hpp
-    src/SimTKBindings/SimTKConverters.hpp
     src/SimTKBindings/SimTKLoadMesh.cpp
     src/SimTKBindings/SimTKLoadMesh.hpp
 
-    src/UI/AddComponentPopup.hpp
-    src/UI/AddComponentPopup.cpp
-    src/UI/ComponentHierarchy.hpp
-    src/UI/ComponentHierarchy.cpp
-    src/UI/ComponentDetails.cpp
-    src/UI/ComponentDetails.hpp
-    src/UI/Component3DViewer.hpp
-    src/UI/Component3DViewer.cpp
-    src/UI/PropertyEditors.hpp
-    src/UI/PropertyEditors.cpp
-    src/UI/ReassignSocketPopup.hpp
-    src/UI/ReassignSocketPopup.cpp
-    src/UI/AttachGeometryPopup.hpp
-    src/UI/AttachGeometryPopup.cpp
     src/UI/AddBodyPopup.cpp
     src/UI/AddBodyPopup.hpp
-    src/UI/LogViewer.hpp
-    src/UI/LogViewer.cpp
-    src/UI/F3Editor.hpp
-    src/UI/F3Editor.cpp
-    src/UI/MainMenu.hpp
-    src/UI/MainMenu.cpp
-    src/UI/HelpMarker.hpp
-    src/UI/HelpMarker.cpp
-    src/UI/CoordinateEditor.hpp
+    src/UI/AddComponentPopup.cpp
+    src/UI/AddComponentPopup.hpp
+    src/UI/AttachGeometryPopup.cpp
+    src/UI/AttachGeometryPopup.hpp
+    src/UI/Component3DViewer.cpp
+    src/UI/Component3DViewer.hpp
+    src/UI/ComponentDetails.cpp
+    src/UI/ComponentDetails.hpp
+    src/UI/ComponentHierarchy.cpp
+    src/UI/ComponentHierarchy.hpp
     src/UI/CoordinateEditor.cpp
-    src/UI/Select2PFsPopup.hpp
-    src/UI/Select2PFsPopup.cpp
-    src/UI/Select1PFPopup.hpp
-    src/UI/Select1PFPopup.cpp
+    src/UI/CoordinateEditor.hpp
+    src/UI/F3Editor.cpp
+    src/UI/F3Editor.hpp
+    src/UI/FdParamsEditorPopup.cpp
+    src/UI/FdParamsEditorPopup.hpp
+    src/UI/HelpMarker.cpp
+    src/UI/HelpMarker.hpp
+    src/UI/LogViewer.cpp
+    src/UI/LogViewer.hpp
+    src/UI/MainMenu.cpp
+    src/UI/MainMenu.hpp
     src/UI/ModelActionsMenuBar.cpp
     src/UI/ModelActionsMenuBar.hpp
+    src/UI/PropertyEditors.cpp
+    src/UI/PropertyEditors.hpp
+    src/UI/ReassignSocketPopup.hpp
+    src/UI/ReassignSocketPopup.cpp
+    src/UI/Select1PFPopup.cpp
+    src/UI/Select1PFPopup.hpp
+    src/UI/Select2PFsPopup.cpp
+    src/UI/Select2PFsPopup.hpp
     src/UI/SelectComponentPopup.hpp
-    src/UI/FdParamsEditorPopup.hpp
-    src/UI/FdParamsEditorPopup.cpp
 
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ConcurrencyHelpers.hpp
+    src/Utils/Cpp20Shims.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
     src/Utils/ImGuiHelpers.cpp
@@ -219,7 +220,6 @@ add_executable(osc
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
-    src/Utils/Cpp20Shims.hpp
     src/Utils/Spsc.hpp
 
     src/App.cpp
@@ -232,12 +232,12 @@ add_executable(osc
     src/Log.hpp
     src/MainEditorState.cpp
     src/MainEditorState.hpp
-    src/os.cpp
-    src/os.hpp
-    src/osc.cpp
     src/RecentFile.hpp
     src/Screen.hpp
     src/Styling.hpp
+    src/os.cpp
+    src/os.hpp
+    src/osc.cpp
 
     # Windows: also link a resources file (rc)
     #
