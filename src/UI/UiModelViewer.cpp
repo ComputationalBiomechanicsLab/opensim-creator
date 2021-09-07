@@ -253,7 +253,7 @@ static gl::VertexArray makeSCSVAO(SolidColorShader& shader, gl::ArrayBuffer<glm:
 }
 
 struct osc::UiModelViewer::Impl final {
-    std::unordered_map<SceneMesh::IdType, std::unique_ptr<SceneGPUMesh>> gpuCache;
+    std::unordered_map<ImmutableSceneMesh::IdType, std::unique_ptr<SceneGPUMesh>> gpuCache;
     GouraudMrtShader shader;
     NormalsShader normalsShader;
     EdgeDetectionShader edgeDetectionShader;
@@ -304,7 +304,7 @@ struct osc::UiModelViewer::Impl final {
     Impl(UiModelViewerFlags flags_) : flags{flags_} {
     }
 
-    SceneGPUMesh& getGPUMeshCached(SceneMesh const& se) {
+    SceneGPUMesh& getGPUMeshCached(ImmutableSceneMesh const& se) {
         auto [it, inserted] = gpuCache.try_emplace(se.getID(), nullptr);
         if (inserted) {
             it->second = std::make_unique<SceneGPUMesh>(se.getMesh());
@@ -638,7 +638,7 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
     for (BVHCollision const& c : impl.sceneHittestResults) {
         int instanceIdx = c.primId;
         glm::mat4 instanceMmtx = decs[instanceIdx].modelMtx;
-        SceneMesh const& instanceMesh = *decs[instanceIdx].mesh;
+        ImmutableSceneMesh const& instanceMesh = *decs[instanceIdx].mesh;
 
         Line cameraRayModelspace = LineApplyXform(cameraRay, glm::inverse(instanceMmtx));
 

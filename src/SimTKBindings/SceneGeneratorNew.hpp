@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/SceneMesh.hpp"
+#include "src/3D/ImmutableSceneMesh.hpp"
 #include "src/SimTKBindings/ThreadsafeMeshCache.hpp"
 
 #include <glm/mat4x3.hpp>
@@ -18,7 +18,7 @@ namespace SimTK {
 
 namespace osc {
     struct SceneElement {
-        std::shared_ptr<SceneMesh> mesh;
+        std::shared_ptr<ImmutableSceneMesh> mesh;
         glm::mat4x3 modelMtx;
         glm::mat3 normalMtx;
         glm::vec4 color;
