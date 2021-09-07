@@ -10,16 +10,12 @@
 
 namespace osc {
     class SceneMesh final {
-        int ID;  // globally unique
-        Mesh mesh;
-        AABB aabb;
-        Sphere boundingSphere;
-        BVH triangleBVH;
-
     public:
+        using IdType = int;
+
         SceneMesh(Mesh const&);
 
-        int getID() const noexcept;
+        IdType getID() const noexcept;
         Mesh const& getMesh() const noexcept;
         std::vector<glm::vec3> const& getVerts() const noexcept;
         std::vector<glm::vec3> const& getNormals() const noexcept;
@@ -28,5 +24,12 @@ namespace osc {
         AABB const& getAABB() const noexcept;
         Sphere const& getBoundingSphere() const noexcept;
         BVH const& getTriangleBVH() const noexcept;
+
+    private:
+        IdType ID;
+        Mesh mesh;
+        AABB aabb;
+        Sphere boundingSphere;
+        BVH triangleBVH;
     };
 }

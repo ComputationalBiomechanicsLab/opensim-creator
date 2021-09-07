@@ -50,9 +50,8 @@ namespace osc {
         SceneGeneratorFlags_None = 0<<0,
         SceneGeneratorFlags_GenerateDynamicDecorations = 1<<0,
         SceneGeneratorFlags_GenerateStaticDecorations = 1<<1,
-        SceneGeneratorFlags_GenerateFloor = 1<<2,
         SceneGeneratorFlags_Default =
-            SceneGeneratorFlags_GenerateDynamicDecorations | SceneGeneratorFlags_GenerateStaticDecorations | SceneGeneratorFlags_GenerateFloor,
+            SceneGeneratorFlags_GenerateDynamicDecorations | SceneGeneratorFlags_GenerateStaticDecorations,
     };
 
     struct CachedMeshdata final {

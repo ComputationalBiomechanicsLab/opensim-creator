@@ -1,4 +1,5 @@
 #include "src/Screens/Experimental/MathExperimentsScreen.hpp"
+#include "src/Screens/Experimental/SceneGeneratorNewScreen.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
@@ -55,7 +56,8 @@ int main(int argc, char** argv) {
         App app;
 
         if (argc <= 0) {
-            app.show<SplashScreen>();
+            //app.show<SplashScreen>();
+            app.show<SceneGeneratorNewScreen>();
         } else {
             auto mes = std::make_shared<MainEditorState>();
             app.show<LoadingScreen>(mes, argv[0]);

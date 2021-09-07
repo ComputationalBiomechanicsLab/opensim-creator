@@ -45,6 +45,6 @@ osc::Sphere const& osc::SceneMesh::getBoundingSphere() const noexcept {
     return boundingSphere;
 }
 
-osc::BVH const& osc::SceneMesh::getBVH() const noexcept {
+osc::BVH const& osc::SceneMesh::getTriangleBVH() const noexcept {
     return triangleBVH;
 }

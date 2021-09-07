@@ -201,7 +201,7 @@ void osc::GeometryGenerator::implementFrameGeometry(SimTK::DecorativeFrame const
     onGeometryEmission(g);
 }
 
-void osc::GeometryGenerator::implementTextGeometry(SimTK::DecorativeText const&) {
+void osc::GeometryGenerator::implementTextGeometry(SimTK::DecorativeText const& t) {
     static bool shownWarning = []() {
         log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
         return true;
@@ -244,7 +244,7 @@ void osc::GeometryGenerator::implementArrowGeometry(SimTK::DecorativeArrow const
     onGeometryEmission(g);
 }
 
-void osc::GeometryGenerator::implementTorusGeometry(SimTK::DecorativeTorus const&) {
+void osc::GeometryGenerator::implementTorusGeometry(SimTK::DecorativeTorus const& t) {
     static bool shownWarning = []() {
         log::warn("this model uses implementTorusGeometry, which is not yet implemented in OSC");
         return true;

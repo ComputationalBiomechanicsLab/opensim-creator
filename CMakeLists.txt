@@ -149,6 +149,8 @@ add_executable(osc
     src/Screens/Experimental/MeshesToModelWizardScreen.hpp
     src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.cpp
     src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.hpp
+    src/Screens/Experimental/SceneGeneratorNewScreen.cpp
+    src/Screens/Experimental/SceneGeneratorNewScreen.hpp
     src/Screens/Experimental/SimbodyMeshgenScreen.cpp
     src/Screens/Experimental/SimbodyMeshgenScreen.hpp
 
@@ -167,11 +169,15 @@ add_executable(osc
     src/Screens/SplashScreen.cpp
     src/Screens/SplashScreen.hpp
 
+    src/SimTKBindings/SceneGeneratorNew.cpp
+    src/SimTKBindings/SceneGeneratorNew.hpp
     src/SimTKBindings/SimTKConverters.hpp
     src/SimTKBindings/SimTKGeometryGenerator.cpp
     src/SimTKBindings/SimTKGeometryGenerator.hpp
     src/SimTKBindings/SimTKLoadMesh.cpp
     src/SimTKBindings/SimTKLoadMesh.hpp
+    src/SimTKBindings/ThreadsafeMeshCache.cpp
+    src/SimTKBindings/ThreadsafeMeshCache.hpp
 
     src/UI/AddBodyPopup.cpp
     src/UI/AddBodyPopup.hpp
