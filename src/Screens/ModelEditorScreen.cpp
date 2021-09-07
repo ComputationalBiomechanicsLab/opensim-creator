@@ -21,6 +21,7 @@
 #include "src/UI/SelectComponentPopup.hpp"
 #include "src/UI/Select1PFPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
+#include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"
 #include "src/Log.hpp"
 #include "src/MainEditorState.hpp"
@@ -1183,27 +1184,19 @@ namespace {
     // draw a single 3D model viewer
     void draw3DViewer(
             ModelEditorScreen::Impl& impl,
-            Component3DViewer& viewer,
+            UiModelViewer& viewer,
             char const* name) {
 
-        Component3DViewerResponse resp;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+        bool opened = ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar);
+        OSC_SCOPE_GUARD({ ImGui::End(); });
 
-        if (impl.st->isolated()) {
-            resp = viewer.draw(
-                name,
-                *impl.st->isolated(),
-                impl.st->model().getDisplayHints(),
-                impl.st->state(),
-                impl.st->selection(),
-                impl.st->hovered());
-        } else {
-            resp = viewer.draw(
-                name,
-                impl.st->model(),
-                impl.st->state(),
-                impl.st->selection(),
-                impl.st->hovered());
+        if (!opened) {
+            return;
         }
+
+        auto resp = viewer.draw(impl.st->editedModel.current);
 
         // update hover
         if (resp.isMousedOver && resp.hovertestResult != impl.st->hovered()) {
@@ -1244,7 +1237,7 @@ namespace {
                 continue;
             }
 
-            Component3DViewer& viewer = *maybe3DViewer;
+            UiModelViewer& viewer = *maybe3DViewer;
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);

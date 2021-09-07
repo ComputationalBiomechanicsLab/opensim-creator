@@ -9,6 +9,12 @@
 
 using namespace osc;
 
+
+std::shared_ptr<ThreadsafeMeshCache> osc::ThreadsafeMeshCache::getGlobal() {
+    static std::shared_ptr<ThreadsafeMeshCache> g_GlobalMeshCache = std::make_shared<ThreadsafeMeshCache>();
+    return g_GlobalMeshCache;
+}
+
 struct osc::ThreadsafeMeshCache::Impl final {
     std::shared_ptr<SceneMesh> sphere = std::make_shared<SceneMesh>(GenUntexturedUVSphere(12, 12));
     std::shared_ptr<SceneMesh> cylinder = std::make_shared<SceneMesh>(GenUntexturedSimbodyCylinder(16));

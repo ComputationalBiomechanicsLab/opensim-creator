@@ -153,6 +153,8 @@ add_executable(osc
     src/Screens/Experimental/SceneGeneratorNewScreen.hpp
     src/Screens/Experimental/SimbodyMeshgenScreen.cpp
     src/Screens/Experimental/SimbodyMeshgenScreen.hpp
+    src/Screens/Experimental/UiModelViewerScreen.cpp
+    src/Screens/Experimental/UiModelViewerScreen.hpp
 
     src/Screens/CookiecutterScreen.cpp
     src/Screens/CookiecutterScreen.hpp
@@ -214,6 +216,8 @@ add_executable(osc
     src/UI/Select2PFsPopup.cpp
     src/UI/Select2PFsPopup.hpp
     src/UI/SelectComponentPopup.hpp
+    src/UI/UiModelViewer.cpp
+    src/UI/UiModelViewer.hpp
 
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp

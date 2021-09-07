@@ -115,7 +115,7 @@ struct osc::SimulatorScreen::Impl final {
 
         // lazily init at least one viewer
         if (!mes->viewers.front()) {
-            mes->viewers.front() = create3DViewer();
+            mes->viewers.front() = std::make_unique<UiModelViewer>();
         }
     }
 };
@@ -805,22 +805,73 @@ namespace {
         }
     }
 
+    class RenderableSim final : public RenderableScene {
+        UiSimulation& m_Sim;
+        Report const& m_Report;
+        std::vector<LabelledSceneElement> m_Decorations;
+        BVH m_SceneBVH;
+        float m_FixupScaleFactor;
+
+    public:
+        RenderableSim(UiSimulation& sim, Report const& report) :
+            m_Sim{sim},
+            m_Report{report},
+            m_Decorations{},
+            m_SceneBVH{},
+            m_FixupScaleFactor{1.0f} // todo
+        {
+            generateDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations);
+            updateBVH(m_Decorations, m_SceneBVH);
+        }
+
+        ~RenderableSim() noexcept override = default;
+
+        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override {
+            return m_Decorations;
+        }
+
+        BVH const& getSceneBVH() const override {
+            return m_SceneBVH;
+        }
+
+        float getFixupScaleFactor() const override {
+            return m_FixupScaleFactor;
+        }
+
+        OpenSim::Component const* getSelected() const override {
+            return m_Sim.selected;
+        }
+
+        OpenSim::Component const* getHovered() const override {
+            return m_Sim.hovered;
+        }
+
+        OpenSim::Component const* getIsolated() const override {
+            return nullptr;
+        }
+    };
+
     // draw a 3D model viewer
     void draw3DViewer(
             UiSimulation& sim,
             Report const& report,
-            Component3DViewer& viewer,
+            UiModelViewer& viewer,
             char const* name) {
 
-        Component3DViewerResponse resp =
-            viewer.draw(name, *sim.model, report.state, sim.selected, sim.hovered);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+        if (ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar)) {
+            RenderableSim rs{sim, report};
+            auto resp = viewer.draw(rs);
 
-        if (resp.isLeftClicked && resp.hovertestResult) {
-            sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
+            if (resp.isLeftClicked && resp.hovertestResult) {
+                sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
+            }
+            if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
+                sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
+            }
         }
-        if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
-            sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
-        }
+        ImGui::End();
     }
 
     // draw all active 3D viewers
@@ -848,7 +899,7 @@ namespace {
                 continue;
             }
 
-            Component3DViewer& viewer = *maybeViewer;
+            UiModelViewer& viewer = *maybeViewer;
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);

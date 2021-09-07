@@ -5,6 +5,7 @@
 #include "src/3D/GlGlm.hpp"
 #include "src/3D/Model.hpp"
 #include "src/3D/SceneMesh.hpp"
+#include "src/OpenSimBindings/UiTypes.hpp"
 #include "src/SimTKBindings/SceneGeneratorNew.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/App.hpp"
@@ -18,26 +19,6 @@
 #include <vector>
 
 using namespace osc;
-
-namespace {
-    template<typename Callback>
-    class SceneGeneratorLambda final : public SceneGeneratorNew {
-        Callback m_Callback;
-    public:
-        SceneGeneratorLambda(std::shared_ptr<ThreadsafeMeshCache> meshCache,
-                             SimTK::SimbodyMatterSubsystem const& matter,
-                             SimTK::State const& st,
-                             float fixupScaleFactor,
-                             Callback callback) :
-            SceneGeneratorNew{meshCache, matter, st, fixupScaleFactor},
-            m_Callback{std::move(callback)} {
-        }
-
-        void onSceneElementEmission(SceneElement const& se) override {
-            m_Callback(se);
-        }
-    };
-}
 
 static void getSceneElements(
         std::shared_ptr<ThreadsafeMeshCache> meshCache,
@@ -67,14 +48,6 @@ static void getSceneElements(
             dg.implementGeometry(visitor);
         }
         geomList.clear();
-    }
-}
-
-static bool sortByOpacityThenMeshID(SceneElement const& a, SceneElement const& b) {
-    if (a.color.a != a.color.a) {
-        return a.color.a < b.color.a;
-    } else {
-        return a.mesh.get() < b.mesh.get();
     }
 }
 
@@ -147,20 +120,7 @@ struct osc::SceneGeneratorNewScreen::Impl final {
 
     std::string modelPath = App::resource("models/RajagopalModel/Rajagopal2015.osim").string();
 
-    OpenSim::Model model = [this]() {
-        OpenSim::Model m{modelPath};
-        m.finalizeFromProperties();
-        m.finalizeConnections();
-        return m;
-    }();
-
-    SimTK::State state = [this]() {
-        SimTK::State rv = model.initSystem();
-        model.realizeAcceleration(rv);
-        return rv;
-    }();
-
-    std::vector<SceneElement> sceneElements;
+    UiModel uim{modelPath};
 
     PolarPerspectiveCamera camera;
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
@@ -224,9 +184,6 @@ void osc::SceneGeneratorNewScreen::draw() {
     gl::ClearColor(1.0f, 1.0f, 1.0f, 0.0f);  // set app window bg color
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // clear app window with bg color
 
-    getSceneElements(m_Impl->meshCache, m_Impl->model, m_Impl->state, m_Impl->sceneElements);
-    std::sort(m_Impl->sceneElements.begin(), m_Impl->sceneElements.end(), sortByOpacityThenMeshID);
-
     GouraudMrtShader& shader = m_Impl->shader;
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uProjMat, m_Impl->camera.getProjMtx(App::cur().aspectRatio()));
@@ -236,11 +193,11 @@ void osc::SceneGeneratorNewScreen::draw() {
     gl::Uniform(shader.uViewPos, m_Impl->camera.getPos());
 
     // upload all instances to the GPU;
-    gl::ArrayBuffer instanceBuf = uploadInstances(m_Impl->sceneElements.data(), m_Impl->sceneElements.size());
+    gl::ArrayBuffer instanceBuf = uploadInstances(m_Impl->uim.decorations.data(), m_Impl->uim.decorations.size());
 
     size_t pos = 0;
-    size_t ninstances = m_Impl->sceneElements.size();
-    auto const& els = m_Impl->sceneElements;
+    size_t ninstances = m_Impl->uim.decorations.size();
+    auto const& els = m_Impl->uim.decorations;
 
     while (pos < ninstances) {
         SceneElement const& se = els[pos];

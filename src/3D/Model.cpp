@@ -380,8 +380,16 @@ glm::vec3 osc::VecMin(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     return glm::vec3{std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z)};
 }
 
+glm::vec2 osc::VecMin(glm::vec2 const& a, glm::vec2 const& b) noexcept {
+    return glm::vec2{std::min(a.x, b.x), std::min(a.y, b.y)};
+}
+
 glm::vec3 osc::VecMax(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     return glm::vec3{std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z)};
+}
+
+glm::vec2 osc::VecMax(glm::vec2 const& a, glm::vec2 const& b) noexcept {
+    return glm::vec2{std::max(a.x, b.x), std::max(a.y, b.y)};
 }
 
 glm::vec3::length_type osc::VecLongestDimIdx(glm::vec3 const& v) noexcept {
@@ -485,7 +493,8 @@ std::array<glm::vec3, 8> osc::AABBVerts(AABB const& aabb) noexcept {
 AABB osc::AABBApplyXform(AABB const& aabb, glm::mat4 const& m) noexcept {
     auto verts = AABBVerts(aabb);
     for (auto& vert : verts) {
-        vert = m * glm::vec4{vert, 1.0f};
+        glm::vec4 p = m * glm::vec4{vert, 1.0f};
+        vert = glm::vec3{p / p.w}; // perspective divide
     }
 
     return AABBFromVerts(verts.data(), verts.size());

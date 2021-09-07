@@ -34,8 +34,14 @@ namespace osc {
     // returns a vector containing min(a[dim], b[dim]) for each dimension
     glm::vec3 VecMin(glm::vec3 const&, glm::vec3 const&) noexcept;
 
+    // returns a vector containing min(a[dim], b[dim]) for each dimension
+    glm::vec2 VecMin(glm::vec2 const&, glm::vec2 const&) noexcept;
+
     // returns a vector containing max(a[dim], b[dim]) for each dimension
     glm::vec3 VecMax(glm::vec3 const&, glm::vec3 const&) noexcept;
+
+    // returns a vector containing max(a[dim], b[dim]) for each dimension
+    glm::vec2 VecMax(glm::vec2 const&, glm::vec2 const&) noexcept;
 
     // returns the *index* of a vector's longest dimension
     glm::vec3::length_type VecLongestDimIdx(glm::vec3 const&) noexcept;

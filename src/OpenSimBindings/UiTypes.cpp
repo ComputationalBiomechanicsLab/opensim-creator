@@ -125,6 +125,38 @@ static std::unique_ptr<Report> createDummySimulationReport(OpenSim::Model const&
     return rv;
 }
 
+static void getSceneElements(OpenSim::Model const& m,
+                             SimTK::State const& st,
+                             float fixupScaleFactor,
+                             std::vector<LabelledSceneElement>& out) {
+    out.clear();
+
+    OpenSim::Component const* currentComponent = nullptr;
+    auto onEmit = [&](SceneElement const& se) {
+        out.emplace_back(se, currentComponent);
+    };
+
+    SceneGeneratorLambda visitor{ThreadsafeMeshCache::getGlobal(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
+
+    OpenSim::ModelDisplayHints mdh = m.getDisplayHints();
+
+    SimTK::Array_<SimTK::DecorativeGeometry> geomList;
+    for (OpenSim::Component const& c : m.getComponentList()) {
+        currentComponent = &c;
+        c.generateDecorations(true, mdh, st, geomList);
+        for (SimTK::DecorativeGeometry const& dg : geomList) {
+            dg.implementGeometry(visitor);
+        }
+        geomList.clear();
+
+        c.generateDecorations(false, mdh, st, geomList);
+        for (SimTK::DecorativeGeometry const& dg : geomList) {
+            dg.implementGeometry(visitor);
+        }
+        geomList.clear();
+    }
+}
+
 // named namespace is due to an MSVC internal linkage compiler bug
 namespace subfield_magic {
 
@@ -217,8 +249,37 @@ namespace subfield_magic {
     }
 }
 
+static bool sortByOpacityThenMeshID(SceneElement const& a, SceneElement const& b) {
+    if (a.color.a != a.color.a) {
+        return a.color.a < b.color.a;
+    } else {
+        return a.mesh.get() < b.mesh.get();
+    }
+}
+
 
 // public API
+
+void osc::generateDecorations(OpenSim::Model const& model,
+                              SimTK::State const& state,
+                              float fixupScaleFactor,
+                              std::vector<LabelledSceneElement>& out) {
+    out.clear();
+    getSceneElements(model, state, fixupScaleFactor, out);
+    std::sort(out.begin(), out.end(), sortByOpacityThenMeshID);
+}
+void osc::updateBVH(nonstd::span<LabelledSceneElement const> sceneEls, BVH& bvh) {
+    std::vector<AABB> aabbs;
+    aabbs.reserve(sceneEls.size());
+    for (auto const& el : sceneEls) {
+        aabbs.push_back(el.worldspaceAABB);
+    }
+    BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
+}
+
+osc::UiModel::UiModel(std::string const& osim) :
+    UiModel{std::make_unique<OpenSim::Model>(osim)} {
+}
 
 osc::UiModel::UiModel(std::unique_ptr<OpenSim::Model> _model) :
     model{[&_model]() {
@@ -231,10 +292,16 @@ osc::UiModel::UiModel(std::unique_ptr<OpenSim::Model> _model) :
         model->realizePosition(*rv);
         return rv;
     }()},
+    decorations{},
+    sceneAABBBVH{},
+    fixupScaleFactor{1.0f},
     selected{nullptr},
     hovered{nullptr},
     isolated{nullptr},
     timestamp{std::chrono::system_clock::now()} {
+
+    generateDecorations(*model, *state, fixupScaleFactor, decorations);
+    updateBVH(decorations, sceneAABBBVH);
 }
 
 osc::UiModel::UiModel(UiModel const& other, std::chrono::system_clock::time_point t) :
@@ -250,10 +317,16 @@ osc::UiModel::UiModel(UiModel const& other, std::chrono::system_clock::time_poin
         model->realizePosition(*rv);
         return rv;
     }()},
+    decorations{},
+    sceneAABBBVH{},
+    fixupScaleFactor{1.0f},
     selected{relocateComponentPointerToAnotherModel(*model, other.selected)},
     hovered{relocateComponentPointerToAnotherModel(*model, other.hovered)},
     isolated{relocateComponentPointerToAnotherModel(*model, other.isolated)},
     timestamp{t} {
+
+    generateDecorations(*model, *state, fixupScaleFactor, decorations);
+    updateBVH(decorations, sceneAABBBVH);
 }
 
 osc::UiModel::UiModel(UiModel const& other) : UiModel{other, std::chrono::system_clock::now()} {
@@ -269,6 +342,8 @@ void osc::UiModel::onUiModelModified() {
     *this->state = model->initSystem();
     model->equilibrateMuscles(*this->state);
     model->realizePosition(*this->state);
+    generateDecorations(*model, *state, fixupScaleFactor, decorations);
+    updateBVH(decorations, sceneAABBBVH);
     this->timestamp = std::chrono::system_clock::now();
 }
 

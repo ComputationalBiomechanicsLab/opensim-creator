@@ -17,7 +17,7 @@ namespace SimTK {
 }
 
 namespace osc {
-    struct SceneElement final {
+    struct SceneElement {
         std::shared_ptr<SceneMesh> mesh;
         glm::mat4x3 modelMtx;
         glm::mat3 normalMtx;
@@ -54,5 +54,23 @@ namespace osc {
         void implementArrowGeometry(SimTK::DecorativeArrow const&) override final;
         void implementTorusGeometry(SimTK::DecorativeTorus const&) override final;
         void implementConeGeometry(SimTK::DecorativeCone const&) override final;
+    };
+
+    template<typename Callback>
+    class SceneGeneratorLambda final : public SceneGeneratorNew {
+        Callback m_Callback;
+    public:
+        SceneGeneratorLambda(std::shared_ptr<ThreadsafeMeshCache> meshCache,
+                             SimTK::SimbodyMatterSubsystem const& matter,
+                             SimTK::State const& st,
+                             float fixupScaleFactor,
+                             Callback callback) :
+            SceneGeneratorNew{meshCache, matter, st, fixupScaleFactor},
+            m_Callback{std::move(callback)} {
+        }
+
+        void onSceneElementEmission(SceneElement const& se) override {
+            m_Callback(se);
+        }
     };
 }

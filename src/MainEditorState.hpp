@@ -2,7 +2,7 @@
 
 #include "src/OpenSimBindings/UiTypes.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
-#include "src/UI/Component3DViewer.hpp"
+#include "src/UI/UiModelViewer.hpp"
 
 #include <array>
 #include <vector>
@@ -52,7 +52,7 @@ namespace osc {
         // cached between screens
         //
         // the viewers can be null, which should be interpreted as "not yet initialized"
-        std::array<std::unique_ptr<Component3DViewer>, 4> viewers;
+        std::array<std::unique_ptr<UiModelViewer>, 4> viewers;
 
         // which panels should be shown
         //

@@ -113,10 +113,6 @@ namespace {
     void transitionToLoadingScreen(std::shared_ptr<MainEditorState> st, std::filesystem::path p) {
         App::cur().requestTransition<LoadingScreen>(st, p);
     }
-
-    std::unique_ptr<Component3DViewer> create3DViewer() {
-        return std::make_unique<Component3DViewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
-    }
 }
 
 
@@ -497,7 +493,7 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st) {
         }
 
         for (size_t i = 0; i < st.viewers.size(); ++i) {
-            Component3DViewer* viewer = st.viewers[i].get();
+            UiModelViewer* viewer = st.viewers[i].get();
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);
@@ -506,7 +502,7 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st) {
             if (ImGui::MenuItem(buf, nullptr, &enabled)) {
                 if (enabled) {
                     // was enabled by user click
-                    st.viewers[i] = create3DViewer();
+                    st.viewers[i] = std::make_unique<UiModelViewer>();
                 } else {
                     // was disabled by user click
                     st.viewers[i] = nullptr;

@@ -1,13 +1,17 @@
 #pragma once
 
 #include "src/3D/SceneMesh.hpp"
+#include "src/Assertions.hpp"
 
 #include <memory>
 #include <string>
 
 namespace osc {
     class ThreadsafeMeshCache final {
+
     public:
+        [[nodiscard]] static std::shared_ptr<ThreadsafeMeshCache> getGlobal();
+
         ThreadsafeMeshCache();
         ~ThreadsafeMeshCache() noexcept;
 

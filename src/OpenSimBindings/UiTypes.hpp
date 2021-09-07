@@ -1,6 +1,9 @@
 #pragma once
 
 #include "src/Utils/CircularBuffer.hpp"
+#include "src/SimTKBindings/SceneGeneratorNew.hpp"
+
+#include <nonstd/span.hpp>
 
 #include <vector>
 #include <memory>
@@ -26,16 +29,53 @@ namespace osc {
 
 namespace osc {
 
+    struct LabelledSceneElement : public SceneElement {
+        OpenSim::Component const* component;
+
+        LabelledSceneElement(SceneElement const& se, OpenSim::Component const* c) :
+            SceneElement{se}, component{c} {
+        }
+    };
+
+    class RenderableScene {
+    public:
+        virtual ~RenderableScene() noexcept = default;
+        virtual nonstd::span<LabelledSceneElement const> getSceneDecorations() const = 0;
+        virtual BVH const& getSceneBVH() const = 0;
+        virtual float getFixupScaleFactor() const = 0;
+        virtual OpenSim::Component const* getSelected() const = 0;
+        virtual OpenSim::Component const* getHovered() const = 0;
+        virtual OpenSim::Component const* getIsolated() const = 0;
+    };
+
+    void generateDecorations(OpenSim::Model const&,
+                       SimTK::State const&,
+                       float fixupScaleFactor,
+                       std::vector<LabelledSceneElement>&);
+    void updateBVH(nonstd::span<LabelledSceneElement const>, BVH&);
+
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
     //
     // this is what most of the components, screen elements, etc. are
     // accessing - usually indirectly (e.g. via a reference to the Model)
-    struct UiModel final {
+    struct UiModel final : public RenderableScene {
         // the model, finalized from its properties
         std::unique_ptr<OpenSim::Model> model;
 
         // SimTK::State, in a renderable state (e.g. realized up to a relevant stage)
         std::unique_ptr<SimTK::State> state;
+
+        // decorations, generated from model's display properties etc.
+        std::vector<LabelledSceneElement> decorations;
+
+        // scene-level BVH of decoration AABBs
+        BVH sceneAABBBVH;
+
+        // fixup scale factor of the model
+        //
+        // this scales up/down the decorations of the model - used for extremely
+        // undersized models (e.g. fly leg)
+        float fixupScaleFactor;
 
         // current selection, if any
         OpenSim::Component* selected;
@@ -56,11 +96,12 @@ namespace osc {
         // track how old/new the instance is
         std::chrono::system_clock::time_point timestamp;
 
+        explicit UiModel(std::string const& osim);
         explicit UiModel(std::unique_ptr<OpenSim::Model>);
         UiModel(UiModel const&);
         UiModel(UiModel const&, std::chrono::system_clock::time_point t);
         UiModel(UiModel&&) noexcept;
-        ~UiModel() noexcept;
+        ~UiModel() noexcept override;
 
         UiModel& operator=(UiModel const&) = delete;
         UiModel& operator=(UiModel&&);
@@ -72,6 +113,30 @@ namespace osc {
         // state that can't be used to initialize a new SimTK::MultiBodySystem or
         // SimTK::State
         void onUiModelModified();
+
+        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override {
+            return decorations;
+        }
+
+        BVH const& getSceneBVH() const override {
+            return sceneAABBBVH;
+        }
+
+        float getFixupScaleFactor() const override {
+            return fixupScaleFactor;
+        }
+
+        OpenSim::Component const* getSelected() const override {
+            return selected;
+        }
+
+        OpenSim::Component const* getHovered() const override {
+            return hovered;
+        }
+
+        OpenSim::Component const* getIsolated() const override {
+            return isolated;
+        }
     };
 
     // a "UI-ready" OpenSim::Model with undo/redo and rollback support
