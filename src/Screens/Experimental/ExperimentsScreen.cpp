@@ -1,15 +1,12 @@
 #include "ExperimentsScreen.hpp"
 
 #include "src/3D/Gl.hpp"
-#include "src/Screens/Experimental/Component3DViewerScreen.hpp"
 #include "src/Screens/Experimental/HelloTriangleScreen.hpp"
 #include "src/Screens/Experimental/HittestScreen.hpp"
 #include "src/Screens/Experimental/MeshHittestWithBVHScreen.hpp"
 #include "src/Screens/Experimental/InstancedRendererScreen.hpp"
 #include "src/Screens/Experimental/MeshHittestScreen.hpp"
 #include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
-#include "src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.hpp"
-#include "src/Screens/Experimental/SimbodyMeshgenScreen.hpp"
 #include "src/Screens/Experimental/ImGuizmoDemoScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
@@ -32,14 +29,11 @@ struct Entry final { std::string name; transition_fn f;  };
 // experiments screen impl
 struct ExperimentsScreen::Impl final {
     std::vector<Entry> entries = {
-        { "Component 3D Viewer Test", transition<Component3DViewerScreen> },
         { "Hello Triangle (OpenGL test)", transition<HelloTriangleScreen> },
         { "Hit testing analytical geometry (AABBs, Spheres, etc.)", transition<HittestScreen> },
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
         { "OpenSim mesh importer wizard", transition<MeshesToModelWizardScreen> },
-        { "OpenSim Model+State decoration generation", transition<OpenSimModelstateDecorationGeneratorScreen> },
-        { "Simbody mesh generation", transition<SimbodyMeshgenScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
     };

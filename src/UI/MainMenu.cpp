@@ -6,7 +6,6 @@
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
-#include "src/UI/Component3DViewer.hpp"
 #include "src/UI/HelpMarker.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"

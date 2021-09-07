@@ -118,8 +118,6 @@ add_executable(osc
     src/OpenSimBindings/FileChangePoller.cpp
     src/OpenSimBindings/FileChangePoller.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
-    src/OpenSimBindings/SceneGenerator.cpp
-    src/OpenSimBindings/SceneGenerator.hpp
     src/OpenSimBindings/Simulation.cpp
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/TypeRegistry.cpp
@@ -127,8 +125,6 @@ add_executable(osc
     src/OpenSimBindings/UiTypes.cpp
     src/OpenSimBindings/UiTypes.hpp
 
-    src/Screens/Experimental/Component3DViewerScreen.cpp
-    src/Screens/Experimental/Component3DViewerScreen.hpp
     src/Screens/Experimental/ExperimentsScreen.cpp
     src/Screens/Experimental/ExperimentsScreen.hpp
     src/Screens/Experimental/HelloTriangleScreen.cpp
@@ -147,12 +143,6 @@ add_executable(osc
     src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
     src/Screens/Experimental/MeshesToModelWizardScreen.cpp
     src/Screens/Experimental/MeshesToModelWizardScreen.hpp
-    src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.cpp
-    src/Screens/Experimental/OpenSimModelstateDecorationGeneratorScreen.hpp
-    src/Screens/Experimental/SceneGeneratorNewScreen.cpp
-    src/Screens/Experimental/SceneGeneratorNewScreen.hpp
-    src/Screens/Experimental/SimbodyMeshgenScreen.cpp
-    src/Screens/Experimental/SimbodyMeshgenScreen.hpp
     src/Screens/Experimental/UiModelViewerScreen.cpp
     src/Screens/Experimental/UiModelViewerScreen.hpp
 
@@ -174,8 +164,6 @@ add_executable(osc
     src/SimTKBindings/SceneGeneratorNew.cpp
     src/SimTKBindings/SceneGeneratorNew.hpp
     src/SimTKBindings/SimTKConverters.hpp
-    src/SimTKBindings/SimTKGeometryGenerator.cpp
-    src/SimTKBindings/SimTKGeometryGenerator.hpp
     src/SimTKBindings/SimTKLoadMesh.cpp
     src/SimTKBindings/SimTKLoadMesh.hpp
     src/SimTKBindings/ThreadsafeMeshCache.cpp
@@ -187,8 +175,6 @@ add_executable(osc
     src/UI/AddComponentPopup.hpp
     src/UI/AttachGeometryPopup.cpp
     src/UI/AttachGeometryPopup.hpp
-    src/UI/Component3DViewer.cpp
-    src/UI/Component3DViewer.hpp
     src/UI/ComponentDetails.cpp
     src/UI/ComponentDetails.hpp
     src/UI/ComponentHierarchy.cpp

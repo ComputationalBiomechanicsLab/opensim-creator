@@ -3,7 +3,6 @@
 #include "src/3D/Gl.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/UI/LogViewer.hpp"
-#include "src/UI/Component3DViewer.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
@@ -26,13 +25,6 @@
 using namespace osc;
 
 namespace {
-
-    // create Component 3D viewer for rendering the scene
-    [[nodiscard]] std::unique_ptr<Component3DViewer> create3DViewer() {
-        return std::make_unique<Component3DViewer>(Component3DViewerFlags_Default | Component3DViewerFlags_DrawFrames);
-    }
-
-
     // draw timescrubber slider
     void drawSimulationScrubber(
             osc::MainEditorState& st,
