@@ -30,7 +30,7 @@ REM which OSC build target to build
 REM
 REM     osc        just build the osc binary
 REM     package    package everything into a .deb installer
-set OSC_BUILD_TARGET=osc
+set OSC_BUILD_TARGET=package
 
 REM change this if you want to try a different generator+arch combo
 set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64
