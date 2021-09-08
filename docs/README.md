@@ -1,4 +1,4 @@
-# OpenSim Creator Documentation
+# OpenSim Creator's Documentation
 
 > [Sphinx](https://www.sphinx-doc.org/en/master/)-based docs that use the [furo](https://sphinx-themes.org/sample-sites/furo/) theme
 
