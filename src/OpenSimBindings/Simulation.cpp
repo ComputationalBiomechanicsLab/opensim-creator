@@ -4,6 +4,7 @@
 #include "src/Utils/ConcurrencyHelpers.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Assertions.hpp"
+#include "src/App.hpp"
 
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
@@ -183,6 +184,7 @@ static FdsimStatus FdSimulationMainUnguarded(
         guard->regularReports.push_back(std::move(regularReport));
         guard->latestReport = std::move(spotReport);
         tNextRegularReport = t0 + params.ReportingInterval.count();
+        App::cur().requestRedraw();
     }
 
     // integrate (t0..tfinal]
@@ -252,9 +254,11 @@ static FdsimStatus FdSimulationMainUnguarded(
             guard->latestSimTime = std::chrono::duration<double>{integ->getTime()};
             if (regulaReport) {
                 guard->regularReports.push_back(std::move(regulaReport));
+                App::cur().requestRedraw();
             }
             if (spotReport) {
                 guard->latestReport = std::move(spotReport);
+                App::cur().requestRedraw();
             }
         }
     }

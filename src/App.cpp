@@ -531,6 +531,12 @@ struct osc::App::Impl final {
     // set to true if application is in debug mode
     bool isDebugModeEnabled = false;
 
+    // set to true if the main loop should pause on events
+    //
+    // CAREFUL: this makes the app event-driven, which may not do what you
+    //          want
+    bool isInWaitMode = false;
+
     // current screen being shown (if any)
     std::unique_ptr<Screen> currentScreen = nullptr;
 
@@ -563,11 +569,17 @@ static void appEnterMainLoopUnguarded(App::Impl& impl) {
 
     while (true) {  // gameloop
 
-        for (SDL_Event e; SDL_PollEvent(&e);) {  // event pump
+        bool wait = impl.isInWaitMode;
+        for (SDL_Event e; wait ? SDL_WaitEvent(&e) : SDL_PollEvent(&e);) {  // event pump
+            wait = false;
 
             // SDL_QUIT should cause the application to immediately quit
             if (e.type == SDL_QUIT) {
                 return;
+            }
+
+            if (e.type == SDL_USEREVENT) {
+                continue;  // it's a redraw event that lower layers can't handle anyway
             }
 
             // let screen handle the event
@@ -978,4 +990,19 @@ void osc::ImGuiRender() {
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
     }
+}
+
+void osc::App::makeMainEventLoopWaiting() {
+    m_Impl->isInWaitMode = true;
+}
+
+void osc::App::makeMainEventLoopPolling() {
+    m_Impl->isInWaitMode = false;
+    requestRedraw();  // edge-case is that the main thread is waiting on something
+}
+
+void osc::App::requestRedraw() {
+    SDL_Event e{};
+    e.type = SDL_USEREVENT;
+    SDL_PushEvent(&e);
 }

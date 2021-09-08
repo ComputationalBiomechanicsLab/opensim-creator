@@ -188,6 +188,23 @@ namespace osc {
 
         // returns the application-wide mesh cache
         MeshCache& getMeshCache() noexcept;
+
+        // makes main application event loop wait, rather than poll, for events
+        //
+        // this transforms the application from being a game-like loop (continuously
+        // re-render) into something closer to an application. Downstream screens will
+        // have to call `requestRedraw` to force the application to redraw when there isn't
+        // and OS event
+        void makeMainEventLoopWaiting();
+
+        // makes the main application event loop poll, rather than waiting, for events
+        //
+        // this makes the application game-like, and doesn't require that downstream screens
+        // call `requestRedraw` whenever they want to force a redraw
+        void makeMainEventLoopPolling();
+
+        // threadsafe: pumps a redraw event into the application's event loop
+        void requestRedraw();
     };
 
     // ImGui support

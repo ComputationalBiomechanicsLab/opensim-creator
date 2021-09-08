@@ -497,6 +497,7 @@ struct ModelEditorScreen::Impl final {
     struct {
         bool editSimParamsRequested = false;
         bool subpanelRequestedEarlyExit = false;
+        bool shouldRequestRedraw = false;
     } resetPerFrame;
 
     explicit Impl(std::shared_ptr<MainEditorState> _st) :
@@ -1258,6 +1259,9 @@ namespace {
     //
     // can throw if the model is in an invalid state
     void modelEditorDrawUnguarded(ModelEditorScreen::Impl& impl) {
+        if (impl.resetPerFrame.shouldRequestRedraw) {
+            App::cur().requestRedraw();
+        }
 
         impl.resetPerFrame = {};
 
@@ -1366,15 +1370,18 @@ osc::ModelEditorScreen& osc::ModelEditorScreen::operator=(ModelEditorScreen&&) n
 osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
 
 void osc::ModelEditorScreen::onMount() {
+    App::cur().makeMainEventLoopWaiting();
     osc::ImGuiInit();
 }
 
 void osc::ModelEditorScreen::onUnmount() {
+    App::cur().makeMainEventLoopPolling();
     osc::ImGuiShutdown();
 }
 
 void ModelEditorScreen::onEvent(SDL_Event const& e) {
     if (osc::ImGuiOnEvent(e)) {
+        m_Impl->resetPerFrame.shouldRequestRedraw = true;
         return;
     }
 
