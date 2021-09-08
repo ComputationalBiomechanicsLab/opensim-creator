@@ -439,14 +439,14 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     glm::vec3 viewerPos = impl.camera.getPos();
 
     // setup uniforms
-    GouraudMrtShader& shader = impl.shader;
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjMat, projMtx);
-    gl::Uniform(shader.uViewMat, viewMtx);
-    gl::Uniform(shader.uLightDir, impl.lightDir);
-    gl::Uniform(shader.uIsTextured, false);
-    gl::Uniform(shader.uLightColor, impl.lightCol);
-    gl::Uniform(shader.uViewPos, viewerPos);
+    GouraudMrtShader& gouraudShader = impl.shader;
+    gl::UseProgram(gouraudShader.program);
+    gl::Uniform(gouraudShader.uProjMat, projMtx);
+    gl::Uniform(gouraudShader.uViewMat, viewMtx);
+    gl::Uniform(gouraudShader.uLightDir, impl.lightDir);
+    gl::Uniform(gouraudShader.uIsTextured, false);
+    gl::Uniform(gouraudShader.uLightColor, impl.lightCol);
+    gl::Uniform(gouraudShader.uViewPos, viewerPos);
 
     // upload all instances to the GPU
     gl::ArrayBuffer instanceBuf = impl.uploadInstances(rs);
@@ -497,14 +497,14 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
 
     // draw mesh normals, if requested
     if (impl.drawMeshNormals) {
-        NormalsShader& shader = impl.normalsShader;
+        NormalsShader& normalShader = impl.normalsShader;
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-        gl::UseProgram(shader.program);
-        gl::Uniform(shader.uProjMat, projMtx);
-        gl::Uniform(shader.uViewMat, viewMtx);
+        gl::UseProgram(normalShader.program);
+        gl::Uniform(normalShader.uProjMat, projMtx);
+        gl::Uniform(normalShader.uViewMat, viewMtx);
         for (auto const& se : decs) {
-            gl::Uniform(shader.uModelMat, se.modelMtx);
-            gl::Uniform(shader.uNormalMat, se.normalMtx);
+            gl::Uniform(normalShader.uModelMat, se.modelMtx);
+            gl::Uniform(normalShader.uNormalMat, se.normalMtx);
             SceneGPUMesh const& gpuMesh = impl.getGPUMeshCached(*se.mesh);
             gl::BindVertexArray(gpuMesh.vao);
             gl::DrawElements(GL_TRIANGLES, gpuMesh.indices.sizei(), gl::indexType(gpuMesh.indices), nullptr);
