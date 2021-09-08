@@ -1188,15 +1188,16 @@ namespace {
             char const* name) {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
         bool opened = ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar);
-        OSC_SCOPE_GUARD({ ImGui::End(); });
 
         if (!opened) {
+            ImGui::End();
             return;
         }
 
         auto resp = viewer.draw(impl.st->editedModel.current);
+        ImGui::PopStyleVar();
+        ImGui::End();
 
         // update hover
         if (resp.isMousedOver && resp.hovertestResult != impl.st->hovered()) {

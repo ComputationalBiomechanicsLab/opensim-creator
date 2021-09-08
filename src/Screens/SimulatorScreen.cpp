@@ -851,19 +851,24 @@ namespace {
             char const* name) {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
-        if (ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar)) {
-            RenderableSim rs{sim, report};
-            auto resp = viewer.draw(rs);
+        bool opened = ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar);
 
-            if (resp.isLeftClicked && resp.hovertestResult) {
-                sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
-            }
-            if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
-                sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
-            }
+        if (!opened) {
+            ImGui::End();
+            return;
         }
+
+        RenderableSim rs{sim, report};
+        auto resp = viewer.draw(rs);
+        ImGui::PopStyleVar();
         ImGui::End();
+
+        if (resp.isLeftClicked && resp.hovertestResult) {
+            sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
+        }
+        if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
+            sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
+        }
     }
 
     // draw all active 3D viewers
