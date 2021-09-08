@@ -1,6 +1,6 @@
 # OpenSim Creator's Documentation
 
-> [Sphinx](https://www.sphinx-doc.org/en/master/)-based docs that use the [furo](https://sphinx-themes.org/sample-sites/furo/) theme
+> [Sphinx](https://www.sphinx-doc.org/en/master/)-based docs
 
 This directory contains the source code for OpenSim Creator's official documenation. The
 documentation is kept in-tree so that documentation revisions are part of each software
@@ -18,17 +18,17 @@ To build the documentation, you will need:
   - On Linux, you can probably just `{apt-get,yum,pacman} install pip`
   - On Mac, you can probably just `brew install pip`
 
-Workspace setup:
+#### Workspace setup
 
 - If you use `venv`s, set one up: `python -m venv venv/ && source venv/bin/activate`
 - Install dependencies: `pip install -r requirements.txt`
 
-Building HTML:
+#### Building HTML
 
 - While in the `docs/` dir, run `sphinx-build -M html source build`
 - The docs wil be written to `build/html`, they can be opened in a standard browser
 
-Automatically Rebuilding + Reloading (handy for development):
+#### Automatically Rebuilding + Reloading (handy for development)
 
 - Install `sphinx-autobuild`: `pip install sphinx-autobuild`
 - While in the `docs/` dir, run `sphinx-autobuild source build`
