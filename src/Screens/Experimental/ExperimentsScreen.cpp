@@ -3,11 +3,12 @@
 #include "src/3D/Gl.hpp"
 #include "src/Screens/Experimental/HelloTriangleScreen.hpp"
 #include "src/Screens/Experimental/HittestScreen.hpp"
-#include "src/Screens/Experimental/MeshHittestWithBVHScreen.hpp"
-#include "src/Screens/Experimental/InstancedRendererScreen.hpp"
-#include "src/Screens/Experimental/MeshHittestScreen.hpp"
-#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
 #include "src/Screens/Experimental/ImGuizmoDemoScreen.hpp"
+#include "src/Screens/Experimental/InstancedRendererScreen.hpp"
+#include "src/Screens/Experimental/MathExperimentsScreen.hpp"
+#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/Experimental/MeshHittestScreen.hpp"
+#include "src/Screens/Experimental/MeshHittestWithBVHScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
 
@@ -32,6 +33,7 @@ struct ExperimentsScreen::Impl final {
         { "Hello Triangle (OpenGL test)", transition<HelloTriangleScreen> },
         { "Hit testing analytical geometry (AABBs, Spheres, etc.)", transition<HittestScreen> },
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
+        { "Random math experiments", transition<MathExperimentsScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
         { "OpenSim mesh importer wizard", transition<MeshesToModelWizardScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
