@@ -1,4 +1,5 @@
 resources = "resources"
+docs = "share/doc/html"
 
 [experimental_feature_flags]
 

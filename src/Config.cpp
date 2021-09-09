@@ -72,7 +72,7 @@ namespace {
 
         // config file parsed as TOML just fine
 
-        // init `resource_dir`
+        // resources
         {
             auto maybe_resources = config["resources"];
             if (maybe_resources) {
@@ -82,6 +82,13 @@ namespace {
                 fs::path config_file_dir = config_pth->parent_path();
                 cfg.resourceDir = config_file_dir / rp;
             }
+        }
+
+        // docs dir
+        if (auto docs = config["docs"]; docs) {
+            std::string pth = (*docs.as_string()).get();
+            fs::path config_file_dir = config_pth->parent_path();
+            cfg.htmlDocsDir = config_file_dir / pth;
         }
 
         // init `use_multi_viewport`

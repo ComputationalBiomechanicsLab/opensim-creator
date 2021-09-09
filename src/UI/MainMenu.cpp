@@ -13,6 +13,7 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/MainEditorState.hpp"
 #include "src/App.hpp"
+#include "src/Config.hpp"
 #include "src/Log.hpp"
 #include "src/os.hpp"
 #include "src/Styling.hpp"
@@ -424,6 +425,22 @@ void osc::MainMenuAboutTab::draw() {
     ImGui::Dummy(ImVec2(0.0f, 0.5f));
     {
         ImGui::Columns(2);
+
+        ImGui::TextUnformatted("OpenSim Creator Documentation");
+        ImGui::NextColumn();
+        ImGui::PushID(id++);
+        if (ImGui::Button(ICON_FA_LINK " open")) {
+            OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("this will open the (locally installed) documentation in a separate browser window");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
 
         ImGui::TextUnformatted("OpenSim Creator GitHub");
         ImGui::NextColumn();

@@ -12,6 +12,7 @@
 # INSTALL configuration file.
 
 resources = "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+docs = "@CMAKE_CURRENT_SOURCE_DIR@/docs/build/html"
 
 [experimental_feature_flags]
 
