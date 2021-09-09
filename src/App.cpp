@@ -819,6 +819,62 @@ void osc::App::addRecentFile(std::filesystem::path const& p) {
     fd << nowAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
 }
 
+bool osc::App::isWindowFocused() const noexcept {
+    return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
+}
+
+App::MouseState osc::App::getMouseState() const noexcept {
+    MouseState rv;
+
+    glm::ivec2 mouseLocal;
+    Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
+    rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
+    rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
+    rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+    rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
+    rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
+
+    static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+    if (isWindowFocused()) {
+        if (canUseGlobalMouseState) {
+            glm::ivec2 mouseGlobal;
+            SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
+            glm::ivec2 mouseWindow;
+            SDL_GetWindowPosition(m_Impl->window, &mouseWindow.x, &mouseWindow.y);
+
+            rv.pos = mouseGlobal - mouseWindow;
+        } else {
+            rv.pos = mouseLocal;
+        }
+    }
+
+    return rv;
+}
+
+uint64_t osc::App::getTicks() const noexcept {
+    return SDL_GetPerformanceCounter();
+}
+
+uint64_t osc::App::getTickFrequency() const noexcept {
+    return SDL_GetPerformanceFrequency();
+}
+
+bool osc::App::isShiftPressed() const noexcept {
+    return SDL_GetModState() & KMOD_SHIFT;
+}
+
+bool osc::App::isCtrlPressed() const noexcept {
+    return SDL_GetModState() & KMOD_CTRL;
+}
+
+bool osc::App::isAltPressed() const noexcept {
+    return SDL_GetModState() & KMOD_ALT;
+}
+
+void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept {
+    SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
+}
+
 void osc::ImGuiInit() {
 
     // init ImGui top-level context
