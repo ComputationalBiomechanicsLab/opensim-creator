@@ -30,10 +30,10 @@ REM which OSC build target to build
 REM
 REM     osc        just build the osc binary
 REM     package    package everything into a .deb installer
-set OSC_BUILD_TARGET=osc
+set OSC_BUILD_TARGET=package
 
 REM change this if you want to try a different generator+arch combo
-set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64
+set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE%
 
 echo "----- starting build -----"
 echo ""
@@ -96,7 +96,7 @@ cd ..
 echo "----- building OSC -----"
 mkdir osc-build
 cd osc-build
-cmake .. %OSC_CMAKE_GENFLAGS% -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake || exit /b
+cmake .. %OSC_CMAKE_GENFLAGS% -DCMAKE_PREFIX_PATH=%cd%/../opensim-install/cmake -DCMAKE_INSTALL_PATH=%cd%/../osc-install || exit /b
 cmake --build . --config %OSC_BUILD_TYPE% --target %OSC_BUILD_TARGET% -j%OSC_BUILD_CONCURRENCY% || exit /b
 
 echo "----- osc built, printing build dir -----"
