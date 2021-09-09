@@ -14,14 +14,14 @@ osc::IoPoller::IoPoller() :
     DeltaTime{0.0f},
     MousePos{0.0f, 0.0f},
     MousePosPrevious{0.0f, 0.0f},
-    MousePosDelta{0.0f, 0.0f},
+    MouseDelta{0.0f, 0.0f},
     WantMousePosWarpTo{false},
     MousePosWarpTo{-1.0f, -1.0f},
     MousePressed{false, false, false},
     // KeysDown: handled below
-    ShiftDown{false},
-    CtrlDown{false},
-    AltDown{false},
+    KeyShift{false},
+    KeyCtrl{false},
+    KeyAlt{false},
     // KeysDownDuration: handled below
     // KeysDownDurationPrev: handled below
     _mousePressedEvents{false, false, false}
@@ -39,11 +39,11 @@ void osc::IoPoller::onEvent(SDL_Event const& e) {
         case SDL_BUTTON_RIGHT: _mousePressedEvents[1] = true; break;
         case SDL_BUTTON_MIDDLE: _mousePressedEvents[2] = true; break;
         }
-    } else if (e.type == SDL_KEYUP) {
+    } else if (e.type == SDL_KEYUP || e.type == SDL_KEYDOWN) {
         KeysDown[e.key.keysym.scancode] = e.type == SDL_KEYDOWN;
-        ShiftDown = App::cur().isShiftPressed();
-        CtrlDown = App::cur().isCtrlPressed();
-        AltDown = App::cur().isAltPressed();
+        KeyShift = App::cur().isShiftPressed();
+        KeyCtrl = App::cur().isCtrlPressed();
+        KeyAlt = App::cur().isAltPressed();
     }
 }
 
@@ -64,7 +64,7 @@ void osc::IoPoller::onUpdate() {
     MousePressed[2] = _mousePressedEvents[2] || mouseState.MiddleDown;
     MousePosPrevious = MousePos;
     MousePos = mouseState.pos;
-    MousePosDelta = MousePos - MousePosPrevious;
+    MouseDelta = MousePos - MousePosPrevious;
 
     // (edge-case)
     //
@@ -74,7 +74,7 @@ void osc::IoPoller::onUpdate() {
     // location to the warp location
     if (WantMousePosWarpTo && App::cur().isWindowFocused()) {
         App::cur().warpMouseInWindow(MousePosWarpTo);
-        MousePosPrevious = MousePos - MousePosDelta;
+        MousePosPrevious = MousePos - MouseDelta;
         MousePos = MousePosWarpTo;
         WantMousePosWarpTo = false;
     }

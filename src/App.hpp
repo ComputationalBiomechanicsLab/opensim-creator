@@ -86,7 +86,7 @@ namespace osc {
         [[nodiscard]] float aspectRatio() const noexcept;
 
         // hides mouse in screen and makes it operate relative per-frame
-        void setRelativeMouseMode() noexcept;
+        void setRelativeMouseMode(bool) noexcept;
 
         // makes the application window fullscreen
         void makeFullscreen();

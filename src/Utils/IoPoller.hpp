@@ -27,7 +27,7 @@ namespace osc {
         glm::vec2 MousePosPrevious;
 
         // mouse position delta from previous update (== MousePos - MousePosPrevious)
-        glm::vec2 MousePosDelta;
+        glm::vec2 MouseDelta;
 
         // indicates that the backend should set the OS mouse pos
         //
@@ -45,9 +45,9 @@ namespace osc {
 
         // keyboard keys that are currently pressed
         std::array<bool, 512> KeysDown;
-        bool ShiftDown;
-        bool CtrlDown;
-        bool AltDown;
+        bool KeyShift;
+        bool KeyCtrl;
+        bool KeyAlt;
 
         // duration, in seconds, that each key has been pressed for
         //

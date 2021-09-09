@@ -683,8 +683,8 @@ float osc::App::aspectRatio() const noexcept {
     return v.x / v.y;
 }
 
-void osc::App::setRelativeMouseMode() noexcept {
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+void osc::App::setRelativeMouseMode(bool v) noexcept {
+    SDL_SetRelativeMouseMode(v ? SDL_TRUE : SDL_FALSE);
 }
 
 void osc::App::makeFullscreen() {
