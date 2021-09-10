@@ -1,6 +1,7 @@
 #include "ComponentHierarchy.hpp"
 
 #include "src/Assertions.hpp"
+#include "src/Log.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -26,7 +27,7 @@ namespace {
         int n = 0;
 
         SizedArray& operator=(SizedArray const& rhs) {
-            std::copy(rhs.els.begin(), rhs.els.begin() + size(), els.begin());
+            std::copy(rhs.els.begin(), rhs.els.begin() + rhs.size(), els.begin());
             n = rhs.n;
             return *this;
         }
@@ -93,13 +94,22 @@ namespace {
 
         out.clear();
 
-        // child --> parent
-        while (child != ancestor && child->hasOwner()) {
+        // populate child --> parent
+        while (child) {
             out.push_back(child);
+
+            if (!child->hasOwner()) {
+                break;
+            }
+
+            if (child == ancestor) {
+                break;
+            }
+
             child = &child->getOwner();
         }
 
-        // parent --> child
+        // reverse to yield parent --> child
         std::reverse(out.begin(), out.end());
     }
 
@@ -113,6 +123,16 @@ namespace {
     }
 }
 
+static bool isSearchHit(char const* searchStr, ComponentPath const& cp) {
+    for (auto const& c : cp) {
+        std::string const& name = c->getName();
+        if (name.find(searchStr) != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 // public API
 
@@ -120,6 +140,8 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     OpenSim::Component const* root,
     OpenSim::Component const* selection,
     OpenSim::Component const* hover) {
+
+    ImGui::InputText("search", search, sizeof(search));
 
     Response response;
 
@@ -143,23 +165,17 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     auto const end = lst.end();
 
     // initially populate lookahead (+ path)
-    OpenSim::Component const* lookahead = nullptr;
+    OpenSim::Component const* lookahead = root;
     ComponentPath lookaheadPath;
-    while (it != end) {
-        OpenSim::Component const& c = *it++;
+    computeComponentPath(root, root, lookaheadPath);
 
-        if (shouldRender(c)) {
-            lookahead = &c;
-            computeComponentPath(root, &c, lookaheadPath);
-            break;
-        }
-    }
-
+    // set cur path empty (first step copies lookahead into this)
     OpenSim::Component const* cur = nullptr;
     ComponentPath currentPath;
 
     int imguiTreeDepth = 0;
     int imguiId = 0;
+    bool hasSearch = std::strlen(search) > 0;
 
     while (lookahead) {
         // important: ensure all nodes have a unique ID: regardess of filtering
@@ -172,7 +188,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         OSC_ASSERT(cur && "cur ptr should *definitely* be populated at this point");
         OSC_ASSERT(!currentPath.empty() && "current path cannot be empty (even a root element has a path)");
 
-        // update lookahead (+ path)
+        // update lookahead (+ path) by stepping to the next component in the component tree
         lookahead = nullptr;
         lookaheadPath.clear();
         while (it != end) {
@@ -186,6 +202,8 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         }
         OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
+        bool searchHit = hasSearch && isSearchHit(search, currentPath);
+
         // skip rendering if a parent node is collapsed
         if (imguiTreeDepth < currentPath.sizei() - 1) {
             continue;
@@ -196,14 +214,14 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             ImGui::TreePop();
             --imguiTreeDepth;
         }
-        OSC_ASSERT(imguiTreeDepth == currentPath.sizei() - 1);
+        OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
 
-        if (currentPath.size() < 2 || lookaheadPath.size() > currentPath.size()) {
+        if (currentPath.size() < 3 || lookaheadPath.size() > currentPath.size()) {
             // render as an expandable tree node
 
             int styles = 0;
-            if (cur == hover) {
+            if (searchHit || cur == hover) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
                 ++styles;
             }
@@ -212,7 +230,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
                 ++styles;
             }
 
-            if (pathContains(selectionPath, cur)) {
+            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
                 ImGui::SetNextItemOpen(true);
             }
 
@@ -226,7 +244,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             // render as plain text
 
             int styles = 0;
-            if (pathContains(hoverPath, cur)) {
+            if (searchHit || pathContains(hoverPath, cur)) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
                 ++styles;
             }
@@ -236,7 +254,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             }
 
             ImGui::PushID(imguiId);
-            ImGui::TextUnformatted(cur->getName().c_str());
+            ImGui::BulletText("%s", cur->getName().c_str());
             ImGui::PopID();
             ImGui::PopStyleColor(styles);
         }
