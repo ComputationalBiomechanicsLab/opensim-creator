@@ -93,6 +93,8 @@ struct osc::Component3DViewer::Impl final {
     float fixupScaleFactor = 1.0f;
 
     Impl(Component3DViewerFlags flags_) : flags{flags_} {
+        camera.theta = fpi4;
+        camera.phi = fpi4;
     }
 };
 
