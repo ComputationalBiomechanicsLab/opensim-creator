@@ -38,7 +38,7 @@ namespace osc {
 
         OpenSim::PhysicalFrame const* selectedPF = nullptr;
 
-        char bodyName[64]{};
+        char bodyName[64] = "new_body";
         int jointIdx = 0;
         char jointName[64]{};
         float mass = 1.0f;
