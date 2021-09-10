@@ -1,0 +1,14 @@
+digraph G {
+    start [label="ground"; rank=1]
+
+    end [label="pendulum_head (Body)"; rank=5]
+    end -> "pendulum_head_offset2 (PhysicalOffsetFrame)" [label="Offset Frame Attachment"]
+    "pendulum_head_offset2 (PhysicalOffsetFrame)" -> "pendulum_head_to_pendulum_base (PinJoint)" [label="PinJoint Child Attachment"]
+    "pendulum_head_to_pendulum_base (PinJoint)" -> "pendulum_base_offset2 (PhysicalOffsetFrame)" [label="PinJoint Parent Attachment"]
+    "pendulum_base_offset2 (PhysicalOffsetFrame)" -> "pendulum_base (Body)" [label="Offset Frame Attachment"]
+
+    "pendulum_base (Body)" -> "pendulum_base_offset (PhysicalOffsetFrame)" [label="Offset Frame Attachment"]
+    "pendulum_base_offset (PhysicalOffsetFrame)" -> "pendulum_base_to_ground (WeldJoint)" [label="WeldJoint Child Attachment"]
+    "pendulum_base_to_ground (WeldJoint)" -> "ground_offset (PhysicalOffsetFrame)" [label="WeldJoint Parent Attachment"]
+    "ground_offset (PhysicalOffsetFrame)" -> start [label="Offset Frame Attachment"]
+}

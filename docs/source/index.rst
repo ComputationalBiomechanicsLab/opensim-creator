@@ -19,8 +19,7 @@ for OpenSim creator.
 Getting Started
 ---------------
 
-This is a quick guide for new users. If you have already installed and used OpenSim
-Creator and are here for specific documentation pages, go to the `Indices and tables`_ section.
+This is a quick guide for new users. If you have already installed and used OpenSim Creator and are here for specific documentation pages, go to the `Table of Contents`_ section to find something specific.
 
 * Grab an OpenSim Creator release from the `releases <https://github.com/adamkewley/opensim-creator/releases>`_ page on GitHub. Make sure you download a release that is suitable for your machine. Install it according to the installer's instructions.
 
@@ -34,10 +33,27 @@ Creator and are here for specific documentation pages, go to the `Indices and ta
 
   * You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. I'd reccommend ``double_pendulum.osim``  for a basic model and ``ToyDropLanding.osim`` for something "meatier"
 
+  * Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start :ref:`tut1`
+
+
+Table of Contents
+-----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Tutorials
+
+   tut1
+   tut2
+   tut3
+   tut4
+
+.. toctree::
+    :caption: Other Links
+
+    OpenSim Creator GitHub <https://github.com/adamkewley/opensim-creator>
+    OpenSim GitHub <https://github.com/openim-org/openim-core>
+    OpenSim Documentation <https://simtk-confluence.stanford.edu/display/OpenSim/Documentation>
 
 
 .. _Indices and Tables:
