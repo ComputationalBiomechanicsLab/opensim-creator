@@ -1,5 +1,8 @@
 on: [push]
 
+env:
+  OSC_BUILD_DOCS: 1
+
 jobs:
   windows:
     name: Build on Windows
