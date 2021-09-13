@@ -218,7 +218,7 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
     // show cancel button
     if (ImGui::Button("cancel")) {
 
-        st = {};  // reset user inputs
+        st = AddBodyPopup{};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
 
@@ -238,7 +238,7 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
 
         rv = NewBody{std::move(body), std::move(joint)};
 
-        st = {};  // reset user inputs
+        st = AddBodyPopup{};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
 
