@@ -61,6 +61,10 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 #
 #     OSC_SKIP_OSC
 
+# set this if you want to build the docs
+#
+#     OSC_BUILD_DOCS
+
 set +x
 echo "----- starting build -----"
 echo ""
@@ -102,6 +106,10 @@ if [[ -z ${OSC_SKIP_APT+x} ]]; then
 
     # osc: main dependencies
     ${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev
+
+    # osc: docs dependencies (if OSC_BUILD_DOCS is set)
+    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} apt-get install python3 python3-pip
+    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} pip3 install -r docs/requirements.txt
 
     echo "----- finished getting system-level dependencies -----"
 else
@@ -165,7 +173,7 @@ if [[ ! ${OSC_SKIP_OSC+x} ]]; then
 
     mkdir -p osc-build/
     cd osc-build/
-    cmake .. -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
+    cmake .. -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
     cmake --build . --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of final build dir"
     ls .
