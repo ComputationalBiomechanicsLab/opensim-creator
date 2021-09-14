@@ -3,6 +3,6 @@ Name=OpenSim Creator
 Comment=OpenSim Creator GUI Booter
 TryExec=/opt/osc/bin/osc
 Exec=/opt/osc/bin/osc
-Icon=/opt/osc/resources/icon.ico
+Icon=/opt/osc/resources/logo.png
 Type=Application
 Keywords=OpenSim
