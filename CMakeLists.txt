@@ -94,11 +94,18 @@ if(OSC_BUILD_DOCS)
         CODE "execute_process(COMMAND ${OSC_SPHINX_EXE} -M html source build WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}/docs\")"
     )
 
-    # install time: copy the built docs into the install dir
-    install(
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
-        TYPE DOC
-    )
+    if(APPLE)
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            DESTINATION osc.app/Contents/MacOS/share/doc
+        )
+    else()
+        # install time: copy the built docs into the install dir
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            TYPE DOC
+        )
+    endif()
 endif()
 
 
