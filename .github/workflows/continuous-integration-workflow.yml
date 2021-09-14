@@ -42,6 +42,11 @@ jobs:
         name: osc_focal_installer.deb
         path: osc/osc-build/*.deb
         if-no-files-found: error
+    - uses: actions/upload-artifact@v2
+      with:
+        name: osc_docs
+        path: osc/osc-build/docs
+        if-no-files-found: error
 
   macCatalina:
     name: Build on Mac (catalina)
