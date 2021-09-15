@@ -45,7 +45,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: osc_docs
-        path: osc/osc-build/docs
+        path: osc/docs/build
         if-no-files-found: error
 
   macCatalina:
