@@ -7,8 +7,8 @@
 #include "src/3D/GlGlm.hpp"
 #include "src/3D/Model.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
+#include "src/Utils/IoPoller.hpp"
 
-#include <imgui.h>
 #include <glm/vec3.hpp>
 
 #include <algorithm>
@@ -104,6 +104,8 @@ static std::vector<SceneSphere> generateSceneSpheres() {
 
 // screen impl.
 struct osc::HittestScreen::Impl final {
+    IoPoller io;
+
     Shader shader;
 
     // sphere datas
@@ -151,17 +153,17 @@ osc::HittestScreen::HittestScreen() :
 osc::HittestScreen::~HittestScreen() noexcept = default;
 
 void osc::HittestScreen::onMount() {
-    osc::ImGuiInit();
+    App::cur().setRelativeMouseMode(true);
+    gl::Disable(GL_CULL_FACE);
 }
 
 void osc::HittestScreen::onUnmount() {
-    osc::ImGuiShutdown();
+    App::cur().setRelativeMouseMode(false);
+    gl::Enable(GL_CULL_FACE);
 }
 
 void osc::HittestScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
-        return;
-    }
+    m_Impl->io.onEvent(e);
 
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
         App::cur().requestTransition<ExperimentsScreen>();
@@ -170,13 +172,14 @@ void osc::HittestScreen::onEvent(SDL_Event const& e) {
 
 void osc::HittestScreen::tick(float) {
     auto& camera = m_Impl->camera;
-    auto& io = ImGui::GetIO();
+    auto& io = m_Impl->io;
+    io.onUpdate();
 
     float speed = 10.0f;
     float sensitivity = 0.005f;
 
     if (io.KeysDown[SDL_SCANCODE_ESCAPE]) {
-        App::cur().requestQuit();
+        App::cur().requestTransition<ExperimentsScreen>();
     }
 
     if (io.KeysDown[SDL_SCANCODE_W]) {
@@ -205,7 +208,9 @@ void osc::HittestScreen::tick(float) {
 
     camera.yaw += sensitivity * io.MouseDelta.x;
     camera.pitch  -= sensitivity * io.MouseDelta.y;
-    camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
+    camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.1f, fpi2 - 0.1f);
+    io.WantMousePosWarpTo = true;
+    io.MousePosWarpTo = io.DisplaySize/2.0f;
 
 
     // compute hits
@@ -238,8 +243,6 @@ void osc::HittestScreen::tick(float) {
 }
 
 void osc::HittestScreen::draw() {
-    osc::ImGuiNewFrame();
-
     App& app = App::cur();
     Impl& impl = *m_Impl;
     Shader& shader = impl.shader;
@@ -333,6 +336,4 @@ void osc::HittestScreen::draw() {
         gl::DrawArrays(GL_LINES, 0, impl.crosshairVBO.sizei());
         gl::BindVertexArray();
     }
-
-    osc::ImGuiRender();
 }

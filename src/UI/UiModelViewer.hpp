@@ -12,33 +12,36 @@ namespace osc {
     enum UiModelViewerFlags_ {
 
         // no flags: a basic-as-possible render
-        RenderableSceneViewerFlags_None = 0,
+        UiModelViewerFlags_None = 0,
+
+        // draw the chequered floor
+        UiModelViewerFlags_DrawFloor = 1 << 0,
 
         // draw a 2D XZ grid
-        RenderableSceneViewerFlags_DrawXZGrid = 1 << 0,
+        UiModelViewerFlags_DrawXZGrid = 1 << 1,
 
         // draw a 2D XY grid
-        RenderableSceneViewerFlags_DrawXYGrid = 1 << 1,
+        UiModelViewerFlags_DrawXYGrid = 1 << 2,
 
         // draw a 2D YZ grid
-        RenderableSceneViewerFlags_DrawYZGrid = 1 << 2,
+        UiModelViewerFlags_DrawYZGrid = 1 << 3,
 
         // draw axis lines (the red/green lines on the floor showing axes)
-        RenderableSceneViewerFlags_DrawAxisLines = 1 << 3,
+        UiModelViewerFlags_DrawAxisLines = 1 << 4,
 
         // draw AABBs (debugging)
-        RenderableSceneViewerFlags_DrawAABBs = 1 << 4,
+        UiModelViewerFlags_DrawAABBs = 1 << 5,
 
         // draw scene BVH (debugging)
-        RenderableSceneViewerFlags_DrawBVH = 1 << 5,
+        UiModelViewerFlags_DrawBVH = 1 << 6,
 
         // draw alignment axes
         //
         // these are little red+green+blue demo axes in corner of the viewer that
         // show the user how the world axes align relative to the current view location
-        RenderableSceneViewerFlags_DrawAlignmentAxes = 1 << 6,
+        UiModelViewerFlags_DrawAlignmentAxes = 1 << 7,
 
-        RenderableSceneViewerFlags_Default = RenderableSceneViewerFlags_None,
+        UiModelViewerFlags_Default = UiModelViewerFlags_DrawFloor,
     };
 
     // viewer response
@@ -63,7 +66,7 @@ namespace osc {
         std::unique_ptr<Impl> m_Impl;
 
     public:
-        UiModelViewer(UiModelViewerFlags = RenderableSceneViewerFlags_Default);
+        UiModelViewer(UiModelViewerFlags = UiModelViewerFlags_Default);
         ~UiModelViewer() noexcept;
 
         bool isMousedOver() const noexcept;

@@ -5,10 +5,14 @@
 
 # create a symlink in /usr/local/bin to the installed osc, so that
 # users can write 'osc' at the command line
-ln -s "/opt/osc/bin/osc" "/usr/local/bin/osc"
+if [[ ! -e "/usr/local/bin/osc" ]]; then
+    ln -s "/opt/osc/bin/osc" "/usr/local/bin/osc"
+fi
 
 # if the user has an application's dir, they're probably using a
 # desktop Linux, so add a desktop icon
-if [ -d "/usr/share/applications/" ]; then
-    ln -s "/opt/osc/resources/osc.desktop" "/usr/share/applications/osc.desktop"
+if [[ -d "/usr/share/applications/" ]]; then
+    if [[ ! -e "/usr/share/applications/osc.desktop" ]]; then
+        ln -s "/opt/osc/resources/osc.desktop" "/usr/share/applications/osc.desktop"
+    fi
 fi

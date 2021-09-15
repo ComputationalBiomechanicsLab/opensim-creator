@@ -86,7 +86,7 @@ namespace osc {
         [[nodiscard]] float aspectRatio() const noexcept;
 
         // hides mouse in screen and makes it operate relative per-frame
-        void setRelativeMouseMode() noexcept;
+        void setRelativeMouseMode(bool) noexcept;
 
         // makes the application window fullscreen
         void makeFullscreen();
@@ -134,6 +134,42 @@ namespace osc {
         //
         // this addition is persisted between app boots
         void addRecentFile(std::filesystem::path const&);
+
+        // returns true if the main app window is focused
+        [[nodiscard]] bool isWindowFocused() const noexcept;
+
+        struct MouseState final {
+            glm::ivec2 pos;
+            bool LeftDown;
+            bool RightDown;
+            bool MiddleDown;
+            bool X1Down;
+            bool X2Down;
+        };
+
+        // get current mouse state
+        //
+        // note: this tries to be as precise as possible by fetching from the
+        //       OS if possible, so it can be expensive
+        [[nodiscard]] MouseState getMouseState() const noexcept;
+
+        // returns the number of "ticks" that the application has counted
+        [[nodiscard]] uint64_t getTicks() const noexcept;
+
+        // returns the number of "ticks" the application accumulates per second
+        [[nodiscard]] uint64_t getTickFrequency() const noexcept;
+
+        // returns true if the user is pressing the SHIFT key
+        [[nodiscard]] bool isShiftPressed() const noexcept;
+
+        // returns true if the user is pressing the CTRL key
+        [[nodiscard]] bool isCtrlPressed() const noexcept;
+
+        // returns true if the user is pressing the ALT key
+        [[nodiscard]] bool isAltPressed() const noexcept;
+
+        // move the mouse to a location within the window
+        void warpMouseInWindow(glm::vec2) const noexcept;
     };
 
     // ImGui support

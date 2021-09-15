@@ -10,5 +10,3 @@ namespace osc {
     static constexpr float fpi4 = fpi/4.0f;
     static constexpr float f1pi = 1.0f/fpi;
 }
-
-

@@ -4,7 +4,7 @@
 
 📥 Download v0.0.3: [Windows (.exe)](../../releases/download/0.0.3/osc-0.0.3-win64.exe) / [Mac (.dmg)](../../releases/download/0.0.3/osc-0.0.3-Darwin.dmg) / [Ubuntu (.deb)](../../releases/download/0.0.3/osc_0.0.3_amd64.deb)
 
-![screenshot](screenshot.png)
+![screenshot](docs/source/_static/screenshot.png)
 
 OpenSim Creator (`osc`) is a standalone UI for building
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It is

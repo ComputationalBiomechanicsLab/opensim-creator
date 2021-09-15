@@ -32,7 +32,6 @@ namespace osc {
         float distance;
     };
 
-
     // triangle BVHes
     //
     // these are BVHes where prim.id refers to the first index of a triangle

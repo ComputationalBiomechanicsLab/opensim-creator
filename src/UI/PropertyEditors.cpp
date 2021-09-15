@@ -8,6 +8,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
+#include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <SimTKcommon.h>
 #include <imgui.h>
 

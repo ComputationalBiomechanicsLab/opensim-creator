@@ -10,7 +10,9 @@
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/App.hpp"
+#include "src/Config.hpp"
 #include "src/Log.hpp"
+#include "src/os.hpp"
 #include "src/Styling.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -33,7 +35,6 @@ struct SplashScreen::Impl final {
     // used to render quads (e.g. logo banners)
     PlainTextureShader pts;
 
-    // TODO: fix this shit packing
     gl::ArrayBuffer<glm::vec3> quadVBO{GenTexturedQuad().verts};
     gl::ArrayBuffer<glm::vec2> quadStandardUVs{GenTexturedQuad().texcoords};
     gl::VertexArray quadPtsVAO = [this]() {
@@ -226,10 +227,15 @@ void osc::SplashScreen::draw() {
         ImGui::SameLine();
 
         // `open` button
-        {
-            if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
-                actionOpenModel(impl.mes);
-            }
+        if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
+            actionOpenModel(impl.mes);
+        }
+
+        ImGui::SameLine();
+
+        // `docs` button
+        if (ImGui::Button(ICON_FA_LINK " Open Documentation")) {
+            OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
         }
 
         ImGui::Dummy(ImVec2{0.0f, 10.0f});

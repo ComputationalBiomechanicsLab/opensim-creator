@@ -10,6 +10,9 @@ namespace osc {
         // full path to the runtime `resources/` dir
         std::filesystem::path resourceDir;
 
+        // full path to the runtime `html/` dir for the documentation
+        std::filesystem::path htmlDocsDir;
+
         // true if the implementation should allow multiple viewports
         bool useMultiViewport;
 

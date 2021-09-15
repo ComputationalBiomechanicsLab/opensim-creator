@@ -1,5 +1,8 @@
 on: [push]
 
+env:
+  OSC_BUILD_DOCS: 1
+
 jobs:
   windows:
     name: Build on Windows
@@ -38,6 +41,11 @@ jobs:
       with:
         name: osc_focal_installer.deb
         path: osc/osc-build/*.deb
+        if-no-files-found: error
+    - uses: actions/upload-artifact@v2
+      with:
+        name: osc_docs
+        path: osc/docs/build
         if-no-files-found: error
 
   macCatalina:

@@ -284,9 +284,11 @@ namespace osc {
         // the (polling) UI thread
         std::vector<std::unique_ptr<Report>> regularReports;
 
-        // start a new simulation by *copying* the provided OpenSim::Model and
-        // SimTK::State pair
-        UiSimulation(OpenSim::Model const&, SimTK::State const&, FdParams const&);
+        // fixup scale factor of the model
+        //
+        // this scales up/down the decorations of the model - used for extremely
+        // undersized models (e.g. fly leg)
+        float fixupScaleFactor;
 
         // start a new simulation by *copying* the provided Ui_model
         UiSimulation(UiModel const&, FdParams const&);

@@ -323,4 +323,3 @@ bool osc::BVH_GetClosestRayTriangleCollision(
     float closest = std::numeric_limits<float>::max();
     return BVH_GetClosestRayTriangleCollisionRecursive(bvh, verts, nverts, ray, closest, 0, out);
 }
-

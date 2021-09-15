@@ -21,15 +21,15 @@
 
 using namespace osc;
 
-namespace {
+// helper method for making a render buffer (used in Render_target)
+static gl::RenderBuffer makeRenderBuffer(int samples, GLenum format, int w, int h) {
+    gl::RenderBuffer rv;
+    gl::BindRenderBuffer(rv);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
+    return rv;
+}
 
-    // helper method for making a render buffer (used in Render_target)
-    gl::RenderBuffer makeRenderBuffer(int samples, GLenum format, int w, int h) {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
-        return rv;
-    }
+namespace {
 
     // draw targets written to by the renderer
     struct RenderTarget final {
@@ -175,6 +175,7 @@ namespace {
         glm::mat3 normalMtx;
         glm::vec4 rgba;
         float rimIntensity;
+        int decorationIdx;
     };
 
     // GPU format of meshdata with texcoords
@@ -216,31 +217,31 @@ namespace {
 
         return {swap};
     }
+}
 
-    gl::VertexArray makeEdgeDetectionVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
-        gl::VertexArray rv;
-        gl::BindVertexArray(rv);
-        gl::BindBuffer(vbo);
-        gl::VertexAttribPointer(EdgeDetectionShader::aPos, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
-        gl::EnableVertexAttribArray(EdgeDetectionShader::aPos);
-        gl::VertexAttribPointer(EdgeDetectionShader::aTexCoord, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
-        gl::EnableVertexAttribArray(EdgeDetectionShader::aTexCoord);
-        return rv;
-    }
 
-    gl::VertexArray makeFloorVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
+static gl::VertexArray makeEdgeDetectionVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
+    gl::VertexArray rv;
+    gl::BindVertexArray(rv);
+    gl::BindBuffer(vbo);
+    gl::VertexAttribPointer(EdgeDetectionShader::aPos, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
+    gl::EnableVertexAttribArray(EdgeDetectionShader::aPos);
+    gl::VertexAttribPointer(EdgeDetectionShader::aTexCoord, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
+    gl::EnableVertexAttribArray(EdgeDetectionShader::aTexCoord);
+    return rv;
+}
 
-        gl::VertexArray rv;
-        gl::BindVertexArray(rv);
-        gl::BindBuffer(vbo);
-        gl::VertexAttribPointer(gl::AttributeVec3{0}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
-        gl::EnableVertexAttribArray(gl::AttributeVec3{0});
-        gl::VertexAttribPointer(gl::AttributeVec2{1}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
-        gl::EnableVertexAttribArray(gl::AttributeVec3{1});
-        gl::VertexAttribPointer(gl::AttributeVec3{2}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, norm));
-        gl::EnableVertexAttribArray(gl::AttributeVec3{2});
-        return rv;
-    }
+static gl::VertexArray makeFloorVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
+    gl::VertexArray rv;
+    gl::BindVertexArray(rv);
+    gl::BindBuffer(vbo);
+    gl::VertexAttribPointer(gl::AttributeVec3{0}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
+    gl::EnableVertexAttribArray(gl::AttributeVec3{0});
+    gl::VertexAttribPointer(gl::AttributeVec2{1}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
+    gl::EnableVertexAttribArray(gl::AttributeVec3{1});
+    gl::VertexAttribPointer(gl::AttributeVec3{2}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, norm));
+    gl::EnableVertexAttribArray(gl::AttributeVec3{2});
+    return rv;
 }
 
 static gl::VertexArray makeSCSVAO(SolidColorShader& shader, gl::ArrayBuffer<glm::vec3>& vbo) {
@@ -298,31 +299,11 @@ struct osc::UiModelViewer::Impl final {
     bool drawMeshNormals = false;
     bool drawRims = true;
 
-    std::vector<float> rimHighlights;
-    std::vector<SceneGPUInstanceData> buf;
+    std::vector<SceneGPUInstanceData> drawlistBuffer;
 
     Impl(UiModelViewerFlags flags_) : flags{flags_} {
-    }
-
-    SceneGPUMesh& getGPUMeshCached(ImmutableSceneMesh const& se) {
-        auto [it, inserted] = gpuCache.try_emplace(se.getID(), nullptr);
-        if (inserted) {
-            it->second = std::make_unique<SceneGPUMesh>(se.getMesh());
-        }
-        return *it->second;
-    }
-
-    gl::ArrayBuffer<SceneGPUInstanceData> uploadInstances(RenderableScene const& rs) {
-        auto decs = rs.getSceneDecorations();
-
-        rimHighlights.resize(decs.size(), 0.0f);  // asssume they're pre-populated but ensure this minimum size
-        buf.clear();
-        buf.reserve(decs.size());
-        for (size_t i = 0; i < decs.size(); ++i) {
-            LabelledSceneElement const& se = decs[i];
-            buf.push_back({se.modelMtx, se.normalMtx, se.color, rimHighlights[i]});
-        }
-        return {buf};
+        camera.theta = fpi4;
+        camera.phi = fpi4;
     }
 };
 
@@ -334,6 +315,14 @@ osc::UiModelViewer::~UiModelViewer() noexcept = default;
 
 bool osc::UiModelViewer::isMousedOver() const noexcept {
     return m_Impl->renderHovered;
+}
+
+static SceneGPUMesh& getSceneGPUMeshCached(osc::UiModelViewer::Impl& impl, ImmutableSceneMesh const& se) {
+    auto [it, inserted] = impl.gpuCache.try_emplace(se.getID(), nullptr);
+    if (inserted) {
+        it->second = std::make_unique<SceneGPUMesh>(se.getMesh());
+    }
+    return *it->second;
 }
 
 static glm::mat4x3 generateFloorModelMatrix(RenderableScene const& rs) {
@@ -352,34 +341,11 @@ static glm::mat4x3 generateFloorModelMatrix(RenderableScene const& rs) {
     return glm::mat4x3{rv};
 }
 
-static void drawFloor(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-
-
-    glm::mat4x3 modelMtx = generateFloorModelMatrix(rs);
-    glm::vec4 color = {0.0f, 0.0f, 0.0f, 0.0f};
-    // TODO
-/*
-
-
-    decs.normalMtxs.push_back(NormalMatrix(modelXform));
-    decs.cols.push_back(Rgba32{0x00, 0x00, 0x00, 0x00});
-    decs.gpuMeshes.push_back(impl.floorMeshdata);
-    decs.cpuMeshes.push_back(impl.floorMesh);
-    decs.aabbs.push_back(AABBApplyXform(impl.floorMesh->aabb, modelXform));
-    decs.components.push_back(nullptr);
-
-    impl.textures.clear();
-    impl.textures.resize(decs.modelMtxs.size(), nullptr);
-    impl.textures.back() = impl.chequerTex;
-    */
-}
-
 static AABB computeWorldspaceRimAABB(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-    auto decs = rs.getSceneDecorations();
+    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    std::vector<SceneGPUInstanceData> const& dl = impl.drawlistBuffer;
 
-    impl.rimHighlights.resize(decs.size(), 0.0f);  // safety
-
-    if (decs.empty()) {
+    if (dl.empty()) {
         return {};
     }
 
@@ -388,9 +354,9 @@ static AABB computeWorldspaceRimAABB(osc::UiModelViewer::Impl& impl, RenderableS
     rv.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
 
     int n = 0;
-    for (size_t i = 0; i < decs.size(); ++i) {
-        if (impl.rimHighlights[i] > 0.0f) {
-            rv = AABBUnion(decs[i].worldspaceAABB, rv);
+    for (SceneGPUInstanceData const& inst : dl) {
+        if (inst.rimIntensity > 0.0f) {
+            rv = AABBUnion(decs[inst.decorationIdx].worldspaceAABB, rv);
             ++n;
         }
     }
@@ -400,6 +366,75 @@ static AABB computeWorldspaceRimAABB(osc::UiModelViewer::Impl& impl, RenderableS
     }
 
     return rv;
+}
+
+static float computeRimColor(OpenSim::Component const* selected,
+                             OpenSim::Component const* hovered,
+                             OpenSim::Component const* c) {
+    while (c) {
+        if (c == selected) {
+            return 1.0f;
+        }
+        if (c == hovered) {
+            return 0.5f;
+        }
+        if (!c->hasOwner()) {
+            return 0.0f;
+        }
+        c = &c->getOwner();
+    }
+
+    return 0.0f;
+}
+
+static bool isInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c) {
+    if (!c) {
+        return false;
+    }
+
+    if (!parent) {
+        return false;
+    }
+
+    for (;;) {
+        if (c == parent) {
+            return true;
+        }
+
+        if (!c->hasOwner()) {
+            return false;
+        }
+
+        c = &c->getOwner();
+    }
+}
+
+static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+    std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
+    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    OpenSim::Component const* const selected = rs.getSelected();
+    OpenSim::Component const* const hovered = rs.getHovered();
+    OpenSim::Component const* const isolated = rs.getIsolated();
+
+    // clear it (could've been populated by the last drawcall)
+    buf.clear();
+    buf.reserve(decs.size());
+
+    // populate the list with the scene
+    for (size_t i = 0; i < decs.size(); ++i) {
+        LabelledSceneElement const& se = decs[i];
+
+        if (isolated && !isInclusiveChildOf(isolated, se.component)) {
+            continue;  // skip rendering this (it's not in the isolated component)
+        }
+
+        SceneGPUInstanceData& ins = buf.emplace_back();
+        ins.modelMtx = se.modelMtx;
+        ins.normalMtx = se.normalMtx;
+        ins.rgba = se.color;
+        ins.rimIntensity = computeRimColor(selected, hovered, se.component);
+        ins.decorationIdx = static_cast<int>(i);
+    }
 }
 
 static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
@@ -449,27 +484,30 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     gl::Uniform(gouraudShader.uViewPos, viewerPos);
 
     // upload all instances to the GPU
-    gl::ArrayBuffer instanceBuf = impl.uploadInstances(rs);
-    auto decs = rs.getSceneDecorations();
+    gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{impl.drawlistBuffer};
 
     // draw scene
     {
+        std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
+        nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+
         size_t pos = 0;
-        size_t ninstances = decs.size();
+        size_t ninstances = instances.size();
 
         while (pos < ninstances) {
-            auto const& se = decs[pos];
+            LabelledSceneElement const& se = decs[instances[pos].decorationIdx];
 
             // batch
             size_t end = pos + 1;
-            while (end < ninstances && decs[end].mesh.get() == se.mesh.get()) {
+            while (end < ninstances && decs[instances[end].decorationIdx].mesh.get() == se.mesh.get()) {
                 ++end;
             }
 
             // lookup/populate GPU data for mesh
-            SceneGPUMesh const& gpuMesh = impl.getGPUMeshCached(*se.mesh);
+            SceneGPUMesh const& gpuMesh = getSceneGPUMeshCached(impl, *se.mesh);
 
             gl::BindVertexArray(gpuMesh.vao);
+            gl::BindBuffer(instanceBuf);
             gl::VertexAttribPointer(GouraudMrtShader::aModelMat, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*pos + offsetof(SceneGPUInstanceData, modelMtx));
             gl::VertexAttribDivisor(GouraudMrtShader::aModelMat, 1);
             gl::EnableVertexAttribArray(GouraudMrtShader::aModelMat);
@@ -489,7 +527,37 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         }
     }
 
-    drawFloor(impl, rs);
+    if (impl.flags & UiModelViewerFlags_DrawFloor) {
+        SceneGPUInstanceData data;
+        data.modelMtx = generateFloorModelMatrix(rs);
+        data.normalMtx = NormalMatrix(data.modelMtx);
+        data.rgba = {0.0f, 0.0f, 0.0f, 1.0f};
+        data.rimIntensity = 0.0f;
+        data.decorationIdx = -1;
+        gl::ArrayBuffer<SceneGPUInstanceData> buf{&data, 1};
+
+        gl::Uniform(gouraudShader.uIsTextured, true);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(impl.chequerTex);
+        gl::Uniform(gouraudShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+
+        gl::BindVertexArray(impl.floorVAO);
+        gl::BindBuffer(buf);
+        gl::VertexAttribPointer(GouraudMrtShader::aModelMat, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, modelMtx));
+        gl::VertexAttribDivisor(GouraudMrtShader::aModelMat, 1);
+        gl::EnableVertexAttribArray(GouraudMrtShader::aModelMat);
+        gl::VertexAttribPointer(GouraudMrtShader::aNormalMat, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, normalMtx));
+        gl::VertexAttribDivisor(GouraudMrtShader::aNormalMat, 1);
+        gl::EnableVertexAttribArray(GouraudMrtShader::aNormalMat);
+        gl::VertexAttribPointer(GouraudMrtShader::aDiffuseColor, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, rgba));
+        gl::VertexAttribDivisor(GouraudMrtShader::aDiffuseColor, 1);
+        gl::EnableVertexAttribArray(GouraudMrtShader::aDiffuseColor);
+        gl::VertexAttribPointer(GouraudMrtShader::aRimIntensity, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, rimIntensity));
+        gl::VertexAttribDivisor(GouraudMrtShader::aRimIntensity, 1);
+        gl::EnableVertexAttribArray(GouraudMrtShader::aRimIntensity);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, impl.floorVBO.sizei(), 1);
+        gl::BindVertexArray();
+    }
 
     if (impl.wireframeMode) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -497,15 +565,23 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
 
     // draw mesh normals, if requested
     if (impl.drawMeshNormals) {
+
         NormalsShader& normalShader = impl.normalsShader;
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(normalShader.program);
         gl::Uniform(normalShader.uProjMat, projMtx);
         gl::Uniform(normalShader.uViewMat, viewMtx);
-        for (auto const& se : decs) {
-            gl::Uniform(normalShader.uModelMat, se.modelMtx);
-            gl::Uniform(normalShader.uNormalMat, se.normalMtx);
-            SceneGPUMesh const& gpuMesh = impl.getGPUMeshCached(*se.mesh);
+
+        std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
+        nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+
+        for (SceneGPUInstanceData const& inst : instances) {
+            LabelledSceneElement const& se = decs[inst.decorationIdx];
+
+            gl::Uniform(normalShader.uModelMat, inst.modelMtx);
+            gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
+
+            SceneGPUMesh const& gpuMesh = getSceneGPUMeshCached(impl, *se.mesh);
             gl::BindVertexArray(gpuMesh.vao);
             gl::DrawElements(GL_TRIANGLES, gpuMesh.indices.sizei(), gl::indexType(gpuMesh.indices), nullptr);
         }
@@ -634,9 +710,16 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
     float closestDistance = std::numeric_limits<float>::max();
 
     // iterate through each scene-level hit and perform a triangle-level hittest
-    auto decs = rs.getSceneDecorations();
+    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    OpenSim::Component const* const isolated = rs.getIsolated();
+
     for (BVHCollision const& c : impl.sceneHittestResults) {
         int instanceIdx = c.primId;
+
+        if (isolated && !isInclusiveChildOf(isolated, decs[instanceIdx].component)) {
+            continue;  // it's not in the current isolation
+        }
+
         glm::mat4 instanceMmtx = decs[instanceIdx].modelMtx;
         ImmutableSceneMesh const& instanceMesh = *decs[instanceIdx].mesh;
 
@@ -843,31 +926,31 @@ static void drawOverlays(osc::UiModelViewer::Impl& impl, RenderableScene const& 
     gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawXZGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawXZGrid) {
         drawXZGrid(impl);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawXYGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawXYGrid) {
         drawXYGrid(impl);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawYZGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawYZGrid) {
         drawYZGrid(impl);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawAlignmentAxes) {
+    if (impl.flags & UiModelViewerFlags_DrawAlignmentAxes) {
         drawAlignmentAxes(impl);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawAxisLines) {
+    if (impl.flags & UiModelViewerFlags_DrawAxisLines) {
         drawFloorAxesLines(impl);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawAABBs) {
+    if (impl.flags & UiModelViewerFlags_DrawAABBs) {
         drawAABBs(impl, rs);
     }
 
-    if (impl.flags & RenderableSceneViewerFlags_DrawBVH) {
+    if (impl.flags & UiModelViewerFlags_DrawBVH) {
         drawBVH(impl, rs);
     }
 
@@ -878,13 +961,14 @@ static void drawOptionsMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::Checkbox("wireframe mode", &impl.wireframeMode);
     ImGui::Checkbox("show normals", &impl.drawMeshNormals);
     ImGui::Checkbox("draw rims", &impl.drawRims);
-    ImGui::CheckboxFlags("show XZ grid", &impl.flags, RenderableSceneViewerFlags_DrawXZGrid);
-    ImGui::CheckboxFlags("show XY grid", &impl.flags, RenderableSceneViewerFlags_DrawXYGrid);
-    ImGui::CheckboxFlags("show YZ grid", &impl.flags, RenderableSceneViewerFlags_DrawYZGrid);
-    ImGui::CheckboxFlags("show alignment axes", &impl.flags, RenderableSceneViewerFlags_DrawAlignmentAxes);
-    ImGui::CheckboxFlags("show grid lines", &impl.flags, RenderableSceneViewerFlags_DrawAxisLines);
-    ImGui::CheckboxFlags("show AABBs", &impl.flags, RenderableSceneViewerFlags_DrawAABBs);
-    ImGui::CheckboxFlags("show BVH", &impl.flags, RenderableSceneViewerFlags_DrawBVH);
+    ImGui::CheckboxFlags("show XZ grid", &impl.flags, UiModelViewerFlags_DrawXZGrid);
+    ImGui::CheckboxFlags("show XY grid", &impl.flags, UiModelViewerFlags_DrawXYGrid);
+    ImGui::CheckboxFlags("show YZ grid", &impl.flags, UiModelViewerFlags_DrawYZGrid);
+    ImGui::CheckboxFlags("show alignment axes", &impl.flags, UiModelViewerFlags_DrawAlignmentAxes);
+    ImGui::CheckboxFlags("show grid lines", &impl.flags, UiModelViewerFlags_DrawAxisLines);
+    ImGui::CheckboxFlags("show AABBs", &impl.flags, UiModelViewerFlags_DrawAABBs);
+    ImGui::CheckboxFlags("show BVH", &impl.flags, UiModelViewerFlags_DrawBVH);
+    ImGui::CheckboxFlags("show floor", &impl.flags, UiModelViewerFlags_DrawFloor);
 }
 
 static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
@@ -931,7 +1015,7 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::SliderFloat("light_dir_y", &impl.lightDir.y, -1.0f, 1.0f);
     ImGui::SliderFloat("light_dir_z", &impl.lightDir.z, -1.0f, 1.0f);
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
-    ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.lightCol));
+    ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
 
     ImGui::Separator();
 }
@@ -949,47 +1033,7 @@ static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
     }
 }
 
-static float computeRimColor(OpenSim::Component const* selected,
-                             OpenSim::Component const* hovered,
-                             OpenSim::Component const* c) {
-
-    if (!c) {
-        return 0.0f;
-    }
-
-    while (c) {
-        if (c == selected) {
-            return 1.0f;
-        }
-        if (c == hovered) {
-            return 0.5f;
-        }
-        if (!c->hasOwner()) {
-            return 0.0f;
-        }
-        c = &c->getOwner();
-    }
-
-    return 0.0f;
-}
-
-static void computeRimHighlights(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-    auto decs = rs.getSceneDecorations();
-
-    impl.rimHighlights.clear();
-    impl.rimHighlights.reserve(decs.size());
-    OpenSim::Component const* selected = rs.getSelected();
-    OpenSim::Component const* hovered = rs.getHovered();
-    for (size_t i = 0; i < decs.size(); ++i) {
-        OpenSim::Component const* c = decs[i].component;
-        impl.rimHighlights.push_back(computeRimColor(selected, hovered, c));
-    }
-}
-
-
 UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
-    // TODO: isolated components....
-
     Impl& impl = *m_Impl;
 
     // update camera if necessary
@@ -998,7 +1042,6 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     }
 
     // draw main menu
-    // draw panel menu
     if (ImGui::BeginMenuBar()) {
         drawMainMenuContents(impl);
         ImGui::EndMenuBar();
@@ -1006,21 +1049,22 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
 
     // put 3D scene in an undraggable child panel, to prevent accidental panel
     // dragging when the user drags their mouse over the scene
-    if (!ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
+    if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
+        OpenSim::Component const* htResult = hittestSceneDecorations(impl, rs);
+        populateSceneDrawlist(impl, rs);
+        drawSceneTexture(impl, rs);
+        drawOverlays(impl, rs);
+        blitSceneTexture(impl);
+
+        UiModelViewerResponse resp;
+        resp.hovertestResult = htResult;
+        resp.isMousedOver = impl.renderHovered;
+        resp.isLeftClicked = impl.renderLeftClicked;
+        resp.isRightClicked = impl.renderRightClicked;
+        return resp;
+
+        ImGui::EndChild();
+    } else {
         return {};  // child not visible
     }
-    OSC_SCOPE_GUARD({ ImGui::EndChild(); });
-
-    OpenSim::Component const* htResult = hittestSceneDecorations(impl, rs);
-    computeRimHighlights(impl, rs);
-    drawSceneTexture(impl, rs);
-    drawOverlays(impl, rs);
-    blitSceneTexture(impl);
-
-    UiModelViewerResponse resp;
-    resp.hovertestResult = htResult;
-    resp.isMousedOver = impl.renderHovered;
-    resp.isLeftClicked = impl.renderLeftClicked;
-    resp.isRightClicked = impl.renderRightClicked;
-    return resp;
 }

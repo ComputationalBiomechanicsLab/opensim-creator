@@ -1019,6 +1019,13 @@ namespace {
                 ImGui::EndTooltip();
             }
 
+
+            float scaleFactor = impl.st->editedModel.current.fixupScaleFactor;
+            if (ImGui::InputFloat("set scale factor", &scaleFactor)) {
+                impl.st->editedModel.current.fixupScaleFactor = scaleFactor;
+                impl.st->editedModel.current.onUiModelModified();
+            }
+
             if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, hasBackingFile(impl.st->editedModel.model()))) {
                 OpenPathInOSDefaultApplication(uim.model().getInputFileName());
             }

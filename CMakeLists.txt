@@ -13,6 +13,7 @@ set(OSC_FORCE_UNDEFINE_NDEBUG OFF CACHE BOOL "force disable NDEBUG, even if runn
 set(OSC_USE_ASAN OFF CACHE BOOL "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks")
 set(OSC_DEFAULT_USE_MULTI_VIEWPORT OFF CACHE BOOL "enable/disable osc using multi viewport when not explicitly specified a the user/config")
 set(OSC_DEFAULT_RESOURCE_DIR "../resources" CACHE STRING "default location of runtime resources dir when not specified by user/config")
+set(OSC_BUILD_DOCS OFF CACHE BOOL "whether to build the documentation or not (requires Sphinx)")
 
 
 # -------------- top-level build configuration (vars etc.) ---------------- #
@@ -74,6 +75,38 @@ endif()
 # the dependencies as targets - along with some other useful vars (e.g. a list
 # of all dependencies that should be copied into the install, etc.)
 include(GetDependencies.cmake)
+
+
+# --------------- documentation generation ------------------ #
+
+if(OSC_BUILD_DOCS)
+    # configure time: ensure the build system has 'sphinx-build' if they are
+    # building the docs
+    find_program(
+        OSC_SPHINX_EXE
+        "sphinx-build"
+        DOC "Location of sphinx-build, which is used to compile the documentation"
+        REQUIRED
+    )
+
+    # install time: run `sphinx-build` to build the docs
+    install(
+        CODE "execute_process(COMMAND ${OSC_SPHINX_EXE} -M html source build WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}/docs\")"
+    )
+
+    if(APPLE)
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            DESTINATION osc.app/Contents/MacOS/share/doc
+        )
+    else()
+        # install time: copy the built docs into the install dir
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            TYPE DOC
+        )
+    endif()
+endif()
 
 
 # ------------ osc build target configuration ---------- #
@@ -215,6 +248,8 @@ add_executable(osc
     src/Utils/FilesystemHelpers.hpp
     src/Utils/ImGuiHelpers.cpp
     src/Utils/ImGuiHelpers.hpp
+    src/Utils/IoPoller.cpp
+    src/Utils/IoPoller.hpp
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
@@ -466,7 +501,7 @@ if (WIN32)
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_HELP_LINK "https://github.com/adamkewley/osc")
     set(CPACK_NSIS_CONTACT "contact@adamkewley.com")
-    set(CPACK_NSIS_MODIFY_PATH ON)  # user can modify install locaton
+    set(CPACK_NSIS_MODIFY_PATH OFF)  # for modifying PATH variable
     set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
     set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\osc ${osc_VERSION_MAJOR}.${osc_VERSION_MINOR}.${osc_VERSION_PATCH}\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
 endif()

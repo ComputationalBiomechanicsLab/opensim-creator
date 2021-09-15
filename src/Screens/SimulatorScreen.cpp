@@ -810,7 +810,7 @@ namespace {
             m_Report{report},
             m_Decorations{},
             m_SceneBVH{},
-            m_FixupScaleFactor{1.0f} // todo
+            m_FixupScaleFactor{sim.fixupScaleFactor}
         {
             generateDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations);
             updateBVH(m_Decorations, m_SceneBVH);

@@ -177,8 +177,6 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
 
     // prompt geometry
     {
-        // TODO: doesn't populate the list by default anymore
-
         ImGui::Text("geometry");
         ImGui::SameLine();
         DrawHelpMarker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
@@ -218,7 +216,7 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
     // show cancel button
     if (ImGui::Button("cancel")) {
 
-        st = {};  // reset user inputs
+        st = AddBodyPopup{};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
 
@@ -238,7 +236,7 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
 
         rv = NewBody{std::move(body), std::move(joint)};
 
-        st = {};  // reset user inputs
+        st = AddBodyPopup{};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }
 

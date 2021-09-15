@@ -139,6 +139,7 @@ static void getSceneElements(OpenSim::Model const& m,
     SceneGeneratorLambda visitor{ThreadsafeMeshCache::getGlobal(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
 
     OpenSim::ModelDisplayHints mdh = m.getDisplayHints();
+    mdh.set_show_frames(true);
 
     SimTK::Array_<SimTK::DecorativeGeometry> geomList;
     for (OpenSim::Component const& c : m.getComponentList()) {
@@ -401,15 +402,12 @@ void osc::UndoableUiModel::clearAnyDamagedModels() {
     }
 }
 
-osc::UiSimulation::UiSimulation(OpenSim::Model const& m, SimTK::State const& s, FdParams const& p) :
-    simulation{createForwardDynamicSim(m, s, p)},
-    model{createInitializedModel(m)},
-    spotReport{createDummySimulationReport(*this->model)},
-    regularReports{} {
-}
-
 osc::UiSimulation::UiSimulation(UiModel const& uim, FdParams const& p) :
-    UiSimulation{*uim.model, *uim.state, p} {
+    simulation{createForwardDynamicSim(*uim.model, *uim.state, p)},
+    model{createInitializedModel(*uim.model)},
+    spotReport{createDummySimulationReport(*this->model)},
+    regularReports{},
+    fixupScaleFactor{uim.fixupScaleFactor} {
 }
 
 osc::UiSimulation::UiSimulation(UiSimulation&&) noexcept = default;
