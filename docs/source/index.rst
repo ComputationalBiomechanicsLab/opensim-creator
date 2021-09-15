@@ -47,6 +47,10 @@ Table of Contents
    tut2
    tut3
    tut4
+   tut5
+   tut6
+   tut7
+   tut8
 
 .. toctree::
     :caption: Other Links

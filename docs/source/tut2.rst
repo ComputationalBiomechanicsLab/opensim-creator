@@ -3,16 +3,16 @@ Tutorial 2: Make a Bouncing Block
 
 In this tutorial, we will be making a bouncing block using OpenSim Creator:
 
-.. figure:: _static/tut1_appearanceformatted.png
+.. figure:: _static/tut2_constraints-added.png
     :width: 60%
 
-    TODO final solution image
+    The final model made in this tutorial. It is a three-body system with a spring attached between the head to the foot. Contact geometries are used to make the model bounce on the floor, and constraints are used to prevent it from rolling around (:download:`download model <_static/tut2_constraints-added.osim>`).
 
 In :ref:`tut1`, we created one of the most basic physical systems that can be modelled. This tutorial reinforces those concepts by building a slightly more complex model that requires the use of **collisions**, **forces**, and **constraints**. This tutorial builds the model *incrementally* (i.e. from the ground up), so that we can explore each model-making decision one step at a time.
 
 .. warning::
 
-    This tutorial also assumes that you have already completed :ref:`tut1`. The content here will skip over some of the steps that were introduced in that tutorial. If you feel lost at any point, there should be partial solutions available along the way.
+    This tutorial also assumes that you have already completed :ref:`tut1`. The content here will skip over some of the steps that were introduced in that tutorial. If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the *download model* links.
 
 
 Step 1: Create the Foot
@@ -22,16 +22,16 @@ Because of how OpenSim computes a model's spatial layout, the most straightforwa
 
 .. note::
 
-    The body that is attached to ground does **not** need to be the *spatially* closest body in the model. It just needs to be whichever body you think should be positioned relative to ground. In this tutorial, we are starting at the ``foot``, which happens to also be the body that's closes to the ground, but OpenSim Creator's example models contain ``bouncing_block.osim``, which is similar to the model we will build here, but built from the ``head`` towards the ``foot``. 
+    The body that is attached to ground does **not** need to be the closest body in the model. It just needs to be whichever body you think should be positioned relative to ground. In this tutorial, we are starting at the ``foot``, which happens to also be the body that's closest to the ground. However, OpenSim Creator's example models contain ``bouncing_block.osim``, which is similar to the model we will build here, but built from the ``head`` towards the ``foot``.
 
-    The main benefit of building the model from the ``foot`` is that we can experiment with collisions earlier in the model-building process. If we built the model from the ``head``, we would have to wait until the ``knee``, ``foot``, and ``foot_collision`` were added before we could experiment with collisions.
+    The main benefit of building this model from the ``foot`` is that we can experiment with collisions earlier in this tutorial. If we built the model from the ``head``, we would have to wait until the ``knee``, ``foot``, and ``foot_collision`` were added to the model before we could experiment with collisions.
 
 The first thing we need to add to our model is the ``foot`` body. As explained in the previous tutorial, all bodies (which are frames) need to be attached to other frames in the model and, ultimately, attached to ground. In our model, the ``foot`` will be an (initially) freely-moving element in the scene, so we will directly attach it to the ground with a ``FreeJoint``.
 
 Using similar steps to the previous tutorial:
 
 * Add a body called ``foot`` into the model. It should have a mass of ``1 kg`` (the default) and be joined to ``ground`` with a ``FreeJoint`` called ``foot_to_ground``. Attach a ``Sphere`` geometry to it.
-* Click the sphere and change its ``Appearance`` property such that it has a red color.
+* Click the sphere and change its ``Appearance`` to a red color.
 
 You can then raise ``foot`` above the ground slightly by altering the ``foot_to_ground`` joint's ``ty`` coordinate:
 
@@ -39,7 +39,7 @@ You can then raise ``foot`` above the ground slightly by altering the ``foot_to_
 * Select the ``ty`` coordinate
 * Change ``ty``'s ``default_value`` from ``0.0`` to ``0.5``
 
-This should produce a model with a red sphere (``foot``) raised above the ground:
+This should produce a model with a red sphere (``foot``) that is raised above the ground:
 
 .. figure:: _static/tut2_added-foot.png
     :width: 60%
@@ -50,13 +50,13 @@ This should produce a model with a red sphere (``foot``) raised above the ground
 
     Why do we change the ``ty`` coordinate, rather than changing (e.g.) the ``translation`` property of ``foot_offset``?
 
-    In :ref:`tut1` we moved bodies around by altering the ``translation`` property of offset frames. Here, we are exploiting the fact that ``FreeJoint`` s happen to have a translation coordinate. Both of these approaches for moving bodies around in the model have roughly equivalent side-effects. However, coordinates can *also* be freely edited in the official OpenSim GUI via the ``coordinates`` panel. This enables users to (e.g.) change ``ty`` and make the model start higher off the ground.
+    In :ref:`tut1` we moved bodies around by altering the ``translation`` property of offset frames. Here, we are changing the ``ty`` coordinate. This exploits the fact that ``FreeJoint`` s have translation coordinates. Both of these approaches for moving bodies around in the model have equivalent side-effects. However, coordinates can *also* be freely edited in the official OpenSim GUI via the ``coordinates`` panel. This enables users to (e.g.) later change ``ty`` to make the model start higher off the ground.
 
 
 Step 2: Add Contact Surfaces & Forces
 -------------------------------------
 
-If you simulate the model at this point, ``foot`` will just fall through the floor. The reason this happens is because the chequered floor is decorative, the ``foot`` body we have added is effectively a 0D point in space, and the sphere is decorative. We fix this by explicitly adding ``ContactGeometry`` into the model at locations where we logically expect collisions to take place.
+If you simulate the model at this point, ``foot`` will just fall through the floor. The reason this happens is because the chequered floor is decorative, the ``foot`` body we have added is effectively a 0D point in space, and the sphere is decorative. We need to explicitly add ``ContactGeometry`` into the model at locations where we *logically* expect collisions to take place. In this case, we will add ``ContactGeometry`` at the same location as the decorations.
 
 To attach a collideable floor (a ``ContactHalfSpace``) to the ground of the model:
 
@@ -75,11 +75,11 @@ To attach a collidable sphere (a ``ContactSphere``) to ``foot``:
 
 .. figure:: _static/tut2_footcontact-properties.png
 
-    Properties for the ``foot_contact`` component (a ``ContactSphere``). The ``radius`` is set to match the ``Sphere`` decoration used on the ``foot``. The ``ContactSphere`` is attached to ``foot`` so that collisions it encounters affect ``foot``. **Note**: You can edit the ``radius`` property of ``foot_contact`` if you can't see it in the scene. It may be hidden inside the ``foot`` sphere (they have the same radius, after all).
+    Properties for the ``foot_contact`` component (a ``ContactSphere``). The ``radius`` is set to match the ``Sphere`` decoration used on the ``foot``. The ``ContactSphere`` is attached to ``foot`` so that collisions it encounters affect ``foot``. **Note**: You can edit the ``radius`` property of ``foot_contact`` if you can't see it in the scene. It may be hidden inside the ``foot`` sphere (they have the same radius).
 
-With those two added, the model now contains enough contact geometry to model the collisions we are interested in. However, if you try to simulate this model you will find that ``foot`` still just falls through the floor 😕. What's going on?
+With those two contact geometries added, the model now contains enough contact geometry to model the collisions we are interested in. However, if you try to simulate this model you will find that ``foot`` still just falls through the floor 😕. What's going on?
 
-In OpenSim, ``ContactGeometry`` s only express a geometry that *may* participate in contact (collision) detection. They do not express the *force* that is generated whenever that contact occurs. We need to separately add a suitable contact force (in this case, a ``HuntCrossleyForce``) into the model. That force then handles what *physically* happens to the model (i.e. which *forces* are applied to model) whenever a collision occurs.
+In OpenSim, contact geometries only express a geometry that *may* participate in contact (collision) detection. They do not express the *force* that is generated whenever contact occurs. We need to separately add a suitable contact force (in this case, a ``HuntCrossleyForce``) into the model. That force then handles what *physically* happens to the model (i.e. which *forces* are applied to model) whenever a collision occurs.
 
 To add a contact force (``HuntCrossleyForce``) to the model:
 
@@ -89,7 +89,7 @@ To add a contact force (``HuntCrossleyForce``) to the model:
 * Select the force
 * In the properties editor, click ``add contact geometry`` and add ``floor_contact`` and ``foot_contact`` to the force
 
-With the contact force added, a simulation of this model should show ``foot`` hit ``floor``, bounce a little, then stop. You can change the ``HuntCrossleyForce``'s properties to change how stiff the contact force is, how much energy is dissipated by the contact, etc. - experiment with that at your leisure.
+With the contact force added, a simulation of this model should show ``foot`` hit ``floor``, bounce a little, then stop. You can change the ``HuntCrossleyForce``'s properties to change how stiff the contact force is, how much energy is dissipated by the contact, etc.
 
 .. figure:: _static/tut2_collision-forces-added.png
     :width: 60%
@@ -114,7 +114,7 @@ To add the ``head`` to the model:
 * Change the ``knee_offset`` of the ``knee_to_head`` joint from ``(0, 0, 0)`` to ``(0, 0.5, 0)``, so that the ``knee`` is offset from the origin of ``knee_to_head`` and ``head`` is co-located with it (i.e. it swings at the head).
 * Make the cube geometry red
 
-These steps should create all the necessary bodies in the sytem, but not look quite right (the "links" are missing):
+These steps should create all the necessary bodies in the sytem, but it looks a little bit unusual (the "links" are missing):
 
 .. figure:: _static/tut2_bodies-added.png
     :width: 60%
@@ -175,7 +175,9 @@ Step 4: Add a Spring between ``foot`` and ``head``
 
 We now have the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the collision force. If you simulate the model, it won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
 
-The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let that drop through space. The only forces acting on the model are external (i.e. gravity). What we need to do is to add more **forces** into the model. This step will add a ``PointToPointSpring`` between ``foot`` and ``head`` to make the model's head "bounce" when the foot hits the floor.
+The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The only forces acting on the model are external (i.e. gravity), so the model is acting like a passive swing and rolling along its joints.
+
+We can add **forces** to the model to make it more interesting. This step will add a ``PointToPointSpring`` between ``foot`` and ``head`` to make the model's head "bounce" away from the foot whenever the model hits the floor.
 
 To add a ``PointToPointSpring`` between ``foot`` and ``head``:
 
@@ -194,15 +196,19 @@ If you simulate the model after adding the spring, you should see that the model
 .. figure:: _static/tut2_spring-added.png
     :width: 60%
 
-    The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis. Its center of mass isn't perfectly balanced around its falling vector (:download:`download model <_static/tut2_spring-added.osim>`).
+    The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis. Because the model's center of mass isn't perfectly balanced, it will roll around (:download:`download model <_static/tut2_spring-added.osim>`).
 
 
-Step 5: Constrain ``foot`` and ``head`` so stay along Y
+Step 5: Constrain ``foot`` and ``head`` to stay along Y
 -------------------------------------------------------
 
-The model is now *logically* complete--in the sense that it contains all of the mechanical components we want--but it isn't particularly *stable*. If you simulate the model, you will find that it bounces a little bit and then starts to roll around on its foot, rather than continuing to bounce up and down. We can use **constraints** to prevent this from happening.
+The model is now *logically* complete--in the sense that it contains all of the mechanical components we want--but it isn't particularly *stable*. If you simulate the model, you will find that it bounces a little bit and then starts to roll around on its foot, rather than continuing to bounce up and down. 
 
-A constraint adds extra "rules" to a model. The underyling simulation engine then tries to ensure that these rules are obeyed. OpenSim has support for a few different constraints, such as:
+The reason this happens is because the model isn't perfectly balanced. It is slightly heavier on one side, which causes the whole model to start leaning and, ultimately, roll around. One way to prevent this from happening is to add **constraints** into the model that prevent it from rolling.
+
+One way to think of constraints is as extra "rules" the model must obey. When the model is assembled and simulated, the simulator has to ensure that each state of the model obeys the model's constraints. A common use-case for constraints is to constrain a degree of freedom in the model to simplify the model in some way.
+
+OpenSim has support for a few different constraints, such as:
 
 * Enforcing a constant distance between two frames in the model (``ConstantDistanceConstraint``)
 * Enforcing that a frame "follows along" some other frame. E.g. that the frame is only allowed to be some distance along the Y axis of some other frame (``PointOnLineConstraint``)
@@ -227,24 +233,36 @@ With both of those constraints in place, the model now bounces up and down witho
 .. figure:: _static/tut2_constraints-added.png
     :width: 60%
 
-    The model after adding ``PointOnLineConstraint`` s that make the ``head`` and ``foot`` bodies stay along the Y axis, rather than having the freedom to roll around (:download:`download model <_static/tut2_constraints-added.osim>`).
+    The final model after adding ``PointOnLineConstraint`` s that make the ``head`` and ``foot`` bodies stay along the Y axis, rather than having the freedom to roll around (:download:`download model <_static/tut2_constraints-added.osim>`).
 
 .. note::
 
-    Wait a second, did we just cheat? A "real" model wouldn't have these constraints, right?
+    Wait a second, did we just cheat? A "real" model wouldn't have these invisible constraints, right?
 
     Using constraints in this way is a design choice. It depends what you want out of your model.
 
     Take this model as an example. If your main objective is to figure out which angles, masses, and spring strains lead to a perfectly balanced model (e.g. because optimizing the model's *balance* is the thing you're interested in), then you probably don't want to use constraints: they're interrupting the main objective of the model.
 
-    Conversely, if your main objective is to tune the spring to get the vertical "bounce" you want, and you know that the model's balance isn't relevant (e.g. because other investigations indicate it will not be relevant; or the "block" is, in reality, a gyroscope; or because the model is, in reality, going to be dropped down a tube; etc.),  then you probably do want to use constraints: they're making it easier to focus on the main objective of the model.
+    Conversely, if your main objective is to tune the spring and weights to get the vertical "bounce" you want, and you know that the model's balance isn't relevant (e.g. because other investigations or assumptions indicate it will not be relevant),  then you probably do want to use constraints: they will make it easier to focus on the main objective of the model.
 
-    Deciding on constraints is even more important with complex models. Sure, you *could* perfectly balance a perfectly-represented human on a perfectly-designed bicycle with perfectly-designed balance, and ensure that the various muscle controls etc. keep the bike straight, but that will *probably* take a very long time to get right, and you might only be interested in much lower-resolution (e.g. 2D) representation of that system. The art of modelling is in figuring out which constraints are suitable for your problem. There's a reason why physicists model everything as spheres - and usually get away with it 😉.
+    Choosing the right constraints is even more important with complex models. Sure, you *could* perfectly balance a perfectly-represented human on a perfectly-designed bicycle, and ensure that the various muscle controls etc. keep the bike balanced, but getting that right will *probably* take a very long time. For your particular research problem, you might be satisfied with a lower-resolution (e.g. 2D) representation of someone riding a bike. 
+
+    The art of modelling is in figuring out which constraints and simplifications are suitable for your problem. There's a reason why physicists tend to model everything as a sphere - and usually get away with it 😉.
+
 
 (Optional) Extra Exercises
 --------------------------
 
+Now that you have a working model, you can experiment a little bit by doing these extra exercises.
+
+* **Experiment with the body masses and spring parameters**. What happens if ``head`` is heavier? How does the spring ``stiffness`` affect how the model bounces? Can the floor's contact forces be modified to reduce how much of the drop force is dissipated each bounce? Can you make it bounce for longer?
+
+* **Try opening your model in the official OpenSim GUI**. Save your model to an ``.osim`` and open it in the official OpenSim GUI. This should let you edit coordinates, plot things, etc. The official GUI has features that OpenSim Creator does not have. The benefit of using open file types (here, ``.osim`` s) is that you can use multiple tools with the same file.
+
+
 Next Steps
 ----------
 
+This tutorial was similar to :ref:`tut1`, but it focused on introducing some of the more practical parts of designing a more complex model. Things like adding **collision geometry**, adding **forces**, and deciding on **constraints**. These are all important parts of the model-building process that come up repeatably when designing OpenSim models.
 
+The next tutorial, :ref:`tut3`, is going to focus on **muscles**, which can be seen as a specialized forces (e.g. like the ``PointToPointSpring`` force we used here) that are typically used in biomechanical models.
