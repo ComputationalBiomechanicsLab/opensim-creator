@@ -6,6 +6,7 @@ namespace OpenSim {
 
 namespace osc {
     class ComponentHierarchy final {
+        char search[256]{};
 
     public:
         enum ResponseType { NothingHappened, SelectionChanged, HoverChanged };

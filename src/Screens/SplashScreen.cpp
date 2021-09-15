@@ -10,7 +10,9 @@
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/App.hpp"
+#include "src/Config.hpp"
 #include "src/Log.hpp"
+#include "src/os.hpp"
 #include "src/Styling.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -226,10 +228,15 @@ void osc::SplashScreen::draw() {
         ImGui::SameLine();
 
         // `open` button
-        {
-            if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
-                actionOpenModel(impl.mes);
-            }
+        if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
+            actionOpenModel(impl.mes);
+        }
+
+        ImGui::SameLine();
+
+        // `docs` button
+        if (ImGui::Button(ICON_FA_LINK " Open Documentation")) {
+            OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
         }
 
         ImGui::Dummy(ImVec2{0.0f, 10.0f});

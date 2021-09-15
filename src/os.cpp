@@ -337,11 +337,15 @@ void osc::OpenURLInDefaultBrowser(std::string_view vw) {
 }
 
 #elif defined(__APPLE__)
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const&) {
-    log::error("unsupported action: cannot open external programs in Mac OSX (yet!)");
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {
+    std::string cmd = std::string{"open "};
+    cmd.append(p);
+    system(cmd.c_str());
 }
-void osc::OpenURLInDefaultBrowser(std::string_view) {
-    log::error("unsupported action: cannot open external URLs in Mac OSX (yet!)");
+void osc::OpenURLInDefaultBrowser(std::string_view url) {
+    std::string cmd = std::string{"open "};
+    cmd.append(url);
+    system(cmd.c_str());
 }
 #elif defined(WIN32)
 void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {

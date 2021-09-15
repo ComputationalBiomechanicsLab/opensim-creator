@@ -61,6 +61,10 @@ OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 #
 #     OSC_SKIP_OSC
 
+# set this if you want to build the docs
+#
+#     OSC_BUILD_DOCS
+
 set +x
 echo "----- starting build -----"
 echo ""
@@ -84,7 +88,7 @@ ls -la .  # print build dir contents
 uname -a  # print distro details
 
 
-if [[ -z ${OSC_SKIP_APT+x} ]]; then
+if [[ -z ${OSC_SKIP_APT:+x} ]]; then
     echo "----- getting system-level dependencies -----"
 
     # if root is running this script then do not use `sudo` (some distros
@@ -103,6 +107,10 @@ if [[ -z ${OSC_SKIP_APT+x} ]]; then
     # osc: main dependencies
     ${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev
 
+    # osc: docs dependencies (if OSC_BUILD_DOCS is set)
+    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} apt-get install python3 python3-pip
+    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} pip3 install -r docs/requirements.txt
+
     echo "----- finished getting system-level dependencies -----"
 else
     echo "----- skipping getting system-level dependencies (OSC_SKIP_APT is set) -----"
@@ -116,7 +124,7 @@ cmake --version
 make --version
 
 
-if [[ -z ${OSC_SKIP_OPENSIM+x} ]]; then
+if [[ -z ${OSC_SKIP_OPENSIM:+x} ]]; then
     echo "----- downloading, building, and installing (locally) OpenSim -----"
 
     # clone sources
@@ -160,12 +168,15 @@ else
     echo "----- skipping OpenSim build (OSC_SKIP_OPENSIM is set) -----"
 fi
 
-if [[ ! ${OSC_SKIP_OSC+x} ]]; then
+if [[ -z ${OSC_SKIP_OSC:+x} ]]; then
     echo "----- building OSC -----"
 
     mkdir -p osc-build/
     cd osc-build/
-    cmake .. -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
+        -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install \
+        ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
     cmake --build . --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}
     echo "DEBUG: listing contents of final build dir"
     ls .
