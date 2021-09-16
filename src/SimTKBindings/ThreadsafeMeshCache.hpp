@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/3D/ImmutableSceneMesh.hpp"
-#include "src/Assertions.hpp"
 
 #include <memory>
 #include <string>
@@ -10,7 +9,7 @@ namespace osc {
     class ThreadsafeMeshCache final {
 
     public:
-        [[nodiscard]] static std::shared_ptr<ThreadsafeMeshCache> getGlobal();
+        [[nodiscard]] static std::shared_ptr<ThreadsafeMeshCache> getGlobalMeshCache();
 
         ThreadsafeMeshCache();
         ~ThreadsafeMeshCache() noexcept;

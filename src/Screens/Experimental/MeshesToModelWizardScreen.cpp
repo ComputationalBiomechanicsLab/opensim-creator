@@ -66,7 +66,7 @@ namespace {
         std::filesystem::path filepath;
 
         // CPU-side mesh data
-        Mesh um;
+        CPUMesh um;
 
         // AABB of the mesh data
         AABB aabb;
@@ -127,7 +127,7 @@ namespace {
         std::filesystem::path filepath;
 
         // CPU-side mesh data
-        Mesh meshdata;
+        CPUMesh meshdata;
 
         // AABB of the mesh data
         AABB aabb;
@@ -330,8 +330,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
     // floor data
     std::shared_ptr<gl::Texture2D> floorTex = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
-    Mesh floorMesh = []() {
-        Mesh rv = GenTexturedQuad();
+    CPUMesh floorMesh = []() {
+        CPUMesh rv = GenTexturedQuad();
         for (auto& uv : rv.texcoords) {
             uv *= 200.0f;
         }

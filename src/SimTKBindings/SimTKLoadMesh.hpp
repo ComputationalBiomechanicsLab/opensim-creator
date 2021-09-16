@@ -5,5 +5,5 @@
 #include <filesystem>
 
 namespace osc {
-    Mesh SimTKLoadMesh(std::filesystem::path const&);
+    CPUMesh SimTKLoadMesh(std::filesystem::path const&);
 }

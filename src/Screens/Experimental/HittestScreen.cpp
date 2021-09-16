@@ -216,8 +216,8 @@ void osc::HittestScreen::tick(float) {
     // compute hits
 
     Line cameraRay;
-    cameraRay.o = camera.pos;
-    cameraRay.d = camera.getFront();
+    cameraRay.origin = camera.pos;
+    cameraRay.dir = camera.getFront();
 
     float closestEl = FLT_MAX;
     SceneSphere* closestSceneSphere = nullptr;
@@ -248,8 +248,8 @@ void osc::HittestScreen::draw() {
     Shader& shader = impl.shader;
 
     Line cameraRay;
-    cameraRay.d = impl.camera.getFront();
-    cameraRay.o = impl.camera.pos;
+    cameraRay.dir = impl.camera.getFront();
+    cameraRay.origin = impl.camera.pos;
 
     gl::Viewport(0, 0, App::cur().idims().x, App::cur().idims().y);
     gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);

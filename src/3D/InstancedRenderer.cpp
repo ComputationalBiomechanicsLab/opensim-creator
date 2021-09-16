@@ -132,9 +132,9 @@ namespace {
 
     // create VAO for the Gouraud shader
     gl::VertexArray createGouraudVAO(
-            Mesh const& mesh,
+            CPUMesh const& mesh,
             gl::ArrayBuffer<GLubyte>& data,
-            gl::ElementArrayBuffer<GLushort>& ebo,
+            gl::ElementArrayBuffer<uint32_t>& ebo,
             gl::ArrayBuffer<GPUMeshInstance, GL_DYNAMIC_DRAW>& instances) {
 
         static_assert(offsetof(GPUUntexturedMeshdata, pos) == offsetof(GPUTexturedMeshdata, pos));
@@ -191,9 +191,9 @@ namespace {
 
     // create VAO for the normals shader
     gl::VertexArray createNormalsVAO(
-            Mesh const& mesh,
+            CPUMesh const& mesh,
             gl::ArrayBuffer<GLubyte>& vbo,
-            gl::ElementArrayBuffer<GLushort>& ebo) {
+            gl::ElementArrayBuffer<uint32_t>& ebo) {
 
         static_assert(offsetof(GPUUntexturedMeshdata, pos) == offsetof(GPUTexturedMeshdata, pos));
         static_assert(offsetof(GPUUntexturedMeshdata, norm) == offsetof(GPUTexturedMeshdata, norm));
@@ -222,13 +222,13 @@ namespace {
 // buffer
 struct InstanceableMeshdata::Impl final {
     gl::ArrayBuffer<GLubyte> data;
-    gl::ElementArrayBuffer<GLushort> indices;
+    gl::ElementArrayBuffer<uint32_t> indices;
     gl::ArrayBuffer<GPUMeshInstance, GL_DYNAMIC_DRAW> instances;
     gl::VertexArray gouraudVAO;
     gl::VertexArray normalsVAO;
 
     Impl(gl::ArrayBuffer<GLubyte> data_,
-         gl::ElementArrayBuffer<GLushort> indices_,
+         gl::ElementArrayBuffer<uint32_t> indices_,
          gl::ArrayBuffer<GPUMeshInstance, GL_DYNAMIC_DRAW> instances_,
          gl::VertexArray gouraud_vao_,
          gl::VertexArray normals_vao_) :
@@ -259,7 +259,7 @@ struct osc::InstancedRenderer::Impl final {
     RenderTarget rt;
 
     gl::ArrayBuffer<GPUTexturedMeshdata> quadVBO{[&]() {
-        Mesh m = GenTexturedQuad();
+        CPUMesh m = GenTexturedQuad();
 
         std::vector<GPUTexturedMeshdata> swap;
         for (size_t i = 0; i < m.indices.size(); ++i) {
@@ -295,7 +295,7 @@ osc::InstanceableMeshdata::InstanceableMeshdata(std::shared_ptr<Impl> impl) : m_
 
 osc::InstanceableMeshdata::~InstanceableMeshdata() noexcept = default;
 
-InstanceableMeshdata osc::uploadMeshdataForInstancing(Mesh const& mesh) {
+InstanceableMeshdata osc::uploadMeshdataForInstancing(CPUMesh const& mesh) {
     if (mesh.verts.size() != mesh.normals.size()) {
         throw std::runtime_error{"mismatch between number of verts and number of normals in a mesh"};
     }
@@ -323,7 +323,7 @@ InstanceableMeshdata osc::uploadMeshdataForInstancing(Mesh const& mesh) {
     }
 
     // make indices
-    gl::ElementArrayBuffer<GLushort> ebo{mesh.indices};
+    gl::ElementArrayBuffer<uint32_t> ebo{mesh.indices};
 
     // preallocate instance buffer (used at render time)
     gl::ArrayBuffer<GPUMeshInstance, GL_DYNAMIC_DRAW> instances;

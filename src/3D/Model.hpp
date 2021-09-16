@@ -6,6 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
+#include <nonstd/span.hpp>
 
 #include <iosfwd>
 #include <array>
@@ -105,8 +106,8 @@ namespace osc {
     };
 
     struct Line final {
-        glm::vec3 o;  // origin
-        glm::vec3 d;  // direction - should be normalized
+        glm::vec3 origin;
+        glm::vec3 dir;
     };
 
     struct Plane final {
@@ -173,50 +174,58 @@ namespace osc {
     Rgba32 Rgba32FromF4(float, float, float, float) noexcept;
     Rgba32 Rgba32FromU32(uint32_t) noexcept;  // R at MSB
 
-    // CPU-side mesh. note: some of the vectors can be empty (unsupplied)
-    struct Mesh {
+    // CPU-side mesh
+    //
+    // These can be generated/manipulated on any CPU core without having to worry
+    // about the GPU
+    //
+    // see `Mesh` for the GPU-friendly version of this. This separation exists
+    // because the algs in this header are supposed to be simple and portable,
+    // so that lower-level CPU-only code can use these without having to worry
+    // about which GPU API is active, buffer packing, etc.
+    struct CPUMesh {
         std::vector<glm::vec3> verts;
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> texcoords;
-        std::vector<unsigned short> indices;
+        std::vector<uint32_t> indices;
 
         void clear();
         void reserve(size_t);
     };
 
     // prints top-level mesh information (eg amount of each thing) to the stream
-    std::ostream& operator<<(std::ostream&, Mesh const&);
-
+    std::ostream& operator<<(std::ostream&, CPUMesh const&);
 
     // generates a textured quad with:
     //
     // - positions: Z == 0, X == [-1, 1], and Y == [-1, 1]
     // - texcoords: (0, 0) to (1, 1)
-    Mesh GenTexturedQuad();
+    CPUMesh GenTexturedQuad();
 
     // generates UV sphere centered at (0,0,0) with radius = 1
-    Mesh GenUntexturedUVSphere(size_t sectors, size_t stacks);
+    CPUMesh GenUntexturedUVSphere(size_t sectors, size_t stacks);
 
     // generates a "Simbody" cylinder, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenUntexturedSimbodyCylinder(size_t nsides);
+    CPUMesh GenUntexturedSimbodyCylinder(size_t nsides);
 
     // generates a "Simbody" cone, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenUntexturedSimbodyCone(size_t nsides);
+    CPUMesh GenUntexturedSimbodyCone(size_t nsides);
 
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
-    Mesh GenNbyNGrid(size_t nticks);
+    CPUMesh GenNbyNGrid(size_t nticks);
 
     // generates a single two-point line from (0,-1,0) to (0,+1,0)
-    Mesh GenYLine();
+    CPUMesh GenYLine();
 
     // generates a cube with [-1,+1] in each dimension
-    Mesh GenCube();
+    CPUMesh GenCube();
 
     // generates the *lines* of a cube with [-1,+1] in each dimension
-    Mesh GenCubeLines();
+    CPUMesh GenCubeLines();
 
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
-    Mesh GenCircle(size_t nsides);
+    CPUMesh GenCircle(size_t nsides);
+
 
     // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
     // XY location in NDC (-1 to +1 in XY starting in the middle)

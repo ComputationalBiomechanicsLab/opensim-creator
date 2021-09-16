@@ -56,7 +56,7 @@ namespace {
     };
 }
 
-static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<GLushort>& ebo) {
+static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<uint32_t>& ebo) {
     gl::VertexArray rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
@@ -70,26 +70,26 @@ static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, 
 struct osc::MeshHittestScreen::Impl final {
     Shader shader;
 
-    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    CPUMesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
     gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
-    gl::ElementArrayBuffer<GLushort> meshEBO{mesh.indices};
+    gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
     gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
 
     // sphere (debug)
-    Mesh sphere = GenUntexturedUVSphere(12, 12);
+    CPUMesh sphere = GenUntexturedUVSphere(12, 12);
     gl::ArrayBuffer<glm::vec3> sphereVBO{sphere.verts};
-    gl::ElementArrayBuffer<GLushort> sphereEBO{sphere.indices};
+    gl::ElementArrayBuffer<uint32_t> sphereEBO{sphere.indices};
     gl::VertexArray sphereVAO = makeVAO(shader, sphereVBO, sphereEBO);
 
     // triangle (debug)
     glm::vec3 tris[3];
     gl::ArrayBuffer<glm::vec3> triangleVBO;
-    gl::ElementArrayBuffer<GLushort> triangleEBO = {0, 1, 2};
+    gl::ElementArrayBuffer<uint32_t> triangleEBO = {0, 1, 2};
     gl::VertexArray triangleVAO = makeVAO(shader, triangleVBO, triangleEBO);
 
     // line (debug)
     gl::ArrayBuffer<glm::vec3> lineVBO;
-    gl::ElementArrayBuffer<GLushort> lineEBO = {0, 1};
+    gl::ElementArrayBuffer<uint32_t> lineEBO = {0, 1};
     gl::VertexArray lineVAO = makeVAO(shader, lineVBO, lineEBO);
 
     std::chrono::microseconds raycastDur{0};
@@ -146,14 +146,14 @@ void osc::MeshHittestScreen::tick(float) {
         for (size_t i = 0; i < tris.size(); i += 3) {
             RayCollision res = GetRayCollisionTriangle(impl.ray, tris.data() + i);
             if (res.hit) {
-                impl.hitpos = impl.ray.o + res.distance*impl.ray.d;
+                impl.hitpos = impl.ray.origin + res.distance*impl.ray.dir;
                 impl.isMousedOver = true;
                 impl.tris[0] = tris[i];
                 impl.tris[1] = tris[i+1];
                 impl.tris[2] = tris[i+2];
                 impl.triangleVBO.assign(impl.tris, 3);
 
-                glm::vec3 lineverts[2] = {impl.ray.o, impl.ray.o + 100.0f*impl.ray.d};
+                glm::vec3 lineverts[2] = {impl.ray.origin, impl.ray.origin + 100.0f*impl.ray.dir};
                 impl.lineVBO.assign(lineverts, 2);
 
                 break;
@@ -177,7 +177,7 @@ void osc::MeshHittestScreen::draw() {
         ImGui::Text("%lld microseconds", impl.raycastDur.count());
         auto r = impl.ray;
         ImGui::Text("camerapos = (%.2f, %.2f, %.2f)", impl.camera.getPos().x, impl.camera.getPos().y, impl.camera.getPos().z);
-        ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.o.x, r.o.y, r.o.z, r.d.x, r.d.y, r.d.z);
+        ImGui::Text("origin = (%.2f, %.2f, %.2f), dir = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.dir.x, r.dir.y, r.dir.z);
         if (impl.isMousedOver) {
             ImGui::Text("hit = (%.2f, %.2f, %.2f)", impl.hitpos.x, impl.hitpos.y, impl.hitpos.z);
             ImGui::Text("p1 = (%.2f, %.2f, %.2f)", impl.tris[0].x, impl.tris[0].y, impl.tris[0].z);

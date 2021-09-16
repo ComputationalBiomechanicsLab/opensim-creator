@@ -10,7 +10,7 @@
 using namespace osc;
 
 
-std::shared_ptr<ThreadsafeMeshCache> osc::ThreadsafeMeshCache::getGlobal() {
+std::shared_ptr<ThreadsafeMeshCache> osc::ThreadsafeMeshCache::getGlobalMeshCache() {
     static std::shared_ptr<ThreadsafeMeshCache> g_GlobalMeshCache = std::make_shared<ThreadsafeMeshCache>();
     return g_GlobalMeshCache;
 }

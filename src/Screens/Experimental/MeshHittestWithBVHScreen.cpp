@@ -17,7 +17,7 @@
 
 using namespace osc;
 
-static gl::VertexArray makeVAO(SolidColorShader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<GLushort>& ebo) {
+static gl::VertexArray makeVAO(SolidColorShader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<uint32_t>& ebo) {
     gl::VertexArray rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
@@ -51,22 +51,22 @@ static void drawBVHRecursive(BVH const& bvh, SolidColorShader& shader, int pos) 
 struct osc::MeshHittestWithBVHScreen::Impl final {
     SolidColorShader shader;
 
-    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    CPUMesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
     gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
-    gl::ElementArrayBuffer<GLushort> meshEBO{mesh.indices};
+    gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
     gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
     BVH meshBVH = BVH_CreateFromTriangles(mesh.verts.data(), mesh.verts.size());
 
     // triangle (debug)
     glm::vec3 tris[3];
     gl::ArrayBuffer<glm::vec3> triangleVBO;
-    gl::ElementArrayBuffer<GLushort> triangleEBO = {0, 1, 2};
+    gl::ElementArrayBuffer<uint32_t> triangleEBO = {0, 1, 2};
     gl::VertexArray triangleVAO = makeVAO(shader, triangleVBO, triangleEBO);
 
     // AABB wireframe
-    Mesh cubeWireframe = GenCubeLines();
+    CPUMesh cubeWireframe = GenCubeLines();
     gl::ArrayBuffer<glm::vec3> cubeWireframeVBO{cubeWireframe.verts};
-    gl::ElementArrayBuffer<GLushort> cubeWireframeEBO{cubeWireframe.indices};
+    gl::ElementArrayBuffer<uint32_t> cubeWireframeEBO{cubeWireframe.indices};
     gl::VertexArray cubeVAO = makeVAO(shader, cubeWireframeVBO, cubeWireframeEBO);
 
     std::chrono::microseconds raycastDuration{0};

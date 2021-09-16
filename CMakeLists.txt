@@ -143,6 +143,7 @@ add_executable(osc
     src/3D/InstancedRenderer.hpp
     src/3D/Model.cpp
     src/3D/Model.hpp
+    src/3D/ShaderLocationIndex.hpp
     src/3D/ImmutableSceneMesh.cpp
     src/3D/ImmutableSceneMesh.hpp
     src/3D/Texturing.cpp

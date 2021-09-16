@@ -136,7 +136,7 @@ static void getSceneElements(OpenSim::Model const& m,
         out.emplace_back(se, currentComponent);
     };
 
-    SceneGeneratorLambda visitor{ThreadsafeMeshCache::getGlobal(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
+    SceneGeneratorLambda visitor{ThreadsafeMeshCache::getGlobalMeshCache(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
 
     OpenSim::ModelDisplayHints mdh = m.getDisplayHints();
     mdh.set_show_frames(true);

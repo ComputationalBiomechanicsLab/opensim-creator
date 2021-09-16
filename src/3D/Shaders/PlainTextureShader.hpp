@@ -1,13 +1,14 @@
 #pragma once
 
 #include "src/3D/Gl.hpp"
+#include "src/3D/ShaderLocationIndex.hpp"
 
 namespace osc {
     struct PlainTextureShader final {
         gl::Program program;
 
-        static constexpr gl::AttributeVec3 aPos = 0;
-        static constexpr gl::AttributeVec2 aTexCoord = 1;
+        static constexpr gl::AttributeVec3 aPos = SHADER_LOC_VERTEX_POSITION;
+        static constexpr gl::AttributeVec2 aTexCoord = SHADER_LOC_VERTEX_TEXCOORD01;
 
         gl::UniformMat4 uMVP;
         gl::UniformFloat uTextureScaler;
