@@ -211,8 +211,6 @@ add_executable(osc
     src/SimTKBindings/SimTKConverters.hpp
     src/SimTKBindings/SimTKLoadMesh.cpp
     src/SimTKBindings/SimTKLoadMesh.hpp
-    src/SimTKBindings/ThreadsafeMeshCache.cpp
-    src/SimTKBindings/ThreadsafeMeshCache.hpp
 
     src/UI/AddBodyPopup.cpp
     src/UI/AddBodyPopup.hpp
@@ -275,6 +273,8 @@ add_executable(osc
     src/Config.hpp
     src/Log.cpp
     src/Log.hpp
+    src/MeshCache.cpp
+    src/MeshCache.hpp
     src/MainEditorState.cpp
     src/MainEditorState.hpp
     src/RecentFile.hpp

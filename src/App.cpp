@@ -9,6 +9,7 @@
 #include "src/Styling.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/ShaderCache.hpp"
+#include "src/MeshCache.hpp"
 
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
@@ -512,6 +513,9 @@ struct osc::App::Impl final {
     // init global shader cache
     ShaderCache shaderCache{};
 
+    // init global mesh cache
+    MeshCache meshCache{};
+
     // figure out maximum number of samples supported by the OpenGL backend
     GLint maxMSXAASamples = getMaxOpenGLMSXAASamples(gl);
 
@@ -881,6 +885,10 @@ void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept {
 
 ShaderCache& osc::App::getShaderCache() noexcept {
     return m_Impl->shaderCache;
+}
+
+MeshCache& osc::App::getMeshCache() noexcept {
+    return m_Impl->meshCache;
 }
 
 void osc::ImGuiInit() {

@@ -161,12 +161,8 @@ struct osc::UiModelViewer::Impl final {
     glm::vec4 rimCol = {1.0f, 0.4f, 0.0f, 0.85f};
     RenderBuffers renderTarg{{1, 1}, 1};
 
-    Mesh quadMesh{GenTexturedQuad()};
-    Mesh floorMesh{generateFloorMesh()};
     gl::Texture2D chequerTex = genChequeredFloorTexture();
-    Mesh gridMesh{GenNbyNGrid(100)};
-    Mesh yLineMesh{GenYLine()};
-    Mesh cubeWireMesh{GenCubeLines()};
+
 
     std::vector<BVHCollision> sceneHittestResults;
 
@@ -412,8 +408,9 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(impl.chequerTex);
             gl::Uniform(basicShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::BindVertexArray(impl.floorMesh.GetVertexArray());
-            impl.floorMesh.Draw();
+            auto floor = App::meshes().getFloorMesh();
+            gl::BindVertexArray(floor->GetVertexArray());
+            floor->Draw();
             gl::BindVertexArray();
         }
 
@@ -553,8 +550,9 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             glScissor(x, y, w, h);
             gl::Enable(GL_BLEND);
             gl::Disable(GL_DEPTH_TEST);
-            gl::BindVertexArray(impl.quadMesh.GetVertexArray());
-            impl.quadMesh.Draw();
+            auto quad = App::meshes().getTexturedQuadMesh();
+            gl::BindVertexArray(quad->GetVertexArray());
+            quad->Draw();
             gl::BindVertexArray();
             gl::Enable(GL_DEPTH_TEST);
             gl::Disable(GL_SCISSOR_TEST);
@@ -638,8 +636,9 @@ static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
-    impl.gridMesh.Draw();
+    auto grid = App::meshes().get100x100GridMesh();
+    gl::BindVertexArray(grid->GetVertexArray());
+    grid->Draw();
     gl::BindVertexArray();
 }
 
@@ -651,8 +650,9 @@ static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
-    impl.gridMesh.Draw();
+    auto grid = App::meshes().get100x100GridMesh();
+    gl::BindVertexArray(grid->GetVertexArray());
+    grid->Draw();
     gl::BindVertexArray();
 }
 
@@ -664,8 +664,9 @@ static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
-    impl.gridMesh.Draw();
+    auto grid = App::meshes().get100x100GridMesh();
+    gl::BindVertexArray(grid->GetVertexArray());
+    grid->Draw();
     gl::BindVertexArray();
 }
 
@@ -688,14 +689,16 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uProjection, gl::identity);
     gl::Uniform(shader.uView, gl::identity);
 
+    auto yline = App::meshes().getYLineMesh();
+
     gl::Disable(GL_DEPTH_TEST);
-    gl::BindVertexArray(impl.yLineMesh.GetVertexArray());
+    gl::BindVertexArray(yline->GetVertexArray());
 
     // y axis
     {
         gl::Uniform(shader.uColor, {0.0f, 1.0f, 0.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * makeLineOneSided);
-        impl.yLineMesh.Draw();
+        yline->Draw();
     }
 
     // x axis
@@ -705,7 +708,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
 
         gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * rotateYtoX * makeLineOneSided);
-        impl.yLineMesh.Draw();
+        yline->Draw();
     }
 
     // z axis
@@ -715,7 +718,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
 
         gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * rotateYtoZ * makeLineOneSided);
-        impl.yLineMesh.Draw();
+        yline->Draw();
     }
 
     gl::BindVertexArray();
@@ -730,17 +733,18 @@ static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
 
-    gl::BindVertexArray(impl.yLineMesh.GetVertexArray());
+    auto yline = App::meshes().getYLineMesh();
+    gl::BindVertexArray(yline->GetVertexArray());
 
     // X
     gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 0.0f, 1.0f}));
     gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-    impl.yLineMesh.Draw();
+    yline->Draw();
 
     // Z
     gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-    impl.yLineMesh.Draw();
+    yline->Draw();
 
     gl::BindVertexArray();
 }
@@ -754,7 +758,8 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    gl::BindVertexArray(impl.cubeWireMesh.GetVertexArray());
+    auto cube = App::meshes().getCubeWireMesh();
+    gl::BindVertexArray(cube->GetVertexArray());
 
     for (auto const& se : rs.getSceneDecorations()) {
         glm::vec3 halfWidths = AABBDims(se.worldspaceAABB) / 2.0f;
@@ -765,14 +770,14 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
         glm::mat4 mmtx = mover * scaler;
 
         gl::Uniform(shader.uModel, mmtx);
-        impl.cubeWireMesh.Draw();
+        cube->Draw();
     }
 
     gl::BindVertexArray();
 }
 
 // assumes `pos` is in-bounds
-static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, gl::UniformMat4& mtxUniform, BVH const& bvh, int pos) {
+static void drawBVHRecursive(Mesh& cube, gl::UniformMat4& mtxUniform, BVH const& bvh, int pos) {
     BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = AABBDims(n.bounds) / 2.0f;
@@ -782,11 +787,11 @@ static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, gl::UniformMat4& mt
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
     glm::mat4 mmtx = mover * scaler;
     gl::Uniform(mtxUniform, mmtx);
-    impl.cubeWireMesh.Draw();
+    cube.Draw();
 
     if (n.nlhs >= 0) {  // if it's an internal node
-        drawBVHRecursive(impl, mtxUniform, bvh, pos+1);
-        drawBVHRecursive(impl, mtxUniform, bvh, pos+n.nlhs+1);
+        drawBVHRecursive(cube, mtxUniform, bvh, pos+1);
+        drawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
     }
 }
 
@@ -805,8 +810,9 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    gl::BindVertexArray(impl.cubeWireMesh.GetVertexArray());
-    drawBVHRecursive(impl, shader.uModel, bvh, 0);
+    auto cube = App::meshes().getCubeWireMesh();
+    gl::BindVertexArray(cube->GetVertexArray());
+    drawBVHRecursive(*cube, shader.uModel, bvh, 0);
     gl::BindVertexArray();
 }
 

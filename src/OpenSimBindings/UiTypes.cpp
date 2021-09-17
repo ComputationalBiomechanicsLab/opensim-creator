@@ -1,5 +1,6 @@
 #include "UiTypes.hpp"
 
+#include "src/App.hpp"
 #include "src/Log.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 
@@ -136,7 +137,7 @@ static void getSceneElements(OpenSim::Model const& m,
         out.emplace_back(se, currentComponent);
     };
 
-    SceneGeneratorLambda visitor{ThreadsafeMeshCache::getGlobalMeshCache(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
+    SceneGeneratorLambda visitor{App::meshes(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
 
     OpenSim::ModelDisplayHints mdh = m.getDisplayHints();
     mdh.set_show_frames(true);

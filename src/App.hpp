@@ -2,6 +2,7 @@
 
 #include "src/3D/ShaderCache.hpp"
 #include "src/Assertions.hpp"
+#include "src/MeshCache.hpp"
 #include "src/RecentFile.hpp"
 #include "src/Screen.hpp"
 
@@ -45,6 +46,10 @@ namespace osc {
         template<typename TShader>
         [[nodiscard]] static TShader& shader() {
             return cur().getShaderCache().getShader<TShader>();
+        }
+
+        [[nodiscard]] static MeshCache& meshes() {
+            return cur().getMeshCache();
         }
 
         // init app by loading config from default location
@@ -180,6 +185,9 @@ namespace osc {
 
         // returns the application-wide shader cache
         ShaderCache& getShaderCache() noexcept;
+
+        // returns the application-wide mesh cache
+        MeshCache& getMeshCache() noexcept;
     };
 
     // ImGui support

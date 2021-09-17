@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/3D/Mesh.hpp"
-#include "src/SimTKBindings/ThreadsafeMeshCache.hpp"
+#include "src/MeshCache.hpp"
 
 #include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
@@ -26,13 +26,13 @@ namespace osc {
     };
 
     class SceneGeneratorNew : public SimTK::DecorativeGeometryImplementation {
-        std::shared_ptr<ThreadsafeMeshCache> m_MeshCache;
+        MeshCache& m_MeshCache;
         SimTK::SimbodyMatterSubsystem const& m_Matter;
         SimTK::State const& m_St;
         float m_FixupScaleFactor;
 
     public:
-        SceneGeneratorNew(std::shared_ptr<ThreadsafeMeshCache>,
+        SceneGeneratorNew(MeshCache&,
                           SimTK::SimbodyMatterSubsystem const&,
                           SimTK::State const&,
                           float fixupScaleFactor);
@@ -60,7 +60,7 @@ namespace osc {
     class SceneGeneratorLambda final : public SceneGeneratorNew {
         Callback m_Callback;
     public:
-        SceneGeneratorLambda(std::shared_ptr<ThreadsafeMeshCache> meshCache,
+        SceneGeneratorLambda(MeshCache& meshCache,
                              SimTK::SimbodyMatterSubsystem const& matter,
                              SimTK::State const& st,
                              float fixupScaleFactor,

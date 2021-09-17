@@ -1,8 +1,8 @@
 #include "SceneGeneratorNew.hpp"
 
 #include "src/SimTKBindings/SimTKConverters.hpp"
-#include "src/SimTKBindings/ThreadsafeMeshCache.hpp"
 #include "src/Log.hpp"
+#include "src/MeshCache.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <simbody/internal/SimbodyMatterSubsystem.h>
@@ -41,11 +41,11 @@ static glm::mat4 geomXform(SimTK::SimbodyMatterSubsystem const& matter, SimTK::S
     return ground2body * body2decoration;
 }
 
-osc::SceneGeneratorNew::SceneGeneratorNew(std::shared_ptr<ThreadsafeMeshCache> meshCache,
+osc::SceneGeneratorNew::SceneGeneratorNew(MeshCache& meshCache,
                                           SimTK::SimbodyMatterSubsystem const& matter,
                                           SimTK::State const& st,
                                           float fixupScaleFactor) :
-    m_MeshCache{std::move(meshCache)},
+    m_MeshCache{meshCache},
     m_Matter{matter},
     m_St{st},
     m_FixupScaleFactor{fixupScaleFactor} {
@@ -72,7 +72,7 @@ void osc::SceneGeneratorNew::implementLineGeometry(SimTK::DecorativeLine const& 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {g_LineThickness * m_FixupScaleFactor, 1.0f, g_LineThickness * m_FixupScaleFactor});
 
     SceneElement se;
-    se.mesh = m_MeshCache->getCylinderMesh();
+    se.mesh = m_MeshCache.getCylinderMesh();
     se.modelMtx = glm::mat4x3{cylinderXform * scaler};
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(dl);
@@ -85,7 +85,7 @@ void osc::SceneGeneratorNew::implementBrickGeometry(SimTK::DecorativeBrick const
     glm::vec3 halfdims = SimTKVec3FromVec3(db.getHalfLengths());
 
     SceneElement se;
-    se.mesh = m_MeshCache->getBrickMesh();
+    se.mesh = m_MeshCache.getBrickMesh();
     se.modelMtx = glm::scale(geomXform(m_Matter, m_St, db), halfdims);
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(db);
@@ -101,7 +101,7 @@ void osc::SceneGeneratorNew::implementCylinderGeometry(SimTK::DecorativeCylinder
     s.z *= static_cast<float>(dc.getRadius());
 
     SceneElement se;
-    se.mesh = m_MeshCache->getCylinderMesh();
+    se.mesh = m_MeshCache.getCylinderMesh();
     se.modelMtx = glm::scale(geomXform(m_Matter, m_St, dc), s);
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(dc);
@@ -137,7 +137,7 @@ void osc::SceneGeneratorNew::implementSphereGeometry(SimTK::DecorativeSphere con
     AABB aabb = SphereToAABB(Sphere{pos, scaledR});
 
     SceneElement se;
-    se.mesh = m_MeshCache->getSphereMesh();
+    se.mesh = m_MeshCache.getSphereMesh();
     se.modelMtx = xform;
     se.normalMtx = normalXform;
     se.color = extractRGBA(ds);
@@ -152,7 +152,7 @@ void osc::SceneGeneratorNew::implementEllipsoidGeometry(SimTK::DecorativeEllipso
     glm::vec3 radii = SimTKVec3FromVec3(de.getRadii());
 
     SceneElement se;
-    se.mesh = m_MeshCache->getSphereMesh();
+    se.mesh = m_MeshCache.getSphereMesh();
     se.modelMtx = glm::scale(xform, sfs * radii);
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(de);
@@ -175,7 +175,7 @@ void osc::SceneGeneratorNew::implementFrameGeometry(SimTK::DecorativeFrame const
         Sphere outputSphere{pos, 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor};
 
         SceneElement se;
-        se.mesh = m_MeshCache->getSphereMesh();
+        se.mesh = m_MeshCache.getSphereMesh();
         se.modelMtx = SphereToSphereXform(meshSphere, outputSphere);
         se.normalMtx = NormalMatrix(se.modelMtx);
         se.color = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -197,7 +197,7 @@ void osc::SceneGeneratorNew::implementFrameGeometry(SimTK::DecorativeFrame const
         color[i] = 1.0f;
 
         SceneElement se;
-        se.mesh = m_MeshCache->getCylinderMesh();
+        se.mesh = m_MeshCache.getCylinderMesh();
         se.modelMtx = SegmentToSegmentXform(cylinderline, axisline) * prescaleMtx;
         se.normalMtx = NormalMatrix(se.modelMtx);
         se.color = color;
@@ -225,7 +225,7 @@ void osc::SceneGeneratorNew::implementMeshGeometry(SimTK::DecorativeMesh const&)
 
 void osc::SceneGeneratorNew::implementMeshFileGeometry(SimTK::DecorativeMeshFile const& dmf) {
     SceneElement se;
-    se.mesh = m_MeshCache->getMeshFile(dmf.getMeshFile());
+    se.mesh = m_MeshCache.getMeshFile(dmf.getMeshFile());
     se.modelMtx = glm::scale(geomXform(m_Matter, m_St, dmf), scaleFactors(dmf));
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(dmf);
@@ -257,7 +257,7 @@ void osc::SceneGeneratorNew::implementArrowGeometry(SimTK::DecorativeArrow const
         glm::mat4 cone_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.02f, 1.0f, 0.02f});
 
         SceneElement se;
-        se.mesh = m_MeshCache->getConeMesh();
+        se.mesh = m_MeshCache.getConeMesh();
         se.modelMtx = SegmentToSegmentXform(meshline, Segment{cone_start, cone_end}) * cone_radius_rescaler;
         se.normalMtx = NormalMatrix(se.modelMtx);
         se.color = extractRGBA(da);
@@ -271,7 +271,7 @@ void osc::SceneGeneratorNew::implementArrowGeometry(SimTK::DecorativeArrow const
         glm::mat4 cylinder_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.005f, 1.0f, 0.005f});
 
         SceneElement se;
-        se.mesh = m_MeshCache->getCylinderMesh();
+        se.mesh = m_MeshCache.getCylinderMesh();
         se.modelMtx = SegmentToSegmentXform(meshline, Segment{cylinder_start, cone_start}) * cylinder_radius_rescaler;
         se.normalMtx = NormalMatrix(se.modelMtx);
         se.color = extractRGBA(da);
@@ -307,7 +307,7 @@ void osc::SceneGeneratorNew::implementConeGeometry(SimTK::DecorativeCone const& 
     glm::mat4 radiusRescale = glm::scale(glm::mat4{1.0f}, {baseRadius, 1.0f, baseRadius});
 
     SceneElement se;
-    se.mesh = m_MeshCache->getCylinderMesh();
+    se.mesh = m_MeshCache.getCylinderMesh();
     se.modelMtx = lineXform * radiusRescale;
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(dc);
