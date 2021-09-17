@@ -17,6 +17,6 @@ namespace osc {
         bool useMultiViewport;
 
         // number of MSXAA samples 3D viewports should use
-        static constexpr int numMSXAASamples = 8;
+        static constexpr int numMSXAASamples = 4;
     };
 }
