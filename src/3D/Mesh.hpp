@@ -8,7 +8,9 @@
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
+#include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace osc {
     struct MeshCollision final {
@@ -59,6 +61,8 @@ namespace osc {
         AABB const& getAABB() const;
 
         Sphere const& getBoundingSphere() const;
+
+        BVH const& getTriangleBVH() const;
 
         // returns nothing if the line doesn't intersect it *or* the
         // topography is not triangular

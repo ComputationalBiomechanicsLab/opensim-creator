@@ -317,6 +317,10 @@ Sphere const& osc::Mesh::getBoundingSphere() const {
     return m_Impl->boundingSphere;
 }
 
+BVH const& osc::Mesh::getTriangleBVH() const {
+    return m_Impl->triangleBVH;
+}
+
 std::optional<MeshCollision> osc::Mesh::getClosestRayTriangleCollision(Line const& ray) const {
     if (m_Impl->topography != MeshTopography::Triangles) {
         return std::nullopt;
@@ -352,7 +356,6 @@ void osc::Mesh::recalculateBounds() {
     BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
 }
 
-#include <iostream>
 void osc::Mesh::uploadToGPU() {
     // pack CPU-side mesh data (verts, etc.), which is separate, into a
     // suitable GPU-side buffer
