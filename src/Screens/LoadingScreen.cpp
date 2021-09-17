@@ -1,7 +1,7 @@
 #include "LoadingScreen.hpp"
 
 #include "src/3D/Gl.hpp"
-#include "src/OpenSimBindings/UiTypes.hpp"
+#include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"

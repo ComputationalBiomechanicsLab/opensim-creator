@@ -161,12 +161,19 @@ add_executable(osc
     src/OpenSimBindings/FileChangePoller.cpp
     src/OpenSimBindings/FileChangePoller.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
+    src/OpenSimBindings/PlottableOutputSubfield.cpp
+    src/OpenSimBindings/PlottableOutputSubfield.hpp
+    src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.cpp
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
-    src/OpenSimBindings/UiTypes.cpp
-    src/OpenSimBindings/UiTypes.hpp
+    src/OpenSimBindings/UiModel.cpp
+    src/OpenSimBindings/UiModel.hpp
+    src/OpenSimBindings/UiSimulation.cpp
+    src/OpenSimBindings/UiSimulation.hpp
+    src/OpenSimBindings/UndoableUiModel.cpp
+    src/OpenSimBindings/UndoableUiModel.hpp
 
     src/Screens/Experimental/ExperimentsScreen.cpp
     src/Screens/Experimental/ExperimentsScreen.hpp

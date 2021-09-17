@@ -4,11 +4,11 @@
 #include "src/OpenSimBindings/FileChangePoller.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UiTypes.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/UI/AddBodyPopup.hpp"
 #include "src/UI/AttachGeometryPopup.hpp"
+#include "src/UI/CoordinateEditor.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
 #include "src/UI/FdParamsEditorPopup.hpp"
@@ -491,6 +491,7 @@ struct ModelEditorScreen::Impl final {
         Select2PFsPopup select2PFsPopup;
         ModelActionsMenuBar modelActions;
         LogViewer logViewer;
+        CoordinateEditor coordEditor;
     } ui;
 
     // state that is reset at the start of each frame
@@ -803,6 +804,23 @@ namespace {
             ImGui::EndTooltip();
         }
         ImGui::NextColumn();
+
+
+        ImGui::TextUnformatted("copy abspath");
+        ImGui::NextColumn();
+        if (ImGui::Button("copy")) {
+            SetClipboardText(uim.getSelection()->getAbsolutePathString().c_str());
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted(
+                "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        ImGui::NextColumn();
+
         ImGui::Columns();
 
         if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(uim.getSelection()); frame) {
@@ -1338,6 +1356,13 @@ namespace {
                 impl.ui.logViewer.draw();
             }
             ImGui::End();
+        }
+
+
+        if (impl.st->showing.coordinateEditor) {
+            if (ImGui::Begin("Coordinate Editor")) {
+                impl.ui.coordEditor.draw(impl.st->editedModel.current);
+            }
         }
 
         // draw sim params editor popup (if applicable)

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "src/OpenSimBindings/UiTypes.hpp"
+#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UiSimulation.hpp"
+#include "src/OpenSimBindings/PlottableOutputSubfield.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/UI/UiModelViewer.hpp"
 
@@ -66,6 +68,7 @@ namespace osc {
             bool selectionDetails = true;
             bool simulations = true;
             bool simulationStats = true;
+            bool coordinateEditor = true;
         } showing;
 
         MainEditorState();

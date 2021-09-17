@@ -2,6 +2,7 @@
 
 #include "src/Log.hpp"
 
+#include <SDL_clipboard.h>
 #include <SDL_error.h>
 #include <SDL_filesystem.h>
 #include <SDL_stdinc.h>
@@ -59,6 +60,10 @@ std::filesystem::path const& osc::GetUserDataDir() {
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = getUserDataDir();
     return d;
+}
+
+bool osc::SetClipboardText(char const* s) {
+    return SDL_SetClipboardText(s) == 0;
 }
 
 #ifdef __LINUX__

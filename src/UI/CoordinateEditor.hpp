@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/OpenSimBindings/UiModel.hpp"
+
 #include <vector>
 
 namespace OpenSim {
@@ -25,6 +27,6 @@ namespace osc {
         std::vector<OpenSim::Coordinate const*> coord_scratch;
 
         // returns `true` if `State` was edited by the coordinate editor
-        bool draw(OpenSim::Model const&, SimTK::State&);
+        bool draw(UiModel&);
     };
 }

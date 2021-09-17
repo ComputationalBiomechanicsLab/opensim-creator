@@ -1,7 +1,7 @@
 #include "UiModelViewerScreen.hpp"
 
 #include "src/3D/Gl.hpp"
-#include "src/OpenSimBindings/UiTypes.hpp"
+#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/UI/UiModelViewer.hpp"
 #include "src/App.hpp"
 

@@ -34,4 +34,7 @@ namespace osc {
     //
     // how, or what, the OS does is implementation defined.
     void OpenURLInDefaultBrowser(std::string_view);
+
+    // try to copy a string onto the user's clipboard
+    bool SetClipboardText(char const*);
 }

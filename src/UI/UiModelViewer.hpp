@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/OpenSimBindings/UiTypes.hpp"
+#include "src/OpenSimBindings/RenderableScene.hpp"
 
 namespace OpenSim {
     class Component;

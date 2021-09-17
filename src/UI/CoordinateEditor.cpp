@@ -39,7 +39,7 @@ void osc::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordina
     }
 }
 
-bool osc::CoordinateEditor::draw(OpenSim::Model const& model, SimTK::State& stk_st) {
+bool osc::CoordinateEditor::draw(UiModel& uim) {
     // render coordinate filters
     {
         ImGui::Text("filters:");
@@ -79,7 +79,7 @@ bool osc::CoordinateEditor::draw(OpenSim::Model const& model, SimTK::State& stk_
 
     // load coords
     coord_scratch.clear();
-    get_coordinates(model, coord_scratch);
+    get_coordinates(*uim.model, coord_scratch);
 
     // sort coords
     {
@@ -110,22 +110,22 @@ bool osc::CoordinateEditor::draw(OpenSim::Model const& model, SimTK::State& stk_
 
         // if locked, color everything red
         int styles_pushed = 0;
-        if (c->getLocked(stk_st)) {
+        if (c->getLocked(*uim.state)) {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++styles_pushed;
         }
 
-        if (ImGui::Button(c->getLocked(stk_st) ? "u" : "l")) {
-            c->setLocked(stk_st, !c->getLocked(stk_st));
+        if (ImGui::Button(c->getLocked(*uim.state) ? "u" : "l")) {
+            uim.addCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), !c->getLocked(*uim.state)});
             state_modified = true;
         }
 
         ImGui::SameLine();
 
-        float v = static_cast<float>(c->getValue(stk_st));
+        float v = static_cast<float>(c->getValue(*uim.state));
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (ImGui::SliderFloat(" ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-            c->setValue(stk_st, static_cast<double>(v));
+            uim.addCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getLocked(*uim.state)});
             state_modified = true;
         }
 
