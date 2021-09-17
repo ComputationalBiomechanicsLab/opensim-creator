@@ -42,7 +42,7 @@ static char const g_FragmentShader[] = R"(
 )";
 
 namespace {
-    struct Shader final {
+    struct BasicShader final {
         gl::Program prog = gl::CreateProgramFrom(
             gl::CompileFromSource<gl::VertexShader>(g_VertexShader),
             gl::CompileFromSource<gl::FragmentShader>(g_FragmentShader));
@@ -56,7 +56,7 @@ namespace {
     };
 }
 
-static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<uint32_t>& ebo) {
+static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& vbo, gl::ElementArrayBuffer<uint32_t>& ebo) {
     gl::VertexArray rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
@@ -68,7 +68,7 @@ static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, 
 }
 
 struct osc::MeshHittestScreen::Impl final {
-    Shader shader;
+    BasicShader shader;
 
     MeshData mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
     gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
@@ -169,7 +169,7 @@ void osc::MeshHittestScreen::draw() {
     osc::ImGuiNewFrame();
 
     Impl& impl = *m_Impl;
-    Shader& shader = impl.shader;
+    auto& shader = impl.shader;
 
     // printout stats
     {

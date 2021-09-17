@@ -39,8 +39,6 @@ namespace osc {
         Mesh& operator=(Mesh const&) = delete;
         Mesh& operator=(Mesh&&) noexcept;
 
-        IdType getID() const;  // globally unique
-
         MeshTopography getTopography() const;
         GLenum getTopographyOpenGL() const;
         void setTopography(MeshTopography);

@@ -8,6 +8,7 @@
 #include "src/os.hpp"
 #include "src/Styling.hpp"
 #include "src/3D/Gl.hpp"
+#include "src/3D/ShaderCache.hpp"
 
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
@@ -508,6 +509,9 @@ struct osc::App::Impl final {
     // init OpenGL (globally)
     sdl::GLContext gl = createOpenGLContext(window);
 
+    // init global shader cache
+    ShaderCache shaderCache{};
+
     // figure out maximum number of samples supported by the OpenGL backend
     GLint maxMSXAASamples = getMaxOpenGLMSXAASamples(gl);
 
@@ -873,6 +877,10 @@ bool osc::App::isAltPressed() const noexcept {
 
 void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept {
     SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
+}
+
+ShaderCache& osc::App::getShaderCache() noexcept {
+    return m_Impl->shaderCache;
 }
 
 void osc::ImGuiInit() {

@@ -9,6 +9,7 @@
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
+#include "src/3D/ShaderCache.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
@@ -152,20 +153,12 @@ namespace {
 }
 
 struct osc::UiModelViewer::Impl final {
-    InstancedGouraudColorShader instancedGouraudShader;
-    InstancedSolidColorShader instancedSolidColorShader;
-    GouraudShader gouraudShader;
-    NormalsShader normalsShader;
-    EdgeDetectionShader edgeDetectionShader;
-    SolidColorShader solidColorShader;
-
     UiModelViewerFlags flags;
     PolarPerspectiveCamera camera;
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
     glm::vec4 rimCol = {1.0f, 0.4f, 0.0f, 0.85f};
-
     RenderBuffers renderTarg{{1, 1}, 1};
 
     Mesh quadMesh{GenTexturedQuad()};
@@ -338,14 +331,15 @@ static void bindInstanceAttrs(size_t offset) {
 }
 
 static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+    auto& renderTarg = impl.renderTarg;
 
     // ensure buffer sizes match ImGui panel size
     {
         ImVec2 contentRegion = ImGui::GetContentRegionAvail();
         if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f) {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
-            impl.renderTarg.setDims(dims);
-            impl.renderTarg.setSamples(App::cur().getSamples());
+            renderTarg.setDims(dims);
+            renderTarg.setSamples(App::cur().getSamples());
         }
     }
 
@@ -353,16 +347,16 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     gl::ArrayBuffer<SceneGPUInstanceData> instanceBuf{impl.drawlistBuffer};
 
     // get scene matrices
-    glm::mat4 projMtx = impl.camera.getProjMtx(static_cast<float>(impl.renderTarg.dims.x)/static_cast<float>(impl.renderTarg.dims.y));
+    glm::mat4 projMtx = impl.camera.getProjMtx(static_cast<float>(renderTarg.dims.x)/static_cast<float>(renderTarg.dims.y));
     glm::mat4 viewMtx = impl.camera.getViewMtx();
     glm::vec3 viewerPos = impl.camera.getPos();
 
     // setup top-level OpenGL state
-    gl::Viewport(0, 0, impl.renderTarg.dims.x, impl.renderTarg.dims.y);
+    gl::Viewport(0, 0, renderTarg.dims.x, renderTarg.dims.y);
 
     // draw scene
     {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.sceneFBO);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.sceneFBO);
         gl::ClearColor(impl.backgroundCol);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -370,7 +364,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
 
-        InstancedGouraudColorShader& instancedShader = impl.instancedGouraudShader;
+        auto& instancedShader = App::shader<InstancedGouraudColorShader>();
         gl::UseProgram(instancedShader.program);
         gl::Uniform(instancedShader.uProjMat, projMtx);
         gl::Uniform(instancedShader.uViewMat, viewMtx);
@@ -403,7 +397,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         }
 
         if (impl.flags & UiModelViewerFlags_DrawFloor) {
-            GouraudShader& basicShader = impl.gouraudShader;
+            auto& basicShader = App::shader<GouraudShader>();
 
             gl::UseProgram(basicShader.program);
             gl::Uniform(basicShader.uProjMat, projMtx);
@@ -431,7 +425,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     // draw mesh normals, if requested
     if (impl.drawMeshNormals) {
 
-        NormalsShader& normalShader = impl.normalsShader;
+        auto& normalShader = App::shader<NormalsShader>();
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(normalShader.program);
         gl::Uniform(normalShader.uProjMat, projMtx);
@@ -452,21 +446,21 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     }
 
     // blit scene render to non-MSXAAed output texture
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, impl.renderTarg.sceneFBO);
+    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, renderTarg.sceneFBO);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, impl.renderTarg.outputFbo);
+    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, renderTarg.outputFbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
-    gl::BlitFramebuffer(0, 0, impl.renderTarg.dims.x, impl.renderTarg.dims.y,
-                        0, 0, impl.renderTarg.dims.x, impl.renderTarg.dims.y,
+    gl::BlitFramebuffer(0, 0, renderTarg.dims.x, renderTarg.dims.y,
+                        0, 0, renderTarg.dims.x, renderTarg.dims.y,
                         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     // draw rims
     if (impl.drawRims) {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.rimsFBO);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.rimsFBO);
         gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        InstancedSolidColorShader& iscs = impl.instancedSolidColorShader;
+        auto& iscs = App::shader<InstancedSolidColorShader>();
         gl::UseProgram(iscs.program);
         gl::Uniform(iscs.uVP, projMtx * viewMtx);
 
@@ -514,7 +508,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         }
 
         if (hasRims) {
-            float rimThickness = 1.5f / std::min(impl.renderTarg.dims.x, impl.renderTarg.dims.y);
+            float rimThickness = 1.5f / std::min(renderTarg.dims.x, renderTarg.dims.y);
 
             // calculate a screenspace bounding box that surrounds the rims so that the
             // edge detection shader only had to run on a smaller subset of the screen
@@ -528,7 +522,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             }
             bounds[0] -= rimThickness;
             bounds[1] += rimThickness;
-            glm::ivec2 renderDims = impl.renderTarg.dims;
+            glm::ivec2 renderDims = renderTarg.dims;
             glm::ivec2 min{
                 static_cast<int>((bounds[0].x + 1.0f)/2.0f * renderDims.x),
                 static_cast<int>((bounds[0].y + 1.0f)/2.0f * renderDims.y)};
@@ -544,15 +538,16 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             // rims FBO now contains *solid* colors that need to be edge-detected
 
             // write rims over the output output
-            gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
+            gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.outputFbo);
 
-            gl::UseProgram(impl.edgeDetectionShader.program);
-            gl::Uniform(impl.edgeDetectionShader.uMVP, gl::identity);
+            auto& edgeDetectShader = App::shader<EdgeDetectionShader>();
+            gl::UseProgram(edgeDetectShader.program);
+            gl::Uniform(edgeDetectShader.uMVP, gl::identity);
             gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(impl.renderTarg.rims2DTex);
-            gl::Uniform(impl.edgeDetectionShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(impl.edgeDetectionShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
-            gl::Uniform(impl.edgeDetectionShader.uRimThickness, rimThickness);
+            gl::BindTexture(renderTarg.rims2DTex);
+            gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+            gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
+            gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_SCISSOR_TEST);
             glScissor(x, y, w, h);
@@ -636,7 +631,7 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
 }
 
 static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
@@ -649,7 +644,7 @@ static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
 }
 
 static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::mat4{1.0f}, {5.0f, 5.0f, 1.0f}));
@@ -662,7 +657,7 @@ static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
 }
 
 static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
@@ -686,7 +681,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
     glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
     glm::mat4 baseModelMtx = translator * scaler * model2view;
 
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     // common shader stuff
     gl::UseProgram(shader.program);
@@ -728,7 +723,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
 }
 
 static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     // common stuff
     gl::UseProgram(shader.program);
@@ -751,7 +746,7 @@ static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
 }
 
 static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     // common stuff
     gl::UseProgram(shader.program);
@@ -777,7 +772,7 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
 }
 
 // assumes `pos` is in-bounds
-static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, BVH const& bvh, int pos) {
+static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, gl::UniformMat4& mtxUniform, BVH const& bvh, int pos) {
     BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = AABBDims(n.bounds) / 2.0f;
@@ -786,12 +781,12 @@ static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, BVH const& bvh, int
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
     glm::mat4 mmtx = mover * scaler;
-    gl::Uniform(impl.solidColorShader.uModel, mmtx);
+    gl::Uniform(mtxUniform, mmtx);
     impl.cubeWireMesh.Draw();
 
     if (n.nlhs >= 0) {  // if it's an internal node
-        drawBVHRecursive(impl, bvh, pos+1);
-        drawBVHRecursive(impl, bvh, pos+n.nlhs+1);
+        drawBVHRecursive(impl, mtxUniform, bvh, pos+1);
+        drawBVHRecursive(impl, mtxUniform, bvh, pos+n.nlhs+1);
     }
 }
 
@@ -802,7 +797,7 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
         return;
     }
 
-    SolidColorShader& shader = impl.solidColorShader;
+    auto& shader = App::shader<SolidColorShader>();
 
     // common stuff
     gl::UseProgram(shader.program);
@@ -811,7 +806,7 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
     gl::BindVertexArray(impl.cubeWireMesh.GetVertexArray());
-    drawBVHRecursive(impl, bvh, 0);
+    drawBVHRecursive(impl, shader.uModel, bvh, 0);
     gl::BindVertexArray();
 }
 

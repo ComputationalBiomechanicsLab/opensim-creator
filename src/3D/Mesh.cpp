@@ -7,14 +7,11 @@
 #include <glm/vec3.hpp>
 #include <nonstd/span.hpp>
 
-#include <atomic>
 #include <memory>
 #include <optional>
 #include <vector>
 
 using namespace osc;
-
-static std::atomic<Mesh::IdType> g_LatestId = 1;
 
 union PackedIndex {
     uint32_t u32;
@@ -25,7 +22,6 @@ static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
 static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
 struct osc::Mesh::Impl final {
-    Mesh::IdType id;
     MeshTopography topography;
     std::vector<glm::vec3> verts;
     std::vector<glm::vec3> normals;
@@ -44,7 +40,6 @@ struct osc::Mesh::Impl final {
     std::optional<gl::VertexArray> maybeVAO;
 
     Impl() :
-        id{++g_LatestId},
         topography{MeshTopography::Triangles},
         verts{},
         normals{},
@@ -159,10 +154,6 @@ osc::Mesh::Mesh(Mesh&&) noexcept = default;
 osc::Mesh::~Mesh() noexcept = default;
 
 Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
-
-osc::Mesh::IdType osc::Mesh::getID() const {
-    return m_Impl->id;
-}
 
 osc::MeshTopography osc::Mesh::getTopography() const {
     return m_Impl->topography;

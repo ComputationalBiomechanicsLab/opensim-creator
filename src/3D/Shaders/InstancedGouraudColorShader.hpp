@@ -1,10 +1,11 @@
 #pragma once
 
 #include "src/3D/Gl.hpp"
+#include "src/3D/Shader.hpp"
 #include "src/3D/ShaderLocationIndex.hpp"
 
 namespace osc {
-    struct InstancedGouraudColorShader final {
+    struct InstancedGouraudColorShader final : public Shader {
         gl::Program program;
 
         // vertex attrs - the thing being instanced

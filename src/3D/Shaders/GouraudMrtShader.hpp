@@ -1,13 +1,14 @@
 #pragma once
 
 #include "src/3D/Gl.hpp"
+#include "src/3D/Shader.hpp"
 #include "src/3D/ShaderLocationIndex.hpp"
 
 namespace osc {
 
     // An instanced multi-render-target (MRT) shader that performes Gouraud shading for
     // COLOR0 and labelling in COLOR1
-    struct GouraudMrtShader final {
+    struct GouraudMrtShader final : public Shader {
         gl::Program program;
 
         // vertex attrs - the thing being instanced

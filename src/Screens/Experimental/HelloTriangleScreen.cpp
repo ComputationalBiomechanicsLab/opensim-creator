@@ -32,7 +32,7 @@ static constexpr char const g_FragmentShader[] = R"(
 )";
 
 namespace {
-    struct Shader final {
+    struct BasicShader final {
         gl::Program program = gl::CreateProgramFrom(
             gl::CompileFromSource<gl::VertexShader>(g_VertexShader),
             gl::CompileFromSource<gl::FragmentShader>(g_FragmentShader));
@@ -42,7 +42,7 @@ namespace {
     };
 }
 
-static gl::VertexArray createVAO(Shader& shader, gl::ArrayBuffer<glm::vec3> const& points) {
+static gl::VertexArray createVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3> const& points) {
     gl::VertexArray rv;
 
     gl::BindVertexArray(rv);
@@ -55,7 +55,7 @@ static gl::VertexArray createVAO(Shader& shader, gl::ArrayBuffer<glm::vec3> cons
 }
 
 struct osc::HelloTriangleScreen::Impl final {
-    Shader shader;
+    BasicShader shader;
 
     gl::ArrayBuffer<glm::vec3> points = {
         {-1.0f, -1.0f, 0.0f},

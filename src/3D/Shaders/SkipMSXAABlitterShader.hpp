@@ -1,11 +1,12 @@
 #pragma once
 
 #include "src/3D/Gl.hpp"
+#include "src/3D/Shader.hpp"
 #include "src/3D/ShaderLocationIndex.hpp"
 
 namespace osc {
     // designed to blit the first sample from a multisampled texture source
-    struct SkipMSXAABlitterShader final {
+    struct SkipMSXAABlitterShader final : public Shader {
         gl::Program program;
 
         static constexpr gl::AttributeVec3 aPos = SHADER_LOC_VERTEX_POSITION;

@@ -151,6 +151,9 @@ add_executable(osc
     src/3D/Mesh.hpp
     src/3D/Model.cpp
     src/3D/Model.hpp
+    src/3D/Shader.hpp
+    src/3D/ShaderCache.cpp
+    src/3D/ShaderCache.hpp
     src/3D/ShaderLocationIndex.hpp
     src/3D/Texturing.cpp
     src/3D/Texturing.hpp

@@ -43,7 +43,7 @@ static char const g_FragmentShader[] = R"(
 namespace {
 
     // basic shader that just colors the geometry in
-    struct Shader final {
+    struct BasicShader final {
         gl::Program prog = gl::CreateProgramFrom(
             gl::CompileFromSource<gl::VertexShader>(g_VertexShader),
             gl::CompileFromSource<gl::FragmentShader>(g_FragmentShader));
@@ -76,7 +76,7 @@ static constexpr std::array<glm::vec3, 4> g_CrosshairVerts = {{
 }};
 
 // make a VAO for the basic shader
-static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo) {
+static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& vbo) {
     gl::VertexArray rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
@@ -106,7 +106,7 @@ static std::vector<SceneSphere> generateSceneSpheres() {
 struct osc::HittestScreen::Impl final {
     IoPoller io;
 
-    Shader shader;
+    BasicShader shader;
 
     // sphere datas
     std::vector<glm::vec3> sphereVerts = GenUntexturedUVSphere(12, 12).verts;
@@ -245,7 +245,7 @@ void osc::HittestScreen::tick(float) {
 void osc::HittestScreen::draw() {
     App& app = App::cur();
     Impl& impl = *m_Impl;
-    Shader& shader = impl.shader;
+    auto& shader = impl.shader;
 
     Line cameraRay;
     cameraRay.dir = impl.camera.getFront();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/3D/ShaderCache.hpp"
 #include "src/Assertions.hpp"
 #include "src/RecentFile.hpp"
 #include "src/Screen.hpp"
@@ -15,6 +16,7 @@
 
 namespace osc {
     struct Config;
+    class ShaderCache;
 }
 
 namespace osc {
@@ -38,6 +40,11 @@ namespace osc {
 
         [[nodiscard]] static std::filesystem::path resource(std::string_view s) {
             return cur().getResource(s);
+        }
+
+        template<typename TShader>
+        [[nodiscard]] static TShader& shader() {
+            return cur().getShaderCache().getShader<TShader>();
         }
 
         // init app by loading config from default location
@@ -170,6 +177,9 @@ namespace osc {
 
         // move the mouse to a location within the window
         void warpMouseInWindow(glm::vec2) const noexcept;
+
+        // returns the application-wide shader cache
+        ShaderCache& getShaderCache() noexcept;
     };
 
     // ImGui support
