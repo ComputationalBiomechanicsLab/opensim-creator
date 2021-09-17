@@ -584,9 +584,7 @@ void osc::InstancedRenderer::render(InstancedRendererParams const& p, InstancedD
         // setup edge-detection shader
         EdgeDetectionShader& shader = impl.edgeDetectionShader;
         gl::UseProgram(shader.program);
-        gl::Uniform(shader.uModelMat, gl::identity);
-        gl::Uniform(shader.uViewMat, gl::identity);
-        gl::Uniform(shader.uProjMat, gl::identity);
+        gl::Uniform(shader.uMVP, gl::identity);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(rt.rimsTex);
         gl::Uniform(shader.uSampler0, gl::textureIndex<GL_TEXTURE0>());

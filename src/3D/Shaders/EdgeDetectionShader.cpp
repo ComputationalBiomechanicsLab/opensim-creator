@@ -3,9 +3,7 @@
 static char g_VertexShader[] = R"(
     #version 330 core
 
-    uniform mat4 uModelMat;
-    uniform mat4 uViewMat;
-    uniform mat4 uProjMat;
+    uniform mat4 uMVP;
 
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec2 aTexCoord;
@@ -13,7 +11,7 @@ static char g_VertexShader[] = R"(
     out vec2 TexCoord;
 
     void main(void) {
-        gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0f);
+        gl_Position = uMVP * vec4(aPos, 1.0f);
         TexCoord = aTexCoord;
     }
 )";
@@ -60,12 +58,7 @@ static char g_FragmentShader[] = R"(
             rimStrength += kernel[i] * texture(uSampler0, coord).r;
         }
 
-        // the kernel:
-        //
-        // - produces positive strength for fragments on the outer rim
-        // - produces negative strength for fragments on inner rim
-
-        // rimStrength = abs(rimStrength);  // if you want inner edge, but it's buggy
+        // rimStrength = abs(rimStrength);  // for inner edges
         rimStrength = clamp(rimStrength, 0.0, 1.0);
 
         FragColor = rimStrength * uRimRgba;
@@ -77,9 +70,7 @@ osc::EdgeDetectionShader::EdgeDetectionShader() :
           gl::CompileFromSource<gl::VertexShader>(g_VertexShader),
           gl::CompileFromSource<gl::FragmentShader>(g_FragmentShader))},
 
-    uModelMat{gl::GetUniformLocation(program, "uModelMat")},
-    uViewMat{gl::GetUniformLocation(program, "uViewMat")},
-    uProjMat{gl::GetUniformLocation(program, "uProjMat")},
+    uMVP{gl::GetUniformLocation(program, "uMVP")},
     uSampler0{gl::GetUniformLocation(program, "uSampler0")},
     uRimRgba{gl::GetUniformLocation(program, "uRimRgba")},
     uRimThickness{gl::GetUniformLocation(program, "uRimThickness")} {

@@ -126,6 +126,10 @@ add_executable(osc
     src/3D/Shaders/GouraudMrtShader.hpp
     src/3D/Shaders/GouraudShader.cpp
     src/3D/Shaders/GouraudShader.hpp
+    src/3D/Shaders/InstancedGouraudColorShader.cpp
+    src/3D/Shaders/InstancedGouraudColorShader.hpp
+    src/3D/Shaders/InstancedSolidColorShader.cpp
+    src/3D/Shaders/InstancedSolidColorShader.hpp
     src/3D/Shaders/NormalsShader.cpp
     src/3D/Shaders/NormalsShader.hpp
     src/3D/Shaders/PlainTextureShader.cpp
