@@ -86,8 +86,9 @@ struct SplashScreen::Impl final {
     std::shared_ptr<MainEditorState> mes;
 
     Impl(std::shared_ptr<MainEditorState> mes_) : mes{std::move(mes_)} {
-        camera.phi = fpi4;
+        camera.phi = fpi4/1.5f;
         camera.radius = 10.0f;
+        camera.theta = fpi4;
     }
 };
 
@@ -106,18 +107,19 @@ osc::SplashScreen::~SplashScreen() noexcept = default;
 
 void osc::SplashScreen::onMount() {
     osc::ImGuiInit();
+    App::cur().makeMainEventLoopWaiting();
 }
 
 void osc::SplashScreen::onUnmount() {
     osc::ImGuiShutdown();
+    App::cur().makeMainEventLoopPolling();
 }
 
 void osc::SplashScreen::onEvent(SDL_Event const& e) {
     osc::ImGuiOnEvent(e);
 }
 
-void osc::SplashScreen::tick(float dt) {
-    m_Impl->camera.theta += dt * 0.015f;
+void osc::SplashScreen::tick(float) {
 }
 
 void osc::SplashScreen::draw() {

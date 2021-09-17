@@ -1007,10 +1007,12 @@ osc::SimulatorScreen::~SimulatorScreen() noexcept = default;
 
 void osc::SimulatorScreen::onMount() {
     osc::ImGuiInit();
+    App::cur().makeMainEventLoopWaiting();
 }
 
 void osc::SimulatorScreen::onUnmount() {
     osc::ImGuiShutdown();
+    App::cur().makeMainEventLoopPolling();
 }
 
 void osc::SimulatorScreen::onEvent(SDL_Event const& e) {
