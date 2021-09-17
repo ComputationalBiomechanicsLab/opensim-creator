@@ -570,7 +570,7 @@ static void appEnterMainLoopUnguarded(App::Impl& impl) {
     while (true) {  // gameloop
 
         bool wait = impl.isInWaitMode;
-        for (SDL_Event e; wait ? SDL_WaitEvent(&e) : SDL_PollEvent(&e);) {  // event pump
+        for (SDL_Event e; wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {  // event pump
             wait = false;
 
             // SDL_QUIT should cause the application to immediately quit
