@@ -15,11 +15,11 @@ static glm::vec3 getFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int v
 
 // public API
 
-CPUMesh osc::SimTKLoadMesh(std::filesystem::path const& p) {
+MeshData osc::SimTKLoadMesh(std::filesystem::path const& p) {
     SimTK::DecorativeMeshFile dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
 
-    CPUMesh rv;
+    MeshData rv;
     rv.reserve(static_cast<size_t>(mesh.getNumVertices()));
 
     uint32_t index = 0;

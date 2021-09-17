@@ -131,7 +131,7 @@ namespace {
         glm::vec3 norm;
     };
 
-    gl::ArrayBuffer<SceneGPUElementData> uploadMeshToGPU(CPUMesh const& m) {
+    gl::ArrayBuffer<SceneGPUElementData> uploadMeshToGPU(MeshData const& m) {
         OSC_ASSERT_ALWAYS(m.verts.size() == m.normals.size());
 
         std::vector<SceneGPUElementData> buf;
@@ -163,7 +163,7 @@ namespace {
         gl::ElementArrayBuffer<uint32_t> indices;
         gl::VertexArray vao;
 
-        SceneGPUMesh(CPUMesh const& m) :
+        SceneGPUMesh(MeshData const& m) :
             data{uploadMeshToGPU(m)},
             indices{m.indices},
             vao{makeVAO(data, indices)} {
@@ -186,7 +186,7 @@ namespace {
     };
 
     gl::ArrayBuffer<GPUTexturedMeshdata> generateQuadVBO() {
-        CPUMesh m = GenTexturedQuad();
+        MeshData m = GenTexturedQuad();
 
         std::vector<GPUTexturedMeshdata> swap;
         for (size_t i = 0; i < m.indices.size(); ++i) {
@@ -201,7 +201,7 @@ namespace {
     }
 
     static gl::ArrayBuffer<GPUTexturedMeshdata> generateFloorVBO() {
-        CPUMesh m = GenTexturedQuad();
+        MeshData m = GenTexturedQuad();
         for (auto& coord : m.texcoords) {
             coord *= 200.0f;
         }

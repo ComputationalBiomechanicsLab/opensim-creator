@@ -16,7 +16,7 @@ namespace gl {
 }
 
 namespace osc {
-    struct CPUMesh;
+    struct MeshData;
     struct Rgba32;
 }
 
@@ -31,7 +31,7 @@ namespace osc {
         struct Impl;
     private:
         friend class InstancedRenderer;
-        friend InstanceableMeshdata uploadMeshdataForInstancing(CPUMesh const&);
+        friend InstanceableMeshdata uploadMeshdataForInstancing(MeshData const&);
         friend void uploadInputsToDrawlist(DrawlistCompilerInput const&, InstancedDrawlist&);
         std::shared_ptr<Impl> m_Impl;
         InstanceableMeshdata(std::shared_ptr<Impl>);
@@ -40,7 +40,7 @@ namespace osc {
     };
 
     // uploads mesh data to the backend
-    InstanceableMeshdata uploadMeshdataForInstancing(CPUMesh const&);
+    InstanceableMeshdata uploadMeshdataForInstancing(MeshData const&);
 
     // data inputs the backend needs to generate an instance drawlist
     struct DrawlistCompilerInput final {

@@ -15,10 +15,10 @@ namespace osc {
     public:
         using IdType = int64_t;
 
-        ImmutableSceneMesh(CPUMesh const&);
+        ImmutableSceneMesh(MeshData const&);
 
         IdType getID() const noexcept;  // globally unique
-        CPUMesh const& getMesh() const noexcept;
+        MeshData const& getMesh() const noexcept;
         nonstd::span<glm::vec3 const> getVerts() const noexcept;
         nonstd::span<glm::vec3 const> getNormals() const noexcept;
         nonstd::span<glm::vec2 const> getTexCoords() const noexcept;
@@ -29,7 +29,7 @@ namespace osc {
 
     private:
         IdType m_ID;
-        CPUMesh m_Mesh;
+        MeshData m_Mesh;
         AABB m_AABB;
         Sphere m_BoundingSphere;
         BVH m_TriangleBVH;

@@ -124,6 +124,8 @@ add_executable(osc
     src/3D/Shaders/EdgeDetectionShader.hpp
     src/3D/Shaders/GouraudMrtShader.cpp
     src/3D/Shaders/GouraudMrtShader.hpp
+    src/3D/Shaders/GouraudShader.cpp
+    src/3D/Shaders/GouraudShader.hpp
     src/3D/Shaders/NormalsShader.cpp
     src/3D/Shaders/NormalsShader.hpp
     src/3D/Shaders/PlainTextureShader.cpp
@@ -141,6 +143,8 @@ add_executable(osc
     src/3D/GlGlm.hpp
     src/3D/InstancedRenderer.cpp
     src/3D/InstancedRenderer.hpp
+    src/3D/Mesh.cpp
+    src/3D/Mesh.hpp
     src/3D/Model.cpp
     src/3D/Model.hpp
     src/3D/ShaderLocationIndex.hpp
@@ -175,6 +179,8 @@ add_executable(osc
     src/Screens/Experimental/MeshHittestScreen.hpp
     src/Screens/Experimental/MeshHittestWithBVHScreen.cpp
     src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
+    src/Screens/Experimental/MeshScreen.cpp
+    src/Screens/Experimental/MeshScreen.hpp
     src/Screens/Experimental/MeshesToModelWizardScreen.cpp
     src/Screens/Experimental/MeshesToModelWizardScreen.hpp
     src/Screens/Experimental/UiModelViewerScreen.cpp

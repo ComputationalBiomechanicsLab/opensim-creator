@@ -76,7 +76,7 @@ struct osc::InstancedRendererScreen::Impl final {
 
     ColormappedPlainTextureShader cpt;
 
-    CPUMesh quadMesh = GenTexturedQuad();
+    MeshData quadMesh = GenTexturedQuad();
     gl::ArrayBuffer<glm::vec3> quadPositions{quadMesh.verts};
     gl::ArrayBuffer<glm::vec2> quadTexCoords{quadMesh.texcoords};
     gl::VertexArray quadVAO = [this]() {

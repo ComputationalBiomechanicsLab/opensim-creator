@@ -132,7 +132,7 @@ namespace {
 
     // create VAO for the Gouraud shader
     gl::VertexArray createGouraudVAO(
-            CPUMesh const& mesh,
+            MeshData const& mesh,
             gl::ArrayBuffer<GLubyte>& data,
             gl::ElementArrayBuffer<uint32_t>& ebo,
             gl::ArrayBuffer<GPUMeshInstance, GL_DYNAMIC_DRAW>& instances) {
@@ -191,7 +191,7 @@ namespace {
 
     // create VAO for the normals shader
     gl::VertexArray createNormalsVAO(
-            CPUMesh const& mesh,
+            MeshData const& mesh,
             gl::ArrayBuffer<GLubyte>& vbo,
             gl::ElementArrayBuffer<uint32_t>& ebo) {
 
@@ -259,7 +259,7 @@ struct osc::InstancedRenderer::Impl final {
     RenderTarget rt;
 
     gl::ArrayBuffer<GPUTexturedMeshdata> quadVBO{[&]() {
-        CPUMesh m = GenTexturedQuad();
+        MeshData m = GenTexturedQuad();
 
         std::vector<GPUTexturedMeshdata> swap;
         for (size_t i = 0; i < m.indices.size(); ++i) {
@@ -295,7 +295,7 @@ osc::InstanceableMeshdata::InstanceableMeshdata(std::shared_ptr<Impl> impl) : m_
 
 osc::InstanceableMeshdata::~InstanceableMeshdata() noexcept = default;
 
-InstanceableMeshdata osc::uploadMeshdataForInstancing(CPUMesh const& mesh) {
+InstanceableMeshdata osc::uploadMeshdataForInstancing(MeshData const& mesh) {
     if (mesh.verts.size() != mesh.normals.size()) {
         throw std::runtime_error{"mismatch between number of verts and number of normals in a mesh"};
     }

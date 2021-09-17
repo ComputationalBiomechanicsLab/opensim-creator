@@ -80,7 +80,7 @@ struct SplashScreen::Impl final {
         }();
         glm::mat3 normalMtx = NormalMatrix(mmtx);
         Rgba32 color = Rgba32FromU32(0xffffffff);
-        CPUMesh quadData = GenTexturedQuad();
+        MeshData quadData = GenTexturedQuad();
         for (auto& uv : quadData.texcoords) {
             uv *= 200.0f;
         }

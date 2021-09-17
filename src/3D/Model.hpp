@@ -6,7 +6,6 @@
 #include <glm/mat4x4.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
-#include <nonstd/span.hpp>
 
 #include <iosfwd>
 #include <array>
@@ -63,7 +62,7 @@ namespace osc {
     glm::mat3 NormalMatrix(glm::mat4x3 const&) noexcept;
 
     // returns matrix that rotates dir1 to point in the same direction as dir2
-    glm::mat4 RotDir1ToDir2(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
+    glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
 
     struct AABB final {
         glm::vec3 min;
@@ -174,57 +173,63 @@ namespace osc {
     Rgba32 Rgba32FromF4(float, float, float, float) noexcept;
     Rgba32 Rgba32FromU32(uint32_t) noexcept;  // R at MSB
 
+    enum class MeshTopography {
+        Triangles,
+        Lines,
+    };
+
     // CPU-side mesh
     //
     // These can be generated/manipulated on any CPU core without having to worry
     // about the GPU
     //
-    // see `Mesh` for the GPU-friendly version of this. This separation exists
-    // because the algs in this header are supposed to be simple and portable,
+    // see `Mesh` for the GPU-facing and user-friendly version of this. This separation
+    // exists because the algs in this header are supposed to be simple and portable,
     // so that lower-level CPU-only code can use these without having to worry
     // about which GPU API is active, buffer packing, etc.
-    struct CPUMesh {
+    struct MeshData {
         std::vector<glm::vec3> verts;
         std::vector<glm::vec3> normals;
         std::vector<glm::vec2> texcoords;
         std::vector<uint32_t> indices;
+        MeshTopography topography = MeshTopography::Triangles;
 
         void clear();
         void reserve(size_t);
     };
 
     // prints top-level mesh information (eg amount of each thing) to the stream
-    std::ostream& operator<<(std::ostream&, CPUMesh const&);
+    std::ostream& operator<<(std::ostream&, MeshData const&);
 
     // generates a textured quad with:
     //
     // - positions: Z == 0, X == [-1, 1], and Y == [-1, 1]
     // - texcoords: (0, 0) to (1, 1)
-    CPUMesh GenTexturedQuad();
+    MeshData GenTexturedQuad();
 
     // generates UV sphere centered at (0,0,0) with radius = 1
-    CPUMesh GenUntexturedUVSphere(size_t sectors, size_t stacks);
+    MeshData GenUntexturedUVSphere(size_t sectors, size_t stacks);
 
     // generates a "Simbody" cylinder, where the bottom/top are -1.0f/+1.0f in Y
-    CPUMesh GenUntexturedSimbodyCylinder(size_t nsides);
+    MeshData GenUntexturedSimbodyCylinder(size_t nsides);
 
     // generates a "Simbody" cone, where the bottom/top are -1.0f/+1.0f in Y
-    CPUMesh GenUntexturedSimbodyCone(size_t nsides);
+    MeshData GenUntexturedSimbodyCone(size_t nsides);
 
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
-    CPUMesh GenNbyNGrid(size_t nticks);
+    MeshData GenNbyNGrid(size_t nticks);
 
     // generates a single two-point line from (0,-1,0) to (0,+1,0)
-    CPUMesh GenYLine();
+    MeshData GenYLine();
 
     // generates a cube with [-1,+1] in each dimension
-    CPUMesh GenCube();
+    MeshData GenCube();
 
     // generates the *lines* of a cube with [-1,+1] in each dimension
-    CPUMesh GenCubeLines();
+    MeshData GenCubeLines();
 
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
-    CPUMesh GenCircle(size_t nsides);
+    MeshData GenCircle(size_t nsides);
 
 
     // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
@@ -237,7 +242,7 @@ namespace osc {
     // i.e. {X_ndc, Y_ndc, -1.0f, 1.0f}
     glm::vec4 TopleftRelPosToNDCCube(glm::vec2 relpos);
 
-    // camera that swivels around a focal point (e.g. 3D model viewers)
+    // a camera that focuses on and swivels around a focal point (e.g. for 3D model viewers)
     struct PolarPerspectiveCamera final {
         float radius;
         float theta;

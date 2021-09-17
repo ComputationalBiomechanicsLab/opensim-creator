@@ -70,13 +70,13 @@ static gl::VertexArray makeVAO(Shader& shader, gl::ArrayBuffer<glm::vec3>& vbo, 
 struct osc::MeshHittestScreen::Impl final {
     Shader shader;
 
-    CPUMesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    MeshData mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
     gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
     gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
     gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
 
     // sphere (debug)
-    CPUMesh sphere = GenUntexturedUVSphere(12, 12);
+    MeshData sphere = GenUntexturedUVSphere(12, 12);
     gl::ArrayBuffer<glm::vec3> sphereVBO{sphere.verts};
     gl::ElementArrayBuffer<uint32_t> sphereEBO{sphere.indices};
     gl::VertexArray sphereVAO = makeVAO(shader, sphereVBO, sphereEBO);

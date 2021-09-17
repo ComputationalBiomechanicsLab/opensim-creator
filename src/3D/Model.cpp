@@ -430,7 +430,7 @@ glm::mat3 osc::NormalMatrix(glm::mat4x3 const& m) noexcept {
     return glm::inverse(glm::transpose(topLeft));
 }
 
-glm::mat4 osc::RotDir1ToDir2(glm::vec3 const& a, glm::vec3 const& b) noexcept {
+glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float cosAng = glm::dot(a, b);
 
     if (cosAng > 0.999f) {
@@ -636,7 +636,7 @@ glm::mat4 osc::SegmentToSegmentXform(Segment const& a, Segment const& b) noexcep
     float s = bLen/aLen;
     glm::vec3 scaler = glm::vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
-    glm::mat4 rotate = RotDir1ToDir2(aDir, bDir);
+    glm::mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
     glm::mat4 scale = glm::scale(glm::mat4{1.0f}, scaler);
     glm::mat4 move = glm::translate(glm::mat4{1.0f}, bCenter - aCenter);
 
@@ -865,26 +865,26 @@ Rgba32 osc::Rgba32FromU32(uint32_t v) noexcept {
     return rv;
 }
 
-void osc::CPUMesh::clear() {
+void osc::MeshData::clear() {
     verts.clear();
     normals.clear();
     texcoords.clear();
     indices.clear();
 }
 
-void osc::CPUMesh::reserve(size_t n) {
+void osc::MeshData::reserve(size_t n) {
     verts.reserve(n);
     normals.reserve(n);
     texcoords.reserve(n);
     indices.reserve(n);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, CPUMesh const& m) {
+std::ostream& osc::operator<<(std::ostream& o, MeshData const& m) {
     return o << "Mesh(nverts = " << m.verts.size() << ", nnormals = " << m.normals.size() << ", ntexcoords = " << m.texcoords.size() << ", nindices = " << m.indices.size() << ')';
 }
 
-CPUMesh osc::GenTexturedQuad() {
-    CPUMesh rv;
+MeshData osc::GenTexturedQuad() {
+    MeshData rv;
     rv.reserve(g_ShadedTexturedQuadVerts.size());
 
     unsigned short index = 0;
@@ -898,8 +898,8 @@ CPUMesh osc::GenTexturedQuad() {
     return rv;
 }
 
-CPUMesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks) {
-    CPUMesh rv;
+MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks) {
+    MeshData rv;
     rv.reserve(2*3*stacks*sectors);
 
     // this is a shitty alg that produces a shitty UV sphere. I don't have
@@ -974,8 +974,8 @@ CPUMesh osc::GenUntexturedUVSphere(size_t sectors, size_t stacks) {
     return rv;
 }
 
-CPUMesh osc::GenUntexturedSimbodyCylinder(size_t nsides) {
-    CPUMesh rv;
+MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides) {
+    MeshData rv;
     rv.reserve(4*3*nsides);
 
     constexpr float topY = +1.0f;
@@ -1053,8 +1053,8 @@ CPUMesh osc::GenUntexturedSimbodyCylinder(size_t nsides) {
     return rv;
 }
 
-CPUMesh osc::GenUntexturedSimbodyCone(size_t nsides) {
-    CPUMesh rv;
+MeshData osc::GenUntexturedSimbodyCone(size_t nsides) {
+    MeshData rv;
     rv.reserve(2*3*nsides);
 
     constexpr float topY = +1.0f;
@@ -1109,7 +1109,7 @@ CPUMesh osc::GenUntexturedSimbodyCone(size_t nsides) {
     return rv;
 }
 
-CPUMesh osc::GenNbyNGrid(size_t n) {
+MeshData osc::GenNbyNGrid(size_t n) {
     static constexpr float z = 0.0f;
     static constexpr float min = -1.0f;
     static constexpr float max = 1.0f;
@@ -1118,9 +1118,10 @@ CPUMesh osc::GenNbyNGrid(size_t n) {
 
     size_t nlines = n + 1;
 
-    CPUMesh rv;
+    MeshData rv;
     rv.verts.reserve(4*nlines);
     rv.indices.reserve(4*nlines);
+    rv.topography = MeshTopography::Lines;
 
     unsigned short index = 0;
     auto push = [&index, &rv](glm::vec3 const& pos) {
@@ -1147,15 +1148,16 @@ CPUMesh osc::GenNbyNGrid(size_t n) {
     return rv;
 }
 
-CPUMesh osc::GenYLine() {
-    CPUMesh rv;
+MeshData osc::GenYLine() {
+    MeshData rv;
     rv.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     rv.indices = {0, 1};
+    rv.topography = MeshTopography::Lines;
     return rv;
 }
 
-CPUMesh osc::GenCube() {
-    CPUMesh rv;
+MeshData osc::GenCube() {
+    MeshData rv;
     rv.reserve(g_ShadedTexturedCubeVerts.size());
 
     unsigned short index = 0;
@@ -1169,10 +1171,11 @@ CPUMesh osc::GenCube() {
     return rv;
 }
 
-CPUMesh osc::GenCubeLines() {
-    CPUMesh rv;
+MeshData osc::GenCubeLines() {
+    MeshData rv;
     rv.verts.reserve(g_CubeEdgeLines.size());
     rv.indices.reserve(g_CubeEdgeLines.size());
+    rv.topography = MeshTopography::Lines;
 
     unsigned short index = 0;
     for (auto const& v : g_CubeEdgeLines) {
@@ -1183,9 +1186,10 @@ CPUMesh osc::GenCubeLines() {
     return rv;
 }
 
-CPUMesh osc::GenCircle(size_t nsides) {
-    CPUMesh rv;
+MeshData osc::GenCircle(size_t nsides) {
+    MeshData rv;
     rv.verts.reserve(3*nsides);
+    rv.topography = MeshTopography::Lines;
 
     unsigned short index = 0;
     auto push = [&rv, &index](float x, float y, float z) {

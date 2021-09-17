@@ -51,7 +51,7 @@ static void drawBVHRecursive(BVH const& bvh, SolidColorShader& shader, int pos) 
 struct osc::MeshHittestWithBVHScreen::Impl final {
     SolidColorShader shader;
 
-    CPUMesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    MeshData mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
     gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
     gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
     gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
@@ -64,7 +64,7 @@ struct osc::MeshHittestWithBVHScreen::Impl final {
     gl::VertexArray triangleVAO = makeVAO(shader, triangleVBO, triangleEBO);
 
     // AABB wireframe
-    CPUMesh cubeWireframe = GenCubeLines();
+    MeshData cubeWireframe = GenCubeLines();
     gl::ArrayBuffer<glm::vec3> cubeWireframeVBO{cubeWireframe.verts};
     gl::ElementArrayBuffer<uint32_t> cubeWireframeEBO{cubeWireframe.indices};
     gl::VertexArray cubeVAO = makeVAO(shader, cubeWireframeVBO, cubeWireframeEBO);
