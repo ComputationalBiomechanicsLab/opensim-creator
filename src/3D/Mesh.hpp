@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "src/3D/BVH.hpp"
 #include "src/3D/Gl.hpp"
@@ -32,7 +32,12 @@ namespace osc {
         using IdType = int64_t;
 
         Mesh(MeshData);
+        Mesh(Mesh const&) = delete;
+        Mesh(Mesh&&) noexcept;
         ~Mesh() noexcept;
+
+        Mesh& operator=(Mesh const&) = delete;
+        Mesh& operator=(Mesh&&) noexcept;
 
         IdType getID() const;  // globally unique
 
@@ -48,6 +53,7 @@ namespace osc {
 
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
+        void scaleTexCoords(float);
 
         IndexFormat getIndexFormat() const;
         GLenum getIndexFormatOpenGL() const;
@@ -71,6 +77,9 @@ namespace osc {
         void clear();
         void recalculateBounds();
         void uploadToGPU();  // must be called from GPU thread
-        gl::VertexArray& getVAO();  // might lazily upload data to the GPU if user didn't call uploadToGPU
+
+        gl::VertexArray& GetVertexArray();
+        void Draw();
+        void DrawInstanced(size_t n);
     };
 }

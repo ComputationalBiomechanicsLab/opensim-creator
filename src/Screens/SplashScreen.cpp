@@ -1,10 +1,11 @@
 #include "SplashScreen.hpp"
 
-#include "src/3D/Shaders/PlainTextureShader.hpp"
+#include "src/3D/Shaders/GouraudShader.hpp"
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
 #include "src/3D/InstancedRenderer.hpp"
+#include "src/3D/Mesh.hpp"
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/Screens/LoadingScreen.hpp"
@@ -28,31 +29,42 @@
 using namespace osc;
 
 static gl::Texture2D loadImageResourceIntoTexture(char const* res_pth) {
-    return loadImageAsTexture(App::resource(res_pth).string().c_str(), TexFlag_FlipPixelsVertically).texture;
+    return loadImageAsTexture(App::resource(res_pth).string().c_str()).texture;
+}
+
+static glm::mat4x3 generateFloorModelMatrix() {
+    // rotate from XY (+Z dir) to ZY (+Y dir)
+    glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -fpi2, {1.0f, 0.0f, 0.0f});
+
+    // make floor extend far in all directions
+    rv = glm::scale(glm::mat4{1.0f}, {100.0f, 1.0f, 100.0f}) * rv;
+
+    // lower slightly, so that it doesn't conflict with OpenSim model planes
+    // that happen to lie at Z==0
+    rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
+
+    return glm::mat4x3{rv};
 }
 
 struct SplashScreen::Impl final {
-    // used to render quads (e.g. logo banners)
-    PlainTextureShader pts;
+    // used to render floor
+    GouraudShader gouraud;
 
-    gl::ArrayBuffer<glm::vec3> quadVBO{GenTexturedQuad().verts};
-    gl::ArrayBuffer<glm::vec2> quadStandardUVs{GenTexturedQuad().texcoords};
-    gl::VertexArray quadPtsVAO = [this]() {
-        gl::VertexArray rv;
-        gl::BindVertexArray(rv);
-        gl::BindBuffer(quadVBO);
-        gl::VertexAttribPointer(pts.aPos, false, sizeof(glm::vec3), 0);
-        gl::EnableVertexAttribArray(pts.aPos);
-        gl::BindBuffer(quadStandardUVs);
-        gl::VertexAttribPointer(pts.aTexCoord, false, sizeof(glm::vec2), 0);
-        gl::EnableVertexAttribArray(pts.aTexCoord);
-        gl::BindVertexArray();
+    glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
+    glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
+
+    Mesh floorMesh = []() {
+        Mesh rv{GenTexturedQuad()};
+        rv.scaleTexCoords(200.0f);
         return rv;
     }();
 
-    // main menu (top bar) states
-    MainMenuFileTab mmFileTab;
-    MainMenuAboutTab mmAboutTab;
+    glm::mat4 floorMat = generateFloorModelMatrix();
+    glm::mat4 floorNormalMat = NormalMatrix(floorMat);
+
+    // floor chequer texture
+    gl::Texture2D chequer = genChequeredFloorTexture();
 
     // main app logo, blitted to top of the screen
     gl::Texture2D logo = loadImageResourceIntoTexture("logo.png");
@@ -63,64 +75,19 @@ struct SplashScreen::Impl final {
     // TUD attributation logo, blitted to bottom of screen
     gl::Texture2D tudLogo = loadImageResourceIntoTexture("tud_logo.png");
 
-    // 3D stuff: for the background image
-    InstancedRenderer renderer;
-    InstancedDrawlist drawlist = []() {
-        glm::mat4x3 mmtx = []() {
-            glm::mat4 rv = glm::identity<glm::mat4>();
-
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, -0.005f, 0.0f});
-            rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
-            rv = glm::scale(rv, {100.0f, 100.0f, 1.0f});
-
-            return rv;
-        }();
-        glm::mat3 normalMtx = NormalMatrix(mmtx);
-        Rgba32 color = Rgba32FromU32(0xffffffff);
-        MeshData quadData = GenTexturedQuad();
-        for (auto& uv : quadData.texcoords) {
-            uv *= 200.0f;
-        }
-        InstanceableMeshdata md = uploadMeshdataForInstancing(quadData);
-        std::shared_ptr<gl::Texture2D> tex = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
-
-        DrawlistCompilerInput inp;
-        inp.ninstances = 1;
-        inp.modelMtxs = &mmtx;
-        inp.normalMtxs = &normalMtx;
-        inp.colors = &color;
-        inp.meshes = &md;
-        inp.textures = &tex;
-        inp.rimIntensities = nullptr;
-
-        InstancedDrawlist rv;
-        uploadInputsToDrawlist(inp, rv);
-        return rv;
-    }();
-    InstancedRendererParams params;
+    // camera for top-down shot of the floor
     PolarPerspectiveCamera camera;
+
+    // main menu (top bar) states
+    MainMenuFileTab mmFileTab;
+    MainMenuAboutTab mmAboutTab;
 
     // top-level UI state that's shared between screens
     std::shared_ptr<MainEditorState> mes;
 
     Impl(std::shared_ptr<MainEditorState> mes_) : mes{std::move(mes_)} {
-        log::info("splash screen constructed");
         camera.phi = fpi4;
         camera.radius = 10.0f;
-    }
-
-    void drawQuad(glm::mat4 const& mvp, gl::Texture2D& tex) {
-        gl::UseProgram(pts.program);
-        gl::Uniform(pts.uMVP, mvp);
-        gl::ActiveTexture(GL_TEXTURE0);
-        gl::BindTexture(tex);
-        gl::Uniform(pts.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-        gl::BindVertexArray(quadPtsVAO);
-        gl::DrawArrays(GL_TRIANGLES, 0, quadVBO.sizei());
-        gl::BindVertexArray();
     }
 };
 
@@ -154,53 +121,58 @@ void osc::SplashScreen::tick(float dt) {
 }
 
 void osc::SplashScreen::draw() {
-    osc::ImGuiNewFrame();
-
-    Impl& impl = *m_Impl;
-
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     constexpr glm::vec2 menuDims = {700.0f, 500.0f};
 
+    Impl& impl = *m_Impl;
     App& app = App::cur();
-    glm::ivec2 windowDimsInt = app.idims();
-    glm::vec2 windowDims{windowDimsInt};
 
-    gl::Enable(GL_BLEND);
+    glm::vec2 windowDims = app.dims();
+    gl::Viewport(0, 0, windowDims.x, windowDims.y);
+    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    osc::ImGuiNewFrame();
 
-    // draw chequered floor background
     {
-        impl.renderer.setDims(app.idims());
-        impl.renderer.setMsxaaSamples(app.getSamples());
-        impl.params.viewMtx = impl.camera.getViewMtx();
-        impl.params.projMtx = impl.camera.getProjMtx(impl.renderer.getAspectRatio());
-        impl.params.viewPos = impl.camera.getPos();
-
-        impl.renderer.render(impl.params, impl.drawlist);
-        impl.drawQuad(glm::mat4{1.0f}, impl.renderer.getOutputTexture());
-    }
-
-    // draw logo just above the menu
-    {
-        glm::vec2 desiredLogoDims = {128.0f, 128.0f};
-        glm::vec2 scale = desiredLogoDims / windowDims;
-        float yAboveMenu = (menuDims.y + desiredLogoDims.y + 64.0f) / windowDims.y;
-
-        glm::mat4 translate_xform = glm::translate(glm::mat4{1.0f}, {0.0f, yAboveMenu, 0.0f});
-        glm::mat4 scale_xform = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
-
-        glm::mat4 model = translate_xform * scale_xform;
-
-        gl::Disable(GL_DEPTH_TEST);
-        gl::Enable(GL_BLEND);
-        impl.drawQuad(model, impl.logo);
+        GouraudShader& s = impl.gouraud;
+        gl::UseProgram(s.program);
+        gl::Uniform(s.uProjMat, impl.camera.getProjMtx(app.aspectRatio()));
+        gl::Uniform(s.uViewMat, impl.camera.getViewMtx());
+        gl::Uniform(s.uModelMat, impl.floorMat);
+        gl::Uniform(s.uNormalMat, impl.floorNormalMat);
+        gl::Uniform(s.uLightDir, impl.lightDir);
+        gl::Uniform(s.uLightColor, impl.lightCol);
+        gl::Uniform(s.uViewPos, impl.camera.getPos());
+        gl::Uniform(s.uIsTextured, true);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(impl.chequer);
+        gl::Uniform(s.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+        gl::BindVertexArray(impl.floorMesh.GetVertexArray());
+        impl.floorMesh.Draw();
+        gl::BindVertexArray();
     }
 
     if (ImGui::BeginMainMenuBar()) {
         impl.mmFileTab.draw(impl.mes);
         impl.mmAboutTab.draw();
         ImGui::EndMainMenuBar();
+    }
+
+    ImGuiWindowFlags imgFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDecoration;
+    constexpr glm::vec2 logoDims = {128.0f, 128.0f};
+    constexpr float padding = 25.0f;
+
+    // draw logo just above the menu
+    {
+        glm::vec2 loc = windowDims/2.0f;
+        loc.y -= menuDims.y/2.0f;
+        loc.y -= padding;  // padding
+        loc.y -= logoDims.y;
+        loc.x -= logoDims.x/2.0f;
+
+        ImGui::SetNextWindowPos(loc);
+        ImGui::Begin("logowindow", nullptr, imgFlags);
+        ImGui::Image(impl.logo.getVoidHandle(), logoDims);
+        ImGui::End();
     }
 
     // center the menu
@@ -291,36 +263,29 @@ void osc::SplashScreen::draw() {
 
     // draw TUD logo below menu, slightly to the left
     {
-        glm::vec2 desiredLogoDims = {128.0f, 128.0f};
-        glm::vec2 scale = desiredLogoDims / windowDims;
-        float xLeftByLogoWidth = -desiredLogoDims.x / windowDims.x;
-        float yBelowMenu = -(25.0f + menuDims.y + desiredLogoDims.y) / windowDims.y;
+        glm::vec2 loc = windowDims/2.0f;
+        loc.y += menuDims.y/2.0f;
+        loc.y += padding;
+        loc.x -= padding;
+        loc.x -= logoDims.x;
 
-        glm::mat4 translateMtx = glm::translate(glm::mat4{1.0f}, {xLeftByLogoWidth, yBelowMenu, 0.0f});
-        glm::mat4 scaleMtx = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
-
-        glm::mat4 model = translateMtx * scaleMtx;
-
-        gl::Enable(GL_BLEND);
-        gl::Disable(GL_DEPTH_TEST);
-        impl.drawQuad(model, impl.tudLogo);
+        ImGui::SetNextWindowPos(loc);
+        ImGui::Begin("##tudlogo", nullptr, imgFlags);
+        ImGui::Image(impl.tudLogo.getVoidHandle(), logoDims);
+        ImGui::End();
     }
 
     // draw CZI logo below menu, slightly to the right
     {
-        glm::vec2 desiredLogoDims = {128.0f, 128.0f};
-        glm::vec2 scale = desiredLogoDims / windowDims;
-        float xRightByLogoWidth = desiredLogoDims.x / windowDims.x;
-        float yBelowMenu = -(25.0f + menuDims.y + desiredLogoDims.y) / windowDims.y;
+        glm::vec2 loc = windowDims/2.0f;
+        loc.y += menuDims.y/2.0f;
+        loc.y += padding;
+        loc.x += padding;
 
-        glm::mat4 translateMtx = glm::translate(glm::mat4{1.0f}, {xRightByLogoWidth, yBelowMenu, 0.0f});
-        glm::mat4 scaleMtx = glm::scale(glm::mat4{1.0f}, {scale.x, scale.y, 1.0f});
-
-        glm::mat4 model = translateMtx * scaleMtx;
-
-        gl::Disable(GL_DEPTH_TEST);
-        gl::Enable(GL_BLEND);
-        impl.drawQuad(model, impl.czLogo);
+        ImGui::SetNextWindowPos(loc);
+        ImGui::Begin("##czilogo", nullptr, imgFlags);
+        ImGui::Image(impl.czLogo.getVoidHandle(), logoDims);
+        ImGui::End();
     }
 
     osc::ImGuiRender();

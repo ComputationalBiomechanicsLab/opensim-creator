@@ -43,6 +43,20 @@
 #include <vector>
 #include <variant>
 
+namespace {
+    // parameters for a render drawcall
+    struct DrawParams final {
+        glm::mat4 viewMtx = glm::mat4{1.0f};  // worldspace -> viewspace transform matrix
+        glm::mat4 projMtx = glm::mat4{1.0f};  // viewspace -> clipspace transform matrix
+        glm::vec3 viewPos = {0.0f, 0.0f, 0.0f};  // worldspace position of the viewer
+        glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};  // worldspace direction of the directional light
+        glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};  // rgb color of the directional light
+        glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};  // what the framebuffer will be cleared with pre-render
+        glm::vec4 rimCol = {1.0f, 0.4f, 0.0f, 0.85f};  // color of any rim highlights
+        //InstancedRendererFlags flags = InstancedRendererFlags_Default;  // flags
+    };
+}
+
 using namespace osc;
 
 // private impl details

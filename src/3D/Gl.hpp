@@ -789,6 +789,10 @@ namespace gl {
         constexpr TextureHandle& handle() noexcept {
             return m_TextureHandle;
         }
+
+        void* getVoidHandle() const noexcept {
+            return reinterpret_cast<void*>(static_cast<uintptr_t>(m_TextureHandle.get()));
+        }
     };
 
     class Texture2D : public Texture<GL_TEXTURE_2D> {};

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/ImmutableSceneMesh.hpp"
+#include "src/3D/Mesh.hpp"
 
 #include <memory>
 #include <string>
@@ -14,11 +14,11 @@ namespace osc {
         ThreadsafeMeshCache();
         ~ThreadsafeMeshCache() noexcept;
 
-        std::shared_ptr<ImmutableSceneMesh> getMeshFile(std::string const&);  // returns `nullptr` if file could not be loaded
-        std::shared_ptr<ImmutableSceneMesh> getSphereMesh();
-        std::shared_ptr<ImmutableSceneMesh> getCylinderMesh();
-        std::shared_ptr<ImmutableSceneMesh> getBrickMesh();
-        std::shared_ptr<ImmutableSceneMesh> getConeMesh();
+        std::shared_ptr<Mesh> getMeshFile(std::string const&);  // returns `nullptr` if file could not be loaded
+        std::shared_ptr<Mesh> getSphereMesh();
+        std::shared_ptr<Mesh> getCylinderMesh();
+        std::shared_ptr<Mesh> getBrickMesh();
+        std::shared_ptr<Mesh> getConeMesh();
 
         struct Impl;
     private:

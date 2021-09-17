@@ -90,12 +90,8 @@ void osc::MeshScreen::draw() {
     gl::Uniform(st.shader.uViewPos, st.camera.getPos());
 
     //gl::Disable(GL_CULL_FACE);
-    gl::BindVertexArray(st.m.getVAO());
-    gl::DrawElements(
-        st.m.getTopographyOpenGL(),
-        st.m.getNumIndices(),
-        st.m.getIndexFormatOpenGL(),
-        nullptr);
+    gl::BindVertexArray(st.m.GetVertexArray());
+    st.m.Draw();
     gl::BindVertexArray();
 
     ImGui::Begin("cookiecutter panel");

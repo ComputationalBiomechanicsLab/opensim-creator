@@ -154,8 +154,11 @@ osc::Mesh::Mesh(MeshData cpuMesh) : m_Impl{new Impl{}} {
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
-osc::Mesh::~Mesh() noexcept {
-}
+osc::Mesh::Mesh(Mesh&&) noexcept = default;
+
+osc::Mesh::~Mesh() noexcept = default;
+
+Mesh& osc::Mesh::operator=(Mesh&&) noexcept = default;
 
 osc::Mesh::IdType osc::Mesh::getID() const {
     return m_Impl->id;
@@ -223,6 +226,13 @@ void osc::Mesh::setTexCoords(nonstd::span<const glm::vec2> tc) {
         coords.push_back(t);
     }
 
+    m_Impl->gpuBuffersOutOfDate = true;
+}
+
+void osc::Mesh::scaleTexCoords(float factor) {
+    for (auto& tc : m_Impl->texCoords) {
+        tc *= factor;
+    }
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
@@ -463,10 +473,18 @@ void osc::Mesh::uploadToGPU() {
     m_Impl->gpuBuffersOutOfDate = false;
 }
 
-gl::VertexArray& osc::Mesh::getVAO() {
+gl::VertexArray& osc::Mesh::GetVertexArray() {
     if (m_Impl->gpuBuffersOutOfDate || !m_Impl->maybeVBO || !m_Impl->maybeVAO || !m_Impl->maybeEBO) {
         uploadToGPU();
     }
 
     return *m_Impl->maybeVAO;
+}
+
+void osc::Mesh::Draw() {
+    gl::DrawElements(getTopographyOpenGL(), getNumIndices(), getIndexFormatOpenGL(), nullptr);
+}
+
+void osc::Mesh::DrawInstanced(size_t n) {
+    glDrawElementsInstanced(getTopographyOpenGL(), getNumIndices(), getIndexFormatOpenGL(), nullptr, static_cast<GLsizei>(n));
 }

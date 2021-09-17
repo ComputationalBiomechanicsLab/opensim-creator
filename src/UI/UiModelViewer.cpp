@@ -126,50 +126,6 @@ namespace {
         }
     };
 
-    struct SceneGPUElementData final {
-        glm::vec3 pos;
-        glm::vec3 norm;
-    };
-
-    gl::ArrayBuffer<SceneGPUElementData> uploadMeshToGPU(MeshData const& m) {
-        OSC_ASSERT_ALWAYS(m.verts.size() == m.normals.size());
-
-        std::vector<SceneGPUElementData> buf;
-        buf.reserve(m.verts.size());
-
-        for (size_t i = 0; i < m.verts.size(); ++i) {
-            buf.push_back({m.verts[i], m.normals[i]});
-        }
-
-        return {buf};
-    }
-
-    gl::VertexArray makeVAO(gl::ArrayBuffer<SceneGPUElementData>& vbo,
-                            gl::ElementArrayBuffer<uint32_t>& ebo) {
-
-        gl::VertexArray rv;
-        gl::BindVertexArray(rv);
-        gl::BindBuffer(vbo);
-        gl::BindBuffer(ebo);
-        gl::VertexAttribPointer(gl::AttributeVec3{0}, false, sizeof(SceneGPUElementData), offsetof(SceneGPUElementData, pos));
-        gl::EnableVertexAttribArray(gl::AttributeVec3{0});
-        gl::VertexAttribPointer(gl::AttributeVec3{2}, false, sizeof(SceneGPUElementData), offsetof(SceneGPUElementData, norm));
-        gl::EnableVertexAttribArray(gl::AttributeVec3{2});
-        return rv;
-    }
-
-    struct SceneGPUMesh final {
-        gl::ArrayBuffer<SceneGPUElementData> data;
-        gl::ElementArrayBuffer<uint32_t> indices;
-        gl::VertexArray vao;
-
-        SceneGPUMesh(MeshData const& m) :
-            data{uploadMeshToGPU(m)},
-            indices{m.indices},
-            vao{makeVAO(data, indices)} {
-        }
-    };
-
     struct SceneGPUInstanceData final {
         glm::mat4x3 modelMtx;
         glm::mat3 normalMtx;
@@ -178,83 +134,14 @@ namespace {
         int decorationIdx;
     };
 
-    // GPU format of meshdata with texcoords
-    struct GPUTexturedMeshdata final {
-        glm::vec3 pos;
-        glm::vec3 norm;
-        glm::vec2 uv;
-    };
-
-    gl::ArrayBuffer<GPUTexturedMeshdata> generateQuadVBO() {
-        MeshData m = GenTexturedQuad();
-
-        std::vector<GPUTexturedMeshdata> swap;
-        for (size_t i = 0; i < m.indices.size(); ++i) {
-            unsigned short idx = m.indices[i];
-            GPUTexturedMeshdata& tv = swap.emplace_back();
-            tv.pos = m.verts[idx];
-            tv.norm = m.normals[idx];
-            tv.uv = m.texcoords[idx];
-        }
-
-        return gl::ArrayBuffer<GPUTexturedMeshdata>{swap};
+    static Mesh generateFloorMesh() {
+        Mesh m{GenTexturedQuad()};
+        m.scaleTexCoords(200.0f);
+        return m;
     }
-
-    static gl::ArrayBuffer<GPUTexturedMeshdata> generateFloorVBO() {
-        MeshData m = GenTexturedQuad();
-        for (auto& coord : m.texcoords) {
-            coord *= 200.0f;
-        }
-
-        std::vector<GPUTexturedMeshdata> swap;
-        for (size_t i = 0; i < m.indices.size(); ++i) {
-            auto idx = m.indices[i];
-            auto& el = swap.emplace_back();
-            el.pos = m.verts[idx];
-            el.norm = m.verts[idx];
-            el.uv = m.texcoords[idx];
-        }
-
-        return {swap};
-    }
-}
-
-
-static gl::VertexArray makeEdgeDetectionVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
-    gl::VertexArray rv;
-    gl::BindVertexArray(rv);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(EdgeDetectionShader::aPos, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
-    gl::EnableVertexAttribArray(EdgeDetectionShader::aPos);
-    gl::VertexAttribPointer(EdgeDetectionShader::aTexCoord, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
-    gl::EnableVertexAttribArray(EdgeDetectionShader::aTexCoord);
-    return rv;
-}
-
-static gl::VertexArray makeFloorVAO(gl::ArrayBuffer<GPUTexturedMeshdata>& vbo) {
-    gl::VertexArray rv;
-    gl::BindVertexArray(rv);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(gl::AttributeVec3{0}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, pos));
-    gl::EnableVertexAttribArray(gl::AttributeVec3{0});
-    gl::VertexAttribPointer(gl::AttributeVec2{1}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, uv));
-    gl::EnableVertexAttribArray(gl::AttributeVec3{1});
-    gl::VertexAttribPointer(gl::AttributeVec3{2}, false, sizeof(GPUTexturedMeshdata), offsetof(GPUTexturedMeshdata, norm));
-    gl::EnableVertexAttribArray(gl::AttributeVec3{2});
-    return rv;
-}
-
-static gl::VertexArray makeSCSVAO(SolidColorShader& shader, gl::ArrayBuffer<glm::vec3>& vbo) {
-    gl::VertexArray rv;
-    gl::BindVertexArray(rv);
-    gl::BindBuffer(vbo);
-    gl::VertexAttribPointer(shader.aPos, false, sizeof(glm::vec3), 0);
-    gl::EnableVertexAttribArray(shader.aPos);
-    return rv;
 }
 
 struct osc::UiModelViewer::Impl final {
-    std::unordered_map<ImmutableSceneMesh::IdType, std::unique_ptr<SceneGPUMesh>> gpuCache;
     GouraudMrtShader shader;
     NormalsShader normalsShader;
     EdgeDetectionShader edgeDetectionShader;
@@ -269,27 +156,14 @@ struct osc::UiModelViewer::Impl final {
 
     RenderTarget renderTarg{{1, 1}, 1};
 
-    gl::ArrayBuffer<GPUTexturedMeshdata> quadVBO = generateQuadVBO();
-    gl::VertexArray quadVAO = makeEdgeDetectionVAO(quadVBO);
-
-    gl::ArrayBuffer<GPUTexturedMeshdata> floorVBO = generateFloorVBO();
-    gl::VertexArray floorVAO = makeFloorVAO(floorVBO);
+    Mesh quadMesh{GenTexturedQuad()};
+    Mesh floorMesh{generateFloorMesh()};
     gl::Texture2D chequerTex = genChequeredFloorTexture();
-
-    // grid data
-    gl::ArrayBuffer<glm::vec3> gridVBO{GenNbyNGrid(100).verts};
-    gl::VertexArray gridVAO = makeSCSVAO(solidColorShader, gridVBO);
-
-    // line data
-    gl::ArrayBuffer<glm::vec3> lineVBO{GenYLine().verts};
-    gl::VertexArray lineVAO = makeSCSVAO(solidColorShader, lineVBO);
-
-    // aabb data
-    gl::ArrayBuffer<glm::vec3> cubewireVBO{GenCubeLines().verts};
-    gl::VertexArray cubewireVAO = makeSCSVAO(solidColorShader, cubewireVBO);
+    Mesh gridMesh{GenNbyNGrid(100)};
+    Mesh yLineMesh{GenYLine()};
+    Mesh cubeWireMesh{GenCubeLines()};
 
     std::vector<BVHCollision> sceneHittestResults;
-    std::vector<BVHCollision> triangleHittestResults;
 
     glm::vec2 renderDims = {0.0f, 0.0f};
     bool renderHovered = false;
@@ -315,14 +189,6 @@ osc::UiModelViewer::~UiModelViewer() noexcept = default;
 
 bool osc::UiModelViewer::isMousedOver() const noexcept {
     return m_Impl->renderHovered;
-}
-
-static SceneGPUMesh& getSceneGPUMeshCached(osc::UiModelViewer::Impl& impl, ImmutableSceneMesh const& se) {
-    auto [it, inserted] = impl.gpuCache.try_emplace(se.getID(), nullptr);
-    if (inserted) {
-        it->second = std::make_unique<SceneGPUMesh>(se.getMesh());
-    }
-    return *it->second;
 }
 
 static glm::mat4x3 generateFloorModelMatrix(RenderableScene const& rs) {
@@ -503,10 +369,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
                 ++end;
             }
 
-            // lookup/populate GPU data for mesh
-            SceneGPUMesh const& gpuMesh = getSceneGPUMeshCached(impl, *se.mesh);
-
-            gl::BindVertexArray(gpuMesh.vao);
+            gl::BindVertexArray(se.mesh->GetVertexArray());
             gl::BindBuffer(instanceBuf);
             gl::VertexAttribPointer(GouraudMrtShader::aModelMat, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*pos + offsetof(SceneGPUInstanceData, modelMtx));
             gl::VertexAttribDivisor(GouraudMrtShader::aModelMat, 1);
@@ -520,7 +383,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::VertexAttribPointer(GouraudMrtShader::aRimIntensity, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*pos + offsetof(SceneGPUInstanceData, rimIntensity));
             gl::VertexAttribDivisor(GouraudMrtShader::aRimIntensity, 1);
             gl::EnableVertexAttribArray(GouraudMrtShader::aRimIntensity);
-            glDrawElementsInstanced(GL_TRIANGLES, gpuMesh.indices.sizei(), gl::indexType(gpuMesh.indices), nullptr, static_cast<GLsizei>(end-pos));
+            se.mesh->DrawInstanced(end-pos);
             gl::BindVertexArray();
 
             pos = end;
@@ -541,7 +404,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::BindTexture(impl.chequerTex);
         gl::Uniform(gouraudShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
 
-        gl::BindVertexArray(impl.floorVAO);
+        gl::BindVertexArray(impl.floorMesh.GetVertexArray());
         gl::BindBuffer(buf);
         gl::VertexAttribPointer(GouraudMrtShader::aModelMat, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, modelMtx));
         gl::VertexAttribDivisor(GouraudMrtShader::aModelMat, 1);
@@ -555,7 +418,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::VertexAttribPointer(GouraudMrtShader::aRimIntensity, false, sizeof(SceneGPUInstanceData), offsetof(SceneGPUInstanceData, rimIntensity));
         gl::VertexAttribDivisor(GouraudMrtShader::aRimIntensity, 1);
         gl::EnableVertexAttribArray(GouraudMrtShader::aRimIntensity);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, impl.floorVBO.sizei(), 1);
+        impl.floorMesh.DrawInstanced(1);
         gl::BindVertexArray();
     }
 
@@ -580,10 +443,8 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
 
             gl::Uniform(normalShader.uModelMat, inst.modelMtx);
             gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
-
-            SceneGPUMesh const& gpuMesh = getSceneGPUMeshCached(impl, *se.mesh);
-            gl::BindVertexArray(gpuMesh.vao);
-            gl::DrawElements(GL_TRIANGLES, gpuMesh.indices.sizei(), gl::indexType(gpuMesh.indices), nullptr);
+            gl::BindVertexArray(se.mesh->GetVertexArray());
+            se.mesh->Draw();
         }
         gl::BindVertexArray();
     }
@@ -657,8 +518,8 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         glScissor(x, y, w, h);
         gl::Enable(GL_BLEND);
         gl::Disable(GL_DEPTH_TEST);
-        gl::BindVertexArray(impl.quadVAO);
-        gl::DrawArrays(GL_TRIANGLES, 0, impl.quadVBO.sizei());
+        gl::BindVertexArray(impl.quadMesh.GetVertexArray());
+        impl.quadMesh.Draw();
         gl::BindVertexArray();
         gl::Enable(GL_DEPTH_TEST);
         gl::Disable(GL_SCISSOR_TEST);
@@ -721,25 +582,13 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
         }
 
         glm::mat4 instanceMmtx = decs[instanceIdx].modelMtx;
-        ImmutableSceneMesh const& instanceMesh = *decs[instanceIdx].mesh;
-
         Line cameraRayModelspace = LineApplyXform(cameraRay, glm::inverse(instanceMmtx));
 
-        // perform ray-triangle BVH hittest
-        impl.triangleHittestResults.clear();
-        BVH_GetRayTriangleCollisions(
-                    instanceMesh.getTriangleBVH(),
-                    instanceMesh.getVerts().data(),
-                    instanceMesh.getVerts().size(),
-                    cameraRayModelspace,
-                    &impl.triangleHittestResults);
+        auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollision(cameraRayModelspace);
 
-        // check each triangle collision and take the closest
-        for (BVHCollision const& tc : impl.triangleHittestResults) {
-            if (tc.distance < closestDistance) {
-                closestIdx = instanceIdx;
-                closestDistance = tc.distance;
-            }
+        if (maybeCollision && maybeCollision->distance < closestDistance) {
+            closestIdx = instanceIdx;
+            closestDistance = maybeCollision->distance;
         }
     }
 
@@ -754,8 +603,8 @@ static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::BindVertexArray(impl.gridVAO);
-    gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
+    impl.gridMesh.Draw();
     gl::BindVertexArray();
 }
 
@@ -767,8 +616,8 @@ static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::BindVertexArray(impl.gridVAO);
-    gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
+    impl.gridMesh.Draw();
     gl::BindVertexArray();
 }
 
@@ -780,8 +629,8 @@ static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::BindVertexArray(impl.gridVAO);
-    gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+    gl::BindVertexArray(impl.gridMesh.GetVertexArray());
+    impl.gridMesh.Draw();
     gl::BindVertexArray();
 }
 
@@ -803,14 +652,15 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uProjection, gl::identity);
     gl::Uniform(shader.uView, gl::identity);
-    gl::BindVertexArray(impl.lineVAO);
+
     gl::Disable(GL_DEPTH_TEST);
+    gl::BindVertexArray(impl.yLineMesh.GetVertexArray());
 
     // y axis
     {
         gl::Uniform(shader.uColor, {0.0f, 1.0f, 0.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * makeLineOneSided);
-        gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+        impl.yLineMesh.Draw();
     }
 
     // x axis
@@ -820,7 +670,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
 
         gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * rotateYtoX * makeLineOneSided);
-        gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+        impl.yLineMesh.Draw();
     }
 
     // z axis
@@ -830,7 +680,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
 
         gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
         gl::Uniform(shader.uModel, baseModelMtx * rotateYtoZ * makeLineOneSided);
-        gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+        impl.yLineMesh.Draw();
     }
 
     gl::BindVertexArray();
@@ -844,17 +694,18 @@ static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::BindVertexArray(impl.lineVAO);
+
+    gl::BindVertexArray(impl.yLineMesh.GetVertexArray());
 
     // X
     gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 0.0f, 1.0f}));
     gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-    gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+    impl.yLineMesh.Draw();
 
     // Z
     gl::Uniform(shader.uModel, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-    gl::DrawArrays(GL_LINES, 0, impl.gridVBO.sizei());
+    impl.yLineMesh.Draw();
 
     gl::BindVertexArray();
 }
@@ -868,7 +719,8 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    gl::BindVertexArray(impl.cubewireVAO);
+    gl::BindVertexArray(impl.cubeWireMesh.GetVertexArray());
+
     for (auto const& se : rs.getSceneDecorations()) {
         glm::vec3 halfWidths = AABBDims(se.worldspaceAABB) / 2.0f;
         glm::vec3 center = AABBCenter(se.worldspaceAABB);
@@ -878,8 +730,9 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
         glm::mat4 mmtx = mover * scaler;
 
         gl::Uniform(shader.uModel, mmtx);
-        gl::DrawArrays(GL_LINES, 0, impl.cubewireVBO.sizei());
+        impl.cubeWireMesh.Draw();
     }
+
     gl::BindVertexArray();
 }
 
@@ -894,7 +747,7 @@ static void drawBVHRecursive(osc::UiModelViewer::Impl& impl, BVH const& bvh, int
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
     glm::mat4 mmtx = mover * scaler;
     gl::Uniform(impl.solidColorShader.uModel, mmtx);
-    gl::DrawArrays(GL_LINES, 0, impl.cubewireVBO.sizei());
+    impl.cubeWireMesh.Draw();
 
     if (n.nlhs >= 0) {  // if it's an internal node
         drawBVHRecursive(impl, bvh, pos+1);
@@ -917,7 +770,7 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
-    gl::BindVertexArray(impl.cubewireVAO);
+    gl::BindVertexArray(impl.cubeWireMesh.GetVertexArray());
     drawBVHRecursive(impl, bvh, 0);
     gl::BindVertexArray();
 }
