@@ -19,3 +19,7 @@
 
 // theme color for slightly greyed (usually, additional description text) things
 #define OSC_SLIGHTLY_GREYED_RGBA {0.7f, 0.7f, 0.7f, 1.0f}
+
+#define OSC_HOVERED_COMPONENT_RGBA {0.5f, 0.5f, 0.0f, 1.0f}
+
+#define OSC_SELECTED_COMPONENT_RGBA {1.0f, 1.0f, 0.0f, 1.0f}

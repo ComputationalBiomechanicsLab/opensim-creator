@@ -129,7 +129,7 @@ void osc::SplashScreen::draw() {
     App& app = App::cur();
 
     glm::vec2 windowDims = app.dims();
-    gl::Viewport(0, 0, windowDims.x, windowDims.y);
+    gl::Viewport(0, 0, app.idims().x, app.idims().y);
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();

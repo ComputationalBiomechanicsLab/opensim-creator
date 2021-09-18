@@ -490,7 +490,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             hasRims = true;
 
             // union the rims for scissor testing later
-            for (int i = pos; i < end; ++i) {
+            for (size_t i = pos; i < end; ++i) {
                 rimAABB = AABBUnion(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
             }
 

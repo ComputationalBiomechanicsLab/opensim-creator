@@ -1,5 +1,7 @@
 #include "CoordinateEditor.hpp"
 
+#include "src/Styling.hpp"
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
@@ -40,42 +42,23 @@ void osc::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordina
 }
 
 bool osc::CoordinateEditor::draw(UiModel& uim) {
-    // render coordinate filters
-    {
-        ImGui::Text("filters:");
-        ImGui::Dummy({0.0f, 2.5f});
-        ImGui::Separator();
-
-        ImGui::Columns(2);
-
-        ImGui::Text("search");
-        ImGui::NextColumn();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        ImGui::InputText("##coords search filter", filter, sizeof(filter));
-        ImGui::NextColumn();
-
-        ImGui::Text("sort alphabetically");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##coords alphabetical sort", &sort_by_name);
-        ImGui::NextColumn();
-
-        ImGui::Text("show rotational");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##rotational coordinates checkbox", &show_rotational);
-        ImGui::NextColumn();
-
-        ImGui::Text("show translational");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##translational coordinates checkbox", &show_translational);
-        ImGui::NextColumn();
-
-        ImGui::Text("show coupled");
-        ImGui::NextColumn();
-        ImGui::Checkbox("##coupled coordinates checkbox", &show_coupled);
-        ImGui::NextColumn();
-
-        ImGui::Columns();
+    ImGui::Dummy({0.0f, 3.0f});
+    ImGui::TextUnformatted(ICON_FA_EYE);
+    if (ImGui::BeginPopupContextItem("##coordinateditorfilterpopup")) {
+        ImGui::Checkbox("sort alphabetically", &sort_by_name);
+        ImGui::Checkbox("show rotational coords", &show_rotational);
+        ImGui::Checkbox("show translational coords", &show_translational);
+        ImGui::Checkbox("show coupled coords", &show_coupled);
+        ImGui::EndPopup();
     }
+    ImGui::SameLine();
+    ImGui::TextUnformatted(ICON_FA_SEARCH);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::InputText("##coords search filter", filter, sizeof(filter));
+    ImGui::Dummy({0.0f, 3.0f});
+    ImGui::Separator();
+    ImGui::Dummy({0.0f, 3.0f});
 
     // load coords
     coord_scratch.clear();
@@ -93,29 +76,62 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         std::sort(coord_scratch.begin(), coord_scratch.end(), do_sort_by_name);
     }
 
-    // render coordinates list
-    ImGui::Dummy({0.0f, 10.0f});
-    ImGui::Text("coordinates (%zu):", coord_scratch.size());
-    ImGui::Dummy({0.0f, 2.5f});
-    ImGui::Separator();
-
     bool state_modified = false;
     ImGui::Columns(2);
     int i = 0;
     for (OpenSim::Coordinate const* c : coord_scratch) {
         ImGui::PushID(i++);
 
+        int styles_pushed = 0;
+        if (c == uim.hovered) {
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+            ++styles_pushed;
+        }
+        if (c == uim.selected) {
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+            ++styles_pushed;
+        }
         ImGui::Text("%s", c->getName().c_str());
+        ImGui::PopStyleColor(styles_pushed);
+        styles_pushed = 0;
+
+        if (ImGui::IsItemHovered()) {
+            uim.hovered = const_cast<OpenSim::Coordinate*>(c);
+
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+            char const* type = "Unknown";
+            switch (c->getMotionType()) {
+            case OpenSim::Coordinate::MotionType::Rotational:
+                type = "Rotational";
+                break;
+            case OpenSim::Coordinate::MotionType::Translational:
+                type = "Translational";
+                break;
+            case OpenSim::Coordinate::MotionType::Coupled:
+                type = "Coupled";
+                break;
+            default:
+                type = "Unknown";
+            }
+
+            ImGui::Text("%s Coordinate, Owner = %s", type, c->hasOwner() ? c->getOwner().getName().c_str() : "(no owner)");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+            uim.selected = const_cast<OpenSim::Coordinate*>(c);
+        }
+
         ImGui::NextColumn();
 
         // if locked, color everything red
-        int styles_pushed = 0;
         if (c->getLocked(*uim.state)) {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++styles_pushed;
         }
 
-        if (ImGui::Button(c->getLocked(*uim.state) ? "u" : "l")) {
+        if (ImGui::Button(c->getLocked(*uim.state) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
             uim.addCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), !c->getLocked(*uim.state)});
             state_modified = true;
         }
@@ -130,6 +146,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         }
 
         ImGui::PopStyleColor(styles_pushed);
+        styles_pushed = 0;
         ImGui::NextColumn();
 
         ImGui::PopID();

@@ -2,6 +2,7 @@
 
 #include "src/Assertions.hpp"
 #include "src/Log.hpp"
+#include "src/Styling.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -116,11 +117,6 @@ namespace {
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c) {
         return std::find(p.begin(), p.end(), c) != p.end();
     }
-
-    bool shouldRender(OpenSim::Component const& c) {
-        auto hc = typeid(c).hash_code();
-        return hc != g_FrameGeometryHash && hc != g_WrapObjectSetHash;
-    }
 }
 
 static bool isSearchHit(char const* searchStr, ComponentPath const& cp) {
@@ -141,7 +137,21 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     OpenSim::Component const* selection,
     OpenSim::Component const* hover) {
 
-    ImGui::InputText("search", search, sizeof(search));
+    ImGui::Dummy({0.0f, 3.0f});
+    ImGui::TextUnformatted(ICON_FA_EYE);
+    if (ImGui::BeginPopupContextItem("##filterpopup")) {
+        ImGui::Checkbox("frames", &showFrames);
+        ImGui::Checkbox("wrapobjectsets", &showWrapObjectSets);
+        ImGui::EndPopup();
+    }
+    ImGui::SameLine();
+    ImGui::TextUnformatted(ICON_FA_SEARCH);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::InputText("##hirarchtsearchbar", search, sizeof(search));
+    ImGui::Dummy({0.0f, 3.0f});
+    ImGui::Separator();
+    ImGui::Dummy({0.0f, 3.0f});
 
     Response response;
 
@@ -194,7 +204,18 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         while (it != end) {
             OpenSim::Component const& c = *it++;
 
-            if (shouldRender(c)) {
+            bool shouldRender = true;
+
+            auto hc = typeid(c).hash_code();
+            if (!showFrames && hc == g_FrameGeometryHash) {
+                shouldRender = false;
+            }
+
+            if (!showWrapObjectSets && hc == g_WrapObjectSetHash) {
+                shouldRender = false;
+            }
+
+            if (shouldRender) {
                 lookahead = &c;
                 computeComponentPath(root, &c, lookaheadPath);
                 break;
@@ -222,11 +243,11 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
 
             int styles = 0;
             if (searchHit || cur == hover) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                 ++styles;
             }
             if (cur == selection) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                 ++styles;
             }
 
@@ -245,11 +266,11 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
 
             int styles = 0;
             if (searchHit || pathContains(hoverPath, cur)) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.5f, 0.5f, 0.0f, 1.0f});
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                 ++styles;
             }
             if (pathContains(selectionPath, cur)) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{1.0f, 1.0f, 0.0f, 1.0f});
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                 ++styles;
             }
 
@@ -262,6 +283,12 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         if (ImGui::IsItemHovered()) {
             response.type = HoverChanged;
             response.ptr = cur;
+
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+            ImGui::TextUnformatted(cur->getConcreteClassName().c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
 
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {

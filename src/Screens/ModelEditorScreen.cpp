@@ -492,6 +492,7 @@ struct ModelEditorScreen::Impl final {
         ModelActionsMenuBar modelActions;
         LogViewer logViewer;
         CoordinateEditor coordEditor;
+        ComponentHierarchy componentHierarchy;
     } ui;
 
     // state that is reset at the start of each frame
@@ -1316,7 +1317,7 @@ namespace {
         // draw hierarchy viewer
         if (impl.st->showing.hierarchy) {
             if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
-                auto resp = ComponentHierarchy{}.draw(
+                auto resp = impl.ui.componentHierarchy.draw(
                     &impl.st->editedModel.model().getRoot(),
                     impl.st->editedModel.getSelection(),
                     impl.st->editedModel.getHover());
