@@ -294,7 +294,7 @@ void osc::Mesh::setIndicesU16(nonstd::span<const uint16_t> vs) {
     }
 
     recalculateBounds();
-    m_Impl->numIndices = vs.size();
+    m_Impl->numIndices = static_cast<int>(vs.size());
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
@@ -445,18 +445,18 @@ void osc::Mesh::uploadToGPU() {
     int offset = 0;
     auto int2void = [](int v) { return reinterpret_cast<void*>(static_cast<uintptr_t>(v)); };
 
-    glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, false, stride, int2void(offset));
+    glVertexAttribPointer(SHADER_LOC_VERTEX_POSITION, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), int2void(offset));
     glEnableVertexAttribArray(SHADER_LOC_VERTEX_POSITION);
     offset += 3 * sizeof(float);
 
     if (hasNormals) {
-        glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, false, stride, int2void(offset));
+        glVertexAttribPointer(SHADER_LOC_VERTEX_NORMAL, 3, GL_FLOAT, false, static_cast<GLsizei>(stride), int2void(offset));
         glEnableVertexAttribArray(SHADER_LOC_VERTEX_NORMAL);
         offset += 3 * sizeof(float);
     }
 
     if (hasUvs) {
-        glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, false, stride, int2void(offset));
+        glVertexAttribPointer(SHADER_LOC_VERTEX_TEXCOORD01, 2, GL_FLOAT, false, static_cast<GLsizei>(stride), int2void(offset));
         glEnableVertexAttribArray(SHADER_LOC_VERTEX_TEXCOORD01);
     }
 
