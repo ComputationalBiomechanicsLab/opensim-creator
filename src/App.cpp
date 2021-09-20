@@ -31,6 +31,7 @@
 #include <imgui/backends/imgui_impl_sdl.h>
 
 #include <fstream>
+#include <locale>
 
 
 using namespace osc;
@@ -70,6 +71,33 @@ namespace {
 // this involves setting up OpenSim's log, registering types, dirs, etc.
 static bool ensureOpensimInitialized(Config const& config) {
     static bool initializeOnceGlobally = [&config]() {
+
+        // these are because OpenSim is inconsistient about handling locales
+        //
+        // it *writes* OSIM files using the locale, so you can end up with entries like:
+        //
+        //     <PathPoint_X>0,1323</PathPoint_X>
+        //
+        // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
+        osc::log::info("setting locale to US (so that numbers are always in the format '0.x'");
+        char const* locale = "C";
+        SetEnv("LANG", locale, 1);
+        SetEnv("LC_CTYPE", locale, 1);
+        SetEnv("LC_NUMERIC", locale, 1);
+        SetEnv("LC_TIME", locale, 1);
+        SetEnv("LC_COLLATE", locale, 1);
+        SetEnv("LC_MONETARY", locale, 1);
+        SetEnv("LC_MESSAGES", locale, 1);
+        SetEnv("LC_ALL", locale, 1);
+        std::setlocale(LC_CTYPE, locale);
+        std::setlocale(LC_NUMERIC, locale);
+        std::setlocale(LC_TIME, locale);
+        std::setlocale(LC_COLLATE, locale);
+        std::setlocale(LC_MONETARY, locale);
+        std::setlocale(LC_MESSAGES, locale);
+        std::setlocale(LC_ALL, locale);
+        std::locale::global(std::locale{locale});
+
         // disable OpenSim's `opensim.log` default
         //
         // by default, OpenSim creates an `opensim.log` file in the process's working

@@ -66,6 +66,10 @@ bool osc::SetClipboardText(char const* s) {
     return SDL_SetClipboardText(s) == 0;
 }
 
+void osc::SetEnv(char const* name, char const* value, bool overwrite) {
+    SDL_setenv(name, value, overwrite ? 1 : 0);
+}
+
 #ifdef __LINUX__
 
 #ifndef _GNU_SOURCE
