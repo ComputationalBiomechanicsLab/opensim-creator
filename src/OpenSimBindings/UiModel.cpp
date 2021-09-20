@@ -1,10 +1,14 @@
 #include "UiModel.hpp"
 
+#include "src/3D/Model.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/SimTKBindings/SceneGeneratorNew.hpp"
+#include "src/SimTKBindings/SimTKConverters.hpp"
 #include "src/App.hpp"
 
+#include <glm/gtc/matrix_transform.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <SimTKcommon.h>
 
@@ -49,6 +53,36 @@ static void getSceneElements(OpenSim::Model const& m,
     SimTK::Array_<SimTK::DecorativeGeometry> geomList;
     for (OpenSim::Component const& c : m.getComponentList()) {
         currentComponent = &c;
+
+        // TODO: spring fixup generation into a generic fixup table
+        if (typeid(c) == typeid(OpenSim::PointToPointSpring)) {
+            auto const& p2p = static_cast<OpenSim::PointToPointSpring const&>(c);
+            glm::mat4 b1LocalToGround = SimTKMat4x4FromTransform(p2p.getBody1().getTransformInGround(st));
+            glm::mat4 b2LocalToGround =  SimTKMat4x4FromTransform(p2p.getBody2().getTransformInGround(st));
+            glm::vec3 p1Local = SimTKVec3FromVec3(p2p.getPoint1());
+            glm::vec3 p2Local = SimTKVec3FromVec3(p2p.getPoint2());
+
+            // two points of the connecting cylinder
+            glm::vec3 p1Ground = b1LocalToGround * glm::vec4{p1Local, 1.0f};
+            glm::vec3 p2Ground = b2LocalToGround * glm::vec4{p2Local, 1.0f};
+            glm::vec3 p1Cylinder = {0.0f, -1.0f, 0.0f};
+            glm::vec3 p2Cylinder = {0.0f, +1.0f, 0.0f};
+            Segment springLine{p1Ground, p2Ground};
+            Segment cylinderLine{p1Cylinder, p2Cylinder};
+
+            glm::mat4 cylinderXform = SegmentToSegmentXform(cylinderLine, springLine);
+            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {0.005f * fixupScaleFactor, 1.0f, 0.005f * fixupScaleFactor});
+
+            SceneElement se;
+            se.mesh = App::cur().getMeshCache().getCylinderMesh();
+            se.modelMtx = cylinderXform * scaler;
+            se.normalMtx = NormalMatrix(se.modelMtx);
+            se.color = {0.7f, 0.7f, 0.7f, 1.0f};
+            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
+
+            onEmit(se);
+        }
+
         c.generateDecorations(true, mdh, st, geomList);
         for (SimTK::DecorativeGeometry const& dg : geomList) {
             dg.implementGeometry(visitor);
