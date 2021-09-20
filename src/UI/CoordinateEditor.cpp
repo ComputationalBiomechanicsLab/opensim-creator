@@ -1,5 +1,7 @@
 #include "CoordinateEditor.hpp"
 
+#include "src/UI/HelpMarker.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -12,7 +14,7 @@ static bool do_sort_by_name(OpenSim::Coordinate const* c1, OpenSim::Coordinate c
 }
 
 static bool should_filter_out(osc::CoordinateEditor const& st, OpenSim::Coordinate const* c) {
-    if (c->getName().find(st.filter) == c->getName().npos) {
+    if (!osc::ContainsSubstringCaseInsensitive(c->getName(), st.filter)) {
         return true;
     }
 
@@ -52,7 +54,18 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         ImGui::EndPopup();
     }
     ImGui::SameLine();
-    ImGui::TextUnformatted(ICON_FA_SEARCH);
+    if (filter[0] != '\0') {
+        if (ImGui::Button("X")) {
+            filter[0] = '\0';
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("Clear the search string");
+            ImGui::EndTooltip();
+        }
+    } else {
+        ImGui::TextUnformatted(ICON_FA_SEARCH);
+    }
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     ImGui::InputText("##coords search filter", filter, sizeof(filter));
@@ -76,9 +89,31 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         std::sort(coord_scratch.begin(), coord_scratch.end(), do_sort_by_name);
     }
 
-    bool state_modified = false;
-    ImGui::Columns(2);
+    ImGui::BeginChild("##coordinatesliderschildheaders");
+
+
+    // header
+    ImGui::Columns(3);
+    ImGui::Text("Coordinate");
+    ImGui::SameLine();
+    DrawHelpMarker("Name of the coordinate.\n\nIn OpenSim, coordinates typically parameterize joints. Different joints have different coordinates. For example, a PinJoint has one rotational coordinate, a FreeJoint has 6 coordinates (3 translational, 3 rotational), a WeldJoint has no coordinates. This list shows all the coordinates in the model.");
+    ImGui::NextColumn();
+    ImGui::Text("Value");
+    ImGui::SameLine();
+    DrawHelpMarker("Initial value of the coordinate.\n\nThis sets the initial value of a coordinate in the first state of the simulation. You can `Ctrl+Click` sliders when you want to type a value in.");
+    ImGui::NextColumn();
+    ImGui::Text("Speed");
+    ImGui::SameLine();
+    DrawHelpMarker("Initial speed of the coordinate.\n\nThis sets the 'velocity' of the coordinate in the first state of the simulation. It enables you to (e.g.) start a simulation with something moving in the model.");
+    ImGui::NextColumn();
+    ImGui::Columns(1);
+    ImGui::Separator();
+
+    ImGui::BeginChild("##coordinatesliders");
+
     int i = 0;
+    bool state_modified = false;
+    ImGui::Columns(3);
     for (OpenSim::Coordinate const* c : coord_scratch) {
         ImGui::PushID(i++);
 
@@ -132,26 +167,46 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         }
 
         if (ImGui::Button(c->getLocked(*uim.state) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
-            uim.addCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), !c->getLocked(*uim.state)});
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), c->getSpeedValue(*uim.state), !c->getLocked(*uim.state)});
             state_modified = true;
+        }
+
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+            ImGui::Text("Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
         }
 
         ImGui::SameLine();
 
         float v = static_cast<float>(c->getValue(*uim.state));
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (ImGui::SliderFloat(" ", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-            uim.addCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getLocked(*uim.state)});
+        if (ImGui::SliderFloat("##coordinatevalueeditor", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(*uim.state), c->getLocked(*uim.state)});
             state_modified = true;
         }
+
 
         ImGui::PopStyleColor(styles_pushed);
         styles_pushed = 0;
         ImGui::NextColumn();
 
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+
+        float speed = static_cast<float>(c->getSpeedValue(*uim.state));
+        if (ImGui::InputFloat("##coordinatespeededitor", &speed)) {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), speed, c->getLocked(*uim.state)});
+            state_modified = true;
+        }
+        ImGui::NextColumn();
+
         ImGui::PopID();
     }
     ImGui::Columns();
+
+    ImGui::EndChild();
 
     return state_modified;
 }

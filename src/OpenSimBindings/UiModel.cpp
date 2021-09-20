@@ -71,37 +71,60 @@ static bool sortByOpacityThenMeshID(SceneElement const& a, SceneElement const& b
     }
 }
 
-static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, std::unordered_map<std::string, CoordinateEdit>& coordEdits) {
+static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateModifications& modifications) {
     std::unique_ptr<SimTK::State> rv = std::make_unique<SimTK::State>(m.initializeState());
+    modifications.applyToState(m, *rv);
+    m.equilibrateMuscles(*rv);
+    m.realizePosition(*rv);
+    return rv;
+}
 
-    for (auto& p : coordEdits) {
+void osc::StateModifications::pushCoordinateEdit(const OpenSim::Coordinate& c, const CoordinateEdit& ce) {
+    m_CoordEdits[c.getAbsolutePathString()] = ce;
+}
+
+bool osc::CoordinateEdit::applyToState(OpenSim::Coordinate const& c, SimTK::State& st) const {
+    bool applied = false;
+
+    if (c.getValue(st) != value) {
+        c.setValue(st, value);
+        applied = true;
+    }
+
+    if (c.getLocked(st) != locked) {
+        c.setLocked(st, locked);
+        applied = true;
+    }
+
+    if (c.getSpeedValue(st) != speed) {
+        c.setSpeedValue(st, speed);
+        applied = true;
+    }
+
+    return applied;
+}
+
+bool osc::StateModifications::applyToState(const OpenSim::Model& m, SimTK::State& st) const {
+    bool rv = false;
+
+    for (auto& p : m_CoordEdits) {
         if (!m.hasComponent(p.first)) {
             continue;  // TODO: evict it
         }
 
         OpenSim::Coordinate const& c = m.getComponent<OpenSim::Coordinate>(p.first);
 
-        bool applied = false;
+        bool modifiedCoord = p.second.applyToState(c, st);
 
-        if (c.getValue(*rv) != p.second.value) {
-            c.setValue(*rv, p.second.value);
-            applied = true;
-        }
-
-        if (c.getLocked(*rv) != p.second.locked) {
-            c.setLocked(*rv, p.second.locked);
-            applied = true;
-        }
-
-        if (!applied) {
+        if (!modifiedCoord) {
             // TODO: evict it
         }
+
+        rv = rv || modifiedCoord;
     }
-    m.equilibrateMuscles(*rv);
-    m.realizePosition(*rv);
+
     return rv;
 }
-
 
 void osc::generateDecorations(OpenSim::Model const& model,
                               SimTK::State const& state,
@@ -127,14 +150,14 @@ osc::UiModel::UiModel(std::string const& osim) :
 }
 
 osc::UiModel::UiModel(std::unique_ptr<OpenSim::Model> _model) :
-    coordEdits{},
+    stateModifications{},
     model{[&_model]() {
         _model->finalizeFromProperties();
         _model->finalizeConnections();
         _model->buildSystem();
         return std::unique_ptr<OpenSim::Model>{std::move(_model)};
     }()},
-    state{initializeState(*model, coordEdits)},
+    state{initializeState(*model, stateModifications)},
     decorations{},
     sceneAABBBVH{},
     fixupScaleFactor{1.0f},
@@ -148,7 +171,7 @@ osc::UiModel::UiModel(std::unique_ptr<OpenSim::Model> _model) :
 }
 
 osc::UiModel::UiModel(UiModel const& other, std::chrono::system_clock::time_point t) :
-    coordEdits{other.coordEdits},
+    stateModifications{other.stateModifications},
     model{[&other]() {
         auto copy = std::make_unique<OpenSim::Model>(*other.model);
         copy->finalizeFromProperties();
@@ -156,7 +179,7 @@ osc::UiModel::UiModel(UiModel const& other, std::chrono::system_clock::time_poin
         copy->buildSystem();
         return copy;
     }()},
-    state{initializeState(*model, coordEdits)},
+    state{initializeState(*model, stateModifications)},
     decorations{},
     sceneAABBBVH{},
     fixupScaleFactor{other.fixupScaleFactor},
@@ -183,15 +206,15 @@ void osc::UiModel::onUiModelModified() {
     model->finalizeFromProperties();
     model->finalizeConnections();
     model->buildSystem();
-    this->state = initializeState(*model, coordEdits);
+    this->state = initializeState(*model, stateModifications);
     generateDecorations(*model, *state, fixupScaleFactor, decorations);
     updateBVH(decorations, sceneAABBBVH);
     this->timestamp = std::chrono::system_clock::now();
 }
 
-void osc::UiModel::addCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit ce) {
-    coordEdits[c.getAbsolutePathString()] = ce;
-    this->state = initializeState(*model, coordEdits);
+void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce) {
+    stateModifications.pushCoordinateEdit(c, ce);
+    this->state = initializeState(*model, stateModifications);
     generateDecorations(*model, *state, fixupScaleFactor, decorations);
     updateBVH(decorations, sceneAABBBVH);
 }

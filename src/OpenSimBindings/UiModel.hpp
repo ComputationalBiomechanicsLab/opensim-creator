@@ -32,7 +32,20 @@ namespace osc {
     // used to modify the default state whenever a new state is generated
     struct CoordinateEdit final {
         double value;
+        double speed;
         bool locked;
+
+        bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;  // returns `true` if it modified the state
+    };
+
+    // user-enacted state modifications
+    class StateModifications final {
+    public:
+        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
+        bool applyToState(OpenSim::Model const&, SimTK::State&) const;
+
+    private:
+        std::unordered_map<std::string, CoordinateEdit> m_CoordEdits;
     };
 
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
@@ -40,11 +53,8 @@ namespace osc {
     // this is what most of the components, screen elements, etc. are
     // accessing - usually indirectly (e.g. via a reference to the Model)
     struct UiModel final : public RenderableScene {
-        // user-enacted coordinate edits
-        //
-        // these are applied whenever a new state is generated (e.g. because of
-        // a model edit)
-        std::unordered_map<std::string, CoordinateEdit> coordEdits;
+        // user-enacted state modifications (e.g. coordinate edits)
+        StateModifications stateModifications;
 
         // the model, finalized from its properties
         std::unique_ptr<OpenSim::Model> model;
@@ -125,6 +135,6 @@ namespace osc {
             return isolated;
         }
 
-        void addCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit ce);
+        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
     };
 }

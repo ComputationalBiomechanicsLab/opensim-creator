@@ -1,5 +1,6 @@
 #include "ComponentHierarchy.hpp"
 
+#include "src/Utils/Algorithms.hpp"
 #include "src/Assertions.hpp"
 #include "src/Log.hpp"
 #include "src/Styling.hpp"
@@ -119,10 +120,9 @@ namespace {
     }
 }
 
-static bool isSearchHit(char const* searchStr, ComponentPath const& cp) {
+static bool isSearchHit(std::string searchStr, ComponentPath const& cp) {
     for (auto const& c : cp) {
-        std::string const& name = c->getName();
-        if (name.find(searchStr) != std::string::npos) {
+        if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr)) {
             return true;
         }
     }
@@ -145,13 +145,26 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         ImGui::EndPopup();
     }
     ImGui::SameLine();
-    ImGui::TextUnformatted(ICON_FA_SEARCH);
+    if (search[0] != '\0') {
+        if (ImGui::Button("X")) {
+            search[0] = '\0';
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("Clear the search string");
+            ImGui::EndTooltip();
+        }
+    } else {
+        ImGui::TextUnformatted(ICON_FA_SEARCH);
+    }
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     ImGui::InputText("##hirarchtsearchbar", search, sizeof(search));
     ImGui::Dummy({0.0f, 3.0f});
     ImGui::Separator();
     ImGui::Dummy({0.0f, 3.0f});
+
+    ImGui::BeginChild("##componenthierarchyvieweritems");
 
     Response response;
 
@@ -237,19 +250,23 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
         }
         OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
-
         if (currentPath.size() < 3 || lookaheadPath.size() > currentPath.size()) {
             // render as an expandable tree node
 
             int styles = 0;
-            if (searchHit || cur == hover) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-                ++styles;
-            }
             if (cur == selection) {
                 ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                 ++styles;
+            } else if (cur == hover) {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                ++styles;
+            } else if (!hasSearch || searchHit) {
+                // display as normal
+            } else {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+                ++styles;
             }
+
 
             if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
                 ImGui::SetNextItemOpen(true);
@@ -265,12 +282,16 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             // render as plain text
 
             int styles = 0;
-            if (searchHit || pathContains(hoverPath, cur)) {
+            if (cur == selection) {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                ++styles;
+            } else if (cur == hover) {
                 ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                 ++styles;
-            }
-            if (pathContains(selectionPath, cur)) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+            } else if (!hasSearch || searchHit) {
+                // display as normal
+            } else {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
                 ++styles;
             }
 
@@ -301,6 +322,8 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     while (imguiTreeDepth-- > 0) {
         ImGui::TreePop();
     }
+
+    ImGui::EndChild();
 
     return response;
 }

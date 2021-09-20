@@ -1,6 +1,7 @@
 #include "Algorithms.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <string>
 
@@ -54,4 +55,25 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
 // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
 bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2) noexcept {
     return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
+}
+
+bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr) {
+    if (substr.empty()) {
+        return true;
+    }
+
+    if (substr.size() > str.size()) {
+        return false;
+    }
+
+    std::string s = str;
+    for (char& c : s) {
+        c = std::tolower(c);
+    }
+    std::string ss = substr;
+    for (char& c : ss) {
+        c = std::tolower(c);
+    }
+
+    return std::strstr(s.c_str(), ss.c_str()) != nullptr;
 }
