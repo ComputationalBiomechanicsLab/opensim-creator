@@ -1,5 +1,7 @@
 #include "F3Editor.hpp"
 
+#include "src/Styling.hpp"
+
 #include <SimTKcommon.h>
 #include <imgui.h>
 
@@ -20,9 +22,13 @@ namespace {
 bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool* isLocked) {
     bool changed = false;
 
-    if (ImGui::Checkbox(lockID, isLocked)) {
+    ImGui::PushID(*lockID);
+    if (ImGui::Button(*isLocked ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
+        *isLocked = !*isLocked;
         changed = true;
     }
+    ImGui::PopID();
+
     ImGui::SameLine();
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
