@@ -111,6 +111,11 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
     ImGui::BeginChild("##coordinatesliders");
 
+    if (coord_scratch.empty()) {
+        ImGui::NewLine();
+        ImGui::TextDisabled("    (no coordinates in this model)");
+    }
+
     int i = 0;
     bool state_modified = false;
     ImGui::Columns(3);
