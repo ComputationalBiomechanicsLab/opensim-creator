@@ -486,6 +486,13 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st) {
             ImGui::EndTooltip();
         }
         ImGui::MenuItem("Hierarchy", nullptr, &st.showing.hierarchy);
+        ImGui::MenuItem("Coordinate Editor", nullptr, &st.showing.coordinateEditor);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when editing a model");
+            ImGui::EndTooltip();
+        }
+
         ImGui::MenuItem("Log", nullptr, &st.showing.log);
         ImGui::MenuItem("Outputs", nullptr, &st.showing.outputs);
         ImGui::MenuItem("Property Editor", nullptr, &st.showing.propertyEditor);
