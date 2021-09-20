@@ -89,13 +89,27 @@ static bool ensureOpensimInitialized(Config const& config) {
         SetEnv("LC_MONETARY", locale, 1);
         SetEnv("LC_MESSAGES", locale, 1);
         SetEnv("LC_ALL", locale, 1);
-        std::setlocale(LC_CTYPE, locale);
-        std::setlocale(LC_NUMERIC, locale);
-        std::setlocale(LC_TIME, locale);
-        std::setlocale(LC_COLLATE, locale);
-        std::setlocale(LC_MONETARY, locale);
-        std::setlocale(LC_MESSAGES, locale);
-        std::setlocale(LC_ALL, locale);
+#ifdef LC_CTYPE
+        setlocale(LC_CTYPE, locale);
+#endif
+#ifdef LC_NUMERIC
+        setlocale(LC_NUMERIC, locale);
+#endif
+#ifdef LC_TIME
+        setlocale(LC_TIME, locale);
+#endif
+#ifdef LC_COLLATE
+        setlocale(LC_COLLATE, locale);
+#endif
+#ifdef LC_MONETARY
+        setlocale(LC_MONETARY, locale);
+#endif
+#ifdef LC_MESSAGES
+        setlocale(LC_MESSAGES, locale);
+#endif
+#ifdef LC_ALL
+        setlocale(LC_ALL, locale);
+#endif
         std::locale::global(std::locale{locale});
 
         // disable OpenSim's `opensim.log` default
