@@ -20,7 +20,7 @@ namespace osc {
 namespace osc {
     struct CoordinateEditor final {
         char filter[64]{};
-        bool sort_by_name = true;
+        bool sort_by_name = false;
         bool show_rotational = true;
         bool show_translational = true;
         bool show_coupled = true;
