@@ -120,18 +120,26 @@ void osc::StateModifications::pushCoordinateEdit(const OpenSim::Coordinate& c, c
 bool osc::CoordinateEdit::applyToState(OpenSim::Coordinate const& c, SimTK::State& st) const {
     bool applied = false;
 
+    bool wasLocked = c.getLocked(st);
+
+    // always unlock to apply user edits
+    if (wasLocked) {
+        c.setLocked(st, false);
+    }
+
     if (c.getValue(st) != value) {
         c.setValue(st, value);
         applied = true;
     }
 
-    if (c.getLocked(st) != locked) {
-        c.setLocked(st, locked);
+    if (c.getSpeedValue(st) != speed) {
+        c.setSpeedValue(st, speed);
         applied = true;
     }
 
-    if (c.getSpeedValue(st) != speed) {
-        c.setSpeedValue(st, speed);
+    // apply the final lock state (was unconditionally unlocked, above)
+    c.setLocked(st, locked);
+    if (wasLocked != locked) {
         applied = true;
     }
 
