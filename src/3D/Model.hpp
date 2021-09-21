@@ -87,6 +87,9 @@ namespace osc {
     // returns the *index* of the longest dimension of an AABB
     glm::vec3::length_type AABBLongestDimIdx(AABB const&) noexcept;
 
+    // returns the length of the longest dimension of an AABB
+    float AABBLongestDim(AABB const&) noexcept;
+
     // returns the eight corner points of the cuboid representation of the AABB
     std::array<glm::vec3, 8> AABBVerts(AABB const&) noexcept;
 

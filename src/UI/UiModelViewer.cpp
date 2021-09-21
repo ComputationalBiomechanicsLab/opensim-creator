@@ -174,6 +174,8 @@ struct osc::UiModelViewer::Impl final {
     bool drawMeshNormals = false;
     bool drawRims = true;
 
+    bool autoFocusCameraNextFrame = false;
+
     std::vector<SceneGPUInstanceData> drawlistBuffer;
 
     Impl(UiModelViewerFlags flags_) : flags{flags_} {
@@ -892,6 +894,31 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
 
     ImGui::NewLine();
 
+    if (ImGui::Button("Reset Camera")) {
+        impl.camera = {};
+        impl.camera.theta = fpi4;
+        impl.camera.phi = fpi4;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Reset the camera to its initial (default) location");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+
+    if (ImGui::Button("Auto-focus camera")) {
+        impl.autoFocusCameraNextFrame = true;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Tries to automatically adjust the camera based on the model's dimensions");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+
+
     ImGui::SliderFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
     ImGui::SliderFloat("theta", &impl.camera.theta, 0.0f, 2.0f * fpi);
     ImGui::SliderFloat("phi", &impl.camera.phi, 0.0f, 2.0f * fpi);
@@ -929,6 +956,18 @@ static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
 
 UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     Impl& impl = *m_Impl;
+
+    if (impl.autoFocusCameraNextFrame) {
+        auto const& bvh = rs.getSceneBVH();
+        if (!bvh.nodes.empty()) {
+            auto const& bvhRoot = bvh.nodes[0].bounds;
+            impl.camera.focusPoint = -AABBCenter(bvhRoot);
+            impl.camera.radius = 2.0f * AABBLongestDim(bvhRoot);
+            impl.camera.theta = fpi4;
+            impl.camera.phi = fpi4;
+        }
+        impl.autoFocusCameraNextFrame = false;
+    }
 
     // update camera if necessary
     if (impl.renderHovered) {

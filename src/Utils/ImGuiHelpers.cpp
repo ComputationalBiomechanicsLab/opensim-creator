@@ -16,9 +16,9 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     // input is designed to mirror Blender fairly closely (because, imho, it has
     // decent UX for this problem space)
     bool leftButtonDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool rightButtonDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+    bool middleButtonDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
 
-    if (leftButtonDown || rightButtonDown) {
+    if (leftButtonDown || middleButtonDown) {
         ImVec2 screendims = viewportDims;
         float aspectRatio = screendims.x / screendims.y;
         ImVec2 delta = ImGui::GetMouseDragDelta(leftButtonDown ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle, 0.0f);

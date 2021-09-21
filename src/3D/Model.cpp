@@ -471,6 +471,14 @@ glm::vec3::length_type osc::AABBLongestDimIdx(AABB const& a) noexcept {
     return VecLongestDimIdx(AABBDims(a));
 }
 
+float osc::AABBLongestDim(AABB const& a) noexcept {
+    glm::vec3 dims = AABBDims(a);
+    float rv = dims[0];
+    rv = std::max(rv, dims[1]);
+    rv = std::max(rv, dims[2]);
+    return rv;
+}
+
 std::array<glm::vec3, 8> osc::AABBVerts(AABB const& aabb) noexcept {
 
     glm::vec3 d = AABBDims(aabb);
