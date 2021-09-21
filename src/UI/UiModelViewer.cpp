@@ -867,37 +867,84 @@ static void drawOptionsMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::CheckboxFlags("show floor", &impl.flags, UiModelViewerFlags_DrawFloor);
 }
 
-static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
-    if (ImGui::Button("Top")) {
-        impl.camera.theta = 0.0f;
-        impl.camera.phi = fpi2;
-    }
+static void actionFocusCameraAlongX(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = fpi2;
+    impl.camera.phi = 0.0f;
+}
 
-    if (ImGui::Button("Left")) {
-        // assumes models tend to point upwards in Y and forwards in +X
-        // (so sidewards is theta == 0 or PI)
-        impl.camera.theta = fpi;
-        impl.camera.phi = 0.0f;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Right")) {
-        // assumes models tend to point upwards in Y and forwards in +X
-        // (so sidewards is theta == 0 or PI)
-        impl.camera.theta = 0.0f;
-        impl.camera.phi = 0.0f;
-    }
+static void actionFocusCameraAlongMinusX(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = -fpi2;
+    impl.camera.phi = 0.0f;
+}
 
-    if (ImGui::Button("Bottom")) {
-        impl.camera.theta = 0.0f;
-        impl.camera.phi = 3.0f * fpi2;
-    }
+static void actionFocusCameraAlongY(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = 0.0f;
+    impl.camera.phi = fpi2;
+}
 
-    ImGui::NewLine();
+static void actionFocusCameraAlongMinusY(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = 0.0f;
+    impl.camera.phi = -fpi2;
+}
 
-    if (ImGui::Button("Reset Camera")) {
-        impl.camera = {};
+static void actionFocusCameraAlongZ(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = 0.0f;
+    impl.camera.phi = 0.0f;
+}
+
+static void actionFocusCameraAlongMinusZ(osc::UiModelViewer::Impl& impl) {
+    impl.camera.theta = fpi;
+    impl.camera.phi = 0.0f;
+}
+
+static void actionResetCamera(osc::UiModelViewer::Impl& impl) {
+    impl.camera = {};
+    impl.camera.theta = fpi4;
+    impl.camera.phi = fpi4;
+}
+
+static void actionAutoFocusCamera(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+    auto const& bvh = rs.getSceneBVH();
+    if (!bvh.nodes.empty()) {
+        auto const& bvhRoot = bvh.nodes[0].bounds;
+        impl.camera.focusPoint = -AABBCenter(bvhRoot);
+        impl.camera.radius = 2.0f * AABBLongestDim(bvhRoot);
         impl.camera.theta = fpi4;
         impl.camera.phi = fpi4;
+    }
+}
+
+static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
+    ImGui::Dummy({0.0f, 10.0f});
+    ImGui::Text("reposition camera:");
+    ImGui::Separator();
+
+    if (ImGui::Button("+X")) {
+        actionFocusCameraAlongX(impl);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("-X")) {
+        actionFocusCameraAlongMinusX(impl);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("+Y")) {
+        actionFocusCameraAlongY(impl);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("-Y")) {
+        actionFocusCameraAlongMinusY(impl);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("+Z")) {
+        actionFocusCameraAlongZ(impl);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("-Z")) {
+        actionFocusCameraAlongMinusZ(impl);
+    }
+
+    if (ImGui::Button("reset camera")) {
+        actionResetCamera(impl);
     }
     if (ImGui::IsItemHovered()) {
         ImGui::BeginTooltip();
@@ -918,7 +965,9 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
         ImGui::EndTooltip();
     }
 
-
+    ImGui::Dummy({0.0f, 10.0f});
+    ImGui::Text("advanced camera properties:");
+    ImGui::Separator();
     ImGui::SliderFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
     ImGui::SliderFloat("theta", &impl.camera.theta, 0.0f, 2.0f * fpi);
     ImGui::SliderFloat("phi", &impl.camera.phi, 0.0f, 2.0f * fpi);
@@ -930,15 +979,14 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::SliderFloat("pan_y", &impl.camera.focusPoint.y, -100.0f, 100.0f);
     ImGui::SliderFloat("pan_z", &impl.camera.focusPoint.z, -100.0f, 100.0f);
 
+    ImGui::Dummy({0.0f, 10.0f});
+    ImGui::Text("advanced scene properties:");
     ImGui::Separator();
-
     ImGui::SliderFloat("light_dir_x", &impl.lightDir.x, -1.0f, 1.0f);
     ImGui::SliderFloat("light_dir_y", &impl.lightDir.y, -1.0f, 1.0f);
     ImGui::SliderFloat("light_dir_z", &impl.lightDir.z, -1.0f, 1.0f);
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
     ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
-
-    ImGui::Separator();
 }
 
 
@@ -959,35 +1007,41 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
 
     // auto-focus the camera, if the user requested it last frame
     if (impl.autoFocusCameraNextFrame) {
-        auto const& bvh = rs.getSceneBVH();
-        if (!bvh.nodes.empty()) {
-            auto const& bvhRoot = bvh.nodes[0].bounds;
-            impl.camera.focusPoint = -AABBCenter(bvhRoot);
-            impl.camera.radius = 2.0f * AABBLongestDim(bvhRoot);
-            impl.camera.theta = fpi4;
-            impl.camera.phi = fpi4;
-        }
+        actionAutoFocusCamera(impl, rs);
         impl.autoFocusCameraNextFrame = false;
     }
 
     // update camera if necessary
     if (impl.renderHovered) {
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_X)) {
-            impl.camera.theta = fpi2;
-            impl.camera.phi = 0.0f;
+        bool ctrlDown = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
+
+        if (ImGui::IsKeyReleased(SDL_SCANCODE_X)) {
+            if (ctrlDown) {
+                actionFocusCameraAlongMinusX(impl);
+            } else {
+                actionFocusCameraAlongX(impl);
+            }
         }
         if (ImGui::IsKeyPressed(SDL_SCANCODE_Y)) {
-            impl.camera.theta = 0.0f;
-            impl.camera.phi = fpi2;
+            if (ctrlDown) {
+                actionFocusCameraAlongMinusY(impl);
+            } else {
+                actionFocusCameraAlongY(impl);
+            }
         }
         if (ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
-            impl.camera.theta = 0.0f;
-            impl.camera.phi = 0.0f;
+            if (ctrlDown) {
+                actionFocusCameraAlongMinusZ(impl);
+            } else {
+                actionFocusCameraAlongZ(impl);
+            }
         }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
-            impl.camera = {};
-            impl.camera.theta = fpi4;
-            impl.camera.phi = fpi4;
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_F)) {
+            if (ctrlDown) {
+                actionAutoFocusCamera(impl, rs);
+            } else {
+                actionResetCamera(impl);
+            }
         }
         UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
     }
