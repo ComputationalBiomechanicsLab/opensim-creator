@@ -54,7 +54,10 @@ static void getSceneElements(OpenSim::Model const& m,
     for (OpenSim::Component const& c : m.getComponentList()) {
         currentComponent = &c;
 
-        // TODO: spring fixup generation into a generic fixup table
+        // if the component is an OpenSim::PointToPointSpring, then hackily generate
+        // a cylinder between the spring's two attachment points
+        //
+        // (these fixups should ideally be in a lookup table)
         if (typeid(c) == typeid(OpenSim::PointToPointSpring)) {
             auto const& p2p = static_cast<OpenSim::PointToPointSpring const&>(c);
             glm::mat4 b1LocalToGround = SimTKMat4x4FromTransform(p2p.getBody1().getTransformInGround(st));
@@ -81,6 +84,16 @@ static void getSceneElements(OpenSim::Model const& m,
             se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
 
             onEmit(se);
+        }
+
+        // if the component is a geometry path that is owned by a muscle then coerce the selection
+        // to the muscle, so that users see+select muscle components in the UI
+        if (dynamic_cast<OpenSim::GeometryPath const*>(&c)) {
+            if (c.hasOwner()) {
+                if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&c.getOwner()); musc) {
+                    currentComponent = musc;
+                }
+            }
         }
 
         c.generateDecorations(true, mdh, st, geomList);
