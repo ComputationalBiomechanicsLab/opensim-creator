@@ -1,5 +1,7 @@
 #include "SplashScreen.hpp"
 
+#include "osc_config.hpp"
+
 #include "src/3D/Shaders/GouraudShader.hpp"
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
@@ -288,6 +290,16 @@ void osc::SplashScreen::draw() {
         ImGui::Begin("##czilogo", nullptr, imgFlags);
         ImGui::Image(impl.czLogo.getVoidHandle(), logoDims);
         ImGui::End();
+    }
+
+    // draw version information
+    {
+        float h = ImGui::GetTextLineHeightWithSpacing();
+        glm::vec2 pos{0.0f, windowDims.y - h};
+        ImDrawList* dl = ImGui::GetForegroundDrawList();
+        ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+        char const* content = "OpenSim Creator v" OSC_VERSION_STRING " (build " OSC_BUILD_ID ")";
+        dl->AddText(pos, color, content);
     }
 
     osc::ImGuiRender();
