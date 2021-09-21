@@ -41,7 +41,7 @@ namespace osc {
         // show the user how the world axes align relative to the current view location
         UiModelViewerFlags_DrawAlignmentAxes = 1 << 7,
 
-        UiModelViewerFlags_Default = UiModelViewerFlags_DrawFloor,
+        UiModelViewerFlags_Default = UiModelViewerFlags_DrawFloor | UiModelViewerFlags_DrawAlignmentAxes,
     };
 
     // viewer response
