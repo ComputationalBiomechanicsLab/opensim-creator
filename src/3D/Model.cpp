@@ -458,6 +458,25 @@ AABB osc::AABBUnion(AABB const& a, AABB const& b) noexcept {
     return AABB{VecMin(a.min, b.min), VecMax(a.max, b.max)};
 }
 
+AABB osc::AABBUnion(void const* data, size_t n, size_t stride, size_t offset) {
+    if (n == 0) {
+        return AABB{};
+    }
+
+    assert(reinterpret_cast<uintptr_t>(data) % alignof(AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
+    assert(reinterpret_cast<uintptr_t>(offset) % alignof(AABB) == 0 && "possible unaligned load detected: this will cause bugs on systems that only support aligned loads (e.g. ARM)");
+
+    unsigned char const* firstPtr = reinterpret_cast<unsigned char const*>(data);
+
+    AABB rv = *reinterpret_cast<AABB const*>(firstPtr + offset);
+    for (size_t i = 1; i < n; ++i) {
+        unsigned char const* elPtr = firstPtr + (i*stride) + offset;
+        AABB const& aabb = *reinterpret_cast<AABB const*>(elPtr);
+        rv = AABBUnion(rv, aabb);
+    }
+    return rv;
+}
+
 bool osc::AABBIsEmpty(AABB const& a) noexcept {
     for (int i = 0; i < 3; ++i) {
         if (a.min[i] == a.max[i]) {

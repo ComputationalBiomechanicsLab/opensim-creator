@@ -81,6 +81,9 @@ namespace osc {
     // returns the smallest AABB that spans both of the provided AABBs
     AABB AABBUnion(AABB const&, AABB const&) noexcept;
 
+    // advanced: returns the smallest AABB that spans all the AABBs at `offset` from the start of data with size `stride`
+    AABB AABBUnion(void const* data, size_t n, size_t stride, size_t offset);
+
     // returns true if the AABB has an effective volume of 0
     bool AABBIsEmpty(AABB const&) noexcept;
 
