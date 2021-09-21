@@ -41,27 +41,40 @@ static char g_FragmentShader[] = R"(
         vec2( 1.0f, -1.0f)  // bottom-right
     );
 
-    // simple edge-detection kernel
-    const float kernel[9] = float[](
-        1.0,  1.0, 1.0,
-        1.0, -8.0, 1.0,
-        1.0,  1.0, 1.0
+    // https://computergraphics.stackexchange.com/questions/2450/opengl-detection-of-edges
+    const float xkern[9] = float[](
+        +1.0, 0.0, -1.0,
+        +2.0, 0.0, -2.0,
+        +1.0, 0.0, -1.0
+    );
+
+    const float ykern[9] = float[](
+        +1.0, +2.0, +1.0,
+         0.0,  0.0,  0.0,
+        -1.0, -2.0, -1.0
     );
 
     void main(void) {
 
-        float rimStrength = 0.0;
-        for (int i = 0; i < 9; ++i) {
+        float rimX = 0.0;
+        float rimY = 0.0;
+        for (int i = 0; i < xkern.length(); ++i) {
             vec2 offset = uRimThickness * offsets[i];
             vec2 coord = TexCoord + offset;
 
-            rimStrength += kernel[i] * texture(uSampler0, coord).r;
+            float v = texture(uSampler0, coord).r;
+            float x = xkern[i] * v;
+            float y = ykern[i] * v;
+
+            rimX += x;
+            rimY += y;
         }
 
-        // rimStrength = abs(rimStrength);  // for inner edges
-        rimStrength = clamp(rimStrength, 0.0, 1.0);
+        float rimStrength = sqrt(rimX*rimX + rimY*rimY) / 3.0f;
 
-        FragColor = rimStrength * uRimRgba;
+        // rimStrength = abs(rimStrength);  // for inner edges
+
+        FragColor = vec4(uRimRgba.rgb, rimStrength * uRimRgba.a);
     }
 )";
 

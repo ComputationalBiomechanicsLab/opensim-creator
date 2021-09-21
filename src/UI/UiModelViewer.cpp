@@ -245,10 +245,10 @@ static float computeRimColor(OpenSim::Component const* selected,
                              OpenSim::Component const* c) {
     while (c) {
         if (c == selected) {
-            return 1.0f;
+            return 0.9f;
         }
         if (c == hovered) {
-            return 0.2f;
+            return 0.4f;
         }
         if (!c->hasOwner()) {
             return 0.0f;
@@ -522,7 +522,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         }
 
         if (hasRims) {
-            float rimThickness = 1.5f / std::min(renderTarg.dims.x, renderTarg.dims.y);
+            float rimThickness = 1.0f / std::min(renderTarg.dims.x, renderTarg.dims.y);
 
             // calculate a screenspace bounding box that surrounds the rims so that the
             // edge detection shader only had to run on a smaller subset of the screen
@@ -1031,14 +1031,6 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
         impl.autoFocusCameraNextFrame = false;
     }
 
-    // automatically change lighting position based on camera position
-    {
-        glm::vec3 p = impl.camera.getPos();
-        glm::vec3 up = {0.0f, 1.0f, 0.0f};
-        glm::vec3 mp = -glm::rotate(glm::mat4{1.0f}, 1.0f * fpi4, up) * glm::vec4{p, 0.0f};
-        impl.lightDir = glm::normalize(mp + -up);
-    }
-
     // update camera if necessary
     if (impl.renderHovered) {
         bool ctrlDown = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
@@ -1074,6 +1066,14 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     if (ImGui::BeginMenuBar()) {
         drawMainMenuContents(impl);
         ImGui::EndMenuBar();
+    }
+
+    // automatically change lighting position based on camera position
+    {
+        glm::vec3 p = impl.camera.getPos();
+        glm::vec3 up = {0.0f, 1.0f, 0.0f};
+        glm::vec3 mp = -glm::rotate(glm::mat4{1.0f}, 1.0f * fpi4, up) * glm::vec4{p, 0.0f};
+        impl.lightDir = glm::normalize(mp + -up);
     }
 
     // put 3D scene in an undraggable child panel, to prevent accidental panel
