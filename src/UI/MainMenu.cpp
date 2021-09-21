@@ -120,7 +120,7 @@ namespace {
 
 void osc::actionNewModel(std::shared_ptr<MainEditorState> st) {
     if (st) {
-        st->editedModel = UndoableUiModel{std::make_unique<OpenSim::Model>()};
+        st->editedModel = UndoableUiModel{};
         App::cur().requestTransition<ModelEditorScreen>(st);
     } else {
         App::cur().requestTransition<ModelEditorScreen>(std::make_unique<MainEditorState>());

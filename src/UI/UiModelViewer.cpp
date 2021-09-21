@@ -354,6 +354,10 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
 
     // setup top-level OpenGL state
     gl::Viewport(0, 0, renderTarg.dims.x, renderTarg.dims.y);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    gl::Enable(GL_BLEND);
+    gl::Enable(GL_DEPTH_TEST);
+    gl::Disable(GL_SCISSOR_TEST);
 
     // draw scene
     {
@@ -386,6 +390,14 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             size_t end = pos + 1;
             while (end < ninstances && decs[instances[end].decorationIdx].mesh.get() == se.mesh.get()) {
                 ++end;
+            }
+
+            // if the last element in a batch is opaque, then all the preceding ones should be
+            // also and we can skip blend-testing the entire batch
+            if (instances[end-1].rgba.a >= 0.99f) {
+                gl::Disable(GL_BLEND);
+            } else {
+                gl::Enable(GL_BLEND);
             }
 
             gl::BindVertexArray(se.mesh->GetVertexArray());
@@ -550,7 +562,6 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::Uniform(edgeDetectShader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
             gl::Uniform(edgeDetectShader.uRimRgba, {0.95f, 0.40f, 0.0f, 0.70f});
             gl::Uniform(edgeDetectShader.uRimThickness, rimThickness);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_SCISSOR_TEST);
             glScissor(x, y, w, h);
             gl::Enable(GL_BLEND);
@@ -564,6 +575,9 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         }
     }
 
+    gl::Enable(GL_BLEND);
+    gl::Enable(GL_DEPTH_TEST);
+    gl::Disable(GL_SCISSOR_TEST);
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 }
 
@@ -950,7 +964,7 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     if (ImGui::Button("-Y")) {
         actionFocusCameraAlongMinusY(impl);
     }
-    makeHoverTooltip("Position camera along -Y, pointing towards the center. Hotkey: Ctrl+Y");
+    makeHoverTooltip("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
     ImGui::SameLine();
     if (ImGui::Button("+Z")) {
         actionFocusCameraAlongZ(impl);
@@ -960,7 +974,7 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     if (ImGui::Button("-Z")) {
         actionFocusCameraAlongMinusZ(impl);
     }
-    makeHoverTooltip("Position camera along -Z, pointing towards the center. Hotkey: Ctrl+Z");
+    makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
 
     if (ImGui::Button("reset camera")) {
         actionResetCamera(impl);
@@ -1032,16 +1046,12 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
             }
         }
         if (ImGui::IsKeyPressed(SDL_SCANCODE_Y)) {
-            if (ctrlDown) {
-                actionFocusCameraAlongMinusY(impl);
-            } else {
+            if (!ctrlDown) {
                 actionFocusCameraAlongY(impl);
             }
         }
         if (ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
-            if (ctrlDown) {
-                actionFocusCameraAlongMinusZ(impl);
-            } else {
+            if (!ctrlDown) {
                 actionFocusCameraAlongZ(impl);
             }
         }

@@ -48,6 +48,9 @@ namespace osc {
         // damaged model than potentially segfault.
         std::optional<UiModel> damaged;
 
+        // make a new undoable UI model
+        UndoableUiModel();
+
         explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
 
         [[nodiscard]] constexpr bool canUndo() const noexcept {

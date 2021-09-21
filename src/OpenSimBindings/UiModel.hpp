@@ -93,10 +93,21 @@ namespace osc {
         // track how old/new the instance is
         std::chrono::system_clock::time_point timestamp;
 
+        // make a blank (new) UiModel
+        UiModel();
+
+        // load a UiModel from an osim file
         explicit UiModel(std::string const& osim);
+
+        // make a UiModel from an in-memory OpenSim::Model
         explicit UiModel(std::unique_ptr<OpenSim::Model>);
+
+        // copy some other UiModel
         UiModel(UiModel const&);
+
+        // copy some other UiModel, but use the supplied timestamp for the modification time
         UiModel(UiModel const&, std::chrono::system_clock::time_point t);
+
         UiModel(UiModel&&) noexcept;
         ~UiModel() noexcept override;
 

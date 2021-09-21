@@ -81,8 +81,18 @@ static void carefullyTryToInitSimTKSystemAndRealizeOnCurrentModel(UndoableUiMode
 
 // public API
 
+osc::UndoableUiModel::UndoableUiModel() :
+    current{},
+    undo{},
+    redo{},
+    damaged{std::nullopt} {
+}
+
 osc::UndoableUiModel::UndoableUiModel(std::unique_ptr<OpenSim::Model> model) :
-    current{std::move(model)}, undo{}, redo{}, damaged{std::nullopt} {
+    current{std::move(model)},
+    undo{},
+    redo{},
+    damaged{std::nullopt} {
 }
 
 void osc::UndoableUiModel::doUndo() {

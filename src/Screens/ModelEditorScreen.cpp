@@ -770,6 +770,20 @@ namespace {
         ImGui::Columns();
     }
 
+    void drawModelContextualActions(ModelEditorScreen::Impl& impl, OpenSim::Model& selection) {
+        ImGui::Columns(2);
+        ImGui::Text("show frames");
+        ImGui::NextColumn();
+        bool showingFrames = selection.get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+        if (ImGui::Button(showingFrames ? "hide" : "show")) {
+            impl.st->editedModel.beforeModifyingModel();
+            selection.upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+            impl.st->editedModel.afterModifyingModel();
+        }
+        ImGui::NextColumn();
+        ImGui::Columns();
+    }
+
     // draw contextual actions for selection
     void drawContextualActions(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
 
@@ -824,7 +838,9 @@ namespace {
 
         ImGui::Columns();
 
-        if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(uim.getSelection()); frame) {
+        if (auto* model = dynamic_cast<OpenSim::Model*>(uim.getSelection()); model) {
+            drawModelContextualActions(impl, *model);
+        } else if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(uim.getSelection()); frame) {
             drawPhysicalFrameContextualActions(impl, uim, *frame);
         } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(uim.getSelection()); joint) {
             drawJointContextualActions(uim, *joint);
@@ -1054,6 +1070,20 @@ namespace {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::Text("Try to autoscale the model's scale factor based on the current dimensions of the model");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+
+            bool showingFrames = impl.st->editedModel.model().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+            if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames")) {
+                impl.st->editedModel.beforeModifyingModel();
+                impl.st->editedModel.model().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+                impl.st->editedModel.afterModifyingModel();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Set the model's display properties to display physical frames");
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
             }

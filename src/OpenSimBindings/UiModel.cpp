@@ -47,8 +47,7 @@ static void getSceneElements(OpenSim::Model const& m,
 
     SceneGeneratorLambda visitor{App::meshes(), m.getSystem().getMatterSubsystem(), st, fixupScaleFactor, onEmit};
 
-    OpenSim::ModelDisplayHints mdh = m.getDisplayHints();
-    mdh.set_show_frames(true);
+    OpenSim::ModelDisplayHints const& mdh = m.getDisplayHints();
 
     SimTK::Array_<SimTK::DecorativeGeometry> geomList;
     for (OpenSim::Component const& c : m.getComponentList()) {
@@ -111,8 +110,8 @@ static void getSceneElements(OpenSim::Model const& m,
 }
 
 static bool sortByOpacityThenMeshID(SceneElement const& a, SceneElement const& b) {
-    if (a.color.a != a.color.a) {
-        return a.color.a < b.color.a;
+    if (a.color.a != b.color.a) {
+        return a.color.a > b.color.a;  // alpha descending, so non-opaque stuff is drawn last
     } else {
         return a.mesh.get() < b.mesh.get();
     }
@@ -123,6 +122,12 @@ static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateMod
     modifications.applyToState(m, *rv);
     m.equilibrateMuscles(*rv);
     m.realizePosition(*rv);
+    return rv;
+}
+
+static std::unique_ptr<OpenSim::Model> makeNewModel() {
+    auto rv = std::make_unique<OpenSim::Model>();
+    rv->updDisplayHints().set_show_frames(true);
     return rv;
 }
 
@@ -199,6 +204,8 @@ void osc::updateBVH(nonstd::span<LabelledSceneElement const> sceneEls, BVH& bvh)
     BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
 }
 
+osc::UiModel::UiModel() : UiModel{makeNewModel()} {
+}
 
 osc::UiModel::UiModel(std::string const& osim) :
     UiModel{std::make_unique<OpenSim::Model>(osim)} {
