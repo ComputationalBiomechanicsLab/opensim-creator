@@ -136,5 +136,15 @@ namespace osc {
         }
 
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
+
+        AABB getSceneAABB() const;
+
+        glm::vec3 getSceneDimensions() const;
+
+        float getSceneLongestDimension() const;
+
+        float getRecommendedScaleFactor() const;
+
+        void setSceneScaleFactor(float);
     };
 }

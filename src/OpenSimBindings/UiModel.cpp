@@ -273,3 +273,54 @@ void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEd
     generateDecorations(*model, *state, fixupScaleFactor, decorations);
     updateBVH(decorations, sceneAABBBVH);
 }
+
+AABB osc::UiModel::getSceneAABB() const {
+    auto const& bvh = getSceneBVH();
+    if (!bvh.nodes.empty()) {
+        return bvh.nodes[0].bounds;
+    } else {
+        return AABB{};
+    }
+}
+
+glm::vec3 osc::UiModel::getSceneDimensions() const {
+    return AABBDims(getSceneAABB());
+}
+
+float osc::UiModel::getSceneLongestDimension() const {
+    return AABBLongestDim(getSceneAABB());
+}
+
+float osc::UiModel::getRecommendedScaleFactor() const {
+    // generate decorations as if they were empty-sized and union their
+    // AABBs to get an idea of what the "true" scale of the model probably
+    // is (without the model containing oversized frames, etc.)
+    std::vector<LabelledSceneElement> ses;
+    generateDecorations(*model, *state, 0.0f, ses);
+
+    if (ses.empty()) {
+        return 1.0f;
+    }
+
+    AABB aabb = ses[0].worldspaceAABB;
+    for (size_t i = 1; i < ses.size(); ++i) {
+        aabb = AABBUnion(aabb, ses[i].worldspaceAABB);
+    }
+
+    float longest = AABBLongestDim(aabb);
+    float rv = 1.0f;
+
+    while (longest < 0.1) {
+        longest *= 10.0f;
+        rv /= 10.0f;
+    }
+
+    return rv;
+}
+
+void osc::UiModel::setSceneScaleFactor(float sf) {
+    fixupScaleFactor = sf;
+    generateDecorations(*model, *state, fixupScaleFactor, decorations);
+    updateBVH(decorations, sceneAABBBVH);
+}
+

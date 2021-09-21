@@ -1045,6 +1045,19 @@ namespace {
                 impl.st->editedModel.current.fixupScaleFactor = scaleFactor;
                 impl.st->editedModel.current.onUiModelModified();
             }
+            if (ImGui::MenuItem("autoscale scale factor")) {
+                UiModel& uim2 = impl.st->editedModel.current;
+                float sf = uim2.getRecommendedScaleFactor();
+                uim2.setSceneScaleFactor(sf);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Try to autoscale the model's scale factor based on the current dimensions of the model");
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+
 
             if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, hasBackingFile(impl.st->editedModel.model()))) {
                 OpenPathInOSDefaultApplication(uim.model().getInputFileName());
