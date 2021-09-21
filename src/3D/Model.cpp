@@ -433,8 +433,13 @@ glm::mat3 osc::NormalMatrix(glm::mat4x3 const& m) noexcept {
 glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float cosAng = glm::dot(a, b);
 
-    if (cosAng > 0.999f) {
-        return glm::mat4{1.0f}; // angle too small to compute cross product
+    if (std::fabs(cosAng) > 0.999f) {
+        // the vectors can't form a parallelogram, so the cross product is going
+        // to be zero
+        //
+        // "More generally, the magnitude of the product equals the area of a parallelogram
+        //  with the vectors for sides" - https://en.wikipedia.org/wiki/Cross_product
+        return glm::mat4{1.0f};
     }
 
     glm::vec3 rotAxis = glm::cross(a, b);
@@ -564,6 +569,10 @@ std::ostream& osc::operator<<(std::ostream& o, Plane const& p) {
 
 std::ostream& osc::operator<<(std::ostream& o, Disc const& d) {
     return o << "Disc(origin = " << d.origin << ", normal = " << d.normal << ", radius = " << d.radius << ')';
+}
+
+std::ostream& osc::operator<<(std::ostream& o, Segment const& d) {
+    return o << "Segment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
 }
 
 Sphere osc::BoundingSphereFromVerts(glm::vec3 const* vs, size_t n) noexcept {

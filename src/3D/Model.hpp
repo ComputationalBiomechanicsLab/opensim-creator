@@ -136,6 +136,7 @@ namespace osc {
     std::ostream& operator<<(std::ostream&, Line const&);
     std::ostream& operator<<(std::ostream&, Plane const&);
     std::ostream& operator<<(std::ostream&, Disc const&);
+    std::ostream& operator<<(std::ostream&, Segment const&);
 
     // analytical geometry calculations
     Sphere BoundingSphereFromVerts(glm::vec3 const*, size_t n) noexcept;
