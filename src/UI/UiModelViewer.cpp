@@ -1003,9 +1003,6 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
-    ImGui::SliderFloat("light_dir_x", &impl.lightDir.x, -1.0f, 1.0f);
-    ImGui::SliderFloat("light_dir_y", &impl.lightDir.y, -1.0f, 1.0f);
-    ImGui::SliderFloat("light_dir_z", &impl.lightDir.z, -1.0f, 1.0f);
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
     ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
     ImGui::InputFloat3("floor location", &impl.floorLocation.x, "%.6f");
@@ -1032,6 +1029,14 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     if (impl.autoFocusCameraNextFrame) {
         actionAutoFocusCamera(impl, rs);
         impl.autoFocusCameraNextFrame = false;
+    }
+
+    // automatically change lighting position based on camera position
+    {
+        glm::vec3 p = impl.camera.getPos();
+        glm::vec3 up = {0.0f, 1.0f, 0.0f};
+        glm::vec3 mp = -glm::rotate(glm::mat4{1.0f}, 1.0f * fpi4, up) * glm::vec4{p, 0.0f};
+        impl.lightDir = glm::normalize(mp + -up);
     }
 
     // update camera if necessary
