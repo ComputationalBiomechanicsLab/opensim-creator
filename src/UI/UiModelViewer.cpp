@@ -972,6 +972,23 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
 
     // update camera if necessary
     if (impl.renderHovered) {
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_X)) {
+            impl.camera.theta = fpi2;
+            impl.camera.phi = 0.0f;
+        }
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_Y)) {
+            impl.camera.theta = 0.0f;
+            impl.camera.phi = fpi2;
+        }
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
+            impl.camera.theta = 0.0f;
+            impl.camera.phi = 0.0f;
+        }
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
+            impl.camera = {};
+            impl.camera.theta = fpi4;
+            impl.camera.phi = fpi4;
+        }
         UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
     }
 
