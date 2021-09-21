@@ -305,13 +305,12 @@ void osc::MainMenuAboutTab::draw() {
         DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ImGui::NextColumn();
 
-        if (App::cur().isVsyncEnabled()) {
-            if (ImGui::Button("disable")) {
-                App::cur().disableVsync();
-            }
-        } else {
-            if (ImGui::Button("enable")) {
+        bool enabled = App::cur().isVsyncEnabled();
+        if (ImGui::Checkbox("##vsynccheckbox", &enabled)) {
+            if (enabled) {
                 App::cur().enableVsync();
+            } else {
+                App::cur().disableVsync();
             }
         }
         ImGui::NextColumn();

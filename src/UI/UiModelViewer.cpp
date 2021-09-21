@@ -922,51 +922,55 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::Text("reposition camera:");
     ImGui::Separator();
 
+    auto makeHoverTooltip = [](char const* msg) {
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted(msg);
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    };
+
     if (ImGui::Button("+X")) {
         actionFocusCameraAlongX(impl);
     }
+    makeHoverTooltip("Position camera along +X, pointing towards the center. Hotkey: X");
     ImGui::SameLine();
     if (ImGui::Button("-X")) {
         actionFocusCameraAlongMinusX(impl);
     }
+    makeHoverTooltip("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
     ImGui::SameLine();
     if (ImGui::Button("+Y")) {
         actionFocusCameraAlongY(impl);
     }
+    makeHoverTooltip("Position camera along +Y, pointing towards the center. Hotkey: Y");
     ImGui::SameLine();
     if (ImGui::Button("-Y")) {
         actionFocusCameraAlongMinusY(impl);
     }
+    makeHoverTooltip("Position camera along -Y, pointing towards the center. Hotkey: Ctrl+Y");
     ImGui::SameLine();
     if (ImGui::Button("+Z")) {
         actionFocusCameraAlongZ(impl);
     }
+    makeHoverTooltip("Position camera along +Z, pointing towards the center. Hotkey: Z");
     ImGui::SameLine();
     if (ImGui::Button("-Z")) {
         actionFocusCameraAlongMinusZ(impl);
     }
+    makeHoverTooltip("Position camera along -Z, pointing towards the center. Hotkey: Ctrl+Z");
 
     if (ImGui::Button("reset camera")) {
         actionResetCamera(impl);
     }
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted("Reset the camera to its initial (default) location");
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+    makeHoverTooltip("Reset the camera to its initial (default) location. Hotkey: F");
 
     if (ImGui::Button("Auto-focus camera")) {
         impl.autoFocusCameraNextFrame = true;
     }
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted("Tries to automatically adjust the camera based on the model's dimensions");
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
+    makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
 
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced camera properties:");
@@ -991,6 +995,7 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
     ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
     ImGui::InputFloat3("floor location", &impl.floorLocation.x, "%.6f");
+    makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 }
 
 
