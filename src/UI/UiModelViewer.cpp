@@ -957,6 +957,7 @@ static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
 UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     Impl& impl = *m_Impl;
 
+    // auto-focus the camera, if the user requested it last frame
     if (impl.autoFocusCameraNextFrame) {
         auto const& bvh = rs.getSceneBVH();
         if (!bvh.nodes.empty()) {
@@ -983,7 +984,13 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     // put 3D scene in an undraggable child panel, to prevent accidental panel
     // dragging when the user drags their mouse over the scene
     if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
-        OpenSim::Component const* htResult = hittestSceneDecorations(impl, rs);
+
+        // only do the hit test if the user isn't currently dragging their mouse around
+        OpenSim::Component const* htResult = nullptr;
+        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Middle) && !ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
+            htResult = hittestSceneDecorations(impl, rs);
+        }
+
         populateSceneDrawlist(impl, rs);
         drawSceneTexture(impl, rs);
         drawOverlays(impl, rs);

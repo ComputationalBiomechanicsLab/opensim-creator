@@ -1245,7 +1245,7 @@ namespace {
         {
             char buf[128];
             std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
-            if (resp.isMousedOver && resp.hovertestResult && resp.isRightClicked) {
+            if (resp.isMousedOver && resp.hovertestResult && ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
                 impl.st->setSelection(const_cast<OpenSim::Component*>(resp.hovertestResult));
                 ImGui::OpenPopup(buf);
             }

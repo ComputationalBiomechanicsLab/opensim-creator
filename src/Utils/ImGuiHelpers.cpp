@@ -7,36 +7,46 @@
 #include <SDL_events.h>
 
 void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera) {
+    // handle mousewheel scrolling
     camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
     camera.rescaleZNearAndZFarBasedOnRadius();
 
-    // update camera
+    // these camera controls try to be the union of OpenSim and Blender
     //
-    // At the moment, all camera updates happen via the middle-mouse. The mouse
-    // input is designed to mirror Blender fairly closely (because, imho, it has
-    // decent UX for this problem space)
-    bool leftButtonDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-    bool middleButtonDown = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+    // left drag: drags/orbits camera (OpenSim behavior)
+    // left drag + L/R SHIFT: pans camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
+    // left drag + L/R CTRL: zoom camera (CUSTOM behavior: can be handy on laptops where right-click + drag sucks)
+    // middle drag: drags/orbits camera (Blender behavior)
+    // middle drag + L/R SHIFT: pans camera (Blender behavior)
+    // middle drag + L/R CTRL: zooms camera (Blender behavior)
+    // right drag: pans camera (OpenSim behavior)
+    //
+    // the reason it's like this is to please legacy OpenSim users *and*
+    // users who use modelling software like Blender (which is more popular
+    // among newer users looking to make new models)
 
-    if (leftButtonDown || middleButtonDown) {
-        ImVec2 screendims = viewportDims;
-        float aspectRatio = screendims.x / screendims.y;
-        ImVec2 delta = ImGui::GetMouseDragDelta(leftButtonDown ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle, 0.0f);
-        ImGui::ResetMouseDragDelta(leftButtonDown ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle);
+    float aspectRatio = viewportDims.x / viewportDims.y;
 
-        // relative vectors
-        float rdx = delta.x/screendims.x;
-        float rdy = delta.y/screendims.y;
+    bool leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+    bool middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
+    ImGuiMouseButton btn = leftDragging ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle;
+
+    if (leftDragging || middleDragging) {
+        glm::vec2 delta = ImGui::GetMouseDragDelta(btn, 0.0f);
+        ImGui::ResetMouseDragDelta(btn);
 
         if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
-            // shift + middle-mouse: pan
-            camera.pan(aspectRatio, {rdx, rdy});
+            camera.pan(aspectRatio, delta/viewportDims);
         } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-            // shift + middle-mouse: zoom
-            camera.radius *= 1.0f + rdy;
+            camera.radius *= 1.0f + delta.y/viewportDims.y;
         } else {
-            // middle: mouse drag
-            camera.drag({rdx, rdy});
+            camera.drag(delta/viewportDims);
         }
+
+    } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
+        glm::vec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right, 0.0f);
+        ImGui::ResetMouseDragDelta(ImGuiMouseButton_Right);
+        camera.pan(aspectRatio, delta/viewportDims);
+
     }
 }
