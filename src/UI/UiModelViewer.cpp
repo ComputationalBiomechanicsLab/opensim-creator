@@ -161,6 +161,11 @@ struct osc::UiModelViewer::Impl final {
     glm::vec4 rimCol = {1.0f, 0.4f, 0.0f, 0.85f};
     RenderBuffers renderTarg{{1, 1}, 1};
 
+    // by default, lower the floor slightly, so that it doesn't conflict
+    // with OpenSim ContactHalfSpace planes that coincidently happen to
+    // lie at Z==0
+    glm::vec3 floorLocation = {0.0f, -0.0001f, 0.0f};
+
     gl::Texture2D chequerTex = genChequeredFloorTexture();
 
 
@@ -194,7 +199,7 @@ bool osc::UiModelViewer::isMousedOver() const noexcept {
     return m_Impl->renderHovered;
 }
 
-static glm::mat4x3 generateFloorModelMatrix(RenderableScene const& rs) {
+static glm::mat4x3 generateFloorModelMatrix(osc::UiModelViewer::Impl const& impl, RenderableScene const& rs) {
     float fixupScaleFactor = rs.getFixupScaleFactor();
 
     // rotate from XY (+Z dir) to ZY (+Y dir)
@@ -203,9 +208,7 @@ static glm::mat4x3 generateFloorModelMatrix(RenderableScene const& rs) {
     // make floor extend far in all directions
     rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
 
-    // lower slightly, so that it doesn't conflict with OpenSim model planes
-    // that happen to lie at Z==0
-    rv = glm::translate(glm::mat4{1.0f}, {0.0f, -0.0001f, 0.0f}) * rv;
+    rv = glm::translate(glm::mat4{1.0f}, impl.floorLocation) * rv;
 
     return glm::mat4x3{rv};
 }
@@ -400,7 +403,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::UseProgram(basicShader.program);
             gl::Uniform(basicShader.uProjMat, projMtx);
             gl::Uniform(basicShader.uViewMat, viewMtx);
-            glm::mat4 mtx = generateFloorModelMatrix(rs);
+            glm::mat4 mtx = generateFloorModelMatrix(impl, rs);
             gl::Uniform(basicShader.uModelMat, mtx);
             gl::Uniform(basicShader.uNormalMat, NormalMatrix(mtx));
             gl::Uniform(basicShader.uLightDir, impl.lightDir);
@@ -987,6 +990,7 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::SliderFloat("light_dir_z", &impl.lightDir.z, -1.0f, 1.0f);
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
     ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
+    ImGui::InputFloat3("floor location", &impl.floorLocation.x, "%.6f");
 }
 
 
