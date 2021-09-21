@@ -79,7 +79,7 @@ namespace {
 
     std::optional<std::filesystem::path> promptOpenVTP() {
         nfdchar_t* outpath = nullptr;
-        nfdresult_t result = NFD_OpenDialog("vtp", nullptr, &outpath);
+        nfdresult_t result = NFD_OpenDialog("vtp,stl", nullptr, &outpath);
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
         return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
