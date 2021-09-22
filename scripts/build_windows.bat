@@ -6,34 +6,37 @@ REM       Server PC /w basic toolchain installs (Visual Studio, MSVC, CMake)
 REM where to clone the OpenSim source from
 REM
 REM handy to override if you are developing against a fork, locally, etc.
-set OSC_OPENSIM_REPO=https://github.com/opensim-org/opensim-core
+IF NOT DEFINED OSC_OPENSIM_REPO (set OSC_OPENSIM_REPO=https://github.com/opensim-org/opensim-core)
 
 REM can be any branch identifier from opensim-core
-set OSC_OPENSIM_REPO_BRANCH=4.2
+IF NOT DEFINED OSC_OPENSIM_REPO_BRANCH (set OSC_OPENSIM_REPO_BRANCH=4.2)
 
 REM where the sources are checked out to
-set OSC_OPENSIM_SRC_DIR=opensim-core
+IF NOT DEFINED OSC_OPENSIM_SRC_DIR (set OSC_OPENSIM_SRC_DIR=opensim-core)
 
 REM build types:
 REM
 REM DRAGONS: it seems that this *must* be a `Release` build in OpenSim >4.2
 REM DRAGONS: because the upstream developers lazily packaged Release-mode
 REM DRAGONS: library binaries
-set OSC_OPENSIM_DEPS_BUILD_TYPE=RelWithDebInfo
-set OSC_OPENSIM_BUILD_TYPE=RelWithDebInfo
-set OSC_BUILD_TYPE=RelWithDebInfo
+IF NOT DEFINED OSC_OPENSIM_DEPS_BUILD_TYPE (set OSC_OPENSIM_DEPS_BUILD_TYPE=RelWithDebInfo)
+IF NOT DEFINED OSC_OPENSIM_BUILD_TYPE (set OSC_OPENSIM_BUILD_TYPE=RelWithDebInfo)
+IF NOT DEFINED OSC_BUILD_TYPE (set OSC_BUILD_TYPE=RelWithDebInfo)
 
 REM maximum number of build jobs to run concurrently
-set OSC_BUILD_CONCURRENCY=%NUMBER_OF_PROCESSORS%
+IF NOT DEFINED OSC_BUILD_CONCURRENCY (set OSC_BUILD_CONCURRENCY=%NUM_PROCESSORS%)
 
 REM which OSC build target to build
 REM
 REM     osc        just build the osc binary
 REM     package    package everything into a .deb installer
-set OSC_BUILD_TARGET=package
+IF NOT DEFINED OSC_BUILD_TARGET (set OSC_BUILD_TARGET=package)
+
+REM if in-built HTML/sphinx documentation should be built
+IF NOT DEFINED OSC_BUILD_DOCS (set OSC_BUILD_DOCS=OFF)
 
 REM change this if you want to try a different generator+arch combo
-set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE%
+set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% -DOSC_BUILD_DOCS=%OSC_BUILD_DOCS%
 
 echo "----- starting build -----"
 echo ""
