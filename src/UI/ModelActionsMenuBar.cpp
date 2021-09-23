@@ -1,9 +1,10 @@
 #include "ModelActionsMenuBar.hpp"
 
-#include "src/Log.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/UI/AddBodyPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
+#include "src/Log.hpp"
+#include "src/Styling.hpp"
 
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>
@@ -41,7 +42,7 @@ static void renderModelActionsPanelContent(
         static constexpr char const* addBodyPopupName = "add body";
 
         // draw button
-        if (ImGui::MenuItem("add body")) {
+        if (ImGui::MenuItem(ICON_FA_PLUS " add body")) {
             ImGui::OpenPopup(addBodyPopupName);
         }
 
@@ -68,7 +69,7 @@ static void renderModelActionsPanelContent(
         bool openPopup = false;  // has to be outside ImGui::Menu
 
         // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
-        if (ImGui::BeginMenu("add joint")) {
+        if (ImGui::BeginMenu(ICON_FA_PLUS " add joint")) {
             auto jointNames = JointRegistry::names();
 
             for (size_t i = 0; i < jointNames.size(); ++i) {
@@ -104,7 +105,7 @@ static void renderModelActionsPanelContent(
         bool openPopup = false;  // has to be outside ImGui::Menu
 
         // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
-        if (ImGui::BeginMenu("add contact geometry")) {
+        if (ImGui::BeginMenu(ICON_FA_PLUS " add contact geometry")) {
             auto contactGeomNames = ContactGeometryRegistry::names();
 
             for (size_t i = 0; i < contactGeomNames.size(); ++i) {
@@ -140,7 +141,7 @@ static void renderModelActionsPanelContent(
         bool openPopup = false;  // has to be outside ImGui::Menu
 
         // draw dropdown menu (containing concrete `OpenSim::Constraint`s)
-        if (ImGui::BeginMenu("add constraint")) {
+        if (ImGui::BeginMenu(ICON_FA_PLUS " add constraint")) {
             auto constraintRegistryNames = ConstraintRegistry::names();
             for (size_t i = 0; i < constraintRegistryNames.size(); ++i) {
 
@@ -175,7 +176,7 @@ static void renderModelActionsPanelContent(
         bool openPopup = false;  // has to be outside ImGui::Menu
 
         // draw dropdown menu (containing concrete `OpenSim::Force`s)
-        if (ImGui::BeginMenu("add force/muscle")) {
+        if (ImGui::BeginMenu(ICON_FA_PLUS " add force/muscle")) {
             auto forceRegistryNames = ForceRegistry::names();
             for (size_t i = 0; i < forceRegistryNames.size(); ++i) {
 
