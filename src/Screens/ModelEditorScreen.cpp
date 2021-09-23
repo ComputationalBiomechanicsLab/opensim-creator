@@ -848,11 +848,6 @@ namespace {
             drawHCFContextualActions(uim, *hcf);
         } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(uim.getSelection()); pa) {
             drawPathActuatorContextualParams(uim, *pa);
-        } else {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-            ImGui::Text(
-                "    (OpenSim::%s has no contextual actions)", uim.getSelection()->getConcreteClassName().c_str());
-            ImGui::PopStyleColor();
         }
     }
 
@@ -893,11 +888,18 @@ namespace {
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                ImGui::Text(
-                    "%s\n\nClick to reassign this socket's connectee",
-                    socket.getConnecteeAsObject().getConcreteClassName().c_str());
+                ImGui::TextUnformatted(socket.getConnecteeAsObject().getName().c_str());
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", socket.getConnecteeAsObject().getConcreteClassName().c_str());
+                ImGui::NewLine();
+                ImGui::TextDisabled("Left-Click: Reassign this socket's connectee");
+                ImGui::TextDisabled("Right-Click: Select the connectee");
                 ImGui::PopTextWrapPos();
                 ImGui::EndTooltip();
+            }
+
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())) {
+                uim.setSelection(const_cast<OpenSim::Component*>(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())));
             }
 
             if (OpenSim::Object const* connectee =
@@ -981,15 +983,8 @@ namespace {
         ImGui::Separator();
         drawSelectionBreadcrumbs(uim);
 
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
-        ImGui::TextUnformatted("top-level attributes:");
-        ImGui::SameLine();
-        DrawHelpMarker("Top-level properties on the OpenSim::Component itself");
-        ImGui::Separator();
-        drawTopLevelMembersEditor(uim);
-
         // contextual actions
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::TextUnformatted("contextual actions:");
         ImGui::SameLine();
         DrawHelpMarker("Actions that are specific to the type of OpenSim::Component that is currently selected");
@@ -1002,11 +997,12 @@ namespace {
         }
 
         // property editor
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::TextUnformatted("properties:");
         ImGui::SameLine();
         DrawHelpMarker("Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
         ImGui::Separator();
+        drawTopLevelMembersEditor(uim);
         {
             auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelection());
             if (maybeUpdater) {
@@ -1017,7 +1013,7 @@ namespace {
         }
 
         // socket editor
-        ImGui::Dummy(ImVec2(0.0f, 2.0f));
+        ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::TextUnformatted("sockets:");
         ImGui::SameLine();
         DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
