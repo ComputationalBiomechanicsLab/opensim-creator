@@ -1088,8 +1088,13 @@ namespace {
                 ImGui::EndTooltip();
             }
 
+            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.model());
+            if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile)) {
+                std::filesystem::path p{uim.model().getInputFileName()};
+                OpenPathInOSDefaultApplication(p.parent_path());
+            }
 
-            if (ImGui::MenuItem(ICON_FA_LINK " Open in external editor", nullptr, false, hasBackingFile(impl.st->editedModel.model()))) {
+            if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile)) {
                 OpenPathInOSDefaultApplication(uim.model().getInputFileName());
             }
             if (ImGui::IsItemHovered()) {
