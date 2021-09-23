@@ -187,8 +187,7 @@ void osc::SplashScreen::draw() {
         ImGui::SetNextWindowSizeConstraints(menuDims, menuDims);
     }
 
-    bool b = true;
-    if (ImGui::Begin("Splash screen", &b, ImGuiWindowFlags_NoTitleBar)) {
+    if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar)) {
 
         // `new` button
         {
