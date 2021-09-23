@@ -361,7 +361,7 @@ void osc::MainMenuAboutTab::draw() {
     }
 
     ImGui::Dummy(ImVec2(0.0f, 2.5f));
-    ImGui::TextUnformatted("debugging utilities");
+    ImGui::TextUnformatted("debugging utilities:");
     ImGui::SameLine();
     DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
     ImGui::Separator();
@@ -388,6 +388,28 @@ void osc::MainMenuAboutTab::draw() {
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_EYE " show")) {
             App::cur().requestTransition<ExperimentsScreen>();
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("OSC Install Location");
+        ImGui::SameLine();
+        DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
+        ImGui::NextColumn();
+        ImGui::PushID(id++);
+        if (ImGui::Button(ICON_FA_FOLDER " open")) {
+            OpenPathInOSDefaultApplication(CurrentExeDir());
+        }
+        ImGui::PopID();
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted("User Data Dir");
+        ImGui::SameLine();
+        DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
+        ImGui::NextColumn();
+        ImGui::PushID(id++);
+        if (ImGui::Button(ICON_FA_FOLDER " open")) {
+            OpenPathInOSDefaultApplication(GetUserDataDir());
         }
         ImGui::PopID();
         ImGui::NextColumn();
