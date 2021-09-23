@@ -1252,17 +1252,24 @@ namespace {
     }
 
     // draw a single 3D model viewer
-    void draw3DViewer(
+    bool draw3DViewer(
             ModelEditorScreen::Impl& impl,
             UiModelViewer& viewer,
             char const* name) {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool opened = ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar);
 
-        if (!opened) {
+        bool isOpen = true;
+        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+
+        if (!isOpen) {
             ImGui::End();
-            return;
+            return false;
+        }
+
+        if (!shown) {
+            ImGui::End();
+            return true;
         }
 
         auto resp = viewer.draw(impl.st->editedModel.current);
@@ -1297,6 +1304,8 @@ namespace {
                 ImGui::EndPopup();
             }
         }
+
+        return true;
     }
 
     // draw all user-enabled 3D model viewers
@@ -1313,7 +1322,11 @@ namespace {
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);
 
-            draw3DViewer(impl, viewer, buf);
+            bool isOpen = draw3DViewer(impl, viewer, buf);
+
+            if (!isOpen) {
+                maybe3DViewer.reset();
+            }
         }
     }
 
