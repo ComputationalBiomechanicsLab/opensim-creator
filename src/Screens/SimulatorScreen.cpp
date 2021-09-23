@@ -939,18 +939,24 @@ namespace {
     };
 
     // draw a 3D model viewer
-    void draw3DViewer(
+    bool draw3DViewer(
             UiSimulation& sim,
             Report const& report,
             UiModelViewer& viewer,
             char const* name) {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool opened = ImGui::Begin(name, nullptr, ImGuiWindowFlags_MenuBar);
+        bool isOpen = true;
+        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
 
-        if (!opened) {
+        if (!isOpen) {
             ImGui::End();
-            return;
+            return false;  // closed by the user
+        }
+
+        if (!shown) {
+            ImGui::End();
+            return true;  // it's open, but not shown
         }
 
         RenderableSim rs{sim, report};
@@ -964,6 +970,8 @@ namespace {
         if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
             sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
         }
+
+        return true;
     }
 
     // draw all active 3D viewers
@@ -996,7 +1004,11 @@ namespace {
             char buf[64];
             std::snprintf(buf, sizeof(buf), "viewer%zu", i);
 
-            draw3DViewer(sim, report, viewer, buf);
+            bool isOpen = draw3DViewer(sim, report, viewer, buf);
+
+            if (!isOpen) {
+                maybeViewer.reset();
+            }
         }
     }
 
