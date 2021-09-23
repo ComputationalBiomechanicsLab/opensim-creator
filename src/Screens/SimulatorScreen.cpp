@@ -38,7 +38,7 @@ namespace {
         // draw the scrubber (slider)
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         float v = static_cast<float>(treport);
-        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.8f", ImGuiSliderFlags_AlwaysClamp)) {
+        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
             st.focusedSimulationScrubbingTime = v;
         }
 
@@ -557,16 +557,16 @@ namespace {
         struct PlottableOutput final {
             OpenSim::Component const& component;
             OpenSim::AbstractOutput const& output;
-            extrator_fn_t extractor;
+            DesiredOutput const& desiredOutput;
 
             PlottableOutput(
                 OpenSim::Component const& _component,
                 OpenSim::AbstractOutput const& _output,
-                extrator_fn_t _extractor) :
+                DesiredOutput const& _desiredOutput) :
 
                 component{_component},
                 output{_output},
-                extractor{_extractor} {
+                desiredOutput{_desiredOutput} {
             }
         };
 
@@ -611,13 +611,13 @@ namespace {
                 continue;  // the output is there, but now has a different type
             }
 
-            plottableOutputs.emplace_back(c, *aop, de.extractorFunc);
+            plottableOutputs.emplace_back(c, *aop, de);
         }
 
         // write header line
         fout << "time";
         for (PlottableOutput const& po : plottableOutputs) {
-            fout << ',' << po.component.getName() << '_' << po.output.getName();
+            fout << ',' << po.desiredOutput.label;
         }
         fout << '\n';
 
@@ -628,7 +628,7 @@ namespace {
             // write time
             fout << stkst.getTime();
             for (PlottableOutput const& po : plottableOutputs) {
-                fout << ',' << po.extractor(po.output, stkst);
+                fout << ',' << po.desiredOutput.extractorFunc(po.output, stkst);
             }
             fout << '\n';
         }
@@ -841,7 +841,7 @@ namespace {
                         ts.push_back(static_cast<float>(r->state.getTime()));
                     }
                     OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
-                    exportTimeseriesToCSV(ts.data(), impl.plotscratch.data(), ts.size(), ao.getName().c_str());
+                    exportTimeseriesToCSV(ts.data(), impl.plotscratch.data(), ts.size(), de.label.c_str());
                 }
 
                 if (ImGui::MenuItem("Save as CSV & Open")) {
