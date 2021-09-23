@@ -771,8 +771,8 @@ namespace {
             glm::vec2 plotTopLeft = ImGui::GetItemRectMin();
             glm::vec2 plotBottomRight = ImGui::GetItemRectMax();
 
-            float simStartTime = reports.empty() ? 0.0f : reports.front()->state.getTime();
-            float simEndTime = reports.empty() ? 0.0f : reports.back()->state.getTime();
+            float simStartTime = reports.empty() ? 0.0f : static_cast<float>(reports.front()->state.getTime());
+            float simEndTime = reports.empty() ? 0.0f : static_cast<float>(reports.back()->state.getTime());
             float simTimeStep = (simEndTime - simStartTime) / static_cast<float>(reports.size());
 
             // coerce the scrubbing time, if necessary
