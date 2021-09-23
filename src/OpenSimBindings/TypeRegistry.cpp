@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
@@ -186,7 +187,7 @@ static_assert(g_ContactGeomHashes.size() == g_ContactGeomPrototypes.size());
 
 // Force LUTs
 
-std::array<std::unique_ptr<OpenSim::Force const>, 10> const g_ForcePrototypes = {
+std::array<std::unique_ptr<OpenSim::Force const>, 11> const g_ForcePrototypes = {
     std::make_unique<OpenSim::BushingForce>(),
     std::make_unique<OpenSim::CoordinateLimitForce>(),
     std::make_unique<OpenSim::ElasticFoundationForce>(),
@@ -200,6 +201,13 @@ std::array<std::unique_ptr<OpenSim::Force const>, 10> const g_ForcePrototypes = 
         return hcf;
     }(),
     std::make_unique<OpenSim::PointToPointSpring>(),
+    []() {
+        auto ps = std::make_unique<OpenSim::PathSpring>();
+        ps->setRestingLength(1.0);
+        ps->setStiffness(1000.0);
+        ps->setDissipation(0.5);
+        return ps;
+    }(),
     std::make_unique<OpenSim::SmoothSphereHalfSpaceForce>(),
     std::make_unique<OpenSim::Thelen2003Muscle>(),
     std::make_unique<OpenSim::DeGrooteFregly2016Muscle>(),
@@ -214,6 +222,7 @@ static constexpr std::array<char const*, g_ForcePrototypes.size()> g_ForceDescri
     "This Force subclass implements an elastic foundation contact model. It places a spring at the center of each face of each ContactMesh it acts on. Those springs interact with all objects (both meshes and other objects) the mesh comes in contact with.",
     "This force subclass implements a Hunt-Crossley contact model. It uses Hertz contact theory to model the interactions between a set of ContactSpheres and ContactHalfSpaces.",
     "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
+    "A spring that follows a one-dimensional path. A PathSpring is a massless force element which applies tension along a path connected to bodies. A path spring can also wrap over wrap surfaces.\n\nThe tension is proportional to its stretch beyond its resting length and the amount of dissipation scales with the amount of stretch.",
     "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
     "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
     "This muscle model was published in De Groote et al. 2016.",
