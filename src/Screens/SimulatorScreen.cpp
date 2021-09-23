@@ -97,6 +97,9 @@ struct osc::SimulatorScreen::Impl final {
     // scratch space for plots
     std::vector<float> plotscratch;
 
+    // scratch space for string formatting
+    std::string stringscratch;
+
     // ui component state
     LogViewer logViewerState;
     MainMenuFileTab mmFileTab;
@@ -678,11 +681,20 @@ namespace {
 
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
-        ImGui::Columns(2);
-        for (DesiredOutput const& de : st.desiredOutputs) {
-            ImGui::Text("%s[%s]", de.absoluteComponentPath.c_str(), de.outputName.c_str());
-            ImGui::NextColumn();
+        ImU32 currentTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.6f});
+        ImU32 hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
 
+        int markedForDeletionDe = -1;
+        for (size_t deIdx = 0; deIdx < st.desiredOutputs.size(); ++deIdx) {
+            ImGui::PushID(imguiID++);
+
+            DesiredOutput const& de = st.desiredOutputs[deIdx];
+
+            // format the output name
+            impl.stringscratch.resize(1024);
+            std::snprintf(impl.stringscratch.data(), impl.stringscratch.size(), "%s[%s]", de.absoluteComponentPath.c_str(), de.outputName.c_str());
+
+            // check the desired component is in the current model
             OpenSim::Component const* cp = nullptr;
             try {
                 cp = &sim.model->getComponent(de.absoluteComponentPath);
@@ -695,13 +707,13 @@ namespace {
             }
 
             if (!cp) {
-                ImGui::TextUnformatted("component not found");
-                ImGui::NextColumn();
+                ImGui::Text("%s: component not found", impl.stringscratch.data());
                 continue;
             }
 
             OpenSim::Component const& c = *cp;
 
+            // check the desired output is in in the desired component
             OpenSim::AbstractOutput const* aop = nullptr;
             try {
                 aop = &c.getOutput(de.outputName);
@@ -710,40 +722,124 @@ namespace {
             }
 
             if (!aop) {
-                ImGui::TextUnformatted("output not found");
-                ImGui::NextColumn();
+                ImGui::Text("%s: component output not found", impl.stringscratch.data());
                 continue;
             }
 
+            // check the desired output's type is the same as when it was initially plotted
             OpenSim::AbstractOutput const& ao = *aop;
             size_t typehash = typeid(ao).hash_code();
-
             if (typehash != de.outputTypeHashcode) {
-                ImGui::TextUnformatted("output type changed");
-                ImGui::NextColumn();
+                ImGui::Text("%s: output type changed", impl.stringscratch.data());
                 continue;
             }
 
+            // check if the output is plottable, if it isn't, just print the current value
             if (!de.extractorFunc) {
-                // no extractor function, so unplottable
-                ImGui::TextUnformatted(ao.getValueAsString(report.state).c_str());
-                ImGui::NextColumn();
+                ImGui::Text("%s: %s", impl.stringscratch.data(), ao.getValueAsString(report.state).c_str());
                 continue;
             }
 
-            // else: it's a plottable output
-
-            size_t npoints = sim.regularReports.size();
-            impl.plotscratch.resize(npoints);
-            size_t i = 0;
-            for (auto const& r : sim.regularReports) {
-                double v = de.extractorFunc(ao, r->state);
-                impl.plotscratch[i++] = static_cast<float>(v);
+            // check if there's any datapoints yet
+            auto const& reports = sim.regularReports;
+            if (reports.empty()) {
+                ImGui::Text("%s: no data (yet)", impl.stringscratch.data());
+                continue;
             }
 
-            ImGui::PushID(imguiID++);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-            ImGui::PlotLines("##nolabel", impl.plotscratch.data(), static_cast<int>(impl.plotscratch.size()));
+            // extract all Y values into a single float vector
+            std::vector<float>& yValues = impl.plotscratch;
+            yValues.resize(reports.size());
+            float ySmallest = std::numeric_limits<float>::max();
+            float yLargest = std::numeric_limits<float>::lowest();
+            for (size_t i = 0; i < reports.size(); ++i) {
+                double dVal = de.extractorFunc(ao, reports[i]->state);
+                float fVal = static_cast<float>(dVal);
+                yValues[i] = fVal;
+                ySmallest = std::min(ySmallest, fVal);
+                yLargest = std::max(yLargest, fVal);
+            }
+
+            // draw the plot
+            constexpr float plotHeight = 128.0f;
+            const float plotWidth = ImGui::GetContentRegionAvailWidth();
+            ImGui::PlotLines(
+                "##nolabel",
+                yValues.data(),
+                static_cast<int>(yValues.size()),
+                0,
+                impl.stringscratch.data(),
+                ySmallest,
+                yLargest,
+                {plotWidth, plotHeight});
+
+            // figure out the plot's dimensions in both (simulation) time
+            // and (screen) space
+            glm::vec2 plotTopLeft = ImGui::GetItemRectMin();
+            glm::vec2 plotBottomRight = ImGui::GetItemRectMax();
+
+            float simStartTime = reports.empty() ? 0.0f : reports.front()->state.getTime();
+            float simEndTime = reports.empty() ? 0.0f : reports.back()->state.getTime();
+            float simTimeStep = (simEndTime - simStartTime) / static_cast<float>(reports.size());
+
+            // coerce the scrubbing time, if necessary
+            float simScrubTime = impl.mes->focusedSimulationScrubbingTime;
+            if (!(simStartTime < simScrubTime && simScrubTime <= simEndTime)) {
+                simScrubTime = simEndTime;
+            }
+
+            // express scrubbing time, in sim time, as a percentage, so that it can be linearly
+            // mapped onto a percentage of the plot rectangle
+            float simScrubPct = (simScrubTime - simStartTime) / (simEndTime - simStartTime);
+
+            ImDrawList* drawlist = ImGui::GetForegroundDrawList();
+
+            // if data crosses X=0, draw a horizontal X line showing X = 0
+            if (ySmallest < 0.0f && yLargest > 0.0f) {
+                float crossingPct = yLargest / (yLargest - ySmallest);
+                float crossingY = plotTopLeft.y + crossingPct * (plotBottomRight.y - plotTopLeft.y);
+                glm::vec2 p1 = {plotTopLeft.x, crossingY};
+                glm::vec2 p2 = {plotBottomRight.x, crossingY};
+                drawlist->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.3f}));
+            }
+
+            // draw a vertical Y line showing the current scrub time over the plots
+            {
+                float plotScrubLineX = plotTopLeft.x + simScrubPct*(plotBottomRight.x - plotTopLeft.x);
+                glm::vec2 p1 = {plotScrubLineX, plotBottomRight.y};
+                glm::vec2 p2 = {plotScrubLineX, plotTopLeft.y};
+                drawlist->AddLine(p1, p2, currentTimeLineColor);
+            }
+
+            if (ImGui::IsItemHovered()) {
+                glm::vec2 mp = ImGui::GetMousePos();
+                glm::vec2 plotLoc = mp - plotTopLeft;
+                float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
+                float timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
+
+                // draw vertical line to show current X of their hover
+                {
+                    glm::vec2 p1 = {mp.x, plotBottomRight.y};
+                    glm::vec2 p2 = {mp.x, plotTopLeft.y};
+                    drawlist->AddLine(p1, p2, hoverTimeLineColor);
+                }
+
+                // show a tooltip of X and Y
+                {
+                    int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
+                    if (0 <= step && static_cast<size_t>(step) < yValues.size()) {
+                        float y = yValues[static_cast<size_t>(step)];
+                        ImGui::SetTooltip("(%.2fs, %.2f)", timeLoc, y);
+                    }
+                }
+
+                // if the user presses their left mouse while hovering over the plot,
+                // change the current sim scrub time to match their press location
+                if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                    impl.mes->focusedSimulationScrubbingTime = timeLoc;
+                }
+            }
+
             if (ImGui::BeginPopupContextItem("outputplotscontextmenu")) {
                 if (ImGui::MenuItem("Save as CSV")) {
                     std::vector<float> ts;
@@ -769,12 +865,18 @@ namespace {
                     }
                 }
 
+                if (ImGui::MenuItem("Remove")) {
+                    markedForDeletionDe = static_cast<int>(deIdx);
+                }
+
                 ImGui::EndPopup();
             }
             ImGui::PopID();
-            ImGui::NextColumn();
         }
-        ImGui::Columns();
+
+        if (0 <= markedForDeletionDe && markedForDeletionDe < st.desiredOutputs.size()) {
+            st.desiredOutputs.erase(st.desiredOutputs.begin() + static_cast<size_t>(markedForDeletionDe));
+        }
     }
 
     // draw "hierarchy" tab, which shows the tree hierarchy structure for
