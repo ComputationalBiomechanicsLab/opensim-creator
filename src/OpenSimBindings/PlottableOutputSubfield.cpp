@@ -124,8 +124,13 @@ osc::DesiredOutput::DesiredOutput(
 
     absoluteComponentPath{c.getAbsolutePathString()},
     outputName{ao.getName()},
+    label{},
     extractorFunc{subfield_magic::extractorFunctionForOutput(ao)},
     outputTypeHashcode{typeid(ao).hash_code()} {
+
+    char buf[1024];
+    std::snprintf(buf, sizeof(buf), "%s[%s]", absoluteComponentPath.c_str(), outputName.c_str());
+    label = buf;
 }
 
 osc::DesiredOutput::DesiredOutput(
@@ -140,4 +145,8 @@ osc::DesiredOutput::DesiredOutput(
     if (pls.parentOutputTypeHashcode != outputTypeHashcode) {
         throw std::runtime_error{"output subfield mismatch: the provided Plottable_output_field does not match the provided AbstractOutput: this is a developer error"};
     }
+
+    char buf[1024];
+    std::snprintf(buf, sizeof(buf), "%s[%s.%s]", absoluteComponentPath.c_str(), outputName.c_str(), pls.name);
+    label = buf;
 }

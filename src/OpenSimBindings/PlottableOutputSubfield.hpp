@@ -47,6 +47,9 @@ namespace osc {
         // name of the output on the component
         std::string outputName;
 
+        // user-facing label for this output in the UI
+        std::string label;
+
         // if != nullptr
         //     pointer to a function function that can extract a double from the output
         // else
