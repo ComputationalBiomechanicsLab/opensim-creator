@@ -3,40 +3,69 @@ cmake_minimum_required(VERSION 3.5)
 project(osc VERSION 0.0.4 LANGUAGES C CXX)
 
 
-# -------------- gather client build config options ---------------- #
+# -------------- gather user-facing build config options ---------------- #
 
-set(OSC_USE_CLANG_TIDY OFF CACHE BOOL "enable/disable running `clang-tidy` (linter) while building")
-set(OSC_USE_IWYU OFF CACHE BOOL "enable/disable running `iwyu` (include-what-you-use) while building")
-set(OSC_IWYU_PATH "include-what-you-use" CACHE STRING "path to the `iwyu` executable (if not on the PATH)")
-set(OSC_FORCE_ASSERTS_ENABLED ON CACHE BOOL "enable OSC's runtime assertions - even if building a release build")
-set(OSC_FORCE_UNDEFINE_NDEBUG OFF CACHE BOOL "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions (standard lib, SimTK, OpenSim)")
-set(OSC_USE_ASAN OFF CACHE BOOL "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks")
-set(OSC_DEFAULT_USE_MULTI_VIEWPORT OFF CACHE BOOL "enable/disable osc using multi viewport when not explicitly specified a the user/config")
-set(OSC_DEFAULT_RESOURCE_DIR "../resources" CACHE STRING "default location of runtime resources dir when not specified by user/config")
-set(OSC_BUILD_DOCS OFF CACHE BOOL "whether to build the documentation or not (requires Sphinx)")
+set(
+    OSC_USE_CLANG_TIDY OFF
+    CACHE BOOL
+    "enable/disable running `clang-tidy` (linter) while building"
+)
+set(
+    OSC_USE_IWYU OFF
+    CACHE BOOL
+    "enable/disable running `iwyu` (include-what-you-use) while building"
+)
+set(
+    OSC_IWYU_PATH "include-what-you-use"
+    CACHE STRING
+    "path to the `iwyu` executable (if not on the PATH)"
+)
+set(
+    OSC_FORCE_ASSERTS_ENABLED ON
+    CACHE BOOL
+    "enable OSC's runtime assertions - even if building a release build"
+)
+set(
+    OSC_FORCE_UNDEFINE_NDEBUG OFF
+    CACHE BOOL
+    "force disable NDEBUG, even if running in Release mode. This enables *a lot* of runtime assertions (standard lib, SimTK, OpenSim)"
+)
+set(
+    OSC_USE_ASAN OFF
+    CACHE BOOL
+    "enable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
+)
+set(
+    OSC_DEFAULT_USE_MULTI_VIEWPORT OFF
+    CACHE BOOL
+    "enable/disable osc using multi viewport when not explicitly specified a the user/config"
+)
+set(
+    OSC_DEFAULT_RESOURCE_DIR "../resources"
+    CACHE STRING
+    "default location of runtime resources dir when not specified by user/config"
+)
+set(
+    OSC_BUILD_DOCS OFF
+    CACHE BOOL
+    "whether to build the documentation or not (requires sphinx-build is available on the PATH)"
+)
 
 
 # -------------- top-level build configuration (vars etc.) ---------------- #
 
-# shim CMake for older versions:
+# set OSC_GENERATOR_IS_MULTI_CONFIG
 #
-#     - all shimming should be close to the variables set by this, for easier debugging
-if((${CMAKE_MAJOR_VERSION} LESS 3) OR (${CMAKE_MINOR_VERSION} LESS 13))
-    message(WARNING "you are using an older version of CMake. This is fine (for now), but you should upgrade")
-    set(OSC_USING_MODERN_CMAKE 0)
-else()
-    set(OSC_USING_MODERN_CMAKE 1)
-endif()
-
-# test if the generated build system is multi-config (e.g. Visual Studio, which lets
-# devs change from Debug to Release in a dropdown, etc.)
+# effectively, tests if the user is using a multi-config generator, like
+# Visual Studio, which lets developers change their build configuration
+# (Release, Debug) in a single configuration
+#
+# this can affect things like deciding which/where to link libraries
 get_property(OSC_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
-if(${OSC_USING_MODERN_CMAKE})
-    cmake_policy(SET CMP0072 OLD)  # use newer OpenGL linking strategy
-endif()
-set(OpenGL_GL_PREFERENCE "LEGACY")  # use newer OpenGL linking strategy
-
+# set LINUX
+#
+# this is based on whether the UNIX variant being used appears to be LINUX
 if(UNIX AND NOT APPLE)
     if(CMAKE_SYSTEM_NAME MATCHES ".*Linux")
         set(LINUX TRUE)
@@ -45,31 +74,54 @@ if(UNIX AND NOT APPLE)
     endif()
 endif()
 
-if(OSC_USE_IWYU)
-    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${OSC_IWYU_PATH};-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;")
-endif()
-
-if(OSC_USE_CLANG_TIDY)
-    set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
-endif()
-
-# set a build ID so that errors in the binary can be linked to source
+# set OSC_BUILD_ID
+#
+# this is so that errors in the binary can potentially be linked to the source
+# that produced the binary later on (user errors, etc.)
 if(DEFINED ENV{GITHUB_RUN_ID})
+
+    # build is running inside GitHub Action CI - use that ID
     set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
 else()
+
+    # build is probably running on a dev's machine - generate a random ID
     string(RANDOM RANDOM_ID)
     set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}")
     unset(RANDOM_ID)
 endif()
 
+# set OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL
+#
+# this is a C-like boolean that tells OSC whether to use a multi-viewport
+# mode
 if(${OSC_DEFAULT_USE_MULTI_VIEWPORT})
     set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "true")
 else()
     set(OSC_DEFAULT_USE_MULTI_VIEWPORT_CBOOL "false")
 endif()
 
+# set CMAKE_CXX_INCLUDE_WHAT_YOU_USE
+#
+# this enables CMake's in-built support for iwyu
+if(OSC_USE_IWYU)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "${OSC_IWYU_PATH};-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;")
+endif()
 
-# --------------- dependency management ----------------- #
+# set CMAKE_CXX_CLANG_TIDY
+#
+# this enables CMake's in-built support for clang-tidy
+if(OSC_USE_CLANG_TIDY)
+    set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+endif()
+
+# use an older OpenGL linking strategy
+#
+# (this seems to be necessary on some systems: need to investigate why)
+cmake_policy(SET CMP0072 OLD)
+set(OpenGL_GL_PREFERENCE "LEGACY")
+
+
+# ------------------ configure dependencies -------------------- #
 
 # all dependency management is handled from a separate CMake file that exports
 # the dependencies as targets - along with some other useful vars (e.g. a list
@@ -77,44 +129,16 @@ endif()
 include(GetDependencies.cmake)
 
 
-# --------------- documentation generation ------------------ #
-
-if(OSC_BUILD_DOCS)
-    # configure time: ensure the build system has 'sphinx-build' if they are
-    # building the docs
-    find_program(
-        OSC_SPHINX_EXE
-        "sphinx-build"
-        DOC "Location of sphinx-build, which is used to compile the documentation"
-        REQUIRED
-    )
-
-    # install time: run `sphinx-build` to build the docs
-    install(
-        CODE "execute_process(COMMAND ${OSC_SPHINX_EXE} -M html source build WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}/docs\")"
-    )
-
-    if(APPLE)
-        install(
-            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
-            DESTINATION osc.app/Contents/MacOS/share/doc
-        )
-    else()
-        # install time: copy the built docs into the install dir
-        install(
-            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
-            TYPE DOC
-        )
-    endif()
-endif()
-
-
-# ------------ osc build target configuration ---------- #
+# --------------- configure `osc` build target ----------------- #
 
 # osc_config.hpp:
+#
 #     configuration file that contains configuration-time vals (e.g. version, libs)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.hpp")
 
+# osc
+#
+# made from the usual ball of hpp and cpp files
 add_executable(osc
     ${CMAKE_BINARY_DIR}/osc_config.hpp
 
@@ -293,35 +317,47 @@ add_executable(osc
 
     # Windows: also link a resources file (rc)
     #
-    # this tells the MSVC compiler how to compile non-source resources (e.g. the icon) into the
-    # output exe
+    # the resources file tells MSVC compiler how to compile non-source resources
+    # into the output exe. Specifically, it's used to embed the application icon
+    # into the `osc` exe
     $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
 )
-target_link_libraries(osc PRIVATE
-    # in gcc/clang the <filesystem> implementation must be explicitly linked
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
 
-    osc-all-deps  # see: GetDependencies.cmake
-)
+# osc: compile-time includes
 target_include_directories(osc PRIVATE
-    ${PROJECT_BINARY_DIR}  # so `#include "osc_config.hpp"` works
-    ${CMAKE_CURRENT_SOURCE_DIR}  # so `#include "src/<path>.hpp"` works
+
+    # so `#include "osc_config.hpp"` works
+    ${PROJECT_BINARY_DIR}
+
+    # so `#include "src/<path>.hpp"` works
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# osc: compile options
 target_compile_options(osc PRIVATE
 
-    # msvc flags
+    # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
-        /wd4996  # disable warning 4996: Simbody uses a deprecated iterator class
-        /wd4455  # disable warning 4455: incorrectly flags std::string::literals::"s"
-        /W3  # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
-        /WX  # treat all warnings as errors
-        /Oy-  # keep frame pointers around
+        # disable warning 4996: Simbody uses a deprecated iterator class
+        /wd4996
+
+        # disable warning 4455: incorrectly flags std::string::literals::"s"
+        /wd4455
+
+        # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
+        /W3
+
+        # treat all warnings as errors
+        /WX
+
+        # keep frame pointers around
+        /Oy-
 
         # newer MSVCs may also come with LIBASAN (experimental)
         $<$<BOOL:${OSC_USE_ASAN}>:/fsanitize=address>
     >
 
-    # gcc/clang flags
+    # gcc AND clang flags
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         -Wall
         -Wextra
@@ -354,7 +390,7 @@ target_compile_options(osc PRIVATE
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 
-    # clang-only
+    # clang flags
     $<$<CXX_COMPILER_ID:Clang>:
         -Wno-cast-align
 
@@ -367,65 +403,44 @@ target_compile_options(osc PRIVATE
         -mno-omit-leaf-frame-pointer
     >
 
-    # gcc-only
+    # gcc flags
     $<$<CXX_COMPILER_ID:GNU>:
         -Wno-unused  # disable: broken by STB headers
     >
-
-    # older CMakes do not support C++17 config
-    $<$<NOT:$<BOOL:${OSC_USING_MODERN_CMAKE}>>:-std=c++17>
 )
-if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(osc PRIVATE -DOSC_FORCE_ASSERTS_ENABLED=1)
-endif()
 
-if(OSC_FORCE_UNDEFINE_NDEBUG)
-    # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
+# osc: compile features
+target_compile_features(osc PUBLIC cxx_std_17)
 
-set_target_properties(osc PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED YES
-    EXPORT_COMPILE_COMMANDS ON  # needed by clang-tidy
+# osc: link libraries
+target_link_libraries(osc PRIVATE
+
+    # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
+
+    # see: GetDependencies.cmake
+    osc-all-deps
 )
-if(LINUX)
-    # Linux RPATH:
-    #     - at installation time, Linux install dir is:
-    #         bin/
-    #         lib/*.so
-    #     - so set the install RPATH to reflect this
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
-endif()
-if(APPLE)
-    # Apple RPATH:
-    #     - at installation time, Apple install dir is something like:
-    #
-    #           lib/*.dylib
-    #           resources/*
-    #           osc (exe)
-    #           osc.toml
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
-endif()
 
-if(${OSC_USING_MODERN_CMAKE})
-    # this is the "modern" way to explain CXX conformance
-    target_compile_features(osc PUBLIC cxx_std_17)
-endif()
-
+# osc: link options
 target_link_options(osc PUBLIC
+
+    # MSVC (Windows)
     $<$<CXX_COMPILER_ID:MSVC>:
-        /SUBSYSTEM:windows  # open as a desktop app, not CLI
-        /ENTRY:mainCRTStartup  # as above
-        /ignore:4217  # ImGui uses locally defined symbols
+
+        # open as a desktop app, not CLI
+        /SUBSYSTEM:windows
+
+        # as above, call into `main`
+        /ENTRY:mainCRTStartup
+
+        # ignore error from ImGui, which uses locally-defined symbols
+        /ignore:4217
     >
 
-    # only Linux + GNU/Clang support rdynamic?
+    # Linux /w GCC or Clang
     $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
+
         # make `ld` emit symbols for all functions - even if they aren't
         # externally used (with an exe, only `main` is used, really)
         #
@@ -435,11 +450,107 @@ target_link_options(osc PUBLIC
         -rdynamic
     >
 
-    # if address sanitizer is specified, use it
+    # GCC or Clang: handle OSC_USE_ASAN
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )
+
+# osc: handle OSC_FORCE_ASSERTS_ENABLED
+if(OSC_FORCE_ASSERTS_ENABLED)
+    target_compile_definitions(osc PRIVATE -DOSC_FORCE_ASSERTS_ENABLED=1)
+endif()
+
+# osc: handle OSC_FORCE_UNDEFINE_NDEBUG
+if(OSC_FORCE_UNDEFINE_NDEBUG)
+    # MSVC
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    # others
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
+
+# osc: handle LINUX RPATH
+#
+# - at installation time, Linux install dir is:
+#
+#     bin/
+#     lib/*.so
+if(LINUX)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+endif()
+
+# osc: handle APPLE @executable_path
+#
+# - at installation time, Apple install dir is something like:
+#
+#    lib/*.dylib
+#    resources/*
+#    osc (exe)
+#    osc.toml
+if(APPLE)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
+endif()
+
+# osc: target properties
+set_target_properties(osc PROPERTIES
+
+    # disable compiler-specific language extensions
+    CXX_EXTENSIONS OFF
+
+    # strictly require the requested C++ standard (e.g. C++17)
+    CXX_STANDARD_REQUIRED YES
+
+    # export compile commands, so clang-tidy works correctly
+    EXPORT_COMPILE_COMMANDS ON
+)
+
+
+# --------------- configure documentation target ------------------ #
+
+# configure documentation generation
+#
+# if the user sets OSC_BUILD_DOCS then they *require* documentation
+# to be generated. Documentation is written in `sphinx`, which should
+# be tested here, and the documentation should be generated at
+# install-time
+if(OSC_BUILD_DOCS)
+
+    # configure time: ensure the user's build system has 'sphinx-build'
+    find_program(
+        OSC_SPHINX_EXE
+        "sphinx-build"
+        DOC "Location of sphinx-build, which is used to compile the documentation"
+        REQUIRED
+    )
+
+    # install time: run `sphinx-build` to build the docs
+    install(
+        CODE "execute_process(COMMAND ${OSC_SPHINX_EXE} -M html source build WORKING_DIRECTORY \"${CMAKE_CURRENT_SOURCE_DIR}/docs\")"
+    )
+
+    # install time: copy the build docs to the appropriate packaging dir
+    if(APPLE)
+
+        # APPLE's `DOC` packaging location is (imho) wrong for DMG packaging.
+        # It puts the docs outside the DMG in the user-facing drag and drop
+        # GUI? So users are presented with 'osc' and 'share', rather than just
+        # 'osc' (ewww)
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            DESTINATION osc.app/Contents/MacOS/share/doc
+        )
+
+    else()
+        # on other OSes, just use the CMake `DOC` default, which typically just
+        # bundles it in $INSTALL_LOC/share/doc/html
+        install(
+            DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs/build/html
+            TYPE DOC
+        )
+    endif()
+endif()
 
 
 # -------------- development nice-to-haves ------------- #
@@ -455,9 +566,9 @@ target_link_options(osc PUBLIC
 #       resources from the (copied) resource directory
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osc.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
 
-# (on Windows): copy libraries into the same dir as osc.exe
+# (on Windows): copy runtime DLLs into the `osc.exe` build dir
 #
-#     - this is so that devs can run osc.exe from an IDE without having to
+#     - this is so that devs can run `osc.exe` from an IDE without having to
 #       copy libraries around manually etc.
 #
 #     - this isn't necessary with Unix'es because CMake sets the RPATH up to
@@ -475,15 +586,19 @@ if (WIN32)
 endif()
 
 
+# ------------- installation / packaging (CPack) -------------- #
 
-# ---------- installation / packaging (CPack) ----------- #
-
+# install-time: also package any required system libraries
 include(InstallRequiredSystemLibraries)
+
+# install-time: set necessary CPack variables
+set(CPACK_PACKAGE_NAME "OpenSimCreator")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
-set(CPACK_PACKAGE_VERSION_MAJOR "${osc_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${osc_VERSION_MINOR}")
+set(CPACK_PACKAGE_VENDOR "Adam Kewley")
 set(CPACK_PACKAGE_CONTACT "Adam Kewley <contact@adamkewley.com>")
-set(CPACK_PACKAGE_DESCRIPTION "A thin GUI for OpenSim - primarily for development use")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/adamkewley/opensim-creator")
+set(CPACK_PACKAGE_DESCRIPTION "A standalone GUI for building OpenSim models")
+set(CPACK_PACKAGE_EXECUTABLES "osc;OpenSimCreator")
 
 # Windows install/packaging:
 #
@@ -496,33 +611,43 @@ set(CPACK_PACKAGE_DESCRIPTION "A thin GUI for OpenSim - primarily for developmen
 #
 #     - packaging: uses NSIS.exe : get it from https://nsis.sourceforge.io/Download
 if (WIN32)
-    # install osc.exe
+
+    # install-time: install osc.exe
     install(TARGETS osc)
 
-    # install DLLs
+    # install-time: install all dependency DLLs next to the exe
     foreach(LIB_FILE_TO_COPY ${OSC_LIB_FILES_TO_COPY})
         install(FILES "${LIB_FILE_TO_COPY}" DESTINATION bin)
     endforeach()
 
-    # install a user-centric `osc.toml`
+    # install-time: install a user-facing `osc.toml` config file
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osc executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml" RENAME "osc.toml" DESTINATION ".")
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+        RENAME "osc.toml"
+        DESTINATION "."
+    )
 
-    # install `resources/`
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
+    # install-time: copy `resources/` (assets) dir
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        DESTINATION "."
+    )
 
-    # set up NSIS packaging
+    # packaging: use NSIS to package everything into a self-extracting installer
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
     set(CPACK_GENERATOR NSIS)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
-    set(CPACK_NSIS_UNINSTALL_NAME "uninstall-osc")
+    set(CPACK_NSIS_UNINSTALL_NAME "UninstallOpenSimCreator")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-    set(CPACK_NSIS_HELP_LINK "https://github.com/adamkewley/osc")
+    set(CPACK_NSIS_HELP_LINK "https://github.com/adamkewley/opensim-creator")
     set(CPACK_NSIS_CONTACT "contact@adamkewley.com")
-    set(CPACK_NSIS_MODIFY_PATH OFF)  # for modifying PATH variable
+    # do not prompt the user to modify the PATH
+    set(CPACK_NSIS_MODIFY_PATH OFF)
     set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
-    set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\osc ${osc_VERSION_MAJOR}.${osc_VERSION_MINOR}.${osc_VERSION_PATCH}\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
+    #set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\OpenSimCreator\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
 endif()
 
 # Linux install/packaging:
@@ -545,30 +670,46 @@ endif()
 #
 #           apt-get install libopengl0 libglx0 libglu1-mesa
 if (LINUX)
-    # install osc
+    # install-time: install osc executable
     install(TARGETS osc DESTINATION bin/)
 
-    # install *bundled* SOs
+    # install-time: install all dependency `.so` files into `lib/`
+    #
+    # the RPATH stuff ensures that the exe can find these at runtime
     foreach(LIB_FILE_TO_COPY ${OSC_LIB_FILES_TO_COPY})
         install(FILES "${LIB_FILE_TO_COPY}" DESTINATION lib/)
     endforeach()
 
-    # install a user-centric `osc.toml`
+    # install-time: install a user-facing `osc.toml` config file
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osc executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml" RENAME "osc.toml" DESTINATION ".")
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+        RENAME "osc.toml"
+        DESTINATION "."
+    )
 
-    # install `resources/`
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION ".")
+    # install-time: copy `resources/` (assets) dir
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        DESTINATION
+        "."
+    )
 
-    # set up DEB packaging
+    # packaging: package installation as a DEB
     set(CPACK_GENERATOR DEB)
     set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsdl2-2.0-0, libblas3, liblapack3, libstdc++6")
     set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postinst.in" "postinst" @ONLY)  # create symlink /usr/local/bin/osc --> /opt/osc/bin/osc
-    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postrm.in" "postrm" @ONLY)  # destroy symlink created during install
+
+    # packaging: configure a script that creates a symlink /usr/local/bin/osc --> /opt/osc/bin/osc
+    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postinst.in" "postinst" @ONLY)
+
+    # packaging: configure a script that destroys the above symlink on uninstall
+    configure_file("${PROJECT_SOURCE_DIR}/build_resources/postrm.in" "postrm" @ONLY)
+
+    # packaging: tell debian packager to use the scripts for postinst and postrm actions
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")
 endif()
 
@@ -577,31 +718,47 @@ endif()
 # - Create a DMG (archive) installer that packages the whole application +
 #   libraries into a single directory tree that can be copied to
 #   /Applications/osc
+#
 if (APPLE)
-    # install main executable into package root (Application/ dir requirement)
+
+    # install-time: install osc into package root (Application/ dir requirement)
     install(TARGETS osc DESTINATION osc.app/Contents/MacOS/)
 
-    # install bundled libraries into lib/
+    # install-time: install bundled libraries into lib/
     foreach(LIB_FILE_TO_COPY ${OSC_LIB_FILES_TO_COPY})
         install(FILES "${LIB_FILE_TO_COPY}" DESTINATION osc.app/Contents/MacOS/lib/)
     endforeach()
 
-    # install a user-centric `osc.toml`
+    # install-time: install a user-facing `osc.toml` config file
     #
     #     - in contrast to the dev-centric one, this loads resources from the installation dir,
     #       which has a known path relative to the osc executable (../resources)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml" RENAME "osc.toml" DESTINATION osc.app/Contents/MacOS/)
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+        RENAME "osc.toml"
+        DESTINATION osc.app/Contents/MacOS/
+    )
 
-    # install an Info.plist file for this particular app
+    # install-time: install an `Info.plist` file
     #
-    # this is a mac-specific XML file
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/Info.plist" DESTINATION osc.app/Contents/)
+    # it's mac-specific XML file that tells Mac OSX about where the
+    # executable is, what the icon is, etc.
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/Info.plist"
+        DESTINATION osc.app/Contents/
+    )
 
-    # install `resources/`
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION osc.app/Contents/MacOS/)
+    # install-time: copy `resources/` (assets) dir
+    install(
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+        DESTINATION osc.app/Contents/MacOS/
+    )
 
-    # install desktop icon (.icns)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/osc.icns" DESTINATION osc.app/Contents/Resources/)
+    # install-time: copy the Mac-specific desktop icon (.icns)
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/osc.icns"
+        DESTINATION osc.app/Contents/Resources/
+    )
 
     set(CPACK_GENERATOR DragNDrop)
 endif()
