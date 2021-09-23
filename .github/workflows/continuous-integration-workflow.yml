@@ -17,12 +17,12 @@ jobs:
         scripts\\build_windows.bat || exit /b
     - uses: actions/upload-artifact@v2
       with:
-        name: osc_windows.exe
+        name: OpenSimCreator_Win64.zip
         path: osc/osc-build/*win64.exe
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
       with:
-        name: osc_windows_pdb
+        name: OpenSimCreator_PDB.zip
         path: osc/osc-build/RelWithDebInfo/*.pdb
         if-no-files-found: error
 
@@ -39,7 +39,7 @@ jobs:
         OSC_BASE_BUILD_TYPE=Release OSC_BUILD_TYPE=RelWithDebInfo ./scripts/build_debian-buster.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osc_focal_installer.deb
+        name: OpenSimCreator_Deb.zip
         path: osc/osc-build/*.deb
         if-no-files-found: error
     - uses: actions/upload-artifact@v2
@@ -59,6 +59,6 @@ jobs:
         ./scripts/build_mac-catalina.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: osc_catalina.dmg
+        name: OpenSimCreator_MacOSX.zip
         path: osc-build/*.dmg
         if-no-files-found: error
