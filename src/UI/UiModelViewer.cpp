@@ -976,6 +976,15 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     }
     makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
 
+    if (ImGui::Button("Zoom in")) {
+        impl.camera.radius *= 0.8f;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Zoom out")) {
+        impl.camera.radius *= 1.2f;
+    }
+
     if (ImGui::Button("reset camera")) {
         actionResetCamera(impl);
     }
