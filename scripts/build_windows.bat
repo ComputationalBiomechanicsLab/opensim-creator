@@ -54,6 +54,17 @@ echo ""
 echo "----- printing system info -----"
 dir .
 
+REM ----- Get Spinx, if necessary -----
+set OSC_SHOULD_PIP_INSTALL=NO
+IF %OSC_BUILD_DOCS% == "ON" (set OSC_SHOULD_PIP_INSTALL=YES)
+IF %OSC_BUILD_DOCS% == "1" (set OSC_SHOULD_PIP_INSTALL=YES)
+IF %OSC_BUILD_DOCS% == "TRUE" (set OSC_SHOULD_PIP_INSTALL=YES)
+IF %OSC_BUILD_DOCS% == "YES" (set OSC_SHOULD_PIP_INSTALL=YES)
+
+IF %OSC_SHOULD_PIP_INSTALL% == "YES" (
+    pip install -r docs/requirements.txt
+)
+
 REM ----- checkout OpenSim sources from GitHub -----
 
 echo "----- checking if OpenSim needs to be cloned from %OSC_OPENSIM_REPO% -----"
