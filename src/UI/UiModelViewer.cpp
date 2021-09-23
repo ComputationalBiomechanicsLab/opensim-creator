@@ -172,6 +172,8 @@ struct osc::UiModelViewer::Impl final {
     std::vector<BVHCollision> sceneHittestResults;
 
     glm::vec2 renderDims = {0.0f, 0.0f};
+    glm::vec2 renderTopLeft = {0.0f, 0.0f};
+    glm::vec2 renderBottomRight = {0.0f, 0.0f};
     bool renderHovered = false;
     bool renderLeftClicked = false;
     bool renderRightClicked = false;
@@ -592,6 +594,8 @@ static void blitSceneTexture(osc::UiModelViewer::Impl& impl) {
     ImGui::Image(texImGuiHandle, imgDims, texcoordUV0, texcoordUV1);
 
     impl.renderDims = ImGui::GetItemRectSize();
+    impl.renderTopLeft = ImGui::GetItemRectMin();
+    impl.renderBottomRight = ImGui::GetItemRectMax();
     impl.renderHovered = ImGui::IsItemHovered();
     impl.renderLeftClicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
     impl.renderRightClicked = ImGui::IsItemClicked(ImGuiMouseButton_Right);
@@ -692,56 +696,34 @@ static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
 static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
     glm::mat4 model2view = impl.camera.getViewMtx();
 
-    // we only care about rotation of the axes, not translation
-    model2view[3] = glm::vec4{0.0f, 0.0f, 0.0f, 1.0f};
+    ImDrawList* dd = ImGui::GetForegroundDrawList();
 
-    // rescale + translate the y-line vertices
-    glm::mat4 makeLineOneSided = glm::translate(glm::identity<glm::mat4>(), glm::vec3{0.0f, 1.0f, 0.0f});
-    glm::mat4 scaler = glm::scale(glm::identity<glm::mat4>(), glm::vec3{0.025f});
-    glm::mat4 translator = glm::translate(glm::identity<glm::mat4>(), glm::vec3{-0.95f, -0.95f, 0.0f});
-    glm::mat4 baseModelMtx = translator * scaler * model2view;
+    constexpr float linelen = 35.0f;
+    float fontSize = ImGui::GetFontSize();
+    float circleRadius = fontSize/1.5f;
+    float padding = circleRadius + 3.0f;
+    glm::vec2 origin{impl.renderTopLeft.x, impl.renderBottomRight.y};
+    origin.x += linelen + padding;
+    origin.y -= linelen + padding;
 
-    auto& shader = App::shader<SolidColorShader>();
+    char const* labels[] = {"X", "Y", "Z"};
+    for (int i = 0; i < 3; ++i) {
+        glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
+        world[i] = 1.0f;
+        glm::vec2 view = glm::vec2{model2view * world};
+        view.y = -view.y;  // y goes down in screen-space
 
-    // common shader stuff
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, gl::identity);
-    gl::Uniform(shader.uView, gl::identity);
+        glm::vec2 p1 = origin;
+        glm::vec2 p2 = origin + linelen*view;
 
-    auto yline = App::meshes().getYLineMesh();
-
-    gl::Disable(GL_DEPTH_TEST);
-    gl::BindVertexArray(yline->GetVertexArray());
-
-    // y axis
-    {
-        gl::Uniform(shader.uColor, {0.0f, 1.0f, 0.0f, 1.0f});
-        gl::Uniform(shader.uModel, baseModelMtx * makeLineOneSided);
-        yline->Draw();
+        glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+        color[i] = 1.0f;
+        ImVec4 col{color.x, color.y, color.z, color.a};
+        dd->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32(col), 3.0f);
+        dd->AddCircleFilled(p2, circleRadius, ImGui::ColorConvertFloat4ToU32(col));
+        glm::vec2 ts = ImGui::CalcTextSize(labels[i]);
+        dd->AddText(p2 - ts/2.0f, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), labels[i]);
     }
-
-    // x axis
-    {
-        glm::mat4 rotateYtoX =
-            glm::rotate(glm::identity<glm::mat4>(), fpi2, glm::vec3{0.0f, 0.0f, -1.0f});
-
-        gl::Uniform(shader.uColor, {1.0f, 0.0f, 0.0f, 1.0f});
-        gl::Uniform(shader.uModel, baseModelMtx * rotateYtoX * makeLineOneSided);
-        yline->Draw();
-    }
-
-    // z axis
-    {
-        glm::mat4 rotateYtoZ =
-            glm::rotate(glm::identity<glm::mat4>(), fpi2, glm::vec3{1.0f, 0.0f, 0.0f});
-
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 1.0f, 1.0f});
-        gl::Uniform(shader.uModel, baseModelMtx * rotateYtoZ * makeLineOneSided);
-        yline->Draw();
-    }
-
-    gl::BindVertexArray();
-    gl::Enable(GL_DEPTH_TEST);
 }
 
 static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
