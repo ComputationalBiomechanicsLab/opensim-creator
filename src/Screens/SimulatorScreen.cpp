@@ -97,9 +97,6 @@ struct osc::SimulatorScreen::Impl final {
     // scratch space for plots
     std::vector<float> plotscratch;
 
-    // scratch space for string formatting
-    std::string stringscratch;
-
     // ui component state
     LogViewer logViewerState;
     MainMenuFileTab mmFileTab;
@@ -690,10 +687,6 @@ namespace {
 
             DesiredOutput const& de = st.desiredOutputs[deIdx];
 
-            // format the output name
-            impl.stringscratch.resize(1024);
-            std::snprintf(impl.stringscratch.data(), impl.stringscratch.size(), "%s[%s]", de.absoluteComponentPath.c_str(), de.outputName.c_str());
-
             // check the desired component is in the current model
             OpenSim::Component const* cp = nullptr;
             try {
@@ -707,7 +700,7 @@ namespace {
             }
 
             if (!cp) {
-                ImGui::Text("%s: component not found", impl.stringscratch.data());
+                ImGui::Text("%s: component not found", de.label.c_str());
                 continue;
             }
 
@@ -722,7 +715,7 @@ namespace {
             }
 
             if (!aop) {
-                ImGui::Text("%s: component output not found", impl.stringscratch.data());
+                ImGui::Text("%s: component output not found", de.label.c_str());
                 continue;
             }
 
@@ -730,20 +723,20 @@ namespace {
             OpenSim::AbstractOutput const& ao = *aop;
             size_t typehash = typeid(ao).hash_code();
             if (typehash != de.outputTypeHashcode) {
-                ImGui::Text("%s: output type changed", impl.stringscratch.data());
+                ImGui::Text("%s: output type changed", de.label.c_str());
                 continue;
             }
 
             // check if the output is plottable, if it isn't, just print the current value
             if (!de.extractorFunc) {
-                ImGui::Text("%s: %s", impl.stringscratch.data(), ao.getValueAsString(report.state).c_str());
+                ImGui::Text("%s: %s", de.label.c_str(), ao.getValueAsString(report.state).c_str());
                 continue;
             }
 
             // check if there's any datapoints yet
             auto const& reports = sim.regularReports;
             if (reports.empty()) {
-                ImGui::Text("%s: no data (yet)", impl.stringscratch.data());
+                ImGui::Text("%s: no data (yet)", de.label.c_str());
                 continue;
             }
 
@@ -768,7 +761,7 @@ namespace {
                 yValues.data(),
                 static_cast<int>(yValues.size()),
                 0,
-                impl.stringscratch.data(),
+                de.label.c_str(),
                 ySmallest,
                 yLargest,
                 {plotWidth, plotHeight});
