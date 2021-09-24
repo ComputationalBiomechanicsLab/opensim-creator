@@ -73,7 +73,7 @@ The release process builds installers that work slightly differently on each pla
 
 - **Debian/Ubuntu Installation**: Download a release, unzip it (if necessary). Double-click the
   `.deb` package and install it through your package manager UI. Alternatively, you can install it
-  through the commandline: `apt-get install -yf ./osc-0.0.4_amd64.deb` (or similar). Once installed,
+  through the commandline: `apt-get install -yf ./osc-X.X.X_amd64.deb` (or similar). Once installed,
   the `osc` or `OpenSim Creator` shortcuts should be available from your desktop, or you can browse
   to `/opt/osc`
 
