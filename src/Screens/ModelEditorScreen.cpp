@@ -900,6 +900,8 @@ namespace {
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())) {
                 uim.setSelection(const_cast<OpenSim::Component*>(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())));
+                ImGui::NextColumn();
+                break;  // don't continue to traverse the sockets, because the selection changed
             }
 
             if (OpenSim::Object const* connectee =
