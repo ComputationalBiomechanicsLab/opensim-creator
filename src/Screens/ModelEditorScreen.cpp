@@ -153,13 +153,16 @@ namespace {
     }
 
     // draw component information as a hover tooltip
-    void drawComponentHoverTooltip(OpenSim::Component const& hovered) {
+    void drawComponentHoverTooltip(OpenSim::Component const& hovered, glm::vec3 const& pos) {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
 
         ImGui::TextUnformatted(hovered.getName().c_str());
-        ImGui::SameLine();
-        ImGui::TextDisabled(" (%s)", hovered.getConcreteClassName().c_str());
+        ImGui::Dummy(ImVec2{0.0f, 3.0f});
+        ImGui::Indent();
+        ImGui::TextDisabled("Component Type = %s", hovered.getConcreteClassName().c_str());
+        ImGui::TextDisabled("Mouse Location = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
+        ImGui::Unindent();
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::TextDisabled("(right-click for actions)");
 
@@ -1301,7 +1304,7 @@ namespace {
 
         // if hovered, draw hover tooltip
         if (resp.isMousedOver && resp.hovertestResult) {
-            drawComponentHoverTooltip(*resp.hovertestResult);
+            drawComponentHoverTooltip(*resp.hovertestResult, resp.mouse3DLocation);
         }
 
         // if right-clicked, draw context menu

@@ -601,10 +601,12 @@ static void blitSceneTexture(osc::UiModelViewer::Impl& impl) {
     impl.renderRightClicked = ImGui::IsItemClicked(ImGuiMouseButton_Right);
 }
 
-static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Impl& impl,
-                                                         RenderableScene const& rs) {
+static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
+        osc::UiModelViewer::Impl& impl,
+        RenderableScene const& rs) {
+
     if (!impl.renderHovered) {
-        return nullptr;
+        return {nullptr, {0.0f, 0.0f, 0.0f}};
     }
 
     // figure out mouse pos in panel's NDC system
@@ -625,6 +627,7 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
     // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
     int closestIdx = -1;
     float closestDistance = std::numeric_limits<float>::max();
+    glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
     // iterate through each scene-level hit and perform a triangle-level hittest
     nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
@@ -645,10 +648,16 @@ static OpenSim::Component const* hittestSceneDecorations(osc::UiModelViewer::Imp
         if (maybeCollision && maybeCollision->distance < closestDistance) {
             closestIdx = instanceIdx;
             closestDistance = maybeCollision->distance;
+            glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
+            closestWorldLoc = glm::vec3{instanceMmtx * glm::vec4{closestLocModelspace, 1.0f}};
         }
     }
 
-    return closestIdx >= 0 ? decs[closestIdx].component : nullptr;
+    if (closestIdx >= 0) {
+        return {decs[closestIdx].component,  closestWorldLoc};
+    } else {
+        return {nullptr, {0.0f, 0.0f, 0.0f}};
+    }
 }
 
 static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
@@ -1071,7 +1080,7 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
 
         // only do the hit test if the user isn't currently dragging their mouse around
-        OpenSim::Component const* htResult = nullptr;
+        std::pair<OpenSim::Component const*, glm::vec3> htResult{nullptr, {0.0f, 0.0f, 0.0f}};
         if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Middle) && !ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
             htResult = hittestSceneDecorations(impl, rs);
         }
@@ -1082,8 +1091,11 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
         blitSceneTexture(impl);
 
         UiModelViewerResponse resp;
-        resp.hovertestResult = htResult;
+        resp.hovertestResult = htResult.first;
         resp.isMousedOver = impl.renderHovered;
+        if (resp.isMousedOver) {
+            resp.mouse3DLocation = htResult.second;
+        }
         resp.isLeftClicked = impl.renderLeftClicked;
         resp.isRightClicked = impl.renderRightClicked;
         return resp;
