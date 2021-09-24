@@ -200,6 +200,8 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     int imguiId = 0;
     bool hasSearch = std::strlen(search) > 0;
 
+    float unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
+
     while (lookahead) {
         // important: ensure all nodes have a unique ID: regardess of filtering
         ++imguiId;
@@ -245,61 +247,43 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
 
         // pop tree nodes down to the current depth
         while (imguiTreeDepth >= currentPath.sizei()) {
+            ImGui::Indent(unindentPerLevel);
             ImGui::TreePop();
             --imguiTreeDepth;
         }
         OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
-        if (currentPath.size() < 3 || lookaheadPath.size() > currentPath.size()) {
-            // render as an expandable tree node
+        // handle display mode (node vs leaf)
+        bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
+        ImGuiTreeNodeFlags nodeFlags = isInternalNode ? 0 : ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
 
-            int styles = 0;
-            if (cur == selection) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
-                ++styles;
-            } else if (cur == hover) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-                ++styles;
-            } else if (!hasSearch || searchHit) {
-                // display as normal
-            } else {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-                ++styles;
-            }
-
-
-            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
-                ImGui::SetNextItemOpen(true);
-            }
-
-            ImGui::PushID(imguiId);
-            if (ImGui::TreeNode(cur->getName().c_str())) {
-                ++imguiTreeDepth;
-            }
-            ImGui::PopID();
-            ImGui::PopStyleColor(styles);
+        // handle coloring
+        int styles = 0;
+        if (cur == selection) {
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+            ++styles;
+        } else if (cur == hover) {
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+            ++styles;
+        } else if (!hasSearch || searchHit) {
+            // display as normal
         } else {
-            // render as plain text
-
-            int styles = 0;
-            if (cur == selection) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
-                ++styles;
-            } else if (cur == hover) {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-                ++styles;
-            } else if (!hasSearch || searchHit) {
-                // display as normal
-            } else {
-                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-                ++styles;
-            }
-
-            ImGui::PushID(imguiId);
-            ImGui::BulletText("%s", cur->getName().c_str());
-            ImGui::PopID();
-            ImGui::PopStyleColor(styles);
+            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+            ++styles;
         }
+
+        // auto-open in these cases
+        if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
+            ImGui::SetNextItemOpen(true);
+        }
+
+        ImGui::PushID(imguiId);
+        if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags)) {
+            ImGui::Unindent(unindentPerLevel);
+            ++imguiTreeDepth;
+        }
+        ImGui::PopID();
+        ImGui::PopStyleColor(styles);
 
         if (ImGui::IsItemHovered()) {
             response.type = HoverChanged;
@@ -320,6 +304,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
 
     // pop remaining dangling tree elements
     while (imguiTreeDepth-- > 0) {
+        ImGui::Indent(unindentPerLevel);
         ImGui::TreePop();
     }
 
