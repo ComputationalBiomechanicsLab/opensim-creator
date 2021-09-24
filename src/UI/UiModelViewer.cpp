@@ -15,6 +15,7 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"
 #include "src/Log.hpp"
+#include "src/Styling.hpp"
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
@@ -150,6 +151,83 @@ namespace {
         m.scaleTexCoords(200.0f);
         return m;
     }
+
+    // state associated with a 3D ruler that users can use to measure things
+    // in the scene
+    class GuiRuler final {
+        enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
+        State m_State = State::Inactive;
+        glm::vec3 m_StartWorldPos = {0.0f, 0.0f, 0.0f};
+        glm::vec2 m_StartScreenPos = {0.0f, 0.0f};
+
+    public:
+        void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult) {
+            if (m_State == State::Inactive) {
+                return;
+            }
+
+            // users can exit measuring through these actions
+            if (ImGui::IsKeyDown(SDL_SCANCODE_ESCAPE) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+                StopMeasuring();
+                return;
+            }
+
+            // users can "finish" the measurement through these actions
+            if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                StopMeasuring();
+                return;
+            }
+
+            glm::vec2 mouseLoc = ImGui::GetMousePos();
+            ImDrawList* dl = ImGui::GetForegroundDrawList();
+
+            if (m_State == State::WaitingForFirstPoint) {
+                if (!htResult.first) {  // not mousing over anything
+                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xff0000ff);
+                    return;
+                } else {  // mousing over something
+                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xffffffff);
+                    char buf[1024];
+                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
+                    dl->AddText(mouseLoc + glm::vec2{10.0f, -7.0f}, 0xff000000, buf);
+
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                        m_State = State::WaitingForSecondPoint;
+                        m_StartWorldPos = htResult.second;
+                        m_StartScreenPos = mouseLoc;
+                    }
+                    return;
+                }
+            } else if (m_State == State::WaitingForSecondPoint) {
+                dl->AddCircleFilled(m_StartScreenPos, 5.0f, 0xffffffff);
+
+                if (htResult.first) {  // draw a line + circle between the two hitlocs
+                    dl->AddLine(m_StartScreenPos, mouseLoc, 0xff0000ff, 3.0f);
+                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xffffffff);
+                    glm::vec2 midpoint = (m_StartScreenPos + mouseLoc)/2.0f;
+                    midpoint += 15.0f;  // offset it slightly away from the line
+                    float dist  = glm::length(htResult.second - m_StartWorldPos);
+                    char buf[1024];
+                    std::snprintf(buf, sizeof(buf), "%.2f", dist);
+                    dl->AddText(midpoint, 0xff000000, buf);
+                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
+                    dl->AddText(mouseLoc + glm::vec2{10.0f, -7.0f}, 0xff000000, buf);
+                }
+            }
+        }
+
+        void StartMeasuring() {
+            m_State = State::WaitingForFirstPoint;
+        }
+
+        void StopMeasuring() {
+            m_State = State::Inactive;
+        }
+
+        bool IsMeasuring() const {
+            return m_State != State::Inactive;
+        }
+    };
 }
 
 struct osc::UiModelViewer::Impl final {
@@ -168,7 +246,6 @@ struct osc::UiModelViewer::Impl final {
 
     gl::Texture2D chequerTex = genChequeredFloorTexture();
 
-
     std::vector<BVHCollision> sceneHittestResults;
 
     glm::vec2 renderDims = {0.0f, 0.0f};
@@ -180,10 +257,11 @@ struct osc::UiModelViewer::Impl final {
     bool wireframeMode = false;
     bool drawMeshNormals = false;
     bool drawRims = true;
-
     bool autoFocusCameraNextFrame = false;
 
     std::vector<SceneGPUInstanceData> drawlistBuffer;
+
+    GuiRuler ruler;
 
     Impl(UiModelViewerFlags flags_) : flags{flags_} {
         camera.theta = fpi4;
@@ -1019,6 +1097,23 @@ static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
         drawSceneMenu(impl);
         ImGui::EndMenu();
     }
+
+    if (impl.ruler.IsMeasuring()) {
+        if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false)) {
+            impl.ruler.StopMeasuring();
+        }
+    } else {
+        if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true)) {
+            impl.ruler.StartMeasuring();
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted("EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    }
 }
 
 UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
@@ -1088,19 +1183,25 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
         populateSceneDrawlist(impl, rs);
         drawSceneTexture(impl, rs);
         drawOverlays(impl, rs);
-        blitSceneTexture(impl);
-
-        UiModelViewerResponse resp;
-        resp.hovertestResult = htResult.first;
-        resp.isMousedOver = impl.renderHovered;
-        if (resp.isMousedOver) {
-            resp.mouse3DLocation = htResult.second;
+        if (impl.ruler.IsMeasuring()) {
+            impl.ruler.draw(htResult);
         }
-        resp.isLeftClicked = impl.renderLeftClicked;
-        resp.isRightClicked = impl.renderRightClicked;
-        return resp;
-
+        blitSceneTexture(impl);
         ImGui::EndChild();
+
+        if (impl.ruler.IsMeasuring()) {
+            return {};  // don't give the caller the hittest result while measuring
+        } else {
+            UiModelViewerResponse resp;
+            resp.hovertestResult = htResult.first;
+            resp.isMousedOver = impl.renderHovered;
+            if (resp.isMousedOver) {
+                resp.mouse3DLocation = htResult.second;
+            }
+            resp.isLeftClicked = impl.renderLeftClicked;
+            resp.isRightClicked = impl.renderRightClicked;
+            return resp;
+        }
     } else {
         return {};  // child not visible
     }
