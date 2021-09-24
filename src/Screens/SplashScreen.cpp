@@ -12,6 +12,7 @@
 #include "src/3D/Texturing.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/UI/MainMenu.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/App.hpp"
 #include "src/Config.hpp"
 #include "src/Log.hpp"
@@ -118,7 +119,13 @@ void osc::SplashScreen::onUnmount() {
 }
 
 void osc::SplashScreen::onEvent(SDL_Event const& e) {
-    osc::ImGuiOnEvent(e);
+    if (osc::ImGuiOnEvent(e)) {
+        return;
+    }
+
+    if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim")) {
+        App::cur().requestTransition<LoadingScreen>(m_Impl->mes, e.drop.file);
+    }
 }
 
 void osc::SplashScreen::tick(float) {

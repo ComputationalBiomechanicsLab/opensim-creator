@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <string_view>
 
 namespace osc {
 
@@ -34,4 +35,7 @@ namespace osc {
 
     // returns true if `s` constains the supplied substring (case-insensitive)
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
+
+    // returns true if `s` ends with `suffix`
+    bool CStrEndsWith(char const* s, std::string_view suffix) noexcept;
 }

@@ -77,3 +77,15 @@ bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string c
 
     return std::strstr(s.c_str(), ss.c_str()) != nullptr;
 }
+
+bool osc::CStrEndsWith(char const* s, std::string_view suffix) noexcept {
+    size_t sLen = std::strlen(s);
+
+    if (sLen < suffix.length()) {
+        return false;
+    }
+
+    char const* sEnd = s + sLen;
+
+    return std::equal(sEnd - suffix.length(), sEnd, suffix.begin(), suffix.end());
+}
