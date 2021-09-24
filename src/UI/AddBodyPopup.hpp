@@ -47,6 +47,7 @@ namespace osc {
         bool addOffsetFramesToTheJoint = true;
         bool inertiaLocked = true;
         bool comLocked = true;
+        bool firstOpen = true;
 
         // assumes caller has handled calling ImGui::OpenPopup(modal_name)
         std::optional<NewBody> draw(char const* modalName, OpenSim::Model const&);

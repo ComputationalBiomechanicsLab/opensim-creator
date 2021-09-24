@@ -83,6 +83,11 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
 
     // prompt name
     {
+        if (firstOpen) {
+            ImGui::SetKeyboardFocusHere();
+            firstOpen = false;
+        }
+
         ImGui::Text("body name");
         ImGui::SameLine();
         DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
