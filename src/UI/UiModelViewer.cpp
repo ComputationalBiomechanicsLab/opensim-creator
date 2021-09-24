@@ -914,7 +914,6 @@ static void actionAutoFocusCamera(osc::UiModelViewer::Impl& impl, RenderableScen
 }
 
 static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
-    ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("reposition camera:");
     ImGui::Separator();
 

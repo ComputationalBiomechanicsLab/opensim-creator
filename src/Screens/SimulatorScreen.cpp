@@ -945,9 +945,11 @@ namespace {
             UiModelViewer& viewer,
             char const* name) {
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         bool isOpen = true;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+        ImGui::PopStyleVar();
 
         if (!isOpen) {
             ImGui::End();
@@ -961,7 +963,6 @@ namespace {
 
         RenderableSim rs{sim, report};
         auto resp = viewer.draw(rs);
-        ImGui::PopStyleVar();
         ImGui::End();
 
         if (resp.isLeftClicked && resp.hovertestResult) {
