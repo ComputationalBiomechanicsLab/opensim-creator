@@ -523,6 +523,12 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st) {
             ImGui::EndTooltip();
         }
         ImGui::MenuItem("Selection Details", nullptr, &st.showing.selectionDetails);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("note: this only shows when simulating a model");
+            ImGui::EndTooltip();
+        }
+
         ImGui::MenuItem("Simulations", nullptr, &st.showing.simulations);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();

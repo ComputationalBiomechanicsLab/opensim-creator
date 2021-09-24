@@ -1390,18 +1390,6 @@ namespace {
             ImGui::End();
         }
 
-        // draw selection details
-        if (impl.st->showing.selectionDetails) {
-            if (ImGui::Begin("Selection", &impl.st->showing.selectionDetails)) {
-                auto resp = ComponentDetails{}.draw(impl.st->editedModel.state(), impl.st->editedModel.getSelection());
-
-                if (resp.type == ComponentDetails::SelectionChanged) {
-                    impl.st->editedModel.setSelection(const_cast<OpenSim::Component*>(resp.ptr));
-                }
-            }
-            ImGui::End();
-        }
-
         // draw property editor
         if (impl.st->showing.propertyEditor) {
             if (ImGui::Begin("Edit Props", &impl.st->showing.propertyEditor)) {
