@@ -706,7 +706,7 @@ namespace {
 
         // render standard, easy to render, props of the contact params
         {
-            std::array<int, 6> easyToHandleProps = {
+            auto easyToHandleProps = std::array<int, 6>{
                 params.PropertyIndex_geometry,
                 params.PropertyIndex_stiffness,
                 params.PropertyIndex_dissipation,
@@ -724,6 +724,10 @@ namespace {
                 uim.afterModifyingModel();
             }
         }
+
+
+        // render readonly contact geometry list with the option for deletion
+
     }
 
     // draw contextual actions (buttons, sliders) for a selected path actuator
@@ -998,13 +1002,19 @@ namespace {
             return;
         }
 
-        // property editor
+        // property editors
         ImGui::Dummy(ImVec2(0.0f, 5.0f));
         ImGui::TextUnformatted("properties:");
         ImGui::SameLine();
         DrawHelpMarker("Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
         ImGui::Separator();
-        drawTopLevelMembersEditor(uim);
+
+        // top-level property editors
+        {
+            drawTopLevelMembersEditor(uim);
+        }
+
+        // property editors
         {
             auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelection());
             if (maybeUpdater) {
