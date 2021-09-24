@@ -307,7 +307,7 @@ void osc::SceneGeneratorNew::implementConeGeometry(SimTK::DecorativeCone const& 
     glm::mat4 radiusRescale = glm::scale(glm::mat4{1.0f}, {baseRadius, 1.0f, baseRadius});
 
     SceneElement se;
-    se.mesh = m_MeshCache.getCylinderMesh();
+    se.mesh = m_MeshCache.getConeMesh();
     se.modelMtx = lineXform * radiusRescale;
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(dc);
