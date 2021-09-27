@@ -282,9 +282,15 @@ namespace osc {
         // and the scene will look wrong.
         void rescaleZNearAndZFarBasedOnRadius() noexcept;
 
-        [[nodiscard]] glm::mat4 getViewMtx() const noexcept;
-        [[nodiscard]] glm::mat4 getProjMtx(float aspect_ratio) const noexcept;
-        [[nodiscard]] glm::vec3 getPos() const noexcept;
+        glm::mat4 getViewMtx() const noexcept;
+        glm::mat4 getProjMtx(float aspect_ratio) const noexcept;
+
+        // project's a worldspace coordinate onto a screen-space rectangle
+        glm::vec2 projectOntoScreenRect(glm::vec3 const& worldspaceLoc,
+                                        glm::vec2 const& topLeft,
+                                        glm::vec2 const& bottomRight) const noexcept;
+
+        glm::vec3 getPos() const noexcept;
 
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
         Line unprojectScreenposToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;

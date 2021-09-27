@@ -1333,6 +1333,26 @@ glm::vec3 osc::PolarPerspectiveCamera::getPos() const noexcept {
     return -focusPoint + glm::vec3{x, y, z};
 }
 
+glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(
+        glm::vec3 const& worldspaceLoc,
+        glm::vec2 const& topLeft,
+        glm::vec2 const& bottomRight) const noexcept {
+
+    glm::vec2 dims = bottomRight - topLeft;
+    glm::mat4 MV = getProjMtx(dims.x / dims.y) * getViewMtx();
+
+    glm::vec4 ndc = MV * glm::vec4{worldspaceLoc, 1.0f};
+    ndc /= ndc.w;  // perspective divide
+
+    glm::vec2 ndc2D;
+    ndc2D = {ndc.x, -ndc.y};  // [-1, 1], Y points down
+    ndc2D += 1.0f;            // [0, 2]
+    ndc2D *= 0.5f;            // [0, 1]
+    ndc2D *= dims;            // [0, w]
+    ndc2D += topLeft;         // [x, x + w]
+    return ndc2D;
+}
+
 Line osc::PolarPerspectiveCamera::unprojectScreenposToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept {
     glm::mat4 projMtx = getProjMtx(dims.x/dims.y);
     glm::mat4 viewMtx = getViewMtx();

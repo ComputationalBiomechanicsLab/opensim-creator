@@ -158,10 +158,13 @@ namespace {
         enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
         State m_State = State::Inactive;
         glm::vec3 m_StartWorldPos = {0.0f, 0.0f, 0.0f};
-        glm::vec2 m_StartScreenPos = {0.0f, 0.0f};
 
     public:
-        void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult) {
+        void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult,
+                  PolarPerspectiveCamera const& sceneCamera,
+                  glm::vec2 renderTopLeft,
+                  glm::vec2 renderBottomRight) {
+
             if (m_State == State::Inactive) {
                 return;
             }
@@ -180,38 +183,70 @@ namespace {
 
             glm::vec2 mouseLoc = ImGui::GetMousePos();
             ImDrawList* dl = ImGui::GetForegroundDrawList();
+            ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
+            ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
+            ImU32 lineColor = circleColor;
+            ImU32 textBgColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            ImU32 textColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            float circleRadius = 5.0f;
+            float lineThickness = 3.0f;
+            glm::vec2 labelOffsetWhenNoLine = {10.0f, -10.0f};
+
+            auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, char const* text) {
+                glm::vec2 sz = ImGui::CalcTextSize(text);
+                float bgPad = 5.0f;
+                float edgeRounding = bgPad - 2.0f;
+
+                dl->AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
+                dl->AddText(pos, textColor, text);
+            };
 
             if (m_State == State::WaitingForFirstPoint) {
                 if (!htResult.first) {  // not mousing over anything
-                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xff0000ff);
+                    dl->AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
                     return;
                 } else {  // mousing over something
-                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xffffffff);
+                    dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
                     char buf[1024];
                     std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
-                    dl->AddText(mouseLoc + glm::vec2{10.0f, -7.0f}, 0xff000000, buf);
+                    drawTooltipWithBg(mouseLoc + labelOffsetWhenNoLine, buf);
 
                     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                         m_State = State::WaitingForSecondPoint;
                         m_StartWorldPos = htResult.second;
-                        m_StartScreenPos = mouseLoc;
                     }
                     return;
                 }
             } else if (m_State == State::WaitingForSecondPoint) {
-                dl->AddCircleFilled(m_StartScreenPos, 5.0f, 0xffffffff);
+                glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderTopLeft, renderBottomRight);
 
-                if (htResult.first) {  // draw a line + circle between the two hitlocs
-                    dl->AddLine(m_StartScreenPos, mouseLoc, 0xff0000ff, 3.0f);
-                    dl->AddCircleFilled(mouseLoc, 5.0f, 0xffffffff);
-                    glm::vec2 midpoint = (m_StartScreenPos + mouseLoc)/2.0f;
-                    midpoint += 15.0f;  // offset it slightly away from the line
-                    float dist  = glm::length(htResult.second - m_StartWorldPos);
-                    char buf[1024];
-                    std::snprintf(buf, sizeof(buf), "%.2f", dist);
-                    dl->AddText(midpoint, 0xff000000, buf);
-                    std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
-                    dl->AddText(mouseLoc + glm::vec2{10.0f, -7.0f}, 0xff000000, buf);
+                if (htResult.first) {
+                    // user is moused over something, so draw a line + circle between the two hitlocs
+                    glm::vec2 endScreenPos = mouseLoc;
+                    glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
+                    glm::vec2 offsetVec = 15.0f * glm::vec2{lineScreenDir.y, -lineScreenDir.x};
+                    glm::vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
+                    float lineWorldLen = glm::length(htResult.second - m_StartWorldPos);
+
+                    dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
+                    dl->AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
+                    dl->AddCircleFilled(endScreenPos, circleRadius, circleColor);
+
+                    // label the line's length
+                    {
+                        char buf[1024];
+                        std::snprintf(buf, sizeof(buf), "%.2f", lineWorldLen);
+                        drawTooltipWithBg(lineMidpoint + offsetVec, buf);
+                    }
+
+                    // label the endpoint's component + coord
+                    {
+                        char buf[1024];
+                        std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
+                        drawTooltipWithBg(mouseLoc + offsetVec, buf);
+                    }
+                } else {
+                    dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
                 }
             }
         }
@@ -1184,7 +1219,7 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
         drawSceneTexture(impl, rs);
         drawOverlays(impl, rs);
         if (impl.ruler.IsMeasuring()) {
-            impl.ruler.draw(htResult);
+            impl.ruler.draw(htResult, impl.camera, impl.renderTopLeft, impl.renderBottomRight);
         }
         blitSceneTexture(impl);
         ImGui::EndChild();
