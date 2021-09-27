@@ -16,18 +16,25 @@ namespace SimTK {
 }
 
 namespace osc {
-    // a "UI-ready" OpenSim::Model with undo/redo and rollback support
+    // A "UI ready" model with undo/redo support
     //
-    // this is what the top-level editor screens are managing. As the user makes
-    // edits to the model, the current/undo/redo states are being updated. This
-    // class also has light support for handling "rollbacks", which is where the
-    // implementation detects that the user modified the model into an invalid state
-    // and the implementation tried to fix the problem by rolling back to an earlier
-    // (hopefully, valid) undo state
-    struct UndoableUiModel final {
-        UiModel current;
-        CircularBuffer<UiModel, 32> undo;
-        CircularBuffer<UiModel, 32> redo;
+    // contains four major points of interest:
+    //
+    //     a) an "active", potentially dirty, model
+    //     b) a "committed", always clean, model
+    //     c) an undo buffer containing clean models
+    //     d) an redo buffer containing clean models
+    //
+    // - the editor can edit `a` at any time
+    // - the UI thread regularly (i.e. once per frame) calls `a.updateIfDirty()`
+    // - if updating succeeds, `b` is pushed into the undo buffer and `a` is
+    //   *copied* into `b`
+    // - if updating fails, `b` is copied into `a` as a "fallback" to ensure that
+    //   `a` is left in a valid state
+    class UndoableUiModel final {
+        UiModel m_Current;
+        CircularBuffer<UiModel, 32> m_UndoBuffer;
+        CircularBuffer<UiModel, 32> m_RedoBuffer;
 
         // holding space for a "damaged" model
         //
@@ -46,41 +53,54 @@ namespace osc {
         // be local (stack-allocated) pointers into the damaged model's components.
         // In that case, it is *probably* safer to let that process finish with a
         // damaged model than potentially segfault.
-        std::optional<UiModel> damaged;
+        std::optional<UiModel> m_Damaged;
 
-        // make a new undoable UI model
+        void rollbackModelToEarlierState();
+
+    public:
+
+        // make a new, blank, undoable model
         UndoableUiModel();
 
+        // make a new undoable model from an existing in-memory OpenSim model
         explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
 
+        UiModel const& getUiModel() const {
+            return m_Current;
+        }
+
+        UiModel& updUiModel() {
+            return m_Current;
+        }
+
         [[nodiscard]] constexpr bool canUndo() const noexcept {
-            return !undo.empty();
+            return !m_UndoBuffer.empty();
         }
 
         void doUndo();
 
         [[nodiscard]] constexpr bool canRedo() const noexcept {
-            return !redo.empty();
+            return !m_RedoBuffer.empty();
         }
 
         void doRedo();
 
 
         OpenSim::Model const& getModel() const noexcept {
-            return current.getModel();
+            return m_Current.getModel();
         }
 
         OpenSim::Model& updModel() noexcept {
-            return current.updModel();
+            return m_Current.updModel();
         }
 
 
         SimTK::State const& getState() const noexcept {
-            return current.getState();
+            return m_Current.getState();
         }
 
         SimTK::State& updState() noexcept {
-            return current.updState();
+            return m_Current.updState();
         }
 
         void setModel(std::unique_ptr<OpenSim::Model>);
@@ -103,68 +123,68 @@ namespace osc {
 
 
         bool hasSelected() const {
-            return current.getSelected() != nullptr;
+            return m_Current.getSelected() != nullptr;
         }
 
         OpenSim::Component const* getSelected() const {
-            return current.getSelected();
+            return m_Current.getSelected();
         }
 
         OpenSim::Component* updSelected() {
-            return current.updSelected();
+            return m_Current.updSelected();
         }
 
         void setSelected(OpenSim::Component const* c) {
-            current.setSelected(c);
+            m_Current.setSelected(c);
         }
 
         template<typename T>
         bool selectionIsType() const {
-            return current.selectionIsType<T>();
+            return m_Current.selectionIsType<T>();
         }
 
         template<typename T>
         bool selectionDerivesFrom() const {
-            return current.selectionDerivesFrom<T>();
+            return m_Current.selectionDerivesFrom<T>();
         }
 
         template<typename T>
         T const* getSelectedAs() const {
-            return current.getSelectedAs<T>();
+            return m_Current.getSelectedAs<T>();
         }
 
         template<typename T>
         T* updSelectedAs() {
-            return current.updSelectedAs<T>();
+            return m_Current.updSelectedAs<T>();
         }
 
         bool hasHovered() const {
-            return current.hasHovered();
+            return m_Current.hasHovered();
         }
 
         OpenSim::Component const* getHovered() const noexcept {
-            return current.getHovered();
+            return m_Current.getHovered();
         }
 
         OpenSim::Component* updHovered() {
-            return current.updHovered();
+            return m_Current.updHovered();
         }
 
         void setHovered(OpenSim::Component const* c) {
-            current.setHovered(c);
+            m_Current.setHovered(c);
         }
 
 
         OpenSim::Component const* getIsolated() const noexcept {
-            return current.getIsolated();
+            return m_Current.getIsolated();
         }
 
         OpenSim::Component* updIsolated() {
-            return current.updIsolated();
+            return m_Current.updIsolated();
         }
 
         void setIsolated(OpenSim::Component const* c) {
-            current.setIsolated(c);
+            m_Current.setIsolated(c);
         }
 
 
@@ -176,16 +196,16 @@ namespace osc {
         // the model indirectly (e.g. it was destructed by an OpenSim container)
         // and that we want to ensure the pointer isn't still held by this state
         void declareDeathOf(OpenSim::Component const* c) noexcept {
-            if (current.getSelected() == c) {
-                current.setSelected(nullptr);
+            if (m_Current.getSelected() == c) {
+                m_Current.setSelected(nullptr);
             }
 
-            if (current.getHovered() == c) {
-                current.setHovered(nullptr);
+            if (m_Current.getHovered() == c) {
+                m_Current.setHovered(nullptr);
             }
 
-            if (current.getIsolated() == c) {
-                current.setIsolated(nullptr);
+            if (m_Current.getIsolated() == c) {
+                m_Current.setIsolated(nullptr);
             }
         }
     };

@@ -170,7 +170,7 @@ namespace osc {
 
         void startSimulatingEditedModel() {
             int newFocus = static_cast<int>(simulations.size());
-            simulations.emplace_back(new UiSimulation{editedModel.current, simParams});
+            simulations.emplace_back(new UiSimulation{editedModel.getUiModel(), simParams});
             focusedSimulation = newFocus;
             focusedSimulationScrubbingTime = -1.0f;
         }

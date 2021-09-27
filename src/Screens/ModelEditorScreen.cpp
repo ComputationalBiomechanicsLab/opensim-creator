@@ -793,7 +793,7 @@ namespace {
     }
 
     void drawModelContextualActions(UndoableUiModel& uum) {
-        OpenSim::Model const* m = uum.current.getSelectedAs<OpenSim::Model>();
+        OpenSim::Model const* m = uum.getSelectedAs<OpenSim::Model>();
 
         if (!m) {
             return;
@@ -805,7 +805,7 @@ namespace {
         bool showingFrames = m->get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
         if (ImGui::Button(showingFrames ? "hide" : "show")) {
             uum.beforeModifyingModel();
-            uum.current.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+            uum.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
             uum.afterModifyingModel();
         }
         ImGui::NextColumn();
@@ -1088,15 +1088,14 @@ namespace {
             }
 
 
-            float scaleFactor = impl.st->editedModel.current.getFixupScaleFactor();
+            float scaleFactor = impl.st->editedModel.getUiModel().getFixupScaleFactor();
             if (ImGui::InputFloat("set scale factor", &scaleFactor)) {
-                impl.st->editedModel.current.setFixupScaleFactor(scaleFactor);
-                impl.st->editedModel.current.updateIfDirty();
+                impl.st->editedModel.updUiModel().setFixupScaleFactor(scaleFactor);
+                impl.st->editedModel.updUiModel().updateIfDirty();
             }
             if (ImGui::MenuItem("autoscale scale factor")) {
-                UiModel& uim2 = impl.st->editedModel.current;
-                float sf = uim2.getRecommendedScaleFactor();
-                uim2.setFixupScaleFactor(sf);
+                float sf = impl.st->editedModel.getUiModel().getRecommendedScaleFactor();
+                impl.st->editedModel.updUiModel().setFixupScaleFactor(sf);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1310,7 +1309,7 @@ namespace {
             return true;
         }
 
-        auto resp = viewer.draw(impl.st->editedModel.current);
+        auto resp = viewer.draw(impl.st->editedModel.getUiModel());
         ImGui::End();
 
         // update hover
@@ -1443,7 +1442,7 @@ namespace {
 
         if (impl.st->showing.coordinateEditor) {
             if (ImGui::Begin("Coordinate Editor")) {
-                impl.ui.coordEditor.draw(impl.st->editedModel.current);
+                impl.ui.coordEditor.draw(impl.st->editedModel.updUiModel());
             }
         }
 

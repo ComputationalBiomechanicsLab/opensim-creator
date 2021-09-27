@@ -35,11 +35,6 @@ namespace osc {
     // accessing - usually indirectly (e.g. via a reference to the Model)
     class UiModel final : public RenderableScene {
     public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
-    public:
         // make a blank (new) UiModel
         UiModel();
 
@@ -154,5 +149,10 @@ namespace osc {
 
         std::chrono::system_clock::time_point getTimestamp() const;
         void setTimestamp(std::chrono::system_clock::time_point t);
+
+    public:
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }
