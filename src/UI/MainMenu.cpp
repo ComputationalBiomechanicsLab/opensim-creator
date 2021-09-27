@@ -172,11 +172,11 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            actionSaveCurrentModel(editor_state->model());
+            actionSaveCurrentModel(editor_state->updModel());
         }
 
         if (editor_state && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            actionSaveCurrentModelAs(editor_state->model());
+            actionSaveCurrentModelAs(editor_state->updModel());
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
@@ -230,13 +230,13 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
-            actionSaveCurrentModel(editor_state->model());
+            actionSaveCurrentModel(editor_state->updModel());
         }
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
-            actionSaveCurrentModelAs(editor_state->model());
+            actionSaveCurrentModelAs(editor_state->updModel());
         }
     }
 

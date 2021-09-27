@@ -80,8 +80,20 @@ namespace osc {
         MainEditorState& operator=(MainEditorState const&) = delete;
         MainEditorState& operator=(MainEditorState&&) = delete;
 
-        [[nodiscard]] OpenSim::Model& model() noexcept {
-            return editedModel.model();
+        OpenSim::Model& updModel() noexcept {
+            return editedModel.updModel();
+        }
+
+        OpenSim::Model const& getModel() const noexcept {
+            return editedModel.getModel();
+        }
+
+        SimTK::State const& getState() const noexcept {
+            return editedModel.getState();
+        }
+
+        SimTK::State& updState() noexcept {
+            return editedModel.updState();
         }
 
         [[nodiscard]] bool canUndo() const noexcept {
@@ -100,9 +112,7 @@ namespace osc {
             editedModel.doRedo();
         }
 
-        [[nodiscard]] OpenSim::Model& model() const noexcept {
-            return editedModel.model();
-        }
+
 
         void setModel(std::unique_ptr<OpenSim::Model> new_model);
 
@@ -114,33 +124,45 @@ namespace osc {
             editedModel.afterModifyingModel();
         }
 
-        [[nodiscard]] OpenSim::Component* selection() noexcept {
-            return editedModel.getSelection();
+
+        OpenSim::Component const* getSelected() const noexcept {
+            return editedModel.getSelected();
         }
 
-        void setSelection(OpenSim::Component* c) {
-            editedModel.setSelection(c);
+        OpenSim::Component* updSelected() noexcept {
+            return editedModel.updSelected();
         }
 
-        [[nodiscard]] OpenSim::Component* hovered() noexcept {
-            return editedModel.getHover();
+        void setSelected(OpenSim::Component const* c) {
+            editedModel.setSelected(c);
         }
 
-        void setHovered(OpenSim::Component* c) {
-            editedModel.setHover(c);
+
+        OpenSim::Component const* getHovered() const noexcept {
+            return editedModel.getHovered();
         }
 
-        [[nodiscard]] OpenSim::Component* isolated() noexcept {
+        OpenSim::Component* updHovered() {
+            return editedModel.updHovered();
+        }
+
+        void setHovered(OpenSim::Component const* c) {
+            editedModel.setHovered(c);
+        }
+
+
+        OpenSim::Component const* getIsolated() const noexcept {
             return editedModel.getIsolated();
         }
 
-        void setIsolated(OpenSim::Component* c) {
+        OpenSim::Component* updIsolated() {
+            return editedModel.updIsolated();
+        }
+
+        void setIsolated(OpenSim::Component const* c) {
             editedModel.setIsolated(c);
         }
 
-        [[nodiscard]] SimTK::State& state() noexcept {
-            return editedModel.state();
-        }
 
         void clearAnyDamagedModels() {
             editedModel.clearAnyDamagedModels();

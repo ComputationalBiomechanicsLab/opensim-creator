@@ -12,7 +12,7 @@ namespace osc {
     class FdSimulation;
     struct Report;
     struct FdParams;
-    struct UiModel;
+    class UiModel;
 }
 
 namespace osc {

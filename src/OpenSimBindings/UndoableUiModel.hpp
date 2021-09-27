@@ -65,8 +65,22 @@ namespace osc {
 
         void doRedo();
 
-        [[nodiscard]] OpenSim::Model& model() const noexcept {
-            return *current.model;
+
+        OpenSim::Model const& getModel() const noexcept {
+            return current.getModel();
+        }
+
+        OpenSim::Model& updModel() noexcept {
+            return current.updModel();
+        }
+
+
+        SimTK::State const& getState() const noexcept {
+            return current.getState();
+        }
+
+        SimTK::State& updState() noexcept {
+            return current.updState();
         }
 
         void setModel(std::unique_ptr<OpenSim::Model>);
@@ -87,33 +101,72 @@ namespace osc {
         // that isn't possible (e.g. because there are no earlier states)
         void forciblyRollbackToEarlierState();
 
-        [[nodiscard]] OpenSim::Component* getSelection() noexcept {
-            return current.selected;
+
+        bool hasSelected() const {
+            return current.getSelected() != nullptr;
         }
 
-        void setSelection(OpenSim::Component* c) {
-            current.selected = c;
+        OpenSim::Component const* getSelected() const {
+            return current.getSelected();
         }
 
-        [[nodiscard]] OpenSim::Component* getHover() noexcept {
-            return current.hovered;
+        OpenSim::Component* updSelected() {
+            return current.updSelected();
         }
 
-        void setHover(OpenSim::Component* c) {
-            current.hovered = c;
+        void setSelected(OpenSim::Component const* c) {
+            current.setSelected(c);
         }
 
-        [[nodiscard]] OpenSim::Component* getIsolated() noexcept {
-            return current.isolated;
+        template<typename T>
+        bool selectionIsType() const {
+            return current.selectionIsType<T>();
         }
 
-        void setIsolated(OpenSim::Component* c) {
-            current.isolated = c;
+        template<typename T>
+        bool selectionDerivesFrom() const {
+            return current.selectionDerivesFrom<T>();
         }
 
-        [[nodiscard]] SimTK::State& state() noexcept {
-            return *current.state;
+        template<typename T>
+        T const* getSelectedAs() const {
+            return current.getSelectedAs<T>();
         }
+
+        template<typename T>
+        T* updSelectedAs() {
+            return current.updSelectedAs<T>();
+        }
+
+        bool hasHovered() const {
+            return current.hasHovered();
+        }
+
+        OpenSim::Component const* getHovered() const noexcept {
+            return current.getHovered();
+        }
+
+        OpenSim::Component* updHovered() {
+            return current.updHovered();
+        }
+
+        void setHovered(OpenSim::Component const* c) {
+            current.setHovered(c);
+        }
+
+
+        OpenSim::Component const* getIsolated() const noexcept {
+            return current.getIsolated();
+        }
+
+        OpenSim::Component* updIsolated() {
+            return current.updIsolated();
+        }
+
+        void setIsolated(OpenSim::Component const* c) {
+            current.setIsolated(c);
+        }
+
 
         void clearAnyDamagedModels();
 
@@ -123,16 +176,16 @@ namespace osc {
         // the model indirectly (e.g. it was destructed by an OpenSim container)
         // and that we want to ensure the pointer isn't still held by this state
         void declareDeathOf(OpenSim::Component const* c) noexcept {
-            if (current.selected == c) {
-                current.selected = nullptr;
+            if (current.getSelected() == c) {
+                current.setSelected(nullptr);
             }
 
-            if (current.hovered == c) {
-                current.hovered = nullptr;
+            if (current.getHovered() == c) {
+                current.setHovered(nullptr);
             }
 
-            if (current.isolated == c) {
-                current.isolated = nullptr;
+            if (current.getIsolated() == c) {
+                current.setIsolated(nullptr);
             }
         }
     };

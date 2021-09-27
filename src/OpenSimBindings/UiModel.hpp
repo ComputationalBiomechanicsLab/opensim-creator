@@ -1,18 +1,20 @@
 #pragma once
 
-#include "src/3D/BVH.hpp"
+#include "src/3D/Model.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 
 #include <nonstd/span.hpp>
+#include <glm/vec3.hpp>
 
 #include <chrono>
+#include <cstddef>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 namespace OpenSim {
-    class Model;
+    class Component;
     class Coordinate;
+    class Model;
 }
 
 namespace SimTK {
@@ -20,79 +22,24 @@ namespace SimTK {
 }
 
 namespace osc {
+    struct BVH;
+    class StateModifications;
+    struct CoordinateEdit;
+}
 
-    void generateDecorations(OpenSim::Model const&,
-                             SimTK::State const&,
-                             float fixupScaleFactor,
-                             std::vector<LabelledSceneElement>&);
-    void updateBVH(nonstd::span<LabelledSceneElement const>, BVH&);
-
-    // user-enacted coordinate edit
-    //
-    // used to modify the default state whenever a new state is generated
-    struct CoordinateEdit final {
-        double value;
-        double speed;
-        bool locked;
-
-        bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;  // returns `true` if it modified the state
-    };
-
-    // user-enacted state modifications
-    class StateModifications final {
-    public:
-        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
-        bool applyToState(OpenSim::Model const&, SimTK::State&) const;
-
-    private:
-        std::unordered_map<std::string, CoordinateEdit> m_CoordEdits;
-    };
+namespace osc {
 
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
     //
     // this is what most of the components, screen elements, etc. are
     // accessing - usually indirectly (e.g. via a reference to the Model)
-    struct UiModel final : public RenderableScene {
-        // user-enacted state modifications (e.g. coordinate edits)
-        StateModifications stateModifications;
+    class UiModel final : public RenderableScene {
+    public:
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
 
-        // the model, finalized from its properties
-        std::unique_ptr<OpenSim::Model> model;
-
-        // SimTK::State, in a renderable state (e.g. realized up to a relevant stage)
-        std::unique_ptr<SimTK::State> state;
-
-        // decorations, generated from model's display properties etc.
-        std::vector<LabelledSceneElement> decorations;
-
-        // scene-level BVH of decoration AABBs
-        BVH sceneAABBBVH;
-
-        // fixup scale factor of the model
-        //
-        // this scales up/down the decorations of the model - used for extremely
-        // undersized models (e.g. fly leg)
-        float fixupScaleFactor;
-
-        // current selection, if any
-        OpenSim::Component* selected;
-
-        // current hover, if any
-        OpenSim::Component* hovered;
-
-        // current isolation, if any
-        //
-        // "isolation" here means that the user is only interested in this
-        // particular subcomponent in the model, so visualizers etc. should
-        // try to only show that component
-        OpenSim::Component* isolated;
-
-        // generic timestamp
-        //
-        // can indicate creation or latest modification, it's here to roughly
-        // track how old/new the instance is
-        std::chrono::system_clock::time_point timestamp;
-
+    public:
         // make a blank (new) UiModel
         UiModel();
 
@@ -102,49 +49,98 @@ namespace osc {
         // make a UiModel from an in-memory OpenSim::Model
         explicit UiModel(std::unique_ptr<OpenSim::Model>);
 
-        // copy some other UiModel
+        // make an independent copy
         UiModel(UiModel const&);
 
-        // copy some other UiModel, but use the supplied timestamp for the modification time
-        UiModel(UiModel const&, std::chrono::system_clock::time_point t);
-
+        // move this model somewhere else in memory
         UiModel(UiModel&&) noexcept;
+
         ~UiModel() noexcept override;
 
         UiModel& operator=(UiModel const&) = delete;
         UiModel& operator=(UiModel&&);
 
-        // this should be called whenever `model` is mutated
+        StateModifications const& getStateModifications() const;
+
+        OpenSim::Model const& getModel() const;
+        OpenSim::Model& updModel();
+
+        SimTK::State const& getState() const;
+        SimTK::State& updState();
+
+        // returns true if the model has been modified but the state etc.
+        // haven't yet been updated to reflect the change
+        bool isDirty() const;
+
+        // updates all members in this class to reflect the latest model
         //
-        // This method updates the other members to reflect the modified model. It
-        // can throw, because the modification may have put the model into an invalid
-        // state that can't be used to initialize a new SimTK::MultiBodySystem or
-        // SimTK::State
-        void onUiModelModified();
+        // this potentially can, depending on what's been modified:
+        //
+        // - make a new SimTK::System (if the model is modified)
+        // - make a new SimTK::State
+        // - generate new decorations
+        // - update the scene BVH
+        //
+        // so this has A LOT of potential to THROW. You should handle that
+        // appropriately.
+        void updateIfDirty();
 
-        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override {
-            return decorations;
+        // manually sets the internal dirty flags for this model
+        //
+        // this is *usually* automatically handled based on other method calls, but
+        // is sometimes necessary if (e.g.) the calling code ends up `const_cast`ing
+        // a member of this class for practical reasons
+        void setModelDirty(bool);
+        void setStateDirty(bool);
+        void setDecorationsDirty(bool);
+        void setAllDirty(bool);
+
+        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override;
+
+        BVH const& getSceneBVH() const override;
+
+        float getFixupScaleFactor() const override;
+
+        void setFixupScaleFactor(float);
+
+        bool hasSelected() const;
+
+        OpenSim::Component const* getSelected() const override;
+
+        OpenSim::Component* updSelected();
+
+        void setSelected(OpenSim::Component const* c);
+
+        bool selectionHasTypeHashCode(size_t v) const;
+
+        template<typename T>
+        bool selectionIsType() const {
+            return selectionHasTypeHashCode(typeid(T).hash_code());
         }
 
-        BVH const& getSceneBVH() const override {
-            return sceneAABBBVH;
+        template<typename T>
+        bool selectionDerivesFrom() const {
+            return dynamic_cast<T const*>(getSelected()) != nullptr;
         }
 
-        float getFixupScaleFactor() const override {
-            return fixupScaleFactor;
+        template<typename T>
+        T const* getSelectedAs() const {
+            return dynamic_cast<T const*>(getSelected());
         }
 
-        OpenSim::Component const* getSelected() const override {
-            return selected;
+        template<typename T>
+        T* updSelectedAs() {
+            return dynamic_cast<T*>(updSelected());
         }
 
-        OpenSim::Component const* getHovered() const override {
-            return hovered;
-        }
+        bool hasHovered() const;
+        OpenSim::Component const* getHovered() const override;
+        OpenSim::Component* updHovered();
+        void setHovered(OpenSim::Component const* c);
 
-        OpenSim::Component const* getIsolated() const override {
-            return isolated;
-        }
+        OpenSim::Component const* getIsolated() const override;
+        OpenSim::Component* updIsolated();
+        void setIsolated(OpenSim::Component const* c);
 
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
 
@@ -156,6 +152,7 @@ namespace osc {
 
         float getRecommendedScaleFactor() const;
 
-        void setSceneScaleFactor(float);
+        std::chrono::system_clock::time_point getTimestamp() const;
+        void setTimestamp(std::chrono::system_clock::time_point t);
     };
 }

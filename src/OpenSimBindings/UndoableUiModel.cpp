@@ -23,7 +23,7 @@ namespace {
 static DebounceRv canPushNewUndoStateWithDebounce(UndoableUiModel const& uim) {
     DebounceRv rv;
     rv.validAt = std::chrono::system_clock::now();
-    rv.shouldUndo = uim.undo.empty() || uim.undo.back().timestamp + 5s <= rv.validAt;
+    rv.shouldUndo = uim.undo.empty() || uim.undo.back().getTimestamp() + 5s <= rv.validAt;
     return rv;
 }
 
@@ -31,7 +31,7 @@ static void doDebouncedUndoPush(UndoableUiModel& uim) {
     auto [validAt, shouldUndo] = canPushNewUndoStateWithDebounce(uim);
 
     if (shouldUndo) {
-        uim.undo.emplace_back(uim.current, validAt);
+        uim.undo.emplace_back(uim.current).setTimestamp(validAt);
         uim.redo.clear();
     }
 }
@@ -70,7 +70,7 @@ static void carefullyTryToInitSimTKSystemAndRealizeOnCurrentModel(UndoableUiMode
     // changes in the UI that should not be lost by a crash.
 
     try {
-        uim.current.onUiModelModified();
+        uim.current.updateIfDirty();
         return;
     } catch (std::exception const& ex) {
         log::error("exception thrown when initializing updated model: %s", ex.what());

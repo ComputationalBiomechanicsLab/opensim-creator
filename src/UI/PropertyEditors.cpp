@@ -381,7 +381,8 @@ std::optional<AbstractPropertyEditor::Response> osc::AbstractPropertyEditor::dra
     return rv;
 }
 
-std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object& obj) {
+std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
+        OpenSim::Object const& obj) {
 
     int num_props = obj.getNumProperties();
     OSC_ASSERT(num_props >= 0);
@@ -405,7 +406,7 @@ std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::dra
 }
 
 std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
-        OpenSim::Object& obj,
+        OpenSim::Object const& obj,
         nonstd::span<int const> indices) {
 
     int highest = *std::max_element(indices.begin(), indices.end());
