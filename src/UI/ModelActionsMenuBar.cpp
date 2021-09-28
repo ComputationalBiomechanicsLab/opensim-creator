@@ -1,6 +1,7 @@
 #include "ModelActionsMenuBar.hpp"
 
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/UI/AddBodyPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
 #include "src/Log.hpp"
@@ -30,12 +31,9 @@ static void drawTooltip(char const* header, char const* description) {
     ImGui::EndTooltip();
 }
 
-static void renderModelActionsPanelContent(
-    ModelActionsMenuBar& st,
-    OpenSim::Model& model,
-    std::function<void(OpenSim::Component*)> const& onSetSelection,
-    std::function<void()> const& onBeforeModifyModel,
-    std::function<void()> const& onAfterModifyModel) {
+static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim) {
+
+    bool editMade = false;
 
     // action: add body
     {
@@ -54,13 +52,13 @@ static void renderModelActionsPanelContent(
         }
 
         // draw popup (if requested)
-        if (auto maybeNewBody = st.abm.draw(addBodyPopupName, model); maybeNewBody) {
-            onBeforeModifyModel();
+        if (auto maybeNewBody = st.abm.draw(addBodyPopupName, uim.getModel()); maybeNewBody) {
+            OpenSim::Model& model = uim.updModel();
             model.addJoint(maybeNewBody->joint.release());
             auto* ptr = maybeNewBody->body.get();
             model.addBody(maybeNewBody->body.release());
-            onSetSelection(const_cast<OpenSim::Body*>(ptr));
-            onAfterModifyModel();
+            uim.setSelected(ptr);
+            editMade = true;
         }
     }
 
@@ -208,32 +206,27 @@ static void renderModelActionsPanelContent(
     }
 
     if (st.addComponentPopup && st.addComponentPopupName) {
-        auto newComponent =
-            st.addComponentPopup->draw(st.addComponentPopupName, model);
+        auto newComponent = st.addComponentPopup->draw(st.addComponentPopupName, uim.getModel());
 
         if (newComponent) {
             auto ptr = newComponent.get();
 
             if (dynamic_cast<OpenSim::Joint*>(newComponent.get())) {
-                onBeforeModifyModel();
-                model.addJoint(static_cast<OpenSim::Joint*>(newComponent.release()));
-                onSetSelection(ptr);
-                onAfterModifyModel();
+                uim.updModel().addJoint(static_cast<OpenSim::Joint*>(newComponent.release()));
+                uim.setSelected(ptr);
+                editMade = true;
             } else if (dynamic_cast<OpenSim::Force*>(newComponent.get())) {
-                onBeforeModifyModel();
-                model.addForce(static_cast<OpenSim::Force*>(newComponent.release()));
-                onSetSelection(ptr);
-                onAfterModifyModel();
+                uim.updModel().addForce(static_cast<OpenSim::Force*>(newComponent.release()));
+                uim.setSelected(ptr);
+                editMade = true;
             } else if (dynamic_cast<OpenSim::Constraint*>(newComponent.get())) {
-                onBeforeModifyModel();
-                model.addConstraint(static_cast<OpenSim::Constraint*>(newComponent.release()));
-                onSetSelection(ptr);
-                onAfterModifyModel();
+                uim.updModel().addConstraint(static_cast<OpenSim::Constraint*>(newComponent.release()));
+                uim.setSelected(ptr);
+                editMade = true;
             } else if (dynamic_cast<OpenSim::ContactGeometry*>(newComponent.get())) {
-                onBeforeModifyModel();
-                model.addContactGeometry(static_cast<OpenSim::ContactGeometry*>(newComponent.release()));
-                onSetSelection(ptr);
-                onAfterModifyModel();
+                uim.updModel().addContactGeometry(static_cast<OpenSim::ContactGeometry*>(newComponent.release()));
+                uim.setSelected(ptr);
+                editMade = true;
             } else {
                 log::error(
                     "don't know how to add a component of type %s to the model",
@@ -241,6 +234,8 @@ static void renderModelActionsPanelContent(
             }
         }
     }
+
+    return editMade;
 }
 
 osc::ModelActionsMenuBar::ModelActionsMenuBar() :
@@ -251,14 +246,11 @@ osc::ModelActionsMenuBar::ModelActionsMenuBar() :
     addComponentPopup{std::nullopt} {
 }
 
-void osc::ModelActionsMenuBar::draw(
-    OpenSim::Model& model,
-    std::function<void(OpenSim::Component*)> const& onSetSelection,
-    std::function<void()> const& onBeforeModifyModel,
-    std::function<void()> const& onAfterModifyModel) {
-
+bool osc::ModelActionsMenuBar::draw(UiModel& uim) {
     if (ImGui::BeginMenuBar()) {
-        renderModelActionsPanelContent(*this, model, onSetSelection, onBeforeModifyModel, onAfterModifyModel);
+        return renderModelActionsPanelContent(*this, uim);
         ImGui::EndMenuBar();
+    } else {
+        return false;
     }
 }

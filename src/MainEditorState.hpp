@@ -116,14 +116,6 @@ namespace osc {
 
         void setModel(std::unique_ptr<OpenSim::Model> new_model);
 
-        void beforeModifyingModel() {
-            editedModel.beforeModifyingModel();
-        }
-
-        void afterModifyingModel() {
-            editedModel.afterModifyingModel();
-        }
-
 
         OpenSim::Component const* getSelected() const noexcept {
             return editedModel.getSelected();
@@ -161,11 +153,6 @@ namespace osc {
 
         void setIsolated(OpenSim::Component const* c) {
             editedModel.setIsolated(c);
-        }
-
-
-        void clearAnyDamagedModels() {
-            editedModel.clearAnyDamagedModels();
         }
 
         void startSimulatingEditedModel() {

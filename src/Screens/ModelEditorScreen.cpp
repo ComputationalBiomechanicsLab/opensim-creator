@@ -202,10 +202,9 @@ namespace {
         if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner); js) {
             // delete an OpenSim::Joint from its owning OpenSim::JointSet
 
-            uim.beforeModifyingModel();
             deleteItemFromSet(*js, static_cast<OpenSim::Joint*>(selected));
+            uim.setModelDirty(true);
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner); bs) {
             // delete an OpenSim::Body from its owning OpenSim::BodySet
 
@@ -232,45 +231,39 @@ namespace {
         } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
             // delete an OpenSim::Controller from its owning OpenSim::ControllerSet
 
-            uim.beforeModifyingModel();
-            deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));
+            uim.setModelDirty(true);
+            deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));            
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
             // delete an OpenSim::Constraint from its owning OpenSim::ConstraintSet
 
-            uim.beforeModifyingModel();
+            uim.setModelDirty(true);
             deleteItemFromSet(*conss, static_cast<OpenSim::Constraint*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
             // delete an OpenSim::Force from its owning OpenSim::ForceSet
 
-            uim.beforeModifyingModel();
+            uim.setModelDirty(true);
             deleteItemFromSet(*fs, static_cast<OpenSim::Force*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
             // delete an OpenSim::Marker from its owning OpenSim::MarkerSet
 
-            uim.beforeModifyingModel();
+            uim.setModelDirty(true);
             deleteItemFromSet(*ms, static_cast<OpenSim::Marker*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
             // delete an OpenSim::ContactGeometry from its owning OpenSim::ContactGeometrySet
 
-            uim.beforeModifyingModel();
+            uim.setModelDirty(true);
             deleteItemFromSet(*cgs, static_cast<OpenSim::ContactGeometry*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner); ps) {
             // delete an OpenSim::Probe from its owning OpenSim::ProbeSet
 
-            uim.beforeModifyingModel();
+            uim.setModelDirty(true);
             deleteItemFromSet(*ps, static_cast<OpenSim::Probe*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto const* geom = findAncestorWithType<OpenSim::Geometry>(selected); geom) {
             // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
@@ -283,6 +276,9 @@ namespace {
                 // this is necessary because OpenSim::Property doesn't seem
                 // to support list element deletion, but does support full
                 // assignment
+
+                uim.setModelDirty(true);
+
                 auto& mframe = const_cast<OpenSim::Frame&>(*frame);
                 OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
                     static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(mframe.updProperty_attached_geometry());
@@ -296,10 +292,8 @@ namespace {
                     }
                 }
 
-                uim.beforeModifyingModel();
                 prop.assign(*copy);
                 uim.declareDeathOf(selected);
-                uim.afterModifyingModel();
             }
         } else if (auto* pp = dynamic_cast<OpenSim::PathPoint*>(selected); pp) {
             if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner); gp) {
@@ -313,10 +307,9 @@ namespace {
                 }
 
                 if (idx != -1) {
-                    uim.beforeModifyingModel();
+                    uim.setModelDirty(true);
                     gp->deletePathPoint(uim.getState(), idx);
                     uim.declareDeathOf(selected);
-                    uim.afterModifyingModel();
                 }
             }
         }
@@ -343,9 +336,7 @@ namespace {
         if (ImGui::InputText("##nameditor", nambuf, sizeof(nambuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 
             if (std::strlen(nambuf) > 0) {
-                st.beforeModifyingModel();
                 st.updSelected()->setName(nambuf);
-                st.afterModifyingModel();
             }
         }
         ImGui::NextColumn();
@@ -411,12 +402,11 @@ namespace {
             //
             // note: this will invalidate the `selection` joint, because the
             // OpenSim::JointSet container will automatically kill it
-            st.beforeModifyingModel();
             OpenSim::Joint* ptr = newJoint.get();
+            st.setModelDirty(true);
             const_cast<OpenSim::JointSet&>(js).set(idx, newJoint.release());
             st.declareDeathOf(selection);
             st.setSelected(ptr);
-            st.afterModifyingModel();
         }
         ImGui::NextColumn();
     }
@@ -441,8 +431,6 @@ namespace {
         UndoableUiModel& uim = mes.editedModel;
 
         OpenSim::Model& m = uim.updModel();
-
-        uim.beforeModifyingModel();
         for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
             for (int i = 0; i < wos.getSize(); ++i) {
                 OpenSim::WrapObject& wo = wos[i];
@@ -450,7 +438,6 @@ namespace {
                 wo.upd_Appearance().set_visible(false);
             }
         }
-        uim.afterModifyingModel();
     }
 
     // enable all wrapping surfaces in the current model
@@ -458,8 +445,6 @@ namespace {
         UndoableUiModel& uim = mes.editedModel;
 
         OpenSim::Model& m = uim.updModel();
-
-        uim.beforeModifyingModel();
         for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
             for (int i = 0; i < wos.getSize(); ++i) {
                 OpenSim::WrapObject& wo = wos[i];
@@ -467,7 +452,6 @@ namespace {
                 wo.upd_Appearance().set_visible(true);
             }
         }
-        uim.afterModifyingModel();
     }
 
     // try to start a new simulation from the currently-edited model
@@ -514,7 +498,7 @@ struct ModelEditorScreen::Impl final {
 
     explicit Impl(std::shared_ptr<MainEditorState> _st) :
         st{std::move(_st)},
-        filePoller{std::chrono::milliseconds{1000}, st->editedModel.updModel().getInputFileName()} {
+        filePoller{std::chrono::milliseconds{1000}, st->editedModel.getModel().getInputFileName()} {
     }
 };
 
@@ -565,7 +549,7 @@ namespace {
     void modelEditorOnBackingFileChanged(ModelEditorScreen::Impl& impl) {
         try {
             log::info("file change detected: loading updated file");
-            auto p = std::make_unique<OpenSim::Model>(impl.st->updModel().getInputFileName());
+            auto p = std::make_unique<OpenSim::Model>(impl.st->getModel().getInputFileName());
             log::info("loaded updated file");
             impl.st->setModel(std::move(p));
         } catch (std::exception const& ex) {
@@ -600,9 +584,7 @@ namespace {
         }
 
         if (auto attached = attachGeomPopup.draw(modalName); attached) {
-            uim.beforeModifyingModel();
             uim.updSelectedAs<OpenSim::PhysicalFrame>()->attachGeometry(attached.release());
-            uim.afterModifyingModel();
         }
         ImGui::NextColumn();
 
@@ -613,11 +595,9 @@ namespace {
             pof->setName(selection->getName() + "_offsetframe");
             pof->setParentFrame(*selection);
 
-            uim.beforeModifyingModel();
             auto pofptr = pof.get();
             uim.updSelectedAs<OpenSim::PhysicalFrame>()->addComponent(pof.release());
             uim.setSelected(pofptr);
-            uim.afterModifyingModel();
         }
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -651,19 +631,13 @@ namespace {
             if (ImGui::Button("parent")) {
                 auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
                 pf->setParentFrame(selection->getParentFrame());
-
-                uim.beforeModifyingModel();
                 uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
-                uim.afterModifyingModel();
             }
             ImGui::SameLine();
             if (ImGui::Button("child")) {
                 auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
                 pf->setParentFrame(selection->getChildFrame());
-
-                uim.beforeModifyingModel();
                 uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
-                uim.afterModifyingModel();
             }
             ImGui::NextColumn();
         }
@@ -707,12 +681,10 @@ namespace {
             }
 
             OpenSim::ContactGeometry const* added =
-                SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.updModel());
+                SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.getModel());
 
             if (added) {
-                uim.beforeModifyingModel();
                 uim.updSelectedAs<OpenSim::HuntCrossleyForce>()->updContactParametersSet()[0].updGeometry().appendValue(added->getName());
-                uim.afterModifyingModel();
             }
         }
 
@@ -734,9 +706,8 @@ namespace {
             auto maybe_updater = st.draw(params, easyToHandleProps);
 
             if (maybe_updater) {
-                uim.beforeModifyingModel();
+                uim.setModelDirty(true);
                 maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
-                uim.afterModifyingModel();
             }
         }
 
@@ -774,7 +745,7 @@ namespace {
 
         // handle popup
         {
-            OpenSim::PhysicalFrame const* pf = Select1PFPopup{}.draw(modalName, uim.updModel());
+            OpenSim::PhysicalFrame const* pf = Select1PFPopup{}.draw(modalName, uim.getModel());
             if (pf) {
                 int n = pa->getGeometryPath().getPathPointSet().getSize();
                 char buf[128];
@@ -782,9 +753,7 @@ namespace {
                 std::string name{buf};
                 SimTK::Vec3 pos{0.0f, 0.0f, 0.0f};
 
-                uim.beforeModifyingModel();
                 uim.updSelectedAs<OpenSim::PathActuator>()->addNewPathPoint(name, *pf, pos);
-                uim.afterModifyingModel();
             }
         }
 
@@ -804,9 +773,7 @@ namespace {
         ImGui::NextColumn();
         bool showingFrames = m->get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
         if (ImGui::Button(showingFrames ? "hide" : "show")) {
-            uum.beforeModifyingModel();
             uum.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-            uum.afterModifyingModel();
         }
         ImGui::NextColumn();
         ImGui::Columns();
@@ -826,15 +793,11 @@ namespace {
 
         if (uim.getSelected() != uim.getIsolated()) {
             if (ImGui::Button("isolate")) {
-                uim.beforeModifyingModel();
                 uim.setIsolated(uim.getSelected());
-                uim.afterModifyingModel();
             }
         } else {
             if (ImGui::Button("clear isolation")) {
-                uim.beforeModifyingModel();
                 uim.setIsolated(nullptr);
-                uim.afterModifyingModel();
             }
         }
 
@@ -932,12 +895,11 @@ namespace {
                 break;  // don't continue to traverse the sockets, because the selection changed
             }
 
-            if (OpenSim::Object const* connectee = reassignSocketPopup.draw(popupname.c_str(), uim.updModel(), socket); connectee) {
+            if (OpenSim::Object const* connectee = reassignSocketPopup.draw(popupname.c_str(), uim.getModel(), socket); connectee) {
 
                 ImGui::CloseCurrentPopup();
 
                 OpenSim::Object const& existing = socket.getConnecteeAsObject();
-                uim.beforeModifyingModel();
                 try {
                     uim.updSelected()->updSocket(sn).connect(*connectee);
                     reassignSocketPopup.search[0] = '\0';
@@ -947,7 +909,6 @@ namespace {
                     reassignSocketPopup.error = ex.what();
                     uim.updSelected()->updSocket(sn).connect(existing);
                 }
-                uim.afterModifyingModel();
             }
 
             ImGui::NextColumn();
@@ -1042,9 +1003,8 @@ namespace {
         {
             auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelected());
             if (maybeUpdater) {
-                uim.beforeModifyingModel();
+                uim.setModelDirty(true);
                 maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
-                uim.afterModifyingModel();
             }
         }
 
@@ -1088,9 +1048,9 @@ namespace {
             }
 
 
-            float scaleFactor = impl.st->editedModel.getUiModel().getFixupScaleFactor();
+            float scaleFactor = impl.st->editedModel.getFixupScaleFactor();
             if (ImGui::InputFloat("set scale factor", &scaleFactor)) {
-                impl.st->editedModel.updUiModel().setFixupScaleFactor(scaleFactor);
+                impl.st->editedModel.setFixupScaleFactor(scaleFactor);
                 impl.st->editedModel.updUiModel().updateIfDirty();
             }
             if (ImGui::MenuItem("autoscale scale factor")) {
@@ -1105,11 +1065,9 @@ namespace {
                 ImGui::EndTooltip();
             }
 
-            bool showingFrames = impl.st->editedModel.updModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+            bool showingFrames = impl.st->editedModel.getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
             if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames")) {
-                impl.st->editedModel.beforeModifyingModel();
                 impl.st->editedModel.updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-                impl.st->editedModel.afterModifyingModel();
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1119,20 +1077,20 @@ namespace {
                 ImGui::EndTooltip();
             }
 
-            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.updModel());
+            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.getModel());
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile)) {
-                std::filesystem::path p{uim.updModel().getInputFileName()};
+                std::filesystem::path p{uim.getModel().getInputFileName()};
                 OpenPathInOSDefaultApplication(p.parent_path());
             }
 
             if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile)) {
-                OpenPathInOSDefaultApplication(uim.updModel().getInputFileName());
+                OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!hasBackingFile(uim.updModel())) {
+                if (!hasBackingFile(uim.getModel())) {
                     ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
                 }
                 ImGui::PopTextWrapPos();
@@ -1398,10 +1356,7 @@ namespace {
         // contains top-level actions (e.g. "add body")
         if (impl.st->showing.actions) {
             if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
-                auto onSetSelection = [&](OpenSim::Component* c) { impl.st->setSelected(c); };
-                auto onBeforeModifyModel = [&]() { impl.st->editedModel.beforeModifyingModel(); };
-                auto onAfterModifyModel = [&]() { impl.st->editedModel.afterModifyingModel(); };
-                impl.ui.modelActions.draw(impl.st->editedModel.updModel(), onSetSelection, onBeforeModifyModel, onAfterModifyModel);
+                impl.ui.modelActions.draw(impl.st->editedModel.updUiModel());
             }
             ImGui::End();
         }
@@ -1410,7 +1365,7 @@ namespace {
         if (impl.st->showing.hierarchy) {
             if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
                 auto resp = impl.ui.componentHierarchy.draw(
-                    &impl.st->editedModel.updModel().getRoot(),
+                    &impl.st->editedModel.getModel().getRoot(),
                     impl.st->getSelected(),
                     impl.st->getHovered());
 
@@ -1459,8 +1414,8 @@ namespace {
             return;
         }
 
-        // garbage-collect any models damaged by in-UI modifications (if applicable)
-        impl.st->clearAnyDamagedModels();
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
     }
 }
 
@@ -1498,7 +1453,7 @@ void ModelEditorScreen::onEvent(SDL_Event const& e) {
 }
 
 void osc::ModelEditorScreen::tick(float) {
-    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->updModel().getInputFileName())) {
+    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->getModel().getInputFileName())) {
         modelEditorOnBackingFileChanged(*m_Impl);
     }
 }
@@ -1519,7 +1474,7 @@ void osc::ModelEditorScreen::draw() {
         try {
             if (m_Impl->st->canUndo()) {
                 log::error("the editor has an `undo` history for this model, so it will try to rollback to that");
-                m_Impl->st->editedModel.forciblyRollbackToEarlierState();
+                m_Impl->st->doUndo();
                 log::error("rollback succeeded");
             } else {
                 throw;

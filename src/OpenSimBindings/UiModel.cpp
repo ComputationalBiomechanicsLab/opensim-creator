@@ -3,6 +3,8 @@
 #include "src/3D/Model.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
+#include "src/Log.hpp"
+#include "src/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -14,17 +16,21 @@ using namespace osc;
 // translate a pointer to a component in model A to a pointer to a component in model B
 //
 // returns nullptr if the pointer cannot be cleanly translated
-static OpenSim::Component* relocateComponentPointerToAnotherModel(OpenSim::Model const& model, OpenSim::Component* ptr) {
+static OpenSim::Component const* findComponent(OpenSim::Model const& model, OpenSim::ComponentPath const& absPath) {
+    for (OpenSim::Component const& c : model.getComponentList()) {
+        if (c.getAbsolutePath() == absPath) {
+            return &c;
+        }
+    }
+    return nullptr;
+}
+
+static OpenSim::Component* relocateComponentPointerToAnotherModel(OpenSim::Model const& model, OpenSim::Component const* ptr) {
     if (!ptr) {
         return nullptr;
     }
 
-    try {
-        return const_cast<OpenSim::Component*>(model.findComponent(ptr->getAbsolutePath()));
-    } catch (OpenSim::Exception const&) {
-        // finding fails with exception when ambiguous (fml)
-        return nullptr;
-    }
+    return const_cast<OpenSim::Component*>(findComponent(model, ptr->getAbsolutePath()));
 }
 
 static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateModifications& modifications) {
@@ -39,6 +45,11 @@ static std::unique_ptr<OpenSim::Model> makeNewModel() {
     auto rv = std::make_unique<OpenSim::Model>();
     rv->updDisplayHints().set_show_frames(true);
     return rv;
+}
+
+static void announceDirtyingEvent() {
+    log::info("model dirtied");
+    //WriteTracebackToLog(log::level::info);
 }
 
 struct osc::UiModel::Impl final {
@@ -80,7 +91,7 @@ struct osc::UiModel::Impl final {
     //
     // can indicate creation or latest modification, it's here to roughly
     // track how old/new the instance is
-    std::chrono::system_clock::time_point timestamp;
+    std::chrono::system_clock::time_point m_LastModified;
 
     // set to true when the user potentially modified the model
     bool m_IsDirty;
@@ -107,7 +118,7 @@ struct osc::UiModel::Impl final {
         m_CurrentSelection{nullptr},
         m_Hovered{nullptr},
         m_Isolated{nullptr},
-        timestamp{std::chrono::system_clock::now()},
+        m_LastModified{std::chrono::system_clock::now()},
         m_IsDirty{false} {
 
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
@@ -130,11 +141,22 @@ struct osc::UiModel::Impl final {
         m_CurrentSelection{relocateComponentPointerToAnotherModel(*m_Model, other.m_CurrentSelection)},
         m_Hovered{relocateComponentPointerToAnotherModel(*m_Model, other.m_Hovered)},
         m_Isolated{relocateComponentPointerToAnotherModel(*m_Model, other.m_Isolated)},
-        timestamp{std::chrono::system_clock::now()},
+        m_LastModified{other.m_LastModified},
         m_IsDirty{false} {
 
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
+    }
+
+    void setDirty(bool v) {
+        if (!m_IsDirty && v) {
+            log::info("dirtying event happened");
+        }
+
+        m_IsDirty = v;
+        if (v) {
+            m_LastModified = std::chrono::system_clock::now();
+        }
     }
 };
 
@@ -156,6 +178,12 @@ osc::UiModel::~UiModel() noexcept = default;
 
 osc::UiModel& osc::UiModel::operator=(UiModel&&) = default;
 
+osc::UiModel& osc::UiModel::operator=(UiModel const& other) {
+    UiModel copy{other};
+    *this = std::move(copy);
+    return *this;
+}
+
 StateModifications const& osc::UiModel::getStateModifications() const {
     return m_Impl->m_StateModifications;
 }
@@ -165,8 +193,16 @@ OpenSim::Model const& osc::UiModel::getModel() const {
 }
 
 OpenSim::Model& osc::UiModel::updModel() {
-    m_Impl->m_IsDirty = true;
+    m_Impl->setDirty(true);
     return *m_Impl->m_Model;
+}
+
+void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m) {
+    auto newImpl = std::make_unique<Impl>(std::move(m));
+    newImpl->m_CurrentSelection = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_CurrentSelection);
+    newImpl->m_Hovered = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_Hovered);
+    newImpl->m_Isolated = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_Isolated);
+    m_Impl = std::move(newImpl);
 }
 
 SimTK::State const& osc::UiModel::getState() const {
@@ -174,7 +210,7 @@ SimTK::State const& osc::UiModel::getState() const {
 }
 
 SimTK::State& osc::UiModel::updState() {
-    m_Impl->m_IsDirty = true;
+    m_Impl->setDirty(true);
     return *m_Impl->m_State;
 }
 
@@ -193,23 +229,23 @@ void osc::UiModel::updateIfDirty() {
     m_Impl->m_State = initializeState(*m_Impl->m_Model, m_Impl->m_StateModifications);
     generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
     updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
-    m_Impl->timestamp = std::chrono::system_clock::now();
+    m_Impl->setDirty(false);
 }
 
 void osc::UiModel::setModelDirty(bool v) {
-    m_Impl->m_IsDirty = v;
+    m_Impl->setDirty(v);
 }
 
 void osc::UiModel::setStateDirty(bool v) {
-    m_Impl->m_IsDirty = v;
+    m_Impl->setDirty(v);
 }
 
 void osc::UiModel::setDecorationsDirty(bool v) {
-    m_Impl->m_IsDirty = v;
+    m_Impl->setDirty(v);
 }
 
 void osc::UiModel::setAllDirty(bool v) {
-    m_Impl->m_IsDirty = v;
+    m_Impl->setDirty(v);
 }
 
 nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const {
@@ -239,7 +275,7 @@ OpenSim::Component const* osc::UiModel::getSelected() const {
 }
 
 OpenSim::Component* osc::UiModel::updSelected() {
-    m_Impl->m_IsDirty = true;
+    m_Impl->setDirty(true);
     return m_Impl->m_CurrentSelection;
 }
 
@@ -260,7 +296,7 @@ OpenSim::Component const* osc::UiModel::getHovered() const {
 }
 
 OpenSim::Component* osc::UiModel::updHovered() {
-    m_Impl->m_IsDirty = true;
+    m_Impl->setDirty(true);
     return m_Impl->m_Hovered;
 }
 
@@ -273,12 +309,29 @@ OpenSim::Component const* osc::UiModel::getIsolated() const {
 }
 
 OpenSim::Component* osc::UiModel::updIsolated() {
-    m_Impl->m_IsDirty = true;
+    m_Impl->setDirty(true);
     return m_Impl->m_Isolated;
 }
 
 void osc::UiModel::setIsolated(OpenSim::Component const* c) {
     m_Impl->m_Isolated = const_cast<OpenSim::Component*>(c);
+}
+
+void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim) {
+    OpenSim::Component const* newSelection = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getSelected());
+    if (newSelection) {
+        setSelected(newSelection);
+    }
+
+    OpenSim::Component const* newHover = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getHovered());
+    if (newHover) {
+        setHovered(newHover);
+    }
+
+    OpenSim::Component const* newIsolated = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getIsolated());
+    if (newIsolated) {
+        setIsolated(newIsolated);
+    }
 }
 
 void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce) {
@@ -332,10 +385,25 @@ float osc::UiModel::getRecommendedScaleFactor() const {
     return rv;
 }
 
-std::chrono::system_clock::time_point osc::UiModel::getTimestamp() const {
-    return m_Impl->timestamp;
+std::chrono::system_clock::time_point osc::UiModel::getLastModifiedTime() const {
+    return m_Impl->m_LastModified;
 }
 
-void osc::UiModel::setTimestamp(std::chrono::system_clock::time_point t) {
-    m_Impl->timestamp = t;
+// declare the death of a component pointer
+//
+// this happens when we know that OpenSim has destructed a component in
+// the model indirectly (e.g. it was destructed by an OpenSim container)
+// and that we want to ensure the pointer isn't still held by this state
+void osc::UiModel::declareDeathOf(OpenSim::Component const* c) noexcept {
+    if (getSelected() == c) {
+        setSelected(nullptr);
+    }
+
+    if (getHovered() == c) {
+        setHovered(nullptr);
+    }
+
+    if (getIsolated() == c) {
+        setIsolated(nullptr);
+    }
 }

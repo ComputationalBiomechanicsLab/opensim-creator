@@ -166,16 +166,13 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::NextColumn();
 
-        // if locked, color everything red
-        SimTK::State const& st = uim.getState();
-
-        if (c->getLocked(st)) {
+        if (c->getLocked(uim.getState())) {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++styles_pushed;
         }
 
-        if (ImGui::Button(c->getLocked(st) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(st), c->getSpeedValue(st), !c->getLocked(st)});
+        if (ImGui::Button(c->getLocked(uim.getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), c->getSpeedValue(uim.getState()), !c->getLocked(uim.getState())});
             state_modified = true;
         }
 
@@ -189,10 +186,10 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SameLine();
 
-        float v = static_cast<float>(c->getValue(st));
+        float v = static_cast<float>(c->getValue(uim.getState()));
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (ImGui::SliderFloat("##coordinatevalueeditor", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(st), c->getLocked(st)});
+            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(uim.getState()), c->getLocked(uim.getState())});
             state_modified = true;
         }
 
@@ -203,9 +200,9 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-        float speed = static_cast<float>(c->getSpeedValue(st));
+        float speed = static_cast<float>(c->getSpeedValue(uim.getState()));
         if (ImGui::InputFloat("##coordinatespeededitor", &speed)) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(st), speed, c->getLocked(st)});
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), speed, c->getLocked(uim.getState())});
             state_modified = true;
         }
         ImGui::NextColumn();

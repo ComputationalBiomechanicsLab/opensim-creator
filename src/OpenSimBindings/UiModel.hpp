@@ -25,6 +25,8 @@ namespace osc {
     struct BVH;
     class StateModifications;
     struct CoordinateEdit;
+    struct FdParams;
+    struct UiSimulation;
 }
 
 namespace osc {
@@ -52,13 +54,14 @@ namespace osc {
 
         ~UiModel() noexcept override;
 
-        UiModel& operator=(UiModel const&) = delete;
+        UiModel& operator=(UiModel const&);
         UiModel& operator=(UiModel&&);
 
         StateModifications const& getStateModifications() const;
 
         OpenSim::Model const& getModel() const;
         OpenSim::Model& updModel();
+        void setModel(std::unique_ptr<OpenSim::Model>);
 
         SimTK::State const& getState() const;
         SimTK::State& updState();
@@ -99,30 +102,22 @@ namespace osc {
         void setFixupScaleFactor(float);
 
         bool hasSelected() const;
-
         OpenSim::Component const* getSelected() const override;
-
         OpenSim::Component* updSelected();
-
         void setSelected(OpenSim::Component const* c);
-
         bool selectionHasTypeHashCode(size_t v) const;
-
         template<typename T>
         bool selectionIsType() const {
             return selectionHasTypeHashCode(typeid(T).hash_code());
         }
-
         template<typename T>
         bool selectionDerivesFrom() const {
             return dynamic_cast<T const*>(getSelected()) != nullptr;
         }
-
         template<typename T>
         T const* getSelectedAs() const {
             return dynamic_cast<T const*>(getSelected());
         }
-
         template<typename T>
         T* updSelectedAs() {
             return dynamic_cast<T*>(updSelected());
@@ -137,18 +132,25 @@ namespace osc {
         OpenSim::Component* updIsolated();
         void setIsolated(OpenSim::Component const* c);
 
+        // sets selected, hovered, and isolated state from some other model
+        // (i.e. to transfer those pointers accross)
+        void setSelectedHoveredAndIsolatedFrom(UiModel const&);
+
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
 
         AABB getSceneAABB() const;
-
         glm::vec3 getSceneDimensions() const;
-
         float getSceneLongestDimension() const;
-
         float getRecommendedScaleFactor() const;
 
-        std::chrono::system_clock::time_point getTimestamp() const;
-        void setTimestamp(std::chrono::system_clock::time_point t);
+        std::chrono::system_clock::time_point getLastModifiedTime() const;
+
+        // declare the death of a component pointer
+        //
+        // this happens when we know that OpenSim has destructed a component in
+        // the model indirectly (e.g. it was destructed by an OpenSim container)
+        // and that we want to ensure the pointer isn't still held by this state
+        void declareDeathOf(OpenSim::Component const* c) noexcept;
 
     public:
         struct Impl;
