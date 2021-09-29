@@ -33,6 +33,9 @@ namespace osc {
     // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
     bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2) noexcept;
 
+    // returns true if `path` is within `dir` (non-recursive)
+    bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
+
     // returns true if `s` constains the supplied substring (case-insensitive)
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
 

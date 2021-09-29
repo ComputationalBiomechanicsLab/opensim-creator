@@ -1,10 +1,6 @@
 #pragma once
 
-#include "src/OpenSimBindings/UiModel.hpp"
-#include "src/Utils/CircularBuffer.hpp"
-
 #include <memory>
-#include <optional>
 
 namespace OpenSim {
     class Model;
@@ -16,28 +12,30 @@ namespace SimTK {
 }
 
 namespace osc {
+    class UiModel;
+}
+
+namespace osc {
     // A "UI ready" model with undo/redo support
-    //
-    // contains four major points of interest:
-    //
-    //     a) an "active", potentially dirty, model
-    //     b) a "copy"/"committed", always clean, model
-    //     c) an undo buffer containing clean models
-    //     d) an redo buffer containing clean models
-    //
-    // - the editor can edit `a` at any time
-    // - the UI thread regularly (i.e. once per frame) calls `a.updateIfDirty()`
-    // - if updating succeeds, `b` is pushed into the undo buffer and `a` is
-    //   *copied* into `b`
-    // - if updating fails, `b` is copied into `a` as a "fallback" to ensure that
-    //   `a` is left in a valid state
     class UndoableUiModel final {
     public:
-        // make a new, blank, undoable model
+        // construct a new, blank, UndoableUiModel
         UndoableUiModel();
 
-        // make a new undoable model from an existing in-memory OpenSim model
+        // construct a new UndoableUiModel from an existing in-memory OpenSim model
         explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
+
+        UndoableUiModel(UndoableUiModel const&) = delete;
+
+        // move an UndoableUiModel in memory
+        UndoableUiModel(UndoableUiModel&&) noexcept;
+
+        ~UndoableUiModel() noexcept;
+
+        UndoableUiModel& operator=(UndoableUiModel const&) = delete;
+
+        // mover another UndoableUiModel over this one
+        UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
 
         UiModel const& getUiModel() const;
         UiModel& updUiModel();
@@ -56,37 +54,32 @@ namespace osc {
 
         float getFixupScaleFactor() const;
         void setFixupScaleFactor(float);
-
         float getReccommendedScaleFactor() const;
 
         void updateIfDirty();
 
-        void setModelDirty(bool);
-        void setStateDirty(bool);
-        void setDecorationsDirty(bool);
-        void setAllDirty(bool);
+        void setModelDirtyADVANCED(bool);
+        void setStateDirtyADVANCED(bool);
+        void setDecorationsDirtyADVANCED(bool);
+        void setDirty(bool);
 
         bool hasSelected() const;
         OpenSim::Component const* getSelected() const;
         OpenSim::Component* updSelected();
         void setSelected(OpenSim::Component const* c);
         bool selectionHasTypeHashCode(size_t v) const;
-
         template<typename T>
         bool selectionIsType() const {
             return selectionHasTypeHashCode(typeid(T).hash_code());
         }
-
         template<typename T>
         bool selectionDerivesFrom() const {
             return getSelectedAs<T>() != nullptr;
         }
-
         template<typename T>
         T const* getSelectedAs() const {
             return dynamic_cast<T const*>(getSelected());
         }
-
         template<typename T>
         T* updSelectedAs() {
             return dynamic_cast<T*>(updSelected());
@@ -108,10 +101,9 @@ namespace osc {
         // and that we want to ensure the pointer isn't still held by this state
         void declareDeathOf(OpenSim::Component const* c) noexcept;
 
+    public:
+        struct Impl;
     private:
-        UiModel m_Current;
-        UiModel m_Backup;
-        CircularBuffer<UiModel, 32> m_UndoBuffer;
-        CircularBuffer<UiModel, 32> m_RedoBuffer;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

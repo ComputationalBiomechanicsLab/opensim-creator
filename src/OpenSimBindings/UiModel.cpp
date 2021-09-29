@@ -3,6 +3,7 @@
 #include "src/3D/Model.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Log.hpp"
 #include "src/os.hpp"
 
@@ -93,8 +94,9 @@ struct osc::UiModel::Impl final {
     // track how old/new the instance is
     std::chrono::system_clock::time_point m_LastModified;
 
-    // set to true when the user potentially modified the model
-    bool m_IsDirty;
+    bool m_ModelIsDirty;
+    bool m_StateIsDirty;
+    bool m_DecorationsAreDirty;
 
     Impl() : Impl{makeNewModel()} {
     }
@@ -119,8 +121,10 @@ struct osc::UiModel::Impl final {
         m_Hovered{nullptr},
         m_Isolated{nullptr},
         m_LastModified{std::chrono::system_clock::now()},
-        m_IsDirty{false} {
-
+        m_ModelIsDirty{false},
+        m_StateIsDirty{false},
+        m_DecorationsAreDirty{false}
+    {
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
     }
@@ -142,18 +146,39 @@ struct osc::UiModel::Impl final {
         m_Hovered{relocateComponentPointerToAnotherModel(*m_Model, other.m_Hovered)},
         m_Isolated{relocateComponentPointerToAnotherModel(*m_Model, other.m_Isolated)},
         m_LastModified{other.m_LastModified},
-        m_IsDirty{false} {
-
+        m_ModelIsDirty{false},
+        m_StateIsDirty{false},
+        m_DecorationsAreDirty{false}
+    {
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
     }
 
-    void setDirty(bool v) {
-        if (!m_IsDirty && v) {
-            log::info("dirtying event happened");
+    void setModelDirty(bool v) {
+        if (!m_ModelIsDirty && v) {
+            log::debug("model dirtying event happened");
         }
+        m_ModelIsDirty = v;
+        if (v) {
+            m_LastModified = std::chrono::system_clock::now();
+        }
+    }
 
-        m_IsDirty = v;
+    void setStateDirty(bool v) {
+        if (!m_StateIsDirty && v) {
+            log::debug("state dirtying event happened");
+        }
+        m_StateIsDirty = v;
+        if (v) {
+            m_LastModified = std::chrono::system_clock::now();
+        }
+    }
+
+    void setDecorationsDirty(bool v) {
+        if (!m_DecorationsAreDirty && v) {
+            log::debug("decoration dirtying event happened");
+        }
+        m_DecorationsAreDirty = v;
         if (v) {
             m_LastModified = std::chrono::system_clock::now();
         }
@@ -193,7 +218,7 @@ OpenSim::Model const& osc::UiModel::getModel() const {
 }
 
 OpenSim::Model& osc::UiModel::updModel() {
-    m_Impl->setDirty(true);
+    setDirty(true);
     return *m_Impl->m_Model;
 }
 
@@ -210,42 +235,75 @@ SimTK::State const& osc::UiModel::getState() const {
 }
 
 SimTK::State& osc::UiModel::updState() {
-    m_Impl->setDirty(true);
+    setStateDirtyADVANCED(true);
+    setDecorationsDirtyADVANCED(true);
     return *m_Impl->m_State;
 }
 
 bool osc::UiModel::isDirty() const {
-    return m_Impl->m_IsDirty;
+    return m_Impl->m_ModelIsDirty || m_Impl->m_StateIsDirty || m_Impl->m_DecorationsAreDirty;
 }
 
 void osc::UiModel::updateIfDirty() {
-    if (!m_Impl->m_IsDirty) {
-        return;
+    // measurements are taken here because updating a UiModel is done fairly frequently
+    // during editing and it can block the main UI thread very easily
+    BasicPerfTimer overallTimer;
+    BasicPerfTimer modelUpdateTimer;
+    BasicPerfTimer stateUpdateTimer;
+    BasicPerfTimer decorationUpdateTimer;
+
+    auto overallTimerGuard = overallTimer.measure();
+
+    bool modelWasDirty = m_Impl->m_ModelIsDirty;
+    if (m_Impl->m_ModelIsDirty) {
+        auto modelUpdateTimerGuard = modelUpdateTimer.measure();
+        m_Impl->m_Model->finalizeFromProperties();
+        m_Impl->m_Model->finalizeConnections();
+        m_Impl->m_Model->buildSystem();
+        m_Impl->m_ModelIsDirty = false;
     }
 
-    m_Impl->m_Model->finalizeFromProperties();
-    m_Impl->m_Model->finalizeConnections();
-    m_Impl->m_Model->buildSystem();
-    m_Impl->m_State = initializeState(*m_Impl->m_Model, m_Impl->m_StateModifications);
-    generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
-    updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
-    m_Impl->setDirty(false);
+    if (m_Impl->m_StateIsDirty) {
+        auto stateUpdateTimerGuard = stateUpdateTimer.measure();
+        m_Impl->m_State = initializeState(*m_Impl->m_Model, m_Impl->m_StateModifications);
+        m_Impl->m_StateIsDirty = false;
+    }
+
+    if (m_Impl->m_DecorationsAreDirty) {
+        auto decorationUpdateTimerGuard = decorationUpdateTimer.measure();
+        generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
+        updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
+        m_Impl->m_DecorationsAreDirty = false;
+    }
+
+    overallTimerGuard.stop();
+
+    if (log::getTracebackLevel() == log::level::debug) {
+        log::debug(R"(update perf:
+    model update = %.0f us
+    state update = %.0f us
+    decoration update = %.0f us
+    overall = %.0f us
+)", modelUpdateTimer.micros(), stateUpdateTimer.micros(), decorationUpdateTimer.micros(), overallTimer.micros());
+    }
 }
 
-void osc::UiModel::setModelDirty(bool v) {
-    m_Impl->setDirty(v);
+void osc::UiModel::setModelDirtyADVANCED(bool v) {
+    m_Impl->setModelDirty(v);
 }
 
-void osc::UiModel::setStateDirty(bool v) {
-    m_Impl->setDirty(v);
+void osc::UiModel::setStateDirtyADVANCED(bool v) {
+    m_Impl->setStateDirty(v);
 }
 
-void osc::UiModel::setDecorationsDirty(bool v) {
-    m_Impl->setDirty(v);
+void osc::UiModel::setDecorationsDirtyADVANCED(bool v) {
+    m_Impl->setDecorationsDirty(v);
 }
 
-void osc::UiModel::setAllDirty(bool v) {
-    m_Impl->setDirty(v);
+void osc::UiModel::setDirty(bool v) {
+    setModelDirtyADVANCED(v);
+    setStateDirtyADVANCED(v);
+    setDecorationsDirtyADVANCED(v);
 }
 
 nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const {
@@ -275,7 +333,7 @@ OpenSim::Component const* osc::UiModel::getSelected() const {
 }
 
 OpenSim::Component* osc::UiModel::updSelected() {
-    m_Impl->setDirty(true);
+    setDirty(true);
     return m_Impl->m_CurrentSelection;
 }
 
@@ -296,7 +354,7 @@ OpenSim::Component const* osc::UiModel::getHovered() const {
 }
 
 OpenSim::Component* osc::UiModel::updHovered() {
-    m_Impl->setDirty(true);
+    setDirty(true);
     return m_Impl->m_Hovered;
 }
 
@@ -309,7 +367,7 @@ OpenSim::Component const* osc::UiModel::getIsolated() const {
 }
 
 OpenSim::Component* osc::UiModel::updIsolated() {
-    m_Impl->setDirty(true);
+    setDirty(true);
     return m_Impl->m_Isolated;
 }
 
@@ -336,9 +394,9 @@ void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim) {
 
 void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce) {
     m_Impl->m_StateModifications.pushCoordinateEdit(c, ce);
-    m_Impl->m_State = initializeState(*m_Impl->m_Model, m_Impl->m_StateModifications);
-    generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
-    updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
+
+    setStateDirtyADVANCED(true);
+    setDecorationsDirtyADVANCED(true);
 }
 
 AABB osc::UiModel::getSceneAABB() const {

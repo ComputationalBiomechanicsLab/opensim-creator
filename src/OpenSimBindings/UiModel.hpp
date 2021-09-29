@@ -32,29 +32,29 @@ namespace osc {
 namespace osc {
 
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
-    //
-    // this is what most of the components, screen elements, etc. are
-    // accessing - usually indirectly (e.g. via a reference to the Model)
     class UiModel final : public RenderableScene {
     public:
-        // make a blank (new) UiModel
+        // construct a blank (new) UiModel
         UiModel();
 
-        // load a UiModel from an osim file
+        // construct a UiModel by loading an osim file
         explicit UiModel(std::string const& osim);
 
-        // make a UiModel from an in-memory OpenSim::Model
+        // construct a UiModel from an in-memory OpenSim::Model
         explicit UiModel(std::unique_ptr<OpenSim::Model>);
 
-        // make an independent copy
+        // construct an independent copy of a UiModel
         UiModel(UiModel const&);
 
-        // move this model somewhere else in memory
+        // move the UiModel somewhere else in memory
         UiModel(UiModel&&) noexcept;
 
         ~UiModel() noexcept override;
 
+        // copy another UiModel over this one
         UiModel& operator=(UiModel const&);
+
+        // move another UiModel over this one
         UiModel& operator=(UiModel&&);
 
         StateModifications const& getStateModifications() const;
@@ -66,32 +66,44 @@ namespace osc {
         SimTK::State const& getState() const;
         SimTK::State& updState();
 
-        // returns true if the model has been modified but the state etc.
-        // haven't yet been updated to reflect the change
+        // read dirty flag
+        //
+        // this is set by the various mutating methods and indicate
+        // that part of the UiModel *may* be modified in some way
         bool isDirty() const;
+
+        // sets dirty flags (advanced)
+        //
+        // dirty flags are usually automatically set by the various mutating
+        // methods (e.g. `updModel` will dirty the model). However, it's
+        // sometimes necessary to manually set the flags. Common scenarios:
+        //
+        // - downstream code `const_cast`ed from a non-mutating method, that
+        //   code should probably set a dirty flag
+        //
+        // - downstream code knows the extent of a modification. E.g. the code
+        //   might use `updModel` to mutate the model but knows that it's not
+        //   necessary to call finalizeFromProperties or rebuild the system for
+        //   the model, so it un-dirties the model + state and leaves the
+        //   decorations marked as dirty
+        void setModelDirtyADVANCED(bool);
+        void setStateDirtyADVANCED(bool);
+        void setDecorationsDirtyADVANCED(bool);
+        void setDirty(bool);
 
         // updates all members in this class to reflect the latest model
         //
         // this potentially can, depending on what's been modified:
         //
-        // - make a new SimTK::System (if the model is modified)
-        // - make a new SimTK::State
-        // - generate new decorations
-        // - update the scene BVH
+        // - finalize the model's properties + connections (if the model is dirty)
+        // - make a new SimTK::System (if the model is dirty)
+        // - make a new SimTK::State (if the model/state is dirty)
+        // - generate new decorations (if the model/state/decorations is dirty)
+        // - update the scene BVH (if model/state/decorations is dirty)
         //
-        // so this has A LOT of potential to THROW. You should handle that
-        // appropriately.
+        // so this method has A LOT of potential to THROW. Callers should handle that
+        // appropriately (e.g. by reversing the change)
         void updateIfDirty();
-
-        // manually sets the internal dirty flags for this model
-        //
-        // this is *usually* automatically handled based on other method calls, but
-        // is sometimes necessary if (e.g.) the calling code ends up `const_cast`ing
-        // a member of this class for practical reasons
-        void setModelDirty(bool);
-        void setStateDirty(bool);
-        void setDecorationsDirty(bool);
-        void setAllDirty(bool);
 
         nonstd::span<LabelledSceneElement const> getSceneDecorations() const override;
 

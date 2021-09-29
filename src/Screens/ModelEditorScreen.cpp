@@ -203,7 +203,7 @@ namespace {
             // delete an OpenSim::Joint from its owning OpenSim::JointSet
 
             deleteItemFromSet(*js, static_cast<OpenSim::Joint*>(selected));
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             uim.declareDeathOf(selected);
         } else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner); bs) {
             // delete an OpenSim::Body from its owning OpenSim::BodySet
@@ -231,37 +231,37 @@ namespace {
         } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
             // delete an OpenSim::Controller from its owning OpenSim::ControllerSet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));            
             uim.declareDeathOf(selected);
         } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
             // delete an OpenSim::Constraint from its owning OpenSim::ConstraintSet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*conss, static_cast<OpenSim::Constraint*>(selected));
             uim.declareDeathOf(selected);
         } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
             // delete an OpenSim::Force from its owning OpenSim::ForceSet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*fs, static_cast<OpenSim::Force*>(selected));
             uim.declareDeathOf(selected);
         } else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
             // delete an OpenSim::Marker from its owning OpenSim::MarkerSet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*ms, static_cast<OpenSim::Marker*>(selected));
             uim.declareDeathOf(selected);
         } else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
             // delete an OpenSim::ContactGeometry from its owning OpenSim::ContactGeometrySet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*cgs, static_cast<OpenSim::ContactGeometry*>(selected));
             uim.declareDeathOf(selected);
         } else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner); ps) {
             // delete an OpenSim::Probe from its owning OpenSim::ProbeSet
 
-            uim.setModelDirty(true);
+            uim.setDirty(true);
             deleteItemFromSet(*ps, static_cast<OpenSim::Probe*>(selected));
             uim.declareDeathOf(selected);
         } else if (auto const* geom = findAncestorWithType<OpenSim::Geometry>(selected); geom) {
@@ -277,7 +277,7 @@ namespace {
                 // to support list element deletion, but does support full
                 // assignment
 
-                uim.setModelDirty(true);
+                uim.setDirty(true);
 
                 auto& mframe = const_cast<OpenSim::Frame&>(*frame);
                 OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
@@ -307,7 +307,7 @@ namespace {
                 }
 
                 if (idx != -1) {
-                    uim.setModelDirty(true);
+                    uim.setDirty(true);
                     gp->deletePathPoint(uim.getState(), idx);
                     uim.declareDeathOf(selected);
                 }
@@ -403,7 +403,7 @@ namespace {
             // note: this will invalidate the `selection` joint, because the
             // OpenSim::JointSet container will automatically kill it
             OpenSim::Joint* ptr = newJoint.get();
-            st.setModelDirty(true);
+            st.setDirty(true);
             const_cast<OpenSim::JointSet&>(js).set(idx, newJoint.release());
             st.declareDeathOf(selection);
             st.setSelected(ptr);
@@ -706,7 +706,7 @@ namespace {
             auto maybe_updater = st.draw(params, easyToHandleProps);
 
             if (maybe_updater) {
-                uim.setModelDirty(true);
+                uim.setDirty(true);
                 maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
             }
         }
@@ -1003,7 +1003,7 @@ namespace {
         {
             auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelected());
             if (maybeUpdater) {
-                uim.setModelDirty(true);
+                uim.setDirty(true);
                 maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
             }
         }
