@@ -59,8 +59,8 @@ struct osc::HelloTriangleScreen::Impl final {
 
     gl::ArrayBuffer<glm::vec3> points = {
         {-1.0f, -1.0f, 0.0f},
+        {+1.0f, -1.0f, 0.0f},
         {+0.0f, +1.0f, 0.0f},
-        {+1.0f, -1.0f, 0.0f}
     };
 
     gl::VertexArray vao = createVAO(shader, points);
@@ -84,7 +84,6 @@ void osc::HelloTriangleScreen::onEvent(SDL_Event const& e) {
 }
 
 void osc::HelloTriangleScreen::tick(float dt) {
-    // change color over time
 
     if (m_Impl->color.r < 0.0f || m_Impl->color.r > 1.0f) {
         m_Impl->fadeSpeed = -m_Impl->fadeSpeed;
