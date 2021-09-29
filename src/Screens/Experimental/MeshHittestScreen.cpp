@@ -112,7 +112,6 @@ osc::MeshHittestScreen::~MeshHittestScreen() noexcept = default;
 void osc::MeshHittestScreen::onMount() {
     osc::ImGuiInit();
     App::cur().disableVsync();
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void osc::MeshHittestScreen::onUnmount() {

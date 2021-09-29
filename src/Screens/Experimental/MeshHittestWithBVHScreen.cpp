@@ -40,7 +40,7 @@ static void drawBVHRecursive(BVH const& bvh, SolidColorShader& shader, int pos) 
     glm::mat4 mmtx = mover * scaler;
 
     gl::Uniform(shader.uModel, mmtx);
-    gl::DrawElements(GL_LINES, 24, GL_UNSIGNED_SHORT, nullptr);
+    gl::DrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
 
     if (n.nlhs >= 0) {  // if it's an internal node
         drawBVHRecursive(bvh, shader, pos+1);
