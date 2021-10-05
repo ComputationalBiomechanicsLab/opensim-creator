@@ -4,12 +4,15 @@
 #include "src/UI/AddComponentPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
 
-#include <functional>
 #include <optional>
 
 namespace OpenSim {
     class Model;
     class Component;
+}
+
+namespace osc {
+    class UiModel;
 }
 
 namespace osc {
@@ -22,10 +25,6 @@ namespace osc {
 
         ModelActionsMenuBar();
 
-        void draw(
-            OpenSim::Model& model,
-            std::function<void(OpenSim::Component*)> const& onSetSelection,
-            std::function<void()> const& onBeforeModifyModel,
-            std::function<void()> const& onAfterModifyModel);
+        bool draw(UiModel&);
     };
 }

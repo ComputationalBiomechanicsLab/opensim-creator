@@ -1,10 +1,6 @@
 #pragma once
 
-#include "src/OpenSimBindings/UiModel.hpp"
-#include "src/Utils/CircularBuffer.hpp"
-
 #include <memory>
-#include <optional>
 
 namespace OpenSim {
     class Model;
@@ -16,124 +12,98 @@ namespace SimTK {
 }
 
 namespace osc {
-    // a "UI-ready" OpenSim::Model with undo/redo and rollback support
-    //
-    // this is what the top-level editor screens are managing. As the user makes
-    // edits to the model, the current/undo/redo states are being updated. This
-    // class also has light support for handling "rollbacks", which is where the
-    // implementation detects that the user modified the model into an invalid state
-    // and the implementation tried to fix the problem by rolling back to an earlier
-    // (hopefully, valid) undo state
-    struct UndoableUiModel final {
-        UiModel current;
-        CircularBuffer<UiModel, 32> undo;
-        CircularBuffer<UiModel, 32> redo;
+    class UiModel;
+}
 
-        // holding space for a "damaged" model
-        //
-        // this is set whenever the implementation detects that the current
-        // model was damaged by a modification (i.e. the model does not survive a
-        // call to .initSystem with its modified properties).
-        //
-        // The implementation will try to recover from the damage by popping models
-        // from the undo buffer and making them `current`. It will then store the
-        // damaged model here for later cleanup (by the user of this class, which
-        // should `std::move` out the damaged instance)
-        //
-        // the damaged model is kept "alive" so that any pointers into the model are
-        // still valid. The reason this is important is because the damage may have
-        // been done midway through a larger process (e.g. rendering) and there may
-        // be local (stack-allocated) pointers into the damaged model's components.
-        // In that case, it is *probably* safer to let that process finish with a
-        // damaged model than potentially segfault.
-        std::optional<UiModel> damaged;
-
-        // make a new undoable UI model
+namespace osc {
+    // A "UI ready" model with undo/redo support
+    class UndoableUiModel final {
+    public:
+        // construct a new, blank, UndoableUiModel
         UndoableUiModel();
 
+        // construct a new UndoableUiModel from an existing in-memory OpenSim model
         explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
 
-        [[nodiscard]] constexpr bool canUndo() const noexcept {
-            return !undo.empty();
-        }
+        UndoableUiModel(UndoableUiModel const&) = delete;
 
+        // move an UndoableUiModel in memory
+        UndoableUiModel(UndoableUiModel&&) noexcept;
+
+        ~UndoableUiModel() noexcept;
+
+        UndoableUiModel& operator=(UndoableUiModel const&) = delete;
+
+        // mover another UndoableUiModel over this one
+        UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
+
+        UiModel const& getUiModel() const;
+        UiModel& updUiModel();
+
+        bool canUndo() const noexcept;
         void doUndo();
-
-        [[nodiscard]] constexpr bool canRedo() const noexcept {
-            return !redo.empty();
-        }
-
+        bool canRedo() const noexcept;
         void doRedo();
 
-        [[nodiscard]] OpenSim::Model& model() const noexcept {
-            return *current.model;
-        }
-
+        OpenSim::Model const& getModel() const noexcept;
+        OpenSim::Model& updModel() noexcept;
         void setModel(std::unique_ptr<OpenSim::Model>);
 
-        // this should be called before any modification is made to the current model
-        //
-        // it gives the implementation a chance to save a known-to-be-undamaged
-        // version of `current` before any potential damage happens
-        void beforeModifyingModel();
+        SimTK::State const& getState() const noexcept;
+        SimTK::State& updState() noexcept;
 
-        // this should be called after any modification is made to the current model
-        //
-        // it "commits" the modification by calling `on_model_modified` on the model
-        // in a way that will "rollback" if comitting the change throws an exception
-        void afterModifyingModel();
+        float getFixupScaleFactor() const;
+        void setFixupScaleFactor(float);
+        float getReccommendedScaleFactor() const;
 
-        // tries to rollback the model to an earlier state, throwing an exception if
-        // that isn't possible (e.g. because there are no earlier states)
-        void forciblyRollbackToEarlierState();
+        void updateIfDirty();
 
-        [[nodiscard]] OpenSim::Component* getSelection() noexcept {
-            return current.selected;
+        void setModelDirtyADVANCED(bool);
+        void setStateDirtyADVANCED(bool);
+        void setDecorationsDirtyADVANCED(bool);
+        void setDirty(bool);
+
+        bool hasSelected() const;
+        OpenSim::Component const* getSelected() const;
+        OpenSim::Component* updSelected();
+        void setSelected(OpenSim::Component const* c);
+        bool selectionHasTypeHashCode(size_t v) const;
+        template<typename T>
+        bool selectionIsType() const {
+            return selectionHasTypeHashCode(typeid(T).hash_code());
+        }
+        template<typename T>
+        bool selectionDerivesFrom() const {
+            return getSelectedAs<T>() != nullptr;
+        }
+        template<typename T>
+        T const* getSelectedAs() const {
+            return dynamic_cast<T const*>(getSelected());
+        }
+        template<typename T>
+        T* updSelectedAs() {
+            return dynamic_cast<T*>(updSelected());
         }
 
-        void setSelection(OpenSim::Component* c) {
-            current.selected = c;
-        }
+        bool hasHovered() const;
+        OpenSim::Component const* getHovered() const noexcept;
+        OpenSim::Component* updHovered();
+        void setHovered(OpenSim::Component const* c);
 
-        [[nodiscard]] OpenSim::Component* getHover() noexcept {
-            return current.hovered;
-        }
-
-        void setHover(OpenSim::Component* c) {
-            current.hovered = c;
-        }
-
-        [[nodiscard]] OpenSim::Component* getIsolated() noexcept {
-            return current.isolated;
-        }
-
-        void setIsolated(OpenSim::Component* c) {
-            current.isolated = c;
-        }
-
-        [[nodiscard]] SimTK::State& state() noexcept {
-            return *current.state;
-        }
-
-        void clearAnyDamagedModels();
+        OpenSim::Component const* getIsolated() const noexcept;
+        OpenSim::Component* updIsolated();
+        void setIsolated(OpenSim::Component const* c);
 
         // declare the death of a component pointer
         //
         // this happens when we know that OpenSim has destructed a component in
         // the model indirectly (e.g. it was destructed by an OpenSim container)
         // and that we want to ensure the pointer isn't still held by this state
-        void declareDeathOf(OpenSim::Component const* c) noexcept {
-            if (current.selected == c) {
-                current.selected = nullptr;
-            }
+        void declareDeathOf(OpenSim::Component const* c) noexcept;
 
-            if (current.hovered == c) {
-                current.hovered = nullptr;
-            }
-
-            if (current.isolated == c) {
-                current.isolated = nullptr;
-            }
-        }
+    public:
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

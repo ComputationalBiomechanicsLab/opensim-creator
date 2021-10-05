@@ -1,6 +1,7 @@
 #include "MainMenu.hpp"
 
 #include "src/3D/Gl.hpp"
+#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
@@ -32,86 +33,80 @@
 
 using namespace osc;
 
-namespace {
-    void doOpenFileViaDialog(std::shared_ptr<MainEditorState> st) {
-        nfdchar_t* outpath = nullptr;
+static void doOpenFileViaDialog(std::shared_ptr<MainEditorState> st) {
+    nfdchar_t* outpath = nullptr;
 
-        nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
-        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+    nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
-        if (result == NFD_OKAY) {
-            App::cur().requestTransition<LoadingScreen>(st, outpath);
-        }
+    if (result == NFD_OKAY) {
+        App::cur().requestTransition<LoadingScreen>(st, outpath);
     }
+}
 
-    std::optional<std::filesystem::path> promptSaveOneFile() {
-        nfdchar_t* outpath = nullptr;
-        nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
-        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+static std::optional<std::filesystem::path> promptSaveOneFile() {
+    nfdchar_t* outpath = nullptr;
+    nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
+    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
-        return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
-    }
+    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+}
 
-    bool isSubpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
-        auto dirNumComponents = std::distance(dir.begin(), dir.end());
-        auto pathNumComponents = std::distance(pth.begin(), pth.end());
+static bool isAnExampleFile(std::filesystem::path const& path) {
+    return IsSubpath(App::resource("models"), path);
+}
 
-        if (pathNumComponents < dirNumComponents) {
-            return false;
-        }
+static std::optional<std::string> tryGetModelSaveLocation(OpenSim::Model const& m) {
+    if (std::string const& backing_path = m.getInputFileName();
+        backing_path != "Unassigned" && backing_path.size() > 0) {
 
-        return std::equal(dir.begin(), dir.end(), pth.begin());
-    }
-
-    bool isAnExampleFile(std::filesystem::path const& path) {
-        return isSubpath(App::resource("models"), path);
-    }
-
-    // fmap an optional from T -> f(T)
-    template<typename T, typename MappingFunction>
-    static auto mapOptional(MappingFunction f, std::optional<T> opt)
-        -> std::optional<decltype(f(std::move(opt).value()))> {
-
-        return opt ? std::optional{f(std::move(opt).value())} : std::optional<decltype(f(std::move(opt).value()))>{};
-    }
-
-    std::string path2string(std::filesystem::path p) {
-        return p.string();
-    }
-
-    std::optional<std::string> tryGetModelSaveLocation(OpenSim::Model const& m) {
-
-        if (std::string const& backing_path = m.getInputFileName();
-            backing_path != "Unassigned" && backing_path.size() > 0) {
-
-            // the model has an associated file
-            //
-            // we can save over this document - *IF* it's not an example file
-            if (isAnExampleFile(backing_path)) {
-                return mapOptional(path2string, promptSaveOneFile());
-            } else {
-                return backing_path;
-            }
+        // the model has an associated file
+        //
+        // we can save over this document - *IF* it's not an example file
+        if (isAnExampleFile(backing_path)) {
+            auto maybePath = promptSaveOneFile();
+            return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
         } else {
-            // the model has no associated file, so prompt the user for a save
-            // location
-            return mapOptional(path2string, promptSaveOneFile());
+            return backing_path;
         }
+    } else {
+        // the model has no associated file, so prompt the user for a save
+        // location
+        auto maybePath = promptSaveOneFile();
+        return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
     }
+}
 
-    void trySaveModel(OpenSim::Model& model, std::string const& save_loc) {
-        try {
-            model.print(save_loc);
-            model.setInputFileName(save_loc);
-            log::info("saved model to %s", save_loc.c_str());
-            App::cur().addRecentFile(save_loc);
-        } catch (OpenSim::Exception const& ex) {
-            log::error("error saving model: %s", ex.what());
-        }
+static bool trySaveModel(OpenSim::Model const& model, std::string const& save_loc) {
+    try {
+        model.print(save_loc);
+        log::info("saved model to %s", save_loc.c_str());
+        return true;
+    } catch (OpenSim::Exception const& ex) {
+        log::error("error saving model: %s", ex.what());
+        return false;
     }
+}
 
-    void transitionToLoadingScreen(std::shared_ptr<MainEditorState> st, std::filesystem::path p) {
-        App::cur().requestTransition<LoadingScreen>(st, p);
+static void transitionToLoadingScreen(std::shared_ptr<MainEditorState> st, std::filesystem::path p) {
+    App::cur().requestTransition<LoadingScreen>(st, p);
+}
+
+static void actionSaveCurrentModel(UiModel& uim) {
+    std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(uim.getModel());
+
+    if (maybeUserSaveLoc && trySaveModel(uim.getModel(), *maybeUserSaveLoc)) {
+        uim.updModel().setInputFileName(*maybeUserSaveLoc);
+        App::cur().addRecentFile(*maybeUserSaveLoc);
+    }
+}
+
+static void actionSaveCurrentModelAs(UiModel& uim) {
+    auto maybePath = promptSaveOneFile();
+
+    if (maybePath, trySaveModel(uim.getModel(), maybePath->string())) {
+        uim.updModel().setInputFileName(maybePath->string());
+        App::cur().addRecentFile(*maybePath);
     }
 }
 
@@ -130,22 +125,6 @@ void osc::actionNewModel(std::shared_ptr<MainEditorState> st) {
 void osc::actionOpenModel(std::shared_ptr<MainEditorState> mes) {
     OSC_ASSERT(mes && "editor state should be set");
     doOpenFileViaDialog(mes);
-}
-
-void osc::actionSaveCurrentModel(OpenSim::Model& model) {
-    std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(model);
-
-    if (maybeUserSaveLoc) {
-        trySaveModel(model, *maybeUserSaveLoc);
-    }
-}
-
-void osc::actionSaveCurrentModelAs(OpenSim::Model& model) {
-    std::optional<std::string> maybePath = mapOptional(path2string, promptSaveOneFile());
-
-    if (maybePath) {
-        trySaveModel(model, *maybePath);
-    }
 }
 
 osc::MainMenuFileTab::MainMenuFileTab() :
@@ -172,11 +151,11 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            actionSaveCurrentModel(editor_state->model());
+            actionSaveCurrentModel(editor_state->editedModel.updUiModel());
         }
 
         if (editor_state && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            actionSaveCurrentModelAs(editor_state->model());
+            actionSaveCurrentModelAs(editor_state->editedModel.updUiModel());
         }
 
         if (editor_state && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W)) {
@@ -230,13 +209,13 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
-            actionSaveCurrentModel(editor_state->model());
+            actionSaveCurrentModel(editor_state->editedModel.updUiModel());
         }
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, editor_state != nullptr)) {
         if (editor_state) {
-            actionSaveCurrentModelAs(editor_state->model());
+            actionSaveCurrentModelAs(editor_state->editedModel.updUiModel());
         }
     }
 

@@ -77,7 +77,7 @@ void osc::UiModelViewerScreen::draw() {
         ImGui::Text("hello");
         ImGui::EndTooltip();
     }
-    m_Impl->uim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
+    m_Impl->uim.setHovered(resp.hovertestResult);
     ImGui::End();
 
     osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();

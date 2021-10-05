@@ -187,9 +187,12 @@ add_executable(osc
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/PlottableOutputSubfield.cpp
     src/OpenSimBindings/PlottableOutputSubfield.hpp
+    src/OpenSimBindings/RenderableScene.cpp
     src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.cpp
     src/OpenSimBindings/Simulation.hpp
+    src/OpenSimBindings/StateModifications.cpp
+    src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
     src/OpenSimBindings/UiModel.cpp

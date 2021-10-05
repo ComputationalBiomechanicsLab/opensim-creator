@@ -143,7 +143,7 @@ namespace {
 
     // delete an item from an OpenSim::Set
     template<typename T, typename TSetBase = OpenSim::Object>
-    void deleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T* item) {
+    void deleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T const* item) {
         for (int i = 0; i < set.getSize(); ++i) {
             if (&set.get(i) == item) {
                 set.remove(i);
@@ -174,7 +174,7 @@ namespace {
     //
     // "try", because some things are difficult to delete from OpenSim models
     void actionTryDeleteSelectionFromEditedModel(UndoableUiModel& uim) {
-        OpenSim::Component* selected = uim.getSelection();
+        OpenSim::Component* selected = uim.updSelected();
 
         if (!selected) {
             return;  // nothing selected, so nothing can be deleted
@@ -202,10 +202,9 @@ namespace {
         if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner); js) {
             // delete an OpenSim::Joint from its owning OpenSim::JointSet
 
-            uim.beforeModifyingModel();
             deleteItemFromSet(*js, static_cast<OpenSim::Joint*>(selected));
+            uim.setDirty(true);
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner); bs) {
             // delete an OpenSim::Body from its owning OpenSim::BodySet
 
@@ -232,45 +231,39 @@ namespace {
         } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
             // delete an OpenSim::Controller from its owning OpenSim::ControllerSet
 
-            uim.beforeModifyingModel();
-            deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));
+            uim.setDirty(true);
+            deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));            
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
             // delete an OpenSim::Constraint from its owning OpenSim::ConstraintSet
 
-            uim.beforeModifyingModel();
+            uim.setDirty(true);
             deleteItemFromSet(*conss, static_cast<OpenSim::Constraint*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
             // delete an OpenSim::Force from its owning OpenSim::ForceSet
 
-            uim.beforeModifyingModel();
+            uim.setDirty(true);
             deleteItemFromSet(*fs, static_cast<OpenSim::Force*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
             // delete an OpenSim::Marker from its owning OpenSim::MarkerSet
 
-            uim.beforeModifyingModel();
+            uim.setDirty(true);
             deleteItemFromSet(*ms, static_cast<OpenSim::Marker*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
             // delete an OpenSim::ContactGeometry from its owning OpenSim::ContactGeometrySet
 
-            uim.beforeModifyingModel();
+            uim.setDirty(true);
             deleteItemFromSet(*cgs, static_cast<OpenSim::ContactGeometry*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner); ps) {
             // delete an OpenSim::Probe from its owning OpenSim::ProbeSet
 
-            uim.beforeModifyingModel();
+            uim.setDirty(true);
             deleteItemFromSet(*ps, static_cast<OpenSim::Probe*>(selected));
             uim.declareDeathOf(selected);
-            uim.afterModifyingModel();
         } else if (auto const* geom = findAncestorWithType<OpenSim::Geometry>(selected); geom) {
             // delete an OpenSim::Geometry from its owning OpenSim::Frame
 
@@ -283,6 +276,9 @@ namespace {
                 // this is necessary because OpenSim::Property doesn't seem
                 // to support list element deletion, but does support full
                 // assignment
+
+                uim.setDirty(true);
+
                 auto& mframe = const_cast<OpenSim::Frame&>(*frame);
                 OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
                     static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(mframe.updProperty_attached_geometry());
@@ -296,10 +292,8 @@ namespace {
                     }
                 }
 
-                uim.beforeModifyingModel();
                 prop.assign(*copy);
                 uim.declareDeathOf(selected);
-                uim.afterModifyingModel();
             }
         } else if (auto* pp = dynamic_cast<OpenSim::PathPoint*>(selected); pp) {
             if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner); gp) {
@@ -313,10 +307,9 @@ namespace {
                 }
 
                 if (idx != -1) {
-                    uim.beforeModifyingModel();
-                    gp->deletePathPoint(uim.state(), idx);
+                    uim.setDirty(true);
+                    gp->deletePathPoint(uim.getState(), idx);
                     uim.declareDeathOf(selected);
-                    uim.afterModifyingModel();
                 }
             }
         }
@@ -324,11 +317,12 @@ namespace {
 
     // draw an editor for top-level selected Component members (e.g. name)
     void drawTopLevelMembersEditor(UndoableUiModel& st) {
-        if (!st.getSelection()) {
+        OpenSim::Component const* selection = st.getSelected();
+
+        if (!selection) {
             ImGui::Text("cannot draw top level editor: nothing selected?");
             return;
         }
-        OpenSim::Component& selection = *st.getSelection();
 
         ImGui::Columns(2);
 
@@ -337,14 +331,12 @@ namespace {
 
         char nambuf[128];
         nambuf[sizeof(nambuf) - 1] = '\0';
-        std::strncpy(nambuf, selection.getName().c_str(), sizeof(nambuf) - 1);
+        std::strncpy(nambuf, selection->getName().c_str(), sizeof(nambuf) - 1);
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         if (ImGui::InputText("##nameditor", nambuf, sizeof(nambuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
 
             if (std::strlen(nambuf) > 0) {
-                st.beforeModifyingModel();
-                selection.setName(nambuf);
-                st.afterModifyingModel();
+                st.updSelected()->setName(nambuf);
             }
         }
         ImGui::NextColumn();
@@ -353,9 +345,15 @@ namespace {
     }
 
     // draw UI element that lets user change a model joint's type
-    void drawJointTypeSwitcher(UndoableUiModel& st, OpenSim::Joint& selection) {
+    void drawSelectionJointTypeSwitcher(UndoableUiModel& st) {
+        OpenSim::Joint const* selection = st.getSelectedAs<OpenSim::Joint>();
+
+        if (!selection) {
+            return;
+        }
+
         auto const* parentJointset =
-            selection.hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&selection.getOwner()) : nullptr;
+            selection->hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&selection->getOwner()) : nullptr;
 
         if (!parentJointset) {
             // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
@@ -368,7 +366,7 @@ namespace {
         int idx = -1;
         for (int i = 0; i < js.getSize(); ++i) {
             OpenSim::Joint const* j = &js[i];
-            if (j == &selection) {
+            if (j == selection) {
                 idx = i;
                 break;
             }
@@ -383,7 +381,7 @@ namespace {
         ImGui::NextColumn();
 
         // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-        std::optional<size_t> maybeTypeIndex = JointRegistry::indexOf(selection);
+        std::optional<size_t> maybeTypeIndex = JointRegistry::indexOf(*selection);
         int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
 
         auto jointNames = JointRegistry::names();
@@ -398,18 +396,17 @@ namespace {
 
             // copy + fixup  a prototype of the user's selection
             std::unique_ptr<OpenSim::Joint> newJoint{JointRegistry::prototypes()[static_cast<size_t>(typeIndex)]->clone()};
-            copyCommonJointProperties(selection, *newJoint);
+            copyCommonJointProperties(*selection, *newJoint);
 
             // overwrite old joint in model
             //
             // note: this will invalidate the `selection` joint, because the
             // OpenSim::JointSet container will automatically kill it
-            st.beforeModifyingModel();
             OpenSim::Joint* ptr = newJoint.get();
+            st.setDirty(true);
             const_cast<OpenSim::JointSet&>(js).set(idx, newJoint.release());
-            st.declareDeathOf(&selection);
-            st.setSelection(ptr);
-            st.afterModifyingModel();
+            st.declareDeathOf(selection);
+            st.setSelected(ptr);
         }
         ImGui::NextColumn();
     }
@@ -433,9 +430,7 @@ namespace {
     void actionDisableAllWrappingSurfaces(MainEditorState& mes) {
         UndoableUiModel& uim = mes.editedModel;
 
-        OpenSim::Model& m = uim.model();
-
-        uim.beforeModifyingModel();
+        OpenSim::Model& m = uim.updModel();
         for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
             for (int i = 0; i < wos.getSize(); ++i) {
                 OpenSim::WrapObject& wo = wos[i];
@@ -443,16 +438,13 @@ namespace {
                 wo.upd_Appearance().set_visible(false);
             }
         }
-        uim.afterModifyingModel();
     }
 
     // enable all wrapping surfaces in the current model
     void actionEnableAllWrappingSurfaces(MainEditorState& mes) {
         UndoableUiModel& uim = mes.editedModel;
 
-        OpenSim::Model& m = uim.model();
-
-        uim.beforeModifyingModel();
+        OpenSim::Model& m = uim.updModel();
         for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
             for (int i = 0; i < wos.getSize(); ++i) {
                 OpenSim::WrapObject& wo = wos[i];
@@ -460,7 +452,6 @@ namespace {
                 wo.upd_Appearance().set_visible(true);
             }
         }
-        uim.afterModifyingModel();
     }
 
     // try to start a new simulation from the currently-edited model
@@ -469,7 +460,7 @@ namespace {
     }
 
     void actionClearSelectionFromEditedModel(MainEditorState& mes) {
-        mes.editedModel.setSelection(nullptr);
+        mes.editedModel.setSelected(nullptr);
     }
 }
 
@@ -507,7 +498,7 @@ struct ModelEditorScreen::Impl final {
 
     explicit Impl(std::shared_ptr<MainEditorState> _st) :
         st{std::move(_st)},
-        filePoller{std::chrono::milliseconds{1000}, st->editedModel.model().getInputFileName()} {
+        filePoller{std::chrono::milliseconds{1000}, st->editedModel.getModel().getInputFileName()} {
     }
 };
 
@@ -558,7 +549,7 @@ namespace {
     void modelEditorOnBackingFileChanged(ModelEditorScreen::Impl& impl) {
         try {
             log::info("file change detected: loading updated file");
-            auto p = std::make_unique<OpenSim::Model>(impl.st->model().getInputFileName());
+            auto p = std::make_unique<OpenSim::Model>(impl.st->getModel().getInputFileName());
             log::info("loaded updated file");
             impl.st->setModel(std::move(p));
         } catch (std::exception const& ex) {
@@ -569,10 +560,8 @@ namespace {
     }
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
-    void drawPhysicalFrameContextualActions(
-            ModelEditorScreen::Impl& impl,
-            UndoableUiModel& uim,
-            OpenSim::PhysicalFrame& selection) {
+    void drawPhysicalFrameContextualActions(AttachGeometryPopup& attachGeomPopup, UndoableUiModel& uim) {
+        OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
         ImGui::Columns(2);
 
@@ -594,10 +583,8 @@ namespace {
             ImGui::EndTooltip();
         }
 
-        if (auto attached = impl.ui.attachGeometryPopup.draw(modalName); attached) {
-            uim.beforeModifyingModel();
-            selection.attachGeometry(attached.release());
-            uim.afterModifyingModel();
+        if (auto attached = attachGeomPopup.draw(modalName); attached) {
+            uim.updSelectedAs<OpenSim::PhysicalFrame>()->attachGeometry(attached.release());
         }
         ImGui::NextColumn();
 
@@ -605,14 +592,12 @@ namespace {
         ImGui::NextColumn();
         if (ImGui::Button("add offset frame")) {
             auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-            pof->setName(selection.getName() + "_offsetframe");
-            pof->setParentFrame(selection);
+            pof->setName(selection->getName() + "_offsetframe");
+            pof->setParentFrame(*selection);
 
-            uim.beforeModifyingModel();
             auto pofptr = pof.get();
-            selection.addComponent(pof.release());
-            uim.setSelection(pofptr);
-            uim.afterModifyingModel();
+            uim.updSelectedAs<OpenSim::PhysicalFrame>()->addComponent(pof.release());
+            uim.setSelected(pofptr);
         }
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -627,13 +612,16 @@ namespace {
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint
-    void drawJointContextualActions(
-            UndoableUiModel& st,
-            OpenSim::Joint& selection) {
+    void drawJointContextualActions(UndoableUiModel& uim) {
+        OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
+
+        if (!selection) {
+            return;
+        }
 
         ImGui::Columns(2);
 
-        drawJointTypeSwitcher(st, selection);
+        drawSelectionJointTypeSwitcher(uim);
 
         // BEWARE: broke
         {
@@ -642,20 +630,14 @@ namespace {
 
             if (ImGui::Button("parent")) {
                 auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                pf->setParentFrame(selection.getParentFrame());
-
-                st.beforeModifyingModel();
-                selection.addFrame(pf.release());
-                st.afterModifyingModel();
+                pf->setParentFrame(selection->getParentFrame());
+                uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
             }
             ImGui::SameLine();
             if (ImGui::Button("child")) {
                 auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                pf->setParentFrame(selection.getChildFrame());
-
-                st.beforeModifyingModel();
-                selection.addFrame(pf.release());
-                st.afterModifyingModel();
+                pf->setParentFrame(selection->getChildFrame());
+                uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
             }
             ImGui::NextColumn();
         }
@@ -664,11 +646,15 @@ namespace {
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint
-    void drawHCFContextualActions(
-        UndoableUiModel& uim,
-        OpenSim::HuntCrossleyForce& selection) {
+    void drawHCFContextualActions(UndoableUiModel& uim) {
+        OpenSim::HuntCrossleyForce const* hcf = uim.getSelectedAs<OpenSim::HuntCrossleyForce>();
 
-        if (selection.get_contact_parameters().getSize() > 1) {
+        if (!hcf) {
+            return;
+        }
+
+
+        if (hcf->get_contact_parameters().getSize() > 1) {
             ImGui::Text("cannot edit: has more than one HuntCrossleyForce::Parameter");
             return;
         }
@@ -676,11 +662,11 @@ namespace {
         // HACK: if it has no parameters, give it some. The HuntCrossleyForce implementation effectively
         // does this internally anyway to satisfy its own API (e.g. `getStaticFriction` requires that
         // the HuntCrossleyForce has a parameter)
-        if (selection.get_contact_parameters().getSize() == 0) {
-            selection.updContactParametersSet().adoptAndAppend(new OpenSim::HuntCrossleyForce::ContactParameters());
+        if (hcf->get_contact_parameters().getSize() == 0) {
+            uim.updSelectedAs<OpenSim::HuntCrossleyForce>()->updContactParametersSet().adoptAndAppend(new OpenSim::HuntCrossleyForce::ContactParameters());
         }
 
-        OpenSim::HuntCrossleyForce::ContactParameters& params = selection.upd_contact_parameters()[0];
+        OpenSim::HuntCrossleyForce::ContactParameters const& params = hcf->get_contact_parameters()[0];
 
         ImGui::Columns(2);
         ImGui::TextUnformatted("add contact geometry");
@@ -695,12 +681,10 @@ namespace {
             }
 
             OpenSim::ContactGeometry const* added =
-                SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.model());
+                SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.getModel());
 
             if (added) {
-                uim.beforeModifyingModel();
-                params.updGeometry().appendValue(added->getName());
-                uim.afterModifyingModel();
+                uim.updSelectedAs<OpenSim::HuntCrossleyForce>()->updContactParametersSet()[0].updGeometry().appendValue(added->getName());
             }
         }
 
@@ -722,9 +706,8 @@ namespace {
             auto maybe_updater = st.draw(params, easyToHandleProps);
 
             if (maybe_updater) {
-                uim.beforeModifyingModel();
+                uim.setDirty(true);
                 maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
-                uim.afterModifyingModel();
             }
         }
 
@@ -734,9 +717,12 @@ namespace {
     }
 
     // draw contextual actions (buttons, sliders) for a selected path actuator
-    void drawPathActuatorContextualParams(
-            UndoableUiModel& uim,
-            OpenSim::PathActuator& selection) {
+    void drawPathActuatorContextualParams(UndoableUiModel& uim) {
+        OpenSim::PathActuator const* pa = uim.getSelectedAs<OpenSim::PathActuator>();
+
+        if (!pa) {
+            return;
+        }
 
         ImGui::Columns(2);
 
@@ -759,17 +745,15 @@ namespace {
 
         // handle popup
         {
-            OpenSim::PhysicalFrame const* pf = Select1PFPopup{}.draw(modalName, uim.model());
+            OpenSim::PhysicalFrame const* pf = Select1PFPopup{}.draw(modalName, uim.getModel());
             if (pf) {
-                int n = selection.getGeometryPath().getPathPointSet().getSize();
+                int n = pa->getGeometryPath().getPathPointSet().getSize();
                 char buf[128];
-                std::snprintf(buf, sizeof(buf), "%s-P%i", selection.getName().c_str(), n + 1);
+                std::snprintf(buf, sizeof(buf), "%s-P%i", pa->getName().c_str(), n + 1);
                 std::string name{buf};
                 SimTK::Vec3 pos{0.0f, 0.0f, 0.0f};
 
-                uim.beforeModifyingModel();
-                selection.addNewPathPoint(name, *pf, pos);
-                uim.afterModifyingModel();
+                uim.updSelectedAs<OpenSim::PathActuator>()->addNewPathPoint(name, *pf, pos);
             }
         }
 
@@ -777,15 +761,19 @@ namespace {
         ImGui::Columns();
     }
 
-    void drawModelContextualActions(ModelEditorScreen::Impl& impl, OpenSim::Model& selection) {
+    void drawModelContextualActions(UndoableUiModel& uum) {
+        OpenSim::Model const* m = uum.getSelectedAs<OpenSim::Model>();
+
+        if (!m) {
+            return;
+        }
+
         ImGui::Columns(2);
         ImGui::Text("show frames");
         ImGui::NextColumn();
-        bool showingFrames = selection.get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+        bool showingFrames = m->get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
         if (ImGui::Button(showingFrames ? "hide" : "show")) {
-            impl.st->editedModel.beforeModifyingModel();
-            selection.upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-            impl.st->editedModel.afterModifyingModel();
+            uum.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
         }
         ImGui::NextColumn();
         ImGui::Columns();
@@ -794,7 +782,7 @@ namespace {
     // draw contextual actions for selection
     void drawContextualActions(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
 
-        if (!uim.getSelection()) {
+        if (!uim.hasSelected()) {
             ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
             return;
         }
@@ -803,17 +791,13 @@ namespace {
         ImGui::TextUnformatted("isolate in visualizer");
         ImGui::NextColumn();
 
-        if (uim.getSelection() != uim.getIsolated()) {
+        if (uim.getSelected() != uim.getIsolated()) {
             if (ImGui::Button("isolate")) {
-                uim.beforeModifyingModel();
-                uim.setIsolated(uim.getSelection());
-                uim.afterModifyingModel();
+                uim.setIsolated(uim.getSelected());
             }
         } else {
             if (ImGui::Button("clear isolation")) {
-                uim.beforeModifyingModel();
                 uim.setIsolated(nullptr);
-                uim.afterModifyingModel();
             }
         }
 
@@ -831,7 +815,7 @@ namespace {
         ImGui::TextUnformatted("copy abspath");
         ImGui::NextColumn();
         if (ImGui::Button("copy")) {
-            SetClipboardText(uim.getSelection()->getAbsolutePathString().c_str());
+            SetClipboardText(uim.getSelected()->getAbsolutePathString().c_str());
         }
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
@@ -845,33 +829,33 @@ namespace {
 
         ImGui::Columns();
 
-        if (auto* model = dynamic_cast<OpenSim::Model*>(uim.getSelection()); model) {
-            drawModelContextualActions(impl, *model);
-        } else if (auto* frame = dynamic_cast<OpenSim::PhysicalFrame*>(uim.getSelection()); frame) {
-            drawPhysicalFrameContextualActions(impl, uim, *frame);
-        } else if (auto* joint = dynamic_cast<OpenSim::Joint*>(uim.getSelection()); joint) {
-            drawJointContextualActions(uim, *joint);
-        } else if (auto* hcf = dynamic_cast<OpenSim::HuntCrossleyForce*>(uim.getSelection()); hcf) {
-            drawHCFContextualActions(uim, *hcf);
-        } else if (auto* pa = dynamic_cast<OpenSim::PathActuator*>(uim.getSelection()); pa) {
-            drawPathActuatorContextualParams(uim, *pa);
+        if (uim.selectionIsType<OpenSim::Model>()) {
+            drawModelContextualActions(uim);
+        } else if (uim.selectionDerivesFrom<OpenSim::PhysicalFrame>()) {
+            drawPhysicalFrameContextualActions(impl.ui.attachGeometryPopup, uim);
+        } else if (uim.selectionDerivesFrom<OpenSim::Joint>()) {
+            drawJointContextualActions(uim);
+        } else if (uim.selectionIsType<OpenSim::HuntCrossleyForce>()) {
+            drawHCFContextualActions(uim);
+        } else if (uim.selectionDerivesFrom<OpenSim::PathActuator>()) {
+            drawPathActuatorContextualParams(uim);
         }
     }
 
 
     // draw socket editor for current selection
-    void drawSocketEditor(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
+    void drawSocketEditor(ReassignSocketPopup& reassignSocketPopup, UndoableUiModel& uim) {
+        OpenSim::Component const* selected = uim.getSelected();
 
-        if (!uim.getSelection()) {
+        if (!selected) {
             ImGui::TextUnformatted("cannot draw socket editor: selection is blank (shouldn't be)");
-            return;
         }
 
-        std::vector<std::string> socknames = uim.getSelection()->getSocketNames();
+        std::vector<std::string> socknames = const_cast<OpenSim::Component*>(selected)->getSocketNames();
 
         if (socknames.empty()) {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-            ImGui::Text("    (OpenSim::%s has no sockets)", uim.getSelection()->getConcreteClassName().c_str());
+            ImGui::Text("    (OpenSim::%s has no sockets)", selected->getConcreteClassName().c_str());
             ImGui::PopStyleColor();
             return;
         }
@@ -884,7 +868,7 @@ namespace {
             ImGui::TextUnformatted(sn.c_str());
             ImGui::NextColumn();
 
-            OpenSim::AbstractSocket const& socket = uim.getSelection()->getSocket(sn);
+            OpenSim::AbstractSocket const& socket = selected->getSocket(sn);
             std::string sockname = socket.getConnecteePath();
             std::string popupname = std::string{"reassign"} + sockname;
 
@@ -906,29 +890,25 @@ namespace {
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Right) && dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())) {
-                uim.setSelection(const_cast<OpenSim::Component*>(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject())));
+                uim.setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
                 ImGui::NextColumn();
                 break;  // don't continue to traverse the sockets, because the selection changed
             }
 
-            if (OpenSim::Object const* connectee =
-                    impl.ui.reassignSocketPopup.draw(popupname.c_str(), uim.model(), socket);
-                connectee) {
+            if (OpenSim::Object const* connectee = reassignSocketPopup.draw(popupname.c_str(), uim.getModel(), socket); connectee) {
 
                 ImGui::CloseCurrentPopup();
 
                 OpenSim::Object const& existing = socket.getConnecteeAsObject();
-                uim.beforeModifyingModel();
                 try {
-                    uim.getSelection()->updSocket(sn).connect(*connectee);
-                    impl.ui.reassignSocketPopup.search[0] = '\0';
-                    impl.ui.reassignSocketPopup.error.clear();
+                    uim.updSelected()->updSocket(sn).connect(*connectee);
+                    reassignSocketPopup.search[0] = '\0';
+                    reassignSocketPopup.error.clear();
                     ImGui::CloseCurrentPopup();
                 } catch (std::exception const& ex) {
-                    impl.ui.reassignSocketPopup.error = ex.what();
-                    uim.getSelection()->updSocket(sn).connect(existing);
+                    reassignSocketPopup.error = ex.what();
+                    uim.updSelected()->updSocket(sn).connect(existing);
                 }
-                uim.afterModifyingModel();
             }
 
             ImGui::NextColumn();
@@ -940,11 +920,13 @@ namespace {
     //
     // eg: Model > Joint > PhysicalFrame
     void drawSelectionBreadcrumbs(UndoableUiModel& uim) {
-        if (!uim.getSelection()) {
-            return;  // nothing selected
+        OpenSim::Component const* selection = uim.getSelected();
+
+        if (!selection) {
+            return;
         }
 
-        auto lst = osc::path_to(*uim.getSelection());
+        auto lst = osc::path_to(*selection);
 
         if (lst.empty()) {
             return;  // this shouldn't happen, but you never know...
@@ -956,10 +938,10 @@ namespace {
             ImGui::Dummy(ImVec2{indent, 0.0f});
             ImGui::SameLine();
             if (ImGui::Button((*it)->getName().c_str())) {
-                uim.setSelection(const_cast<OpenSim::Component*>(*it));
+                uim.setSelected(*it);
             }
             if (ImGui::IsItemHovered()) {
-                uim.setHover(const_cast<OpenSim::Component*>(*it));
+                uim.setHovered(*it);
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::Text("OpenSim::%s", (*it)->getConcreteClassName().c_str());
@@ -980,7 +962,7 @@ namespace {
 
     // draw editor for current selection
     void drawSelectionEditor(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
-        if (!uim.getSelection()) {
+        if (!uim.hasSelected()) {
             ImGui::TextUnformatted("(nothing selected)");
             return;
         }
@@ -1001,7 +983,7 @@ namespace {
         drawContextualActions(impl, uim);
 
         // a contextual action may have changed this
-        if (!uim.getSelection()) {
+        if (!uim.hasSelected()) {
             return;
         }
 
@@ -1019,11 +1001,10 @@ namespace {
 
         // property editors
         {
-            auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelection());
+            auto maybeUpdater = impl.ui.propertiesEditor.draw(*uim.getSelected());
             if (maybeUpdater) {
-                uim.beforeModifyingModel();
+                uim.setDirty(true);
                 maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
-                uim.afterModifyingModel();
             }
         }
 
@@ -1033,7 +1014,7 @@ namespace {
         ImGui::SameLine();
         DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
-        drawSocketEditor(impl, uim);
+        drawSocketEditor(impl.ui.reassignSocketPopup, uim);
     }
 
     // draw the "Actions" tab of the main (top) menu
@@ -1067,15 +1048,14 @@ namespace {
             }
 
 
-            float scaleFactor = impl.st->editedModel.current.fixupScaleFactor;
+            float scaleFactor = impl.st->editedModel.getFixupScaleFactor();
             if (ImGui::InputFloat("set scale factor", &scaleFactor)) {
-                impl.st->editedModel.current.fixupScaleFactor = scaleFactor;
-                impl.st->editedModel.current.onUiModelModified();
+                impl.st->editedModel.setFixupScaleFactor(scaleFactor);
+                impl.st->editedModel.updUiModel().updateIfDirty();
             }
             if (ImGui::MenuItem("autoscale scale factor")) {
-                UiModel& uim2 = impl.st->editedModel.current;
-                float sf = uim2.getRecommendedScaleFactor();
-                uim2.setSceneScaleFactor(sf);
+                float sf = impl.st->editedModel.getUiModel().getRecommendedScaleFactor();
+                impl.st->editedModel.updUiModel().setFixupScaleFactor(sf);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1085,11 +1065,9 @@ namespace {
                 ImGui::EndTooltip();
             }
 
-            bool showingFrames = impl.st->editedModel.model().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
+            bool showingFrames = impl.st->editedModel.getModel().get_ModelVisualPreferences().get_ModelDisplayHints().get_show_frames();
             if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames")) {
-                impl.st->editedModel.beforeModifyingModel();
-                impl.st->editedModel.model().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
-                impl.st->editedModel.afterModifyingModel();
+                impl.st->editedModel.updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
@@ -1099,20 +1077,20 @@ namespace {
                 ImGui::EndTooltip();
             }
 
-            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.model());
+            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.getModel());
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile)) {
-                std::filesystem::path p{uim.model().getInputFileName()};
+                std::filesystem::path p{uim.getModel().getInputFileName()};
                 OpenPathInOSDefaultApplication(p.parent_path());
             }
 
             if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile)) {
-                OpenPathInOSDefaultApplication(uim.model().getInputFileName());
+                OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!hasBackingFile(uim.model())) {
+                if (!hasBackingFile(uim.getModel())) {
                     ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
                 }
                 ImGui::PopTextWrapPos();
@@ -1204,10 +1182,10 @@ namespace {
                 std::snprintf(buf, sizeof(buf), "%s (%s)", c->getName().c_str(), c->getConcreteClassName().c_str());
 
                 if (ImGui::MenuItem(buf)) {
-                    impl.st->setSelection(const_cast<OpenSim::Component*>(c));
+                    impl.st->setSelected(c);
                 }
                 if (ImGui::IsItemHovered()) {
-                    impl.st->setHovered(const_cast<OpenSim::Component*>(c));
+                    impl.st->setHovered(c);
                 }
             }
             ImGui::EndMenu();
@@ -1289,17 +1267,17 @@ namespace {
             return true;
         }
 
-        auto resp = viewer.draw(impl.st->editedModel.current);
+        auto resp = viewer.draw(impl.st->editedModel.getUiModel());
         ImGui::End();
 
         // update hover
-        if (resp.isMousedOver && resp.hovertestResult != impl.st->hovered()) {
-            impl.st->setHovered(const_cast<OpenSim::Component*>(resp.hovertestResult));
+        if (resp.isMousedOver && resp.hovertestResult != impl.st->getHovered()) {
+            impl.st->setHovered(resp.hovertestResult);
         }
 
         // if left-clicked, update selection
         if (resp.isMousedOver && resp.isLeftClicked) {
-            impl.st->setSelection(const_cast<OpenSim::Component*>(resp.hovertestResult));
+            impl.st->setSelected(resp.hovertestResult);
         }
 
         // if hovered, draw hover tooltip
@@ -1312,11 +1290,11 @@ namespace {
             char buf[128];
             std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
             if (resp.isMousedOver && resp.hovertestResult && ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
-                impl.st->setSelection(const_cast<OpenSim::Component*>(resp.hovertestResult));
+                impl.st->setSelected(resp.hovertestResult);
                 ImGui::OpenPopup(buf);
             }
-            if (impl.st->selection() && ImGui::BeginPopup(buf)) {
-                draw3DViewerContextMenu(impl, *impl.st->selection());
+            if (impl.st->editedModel.hasSelected() && ImGui::BeginPopup(buf)) {
+                draw3DViewerContextMenu(impl, *impl.st->getSelected());
                 ImGui::EndPopup();
             }
         }
@@ -1378,10 +1356,7 @@ namespace {
         // contains top-level actions (e.g. "add body")
         if (impl.st->showing.actions) {
             if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
-                auto onSetSelection = [&](OpenSim::Component* c) { impl.st->editedModel.setSelection(c); };
-                auto onBeforeModifyModel = [&]() { impl.st->editedModel.beforeModifyingModel(); };
-                auto onAfterModifyModel = [&]() { impl.st->editedModel.afterModifyingModel(); };
-                impl.ui.modelActions.draw(impl.st->editedModel.model(), onSetSelection, onBeforeModifyModel, onAfterModifyModel);
+                impl.ui.modelActions.draw(impl.st->editedModel.updUiModel());
             }
             ImGui::End();
         }
@@ -1390,14 +1365,14 @@ namespace {
         if (impl.st->showing.hierarchy) {
             if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
                 auto resp = impl.ui.componentHierarchy.draw(
-                    &impl.st->editedModel.model().getRoot(),
-                    impl.st->editedModel.getSelection(),
-                    impl.st->editedModel.getHover());
+                    &impl.st->editedModel.getModel().getRoot(),
+                    impl.st->getSelected(),
+                    impl.st->getHovered());
 
                 if (resp.type == ComponentHierarchy::SelectionChanged) {
-                    impl.st->setSelection(const_cast<OpenSim::Component*>(resp.ptr));
+                    impl.st->setSelected(resp.ptr);
                 } else if (resp.type == ComponentHierarchy::HoverChanged) {
-                    impl.st->setHovered(const_cast<OpenSim::Component*>(resp.ptr));
+                    impl.st->setHovered(resp.ptr);
                 }
             }
             ImGui::End();
@@ -1422,7 +1397,7 @@ namespace {
 
         if (impl.st->showing.coordinateEditor) {
             if (ImGui::Begin("Coordinate Editor")) {
-                impl.ui.coordEditor.draw(impl.st->editedModel.current);
+                impl.ui.coordEditor.draw(impl.st->editedModel.updUiModel());
             }
         }
 
@@ -1439,8 +1414,8 @@ namespace {
             return;
         }
 
-        // garbage-collect any models damaged by in-UI modifications (if applicable)
-        impl.st->clearAnyDamagedModels();
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
     }
 }
 
@@ -1478,7 +1453,7 @@ void ModelEditorScreen::onEvent(SDL_Event const& e) {
 }
 
 void osc::ModelEditorScreen::tick(float) {
-    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->model().getInputFileName())) {
+    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->getModel().getInputFileName())) {
         modelEditorOnBackingFileChanged(*m_Impl);
     }
 }
@@ -1499,7 +1474,7 @@ void osc::ModelEditorScreen::draw() {
         try {
             if (m_Impl->st->canUndo()) {
                 log::error("the editor has an `undo` history for this model, so it will try to rollback to that");
-                m_Impl->st->editedModel.forciblyRollbackToEarlierState();
+                m_Impl->st->doUndo();
                 log::error("rollback succeeded");
             } else {
                 throw;

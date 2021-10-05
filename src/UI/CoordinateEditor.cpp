@@ -1,6 +1,7 @@
 #include "CoordinateEditor.hpp"
 
 #include "src/UI/HelpMarker.hpp"
+#include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Styling.hpp"
 
@@ -75,7 +76,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
     // load coords
     coord_scratch.clear();
-    get_coordinates(*uim.model, coord_scratch);
+    get_coordinates(uim.getModel(), coord_scratch);
 
     // sort coords
     {
@@ -123,11 +124,11 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         ImGui::PushID(i++);
 
         int styles_pushed = 0;
-        if (c == uim.hovered) {
+        if (c == uim.getHovered()) {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
             ++styles_pushed;
         }
-        if (c == uim.selected) {
+        if (c == uim.getSelected()) {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
             ++styles_pushed;
         }
@@ -136,7 +137,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         styles_pushed = 0;
 
         if (ImGui::IsItemHovered()) {
-            uim.hovered = const_cast<OpenSim::Coordinate*>(c);
+            uim.setHovered(c);
 
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
@@ -160,19 +161,18 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
             ImGui::EndTooltip();
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-            uim.selected = const_cast<OpenSim::Coordinate*>(c);
+            uim.setSelected(c);
         }
 
         ImGui::NextColumn();
 
-        // if locked, color everything red
-        if (c->getLocked(*uim.state)) {
+        if (c->getLocked(uim.getState())) {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++styles_pushed;
         }
 
-        if (ImGui::Button(c->getLocked(*uim.state) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), c->getSpeedValue(*uim.state), !c->getLocked(*uim.state)});
+        if (ImGui::Button(c->getLocked(uim.getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), c->getSpeedValue(uim.getState()), !c->getLocked(uim.getState())});
             state_modified = true;
         }
 
@@ -186,10 +186,10 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SameLine();
 
-        float v = static_cast<float>(c->getValue(*uim.state));
+        float v = static_cast<float>(c->getValue(uim.getState()));
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
         if (ImGui::SliderFloat("##coordinatevalueeditor", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(*uim.state), c->getLocked(*uim.state)});
+            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(uim.getState()), c->getLocked(uim.getState())});
             state_modified = true;
         }
 
@@ -200,9 +200,9 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-        float speed = static_cast<float>(c->getSpeedValue(*uim.state));
+        float speed = static_cast<float>(c->getSpeedValue(uim.getState()));
         if (ImGui::InputFloat("##coordinatespeededitor", &speed)) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(*uim.state), speed, c->getLocked(*uim.state)});
+            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), speed, c->getLocked(uim.getState())});
             state_modified = true;
         }
         ImGui::NextColumn();

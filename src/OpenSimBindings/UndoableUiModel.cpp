@@ -1,6 +1,7 @@
 #include "UndoableUiModel.hpp"
 
 #include "src/OpenSimBindings/UiModel.hpp"
+#include "src/Utils/CircularBuffer.hpp"
 #include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -20,79 +21,53 @@ namespace {
     };
 }
 
-static DebounceRv canPushNewUndoStateWithDebounce(UndoableUiModel const& uim) {
-    DebounceRv rv;
-    rv.validAt = std::chrono::system_clock::now();
-    rv.shouldUndo = uim.undo.empty() || uim.undo.back().timestamp + 5s <= rv.validAt;
-    return rv;
-}
-
-static void doDebouncedUndoPush(UndoableUiModel& uim) {
-    auto [validAt, shouldUndo] = canPushNewUndoStateWithDebounce(uim);
-
-    if (shouldUndo) {
-        uim.undo.emplace_back(uim.current, validAt);
-        uim.redo.clear();
-    }
-}
-
-
-static void rollbackModelToEarlierState(UndoableUiModel& uim) {
-    if (uim.undo.empty()) {
-        log::error("the model cannot be fixed: no earlier versions of the model exist, throwing an exception");
-        throw std::runtime_error{
-            "an OpenSim::Model was put into an invalid state: probably by a modification. We tried to recover from this error, but couldn't - view the logs"};
-    }
-
-    // otherwise, we have undo entries we can pop
-    log::error(
-        "attempting to rollback to an earlier (pre-modification) of the model that was saved into the undo buffer");
-    try {
-        uim.damaged.emplace(std::move(uim.current));
-        uim.current = uim.undo.pop_back();
-        return;
-    } catch (...) {
-        log::error(
-            "error encountered when trying to rollback to an earlier version of the model, this will be thrown as an exception");
-        throw;
-    }
-}
-
-static void carefullyTryToInitSimTKSystemAndRealizeOnCurrentModel(UndoableUiModel& uim) {
-    // this code is messy because it has to handle the messy situation where
-    // the `current` model has been modified into an invalid state that OpenSim
-    // refuses to initialize a system for
-    //
-    // this code has to balance being super-aggressive (i.e. immediately terminating with
-    // a horrible error message) against letting the UI limp along with the broken
-    // model *just* long enough for a recovery effort to complete. Typical end-users
-    // are going to *strongly* prefer the latter, because they might have unsaved
-    // changes in the UI that should not be lost by a crash.
-
-    try {
-        uim.current.onUiModelModified();
-        return;
-    } catch (std::exception const& ex) {
-        log::error("exception thrown when initializing updated model: %s", ex.what());
-    }
-
-    rollbackModelToEarlierState(uim);
-}
-
 // public API
 
-osc::UndoableUiModel::UndoableUiModel() :
-    current{},
-    undo{},
-    redo{},
-    damaged{std::nullopt} {
+struct osc::UndoableUiModel::Impl final {
+    UiModel m_Current;
+    UiModel m_Backup;
+    CircularBuffer<UiModel, 32> m_UndoBuffer;
+    CircularBuffer<UiModel, 32> m_RedoBuffer;
+
+    Impl() :
+        m_Current{},
+        m_Backup{m_Current},
+        m_UndoBuffer{},
+        m_RedoBuffer{}
+    {
+    }
+
+    Impl(std::unique_ptr<OpenSim::Model> m) :
+        m_Current{std::move(m)},
+        m_Backup{m_Current},
+        m_UndoBuffer{},
+        m_RedoBuffer{}
+    {
+    }
+};
+
+osc::UndoableUiModel::UndoableUiModel() : m_Impl{new Impl{}}
+{
 }
 
-osc::UndoableUiModel::UndoableUiModel(std::unique_ptr<OpenSim::Model> model) :
-    current{std::move(model)},
-    undo{},
-    redo{},
-    damaged{std::nullopt} {
+osc::UndoableUiModel::UndoableUiModel(std::unique_ptr<OpenSim::Model> model) : m_Impl{new Impl{std::move(model)}}
+{
+}
+
+osc::UndoableUiModel::UndoableUiModel(UndoableUiModel&&) noexcept = default;
+osc::UndoableUiModel::~UndoableUiModel() noexcept = default;
+UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
+
+UiModel const& osc::UndoableUiModel::getUiModel() const {
+    return m_Impl->m_Current;
+}
+
+UiModel& osc::UndoableUiModel::updUiModel() {
+    return m_Impl->m_Current;
+}
+
+bool osc::UndoableUiModel::canUndo() const noexcept {
+    return !m_Impl->m_UndoBuffer.empty();
 }
 
 void osc::UndoableUiModel::doUndo() {
@@ -100,8 +75,24 @@ void osc::UndoableUiModel::doUndo() {
         return;
     }
 
-    redo.emplace_back(std::move(current));
-    current = undo.pop_back();
+    // ensure the backup has equivalent pointers to the current
+    m_Impl->m_Backup.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Current);
+
+    // push backup onto the redo buffer (it's guaranteed to be non-dirty)
+    m_Impl->m_RedoBuffer.push_back(std::move(m_Impl->m_Backup));
+
+    // pop undo onto current
+    m_Impl->m_Current = m_Impl->m_UndoBuffer.pop_back();
+
+    // migrate pointers from backup to current, to update the undo's selection-state
+    m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_RedoBuffer.back());
+
+    // copy new current, which should be fine at this point
+    m_Impl->m_Backup = m_Impl->m_Current;
+}
+
+bool osc::UndoableUiModel::canRedo() const noexcept {
+    return !m_Impl->m_RedoBuffer.empty();
 }
 
 void osc::UndoableUiModel::doRedo() {
@@ -109,37 +100,166 @@ void osc::UndoableUiModel::doRedo() {
         return;
     }
 
-    undo.emplace_back(std::move(current));
-    current = redo.pop_back();
+    // ensure the backup has equivalent pointers to current
+    m_Impl->m_Backup.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Current);
+
+    // push backup onto undo buffer (it's guaranteed to be non-dirty)
+    m_Impl->m_UndoBuffer.push_back(std::move(m_Impl->m_Backup));
+
+    // pop redo onto current
+    m_Impl->m_Current = m_Impl->m_RedoBuffer.pop_back();
+
+    // migrate pointers from backup to current, to update the selection state
+    m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_UndoBuffer.back());
+
+    // copy new current
+    m_Impl->m_Backup = m_Impl->m_Current;
+}
+
+OpenSim::Model const& osc::UndoableUiModel::getModel() const noexcept {
+    return m_Impl->m_Current.getModel();
+}
+
+OpenSim::Model& osc::UndoableUiModel::updModel() noexcept {
+    return m_Impl->m_Current.updModel();
 }
 
 void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel) {
-    // care: this step can throw, because it initializes a system etc.
-    //       so, do this *before* potentially breaking these sequecnes
-    UiModel newCurrentModel{std::move(newModel)};
+    // ensure any current changes are applied + backed up before trying
+    // to initialize from the incoming model
+    updateIfDirty();
 
-    undo.emplace_back(std::move(current));
-    redo.clear();
-    current = std::move(newCurrentModel);
+    // initialize from the incoming model, rolling back if there's an issue
+    try {
+        m_Impl->m_Current.setModel(std::move(newModel));
+        m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Backup);
+        m_Impl->m_Current.updateIfDirty();
+        m_Impl->m_Backup = m_Impl->m_Current;
+    } catch (std::exception const& ex) {
+        log::error("exception thrown while updating the current model from an external (probably, file-loaded) model");
+        log::error("%s", ex.what());
+        log::error("attempting to rollback to an earlier version of the model");
+        m_Impl->m_Current = m_Impl->m_Backup;
+    }
 }
 
-void osc::UndoableUiModel::beforeModifyingModel() {
-    osc::log::debug("starting model modification");
-    doDebouncedUndoPush(*this);
+SimTK::State const& osc::UndoableUiModel::getState() const noexcept {
+    return m_Impl->m_Current.getState();
 }
 
-void osc::UndoableUiModel::afterModifyingModel() {
-    osc::log::debug("ended model modification");
-    carefullyTryToInitSimTKSystemAndRealizeOnCurrentModel(*this);
+SimTK::State& osc::UndoableUiModel::updState() noexcept {
+    return m_Impl->m_Current.updState();
 }
 
-void osc::UndoableUiModel::forciblyRollbackToEarlierState() {
-    rollbackModelToEarlierState(*this);
+float osc::UndoableUiModel::getFixupScaleFactor() const {
+    return m_Impl->m_Current.getFixupScaleFactor();
 }
 
-void osc::UndoableUiModel::clearAnyDamagedModels() {
-    if (damaged) {
-        log::error("destructing damaged model");
-        damaged = std::nullopt;
+void osc::UndoableUiModel::setFixupScaleFactor(float v) {
+    m_Impl->m_Current.setFixupScaleFactor(v);
+}
+
+float osc::UndoableUiModel::getReccommendedScaleFactor() const {
+    return m_Impl->m_Current.getRecommendedScaleFactor();
+}
+
+void osc::UndoableUiModel::updateIfDirty() {
+    if (!m_Impl->m_Current.isDirty()) {
+        return;
+    }
+
+    try {
+        m_Impl->m_Current.updateIfDirty();
+    } catch (std::exception const& ex) {
+        log::error("exception occurred after applying changes to a model:");
+        log::error("%s", ex.what());
+        log::error("attempting to rollback to an earlier version of the model");
+        m_Impl->m_Current = m_Impl->m_Backup;
+    }
+
+    // copy backup into undo buffer if the latest entry in the undo buffer is >5s old
+    if (m_Impl->m_UndoBuffer.empty() || (m_Impl->m_UndoBuffer.back().getLastModifiedTime() < std::chrono::system_clock::now() - 5s)) {
+        m_Impl->m_UndoBuffer.push_back(m_Impl->m_Backup);
+        m_Impl->m_Backup = m_Impl->m_Current;
+    }
+
+    m_Impl->m_RedoBuffer.clear();
+}
+
+void osc::UndoableUiModel::setModelDirtyADVANCED(bool v) {
+    m_Impl->m_Current.setModelDirtyADVANCED(v);
+}
+
+void osc::UndoableUiModel::setStateDirtyADVANCED(bool v) {
+    m_Impl->m_Current.setStateDirtyADVANCED(v);
+}
+
+void osc::UndoableUiModel::setDecorationsDirtyADVANCED(bool v) {
+    m_Impl->m_Current.setDecorationsDirtyADVANCED(v);
+}
+
+void osc::UndoableUiModel::setDirty(bool v) {
+    m_Impl->m_Current.setDirty(v);
+}
+
+bool osc::UndoableUiModel::hasSelected() const {
+    return m_Impl->m_Current.hasSelected();
+}
+
+OpenSim::Component const* osc::UndoableUiModel::getSelected() const {
+    return m_Impl->m_Current.getSelected();
+}
+
+OpenSim::Component* osc::UndoableUiModel::updSelected() {
+    return m_Impl->m_Current.updSelected();
+}
+
+void osc::UndoableUiModel::setSelected(OpenSim::Component const* c) {
+    m_Impl->m_Current.setSelected(c);
+}
+
+bool osc::UndoableUiModel::selectionHasTypeHashCode(size_t v) const {
+    return m_Impl->m_Current.selectionHasTypeHashCode(v);
+}
+
+bool osc::UndoableUiModel::hasHovered() const {
+    return m_Impl->m_Current.hasHovered();
+}
+
+OpenSim::Component const* osc::UndoableUiModel::getHovered() const noexcept {
+    return m_Impl->m_Current.getHovered();
+}
+
+OpenSim::Component* osc::UndoableUiModel::updHovered() {
+    return m_Impl->m_Current.updHovered();
+}
+
+void osc::UndoableUiModel::setHovered(OpenSim::Component const* c) {
+    m_Impl->m_Current.setHovered(c);
+}
+
+OpenSim::Component const* osc::UndoableUiModel::getIsolated() const noexcept {
+    return m_Impl->m_Current.getIsolated();
+}
+
+OpenSim::Component* osc::UndoableUiModel::updIsolated() {
+    return m_Impl->m_Current.updIsolated();
+}
+
+void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c) {
+    m_Impl->m_Current.setIsolated(c);
+}
+
+void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c) noexcept {
+    if (m_Impl->m_Current.getSelected() == c) {
+        m_Impl->m_Current.setSelected(nullptr);
+    }
+
+    if (m_Impl->m_Current.getHovered() == c) {
+        m_Impl->m_Current.setHovered(nullptr);
+    }
+
+    if (m_Impl->m_Current.getIsolated() == c) {
+        m_Impl->m_Current.setIsolated(nullptr);
     }
 }

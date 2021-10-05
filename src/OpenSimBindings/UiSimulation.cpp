@@ -1,6 +1,7 @@
 #include "UiSimulation.hpp"
 
 #include "src/OpenSimBindings/Simulation.hpp"
+#include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -21,10 +22,10 @@ static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateMod
 
 
 static std::unique_ptr<FdSimulation> createForwardDynamicSim(UiModel const& uim, FdParams const& p) {
-    auto modelCopy = std::make_unique<OpenSim::Model>(*uim.model);
+    auto modelCopy = std::make_unique<OpenSim::Model>(uim.getModel());
 
     modelCopy->buildSystem();
-    auto stateCopy = initializeState(*modelCopy, uim.stateModifications);
+    auto stateCopy = initializeState(*modelCopy, uim.getStateModifications());
 
     auto simInput = std::make_unique<Input>(std::move(modelCopy), std::move(stateCopy));
     simInput->params = p;
@@ -57,10 +58,10 @@ static std::unique_ptr<Report> createDummySimulationReport(OpenSim::Model& m, St
 
 osc::UiSimulation::UiSimulation(UiModel const& uim, FdParams const& p) :
     simulation{createForwardDynamicSim(uim, p)},
-    model{createInitializedModel(*uim.model)},
-    spotReport{createDummySimulationReport(*model, uim.stateModifications)},
+    model{createInitializedModel(uim.getModel())},
+    spotReport{createDummySimulationReport(*model, uim.getStateModifications())},
     regularReports{},
-    fixupScaleFactor{uim.fixupScaleFactor} {
+    fixupScaleFactor{uim.getFixupScaleFactor()} {
 }
 
 osc::UiSimulation::UiSimulation(UiSimulation&&) noexcept = default;

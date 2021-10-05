@@ -17,8 +17,6 @@ namespace OpenSim {
 namespace osc {
     void actionNewModel(std::shared_ptr<MainEditorState>);
     void actionOpenModel(std::shared_ptr<MainEditorState>);
-    void actionSaveCurrentModel(OpenSim::Model&);
-    void actionSaveCurrentModelAs(OpenSim::Model&);
 
     struct MainMenuFileTab final {
         std::vector<std::filesystem::path> exampleOsimFiles;

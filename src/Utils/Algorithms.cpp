@@ -57,6 +57,17 @@ bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, 
     return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
 }
 
+bool osc::IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& pth) {
+    auto dirNumComponents = std::distance(dir.begin(), dir.end());
+    auto pathNumComponents = std::distance(pth.begin(), pth.end());
+
+    if (pathNumComponents < dirNumComponents) {
+        return false;
+    }
+
+    return std::equal(dir.begin(), dir.end(), pth.begin());
+}
+
 bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr) {
     if (substr.empty()) {
         return true;

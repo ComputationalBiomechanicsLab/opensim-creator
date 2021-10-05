@@ -5,8 +5,15 @@
 
 #include <nonstd/span.hpp>
 
+#include <vector>
+
 namespace OpenSim {
     class Component;
+    class Model;
+}
+
+namespace SimTK {
+    class State;
 }
 
 namespace osc {
@@ -28,4 +35,11 @@ namespace osc {
         virtual OpenSim::Component const* getHovered() const = 0;
         virtual OpenSim::Component const* getIsolated() const = 0;
     };
+
+    void generateDecorations(OpenSim::Model const&,
+                             SimTK::State const&,
+                             float fixupScaleFactor,
+                             std::vector<LabelledSceneElement>&);
+
+    void updateBVH(nonstd::span<LabelledSceneElement const>, BVH&);
 }

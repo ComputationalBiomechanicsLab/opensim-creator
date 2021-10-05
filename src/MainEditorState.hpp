@@ -80,8 +80,20 @@ namespace osc {
         MainEditorState& operator=(MainEditorState const&) = delete;
         MainEditorState& operator=(MainEditorState&&) = delete;
 
-        [[nodiscard]] OpenSim::Model& model() noexcept {
-            return editedModel.model();
+        OpenSim::Model& updModel() noexcept {
+            return editedModel.updModel();
+        }
+
+        OpenSim::Model const& getModel() const noexcept {
+            return editedModel.getModel();
+        }
+
+        SimTK::State const& getState() const noexcept {
+            return editedModel.getState();
+        }
+
+        SimTK::State& updState() noexcept {
+            return editedModel.updState();
         }
 
         [[nodiscard]] bool canUndo() const noexcept {
@@ -100,55 +112,52 @@ namespace osc {
             editedModel.doRedo();
         }
 
-        [[nodiscard]] OpenSim::Model& model() const noexcept {
-            return editedModel.model();
-        }
+
 
         void setModel(std::unique_ptr<OpenSim::Model> new_model);
 
-        void beforeModifyingModel() {
-            editedModel.beforeModifyingModel();
+
+        OpenSim::Component const* getSelected() const noexcept {
+            return editedModel.getSelected();
         }
 
-        void afterModifyingModel() {
-            editedModel.afterModifyingModel();
+        OpenSim::Component* updSelected() noexcept {
+            return editedModel.updSelected();
         }
 
-        [[nodiscard]] OpenSim::Component* selection() noexcept {
-            return editedModel.getSelection();
+        void setSelected(OpenSim::Component const* c) {
+            editedModel.setSelected(c);
         }
 
-        void setSelection(OpenSim::Component* c) {
-            editedModel.setSelection(c);
+
+        OpenSim::Component const* getHovered() const noexcept {
+            return editedModel.getHovered();
         }
 
-        [[nodiscard]] OpenSim::Component* hovered() noexcept {
-            return editedModel.getHover();
+        OpenSim::Component* updHovered() {
+            return editedModel.updHovered();
         }
 
-        void setHovered(OpenSim::Component* c) {
-            editedModel.setHover(c);
+        void setHovered(OpenSim::Component const* c) {
+            editedModel.setHovered(c);
         }
 
-        [[nodiscard]] OpenSim::Component* isolated() noexcept {
+
+        OpenSim::Component const* getIsolated() const noexcept {
             return editedModel.getIsolated();
         }
 
-        void setIsolated(OpenSim::Component* c) {
+        OpenSim::Component* updIsolated() {
+            return editedModel.updIsolated();
+        }
+
+        void setIsolated(OpenSim::Component const* c) {
             editedModel.setIsolated(c);
-        }
-
-        [[nodiscard]] SimTK::State& state() noexcept {
-            return editedModel.state();
-        }
-
-        void clearAnyDamagedModels() {
-            editedModel.clearAnyDamagedModels();
         }
 
         void startSimulatingEditedModel() {
             int newFocus = static_cast<int>(simulations.size());
-            simulations.emplace_back(new UiSimulation{editedModel.current, simParams});
+            simulations.emplace_back(new UiSimulation{editedModel.getUiModel(), simParams});
             focusedSimulation = newFocus;
             focusedSimulationScrubbingTime = -1.0f;
         }
