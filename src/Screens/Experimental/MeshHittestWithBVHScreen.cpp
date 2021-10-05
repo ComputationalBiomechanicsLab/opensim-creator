@@ -114,7 +114,7 @@ void osc::MeshHittestWithBVHScreen::tick(float) {
     // handle hittest
     auto raycastStart = std::chrono::high_resolution_clock::now();
     {
-        Line cameraRayWorldspace = impl.camera.unprojectScreenposToWorldRay(ImGui::GetMousePos(), App::cur().dims());
+        Line cameraRayWorldspace = impl.camera.unprojectTopLeftPosToWorldRay(ImGui::GetMousePos(), App::cur().dims());
         // camera ray in worldspace == camera ray in model space because the model matrix is an identity matrix
 
         impl.isMousedOver = false;

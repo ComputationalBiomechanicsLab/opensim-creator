@@ -99,7 +99,7 @@ void osc::MeshScreen::draw() {
     BasicPerfTimer t;
     {
         auto g = t.measure();
-        Line const& ray = st.camera.unprojectScreenposToWorldRay(App::cur().getMouseState().pos, App::cur().dims());
+        Line const& ray = st.camera.unprojectTopLeftPosToWorldRay(App::cur().getMouseState().pos, App::cur().dims());
         if (st.m.getClosestRayTriangleCollision(ray)) {
             ImGui::Text("hit");
         }

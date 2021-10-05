@@ -14,9 +14,6 @@
 #include <vector>
 
 namespace osc {
-    struct MeshCollision final {
-        float distance;
-    };
 
     enum class IndexFormat {
         UInt16,
@@ -69,9 +66,9 @@ namespace osc {
 
         BVH const& getTriangleBVH() const;
 
-        // returns nothing if the line doesn't intersect it *or* the
-        // topography is not triangular
-        std::optional<MeshCollision> getClosestRayTriangleCollision(Line const&) const;
+        // returns !hit if the line doesn't intersect it *or* the
+        // topography is not triangulars
+        RayCollision getClosestRayTriangleCollision(Line const&) const;
 
         void clear();
         void recalculateBounds();

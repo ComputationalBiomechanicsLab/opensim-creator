@@ -402,7 +402,19 @@ glm::vec3::length_type osc::VecLongestDimIdx(glm::vec3 const& v) noexcept {
     }
 }
 
+glm::vec2::length_type osc::VecLongestDimIdx(glm::vec2 v) noexcept {
+    if (v.x > v.y) {
+        return 0;  // X is longest
+    } else {
+        return 1;
+    }
+}
+
 float osc::VecLongestDimVal(glm::vec3 const& v) noexcept {
+    return v[VecLongestDimIdx(v)];
+}
+
+float osc::VecLongestDimVal(glm::vec2 v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 
@@ -445,6 +457,29 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept 
     glm::vec3 rotAxis = glm::cross(a, b);
     float angle = glm::acos(cosAng);
     return glm::rotate(glm::mat4{1.0f}, angle, rotAxis);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, Rect const& r) {
+    return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
+}
+
+glm::vec2 osc::RectDims(Rect const& r) noexcept {
+    return glm::abs(r.p2 - r.p1);
+}
+
+float osc::RectAspectRatio(Rect const& r) noexcept {
+    glm::vec2 dims = RectDims(r);
+    return dims.x/dims.y;
+}
+
+glm::mat4 osc::GroundToSphereXform(Sphere const& s) noexcept {
+    return glm::translate(glm::mat4{1.0f}, s.origin) * glm::scale(glm::mat4{1.0f}, {s.radius, s.radius, s.radius});
+}
+
+bool osc::PointIsInRect(Rect const& r, glm::vec2 const& p) noexcept {
+    glm::vec2 relPos = p - r.p1;
+    glm::vec2 dims = RectDims(r);
+    return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb) {
@@ -1333,27 +1368,25 @@ glm::vec3 osc::PolarPerspectiveCamera::getPos() const noexcept {
     return -focusPoint + glm::vec3{x, y, z};
 }
 
-glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(
-        glm::vec3 const& worldspaceLoc,
-        glm::vec2 const& topLeft,
-        glm::vec2 const& bottomRight) const noexcept {
+glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept {
 
-    glm::vec2 dims = bottomRight - topLeft;
-    glm::mat4 MV = getProjMtx(dims.x / dims.y) * getViewMtx();
+    glm::vec2 dims = RectDims(screenRect);
+    glm::mat4 MV = getProjMtx(dims.x/dims.y) * getViewMtx();
 
     glm::vec4 ndc = MV * glm::vec4{worldspaceLoc, 1.0f};
     ndc /= ndc.w;  // perspective divide
 
     glm::vec2 ndc2D;
-    ndc2D = {ndc.x, -ndc.y};  // [-1, 1], Y points down
-    ndc2D += 1.0f;            // [0, 2]
-    ndc2D *= 0.5f;            // [0, 1]
-    ndc2D *= dims;            // [0, w]
-    ndc2D += topLeft;         // [x, x + w]
+    ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
+    ndc2D += 1.0f;                  // [0, 2]
+    ndc2D *= 0.5f;                  // [0, 1]
+    ndc2D *= dims;                  // [0, w]
+    ndc2D += screenRect.p1;         // [x, x + w]
+
     return ndc2D;
 }
 
-Line osc::PolarPerspectiveCamera::unprojectScreenposToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept {
+Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept {
     glm::mat4 projMtx = getProjMtx(dims.x/dims.y);
     glm::mat4 viewMtx = getViewMtx();
 

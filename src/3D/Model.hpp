@@ -46,8 +46,14 @@ namespace osc {
     // returns the *index* of a vector's longest dimension
     glm::vec3::length_type VecLongestDimIdx(glm::vec3 const&) noexcept;
 
+    // returns the *index* of a vector's longest dimension
+    glm::vec2::length_type VecLongestDimIdx(glm::vec2) noexcept;
+
     // returns the *value* of a vector's longest dimension
     float VecLongestDimVal(glm::vec3 const&) noexcept;
+
+    // returns the *value* of a vector's longest dimension
+    float VecLongestDimVal(glm::vec2) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
@@ -63,6 +69,17 @@ namespace osc {
 
     // returns matrix that rotates dir1 to point in the same direction as dir2
     glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
+
+    struct Rect final {
+        glm::vec2 p1;
+        glm::vec2 p2;
+    };
+
+    std::ostream& operator<<(std::ostream&, Rect const&);
+
+    glm::vec2 RectDims(Rect const&) noexcept;
+    float RectAspectRatio(Rect const&) noexcept;
+    bool PointIsInRect(Rect const&, glm::vec2 const&) noexcept;
 
     struct AABB final {
         glm::vec3 min;
@@ -143,15 +160,26 @@ namespace osc {
     AABB SphereToAABB(Sphere const&) noexcept;
     Line LineApplyXform(Line const&, glm::mat4 const&) noexcept;
 
-    // helpful for mapping analytical geometry into a scene
+    // returns an xform that maps an origin centered r=1 sphere into an in-scene sphere
+    glm::mat4 GroundToSphereXform(Sphere const&) noexcept;
+
+    // returns an xform that maps a disc to another disc
     glm::mat4 DiscToDiscXform(Disc const&, Disc const&) noexcept;
+
+    // returns an xform that maps a sphere to another sphere
     glm::mat4 SphereToSphereXform(Sphere const&, Sphere const&) noexcept;
+
+    // returns an xform that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentXform(Segment const&, Segment const&) noexcept;
 
 
     struct RayCollision final {
         bool hit;
         float distance;
+
+        operator bool () {
+            return hit;
+        }
     };
 
     // collision tests
@@ -286,14 +314,12 @@ namespace osc {
         glm::mat4 getProjMtx(float aspect_ratio) const noexcept;
 
         // project's a worldspace coordinate onto a screen-space rectangle
-        glm::vec2 projectOntoScreenRect(glm::vec3 const& worldspaceLoc,
-                                        glm::vec2 const& topLeft,
-                                        glm::vec2 const& bottomRight) const noexcept;
+        glm::vec2 projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept;
 
         glm::vec3 getPos() const noexcept;
 
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
-        Line unprojectScreenposToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;
+        Line unprojectTopLeftPosToWorldRay(glm::vec2 pos, glm::vec2 dims) const noexcept;
     };
 
     // camera that moves freely through space (e.g. FPS games)

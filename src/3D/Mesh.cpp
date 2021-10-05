@@ -322,18 +322,18 @@ BVH const& osc::Mesh::getTriangleBVH() const {
     return m_Impl->triangleBVH;
 }
 
-std::optional<MeshCollision> osc::Mesh::getClosestRayTriangleCollision(Line const& ray) const {
+RayCollision osc::Mesh::getClosestRayTriangleCollision(Line const& ray) const {
     if (m_Impl->topography != MeshTopography::Triangles) {
-        return std::nullopt;
+        return RayCollision{false, 0.0f};
     }
 
     BVHCollision coll;
     bool collided = BVH_GetClosestRayTriangleCollision(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size(), ray, &coll);
 
     if (collided) {
-        return MeshCollision{coll.distance};
+        return RayCollision{true, coll.distance};
     } else {
-        return std::nullopt;
+        return RayCollision{false, 0.0f};
     }
 }
 

@@ -162,8 +162,7 @@ namespace {
     public:
         void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult,
                   PolarPerspectiveCamera const& sceneCamera,
-                  glm::vec2 renderTopLeft,
-                  glm::vec2 renderBottomRight) {
+                  Rect renderRect) {
 
             if (m_State == State::Inactive) {
                 return;
@@ -218,7 +217,7 @@ namespace {
                     return;
                 }
             } else if (m_State == State::WaitingForSecondPoint) {
-                glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderTopLeft, renderBottomRight);
+                glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
 
                 if (htResult.first) {
                     // user is moused over something, so draw a line + circle between the two hitlocs
@@ -283,9 +282,8 @@ struct osc::UiModelViewer::Impl final {
 
     std::vector<BVHCollision> sceneHittestResults;
 
-    glm::vec2 renderDims = {0.0f, 0.0f};
-    glm::vec2 renderTopLeft = {0.0f, 0.0f};
-    glm::vec2 renderBottomRight = {0.0f, 0.0f};
+    Rect renderRect{};
+
     bool renderHovered = false;
     bool renderLeftClicked = false;
     bool renderRightClicked = false;
@@ -706,9 +704,8 @@ static void blitSceneTexture(osc::UiModelViewer::Impl& impl) {
 
     ImGui::Image(texImGuiHandle, imgDims, texcoordUV0, texcoordUV1);
 
-    impl.renderDims = ImGui::GetItemRectSize();
-    impl.renderTopLeft = ImGui::GetItemRectMin();
-    impl.renderBottomRight = ImGui::GetItemRectMax();
+    impl.renderRect.p1 = ImGui::GetItemRectMin();
+    impl.renderRect.p2 = ImGui::GetItemRectMax();
     impl.renderHovered = ImGui::IsItemHovered();
     impl.renderLeftClicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
     impl.renderRightClicked = ImGui::IsItemClicked(ImGuiMouseButton_Right);
@@ -731,7 +728,7 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
     glm::vec2 itemDims = ImGui::GetContentRegionAvail();  // how big current window will be
 
     // un-project the mouse position as a ray in worldspace
-    Line cameraRay = impl.camera.unprojectScreenposToWorldRay(mouseItemPos, itemDims);
+    Line cameraRay = impl.camera.unprojectTopLeftPosToWorldRay(mouseItemPos, itemDims);
 
     // use scene BVH to intersect that ray with the scene
     impl.sceneHittestResults.clear();
@@ -758,9 +755,9 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
 
         auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollision(cameraRayModelspace);
 
-        if (maybeCollision && maybeCollision->distance < closestDistance) {
+        if (maybeCollision && maybeCollision.distance < closestDistance) {
             closestIdx = instanceIdx;
-            closestDistance = maybeCollision->distance;
+            closestDistance = maybeCollision.distance;
             glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
             closestWorldLoc = glm::vec3{instanceMmtx * glm::vec4{closestLocModelspace, 1.0f}};
         }
@@ -779,7 +776,7 @@ static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     auto grid = App::meshes().get100x100GridMesh();
     gl::BindVertexArray(grid->GetVertexArray());
@@ -793,7 +790,7 @@ static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::mat4{1.0f}, {5.0f, 5.0f, 1.0f}));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     auto grid = App::meshes().get100x100GridMesh();
     gl::BindVertexArray(grid->GetVertexArray());
@@ -807,7 +804,7 @@ static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     auto grid = App::meshes().get100x100GridMesh();
     gl::BindVertexArray(grid->GetVertexArray());
@@ -824,7 +821,7 @@ static void drawAlignmentAxes(osc::UiModelViewer::Impl& impl) {
     float fontSize = ImGui::GetFontSize();
     float circleRadius = fontSize/1.5f;
     float padding = circleRadius + 3.0f;
-    glm::vec2 origin{impl.renderTopLeft.x, impl.renderBottomRight.y};
+    glm::vec2 origin{impl.renderRect.p1.x, impl.renderRect.p2.y};
     origin.x += linelen + padding;
     origin.y -= linelen + padding;
 
@@ -853,7 +850,7 @@ static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
 
     auto yline = App::meshes().getYLineMesh();
@@ -877,7 +874,7 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -929,7 +926,7 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(impl.renderDims.x / impl.renderDims.y));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -1219,7 +1216,7 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
         drawSceneTexture(impl, rs);
         drawOverlays(impl, rs);
         if (impl.ruler.IsMeasuring()) {
-            impl.ruler.draw(htResult, impl.camera, impl.renderTopLeft, impl.renderBottomRight);
+            impl.ruler.draw(htResult, impl.camera, impl.renderRect);
         }
         blitSceneTexture(impl);
         ImGui::EndChild();

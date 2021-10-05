@@ -9,10 +9,13 @@
 namespace osc {
     // meshes-to-model wizard
     //
-    // a screen that helps users import 3D meshes into a new OpenSim model.
+    // A screen that helps users import 3D meshes into a new OpenSim model.
+    //
     // This is a separate screen from the main UI because it involves letting
-    // the user manipulate meshes/bodies/joints in free/ground 3D space *before*
-    // committing to OpenSim's constraints
+    // the user manipulate meshes/bodies/joints in free/ground 3D space, much
+    // like if they were using Blender, *before* trying to stuff everything
+    // into an OpenSim::Model (which has constraints, relative coordinates,
+    // etc.)
     class MeshesToModelWizardScreen final : public Screen {
     public:
         struct Impl;

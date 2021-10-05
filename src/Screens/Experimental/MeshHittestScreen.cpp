@@ -138,7 +138,7 @@ void osc::MeshHittestScreen::tick(float) {
     auto raycastStart = std::chrono::high_resolution_clock::now();
     {
 
-        impl.ray = impl.camera.unprojectScreenposToWorldRay(ImGui::GetIO().MousePos, App::cur().dims());
+        impl.ray = impl.camera.unprojectTopLeftPosToWorldRay(ImGui::GetIO().MousePos, App::cur().dims());
 
         impl.isMousedOver = false;
         std::vector<glm::vec3> const& tris = impl.mesh.verts;
