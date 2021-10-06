@@ -57,81 +57,90 @@ using namespace osc;
 namespace {
 
     // base radius of rendered spheres (e.g. for bodies)
-    constexpr float g_SphereRadius = 0.01f;
+    constexpr float g_SphereRadius = 0.025f;
+
+
+    class Node;
 
     // a mesh loading request
-    struct MeshLoadRequest final {
-        std::filesystem::path path;
+    class MeshLoadRequest final {
+    public:
+        MeshLoadRequest(std::weak_ptr<Node> prefAttachmentPoint, std::filesystem::path path) :
+            m_PreferredAttachmentPoint{prefAttachmentPoint},
+            m_Path{path}
+        {
+        }
+
+        std::filesystem::path const& GetPath() const { return m_Path; }
+        std::weak_ptr<Node> GetPreferredAttachmentPoint() const { return m_PreferredAttachmentPoint; }
+
+    private:
+        std::weak_ptr<Node> m_PreferredAttachmentPoint;
+        std::filesystem::path m_Path;
     };
 
     // an OK response to a mesh loading request
-    struct MeshLoadOKResponse final {
-        std::filesystem::path path;
-        std::shared_ptr<Mesh> mesh;
+    class MeshLoadOKResponse final {
+    public:
+        MeshLoadOKResponse(MeshLoadRequest const& req, std::shared_ptr<Mesh> mesh) :
+            m_Req{req}, m_Mesh{mesh}
+        {
+            OSC_ASSERT_ALWAYS(m_Mesh != nullptr);
+        }
+
+        std::filesystem::path const& GetPath() const { return m_Req.GetPath(); }
+        std::weak_ptr<Node> GetPreferredAttachmentPoint() const { return m_Req.GetPreferredAttachmentPoint(); }
+        std::shared_ptr<Mesh> GetMeshPtr() const { return m_Mesh; }
+
+    private:
+        MeshLoadRequest m_Req;
+        std::shared_ptr<Mesh> m_Mesh;
     };
 
     // an ERROR response to a mesh loading request
-    struct MeshLoadErrorResponse final {
-        std::filesystem::path path;
-        std::string error;
+    class MeshLoadErrorResponse final {
+    public:
+        MeshLoadErrorResponse(MeshLoadRequest const& req, std::string error) :
+            m_Req{req}, m_Error{error}
+        {
+        }
+
+        std::filesystem::path const& GetPath() const { return m_Req.GetPath(); }
+        char const* what() const { return m_Error.c_str(); }
+
+    private:
+        MeshLoadRequest m_Req;
+        std::string m_Error;
     };
 
     // a response to a mesh loading request
     using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
 
     // responds to a mesh loading request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest const& msg) noexcept {
+    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest const& msg) noexcept
+    {
         try {
-            auto mesh = std::make_shared<Mesh>(SimTKLoadMesh(msg.path));  // can throw
-            return MeshLoadOKResponse{msg.path, std::move(mesh)};
+            auto mesh = std::make_shared<Mesh>(SimTKLoadMesh(msg.GetPath()));  // can throw
+            return MeshLoadOKResponse{msg, std::move(mesh)};
         } catch (std::exception const& ex) {
-            return MeshLoadErrorResponse{msg.path, ex.what()};
+            return MeshLoadErrorResponse{msg, ex.what()};
         }
     }
 
     // a mesh-loading background worker
     using Mesh_loader = spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
 
-    // the tree datastructure that the user is building
-    class Node {
-    public:
-        virtual bool CanHaveParent() const = 0;
-        virtual std::shared_ptr<Node> UpdParentPtr() = 0;
-        virtual std::shared_ptr<Node const> GetParentPtr() const = 0;
-        virtual void SetParent(std::shared_ptr<Node>) = 0;
-
-        virtual bool CanHaveChildren() const = 0;
-        virtual nonstd::span<std::shared_ptr<Node const> const> GetChildren() const = 0;
-        virtual nonstd::span<std::shared_ptr<Node>> UpdChildren() = 0;
-        virtual void AddChild(std::shared_ptr<Node>) = 0;
-        virtual bool RemoveChild(std::shared_ptr<Node>) = 0;
-
-        virtual glm::vec3 GetPos() const = 0;
-        virtual AABB GetBounds(float sceneScaleFactor) const = 0;
-        virtual glm::mat4 GetModelMatrix(float sceneScaleFactor) const = 0;
-        virtual void ApplyRotation(glm::mat4 const&) = 0;
-        virtual void ApplyScale(glm::mat4 const&) = 0;
-        virtual void ApplyTranslation(glm::mat4 const&) = 0;
-        virtual glm::vec3 GetCenterPoint() const = 0;
-        virtual RayCollision DoHittest(float sceneScaleFactor, Line const&) const = 0;
-
-        virtual std::string const& GetName() const = 0;
-        virtual void SetName(char const*) = 0;
-
-        Node& UpdParent() { auto p = UpdParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
-        Node const& GetParent() const { auto p = GetParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
-        char const* GetNameCStr() const { return GetName().c_str(); }
-        bool HasParent() const { return CanHaveParent() && GetParentPtr() != nullptr; }
-        bool HasChildren() const { return CanHaveChildren() && !GetChildren().empty(); }
-    };
-
-    nonstd::span<std::shared_ptr<Node const> const> ToConstSpan(std::vector<std::shared_ptr<Node>> const& v) {
+    // returns a const-ized version of a non-const `span`
+    nonstd::span<std::shared_ptr<Node const> const> ToConstSpan(std::vector<std::shared_ptr<Node>> const& v)
+    {
         auto ptr = reinterpret_cast<std::shared_ptr<Node const> const*>(v.data());
         return {ptr, ptr + v.size()};
     }
 
+    // returns true if exactly one instance of `el` was removed from `els`
     template<typename El>
-    bool RemoveFirstEquivalentEl(std::vector<El>& els, El const& el) {
+    bool RemoveFirstEquivalentEl(std::vector<El>& els, El const& el)
+    {
         for (auto it = els.begin(); it != els.end(); ++it) {
             if (*it == el) {
                 els.erase(it);
@@ -141,47 +150,31 @@ namespace {
         return false;
     }
 
-    static std::string FileNameWithoutExtension(std::filesystem::path const& p) {
+    // returns the path's filename with the extension removed
+    static std::string FileNameWithoutExtension(std::filesystem::path const& p)
+    {
         return p.filename().replace_extension("").string();
     }
 
-    class GroundNode final : public Node {
-    public:
-        GroundNode() : m_Children{} {}
-
-        bool CanHaveParent() const override { return false; }
-        std::shared_ptr<Node> UpdParentPtr() override { return nullptr; }
-        std::shared_ptr<Node const> GetParentPtr() const override { return nullptr; }
-        void SetParent(std::shared_ptr<Node>) override { throw std::runtime_error{"cannot call SetParent on GroundNode"}; }
-        bool CanHaveChildren() const override { return true; }
-        nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return ToConstSpan(m_Children); }
-        nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return m_Children; }
-        void AddChild(std::shared_ptr<Node> n) override { m_Children.push_back(n); }
-        bool RemoveChild(std::shared_ptr<Node> n) override { return RemoveFirstEquivalentEl(m_Children, n); }
-        glm::vec3 GetPos() const override { return {0.0f, 0.0f, 0.0f}; }
-        AABB GetBounds(float) const override { return AABB{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}; }
-        glm::mat4 GetModelMatrix(float) const override { return glm::mat4{1.0f}; }
-        void ApplyRotation(glm::mat4 const&) override {}
-        void ApplyScale(glm::mat4 const&) override {}
-        void ApplyTranslation(glm::mat4 const&) override {}
-        glm::vec3 GetCenterPoint() const override { return {0.0f, 0.0f, 0.0f}; }
-        RayCollision DoHittest(float, Line const&) const override { return RayCollision{false, {}}; }  // never hits
-        std::string const& GetName() const override { static std::string const name{"ground"}; return name; }
-        void SetName(char const*) override {}
-
-    private:
-        std::vector<std::shared_ptr<Node>> m_Children;
+    // the type of joint used in a frame-to-frame joint
+    using BofJointType = int;
+    enum BofJointType_
+    {
+        BofJointType_WeldJoint = 0,
+        BofJointType_PinJoint,
+        BofJointType_NumJointTypes,
     };
 
-    using BofJointType = int;
-    enum BofJointType_ { BofJointType_WeldJoint = 0, BofJointType_PinJoint, BofJointType_NumJointTypes };
-
-    std::array<std::string const, BofJointType_NumJointTypes> const& GetJointTypeStrings() {
+    // returns string representations of all joint types (enum)
+    std::array<std::string const, BofJointType_NumJointTypes> const& GetJointTypeStrings()
+    {
         static std::array<std::string const, BofJointType_NumJointTypes> const g_Names = {"WeldJoint", "PinJoint"};
         return g_Names;
     }
 
-    std::array<char const*, BofJointType_NumJointTypes> GetJointTypeCStrings() {
+    // returns CString representations of all joint types (enum)
+    std::array<char const*, BofJointType_NumJointTypes> GetJointTypeCStrings()
+    {
         auto strings = GetJointTypeStrings();
         std::array<char const*, BofJointType_NumJointTypes> rv;
         for (size_t i = 0; i < BofJointType_NumJointTypes; ++i) {
@@ -190,11 +183,14 @@ namespace {
         return rv;
     }
 
-    std::string const& ToString(BofJointType jt) {
+    // returns a string representation of a joint type
+    std::string const& ToString(BofJointType jt)
+    {
         OSC_ASSERT_ALWAYS(0 <= jt && jt < BofJointType_NumJointTypes);
         return GetJointTypeStrings()[jt];
     }
 
+    // represents a joint between a body-or-frame (BoF) and its parent
     class BofJoint final {
     public:
         BofJoint(std::shared_ptr<Node> other) :
@@ -227,6 +223,84 @@ namespace {
         std::string m_MaybeUserDefinedJointName;
     };
 
+    // the tree datastructure that the user is building
+    class Node {
+    public:
+        // parent
+        virtual bool CanHaveParent() const = 0;
+        virtual std::shared_ptr<Node> UpdParentPtr() = 0;
+        virtual std::shared_ptr<Node const> GetParentPtr() const = 0;
+        virtual void SetParent(std::shared_ptr<Node>) = 0;
+
+        // children
+        virtual bool CanHaveChildren() const = 0;
+        virtual nonstd::span<std::shared_ptr<Node const> const> GetChildren() const = 0;
+        virtual nonstd::span<std::shared_ptr<Node>> UpdChildren() = 0;
+        virtual void ClearChildren() = 0;
+        virtual void AddChild(std::shared_ptr<Node>) = 0;
+        virtual bool RemoveChild(std::shared_ptr<Node>) = 0;
+
+        // position/bounds/xform
+        virtual glm::vec3 GetPos() const = 0;
+        virtual AABB GetBounds(float sceneScaleFactor) const = 0;
+        virtual glm::mat4 GetModelMatrix(float sceneScaleFactor) const = 0;
+        virtual void ApplyRotation(glm::mat4 const&) = 0;
+        virtual void ApplyScale(glm::mat4 const&) = 0;
+        virtual void ApplyTranslation(glm::mat4 const&) = 0;
+        virtual glm::vec3 GetCenterPoint() const = 0;
+        virtual RayCollision DoHittest(float sceneScaleFactor, Line const&) const = 0;
+
+        // name
+        virtual std::string const& GetName() const = 0;
+        virtual void SetName(char const*) = 0;
+
+        // helpers that use the virtual interface
+        Node& UpdParent() { auto p = UpdParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
+        Node const& GetParent() const { auto p = GetParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
+        char const* GetNameCStr() const { return GetName().c_str(); }
+        bool HasParent() const { return CanHaveParent() && GetParentPtr() != nullptr; }
+        bool HasChildren() const { return CanHaveChildren() && !GetChildren().empty(); }
+    };
+
+    // node representing the model's ground (the root of the model tree)
+    class GroundNode final : public Node {
+    public:
+        GroundNode() : m_Children{} {}
+
+        Sphere GetSphere(float sceneScaleFactor) const
+        {
+            return Sphere{GetPos(), sceneScaleFactor * g_SphereRadius};
+        }
+
+        bool CanHaveParent() const override { return false; }
+        std::shared_ptr<Node> UpdParentPtr() override { return nullptr; }
+        std::shared_ptr<Node const> GetParentPtr() const override { return nullptr; }
+        void SetParent(std::shared_ptr<Node>) override { throw std::runtime_error{"cannot call SetParent on GroundNode"}; }
+
+        bool CanHaveChildren() const override { return true; }
+        nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return ToConstSpan(m_Children); }
+        nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return m_Children; }
+        void ClearChildren() override { m_Children.clear(); }
+        void AddChild(std::shared_ptr<Node> n) override { m_Children.push_back(n); }
+        bool RemoveChild(std::shared_ptr<Node> n) override { return RemoveFirstEquivalentEl(m_Children, n); }
+
+        glm::vec3 GetPos() const override { return {0.0f, 0.0f, 0.0f}; }
+        AABB GetBounds(float sceneScaleFactor) const override { return SphereToAABB(GetSphere(sceneScaleFactor)); }
+        glm::mat4 GetModelMatrix(float) const override { return glm::mat4{1.0f}; }
+        void ApplyRotation(glm::mat4 const&) override {}
+        void ApplyScale(glm::mat4 const&) override {}
+        void ApplyTranslation(glm::mat4 const&) override {}
+        glm::vec3 GetCenterPoint() const override { return {0.0f, 0.0f, 0.0f}; }
+        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override { return GetRayCollisionSphere(ray, GetSphere(sceneScaleFactor)); }
+
+        std::string const& GetName() const override { static std::string const name{"ground"}; return name; }
+        void SetName(char const*) override {}
+
+    private:
+        std::vector<std::shared_ptr<Node>> m_Children;
+    };
+
+    // node representing a body-or-frame (BOF)
     class BofNode final : public Node {
     public:
         BofNode(std::shared_ptr<Node> parent, bool isBody, glm::vec3 const& pos) :
@@ -242,7 +316,8 @@ namespace {
 
         bool IsBody() const { return m_IsBody; }
         void SetPos(glm::vec3 const& newPos) { m_Pos = newPos; }
-        Sphere GetSphere(float sceneScaleFactor) const {
+        Sphere GetSphere(float sceneScaleFactor) const
+        {
             return Sphere{m_Pos, sceneScaleFactor * g_SphereRadius};
         }
         BofJointType GetJointType() const { return m_Joint.GetJointType(); }
@@ -261,12 +336,14 @@ namespace {
         bool CanHaveChildren() const override { return true; }
         nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return ToConstSpan(m_Children); }
         nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return m_Children; }
+        void ClearChildren() override { m_Children.clear(); }
         void AddChild(std::shared_ptr<Node> child) override { m_Children.push_back(child); }
         bool RemoveChild(std::shared_ptr<Node> child) override { return RemoveFirstEquivalentEl(m_Children, child); }
 
         glm::vec3 GetPos() const override { return m_Pos; }
         AABB GetBounds(float sceneScaleFactor) const override { Sphere s{m_Pos, sceneScaleFactor * g_SphereRadius}; return SphereToAABB(s); }
-        glm::mat4 GetModelMatrix(float sceneScaleFactor) const override {
+        glm::mat4 GetModelMatrix(float sceneScaleFactor) const override
+        {
             float r = sceneScaleFactor * g_SphereRadius;
             glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, glm::vec3{r,r,r});
             glm::mat4 translator = glm::translate(glm::mat4{1.0f}, m_Pos);
@@ -289,10 +366,15 @@ namespace {
         std::string m_Name;
     };
 
+    // node representing a decorative mesh
     class MeshNode final : public Node {
     public:
-        MeshNode(std::weak_ptr<Node> parent, std::shared_ptr<Mesh> mesh, std::filesystem::path const&& path) :
-            m_Parent{parent}, m_ModelMtx{1.0f}, m_Mesh{mesh}, m_Path{path}, m_Name{FileNameWithoutExtension(m_Path)}
+        MeshNode(std::weak_ptr<Node> parent, std::shared_ptr<Mesh> mesh, std::filesystem::path const& path) :
+            m_Parent{parent},
+            m_ModelMtx{1.0f},
+            m_Mesh{mesh},
+            m_Path{path},
+            m_Name{FileNameWithoutExtension(m_Path)}
         {
         }
 
@@ -307,10 +389,13 @@ namespace {
         bool CanHaveChildren() const override { return false; }
         nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return {}; }
         nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return {}; }
+        void ClearChildren() override {}
         void AddChild(std::shared_ptr<Node>) override {}
         bool RemoveChild(std::shared_ptr<Node>) override { return false; }
         glm::vec3 GetPos() const override { return m_ModelMtx[3]; }
-        AABB GetBounds(float) const override {  // scale factor is ignored for meshes
+        AABB GetBounds(float) const override
+        {
+            // scale factor is ignored for meshes
             return AABBApplyXform(m_Mesh->getAABB(), m_ModelMtx);
         }
         glm::mat4 GetModelMatrix(float) const override { return m_ModelMtx; }
@@ -318,14 +403,20 @@ namespace {
         void ApplyScale(glm::mat4 const& mtx) override { m_ModelMtx = m_ModelMtx * mtx; }
         void ApplyTranslation(glm::mat4 const& mtx) override { m_ModelMtx = mtx * m_ModelMtx; }
         glm::vec3 GetCenterPoint() const override { return AABBCenter(AABBApplyXform(m_Mesh->getAABB(), m_ModelMtx)); }
-        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override {
-            RayCollision roughCollision = GetRayCollisionAABB(ray, GetBounds(sceneScaleFactor));
-            if (!roughCollision.hit) {
-                return roughCollision;
+        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override
+        {
+            // do a fast ray-to-AABB collision test
+            RayCollision rayAABBCollision = GetRayCollisionAABB(ray, GetBounds(sceneScaleFactor));
+            if (!rayAABBCollision.hit) {
+                return rayAABBCollision;
             }
+
+            // it *may* have hit: refine by doing a slower ray-to-triangle test
             glm::mat4 world2model = glm::inverse(GetModelMatrix());
             Line rayModel = LineApplyXform(ray, world2model);
-            return m_Mesh->getClosestRayTriangleCollision(rayModel);
+            RayCollision rayTriangleCollision = m_Mesh->getClosestRayTriangleCollision(rayModel);
+
+            return rayTriangleCollision;
         }
         std::string const& GetName() const override { return m_Name; }
         void SetName(char const* newName) override { m_Name = newName; }
@@ -338,17 +429,22 @@ namespace {
         std::string m_Name;
     };
 
-    bool IsGroundNode(Node const& node) {
-        return dynamic_cast<GroundNode const*>(&node);
+    // returns true if the provided reference of type `T` was instantiated as type `U`
+    template<typename U, typename T>
+    bool IsType(T const& v)
+    {
+        return typeid(v) == typeid(U);
     }
 
-    bool IsConnectedToGround(Node const& node) {
-        if (IsGroundNode(node)) {
+    // returns true if `node` is, or is a child of, a `GroundNode`
+    bool IsInclusiveChildOfGround(Node const& node)
+    {
+        if (IsType<GroundNode>(node)) {
             return true;
         }
 
         for (auto ptr = node.GetParentPtr(); ptr; ptr = ptr->GetParentPtr()) {
-            if (IsGroundNode(*ptr)) {
+            if (IsType<GroundNode>(*ptr)) {
                 return true;
             }
         }
@@ -356,15 +452,19 @@ namespace {
         return false;
     }
 
-    bool IsDirectDescendantOf(Node const* ancestor, Node const* node) {
+    // returns true if `node` is a direct descendant (child) of `ancestor`
+    bool IsDirectDescendantOf(Node const* ancestor, Node const* node)
+    {
         return node->GetParentPtr().get() == ancestor;
     }
 
-    bool IsDescendantOf(Node const* ancestor, Node const* node) {
+    // returns true if `node` is a descendant (child, grandchild, etc.) of `ancestor`
+    bool IsInclusiveDescendantOf(Node const* ancestor, Node const* node)
+    {
         OSC_ASSERT_ALWAYS(ancestor != nullptr);
         OSC_ASSERT_ALWAYS(node != nullptr);
 
-        for (auto ptr = node->GetParentPtr(); ptr; ptr->GetParent()) {
+        for (auto ptr = node->GetParentPtr(); ptr; ptr = ptr->GetParentPtr()) {
             if (ptr.get() == ancestor) {
                 return true;
             }
@@ -373,15 +473,21 @@ namespace {
         return false;
     }
 
-    bool IsDirectAncestorOf(Node const* descendant, Node const* node) {
+    // returns true if `node` is a direct ancestor (parent) of `descendant`
+    bool IsDirectAncestorOf(Node const* descendant, Node const* node)
+    {
         OSC_ASSERT_ALWAYS(descendant != nullptr);
         OSC_ASSERT_ALWAYS(node != nullptr);
 
         auto children = node->GetChildren();
-        return std::find_if(children.begin(), children.end(), [node](auto const& child) { return child.get() == node; }) != children.end();
+        auto pointsToNode = [node](auto const& child) { return child.get() == node; };
+
+        return AnyOf(children, pointsToNode);
     }
 
-    bool IsAncestorOf(Node const* descendant, Node const* node) {
+    // returns true if `node` is, or is an ancestor (parent, grandparent, etc.), of `descendant`
+    bool IsAncestorOf(Node const* descendant, Node const* node)
+    {
         if (IsDirectAncestorOf(descendant, node)) {
             return true;
         }
@@ -395,16 +501,10 @@ namespace {
         return false;
     }
 
+    // calls `f` on each node (inclusive) of `n`
     template<typename Callable>
-    void ForEachNodeConst(std::shared_ptr<Node const> n, Callable f) {
-        f(n);
-        for (auto const& child : n->GetChildren()) {
-            ForEachNode(child, f);
-        }
-    }
-
-    template<typename Callable>
-    void ForEachNode(std::shared_ptr<Node> n, Callable f) {
+    void ForEachNode(std::shared_ptr<Node> n, Callable f)
+    {
         f(n);
         for (auto const& child : n->UpdChildren()) {
             ForEachNode(child, f);
@@ -412,9 +512,11 @@ namespace {
     }
 }
 
+// attaches a `MeshNode` to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
 static void AttachMeshNodeToModel(OpenSim::Model& model,
                                   MeshNode const& node,
-                                  OpenSim::PhysicalFrame& parentPhysFrame) {
+                                  OpenSim::PhysicalFrame& parentPhysFrame)
+{
 
     // ensure the model is up-to-date (the model-generation step modifies the model
     // quite a bit)
@@ -455,9 +557,12 @@ static void RecursivelyAddNodeToModel(OpenSim::Model& model,
                                       Node const& node,
                                       OpenSim::PhysicalFrame& parentPhysFrame);
 
+// adds a `BofNode` to a parent `OpenSim::PhysicalFrame` that is part of an
+// `OpenSim::Model` and then recursively adds the `BofNode`'s children
 static void RecursivelyAddBodyNodeToModel(OpenSim::Model& model,
                                           BofNode const& node,
-                                          OpenSim::PhysicalFrame& parentPhysFrame) {
+                                          OpenSim::PhysicalFrame& parentPhysFrame)
+{
     if (!node.IsBody()) {
         throw std::runtime_error{"POFs: TODO"};
     }
@@ -537,10 +642,11 @@ static void RecursivelyAddBodyNodeToModel(OpenSim::Model& model,
     }
 }
 
+// recursively adds a node to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
 static void RecursivelyAddNodeToModel(OpenSim::Model& model,
                                       Node const& node,
-                                      OpenSim::PhysicalFrame& parentPhysFrame) {
-
+                                      OpenSim::PhysicalFrame& parentPhysFrame)
+{
     if (auto const* bofnode = dynamic_cast<BofNode const*>(&node)) {
         RecursivelyAddBodyNodeToModel(model, *bofnode, parentPhysFrame);
     } else if (auto const* meshnode = dynamic_cast<MeshNode const*>(&node)) {
@@ -548,17 +654,18 @@ static void RecursivelyAddNodeToModel(OpenSim::Model& model,
     }
 }
 
-static bool GetDagIssues(Node const& node,
-                         std::vector<std::string>& issues) {
+// populates `issues` with any issues that are dectected in the `Node` (recursive)
+static bool GetDagIssuesRecursive(Node const& node, std::vector<std::string>& issues)
+{
     bool rv = false;
 
-    if (!IsConnectedToGround(node)) {
+    if (!IsInclusiveChildOfGround(node)) {
         issues.push_back("detected body or frame that is not connected to ground");
         rv = true;
     }
 
     for (auto const& child : node.GetChildren()) {
-        if (GetDagIssues(*child, issues)) {
+        if (GetDagIssuesRecursive(*child, issues)) {
             rv = true;
         }
     }
@@ -568,10 +675,10 @@ static bool GetDagIssues(Node const& node,
 
 // map a DAG onto an OpenSim model
 static std::unique_ptr<OpenSim::Model> CreateModelFromDag(GroundNode const& root,
-                                                          std::vector<std::string>& issues) {
-
+                                                          std::vector<std::string>& issues)
+{
     issues.clear();
-    if (GetDagIssues(root, issues)) {
+    if (GetDagIssuesRecursive(root, issues)) {
         log::error("cannot create an osim model: advancement issues detected");
         return nullptr;
     }
@@ -585,7 +692,8 @@ static std::unique_ptr<OpenSim::Model> CreateModelFromDag(GroundNode const& root
 }
 
 // draw an ImGui color picker for an OSC Rgba32
-static void Rgba32_ColorEdit4(char const* label, Rgba32* rgba) {
+static void Rgba32_ColorEdit4(char const* label, Rgba32* rgba)
+{
     ImVec4 col{
         static_cast<float>(rgba->r) / 255.0f,
         static_cast<float>(rgba->g) / 255.0f,
@@ -602,7 +710,8 @@ static void Rgba32_ColorEdit4(char const* label, Rgba32* rgba) {
 }
 
 // generate a quad used for rendering the chequered floor
-static Mesh generateFloorMesh() {
+static Mesh generateFloorMesh()
+{
     Mesh m{GenTexturedQuad()};
     m.scaleTexCoords(200.0f);
     return m;
@@ -610,7 +719,8 @@ static Mesh generateFloorMesh() {
 
 // synchronously prompts the user to select multiple mesh files through
 // a native OS file dialog
-static std::vector<std::filesystem::path> PromptUserForMeshFiles() {
+static std::vector<std::filesystem::path> PromptUserForMeshFiles()
+{
     nfdpathset_t s{};
     nfdresult_t result = NFD_OpenDialogMultiple("obj,vtp,stl", nullptr, &s);
 
@@ -632,21 +742,24 @@ static std::vector<std::filesystem::path> PromptUserForMeshFiles() {
 }
 
 namespace {
-    static gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::vec2 dims) {
+    static gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::vec2 dims)
+    {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y));
         return rv;
     }
 
-    static gl::RenderBuffer RenderBuffer(GLenum format, glm::vec2 dims) {
+    static gl::RenderBuffer RenderBuffer(GLenum format, glm::vec2 dims)
+    {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
         glRenderbufferStorage(GL_RENDERBUFFER, format, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y));
         return rv;
     }
 
-    static void SceneTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type) {
+    static void SceneTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type)
+    {
         gl::BindTexture(out);
         gl::TexImage2D(out.type, level, internalFormat, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y), 0, format, type, nullptr);
         gl::TexParameteri(out.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
@@ -657,7 +770,8 @@ namespace {
         gl::BindTexture();
     }
 
-    static gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type) {
+    static gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type)
+    {
         gl::Texture2D rv;
         SceneTex(rv, level, internalFormat, dims, format, type);
         return rv;
@@ -676,7 +790,8 @@ namespace {
         {
         }
 
-        void Bind() override {
+        void Bind() override
+        {
             gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, rbo);
         }
     };
@@ -691,13 +806,15 @@ namespace {
         {
         }
 
-        void Bind() override {
+        void Bind() override
+        {
             gl::FramebufferTexture2D(GL_FRAMEBUFFER, attachment, tex, level);
         }
     };
 
     template<typename... Binding>
-    gl::FrameBuffer FrameBufferWithBindings(Binding... bindings) {
+    gl::FrameBuffer FrameBufferWithBindings(Binding... bindings)
+    {
         gl::FrameBuffer rv;
         gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
         (bindings.Bind(), ...);
@@ -715,7 +832,8 @@ namespace {
         std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
     };
 
-    static bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b) {
+    static bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
+    {
         return std::tie(b.color.a, b.mesh) < std::tie(a.color.a, a.mesh);
     }
 
@@ -734,7 +852,8 @@ namespace {
                           glm::vec3 const& lightCol,
                           glm::vec4 const& bgCol,
                           nonstd::span<DrawableThing const> drawables,
-                          gl::Texture2D& outSceneTex) {
+                          gl::Texture2D& outSceneTex)
+    {
 
         auto samples = App::cur().getSamples();
 
@@ -838,81 +957,77 @@ namespace {
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
-}
-struct osc::MeshesToModelWizardScreen::Impl final {
-
-    // loader that loads mesh data in a background thread
-    Mesh_loader meshLoader = Mesh_loader::create(respondToMeshloadRequest);
-
-    // mesh used by bodies/frames (BOFs)
-    std::shared_ptr<Mesh> sphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
-
-    // model tree the user is editing
-    std::shared_ptr<GroundNode> tree = std::make_shared<GroundNode>();
-
-    // currently-selected tree nodes
-    std::unordered_set<std::shared_ptr<Node>> selected;
 
     // node that is currently hovered over by the user's mouse and it's 3D worldspace location
     class Hover {
     public:
-        Hover() : m_Ptr{}, m_Loc{} {}
-        Hover(std::weak_ptr<Node> ptr, glm::vec3 const& loc) : m_Ptr{std::move(ptr)}, m_Loc{loc} {}
+        Hover() : m_Ptr{}, m_Pos{} {}
+        Hover(std::weak_ptr<Node> ptr, glm::vec3 const& loc) : m_Ptr{std::move(ptr)}, m_Pos{loc} {}
 
-        glm::vec3 const& loc() const {
-            return m_Loc;
-        }
+        glm::vec3 const& getPos() const { return m_Pos; }
 
-        std::shared_ptr<Node> lockPtr() const {
-            return m_Ptr.lock();
-        }
+        std::shared_ptr<Node> lock() const { return m_Ptr.lock(); }
 
-        std::pair<std::shared_ptr<Node>, glm::vec3> lock() const {
-            return {m_Ptr.lock(), m_Loc};
-        }
+        template<typename T>
+        std::shared_ptr<T> lockDowncasted() const { return std::dynamic_pointer_cast<T>(m_Ptr.lock()); }
 
-        operator bool () const {
-            return m_Ptr.lock() != nullptr;
-        }
+        operator bool () const { return m_Ptr.lock() != nullptr; }
 
-        bool operator==(Node const& other) const {
-            return m_Ptr.lock().get() == &other;
-        }
+        bool operator==(Node const& other) const { return m_Ptr.lock().get() == &other; }
 
-        bool operator==(std::shared_ptr<Node> other) const {
-            return m_Ptr.lock() == other;
-        }
+        bool operator==(std::shared_ptr<Node> other) const { return m_Ptr.lock() == other; }
 
-        void reset() {
+        void reset()
+        {
             m_Ptr.reset();
-            m_Loc = {};
+            m_Pos = {};
         }
 
     private:
         std::weak_ptr<Node> m_Ptr;
-        glm::vec3 m_Loc;
+        glm::vec3 m_Pos;
     };
-    Hover hovered;
+}
+
+struct osc::MeshesToModelWizardScreen::Impl final {
+
+    // loader that loads mesh data in a background thread
+    Mesh_loader m_MeshLoader = Mesh_loader::create(respondToMeshloadRequest);
+
+    // mesh used by bodies/frames (BOFs)
+    std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
+
+    // model tree the user is editing
+    std::shared_ptr<GroundNode> m_ModelRoot = std::make_shared<GroundNode>();
+
+    // currently-selected tree nodes
+    std::unordered_set<std::shared_ptr<Node>> m_SelectedNodes = {};
+
+    // node that is currently hovered over by the user's mouse and it's 3D worldspace location
+    Hover m_MaybeHover;
 
     // node that is currently being assigned
-    std::weak_ptr<Node> currentlyBeingAssigned;
+    std::weak_ptr<Node> m_MaybeCurrentAssignment;
 
     // node that is currently being edited via a context menu
-    std::weak_ptr<Node> contextMenuNode;
+    Hover m_MaybeNodeOpenedInContextMenu;
 
-    // rect for render
-    Rect sceneScreenRect = {};
+    // screenspace rect where the 3D scene is currently being drawn to
+    Rect m_3DSceneRect = {};
 
-    // texture the scene is rendered to
-    gl::Texture2D sceneTex;
+    // texture the 3D scene is being rendered to
+    //
+    // CAREFUL: must survive beyond the end of the drawcall because ImGui needs it to be
+    //          alive during rendering
+    gl::Texture2D m_3DSceneTex;
 
     // scene colors
     struct {
-        glm::vec4 mesh = {1.0f, 0.95f, 0.95f, 1.0f};
+        glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
         glm::vec4 body = {1.0f, 0.0f, 0.0f, 1.0f};
         glm::vec4 frame = {0.0f, 1.0f, 0.0f, 1.0f};
-    } colors;
+    } m_Colors;
 
     // scale factor for all non-mesh, non-overlay scene elements (e.g.
     // the floor, bodies)
@@ -921,21 +1036,21 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     // scene elements need to be scaled accordingly (e.g. without this, a body
     // sphere end up being much larger than a mesh instance). Imagine if the
     // mesh was the leg of a fly
-    float fixupScaleFactor = 1.0f;
+    float m_SceneScaleFactor = 1.0f;
 
     // ImGuizmo state
     struct {
         glm::mat4 mtx{};
         ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
-    } imguizmo;
+    } m_ImGuizmoState;
 
     // floor data
     struct {
-        std::shared_ptr<gl::Texture2D> tex = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
+        std::shared_ptr<gl::Texture2D> texture = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
         std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(generateFloorMesh());
-    } floor;
+    } m_Floor;
 
-    PolarPerspectiveCamera camera = []() {
+    PolarPerspectiveCamera m_3DSceneCamera = []() {
         PolarPerspectiveCamera rv;
         rv.phi = fpi4;
         rv.theta = fpi4;
@@ -943,122 +1058,148 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return rv;
     }();
 
-    glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
-    glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    glm::vec4 bgCol = {0.89f, 0.89f, 0.89f, 1.0f};
+    glm::vec3 m_3DSceneLightDir = {-0.34f, -0.25f, 0.05f};
+    glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+    glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
 
     // model created by this wizard
     //
     // `nullptr` until the model is successfully created
-    std::unique_ptr<OpenSim::Model> generatedOsimModel = nullptr;
+    std::unique_ptr<OpenSim::Model> m_MaybeOutputModel = nullptr;
 
     // recycled by the renderer to upload instance data
-    std::vector<SceneGPUInstanceData> sceneBuffer;
+    std::vector<SceneGPUInstanceData> m_3DSceneInstanceBuffer;
 
     // buffer of known issues
-    std::vector<std::string> issuesBuffer;
+    std::vector<std::string> m_ErrorMessageBuffer;
 
     // clamped to [0, 1] - used for any active animations, like the dots on the connection lines
-    float animationPercent = 0.0f;
+    float m_AnimationPercentage = 0.0f;
 
     // true if a chequered floor should be drawn
-    bool isShowingFloor = true;
+    bool m_IsShowingFloor = true;
 
     // true if meshes should be drawn
-    bool isShowingMeshes = true;
+    bool m_IsShowingMeshes = true;
 
     // true if ground should be drawn
-    bool isShowingGround = true;
+    bool m_IsShowingGround = true;
 
     // true if bofs should be drawn
-    bool isShowingBofs = true;
+    bool m_IsShowingBofs = true;
 
     // true if all connection lines between entities should be
     // drawn, rather than just *hovered* entities
-    bool isShowingAllConnectionLines = true;
+    bool m_IsShowingAllConnectionLines = true;
 
     // true if meshes shouldn't be hoverable/clickable in the 3D scene
-    bool isMeshesInteractable = false;
+    bool m_IsMeshesInteractable = true;
 
     // true if BOFs shouldn't be hoverable/clickable in the 3D scene
-    bool isBofsInteractable = false;
+    bool m_IsBofsInteractable = true;
+
+    // set to true after drawing the ImGui::Image
+    bool m_IsRenderHovered = false;
 
 
     // --------------- methods ---------------
 
     Impl() = default;
 
-    Impl(nonstd::span<std::filesystem::path> paths)
+    Impl(nonstd::span<std::filesystem::path> meshPaths)
     {
-        PushMeshLoadRequests(paths);
+        PushMeshLoadRequests(m_ModelRoot, meshPaths);
     }
 
-    void Select(std::shared_ptr<Node> const& n) {
-        if (!dynamic_cast<GroundNode*>(n.get())) {
-            selected.insert(n);
+    void Select(std::shared_ptr<Node> const& node)
+    {
+        if (IsType<GroundNode>(*node)) {
+            return;
         }
+
+        m_SelectedNodes.insert(node);
     }
 
-    void SelectAll() {
-        selected.clear();
-        ForEachNode(tree, [this](auto const& ptr) { Select(ptr); });
+    void SelectAll()
+    {
+        m_SelectedNodes.clear();
+        ForEachNode(m_ModelRoot, [this](auto const& nodePtr) { Select(nodePtr); });
     }
 
-    void DeSelectAll() {
-        selected.clear();
+    void DeSelectAll()
+    {
+        m_SelectedNodes.clear();
     }
 
-    bool IsSelected(Node const& n) const {
-        for (auto const& p : selected) {
-            if (p.get() == &n) {
+    bool IsSelected(Node const& node) const
+    {
+        for (auto const& selectedPtr : m_SelectedNodes) {
+            if (selectedPtr.get() == &node) {
                 return true;
             }
         }
         return false;
     }
 
-    bool HasHover() const {
-        return hovered;
+    bool HasHover() const
+    {
+        return m_MaybeHover;
     }
 
-    bool IsHovered(Node const& n) const {
-        return hovered == n;
+    bool IsHovered(Node const& node) const
+    {
+        return m_MaybeHover == node;
     }
 
-    void ClearHover() {
-        hovered.reset();
+    void ClearHover()
+    {
+        m_MaybeHover.reset();
     }
 
-    void SelectHover() {
-        auto hover = hovered.lockPtr();
+    void SelectHover()
+    {
+        auto hover = m_MaybeHover.lock();
         if (hover) {
-            selected.insert(hover);
+            m_SelectedNodes.insert(hover);
         }
     }
 
-    bool IsInAssignmentMode() const {
-        return currentlyBeingAssigned.lock() != nullptr;
+    bool IsInAssignmentMode() const
+    {
+        return m_MaybeCurrentAssignment.lock() != nullptr;
     }
 
-    void StartAssigningHover() {
-        auto hover = hovered.lockPtr();
-        if (hover) {
-            currentlyBeingAssigned = hover;
+    void StartAssigning(std::shared_ptr<Node> newAssignee)
+    {
+        // nullptr is allowed: effectively means "stop assigning"
+
+        if (newAssignee && IsType<GroundNode>(*newAssignee)) {
+            return;
         }
+
+        m_MaybeCurrentAssignment = newAssignee;
     }
 
-    void LeaveAssignmentMode() {
-        currentlyBeingAssigned.reset();
+    void StartAssigningHover()
+    {
+        StartAssigning(m_MaybeHover.lock());
     }
 
-    void Assign(std::shared_ptr<Node> assignee, std::shared_ptr<BofNode> newParent) {
+    void LeaveAssignmentMode()
+    {
+        m_MaybeCurrentAssignment.reset();
+    }
+
+    void Assign(std::shared_ptr<Node> assignee, std::shared_ptr<Node> newParent)
+    {
         auto& assigneeParent = assignee->UpdParent();
         assigneeParent.RemoveChild(assignee);
         assignee->SetParent(newParent);
         newParent->AddChild(assignee);
     }
 
-    void AssignAssigneeTo(std::shared_ptr<BofNode> newParent) {
+    void AssignAssigneeTo(std::shared_ptr<Node> newParent)
+    {
         if (!newParent) {
             return;
         }
@@ -1067,7 +1208,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        auto assignee = currentlyBeingAssigned.lock();
+        auto assignee = m_MaybeCurrentAssignment.lock();
 
         if (!assignee) {
             return;
@@ -1077,79 +1218,113 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         LeaveAssignmentMode();
     }
 
-    float RimIntensity(Node const& n) const {
-        if (IsSelected(n)) {
+    float GetRimIntensity(Node const& node) const
+    {
+        if (IsSelected(node)) {
             return 1.0f;
-        } else if (IsHovered(n)) {
+        } else if (IsHovered(node)) {
             return 0.5f;
         } else {
             return 0.0f;
         }
     }
 
-    void PushMeshLoadRequest(std::filesystem::path const& p) {
-        meshLoader.send(MeshLoadRequest{p});
+    void PushMeshLoadRequest(std::weak_ptr<Node> prefAttachmentPoint, std::filesystem::path const& meshPath)
+    {
+        m_MeshLoader.send(MeshLoadRequest{prefAttachmentPoint, meshPath});
     }
 
     template<typename Container>
-    void PushMeshLoadRequests(Container const& c) {
-        for (auto const& path : c) {
-            PushMeshLoadRequest(path);
+    void PushMeshLoadRequests(std::weak_ptr<Node> attachmentPoint, Container const& meshPaths)
+    {
+        for (auto const& meshPath : meshPaths) {
+            PushMeshLoadRequest(attachmentPoint, meshPath);
         }
     }
 
-    void PromptUserForMeshFiles() {
-        for (auto const& file : ::PromptUserForMeshFiles()) {
-            PushMeshLoadRequest(file);
+    void PromptUserForMeshFiles(std::weak_ptr<Node> attachmentPoint)
+    {
+        for (auto const& meshPath : ::PromptUserForMeshFiles()) {
+            PushMeshLoadRequest(attachmentPoint, meshPath);
         }
     }
 
-    std::shared_ptr<BofNode> AddBody(glm::vec3 const& pos) {
-        auto dagNode = std::make_shared<BofNode>(tree, true, pos);
-        tree->AddChild(dagNode);
-        return dagNode;
+    std::shared_ptr<BofNode> AddBody(glm::vec3 const& pos)
+    {
+        auto bodyNode = std::make_shared<BofNode>(m_ModelRoot, true, pos);
+        m_ModelRoot->AddChild(bodyNode);
+        return bodyNode;
     }
 
-    std::shared_ptr<BofNode> AddPof(glm::vec3 const& pos) {
-        auto dagNode = std::make_shared<BofNode>(tree, false, pos);
-        tree->AddChild(dagNode);
-        return dagNode;
+    std::shared_ptr<BofNode> AddOffsetFrame(glm::vec3 const& pos)
+    {
+        auto pofNode = std::make_shared<BofNode>(m_ModelRoot, false, pos);
+        m_ModelRoot->AddChild(pofNode);
+        return pofNode;
     }
 
-    void Delete(std::shared_ptr<Node> n) {
-        if (n->CanHaveParent()) {
-            n->UpdParent().RemoveChild(n);
+    void DeleteNodeButReParentItsChildren(std::shared_ptr<Node> node)
+    {
+        if (!node->CanHaveParent()) {
+            return;
         }
-    }
 
-    void DeleteSelected() {
-        for (auto const& selection : selected) {
-            Delete(selection);
+        auto parentPtr = node->UpdParentPtr();
+        for (auto& childPtr : node->UpdChildren()) {
+            parentPtr->AddChild(childPtr);
+            childPtr->SetParent(parentPtr);
         }
-        selected.clear();
+        node->ClearChildren();
+
+        node->UpdParent().RemoveChild(node);
     }
 
-    void PopMeshLoader() {
-        for (auto maybeResponse = meshLoader.poll(); maybeResponse.has_value(); maybeResponse = meshLoader.poll()) {
-            MeshLoadResponse& resp = *maybeResponse;
+    void DeleteSubtree(std::shared_ptr<Node> node)
+    {
+        if (!node->CanHaveParent()) {
+            return;
+        }
 
-            if (std::holds_alternative<MeshLoadOKResponse>(resp)) {
+        node->UpdParent().RemoveChild(node);
+    }
+
+    void DeleteSelected()
+    {
+        for (auto const& selectedNodePtr : m_SelectedNodes) {
+            DeleteSubtree(selectedNodePtr);
+        }
+        m_SelectedNodes.clear();
+    }
+
+    void PopMeshLoader()
+    {
+        for (auto maybeResponse = m_MeshLoader.poll(); maybeResponse.has_value(); maybeResponse = m_MeshLoader.poll()) {
+            MeshLoadResponse& meshLoaderResp = *maybeResponse;
+
+            if (std::holds_alternative<MeshLoadOKResponse>(meshLoaderResp)) {
                 // handle OK message from loader
-                MeshLoadOKResponse& ok = std::get<MeshLoadOKResponse>(resp);
-                auto meshNode = std::make_shared<MeshNode>(tree, std::move(ok.mesh), std::move(ok.path));
-                tree->AddChild(meshNode);
+                MeshLoadOKResponse& ok = std::get<MeshLoadOKResponse>(meshLoaderResp);
+                auto maybeAttachmentPoint = ok.GetPreferredAttachmentPoint().lock();
+                if (!maybeAttachmentPoint) {
+                    maybeAttachmentPoint = m_ModelRoot;
+                }
+                auto meshNode = std::make_shared<MeshNode>(maybeAttachmentPoint, ok.GetMeshPtr(), ok.GetPath());
+                meshNode->ApplyTranslation(glm::translate(glm::mat4{1.0f}, maybeAttachmentPoint->GetPos()));
+                maybeAttachmentPoint->AddChild(meshNode);
             } else {
-                MeshLoadErrorResponse& err = std::get<MeshLoadErrorResponse>(resp);
-                log::error("%s: error loading mesh file: %s", err.path.string().c_str(), err.error.c_str());
+                MeshLoadErrorResponse& err = std::get<MeshLoadErrorResponse>(meshLoaderResp);
+                log::error("%s: error loading mesh file: %s", err.GetPath().string().c_str(), err.what());
             }
         }
     }
 
-    bool IsMouseOverRender() const {
-        return PointIsInRect(sceneScreenRect, ImGui::GetMousePos());
+    bool IsMouseOverRender() const
+    {
+        return m_IsRenderHovered;
     }
 
-    void UpdateCameraFromImGuiUserInput() {
+    void UpdateCameraFromImGuiUserInput()
+    {
         if (!IsMouseOverRender()) {
             return;
         }
@@ -1158,11 +1333,11 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        UpdatePolarCameraFromImGuiUserInput(RectDims(sceneScreenRect), camera);
+        UpdatePolarCameraFromImGuiUserInput(RectDims(m_3DSceneRect), m_3DSceneCamera);
     }
 
-    void UpdateFromImGuiKeyboardState() {
-
+    void UpdateFromImGuiKeyboardState()
+    {
         // DELETE: delete any selected elements
         if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
             DeleteSelected();
@@ -1170,7 +1345,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         // B: add body to hovered element
         if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
-            auto hover = hovered.lockPtr();
+            auto hover = m_MaybeHover.lock();
             if (hover) {
                 DeSelectAll();
                 glm::vec3 pos = hover->GetCenterPoint();
@@ -1196,264 +1371,386 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         // S: set manipulation mode to "scale"
         if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            imguizmo.op = ImGuizmo::SCALE;
+            m_ImGuizmoState.op = ImGuizmo::SCALE;
         }
 
         // R: set manipulation mode to "rotate"
         if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
-            imguizmo.op = ImGuizmo::ROTATE;
+            m_ImGuizmoState.op = ImGuizmo::ROTATE;
         }
 
         // G: set manipulation mode to "grab" (translate)
         if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
-            imguizmo.op = ImGuizmo::TRANSLATE;
+            m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
         }
     }
 
-    void ActionFocusCameraOn(MeshNode const& mn) {
-        camera.focusPoint = -mn.GetCenterPoint();
+    void FocusCameraOn(Node const& node)
+    {
+        m_3DSceneCamera.focusPoint = -node.GetCenterPoint();
     }
 
-    void ActionAutoScaleScene() {
-        if (!tree->HasChildren()) {
-            fixupScaleFactor = 1.0f;
+    AABB GetSceneAABB() const
+    {
+        AABB sceneAABB = m_ModelRoot->GetBounds(m_SceneScaleFactor);
+        ForEachNode(m_ModelRoot, [&](auto const& node) { sceneAABB = AABBUnion(sceneAABB, node->GetBounds(m_SceneScaleFactor)); });
+        return sceneAABB;
+    }
+
+    void AutoScaleScene()
+    {
+        if (!m_ModelRoot->HasChildren()) {
+            m_SceneScaleFactor = 1.0f;
             return;
         }
 
-        AABB aabb = tree->GetBounds(fixupScaleFactor);
-        ForEachNode(tree, [&](auto const& node) { aabb = AABBUnion(aabb, node->GetBounds(fixupScaleFactor)); });
+        AABB sceneAABB = GetSceneAABB();
+        float longest = AABBLongestDim(GetSceneAABB());
 
-        glm::vec3 dims = AABBDims(aabb);
-        float longest = VecLongestDimVal(dims);
-
-        fixupScaleFactor = 5.0f * longest;
-        camera.focusPoint = {};
-        camera.radius = 5.0f * longest;
+        m_SceneScaleFactor = 5.0f * longest;
+        m_3DSceneCamera.focusPoint = {};
+        m_3DSceneCamera.radius = 5.0f * longest;
     }
 
-    glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) {
-        return camera.projectOntoScreenRect(worldPos, sceneScreenRect);
+    glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos)
+    {
+        return m_3DSceneCamera.projectOntoScreenRect(worldPos, m_3DSceneRect);
     }
 
-    void DrawConnectionLine(glm::vec2 parent, glm::vec2 child) {
+    void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child)
+    {
         // the line
-        ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.25f});
-        ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 3.0f);
+        ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 2.0f);
 
         // moving dot between the two points to indicate directionality
         glm::vec2 child2parent = parent - child;
-        glm::vec2 dotPos = child + animationPercent*child2parent;
-        ImGui::GetForegroundDrawList()->AddCircleFilled(dotPos, 5.0f, color);
+        glm::vec2 dotPos = child + m_AnimationPercentage*child2parent;
+        ImGui::GetForegroundDrawList()->AddCircleFilled(dotPos, 4.0f, color);
     }
 
-    void DrawConnectionLine(Node const& a, Node const& b) {
-        DrawConnectionLine(WorldPosToScreenPos(a.GetPos()), WorldPosToScreenPos(b.GetPos()));
+    void DrawConnectionLine(ImU32 color, Node const& parent, Node const& child)
+    {
+        DrawConnectionLine(color, WorldPosToScreenPos(parent.GetCenterPoint()), WorldPosToScreenPos(child.GetCenterPoint()));
     }
 
-    void DrawLineToParent(Node const& n) {
-        auto parent = n.GetParentPtr();
+    void DrawLineToParent(ImU32 color, Node const& child)
+    {
+        auto parent = child.GetParentPtr();
         if (parent) {
-            DrawConnectionLine(*parent, n);
+            DrawConnectionLine(color, *parent, child);
         }
     }
 
-    void DrawLinesToChildren(Node const& n) {
-        for (auto const& child : n.GetChildren()) {
-            DrawConnectionLine(n, *child);
+    void DrawLinesToChildren(ImU32 color, Node const& node)
+    {
+        for (auto const& child : node.GetChildren()) {
+            DrawConnectionLine(color, node, *child);
         }
     }
 
-    void DrawConnectionLines() {
-        if (isShowingAllConnectionLines) {
-            ForEachNode(tree, [this](auto const& node) { DrawLinesToChildren(*node); });
-            return;  // all possible lines are drawn
+    void DrawAllConnectionLines(ImU32 color)
+    {
+        ForEachNode(m_ModelRoot, [this, color](auto const& node) { DrawLinesToChildren(color, *node); });
+    }
+
+    void DrawConnectionLinesFrom(ImU32 color, Node const& centralNode)
+    {
+        DrawLineToParent(color, centralNode);
+        DrawLinesToChildren(color, centralNode);
+    }
+
+    void DrawConnectionLines(ImU32 color)
+    {
+        if (m_IsShowingAllConnectionLines) {
+            DrawAllConnectionLines(color);
+            return;
         }
 
-        auto hover = hovered.lockPtr();
+        auto hover = m_MaybeHover.lock();
 
         // draw lines from hover to parent and children
         if (hover) {
-            DrawLineToParent(*hover);
-            DrawLinesToChildren(*hover);
+            DrawConnectionLinesFrom(color, *hover);
         }
 
         // draw lines from selected els to their parents
-        for (auto const& s : selected) {
-            if (s != hover) {
-                DrawLineToParent(*s);
+        for (auto const& selectedNode : m_SelectedNodes) {
+            if (selectedNode != hover) {
+                DrawLineToParent(color, *selectedNode);
             }
         }
     }
 
-    void DrawMeshHoverTooltip(MeshNode const& mn) {
+    void DrawMeshHoverTooltip(MeshNode const& meshNode, glm::vec3 const& hoverPos)
+    {
         ImGui::BeginTooltip();
         ImGui::Text("Imported Mesh");
         ImGui::Indent();
-        ImGui::Text("Name = %s", mn.GetNameCStr());
-        ImGui::Text("Filename = %s", mn.GetPath().filename().string().c_str());
-        ImGui::Text("Conntected to = %s", mn.GetParent().GetNameCStr());
-        auto pos = mn.GetPos();
+        ImGui::Text("Name = %s", meshNode.GetNameCStr());
+        ImGui::Text("Filename = %s", meshNode.GetPath().filename().string().c_str());
+        ImGui::Text("Conntected to = %s", meshNode.GetParent().GetNameCStr());
+        auto pos = meshNode.GetPos();
         ImGui::Text("Center = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = mn.GetParent().GetPos();
-        auto dist = glm::length(pos - parentPos);
-        ImGui::Text("Distance to Parent = %.2f", dist);
+        auto parentPos = meshNode.GetParent().GetPos();
+        ImGui::Text("Center's Distance to Parent = %.2f", glm::length(pos - parentPos));
+        ImGui::Text("Mouse Location = (%.2f, %.2f, %.2f)", hoverPos.x, hoverPos.y, hoverPos.z);
+        ImGui::Text("Mouse Location's Distance to Parent = %.2f", glm::length(hoverPos - parentPos));
         ImGui::Unindent();
         ImGui::EndTooltip();
     }
 
-    void DrawPfHoverTooltip(BofNode const& pn) {
+    void DrawPfHoverTooltip(BofNode const& bofNode)
+    {
         ImGui::BeginTooltip();
-        if (pn.IsBody()) {
+        if (bofNode.IsBody()) {
             ImGui::TextUnformatted("Body");
         } else {
             ImGui::TextUnformatted("PhysicalOffsetFrame");
         }
         ImGui::Indent();
-        ImGui::Text("Name = %s", pn.GetNameCStr());
-        ImGui::Text("Connected to = %s", pn.GetParent().GetNameCStr());
-        auto pos = pn.GetPos();
+        ImGui::Text("Name = %s", bofNode.GetNameCStr());
+        ImGui::Text("Connected to = %s", bofNode.GetParent().GetNameCStr());
+        ImGui::Text("Joint type = %s", bofNode.GetJointTypeNameCStr());
+        auto pos = bofNode.GetPos();
         ImGui::Text("Pos = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = pn.GetParent().GetPos();
-        auto dist = glm::length(pos - parentPos);
-        ImGui::Text("Distance to Parent = %.2f", dist);
-        ImGui::Text("Joint type = %s", pn.GetJointTypeNameCStr());
+        auto parentPos = bofNode.GetParent().GetPos();
+        ImGui::Text("Distance to Parent = %.2f", glm::length(pos - parentPos));
         ImGui::Unindent();
         ImGui::EndTooltip();
     }
 
-    void DrawHoverTooltip() {
-        auto hover = hovered.lockPtr();
+    void DrawHoverTooltip()
+    {
+        auto hover = m_MaybeHover.lock();
 
         if (!hover) {
             return;
         }
 
         if (auto meshNodePtr = dynamic_cast<MeshNode*>(hover.get())) {
-            DrawMeshHoverTooltip(*meshNodePtr);
+            DrawMeshHoverTooltip(*meshNodePtr, m_MaybeHover.getPos());
         } else if (auto bofPtr = dynamic_cast<BofNode*>(hover.get())) {
             DrawPfHoverTooltip(*bofPtr);
+        } else if (auto groundPtr = dynamic_cast<GroundNode*>(hover.get())) {
+            ImGui::BeginTooltip();
+            ImGui::Text("ground");
+            ImGui::EndTooltip();
         }
     }
 
-    void DrawMeshContextMenu(std::shared_ptr<MeshNode> mn) {
+    void DrawMeshContextMenu(std::shared_ptr<MeshNode> meshNode, glm::vec3 const& pos)
+    {
         if (ImGui::BeginPopup("contextmenu")) {
-            if (ImGui::MenuItem("add body")) {
-                auto body = AddBody(mn->GetCenterPoint());
-                DeSelectAll();
-                Select(body);
+            if (ImGui::BeginMenu("add body")) {
+                if (ImGui::MenuItem("at mouse location")) {
+                    auto addedBody = AddBody(pos);
+                    DeSelectAll();
+                    Select(addedBody);
+                }
+
+                if (ImGui::MenuItem("at mouse location, and assign the mesh to it")) {
+                    auto addedBody = AddBody(pos);
+                    Assign(addedBody, meshNode->UpdParentPtr());
+                    Assign(meshNode, addedBody);
+                    DeSelectAll();
+                    Select(addedBody);
+                }
+
+                if (ImGui::MenuItem("at center")) {
+                    auto body = AddBody(meshNode->GetCenterPoint());
+                    DeSelectAll();
+                    Select(body);
+                }
+
+                if (ImGui::MenuItem("at center, and assign this mesh to it")) {
+                    auto addedBody = AddBody(meshNode->GetCenterPoint());
+                    Assign(addedBody, meshNode->UpdParentPtr());
+                    Assign(meshNode, addedBody);
+                    DeSelectAll();
+                    Select(addedBody);
+                }
+
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("add body and assign this mesh to it")) {
-                auto body = AddBody(mn->GetCenterPoint());
-                Assign(mn, body);
-                DeSelectAll();
-                Select(body);
+
+            if (ImGui::BeginMenu("add frame")) {
+                if (ImGui::MenuItem("at mouse location")) {
+                    auto addedFrame = AddOffsetFrame(pos);
+                    DeSelectAll();
+                    Select(addedFrame);
+                }
+
+                if (ImGui::MenuItem("at mouse location, and assign the mesh to it")) {
+                    auto addedFrame = AddOffsetFrame(pos);
+                    Assign(addedFrame, meshNode->UpdParentPtr());
+                    Assign(meshNode, addedFrame);
+                    DeSelectAll();
+                    Select(addedFrame);
+                }
+
+                if (ImGui::MenuItem("at center")) {
+                    auto addedFrame = AddOffsetFrame(meshNode->GetCenterPoint());
+                    DeSelectAll();
+                    Select(addedFrame);
+                }
+
+                if (ImGui::MenuItem("at center, and assign this mesh to it")) {
+                    auto addedFrame = AddOffsetFrame(meshNode->GetCenterPoint());
+                    Assign(addedFrame, meshNode->UpdParentPtr());
+                    Assign(meshNode, addedFrame);
+                    DeSelectAll();
+                    Select(addedFrame);
+                }
+
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("add frame")) {
-                auto frame = AddPof(mn->GetCenterPoint());
-                DeSelectAll();
-                Select(frame);
+
+            if (ImGui::MenuItem("focus camera on this")) {
+                FocusCameraOn(*meshNode);
             }
-            if (ImGui::MenuItem("add frame and assign this mesh to it")) {
-                auto frame = AddPof(mn->GetCenterPoint());
-                Assign(mn, frame);
-                DeSelectAll();
-                Select(frame);
+
+            if (ImGui::MenuItem("reassign parent")) {
+                StartAssigning(meshNode);
             }
-            if (ImGui::MenuItem("center camera on this mesh")) {
-                ActionFocusCameraOn(*mn);
+
+            if (ImGui::MenuItem("delete")) {
+                DeleteSubtree(meshNode);
             }
-            char buf[256];
-            std::strcpy(buf, mn->GetNameCStr());
-            if (ImGui::InputText("set mesh name", buf, sizeof(buf))) {
-                mn->SetName(buf);
+
+            // draw name editor
+            {
+                char buf[256];
+                std::strcpy(buf, meshNode->GetNameCStr());
+                if (ImGui::InputText("set mesh name", buf, sizeof(buf))) {
+                    meshNode->SetName(buf);
+                }
             }
         }
         ImGui::EndPopup();
     }
 
-    void DrawPfContextMenu(BofNode& pn) {
+    void DrawPfContextMenu(std::shared_ptr<BofNode> bofNode)
+    {
         if (ImGui::BeginPopup("contextmenu")) {
-
-
-            BofJointType jointType = pn.GetJointType();
-            auto strings = GetJointTypeCStrings();
-            if (ImGui::Combo("joint type", &jointType, strings.data(), strings.size())) {
-                pn.SetJointType(jointType);
+            if (ImGui::MenuItem("add body (assigned to this one)")) {
+                auto addedBody = AddBody(bofNode->GetCenterPoint());
+                Assign(addedBody, bofNode);
+                DeSelectAll();
+                Select(addedBody);
             }
 
-            char buf[256];
-            std::strcpy(buf, pn.GetNameCStr());
-            if (ImGui::InputText("set name", buf, sizeof(buf))) {
-                pn.SetName(buf);
+            if (ImGui::MenuItem("assign mesh(es)")) {
+                PromptUserForMeshFiles(bofNode);
             }
 
-            char buf2[256];
-            std::strcpy(buf2, pn.GetJointNameCStr());
-            if (ImGui::InputText("set joint name", buf2, sizeof(buf2))) {
-                pn.SetUserDefinedJointName(buf2);
+            if (ImGui::MenuItem("focus camera on this")) {
+                FocusCameraOn(*bofNode);
+            }
+
+            if (ImGui::MenuItem("reassign parent")) {
+                StartAssigning(bofNode);
+            }
+
+            if (ImGui::BeginMenu("delete")) {
+                if (ImGui::MenuItem("entire subtree")) {
+                    DeleteSubtree(bofNode);
+                }
+
+                if (ImGui::MenuItem("just this")) {
+                    DeleteNodeButReParentItsChildren(bofNode);
+                }
+
+                ImGui::EndMenu();
+            }
+
+            BofJointType jointType = bofNode->GetJointType();
+            auto jointTypeStrings = GetJointTypeCStrings();
+            if (ImGui::Combo("joint type", &jointType, jointTypeStrings.data(), jointTypeStrings.size())) {
+                bofNode->SetJointType(jointType);
+            }
+
+            // draw name editor
+            {
+                char buf[256];
+                std::strcpy(buf, bofNode->GetNameCStr());
+                if (ImGui::InputText("set name", buf, sizeof(buf))) {
+                    bofNode->SetName(buf);
+                }
+            }
+
+            // draw joint name editor
+            {
+                char buf2[256];
+                std::strcpy(buf2, bofNode->GetJointNameCStr());
+                if (ImGui::InputText("set joint name", buf2, sizeof(buf2))) {
+                    bofNode->SetUserDefinedJointName(buf2);
+                }
             }
         }
         ImGui::EndPopup();
     }
 
-    void DrawContextMenu() {
-        auto editedNode = contextMenuNode.lock();
+    void DrawContextMenu()
+    {
+        auto editedNode = m_MaybeNodeOpenedInContextMenu.lock();
 
         if (!editedNode) {
             return;
         }
 
         if (auto meshNodePtr = std::dynamic_pointer_cast<MeshNode>(editedNode)) {
-            DrawMeshContextMenu(meshNodePtr);
-        } else if (auto bofPtr = dynamic_cast<BofNode*>(editedNode.get())) {
-            DrawPfContextMenu(*bofPtr);
+            DrawMeshContextMenu(meshNodePtr, m_MaybeNodeOpenedInContextMenu.getPos());
+        } else if (auto bofPtr = std::dynamic_pointer_cast<BofNode>(editedNode)) {
+            DrawPfContextMenu(bofPtr);
         }
     }
 
-    void OpenContextMenu(Hover const& hover) {
-        auto guard = hover.lock();
-        if (!guard.first) {
-            return;  // nothing hovered
+    void OpenHoverContextMenu()
+    {
+        if (!m_MaybeHover) {
+            return;
         }
-        contextMenuNode = guard.first;
+
+        m_MaybeNodeOpenedInContextMenu = m_MaybeHover;
         ImGui::OpenPopup("contextmenu");
     }
 
-    void Draw3DManipulators() {
+    void Draw3DManipulators()
+    {
         // if the user isn't manipulating anything, create an up-to-date
         // manipulation matrix
         if (!ImGuizmo::IsUsing()) {
-            auto it = selected.begin();
-            auto end = selected.end();
+            auto it = m_SelectedNodes.begin();
+            auto end = m_SelectedNodes.end();
 
             if (it == end) {
                 return;  // nothing's selected
             }
 
-            AABB aabb = (*it)->GetBounds(fixupScaleFactor);
+            AABB aabb = (*it)->GetBounds(m_SceneScaleFactor);
             while (++it != end) {
-                aabb = AABBUnion(aabb, (*it)->GetBounds(fixupScaleFactor));
+                aabb = AABBUnion(aabb, (*it)->GetBounds(m_SceneScaleFactor));
             }
 
-            imguizmo.mtx = glm::translate(glm::mat4{1.0f}, AABBCenter(aabb));
+            m_ImGuizmoState.mtx = glm::translate(glm::mat4{1.0f}, AABBCenter(aabb));
         }
 
         // else: is using OR nselected > 0 (so draw it)
 
         ImGuizmo::SetRect(
-            sceneScreenRect.p1.x,
-            sceneScreenRect.p1.y,
-            RectDims(sceneScreenRect).x,
-            RectDims(sceneScreenRect).y);
+            m_3DSceneRect.p1.x,
+            m_3DSceneRect.p1.y,
+            RectDims(m_3DSceneRect).x,
+            RectDims(m_3DSceneRect).y);
         ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
         glm::mat4 delta;
         bool manipulated = ImGuizmo::Manipulate(
-            glm::value_ptr(camera.getViewMtx()),
-            glm::value_ptr(camera.getProjMtx(RectAspectRatio(sceneScreenRect))),
-            imguizmo.op,
+            glm::value_ptr(m_3DSceneCamera.getViewMtx()),
+            glm::value_ptr(m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect))),
+            m_ImGuizmoState.op,
             ImGuizmo::LOCAL,
-            glm::value_ptr(imguizmo.mtx),
+            glm::value_ptr(m_ImGuizmoState.mtx),
             glm::value_ptr(delta),
             nullptr,
             nullptr,
@@ -1463,8 +1760,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        for (auto& node : selected) {
-            switch (imguizmo.op) {
+        for (auto& node : m_SelectedNodes) {
+            switch (m_ImGuizmoState.op) {
             case ImGuizmo::SCALE:
                 node->ApplyScale(delta);
                 break;
@@ -1480,7 +1777,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    glm::mat4 GetFloorModelMtx() const {
+    glm::mat4 GetFloorModelMtx() const
+    {
         glm::mat4 rv{1.0f};
 
         // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
@@ -1488,31 +1786,36 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         // model itself (the contact planes, etc.)
         rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
         rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
-        rv = glm::scale(rv, {fixupScaleFactor * 100.0f, fixupScaleFactor * 100.0f, 1.0f});
+        rv = glm::scale(rv, {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f});
 
         return rv;
     }
 
-    Hover DoHittest(glm::vec2 pos, bool ignoreBofs, bool ignoreMeshes) const {
-        if (!PointIsInRect(sceneScreenRect, pos)) {
+    Hover DoHittest(glm::vec2 pos, bool isGroundInteractable, bool isBofsInteractable, bool isMeshesInteractable) const
+    {
+        if (!PointIsInRect(m_3DSceneRect, pos)) {
             return {};
         }
 
-        Line ray = camera.unprojectTopLeftPosToWorldRay(pos - sceneScreenRect.p1, RectDims(sceneScreenRect));
+        Line ray = m_3DSceneCamera.unprojectTopLeftPosToWorldRay(pos - m_3DSceneRect.p1, RectDims(m_3DSceneRect));
 
         std::shared_ptr<Node> closest = nullptr;
         float closestDist = std::numeric_limits<float>::max();
 
-        ForEachNode(tree, [&](auto const& node) {
-            if (ignoreBofs && dynamic_cast<BofNode*>(node.get())) {
+        ForEachNode(m_ModelRoot, [&](auto const& node) {
+            if (!isBofsInteractable && IsType<BofNode>(*node)) {
                 return;
             }
 
-            if (ignoreMeshes && dynamic_cast<MeshNode*>(node.get())) {
+            if (!isMeshesInteractable && IsType<MeshNode>(*node)) {
                 return;
             }
 
-            RayCollision rc = node->DoHittest(fixupScaleFactor, ray);
+            if (!isGroundInteractable && IsType<GroundNode>(*node)) {
+                return;
+            }
+
+            RayCollision rc = node->DoHittest(m_SceneScaleFactor, ray);
             if (rc.hit && rc.distance < closestDist) {
                 closest = node;
                 closestDist = rc.distance;
@@ -1547,26 +1850,28 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         // draw top-level stats
 
         // draw editors (checkboxes, sliders, etc.)
-        ImGui::Checkbox("show floor", &isShowingFloor);
-        ImGui::Checkbox("show meshes", &isShowingMeshes);
-        ImGui::Checkbox("show ground", &isShowingGround);
-        ImGui::Checkbox("show bofs", &isShowingBofs);
-        ImGui::Checkbox("lock meshes", &isMeshesInteractable);
-        ImGui::Checkbox("lock bofs", &isBofsInteractable);
-        ImGui::Checkbox("show all connection lines", &isShowingAllConnectionLines);
-        ImGui::ColorEdit4("mesh color", glm::value_ptr(colors.mesh));
-        ImGui::ColorEdit4("ground color", glm::value_ptr(colors.ground));
-        ImGui::ColorEdit4("body color", glm::value_ptr(colors.body));
-        ImGui::ColorEdit4("frame color", glm::value_ptr(colors.frame));
+        ImGui::Checkbox("show floor", &m_IsShowingFloor);
+        ImGui::Checkbox("show meshes", &m_IsShowingMeshes);
+        ImGui::Checkbox("show ground", &m_IsShowingGround);
+        ImGui::Checkbox("show bofs", &m_IsShowingBofs);
+        ImGui::Checkbox("can click meshes", &m_IsMeshesInteractable);
+        ImGui::Checkbox("can click bofs", &m_IsBofsInteractable);
+        ImGui::Checkbox("show all connection lines", &m_IsShowingAllConnectionLines);
+        ImGui::ColorEdit4("mesh color", glm::value_ptr(m_Colors.mesh));
+        ImGui::ColorEdit4("ground color", glm::value_ptr(m_Colors.ground));
+        ImGui::ColorEdit4("body color", glm::value_ptr(m_Colors.body));
+        ImGui::ColorEdit4("frame color", glm::value_ptr(m_Colors.frame));
 
-        ImGui::InputFloat("scene_scale_factor", &fixupScaleFactor);
+        ImGui::InputFloat("scene_scale_factor", &m_SceneScaleFactor);
         if (ImGui::Button("autoscale scene_scale_factor")) {
-            ActionAutoScaleScene();
+            AutoScaleScene();
         }
 
         // draw actions (buttons, etc.)
         if (ImGui::Button("add frame")) {
-            AddPof({0.0f, 0.0f, 0.0f});
+            auto frame = AddOffsetFrame({0.0f, 0.0f, 0.0f});
+            DeSelectAll();
+            Select(frame);
         }
         if (ImGui::Button("select all")) {
             SelectAll();
@@ -1576,24 +1881,24 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
         ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
         if (ImGui::Button(ICON_FA_PLUS "Import Meshes")) {
-            PromptUserForMeshFiles();
+            PromptUserForMeshFiles(m_ModelRoot);
         }
         ImGui::PopStyleColor();
 
-        issuesBuffer.clear();
-        if (!GetDagIssues(*tree, issuesBuffer)) {
+        m_ErrorMessageBuffer.clear();
+        if (!GetDagIssuesRecursive(*m_ModelRoot, m_ErrorMessageBuffer)) {
 
             // show button for model creation if no issues
             if (ImGui::Button("next >>")) {
-                generatedOsimModel = CreateModelFromDag(*tree, issuesBuffer);
+                m_MaybeOutputModel = CreateModelFromDag(*m_ModelRoot, m_ErrorMessageBuffer);
             }
         } else {
 
             // show issues
-            ImGui::Text("issues (%zu):", issuesBuffer.size());
+            ImGui::Text("issues (%zu):", m_ErrorMessageBuffer.size());
             ImGui::Separator();
             ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            for (std::string const& s : issuesBuffer) {
+            for (std::string const& s : m_ErrorMessageBuffer) {
                 ImGui::TextUnformatted(s.c_str());
             }
         }
@@ -1602,41 +1907,40 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     DrawableThing GenerateMeshSceneEl(MeshNode const& mn, glm::vec4 const& color) {
         DrawableThing rv;
         rv.mesh = mn.GetMesh();
-        rv.modelMatrix = mn.GetModelMatrix(fixupScaleFactor);
+        rv.modelMatrix = mn.GetModelMatrix(m_SceneScaleFactor);
         rv.normalMatrix = NormalMatrix(rv.modelMatrix);
         rv.color = color;
-        rv.rimColor = RimIntensity(mn);
+        rv.rimColor = GetRimIntensity(mn);
         rv.maybeDiffuseTex = nullptr;
         return rv;
     }
 
     DrawableThing GenerateSphereSceneEl(BofNode const& pfn, glm::vec4 const& color) {
         DrawableThing rv;
-        rv.mesh = sphereMesh;
-        rv.modelMatrix = pfn.GetModelMatrix(fixupScaleFactor);
+        rv.mesh = m_SphereMesh;
+        rv.modelMatrix = pfn.GetModelMatrix(m_SceneScaleFactor);
         rv.normalMatrix = NormalMatrix(rv.modelMatrix);
         rv.color = color;
-        rv.rimColor = RimIntensity(pfn);
+        rv.rimColor = GetRimIntensity(pfn);
         rv.maybeDiffuseTex = nullptr;
         return rv;
     }
 
     DrawableThing GenerateFloor() {
         DrawableThing dt;
-        dt.mesh = floor.mesh;
+        dt.mesh = m_Floor.mesh;
         dt.modelMatrix = GetFloorModelMtx();
         dt.normalMatrix = NormalMatrix(dt.modelMatrix);
         dt.color = {0.0f, 0.0f, 0.0f, 1.0f};  // doesn't matter: it's textured
         dt.rimColor = 0.0f;
-        dt.maybeDiffuseTex = floor.tex;
+        dt.maybeDiffuseTex = m_Floor.texture;
         return dt;
     }
 
     DrawableThing GenerateGroundSceneEl() {
         DrawableThing dt;
-        dt.mesh = sphereMesh;
-        float r = 0.5f * g_SphereRadius;
-        dt.modelMatrix = glm::scale(glm::mat4{1.0f}, glm::vec3{r, r, r});
+        dt.mesh = m_SphereMesh;
+        dt.modelMatrix = glm::scale(glm::mat4{1.0f}, glm::vec3{g_SphereRadius, g_SphereRadius, g_SphereRadius});
         dt.normalMatrix = NormalMatrix(dt.modelMatrix);
         dt.color = {0.0f, 0.0f, 0.0f, 1.0f};
         dt.rimColor = 0.0f;
@@ -1649,54 +1953,60 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImVec2 uv0{0.0f, 1.0f};
         ImVec2 uv1{1.0f, 0.0f};
         ImGui::Image(textureHandle, dims, uv0, uv1);
+        m_IsRenderHovered = ImGui::IsItemHovered();
     }
 
     void HoverTest_AssignmentMode() {
-        if (!IsMouseOverRender()) {
-            hovered.reset();
-            return;
-        }
-
-        auto assignee = currentlyBeingAssigned.lock();
+        auto assignee = m_MaybeCurrentAssignment.lock();
         if (!assignee) {
             return;
         }
 
-        hovered = DoHittest(ImGui::GetMousePos(), isBofsInteractable, false);
+        m_MaybeHover.reset();  // reset old hover
 
-        if (!hovered) {
+        if (!IsMouseOverRender()) {
             return;
         }
 
-        if (hovered == assignee) {
-            return;
+        Hover newHover = DoHittest(ImGui::GetMousePos(), true, m_IsBofsInteractable, false);
+
+        auto hover = newHover.lock();
+
+        if (!hover) {
+            return;  // nothing hovered
         }
 
-        auto hoveredAsPof = std::dynamic_pointer_cast<BofNode>(hovered.lockPtr());
-
-        if (!hoveredAsPof) {
-            return;
+        if (hover == assignee) {
+            return;  // can't self-assign
         }
+
+        if (!hover->CanHaveChildren()) {
+            return;  // can't assign to a node that can't have childrens
+        }
+
+        if (IsInclusiveDescendantOf(assignee.get(), hover.get())) {
+            return;  // can't perform an assignment that would result in a cycle
+        }
+
+        // else: it's ok for the hovered node to be the new hover
+        m_MaybeHover = newHover;
 
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-            AssignAssigneeTo(hoveredAsPof);
+            AssignAssigneeTo(hover);
             return;
         }
 
         ImGui::BeginTooltip();
-        if (hoveredAsPof->IsBody()) {
-            ImGui::TextUnformatted("body");
-        } else {
-            ImGui::TextUnformatted("pf");
-        }
+        ImGui::Text("assign to %s", hover->GetNameCStr());
         ImGui::EndTooltip();
     }
 
     void Draw3DViewer_AssignmentMode() {
         HoverTest_AssignmentMode();
 
-        auto assignee = currentlyBeingAssigned.lock();
+        auto assignee = m_MaybeCurrentAssignment.lock();
         if (!assignee) {
+            // nothing being assigned, this draw function might be an invalid call, just quit early
             return;
         }
 
@@ -1704,20 +2014,25 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         // draw assignee as a rim-highlighted el
         if (auto const* bofPtr = dynamic_cast<BofNode const*>(assignee.get())) {
-            auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? colors.body : colors.frame));
-            el.rimColor = 1.0f;
+            auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
+            el.color.a = 0.5f;
+            el.rimColor = 0.5f;
         } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(assignee.get())) {
-            auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, colors.mesh));
-            el.rimColor = 1.0f;
+            auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
+            el.color.a = 0.5f;
+            el.rimColor = 0.5f;
         }
 
         // draw all frame nodes (they are possible attachment points)
-        ForEachNode(tree, [&](auto const& node) {
+        ForEachNode(m_ModelRoot, [&](auto const& node) {
             if (auto const* bofPtr = dynamic_cast<BofNode const*>(node.get())) {
-                auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? colors.body : colors.frame));
-                el.rimColor = (hovered == *bofPtr) ? 0.35f : 0.0f;
+                auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
+                el.rimColor = (m_MaybeHover == *bofPtr) ? 0.35f : 0.0f;
+                if (IsInclusiveDescendantOf(assignee.get(), bofPtr)) {
+                    el.color.a = 0.1f;  // make circular assignments faint
+                }
             } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
-                auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, colors.mesh));
+                auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
                 el.rimColor = 0.0f;
                 el.color.a = 0.1f;  // show (non-assignable) meshes faintly
             }
@@ -1726,28 +2041,57 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         // always draw ground (it's a possible attachment point)
         sceneEls.push_back(GenerateGroundSceneEl());
 
-        if (isShowingFloor) {
+        if (m_IsShowingFloor) {
             sceneEls.push_back(GenerateFloor());
         }
 
         std::sort(sceneEls.begin(), sceneEls.end(), OptimalDrawOrder);
 
         DrawScene(
-            RectDims(sceneScreenRect),
-            camera.getProjMtx(RectAspectRatio(sceneScreenRect)),
-            camera.getViewMtx(),
-            camera.getPos(),
-            lightDir,
-            lightCol,
-            bgCol,
+            RectDims(m_3DSceneRect),
+            m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect)),
+            m_3DSceneCamera.getViewMtx(),
+            m_3DSceneCamera.getPos(),
+            m_3DSceneLightDir,
+            m_3DSceneLightColor,
+            m_3DSceneBgColor,
             sceneEls,
-            sceneTex);
-        DrawTextureAsImguiImage(sceneTex, RectDims(sceneScreenRect));
+            m_3DSceneTex);
+        DrawTextureAsImguiImage(m_3DSceneTex, RectDims(m_3DSceneRect));
+
+        // draw connection lines, as appropriate
+        {
+            auto hover = m_MaybeHover.lock();
+
+            auto drawLine = [&](auto const& nodePtr) {
+                for (auto const& child : nodePtr->GetChildren()) {
+                    if (child == assignee) {
+                        if (hover && hover != assignee) {
+                            // do not draw: the max-strength line will be drawn later
+                            continue;
+                        } else {
+                            // draw a medium-strength line for the existing connection
+                            DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.33f}), *nodePtr, *child);
+                        }
+                    } else {
+                        // draw a faint connection line (these lines are non-participating)
+                        DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.05f}), *nodePtr, *child);
+                    }
+                }
+            };
+
+            if (hover && hover != assignee) {
+                // draw max-strength line for user's current interest
+                DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), *hover, *assignee);
+            }
+
+            ForEachNode(m_ModelRoot, drawLine);
+        }
     }
 
     void HoverTest_NormalMode() {
         if (!IsMouseOverRender()) {
-            hovered.reset();
+            m_MaybeHover.reset();
             return;
         }
 
@@ -1755,19 +2099,19 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        hovered = DoHittest(ImGui::GetMousePos(), isBofsInteractable, isMeshesInteractable);
+        m_MaybeHover = DoHittest(ImGui::GetMousePos(), true, m_IsBofsInteractable, m_IsMeshesInteractable);
 
         bool lcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         bool rcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
         bool shiftDown = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
         bool isUsingGizmo = ImGuizmo::IsUsing();
 
-        if (!hovered && lcReleased && !isUsingGizmo && !shiftDown) {
+        if (!m_MaybeHover && lcReleased && !isUsingGizmo && !shiftDown) {
             DeSelectAll();
             return;
         }
 
-        if (hovered && lcReleased && !isUsingGizmo) {
+        if (m_MaybeHover && lcReleased && !isUsingGizmo) {
             if (!shiftDown) {
                 DeSelectAll();
             }
@@ -1775,8 +2119,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        if (hovered && rcReleased && !isUsingGizmo) {
-            OpenContextMenu(hovered);
+        if (m_MaybeHover && rcReleased && !isUsingGizmo) {
+            OpenHoverContextMenu();
         }
 
         DrawHoverTooltip();
@@ -1788,37 +2132,37 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         std::vector<DrawableThing> sceneEls;
 
         // add DAG decorations
-        ForEachNode(tree, [&](auto const& node) {
+        ForEachNode(m_ModelRoot, [&](auto const& node) {
             if (auto const* bofPtr = dynamic_cast<BofNode const*>(node.get())) {
-                sceneEls.push_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? colors.body : colors.frame));
+                sceneEls.push_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
             } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
-                sceneEls.push_back(GenerateMeshSceneEl(*meshPtr, colors.mesh));
+                sceneEls.push_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
             }
         });
 
-        if (isShowingFloor) {
+        if (m_IsShowingFloor) {
             sceneEls.push_back(GenerateFloor());
         }
 
-        if (isShowingGround) {
+        if (m_IsShowingGround) {
             sceneEls.push_back(GenerateGroundSceneEl());
         }
 
         std::sort(sceneEls.begin(), sceneEls.end(), OptimalDrawOrder);
 
         DrawScene(
-            RectDims(sceneScreenRect),
-            camera.getProjMtx(RectAspectRatio(sceneScreenRect)),
-            camera.getViewMtx(),
-            camera.getPos(),
-            lightDir,
-            lightCol,
-            bgCol,
+            RectDims(m_3DSceneRect),
+            m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect)),
+            m_3DSceneCamera.getViewMtx(),
+            m_3DSceneCamera.getPos(),
+            m_3DSceneLightDir,
+            m_3DSceneLightColor,
+            m_3DSceneBgColor,
             sceneEls,
-            sceneTex);
-        DrawTextureAsImguiImage(sceneTex, RectDims(sceneScreenRect));
+            m_3DSceneTex);
+        DrawTextureAsImguiImage(m_3DSceneTex, RectDims(m_3DSceneRect));
         Draw3DManipulators();
-        DrawConnectionLines();
+        DrawConnectionLines(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.3f}));
         DrawContextMenu();
     }
 
@@ -1831,7 +2175,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     }
 
     void Draw3DViewer() {
-        sceneScreenRect = ContentRegionAvailRect();
+        m_3DSceneRect = ContentRegionAvailRect();
 
         if (!IsInAssignmentMode()) {
             Draw3dViewer_NormalMode();
@@ -1849,18 +2193,19 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     }
 
     void tick(float dt) {
-        float dotMotionsPerSecond = 0.25f;
+        float dotMotionsPerSecond = 0.35f;
         float ignoreMe;
-        animationPercent = std::modf(animationPercent + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
+        m_AnimationPercentage = std::modf(m_AnimationPercentage + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
 
-        PopMeshLoader();
         if (IsMouseOverRender()) {
             UpdateCameraFromImGuiUserInput();
         }
         UpdateFromImGuiKeyboardState();
 
-        if (generatedOsimModel) {
-            auto mes = std::make_shared<MainEditorState>(std::move(generatedOsimModel));
+        PopMeshLoader();
+
+        if (m_MaybeOutputModel) {
+            auto mes = std::make_shared<MainEditorState>(std::move(m_MaybeOutputModel));
             App::cur().requestTransition<ModelEditorScreen>(mes);
         }
     }
@@ -1872,7 +2217,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr) {
             std::filesystem::path p{e.drop.file};
-            PushMeshLoadRequest(p);
+            PushMeshLoadRequest(m_ModelRoot, p);
         }
     }
 

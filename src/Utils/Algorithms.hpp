@@ -9,8 +9,20 @@ namespace osc {
     // remove all elements `e` in `Container` `c` for which `p(e)` returns `true`
     template<typename Container, typename UnaryPredicate>
     void RemoveErase(Container& c, UnaryPredicate p) {
-        auto it = std::remove_if(c.begin(), c.end(), p);
-        c.erase(it, c.end());
+        using std::begin;
+        using std::end;
+
+        auto endIt = end(c);
+        auto it = std::remove_if(begin(c), endIt, p);
+        c.erase(it, endIt);
+    }
+
+    template<typename Container, typename UnaryPredicate>
+    bool AnyOf(Container const& c, UnaryPredicate p) {
+        using std::begin;
+        using std::end;
+
+        return std::any_of(begin(c), end(c), p);
     }
 
     // returns the number of bits set in the input integer
