@@ -21,10 +21,12 @@ namespace osc {
     // - return entires in a format that's useful for downstream (e.g. contiguous strings for ImGui)
     template<typename T>
     struct TypeRegistry {
-        [[nodiscard]] static nonstd::span<std::unique_ptr<T const> const> prototypes() noexcept;
-        [[nodiscard]] static nonstd::span<char const* const> names() noexcept;
-        [[nodiscard]] static nonstd::span<char const* const> descriptions() noexcept;
-        [[nodiscard]] static std::optional<size_t> indexOf(T const& v);
+        static nonstd::span<std::unique_ptr<T const> const> prototypes() noexcept;
+        static nonstd::span<std::string const> nameStrings() noexcept;
+        static nonstd::span<char const* const> nameCStrings() noexcept;
+        static nonstd::span<std::string const* const> descriptionStrings() noexcept;
+        static nonstd::span<char const* const> descriptionCStrings() noexcept;
+        static std::optional<size_t> indexOf(T const& v) noexcept;
     };
 
     struct JointRegistry : TypeRegistry<OpenSim::Joint> {};

@@ -68,7 +68,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
 
         // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
         if (ImGui::BeginMenu(ICON_FA_PLUS " add joint")) {
-            auto jointNames = JointRegistry::names();
+            auto jointNames = JointRegistry::nameCStrings();
 
             for (size_t i = 0; i < jointNames.size(); ++i) {
                 if (ImGui::MenuItem(jointNames[i])) {
@@ -78,7 +78,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
                     openPopup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    drawTooltip(jointNames[i], JointRegistry::descriptions()[i]);
+                    drawTooltip(jointNames[i], JointRegistry::descriptionCStrings()[i]);
                 }
             }
 
@@ -104,7 +104,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
 
         // draw dropdown menu (containing concrete `OpenSim::ContactGeometry`s)
         if (ImGui::BeginMenu(ICON_FA_PLUS " add contact geometry")) {
-            auto contactGeomNames = ContactGeometryRegistry::names();
+            auto contactGeomNames = ContactGeometryRegistry::nameCStrings();
 
             for (size_t i = 0; i < contactGeomNames.size(); ++i) {
                 if (ImGui::MenuItem(contactGeomNames[i])) {
@@ -114,7 +114,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
                     openPopup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    drawTooltip(contactGeomNames[i], ContactGeometryRegistry::descriptions()[i]);
+                    drawTooltip(contactGeomNames[i], ContactGeometryRegistry::descriptionCStrings()[i]);
                 }
             }
 
@@ -140,7 +140,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
 
         // draw dropdown menu (containing concrete `OpenSim::Constraint`s)
         if (ImGui::BeginMenu(ICON_FA_PLUS " add constraint")) {
-            auto constraintRegistryNames = ConstraintRegistry::names();
+            auto constraintRegistryNames = ConstraintRegistry::nameCStrings();
             for (size_t i = 0; i < constraintRegistryNames.size(); ++i) {
 
                 if (ImGui::MenuItem(constraintRegistryNames[i])) {
@@ -150,7 +150,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
                     openPopup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    drawTooltip(constraintRegistryNames[i], ConstraintRegistry::descriptions()[i]);
+                    drawTooltip(constraintRegistryNames[i], ConstraintRegistry::descriptionCStrings()[i]);
                 }
             }
 
@@ -175,7 +175,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
 
         // draw dropdown menu (containing concrete `OpenSim::Force`s)
         if (ImGui::BeginMenu(ICON_FA_PLUS " add force/muscle")) {
-            auto forceRegistryNames = ForceRegistry::names();
+            auto forceRegistryNames = ForceRegistry::nameCStrings();
             for (size_t i = 0; i < forceRegistryNames.size(); ++i) {
 
                 if (ImGui::MenuItem(forceRegistryNames[i])) {
@@ -185,7 +185,7 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
                     openPopup = true;
                 }
                 if (ImGui::IsItemHovered()) {
-                    drawTooltip(forceRegistryNames[i], ForceRegistry::descriptions()[i]);
+                    drawTooltip(forceRegistryNames[i], ForceRegistry::descriptionCStrings()[i]);
                 }
             }
 

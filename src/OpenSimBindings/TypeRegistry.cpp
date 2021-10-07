@@ -243,18 +243,41 @@ nonstd::span<std::unique_ptr<OpenSim::Joint const> const> osc::TypeRegistry<Open
     return g_JointPrototypes;
 }
 
+static std::array<std::string, g_JointNames.size()> GenerateJointNames() {
+    std::array<std::string, g_JointNames.size()> rv;
+    for (size_t i = 0; i < g_JointNames.size(); ++i) {
+        rv[i] = g_JointNames[i];
+    }
+    return rv;
+}
+
+template<typename T, size_t N>
+static std::array<T const*, N> GeneratePointers(std::array<T, N> const& src) {
+    std::array<T const*, N> rv;
+    for (size_t i = 0; i < N; ++i) {
+        rv[i] = std::addressof(src[i]);
+    }
+    return rv;
+}
+
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::names() noexcept {
+nonstd::span<std::string const> osc::TypeRegistry<OpenSim::Joint>::nameStrings() noexcept {
+    static std::array<std::string, g_JointNames.size()> const g_NameStrings = GenerateJointNames();
+    return g_NameStrings;
+}
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::nameCStrings() noexcept {
     return g_JointNames;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::descriptions() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::descriptionCStrings() noexcept {
     return g_JointDescriptions;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) {
+std::optional<size_t> osc::TypeRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept {
     return ::IndexOf(g_JointHashes, typeid(joint).hash_code());
 }
 
@@ -267,17 +290,17 @@ nonstd::span<std::unique_ptr<OpenSim::ContactGeometry const> const>
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::names() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameCStrings() noexcept {
     return g_ContactGeomNames;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptions() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionCStrings() noexcept {
     return g_ContactGeomDescriptions;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) {
+std::optional<size_t> osc::TypeRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept {
     return ::IndexOf(g_ContactGeomHashes, typeid(cg).hash_code());
 }
 
@@ -290,17 +313,17 @@ nonstd::span<std::unique_ptr<OpenSim::Constraint const> const>
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::names() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::nameCStrings() noexcept {
     return g_ConstraintNames;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::descriptions() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::descriptionCStrings() noexcept {
     return g_ConstraintDescriptions;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& constraint) {
+std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& constraint) noexcept {
     return ::IndexOf(g_ConstraintHashes, typeid(constraint).hash_code());
 }
 
@@ -311,17 +334,19 @@ nonstd::span<std::unique_ptr<OpenSim::Force const> const> osc::TypeRegistry<Open
     return g_ForcePrototypes;
 }
 
+
+
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::names() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::nameCStrings() noexcept {
     return g_ForceNames;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptions() noexcept {
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptionCStrings() noexcept {
     return g_ForceDescriptions;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& force) {
+std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& force) noexcept {
     return ::IndexOf(g_ForceHashes, typeid(force).hash_code());
 }

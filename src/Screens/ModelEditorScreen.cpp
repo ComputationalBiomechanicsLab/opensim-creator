@@ -384,7 +384,7 @@ namespace {
         std::optional<size_t> maybeTypeIndex = JointRegistry::indexOf(*selection);
         int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
 
-        auto jointNames = JointRegistry::names();
+        auto jointNames = JointRegistry::nameCStrings();
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         if (ImGui::Combo(

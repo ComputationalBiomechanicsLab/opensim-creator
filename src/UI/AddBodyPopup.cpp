@@ -152,7 +152,7 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
         DrawHelpMarker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
         ImGui::NextColumn();
         {
-            auto names = osc::JointRegistry::names();
+            auto names = osc::JointRegistry::nameCStrings();
             ImGui::Combo("##jointtype", &st.jointIdx, names.data(), static_cast<int>(names.size()));
         }
         ImGui::NextColumn();

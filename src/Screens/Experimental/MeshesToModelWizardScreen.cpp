@@ -1,20 +1,16 @@
 #include "MeshesToModelWizardScreen.hpp"
 
-#include "src/App.hpp"
-#include "src/Log.hpp"
-#include "src/MainEditorState.hpp"
-#include "src/Styling.hpp"
-#include "src/3D/BVH.hpp"
 #include "src/3D/Shaders/InstancedGouraudColorShader.hpp"
 #include "src/3D/Shaders/EdgeDetectionShader.hpp"
 #include "src/3D/Shaders/GouraudShader.hpp"
 #include "src/3D/Shaders/SolidColorShader.hpp"
+#include "src/3D/BVH.hpp"
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
-#include "src/3D/InstancedRenderer.hpp"
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
+#include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/SimTKBindings/SimTKLoadMesh.hpp"
 #include "src/SimTKBindings/SimTKConverters.hpp"
@@ -23,6 +19,10 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
+#include "src/App.hpp"
+#include "src/Log.hpp"
+#include "src/MainEditorState.hpp"
+#include "src/Styling.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
@@ -58,7 +58,6 @@ namespace {
 
     // base radius of rendered spheres (e.g. for bodies)
     constexpr float g_SphereRadius = 0.025f;
-
 
     class Node;
 
@@ -156,58 +155,24 @@ namespace {
         return p.filename().replace_extension("").string();
     }
 
-    // the type of joint used in a frame-to-frame joint
-    using BofJointType = int;
-    enum BofJointType_
-    {
-        BofJointType_WeldJoint = 0,
-        BofJointType_PinJoint,
-        BofJointType_NumJointTypes,
-    };
-
-    // returns string representations of all joint types (enum)
-    std::array<std::string const, BofJointType_NumJointTypes> const& GetJointTypeStrings()
-    {
-        static std::array<std::string const, BofJointType_NumJointTypes> const g_Names = {"WeldJoint", "PinJoint"};
-        return g_Names;
-    }
-
-    // returns CString representations of all joint types (enum)
-    std::array<char const*, BofJointType_NumJointTypes> GetJointTypeCStrings()
-    {
-        auto strings = GetJointTypeStrings();
-        std::array<char const*, BofJointType_NumJointTypes> rv;
-        for (size_t i = 0; i < BofJointType_NumJointTypes; ++i) {
-            rv[i] = strings[i].c_str();
-        }
-        return rv;
-    }
-
-    // returns a string representation of a joint type
-    std::string const& ToString(BofJointType jt)
-    {
-        OSC_ASSERT_ALWAYS(0 <= jt && jt < BofJointType_NumJointTypes);
-        return GetJointTypeStrings()[jt];
-    }
-
-    // represents a joint between a body-or-frame (BoF) and its parent
-    class BofJoint final {
+    // represents a joint in the model
+    class BodyJoint final {
     public:
-        BofJoint(std::shared_ptr<Node> other) :
+        BodyJoint(std::weak_ptr<Node> other) :
             m_Other{other},
-            m_JointType{BofJointType_WeldJoint},
+            m_JointTypeIndex{0},
             m_MaybeUserDefinedPivotPoint{std::nullopt},
             m_MaybeUserDefinedJointName{}
         {
-            OSC_ASSERT_ALWAYS(other != nullptr);
+            OSC_ASSERT_ALWAYS(other.lock() != nullptr);
         }
 
         std::shared_ptr<Node> UpdOther() { auto p = m_Other.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
         std::shared_ptr<Node> GetOther() const { auto p = m_Other.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
-        void SetOther(std::shared_ptr<Node> newOther) { OSC_ASSERT_ALWAYS(newOther != nullptr); m_Other = newOther; }
-        BofJointType GetJointType() const { return m_JointType; }
-        void SetJointType(BofJointType newJointType) { m_JointType = newJointType; }
-        std::string const& GetJointTypeName() const { return ToString(m_JointType); }
+        void SetOther(std::weak_ptr<Node> newOther) { OSC_ASSERT_ALWAYS(newOther.lock() != nullptr); m_Other = newOther; }
+        size_t GetJointTypeIndex() const { return m_JointTypeIndex; }
+        void SetJointTypeIndex(size_t newJointTypeIndex) { m_JointTypeIndex = newJointTypeIndex; }
+        std::string const& GetJointTypeName() const { return JointRegistry::nameStrings()[m_JointTypeIndex]; }
         bool HasUserDefinedPivotPoint() const { return m_MaybeUserDefinedPivotPoint != std::nullopt; }
         std::optional<glm::vec3> GetUserDefinedPivotPoint() const { return m_MaybeUserDefinedPivotPoint; }
         void SetUserDefinedPivotPoint(glm::vec3 const& newPivotPoint) { m_MaybeUserDefinedPivotPoint = newPivotPoint; }
@@ -218,7 +183,7 @@ namespace {
 
     private:
         std::weak_ptr<Node> m_Other;
-        BofJointType m_JointType;
+        size_t m_JointTypeIndex;
         std::optional<glm::vec3> m_MaybeUserDefinedPivotPoint;
         std::string m_MaybeUserDefinedJointName;
     };
@@ -254,7 +219,7 @@ namespace {
         virtual std::string const& GetName() const = 0;
         virtual void SetName(char const*) = 0;
 
-        // helpers that use the virtual interface
+        // helper functions that use the virtual interface
         Node& UpdParent() { auto p = UpdParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
         Node const& GetParent() const { auto p = GetParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
         char const* GetNameCStr() const { return GetName().c_str(); }
@@ -300,33 +265,34 @@ namespace {
         std::vector<std::shared_ptr<Node>> m_Children;
     };
 
-    // node representing a body-or-frame (BOF)
-    class BofNode final : public Node {
+    // node representing a body
+    class BodyNode final : public Node {
     public:
-        BofNode(std::shared_ptr<Node> parent, bool isBody, glm::vec3 const& pos) :
+        BodyNode(std::shared_ptr<Node> parent, glm::vec3 const& pos) :
             m_Joint{parent},
             m_Children{},
-            m_IsBody{isBody},
             m_Pos{pos},
-            m_Name{}
+            m_Name{},
+            m_Mass{1.0}
         {
             static std::atomic<int> g_LatestBodyIdx = 0;
-            m_Name = (m_IsBody ? std::string{"body"} : std::string{"physicaloffsetframe"}) + std::to_string(g_LatestBodyIdx++);
+            m_Name = std::string{"body"} + std::to_string(g_LatestBodyIdx++);
         }
 
-        bool IsBody() const { return m_IsBody; }
         void SetPos(glm::vec3 const& newPos) { m_Pos = newPos; }
         Sphere GetSphere(float sceneScaleFactor) const
         {
             return Sphere{m_Pos, sceneScaleFactor * g_SphereRadius};
         }
-        BofJointType GetJointType() const { return m_Joint.GetJointType(); }
-        void SetJointType(BofJointType newJointType) { m_Joint.SetJointType(newJointType); }
+        size_t GetJointTypeIndex() const { return m_Joint.GetJointTypeIndex(); }
+        void SetJointTypeIndex(size_t newJointTypeIndex) { m_Joint.SetJointTypeIndex(newJointTypeIndex); }
         char const* GetJointTypeNameCStr() const { return m_Joint.GetJointTypeName().c_str(); }
         char const* GetJointNameCStr() const { return m_Joint.GetName().c_str(); }
         bool HasUserDefinedJointName() const { return m_Joint.HasUserDefinedJointName(); }
         std::string const& GetUserDefinedJointName() const { return m_Joint.GetUserDefinedJointName(); }
         void SetUserDefinedJointName(std::string newJointName) { m_Joint.SetUserDefinedJointName(std::move(newJointName)); }
+        double GetMass() const { return m_Mass; }
+        void SetMass(double newMass) { m_Mass = newMass; }
 
         bool CanHaveParent() const override { return true; }
         std::shared_ptr<Node> UpdParentPtr() override { return m_Joint.UpdOther(); }
@@ -359,11 +325,11 @@ namespace {
         void SetName(char const* newName) override { m_Name = newName; }
 
     private:
-        BofJoint m_Joint;
+        BodyJoint m_Joint;
         std::vector<std::shared_ptr<Node>> m_Children;
-        bool m_IsBody;
         glm::vec3 m_Pos;
         std::string m_Name;
+        double m_Mass;
     };
 
     // node representing a decorative mesh
@@ -386,12 +352,14 @@ namespace {
         std::shared_ptr<Node> UpdParentPtr() override { auto p = m_Parent.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
         std::shared_ptr<Node const> GetParentPtr() const override { auto p = m_Parent.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
         void SetParent(std::shared_ptr<Node> newParent) override { m_Parent = newParent; }
+
         bool CanHaveChildren() const override { return false; }
         nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return {}; }
         nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return {}; }
         void ClearChildren() override {}
         void AddChild(std::shared_ptr<Node>) override {}
         bool RemoveChild(std::shared_ptr<Node>) override { return false; }
+
         glm::vec3 GetPos() const override { return m_ModelMtx[3]; }
         AABB GetBounds(float) const override
         {
@@ -418,6 +386,7 @@ namespace {
 
             return rayTriangleCollision;
         }
+
         std::string const& GetName() const override { return m_Name; }
         void SetName(char const* newName) override { m_Name = newName; }
 
@@ -557,49 +526,32 @@ static void RecursivelyAddNodeToModel(OpenSim::Model& model,
                                       Node const& node,
                                       OpenSim::PhysicalFrame& parentPhysFrame);
 
-// adds a `BofNode` to a parent `OpenSim::PhysicalFrame` that is part of an
-// `OpenSim::Model` and then recursively adds the `BofNode`'s children
+// adds a `BodyNode` to a parent `OpenSim::PhysicalFrame` that is part of an
+// `OpenSim::Model` and then recursively adds the `BodyNode`'s children
 static void RecursivelyAddBodyNodeToModel(OpenSim::Model& model,
-                                          BofNode const& node,
+                                          BodyNode const& node,
                                           OpenSim::PhysicalFrame& parentPhysFrame)
 {
-    if (!node.IsBody()) {
-        throw std::runtime_error{"POFs: TODO"};
-    }
-
     auto const& parent = node.GetParent();
 
-    // joint that connects the POF to the body
-    OpenSim::Joint* joint = nullptr;
-    switch (node.GetJointType()) {
-    case BofJointType_WeldJoint:
-        joint = new OpenSim::WeldJoint{};
-        break;
-    case BofJointType_PinJoint:
-        joint = new OpenSim::PinJoint{};
-        break;
-    default:
-        throw std::runtime_error{"unknown joint type provided to model generator"};
-    }
-
+    OpenSim::Joint* joint = JointRegistry::prototypes()[node.GetJointTypeIndex()]->clone();
     joint->setName(node.HasUserDefinedJointName() ? node.GetUserDefinedJointName() : node.GetName() + "_to_" + parent.GetName());
 
-    // the body
-    OpenSim::Body* body = new OpenSim::Body{};
-    body->setName(node.GetName());
-    body->setMass(1.0);
+    // the body that's being emitted
+    OpenSim::Body* addedBody = new OpenSim::Body{};
+    addedBody->setMass(node.GetMass());
+    addedBody->setName(node.GetName());
 
     // the POF that is offset from the parent physical frame
     OpenSim::PhysicalOffsetFrame* pof = new OpenSim::PhysicalOffsetFrame{};
     pof->setName(parent.GetName() + "_offset");
 
     glm::vec3 worldParentPos = parent.GetPos();
-    glm::vec3 worldBOFPos = node.GetPos();
+    glm::vec3 worldBodyPos = node.GetPos();
     {
         // figure out the parent's actual rotation, so that the relevant
         // vectors can be transformed into "parent space"
         model.finalizeFromProperties();
-        model.finalizeConnections();
         SimTK::State s = model.initSystem();
         model.realizePosition(s);
 
@@ -607,38 +559,40 @@ static void RecursivelyAddBodyNodeToModel(OpenSim::Model& model,
         SimTK::Rotation rotateWorldToParent = rotateParentToWorld.invert();
 
         // compute relevant vectors in worldspace (the screen's coordinate system)
-        SimTK::Vec3 worldParentToBOF = SimTKVec3FromV3(worldBOFPos - worldParentPos);
-        SimTK::Vec3 worldBOFToParent = SimTKVec3FromV3(worldParentPos - worldBOFPos);
-        SimTK::Vec3 worldBOFToParentDir = worldBOFToParent.normalize();
+        SimTK::Vec3 worldParentToBody = SimTKVec3FromV3(worldBodyPos - worldParentPos);
+        SimTK::Vec3 worldBodyToParent = SimTKVec3FromV3(worldParentPos - worldBodyPos);
+        SimTK::Vec3 worldBodyToParentDir = worldBodyToParent.normalize();
 
-        SimTK::Vec3 parentBOFToParentDir = rotateWorldToParent * worldBOFToParentDir;
+        SimTK::Vec3 parentBodyToParentDir = rotateWorldToParent * worldBodyToParentDir;
         SimTK::Vec3 parentY = {0.0f, 1.0f, 0.0f};  // by definition
 
-        // create a "BOF space" that specifically points the Y axis
+        // create a "Body space" that specifically points the Y axis
         // towards the parent frame (an OpenSim model building convention)
-        SimTK::Transform parentToBOFMtx{
+        SimTK::Transform parentToBodyMtx{
             SimTK::Rotation{
-                glm::acos(SimTK::dot(parentY, parentBOFToParentDir)),
-                SimTK::cross(parentY, parentBOFToParentDir).normalize(),
+                glm::acos(SimTK::dot(parentY, parentBodyToParentDir)),
+                SimTK::cross(parentY, parentBodyToParentDir).normalize(),
             },
-            SimTK::Vec3{rotateWorldToParent * worldParentToBOF},  // translation
+            SimTK::Vec3{rotateWorldToParent * worldParentToBody},  // translation
         };
-        pof->setOffsetTransform(parentToBOFMtx);
+        pof->setOffsetTransform(parentToBodyMtx);
         pof->setParentFrame(parentPhysFrame);
     }
 
-    // link everything up
+    // connect the joint to its children frames
     joint->addFrame(pof);
     joint->connectSocket_parent_frame(*pof);
-    joint->connectSocket_child_frame(*body);
+    joint->connectSocket_child_frame(*addedBody);
 
-    // add it all to the model
-    model.addBody(body);
+    // add the body to the model (required for socket connections)
+    model.addBody(addedBody);
+
+    // add the joint to the model
     model.addJoint(joint);
 
     // done! - time to recurse
     for (auto const& child : node.GetChildren()) {
-        RecursivelyAddNodeToModel(model, *child, *body);
+        RecursivelyAddNodeToModel(model, *child, *addedBody);
     }
 }
 
@@ -647,8 +601,8 @@ static void RecursivelyAddNodeToModel(OpenSim::Model& model,
                                       Node const& node,
                                       OpenSim::PhysicalFrame& parentPhysFrame)
 {
-    if (auto const* bofnode = dynamic_cast<BofNode const*>(&node)) {
-        RecursivelyAddBodyNodeToModel(model, *bofnode, parentPhysFrame);
+    if (auto const* bodyNode = dynamic_cast<BodyNode const*>(&node)) {
+        RecursivelyAddBodyNodeToModel(model, *bodyNode, parentPhysFrame);
     } else if (auto const* meshnode = dynamic_cast<MeshNode const*>(&node)) {
         AttachMeshNodeToModel(model, *meshnode, parentPhysFrame);
     }
@@ -660,7 +614,7 @@ static bool GetDagIssuesRecursive(Node const& node, std::vector<std::string>& is
     bool rv = false;
 
     if (!IsInclusiveChildOfGround(node)) {
-        issues.push_back("detected body or frame that is not connected to ground");
+        issues.push_back("detected a body that is not connected to ground");
         rv = true;
     }
 
@@ -994,7 +948,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     // loader that loads mesh data in a background thread
     Mesh_loader m_MeshLoader = Mesh_loader::create(respondToMeshloadRequest);
 
-    // mesh used by bodies/frames (BOFs)
+    // sphere mesh used by various scene elements
     std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
 
     // model tree the user is editing
@@ -1026,7 +980,6 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
         glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
         glm::vec4 body = {1.0f, 0.0f, 0.0f, 1.0f};
-        glm::vec4 frame = {0.0f, 1.0f, 0.0f, 1.0f};
     } m_Colors;
 
     // scale factor for all non-mesh, non-overlay scene elements (e.g.
@@ -1085,8 +1038,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     // true if ground should be drawn
     bool m_IsShowingGround = true;
 
-    // true if bofs should be drawn
-    bool m_IsShowingBofs = true;
+    // true if bodies should be drawn
+    bool m_IsShowingBodies = true;
 
     // true if all connection lines between entities should be
     // drawn, rather than just *hovered* entities
@@ -1095,8 +1048,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     // true if meshes shouldn't be hoverable/clickable in the 3D scene
     bool m_IsMeshesInteractable = true;
 
-    // true if BOFs shouldn't be hoverable/clickable in the 3D scene
-    bool m_IsBofsInteractable = true;
+    // true if bodies shouldn't be hoverable/clickable in the 3D scene
+    bool m_IsBodiesInteractable = true;
 
     // set to true after drawing the ImGui::Image
     bool m_IsRenderHovered = false;
@@ -1249,18 +1202,11 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    std::shared_ptr<BofNode> AddBody(glm::vec3 const& pos)
+    std::shared_ptr<BodyNode> AddBody(glm::vec3 const& pos)
     {
-        auto bodyNode = std::make_shared<BofNode>(m_ModelRoot, true, pos);
+        auto bodyNode = std::make_shared<BodyNode>(m_ModelRoot, pos);
         m_ModelRoot->AddChild(bodyNode);
         return bodyNode;
-    }
-
-    std::shared_ptr<BofNode> AddOffsetFrame(glm::vec3 const& pos)
-    {
-        auto pofNode = std::make_shared<BofNode>(m_ModelRoot, false, pos);
-        m_ModelRoot->AddChild(pofNode);
-        return pofNode;
     }
 
     void DeleteNodeButReParentItsChildren(std::shared_ptr<Node> node)
@@ -1404,7 +1350,6 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        AABB sceneAABB = GetSceneAABB();
         float longest = AABBLongestDim(GetSceneAABB());
 
         m_SceneScaleFactor = 5.0f * longest;
@@ -1489,9 +1434,9 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImGui::Text("Name = %s", meshNode.GetNameCStr());
         ImGui::Text("Filename = %s", meshNode.GetPath().filename().string().c_str());
         ImGui::Text("Conntected to = %s", meshNode.GetParent().GetNameCStr());
-        auto pos = meshNode.GetPos();
+        auto pos = meshNode.GetCenterPoint();
         ImGui::Text("Center = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = meshNode.GetParent().GetPos();
+        auto parentPos = meshNode.GetParent().GetCenterPoint();
         ImGui::Text("Center's Distance to Parent = %.2f", glm::length(pos - parentPos));
         ImGui::Text("Mouse Location = (%.2f, %.2f, %.2f)", hoverPos.x, hoverPos.y, hoverPos.z);
         ImGui::Text("Mouse Location's Distance to Parent = %.2f", glm::length(hoverPos - parentPos));
@@ -1499,21 +1444,17 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImGui::EndTooltip();
     }
 
-    void DrawPfHoverTooltip(BofNode const& bofNode)
+    void DrawBodyHoverTooltip(BodyNode const& bodyNode)
     {
         ImGui::BeginTooltip();
-        if (bofNode.IsBody()) {
-            ImGui::TextUnformatted("Body");
-        } else {
-            ImGui::TextUnformatted("PhysicalOffsetFrame");
-        }
+        ImGui::TextUnformatted("Body");
         ImGui::Indent();
-        ImGui::Text("Name = %s", bofNode.GetNameCStr());
-        ImGui::Text("Connected to = %s", bofNode.GetParent().GetNameCStr());
-        ImGui::Text("Joint type = %s", bofNode.GetJointTypeNameCStr());
-        auto pos = bofNode.GetPos();
+        ImGui::Text("Name = %s", bodyNode.GetNameCStr());
+        ImGui::Text("Connected to = %s", bodyNode.GetParent().GetNameCStr());
+        ImGui::Text("Joint type = %s", bodyNode.GetJointTypeNameCStr());
+        auto pos = bodyNode.GetPos();
         ImGui::Text("Pos = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = bofNode.GetParent().GetPos();
+        auto parentPos = bodyNode.GetParent().GetPos();
         ImGui::Text("Distance to Parent = %.2f", glm::length(pos - parentPos));
         ImGui::Unindent();
         ImGui::EndTooltip();
@@ -1529,8 +1470,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         if (auto meshNodePtr = dynamic_cast<MeshNode*>(hover.get())) {
             DrawMeshHoverTooltip(*meshNodePtr, m_MaybeHover.getPos());
-        } else if (auto bofPtr = dynamic_cast<BofNode*>(hover.get())) {
-            DrawPfHoverTooltip(*bofPtr);
+        } else if (auto bodyPtr = dynamic_cast<BodyNode*>(hover.get())) {
+            DrawBodyHoverTooltip(*bodyPtr);
         } else if (auto groundPtr = dynamic_cast<GroundNode*>(hover.get())) {
             ImGui::BeginTooltip();
             ImGui::Text("ground");
@@ -1573,38 +1514,6 @@ struct osc::MeshesToModelWizardScreen::Impl final {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("add frame")) {
-                if (ImGui::MenuItem("at mouse location")) {
-                    auto addedFrame = AddOffsetFrame(pos);
-                    DeSelectAll();
-                    Select(addedFrame);
-                }
-
-                if (ImGui::MenuItem("at mouse location, and assign the mesh to it")) {
-                    auto addedFrame = AddOffsetFrame(pos);
-                    Assign(addedFrame, meshNode->UpdParentPtr());
-                    Assign(meshNode, addedFrame);
-                    DeSelectAll();
-                    Select(addedFrame);
-                }
-
-                if (ImGui::MenuItem("at center")) {
-                    auto addedFrame = AddOffsetFrame(meshNode->GetCenterPoint());
-                    DeSelectAll();
-                    Select(addedFrame);
-                }
-
-                if (ImGui::MenuItem("at center, and assign this mesh to it")) {
-                    auto addedFrame = AddOffsetFrame(meshNode->GetCenterPoint());
-                    Assign(addedFrame, meshNode->UpdParentPtr());
-                    Assign(meshNode, addedFrame);
-                    DeSelectAll();
-                    Select(addedFrame);
-                }
-
-                ImGui::EndMenu();
-            }
-
             if (ImGui::MenuItem("focus camera on this")) {
                 FocusCameraOn(*meshNode);
             }
@@ -1629,61 +1538,77 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImGui::EndPopup();
     }
 
-    void DrawPfContextMenu(std::shared_ptr<BofNode> bofNode)
+    void DrawBodyContextMenu(std::shared_ptr<BodyNode> bodyNode)
     {
         if (ImGui::BeginPopup("contextmenu")) {
             if (ImGui::MenuItem("add body (assigned to this one)")) {
-                auto addedBody = AddBody(bofNode->GetCenterPoint());
-                Assign(addedBody, bofNode);
+                auto addedBody = AddBody(bodyNode->GetCenterPoint());
+                Assign(addedBody, bodyNode);
                 DeSelectAll();
                 Select(addedBody);
             }
 
             if (ImGui::MenuItem("assign mesh(es)")) {
-                PromptUserForMeshFiles(bofNode);
+                PromptUserForMeshFiles(bodyNode);
             }
 
             if (ImGui::MenuItem("focus camera on this")) {
-                FocusCameraOn(*bofNode);
+                FocusCameraOn(*bodyNode);
             }
 
             if (ImGui::MenuItem("reassign parent")) {
-                StartAssigning(bofNode);
+                StartAssigning(bodyNode);
             }
 
             if (ImGui::BeginMenu("delete")) {
                 if (ImGui::MenuItem("entire subtree")) {
-                    DeleteSubtree(bofNode);
+                    DeleteSubtree(bodyNode);
                 }
 
                 if (ImGui::MenuItem("just this")) {
-                    DeleteNodeButReParentItsChildren(bofNode);
+                    DeleteNodeButReParentItsChildren(bodyNode);
                 }
 
                 ImGui::EndMenu();
             }
 
-            BofJointType jointType = bofNode->GetJointType();
-            auto jointTypeStrings = GetJointTypeCStrings();
-            if (ImGui::Combo("joint type", &jointType, jointTypeStrings.data(), jointTypeStrings.size())) {
-                bofNode->SetJointType(jointType);
-            }
+            ImGui::Dummy({0.0f, 5.0f});
+            ImGui::Separator();
+            ImGui::Dummy({0.0f, 5.0f});
 
             // draw name editor
             {
                 char buf[256];
-                std::strcpy(buf, bofNode->GetNameCStr());
-                if (ImGui::InputText("set name", buf, sizeof(buf))) {
-                    bofNode->SetName(buf);
+                std::strcpy(buf, bodyNode->GetNameCStr());
+                if (ImGui::InputText("name", buf, sizeof(buf))) {
+                    bodyNode->SetName(buf);
                 }
+            }
+
+            // draw mass editor
+            {
+                float mass = static_cast<float>(bodyNode->GetMass());
+                if (ImGui::InputFloat("mass (kg)", &mass)) {
+                    bodyNode->SetMass(static_cast<double>(mass));
+                }
+            }
+
+            ImGui::Dummy({0.0f, 5.0f});
+            ImGui::Separator();
+            ImGui::Dummy({0.0f, 5.0f});
+
+            int jointTypeIdx = static_cast<int>(bodyNode->GetJointTypeIndex());
+            auto jointTypeStrings = JointRegistry::nameCStrings();
+            if (ImGui::Combo("joint type", &jointTypeIdx, jointTypeStrings.data(), jointTypeStrings.size())) {
+                bodyNode->SetJointTypeIndex(static_cast<size_t>(jointTypeIdx));
             }
 
             // draw joint name editor
             {
                 char buf2[256];
-                std::strcpy(buf2, bofNode->GetJointNameCStr());
-                if (ImGui::InputText("set joint name", buf2, sizeof(buf2))) {
-                    bofNode->SetUserDefinedJointName(buf2);
+                std::strcpy(buf2, bodyNode->GetJointNameCStr());
+                if (ImGui::InputText("joint name", buf2, sizeof(buf2))) {
+                    bodyNode->SetUserDefinedJointName(buf2);
                 }
             }
         }
@@ -1700,8 +1625,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         if (auto meshNodePtr = std::dynamic_pointer_cast<MeshNode>(editedNode)) {
             DrawMeshContextMenu(meshNodePtr, m_MaybeNodeOpenedInContextMenu.getPos());
-        } else if (auto bofPtr = std::dynamic_pointer_cast<BofNode>(editedNode)) {
-            DrawPfContextMenu(bofPtr);
+        } else if (auto bodyPtr = std::dynamic_pointer_cast<BodyNode>(editedNode)) {
+            DrawBodyContextMenu(bodyPtr);
         }
     }
 
@@ -1791,7 +1716,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return rv;
     }
 
-    Hover DoHittest(glm::vec2 pos, bool isGroundInteractable, bool isBofsInteractable, bool isMeshesInteractable) const
+    Hover DoHittest(glm::vec2 pos, bool isGroundInteractable, bool isBodiesInteractable, bool isMeshesInteractable) const
     {
         if (!PointIsInRect(m_3DSceneRect, pos)) {
             return {};
@@ -1803,7 +1728,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         float closestDist = std::numeric_limits<float>::max();
 
         ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (!isBofsInteractable && IsType<BofNode>(*node)) {
+            if (!isBodiesInteractable && IsType<BodyNode>(*node)) {
                 return;
             }
 
@@ -1853,14 +1778,13 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImGui::Checkbox("show floor", &m_IsShowingFloor);
         ImGui::Checkbox("show meshes", &m_IsShowingMeshes);
         ImGui::Checkbox("show ground", &m_IsShowingGround);
-        ImGui::Checkbox("show bofs", &m_IsShowingBofs);
+        ImGui::Checkbox("show bodies", &m_IsShowingBodies);
         ImGui::Checkbox("can click meshes", &m_IsMeshesInteractable);
-        ImGui::Checkbox("can click bofs", &m_IsBofsInteractable);
+        ImGui::Checkbox("can click bodies", &m_IsBodiesInteractable);
         ImGui::Checkbox("show all connection lines", &m_IsShowingAllConnectionLines);
         ImGui::ColorEdit4("mesh color", glm::value_ptr(m_Colors.mesh));
         ImGui::ColorEdit4("ground color", glm::value_ptr(m_Colors.ground));
         ImGui::ColorEdit4("body color", glm::value_ptr(m_Colors.body));
-        ImGui::ColorEdit4("frame color", glm::value_ptr(m_Colors.frame));
 
         ImGui::InputFloat("scene_scale_factor", &m_SceneScaleFactor);
         if (ImGui::Button("autoscale scene_scale_factor")) {
@@ -1868,10 +1792,10 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
 
         // draw actions (buttons, etc.)
-        if (ImGui::Button("add frame")) {
-            auto frame = AddOffsetFrame({0.0f, 0.0f, 0.0f});
+        if (ImGui::Button("add body")) {
+            auto newBody = AddBody({0.0f, 0.0f, 0.0f});
             DeSelectAll();
-            Select(frame);
+            Select(newBody);
         }
         if (ImGui::Button("select all")) {
             SelectAll();
@@ -1904,26 +1828,26 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    DrawableThing GenerateMeshSceneEl(MeshNode const& mn, glm::vec4 const& color)
+    DrawableThing GenerateMeshSceneEl(MeshNode const& meshNode, glm::vec4 const& color)
     {
         DrawableThing rv;
-        rv.mesh = mn.GetMesh();
-        rv.modelMatrix = mn.GetModelMatrix(m_SceneScaleFactor);
+        rv.mesh = meshNode.GetMesh();
+        rv.modelMatrix = meshNode.GetModelMatrix(m_SceneScaleFactor);
         rv.normalMatrix = NormalMatrix(rv.modelMatrix);
         rv.color = color;
-        rv.rimColor = GetRimIntensity(mn);
+        rv.rimColor = GetRimIntensity(meshNode);
         rv.maybeDiffuseTex = nullptr;
         return rv;
     }
 
-    DrawableThing GenerateSphereSceneEl(BofNode const& pfn, glm::vec4 const& color)
+    DrawableThing GenerateSphereSceneEl(BodyNode const& bodyNode, glm::vec4 const& color)
     {
         DrawableThing rv;
         rv.mesh = m_SphereMesh;
-        rv.modelMatrix = pfn.GetModelMatrix(m_SceneScaleFactor);
+        rv.modelMatrix = bodyNode.GetModelMatrix(m_SceneScaleFactor);
         rv.normalMatrix = NormalMatrix(rv.modelMatrix);
         rv.color = color;
-        rv.rimColor = GetRimIntensity(pfn);
+        rv.rimColor = GetRimIntensity(bodyNode);
         rv.maybeDiffuseTex = nullptr;
         return rv;
     }
@@ -1974,7 +1898,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        Hover newHover = DoHittest(ImGui::GetMousePos(), true, m_IsBofsInteractable, false);
+        Hover newHover = DoHittest(ImGui::GetMousePos(), true, m_IsBodiesInteractable, false);
 
         auto hover = newHover.lock();
 
@@ -2020,8 +1944,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         std::vector<DrawableThing> sceneEls;
 
         // draw assignee as a rim-highlighted el
-        if (auto const* bofPtr = dynamic_cast<BofNode const*>(assignee.get())) {
-            auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
+        if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(assignee.get())) {
+            auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
             el.color.a = 0.5f;
             el.rimColor = 0.5f;
         } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(assignee.get())) {
@@ -2032,10 +1956,10 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         // draw all frame nodes (they are possible attachment points)
         ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (auto const* bofPtr = dynamic_cast<BofNode const*>(node.get())) {
-                auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
-                el.rimColor = (m_MaybeHover == *bofPtr) ? 0.35f : 0.0f;
-                if (IsInclusiveDescendantOf(assignee.get(), bofPtr)) {
+            if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(node.get())) {
+                auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
+                el.rimColor = (m_MaybeHover == *bodyPtr) ? 0.35f : 0.0f;
+                if (IsInclusiveDescendantOf(assignee.get(), bodyPtr)) {
                     el.color.a = 0.1f;  // make circular assignments faint
                 }
             } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
@@ -2107,7 +2031,7 @@ struct osc::MeshesToModelWizardScreen::Impl final {
             return;
         }
 
-        m_MaybeHover = DoHittest(ImGui::GetMousePos(), true, m_IsBofsInteractable, m_IsMeshesInteractable);
+        m_MaybeHover = DoHittest(ImGui::GetMousePos(), false, m_IsBodiesInteractable, m_IsMeshesInteractable);
 
         bool lcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         bool rcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
@@ -2142,8 +2066,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 
         // add DAG decorations
         ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (auto const* bofPtr = dynamic_cast<BofNode const*>(node.get())) {
-                sceneEls.push_back(GenerateSphereSceneEl(*bofPtr, bofPtr->IsBody() ? m_Colors.body : m_Colors.frame));
+            if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(node.get())) {
+                sceneEls.push_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
             } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
                 sceneEls.push_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
             }
