@@ -410,11 +410,23 @@ glm::vec2::length_type osc::VecLongestDimIdx(glm::vec2 v) noexcept {
     }
 }
 
+glm::ivec2::length_type osc::VecLongestDimIdx(glm::ivec2 v) noexcept {
+    if (v.x > v.y) {
+        return 0;  // X is longest
+    } else {
+        return 1;
+    }
+}
+
 float osc::VecLongestDimVal(glm::vec3 const& v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 
 float osc::VecLongestDimVal(glm::vec2 v) noexcept {
+    return v[VecLongestDimIdx(v)];
+}
+
+float osc::VecLongestDimVal(glm::ivec2 v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 

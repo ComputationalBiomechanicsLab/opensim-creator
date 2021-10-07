@@ -49,11 +49,17 @@ namespace osc {
     // returns the *index* of a vector's longest dimension
     glm::vec2::length_type VecLongestDimIdx(glm::vec2) noexcept;
 
+    // returns the *index* of a vector's longest dimension
+    glm::ivec2::length_type VecLongestDimIdx(glm::ivec2) noexcept;
+
     // returns the *value* of a vector's longest dimension
     float VecLongestDimVal(glm::vec3 const&) noexcept;
 
     // returns the *value* of a vector's longest dimension
     float VecLongestDimVal(glm::vec2) noexcept;
+
+    // returns the *value* of a vector's longest dimension
+    float VecLongestDimVal(glm::ivec2) noexcept;
 
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;

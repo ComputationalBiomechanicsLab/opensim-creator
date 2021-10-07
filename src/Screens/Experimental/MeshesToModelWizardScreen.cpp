@@ -742,26 +742,26 @@ static std::vector<std::filesystem::path> PromptUserForMeshFiles()
 }
 
 namespace {
-    static gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::vec2 dims)
+    static gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
     {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y));
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, dims.x, dims.y);
         return rv;
     }
 
-    static gl::RenderBuffer RenderBuffer(GLenum format, glm::vec2 dims)
+    static gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
     {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
-        glRenderbufferStorage(GL_RENDERBUFFER, format, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y));
+        glRenderbufferStorage(GL_RENDERBUFFER, format, dims.x, dims.y);
         return rv;
     }
 
-    static void SceneTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type)
+    static void SceneTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
     {
         gl::BindTexture(out);
-        gl::TexImage2D(out.type, level, internalFormat, static_cast<GLsizei>(dims.x), static_cast<GLsizei>(dims.y), 0, format, type, nullptr);
+        gl::TexImage2D(out.type, level, internalFormat, dims.x, dims.y, 0, format, type, nullptr);
         gl::TexParameteri(out.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
         gl::TexParameteri(out.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
         gl::TexParameteri(out.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -770,7 +770,7 @@ namespace {
         gl::BindTexture();
     }
 
-    static gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::vec2 dims, GLenum format, GLenum type)
+    static gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
     {
         gl::Texture2D rv;
         SceneTex(rv, level, internalFormat, dims, format, type);
@@ -844,7 +844,7 @@ namespace {
         glm::vec4 rgba;
     };
 
-    static void DrawScene(glm::vec2 dims,
+    static void DrawScene(glm::ivec2 dims,
                           glm::mat4 const& projMat,
                           glm::mat4 const& viewMat,
                           glm::vec3 const& viewPos,
@@ -1828,8 +1828,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     }
 
     // draw sidebar containing basic documentation and some action buttons
-    void DrawSidebar() {
-
+    void DrawSidebar()
+    {
         // draw header text /w wizard explanation
         ImGui::Dummy(ImVec2{0.0f, 5.0f});
         ImGui::TextUnformatted("Mesh Importer Wizard");
@@ -1904,7 +1904,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    DrawableThing GenerateMeshSceneEl(MeshNode const& mn, glm::vec4 const& color) {
+    DrawableThing GenerateMeshSceneEl(MeshNode const& mn, glm::vec4 const& color)
+    {
         DrawableThing rv;
         rv.mesh = mn.GetMesh();
         rv.modelMatrix = mn.GetModelMatrix(m_SceneScaleFactor);
@@ -1915,7 +1916,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return rv;
     }
 
-    DrawableThing GenerateSphereSceneEl(BofNode const& pfn, glm::vec4 const& color) {
+    DrawableThing GenerateSphereSceneEl(BofNode const& pfn, glm::vec4 const& color)
+    {
         DrawableThing rv;
         rv.mesh = m_SphereMesh;
         rv.modelMatrix = pfn.GetModelMatrix(m_SceneScaleFactor);
@@ -1926,7 +1928,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return rv;
     }
 
-    DrawableThing GenerateFloor() {
+    DrawableThing GenerateFloor()
+    {
         DrawableThing dt;
         dt.mesh = m_Floor.mesh;
         dt.modelMatrix = GetFloorModelMtx();
@@ -1937,7 +1940,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return dt;
     }
 
-    DrawableThing GenerateGroundSceneEl() {
+    DrawableThing GenerateGroundSceneEl()
+    {
         DrawableThing dt;
         dt.mesh = m_SphereMesh;
         dt.modelMatrix = glm::scale(glm::mat4{1.0f}, glm::vec3{g_SphereRadius, g_SphereRadius, g_SphereRadius});
@@ -1948,7 +1952,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return dt;
     }
 
-    void DrawTextureAsImguiImage(gl::Texture2D& t, glm::vec2 dims) {
+    void DrawTextureAsImguiImage(gl::Texture2D& t, glm::vec2 dims)
+    {
         void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.get()));
         ImVec2 uv0{0.0f, 1.0f};
         ImVec2 uv1{1.0f, 0.0f};
@@ -1956,7 +1961,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         m_IsRenderHovered = ImGui::IsItemHovered();
     }
 
-    void HoverTest_AssignmentMode() {
+    void HoverTest_AssignmentMode()
+    {
         auto assignee = m_MaybeCurrentAssignment.lock();
         if (!assignee) {
             return;
@@ -2001,7 +2007,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         ImGui::EndTooltip();
     }
 
-    void Draw3DViewer_AssignmentMode() {
+    void Draw3DViewer_AssignmentMode()
+    {
         HoverTest_AssignmentMode();
 
         auto assignee = m_MaybeCurrentAssignment.lock();
@@ -2089,7 +2096,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    void HoverTest_NormalMode() {
+    void HoverTest_NormalMode()
+    {
         if (!IsMouseOverRender()) {
             m_MaybeHover.reset();
             return;
@@ -2126,7 +2134,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         DrawHoverTooltip();
     }
 
-    void Draw3dViewer_NormalMode() {
+    void Draw3dViewer_NormalMode()
+    {
         HoverTest_NormalMode();
 
         std::vector<DrawableThing> sceneEls;
@@ -2166,7 +2175,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         DrawContextMenu();
     }
 
-    Rect ContentRegionAvailRect() {
+    Rect ContentRegionAvailRect()
+    {
         glm::vec2 topLeft = ImGui::GetCursorScreenPos();
         glm::vec2 dims = ImGui::GetContentRegionAvail();
         glm::vec2 bottomRight = topLeft + dims;
@@ -2174,7 +2184,8 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         return Rect{topLeft, bottomRight};
     }
 
-    void Draw3DViewer() {
+    void Draw3DViewer()
+    {
         m_3DSceneRect = ContentRegionAvailRect();
 
         if (!IsInAssignmentMode()) {
@@ -2184,15 +2195,18 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    void onMount() {
+    void onMount()
+    {
         osc::ImGuiInit();
     }
 
-    void onUnmount() {
+    void onUnmount()
+    {
         osc::ImGuiShutdown();
     }
 
-    void tick(float dt) {
+    void tick(float dt)
+    {
         float dotMotionsPerSecond = 0.35f;
         float ignoreMe;
         m_AnimationPercentage = std::modf(m_AnimationPercentage + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
@@ -2210,18 +2224,19 @@ struct osc::MeshesToModelWizardScreen::Impl final {
         }
     }
 
-    void onEvent(SDL_Event const& e) {
+    void onEvent(SDL_Event const& e)
+    {
         if (osc::ImGuiOnEvent(e)) {
             return;
         }
 
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr) {
-            std::filesystem::path p{e.drop.file};
-            PushMeshLoadRequest(m_ModelRoot, p);
+            PushMeshLoadRequest(m_ModelRoot, std::filesystem::path{e.drop.file});
         }
     }
 
-    void draw() {
+    void draw()
+    {
         gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
