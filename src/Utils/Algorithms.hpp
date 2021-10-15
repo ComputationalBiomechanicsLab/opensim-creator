@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <string_view>
+#include <unordered_set>
 
 namespace osc {
 
@@ -23,6 +24,26 @@ namespace osc {
         using std::end;
 
         return std::any_of(begin(c), end(c), p);
+    }
+
+    template<typename Container, typename UnaryPredicate>
+    auto FindIf(Container const& c, UnaryPredicate p) {
+        using std::begin;
+        using std::end;
+
+        return std::find_if(begin(c), end(c), p);
+    }
+
+    template<typename T>
+    bool Contains(std::unordered_set<T> const& set, T const& value)
+    {
+        return set.find(value) != set.end();
+    }
+
+    template<typename K, typename V, typename K2>
+    bool ContainsKey(std::unordered_map<K, V> const& map, K2 const& key)
+    {
+        return map.find(key) != map.end();
     }
 
     // returns the number of bits set in the input integer

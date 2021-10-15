@@ -28,6 +28,7 @@
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
@@ -36,9 +37,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <SimTKcommon.h>
 
 #include <cstddef>
@@ -53,650 +55,1294 @@
 
 using namespace osc;
 
-// private impl details
+// generic helpers
 namespace {
 
-    // base radius of rendered spheres (e.g. for bodies)
-    constexpr float g_SphereRadius = 0.025f;
-
-    class Node;
-
-    // a mesh loading request
-    class MeshLoadRequest final {
-    public:
-        MeshLoadRequest(std::weak_ptr<Node> prefAttachmentPoint, std::filesystem::path path) :
-            m_PreferredAttachmentPoint{prefAttachmentPoint},
-            m_Path{path}
-        {
-        }
-
-        std::filesystem::path const& GetPath() const { return m_Path; }
-        std::weak_ptr<Node> GetPreferredAttachmentPoint() const { return m_PreferredAttachmentPoint; }
-
-    private:
-        std::weak_ptr<Node> m_PreferredAttachmentPoint;
-        std::filesystem::path m_Path;
-    };
-
-    // an OK response to a mesh loading request
-    class MeshLoadOKResponse final {
-    public:
-        MeshLoadOKResponse(MeshLoadRequest const& req, std::shared_ptr<Mesh> mesh) :
-            m_Req{req}, m_Mesh{mesh}
-        {
-            OSC_ASSERT_ALWAYS(m_Mesh != nullptr);
-        }
-
-        std::filesystem::path const& GetPath() const { return m_Req.GetPath(); }
-        std::weak_ptr<Node> GetPreferredAttachmentPoint() const { return m_Req.GetPreferredAttachmentPoint(); }
-        std::shared_ptr<Mesh> GetMeshPtr() const { return m_Mesh; }
-
-    private:
-        MeshLoadRequest m_Req;
-        std::shared_ptr<Mesh> m_Mesh;
-    };
-
-    // an ERROR response to a mesh loading request
-    class MeshLoadErrorResponse final {
-    public:
-        MeshLoadErrorResponse(MeshLoadRequest const& req, std::string error) :
-            m_Req{req}, m_Error{error}
-        {
-        }
-
-        std::filesystem::path const& GetPath() const { return m_Req.GetPath(); }
-        char const* what() const { return m_Error.c_str(); }
-
-    private:
-        MeshLoadRequest m_Req;
-        std::string m_Error;
-    };
-
-    // a response to a mesh loading request
-    using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
-
-    // responds to a mesh loading request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest const& msg) noexcept
-    {
-        try {
-            auto mesh = std::make_shared<Mesh>(SimTKLoadMesh(msg.GetPath()));  // can throw
-            return MeshLoadOKResponse{msg, std::move(mesh)};
-        } catch (std::exception const& ex) {
-            return MeshLoadErrorResponse{msg, ex.what()};
-        }
-    }
-
-    // a mesh-loading background worker
-    using Mesh_loader = spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
-
-    // returns a const-ized version of a non-const `span`
-    nonstd::span<std::shared_ptr<Node const> const> ToConstSpan(std::vector<std::shared_ptr<Node>> const& v)
-    {
-        auto ptr = reinterpret_cast<std::shared_ptr<Node const> const*>(v.data());
-        return {ptr, ptr + v.size()};
-    }
-
-    // returns true if exactly one instance of `el` was removed from `els`
-    template<typename El>
-    bool RemoveFirstEquivalentEl(std::vector<El>& els, El const& el)
-    {
-        for (auto it = els.begin(); it != els.end(); ++it) {
-            if (*it == el) {
-                els.erase(it);
-                return true;
-            }
-        }
-        return false;
-    }
-
     // returns the path's filename with the extension removed
-    static std::string FileNameWithoutExtension(std::filesystem::path const& p)
+    std::string FileNameWithoutExtension(std::filesystem::path const& p)
     {
         return p.filename().replace_extension("").string();
     }
 
-    // represents a joint in the model
-    class BodyJoint final {
-    public:
-        BodyJoint(std::weak_ptr<Node> other) :
-            m_Other{other},
-            m_JointTypeIndex{0},
-            m_MaybeUserDefinedPivotPoint{std::nullopt},
-            m_MaybeUserDefinedJointName{}
-        {
-            OSC_ASSERT_ALWAYS(other.lock() != nullptr);
+
+    // synchronously prompts the user to select multiple mesh files through
+    // a native OS file dialog and returns the paths of any files the user selected
+    std::vector<std::filesystem::path> PromptUserForMeshFiles()
+    {
+        nfdpathset_t s{};
+        nfdresult_t result = NFD_OpenDialogMultiple("obj,vtp,stl", nullptr, &s);
+
+        std::vector<std::filesystem::path> rv;
+        if (result == NFD_OKAY) {
+            OSC_SCOPE_GUARD({ NFD_PathSet_Free(&s); });
+
+            size_t len = NFD_PathSet_GetCount(&s);
+            rv.reserve(len);
+            for (size_t i = 0; i < len; ++i) {
+                rv.push_back(NFD_PathSet_GetPath(&s, i));
+            }
+        } else if (result == NFD_CANCEL) {
+        } else {
+            log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
         }
 
-        std::shared_ptr<Node> UpdOther() { auto p = m_Other.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
-        std::shared_ptr<Node> GetOther() const { auto p = m_Other.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
-        void SetOther(std::weak_ptr<Node> newOther) { OSC_ASSERT_ALWAYS(newOther.lock() != nullptr); m_Other = newOther; }
-        size_t GetJointTypeIndex() const { return m_JointTypeIndex; }
-        void SetJointTypeIndex(size_t newJointTypeIndex) { m_JointTypeIndex = newJointTypeIndex; }
-        std::string const& GetJointTypeName() const { return JointRegistry::nameStrings()[m_JointTypeIndex]; }
-        bool HasUserDefinedPivotPoint() const { return m_MaybeUserDefinedPivotPoint != std::nullopt; }
-        std::optional<glm::vec3> GetUserDefinedPivotPoint() const { return m_MaybeUserDefinedPivotPoint; }
-        void SetUserDefinedPivotPoint(glm::vec3 const& newPivotPoint) { m_MaybeUserDefinedPivotPoint = newPivotPoint; }
-        bool HasUserDefinedJointName() const { return !m_MaybeUserDefinedJointName.empty(); }
-        std::string const& GetUserDefinedJointName() const { return m_MaybeUserDefinedJointName; }
-        void SetUserDefinedJointName(std::string newName) { m_MaybeUserDefinedJointName = std::move(newName); }
-        std::string const& GetName() const { return HasUserDefinedJointName() ? GetUserDefinedJointName() : GetJointTypeName(); }
+        return rv;
+    }
+}
+
+// logical ID support
+//
+// The model graph contains internal cross-references. E.g. a joint in the model may
+// cross-reference bodies that are somewhere else in the model. Those references are
+// looked up at runtime using associative lookups. Associative lookups are preferred
+// over direct pointers, shared pointers, array indices, etc. here because the model
+// graph can be moved in memory, copied (undo/redo), and be heavily edited by the user
+// at runtime. We want the *overall* UI datastructure to have value, rather than
+// reference, semantics to make handling that easier.
+namespace {
+
+    // logical IDs are used for weak scene-element_to_scene-element relationships
+    //
+    // external code cannot set these to arbitrary values. They're either empty, copied
+    // from some other ID, or "created" by pulling the next ID from a global ID pool.
+    class LogicalID {
+    private:
+        static constexpr int64_t g_EmptyId = -1;
+
+    public:
+        static LogicalID next()
+        {
+            static std::atomic<int64_t> g_NextId = 1;
+            return LogicalID{g_NextId++};
+        }
+
+        static LogicalID empty() { return LogicalID{g_EmptyId}; }
+
+        LogicalID() : m_Value{g_EmptyId} {}
+    protected:
+        LogicalID(int64_t value) : m_Value{value} {}
+
+    public:
+        bool IsEmpty() const noexcept { return m_Value == g_EmptyId; }
+        operator bool () const noexcept { return !IsEmpty(); }
+        int64_t Unwrap() const noexcept { return m_Value; }  // handy for printing, hashing, etc.
 
     private:
-        std::weak_ptr<Node> m_Other;
-        size_t m_JointTypeIndex;
-        std::optional<glm::vec3> m_MaybeUserDefinedPivotPoint;
-        std::string m_MaybeUserDefinedJointName;
+        int64_t m_Value;
     };
 
-    // the tree datastructure that the user is building
-    class Node {
+    std::ostream& operator<<(std::ostream& o, LogicalID const& id) { return o << id.Unwrap(); }
+    bool operator==(LogicalID const& lhs, LogicalID const& rhs) { return lhs.Unwrap() == rhs.Unwrap(); }
+
+    // strongly-typed version of the above. Purely a development convenience that helps
+    // prevent code from trying to use IDs "locked" to one type in contexts where they are
+    // strictly "locked" to some other type.
+    //
+    // Typed IDs "decompose" into untyped LogicalIDs where necessary. Untyped IDs can be explicitly
+    // "downcasted" to a typed one by using the explicit constructor. Regardless of type assignment,
+    // LogicalIDs are always globally unique.
+    template<typename T>
+    class LogicalIDT : public LogicalID {
     public:
-        // parent
-        virtual bool CanHaveParent() const = 0;
-        virtual std::shared_ptr<Node> UpdParentPtr() = 0;
-        virtual std::shared_ptr<Node const> GetParentPtr() const = 0;
-        virtual void SetParent(std::shared_ptr<Node>) = 0;
+        static LogicalIDT<T> next() { return LogicalIDT<T>{LogicalID::next()}; }
+        static LogicalIDT<T> empty() { return LogicalIDT<T>{LogicalID::empty()}; }
 
-        // children
-        virtual bool CanHaveChildren() const = 0;
-        virtual nonstd::span<std::shared_ptr<Node const> const> GetChildren() const = 0;
-        virtual nonstd::span<std::shared_ptr<Node>> UpdChildren() = 0;
-        virtual void ClearChildren() = 0;
-        virtual void AddChild(std::shared_ptr<Node>) = 0;
-        virtual bool RemoveChild(std::shared_ptr<Node>) = 0;
+        explicit LogicalIDT(LogicalID id) : LogicalID{id} {}
+    };
+}
 
-        // position/bounds/xform
-        virtual glm::vec3 GetPos() const = 0;
-        virtual AABB GetBounds(float sceneScaleFactor) const = 0;
-        virtual glm::mat4 GetModelMatrix(float sceneScaleFactor) const = 0;
-        virtual void ApplyRotation(glm::mat4 const&) = 0;
-        virtual void ApplyScale(glm::mat4 const&) = 0;
-        virtual void ApplyTranslation(glm::mat4 const&) = 0;
-        virtual glm::vec3 GetCenterPoint() const = 0;
-        virtual RayCollision DoHittest(float sceneScaleFactor, Line const&) const = 0;
+// hashing support for LogicalIDs
+//
+// lets them be used as associative lookup keys, etc.
+namespace std {
 
-        // name
-        virtual std::string const& GetName() const = 0;
-        virtual void SetName(char const*) = 0;
-
-        // helper functions that use the virtual interface
-        Node& UpdParent() { auto p = UpdParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
-        Node const& GetParent() const { auto p = GetParentPtr(); OSC_ASSERT_ALWAYS(p != nullptr); return *p; }
-        char const* GetNameCStr() const { return GetName().c_str(); }
-        bool HasParent() const { return CanHaveParent() && GetParentPtr() != nullptr; }
-        bool HasChildren() const { return CanHaveChildren() && !GetChildren().empty(); }
+    template<>
+    struct hash<LogicalID> {
+        size_t operator()(LogicalID const& id) const { return id.Unwrap(); }
     };
 
-    // node representing the model's ground (the root of the model tree)
-    class GroundNode final : public Node {
-    public:
-        GroundNode() : m_Children{} {}
+    template<typename T>
+    struct hash<LogicalIDT<T>> {
+        size_t operator()(LogicalID const& id) const { return id.Unwrap(); }
+    };
+}
 
-        Sphere GetSphere(float sceneScaleFactor) const
+// background mesh loading support
+//
+// loading mesh files can be slow, so all mesh loading is done on a background worker
+// that:
+//
+//   - receives a mesh loading request
+//   - loads the mesh
+//   - sends the loaded mesh (or error) as a response
+//
+// the main (UI) thread then regularly polls the response channel and handles the (loaded)
+// mesh appropriately
+namespace {
+
+    // a mesh loading request
+    struct MeshLoadRequest final {
+        LogicalID PreferredAttachmentPoint;
+        std::filesystem::path Path;
+    };
+
+    // an OK response to a mesh loading request
+    struct MeshLoadOKResponse final {
+        LogicalID PreferredAttachmentPoint;
+        std::filesystem::path Path;
+        std::shared_ptr<Mesh> mesh;
+    };
+
+    // an ERROR response to a mesh loading request
+    struct MeshLoadErrorResponse final {
+        LogicalID PreferredAttachmentPoint;
+        std::filesystem::path Path;
+        std::string Error;
+    };
+
+    // an OK/ERROR response to a mesh loading request
+    using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
+
+    // function that's used by the meshloader to respond to a mesh loading request
+    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg) noexcept
+    {
+        try {
+            auto mesh = std::make_shared<Mesh>(SimTKLoadMesh(msg.Path));
+            return MeshLoadOKResponse{msg.PreferredAttachmentPoint, msg.Path, std::move(mesh)};
+        } catch (std::exception const& ex) {
+            return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, msg.Path, ex.what()};
+        }
+    }
+
+    // top-level MeshLoader class that the UI thread can safely poll
+    class MeshLoader final {
+        using Worker = spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
+
+    public:
+        MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
         {
-            return Sphere{GetPos(), sceneScaleFactor * g_SphereRadius};
         }
 
-        bool CanHaveParent() const override { return false; }
-        std::shared_ptr<Node> UpdParentPtr() override { return nullptr; }
-        std::shared_ptr<Node const> GetParentPtr() const override { return nullptr; }
-        void SetParent(std::shared_ptr<Node>) override { throw std::runtime_error{"cannot call SetParent on GroundNode"}; }
-
-        bool CanHaveChildren() const override { return true; }
-        nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return ToConstSpan(m_Children); }
-        nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return m_Children; }
-        void ClearChildren() override { m_Children.clear(); }
-        void AddChild(std::shared_ptr<Node> n) override { m_Children.push_back(n); }
-        bool RemoveChild(std::shared_ptr<Node> n) override { return RemoveFirstEquivalentEl(m_Children, n); }
-
-        glm::vec3 GetPos() const override { return {0.0f, 0.0f, 0.0f}; }
-        AABB GetBounds(float sceneScaleFactor) const override { return SphereToAABB(GetSphere(sceneScaleFactor)); }
-        glm::mat4 GetModelMatrix(float) const override { return glm::mat4{1.0f}; }
-        void ApplyRotation(glm::mat4 const&) override {}
-        void ApplyScale(glm::mat4 const&) override {}
-        void ApplyTranslation(glm::mat4 const&) override {}
-        glm::vec3 GetCenterPoint() const override { return {0.0f, 0.0f, 0.0f}; }
-        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override { return GetRayCollisionSphere(ray, GetSphere(sceneScaleFactor)); }
-
-        std::string const& GetName() const override { static std::string const name{"ground"}; return name; }
-        void SetName(char const*) override {}
+        void send(MeshLoadRequest req) { m_Worker.send(std::move(req)); }
+        std::optional<MeshLoadResponse> poll() { return m_Worker.poll(); }
 
     private:
-        std::vector<std::shared_ptr<Node>> m_Children;
+        spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)> m_Worker;
+    };
+}
+
+// modelgraph support
+//
+// This code adds support for an editor-specific "modelgraph". This modelgraph is specifically
+// designed for:
+//
+//   - Freeform UI manipulation. Everything is defined "in ground", rather than relative to the
+//     current model topography. This lets users drag, rotate, reassign, etc. things around without
+//     having to constantly worry so much about joint attachment topology, frame fixups, etc.
+//
+//   - UI integration. Uses `glm` vector types, floats, supports raycasting, has reference-counted
+//     access to ready-to-render meshes, etc.
+//
+//   - Value semantics. Datatypes do not contain pointer-based crossreferences (exception: mesh
+//     data), which means that independent copies of the modelgraph can be cheaply made at runtime (for
+//     undo/redo and snapshot support)
+//
+//   - Direct (eventual) mapping to an OpenSim::Model. So that the user-edited freeform modelgraph can
+//     be exported directly into the main (OpenSim::Model-manipulating) UI
+namespace {
+
+    // composable declaration of a translation + orientation
+    struct TranslationOrientation final {
+        glm::vec3 translation;
+        glm::vec3 orientation;  // Euler angles
     };
 
-    // node representing a body
-    class BodyNode final : public Node {
+    // print a `TranslationOrientation` to an output stream
+    std::ostream& operator<<(std::ostream& o, TranslationOrientation const& to)
+    {
+        using osc::operator<<;
+        return o << "TranslationOrientation(translation = " << to.translation << ", orientation = " << to.orientation << ')';
+    }
+
+    // returns a transform matrix that maps quantities expressed in the TranslationOrientation
+    // (i.e. "a poor man's frame") into its base
+    glm::mat4 TranslationOrientationToBase(TranslationOrientation const& frame)
+    {
+        glm::mat4 mtx = glm::eulerAngleXYZ(frame.orientation.x, frame.orientation.y, frame.orientation.z);
+        mtx[3] = glm::vec4{frame.translation, 1.0f};
+        return mtx;
+    }
+
+    // a mesh in the scene
+    //
+    // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
+    // time, the implementation does necessary maths to attach the meshes into the Model in the relevant relative
+    // coordinate system.
+    //
+    // The reason the editor uses ground-based coordinates is so that users have freeform control over where
+    // the mesh will be positioned in the model, and so that the user can freely re-attach the mesh and freely
+    // move meshes/bodies/joints in the mesh importer without everything else in the scene moving around (which
+    // is what would happen in a relative topology-sensitive attachment graph).
+    class BodyEl;
+    class MeshEl final {
     public:
-        BodyNode(std::shared_ptr<Node> parent, glm::vec3 const& pos) :
-            m_Joint{parent},
-            m_Children{},
-            m_Pos{pos},
-            m_Name{},
-            m_Mass{1.0}
-        {
-            static std::atomic<int> g_LatestBodyIdx = 0;
-            m_Name = std::string{"body"} + std::to_string(g_LatestBodyIdx++);
-        }
+        MeshEl(LogicalIDT<MeshEl> logicalID,
+               LogicalIDT<BodyEl> maybeAttachedBody,  // not strictly required: mesh can also be attached to ground
+               std::shared_ptr<Mesh> mesh,
+               std::filesystem::path const& path) :
 
-        void SetPos(glm::vec3 const& newPos) { m_Pos = newPos; }
-        Sphere GetSphere(float sceneScaleFactor) const
-        {
-            return Sphere{m_Pos, sceneScaleFactor * g_SphereRadius};
-        }
-        size_t GetJointTypeIndex() const { return m_Joint.GetJointTypeIndex(); }
-        void SetJointTypeIndex(size_t newJointTypeIndex) { m_Joint.SetJointTypeIndex(newJointTypeIndex); }
-        char const* GetJointTypeNameCStr() const { return m_Joint.GetJointTypeName().c_str(); }
-        char const* GetJointNameCStr() const { return m_Joint.GetName().c_str(); }
-        bool HasUserDefinedJointName() const { return m_Joint.HasUserDefinedJointName(); }
-        std::string const& GetUserDefinedJointName() const { return m_Joint.GetUserDefinedJointName(); }
-        void SetUserDefinedJointName(std::string newJointName) { m_Joint.SetUserDefinedJointName(std::move(newJointName)); }
-        double GetMass() const { return m_Mass; }
-        void SetMass(double newMass) { m_Mass = newMass; }
-
-        bool CanHaveParent() const override { return true; }
-        std::shared_ptr<Node> UpdParentPtr() override { return m_Joint.UpdOther(); }
-        std::shared_ptr<Node const> GetParentPtr() const override { return m_Joint.GetOther(); }
-        void SetParent(std::shared_ptr<Node> newParent) override { m_Joint.SetOther(newParent); }
-
-        bool CanHaveChildren() const override { return true; }
-        nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return ToConstSpan(m_Children); }
-        nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return m_Children; }
-        void ClearChildren() override { m_Children.clear(); }
-        void AddChild(std::shared_ptr<Node> child) override { m_Children.push_back(child); }
-        bool RemoveChild(std::shared_ptr<Node> child) override { return RemoveFirstEquivalentEl(m_Children, child); }
-
-        glm::vec3 GetPos() const override { return m_Pos; }
-        AABB GetBounds(float sceneScaleFactor) const override { Sphere s{m_Pos, sceneScaleFactor * g_SphereRadius}; return SphereToAABB(s); }
-        glm::mat4 GetModelMatrix(float sceneScaleFactor) const override
-        {
-            float r = sceneScaleFactor * g_SphereRadius;
-            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, glm::vec3{r,r,r});
-            glm::mat4 translator = glm::translate(glm::mat4{1.0f}, m_Pos);
-            return translator * scaler;
-        }
-        void ApplyRotation(glm::mat4 const&) override {}
-        void ApplyScale(glm::mat4 const&) override {}
-        void ApplyTranslation(glm::mat4 const& translationMtx) override { m_Pos = glm::vec3{translationMtx * glm::vec4{m_Pos, 1.0f}}; }
-        glm::vec3 GetCenterPoint() const override { return m_Pos; }
-        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override { return GetRayCollisionSphere(ray, GetSphere(sceneScaleFactor)); }
-
-        std::string const& GetName() const override { return m_Name; }
-        void SetName(char const* newName) override { m_Name = newName; }
-
-    private:
-        BodyJoint m_Joint;
-        std::vector<std::shared_ptr<Node>> m_Children;
-        glm::vec3 m_Pos;
-        std::string m_Name;
-        double m_Mass;
-    };
-
-    // node representing a decorative mesh
-    class MeshNode final : public Node {
-    public:
-        MeshNode(std::weak_ptr<Node> parent, std::shared_ptr<Mesh> mesh, std::filesystem::path const& path) :
-            m_Parent{parent},
-            m_ModelMtx{1.0f},
-            m_Mesh{mesh},
+            m_LogicalID{std::move(logicalID)},
+            m_MaybeAttachedBody{maybeAttachedBody},
+            m_TranslationOrientationInGround{},
+            m_ScaleFactors{1.0f, 1.0f, 1.0f},
+            m_Mesh{std::move(mesh)},
             m_Path{path},
             m_Name{FileNameWithoutExtension(m_Path)}
         {
         }
 
-        glm::mat4 GetModelMatrix() const { return m_ModelMtx; }
-        std::shared_ptr<Mesh> GetMesh() const { return m_Mesh; }
+        LogicalIDT<MeshEl> GetLogicalID() const { return m_LogicalID; }
+
+        LogicalIDT<BodyEl> GetAttachmentPoint() const { return m_MaybeAttachedBody; }
+        void SetAttachmentPoint(LogicalIDT<BodyEl> newAttachmentID) { m_MaybeAttachedBody = newAttachmentID; }
+
+        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
+        void SetTranslationOrientationInGround(TranslationOrientation const& newFrame) { m_TranslationOrientationInGround = newFrame; }
+
+        glm::vec3 const& GetScaleFactors() const { return m_ScaleFactors; }
+        void SetScaleFactors(glm::vec3 const& newScaleFactors) { m_ScaleFactors = newScaleFactors; }
+
+        std::shared_ptr<Mesh> const& GetMesh() const { return m_Mesh; }
+
         std::filesystem::path const& GetPath() const { return m_Path; }
 
-        bool CanHaveParent() const override { return true; }
-        std::shared_ptr<Node> UpdParentPtr() override { auto p = m_Parent.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
-        std::shared_ptr<Node const> GetParentPtr() const override { auto p = m_Parent.lock(); OSC_ASSERT_ALWAYS(p != nullptr && "this node probably leaked"); return p; }
-        void SetParent(std::shared_ptr<Node> newParent) override { m_Parent = newParent; }
-
-        bool CanHaveChildren() const override { return false; }
-        nonstd::span<std::shared_ptr<Node const> const> GetChildren() const override { return {}; }
-        nonstd::span<std::shared_ptr<Node>> UpdChildren() override { return {}; }
-        void ClearChildren() override {}
-        void AddChild(std::shared_ptr<Node>) override {}
-        bool RemoveChild(std::shared_ptr<Node>) override { return false; }
-
-        glm::vec3 GetPos() const override { return m_ModelMtx[3]; }
-        AABB GetBounds(float) const override
-        {
-            // scale factor is ignored for meshes
-            return AABBApplyXform(m_Mesh->getAABB(), m_ModelMtx);
-        }
-        glm::mat4 GetModelMatrix(float) const override { return m_ModelMtx; }
-        void ApplyRotation(glm::mat4 const& mtx) override { m_ModelMtx = mtx * m_ModelMtx; }
-        void ApplyScale(glm::mat4 const& mtx) override { m_ModelMtx = m_ModelMtx * mtx; }
-        void ApplyTranslation(glm::mat4 const& mtx) override { m_ModelMtx = mtx * m_ModelMtx; }
-        glm::vec3 GetCenterPoint() const override { return AABBCenter(AABBApplyXform(m_Mesh->getAABB(), m_ModelMtx)); }
-        RayCollision DoHittest(float sceneScaleFactor, Line const& ray) const override
-        {
-            // do a fast ray-to-AABB collision test
-            RayCollision rayAABBCollision = GetRayCollisionAABB(ray, GetBounds(sceneScaleFactor));
-            if (!rayAABBCollision.hit) {
-                return rayAABBCollision;
-            }
-
-            // it *may* have hit: refine by doing a slower ray-to-triangle test
-            glm::mat4 world2model = glm::inverse(GetModelMatrix());
-            Line rayModel = LineApplyXform(ray, world2model);
-            RayCollision rayTriangleCollision = m_Mesh->getClosestRayTriangleCollision(rayModel);
-
-            return rayTriangleCollision;
-        }
-
-        std::string const& GetName() const override { return m_Name; }
-        void SetName(char const* newName) override { m_Name = newName; }
+        std::string const& GetName() const { return m_Name; }
+        void SetName(std::string const& newName) { m_Name = newName; }
 
     private:
-        std::weak_ptr<Node> m_Parent;
-        glm::mat4 m_ModelMtx;
+        LogicalIDT<MeshEl> m_LogicalID;
+        LogicalIDT<BodyEl> m_MaybeAttachedBody;
+        TranslationOrientation m_TranslationOrientationInGround;
+        glm::vec3 m_ScaleFactors;
         std::shared_ptr<Mesh> m_Mesh;
         std::filesystem::path m_Path;
         std::string m_Name;
     };
 
-    // returns true if the provided reference of type `T` was instantiated as type `U`
-    template<typename U, typename T>
-    bool IsType(T const& v)
+    // returns `true` if the mesh is directly attached to ground
+    bool IsAttachedToGround(MeshEl const& mesh)
     {
-        return typeid(v) == typeid(U);
+        return mesh.GetAttachmentPoint().IsEmpty();
     }
 
-    // returns true if `node` is, or is a child of, a `GroundNode`
-    bool IsInclusiveChildOfGround(Node const& node)
+    // returns `true` if the mesh is attached to some body (i.e. not ground)
+    bool IsAttachedToBody(MeshEl const& mesh)
     {
-        if (IsType<GroundNode>(node)) {
-            return true;
+        return !mesh.GetAttachmentPoint().IsEmpty();
+    }
+
+    // returns a transform matrix that maps quantities expressed in mesh (model) space to groundspace
+    glm::mat4 GetModelMatrix(MeshEl const& mesh)
+    {
+        glm::mat4 translateAndRotate = TranslationOrientationToBase(mesh.GetTranslationOrientationInGround());
+        glm::mat4 rescale = glm::scale(glm::mat4{1.0f}, mesh.GetScaleFactors());
+        return translateAndRotate * rescale;
+    }
+
+    // returns the groundspace bounds of the mesh
+    AABB GetGroundspaceBounds(MeshEl const& mesh)
+    {
+        AABB modelspaceBounds = mesh.GetMesh()->getAABB();
+        return AABBApplyXform(modelspaceBounds, GetModelMatrix(mesh));
+    }
+
+    // returns the groundspace bounds center point of the mesh
+    glm::vec3 GetAABBCenterPointInGround(MeshEl const& mesh)
+    {
+        return AABBCenter(GetGroundspaceBounds(mesh));
+    }
+
+    // performs a collision test of a groundspace ray against the mesh
+    RayCollision GetRayCollision(MeshEl const& mesh, Line const& groundspaceRay)
+    {
+        // do a fast ray-to-AABB collision test
+        RayCollision rayAABBCollision = GetRayCollisionAABB(groundspaceRay, GetGroundspaceBounds(mesh));
+
+        if (!rayAABBCollision.hit) {
+            return rayAABBCollision;  // missed the AABB, so it *definitely* missed the mesh
         }
 
-        for (auto ptr = node.GetParentPtr(); ptr; ptr = ptr->GetParentPtr()) {
-            if (IsType<GroundNode>(*ptr)) {
-                return true;
-            }
-        }
+        // it hit the AABB, so it *may* have hit a triangle in the mesh
+        //
+        // refine the hittest by doing a slower ray-to-triangle test
+        glm::mat4 ground2model = glm::inverse(glm::mat4{GetModelMatrix(mesh)});
+        Line modelspaceRay = LineApplyXform(groundspaceRay, ground2model);
+        RayCollision rayTriangleCollision = mesh.GetMesh()->getClosestRayTriangleCollision(modelspaceRay);
 
-        return false;
+        return rayTriangleCollision;
     }
 
-    // returns true if `node` is a direct descendant (child) of `ancestor`
-    bool IsDirectDescendantOf(Node const* ancestor, Node const* node)
+    // generates a placeholder body name
+    std::string GenerateBodyName()
     {
-        return node->GetParentPtr().get() == ancestor;
+        static std::atomic<int> g_LatestBodyIdx = 0;
+
+        std::stringstream ss;
+        ss << "body" << g_LatestBodyIdx++;
+        return std::move(ss).str();
     }
 
-    // returns true if `node` is a descendant (child, grandchild, etc.) of `ancestor`
-    bool IsInclusiveDescendantOf(Node const* ancestor, Node const* node)
-    {
-        OSC_ASSERT_ALWAYS(ancestor != nullptr);
-        OSC_ASSERT_ALWAYS(node != nullptr);
-
-        for (auto ptr = node->GetParentPtr(); ptr; ptr = ptr->GetParentPtr()) {
-            if (ptr.get() == ancestor) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // returns true if `node` is a direct ancestor (parent) of `descendant`
-    bool IsDirectAncestorOf(Node const* descendant, Node const* node)
-    {
-        OSC_ASSERT_ALWAYS(descendant != nullptr);
-        OSC_ASSERT_ALWAYS(node != nullptr);
-
-        auto children = node->GetChildren();
-        auto pointsToNode = [node](auto const& child) { return child.get() == node; };
-
-        return AnyOf(children, pointsToNode);
-    }
-
-    // returns true if `node` is, or is an ancestor (parent, grandparent, etc.), of `descendant`
-    bool IsAncestorOf(Node const* descendant, Node const* node)
-    {
-        if (IsDirectAncestorOf(descendant, node)) {
-            return true;
-        }
-
-        for (auto const& child : node->GetChildren()) {
-            if (IsAncestorOf(descendant, child.get())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // calls `f` on each node (inclusive) of `n`
-    template<typename Callable>
-    void ForEachNode(std::shared_ptr<Node> n, Callable f)
-    {
-        f(n);
-        for (auto const& child : n->UpdChildren()) {
-            ForEachNode(child, f);
-        }
-    }
-}
-
-// attaches a `MeshNode` to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
-static void AttachMeshNodeToModel(OpenSim::Model& model,
-                                  MeshNode const& node,
-                                  OpenSim::PhysicalFrame& parentPhysFrame)
-{
-
-    // ensure the model is up-to-date (the model-generation step modifies the model
-    // quite a bit)
-    model.finalizeFromProperties();
-    model.finalizeConnections();
-    SimTK::State s = model.initSystem();
-    model.realizePosition(s);
-
-    // get relevant transform matrices
-    SimTK::Transform parentToGroundMtx = parentPhysFrame.getTransformInGround(s);
-    SimTK::Transform groundToParentMtx = parentToGroundMtx.invert();
-
-    // create a POF that attaches to the body
+    // a body scene element
     //
-    // this is necessary to independently transform the mesh relative
-    // to the parent's transform (the mesh is currently transformed relative
-    // to ground)
-    OpenSim::PhysicalOffsetFrame* meshPhysOffsetFrame = new OpenSim::PhysicalOffsetFrame{};
-    meshPhysOffsetFrame->setParentFrame(parentPhysFrame);
-    meshPhysOffsetFrame->setName(node.GetName() + "_offset");
+    // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
+    class BodyEl final {
+    public:
+        BodyEl(LogicalIDT<BodyEl> logicalID,
+               std::string name,
+               glm::vec3 const& position,
+               glm::vec3 const& orientation) :
 
-    // without setting `setObjectTransform`, the mesh will be subjected to
-    // the POF's object-to-ground transform. so vertices in the matrix are
-    // already in "object space" and we want to figure out how to transform
-    // them as if they were in our current (world) space
-    SimTK::Transform mmtx = SimTKTransformFromMat4x3(node.GetModelMatrix());
-
-    meshPhysOffsetFrame->setOffsetTransform(groundToParentMtx * mmtx);
-    parentPhysFrame.addComponent(meshPhysOffsetFrame);
-
-    // attach mesh to the POF
-    auto mesh = std::make_unique<OpenSim::Mesh>(node.GetPath());
-    mesh->setName(node.GetName());
-    meshPhysOffsetFrame->attachGeometry(mesh.release());
-}
-
-static void RecursivelyAddNodeToModel(OpenSim::Model& model,
-                                      Node const& node,
-                                      OpenSim::PhysicalFrame& parentPhysFrame);
-
-// adds a `BodyNode` to a parent `OpenSim::PhysicalFrame` that is part of an
-// `OpenSim::Model` and then recursively adds the `BodyNode`'s children
-static void RecursivelyAddBodyNodeToModel(OpenSim::Model& model,
-                                          BodyNode const& node,
-                                          OpenSim::PhysicalFrame& parentPhysFrame)
-{
-    auto const& parent = node.GetParent();
-
-    OpenSim::Joint* joint = JointRegistry::prototypes()[node.GetJointTypeIndex()]->clone();
-    joint->setName(node.HasUserDefinedJointName() ? node.GetUserDefinedJointName() : node.GetName() + "_to_" + parent.GetName());
-
-    // the body that's being emitted
-    OpenSim::Body* addedBody = new OpenSim::Body{};
-    addedBody->setMass(node.GetMass());
-    addedBody->setName(node.GetName());
-
-    // the POF that is offset from the parent physical frame
-    OpenSim::PhysicalOffsetFrame* pof = new OpenSim::PhysicalOffsetFrame{};
-    pof->setName(parent.GetName() + "_offset");
-
-    glm::vec3 worldParentPos = parent.GetPos();
-    glm::vec3 worldBodyPos = node.GetPos();
-    {
-        // figure out the parent's actual rotation, so that the relevant
-        // vectors can be transformed into "parent space"
-        model.finalizeFromProperties();
-        SimTK::State s = model.initSystem();
-        model.realizePosition(s);
-
-        SimTK::Rotation rotateParentToWorld = parentPhysFrame.getRotationInGround(s);
-        SimTK::Rotation rotateWorldToParent = rotateParentToWorld.invert();
-
-        // compute relevant vectors in worldspace (the screen's coordinate system)
-        SimTK::Vec3 worldParentToBody = SimTKVec3FromV3(worldBodyPos - worldParentPos);
-        SimTK::Vec3 worldBodyToParent = SimTKVec3FromV3(worldParentPos - worldBodyPos);
-        SimTK::Vec3 worldBodyToParentDir = worldBodyToParent.normalize();
-
-        SimTK::Vec3 parentBodyToParentDir = rotateWorldToParent * worldBodyToParentDir;
-        SimTK::Vec3 parentY = {0.0f, 1.0f, 0.0f};  // by definition
-
-        // create a "Body space" that specifically points the Y axis
-        // towards the parent frame (an OpenSim model building convention)
-        SimTK::Transform parentToBodyMtx{
-            SimTK::Rotation{
-                glm::acos(SimTK::dot(parentY, parentBodyToParentDir)),
-                SimTK::cross(parentY, parentBodyToParentDir).normalize(),
-            },
-            SimTK::Vec3{rotateWorldToParent * worldParentToBody},  // translation
-        };
-        pof->setOffsetTransform(parentToBodyMtx);
-        pof->setParentFrame(parentPhysFrame);
-    }
-
-    // connect the joint to its children frames
-    joint->addFrame(pof);
-    joint->connectSocket_parent_frame(*pof);
-    joint->connectSocket_child_frame(*addedBody);
-
-    // add the body to the model (required for socket connections)
-    model.addBody(addedBody);
-
-    // add the joint to the model
-    model.addJoint(joint);
-
-    // done! - time to recurse
-    for (auto const& child : node.GetChildren()) {
-        RecursivelyAddNodeToModel(model, *child, *addedBody);
-    }
-}
-
-// recursively adds a node to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
-static void RecursivelyAddNodeToModel(OpenSim::Model& model,
-                                      Node const& node,
-                                      OpenSim::PhysicalFrame& parentPhysFrame)
-{
-    if (auto const* bodyNode = dynamic_cast<BodyNode const*>(&node)) {
-        RecursivelyAddBodyNodeToModel(model, *bodyNode, parentPhysFrame);
-    } else if (auto const* meshnode = dynamic_cast<MeshNode const*>(&node)) {
-        AttachMeshNodeToModel(model, *meshnode, parentPhysFrame);
-    }
-}
-
-// populates `issues` with any issues that are dectected in the `Node` (recursive)
-static bool GetDagIssuesRecursive(Node const& node, std::vector<std::string>& issues)
-{
-    bool rv = false;
-
-    if (!IsInclusiveChildOfGround(node)) {
-        issues.push_back("detected a body that is not connected to ground");
-        rv = true;
-    }
-
-    for (auto const& child : node.GetChildren()) {
-        if (GetDagIssuesRecursive(*child, issues)) {
-            rv = true;
+            m_LogicalID{logicalID},
+            m_Name{std::move(name)},
+            m_TranslationOrientationInGround{position, orientation},
+            m_Mass{1.0}  // required: OpenSim goes bananas if it's <= 0
+        {
         }
-    }
 
-    return rv;
-}
+        LogicalIDT<BodyEl> GetLogicalID() const { return m_LogicalID; }
 
-// map a DAG onto an OpenSim model
-static std::unique_ptr<OpenSim::Model> CreateModelFromDag(GroundNode const& root,
-                                                          std::vector<std::string>& issues)
-{
-    issues.clear();
-    if (GetDagIssuesRecursive(root, issues)) {
-        log::error("cannot create an osim model: advancement issues detected");
-        return nullptr;
-    }
+        std::string const& GetName() const { return m_Name; }
+        void SetName(std::string const& newName) { m_Name = newName; }
 
-    // find nodes directly connect to ground and start recursing from there
-    auto rv = std::make_unique<OpenSim::Model>();
-    for (auto const& child : root.GetChildren()) {
-        RecursivelyAddNodeToModel(*rv, *child, rv->updGround());
-    }
-    return rv;
-}
+        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
+        void SetTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_TranslationOrientationInGround = newTranslationOrientation; }
 
-// draw an ImGui color picker for an OSC Rgba32
-static void Rgba32_ColorEdit4(char const* label, Rgba32* rgba)
-{
-    ImVec4 col{
-        static_cast<float>(rgba->r) / 255.0f,
-        static_cast<float>(rgba->g) / 255.0f,
-        static_cast<float>(rgba->b) / 255.0f,
-        static_cast<float>(rgba->a) / 255.0f,
+        glm::vec3 const& GetTranslationInGround() const { return m_TranslationOrientationInGround.translation; }
+        void SetTranslationInGround(glm::vec3 const& newTranslation) { m_TranslationOrientationInGround.translation = newTranslation; }
+
+        glm::vec3 const& GetOrientationInGround() const { return m_TranslationOrientationInGround.orientation; }
+        void SetOrientationInGround(glm::vec3 const& newOrientation) { m_TranslationOrientationInGround.orientation = newOrientation; }
+
+        double GetMass() const { return m_Mass; }
+        void SetMass(double newMass) { m_Mass = newMass; }
+
+    private:
+        LogicalIDT<BodyEl> m_LogicalID;
+        std::string m_Name;
+        TranslationOrientation m_TranslationOrientationInGround;
+        double m_Mass;
     };
 
-    if (ImGui::ColorEdit4(label, reinterpret_cast<float*>(&col))) {
-        rgba->r = static_cast<unsigned char>(col.x * 255.0f);
-        rgba->g = static_cast<unsigned char>(col.y * 255.0f);
-        rgba->b = static_cast<unsigned char>(col.z * 255.0f);
-        rgba->a = static_cast<unsigned char>(col.w * 255.0f);
-    }
-}
-
-// generate a quad used for rendering the chequered floor
-static Mesh generateFloorMesh()
-{
-    Mesh m{GenTexturedQuad()};
-    m.scaleTexCoords(200.0f);
-    return m;
-}
-
-// synchronously prompts the user to select multiple mesh files through
-// a native OS file dialog
-static std::vector<std::filesystem::path> PromptUserForMeshFiles()
-{
-    nfdpathset_t s{};
-    nfdresult_t result = NFD_OpenDialogMultiple("obj,vtp,stl", nullptr, &s);
-
-    std::vector<std::filesystem::path> rv;
-    if (result == NFD_OKAY) {
-        OSC_SCOPE_GUARD({ NFD_PathSet_Free(&s); });
-
-        size_t len = NFD_PathSet_GetCount(&s);
-        rv.reserve(len);
-        for (size_t i = 0; i < len; ++i) {
-            rv.push_back(NFD_PathSet_GetPath(&s, i));
+    // compute a joint's name based on whether it has a user-defined name or not
+    std::string const& ComputeJointName(size_t jointTypeIndex, std::string const& maybeName)
+    {
+        if (!maybeName.empty()) {
+            return maybeName;
         }
-    } else if (result == NFD_CANCEL) {
-    } else {
-        log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
+
+        return JointRegistry::nameStrings()[jointTypeIndex];
     }
 
-    return rv;
+    // returns `true` if `mesh` is directly attached to `body`
+    bool IsMeshAttachedTo(MeshEl const& mesh, BodyEl const& body)
+    {
+        return mesh.GetAttachmentPoint() == body.GetLogicalID();
+    }
+
+    // one "side" (attachment) of a joint
+    //
+    // In OpenSim, a Joint fixes two frames together. If the frames of the two things being joined
+    // (e.g. bodies) need to be oriented + translated away from the actual joint center, it's
+    // assumed that the model designer knows to add `OpenSim::PhysicalOffsetFrame`s that have a
+    // translation + orientation from the thing being joined in the model.
+    //
+    // In this model editor, a joint always links two bodies (or a body+ground) together. It is assumed
+    // that the joint attachment *always* requires some degree of translation+reorientation on each end
+    // of the joint - even if it's just zero. The implementation will *always* emit two
+    // `OpenSim::PhysicalOffsetFrame`s at each end of the joint - even if they are technically
+    // unnecessary in "pure" OpenSim (e.g. the zero case).
+    //
+    // The reason the editor sticks to these different-from-OpenSim semantics is that:
+    //
+    // - OpenSim is too flexible. You can directly attach the two bodies to a joint, or one attachment
+    //   could be a `PhysicalOffsetFrame`, or both attachments could be, or `PhysicalOffsetFrame`s could be
+    //   attached in a daisy chain of `PhysicalOffsetFrame`s that eventually connect to the joint. They
+    //   are all valid topologies in OpenSim.
+    //
+    // - That makes it difficult to design joint UX. If the user wants to join two bodies in the mesh
+    //   importer, what flow should be shown?
+    //
+    //     + Should the mesh importer expose the ability to add `PhysicalOffsetFrame`s manually? Should it
+    //       immediately (rudely) "snap" the two frames together, potentially reorienting the child, if the
+    //       user didn't handle their frames correctly? That flow would *probably* piss off a designer -
+    //       especially if they just spent 5 minutes freely orienting their meshes in 3D space *before* handling
+    //       bodies/PoFs/joints
+    //
+    //     + Should the mesh importer ask "do you want an offset frame?", "where do you want it?", "do you want a
+    //       second offset frame attached to the other side of the joint?", "where do you want that?", "Same
+    //       location and orientation as the first offset frame?", "it looks like the position of your two
+    //       offset frames are different, I'll just go ahead and snap your whole model into place if the joint
+    //       doesn't offer a translation coordinate". That flow would enable a wide range of functionality in a
+    //       step-by-step manner, but would *probably* piss off a designer because it's kind of like going to a
+    //       restaurant where the waiter incessantly asks you what curvature of bowl you want your soup in and
+    //       how many ice cubes you'd like in your diet coke.
+    //
+    // - The joint UX we *want* is:
+    //
+    //     + User right-clicks a body, clicks "add joint"
+    //     + UI prompts which other body/ground to join to, user clicks one
+    //     + UI asks which joint type (defaults to something sensible, like a PinJoint)
+    //     + UI uses its knowledge of that joint type to ask the user for the bare-minimum amount of information:
+    //
+    //       + WeldJoint: pick + orient a single joint location
+    //       + PinJoint: pick+orient a single joint location, rotate along pin axis to set the default angle, automatically compute default rotation coordinate based on initial separation
+    //       + FreeJoint: pick + orient parent joint location, pick + orient child joint location, automatically compute default coordinates from the separation between those two
+    //       +
+    //       + Any other joint: pick + orient parent joint location, pick + orient child joint location, hope for the best when the OpenSim import happens
+    //
+    // - Doing this predictably is the difficult part. There's *a lot* of joint types and it's possible for
+    //   the user to produce an arrangement of joints+offsets that cause a "snap" to happen when the modelgraph is
+    //   finally imported into an OpenSim::Model. However, this constrained+simplified datastructure is here to
+    //   make it easier for the UI to figure out "what it's working with"
+    class JointAttachment final {
+    public:
+        JointAttachment(LogicalIDT<BodyEl> bodyID) :
+            m_BodyID{bodyID},
+            m_TranslationOrientationInGround{}
+        {
+        }
+
+        JointAttachment(LogicalIDT<BodyEl> bodyID, TranslationOrientation const& translationOrientationInGround) :
+            m_BodyID{bodyID},
+            m_TranslationOrientationInGround{translationOrientationInGround}
+        {
+        }
+
+        LogicalIDT<BodyEl> GetBodyID() const { return m_BodyID; }
+        void SetBodyID(LogicalIDT<BodyEl> newBodyID) { m_BodyID = std::move(newBodyID); }
+
+        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
+        void SetTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_TranslationOrientationInGround = newTranslationOrientation; }
+
+        glm::vec3 const& GetTranslationInGround() const { return m_TranslationOrientationInGround.translation; }
+        void SetTranslationInGround(glm::vec3 const& newTranslation) { m_TranslationOrientationInGround.translation = newTranslation; }
+
+        glm::vec3 const& GetOrientationInGround() const { return m_TranslationOrientationInGround.orientation; }
+        void SetOrientationInGround(glm::vec3 const& newOrientation) { m_TranslationOrientationInGround.orientation = newOrientation; }
+
+    private:
+        LogicalIDT<BodyEl> m_BodyID;
+        TranslationOrientation m_TranslationOrientationInGround;
+    };
+
+    // a joint scene element
+    //
+    // see `JointAttachment` comment for an extremely long explanation of why it's designed this way.
+    class JointEl final {
+    public:
+        JointEl(LogicalIDT<JointEl> logicalID,
+                size_t jointTypeIdx,
+                std::string maybeName,
+                JointAttachment parentAttachment,
+                JointAttachment childAttachment) :
+
+            m_LogicalID{logicalID},
+            m_JointTypeIndex{jointTypeIdx},
+            m_MaybeUserAssignedName{std::move(maybeName)},
+            m_ParentAttachment{parentAttachment},
+            m_ChildAttachment{childAttachment}
+        {
+        }
+
+        LogicalIDT<JointEl> GetLogicalID() const { return m_LogicalID; }
+
+        size_t GetJointTypeIndex() const { return m_JointTypeIndex; }
+        void SetJointTypeIndex(size_t newJointTypeIndex) { m_JointTypeIndex = newJointTypeIndex; }
+
+        bool HasUserAssignedName() const { return !m_MaybeUserAssignedName.empty(); }
+        std::string const& GetUserAssignedName() const { return m_MaybeUserAssignedName; }
+        void SetUserAssignedName(std::string newName) { m_MaybeUserAssignedName = std::move(newName); }
+
+        LogicalIDT<BodyEl> GetParentBodyID() const { return m_ParentAttachment.GetBodyID(); }
+        void SetParentBodyID(LogicalIDT<BodyEl> newParentBodyID) { m_ParentAttachment.SetBodyID(std::move(newParentBodyID)); }
+
+        TranslationOrientation const& GetParentAttachmentTranslationOrientationInGround() const { return m_ParentAttachment.GetTranslationOrientationInGround(); }
+        void SetParentAttachmentTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_ParentAttachment.SetTranslationOrientationInGround(newTranslationOrientation); }
+
+        glm::vec3 const& GetParentAttachmentTranslationInGround() const { return m_ParentAttachment.GetTranslationInGround(); }
+        void SetParentAttachmentTranslationInGround(glm::vec3 const& newTranslation) { m_ParentAttachment.SetTranslationInGround(newTranslation); }
+
+        glm::vec3 const& GetParentAttachmentOrientationInGround() const { return m_ParentAttachment.GetOrientationInGround(); }
+        void SetParentAttachmentOrientationInGround(glm::vec3 const& newOrientation) { m_ParentAttachment.SetOrientationInGround(newOrientation); }
+
+        LogicalIDT<BodyEl> GetChildBodyID() const { return m_ChildAttachment.GetBodyID(); }
+        void SetChildBodyID(LogicalIDT<BodyEl> newChildBodyID) { m_ChildAttachment.SetBodyID(std::move(newChildBodyID)); }
+
+        TranslationOrientation const& GetChildAttachmentTranslationOrientationInGround() const { return m_ChildAttachment.GetTranslationOrientationInGround(); }
+        void SetChildAttachmentTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_ChildAttachment.SetTranslationOrientationInGround(newTranslationOrientation); }
+
+        glm::vec3 const& GetChildAttachmentTranslationInGround() const { return m_ChildAttachment.GetTranslationInGround(); }
+        void SetChildAttachmentTranslationInGround(glm::vec3 const& newTranslation) { m_ChildAttachment.SetTranslationInGround(newTranslation); }
+
+        glm::vec3 const& GetChildAttachmentOrientationInGround() const { return m_ChildAttachment.GetOrientationInGround(); }
+        void SetChildAttachmentOrientationInGround(glm::vec3 const& newOrientation) { m_ChildAttachment.SetOrientationInGround(newOrientation); }
+
+    private:
+        LogicalIDT<JointEl> m_LogicalID;
+        size_t m_JointTypeIndex;
+        std::string m_MaybeUserAssignedName;
+        JointAttachment m_ParentAttachment;
+        JointAttachment m_ChildAttachment;
+    };
+
+    // returns a human-readable name for the joint
+    std::string const& GetName(JointEl const& joint)
+    {
+        if (joint.HasUserAssignedName()) {
+            return joint.GetUserAssignedName();
+        } else {
+            return JointRegistry::nameStrings()[joint.GetJointTypeIndex()];
+        }
+    }
+
+    // returns `true` if `body` is `joint`'s parent
+    bool HasParent(JointEl const& joint, BodyEl const& body)
+    {
+        return joint.GetParentBodyID() == body.GetLogicalID();
+    }
+
+    // returns `true` if `body` is `joint`'s child
+    bool HasChild(JointEl const& joint, BodyEl const& body)
+    {
+        return joint.GetChildBodyID() == body.GetLogicalID();
+    }
+
+    // returns `true` if `body` is the child attachment of `joint`
+    bool IsChildOfJoint(JointEl const& joint, BodyEl const& body)
+    {
+        return joint.GetChildBodyID() == body.GetLogicalID();
+    }
+
+    bool IsParentOfJoint(JointEl const& joint, BodyEl const& body)
+    {
+        return joint.GetParentBodyID() == body.GetLogicalID();
+    }
+
+    // returns `true` is a joint's parent is ground
+    bool IsJointParentGround(JointEl const& joint)
+    {
+        return joint.GetParentBodyID().IsEmpty();
+    }
+
+    // returns an OpenSim::Joint that has the specified type index (from the type registry)
+    std::unique_ptr<OpenSim::Joint> ConstructOpenSimJointFromTypeIndex(size_t typeIndex)
+    {
+        return std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[typeIndex]->clone());
+    }
+
+    // top-level model structure
+    //
+    // - must have value semantics, so that other code can copy this to (e.g.) an
+    //   undo/redo buffer without worrying about references into the copy later
+    //   internally tainting the buffer
+    //
+    // - associative lookups need to be fairly fast, because that's how the rest
+    //   of the system "references" things in this graph (rather than using pointers,
+    //   which don't play well with copying, multiple versions, etc.)
+    class ModelGraph final {
+    public:
+        std::unordered_map<LogicalIDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
+        std::unordered_map<LogicalIDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
+        std::unordered_map<LogicalIDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
+
+        MeshEl const* TryGetMeshElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
+        BodyEl const* TryGetBodyElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
+        JointEl const* TryGetJointElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
+
+        MeshEl const& GetMeshByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
+        BodyEl const& GetBodyByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
+        JointEl const& GetJointByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+
+        LogicalIDT<BodyEl> AddBody(std::string name, glm::vec3 const& position, glm::vec3 const& orientation)
+        {
+            LogicalIDT<BodyEl> id = LogicalIDT<BodyEl>::next();
+            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, position, orientation)).first->first;
+        }
+
+        LogicalIDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, LogicalIDT<BodyEl> maybeAttachedBody, std::filesystem::path const& path)
+        {
+            OSC_ASSERT_ALWAYS(maybeAttachedBody && TryGetBodyElByID(maybeAttachedBody));
+
+            LogicalIDT<MeshEl> id = LogicalIDT<MeshEl>::next();
+            return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, maybeAttachedBody, mesh, path)).first->first;
+        }
+
+        LogicalIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, JointAttachment parentAttachment, JointAttachment childAttachment)
+        {
+            // TODO: validate joint attachment for this particular type of joint
+
+            LogicalIDT<JointEl> id = LogicalIDT<JointEl>::next();
+            return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parentAttachment, childAttachment)).first->first;
+        }
+
+        void SetMeshAttachmentPoint(LogicalIDT<MeshEl> meshID, LogicalIDT<BodyEl> bodyID)
+        {
+            UpdMeshByIDOrThrow(meshID).SetAttachmentPoint(bodyID);
+        }
+
+        void SetMeshTranslationOrientationInGround(LogicalIDT<MeshEl> meshID, TranslationOrientation const& newTO)
+        {
+            UpdMeshByIDOrThrow(meshID).SetTranslationOrientationInGround(newTO);
+        }
+
+        void SetBodyMass(LogicalIDT<BodyEl> bodyID, double newMass)
+        {
+            UpdBodyByIDOrThrow(bodyID).SetMass(newMass);
+        }
+
+    private:
+        MeshEl* TryUpdMeshElByID(LogicalID id)
+        {
+            auto it = m_Meshes.find(LogicalIDT<MeshEl>{id});
+            return it != m_Meshes.end() ? &it->second : nullptr;
+        }
+
+        BodyEl* TryUpdBodyElByID(LogicalID id)
+        {
+            auto it = m_Bodies.find(LogicalIDT<BodyEl>{id});
+            return it != m_Bodies.end() ? &it->second : nullptr;
+        }
+
+        JointEl* TryUpdJointElByID(LogicalID id)
+        {
+            auto it = m_Joints.find(LogicalIDT<JointEl>{id});
+            return it != m_Joints.end() ? &it->second : nullptr;
+        }
+
+        MeshEl& UpdMeshByIDOrThrow(LogicalID id)
+        {
+            MeshEl* meshEl = TryUpdMeshElByID(id);
+            if (!meshEl) {
+                throw std::runtime_error{"could not find a mesh"};
+            }
+            return *meshEl;
+        }
+
+        BodyEl& UpdBodyByIDOrThrow(LogicalID id)
+        {
+            BodyEl* bodyEl = TryUpdBodyElByID(id);
+            if (!bodyEl) {
+                throw std::runtime_error{"could not find a body"};
+            }
+            return *bodyEl;
+        }
+
+        JointEl& UpdJointByIDOrThrow(LogicalID id)
+        {
+            JointEl* jointEl = TryUpdJointElByID(id);
+            if (!jointEl) {
+                throw std::runtime_error{"could not find a joint"};
+            }
+            return *jointEl;
+        }
+
+        std::unordered_map<LogicalIDT<MeshEl>, MeshEl> m_Meshes;
+        std::unordered_map<LogicalIDT<BodyEl>, BodyEl> m_Bodies;
+        std::unordered_map<LogicalIDT<JointEl>, JointEl> m_Joints;
+    };
+
+    // try to find the parent body of the given joint
+    //
+    // returns nullptr if the joint's parent has an invalid id or is attached to ground
+    BodyEl const* TryGetParentBody(ModelGraph const& modelGraph, JointEl const& joint)
+    {
+        auto maybeId = joint.GetParentBodyID();
+
+        if (!maybeId) {
+            return nullptr;
+        }
+
+        return modelGraph.TryGetBodyElByID(maybeId);
+    }
+
+    // returns `true` if `body` participates in any joint in the model graph
+    bool IsChildInAnyJoint(ModelGraph const& modelGraph, BodyEl const& body)
+    {
+        return AnyOf(modelGraph.GetJoints(), [&](auto const& pair) { return IsChildOfJoint(pair.second, body); });
+    }
+
+    // returns `true` if a Joint is complete b.s.
+    bool IsGarbageJoint(ModelGraph const& modelGraph, JointEl const& jointEl)
+    {
+        auto parentBodyID = jointEl.GetParentBodyID();
+        auto childBodyID = jointEl.GetChildBodyID();
+
+        if (parentBodyID == childBodyID) {
+            return true;  // is directly attached to itself
+        }
+
+        if (parentBodyID && !modelGraph.TryGetBodyElByID(parentBodyID)) {
+             return true;  // has a parent ID that's invalid for this model graph
+        }
+
+        if (childBodyID && !modelGraph.TryGetBodyElByID(childBodyID)) {
+            return true;  // has a child ID that's invalid for this model graph
+        }
+
+        return false;
+    }
+
+    // returns `true` if a body is indirectly or directly attached to ground
+    bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
+                                BodyEl const& body,
+                                std::unordered_set<LogicalID>& previousVisits);
+
+    // returns `true` if `joint` is indirectly or directly attached to ground via its parent
+    bool IsJointAttachedToGround(ModelGraph const& modelGraph,
+                                 JointEl const& joint,
+                                 std::unordered_set<LogicalID>& previousVisits)
+    {
+        OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
+
+        BodyEl const* parent = TryGetParentBody(modelGraph, joint);
+
+        if (!parent) {
+            return true;  // joints use nullptr as senteniel for Ground
+        }
+
+        auto [it, wasInserted] = previousVisits.emplace(parent->GetLogicalID());
+
+        if (!wasInserted) {
+            return false;  // cycle detected
+        }
+
+        return IsBodyAttachedToGround(modelGraph, *parent, previousVisits);
+    }
+
+    // returns `true` if `body` is attached to ground
+    bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
+                                BodyEl const& body,
+                                std::unordered_set<LogicalID>& previousVisits)
+    {
+        for (auto const& [id, joint] : modelGraph.GetJoints()) {
+            OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
+
+            if (HasChild(joint, body)) {
+                // body participates as a child in a joint - check if the joint indirectly connects to ground
+                return IsJointAttachedToGround(modelGraph, joint, previousVisits);
+            }
+        }
+        return true;  // non-participating bodies will be attached to ground automatically
+    }
+
+    // returns `true` if `modelGraph` contains issues
+    bool GetModelGraphIssues(ModelGraph const& modelGraph, std::vector<std::string>& issuesOut)
+    {
+        issuesOut.clear();
+
+        for (auto const& [id, joint] : modelGraph.GetJoints()) {
+            if (IsGarbageJoint(modelGraph, joint)) {
+                std::stringstream ss;
+                ss << GetName(joint) << ": joint is garbage (this is an implementation error)";
+                throw std::runtime_error{std::move(ss).str()};
+            }
+        }
+
+        std::unordered_set<LogicalID> previousVisits;
+
+        for (auto const& [id, body] : modelGraph.GetBodies()) {
+            if (!IsBodyAttachedToGround(modelGraph, body, previousVisits)) {
+                std::stringstream ss;
+                ss << body.GetName() << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
+                issuesOut.push_back(std::move(ss).str());
+            }
+        }
+
+        return !issuesOut.empty();
+    }
+
+    // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
+    void AttachMeshElToFrame(MeshEl const& meshEl,
+                             TranslationOrientation const& parentTranslationAndOrientationInGround,
+                             OpenSim::PhysicalFrame& parentPhysFrame)
+    {
+        // create a POF that attaches to the body
+        auto meshPhysOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        meshPhysOffsetFrame->setParentFrame(parentPhysFrame);
+        meshPhysOffsetFrame->setName(meshEl.GetName() + "_offset");
+
+        TranslationOrientation meshInGround = meshEl.GetTranslationOrientationInGround();
+
+        // re-express the transform matrix in the parent's frame
+        glm::mat4 parent2ground = TranslationOrientationToBase(parentTranslationAndOrientationInGround);
+        glm::mat4 ground2parent = glm::inverse(parent2ground);
+        glm::mat4 mesh2ground = TranslationOrientationToBase(meshEl.GetTranslationOrientationInGround());
+        glm::mat4 mesh2parent = ground2parent * mesh2ground;
+
+        // set it as the transform
+        meshPhysOffsetFrame->setOffsetTransform(SimTKTransformFromMat4x3(mesh2parent));
+
+        // attach mesh to the POF
+        auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.GetPath());
+        mesh->setName(meshEl.GetName());
+        meshPhysOffsetFrame->attachGeometry(mesh.release());
+
+        parentPhysFrame.addComponent(meshPhysOffsetFrame.release());
+    }
+
+    // create a body for the `model`, but don't add it to the model yet
+    //
+    // *may* add any attached meshes to the model, though
+    std::unique_ptr<OpenSim::Body> CreateDetatchedBody(ModelGraph const& mg, BodyEl const& bodyEl)
+    {
+        auto addedBody = std::make_unique<OpenSim::Body>();
+        addedBody->setMass(bodyEl.GetMass());
+        addedBody->setName(bodyEl.GetName());
+
+        for (auto const& [meshID, mesh] : mg.GetMeshes()) {
+            if (IsMeshAttachedTo(mesh, bodyEl)) {
+                AttachMeshElToFrame(mesh, bodyEl.GetTranslationOrientationInGround(), *addedBody);
+            }
+        }
+
+        return addedBody;
+    }
+
+    // result of a lookup for (effectively) a physicalframe
+    struct JointAttachmentCachedLookupResult {
+        BodyEl const* bodyEl;  // can be nullptr (indicating Ground)
+        std::unique_ptr<OpenSim::Body> createdBody;  // can be nullptr (indicating ground/cache hit)
+        OpenSim::PhysicalFrame* physicalFrame;  // always != nullptr, can point to `createdBody`, or an existing body from the cache, or Ground
+    };
+
+    // cached lookup of a physical frame
+    //
+    // if the frame/body doesn't exist yet, constructs it
+    JointAttachmentCachedLookupResult lookupPF(ModelGraph const& mg,
+                                               OpenSim::Model& model,
+                                               std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies,
+                                               LogicalIDT<BodyEl> elID)
+    {
+        // figure out what the parent body is. There's 3 possibilities:
+        //
+        // - null (ground)
+        // - found, visited before (get it, but don't make it or add it to the model)
+        // - found, not visited before (make it, add it to the model, cache it)
+
+        JointAttachmentCachedLookupResult rv;
+        rv.bodyEl = mg.TryGetBodyElByID(elID);
+        rv.createdBody = nullptr;
+        rv.physicalFrame = nullptr;
+
+        if (rv.bodyEl) {
+            auto it = visitedBodies.find(elID);
+            if (it == visitedBodies.end()) {
+                // haven't visited the body before
+                rv.createdBody = CreateDetatchedBody(mg, *rv.bodyEl);
+                rv.physicalFrame = rv.createdBody.get();
+
+                // add it to the cache
+                visitedBodies.emplace(elID, rv.createdBody.get());
+            } else {
+                // visited the body before, use cached result
+                rv.createdBody = nullptr;  // it's not this function's responsibility to add it
+                rv.physicalFrame = it->second;
+            }
+        } else {
+            // the element is connected to ground
+            rv.createdBody = nullptr;
+            rv.physicalFrame = &model.updGround();
+        }
+
+        return rv;
+    }
+
+    // compute the name of a joint from its attached frames
+    std::string ComputeJointName(JointEl const& jointEl,
+                                 OpenSim::PhysicalFrame const& parentFrame,
+                                 OpenSim::PhysicalFrame const& childFrame)
+    {
+        if (jointEl.HasUserAssignedName()) {
+            return jointEl.GetUserAssignedName();
+        } else {
+            return childFrame.getName() + "_to_" + parentFrame.getName();
+        }
+    }
+
+    // returns the translation and orientation of the given body in ground
+    //
+    // if the supplied ID is empty, returns the translation and orientation of ground itself (i.e. 0.0...)
+    TranslationOrientation GetBodyTranslationAndOrientationInGround(ModelGraph const& mg, LogicalIDT<BodyEl> bodyID)
+    {
+        if (bodyID.IsEmpty()) {
+            return TranslationOrientation{};  // ground
+        }
+
+        BodyEl const* body = mg.TryGetBodyElByID(bodyID);
+
+        if (!body) {
+            throw std::runtime_error{"cannot get the position of this body: the ID is invalid"};
+        }
+
+        return body->GetTranslationOrientationInGround();
+    }
+
+    // returns a `TranslationOrientation` that can reorient things expressed in base to things expressed in parent
+    TranslationOrientation TranslationOrientationInParent(TranslationOrientation const& parentInBase, TranslationOrientation const& childInBase)
+    {
+        glm::mat4 parent2base = TranslationOrientationToBase(parentInBase);
+        glm::mat4 base2parent = glm::inverse(parent2base);
+        glm::mat4 child2base = TranslationOrientationToBase(childInBase);
+        glm::mat4 child2parent = base2parent * child2base;
+
+        glm::vec3 translation = base2parent * glm::vec4{childInBase.translation, 1.0f};
+
+        glm::vec3 orientation;
+        glm::extractEulerAngleXYZ(child2parent, orientation.x, orientation.y, orientation.z);
+
+        return TranslationOrientation{translation, orientation};
+    }
+
+    // expresses if a joint has a degree of freedom (i.e. != -1) and the coordinate index of
+    // that degree of freedom
+    struct JointDegreesOfFreedom final {
+        std::array<int, 3> orientation = {-1, -1, -1};
+        std::array<int, 3> translation = {-1, -1, -1};
+    };
+
+    // returns the indices of each degree of freedom that the joint supports
+    JointDegreesOfFreedom GetDegreesOfFreedom(size_t jointTypeIdx)
+    {
+        OpenSim::Joint const* proto = JointRegistry::prototypes()[jointTypeIdx].get();
+        size_t typeHash = typeid(*proto).hash_code();
+
+        if (typeHash == typeid(OpenSim::FreeJoint).hash_code()) {
+            return JointDegreesOfFreedom{{0, 1, 2}, {3, 4, 5}};
+        } else if (typeHash == typeid(OpenSim::PinJoint).hash_code()) {
+            return JointDegreesOfFreedom{{-1, -1, 0}, {-1, -1, -1}};
+        } else {
+            std::stringstream msg;
+            msg << "GetDegreesOfFreedom: coordinate fixups for joint type '" << proto->getConcreteClassName() << "' not yet supported: needs to be implemented";
+            throw std::runtime_error{std::move(msg).str()};
+        }
+    }
+
+    // sets the names of a joint's coordinates
+    void SetJointCoordinateNames(OpenSim::Joint& joint, std::string const& prefix)
+    {
+        constexpr std::array<char const*, 3> translationNames = {"_tx", "_ty", "_tz"};
+        constexpr std::array<char const*, 3> const rotationNames = {"_rx", "_ry", "_rz"};
+
+        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*JointRegistry::indexOf(joint));
+
+        // translations
+        for (int i = 0; i < 3; ++i) {
+            if (dofs.translation[i] != -1) {
+                joint.upd_coordinates(dofs.translation[i]).setName(prefix + translationNames[i]);
+            }
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            if (dofs.orientation[i] != -1) {
+                joint.upd_coordinates(dofs.orientation[i]).setName(prefix + rotationNames[i]);
+            }
+        }
+    }
+
+    // returns true if the value is effectively zero
+    bool IsEffectivelyZero(float v)
+    {
+        return std::fabs(v) < 1e-7;
+    }
+
+    // sets joint coordinate default values based on the difference between its two attached frames
+    //
+    // throws if the joint does not contain a relevant coordinate to rectify the difference
+    void SetJointCoordinatesBasedOnFrameDifferences(OpenSim::Joint& joint,
+                                                    TranslationOrientation const& parentPofInGround,
+                                                    TranslationOrientation const& childPofInGround)
+    {
+        size_t jointTypeIdx = *JointRegistry::indexOf(joint);
+
+        TranslationOrientation toInParent = TranslationOrientationInParent(parentPofInGround, childPofInGround);
+
+        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(jointTypeIdx);
+
+        // handle translations
+        for (int i = 0; i < 3; ++i) {
+            if (dofs.translation[i] == -1) {
+                if (!IsEffectivelyZero(toInParent.translation[i])) {
+                    throw std::runtime_error{"invalid POF translation: joint offset frames have a nonzero translation but the joint doesn't have a coordinate along the necessary DoF"};
+                }
+            } else {
+                joint.upd_coordinates(dofs.translation[i]).setDefaultValue(toInParent.translation[i]);
+            }
+        }
+
+        // handle orientations
+        for (int i = 0; i < 3; ++i) {
+            if (dofs.orientation[i] == -1) {
+                if (!IsEffectivelyZero(toInParent.orientation[i])) {
+                    std::cerr << toInParent << '\n';
+                    std::cerr << toInParent.orientation[i] << '\n';
+                    throw std::runtime_error{"invalid POF rotation: joint offset frames have a nonzero rotation but the joint doesn't have a coordinate along the necessary DoF"};
+                }
+            } else {
+                joint.upd_coordinates(dofs.orientation[i]).setDefaultValue(toInParent.orientation[i]);
+            }
+        }
+    }
+
+    // recursively attaches `joint` to `model` by:
+    //
+    // - adding child bodies, if necessary
+    // - adding an offset frames for each side of the joint
+    // - computing relevant offset values for the offset frames, to ensure the bodies/joint-center end up in the right place
+    // - setting the joint's default coordinate values based on any differences
+    // - RECURSING by figuring out which joints have this joint's child as a parent
+    void AttachJointRecursive(ModelGraph const& mg,
+                              OpenSim::Model& model,
+                              JointEl const& joint,
+                              std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies,
+                              std::unordered_set<LogicalID>& visitedJoints)
+    {
+        LogicalID jointID = joint.GetLogicalID();
+
+        if (auto const& [it, wasInserted] = visitedJoints.emplace(jointID); !wasInserted) {
+            return;  // graph cycle detected: joint was already previously visited and shouldn't be traversed again
+        }
+
+        // lookup each side of the joint, creating the bodies if necessary
+        JointAttachmentCachedLookupResult parent = lookupPF(mg, model, visitedBodies, joint.GetParentBodyID());
+        JointAttachmentCachedLookupResult child = lookupPF(mg, model, visitedBodies, joint.GetChildBodyID());
+
+        // create the parent OpenSim::PhysicalOffsetFrame
+        auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        parentPOF->setName(parent.physicalFrame->getName() + "_offset");
+        parentPOF->setParentFrame(*parent.physicalFrame);
+        TranslationOrientation toParentInGround = GetBodyTranslationAndOrientationInGround(mg, joint.GetParentBodyID());
+        TranslationOrientation toParentPofInGround = joint.GetParentAttachmentTranslationOrientationInGround();
+        TranslationOrientation toParentPofInParent = TranslationOrientationInParent(toParentInGround, toParentPofInGround);
+        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent.translation));
+        parentPOF->set_orientation(SimTKVec3FromV3(toParentPofInParent.orientation));
+
+        // create the child OpenSim::PhysicalOffsetFrame
+        auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        childPOF->setName(child.physicalFrame->getName() + "_offset");
+        childPOF->setParentFrame(*child.physicalFrame);
+        TranslationOrientation toChildInGround = GetBodyTranslationAndOrientationInGround(mg, joint.GetChildBodyID());
+        TranslationOrientation toChildPofInGround = joint.GetChildAttachmentTranslationOrientationInGround();
+        TranslationOrientation toChildPofInChild = TranslationOrientationInParent(toChildInGround, toChildPofInGround);
+        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild.translation));
+        childPOF->set_orientation(SimTKVec3FromV3(toChildPofInChild.orientation));
+
+        // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
+        auto jointUniqPtr = ConstructOpenSimJointFromTypeIndex(joint.GetJointTypeIndex());
+
+        // set its name
+        jointUniqPtr->setName(ComputeJointName(joint, *parent.physicalFrame, *child.physicalFrame));
+
+        // set its default coordinate values based on the differences between the user-specified offset frames
+        //
+        // e.g. if the two ground-defined offset frames are separated by (0, 1, 0), then the joint should set
+        //      its y translation to +1 (if possible). If it isn't possible to translate/rotate the joint then
+        //      we have a UI error (the UI should only allow the user to change the frame locations based on
+        //      the joint type)
+        SetJointCoordinatesBasedOnFrameDifferences(*jointUniqPtr, toParentPofInGround, toChildPofInGround);
+
+        // add + connect the joint to the POFs
+        jointUniqPtr->addFrame(parentPOF.get());
+        jointUniqPtr->addFrame(childPOF.get());
+        jointUniqPtr->connectSocket_parent_frame(*parentPOF);
+        jointUniqPtr->connectSocket_child_frame(*childPOF);
+        parentPOF.release();
+        childPOF.release();
+
+        // if a child body was created during this step (e.g. because it's not a cyclic connection)
+        // then add it to the model
+        OSC_ASSERT_ALWAYS(parent.createdBody == nullptr && "at this point in the algorithm, all parents should have already been created");
+        if (child.createdBody) {
+            model.addBody(child.createdBody.release());
+        }
+
+        // add the joint to the model
+        model.addJoint(jointUniqPtr.release());
+
+        // recurse by finding where the child of this joint is the parent of some other joint
+        OSC_ASSERT_ALWAYS(child.bodyEl != nullptr && "child should always be an identifiable body element");
+        for (auto const& [otherJointID, otherJoint] : mg.GetJoints()) {
+            if (IsParentOfJoint(otherJoint, *child.bodyEl)) {
+                AttachJointRecursive(mg, model, otherJoint, visitedBodies, visitedJoints);
+            }
+        }
+    }
+
+    // attaches `BodyEl` into `model` by directly attaching it to ground
+    void AttachBodyDirectlyToGround(ModelGraph const& mg,
+                                    OpenSim::Model& model,
+                                    BodyEl const& bodyEl,
+                                    std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies)
+    {
+        auto addedBody = CreateDetatchedBody(mg, bodyEl);
+        auto joint = std::make_unique<OpenSim::FreeJoint>();
+
+        // set joint name
+        joint->setName(bodyEl.GetName() + "_to_ground");
+
+        // set joint coordinate names
+        SetJointCoordinateNames(*joint, bodyEl.GetName());
+
+        // set joint's default location of the body's position in the ground
+        SetJointCoordinatesBasedOnFrameDifferences(*joint, TranslationOrientation{}, bodyEl.GetTranslationOrientationInGround());
+
+        // connect joint from ground to the body
+        joint->connectSocket_parent_frame(model.getGround());
+        joint->connectSocket_child_frame(*addedBody);
+
+        // populate it in the "already visited bodies" cache
+        visitedBodies[bodyEl.GetLogicalID()] = addedBody.get();
+
+        // add the body + joint to the output model
+        model.addBody(addedBody.release());
+        model.addJoint(joint.release());
+    }
+
+    // if there are no issues, returns a new OpenSim::Model created from the Modelgraph
+    //
+    // otherwise, returns nullptr and issuesOut will be populated with issue messages
+    std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromModelGraph(ModelGraph const& mg,
+                                                                     std::vector<std::string>& issuesOut)
+    {
+        if (GetModelGraphIssues(mg, issuesOut)) {
+            log::error("cannot create an osim model: issues detected");
+            return nullptr;
+        }
+
+        // create the output model
+        auto model = std::make_unique<OpenSim::Model>();
+
+        // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
+        for (auto const& [meshID, mesh] : mg.GetMeshes()) {
+            if (IsAttachedToGround(mesh)) {
+                AttachMeshElToFrame(mesh, TranslationOrientation{}, model->updGround());
+            }
+        }
+
+        // keep track of any bodies/joints already visited (there might be cycles)
+        std::unordered_map<LogicalID, OpenSim::Body*> visitedBodies;
+        std::unordered_set<LogicalID> visitedJoints;
+
+        // add any bodies that participate in no joints into the model with a freejoint
+        for (auto const& [bodyID, body] : mg.GetBodies()) {
+            if (!IsChildInAnyJoint(mg, body)) {
+                AttachBodyDirectlyToGround(mg, *model, body, visitedBodies);
+            }
+        }
+
+        // add bodies that do participate in joints into the model
+        //
+        // note: these bodies may use the non-participating bodies (above) as parents
+        for (auto const& [jointID, joint] : mg.GetJoints()) {
+
+            auto parentID = joint.GetParentBodyID();
+
+            if (IsJointParentGround(joint) || ContainsKey(visitedBodies, parentID)) {
+                AttachJointRecursive(mg, *model, joint, visitedBodies, visitedJoints);
+            }
+        }
+
+        return model;
+    }
 }
 
+// undo/redo/snapshot support
+//
+// the editor has to support undo/redo/snapshots, because it's feasible that the user
+// will want to undo a change they make.
+//
+// this implementation leans on the fact that the modelgraph (above) tries to follow value
+// semantics, so copying an entire modelgraph is possible, rather than (e.g.) holding onto
+// command buffers (command pattern) or other alternatives
 namespace {
-    static gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
+
+    // a single immutable and independent snapshot of the model, with a commit message + time
+    // explaining what the snapshot "is" (e.g. "loaded file", "rotated body") and when it was
+    // created
+    class ModelGraphSnapshot {
+    public:
+        ModelGraphSnapshot(ModelGraph const& modelGraph,
+                           std::string_view commitMessage) :
+
+            m_ModelGraph{modelGraph},
+            m_CommitMessage{commitMessage},
+            m_CommitTime{std::chrono::system_clock::now()}
+        {
+        }
+
+        ModelGraph const& GetModelGraph() const { return m_ModelGraph; }
+        std::string const& GetCommitMessage() const { return m_CommitMessage; }
+        std::chrono::system_clock::time_point const& GetCommitTime() const { return m_CommitTime; }
+
+    private:
+        ModelGraph m_ModelGraph;
+        std::string m_CommitMessage;
+        std::chrono::system_clock::time_point m_CommitTime;
+    };
+
+
+    // undoable model graph storage
+    class SnapshottableModelGraph final {
+    public:
+        SnapshottableModelGraph() :
+            m_Current{},
+            m_Snapshots{ModelGraphSnapshot{m_Current, "created model"}},
+            m_CurrentIsBasedOn{0}
+        {
+        }
+
+        ModelGraph& Current() { return m_Current; }
+        ModelGraph const& Current() const { return m_Current; }
+
+        void CommitCurrent(std::string_view commitMessage)
+        {
+            m_Snapshots.emplace_back(m_Current, commitMessage);
+            m_CurrentIsBasedOn = m_Snapshots.size() - 1;
+        }
+
+    private:
+        ModelGraph m_Current;  // mutateable staging area from which commits can be made
+        std::vector<ModelGraphSnapshot> m_Snapshots;  // frozen snapshots of previously-made states
+        size_t m_CurrentIsBasedOn;
+    };
+}
+
+// rendering support
+//
+// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
+// renderable in the UI
+namespace {
+
+    constexpr float g_SphereRadius = 0.025f;
+
+    // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
+    // to some sphere in the scene (e.g. a body/ground)
+    glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
+    {
+        Sphere sphereMesh{{0.0f, 0.0f, 0.0f}, 1.0f};
+        return SphereToSphereXform(sphereMesh, sceneSphere);
+    }
+
+
+    // returns a quad used for rendering the chequered floor
+    Mesh generateFloorMesh()
+    {
+        Mesh m{GenTexturedQuad()};
+        m.scaleTexCoords(200.0f);
+        return m;
+    }
+
+    // returns a multiampled render buffer with the given format + dimensions
+    gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
     {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
@@ -704,7 +1350,8 @@ namespace {
         return rv;
     }
 
-    static gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
+    // returns a non-multisampled render buffer with the given format + dimensions
+    gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
     {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
@@ -712,7 +1359,8 @@ namespace {
         return rv;
     }
 
-    static void SceneTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
+    // sets the supplied texture with the appropriate dimensions, parameters, etc. to be used as a scene texture
+    void SetTextureAsSceneTextureTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
     {
         gl::BindTexture(out);
         gl::TexImage2D(out.type, level, internalFormat, dims.x, dims.y, 0, format, type, nullptr);
@@ -724,17 +1372,21 @@ namespace {
         gl::BindTexture();
     }
 
-    static gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
+    // returns a texture as a scene texture (specific params, etc.) with the given format, dims, etc.
+    gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
     {
         gl::Texture2D rv;
-        SceneTex(rv, level, internalFormat, dims, format, type);
+        SetTextureAsSceneTextureTex(rv, level, internalFormat, dims, format, type);
         return rv;
     }
 
+    // declares a type that can bind an OpenGL buffer type to an FBO in the current OpenGL context
     struct FboBinding {
+        virtual ~FboBinding() noexcept = default;
         virtual void Bind() = 0;
     };
 
+    // defines a way of binding to a render buffer to the current FBO
     struct RboBinding final : FboBinding {
         GLenum attachment;
         gl::RenderBuffer& rbo;
@@ -750,6 +1402,7 @@ namespace {
         }
     };
 
+    // defines a way of binding to a texture buffer to the current FBO
     struct TexBinding final : FboBinding {
         GLenum attachment;
         gl::Texture2D& tex;
@@ -766,6 +1419,7 @@ namespace {
         }
     };
 
+    // returns an OpenGL framebuffer that is bound to the specified `FboBinding`s
     template<typename... Binding>
     gl::FrameBuffer FrameBufferWithBindings(Binding... bindings)
     {
@@ -776,7 +1430,7 @@ namespace {
         return rv;
     }
 
-    // thing being drawn in the scene
+    // something that is being drawn in the scene
     struct DrawableThing final {
         std::shared_ptr<Mesh> mesh;
         glm::mat4x3 modelMatrix;
@@ -786,29 +1440,32 @@ namespace {
         std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
     };
 
-    static bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
-    {
-        return std::tie(b.color.a, b.mesh) < std::tie(a.color.a, a.mesh);
-    }
-
-    // instance on the GPU
+    // an instance of something that is being drawn, once uploaded to the GPU
     struct SceneGPUInstanceData final {
         glm::mat4x3 modelMtx;
         glm::mat3 normalMtx;
         glm::vec4 rgba;
     };
 
-    static void DrawScene(glm::ivec2 dims,
-                          glm::mat4 const& projMat,
-                          glm::mat4 const& viewMat,
-                          glm::vec3 const& viewPos,
-                          glm::vec3 const& lightDir,
-                          glm::vec3 const& lightCol,
-                          glm::vec4 const& bgCol,
-                          nonstd::span<DrawableThing const> drawables,
-                          gl::Texture2D& outSceneTex)
+    // a predicate used for drawcall ordering
+    bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
     {
+        return std::tie(b.color.a, b.mesh) < std::tie(a.color.a, a.mesh);
+    }
 
+    // draws the drawables to the output texture
+    //
+    // effectively, this is the main top-level rendering function
+    void DrawScene(glm::ivec2 dims,
+                   glm::mat4 const& projMat,
+                   glm::mat4 const& viewMat,
+                   glm::vec3 const& viewPos,
+                   glm::vec3 const& lightDir,
+                   glm::vec3 const& lightCol,
+                   glm::vec4 const& bgCol,
+                   nonstd::span<DrawableThing const> drawables,
+                   gl::Texture2D& outSceneTex)
+    {
         auto samples = App::cur().getSamples();
 
         gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGBA, dims);
@@ -851,7 +1508,7 @@ namespace {
 
         // blit it to the (non-MSXAAed) output texture
 
-        SceneTex(outSceneTex, 0, GL_RGBA, dims, GL_RGBA, GL_UNSIGNED_BYTE);
+        SetTextureAsSceneTextureTex(outSceneTex, 0, GL_RGBA, dims, GL_RGBA, GL_UNSIGNED_BYTE);
         gl::FrameBuffer outputFBO = FrameBufferWithBindings(
             TexBinding{GL_COLOR_ATTACHMENT0, outSceneTex, 0}
         );
@@ -863,7 +1520,7 @@ namespace {
         // draw rims directly over the output texture
         if (true) {
             gl::Texture2D rimsTex;
-            SceneTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
+            SetTextureAsSceneTextureTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
             gl::FrameBuffer rimsFBO = FrameBufferWithBindings(
                 TexBinding{GL_COLOR_ATTACHMENT0, rimsTex, 0}
             );
@@ -911,158 +1568,248 @@ namespace {
 
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
+}
 
-    // node that is currently hovered over by the user's mouse and it's 3D worldspace location
-    class Hover {
+// shared data support
+//
+// this is data that's shared between multiple UI states
+namespace {
+
+    class SharedData final {
     public:
-        Hover() : m_Ptr{}, m_Pos{} {}
-        Hover(std::weak_ptr<Node> ptr, glm::vec3 const& loc) : m_Ptr{std::move(ptr)}, m_Pos{loc} {}
-
-        glm::vec3 const& getPos() const { return m_Pos; }
-
-        std::shared_ptr<Node> lock() const { return m_Ptr.lock(); }
-
-        template<typename T>
-        std::shared_ptr<T> lockDowncasted() const { return std::dynamic_pointer_cast<T>(m_Ptr.lock()); }
-
-        operator bool () const { return m_Ptr.lock() != nullptr; }
-
-        bool operator==(Node const& other) const { return m_Ptr.lock().get() == &other; }
-
-        bool operator==(std::shared_ptr<Node> other) const { return m_Ptr.lock() == other; }
-
-        void reset()
+        SharedData() = default;
+        SharedData(std::vector<std::filesystem::path>)
         {
-            m_Ptr.reset();
-            m_Pos = {};
+            // TODO: submit to meshloader
         }
 
+
     private:
-        std::weak_ptr<Node> m_Ptr;
-        glm::vec3 m_Pos;
+        // model graph (snapshots) the user is working on
+        SnapshottableModelGraph m_ModelGraphSnapshots;
+
+        // loads meshes in a background thread
+        MeshLoader m_MeshLoader;
+
+        // sphere mesh used by various scene elements
+        std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
+
+        // main 3D scene camera
+        PolarPerspectiveCamera m_3DSceneCamera = []() {
+            PolarPerspectiveCamera rv;
+            rv.phi = fpi4;
+            rv.theta = fpi4;
+            rv.radius = 5.0f;
+            return rv;
+        }();
+
+        // screenspace rect where the 3D scene is currently being drawn to
+        Rect m_3DSceneRect = {};
+
+        // texture the 3D scene is being rendered to
+        //
+        // CAREFUL: must survive beyond the end of the drawcall because ImGui needs it to be
+        //          alive during rendering
+        gl::Texture2D m_3DSceneTex;
+
+        // scene colors
+        struct {
+            glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
+            glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
+            glm::vec4 body = {1.0f, 0.0f, 0.0f, 1.0f};
+        } m_Colors;
+
+        glm::vec3 m_3DSceneLightDir = {-0.34f, -0.25f, 0.05f};
+        glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
+
+        // scale factor for all non-mesh, non-overlay scene elements (e.g.
+        // the floor, bodies)
+        //
+        // this is necessary because some meshes can be extremely small/large and
+        // scene elements need to be scaled accordingly (e.g. without this, a body
+        // sphere end up being much larger than a mesh instance). Imagine if the
+        // mesh was the leg of a fly
+        float m_SceneScaleFactor = 1.0f;
+
+        // floor data
+        //
+        // this is for the chequered floor
+        struct {
+            std::shared_ptr<gl::Texture2D> texture = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
+            std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(generateFloorMesh());
+        } m_Floor;
+
+        // model created by this wizard
+        //
+        // `nullptr` until the model is successfully created
+        std::unique_ptr<OpenSim::Model> m_MaybeOutputModel = nullptr;
+
+        // recycled by the renderer to upload instance data
+        std::vector<SceneGPUInstanceData> m_3DSceneInstanceBuffer;
+
+        // clamped to [0, 1] - used for any active animations, like the dots on the connection lines
+        float m_AnimationPercentage = 0.0f;
+
+        // true if a chequered floor should be drawn
+        bool m_IsShowingFloor = true;
+
+        // true if meshes should be drawn
+        bool m_IsShowingMeshes = true;
+
+        // true if ground should be drawn
+        bool m_IsShowingGround = true;
+
+        // true if bodies should be drawn
+        bool m_IsShowingBodies = true;
+
+        // true if all connection lines between entities should be
+        // drawn, rather than just *hovered* entities
+        bool m_IsShowingAllConnectionLines = true;
+
+        // true if meshes shouldn't be hoverable/clickable in the 3D scene
+        bool m_IsMeshesInteractable = true;
+
+        // true if bodies shouldn't be hoverable/clickable in the 3D scene
+        bool m_IsBodiesInteractable = true;
+
+        // set to true after drawing the ImGui::Image
+        bool m_IsRenderHovered = false;
     };
 }
 
+// state pattern support
+//
+// The mesh importer UI isn't always in one particular state with one particular update->tick->draw
+// algorithm. The UI could be in:
+//
+// - "standard editing mode"           showing the scene, handling hovering, tooltips, move things around, etc.
+// - "assigning mesh mode"             shows the scene differently: only assignable things will be highlighted, etc.
+// - "assigning joint mode (step 1)"   shows the scene differently: can only click other bodies to join to
+// - "assigning joint mode (step 2)"   (e.g.) might be asking the user what joint type they want, etc.
+// - (etc.)
+//
+// The UI needs to be able to handle these states without resorting to a bunch of `if` statements littering
+// every method. The states also need to be able to transition into arbitrary other states because state
+// transitions aren't always linear. For example, the user might start assigning a joint, but cancel out
+// of doing that midway by pressing ESC.
+namespace {
+    class ModelWizardState {
+    public:
+        ModelWizardState(SharedData& sharedData) : m_SharedData{sharedData} {}
+        virtual ~ModelWizardState() noexcept = default;
+
+        SharedData& UpdSharedData() { return m_SharedData; }
+        SharedData const& GetSharedData() { return m_SharedData; }
+
+        virtual std::unique_ptr<ModelWizardState> onEvent(SDL_Event const&) = 0;
+        virtual std::unique_ptr<ModelWizardState> draw() = 0;
+        virtual std::unique_ptr<ModelWizardState> tick(float) = 0;
+
+    private:
+        SharedData& m_SharedData;
+    };
+
+    class StandardModeState final : public ModelWizardState {
+    public:
+        StandardModeState(SharedData& sharedData) : ModelWizardState{sharedData} {}
+
+        void Select(LogicalID elID)
+        {
+            m_Selected.insert(elID);
+        }
+
+        void SelectAll()
+        {
+        }
+
+        std::unique_ptr<ModelWizardState> onEvent(SDL_Event const&) override
+        {
+            return nullptr;
+        }
+
+        std::unique_ptr<ModelWizardState> tick(float) override
+        {
+            return nullptr;
+        }
+
+        std::unique_ptr<ModelWizardState> draw() override
+        {
+            ImGuizmo::BeginFrame();
+
+            std::filesystem::path meshPath = App::resource("geometry/block.vtp");
+            std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(SimTKLoadMesh(meshPath));
+
+            ModelGraph mg;
+
+            // first pendulum part
+            LogicalIDT<BodyEl> firstBlockID = mg.AddBody("firstBlock", {0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
+            BodyEl firstBlockCopy = mg.GetBodyByIDOrThrow(firstBlockID);
+
+            // join it to ground with a joint location +1.0Y in ground
+            mg.AddJoint(
+                *JointRegistry::indexOf(OpenSim::PinJoint{}),
+                "",
+                JointAttachment{LogicalIDT<BodyEl>::empty(), {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}},
+                JointAttachment{firstBlockID, {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}});
+
+            // attach a block to the first pendulum bit
+            LogicalIDT<MeshEl> meshID = mg.AddMesh(mesh, firstBlockID, meshPath);
+            mg.SetMeshTranslationOrientationInGround(meshID, firstBlockCopy.GetTranslationOrientationInGround());
+
+            // second pendulum part
+            LogicalIDT<BodyEl> secondBlockID = mg.AddBody("secondBlock", {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
+
+            // join it to the first part at the first part's location
+            mg.AddJoint(
+                *JointRegistry::indexOf(OpenSim::PinJoint{}),
+                "",
+                JointAttachment{firstBlockID, {{0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}},
+                JointAttachment{secondBlockID, {{0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}});
+
+
+            /*
+            LogicalIDT<MeshEl> meshID = mg.AddMesh(mesh, customJointBodyID, meshPath);
+            TranslationOrientation bodyTO = mg.GetBodyByIDOrThrow(customJointBodyID).GetTranslationOrientationInGround();
+            bodyTO.orientation.x += fpi4;
+            mg.SetMeshTranslationOrientationInGround(meshID, bodyTO);
+            */
+
+            std::vector<std::string> issuesOut;
+            auto osimModel = CreateOpenSimModelFromModelGraph(mg, issuesOut);
+            osimModel->updDisplayHints().set_show_frames(true);
+            OSC_ASSERT_ALWAYS(issuesOut.empty());
+            OSC_ASSERT_ALWAYS(osimModel != nullptr);
+            auto mes = std::make_shared<MainEditorState>(std::move(osimModel));
+            App::cur().requestTransition<ModelEditorScreen>(mes);
+
+            return nullptr;
+        }
+
+    private:
+        // scene elements selected by the user
+        std::unordered_set<LogicalID> m_Selected;
+
+        // (maybe) hover + worldspace location of the hover
+        std::pair<LogicalID, glm::vec3> m_MaybeHover;
+
+        // (maybe) the scene element the user opened a context menu for
+        std::pair<LogicalID, glm::vec3> m_MaybeOpenedContextMenu;
+
+        // ImGuizmo state
+        struct {
+            glm::mat4 mtx{};
+            ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
+        } m_ImGuizmoState;
+    };
+}
+
+/*
+
+// top-level Impl struct
+//
+// this is what the `Screen` keeps between frames
 struct osc::MeshesToModelWizardScreen::Impl final {
-
-    // loader that loads mesh data in a background thread
-    Mesh_loader m_MeshLoader = Mesh_loader::create(respondToMeshloadRequest);
-
-    // sphere mesh used by various scene elements
-    std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
-
-    // model tree the user is editing
-    std::shared_ptr<GroundNode> m_ModelRoot = std::make_shared<GroundNode>();
-
-    // currently-selected tree nodes
-    std::unordered_set<std::shared_ptr<Node>> m_SelectedNodes = {};
-
-    // node that is currently hovered over by the user's mouse and it's 3D worldspace location
-    Hover m_MaybeHover;
-
-    // node that is currently being assigned
-    std::weak_ptr<Node> m_MaybeCurrentAssignment;
-
-    // node that is currently being edited via a context menu
-    Hover m_MaybeNodeOpenedInContextMenu;
-
-    // screenspace rect where the 3D scene is currently being drawn to
-    Rect m_3DSceneRect = {};
-
-    // texture the 3D scene is being rendered to
-    //
-    // CAREFUL: must survive beyond the end of the drawcall because ImGui needs it to be
-    //          alive during rendering
-    gl::Texture2D m_3DSceneTex;
-
-    // scene colors
-    struct {
-        glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
-        glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
-        glm::vec4 body = {1.0f, 0.0f, 0.0f, 1.0f};
-    } m_Colors;
-
-    // scale factor for all non-mesh, non-overlay scene elements (e.g.
-    // the floor, bodies)
-    //
-    // this is necessary because some meshes can be extremely small/large and
-    // scene elements need to be scaled accordingly (e.g. without this, a body
-    // sphere end up being much larger than a mesh instance). Imagine if the
-    // mesh was the leg of a fly
-    float m_SceneScaleFactor = 1.0f;
-
-    // ImGuizmo state
-    struct {
-        glm::mat4 mtx{};
-        ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
-    } m_ImGuizmoState;
-
-    // floor data
-    struct {
-        std::shared_ptr<gl::Texture2D> texture = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
-        std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(generateFloorMesh());
-    } m_Floor;
-
-    PolarPerspectiveCamera m_3DSceneCamera = []() {
-        PolarPerspectiveCamera rv;
-        rv.phi = fpi4;
-        rv.theta = fpi4;
-        rv.radius = 5.0f;
-        return rv;
-    }();
-
-    glm::vec3 m_3DSceneLightDir = {-0.34f, -0.25f, 0.05f};
-    glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
-    glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
-
-    // model created by this wizard
-    //
-    // `nullptr` until the model is successfully created
-    std::unique_ptr<OpenSim::Model> m_MaybeOutputModel = nullptr;
-
-    // recycled by the renderer to upload instance data
-    std::vector<SceneGPUInstanceData> m_3DSceneInstanceBuffer;
-
-    // buffer of known issues
-    std::vector<std::string> m_ErrorMessageBuffer;
-
-    // clamped to [0, 1] - used for any active animations, like the dots on the connection lines
-    float m_AnimationPercentage = 0.0f;
-
-    // true if a chequered floor should be drawn
-    bool m_IsShowingFloor = true;
-
-    // true if meshes should be drawn
-    bool m_IsShowingMeshes = true;
-
-    // true if ground should be drawn
-    bool m_IsShowingGround = true;
-
-    // true if bodies should be drawn
-    bool m_IsShowingBodies = true;
-
-    // true if all connection lines between entities should be
-    // drawn, rather than just *hovered* entities
-    bool m_IsShowingAllConnectionLines = true;
-
-    // true if meshes shouldn't be hoverable/clickable in the 3D scene
-    bool m_IsMeshesInteractable = true;
-
-    // true if bodies shouldn't be hoverable/clickable in the 3D scene
-    bool m_IsBodiesInteractable = true;
-
-    // set to true after drawing the ImGui::Image
-    bool m_IsRenderHovered = false;
-
-
-    // --------------- methods ---------------
-
-    Impl() = default;
-
-    Impl(nonstd::span<std::filesystem::path> meshPaths)
-    {
-        PushMeshLoadRequests(m_ModelRoot, meshPaths);
-    }
 
     void Select(std::shared_ptr<Node> const& node)
     {
@@ -2190,6 +2937,71 @@ struct osc::MeshesToModelWizardScreen::Impl final {
     }
 };
 using Impl = osc::MeshesToModelWizardScreen::Impl;
+*/
+
+// top-level screen implementation
+//
+// this effectively just feeds the underlying state machine pattern established by
+// the `ModelWizardState` class
+struct osc::MeshesToModelWizardScreen::Impl final {
+public:
+    Impl() :
+        m_SharedData{},
+        m_CurrentState{std::make_unique<StandardModeState>(m_SharedData)}
+    {
+    }
+
+    Impl(std::vector<std::filesystem::path> meshPaths) :
+        m_SharedData{std::move(meshPaths)},
+        m_CurrentState{std::make_unique<StandardModeState>(m_SharedData)}
+    {
+    }
+
+    void onMount()
+    {
+        osc::ImGuiInit();
+    }
+
+    void onUnmount()
+    {
+        osc::ImGuiShutdown();
+    }
+
+    void onEvent(SDL_Event const& e)
+    {
+        auto maybeNewState = m_CurrentState->onEvent(e);
+        if (maybeNewState) {
+            m_CurrentState = std::move(maybeNewState);
+        }
+    }
+
+    void draw()
+    {
+        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        osc::ImGuiNewFrame();
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
+
+        auto maybeNewState = m_CurrentState->draw();
+        if (maybeNewState) {
+            m_CurrentState = std::move(maybeNewState);
+        }
+
+        osc::ImGuiRender();
+    }
+
+    void tick(float dt)
+    {
+        auto maybeNewState = m_CurrentState->tick(dt);
+        if (maybeNewState) {
+            m_CurrentState = std::move(maybeNewState);
+        }
+    }
+
+private:
+    SharedData m_SharedData;
+    std::unique_ptr<ModelWizardState> m_CurrentState;
+};
 
 
 // public API
