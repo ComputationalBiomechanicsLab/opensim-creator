@@ -40,4 +40,12 @@ namespace osc {
 
     // set an environment variable's value (process-wide)
     void SetEnv(char const* name, char const* value, bool overwrite);
+
+    // synchronously prompt a user to select files ending with the supplied extensions (e.g. "obj,vtp,stl")
+    //
+    // - `extensions` can be nullptr, meaning "don't filter by extension"
+    // - `extensions` can be a single extension (e.g. "blend")
+    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
+    // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
+    std::vector<std::filesystem::path> PromptUserForFiles(char const* extensions, char const* defaultPath = nullptr);
 }

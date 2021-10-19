@@ -753,7 +753,7 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
         glm::mat4 instanceMmtx = decs[instanceIdx].modelMtx;
         Line cameraRayModelspace = LineApplyXform(cameraRay, glm::inverse(instanceMmtx));
 
-        auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollision(cameraRayModelspace);
+        auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
 
         if (maybeCollision && maybeCollision.distance < closestDistance) {
             closestIdx = instanceIdx;

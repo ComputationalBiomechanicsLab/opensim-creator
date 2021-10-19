@@ -322,7 +322,7 @@ BVH const& osc::Mesh::getTriangleBVH() const {
     return m_Impl->triangleBVH;
 }
 
-RayCollision osc::Mesh::getClosestRayTriangleCollision(Line const& ray) const {
+RayCollision osc::Mesh::getClosestRayTriangleCollisionModelspace(Line const& ray) const {
     if (m_Impl->topography != MeshTopography::Triangles) {
         return RayCollision{false, 0.0f};
     }
@@ -335,6 +335,26 @@ RayCollision osc::Mesh::getClosestRayTriangleCollision(Line const& ray) const {
     } else {
         return RayCollision{false, 0.0f};
     }
+}
+
+RayCollision osc::Mesh::getRayMeshCollisionInWorldspace(glm::mat4 const& model2world, Line const& worldspaceLine) const {
+    // do a fast ray-to-AABB collision test
+    AABB modelspaceAABB = getAABB();
+    AABB worldspaceAABB = AABBApplyXform(modelspaceAABB, model2world);
+
+    RayCollision rayAABBCollision = GetRayCollisionAABB(worldspaceLine, worldspaceAABB);
+
+    if (!rayAABBCollision.hit) {
+        return rayAABBCollision;  // missed the AABB, so *definitely* missed the mesh
+    }
+
+    // it hit the AABB, so it *may* have hit a triangle in the mesh
+    //
+    // refine the hittest by doing a slower ray-to-triangle test
+    glm::mat4 world2model = glm::inverse(model2world);
+    Line modelspaceLine = LineApplyXform(worldspaceLine, world2model);
+
+    return getClosestRayTriangleCollisionModelspace(modelspaceLine);
 }
 
 void osc::Mesh::clear() {

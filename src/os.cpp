@@ -2,6 +2,7 @@
 
 #include "src/Log.hpp"
 
+#include <nfd.h>
 #include <SDL_clipboard.h>
 #include <SDL_error.h>
 #include <SDL_filesystem.h>
@@ -68,6 +69,30 @@ bool osc::SetClipboardText(char const* s) {
 
 void osc::SetEnv(char const* name, char const* value, bool overwrite) {
     SDL_setenv(name, value, overwrite ? 1 : 0);
+}
+
+std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extensions, char const* defaultPath)
+{
+    nfdpathset_t s{};
+    nfdresult_t result = NFD_OpenDialogMultiple(extensions, defaultPath, &s);
+
+    std::vector<std::filesystem::path> rv;
+    if (result == NFD_OKAY) {
+
+        size_t len = NFD_PathSet_GetCount(&s);
+        rv.reserve(len);
+        for (size_t i = 0; i < len; ++i) {
+            rv.push_back(NFD_PathSet_GetPath(&s, i));
+        }
+
+        NFD_PathSet_Free(&s);
+
+    } else if (result == NFD_CANCEL) {
+    } else {
+        log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
+    }
+
+    return rv;
 }
 
 #ifdef __LINUX__

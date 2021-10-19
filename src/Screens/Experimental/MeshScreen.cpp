@@ -100,7 +100,7 @@ void osc::MeshScreen::draw() {
     {
         auto g = t.measure();
         Line const& ray = st.camera.unprojectTopLeftPosToWorldRay(App::cur().getMouseState().pos, App::cur().dims());
-        if (st.m.getClosestRayTriangleCollision(ray)) {
+        if (st.m.getClosestRayTriangleCollisionModelspace(ray)) {
             ImGui::Text("hit");
         }
     }

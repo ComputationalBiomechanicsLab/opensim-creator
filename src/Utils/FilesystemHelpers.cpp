@@ -72,3 +72,7 @@ std::string osc::SlurpFileIntoString(std::filesystem::path const& p) {
 
     return std::move(ss).str();
 }
+
+std::string osc::FileNameWithoutExtension(std::filesystem::path const& p) {
+    return p.filename().replace_extension("").string();
+}

@@ -50,3 +50,20 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 
     }
 }
+
+osc::Rect osc::ContentRegionAvailScreenRect()
+{
+    glm::vec2 topLeft = ImGui::GetCursorScreenPos();
+    glm::vec2 dims = ImGui::GetContentRegionAvail();
+    glm::vec2 bottomRight = topLeft + dims;
+
+    return Rect{topLeft, bottomRight};
+}
+
+void osc::DrawTextureAsImGuiImage(gl::Texture2D& t, glm::vec2 dims)
+{
+    void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.get()));
+    ImVec2 uv0{0.0f, 1.0f};
+    ImVec2 uv1{1.0f, 0.0f};
+    ImGui::Image(textureHandle, dims, uv0, uv1);
+}

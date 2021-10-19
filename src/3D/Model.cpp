@@ -430,6 +430,14 @@ float osc::VecLongestDimVal(glm::ivec2 v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 
+float osc::VecAspectRatio(glm::ivec2 v) noexcept {
+    return static_cast<float>(v.x) / static_cast<float>(v.y);
+}
+
+float osc::VecAspectRatio(glm::vec2 v) noexcept {
+    return v.x/v.y;
+}
+
 glm::vec3 osc::TriangleNormal(glm::vec3 const* v) noexcept {
     glm::vec3 ab = v[1] - v[0];
     glm::vec3 ac = v[2] - v[0];

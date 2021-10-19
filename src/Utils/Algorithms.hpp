@@ -46,6 +46,15 @@ namespace osc {
         return map.find(key) != map.end();
     }
 
+    template<typename Container, typename Compare>
+    void Sort(Container& c, Compare comp)
+    {
+        using std::begin;
+        using std::end;
+
+        std::sort(begin(c), end(c), comp);
+    }
+
     // returns the number of bits set in the input integer
     //
     // e.g. 0x1 --> 1, 0x2 --> 1, 0x3 --> 2, 0xf --> 4

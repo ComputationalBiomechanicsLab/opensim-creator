@@ -61,6 +61,12 @@ namespace osc {
     // returns the *value* of a vector's longest dimension
     float VecLongestDimVal(glm::ivec2) noexcept;
 
+    // returns the aspect ratio of the vec (effectively: x/y)
+    float VecAspectRatio(glm::ivec2) noexcept;
+
+    // returns the aspect ratio of the vec (effectively: x/y)
+    float VecAspectRatio(glm::vec2) noexcept;
+
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
 

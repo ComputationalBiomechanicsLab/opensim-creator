@@ -41,4 +41,7 @@ namespace osc {
 
     // slurp a file's contents into a string
     std::string SlurpFileIntoString(std::filesystem::path const&);
+
+    // returns the given path's filename without an extension (e.g. /dir/model.osim --> model)
+    std::string FileNameWithoutExtension(std::filesystem::path const&);
 }
