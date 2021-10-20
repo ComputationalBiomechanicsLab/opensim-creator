@@ -342,7 +342,8 @@ void osc::UiModel::setSelected(OpenSim::Component const* c) {
 }
 
 bool osc::UiModel::selectionHasTypeHashCode(size_t v) const {
-    return m_Impl->m_CurrentSelection && typeid(*m_Impl->m_CurrentSelection).hash_code() == v;
+    OpenSim::Component& currentSelection =  *m_Impl->m_CurrentSelection;
+    return m_Impl->m_CurrentSelection && typeid(currentSelection).hash_code() == v;
 }
 
 bool osc::UiModel::hasHovered() const {
