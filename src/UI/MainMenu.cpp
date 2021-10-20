@@ -104,7 +104,7 @@ static void actionSaveCurrentModel(UiModel& uim) {
 static void actionSaveCurrentModelAs(UiModel& uim) {
     auto maybePath = promptSaveOneFile();
 
-    if (maybePath, trySaveModel(uim.getModel(), maybePath->string())) {
+    if (maybePath && trySaveModel(uim.getModel(), maybePath->string())) {
         uim.updModel().setInputFileName(maybePath->string());
         App::cur().addRecentFile(*maybePath);
     }

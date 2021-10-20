@@ -582,6 +582,13 @@ struct osc::App::Impl final {
     // current screen being shown (if any)
     std::unique_ptr<Screen> currentScreen = nullptr;
 
+    // number of drawcalls made on this screen
+    //
+    // some systems (especially ImGui) use the first drawcall to set up things
+    // like screen buffers etc. and won't draw a valid render until the second
+    // drawcall
+    uint64_t currentScreenDrawcalls = 0;
+
     // the *next* screen the application should show
     //
     // this is what "requesting a transition" ultimately sets
@@ -593,6 +600,8 @@ static void performScreenTransition(App::Impl& impl) {
     impl.currentScreen->onUnmount();
     impl.currentScreen.reset();
     impl.currentScreen = std::move(impl.nextScreen);
+    impl.currentScreenDrawcalls = 0;
+
     Screen& sref = *impl.currentScreen;
     log::info("mounting screen %s", typeid(sref).name());
     impl.currentScreen->onMount();
@@ -611,7 +620,7 @@ static void appEnterMainLoopUnguarded(App::Impl& impl) {
 
     while (true) {  // gameloop
 
-        bool wait = impl.isInWaitMode;
+        bool wait = impl.isInWaitMode && impl.currentScreenDrawcalls > 1;
         for (SDL_Event e; wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {  // event pump
             wait = false;
 
@@ -665,6 +674,7 @@ static void appEnterMainLoopUnguarded(App::Impl& impl) {
 
         // "draw" the screen into the window framebuffer
         impl.currentScreen->draw();
+        ++impl.currentScreenDrawcalls;
 
         // "present" the rendered screen to the user (can block on VSYNC)
         SDL_GL_SwapWindow(impl.window);
@@ -1038,6 +1048,7 @@ void osc::ImGuiRender() {
 
 void osc::App::makeMainEventLoopWaiting() {
     m_Impl->isInWaitMode = true;
+    requestRedraw();  // ensure it immediately draws *something*
 }
 
 void osc::App::makeMainEventLoopPolling() {
