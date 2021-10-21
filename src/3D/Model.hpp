@@ -67,6 +67,12 @@ namespace osc {
     // returns the aspect ratio of the vec (effectively: x/y)
     float VecAspectRatio(glm::vec2) noexcept;
 
+    // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors
+    glm::vec3 VecKahanSum(glm::vec3 const*, size_t n) noexcept;
+
+    // returns the average of `n` vectors using whichever numerically stable average happens to work
+    glm::vec3 VecNumericallyStableAverage(glm::vec3 const*, size_t n) noexcept;
+
     // returns a normal vector of the supplied (pointed to) triangle (i.e. (v[1]-v[0]) x (v[2]-v[0]))
     glm::vec3 TriangleNormal(glm::vec3 const*) noexcept;
 

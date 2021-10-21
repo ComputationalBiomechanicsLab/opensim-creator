@@ -438,6 +438,27 @@ float osc::VecAspectRatio(glm::vec2 v) noexcept {
     return v.x/v.y;
 }
 
+glm::vec3 osc::VecKahanSum(glm::vec3 const* vs, size_t n) noexcept
+{
+    glm::vec3 sum{};  // accumulator
+    glm::vec3 c{};    // running compensation of low-order bits
+
+    for (size_t i = 0; i < n; ++i) {
+        glm::vec3 y = vs[i] - c;  // subtract the compensation amount from the next number
+        glm::vec3 t = sum + y;    // perform the summation (might lose information)
+        c = (t - sum) - y;        // (t-sum) yields the retained (high-order) parts of `y`, so `c` contains the "lost" information
+        sum = t;                  // CAREFUL: algebreically, `c` always == 0 - despite the computer's (actual) limited precision, the compiler might elilde all of this
+    }
+
+    return sum;
+}
+
+glm::vec3 osc::VecNumericallyStableAverage(glm::vec3 const* vs, size_t n) noexcept
+{
+    glm::vec3 sum = VecKahanSum(vs, n);
+    return sum / static_cast<float>(n);
+}
+
 glm::vec3 osc::TriangleNormal(glm::vec3 const* v) noexcept {
     glm::vec3 ab = v[1] - v[0];
     glm::vec3 ac = v[2] - v[0];
