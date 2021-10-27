@@ -426,7 +426,7 @@ float osc::VecLongestDimVal(glm::vec2 v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 
-float osc::VecLongestDimVal(glm::ivec2 v) noexcept {
+int osc::VecLongestDimVal(glm::ivec2 v) noexcept {
     return v[VecLongestDimIdx(v)];
 }
 

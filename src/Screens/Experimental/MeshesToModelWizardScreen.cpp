@@ -146,6 +146,7 @@ namespace {
 
     std::ostream& operator<<(std::ostream& o, LogicalID const& id) { return o << id.Unwrap(); }
     bool operator==(LogicalID const& lhs, LogicalID const& rhs) { return lhs.Unwrap() == rhs.Unwrap(); }
+    bool operator!=(LogicalID const& lhs, LogicalID const& rhs) { return lhs.Unwrap() != rhs.Unwrap(); }
 
     // strongly-typed version of the above. Purely a development convenience that helps
     // prevent code from trying to use IDs "locked" to one type in contexts where they are
@@ -276,6 +277,18 @@ namespace {
         glm::vec3 orientation;  // Euler angles
     };
 
+    TranslationOrientation GroundTranslationOrientation()
+    {
+        return {{}, {}};
+    }
+
+    TranslationOrientation Midpoint(TranslationOrientation const& a, TranslationOrientation const& b)
+    {
+        glm::vec3 translation = (a.translation + b.translation) / 2.0f;
+        glm::vec3 orientation = (a.orientation + b.orientation) / 2.0f;
+        return TranslationOrientation{translation, orientation};
+    }
+
     // print a `TranslationOrientation` to an output stream
     std::ostream& operator<<(std::ostream& o, TranslationOrientation const& to)
     {
@@ -342,7 +355,7 @@ namespace {
         std::filesystem::path const& GetPath() const { return m_Path; }
 
         std::string const& GetName() const { return m_Name; }
-        void SetName(std::string const& newName) { m_Name = newName; }
+        void SetName(std::string_view newName) { m_Name = newName; }
 
     private:
         LogicalIDT<MeshEl> m_LogicalID;
@@ -417,7 +430,7 @@ namespace {
         LogicalIDT<BodyEl> GetLogicalID() const { return m_LogicalID; }
 
         std::string const& GetName() const { return m_Name; }
-        void SetName(std::string const& newName) { m_Name = newName; }
+        void SetName(std::string_view newName) { m_Name = newName; }
 
         TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
         void SetTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_TranslationOrientationInGround = newTranslationOrientation; }
@@ -523,7 +536,7 @@ namespace {
 
         bool HasUserAssignedName() const { return !m_MaybeUserAssignedName.empty(); }
         std::string const& GetUserAssignedName() const { return m_MaybeUserAssignedName; }
-        void SetUserAssignedName(std::string newName) { m_MaybeUserAssignedName = std::move(newName); }
+        void SetUserAssignedName(std::string_view newName) { m_MaybeUserAssignedName = newName; }
 
         LogicalIDT<BodyEl> GetParentBodyID() const { return m_ParentAttachment.GetBodyID(); }
         void SetParentBodyID(LogicalIDT<BodyEl> newParentBodyID) { m_ParentAttachment.SetBodyID(std::move(newParentBodyID)); }
@@ -663,9 +676,29 @@ namespace {
             UpdMeshByIDOrThrow(meshID).SetAttachmentPoint(bodyID);
         }
 
+        void UnsetMeshAttachmentPoint(LogicalIDT<MeshEl> meshID)
+        {
+            UpdMeshByIDOrThrow(meshID).SetAttachmentPoint(LogicalIDT<BodyEl>::empty());
+        }
+
         void SetMeshTranslationOrientationInGround(LogicalIDT<MeshEl> meshID, TranslationOrientation const& newTO)
         {
             UpdMeshByIDOrThrow(meshID).SetTranslationOrientationInGround(newTO);
+        }
+
+        void SetMeshName(LogicalIDT<MeshEl> meshID, std::string_view newName)
+        {
+            UpdMeshByIDOrThrow(meshID).SetName(newName);
+        }
+
+        void SetBodyName(LogicalIDT<BodyEl> bodyID, std::string_view newName)
+        {
+            UpdBodyByIDOrThrow(bodyID).SetName(newName);
+        }
+
+        void SetBodyTranslationOrientationInGround(LogicalIDT<BodyEl> bodyID, TranslationOrientation const& newTO)
+        {
+            UpdBodyByIDOrThrow(bodyID).SetTranslationOrientationInGround(newTO);
         }
 
         void SetBodyMass(LogicalIDT<BodyEl> bodyID, double newMass)
@@ -790,6 +823,11 @@ namespace {
             }
         }
 
+        TranslationOrientation GetTranslationOrientationInGround(LogicalID id) const
+        {
+            return {GetTranslationInGround(id), GetOrientationInGround(id)};
+        }
+
         // returns empty AABB at point if a point-like element (e.g. mesh, joint pivot)
         AABB GetBounds(LogicalID id) const
         {
@@ -829,7 +867,10 @@ namespace {
 
         void DeSelect(LogicalID id)
         {
-            m_Selected.erase(m_Selected.find(id));
+            auto it = m_Selected.find(id);
+            if (it != m_Selected.end()) {
+                m_Selected.erase(it);
+            }
         }
 
         bool HasSelection() const
@@ -1069,7 +1110,7 @@ namespace {
         meshPhysOffsetFrame->setOffsetTransform(SimTKTransformFromMat4x3(mesh2parent));
 
         // attach mesh to the POF
-        auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.GetPath());
+        auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.GetPath().string());
         mesh->setName(meshEl.GetName());
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
@@ -1402,6 +1443,7 @@ namespace {
 
         // create the output model
         auto model = std::make_unique<OpenSim::Model>();
+        model->updDisplayHints().upd_show_frames() = true;
 
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
         for (auto const& [meshID, mesh] : mg.GetMeshes()) {
@@ -1513,7 +1555,11 @@ namespace {
 
         void Undo()
         {
-            m_CurrentIsBasedOn = m_CurrentIsBasedOn == 0 ? 0 : m_CurrentIsBasedOn-1;
+            if (m_Snapshots.empty()) {
+                return;  // this shouldn't happen, but I'm paranoid
+            }
+
+            m_CurrentIsBasedOn = m_CurrentIsBasedOn <= 0 ? 0 : m_CurrentIsBasedOn-1;
             m_Current = m_Snapshots.at(m_CurrentIsBasedOn).GetModelGraph();
         }
 
@@ -1534,7 +1580,7 @@ namespace {
 
             size_t lastSnapshot = m_Snapshots.size()-1;
 
-            m_CurrentIsBasedOn = m_CurrentIsBasedOn == lastSnapshot ? lastSnapshot : m_CurrentIsBasedOn+1;
+            m_CurrentIsBasedOn = m_CurrentIsBasedOn >= lastSnapshot ? lastSnapshot : m_CurrentIsBasedOn+1;
             m_Current = m_Snapshots.at(m_CurrentIsBasedOn).GetModelGraph();
         }
 
@@ -1656,9 +1702,6 @@ namespace {
         gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
         return rv;
     }
-
-    LogicalID const g_BodyGroupID = LogicalID::next();
-    LogicalID const g_MeshGroupID = LogicalID::next();
 
     // something that is being drawn in the scene
     struct DrawableThing final {
@@ -1815,6 +1858,17 @@ namespace {
 // Data that's shared between multiple UI states.
 namespace {
 
+    // senteniel IDs
+    //
+    // these come in handy when (e.g.) an implementation needs
+    // to differentiate between "empty" and "ground"
+
+    LogicalID const g_GroundID = LogicalID::next();
+
+    LogicalID const g_BodyGroupID = LogicalID::next();
+    LogicalID const g_MeshGroupID = LogicalID::next();
+    LogicalID const g_GroundGroupID = LogicalID::next();
+
     class SharedData final {
     public:
         SharedData() = default;
@@ -1834,6 +1888,11 @@ namespace {
         std::unique_ptr<OpenSim::Model>& UpdOutputModel()
         {
             return m_MaybeOutputModel;
+        }
+
+        void TryCreateOutputModel()
+        {
+            m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetCurrentModelGraph(), m_Issues);
         }
 
         ModelGraph const& GetCurrentModelGraph() const
@@ -1992,6 +2051,145 @@ namespace {
             }
         }
 
+        glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) const
+        {
+            return GetCamera().projectOntoScreenRect(worldPos, Get3DSceneRect());
+        }
+
+        void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
+        {
+            // the line
+            ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 2.0f);
+
+            // triangle indicating connection directionality
+            glm::vec2 midpoint = (parent + child) / 2.0f;
+            glm::vec2 direction = glm::normalize(parent - child);
+            glm::vec2 normal = {-direction.y, direction.x};
+
+            constexpr float triangleWidth = 10.0f;
+            glm::vec2 p1 = midpoint + (triangleWidth/2.0f)*normal;
+            glm::vec2 p2 = midpoint - (triangleWidth/2.0f)*normal;
+            glm::vec2 p3 = midpoint + triangleWidth*direction;
+
+            ImGui::GetForegroundDrawList()->AddTriangleFilled(p1, p2, p3, color);
+        }
+
+        void DrawConnectionLine(MeshEl const& meshEl, ImU32 color) const
+        {
+            glm::vec3 meshLoc = meshEl.GetTranslationInGround();
+            glm::vec3 otherLoc{};
+
+            if (IsAttachedToABody(meshEl)) {
+                BodyEl const& body = GetCurrentModelGraph().GetBodyByIDOrThrow(meshEl.GetAttachmentPoint());
+                otherLoc = body.GetTranslationInGround();
+            }
+
+            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(meshLoc));
+        }
+
+        void DrawConnectionLineToGround(BodyEl const& bodyEl, ImU32 color) const
+        {
+            glm::vec3 bodyLoc = bodyEl.GetTranslationInGround();
+            glm::vec3 otherLoc = {};
+
+            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(bodyLoc));
+        }
+
+        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, LogicalID excludeID = LogicalID::empty()) const
+        {
+            if (jointEl.GetLogicalID() == excludeID) {
+                return;
+            }
+
+            auto childID = jointEl.GetChildBodyID();
+            if (childID != excludeID) {
+                glm::vec3 childLoc = childID && childID != g_GroundID ? GetCurrentModelGraph().GetBodyByIDOrThrow(childID).GetTranslationInGround() : glm::vec3{};
+                glm::vec3 childPivotLoc = jointEl.GetChildAttachmentTranslationInGround();
+                DrawConnectionLine(color, WorldPosToScreenPos(childPivotLoc), WorldPosToScreenPos(childLoc));
+            }
+
+            auto parentID = jointEl.GetParentBodyID();
+            if (parentID != excludeID) {
+                glm::vec3 parentLoc = parentID && parentID != g_GroundID ? GetCurrentModelGraph().GetBodyByIDOrThrow(parentID).GetTranslationInGround() : glm::vec3{};
+                glm::vec3 parentPivotLoc = jointEl.GetParentAttachmentTranslationInGround();
+                DrawConnectionLine(color, WorldPosToScreenPos(parentLoc), WorldPosToScreenPos(parentPivotLoc));
+            }
+        }
+
+        void DrawConnectionLines() const
+        {
+            DrawConnectionLines({0.0f, 0.0f, 0.0f, 0.33f});
+        }
+
+        void DrawConnectionLines(ImVec4 colorVec, LogicalID excludeID = LogicalID::empty()) const
+        {
+            ModelGraph const& mg = GetCurrentModelGraph();
+            ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
+
+            // draw each mesh's connection line
+            for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
+                if (meshID == excludeID) {
+                    continue;
+                }
+
+                DrawConnectionLine(meshEl, color);
+            }
+
+            // draw connection lines for bodies that have a direct (implicit) connection to ground
+            // because they do not participate as a child of any joint
+            for (auto const& [bodyID, bodyEl] : mg.GetBodies()) {
+                if (bodyID == excludeID) {
+                    continue;
+                }
+
+                if (IsChildAttachmentOfAnyJoint(mg, bodyEl)) {
+                    continue;  // will be handled during joint drawing
+                }
+
+                DrawConnectionLineToGround(bodyEl, color);
+            }
+
+            // draw connection lines for each joint
+            for (auto const& [jointID, jointEl] : mg.GetJoints()) {
+                if (jointID == excludeID) {
+                    continue;
+                }
+
+                DrawConnectionLine(jointEl, color, excludeID);
+            }
+        }
+
+        void SetContentRegionAvailAsSceneRect()
+        {
+            Set3DSceneRect(ContentRegionAvailScreenRect());
+        }
+
+        void DrawScene(nonstd::span<DrawableThing> drawables)
+        {
+            // sort for (potentially) instanced rendering
+            Sort(drawables, OptimalDrawOrder);
+
+            // draw 3D scene to texture
+            ::DrawScene(
+                RectDims(Get3DSceneRect()),
+                GetCamera(),
+                GetLightDir(),
+                GetLightColor(),
+                GetBgColor(),
+                drawables,
+                UpdSceneTex());
+
+            // send texture to ImGui
+            DrawTextureAsImGuiImage(UpdSceneTex(), RectDims(Get3DSceneRect()));
+
+            // handle hittesting, etc.
+            SetIsRenderHovered(ImGui::IsItemHovered());
+            if (ImGui::IsItemHovered()) {
+                ImGui::CaptureKeyboardFromApp(false);
+                ImGui::CaptureMouseFromApp(false);
+            }
+        }
+
         bool IsShowingMeshes() const { return m_IsShowingMeshes; }
         bool IsShowingBodies() const { return m_IsShowingBodies; }
         bool IsShowingGround() const { return m_IsShowingGround; }
@@ -2010,6 +2208,10 @@ namespace {
 
         PolarPerspectiveCamera const& GetCamera() const { return m_3DSceneCamera; }
         PolarPerspectiveCamera& UpdCamera() { return m_3DSceneCamera; }
+        void FocusCameraOn(glm::vec3 const& focusPoint)
+        {
+            m_3DSceneCamera.focusPoint = -focusPoint;
+        }
 
         glm::vec3 const& GetLightDir() const { return m_3DSceneLightDir; }
         glm::vec3 const& GetLightColor() const { return m_3DSceneLightColor; }
@@ -2086,12 +2288,30 @@ namespace {
             return rv;
         }
 
-        void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        DrawableThing GenerateGroundSphere(glm::vec4 const& color) const
+        {
+            DrawableThing rv;
+            rv.id = g_GroundID;
+            rv.groupId = g_GroundGroupID;
+            rv.mesh = m_SphereMesh;
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
+            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.color = color;
+            rv.rimColor = 0.0f;
+            rv.maybeDiffuseTex = nullptr;
+            return rv;
+        }
+
+        void AppendAsFrame(LogicalID logicalID,
+                           LogicalID groupID,
+                           TranslationOrientation const& translationOrientation,
+                           std::vector<DrawableThing>& appendOut,
+                           float alpha = 1.0f) const
         {
             // stolen from SceneGeneratorNew.cpp
 
-            glm::vec3 origin = bodyEl.GetTranslationInGround();
-            glm::mat3 rotation = EulerAnglesToMat(bodyEl.GetOrientationInGround());
+            glm::vec3 origin = translationOrientation.translation;
+            glm::mat3 rotation = EulerAnglesToMat(translationOrientation.orientation);
 
             static constexpr float g_FrameAxisLengthRescale = 0.25f;
             static constexpr float g_FrameAxisThickness = 0.0025f;
@@ -2101,12 +2321,12 @@ namespace {
                 Sphere centerSphere{origin, 0.05f * g_FrameAxisLengthRescale};
 
                 DrawableThing& sphere = appendOut.emplace_back();
-                sphere.id = bodyEl.GetLogicalID();
-                sphere.groupId = g_BodyGroupID;
+                sphere.id = logicalID;
+                sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.modelMatrix = SphereMeshToSceneSphereXform(centerSphere);
                 sphere.normalMatrix = NormalMatrix(sphere.modelMatrix);
-                sphere.color = {1.0f, 1.0f, 1.0f, 1.0f};
+                sphere.color = {1.0f, 1.0f, 1.0f, alpha};
                 sphere.rimColor = 0.0f;
                 sphere.maybeDiffuseTex = nullptr;
             }
@@ -2120,12 +2340,12 @@ namespace {
 
                 glm::vec3 prescale = {g_FrameAxisThickness, 1.0f, g_FrameAxisThickness};
                 glm::mat4 prescaleMtx = glm::scale(glm::mat4{1.0f}, prescale);
-                glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
+                glm::vec4 color{0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
 
                 DrawableThing& se = appendOut.emplace_back();
-                se.id = bodyEl.GetLogicalID();
-                se.groupId = g_BodyGroupID;
+                se.id = logicalID;
+                se.groupId = groupID;
                 se.mesh = m_CylinderMesh;
                 se.modelMatrix = SegmentToSegmentXform(cylinderline, axisline) * prescaleMtx;
                 se.normalMatrix = NormalMatrix(se.modelMatrix);
@@ -2133,6 +2353,11 @@ namespace {
                 se.rimColor = 0.0f;
                 se.maybeDiffuseTex = nullptr;
             }
+        }
+
+        void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        {
+            AppendAsFrame(bodyEl.GetLogicalID(), g_BodyGroupID, bodyEl.GetTranslationOrientationInGround(), appendOut);
         }
 
         std::pair<LogicalID, glm::vec3> Hovertest(std::vector<DrawableThing> const& drawables) const
@@ -2185,10 +2410,17 @@ namespace {
             return false;
         }
 
-        void tick(float)
+        void tick(float dt)
         {
             // pop any background-loaded meshes
             PopMeshLoader();
+
+            // update animation percentage thing
+            {
+                float dotMotionsPerSecond = 0.35f;
+                float ignoreMe;
+                m_AnimationPercentage = std::modf(m_AnimationPercentage + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
+            }
 
             // if some screen generated an OpenSim::Model, transition to the main editor
             if (HasOutputModel()) {
@@ -2245,6 +2477,9 @@ namespace {
         glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
 
+        // senteniel ID for ground: used for some hittests
+        LogicalID m_GroundID = LogicalID::next();
+
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)
         //
@@ -2253,6 +2488,12 @@ namespace {
         // sphere end up being much larger than a mesh instance). Imagine if the
         // mesh was the leg of a fly
         float m_SceneScaleFactor = 1.0f;
+
+        // looping animation X
+        float m_AnimationPercentage = 0.0f;
+
+        // buffer containing issues found in the modelgraph
+        std::vector<std::string> m_Issues;
 
         // model created by this wizard
         //
@@ -2304,56 +2545,1059 @@ namespace {
 namespace {
 
     // base class that declares the API that each state must implement
-    class ModelWizardState {
+    class MWState {
     public:
-        ModelWizardState(SharedData& sharedData) : m_SharedData{sharedData} {}
-        virtual ~ModelWizardState() noexcept = default;
+        MWState(SharedData& sharedData) : m_SharedData{sharedData} {}
+        virtual ~MWState() noexcept = default;
 
-        virtual std::unique_ptr<ModelWizardState> onEvent(SDL_Event const&) = 0;
-        virtual std::unique_ptr<ModelWizardState> draw() = 0;
-        virtual std::unique_ptr<ModelWizardState> tick(float) = 0;
+        virtual std::unique_ptr<MWState> onEvent(SDL_Event const&) = 0;
+        virtual std::unique_ptr<MWState> draw() = 0;
+        virtual std::unique_ptr<MWState> tick(float) = 0;
 
     protected:
         SharedData& m_SharedData;
     };
 
-    // UI state for when a user is assigning something in the UI
-    class AssignmentModeState final : public ModelWizardState {
-        using ModelWizardState::ModelWizardState;
+    // forward-declaration so that subscreens can transition to the standard top-level state
+    std::unique_ptr<MWState> CreateStandardState(SharedData&);
 
-        std::unique_ptr<ModelWizardState> onEvent(SDL_Event const&) override
+    // "mesh assignment" state
+    //
+    // this is what's shown when the user is trying to assign a mesh to some other
+    // body in the scene
+    class AssignMeshMWState final : public MWState {
+    public:
+        AssignMeshMWState(SharedData& sharedData, LogicalIDT<MeshEl> meshID) :
+            MWState{sharedData},
+            m_MeshID{meshID}
         {
-            return nullptr;
         }
 
-        std::unique_ptr<ModelWizardState> draw() override
+        LogicalID GetHoverID() const
+        {
+            return m_MaybeHover.first;
+        }
+
+        bool IsHoveringSomething() const
+        {
+            return GetHoverID();
+        }
+
+        bool IsHoveringMesh() const
+        {
+            return GetHoverID() == m_MeshID;
+        }
+
+        bool IsHoveringGround() const
+        {
+            return GetHoverID() == g_GroundID;
+        }
+
+        bool IsHoveringABody() const
+        {
+            return IsHoveringSomething() && !IsHoveringMesh() && !IsHoveringGround();
+        }
+
+        void ClearHover()
+        {
+            m_MaybeHover.first = LogicalID::empty();
+        }
+
+        void UpdateFromImGuiKeyboardState()
+        {
+            if (ImGui::IsKeyReleased(SDL_SCANCODE_ESCAPE)) {
+                // ESC: transition back to main UI
+                m_MaybeNextState = CreateStandardState(m_SharedData);
+            }
+        }
+
+        void DrawMeshHoverTooltip() const
+        {
+            if (!IsHoveringSomething() || !IsHoveringMesh()) {
+                return;
+            }
+
+            // user is hovering the mesh being assigned
+            MeshEl const& meshEl = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID);
+
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted(meshEl.GetName().c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(click to assign the mesh to ground)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawBodyHoverTooltip() const
+        {
+            if (!IsHoveringSomething() || !IsHoveringABody()) {
+                return;
+            }
+
+            // user is hovering a body that the mesh could attach to
+            BodyEl const& bodyEl = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID());
+
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted(bodyEl.GetName().c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(click to assign the mesh to this body)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawGroundHoverTooltip() const
+        {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted("ground");
+            ImGui::SameLine();
+            ImGui::TextDisabled("(click to assign the mesh to ground)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawHoverTooltip() const
+        {
+            if (!IsHoveringSomething()) {
+                return;
+            } else if (IsHoveringMesh()) {
+                DrawMeshHoverTooltip();
+            } else if (IsHoveringABody()) {
+                DrawBodyHoverTooltip();
+            } else if (IsHoveringGround()) {
+                DrawGroundHoverTooltip();
+            }
+        }
+
+        void DoHovertest(std::vector<DrawableThing> const& drawables)
+        {
+            if (!m_SharedData.IsRenderHovered()) {
+                ClearHover();
+                return;
+            }
+
+            m_MaybeHover = m_SharedData.Hovertest(drawables);
+        }
+
+        void DrawConnectionLines()
+        {
+            ImVec4 faintColor = {0.0f, 0.0f, 0.0f, 0.2f};
+            ImVec4 strongColor = {0.0f, 0.0f, 0.0f, 1.0f};
+
+            if (!IsHoveringSomething()) {
+                // draw all existing connection lines faintly
+                m_SharedData.DrawConnectionLines(faintColor);
+                return;
+            }
+
+            // otherwise, draw all *other* connection lines faintly and then handle
+            // the hovertest line drawing
+            m_SharedData.DrawConnectionLines(faintColor, m_MeshID);
+
+            // draw hover connection line strongly
+            auto meshLoc = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID).GetTranslationInGround();
+            auto strongColorU32 = ImGui::ColorConvertFloat4ToU32(strongColor);
+            if (IsHoveringABody()) {
+                auto bodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID()).GetTranslationInGround();
+                m_SharedData.DrawConnectionLine(strongColorU32,
+                                                m_SharedData.WorldPosToScreenPos(bodyLoc),
+                                                m_SharedData.WorldPosToScreenPos(meshLoc));
+            } else if (IsHoveringMesh() || IsHoveringGround()) {
+                auto groundLoc = glm::vec3{0.0f, 0.0f, 0.0f};
+                m_SharedData.DrawConnectionLine(strongColorU32,
+                                                m_SharedData.WorldPosToScreenPos(groundLoc),
+                                                m_SharedData.WorldPosToScreenPos(meshLoc));
+            }
+        }
+
+        void DrawHeaderText() const
+        {
+            char const* const text = "choose a body to assign the mesh to (ESC to cancel)";
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+        }
+
+        void Draw3DViewer()
+        {
+            MeshEl const& meshEl = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID);
+
+            m_SharedData.SetContentRegionAvailAsSceneRect();
+
+            std::vector<DrawableThing> sceneEls;
+
+            // draw mesh slightly faded and with a rim highlight
+            {
+                DrawableThing& meshDrawable = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, m_SharedData.GetMeshColor()));
+                meshDrawable.color.a = 0.25f;
+                meshDrawable.rimColor = 0.25f;
+            }
+
+            // draw bodies as spheres the user can click
+            for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
+                sceneEls.push_back(m_SharedData.GenerateBodyElSphere(bodyEl, {1.0f, 0.0f, 0.0f, 1.0f}));
+            }
+
+            // draw ground as sphere the user can click
+            sceneEls.push_back(m_SharedData.GenerateGroundSphere({0.0f, 0.0f, 0.0f, 1.0f}));
+
+            // draw floor
+            sceneEls.push_back(m_SharedData.GenerateFloorDrawable());
+
+            // hovertest generated geometry
+            DoHovertest(sceneEls);
+
+            // hovertest side-effects
+            if (IsHoveringSomething()) {
+
+                DrawHoverTooltip();
+
+                // handle user clicks
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+
+                    if (IsHoveringMesh() || IsHoveringGround()) {
+                        // user clicked on the mesh: assign mesh to ground (un-assign it)
+                        m_SharedData.UpdCurrentModelGraph().UnsetMeshAttachmentPoint(m_MeshID);
+                        m_SharedData.CommitCurrentModelGraph("assigned mesh to ground");
+                        m_MaybeNextState = CreateStandardState(m_SharedData);  // transition to main UI
+                        App::cur().requestRedraw();
+                    } else if (IsHoveringABody()) {
+                        // user clicked on a body: assign the mesh to the body
+                        auto hoverID = GetHoverID();
+                        auto bodyID = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(hoverID).GetLogicalID();
+
+                        m_SharedData.UpdCurrentModelGraph().SetMeshAttachmentPoint(m_MeshID, bodyID);
+                        m_SharedData.CommitCurrentModelGraph("assigned mesh to body");
+                        m_MaybeNextState = CreateStandardState(m_SharedData);  // transition to main UI
+                        App::cur().requestRedraw();
+                    }
+                }
+            }
+
+            m_SharedData.DrawScene(sceneEls);
+            DrawConnectionLines();
+            DrawHeaderText();
+        }
+
+        std::unique_ptr<MWState> onEvent(SDL_Event const&) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+
+        std::unique_ptr<MWState> tick(float) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdatePolarCameraFromImGuiUserInput(m_SharedData.Get3DSceneDims(), m_SharedData.UpdCamera());
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> draw() override
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("assign")) {
+            if (ImGui::Begin("wizardsstep2viewer")) {
                 ImGui::PopStyleVar();
+                Draw3DViewer();
             } else {
                 ImGui::PopStyleVar();
             }
             ImGui::End();
-            return nullptr;
-        }
 
-        std::unique_ptr<ModelWizardState> tick(float) override
-        {
-            return nullptr;
+            return std::move(m_MaybeNextState);
         }
 
     private:
+        // the mesh being assigned by this state
+        LogicalIDT<MeshEl> m_MeshID;
+
+        // (maybe) next state to transition to
+        std::unique_ptr<MWState> m_MaybeNextState;
+
         // (maybe) hover + worldspace location of the hover
         std::pair<LogicalID, glm::vec3> m_MaybeHover;
     };
 
-    // "standard" UI state: it's what's shown when the user is browsing around the main UI
-    class StandardModeState final : public ModelWizardState {
+    class FreeJointFirstPivotPlacementState final : public MWState {
+    public:
+        FreeJointFirstPivotPlacementState(SharedData& sharedData, LogicalID parentID, LogicalIDT<BodyEl> childBodyID) :
+            MWState{sharedData}
+        {
+        }
+
+    private:
+
+        void UpdateFromImGuiKeyboardState()
+        {
+            if (ImGui::IsKeyReleased(SDL_SCANCODE_ESCAPE)) {
+                m_MaybeNextState = CreateStandardState(m_SharedData);
+                return;
+            }
+        }
+
+        void Draw3DViewer()
+        {
+            ImGui::Text("TODO: assign first joint center and ask user whether the 2nd should be aligned with it (or separate)");
+            if (ImGui::Button("return")) {
+                m_MaybeNextState = CreateStandardState(m_SharedData);
+                return;
+            }
+        }
+
+    public:
+        std::unique_ptr<MWState> onEvent(SDL_Event const&) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+
+        std::unique_ptr<MWState> tick(float) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdatePolarCameraFromImGuiUserInput(m_SharedData.Get3DSceneDims(), m_SharedData.UpdCamera());
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> draw() override
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            if (ImGui::Begin("wizardsstep2viewer")) {
+                ImGui::PopStyleVar();
+                Draw3DViewer();
+            } else {
+                ImGui::PopStyleVar();
+            }
+            ImGui::End();
+
+            return std::move(m_MaybeNextState);
+        }
+    private:
+
+        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
+
+    };
+
+    TranslationOrientation CalcMidpoint(ModelGraph const& mg, LogicalID parentID, LogicalIDT<BodyEl> childID)
+    {
+        TranslationOrientation parentTO = (parentID && parentID != g_GroundID) ? mg.GetTranslationOrientationInGround(parentID) : GroundTranslationOrientation();
+        TranslationOrientation childTO = mg.GetTranslationOrientationInGround(childID);
+        return Midpoint(parentTO, childTO);
+    }
+
+    class PinJointPivotPlacementState final : public MWState {
+    public:
+        PinJointPivotPlacementState(SharedData& sharedData, LogicalID parentID, LogicalIDT<BodyEl> childBodyID) :
+            MWState{sharedData},
+            m_MaybeNextState{nullptr},
+            m_ParentID{parentID},
+            m_ChildBodyID{childBodyID},
+            m_PivotTranslationOrientation{CalcMidpoint(sharedData.GetCurrentModelGraph(), parentID, childBodyID)},
+            m_PivotID{LogicalID::next()}
+        {
+        }
+
+    private:
+
+        glm::vec3 GetParentTranslationInGround() const
+        {
+            if (m_ParentID && m_ParentID != g_GroundID) {
+                return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ParentID);
+            } else {
+                return {};  // ground
+            }
+        }
+
+        glm::vec3 GetParentOrientationInGround() const
+        {
+            if (m_ParentID && m_ParentID != g_GroundID) {
+                return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ParentID);
+            } else {
+                return {};  // ground
+            }
+        }
+
+        glm::vec3 GetChildTranslationInGround() const
+        {
+            return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ChildBodyID);
+        }
+
+        glm::vec3 GetChildOrientationInGround() const
+        {
+            return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ChildBodyID);
+        }
+
+        glm::vec3 const& GetPivotCenter() const
+        {
+            return m_PivotTranslationOrientation.translation;
+        }
+
+        glm::vec3 const& GetPivotOrientation() const
+        {
+            return m_PivotTranslationOrientation.orientation;
+        }
+
+        void CreatePinjointFromCurrentState()
+        {
+            LogicalIDT<BodyEl> parentID = m_ParentID && m_ParentID != g_GroundID ? LogicalIDT<BodyEl>::downcast(m_ParentID) : LogicalIDT<BodyEl>::empty();
+            JointAttachment parentAttachment{parentID, m_PivotTranslationOrientation};
+            JointAttachment childAttachment{m_ChildBodyID, m_PivotTranslationOrientation};
+
+            auto pinjointIdx = *JointRegistry::indexOf(OpenSim::PinJoint{});
+
+            m_SharedData.UpdCurrentModelGraph().AddJoint(pinjointIdx, "pinjoint", parentAttachment, childAttachment);
+            m_SharedData.CommitCurrentModelGraph("added pin joint");
+        }
+
+        void TransitionToStandardScreen()
+        {
+            m_MaybeNextState = CreateStandardState(m_SharedData);
+        }
+
+        void UpdateFromImGuiKeyboardState()
+        {
+            if (ImGui::IsKeyReleased(SDL_SCANCODE_ESCAPE)) {
+                m_MaybeNextState = CreateStandardState(m_SharedData);
+                App::cur().requestRedraw();
+            }
+
+            // R: set manipulation mode to "rotate"
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
+                if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::ROTATE;
+            }
+
+            // G: set manipulation mode to "grab" (translate)
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
+                if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
+            }
+        }
+
+        void DrawConnectionLines() const
+        {
+            glm::vec2 childScreenPos = m_SharedData.WorldPosToScreenPos(GetChildTranslationInGround());
+            glm::vec2 pivotScreenPos = m_SharedData.WorldPosToScreenPos(m_PivotTranslationOrientation.translation);
+            glm::vec2 parentScreenPos = m_SharedData.WorldPosToScreenPos(GetParentTranslationInGround());
+
+            ImU32 blackColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+
+            m_SharedData.DrawConnectionLine(blackColor, pivotScreenPos, childScreenPos);
+            m_SharedData.DrawConnectionLine(blackColor, parentScreenPos, pivotScreenPos);
+        }
+
+        void DrawHeaderText() const
+        {
+            char const* const text = "choose pivot location + orientation (ESC to cancel)";
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+        }
+
+        void DrawPivot3DManipulators()
+        {
+            if (!ImGuizmo::IsUsing()) {
+                m_ImGuizmoState.mtx = TranslationOrientationToBase(m_PivotTranslationOrientation);
+            }
+
+            Rect sceneRect = m_SharedData.Get3DSceneRect();
+            ImGuizmo::SetRect(sceneRect.p1.x, sceneRect.p1.y, RectDims(sceneRect).x, RectDims(sceneRect).y);
+            ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+
+            glm::mat4 viewMatrix = m_SharedData.GetCamera().getViewMtx();
+            glm::mat4 projMatrix = m_SharedData.GetCamera().getProjMtx(RectAspectRatio(sceneRect));
+            glm::mat4 delta;
+
+            bool wasManipulated = ImGuizmo::Manipulate(
+                glm::value_ptr(viewMatrix),
+                glm::value_ptr(projMatrix),
+                m_ImGuizmoState.op,
+                m_ImGuizmoState.mode,
+                glm::value_ptr(m_ImGuizmoState.mtx),
+                glm::value_ptr(delta),
+                nullptr,
+                nullptr,
+                nullptr);
+
+            if (!wasManipulated) {
+                return;
+            }
+
+            glm::vec3 translation;
+            glm::vec3 rotation;
+            glm::vec3 scale;
+            ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(delta), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+            rotation = glm::radians(rotation);
+
+            if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
+                m_PivotTranslationOrientation.orientation = EulerCompose(m_PivotTranslationOrientation.orientation, rotation);
+            } else if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
+                m_PivotTranslationOrientation.translation += translation;
+            }
+        }
+
+        float GetAngleBetweenParentAndChild() const
+        {
+            glm::vec3 pivot = m_PivotTranslationOrientation.translation;
+            glm::vec3 pivot2parent = GetParentTranslationInGround() - pivot;
+            glm::vec3 pivot2child = GetChildTranslationInGround() - pivot;
+            glm::vec3 pivot2parentDir = glm::normalize(pivot2parent);
+            glm::vec3 pivot2childDir = glm::normalize(pivot2child);
+            float cosTheta = glm::dot(pivot2parentDir, pivot2childDir);
+            return glm::acos(cosTheta);
+        }
+
+        float GetPivotAmount() const
+        {
+            if (m_MaybePivotInitialRotationAmount != -1.0f) {
+                return m_MaybePivotInitialRotationAmount;
+            } else {
+                return GetAngleBetweenParentAndChild();
+            }
+        }
+
+        void DrawPivotArc()
+        {
+            glm::vec3 pivotCenter = GetPivotCenter();
+
+            glm::mat3 reorientMtx = EulerAnglesToMat(GetPivotOrientation());
+
+            glm::vec3 xDir = reorientMtx * glm::vec3{1.0f, 0.0f, 0.0f};
+            glm::vec3 p1 = pivotCenter + 0.1f*xDir;
+
+            float ang = GetPivotAmount();
+            glm::mat3 rotate90deg = glm::rotate(glm::mat4{1.0f}, ang, reorientMtx * glm::vec3{0.0f, 0.0f, 1.0f});
+
+            glm::vec3 p2 = pivotCenter + 0.1f*rotate90deg*xDir;
+
+            glm::vec2 midpoint = m_SharedData.WorldPosToScreenPos((p1+p2)/2.0f);
+
+            glm::vec2 cScreen = m_SharedData.WorldPosToScreenPos(pivotCenter);
+            glm::vec2 p1Screen = m_SharedData.WorldPosToScreenPos(p1);
+            glm::vec2 p2Screen = m_SharedData.WorldPosToScreenPos(p2);
+
+            ImDrawList* dl = ImGui::GetForegroundDrawList();
+            dl->AddBezierQuadratic(p1Screen, midpoint, p2Screen, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), 5.0f);
+            //dl->AddCircle(cScreen, 5.0f, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
+            //dl->AddCircle(p1Screen, 5.0f, ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f}));
+            //dl->AddCircle(p2Screen, 5.0f, ImGui::ColorConvertFloat4ToU32({0.0f, 1.0f, 0.0f, 1.0f}));
+        }
+
+        void Draw3DViewer()
+        {
+            m_SharedData.SetContentRegionAvailAsSceneRect();
+
+            std::vector<DrawableThing> sceneEls;
+
+            // draw pivot point as a single frame
+            m_SharedData.AppendAsFrame(m_PivotID, m_PivotID, m_PivotTranslationOrientation, sceneEls);
+
+            float const faintAlpha = 0.1f;
+
+            // draw other bodies faintly and non-clickable
+            for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
+                m_SharedData.AppendAsFrame({}, {}, bodyEl.GetTranslationOrientationInGround(), sceneEls, faintAlpha);
+            }
+
+            // draw meshes faintly and non-clickable
+            for (auto const& [meshID, meshEl] : m_SharedData.GetCurrentModelGraph().GetMeshes()) {
+                DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, m_SharedData.GetMeshColor()));
+                dt.id = {};
+                dt.groupId = {};
+                dt.color.a = faintAlpha;
+            }
+
+            // draw floor
+            sceneEls.push_back(m_SharedData.GenerateFloorDrawable());
+
+            m_SharedData.DrawScene(sceneEls);
+            DrawPivot3DManipulators();
+            DrawPivotArc();
+            DrawConnectionLines();
+            DrawHeaderText();
+        }
+
+        void DrawPlacementTools()
+        {
+            ImGui::Dummy({0.0f, 2.0f});
+            ImGui::Text("orientation tools:");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            {
+                glm::vec3 v = glm::degrees(m_PivotTranslationOrientation.orientation);
+                if (ImGui::InputFloat3("orientation in ground", glm::value_ptr(v))) {
+                    m_PivotTranslationOrientation.orientation = glm::radians(v);
+                }
+            }
+
+            if (ImGui::Button("orient Z towards parent")) {
+
+            }
+
+            if (ImGui::Button("orient Z towards child")) {
+
+            }
+
+            if (ImGui::Button("use parent's orientation")) {
+
+            }
+
+            if (ImGui::Button("use child's orientation")) {
+
+            }
+
+            if (ImGui::Button("orient orthogonally (to parent+child+pivot triangle)")) {
+
+            }
+
+            if (ImGui::Button("orient orthogonally negative (to parent+child+pivot triangle)")) {
+
+            }
+
+            if (ImGui::Button("orient along global axes")) {
+
+            }
+
+            ImGui::Dummy({0.0f, 10.0f});
+            ImGui::Text("translation tools:");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            ImGui::InputFloat3("translation in ground", glm::value_ptr(m_PivotTranslationOrientation.translation));
+
+            if (ImGui::Button("move to parent")) {
+            }
+
+            if (ImGui::Button("move to child")) {
+
+            }
+
+            if (ImGui::Button("move to midpoint")) {
+            }
+
+            ImGui::Dummy({0.0f, 10.0f});
+            ImGui::Text("initial angle tools:");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            float ang = glm::degrees(GetPivotAmount());
+            if (ImGui::InputFloat("initial joint angle", &ang)) {
+                m_MaybePivotInitialRotationAmount = glm::radians(ang);
+            }
+
+
+            ImGui::Dummy({0.0f, 10.0f});
+            ImGui::Text("finishing:");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            if (ImGui::Button("finish")) {
+                CreatePinjointFromCurrentState();
+                TransitionToStandardScreen();
+            }
+        }
+
+    public:
+        std::unique_ptr<MWState> onEvent(SDL_Event const&) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+
+        std::unique_ptr<MWState> tick(float) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+            bool isUsingGizmo = ImGuizmo::IsUsing();
+
+            if (isRenderHovered && !isUsingGizmo) {
+                UpdatePolarCameraFromImGuiUserInput(m_SharedData.Get3DSceneDims(), m_SharedData.UpdCamera());
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> draw() override
+        {
+            ImGuizmo::BeginFrame();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            if (ImGui::Begin("wizardsstep2viewer")) {
+                ImGui::PopStyleVar();
+                Draw3DViewer();
+            } else {
+                ImGui::PopStyleVar();
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("placement tools")) {
+                DrawPlacementTools();
+            }
+            ImGui::End();
+
+            return std::move(m_MaybeNextState);
+        }
+
+    private:
+        // (maybe) next state that should be transitioned to
+        std::unique_ptr<MWState> m_MaybeNextState;
+
+        // ID of the parent-side of the joint (ground/body)
+        LogicalID m_ParentID;
+
+        // ID of the child-side of the joint (always a body)
+        LogicalIDT<BodyEl> m_ChildBodyID;
+
+        // translation+orientation of the pinjoint's pivot
+        TranslationOrientation m_PivotTranslationOrientation;
+
+        // (maybe) the initial amount that the pinjoint is rotated by
+        //
+        // -1.0f implies "let the implementation figure it out", which
+        // it will do by computing the current angle between the parent
+        // and child (from the pivot)
+        float m_MaybePivotInitialRotationAmount = -1.0f;
+
+        // senteniel ID for the pivot, so that hittesting can "see" it
+        LogicalID m_PivotID;
+
+        // ImGuizmo state for 3D manipulators
+        struct {
+            bool wasUsingLastFrame = false;
+            glm::mat4 mtx{};
+            ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
+            ImGuizmo::MODE mode = ImGuizmo::WORLD;
+        } m_ImGuizmoState;
+    };
+
+    // joint assignment: step 1: choose body to join to
+    //
+    // this state is entered when the user clicks "join to" in the UI, indicating
+    // that they want to create a joint in the scene
+    class JointAssignmentStep1State final : public MWState {
+    public:
+        JointAssignmentStep1State(SharedData& sharedData, LogicalIDT<BodyEl> childBodyID) :
+            MWState{sharedData},
+            m_ChildBodyID{childBodyID}
+        {
+        }
+
+    private:
+        LogicalID GetHoverID() const
+        {
+            return m_MaybeHover.first;
+        }
+
+        bool IsHoveringSomething() const
+        {
+            return GetHoverID();
+        }
+
+        bool IsHoveringGround() const
+        {
+            return GetHoverID() == g_GroundID;
+        }
+
+        bool IsHoveringChildBody() const
+        {
+            return GetHoverID() == m_ChildBodyID;
+        }
+
+        bool IsHoveringAnotherBody() const
+        {
+            return IsHoveringSomething() && !IsHoveringGround() && !IsHoveringChildBody();
+        }
+
+        void ClearHover()
+        {
+            m_MaybeHover.first = LogicalID::empty();
+        }
+
+        BodyEl const& GetChildBodyEl() const
+        {
+            return m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_ChildBodyID);
+        }
+
+        void UpdateFromImGuiKeyboardState()
+        {
+            if (ImGui::IsKeyReleased(SDL_SCANCODE_ESCAPE)) {
+                // ESC: transition back to main UI
+                m_MaybeNextState = CreateStandardState(m_SharedData);
+            }
+        }
+
+        void DrawChildHoverTooltip() const
+        {
+            if (!IsHoveringChildBody()) {
+                return;
+            }
+
+            BodyEl const& body = GetChildBodyEl();
+
+            ImGui::BeginTooltip();
+            ImGui::Text("%s", body.GetName().c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(you cannot join bodies to themselves)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawGroundHoverTooltip() const
+        {
+            if (!IsHoveringGround()) {
+                return;
+            }
+
+            ImGui::BeginTooltip();
+            ImGui::Text("ground");
+            ImGui::SameLine();
+            ImGui::TextDisabled("(click to join the body to ground)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawOtherBodyTooltip() const
+        {
+            if (!IsHoveringAnotherBody()) {
+                return;
+            }
+
+            BodyEl const& otherBody = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID());
+
+            ImGui::BeginTooltip();
+            ImGui::Text("%s", otherBody.GetName().c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(click to join)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawHoverTooltip() const
+        {
+            if (!IsHoveringSomething()) {
+                return;
+            } else if (IsHoveringChildBody()) {
+                DrawChildHoverTooltip();
+            } else if (IsHoveringGround()) {
+                DrawGroundHoverTooltip();
+            } else if (IsHoveringAnotherBody()) {
+                DrawOtherBodyTooltip();
+            }
+        }
+
+        void DoHovertest(std::vector<DrawableThing> const& drawables)
+        {
+            if (!m_SharedData.IsRenderHovered()) {
+                ClearHover();
+                return;
+            }
+
+            m_MaybeHover = m_SharedData.Hovertest(drawables);
+        }
+
+        void DrawHeaderText() const
+        {
+            char const* const text = "choose a body (or ground) to join to (ESC to cancel)";
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+        }
+
+        void DrawConnectionLines() const
+        {
+            ImVec4 faintColor = {0.0f, 0.0f, 0.0f, 0.2f};
+            ImVec4 strongColor = {0.0f, 0.0f, 0.0f, 1.0f};
+            auto strongColorU32 = ImGui::ColorConvertFloat4ToU32(strongColor);
+
+            if (!IsHoveringSomething()) {
+                // draw all existing connection lines faintly
+                m_SharedData.DrawConnectionLines(faintColor);
+                return;
+            }
+
+            // otherwise, draw all *other* connection lines faintly and then handle
+            // the hovertest line drawing
+            m_SharedData.DrawConnectionLines(faintColor, m_ChildBodyID);
+
+            glm::vec3 const& childBodyLoc = GetChildBodyEl().GetTranslationInGround();
+
+            if (IsHoveringAnotherBody()) {
+                glm::vec3 const& otherBodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID()).GetTranslationInGround();
+                m_SharedData.DrawConnectionLine(strongColorU32,
+                                                m_SharedData.WorldPosToScreenPos(otherBodyLoc),
+                                                m_SharedData.WorldPosToScreenPos(childBodyLoc));
+            } else if (IsHoveringGround()) {
+                glm::vec3 groundLoc = {0.0f, 0.0f, 0.0f};
+                m_SharedData.DrawConnectionLine(strongColorU32,
+                                                m_SharedData.WorldPosToScreenPos(groundLoc),
+                                                m_SharedData.WorldPosToScreenPos(childBodyLoc));
+            }
+        }
+
+        void HandleHovertestSideEffects()
+        {
+            if (!IsHoveringSomething()) {
+                return;
+            }
+
+            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+                // user has clicked what they want, so present them with the joint type
+                // popup modal
+
+                m_MaybeUserParentChoice = GetHoverID();
+                ImGui::OpenPopup(m_JointTypePopupName);
+                App::cur().requestRedraw();
+            }
+        }
+
+        void DrawJointTypeSelectionPopupIfUserHasSelectedSomething()
+        {
+            if (!m_MaybeUserParentChoice) {
+                return;
+            }
+
+            // otherwise: try to draw the popup (should be opened by this point)
+
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(512, 0));
+            if (!ImGui::BeginPopupModal(m_JointTypePopupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+                return;  // not showing modal popup
+            }
+
+            if (ImGui::Button("PinJoint")) {
+                m_MaybeNextState = std::make_unique<PinJointPivotPlacementState>(m_SharedData, m_MaybeUserParentChoice, m_ChildBodyID);
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (ImGui::Button("FreeJoint")) {
+                m_MaybeNextState = std::make_unique<FreeJointFirstPivotPlacementState>(m_SharedData, m_MaybeUserParentChoice, m_ChildBodyID);
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        void Draw3DViewer()
+        {
+            // ensure render is sized correctly
+            m_SharedData.SetContentRegionAvailAsSceneRect();
+
+            std::vector<DrawableThing> sceneEls;
+
+            // draw bodies as spheres the user can click
+            for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
+                DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateBodyElSphere(bodyEl, {1.0f, 0.0f, 0.0f, 1.0f}));
+                if (bodyID == m_ChildBodyID) {
+                    dt.color.a = 0.1f;  // can't self-assign, so fade it a bit
+                }
+            }
+
+            // draw meshes faintly and non-clickable
+            for (auto const& [meshID, meshEl] : m_SharedData.GetCurrentModelGraph().GetMeshes()) {
+                DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, {1.0f, 1.0f, 1.0f, 0.1f}));
+                dt.id = LogicalID::empty();
+                dt.groupId = LogicalID::empty();
+            }
+
+            // draw ground as clickable sphere
+            sceneEls.push_back(m_SharedData.GenerateGroundSphere({0.0f, 0.0f, 0.0f, 1.0f}));
+
+            // draw floor normally
+            sceneEls.push_back(m_SharedData.GenerateFloorDrawable());
+
+            // hovertest generated geometry
+            DoHovertest(sceneEls);
+
+            // handle any hovertest side effects (state transitions, etc.)
+            HandleHovertestSideEffects();
+
+            // draw everything
+            m_SharedData.DrawScene(sceneEls);
+            DrawHoverTooltip();
+            DrawConnectionLines();
+            DrawHeaderText();
+            DrawJointTypeSelectionPopupIfUserHasSelectedSomething();
+        }
+
+    public:
+        std::unique_ptr<MWState> onEvent(SDL_Event const&) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdateFromImGuiKeyboardState();
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+
+        std::unique_ptr<MWState> tick(float) override
+        {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdatePolarCameraFromImGuiUserInput(m_SharedData.Get3DSceneDims(), m_SharedData.UpdCamera());
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> draw() override
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            if (ImGui::Begin("wizardsstep2viewer")) {
+                ImGui::PopStyleVar();
+                Draw3DViewer();
+            } else {
+                ImGui::PopStyleVar();
+            }
+            ImGui::End();
+
+            return std::move(m_MaybeNextState);
+        }
+
+    private:
+        // the body that the user clicked "join to" on
+        LogicalIDT<BodyEl> m_ChildBodyID;
+
+        // (maybe) next state to transition to
+        std::unique_ptr<MWState> m_MaybeNextState;
+
+        // (maybe) hover + worldspace location of the user's mouse hover
+        std::pair<LogicalID, glm::vec3> m_MaybeHover;
+
+        // (maybe) the body/ground the user selected
+        LogicalID m_MaybeUserParentChoice = LogicalID::empty();
+
+        // name of the ImGui popup that lets the user select a joint type
+        char const* m_JointTypePopupName = "select joint type";
+    };
+
+
+    // "standard" UI state
+    //
+    // this is what the user is typically interacting with when the UI loads
+    class StandardMWState final : public MWState {
     public:
 
-        StandardModeState(SharedData& sharedData) :
-            ModelWizardState{sharedData},
+        StandardMWState(SharedData& sharedData) :
+            MWState{sharedData},
             m_MaybeHover{},
             m_MaybeOpenedContextMenu{}
         {
@@ -2417,14 +3661,25 @@ namespace {
             m_SharedData.AddBody(HoverPos());
         }
 
-        void TryStartAssigningHover()
+        void TransitionToAssigningMeshNextFrame(MeshEl const& meshEl)
+        {
+            // request a state transition
+            m_MaybeNextState = std::make_unique<AssignMeshMWState>(m_SharedData, meshEl.GetLogicalID());
+        }
+
+        void TryTransitionToAssigningHoveredMeshNextFrame()
         {
             if (!HasHover()) {
                 return;
             }
 
-            // request a state transition
-            m_MaybeNextState = std::make_unique<AssignmentModeState>(m_SharedData);
+            MeshEl const* maybeMesh = m_SharedData.UpdCurrentModelGraph().TryGetMeshElByID(HoverID());
+
+            if (!maybeMesh) {
+                return;  // not hovering a mesh
+            }
+
+            TransitionToAssigningMeshNextFrame(*maybeMesh);
         }
 
         void OpenHoverContextMenu()
@@ -2452,7 +3707,7 @@ namespace {
 
             // A: assign a parent for the hovered element
             if (ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
-                TryStartAssigningHover();
+                TryTransitionToAssigningHoveredMeshNextFrame();
             }
 
             // S: set manipulation mode to "scale"
@@ -2482,7 +3737,7 @@ namespace {
             // modified keys
 
             bool superPressed = ImGui::IsKeyDown(SDL_SCANCODE_LGUI) || ImGui::IsKeyDown(SDL_SCANCODE_RGUI);
-            bool ctrlPressed = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
+            bool ctrlPressed = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
             bool shiftPressed = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             bool ctrlOrSuperPressed =  superPressed || ctrlPressed;
 
@@ -2505,18 +3760,124 @@ namespace {
         void DrawBodyContextMenu(BodyEl const& bodyEl)
         {
             if (ImGui::BeginPopup(m_ContextMenuName)) {
-                if (ImGui::MenuItem("do body stuff")) {
-
+                if (ImGui::MenuItem("focus camera on this")) {
+                    m_SharedData.FocusCameraOn(bodyEl.GetTranslationInGround());
                 }
+
+                if (ImGui::MenuItem("create joint to this")) {
+                    m_MaybeNextState = std::make_unique<JointAssignmentStep1State>(m_SharedData, bodyEl.GetLogicalID());
+                }
+
+                if (ImGui::MenuItem("delete")) {
+                    std::string name = bodyEl.GetName();
+                    m_SharedData.UpdCurrentModelGraph().DeleteBodyElByID(bodyEl.GetLogicalID());
+                    ClearHover();
+                    m_MaybeOpenedContextMenu = {};
+                    m_SharedData.CommitCurrentModelGraph("deleted " + name);
+                }
+
+                // draw name editor
+                {
+                    char buf[256];
+                    std::strcpy(buf, bodyEl.GetName().c_str());
+                    if (ImGui::InputText("name", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        m_SharedData.UpdCurrentModelGraph().SetBodyName(bodyEl.GetLogicalID(), buf);
+                        m_SharedData.CommitCurrentModelGraph("changed body name");
+                    }
+                }
+
+                // pos editor
+                {
+                    glm::vec3 translation = bodyEl.GetTranslationInGround();
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        TranslationOrientation to = bodyEl.GetTranslationOrientationInGround();
+                        to.translation = translation;
+                        m_SharedData.UpdCurrentModelGraph().SetBodyTranslationOrientationInGround(bodyEl.GetLogicalID(), to);
+                        m_SharedData.CommitCurrentModelGraph("changed body translation");
+                    }
+                }
+
+                // rotation editor
+                {
+                    glm::vec3 orientationDegrees = glm::degrees(bodyEl.GetOrientationInGround());
+                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        TranslationOrientation to = bodyEl.GetTranslationOrientationInGround();
+                        to.orientation = glm::radians(orientationDegrees);
+                        m_SharedData.UpdCurrentModelGraph().SetBodyTranslationOrientationInGround(bodyEl.GetLogicalID(), to);
+                        m_SharedData.CommitCurrentModelGraph("changed body orientation");
+                    }
+                }
+
             }
             ImGui::EndPopup();
         }
 
-        void DrawMeshContextMenu(MeshEl const& meshEl)
+        void DrawMeshContextMenu(MeshEl const& meshEl, glm::vec3 const& clickPos)
         {
             if (ImGui::BeginPopup(m_ContextMenuName)) {
-                if (ImGui::MenuItem("do mesh stuff")) {
+
+                if (ImGui::MenuItem("add body at click location")) {
+                    m_SharedData.AddBody(clickPos);
                 }
+
+                if (ImGui::MenuItem("add body at mesh origin")) {
+                    m_SharedData.AddBody(meshEl.GetTranslationInGround());
+                }
+
+                if (ImGui::MenuItem("add body at mesh bounds center")) {
+                    m_SharedData.AddBody(AABBCenter(GetGroundspaceBounds(*meshEl.GetMesh(), GetModelMatrix(meshEl))));
+                }
+
+                if (ImGui::MenuItem("focus camera on this")) {
+                    m_SharedData.FocusCameraOn(meshEl.GetTranslationInGround());
+                }
+
+                if (ImGui::MenuItem("assign to body")) {
+                    TransitionToAssigningMeshNextFrame(meshEl);
+                }
+
+                if (ImGui::MenuItem("delete")) {
+                    std::string name = meshEl.GetName();
+                    m_SharedData.UpdCurrentModelGraph().DeleteMeshElByID(meshEl.GetLogicalID());
+                    m_SharedData.CommitCurrentModelGraph("deleted " + name);
+                }
+
+                ImGui::Dummy({0.0f, 5.0f});
+                ImGui::Separator();
+                ImGui::Dummy({0.0f, 5.0f});
+
+                // draw name editor
+                {
+                    char buf[256];
+                    std::strcpy(buf, meshEl.GetName().c_str());
+                    if (ImGui::InputText("name", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        m_SharedData.UpdCurrentModelGraph().SetMeshName(meshEl.GetLogicalID(), buf);
+                        m_SharedData.CommitCurrentModelGraph("changed mesh name");
+                    }
+                }
+
+                // pos editor
+                {
+                    glm::vec3 translation = meshEl.GetTranslationInGround();
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        TranslationOrientation to = meshEl.GetTranslationOrientationInGround();
+                        to.translation = translation;
+                        m_SharedData.UpdCurrentModelGraph().SetMeshTranslationOrientationInGround(meshEl.GetLogicalID(), to);
+                        m_SharedData.CommitCurrentModelGraph("changed mesh translation");
+                    }
+                }
+
+                // rotation editor
+                {
+                    glm::vec3 orientationDegrees = glm::degrees(meshEl.GetOrientationInGround());
+                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                        TranslationOrientation to = meshEl.GetTranslationOrientationInGround();
+                        to.orientation = glm::radians(orientationDegrees);
+                        m_SharedData.UpdCurrentModelGraph().SetMeshTranslationOrientationInGround(meshEl.GetLogicalID(), to);
+                        m_SharedData.CommitCurrentModelGraph("changed mesh orientation");
+                    }
+                }
+
             }
             ImGui::EndPopup();
         }
@@ -2540,7 +3901,7 @@ namespace {
             ModelGraph const& mg = m_SharedData.GetCurrentModelGraph();
 
             if (MeshEl const* meshEl = mg.TryGetMeshElByID(id)) {
-                DrawMeshContextMenu(*meshEl);
+                DrawMeshContextMenu(*meshEl, m_MaybeOpenedContextMenu.second);
             } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(id)) {
                 DrawBodyContextMenu(*bodyEl);
             } else if (JointEl const* jointEl = mg.TryGetJointElByID(id)) {
@@ -2555,7 +3916,7 @@ namespace {
             for (size_t i = 0; i < snapshots.size(); ++i) {
                 ModelGraphSnapshot const& snapshot = snapshots[i];
 
-                ImGui::PushID(i);
+                ImGui::PushID(static_cast<int>(i));
                 if (ImGui::Selectable(snapshot.GetCommitMessage().c_str(), i == currentSnapshot)) {
                     m_SharedData.UseModelGraphSnapshot(i);
                 }
@@ -2572,10 +3933,11 @@ namespace {
             if (ImGui::Button(ICON_FA_PLUS "Add Body")) {
                 m_SharedData.AddBody({0.0f, 0.0f, 0.0f});
             }
-
             ImGui::PopStyleColor();
 
-            ImGui::Text("hover = %i, pos = (%.2f, %.2f, %.2f)", static_cast<int>(m_MaybeHover.first.Unwrap()), m_MaybeHover.second[0], m_MaybeHover.second[1], m_MaybeHover.second[2]);
+            if (ImGui::Button(ICON_FA_ARROW_RIGHT " Convert to OpenSim model")) {
+                m_SharedData.TryCreateOutputModel();
+            }
         }
 
         void DrawMeshHoverTooltip(MeshEl const& meshEl)
@@ -2769,84 +4131,14 @@ namespace {
                 OpenHoverContextMenu();
             }
 
-            if (!ImGui::IsPopupOpen(m_ContextMenuName)) {
+            if (HasHover() && !ImGui::IsPopupOpen(m_ContextMenuName)) {
                 DrawHoverTooltip();
-            }
-        }
-
-        glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) const
-        {
-            return m_SharedData.GetCamera().projectOntoScreenRect(worldPos, m_SharedData.Get3DSceneRect());
-        }
-
-        void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
-        {
-            // the line
-            ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 2.0f);
-
-            // moving dot between the two points to indicate directionality
-            glm::vec2 child2parent = parent - child;
-            // TODO glm::vec2 dotPos = child + m_AnimationPercentage*child2parent;
-            // TODO ImGui::GetForegroundDrawList()->AddCircleFilled(dotPos, 4.0f, color);
-        }
-
-        void DrawConnectionLine(MeshEl const& meshEl) const
-        {
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-            glm::vec3 meshLoc = meshEl.GetTranslationInGround();
-            glm::vec3 otherLoc{};
-
-            if (IsAttachedToABody(meshEl)) {
-                BodyEl const& body = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(meshEl.GetAttachmentPoint());
-                otherLoc = body.GetTranslationInGround();
-            }
-
-
-            DrawConnectionLine(color, WorldPosToScreenPos(meshLoc), WorldPosToScreenPos(otherLoc));
-        }
-
-        void DrawConnectionLineToGround(BodyEl const& bodyEl) const
-        {
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 1.0f});
-            glm::vec3 bodyLoc = bodyEl.GetTranslationInGround();
-            glm::vec3 otherLoc = {};
-
-            DrawConnectionLine(color, WorldPosToScreenPos(bodyLoc), WorldPosToScreenPos(otherLoc));
-        }
-
-        void DrawConnectionLine(JointEl const& jointEl) const
-        {
-
-        }
-
-        void DrawConnectionLines() const
-        {
-            ModelGraph const& mg = m_SharedData.GetCurrentModelGraph();
-
-            // draw each mesh's connection line
-            for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
-                DrawConnectionLine(meshEl);
-            }
-
-            // draw connection lines for bodies that have a direct (implicit) connection to ground
-            // because they do not participate as a child of any joint
-            for (auto const& [bodyID, bodyEl] : mg.GetBodies()) {
-                if (IsChildAttachmentOfAnyJoint(mg, bodyEl)) {
-                    continue;  // will be handled during joint drawing
-                }
-
-                DrawConnectionLineToGround(bodyEl);
-            }
-
-            // draw connection lines for each joint
-            for (auto const& [jointID, jointEl] : mg.GetJoints()) {
-                DrawConnectionLine(jointEl);
             }
         }
 
         void Draw3DViewer()
         {
-            m_SharedData.Set3DSceneRect(ContentRegionAvailScreenRect());
+            m_SharedData.SetContentRegionAvailAsSceneRect();
 
             std::vector<DrawableThing> sceneEls;
 
@@ -2862,6 +4154,12 @@ namespace {
                 }
             }
 
+            for (auto const& [jointID, jointEl] : m_SharedData.GetCurrentModelGraph().GetJoints()) {
+                // first pivot
+                m_SharedData.AppendAsFrame(jointID, {}, jointEl.GetParentAttachmentTranslationOrientationInGround(), sceneEls);
+                m_SharedData.AppendAsFrame(jointID, {}, jointEl.GetChildAttachmentTranslationOrientationInGround(), sceneEls);
+            }
+
             if (m_SharedData.IsShowingFloor()) {
                 sceneEls.push_back(m_SharedData.GenerateFloorDrawable());
             }
@@ -2874,43 +4172,37 @@ namespace {
                 dt.rimColor = RimIntensity(dt.id);
             }
 
-            // optimize draw order
-            Sort(sceneEls, OptimalDrawOrder);
+            // draw 3D scene (effectively, as an ImGui::Image)
+            m_SharedData.DrawScene(sceneEls);
 
-            // draw
-            DrawScene(
-                RectDims(m_SharedData.Get3DSceneRect()),
-                m_SharedData.GetCamera(),
-                m_SharedData.GetLightDir(),
-                m_SharedData.GetLightColor(),
-                m_SharedData.GetBgColor(),
-                sceneEls,
-                m_SharedData.UpdSceneTex());
-
-            DrawTextureAsImGuiImage(m_SharedData.UpdSceneTex(), RectDims(m_SharedData.Get3DSceneRect()));
-            m_SharedData.SetIsRenderHovered(ImGui::IsItemHovered());
+            // draw overlays/gizmos
             DrawSelection3DManipulators();
             DrawContextMenu();
-            DrawConnectionLines();
+            m_SharedData.DrawConnectionLines();
         }
 
-        std::unique_ptr<ModelWizardState> onEvent(SDL_Event const&) override
+        std::unique_ptr<MWState> onEvent(SDL_Event const&) override
         {
+            if (m_SharedData.IsRenderHovered()) {
+                UpdateFromImGuiKeyboardState();
+            }
+
             return std::move(m_MaybeNextState);
         }
 
-        std::unique_ptr<ModelWizardState> tick(float) override
+        std::unique_ptr<MWState> tick(float) override
         {
-            if (m_SharedData.IsRenderHovered() && !ImGuizmo::IsUsing()) {
+            bool isRenderHovered = m_SharedData.IsRenderHovered();
+            bool isUsingGizmo = ImGuizmo::IsUsing();
+
+            if (isRenderHovered && !isUsingGizmo) {
                 UpdatePolarCameraFromImGuiUserInput(m_SharedData.Get3DSceneDims(), m_SharedData.UpdCamera());
             }
 
-            UpdateFromImGuiKeyboardState();
-
             return std::move(m_MaybeNextState);
         }
 
-        std::unique_ptr<ModelWizardState> draw() override
+        std::unique_ptr<MWState> draw() override
         {
             ImGuizmo::BeginFrame();
 
@@ -2944,7 +4236,7 @@ namespace {
         std::pair<LogicalID, glm::vec3> m_MaybeOpenedContextMenu;
 
         // (maybe) the next state the host screen should transition to
-        std::unique_ptr<ModelWizardState> m_MaybeNextState;
+        std::unique_ptr<MWState> m_MaybeNextState;
 
         // ImGuizmo state
         struct {
@@ -2956,1194 +4248,12 @@ namespace {
 
         static constexpr char const* const m_ContextMenuName = "standardmodecontextmenu";
     };
+
+    std::unique_ptr<MWState> CreateStandardState(SharedData& sd)
+    {
+        return std::make_unique<StandardMWState>(sd);
+    }
 }
-
-/*
- *
-
-            std::filesystem::path meshPath = App::resource("geometry/block.vtp");
-            std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(SimTKLoadMesh(meshPath));
-
-            ModelGraph mg;
-
-            // first pendulum part
-            LogicalIDT<BodyEl> firstBlockID = mg.AddBody("firstBlock", {0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
-            BodyEl firstBlockCopy = mg.GetBodyByIDOrThrow(firstBlockID);
-
-            // join it to ground with a joint location +1.0Y in ground
-            mg.AddJoint(
-                *JointRegistry::indexOf(OpenSim::PinJoint{}),
-                "",
-                JointAttachment{LogicalIDT<BodyEl>::empty(), {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}},
-                JointAttachment{firstBlockID, {{0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}});
-
-            // attach a block to the first pendulum bit
-            LogicalIDT<MeshEl> meshID = mg.AddMesh(mesh, firstBlockID, meshPath);
-            mg.SetMeshTranslationOrientationInGround(meshID, firstBlockCopy.GetTranslationOrientationInGround());
-
-            // second pendulum part
-            LogicalIDT<BodyEl> secondBlockID = mg.AddBody("secondBlock", {1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
-
-            // join it to the first part at the first part's location
-            mg.AddJoint(
-                *JointRegistry::indexOf(OpenSim::PinJoint{}),
-                "",
-                JointAttachment{firstBlockID, {{0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}},
-                JointAttachment{secondBlockID, {{0.5f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}}});
-
-
-
-            LogicalIDT<MeshEl> meshID = mg.AddMesh(mesh, customJointBodyID, meshPath);
-            TranslationOrientation bodyTO = mg.GetBodyByIDOrThrow(customJointBodyID).GetTranslationOrientationInGround();
-            bodyTO.orientation.x += fpi4;
-            mg.SetMeshTranslationOrientationInGround(meshID, bodyTO);
-
-            std::vector<std::string> issuesOut;
-            auto osimModel = CreateOpenSimModelFromModelGraph(mg, issuesOut);
-            osimModel->updDisplayHints().set_show_frames(true);
-            OSC_ASSERT_ALWAYS(issuesOut.empty());
-            OSC_ASSERT_ALWAYS(osimModel != nullptr);
-            auto mes = std::make_shared<MainEditorState>(std::move(osimModel));
-            App::cur().requestTransition<ModelEditorScreen>(mes);
-
-            return nullptr;
-*/
-
-/*
-
-// top-level Impl struct
-//
-// this is what the `Screen` keeps between frames
-struct osc::MeshesToModelWizardScreen::Impl final {
-
-    void Select(std::shared_ptr<Node> const& node)
-    {
-        if (IsType<GroundNode>(*node)) {
-            return;
-        }
-
-        m_SelectedNodes.insert(node);
-    }
-
-    void SelectAll()
-    {
-        m_SelectedNodes.clear();
-        ForEachNode(m_ModelRoot, [this](auto const& nodePtr) { Select(nodePtr); });
-    }
-
-    void DeSelectAll()
-    {
-        m_SelectedNodes.clear();
-    }
-
-    bool IsSelected(Node const& node) const
-    {
-        for (auto const& selectedPtr : m_SelectedNodes) {
-            if (selectedPtr.get() == &node) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    bool HasHover() const
-    {
-        return m_MaybeHover;
-    }
-
-    bool IsHovered(Node const& node) const
-    {
-        return m_MaybeHover == node;
-    }
-
-    void ClearHover()
-    {
-        m_MaybeHover.reset();
-    }
-
-    void SelectHover()
-    {
-        auto hover = m_MaybeHover.lock();
-        if (hover) {
-            m_SelectedNodes.insert(hover);
-        }
-    }
-
-    bool IsInAssignmentMode() const
-    {
-        return m_MaybeCurrentAssignment.lock() != nullptr;
-    }
-
-    void StartAssigning(std::shared_ptr<Node> newAssignee)
-    {
-        // nullptr is allowed: effectively means "stop assigning"
-
-        if (newAssignee && IsType<GroundNode>(*newAssignee)) {
-            return;
-        }
-
-        m_MaybeCurrentAssignment = newAssignee;
-    }
-
-    void StartAssigningHover()
-    {
-        StartAssigning(m_MaybeHover.lock());
-    }
-
-    void LeaveAssignmentMode()
-    {
-        m_MaybeCurrentAssignment.reset();
-    }
-
-    void Assign(std::shared_ptr<Node> assignee, std::shared_ptr<Node> newParent)
-    {
-        auto& assigneeParent = assignee->UpdParent();
-        assigneeParent.RemoveChild(assignee);
-        assignee->SetParent(newParent);
-        newParent->AddChild(assignee);
-    }
-
-    void AssignAssigneeTo(std::shared_ptr<Node> newParent)
-    {
-        if (!newParent) {
-            return;
-        }
-
-        if (!newParent->CanHaveChildren()) {
-            return;
-        }
-
-        auto assignee = m_MaybeCurrentAssignment.lock();
-
-        if (!assignee) {
-            return;
-        }
-
-        Assign(assignee, newParent);
-        LeaveAssignmentMode();
-    }
-
-    float GetRimIntensity(Node const& node) const
-    {
-        if (IsSelected(node)) {
-            return 1.0f;
-        } else if (IsHovered(node)) {
-            return 0.5f;
-        } else {
-            return 0.0f;
-        }
-    }
-
-    void PushMeshLoadRequest(std::weak_ptr<Node> prefAttachmentPoint, std::filesystem::path const& meshPath)
-    {
-        m_MeshLoader.send(MeshLoadRequest{prefAttachmentPoint, meshPath});
-    }
-
-    template<typename Container>
-    void PushMeshLoadRequests(std::weak_ptr<Node> attachmentPoint, Container const& meshPaths)
-    {
-        for (auto const& meshPath : meshPaths) {
-            PushMeshLoadRequest(attachmentPoint, meshPath);
-        }
-    }
-
-    void PromptUserForMeshFiles(std::weak_ptr<Node> attachmentPoint)
-    {
-        for (auto const& meshPath : ::PromptUserForMeshFiles()) {
-            PushMeshLoadRequest(attachmentPoint, meshPath);
-        }
-    }
-
-    std::shared_ptr<BodyNode> AddBody(glm::vec3 const& pos)
-    {
-        auto bodyNode = std::make_shared<BodyNode>(m_ModelRoot, pos);
-        m_ModelRoot->AddChild(bodyNode);
-        return bodyNode;
-    }
-
-    void DeleteNodeButReParentItsChildren(std::shared_ptr<Node> node)
-    {
-        if (!node->CanHaveParent()) {
-            return;
-        }
-
-        auto parentPtr = node->UpdParentPtr();
-        for (auto& childPtr : node->UpdChildren()) {
-            parentPtr->AddChild(childPtr);
-            childPtr->SetParent(parentPtr);
-        }
-        node->ClearChildren();
-
-        node->UpdParent().RemoveChild(node);
-    }
-
-    void DeleteSubtree(std::shared_ptr<Node> node)
-    {
-        if (!node->CanHaveParent()) {
-            return;
-        }
-
-        node->UpdParent().RemoveChild(node);
-    }
-
-    void DeleteSelected()
-    {
-        for (auto const& selectedNodePtr : m_SelectedNodes) {
-            DeleteSubtree(selectedNodePtr);
-        }
-        m_SelectedNodes.clear();
-    }
-
-    void PopMeshLoader()
-    {
-        for (auto maybeResponse = m_MeshLoader.poll(); maybeResponse.has_value(); maybeResponse = m_MeshLoader.poll()) {
-            MeshLoadResponse& meshLoaderResp = *maybeResponse;
-
-            if (std::holds_alternative<MeshLoadOKResponse>(meshLoaderResp)) {
-                // handle OK message from loader
-                MeshLoadOKResponse& ok = std::get<MeshLoadOKResponse>(meshLoaderResp);
-                auto maybeAttachmentPoint = ok.GetPreferredAttachmentPoint().lock();
-                if (!maybeAttachmentPoint) {
-                    maybeAttachmentPoint = m_ModelRoot;
-                }
-                auto meshNode = std::make_shared<MeshNode>(maybeAttachmentPoint, ok.GetMeshPtr(), ok.GetPath());
-                meshNode->ApplyTranslation(glm::translate(glm::mat4{1.0f}, maybeAttachmentPoint->GetPos()));
-                maybeAttachmentPoint->AddChild(meshNode);
-            } else {
-                MeshLoadErrorResponse& err = std::get<MeshLoadErrorResponse>(meshLoaderResp);
-                log::error("%s: error loading mesh file: %s", err.GetPath().string().c_str(), err.what());
-            }
-        }
-    }
-
-    bool IsMouseOverRender() const
-    {
-        return m_IsRenderHovered;
-    }
-
-    void UpdateCameraFromImGuiUserInput()
-    {
-        if (!IsMouseOverRender()) {
-            return;
-        }
-
-        if (ImGuizmo::IsUsing()) {
-            return;
-        }
-
-        UpdatePolarCameraFromImGuiUserInput(RectDims(m_3DSceneRect), m_3DSceneCamera);
-    }
-
-    void UpdateFromImGuiKeyboardState()
-    {
-        // DELETE: delete any selected elements
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
-            DeleteSelected();
-        }
-
-        // B: add body to hovered element
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
-            auto hover = m_MaybeHover.lock();
-            if (hover) {
-                DeSelectAll();
-                glm::vec3 pos = hover->GetCenterPoint();
-                auto body = AddBody(pos);
-                Select(body);
-            }
-        }
-
-        // A: assign a parent for the hovered element
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
-            StartAssigningHover();
-        }
-
-        // ESC: leave assignment state
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
-            LeaveAssignmentMode();
-        }
-
-        // CTRL+A: select all
-        if ((ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
-            SelectAll();
-        }
-
-        // S: set manipulation mode to "scale"
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-            m_ImGuizmoState.op = ImGuizmo::SCALE;
-        }
-
-        // R: set manipulation mode to "rotate"
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
-            m_ImGuizmoState.op = ImGuizmo::ROTATE;
-        }
-
-        // G: set manipulation mode to "grab" (translate)
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
-            m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
-        }
-    }
-
-    void FocusCameraOn(Node const& node)
-    {
-        m_3DSceneCamera.focusPoint = -node.GetCenterPoint();
-    }
-
-    AABB GetSceneAABB() const
-    {
-        AABB sceneAABB = m_ModelRoot->GetBounds(m_SceneScaleFactor);
-        ForEachNode(m_ModelRoot, [&](auto const& node) { sceneAABB = AABBUnion(sceneAABB, node->GetBounds(m_SceneScaleFactor)); });
-        return sceneAABB;
-    }
-
-    void AutoScaleScene()
-    {
-        if (!m_ModelRoot->HasChildren()) {
-            m_SceneScaleFactor = 1.0f;
-            return;
-        }
-
-        float longest = AABBLongestDim(GetSceneAABB());
-
-        m_SceneScaleFactor = 5.0f * longest;
-        m_3DSceneCamera.focusPoint = {};
-        m_3DSceneCamera.radius = 5.0f * longest;
-    }
-
-    glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos)
-    {
-        return m_3DSceneCamera.projectOntoScreenRect(worldPos, m_3DSceneRect);
-    }
-
-    void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child)
-    {
-        // the line
-        ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 2.0f);
-
-        // moving dot between the two points to indicate directionality
-        glm::vec2 child2parent = parent - child;
-        glm::vec2 dotPos = child + m_AnimationPercentage*child2parent;
-        ImGui::GetForegroundDrawList()->AddCircleFilled(dotPos, 4.0f, color);
-    }
-
-    void DrawConnectionLine(ImU32 color, Node const& parent, Node const& child)
-    {
-        DrawConnectionLine(color, WorldPosToScreenPos(parent.GetCenterPoint()), WorldPosToScreenPos(child.GetCenterPoint()));
-    }
-
-    void DrawLineToParent(ImU32 color, Node const& child)
-    {
-        auto parent = child.GetParentPtr();
-        if (parent) {
-            DrawConnectionLine(color, *parent, child);
-        }
-    }
-
-    void DrawLinesToChildren(ImU32 color, Node const& node)
-    {
-        for (auto const& child : node.GetChildren()) {
-            DrawConnectionLine(color, node, *child);
-        }
-    }
-
-    void DrawAllConnectionLines(ImU32 color)
-    {
-        ForEachNode(m_ModelRoot, [this, color](auto const& node) { DrawLinesToChildren(color, *node); });
-    }
-
-    void DrawConnectionLinesFrom(ImU32 color, Node const& centralNode)
-    {
-        DrawLineToParent(color, centralNode);
-        DrawLinesToChildren(color, centralNode);
-    }
-
-    void DrawConnectionLines(ImU32 color)
-    {
-        if (m_IsShowingAllConnectionLines) {
-            DrawAllConnectionLines(color);
-            return;
-        }
-
-        auto hover = m_MaybeHover.lock();
-
-        // draw lines from hover to parent and children
-        if (hover) {
-            DrawConnectionLinesFrom(color, *hover);
-        }
-
-        // draw lines from selected els to their parents
-        for (auto const& selectedNode : m_SelectedNodes) {
-            if (selectedNode != hover) {
-                DrawLineToParent(color, *selectedNode);
-            }
-        }
-    }
-
-    void DrawMeshHoverTooltip(MeshNode const& meshNode, glm::vec3 const& hoverPos)
-    {
-        ImGui::BeginTooltip();
-        ImGui::Text("Imported Mesh");
-        ImGui::Indent();
-        ImGui::Text("Name = %s", meshNode.GetNameCStr());
-        ImGui::Text("Filename = %s", meshNode.GetPath().filename().string().c_str());
-        ImGui::Text("Conntected to = %s", meshNode.GetParent().GetNameCStr());
-        auto pos = meshNode.GetCenterPoint();
-        ImGui::Text("Center = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = meshNode.GetParent().GetCenterPoint();
-        ImGui::Text("Center's Distance to Parent = %.2f", glm::length(pos - parentPos));
-        ImGui::Text("Mouse Location = (%.2f, %.2f, %.2f)", hoverPos.x, hoverPos.y, hoverPos.z);
-        ImGui::Text("Mouse Location's Distance to Parent = %.2f", glm::length(hoverPos - parentPos));
-        ImGui::Unindent();
-        ImGui::EndTooltip();
-    }
-
-    void DrawBodyHoverTooltip(BodyNode const& bodyNode)
-    {
-        ImGui::BeginTooltip();
-        ImGui::TextUnformatted("Body");
-        ImGui::Indent();
-        ImGui::Text("Name = %s", bodyNode.GetNameCStr());
-        ImGui::Text("Connected to = %s", bodyNode.GetParent().GetNameCStr());
-        ImGui::Text("Joint type = %s", bodyNode.GetJointTypeNameCStr());
-        auto pos = bodyNode.GetPos();
-        ImGui::Text("Pos = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-        auto parentPos = bodyNode.GetParent().GetPos();
-        ImGui::Text("Distance to Parent = %.2f", glm::length(pos - parentPos));
-        ImGui::Unindent();
-        ImGui::EndTooltip();
-    }
-
-    void DrawHoverTooltip()
-    {
-        auto hover = m_MaybeHover.lock();
-
-        if (!hover) {
-            return;
-        }
-
-        if (auto meshNodePtr = dynamic_cast<MeshNode*>(hover.get())) {
-            DrawMeshHoverTooltip(*meshNodePtr, m_MaybeHover.getPos());
-        } else if (auto bodyPtr = dynamic_cast<BodyNode*>(hover.get())) {
-            DrawBodyHoverTooltip(*bodyPtr);
-        } else if (auto groundPtr = dynamic_cast<GroundNode*>(hover.get())) {
-            ImGui::BeginTooltip();
-            ImGui::Text("ground");
-            ImGui::EndTooltip();
-        }
-    }
-
-    void DrawMeshContextMenu(std::shared_ptr<MeshNode> meshNode, glm::vec3 const& pos)
-    {
-        if (ImGui::BeginPopup("contextmenu")) {
-            if (ImGui::BeginMenu("add body")) {
-                if (ImGui::MenuItem("at mouse location")) {
-                    auto addedBody = AddBody(pos);
-                    DeSelectAll();
-                    Select(addedBody);
-                }
-
-                if (ImGui::MenuItem("at mouse location, and assign the mesh to it")) {
-                    auto addedBody = AddBody(pos);
-                    Assign(addedBody, meshNode->UpdParentPtr());
-                    Assign(meshNode, addedBody);
-                    DeSelectAll();
-                    Select(addedBody);
-                }
-
-                if (ImGui::MenuItem("at center")) {
-                    auto body = AddBody(meshNode->GetCenterPoint());
-                    DeSelectAll();
-                    Select(body);
-                }
-
-                if (ImGui::MenuItem("at center, and assign this mesh to it")) {
-                    auto addedBody = AddBody(meshNode->GetCenterPoint());
-                    Assign(addedBody, meshNode->UpdParentPtr());
-                    Assign(meshNode, addedBody);
-                    DeSelectAll();
-                    Select(addedBody);
-                }
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::MenuItem("focus camera on this")) {
-                FocusCameraOn(*meshNode);
-            }
-
-            if (ImGui::MenuItem("reassign parent")) {
-                StartAssigning(meshNode);
-            }
-
-            if (ImGui::MenuItem("delete")) {
-                DeleteSubtree(meshNode);
-            }
-
-            // draw name editor
-            {
-                char buf[256];
-                std::strcpy(buf, meshNode->GetNameCStr());
-                if (ImGui::InputText("set mesh name", buf, sizeof(buf))) {
-                    meshNode->SetName(buf);
-                }
-            }
-        }
-        ImGui::EndPopup();
-    }
-
-    void DrawBodyContextMenu(std::shared_ptr<BodyNode> bodyNode)
-    {
-        if (ImGui::BeginPopup("contextmenu")) {
-            if (ImGui::MenuItem("add body (assigned to this one)")) {
-                auto addedBody = AddBody(bodyNode->GetCenterPoint());
-                Assign(addedBody, bodyNode);
-                DeSelectAll();
-                Select(addedBody);
-            }
-
-            if (ImGui::MenuItem("assign mesh(es)")) {
-                PromptUserForMeshFiles(bodyNode);
-            }
-
-            if (ImGui::MenuItem("focus camera on this")) {
-                FocusCameraOn(*bodyNode);
-            }
-
-            if (ImGui::MenuItem("reassign parent")) {
-                StartAssigning(bodyNode);
-            }
-
-            if (ImGui::BeginMenu("delete")) {
-                if (ImGui::MenuItem("entire subtree")) {
-                    DeleteSubtree(bodyNode);
-                }
-
-                if (ImGui::MenuItem("just this")) {
-                    DeleteNodeButReParentItsChildren(bodyNode);
-                }
-
-                ImGui::EndMenu();
-            }
-
-            ImGui::Dummy({0.0f, 5.0f});
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 5.0f});
-
-            // draw name editor
-            {
-                char buf[256];
-                std::strcpy(buf, bodyNode->GetNameCStr());
-                if (ImGui::InputText("name", buf, sizeof(buf))) {
-                    bodyNode->SetName(buf);
-                }
-            }
-
-            // draw mass editor
-            {
-                float mass = static_cast<float>(bodyNode->GetMass());
-                if (ImGui::InputFloat("mass (kg)", &mass)) {
-                    bodyNode->SetMass(static_cast<double>(mass));
-                }
-            }
-
-            ImGui::Dummy({0.0f, 5.0f});
-            ImGui::Separator();
-            ImGui::Dummy({0.0f, 5.0f});
-
-            int jointTypeIdx = static_cast<int>(bodyNode->GetJointTypeIndex());
-            auto jointTypeStrings = JointRegistry::nameCStrings();
-            if (ImGui::Combo("joint type", &jointTypeIdx, jointTypeStrings.data(), jointTypeStrings.size())) {
-                bodyNode->SetJointTypeIndex(static_cast<size_t>(jointTypeIdx));
-            }
-
-            // draw joint name editor
-            {
-                char buf2[256];
-                std::strcpy(buf2, bodyNode->GetJointNameCStr());
-                if (ImGui::InputText("joint name", buf2, sizeof(buf2))) {
-                    bodyNode->SetUserDefinedJointName(buf2);
-                }
-            }
-        }
-        ImGui::EndPopup();
-    }
-
-    void DrawContextMenu()
-    {
-        auto editedNode = m_MaybeNodeOpenedInContextMenu.lock();
-
-        if (!editedNode) {
-            return;
-        }
-
-        if (auto meshNodePtr = std::dynamic_pointer_cast<MeshNode>(editedNode)) {
-            DrawMeshContextMenu(meshNodePtr, m_MaybeNodeOpenedInContextMenu.getPos());
-        } else if (auto bodyPtr = std::dynamic_pointer_cast<BodyNode>(editedNode)) {
-            DrawBodyContextMenu(bodyPtr);
-        }
-    }
-
-    void OpenHoverContextMenu()
-    {
-        if (!m_MaybeHover) {
-            return;
-        }
-
-        m_MaybeNodeOpenedInContextMenu = m_MaybeHover;
-        ImGui::OpenPopup("contextmenu");
-    }
-
-    void Draw3DManipulators()
-    {
-        // if the user isn't manipulating anything, create an up-to-date
-        // manipulation matrix
-        if (!ImGuizmo::IsUsing()) {
-            auto it = m_SelectedNodes.begin();
-            auto end = m_SelectedNodes.end();
-
-            if (it == end) {
-                return;  // nothing's selected
-            }
-
-            AABB aabb = (*it)->GetBounds(m_SceneScaleFactor);
-            while (++it != end) {
-                aabb = AABBUnion(aabb, (*it)->GetBounds(m_SceneScaleFactor));
-            }
-
-            m_ImGuizmoState.mtx = glm::translate(glm::mat4{1.0f}, AABBCenter(aabb));
-        }
-
-        // else: is using OR nselected > 0 (so draw it)
-
-        ImGuizmo::SetRect(
-            m_3DSceneRect.p1.x,
-            m_3DSceneRect.p1.y,
-            RectDims(m_3DSceneRect).x,
-            RectDims(m_3DSceneRect).y);
-        ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
-
-        glm::mat4 delta;
-        bool manipulated = ImGuizmo::Manipulate(
-            glm::value_ptr(m_3DSceneCamera.getViewMtx()),
-            glm::value_ptr(m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect))),
-            m_ImGuizmoState.op,
-            ImGuizmo::LOCAL,
-            glm::value_ptr(m_ImGuizmoState.mtx),
-            glm::value_ptr(delta),
-            nullptr,
-            nullptr,
-            nullptr);
-
-        if (!manipulated) {
-            return;
-        }
-
-        for (auto& node : m_SelectedNodes) {
-            switch (m_ImGuizmoState.op) {
-            case ImGuizmo::SCALE:
-                node->ApplyScale(delta);
-                break;
-            case ImGuizmo::ROTATE:
-                node->ApplyRotation(delta);
-                break;
-            case ImGuizmo::TRANSLATE:
-                node->ApplyTranslation(delta);
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
-    glm::mat4 GetFloorModelMtx() const
-    {
-        glm::mat4 rv{1.0f};
-
-        // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-        // floor down *slightly* to prevent Z fighting from planes rendered from the
-        // model itself (the contact planes, etc.)
-        rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
-        rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
-        rv = glm::scale(rv, {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f});
-
-        return rv;
-    }
-
-    Hover DoHittest(glm::vec2 pos, bool isGroundInteractable, bool isBodiesInteractable, bool isMeshesInteractable) const
-    {
-        if (!PointIsInRect(m_3DSceneRect, pos)) {
-            return {};
-        }
-
-        Line ray = m_3DSceneCamera.unprojectTopLeftPosToWorldRay(pos - m_3DSceneRect.p1, RectDims(m_3DSceneRect));
-
-        std::shared_ptr<Node> closest = nullptr;
-        float closestDist = std::numeric_limits<float>::max();
-
-        ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (!isBodiesInteractable && IsType<BodyNode>(*node)) {
-                return;
-            }
-
-            if (!isMeshesInteractable && IsType<MeshNode>(*node)) {
-                return;
-            }
-
-            if (!isGroundInteractable && IsType<GroundNode>(*node)) {
-                return;
-            }
-
-            RayCollision rc = node->DoHittest(m_SceneScaleFactor, ray);
-            if (rc.hit && rc.distance < closestDist) {
-                closest = node;
-                closestDist = rc.distance;
-            }
-        });
-
-        glm::vec3 hitPos = ray.origin + closestDist*ray.dir;
-
-        return Hover{closest, hitPos};
-    }
-
-    // draw sidebar containing basic documentation and some action buttons
-    void DrawSidebar()
-    {
-        // draw header text /w wizard explanation
-        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-        ImGui::TextUnformatted("Mesh Importer Wizard");
-        ImGui::Separator();
-        ImGui::TextWrapped("This is a specialized utlity for mapping existing mesh data into a new OpenSim model file. This wizard works best when you have a lot of mesh data from some other source and you just want to (roughly) map the mesh data onto a new OpenSim model. You can then tweak the generated model in the main OSC GUI, or an XML editor (advanced).");
-        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-        ImGui::TextWrapped("EXPERIMENTAL: currently under active development. Expect issues. This is shipped with OSC because, even with some bugs, it may save time in certain workflows.");
-        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-        // draw step text /w step information
-        ImGui::Dummy(ImVec2{0.0f, 5.0f});
-        ImGui::TextUnformatted("step 2: build an OpenSim model and assign meshes");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2{0.0f, 2.0f});
-        ImGui::TextWrapped("An OpenSim `Model` is a tree of `Body`s (things with mass) and `Frame`s (things with a location) connected by `Joint`s (things with physical constraints) in a tree-like datastructure that has `Ground` as its root.\n\nIn this step, you will build the Model's tree structure by adding `Body`s and `Frame`s into the scene, followed by assigning your mesh data to them.");
-        ImGui::Dummy(ImVec2{0.0f, 10.0f});
-
-        // draw top-level stats
-
-        // draw editors (checkboxes, sliders, etc.)
-        ImGui::Checkbox("show floor", &m_IsShowingFloor);
-        ImGui::Checkbox("show meshes", &m_IsShowingMeshes);
-        ImGui::Checkbox("show ground", &m_IsShowingGround);
-        ImGui::Checkbox("show bodies", &m_IsShowingBodies);
-        ImGui::Checkbox("can click meshes", &m_IsMeshesInteractable);
-        ImGui::Checkbox("can click bodies", &m_IsBodiesInteractable);
-        ImGui::Checkbox("show all connection lines", &m_IsShowingAllConnectionLines);
-        ImGui::ColorEdit4("mesh color", glm::value_ptr(m_Colors.mesh));
-        ImGui::ColorEdit4("ground color", glm::value_ptr(m_Colors.ground));
-        ImGui::ColorEdit4("body color", glm::value_ptr(m_Colors.body));
-
-        ImGui::InputFloat("scene_scale_factor", &m_SceneScaleFactor);
-        if (ImGui::Button("autoscale scene_scale_factor")) {
-            AutoScaleScene();
-        }
-
-        // draw actions (buttons, etc.)
-        if (ImGui::Button("add body")) {
-            auto newBody = AddBody({0.0f, 0.0f, 0.0f});
-            DeSelectAll();
-            Select(newBody);
-        }
-        if (ImGui::Button("select all")) {
-            SelectAll();
-        }
-        if (ImGui::Button("clear selection")) {
-            ClearHover();
-        }
-        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-        if (ImGui::Button(ICON_FA_PLUS "Import Meshes")) {
-            PromptUserForMeshFiles(m_ModelRoot);
-        }
-        ImGui::PopStyleColor();
-
-        m_ErrorMessageBuffer.clear();
-        if (!GetDagIssuesRecursive(*m_ModelRoot, m_ErrorMessageBuffer)) {
-
-            // show button for model creation if no issues
-            if (ImGui::Button("next >>")) {
-                m_MaybeOutputModel = CreateModelFromDag(*m_ModelRoot, m_ErrorMessageBuffer);
-            }
-        } else {
-
-            // show issues
-            ImGui::Text("issues (%zu):", m_ErrorMessageBuffer.size());
-            ImGui::Separator();
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            for (std::string const& s : m_ErrorMessageBuffer) {
-                ImGui::TextUnformatted(s.c_str());
-            }
-        }
-    }
-
-    DrawableThing GenerateMeshSceneEl(MeshNode const& meshNode, glm::vec4 const& color)
-    {
-        DrawableThing rv;
-        rv.mesh = meshNode.GetMesh();
-        rv.modelMatrix = meshNode.GetModelMatrix(m_SceneScaleFactor);
-        rv.normalMatrix = NormalMatrix(rv.modelMatrix);
-        rv.color = color;
-        rv.rimColor = GetRimIntensity(meshNode);
-        rv.maybeDiffuseTex = nullptr;
-        return rv;
-    }
-
-    DrawableThing GenerateSphereSceneEl(BodyNode const& bodyNode, glm::vec4 const& color)
-    {
-        DrawableThing rv;
-        rv.mesh = m_SphereMesh;
-        rv.modelMatrix = bodyNode.GetModelMatrix(m_SceneScaleFactor);
-        rv.normalMatrix = NormalMatrix(rv.modelMatrix);
-        rv.color = color;
-        rv.rimColor = GetRimIntensity(bodyNode);
-        rv.maybeDiffuseTex = nullptr;
-        return rv;
-    }
-
-    DrawableThing GenerateFloor()
-    {
-        DrawableThing dt;
-        dt.mesh = m_Floor.mesh;
-        dt.modelMatrix = GetFloorModelMtx();
-        dt.normalMatrix = NormalMatrix(dt.modelMatrix);
-        dt.color = {0.0f, 0.0f, 0.0f, 1.0f};  // doesn't matter: it's textured
-        dt.rimColor = 0.0f;
-        dt.maybeDiffuseTex = m_Floor.texture;
-        return dt;
-    }
-
-    DrawableThing GenerateGroundSceneEl()
-    {
-        DrawableThing dt;
-        dt.mesh = m_SphereMesh;
-        dt.modelMatrix = glm::scale(glm::mat4{1.0f}, glm::vec3{g_SphereRadius, g_SphereRadius, g_SphereRadius});
-        dt.normalMatrix = NormalMatrix(dt.modelMatrix);
-        dt.color = {0.0f, 0.0f, 0.0f, 1.0f};
-        dt.rimColor = 0.0f;
-        dt.maybeDiffuseTex = nullptr;
-        return dt;
-    }
-
-    void DrawTextureAsImguiImage(gl::Texture2D& t, glm::vec2 dims)
-    {
-        void* textureHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(t.get()));
-        ImVec2 uv0{0.0f, 1.0f};
-        ImVec2 uv1{1.0f, 0.0f};
-        ImGui::Image(textureHandle, dims, uv0, uv1);
-        m_IsRenderHovered = ImGui::IsItemHovered();
-    }
-
-    void HoverTest_AssignmentMode()
-    {
-        auto assignee = m_MaybeCurrentAssignment.lock();
-        if (!assignee) {
-            return;
-        }
-
-        m_MaybeHover.reset();  // reset old hover
-
-        if (!IsMouseOverRender()) {
-            return;
-        }
-
-        Hover newHover = DoHittest(ImGui::GetMousePos(), true, m_IsBodiesInteractable, false);
-
-        auto hover = newHover.lock();
-
-        if (!hover) {
-            return;  // nothing hovered
-        }
-
-        if (hover == assignee) {
-            return;  // can't self-assign
-        }
-
-        if (!hover->CanHaveChildren()) {
-            return;  // can't assign to a node that can't have childrens
-        }
-
-        if (IsInclusiveDescendantOf(assignee.get(), hover.get())) {
-            return;  // can't perform an assignment that would result in a cycle
-        }
-
-        // else: it's ok for the hovered node to be the new hover
-        m_MaybeHover = newHover;
-
-        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-            AssignAssigneeTo(hover);
-            return;
-        }
-
-        ImGui::BeginTooltip();
-        ImGui::Text("assign to %s", hover->GetNameCStr());
-        ImGui::EndTooltip();
-    }
-
-    void Draw3DViewer_AssignmentMode()
-    {
-        HoverTest_AssignmentMode();
-
-        auto assignee = m_MaybeCurrentAssignment.lock();
-        if (!assignee) {
-            // nothing being assigned, this draw function might be an invalid call, just quit early
-            return;
-        }
-
-        std::vector<DrawableThing> sceneEls;
-
-        // draw assignee as a rim-highlighted el
-        if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(assignee.get())) {
-            auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
-            el.color.a = 0.5f;
-            el.rimColor = 0.5f;
-        } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(assignee.get())) {
-            auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
-            el.color.a = 0.5f;
-            el.rimColor = 0.5f;
-        }
-
-        // draw all frame nodes (they are possible attachment points)
-        ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(node.get())) {
-                auto& el = sceneEls.emplace_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
-                el.rimColor = (m_MaybeHover == *bodyPtr) ? 0.35f : 0.0f;
-                if (IsInclusiveDescendantOf(assignee.get(), bodyPtr)) {
-                    el.color.a = 0.1f;  // make circular assignments faint
-                }
-            } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
-                auto& el = sceneEls.emplace_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
-                el.rimColor = 0.0f;
-                el.color.a = 0.1f;  // show (non-assignable) meshes faintly
-            }
-        });
-
-        // always draw ground (it's a possible attachment point)
-        sceneEls.push_back(GenerateGroundSceneEl());
-
-        if (m_IsShowingFloor) {
-            sceneEls.push_back(GenerateFloor());
-        }
-
-        std::sort(sceneEls.begin(), sceneEls.end(), OptimalDrawOrder);
-
-        DrawScene(
-            RectDims(m_3DSceneRect),
-            m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect)),
-            m_3DSceneCamera.getViewMtx(),
-            m_3DSceneCamera.getPos(),
-            m_3DSceneLightDir,
-            m_3DSceneLightColor,
-            m_3DSceneBgColor,
-            sceneEls,
-            m_3DSceneTex);
-        DrawTextureAsImguiImage(m_3DSceneTex, RectDims(m_3DSceneRect));
-
-        // draw connection lines, as appropriate
-        {
-            auto hover = m_MaybeHover.lock();
-
-            auto drawLine = [&](auto const& nodePtr) {
-                for (auto const& child : nodePtr->GetChildren()) {
-                    if (child == assignee) {
-                        if (hover && hover != assignee) {
-                            // do not draw: the max-strength line will be drawn later
-                            continue;
-                        } else {
-                            // draw a medium-strength line for the existing connection
-                            DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.33f}), *nodePtr, *child);
-                        }
-                    } else {
-                        // draw a faint connection line (these lines are non-participating)
-                        DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.05f}), *nodePtr, *child);
-                    }
-                }
-            };
-
-            if (hover && hover != assignee) {
-                // draw max-strength line for user's current interest
-                DrawConnectionLine(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}), *hover, *assignee);
-            }
-
-            ForEachNode(m_ModelRoot, drawLine);
-        }
-    }
-
-    void HoverTest_NormalMode()
-    {
-        if (!IsMouseOverRender()) {
-            m_MaybeHover.reset();
-            return;
-        }
-
-        if (ImGuizmo::IsUsing()) {
-            return;
-        }
-
-        m_MaybeHover = DoHittest(ImGui::GetMousePos(), false, m_IsBodiesInteractable, m_IsMeshesInteractable);
-
-        bool lcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-        bool rcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
-        bool shiftDown = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
-        bool isUsingGizmo = ImGuizmo::IsUsing();
-
-        if (!m_MaybeHover && lcReleased && !isUsingGizmo && !shiftDown) {
-            DeSelectAll();
-            return;
-        }
-
-        if (m_MaybeHover && lcReleased && !isUsingGizmo) {
-            if (!shiftDown) {
-                DeSelectAll();
-            }
-            SelectHover();
-            return;
-        }
-
-        if (m_MaybeHover && rcReleased && !isUsingGizmo) {
-            OpenHoverContextMenu();
-        }
-
-        DrawHoverTooltip();
-    }
-
-    void Draw3dViewer_NormalMode()
-    {
-        HoverTest_NormalMode();
-
-        std::vector<DrawableThing> sceneEls;
-
-        // add DAG decorations
-        ForEachNode(m_ModelRoot, [&](auto const& node) {
-            if (auto const* bodyPtr = dynamic_cast<BodyNode const*>(node.get())) {
-                sceneEls.push_back(GenerateSphereSceneEl(*bodyPtr, m_Colors.body));
-            } else if (auto const* meshPtr = dynamic_cast<MeshNode const*>(node.get())) {
-                sceneEls.push_back(GenerateMeshSceneEl(*meshPtr, m_Colors.mesh));
-            }
-        });
-
-        if (m_IsShowingFloor) {
-            sceneEls.push_back(GenerateFloor());
-        }
-
-        if (m_IsShowingGround) {
-            sceneEls.push_back(GenerateGroundSceneEl());
-        }
-
-        std::sort(sceneEls.begin(), sceneEls.end(), OptimalDrawOrder);
-
-        DrawScene(
-            RectDims(m_3DSceneRect),
-            m_3DSceneCamera.getProjMtx(RectAspectRatio(m_3DSceneRect)),
-            m_3DSceneCamera.getViewMtx(),
-            m_3DSceneCamera.getPos(),
-            m_3DSceneLightDir,
-            m_3DSceneLightColor,
-            m_3DSceneBgColor,
-            sceneEls,
-            m_3DSceneTex);
-        DrawTextureAsImguiImage(m_3DSceneTex, RectDims(m_3DSceneRect));
-        Draw3DManipulators();
-        DrawConnectionLines(ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 0.3f}));
-        DrawContextMenu();
-    }
-
-    Rect ContentRegionAvailRect()
-    {
-        glm::vec2 topLeft = ImGui::GetCursorScreenPos();
-        glm::vec2 dims = ImGui::GetContentRegionAvail();
-        glm::vec2 bottomRight = topLeft + dims;
-
-        return Rect{topLeft, bottomRight};
-    }
-
-    void Draw3DViewer()
-    {
-        m_3DSceneRect = ContentRegionAvailRect();
-
-        if (!IsInAssignmentMode()) {
-            Draw3dViewer_NormalMode();
-        } else {
-            Draw3DViewer_AssignmentMode();
-        }
-    }
-
-    void onMount()
-    {
-        osc::ImGuiInit();
-    }
-
-    void onUnmount()
-    {
-        osc::ImGuiShutdown();
-    }
-
-    void tick(float dt)
-    {
-        float dotMotionsPerSecond = 0.35f;
-        float ignoreMe;
-        m_AnimationPercentage = std::modf(m_AnimationPercentage + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
-
-        if (IsMouseOverRender()) {
-            UpdateCameraFromImGuiUserInput();
-        }
-        UpdateFromImGuiKeyboardState();
-
-        PopMeshLoader();
-
-        if (m_MaybeOutputModel) {
-            auto mes = std::make_shared<MainEditorState>(std::move(m_MaybeOutputModel));
-            App::cur().requestTransition<ModelEditorScreen>(mes);
-        }
-    }
-
-    void onEvent(SDL_Event const& e)
-    {
-        if (osc::ImGuiOnEvent(e)) {
-            return;
-        }
-
-        if (e.type == SDL_DROPFILE && e.drop.file != nullptr) {
-            PushMeshLoadRequest(m_ModelRoot, std::filesystem::path{e.drop.file});
-        }
-    }
-
-    void draw()
-    {
-        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        osc::ImGuiNewFrame();
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
-
-        // must be called at the start of each frame
-        ImGuizmo::BeginFrame();
-
-        // draw sidebar in a (moveable + resizeable) ImGui panel
-        if (ImGui::Begin("wizardstep2sidebar")) {
-            DrawSidebar();
-        }
-        ImGui::End();
-
-        // draw 3D viewer in a (moveable + resizeable) ImGui panel
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-        if (ImGui::Begin("wizardsstep2viewer")) {
-            ImGui::PopStyleVar();
-            Draw3DViewer();
-        } else {
-            ImGui::PopStyleVar();
-        }
-        ImGui::End();
-
-        osc::ImGuiRender();
-    }
-};
-using Impl = osc::MeshesToModelWizardScreen::Impl;
-*/
-
 
 // top-level screen implementation
 //
@@ -4153,13 +4263,13 @@ struct osc::MeshesToModelWizardScreen::Impl final {
 public:
     Impl() :
         m_SharedData{},
-        m_CurrentState{std::make_unique<StandardModeState>(m_SharedData)}
+        m_CurrentState{std::make_unique<StandardMWState>(m_SharedData)}
     {
     }
 
     Impl(std::vector<std::filesystem::path> meshPaths) :
         m_SharedData{std::move(meshPaths)},
-        m_CurrentState{std::make_unique<StandardModeState>(m_SharedData)}
+        m_CurrentState{std::make_unique<StandardMWState>(m_SharedData)}
     {
     }
 
@@ -4223,7 +4333,7 @@ public:
 
 private:
     SharedData m_SharedData;
-    std::unique_ptr<ModelWizardState> m_CurrentState;
+    std::unique_ptr<MWState> m_CurrentState;
 };
 
 

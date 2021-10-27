@@ -59,7 +59,7 @@ namespace osc {
     float VecLongestDimVal(glm::vec2) noexcept;
 
     // returns the *value* of a vector's longest dimension
-    float VecLongestDimVal(glm::ivec2) noexcept;
+    int VecLongestDimVal(glm::ivec2) noexcept;
 
     // returns the aspect ratio of the vec (effectively: x/y)
     float VecAspectRatio(glm::ivec2) noexcept;
