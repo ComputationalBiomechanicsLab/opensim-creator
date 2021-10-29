@@ -69,7 +69,7 @@ namespace {
     }
 
     // returns a string representation of euler angles in degrees
-    std::string OrientationString(glm::vec3 const& eulerAngles)
+    std::string EulerAnglesString(glm::vec3 const& eulerAngles)
     {
         glm::vec3 degrees = glm::degrees(eulerAngles);
         std::stringstream ss;
@@ -102,69 +102,86 @@ namespace {
     }
 }
 
-// logical ID support
+// global ID support
 //
-// The model graph contains internal cross-references. E.g. a joint in the model may
-// cross-reference bodies that are somewhere else in the model. Those references are
+// The model graph contains internal cross-references (e.g. a joint in the model may
+// cross-reference bodies that are somewhere else in the model). Those references are
 // looked up at runtime using associative lookups.
 //
 // Associative lookups are preferred over direct pointers, shared pointers, array indices,
-// etc. here because the model graph can be moved in memory, copied (undo/redo), and be
+// etc. because the model graph can be moved in memory, copied (undo/redo), and be
 // heavily edited by the user at runtime. We want the *overall* UI datastructure to have
-// value, rather than reference, semantics to make handling that easier.
+// value, rather than reference, semantics to aid those use-cases.
+//
+// - IDs are global, so that there is no chance of an ID collision between different data
+//   types in the system (e.g. if we're storing a variety of types)
+//
+// - IDs can only be "generated" or "copied". Either you generate a new ID or you copy an
+//   existing one. You can't (safely) stuff an arbitrary integer into an ID type. This
+//   prevents IDs being "mixed around" from various (unsafe) sources
 namespace {
 
-    // logical IDs are used for weak scene-element_to_scene-element relationships
-    //
-    // external code cannot set these to arbitrary values. They're either empty, copied
-    // from some other ID, or "created" by pulling the next ID from a global ID pool.
-    class LogicalID {
-    private:
-        static constexpr int64_t g_EmptyId = -1;
+    class ID {
+        friend ID GenerateID() noexcept;
+        friend constexpr int64_t UnwrapID(ID const&) noexcept;
 
-    public:
-        static LogicalID next()
-        {
-            static std::atomic<int64_t> g_NextId = 1;
-            return LogicalID{g_NextId++};
-        }
-
-        static LogicalID empty() { return LogicalID{g_EmptyId}; }
-
-        LogicalID() : m_Value{g_EmptyId} {}
     protected:
-        LogicalID(int64_t value) : m_Value{value} {}
-
-    public:
-        bool IsEmpty() const noexcept { return m_Value == g_EmptyId; }
-        operator bool () const noexcept { return !IsEmpty(); }
-        int64_t Unwrap() const noexcept { return m_Value; }  // handy for printing, hashing, etc.
+        explicit constexpr ID(int64_t value) noexcept : m_Value{value} {}
 
     private:
         int64_t m_Value;
     };
 
-    std::ostream& operator<<(std::ostream& o, LogicalID const& id) { return o << id.Unwrap(); }
-    bool operator==(LogicalID const& lhs, LogicalID const& rhs) { return lhs.Unwrap() == rhs.Unwrap(); }
-    bool operator!=(LogicalID const& lhs, LogicalID const& rhs) { return lhs.Unwrap() != rhs.Unwrap(); }
-
-    // strongly-typed version of the above. Purely a development convenience that helps
-    // prevent code from trying to use IDs "locked" to one type in contexts where they are
-    // strictly "locked" to some other type.
+    // strongly-typed version of the above
     //
-    // Typed IDs "decompose" into untyped LogicalIDs where necessary. Untyped IDs can be explicitly
-    // "downcasted" to a typed one by using the explicit constructor. Regardless of type assignment,
-    // LogicalIDs are always globally unique.
+    // adds compile-time type checking to IDs
     template<typename T>
-    class LogicalIDT : public LogicalID {
-    public:
-        static LogicalIDT<T> next() { return LogicalIDT<T>{LogicalID::next()}; }
-        static LogicalIDT<T> empty() { return LogicalIDT<T>{LogicalID::empty()}; }
-        static LogicalIDT<T> downcast(LogicalID id) { return LogicalIDT<T>{id}; }
+    class IDT : public ID {
+        template<typename U>
+        friend IDT<U> GenerateIDT() noexcept;
+
+        template<typename U>
+        friend constexpr IDT<U> DowncastID(ID const&) noexcept;
 
     private:
-        explicit LogicalIDT(LogicalID id) : LogicalID{id} {}
+        explicit constexpr IDT(ID id) : ID{id} {}
     };
+
+    ID GenerateID() noexcept
+    {
+        static std::atomic<int64_t> g_NextID = 1;
+        return ID{g_NextID++};
+    }
+
+    template<typename T>
+    IDT<T> GenerateIDT() noexcept
+    {
+        return IDT<T>{GenerateID()};
+    }
+
+    constexpr int64_t UnwrapID(ID const& id) noexcept
+    {
+        return id.m_Value;
+    }
+
+    std::ostream& operator<<(std::ostream& o, ID const& id) { return o << UnwrapID(id); }
+    constexpr bool operator==(ID const& lhs, ID const& rhs) noexcept { return UnwrapID(lhs) == UnwrapID(rhs); }
+    constexpr bool operator!=(ID const& lhs, ID const& rhs) noexcept { return UnwrapID(lhs) != UnwrapID(rhs); }
+
+    template<typename T>
+    constexpr IDT<T> DowncastID(ID const& id) noexcept {
+        return IDT<T>{id};
+    }
+
+    // senteniel values used in this codebase
+    class BodyEl;
+    IDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
+    ID const g_EmptyID = GenerateID();
+    ID const g_GroundGroupID = GenerateID();
+    ID const g_MeshGroupID = GenerateID();
+    ID const g_BodyGroupID = GenerateID();
+    ID const g_JointGroupID = GenerateID();
+    ID const g_PivotID = GenerateID();
 }
 
 // hashing support for LogicalIDs
@@ -173,13 +190,13 @@ namespace {
 namespace std {
 
     template<>
-    struct hash<LogicalID> {
-        size_t operator()(LogicalID const& id) const { return static_cast<size_t>(id.Unwrap()); }
+    struct hash<ID> {
+        size_t operator()(ID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
     };
 
     template<typename T>
-    struct hash<LogicalIDT<T>> {
-        size_t operator()(LogicalID const& id) const { return static_cast<size_t>(id.Unwrap()); }
+    struct hash<IDT<T>> {
+        size_t operator()(ID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
     };
 }
 
@@ -200,20 +217,20 @@ namespace {
 
     // a mesh loading request
     struct MeshLoadRequest final {
-        LogicalIDT<BodyEl> PreferredAttachmentPoint;
+        IDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
     };
 
     // an OK response to a mesh loading request
     struct MeshLoadOKResponse final {
-        LogicalIDT<BodyEl> PreferredAttachmentPoint;
+        IDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
         std::shared_ptr<Mesh> mesh;
     };
 
     // an ERROR response to a mesh loading request
     struct MeshLoadErrorResponse final {
-        LogicalIDT<BodyEl> PreferredAttachmentPoint;
+        IDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
         std::string Error;
     };
@@ -271,39 +288,37 @@ namespace {
 //     be exported directly into the main (OpenSim::Model-manipulating) UI
 namespace {
 
-    // composable declaration of a translation + orientation
-    struct TranslationOrientation final {
-        glm::vec3 translation;
-        glm::vec3 orientation;  // Euler angles
+    // rotate-and-shift transform
+    struct Ras final {
+        glm::vec3 rot;  // Euler angles
+        glm::vec3 shift;
+
+        Ras() : rot{}, shift{} {}  // effectively, default-constructs to ground location
+        Ras(glm::vec3 rot_, glm::vec3 shift_) : rot{rot_}, shift{shift_} {}
     };
 
-    // returns the translation and orientation of ground in ground
-    TranslationOrientation GroundTranslationOrientation()
+    // returns the average of two rotations-and-shifts
+    Ras AverageRas(Ras const& a, Ras const& b)
     {
-        return {{}, {}};
+        glm::vec3 avgShift = (a.shift + b.shift) / 2.0f;
+        glm::vec3 avgRot = (a.rot + b.rot) / 2.0f;
+
+        return Ras{avgShift, avgRot};
     }
 
-    // returns the average of two translations + orientations
-    TranslationOrientation Average(TranslationOrientation const& a, TranslationOrientation const& b)
-    {
-        glm::vec3 translation = (a.translation + b.translation) / 2.0f;
-        glm::vec3 orientation = (a.orientation + b.orientation) / 2.0f;
-        return TranslationOrientation{translation, orientation};
-    }
-
-    // print a `TranslationOrientation` to an output stream
-    std::ostream& operator<<(std::ostream& o, TranslationOrientation const& to)
+    // print to an output stream
+    std::ostream& operator<<(std::ostream& o, Ras const& to)
     {
         using osc::operator<<;
-        return o << "TranslationOrientation(translation = " << to.translation << ", orientation = " << to.orientation << ')';
+        return o << "Ras(rot = " << to.rot << ", shift = " << to.shift << ')';
     }
 
-    // returns a transform matrix that maps quantities expressed in the TranslationOrientation
+    // returns a transform matrix that maps quantities expressed in the Ras
     // (i.e. "a poor man's frame") into its base
-    glm::mat4 TranslationOrientationToBase(TranslationOrientation const& frame)
+    glm::mat4 XFormFromRas(Ras const& frame)
     {
-        glm::mat4 mtx = EulerAnglesToMat(frame.orientation);
-        mtx[3] = glm::vec4{frame.translation, 1.0f};
+        glm::mat4 mtx = EulerAnglesToMat(frame.rot);
+        mtx[3] = glm::vec4{frame.shift, 1.0f};
         return mtx;
     }
 
@@ -320,72 +335,32 @@ namespace {
     class BodyEl;
     class MeshEl final {
     public:
-        MeshEl(LogicalIDT<MeshEl> logicalID,
-               LogicalIDT<BodyEl> maybeAttachedBody,  // not strictly required: empty implies "attached to ground"
-               std::shared_ptr<Mesh> mesh,
+        MeshEl(IDT<MeshEl> id,
+               IDT<BodyEl> attachment,  // can be ground
+               std::shared_ptr<Mesh> meshData,
                std::filesystem::path const& path) :
 
-            m_LogicalID{std::move(logicalID)},
-            m_MaybeAttachedBody{maybeAttachedBody},
-            m_TranslationOrientationInGround{},
-            m_ScaleFactors{1.0f, 1.0f, 1.0f},
-            m_Mesh{std::move(mesh)},
-            m_Path{path},
-            m_Name{FileNameWithoutExtension(m_Path)}
+            ID{id},
+            Attachment{attachment},
+            MeshData{meshData},
+            Path{path}
         {
         }
 
-        LogicalIDT<MeshEl> GetLogicalID() const { return m_LogicalID; }
-
-        LogicalIDT<BodyEl> GetAttachmentPoint() const { return m_MaybeAttachedBody; }
-        void SetAttachmentPoint(LogicalIDT<BodyEl> newAttachmentID) { m_MaybeAttachedBody = newAttachmentID; }
-
-        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
-        void SetTranslationOrientationInGround(TranslationOrientation const& newFrame) { m_TranslationOrientationInGround = newFrame; }
-
-        glm::vec3 const& GetTranslationInGround() const { return m_TranslationOrientationInGround.translation; }
-        void SetTranslationInGround(glm::vec3 const& newTranslation) { m_TranslationOrientationInGround.translation = newTranslation; }
-
-        glm::vec3 const& GetOrientationInGround() const { return m_TranslationOrientationInGround.orientation; }
-        void SetOrientationInGround(glm::vec3 const& newOrientation) { m_TranslationOrientationInGround.orientation = newOrientation; }
-
-        glm::vec3 const& GetScaleFactors() const { return m_ScaleFactors; }
-        void SetScaleFactors(glm::vec3 const& newScaleFactors) { m_ScaleFactors = newScaleFactors; }
-
-        std::shared_ptr<Mesh> const& GetMesh() const { return m_Mesh; }
-
-        std::filesystem::path const& GetPath() const { return m_Path; }
-
-        std::string const& GetName() const { return m_Name; }
-        void SetName(std::string_view newName) { m_Name = newName; }
-
-    private:
-        LogicalIDT<MeshEl> m_LogicalID;
-        LogicalIDT<BodyEl> m_MaybeAttachedBody;
-        TranslationOrientation m_TranslationOrientationInGround;
-        glm::vec3 m_ScaleFactors;
-        std::shared_ptr<Mesh> m_Mesh;
-        std::filesystem::path m_Path;
-        std::string m_Name;
+        IDT<MeshEl> ID;
+        IDT<BodyEl> Attachment;  // can be ground
+        Ras Xform = {};
+        glm::vec3 ScaleFactors = {1.0f, 1.0f, 1.0f};
+        std::shared_ptr<Mesh> MeshData;
+        std::filesystem::path Path;
+        std::string Name = FileNameWithoutExtension(Path);
     };
-
-    // returns `true` if the mesh is directly attached to ground
-    bool IsAttachedToGround(MeshEl const& mesh)
-    {
-        return mesh.GetAttachmentPoint().IsEmpty();
-    }
-
-    // returns `true` if the mesh is attached to some body (i.e. not ground)
-    bool IsAttachedToABody(MeshEl const& mesh)
-    {
-        return !mesh.GetAttachmentPoint().IsEmpty();
-    }
 
     // returns a transform matrix that maps quantities expressed in mesh (model) space to groundspace
     glm::mat4 GetModelMatrix(MeshEl const& mesh)
     {
-        glm::mat4 translateAndRotate = TranslationOrientationToBase(mesh.GetTranslationOrientationInGround());
-        glm::mat4 rescale = glm::scale(glm::mat4{1.0f}, mesh.GetScaleFactors());
+        glm::mat4 translateAndRotate = XFormFromRas(mesh.Xform);
+        glm::mat4 rescale = glm::scale(glm::mat4{1.0f}, mesh.ScaleFactors);
         return translateAndRotate * rescale;
     }
 
@@ -399,7 +374,8 @@ namespace {
     // returns the groundspace bounds center point of the mesh
     glm::vec3 GetAABBCenterPointInGround(MeshEl const& mesh)
     {
-        return AABBCenter(GetGroundspaceBounds(*mesh.GetMesh(), GetModelMatrix(mesh)));
+        AABB bounds = GetGroundspaceBounds(*mesh.MeshData, GetModelMatrix(mesh));
+        return AABBCenter(bounds);
     }
 
     // returns a unique, generated body name
@@ -417,57 +393,21 @@ namespace {
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
     class BodyEl final {
     public:
-        BodyEl(LogicalIDT<BodyEl> logicalID,
+        BodyEl(IDT<BodyEl> id,
                std::string name,
-               glm::vec3 const& position,
-               glm::vec3 const& orientation) :
+               Ras xform) :
 
-            m_LogicalID{logicalID},
-            m_Name{std::move(name)},
-            m_TranslationOrientationInGround{position, orientation},
-            m_Mass{1.0}  // required: OpenSim goes bananas if a body has a mass <= 0
+            ID{id},
+            Name{std::move(name)},
+            Xform{xform}
         {
         }
 
-        LogicalIDT<BodyEl> GetLogicalID() const { return m_LogicalID; }
-
-        std::string const& GetName() const { return m_Name; }
-        void SetName(std::string_view newName) { m_Name = newName; }
-
-        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
-        void SetTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_TranslationOrientationInGround = newTranslationOrientation; }
-
-        glm::vec3 const& GetTranslationInGround() const { return m_TranslationOrientationInGround.translation; }
-        void SetTranslationInGround(glm::vec3 const& newTranslation) { m_TranslationOrientationInGround.translation = newTranslation; }
-
-        glm::vec3 const& GetOrientationInGround() const { return m_TranslationOrientationInGround.orientation; }
-        void SetOrientationInGround(glm::vec3 const& newOrientation) { m_TranslationOrientationInGround.orientation = newOrientation; }
-
-        double GetMass() const { return m_Mass; }
-        void SetMass(double newMass) { m_Mass = newMass; }
-
-    private:
-        LogicalIDT<BodyEl> m_LogicalID;
-        std::string m_Name;
-        TranslationOrientation m_TranslationOrientationInGround;
-        double m_Mass;
+        IDT<BodyEl> ID;
+        std::string Name;
+        Ras Xform;
+        double Mass = 1.0f;  // required: OpenSim goes bananas if a body has a mass <= 0
     };
-
-    // compute a joint's name based on whether it has a user-defined name or not
-    std::string const& CalcJointName(size_t jointTypeIndex, std::string const& maybeName)
-    {
-        if (!maybeName.empty()) {
-            return maybeName;
-        }
-
-        return JointRegistry::nameStrings()[jointTypeIndex];
-    }
-
-    // returns `true` if `mesh` is directly attached to `body`
-    bool IsMeshAttachedToBody(MeshEl const& mesh, BodyEl const& body)
-    {
-        return mesh.GetAttachmentPoint() == body.GetLogicalID();
-    }
 
     // one "side" (attachment) of a joint
     //
@@ -483,33 +423,11 @@ namespace {
     // unnecessary in "pure" OpenSim (e.g. the zero case).
     class JointAttachment final {
     public:
-        JointAttachment(LogicalIDT<BodyEl> bodyID) :
-            m_BodyID{bodyID},
-            m_TranslationOrientationInGround{}
-        {
-        }
+        JointAttachment(IDT<BodyEl> bodyID) : BodyID{bodyID} {}
+        JointAttachment(IDT<BodyEl> bodyID, Ras xform) : BodyID{bodyID}, Xform{xform} {}
 
-        JointAttachment(LogicalIDT<BodyEl> bodyID, TranslationOrientation const& translationOrientationInGround) :
-            m_BodyID{bodyID},
-            m_TranslationOrientationInGround{translationOrientationInGround}
-        {
-        }
-
-        LogicalIDT<BodyEl> GetBodyID() const { return m_BodyID; }
-        void SetBodyID(LogicalIDT<BodyEl> newBodyID) { m_BodyID = std::move(newBodyID); }
-
-        TranslationOrientation const& GetTranslationOrientationInGround() const { return m_TranslationOrientationInGround; }
-        void SetTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_TranslationOrientationInGround = newTranslationOrientation; }
-
-        glm::vec3 const& GetTranslationInGround() const { return m_TranslationOrientationInGround.translation; }
-        void SetTranslationInGround(glm::vec3 const& newTranslation) { m_TranslationOrientationInGround.translation = newTranslation; }
-
-        glm::vec3 const& GetOrientationInGround() const { return m_TranslationOrientationInGround.orientation; }
-        void SetOrientationInGround(glm::vec3 const& newOrientation) { m_TranslationOrientationInGround.orientation = newOrientation; }
-
-    private:
-        LogicalIDT<BodyEl> m_BodyID;
-        TranslationOrientation m_TranslationOrientationInGround;
+        IDT<BodyEl> BodyID;
+        Ras Xform = {};
     };
 
     // a joint scene element
@@ -517,105 +435,41 @@ namespace {
     // see `JointAttachment` comment for an explanation of why it's designed this way.
     class JointEl final {
     public:
-        JointEl(LogicalIDT<JointEl> logicalID,
+        JointEl(IDT<JointEl> id,
                 size_t jointTypeIdx,
-                std::string maybeName,
-                JointAttachment parentAttachment,
-                JointAttachment childAttachment) :
+                std::string userAssignedName,  // can be empty
+                JointAttachment parent,
+                JointAttachment child) :
 
-            m_LogicalID{logicalID},
-            m_JointTypeIndex{jointTypeIdx},
-            m_MaybeUserAssignedName{std::move(maybeName)},
-            m_ParentAttachment{parentAttachment},
-            m_ChildAttachment{childAttachment}
+            ID{id},
+            JointTypeIndex{jointTypeIdx},
+            UserAssignedName{std::move(userAssignedName)},
+            Parent{parent},
+            Child{child}
         {
         }
 
-        LogicalIDT<JointEl> GetLogicalID() const { return m_LogicalID; }
-
-        size_t GetJointTypeIndex() const { return m_JointTypeIndex; }
-        void SetJointTypeIndex(size_t newJointTypeIndex) { m_JointTypeIndex = newJointTypeIndex; }
-
-        bool HasUserAssignedName() const { return !m_MaybeUserAssignedName.empty(); }
-        std::string const& GetUserAssignedName() const { return m_MaybeUserAssignedName; }
-        void SetUserAssignedName(std::string_view newName) { m_MaybeUserAssignedName = newName; }
-
-        LogicalIDT<BodyEl> GetParentBodyID() const { return m_ParentAttachment.GetBodyID(); }
-        void SetParentBodyID(LogicalIDT<BodyEl> newParentBodyID) { m_ParentAttachment.SetBodyID(std::move(newParentBodyID)); }
-
-        TranslationOrientation const& GetParentAttachmentTranslationOrientationInGround() const { return m_ParentAttachment.GetTranslationOrientationInGround(); }
-        void SetParentAttachmentTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_ParentAttachment.SetTranslationOrientationInGround(newTranslationOrientation); }
-
-        glm::vec3 const& GetParentAttachmentTranslationInGround() const { return m_ParentAttachment.GetTranslationInGround(); }
-        void SetParentAttachmentTranslationInGround(glm::vec3 const& newTranslation) { m_ParentAttachment.SetTranslationInGround(newTranslation); }
-
-        glm::vec3 const& GetParentAttachmentOrientationInGround() const { return m_ParentAttachment.GetOrientationInGround(); }
-        void SetParentAttachmentOrientationInGround(glm::vec3 const& newOrientation) { m_ParentAttachment.SetOrientationInGround(newOrientation); }
-
-        LogicalIDT<BodyEl> GetChildBodyID() const { return m_ChildAttachment.GetBodyID(); }
-        void SetChildBodyID(LogicalIDT<BodyEl> newChildBodyID) { m_ChildAttachment.SetBodyID(std::move(newChildBodyID)); }
-
-        TranslationOrientation const& GetChildAttachmentTranslationOrientationInGround() const { return m_ChildAttachment.GetTranslationOrientationInGround(); }
-        void SetChildAttachmentTranslationOrientationInGround(TranslationOrientation const& newTranslationOrientation) { m_ChildAttachment.SetTranslationOrientationInGround(newTranslationOrientation); }
-
-        glm::vec3 const& GetChildAttachmentTranslationInGround() const { return m_ChildAttachment.GetTranslationInGround(); }
-        void SetChildAttachmentTranslationInGround(glm::vec3 const& newTranslation) { m_ChildAttachment.SetTranslationInGround(newTranslation); }
-
-        glm::vec3 const& GetChildAttachmentOrientationInGround() const { return m_ChildAttachment.GetOrientationInGround(); }
-        void SetChildAttachmentOrientationInGround(glm::vec3 const& newOrientation) { m_ChildAttachment.SetOrientationInGround(newOrientation); }
-
-    private:
-        LogicalIDT<JointEl> m_LogicalID;
-        size_t m_JointTypeIndex;
-        std::string m_MaybeUserAssignedName;
-        JointAttachment m_ParentAttachment;
-        JointAttachment m_ChildAttachment;
+        IDT<JointEl> ID;
+        size_t JointTypeIndex;
+        std::string UserAssignedName;
+        JointAttachment Parent;  // can be ground
+        JointAttachment Child;  // can't be ground
     };
 
     // returns a human-readable name for the joint
-    std::string const& GetName(JointEl const& joint)
+    std::string const& GetJointLabel(JointEl const& joint)
     {
-        if (joint.HasUserAssignedName()) {
-            return joint.GetUserAssignedName();
+        if (!joint.UserAssignedName.empty()) {
+            return joint.UserAssignedName;
         } else {
-            return JointRegistry::nameStrings()[joint.GetJointTypeIndex()];
+            return JointRegistry::nameStrings()[joint.JointTypeIndex];
         }
-    }
-
-    // returns `true` if `body` is `joint`'s parent
-    bool IsParentOfJoint(JointEl const& joint, BodyEl const& body)
-    {
-        return joint.GetParentBodyID() == body.GetLogicalID();
-    }
-
-    // returns `true` if `body` is `joint`'s child
-    bool IsChildOfJoint(JointEl const& joint, BodyEl const& body)
-    {
-        return joint.GetChildBodyID() == body.GetLogicalID();
-    }
-
-    // returns `true` if `body` is the child attachment of `joint`
-    bool IsAttachedToJointAsChild(JointEl const& joint, BodyEl const& body)
-    {
-        return joint.GetChildBodyID() == body.GetLogicalID();
-    }
-
-    // returns `true` if `body` is the parent attachment of `joint`
-    bool IsAttachedToJointAsParent(JointEl const& joint, BodyEl const& body)
-    {
-        return joint.GetParentBodyID() == body.GetLogicalID();
     }
 
     // returns `true` if body is either the parent or the child attachment of `joint`
     bool IsAttachedToJoint(JointEl const& joint, BodyEl const& body)
     {
-        return IsAttachedToJointAsChild(joint, body) || IsAttachedToJointAsParent(joint, body);
-    }
-
-    // returns `true` is a joint's parent is ground
-    bool IsJointAttachedToGroundAsParent(JointEl const& joint)
-    {
-        return joint.GetParentBodyID().IsEmpty();
+        return joint.Parent.BodyID == body.ID || joint.Child.BodyID == body.ID;
     }
 
     // returns an OpenSim::Joint that has the specified type index (from the type registry)
@@ -635,82 +489,83 @@ namespace {
     //   which don't play well with copying, multiple versions, etc.)
     class ModelGraph final {
     public:
-        std::unordered_map<LogicalIDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
-        std::unordered_map<LogicalIDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
-        std::unordered_map<LogicalIDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
-        std::unordered_set<LogicalID> const& GetSelected() const { return m_Selected; }
+        std::unordered_map<IDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
+        std::unordered_map<IDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
+        std::unordered_map<IDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
+        std::unordered_set<ID> const& GetSelected() const { return m_Selected; }
 
-        MeshEl const* TryGetMeshElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
-        BodyEl const* TryGetBodyElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
-        JointEl const* TryGetJointElByID(LogicalID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
+        bool ContainsMeshEl(ID id) const { return TryGetMeshElByID(id) != nullptr; }
+        bool ContainsBodyEl(ID id) const { return TryGetBodyElByID(id) != nullptr; }
+        bool ContainsJointEl(ID id) const { return TryGetJointElByID(id) != nullptr; }
 
-        MeshEl const& GetMeshByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
-        BodyEl const& GetBodyByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
-        JointEl const& GetJointByIDOrThrow(LogicalID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+        MeshEl const* TryGetMeshElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
+        BodyEl const* TryGetBodyElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
+        JointEl const* TryGetJointElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
 
-        LogicalIDT<BodyEl> AddBody(std::string name, glm::vec3 const& position, glm::vec3 const& orientation)
+        MeshEl const& GetMeshByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
+        BodyEl const& GetBodyByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
+        JointEl const& GetJointByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+
+        IDT<BodyEl> AddBody(std::string name, glm::vec3 const& position, glm::vec3 const& orientation)
         {
-            LogicalIDT<BodyEl> id = LogicalIDT<BodyEl>::next();
-            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, position, orientation)).first->first;
+            IDT<BodyEl> id = GenerateIDT<BodyEl>();
+            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, Ras{position, orientation})).first->first;
         }
 
-        LogicalIDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, LogicalIDT<BodyEl> maybeAttachedBody, std::filesystem::path const& path)
+        IDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, IDT<BodyEl> attachment, std::filesystem::path const& path)
         {
-            if (maybeAttachedBody) {
-                OSC_ASSERT_ALWAYS(TryGetBodyElByID(maybeAttachedBody) != nullptr && "invalid attachment ID");
+            if (attachment != g_GroundID && !ContainsBodyEl(attachment)) {
+                throw std::runtime_error{"implementation error: tried to assign a body to a mesh, but the body does not exist"};
             }
 
-
-            LogicalIDT<MeshEl> id = LogicalIDT<MeshEl>::next();
-            return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, maybeAttachedBody, mesh, path)).first->first;
+            IDT<MeshEl> id = GenerateIDT<MeshEl>();
+            return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, mesh, path)).first->first;
         }
 
-        LogicalIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, JointAttachment parentAttachment, JointAttachment childAttachment)
+        IDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, JointAttachment parentAttachment, JointAttachment childAttachment)
         {
-            // TODO: validate joint attachment for this particular type of joint
-
-            LogicalIDT<JointEl> id = LogicalIDT<JointEl>::next();
+            IDT<JointEl> id = GenerateIDT<JointEl>();
             return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parentAttachment, childAttachment)).first->first;
         }
 
-        void SetMeshAttachmentPoint(LogicalIDT<MeshEl> meshID, LogicalIDT<BodyEl> bodyID)
+        void SetMeshAttachmentPoint(IDT<MeshEl> meshID, IDT<BodyEl> bodyID)
         {
-            UpdMeshByIDOrThrow(meshID).SetAttachmentPoint(bodyID);
+            UpdMeshByIDOrThrow(meshID).Attachment = bodyID;
         }
 
-        void UnsetMeshAttachmentPoint(LogicalIDT<MeshEl> meshID)
+        void UnsetMeshAttachmentPoint(IDT<MeshEl> meshID)
         {
-            UpdMeshByIDOrThrow(meshID).SetAttachmentPoint(LogicalIDT<BodyEl>::empty());
+            UpdMeshByIDOrThrow(meshID).Attachment = g_GroundID;
         }
 
-        void SetMeshTranslationOrientationInGround(LogicalIDT<MeshEl> meshID, TranslationOrientation const& newTO)
+        void SetMeshXform(IDT<MeshEl> meshID, Ras const& newXform)
         {
-            UpdMeshByIDOrThrow(meshID).SetTranslationOrientationInGround(newTO);
+            UpdMeshByIDOrThrow(meshID).Xform = newXform;
         }
 
-        void SetMeshScaleFactors(LogicalIDT<MeshEl> meshID, glm::vec3 const& newScaleFactors)
+        void SetMeshScaleFactors(IDT<MeshEl> meshID, glm::vec3 const& newScaleFactors)
         {
-            UpdMeshByIDOrThrow(meshID).SetScaleFactors(newScaleFactors);
+            UpdMeshByIDOrThrow(meshID).ScaleFactors = newScaleFactors;
         }
 
-        void SetMeshName(LogicalIDT<MeshEl> meshID, std::string_view newName)
+        void SetMeshName(IDT<MeshEl> meshID, std::string_view newName)
         {
-            UpdMeshByIDOrThrow(meshID).SetName(newName);
+            UpdMeshByIDOrThrow(meshID).Name = newName;
         }
 
-        void SetBodyName(LogicalIDT<BodyEl> bodyID, std::string_view newName)
+        void SetBodyName(IDT<BodyEl> bodyID, std::string_view newName)
         {
-            UpdBodyByIDOrThrow(bodyID).SetName(newName);
+            UpdBodyByIDOrThrow(bodyID).Name = newName;
         }
 
-        void SetBodyTranslationOrientationInGround(LogicalIDT<BodyEl> bodyID, TranslationOrientation const& newTO)
+        void SetBodyXform(IDT<BodyEl> bodyID, Ras const& newXform)
         {
-            UpdBodyByIDOrThrow(bodyID).SetTranslationOrientationInGround(newTO);
+            UpdBodyByIDOrThrow(bodyID).Xform = newXform;
         }
 
-        void SetBodyMass(LogicalIDT<BodyEl> bodyID, double newMass)
+        void SetBodyMass(IDT<BodyEl> bodyID, double newMass)
         {
-            UpdBodyByIDOrThrow(bodyID).SetMass(newMass);
+            UpdBodyByIDOrThrow(bodyID).Mass = newMass;
         }
 
         template<typename Consumer>
@@ -721,136 +576,116 @@ namespace {
             for (auto const& [jointID, joint] : GetJoints()) { idConsumer(jointID); }
         }
 
-        void DeleteMeshElByID(LogicalID id)
+        void DeleteMeshElByID(ID id)
         {
-            auto it = m_Meshes.find(LogicalIDT<MeshEl>::downcast(id));
+            auto it = m_Meshes.find(DowncastID<MeshEl>(id));
             if (it != m_Meshes.end()) {
                 DeleteMesh(it);
             }
         }
 
-        void DeleteBodyElByID(LogicalID id)
+        void DeleteBodyElByID(ID id)
         {
-            auto it = m_Bodies.find(LogicalIDT<BodyEl>::downcast(id));
+            auto it = m_Bodies.find(DowncastID<BodyEl>(id));
             if (it != m_Bodies.end()) {
                 DeleteBody(it);
             }
         }
 
-        void DeleteJointElByID(LogicalID id)
+        void DeleteJointElByID(ID id)
         {
-            auto it = m_Joints.find(LogicalIDT<JointEl>::downcast(id));
+            auto it = m_Joints.find(DowncastID<JointEl>(id));
             if (it != m_Joints.end()) {
                 DeleteJoint(it);
             }
         }
 
-        void DeleteElementByID(LogicalID id)
+        void DeleteElementByID(ID id)
         {
             DeleteMeshElByID(id);
             DeleteBodyElByID(id);
             DeleteJointElByID(id);
         }
 
-        void ApplyTranslation(LogicalID id, glm::vec3 const& translation)
+        void ApplyTranslation(ID id, glm::vec3 const& translation)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                auto newTranslation = meshPtr->GetTranslationInGround() + translation;
-                meshPtr->SetTranslationInGround(newTranslation);
+                meshPtr->Xform.shift += translation;
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                auto newTranslation = bodyPtr->GetTranslationInGround() + translation;
-                bodyPtr->SetTranslationInGround(newTranslation);
+                bodyPtr->Xform.shift += translation;
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                auto newParentTranslation = jointPtr->GetParentAttachmentTranslationInGround();
-                jointPtr->SetParentAttachmentTranslationInGround(newParentTranslation);
-                auto newChildTranslation = jointPtr->GetChildAttachmentTranslationInGround() + translation;
-                jointPtr->SetChildAttachmentTranslationInGround(newChildTranslation);
+                jointPtr->Parent.Xform.shift += translation;
+                jointPtr->Child.Xform.shift += translation;
             }
         }
 
-        void ApplyRotation(LogicalID id, glm::vec3 const& eulerAngles)
+        void ApplyRotation(ID id, glm::vec3 const& eulerAngles)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                glm::vec3 newOrientation = EulerCompose(meshPtr->GetOrientationInGround(), eulerAngles);
-                meshPtr->SetOrientationInGround(newOrientation);
+                meshPtr->Xform.rot = EulerCompose(meshPtr->Xform.rot, eulerAngles);
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                glm::vec3 newOrientation = EulerCompose(bodyPtr->GetOrientationInGround(), eulerAngles);
-                bodyPtr->SetOrientationInGround(newOrientation);
+                bodyPtr->Xform.rot = EulerCompose(bodyPtr->Xform.rot, eulerAngles);
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                glm::vec3 newParentOrientation = EulerCompose(jointPtr->GetParentAttachmentOrientationInGround(), eulerAngles);
-                jointPtr->SetParentAttachmentOrientationInGround(newParentOrientation);
-                glm::vec3 newChildOrientation = EulerCompose(jointPtr->GetChildAttachmentOrientationInGround(), eulerAngles);
-                jointPtr->SetChildAttachmentOrientationInGround(newChildOrientation);
+                jointPtr->Parent.Xform.rot = EulerCompose(jointPtr->Parent.Xform.rot, eulerAngles);
+                jointPtr->Child.Xform.rot = EulerCompose(jointPtr->Child.Xform.rot, eulerAngles);
             }
         }
 
-        void ApplyScale(LogicalID id, glm::vec3 const& scaleFactors)
+        void ApplyScale(ID id, glm::vec3 const& scaleFactors)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                glm::vec3 newSfs = meshPtr->GetScaleFactors() * scaleFactors;
-                meshPtr->SetScaleFactors(newSfs);
+                meshPtr->ScaleFactors *= scaleFactors;
             }
         }
 
-        glm::vec3 GetTranslationInGround(LogicalID id) const
+        glm::vec3 GetTranslationInGround(ID id) const
         {
-            if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return meshPtr->GetTranslationInGround();
+            if (id == g_GroundID) {
+                return {};
+            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
+                return meshPtr->Xform.shift;
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return bodyPtr->GetTranslationInGround();
+                return bodyPtr->Xform.shift;
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                glm::vec3 components[] = {
-                    GetTranslationInGround(jointPtr->GetParentBodyID()),
-                    GetTranslationInGround(jointPtr->GetChildBodyID()),
-                    jointPtr->GetParentAttachmentTranslationInGround(),
-                    jointPtr->GetChildAttachmentTranslationInGround(),
-                };
-                return VecNumericallyStableAverage(components, 4);
+                return (jointPtr->Parent.Xform.shift + jointPtr->Child.Xform.shift) / 2.0f;
             } else {
                 throw std::runtime_error{"GetTranslation(): cannot find element by ID"};
             }
         }
 
-        glm::vec3 GetOrientationInGround(LogicalID id) const
+        glm::vec3 GetOrientationInGround(ID id) const
         {
-            if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return meshPtr->GetOrientationInGround();
+            if (id == g_GroundID) {
+                return {};
+            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
+                return meshPtr->Xform.rot;
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return bodyPtr->GetOrientationInGround();
+                return bodyPtr->Xform.rot;
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                glm::vec3 components[] = {
-                    GetOrientationInGround(jointPtr->GetParentBodyID()),
-                    GetOrientationInGround(jointPtr->GetChildBodyID()),
-                    jointPtr->GetParentAttachmentTranslationInGround(),
-                    jointPtr->GetChildAttachmentTranslationInGround()
-                };
-                return VecNumericallyStableAverage(components, 4);
+                return (jointPtr->Parent.Xform.rot + jointPtr->Child.Xform.rot) / 2.0f;
             } else {
                 throw std::runtime_error{"GetOrientationInground(): cannot find element by ID"};
             }
         }
 
-        TranslationOrientation GetTranslationOrientationInGround(LogicalID id) const
+        Ras GetTranslationOrientationInGround(ID id) const
         {
             return {GetTranslationInGround(id), GetOrientationInGround(id)};
         }
 
         // returns empty AABB at point if a point-like element (e.g. mesh, joint pivot)
-        AABB GetBounds(LogicalID id) const
+        AABB GetBounds(ID id) const
         {
-            if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return AABBApplyXform(meshPtr->GetMesh()->getAABB(), GetModelMatrix(*meshPtr));
+            if (id == g_GroundID) {
+                return {};
+            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
+                AABB boundsInModelSpace = meshPtr->MeshData->getAABB();
+                return AABBApplyXform(boundsInModelSpace, GetModelMatrix(*meshPtr));
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                glm::vec3 loc = bodyPtr->GetTranslationInGround();
-                return AABB{loc, loc};
+                return AABB{bodyPtr->Xform.shift, bodyPtr->Xform.shift};
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                glm::vec3 points[] = {
-                    GetTranslationInGround(jointPtr->GetParentBodyID()),
-                    GetTranslationInGround(jointPtr->GetChildBodyID()),
-                    jointPtr->GetParentAttachmentTranslationInGround(),
-                    jointPtr->GetChildAttachmentTranslationInGround()
-                };
-                return AABBFromVerts(points, 4);
+                glm::vec3 points[] = {jointPtr->Parent.Xform.shift, jointPtr->Child.Xform.shift};
+                return AABBFromVerts(points, 2);
             } else {
                 throw std::runtime_error{"GetBounds(): could not find supplied ID"};
             }
@@ -858,7 +693,7 @@ namespace {
 
         void SelectAll()
         {
-            auto addIDToSelectionSet = [this](LogicalID id) { m_Selected.insert(id); };
+            auto addIDToSelectionSet = [this](ID id) { m_Selected.insert(id); };
             ForEachSceneElID(addIDToSelectionSet);
         }
 
@@ -867,12 +702,12 @@ namespace {
             m_Selected.clear();
         }
 
-        void Select(LogicalID id)
+        void Select(ID id)
         {
             m_Selected.insert(id);
         }
 
-        void DeSelect(LogicalID id)
+        void DeSelect(ID id)
         {
             auto it = m_Selected.find(id);
             if (it != m_Selected.end()) {
@@ -885,40 +720,40 @@ namespace {
             return !m_Selected.empty();
         }
 
-        bool IsSelected(LogicalID id) const
+        bool IsSelected(ID id) const
         {
             return m_Selected.find(id) != m_Selected.end();
         }
 
         void DeleteSelected()
         {
-            auto selected = m_Selected;
-            for (LogicalID id : selected) {
+            auto selected = m_Selected;  // copy to ensure iterator invalidation doesn't screw us
+            for (ID id : selected) {
                 DeleteElementByID(id);
             }
             m_Selected.clear();
         }
 
     private:
-        MeshEl* TryUpdMeshElByID(LogicalID id)
+        MeshEl* TryUpdMeshElByID(ID id)
         {
-            auto it = m_Meshes.find(LogicalIDT<MeshEl>::downcast(id));
+            auto it = m_Meshes.find(DowncastID<MeshEl>(id));
             return it != m_Meshes.end() ? &it->second : nullptr;
         }
 
-        BodyEl* TryUpdBodyElByID(LogicalID id)
+        BodyEl* TryUpdBodyElByID(ID id)
         {
-            auto it = m_Bodies.find(LogicalIDT<BodyEl>::downcast(id));
+            auto it = m_Bodies.find(DowncastID<BodyEl>(id));
             return it != m_Bodies.end() ? &it->second : nullptr;
         }
 
-        JointEl* TryUpdJointElByID(LogicalID id)
+        JointEl* TryUpdJointElByID(ID id)
         {
-            auto it = m_Joints.find(LogicalIDT<JointEl>::downcast(id));
+            auto it = m_Joints.find(DowncastID<JointEl>(id));
             return it != m_Joints.end() ? &it->second : nullptr;
         }
 
-        MeshEl& UpdMeshByIDOrThrow(LogicalID id)
+        MeshEl& UpdMeshByIDOrThrow(ID id)
         {
             MeshEl* meshEl = TryUpdMeshElByID(id);
             if (!meshEl) {
@@ -927,7 +762,7 @@ namespace {
             return *meshEl;
         }
 
-        BodyEl& UpdBodyByIDOrThrow(LogicalID id)
+        BodyEl& UpdBodyByIDOrThrow(ID id)
         {
             BodyEl* bodyEl = TryUpdBodyElByID(id);
             if (!bodyEl) {
@@ -936,7 +771,7 @@ namespace {
             return *bodyEl;
         }
 
-        JointEl& UpdJointByIDOrThrow(LogicalID id)
+        JointEl& UpdJointByIDOrThrow(ID id)
         {
             JointEl* jointEl = TryUpdJointElByID(id);
             if (!jointEl) {
@@ -945,13 +780,13 @@ namespace {
             return *jointEl;
         }
 
-        void DeleteMesh(std::unordered_map<LogicalIDT<MeshEl>, MeshEl>::iterator it)
+        void DeleteMesh(std::unordered_map<IDT<MeshEl>, MeshEl>::iterator it)
         {
             DeSelect(it->first);
             m_Meshes.erase(it);
         }
 
-        void DeleteBody(std::unordered_map<LogicalIDT<BodyEl>, BodyEl>::iterator it)
+        void DeleteBody(std::unordered_map<IDT<BodyEl>, BodyEl>::iterator it)
         {
             auto const& [bodyID, bodyEl] = *it;
 
@@ -965,7 +800,7 @@ namespace {
 
             // delete any meshes attached to the body
             for (auto meshIt = m_Meshes.begin(); meshIt != m_Meshes.end(); ++meshIt) {
-                if (meshIt->second.GetAttachmentPoint() == bodyID) {
+                if (meshIt->second.Attachment == bodyID) {
                     DeSelect(meshIt->first);
                     meshIt = m_Meshes.erase(meshIt);
                 }
@@ -976,53 +811,57 @@ namespace {
             m_Bodies.erase(it);
         }
 
-        void DeleteJoint(std::unordered_map<LogicalIDT<JointEl>, JointEl>::iterator it)
+        void DeleteJoint(std::unordered_map<IDT<JointEl>, JointEl>::iterator it)
         {
             DeSelect(it->first);
             m_Joints.erase(it);
         }
 
-        std::unordered_map<LogicalIDT<MeshEl>, MeshEl> m_Meshes;
-        std::unordered_map<LogicalIDT<BodyEl>, BodyEl> m_Bodies;
-        std::unordered_map<LogicalIDT<JointEl>, JointEl> m_Joints;
-        std::unordered_set<LogicalID> m_Selected;
+        std::unordered_map<IDT<MeshEl>, MeshEl> m_Meshes;
+        std::unordered_map<IDT<BodyEl>, BodyEl> m_Bodies;
+        std::unordered_map<IDT<JointEl>, JointEl> m_Joints;
+        std::unordered_set<ID> m_Selected;
     };
 
     // try to find the parent body of the given joint
     //
     // returns nullptr if the joint's parent has an invalid id or is attached to ground
     BodyEl const* TryGetParentBody(ModelGraph const& modelGraph, JointEl const& joint)
-    {
-        auto maybeId = joint.GetParentBodyID();
-
-        if (!maybeId) {
+    {   
+        if (joint.Parent.BodyID == g_GroundID) {
             return nullptr;
+        } else {
+            return modelGraph.TryGetBodyElByID(joint.Parent.BodyID);
         }
-
-        return modelGraph.TryGetBodyElByID(maybeId);
     }
 
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& modelGraph, BodyEl const& body)
     {
-        return AnyOf(modelGraph.GetJoints(), [&](auto const& pair) { return IsAttachedToJointAsChild(pair.second, body); });
+        auto IsBodyAttachedToJointAsChild = [&body](auto const& pair)
+        {
+            return pair.second.Child.BodyID == body.ID;
+        };
+
+        return AnyOf(modelGraph.GetJoints(), IsBodyAttachedToJointAsChild);
     }
 
     // returns `true` if a Joint is complete b.s.
     bool IsGarbageJoint(ModelGraph const& modelGraph, JointEl const& jointEl)
     {
-        auto parentBodyID = jointEl.GetParentBodyID();
-        auto childBodyID = jointEl.GetChildBodyID();
+        if (jointEl.Child.BodyID == g_GroundID) {
+            return true;  // ground cannot be a child in a joint
+        }
 
-        if (parentBodyID == childBodyID) {
+        if (jointEl.Parent.BodyID == jointEl.Child.BodyID) {
             return true;  // is directly attached to itself
         }
 
-        if (parentBodyID && !modelGraph.TryGetBodyElByID(parentBodyID)) {
+        if (jointEl.Parent.BodyID != g_GroundID && !modelGraph.ContainsBodyEl(jointEl.Parent.BodyID)) {
              return true;  // has a parent ID that's invalid for this model graph
         }
 
-        if (childBodyID && !modelGraph.TryGetBodyElByID(childBodyID)) {
+        if (!modelGraph.ContainsBodyEl(jointEl.Child.BodyID)) {
             return true;  // has a child ID that's invalid for this model graph
         }
 
@@ -1032,12 +871,12 @@ namespace {
     // returns `true` if a body is indirectly or directly attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
                                 BodyEl const& body,
-                                std::unordered_set<LogicalID>& previouslyVisitedJoints);
+                                std::unordered_set<ID>& previouslyVisitedJoints);
 
     // returns `true` if `joint` is indirectly or directly attached to ground via its parent
     bool IsJointAttachedToGround(ModelGraph const& modelGraph,
                                  JointEl const& joint,
-                                 std::unordered_set<LogicalID>& previousVisits)
+                                 std::unordered_set<ID>& previousVisits)
     {
         OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
 
@@ -1053,13 +892,13 @@ namespace {
     // returns `true` if `body` is attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
                                 BodyEl const& body,
-                                std::unordered_set<LogicalID>& previouslyVisitedJoints)
+                                std::unordered_set<ID>& previouslyVisitedJoints)
     {
         for (auto const& [jointID, jointEl] : modelGraph.GetJoints()) {
             OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, jointEl));
 
-            if (IsChildOfJoint(jointEl, body)) {
-                bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.GetLogicalID()).second;
+            if (jointEl.Child.BodyID == body.ID) {
+                bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.ID).second;
                 if (alreadyVisited) {
                     return false;  // cycle detected
                 } else {
@@ -1079,16 +918,16 @@ namespace {
         for (auto const& [id, joint] : modelGraph.GetJoints()) {
             if (IsGarbageJoint(modelGraph, joint)) {
                 std::stringstream ss;
-                ss << GetName(joint) << ": joint is garbage (this is an implementation error)";
+                ss << GetJointLabel(joint) << ": joint is garbage (this is an implementation error)";
                 throw std::runtime_error{std::move(ss).str()};
             }
         }
 
         for (auto const& [id, body] : modelGraph.GetBodies()) {
-            std::unordered_set<LogicalID> previouslyVisitedJoints;
+            std::unordered_set<ID> previouslyVisitedJoints;
             if (!IsBodyAttachedToGround(modelGraph, body, previouslyVisitedJoints)) {
                 std::stringstream ss;
-                ss << body.GetName() << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
+                ss << body.Name << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
                 issuesOut.push_back(std::move(ss).str());
             }
         }
@@ -1098,27 +937,27 @@ namespace {
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
-                             TranslationOrientation const& parentTranslationAndOrientationInGround,
+                             Ras const& parentTranslationAndOrientationInGround,
                              OpenSim::PhysicalFrame& parentPhysFrame)
     {
         // create a POF that attaches to the body
         auto meshPhysOffsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         meshPhysOffsetFrame->setParentFrame(parentPhysFrame);
-        meshPhysOffsetFrame->setName(meshEl.GetName() + "_offset");
+        meshPhysOffsetFrame->setName(meshEl.Name + "_offset");
 
         // re-express the transform matrix in the parent's frame
-        glm::mat4 parent2ground = TranslationOrientationToBase(parentTranslationAndOrientationInGround);
+        glm::mat4 parent2ground = XFormFromRas(parentTranslationAndOrientationInGround);
         glm::mat4 ground2parent = glm::inverse(parent2ground);
-        glm::mat4 mesh2ground = TranslationOrientationToBase(meshEl.GetTranslationOrientationInGround());
+        glm::mat4 mesh2ground = XFormFromRas(meshEl.Xform);
         glm::mat4 mesh2parent = ground2parent * mesh2ground;
 
         // set it as the transform
         meshPhysOffsetFrame->setOffsetTransform(SimTKTransformFromMat4x3(mesh2parent));
 
         // attach mesh to the POF
-        auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.GetPath().string());
-        mesh->setName(meshEl.GetName());
-        mesh->set_scale_factors(SimTKVec3FromV3(meshEl.GetScaleFactors()));
+        auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.Path.string());
+        mesh->setName(meshEl.Name);
+        mesh->set_scale_factors(SimTKVec3FromV3(meshEl.ScaleFactors));
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
         parentPhysFrame.addComponent(meshPhysOffsetFrame.release());
@@ -1130,12 +969,12 @@ namespace {
     std::unique_ptr<OpenSim::Body> CreateDetatchedBody(ModelGraph const& mg, BodyEl const& bodyEl)
     {
         auto addedBody = std::make_unique<OpenSim::Body>();
-        addedBody->setMass(bodyEl.GetMass());
-        addedBody->setName(bodyEl.GetName());
+        addedBody->setMass(bodyEl.Mass);
+        addedBody->setName(bodyEl.Name);
 
         for (auto const& [meshID, mesh] : mg.GetMeshes()) {
-            if (IsMeshAttachedToBody(mesh, bodyEl)) {
-                AttachMeshElToFrame(mesh, bodyEl.GetTranslationOrientationInGround(), *addedBody);
+            if (mesh.Attachment == bodyEl.ID) {
+                AttachMeshElToFrame(mesh, bodyEl.Xform, *addedBody);
             }
         }
 
@@ -1154,8 +993,8 @@ namespace {
     // if the frame/body doesn't exist yet, constructs it
     JointAttachmentCachedLookupResult LookupPhysFrame(ModelGraph const& mg,
                                                       OpenSim::Model& model,
-                                                      std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies,
-                                                      LogicalIDT<BodyEl> elID)
+                                                      std::unordered_map<ID, OpenSim::Body*>& visitedBodies,
+                                                      IDT<BodyEl> elID)
     {
         // figure out what the parent body is. There's 3 possibilities:
         //
@@ -1196,8 +1035,8 @@ namespace {
                               OpenSim::PhysicalFrame const& parentFrame,
                               OpenSim::PhysicalFrame const& childFrame)
     {
-        if (jointEl.HasUserAssignedName()) {
-            return jointEl.GetUserAssignedName();
+        if (!jointEl.UserAssignedName.empty()) {
+            return jointEl.UserAssignedName;
         } else {
             return childFrame.getName() + "_to_" + parentFrame.getName();
         }
@@ -1206,10 +1045,10 @@ namespace {
     // returns the translation and orientation of the given body in ground
     //
     // if the supplied ID is empty, returns the translation and orientation of ground itself (i.e. 0.0...)
-    TranslationOrientation GetBodyTranslationAndOrientationInGround(ModelGraph const& mg, LogicalIDT<BodyEl> bodyID)
+    Ras GetBodyTranslationAndOrientationInGround(ModelGraph const& mg, IDT<BodyEl> bodyID)
     {
-        if (bodyID.IsEmpty()) {
-            return TranslationOrientation{};  // ground
+        if (bodyID == g_GroundID) {
+            return Ras{};
         }
 
         BodyEl const* body = mg.TryGetBodyElByID(bodyID);
@@ -1218,21 +1057,21 @@ namespace {
             throw std::runtime_error{"cannot get the position of this body: the ID is invalid"};
         }
 
-        return body->GetTranslationOrientationInGround();
+        return body->Xform;
     }
 
     // returns a `TranslationOrientation` that can reorient things expressed in base to things expressed in parent
-    TranslationOrientation TranslationOrientationInParent(TranslationOrientation const& parentInBase, TranslationOrientation const& childInBase)
+    Ras TranslationOrientationInParent(Ras const& parentInBase, Ras const& childInBase)
     {
-        glm::mat4 parent2base = TranslationOrientationToBase(parentInBase);
+        glm::mat4 parent2base = XFormFromRas(parentInBase);
         glm::mat4 base2parent = glm::inverse(parent2base);
-        glm::mat4 child2base = TranslationOrientationToBase(childInBase);
+        glm::mat4 child2base = XFormFromRas(childInBase);
         glm::mat4 child2parent = base2parent * child2base;
 
-        glm::vec3 translation = base2parent * glm::vec4{childInBase.translation, 1.0f};
+        glm::vec3 translation = base2parent * glm::vec4{childInBase.shift, 1.0f};
         glm::vec3 orientation = MatToEulerAngles(child2parent);
 
-        return TranslationOrientation{translation, orientation};
+        return Ras{translation, orientation};
     }
 
     // expresses if a joint has a degree of freedom (i.e. != -1) and the coordinate index of
@@ -1262,7 +1101,7 @@ namespace {
     // sets the names of a joint's coordinates
     void SetJointCoordinateNames(OpenSim::Joint& joint, std::string const& prefix)
     {
-        constexpr std::array<char const*, 3> translationNames = {"_tx", "_ty", "_tz"};
+        constexpr std::array<char const*, 3> const translationNames = {"_tx", "_ty", "_tz"};
         constexpr std::array<char const*, 3> const rotationNames = {"_rx", "_ry", "_rz"};
 
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*JointRegistry::indexOf(joint));
@@ -1291,34 +1130,34 @@ namespace {
     //
     // throws if the joint does not contain a relevant coordinate to rectify the difference
     void SetJointCoordinatesBasedOnFrameDifferences(OpenSim::Joint& joint,
-                                                    TranslationOrientation const& parentPofInGround,
-                                                    TranslationOrientation const& childPofInGround)
+                                                    Ras const& parentPofInGround,
+                                                    Ras const& childPofInGround)
     {
         size_t jointTypeIdx = *JointRegistry::indexOf(joint);
 
-        TranslationOrientation toInParent = TranslationOrientationInParent(parentPofInGround, childPofInGround);
+        Ras toInParent = TranslationOrientationInParent(parentPofInGround, childPofInGround);
 
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(jointTypeIdx);
 
         // handle translations
         for (int i = 0; i < 3; ++i) {
             if (dofs.translation[i] == -1) {
-                if (!IsEffectivelyZero(toInParent.translation[i])) {
+                if (!IsEffectivelyZero(toInParent.shift[i])) {
                     throw std::runtime_error{"invalid POF translation: joint offset frames have a nonzero translation but the joint doesn't have a coordinate along the necessary DoF"};
                 }
             } else {
-                joint.upd_coordinates(dofs.translation[i]).setDefaultValue(toInParent.translation[i]);
+                joint.upd_coordinates(dofs.translation[i]).setDefaultValue(toInParent.shift[i]);
             }
         }
 
         // handle orientations
         for (int i = 0; i < 3; ++i) {
             if (dofs.orientation[i] == -1) {
-                if (!IsEffectivelyZero(toInParent.orientation[i])) {
+                if (!IsEffectivelyZero(toInParent.rot[i])) {
                     throw std::runtime_error{"invalid POF rotation: joint offset frames have a nonzero rotation but the joint doesn't have a coordinate along the necessary DoF"};
                 }
             } else {
-                joint.upd_coordinates(dofs.orientation[i]).setDefaultValue(toInParent.orientation[i]);
+                joint.upd_coordinates(dofs.orientation[i]).setDefaultValue(toInParent.rot[i]);
             }
         }
     }
@@ -1333,41 +1172,39 @@ namespace {
     void AttachJointRecursive(ModelGraph const& mg,
                               OpenSim::Model& model,
                               JointEl const& joint,
-                              std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies,
-                              std::unordered_set<LogicalID>& visitedJoints)
+                              std::unordered_map<ID, OpenSim::Body*>& visitedBodies,
+                              std::unordered_set<ID>& visitedJoints)
     {
-        LogicalID jointID = joint.GetLogicalID();
-
-        if (auto const& [it, wasInserted] = visitedJoints.emplace(jointID); !wasInserted) {
+        if (auto const& [it, wasInserted] = visitedJoints.emplace(joint.ID); !wasInserted) {
             return;  // graph cycle detected: joint was already previously visited and shouldn't be traversed again
         }
 
         // lookup each side of the joint, creating the bodies if necessary
-        JointAttachmentCachedLookupResult parent = LookupPhysFrame(mg, model, visitedBodies, joint.GetParentBodyID());
-        JointAttachmentCachedLookupResult child = LookupPhysFrame(mg, model, visitedBodies, joint.GetChildBodyID());
+        JointAttachmentCachedLookupResult parent = LookupPhysFrame(mg, model, visitedBodies, joint.Parent.BodyID);
+        JointAttachmentCachedLookupResult child = LookupPhysFrame(mg, model, visitedBodies, joint.Child.BodyID);
 
         // create the parent OpenSim::PhysicalOffsetFrame
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        TranslationOrientation toParentInGround = GetBodyTranslationAndOrientationInGround(mg, joint.GetParentBodyID());
-        TranslationOrientation toParentPofInGround = joint.GetParentAttachmentTranslationOrientationInGround();
-        TranslationOrientation toParentPofInParent = TranslationOrientationInParent(toParentInGround, toParentPofInGround);
-        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent.translation));
-        parentPOF->set_orientation(SimTKVec3FromV3(toParentPofInParent.orientation));
+        Ras toParentInGround = GetBodyTranslationAndOrientationInGround(mg, joint.Parent.BodyID);
+        Ras toParentPofInGround = joint.Parent.Xform;
+        Ras toParentPofInParent = TranslationOrientationInParent(toParentInGround, toParentPofInGround);
+        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent.shift));
+        parentPOF->set_orientation(SimTKVec3FromV3(toParentPofInParent.rot));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        TranslationOrientation toChildInGround = GetBodyTranslationAndOrientationInGround(mg, joint.GetChildBodyID());
-        TranslationOrientation toChildPofInGround = joint.GetChildAttachmentTranslationOrientationInGround();
-        TranslationOrientation toChildPofInChild = TranslationOrientationInParent(toChildInGround, toChildPofInGround);
-        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild.translation));
-        childPOF->set_orientation(SimTKVec3FromV3(toChildPofInChild.orientation));
+        Ras toChildInGround = GetBodyTranslationAndOrientationInGround(mg, joint.Child.BodyID);
+        Ras toChildPofInGround = joint.Child.Xform;
+        Ras toChildPofInChild = TranslationOrientationInParent(toChildInGround, toChildPofInGround);
+        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild.shift));
+        childPOF->set_orientation(SimTKVec3FromV3(toChildPofInChild.rot));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = ConstructOpenSimJointFromTypeIndex(joint.GetJointTypeIndex());
+        auto jointUniqPtr = ConstructOpenSimJointFromTypeIndex(joint.JointTypeIndex);
 
         // set its name
         jointUniqPtr->setName(CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame));
@@ -1401,7 +1238,7 @@ namespace {
         // recurse by finding where the child of this joint is the parent of some other joint
         OSC_ASSERT_ALWAYS(child.bodyEl != nullptr && "child should always be an identifiable body element");
         for (auto const& [otherJointID, otherJoint] : mg.GetJoints()) {
-            if (IsAttachedToJointAsParent(otherJoint, *child.bodyEl)) {
+            if (otherJoint.Parent.BodyID == child.bodyEl->ID) {
                 AttachJointRecursive(mg, model, otherJoint, visitedBodies, visitedJoints);
             }
         }
@@ -1411,26 +1248,26 @@ namespace {
     void AttachBodyDirectlyToGround(ModelGraph const& mg,
                                     OpenSim::Model& model,
                                     BodyEl const& bodyEl,
-                                    std::unordered_map<LogicalID, OpenSim::Body*>& visitedBodies)
+                                    std::unordered_map<ID, OpenSim::Body*>& visitedBodies)
     {
         auto addedBody = CreateDetatchedBody(mg, bodyEl);
         auto joint = std::make_unique<OpenSim::FreeJoint>();
 
         // set joint name
-        joint->setName(bodyEl.GetName() + "_to_ground");
+        joint->setName(bodyEl.Name + "_to_ground");
 
         // set joint coordinate names
-        SetJointCoordinateNames(*joint, bodyEl.GetName());
+        SetJointCoordinateNames(*joint, bodyEl.Name);
 
         // set joint's default location of the body's position in the ground
-        SetJointCoordinatesBasedOnFrameDifferences(*joint, TranslationOrientation{}, bodyEl.GetTranslationOrientationInGround());
+        SetJointCoordinatesBasedOnFrameDifferences(*joint, Ras{}, bodyEl.Xform);
 
         // connect joint from ground to the body
         joint->connectSocket_parent_frame(model.getGround());
         joint->connectSocket_child_frame(*addedBody);
 
         // populate it in the "already visited bodies" cache
-        visitedBodies[bodyEl.GetLogicalID()] = addedBody.get();
+        visitedBodies[bodyEl.ID] = addedBody.get();
 
         // add the body + joint to the output model
         model.addBody(addedBody.release());
@@ -1457,14 +1294,14 @@ namespace {
 
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
         for (auto const& [meshID, mesh] : mg.GetMeshes()) {
-            if (IsAttachedToGround(mesh)) {
-                AttachMeshElToFrame(mesh, TranslationOrientation{}, model->updGround());
+            if (mesh.Attachment == g_GroundID) {
+                AttachMeshElToFrame(mesh, Ras{}, model->updGround());
             }
         }
 
         // keep track of any bodies/joints already visited (there might be cycles)
-        std::unordered_map<LogicalID, OpenSim::Body*> visitedBodies;
-        std::unordered_set<LogicalID> visitedJoints;
+        std::unordered_map<ID, OpenSim::Body*> visitedBodies;
+        std::unordered_set<ID> visitedJoints;
 
         // add any bodies that participate in no joints into the model with a freejoint
         for (auto const& [bodyID, body] : mg.GetBodies()) {
@@ -1477,10 +1314,7 @@ namespace {
         //
         // note: these bodies may use the non-participating bodies (above) as parents
         for (auto const& [jointID, joint] : mg.GetJoints()) {
-
-            auto parentID = joint.GetParentBodyID();
-
-            if (IsJointAttachedToGroundAsParent(joint) || ContainsKey(visitedBodies, parentID)) {
+            if (joint.Parent.BodyID == g_GroundID || ContainsKey(visitedBodies, joint.Parent.BodyID)) {
                 AttachJointRecursive(mg, *model, joint, visitedBodies, visitedJoints);
             }
         }
@@ -1715,8 +1549,8 @@ namespace {
 
     // something that is being drawn in the scene
     struct DrawableThing final {
-        LogicalID id;
-        LogicalID groupId;
+        ID id = g_EmptyID;
+        ID groupId = g_EmptyID;
         std::shared_ptr<Mesh> mesh;
         glm::mat4x3 modelMatrix;
         glm::mat3x3 normalMatrix;
@@ -1868,16 +1702,15 @@ namespace {
 // Data that's shared between multiple UI states.
 namespace {
 
-    // senteniel IDs
-    //
-    // these come in handy when (e.g.) an implementation needs
-    // to differentiate between "empty" and "ground"
+    class Hover final {
+    public:
+        Hover() : ID{g_EmptyID}, Pos{} {}
+        Hover(ID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_} {}
+        operator bool () const noexcept { return ID != g_EmptyID; }
 
-    LogicalID const g_GroundID = LogicalID::next();
-
-    LogicalID const g_BodyGroupID = LogicalID::next();
-    LogicalID const g_MeshGroupID = LogicalID::next();
-    LogicalID const g_GroundGroupID = LogicalID::next();
+        ID ID;
+        glm::vec3 Pos;
+    };
 
     class SharedData final {
     public:
@@ -1955,7 +1788,7 @@ namespace {
             m_ModelGraphSnapshots.Redo();
         }
 
-        std::unordered_set<LogicalID> const& GetCurrentSelection() const
+        std::unordered_set<ID> const& GetCurrentSelection() const
         {
             return GetCurrentModelGraph().GetSelected();
         }
@@ -1970,12 +1803,12 @@ namespace {
             UpdCurrentModelGraph().DeSelectAll();
         }
 
-        void Select(LogicalID id)
+        void Select(ID id)
         {
             UpdCurrentModelGraph().Select(id);
         }
 
-        void DeSelect(LogicalID id)
+        void DeSelect(ID id)
         {
             UpdCurrentModelGraph().DeSelect(id);
         }
@@ -1985,7 +1818,7 @@ namespace {
             return GetCurrentModelGraph().HasSelection();
         }
 
-        bool IsSelected(LogicalID id) const
+        bool IsSelected(ID id) const
         {
             return GetCurrentModelGraph().IsSelected(id);
         }
@@ -1999,7 +1832,7 @@ namespace {
             CommitCurrentModelGraph("deleted selection");
         }
 
-        LogicalIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& pos, glm::vec3 const& orientation)
+        IDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& pos, glm::vec3 const& orientation)
         {
             auto id = UpdCurrentModelGraph().AddBody(name, pos, orientation);
             UpdCurrentModelGraph().DeSelectAll();
@@ -2008,19 +1841,19 @@ namespace {
             return id;
         }
 
-        LogicalIDT<BodyEl> AddBody(glm::vec3 const& pos)
+        IDT<BodyEl> AddBody(glm::vec3 const& pos)
         {
             return AddBody(GenerateBodyName(), pos, {});
         }
 
-        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath, LogicalIDT<BodyEl> bodyToAttachTo)
+        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath, IDT<BodyEl> bodyToAttachTo)
         {
             m_MeshLoader.send(MeshLoadRequest{bodyToAttachTo, meshFilePath});
         }
 
         void PushMeshLoadRequest(std::filesystem::path const& meshFilePath)
         {
-            m_MeshLoader.send(MeshLoadRequest{LogicalIDT<BodyEl>::empty(), meshFilePath});
+            m_MeshLoader.send(MeshLoadRequest{g_GroundID, meshFilePath});
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
@@ -2032,7 +1865,7 @@ namespace {
 
             auto const* maybeBody = mg.TryGetBodyElByID(ok.PreferredAttachmentPoint);
             if (maybeBody) {
-                mg.SetMeshTranslationOrientationInGround(meshID, maybeBody->GetTranslationOrientationInGround());
+                mg.SetMeshXform(meshID, maybeBody->Xform);
             }
 
             std::stringstream commitMsgSS;
@@ -2096,42 +1929,35 @@ namespace {
 
         void DrawConnectionLine(MeshEl const& meshEl, ImU32 color) const
         {
-            glm::vec3 meshLoc = meshEl.GetTranslationInGround();
-            glm::vec3 otherLoc{};
-
-            if (IsAttachedToABody(meshEl)) {
-                BodyEl const& body = GetCurrentModelGraph().GetBodyByIDOrThrow(meshEl.GetAttachmentPoint());
-                otherLoc = body.GetTranslationInGround();
-            }
+            glm::vec3 meshLoc = meshEl.Xform.shift;
+            glm::vec3 otherLoc = GetCurrentModelGraph().GetTranslationInGround(meshEl.Attachment);
 
             DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(meshLoc));
         }
 
         void DrawConnectionLineToGround(BodyEl const& bodyEl, ImU32 color) const
         {
-            glm::vec3 bodyLoc = bodyEl.GetTranslationInGround();
+            glm::vec3 bodyLoc = bodyEl.Xform.shift;
             glm::vec3 otherLoc = {};
 
             DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(bodyLoc));
         }
 
-        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, LogicalID excludeID = LogicalID::empty()) const
+        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, ID excludeID = g_EmptyID) const
         {
-            if (jointEl.GetLogicalID() == excludeID) {
+            if (jointEl.ID == excludeID) {
                 return;
             }
 
-            auto childID = jointEl.GetChildBodyID();
-            if (childID != excludeID) {
-                glm::vec3 childLoc = childID && childID != g_GroundID ? GetCurrentModelGraph().GetBodyByIDOrThrow(childID).GetTranslationInGround() : glm::vec3{};
-                glm::vec3 childPivotLoc = jointEl.GetChildAttachmentTranslationInGround();
+            if (jointEl.Child.BodyID != excludeID) {
+                glm::vec3 childLoc = GetCurrentModelGraph().GetTranslationInGround(jointEl.Child.BodyID);
+                glm::vec3 childPivotLoc = jointEl.Child.Xform.shift;
                 DrawConnectionLine(color, WorldPosToScreenPos(childPivotLoc), WorldPosToScreenPos(childLoc));
             }
 
-            auto parentID = jointEl.GetParentBodyID();
-            if (parentID != excludeID) {
-                glm::vec3 parentLoc = parentID && parentID != g_GroundID ? GetCurrentModelGraph().GetBodyByIDOrThrow(parentID).GetTranslationInGround() : glm::vec3{};
-                glm::vec3 parentPivotLoc = jointEl.GetParentAttachmentTranslationInGround();
+            if (jointEl.Parent.BodyID != excludeID) {
+                glm::vec3 parentLoc = GetCurrentModelGraph().GetTranslationInGround(jointEl.Parent.BodyID);
+                glm::vec3 parentPivotLoc = jointEl.Parent.Xform.shift;
                 DrawConnectionLine(color, WorldPosToScreenPos(parentLoc), WorldPosToScreenPos(parentPivotLoc));
             }
         }
@@ -2141,7 +1967,7 @@ namespace {
             DrawConnectionLines({0.0f, 0.0f, 0.0f, 0.33f});
         }
 
-        void DrawConnectionLines(ImVec4 colorVec, LogicalID excludeID = LogicalID::empty()) const
+        void DrawConnectionLines(ImVec4 colorVec, ID excludeID = g_EmptyID) const
         {
             ModelGraph const& mg = GetCurrentModelGraph();
             ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
@@ -2262,8 +2088,8 @@ namespace {
         DrawableThing GenerateFloorDrawable() const
         {
             DrawableThing dt;
-            dt.id = LogicalID::empty();
-            dt.groupId = LogicalID::empty();
+            dt.id = g_EmptyID;
+            dt.groupId = g_EmptyID;
             dt.mesh = m_FloorMesh;
             dt.modelMatrix = GetFloorModelMtx();
             dt.normalMatrix = NormalMatrix(dt.modelMatrix);
@@ -2276,9 +2102,9 @@ namespace {
         DrawableThing GenerateMeshElDrawable(MeshEl const& meshEl, glm::vec4 const& color) const
         {
             DrawableThing rv;
-            rv.id = meshEl.GetLogicalID();
+            rv.id = meshEl.ID;
             rv.groupId = g_MeshGroupID;
-            rv.mesh = meshEl.GetMesh();
+            rv.mesh = meshEl.MeshData;
             rv.modelMatrix = GetModelMatrix(meshEl);
             rv.normalMatrix = NormalMatrix(rv.modelMatrix);
             rv.color = color;
@@ -2300,10 +2126,10 @@ namespace {
         DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, glm::vec4 const& color) const
         {
             DrawableThing rv;
-            rv.id = bodyEl.GetLogicalID();
+            rv.id = bodyEl.ID;
             rv.groupId = g_BodyGroupID;
             rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.GetTranslationInGround()));
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.shift));
             rv.normalMatrix = NormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
@@ -2325,16 +2151,16 @@ namespace {
             return rv;
         }
 
-        void AppendAsFrame(LogicalID logicalID,
-                           LogicalID groupID,
-                           TranslationOrientation const& translationOrientation,
+        void AppendAsFrame(ID logicalID,
+                           ID groupID,
+                           Ras const& translationOrientation,
                            std::vector<DrawableThing>& appendOut,
                            float alpha = 1.0f) const
         {
             // stolen from SceneGeneratorNew.cpp
 
-            glm::vec3 origin = translationOrientation.translation;
-            glm::mat3 rotation = EulerAnglesToMat(translationOrientation.orientation);
+            glm::vec3 origin = translationOrientation.shift;
+            glm::mat3 rotation = EulerAnglesToMat(translationOrientation.rot);
 
             // emit origin sphere
             {
@@ -2378,16 +2204,16 @@ namespace {
 
         void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
-            AppendAsFrame(bodyEl.GetLogicalID(), g_BodyGroupID, bodyEl.GetTranslationOrientationInGround(), appendOut);
+            AppendAsFrame(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
         }
 
-        std::pair<LogicalID, glm::vec3> Hovertest(std::vector<DrawableThing> const& drawables) const
+        Hover Hovertest(std::vector<DrawableThing> const& drawables) const
         {
             Rect sceneRect = Get3DSceneRect();
             glm::vec2 mousePos = ImGui::GetMousePos();
 
             if (!PointIsInRect(sceneRect, mousePos)) {
-                return {};
+                return Hover{};
             }
 
             glm::vec2 sceneDims = RectDims(sceneRect);
@@ -2397,11 +2223,11 @@ namespace {
             bool hittestMeshes = IsMeshesInteractable();
             bool hittestBodies = IsBodiesInteractable();
 
-            LogicalID closestID;
+            ID closestID = g_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
 
             for (DrawableThing const& drawable : drawables) {
-                if (!drawable.id) {
+                if (drawable.id == g_EmptyID) {
                     continue;  // no hittest data
                 }
 
@@ -2420,9 +2246,9 @@ namespace {
                 }
             }
 
-            glm::vec3 hitPos = closestID ? ray.origin + closestDist*ray.dir : glm::vec3{};
+            glm::vec3 hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
 
-            return {closestID, hitPos};
+            return Hover{closestID, hitPos};
         }
 
         bool onEvent(SDL_Event const& e)
@@ -2502,9 +2328,6 @@ namespace {
         glm::vec3 m_3DSceneLightDir = {-0.34f, -0.25f, 0.05f};
         glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
-
-        // senteniel ID for ground: used for some hittests
-        LogicalID m_GroundID = LogicalID::next();
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)
@@ -2593,40 +2416,15 @@ namespace {
     // body in the scene
     class AssignMeshMWState final : public MWState {
     public:
-        AssignMeshMWState(SharedData& sharedData, LogicalIDT<MeshEl> meshID) :
+        AssignMeshMWState(SharedData& sharedData, IDT<MeshEl> meshID) :
             MWState{sharedData},
             m_MeshID{meshID}
         {
         }
 
-        LogicalID GetHoverID() const
-        {
-            return m_MaybeHover.first;
-        }
-
-        bool IsHoveringSomething() const
-        {
-            return GetHoverID();
-        }
-
-        bool IsHoveringMesh() const
-        {
-            return GetHoverID() == m_MeshID;
-        }
-
-        bool IsHoveringGround() const
-        {
-            return GetHoverID() == g_GroundID;
-        }
-
         bool IsHoveringABody() const
         {
-            return IsHoveringSomething() && !IsHoveringMesh() && !IsHoveringGround();
-        }
-
-        void ClearHover()
-        {
-            m_MaybeHover.first = LogicalID::empty();
+            return m_Hover && m_Hover.ID != m_MeshID && m_Hover.ID != g_GroundID;
         }
 
         void UpdateFromImGuiKeyboardState()
@@ -2639,7 +2437,7 @@ namespace {
 
         void DrawMeshHoverTooltip() const
         {
-            if (!IsHoveringSomething() || !IsHoveringMesh()) {
+            if (m_Hover.ID != m_MeshID) {
                 return;
             }
 
@@ -2647,7 +2445,7 @@ namespace {
             MeshEl const& meshEl = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID);
 
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(meshEl.GetName().c_str());
+            ImGui::TextUnformatted(meshEl.Name.c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(click to assign the mesh to ground)");
             ImGui::EndTooltip();
@@ -2655,15 +2453,15 @@ namespace {
 
         void DrawBodyHoverTooltip() const
         {
-            if (!IsHoveringSomething() || !IsHoveringABody()) {
+            if (!IsHoveringABody()) {
                 return;
             }
 
             // user is hovering a body that the mesh could attach to
-            BodyEl const& bodyEl = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID());
+            BodyEl const& bodyEl = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_Hover.ID);
 
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(bodyEl.GetName().c_str());
+            ImGui::TextUnformatted(bodyEl.Name.c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(click to assign the mesh to this body)");
             ImGui::EndTooltip();
@@ -2680,13 +2478,13 @@ namespace {
 
         void DrawHoverTooltip() const
         {
-            if (!IsHoveringSomething()) {
+            if (!m_Hover) {
                 return;
-            } else if (IsHoveringMesh()) {
+            } else if (m_Hover.ID == m_MeshID) {
                 DrawMeshHoverTooltip();
             } else if (IsHoveringABody()) {
                 DrawBodyHoverTooltip();
-            } else if (IsHoveringGround()) {
+            } else if (m_Hover.ID == g_GroundID) {
                 DrawGroundHoverTooltip();
             }
         }
@@ -2694,11 +2492,11 @@ namespace {
         void DoHovertest(std::vector<DrawableThing> const& drawables)
         {
             if (!m_SharedData.IsRenderHovered()) {
-                ClearHover();
+                m_Hover = Hover{};
                 return;
             }
 
-            m_MaybeHover = m_SharedData.Hovertest(drawables);
+            m_Hover = m_SharedData.Hovertest(drawables);
         }
 
         void DrawConnectionLines()
@@ -2706,7 +2504,7 @@ namespace {
             ImVec4 faintColor = {0.0f, 0.0f, 0.0f, 0.2f};
             ImVec4 strongColor = {0.0f, 0.0f, 0.0f, 1.0f};
 
-            if (!IsHoveringSomething()) {
+            if (!m_Hover) {
                 // draw all existing connection lines faintly
                 m_SharedData.DrawConnectionLines(faintColor);
                 return;
@@ -2717,14 +2515,14 @@ namespace {
             m_SharedData.DrawConnectionLines(faintColor, m_MeshID);
 
             // draw hover connection line strongly
-            auto meshLoc = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID).GetTranslationInGround();
+            auto meshLoc = m_SharedData.GetCurrentModelGraph().GetMeshByIDOrThrow(m_MeshID).Xform.shift;
             auto strongColorU32 = ImGui::ColorConvertFloat4ToU32(strongColor);
             if (IsHoveringABody()) {
-                auto bodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID()).GetTranslationInGround();
+                auto bodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_Hover.ID).Xform.shift;
                 m_SharedData.DrawConnectionLine(strongColorU32,
                                                 m_SharedData.WorldPosToScreenPos(bodyLoc),
                                                 m_SharedData.WorldPosToScreenPos(meshLoc));
-            } else if (IsHoveringMesh() || IsHoveringGround()) {
+            } else if (m_Hover.ID == m_MeshID || m_Hover.ID == g_GroundID) {
                 auto groundLoc = glm::vec3{0.0f, 0.0f, 0.0f};
                 m_SharedData.DrawConnectionLine(strongColorU32,
                                                 m_SharedData.WorldPosToScreenPos(groundLoc),
@@ -2769,14 +2567,14 @@ namespace {
             DoHovertest(sceneEls);
 
             // hovertest side-effects
-            if (IsHoveringSomething()) {
+            if (m_Hover) {
 
                 DrawHoverTooltip();
 
                 // handle user clicks
                 if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
 
-                    if (IsHoveringMesh() || IsHoveringGround()) {
+                    if (m_Hover.ID == m_MeshID || m_Hover.ID == g_GroundID) {
                         // user clicked on the mesh: assign mesh to ground (un-assign it)
                         m_SharedData.UpdCurrentModelGraph().UnsetMeshAttachmentPoint(m_MeshID);
                         m_SharedData.CommitCurrentModelGraph("assigned mesh to ground");
@@ -2784,8 +2582,7 @@ namespace {
                         App::cur().requestRedraw();
                     } else if (IsHoveringABody()) {
                         // user clicked on a body: assign the mesh to the body
-                        auto hoverID = GetHoverID();
-                        auto bodyID = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(hoverID).GetLogicalID();
+                        auto bodyID = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_Hover.ID).ID;
 
                         m_SharedData.UpdCurrentModelGraph().SetMeshAttachmentPoint(m_MeshID, bodyID);
                         m_SharedData.CommitCurrentModelGraph("assigned mesh to body");
@@ -2839,31 +2636,34 @@ namespace {
 
     private:
         // the mesh being assigned by this state
-        LogicalIDT<MeshEl> m_MeshID;
+        IDT<MeshEl> m_MeshID;
 
         // (maybe) next state to transition to
-        std::unique_ptr<MWState> m_MaybeNextState;
+        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
 
-        // (maybe) hover + worldspace location of the hover
-        std::pair<LogicalID, glm::vec3> m_MaybeHover;
+        // (maybe) user mouse hover
+        Hover m_Hover;
     };
 
-    TranslationOrientation CalcAverageTranslationOrientation(ModelGraph const& mg, LogicalID parentID, LogicalIDT<BodyEl> childID)
+    Ras CalcAverageTranslationOrientation(ModelGraph const& mg, ID parentID, IDT<BodyEl> childID)
     {
-        TranslationOrientation parentTO = (parentID && parentID != g_GroundID) ? mg.GetTranslationOrientationInGround(parentID) : GroundTranslationOrientation();
-        TranslationOrientation childTO = mg.GetTranslationOrientationInGround(childID);
-        return Average(parentTO, childTO);
+        Ras parentTO = mg.GetTranslationOrientationInGround(parentID);
+        Ras childTO = mg.GetTranslationOrientationInGround(childID);
+        return AverageRas(parentTO, childTO);
     }
 
     class FreeJointFirstPivotPlacementState final : public MWState {
     public:
-        FreeJointFirstPivotPlacementState(SharedData& sharedData, LogicalID parentID, LogicalIDT<BodyEl> childBodyID) :
+        FreeJointFirstPivotPlacementState(
+                SharedData& sharedData,
+                IDT<BodyEl> parentID,  // can be ground
+                IDT<BodyEl> childBodyID) :
+
             MWState{sharedData},
             m_MaybeNextState{nullptr},
-            m_ParentID{parentID},
+            m_ParentOrGroundID{parentID},
             m_ChildBodyID{childBodyID},
-            m_PivotTranslationOrientation{CalcAverageTranslationOrientation(m_SharedData.GetCurrentModelGraph(), m_ParentID, m_ChildBodyID)},
-            m_PivotID{LogicalID::next()}
+            m_PivotTranslationOrientation{CalcAverageTranslationOrientation(m_SharedData.GetCurrentModelGraph(), m_ParentOrGroundID, m_ChildBodyID)}
         {
         }
 
@@ -2871,20 +2671,12 @@ namespace {
 
         glm::vec3 GetParentTranslationInGround() const
         {
-            if (m_ParentID && m_ParentID != g_GroundID) {
-                return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ParentID);
-            } else {
-                return {};  // ground
-            }
+            return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ParentOrGroundID);
         }
 
         glm::vec3 GetParentOrientationInGround() const
         {
-            if (m_ParentID && m_ParentID != g_GroundID) {
-                return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ParentID);
-            } else {
-                return {};  // ground
-            }
+            return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ParentOrGroundID);
         }
 
         glm::vec3 GetChildTranslationInGround() const
@@ -2899,18 +2691,17 @@ namespace {
 
         glm::vec3 const& GetPivotCenter() const
         {
-            return m_PivotTranslationOrientation.translation;
+            return m_PivotTranslationOrientation.shift;
         }
 
         glm::vec3 const& GetPivotOrientation() const
         {
-            return m_PivotTranslationOrientation.orientation;
+            return m_PivotTranslationOrientation.rot;
         }
 
         void AddFreeJointToModelGraphFromCurrentState()
         {
-            LogicalIDT<BodyEl> parentID = m_ParentID && m_ParentID != g_GroundID ? LogicalIDT<BodyEl>::downcast(m_ParentID) : LogicalIDT<BodyEl>::empty();
-            JointAttachment parentAttachment{parentID, m_PivotTranslationOrientation};
+            JointAttachment parentAttachment{m_ParentOrGroundID, m_PivotTranslationOrientation};
             JointAttachment childAttachment{m_ChildBodyID, m_PivotTranslationOrientation};
 
             auto pinjointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
@@ -2951,7 +2742,7 @@ namespace {
         void DrawConnectionLines() const
         {
             glm::vec2 childScreenPos = m_SharedData.WorldPosToScreenPos(GetChildTranslationInGround());
-            glm::vec2 pivotScreenPos = m_SharedData.WorldPosToScreenPos(m_PivotTranslationOrientation.translation);
+            glm::vec2 pivotScreenPos = m_SharedData.WorldPosToScreenPos(m_PivotTranslationOrientation.shift);
             glm::vec2 parentScreenPos = m_SharedData.WorldPosToScreenPos(GetParentTranslationInGround());
 
             ImU32 blackColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
@@ -2970,7 +2761,7 @@ namespace {
         void DrawPivot3DManipulators()
         {
             if (!ImGuizmo::IsUsing()) {
-                m_ImGuizmoState.mtx = TranslationOrientationToBase(m_PivotTranslationOrientation);
+                m_ImGuizmoState.mtx = XFormFromRas(m_PivotTranslationOrientation);
             }
 
             Rect sceneRect = m_SharedData.Get3DSceneRect();
@@ -3003,9 +2794,9 @@ namespace {
             rotation = glm::radians(rotation);
 
             if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
-                m_PivotTranslationOrientation.orientation = EulerCompose(m_PivotTranslationOrientation.orientation, rotation);
+                m_PivotTranslationOrientation.rot = EulerCompose(m_PivotTranslationOrientation.rot, rotation);
             } else if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
-                m_PivotTranslationOrientation.translation += translation;
+                m_PivotTranslationOrientation.shift += translation;
             }
         }
 
@@ -3016,20 +2807,20 @@ namespace {
             std::vector<DrawableThing> sceneEls;
 
             // draw pivot point as a single frame
-            m_SharedData.AppendAsFrame(m_PivotID, m_PivotID, m_PivotTranslationOrientation, sceneEls);
+            m_SharedData.AppendAsFrame(g_PivotID, g_PivotID, m_PivotTranslationOrientation, sceneEls);
 
             float const faintAlpha = 0.1f;
 
             // draw other bodies faintly and non-clickable
             for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
-                m_SharedData.AppendAsFrame({}, {}, bodyEl.GetTranslationOrientationInGround(), sceneEls, faintAlpha);
+                m_SharedData.AppendAsFrame(g_EmptyID, g_EmptyID, bodyEl.Xform, sceneEls, faintAlpha);
             }
 
             // draw meshes faintly and non-clickable
             for (auto const& [meshID, meshEl] : m_SharedData.GetCurrentModelGraph().GetMeshes()) {
                 DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, m_SharedData.GetMeshColor()));
-                dt.id = {};
-                dt.groupId = {};
+                dt.id = g_EmptyID;
+                dt.groupId = g_EmptyID;
                 dt.color.a = faintAlpha;
             }
 
@@ -3088,16 +2879,13 @@ namespace {
         std::unique_ptr<MWState> m_MaybeNextState = nullptr;
 
         // ID of the parent-side of the FreeJoint (ground or body)
-        LogicalID m_ParentID;
+        IDT<BodyEl> m_ParentOrGroundID;
 
         // ID of the child-side of the FreeJoint (always a body)
-        LogicalIDT<BodyEl> m_ChildBodyID;
+        IDT<BodyEl> m_ChildBodyID;
 
         // translation+orientation of the FreeJoint's joint location in ground
-        TranslationOrientation m_PivotTranslationOrientation;
-
-        // senteniel ID for the joint location, so that hittesting can "see" it
-        LogicalID m_PivotID;
+        Ras m_PivotTranslationOrientation;
 
         // ImGuizmo state for 3D manipulators
         struct {
@@ -3110,13 +2898,12 @@ namespace {
 
     class PinJointPivotPlacementState final : public MWState {
     public:
-        PinJointPivotPlacementState(SharedData& sharedData, LogicalID parentID, LogicalIDT<BodyEl> childBodyID) :
+        PinJointPivotPlacementState(SharedData& sharedData, IDT<BodyEl> parentID, IDT<BodyEl> childBodyID) :
             MWState{sharedData},
             m_MaybeNextState{nullptr},
-            m_ParentID{parentID},
+            m_ParentOrGroundID{parentID},
             m_ChildBodyID{childBodyID},
-            m_PivotTranslationOrientation{CalcAverageTranslationOrientation(sharedData.GetCurrentModelGraph(), parentID, childBodyID)},
-            m_PivotID{LogicalID::next()}
+            m_PivotTranslationOrientation{CalcAverageTranslationOrientation(sharedData.GetCurrentModelGraph(), parentID, childBodyID)}
         {
         }
 
@@ -3124,20 +2911,12 @@ namespace {
 
         glm::vec3 GetParentTranslationInGround() const
         {
-            if (m_ParentID && m_ParentID != g_GroundID) {
-                return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ParentID);
-            } else {
-                return {};  // ground
-            }
+            return m_SharedData.GetCurrentModelGraph().GetTranslationInGround(m_ParentOrGroundID);
         }
 
         glm::vec3 GetParentOrientationInGround() const
         {
-            if (m_ParentID && m_ParentID != g_GroundID) {
-                return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ParentID);
-            } else {
-                return {};  // ground
-            }
+            return m_SharedData.GetCurrentModelGraph().GetOrientationInGround(m_ParentOrGroundID);
         }
 
         glm::vec3 GetChildTranslationInGround() const
@@ -3152,18 +2931,17 @@ namespace {
 
         glm::vec3 const& GetPivotCenter() const
         {
-            return m_PivotTranslationOrientation.translation;
+            return m_PivotTranslationOrientation.shift;
         }
 
         glm::vec3 const& GetPivotOrientation() const
         {
-            return m_PivotTranslationOrientation.orientation;
+            return m_PivotTranslationOrientation.rot;
         }
 
         void CreatePinjointFromCurrentState()
         {
-            LogicalIDT<BodyEl> parentID = m_ParentID && m_ParentID != g_GroundID ? LogicalIDT<BodyEl>::downcast(m_ParentID) : LogicalIDT<BodyEl>::empty();
-            JointAttachment parentAttachment{parentID, m_PivotTranslationOrientation};
+            JointAttachment parentAttachment{m_ParentOrGroundID, m_PivotTranslationOrientation};
             JointAttachment childAttachment{m_ChildBodyID, m_PivotTranslationOrientation};
 
             auto pinjointIdx = *JointRegistry::indexOf(OpenSim::PinJoint{});
@@ -3204,7 +2982,7 @@ namespace {
         void DrawConnectionLines() const
         {
             glm::vec2 childScreenPos = m_SharedData.WorldPosToScreenPos(GetChildTranslationInGround());
-            glm::vec2 pivotScreenPos = m_SharedData.WorldPosToScreenPos(m_PivotTranslationOrientation.translation);
+            glm::vec2 pivotScreenPos = m_SharedData.WorldPosToScreenPos(m_PivotTranslationOrientation.shift);
             glm::vec2 parentScreenPos = m_SharedData.WorldPosToScreenPos(GetParentTranslationInGround());
 
             ImU32 blackColor = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
@@ -3223,7 +3001,7 @@ namespace {
         void DrawPivot3DManipulators()
         {
             if (!ImGuizmo::IsUsing()) {
-                m_ImGuizmoState.mtx = TranslationOrientationToBase(m_PivotTranslationOrientation);
+                m_ImGuizmoState.mtx = XFormFromRas(m_PivotTranslationOrientation);
             }
 
             Rect sceneRect = m_SharedData.Get3DSceneRect();
@@ -3256,15 +3034,15 @@ namespace {
             rotation = glm::radians(rotation);
 
             if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
-                m_PivotTranslationOrientation.orientation = EulerCompose(m_PivotTranslationOrientation.orientation, rotation);
+                m_PivotTranslationOrientation.rot = EulerCompose(m_PivotTranslationOrientation.rot, rotation);
             } else if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
-                m_PivotTranslationOrientation.translation += translation;
+                m_PivotTranslationOrientation.shift += translation;
             }
         }
 
         float GetAngleBetweenParentAndChild() const
         {
-            glm::vec3 pivot = m_PivotTranslationOrientation.translation;
+            glm::vec3 pivot = m_PivotTranslationOrientation.shift;
             glm::vec3 pivot2parent = GetParentTranslationInGround() - pivot;
             glm::vec3 pivot2child = GetChildTranslationInGround() - pivot;
             glm::vec3 pivot2parentDir = glm::normalize(pivot2parent);
@@ -3280,20 +3058,20 @@ namespace {
             std::vector<DrawableThing> sceneEls;
 
             // draw pivot point as a single frame
-            m_SharedData.AppendAsFrame(m_PivotID, m_PivotID, m_PivotTranslationOrientation, sceneEls);
+            m_SharedData.AppendAsFrame(g_PivotID, g_PivotID, m_PivotTranslationOrientation, sceneEls);
 
             float const faintAlpha = 0.1f;
 
             // draw other bodies faintly and non-clickable
             for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
-                m_SharedData.AppendAsFrame({}, {}, bodyEl.GetTranslationOrientationInGround(), sceneEls, faintAlpha);
+                m_SharedData.AppendAsFrame(g_EmptyID, g_EmptyID, bodyEl.Xform, sceneEls, faintAlpha);
             }
 
             // draw meshes faintly and non-clickable
             for (auto const& [meshID, meshEl] : m_SharedData.GetCurrentModelGraph().GetMeshes()) {
                 DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, m_SharedData.GetMeshColor()));
-                dt.id = {};
-                dt.groupId = {};
+                dt.id = g_EmptyID;
+                dt.groupId = g_EmptyID;
                 dt.color.a = faintAlpha;
             }
 
@@ -3345,9 +3123,9 @@ namespace {
             ImGui::Dummy({0.0f, 5.0f});
 
             {
-                glm::vec3 v = glm::degrees(m_PivotTranslationOrientation.orientation);
+                glm::vec3 v = glm::degrees(m_PivotTranslationOrientation.rot);
                 if (ImGui::InputFloat3("orientation in ground", glm::value_ptr(v))) {
-                    m_PivotTranslationOrientation.orientation = glm::radians(v);
+                    m_PivotTranslationOrientation.rot = glm::radians(v);
                 }
             }
 
@@ -3365,7 +3143,7 @@ namespace {
                 glm::vec3 yAxis = glm::normalize(glm::cross(zAxis, xAxis));
 
                 glm::mat3 m{xAxis, yAxis, zAxis};
-                m_PivotTranslationOrientation.orientation = MatToEulerAngles(m);
+                m_PivotTranslationOrientation.rot = MatToEulerAngles(m);
             }
 
             if (ImGui::Button("Auto-orient with X pointing towards child")) {
@@ -3382,53 +3160,53 @@ namespace {
                 glm::vec3 yAxis = glm::normalize(glm::cross(zAxis, xAxis));
 
                 glm::mat3 m{xAxis, yAxis, zAxis};
-                m_PivotTranslationOrientation.orientation = MatToEulerAngles(m);
+                m_PivotTranslationOrientation.rot = MatToEulerAngles(m);
             }
 
             if (ImGui::Button("Reverse Z by rotating X")) {
-                m_PivotTranslationOrientation.orientation = EulerCompose({fpi, 0.0f, 0.0f}, m_PivotTranslationOrientation.orientation);
+                m_PivotTranslationOrientation.rot = EulerCompose({fpi, 0.0f, 0.0f}, m_PivotTranslationOrientation.rot);
             }
 
             if (ImGui::Button("Reverse Z by rotating Y")) {
-                m_PivotTranslationOrientation.orientation = EulerCompose({0.0f, fpi, 0.0f}, m_PivotTranslationOrientation.orientation);
+                m_PivotTranslationOrientation.rot = EulerCompose({0.0f, fpi, 0.0f}, m_PivotTranslationOrientation.rot);
             }
 
             if (ImGui::Button("Use parent's orientation")) {
-                m_PivotTranslationOrientation.orientation = GetParentOrientationInGround();
+                m_PivotTranslationOrientation.rot = GetParentOrientationInGround();
             }
 
             if (ImGui::Button("Use child's orientation")) {
-                m_PivotTranslationOrientation.orientation = GetChildOrientationInGround();
+                m_PivotTranslationOrientation.rot = GetChildOrientationInGround();
             }
 
             if (ImGui::Button("Use parent's and child's orientation (average)")) {
                 glm::vec3 parentOrientation = GetParentOrientationInGround();
                 glm::vec3 childOrientation = GetChildOrientationInGround();
-                m_PivotTranslationOrientation.orientation = (parentOrientation+childOrientation)/2.0f;
+                m_PivotTranslationOrientation.rot = (parentOrientation+childOrientation)/2.0f;
             }
 
             if (ImGui::Button("Orient along global axes")) {
-                m_PivotTranslationOrientation.orientation = {};
+                m_PivotTranslationOrientation.rot = {};
             }
 
             ImGui::Dummy({0.0f, 10.0f});
             ImGui::Text("translation tools:");
             ImGui::Dummy({0.0f, 5.0f});
 
-            ImGui::InputFloat3("translation in ground", glm::value_ptr(m_PivotTranslationOrientation.translation));
+            ImGui::InputFloat3("translation in ground", glm::value_ptr(m_PivotTranslationOrientation.shift));
 
             if (ImGui::Button("Use parent's translation")) {
-                m_PivotTranslationOrientation.translation = GetParentTranslationInGround();
+                m_PivotTranslationOrientation.shift = GetParentTranslationInGround();
             }
 
             if (ImGui::Button("Use child's translation")) {
-                m_PivotTranslationOrientation.translation = GetChildTranslationInGround();
+                m_PivotTranslationOrientation.shift = GetChildTranslationInGround();
             }
 
             if (ImGui::Button("Use midpoint translation ((parent+child)/2)")) {
                 glm::vec3 parentTranslation = GetParentTranslationInGround();
                 glm::vec3 childTranslation = GetChildTranslationInGround();
-                m_PivotTranslationOrientation.translation = (parentTranslation+childTranslation)/2.0f;
+                m_PivotTranslationOrientation.shift = (parentTranslation+childTranslation)/2.0f;
             }
 
             ImGui::Dummy({0.0f, 10.0f});
@@ -3492,16 +3270,13 @@ namespace {
         std::unique_ptr<MWState> m_MaybeNextState;
 
         // ID of the parent-side of the joint (ground/body)
-        LogicalID m_ParentID;
+        IDT<BodyEl> m_ParentOrGroundID;
 
         // ID of the child-side of the joint (always a body)
-        LogicalIDT<BodyEl> m_ChildBodyID;
+        IDT<BodyEl> m_ChildBodyID;
 
         // translation+orientation of the pinjoint's pivot
-        TranslationOrientation m_PivotTranslationOrientation;
-
-        // senteniel ID for the pivot, so that hittesting can "see" it
-        LogicalID m_PivotID;
+        Ras m_PivotTranslationOrientation;
 
         // ImGuizmo state for 3D manipulators
         struct {
@@ -3518,41 +3293,17 @@ namespace {
     // that they want to create a joint in the scene
     class JointAssignmentStep1State final : public MWState {
     public:
-        JointAssignmentStep1State(SharedData& sharedData, LogicalIDT<BodyEl> childBodyID) :
+        JointAssignmentStep1State(SharedData& sharedData, IDT<BodyEl> childBodyID) :
             MWState{sharedData},
             m_ChildBodyID{childBodyID}
         {
         }
 
     private:
-        LogicalID GetHoverID() const
-        {
-            return m_MaybeHover.first;
-        }
-
-        bool IsHoveringSomething() const
-        {
-            return GetHoverID();
-        }
-
-        bool IsHoveringGround() const
-        {
-            return GetHoverID() == g_GroundID;
-        }
-
-        bool IsHoveringChildBody() const
-        {
-            return GetHoverID() == m_ChildBodyID;
-        }
 
         bool IsHoveringAnotherBody() const
         {
-            return IsHoveringSomething() && !IsHoveringGround() && !IsHoveringChildBody();
-        }
-
-        void ClearHover()
-        {
-            m_MaybeHover.first = LogicalID::empty();
+            return m_Hover && m_Hover.ID != g_GroundID && m_Hover.ID != m_ChildBodyID;
         }
 
         BodyEl const& GetChildBodyEl() const
@@ -3570,14 +3321,14 @@ namespace {
 
         void DrawChildHoverTooltip() const
         {
-            if (!IsHoveringChildBody()) {
+            if (m_Hover.ID != m_ChildBodyID) {
                 return;
             }
 
             BodyEl const& body = GetChildBodyEl();
 
             ImGui::BeginTooltip();
-            ImGui::Text("%s", body.GetName().c_str());
+            ImGui::Text("%s", body.Name.c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(you cannot join bodies to themselves)");
             ImGui::EndTooltip();
@@ -3585,7 +3336,7 @@ namespace {
 
         void DrawGroundHoverTooltip() const
         {
-            if (!IsHoveringGround()) {
+            if (m_Hover.ID != g_GroundID) {
                 return;
             }
 
@@ -3602,10 +3353,10 @@ namespace {
                 return;
             }
 
-            BodyEl const& otherBody = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID());
+            BodyEl const& otherBody = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_Hover.ID);
 
             ImGui::BeginTooltip();
-            ImGui::Text("%s", otherBody.GetName().c_str());
+            ImGui::Text("%s", otherBody.Name.c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(click to join)");
             ImGui::EndTooltip();
@@ -3613,11 +3364,11 @@ namespace {
 
         void DrawHoverTooltip() const
         {
-            if (!IsHoveringSomething()) {
+            if (!m_Hover) {
                 return;
-            } else if (IsHoveringChildBody()) {
+            } else if (m_Hover.ID == m_ChildBodyID) {
                 DrawChildHoverTooltip();
-            } else if (IsHoveringGround()) {
+            } else if (m_Hover.ID == g_GroundID) {
                 DrawGroundHoverTooltip();
             } else if (IsHoveringAnotherBody()) {
                 DrawOtherBodyTooltip();
@@ -3627,11 +3378,11 @@ namespace {
         void DoHovertest(std::vector<DrawableThing> const& drawables)
         {
             if (!m_SharedData.IsRenderHovered()) {
-                ClearHover();
+                m_Hover = Hover{};
                 return;
             }
 
-            m_MaybeHover = m_SharedData.Hovertest(drawables);
+            m_Hover = m_SharedData.Hovertest(drawables);
         }
 
         void DrawHeaderText() const
@@ -3647,7 +3398,7 @@ namespace {
             ImVec4 strongColor = {0.0f, 0.0f, 0.0f, 1.0f};
             auto strongColorU32 = ImGui::ColorConvertFloat4ToU32(strongColor);
 
-            if (!IsHoveringSomething()) {
+            if (!m_Hover) {
                 // draw all existing connection lines faintly
                 m_SharedData.DrawConnectionLines(faintColor);
                 return;
@@ -3657,14 +3408,14 @@ namespace {
             // the hovertest line drawing
             m_SharedData.DrawConnectionLines(faintColor, m_ChildBodyID);
 
-            glm::vec3 const& childBodyLoc = GetChildBodyEl().GetTranslationInGround();
+            glm::vec3 const& childBodyLoc = GetChildBodyEl().Xform.shift;
 
             if (IsHoveringAnotherBody()) {
-                glm::vec3 const& otherBodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(GetHoverID()).GetTranslationInGround();
+                glm::vec3 const& otherBodyLoc = m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(m_Hover.ID).Xform.shift;
                 m_SharedData.DrawConnectionLine(strongColorU32,
                                                 m_SharedData.WorldPosToScreenPos(otherBodyLoc),
                                                 m_SharedData.WorldPosToScreenPos(childBodyLoc));
-            } else if (IsHoveringGround()) {
+            } else if (m_Hover.ID == g_GroundID) {
                 glm::vec3 groundLoc = {0.0f, 0.0f, 0.0f};
                 m_SharedData.DrawConnectionLine(strongColorU32,
                                                 m_SharedData.WorldPosToScreenPos(groundLoc),
@@ -3674,7 +3425,7 @@ namespace {
 
         void HandleHovertestSideEffects()
         {
-            if (!IsHoveringSomething()) {
+            if (!m_Hover) {
                 return;
             }
 
@@ -3682,7 +3433,7 @@ namespace {
                 // user has clicked what they want, so present them with the joint type
                 // popup modal
 
-                m_MaybeUserParentChoice = GetHoverID();
+                m_MaybeUserParentChoice = m_Hover.ID;
                 ImGui::OpenPopup(m_JointTypePopupName);
                 App::cur().requestRedraw();
             }
@@ -3690,7 +3441,7 @@ namespace {
 
         void DrawJointTypeSelectionPopupIfUserHasSelectedSomething()
         {
-            if (!m_MaybeUserParentChoice) {
+            if (m_MaybeUserParentChoice == g_EmptyID) {
                 return;
             }
 
@@ -3704,12 +3455,12 @@ namespace {
             }
 
             if (ImGui::Button("PinJoint")) {
-                m_MaybeNextState = std::make_unique<PinJointPivotPlacementState>(m_SharedData, m_MaybeUserParentChoice, m_ChildBodyID);
+                m_MaybeNextState = std::make_unique<PinJointPivotPlacementState>(m_SharedData, DowncastID<BodyEl>(m_MaybeUserParentChoice), m_ChildBodyID);
                 ImGui::CloseCurrentPopup();
             }
 
             if (ImGui::Button("FreeJoint")) {
-                m_MaybeNextState = std::make_unique<FreeJointFirstPivotPlacementState>(m_SharedData, m_MaybeUserParentChoice, m_ChildBodyID);
+                m_MaybeNextState = std::make_unique<FreeJointFirstPivotPlacementState>(m_SharedData, DowncastID<BodyEl>(m_MaybeUserParentChoice), m_ChildBodyID);
                 ImGui::CloseCurrentPopup();
             }
 
@@ -3734,8 +3485,8 @@ namespace {
             // draw meshes faintly and non-clickable
             for (auto const& [meshID, meshEl] : m_SharedData.GetCurrentModelGraph().GetMeshes()) {
                 DrawableThing& dt = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, {1.0f, 1.0f, 1.0f, 0.1f}));
-                dt.id = LogicalID::empty();
-                dt.groupId = LogicalID::empty();
+                dt.id = g_EmptyID;
+                dt.groupId = g_EmptyID;
             }
 
             // draw ground as clickable sphere
@@ -3798,16 +3549,16 @@ namespace {
 
     private:
         // the body that the user clicked "join to" on
-        LogicalIDT<BodyEl> m_ChildBodyID;
+        IDT<BodyEl> m_ChildBodyID;
 
         // (maybe) next state to transition to
-        std::unique_ptr<MWState> m_MaybeNextState;
+        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
 
         // (maybe) hover + worldspace location of the user's mouse hover
-        std::pair<LogicalID, glm::vec3> m_MaybeHover;
+        Hover m_Hover;
 
         // (maybe) the body/ground the user selected
-        LogicalID m_MaybeUserParentChoice = LogicalID::empty();
+        ID m_MaybeUserParentChoice = g_EmptyID;
 
         // name of the ImGui popup that lets the user select a joint type
         char const* m_JointTypePopupName = "select joint type";
@@ -3820,52 +3571,27 @@ namespace {
     class StandardMWState final : public MWState {
     public:
 
-        StandardMWState(SharedData& sharedData) :
-            MWState{sharedData},
-            m_MaybeHover{},
-            m_MaybeOpenedContextMenu{}
+        StandardMWState(SharedData& sharedData) : MWState{sharedData}
         {
         }
 
-        LogicalID HoverID() const
+        bool IsHovered(ID id) const
         {
-            return m_MaybeHover.first;
-        }
-
-        glm::vec3 HoverPos() const
-        {
-            return m_MaybeHover.second;
-        }
-
-        bool HasHover() const
-        {
-            return !HoverID().IsEmpty();
-        }
-
-        bool IsHovered(LogicalID id) const
-        {
-            return m_MaybeHover.first == id;
-        }
-
-        void ClearHover()
-        {
-            m_MaybeHover.first = LogicalID::empty();
+            return m_Hover.ID == id;
         }
 
         void SelectHover()
         {
-            LogicalID maybeHoverID = m_MaybeHover.first;
-
-            if (!maybeHoverID) {
+            if (!m_Hover) {
                 return;
             }
 
-            m_SharedData.Select(maybeHoverID);
+            m_SharedData.Select(m_Hover.ID);
         }
 
-        float RimIntensity(LogicalID id)
+        float RimIntensity(ID id)
         {
-            if (!id) {
+            if (id == g_EmptyID) {
                 return 0.0f;
             } else if (m_SharedData.IsSelected(id)) {
                 return 1.0f;
@@ -3878,26 +3604,26 @@ namespace {
 
         void AddBodyToHoveredElement()
         {
-            if (!HasHover()) {
+            if (!m_Hover) {
                 return;
             }
 
-            m_SharedData.AddBody(HoverPos());
+            m_SharedData.AddBody(m_Hover.Pos);
         }
 
         void TransitionToAssigningMeshNextFrame(MeshEl const& meshEl)
         {
             // request a state transition
-            m_MaybeNextState = std::make_unique<AssignMeshMWState>(m_SharedData, meshEl.GetLogicalID());
+            m_MaybeNextState = std::make_unique<AssignMeshMWState>(m_SharedData, meshEl.ID);
         }
 
         void TryTransitionToAssigningHoveredMeshNextFrame()
         {
-            if (!HasHover()) {
+            if (!m_Hover) {
                 return;
             }
 
-            MeshEl const* maybeMesh = m_SharedData.UpdCurrentModelGraph().TryGetMeshElByID(HoverID());
+            MeshEl const* maybeMesh = m_SharedData.UpdCurrentModelGraph().TryGetMeshElByID(m_Hover.ID);
 
             if (!maybeMesh) {
                 return;  // not hovering a mesh
@@ -3908,11 +3634,11 @@ namespace {
 
         void OpenHoverContextMenu()
         {
-            if (!HasHover()) {
+            if (!m_Hover) {
                 return;
             }
 
-            m_MaybeOpenedContextMenu = m_MaybeHover;
+            m_MaybeOpenedContextMenu = m_Hover;
             ImGui::OpenPopup(m_ContextMenuName);
             App::cur().requestRedraw();
         }
@@ -3985,56 +3711,56 @@ namespace {
         {
             if (ImGui::BeginPopup(m_ContextMenuName)) {
                 if (ImGui::MenuItem("focus camera on this")) {
-                    m_SharedData.FocusCameraOn(bodyEl.GetTranslationInGround());
+                    m_SharedData.FocusCameraOn(bodyEl.Xform.shift);
                 }
 
                 if (ImGui::MenuItem("join to")) {
-                    m_MaybeNextState = std::make_unique<JointAssignmentStep1State>(m_SharedData, bodyEl.GetLogicalID());
+                    m_MaybeNextState = std::make_unique<JointAssignmentStep1State>(m_SharedData, bodyEl.ID);
                 }
 
                 if (ImGui::MenuItem("attach mesh to this")) {
-                    LogicalIDT<BodyEl> bodyID = bodyEl.GetLogicalID();
+                    IDT<BodyEl> bodyID = bodyEl.ID;
                     for (auto const& meshFile : m_SharedData.PromptUserForMeshFiles()) {
                         m_SharedData.PushMeshLoadRequest(meshFile, bodyID);
                     }
                 }
 
                 if (ImGui::MenuItem("delete")) {
-                    std::string name = bodyEl.GetName();
-                    m_SharedData.UpdCurrentModelGraph().DeleteBodyElByID(bodyEl.GetLogicalID());
-                    ClearHover();
-                    m_MaybeOpenedContextMenu = {};
+                    std::string name = bodyEl.Name;
+                    m_SharedData.UpdCurrentModelGraph().DeleteBodyElByID(bodyEl.ID);
+                    m_Hover = Hover{};
+                    m_MaybeOpenedContextMenu = Hover{};
                     m_SharedData.CommitCurrentModelGraph("deleted " + name);
                 }
 
                 // draw name editor
                 {
                     char buf[256];
-                    std::strcpy(buf, bodyEl.GetName().c_str());
+                    std::strcpy(buf, bodyEl.Name.c_str());
                     if (ImGui::InputText("name", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        m_SharedData.UpdCurrentModelGraph().SetBodyName(bodyEl.GetLogicalID(), buf);
+                        m_SharedData.UpdCurrentModelGraph().SetBodyName(bodyEl.ID, buf);
                         m_SharedData.CommitCurrentModelGraph("changed body name");
                     }
                 }
 
                 // pos editor
                 {
-                    glm::vec3 translation = bodyEl.GetTranslationInGround();
+                    glm::vec3 translation = bodyEl.Xform.shift;
                     if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        TranslationOrientation to = bodyEl.GetTranslationOrientationInGround();
-                        to.translation = translation;
-                        m_SharedData.UpdCurrentModelGraph().SetBodyTranslationOrientationInGround(bodyEl.GetLogicalID(), to);
+                        Ras to = bodyEl.Xform;
+                        to.shift = translation;
+                        m_SharedData.UpdCurrentModelGraph().SetBodyXform(bodyEl.ID, to);
                         m_SharedData.CommitCurrentModelGraph("changed body translation");
                     }
                 }
 
                 // rotation editor
                 {
-                    glm::vec3 orientationDegrees = glm::degrees(bodyEl.GetOrientationInGround());
+                    glm::vec3 orientationDegrees = glm::degrees(bodyEl.Xform.rot);
                     if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        TranslationOrientation to = bodyEl.GetTranslationOrientationInGround();
-                        to.orientation = glm::radians(orientationDegrees);
-                        m_SharedData.UpdCurrentModelGraph().SetBodyTranslationOrientationInGround(bodyEl.GetLogicalID(), to);
+                        Ras to = bodyEl.Xform;
+                        to.rot = glm::radians(orientationDegrees);
+                        m_SharedData.UpdCurrentModelGraph().SetBodyXform(bodyEl.ID, to);
                         m_SharedData.CommitCurrentModelGraph("changed body orientation");
                     }
                 }
@@ -4052,15 +3778,15 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("add body at mesh origin")) {
-                    m_SharedData.AddBody(meshEl.GetTranslationInGround());
+                    m_SharedData.AddBody(meshEl.Xform.shift);
                 }
 
                 if (ImGui::MenuItem("add body at mesh bounds center")) {
-                    m_SharedData.AddBody(AABBCenter(GetGroundspaceBounds(*meshEl.GetMesh(), GetModelMatrix(meshEl))));
+                    m_SharedData.AddBody(AABBCenter(GetGroundspaceBounds(*meshEl.MeshData, GetModelMatrix(meshEl))));
                 }
 
                 if (ImGui::MenuItem("focus camera on this")) {
-                    m_SharedData.FocusCameraOn(meshEl.GetTranslationInGround());
+                    m_SharedData.FocusCameraOn(meshEl.Xform.shift);
                 }
 
                 if (ImGui::MenuItem("assign to body")) {
@@ -4068,8 +3794,8 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("delete")) {
-                    std::string name = meshEl.GetName();
-                    m_SharedData.UpdCurrentModelGraph().DeleteMeshElByID(meshEl.GetLogicalID());
+                    std::string name = meshEl.Name;
+                    m_SharedData.UpdCurrentModelGraph().DeleteMeshElByID(meshEl.ID);
                     m_SharedData.CommitCurrentModelGraph("deleted " + name);
                 }
 
@@ -4080,40 +3806,40 @@ namespace {
                 // draw name editor
                 {
                     char buf[256];
-                    std::strcpy(buf, meshEl.GetName().c_str());
+                    std::strcpy(buf, meshEl.Name.c_str());
                     if (ImGui::InputText("name", buf, sizeof(buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        m_SharedData.UpdCurrentModelGraph().SetMeshName(meshEl.GetLogicalID(), buf);
+                        m_SharedData.UpdCurrentModelGraph().SetMeshName(meshEl.ID, buf);
                         m_SharedData.CommitCurrentModelGraph("changed mesh name");
                     }
                 }
 
                 // pos editor
                 {
-                    glm::vec3 translation = meshEl.GetTranslationInGround();
+                    glm::vec3 translation = meshEl.Xform.shift;
                     if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        TranslationOrientation to = meshEl.GetTranslationOrientationInGround();
-                        to.translation = translation;
-                        m_SharedData.UpdCurrentModelGraph().SetMeshTranslationOrientationInGround(meshEl.GetLogicalID(), to);
+                        Ras to = meshEl.Xform;
+                        to.shift = translation;
+                        m_SharedData.UpdCurrentModelGraph().SetMeshXform(meshEl.ID, to);
                         m_SharedData.CommitCurrentModelGraph("changed mesh translation");
                     }
                 }
 
                 // rotation editor
                 {
-                    glm::vec3 orientationDegrees = glm::degrees(meshEl.GetOrientationInGround());
+                    glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
                     if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        TranslationOrientation to = meshEl.GetTranslationOrientationInGround();
-                        to.orientation = glm::radians(orientationDegrees);
-                        m_SharedData.UpdCurrentModelGraph().SetMeshTranslationOrientationInGround(meshEl.GetLogicalID(), to);
+                        Ras to = meshEl.Xform;
+                        to.rot = glm::radians(orientationDegrees);
+                        m_SharedData.UpdCurrentModelGraph().SetMeshXform(meshEl.ID, to);
                         m_SharedData.CommitCurrentModelGraph("changed mesh orientation");
                     }
                 }
 
                 // scale factor editor
                 {
-                    glm::vec3 scaleFactors = meshEl.GetScaleFactors();
+                    glm::vec3 scaleFactors = meshEl.ScaleFactors;
                     if (ImGui::InputFloat3("scale factors", glm::value_ptr(scaleFactors), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        m_SharedData.UpdCurrentModelGraph().SetMeshScaleFactors(meshEl.GetLogicalID(), scaleFactors);
+                        m_SharedData.UpdCurrentModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
                         m_SharedData.CommitCurrentModelGraph("changed mesh scale factors");
                     }
                 }
@@ -4133,18 +3859,17 @@ namespace {
 
         void DrawContextMenu()
         {
-            if (!m_MaybeOpenedContextMenu.first) {
+            if (!m_MaybeOpenedContextMenu) {
                 return;
             }
 
-            auto id = m_MaybeOpenedContextMenu.first;
             ModelGraph const& mg = m_SharedData.GetCurrentModelGraph();
 
-            if (MeshEl const* meshEl = mg.TryGetMeshElByID(id)) {
-                DrawMeshContextMenu(*meshEl, m_MaybeOpenedContextMenu.second);
-            } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(id)) {
+            if (MeshEl const* meshEl = mg.TryGetMeshElByID(m_MaybeOpenedContextMenu.ID)) {
+                DrawMeshContextMenu(*meshEl, m_MaybeOpenedContextMenu.Pos);
+            } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(m_MaybeOpenedContextMenu.ID)) {
                 DrawBodyContextMenu(*bodyEl);
-            } else if (JointEl const* jointEl = mg.TryGetJointElByID(id)) {
+            } else if (JointEl const* jointEl = mg.TryGetJointElByID(m_MaybeOpenedContextMenu.ID)) {
                 DrawJointContextMenu(*jointEl);
             }
         }
@@ -4185,8 +3910,8 @@ namespace {
             ImGui::BeginTooltip();
             ImGui::Text("Imported Mesh");
             ImGui::Indent();
-            ImGui::Text("Name = %s", meshEl.GetName().c_str());
-            ImGui::Text("Filename = %s", meshEl.GetPath().filename().string().c_str());
+            ImGui::Text("Name = %s", meshEl.Name.c_str());
+            ImGui::Text("Filename = %s", meshEl.Path.filename().string().c_str());
 
             auto pos = GetAABBCenterPointInGround(meshEl);
             ImGui::Text("Center = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
@@ -4199,9 +3924,9 @@ namespace {
             ImGui::BeginTooltip();
             ImGui::Text("Body");
             ImGui::Indent();
-            ImGui::Text("Name = %s", bodyEl.GetName().c_str());
-            ImGui::Text("Pos = %s", PosString(bodyEl.GetTranslationInGround()).c_str());
-            ImGui::Text("Orientation = %s", OrientationString(bodyEl.GetOrientationInGround()).c_str());
+            ImGui::Text("Name = %s", bodyEl.Name.c_str());
+            ImGui::Text("Pos = %s", PosString(bodyEl.Xform.shift).c_str());
+            ImGui::Text("Orientation = %s", EulerAnglesString(bodyEl.Xform.rot).c_str());
             ImGui::Unindent();
             ImGui::EndTooltip();
         }
@@ -4215,18 +3940,17 @@ namespace {
 
         void DrawHoverTooltip()
         {
-            if (!HasHover()) {
+            if (!m_Hover) {
                 return;
             }
 
-            LogicalID hoverID = HoverID();
             ModelGraph const& mg = m_SharedData.GetCurrentModelGraph();
 
-            if (MeshEl const* meshEl = mg.TryGetMeshElByID(hoverID)) {
+            if (MeshEl const* meshEl = mg.TryGetMeshElByID(m_Hover.ID)) {
                 DrawMeshHoverTooltip(*meshEl);
-            } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(hoverID)) {
+            } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(m_Hover.ID)) {
                 DrawBodyHoverTooltip(*bodyEl);
-            } else if (JointEl const* jointEl = mg.TryGetJointElByID(hoverID)) {
+            } else if (JointEl const* jointEl = mg.TryGetJointElByID(m_Hover.ID)) {
                 DrawJointHoverTooltip(*jointEl);
             }
         }
@@ -4323,7 +4047,7 @@ namespace {
             ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(delta), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
             rotation = glm::radians(rotation);
 
-            for (LogicalID id : m_SharedData.GetCurrentSelection()) {
+            for (ID id : m_SharedData.GetCurrentSelection()) {
                 switch (m_ImGuizmoState.op) {
                 case ImGuizmo::SCALE:
                     m_SharedData.UpdCurrentModelGraph().ApplyScale(id, scale);
@@ -4343,23 +4067,23 @@ namespace {
         void DoHovertest(std::vector<DrawableThing> const& drawables)
         {
             if (!m_SharedData.IsRenderHovered() || ImGuizmo::IsUsing()) {
-                ClearHover();
+                m_Hover = Hover{};
                 return;
             }
 
-            m_MaybeHover = m_SharedData.Hovertest(drawables);
+            m_Hover = m_SharedData.Hovertest(drawables);
 
             bool lcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
             bool rcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
             bool shiftDown = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             bool isUsingGizmo = ImGuizmo::IsUsing();
 
-            if (!HasHover() && lcReleased && !isUsingGizmo && !shiftDown) {
+            if (!m_Hover && lcReleased && !isUsingGizmo && !shiftDown) {
                 m_SharedData.DeSelectAll();
                 return;
             }
 
-            if (HasHover() && lcReleased && !isUsingGizmo) {
+            if (m_Hover && lcReleased && !isUsingGizmo) {
                 if (!shiftDown) {
                     m_SharedData.DeSelectAll();
                 }
@@ -4367,11 +4091,11 @@ namespace {
                 return;
             }
 
-            if (HasHover() && rcReleased && !isUsingGizmo) {
+            if (m_Hover && rcReleased && !isUsingGizmo) {
                 OpenHoverContextMenu();
             }
 
-            if (HasHover() && !ImGui::IsPopupOpen(m_ContextMenuName)) {
+            if (m_Hover && !ImGui::IsPopupOpen(m_ContextMenuName)) {
                 DrawHoverTooltip();
             }
         }
@@ -4396,8 +4120,8 @@ namespace {
 
             for (auto const& [jointID, jointEl] : m_SharedData.GetCurrentModelGraph().GetJoints()) {
                 // first pivot
-                m_SharedData.AppendAsFrame(jointID, {}, jointEl.GetParentAttachmentTranslationOrientationInGround(), sceneEls);
-                m_SharedData.AppendAsFrame(jointID, {}, jointEl.GetChildAttachmentTranslationOrientationInGround(), sceneEls);
+                m_SharedData.AppendAsFrame(jointID, g_EmptyID, jointEl.Parent.Xform, sceneEls);
+                m_SharedData.AppendAsFrame(jointID, g_EmptyID, jointEl.Child.Xform, sceneEls);
             }
 
             if (m_SharedData.IsShowingFloor()) {
@@ -4470,10 +4194,10 @@ namespace {
 
     private:
         // (maybe) hover + worldspace location of the hover
-        std::pair<LogicalID, glm::vec3> m_MaybeHover;
+        Hover m_Hover;
 
         // (maybe) the scene element the user opened a context menu for
-        std::pair<LogicalID, glm::vec3> m_MaybeOpenedContextMenu;
+        Hover m_MaybeOpenedContextMenu;
 
         // (maybe) the next state the host screen should transition to
         std::unique_ptr<MWState> m_MaybeNextState;
