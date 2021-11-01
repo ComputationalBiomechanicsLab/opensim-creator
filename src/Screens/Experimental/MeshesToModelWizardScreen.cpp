@@ -1912,7 +1912,7 @@ namespace {
         void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
         {
             // the line
-            ImGui::GetForegroundDrawList()->AddLine(parent, child, color, 2.0f);
+            ImGui::GetWindowDrawList()->AddLine(parent, child, color, 2.0f);
 
             // triangle indicating connection directionality
             glm::vec2 midpoint = (parent + child) / 2.0f;
@@ -1924,7 +1924,7 @@ namespace {
             glm::vec2 p2 = midpoint - (triangleWidth/2.0f)*normal;
             glm::vec2 p3 = midpoint + triangleWidth*direction;
 
-            ImGui::GetForegroundDrawList()->AddTriangleFilled(p1, p2, p3, color);
+            ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
         void DrawConnectionLine(MeshEl const& meshEl, ImU32 color) const
@@ -2534,7 +2534,7 @@ namespace {
         {
             char const* const text = "choose a body to assign the mesh to (ESC to cancel)";
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, text);
         }
 
         void Draw3DViewer()
@@ -2755,7 +2755,7 @@ namespace {
         {
             char const* const text = "choose joint location (ESC to cancel)";
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, text);
         }
 
         void DrawPivot3DManipulators()
@@ -2766,7 +2766,7 @@ namespace {
 
             Rect sceneRect = m_SharedData.Get3DSceneRect();
             ImGuizmo::SetRect(sceneRect.p1.x, sceneRect.p1.y, RectDims(sceneRect).x, RectDims(sceneRect).y);
-            ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
             ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 viewMatrix = m_SharedData.GetCamera().getViewMtx();
@@ -2996,7 +2996,7 @@ namespace {
         {
             char const* const text = "choose pivot location + orientation (ESC to cancel)";
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, text);
         }
 
         void DrawPivot3DManipulators()
@@ -3007,7 +3007,7 @@ namespace {
 
             Rect sceneRect = m_SharedData.Get3DSceneRect();
             ImGuizmo::SetRect(sceneRect.p1.x, sceneRect.p1.y, RectDims(sceneRect).x, RectDims(sceneRect).y);
-            ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
             ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 viewMatrix = m_SharedData.GetCamera().getViewMtx();
@@ -3391,7 +3391,7 @@ namespace {
         {
             char const* const text = "choose a body (or ground) to join to (ESC to cancel)";
             ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetForegroundDrawList()->AddText({10.0f, 10.0f}, color, text);
+            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, text);
         }
 
         void DrawConnectionLines() const
@@ -3766,9 +3766,8 @@ namespace {
                         m_SharedData.CommitCurrentModelGraph("changed body orientation");
                     }
                 }
-
+                ImGui::EndPopup();
             }
-            ImGui::EndPopup();
         }
 
         void DrawMeshContextMenu(MeshEl const& meshEl, glm::vec3 const& clickPos)
@@ -3845,9 +3844,8 @@ namespace {
                         m_SharedData.CommitCurrentModelGraph("changed mesh scale factors");
                     }
                 }
-
+                ImGui::EndPopup();
             }
-            ImGui::EndPopup();
         }
 
         void DrawJointContextMenu(JointEl const& jointEl)
@@ -3855,8 +3853,9 @@ namespace {
             if (ImGui::BeginPopup(m_ContextMenuName)) {
                 if (ImGui::MenuItem("do joint stuff")) {
                 }
+
+                ImGui::EndPopup();
             }
-            ImGui::EndPopup();
         }
 
         void DrawContextMenu()
@@ -4012,7 +4011,7 @@ namespace {
                 sceneRect.p1.y,
                 RectDims(sceneRect).x,
                 RectDims(sceneRect).y);
-            ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
             ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 delta;
