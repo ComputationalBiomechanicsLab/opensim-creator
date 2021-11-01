@@ -2767,6 +2767,7 @@ namespace {
             Rect sceneRect = m_SharedData.Get3DSceneRect();
             ImGuizmo::SetRect(sceneRect.p1.x, sceneRect.p1.y, RectDims(sceneRect).x, RectDims(sceneRect).y);
             ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 viewMatrix = m_SharedData.GetCamera().getViewMtx();
             glm::mat4 projMatrix = m_SharedData.GetCamera().getProjMtx(RectAspectRatio(sceneRect));
@@ -3007,6 +3008,7 @@ namespace {
             Rect sceneRect = m_SharedData.Get3DSceneRect();
             ImGuizmo::SetRect(sceneRect.p1.x, sceneRect.p1.y, RectDims(sceneRect).x, RectDims(sceneRect).y);
             ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 viewMatrix = m_SharedData.GetCamera().getViewMtx();
             glm::mat4 projMatrix = m_SharedData.GetCamera().getProjMtx(RectAspectRatio(sceneRect));
@@ -4011,6 +4013,7 @@ namespace {
                 RectDims(sceneRect).x,
                 RectDims(sceneRect).y);
             ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
+            ImGuizmo::AllowAxisFlip(false);
 
             glm::mat4 delta;
             bool manipulated = ImGuizmo::Manipulate(
