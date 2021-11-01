@@ -2187,10 +2187,10 @@ namespace {
             Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
             for (int i = 0; i < 3; ++i) {
                 glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-                dir[i] = 3.0f * GetSphereRadius();
+                dir[i] = 4.0f * GetSphereRadius();
                 Segment axisline{origin, origin + rotation*dir};
 
-                float frameAxisThickness = GetSphereRadius()/4.0f;
+                float frameAxisThickness = GetSphereRadius()/2.0f;
                 glm::vec3 prescale = {frameAxisThickness, 1.0f, frameAxisThickness};
                 glm::mat4 prescaleMtx = glm::scale(glm::mat4{1.0f}, prescale);
                 glm::vec4 color{0.0f, 0.0f, 0.0f, alpha};
@@ -2320,7 +2320,7 @@ namespace {
         // scene colors
         struct {
             glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
-            glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
+            glm::vec4 ground = {0.0f, 0.0f, 0.0f, 1.0f};
             glm::vec4 body = {0.0f, 0.0f, 0.0f, 1.0f};
         } m_Colors;
 
