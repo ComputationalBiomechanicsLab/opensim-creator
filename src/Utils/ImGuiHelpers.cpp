@@ -5,8 +5,11 @@
 #include <glm/vec2.hpp>
 #include <imgui.h>
 #include <SDL_events.h>
+#include <iostream>
 
 void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera) {
+    using osc::operator<<;
+
     // handle mousewheel scrolling
     camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
     camera.rescaleZNearAndZFarBasedOnRadius();
@@ -29,12 +32,10 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 
     bool leftDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
     bool middleDragging = ImGui::IsMouseDragging(ImGuiMouseButton_Middle);
-    ImGuiMouseButton btn = leftDragging ? ImGuiMouseButton_Left : ImGuiMouseButton_Middle;
+
+    glm::vec2 delta = ImGui::GetIO().MouseDelta;
 
     if (leftDragging || middleDragging) {
-        glm::vec2 delta = ImGui::GetMouseDragDelta(btn, 0.0f);
-        ImGui::ResetMouseDragDelta(btn);
-
         if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
             camera.pan(aspectRatio, delta/viewportDims);
         } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
@@ -44,8 +45,6 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
         }
 
     } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-        glm::vec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right, 0.0f);
-        ImGui::ResetMouseDragDelta(ImGuiMouseButton_Right);
         camera.pan(aspectRatio, delta/viewportDims);
 
     }

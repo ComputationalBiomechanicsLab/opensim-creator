@@ -456,14 +456,16 @@ namespace {
         JointAttachment Child;  // can't be ground
     };
 
+    // returns a human-readable typename for the joint
+    std::string const& GetJointTypeName(JointEl const& joint)
+    {
+        return JointRegistry::nameStrings()[joint.JointTypeIndex];
+    }
+
     // returns a human-readable name for the joint
     std::string const& GetJointLabel(JointEl const& joint)
     {
-        if (!joint.UserAssignedName.empty()) {
-            return joint.UserAssignedName;
-        } else {
-            return JointRegistry::nameStrings()[joint.JointTypeIndex];
-        }
+        return joint.UserAssignedName.empty() ? GetJointTypeName(joint) : joint.UserAssignedName;
     }
 
     // returns `true` if body is either the parent or the child attachment of `joint`
@@ -1585,12 +1587,20 @@ namespace {
     // effectively, this is the main top-level rendering function
     void DrawScene(glm::ivec2 dims,
                    PolarPerspectiveCamera const& camera,
-                   glm::vec3 const& lightDir,
-                   glm::vec3 const& lightCol,
                    glm::vec4 const& bgCol,
                    nonstd::span<DrawableThing const> drawables,
                    gl::Texture2D& outSceneTex)
     {
+        glm::vec3 lightDir;
+        {
+            glm::vec3 p = glm::normalize(-camera.focusPoint - camera.getPos());
+            glm::vec3 up = {0.0f, 1.0f, 0.0f};
+            glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
+            lightDir = glm::normalize(mp + -up);
+        }
+
+        glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+
         glm::mat4 projMat = camera.getProjMtx(VecAspectRatio(dims));
         glm::mat4 viewMat = camera.getViewMtx();
         glm::vec3 viewPos = camera.getPos();
@@ -1671,7 +1681,7 @@ namespace {
                     continue;
                 }
 
-                gl::Uniform(scs.uColor, d.rimColor * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
+                gl::Uniform(scs.uColor, {d.rimColor, 0.0f, 0.0f, 1.0f});
                 gl::Uniform(scs.uModel, d.modelMatrix);
                 gl::BindVertexArray(d.mesh->GetVertexArray());
                 d.mesh->Draw();
@@ -1687,7 +1697,7 @@ namespace {
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(eds.uRimRgba, {1.0f, 0.0f, 0.0f, 1.0f});
+            gl::Uniform(eds.uRimRgba,  glm::vec4{1.0f, 0.4f, 0.0f, 0.85f});
             gl::Uniform(eds.uRimThickness, 1.0f / VecLongestDimVal(dims));
             auto quadMesh = App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -2023,8 +2033,6 @@ namespace {
             ::DrawScene(
                 RectDims(Get3DSceneRect()),
                 GetCamera(),
-                GetLightDir(),
-                GetLightColor(),
                 GetBgColor(),
                 drawables,
                 UpdSceneTex());
@@ -2034,10 +2042,6 @@ namespace {
 
             // handle hittesting, etc.
             SetIsRenderHovered(ImGui::IsItemHovered());
-            if (ImGui::IsItemHovered()) {
-                ImGui::CaptureKeyboardFromApp(false);
-                ImGui::CaptureMouseFromApp(false);
-            }
         }
 
         bool IsShowingMeshes() const { return m_IsShowingMeshes; }
@@ -2063,8 +2067,6 @@ namespace {
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        glm::vec3 const& GetLightDir() const { return m_3DSceneLightDir; }
-        glm::vec3 const& GetLightColor() const { return m_3DSceneLightColor; }
         glm::vec4 const& GetBgColor() const { return m_3DSceneBgColor; }
         gl::Texture2D& UpdSceneTex() { return m_3DSceneTex; }
 
@@ -2266,17 +2268,10 @@ namespace {
             return false;
         }
 
-        void tick(float dt)
+        void tick(float)
         {
             // pop any background-loaded meshes
             PopMeshLoader();
-
-            // update animation percentage thing
-            {
-                float dotMotionsPerSecond = 0.35f;
-                float ignoreMe;
-                m_AnimationPercentage = std::modf(m_AnimationPercentage + std::modf(dotMotionsPerSecond * dt, &ignoreMe), &ignoreMe);
-            }
 
             // if some screen generated an OpenSim::Model, transition to the main editor
             if (HasOutputModel()) {
@@ -2326,11 +2321,9 @@ namespace {
         struct {
             glm::vec4 mesh = {1.0f, 1.0f, 1.0f, 1.0f};
             glm::vec4 ground = {0.0f, 0.0f, 1.0f, 1.0f};
-            glm::vec4 body = {1.0f, 0.0f, 0.0f, 1.0f};
+            glm::vec4 body = {0.0f, 0.0f, 0.0f, 1.0f};
         } m_Colors;
 
-        glm::vec3 m_3DSceneLightDir = {-0.34f, -0.25f, 0.05f};
-        glm::vec3 m_3DSceneLightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         glm::vec4 m_3DSceneBgColor = {0.89f, 0.89f, 0.89f, 1.0f};
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
@@ -2341,9 +2334,6 @@ namespace {
         // sphere end up being much larger than a mesh instance). Imagine if the
         // mesh was the leg of a fly
         float m_SceneScaleFactor = 1.0f;
-
-        // looping animation X
-        float m_AnimationPercentage = 0.0f;
 
         // buffer containing issues found in the modelgraph
         std::vector<std::string> m_Issues;
@@ -3600,9 +3590,9 @@ namespace {
             if (id == g_EmptyID) {
                 return 0.0f;
             } else if (m_SharedData.IsSelected(id)) {
-                return 1.0f;
+                return 0.9f;
             } else if (IsHovered(id)) {
-                return 0.5f;
+                return 0.4f;
             } else {
                 return 0.0f;
             }
@@ -3651,65 +3641,47 @@ namespace {
 
         void UpdateFromImGuiKeyboardState()
         {
-            // DELETE/BACKSPACE: delete any selected elements
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE) || ImGui::IsKeyPressed(SDL_SCANCODE_BACKSPACE)) {
-                m_SharedData.DeleteSelected();
-            }
-
-            // B: add body to hovered element
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
-                AddBodyToHoveredElement();
-            }
-
-            // A: assign a parent for the hovered element
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
-                TryTransitionToAssigningHoveredMeshNextFrame();
-            }
-
-            // S: set manipulation mode to "scale"
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
-                if (m_ImGuizmoState.op == ImGuizmo::SCALE) {
-                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-                }
-                m_ImGuizmoState.op = ImGuizmo::SCALE;
-            }
-
-            // R: set manipulation mode to "rotate"
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
-                if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
-                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-                }
-                m_ImGuizmoState.op = ImGuizmo::ROTATE;
-            }
-
-            // G: set manipulation mode to "grab" (translate)
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
-                if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
-                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
-                }
-                m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
-            }
-
-            // modified keys
-
             bool superPressed = ImGui::IsKeyDown(SDL_SCANCODE_LGUI) || ImGui::IsKeyDown(SDL_SCANCODE_RGUI);
             bool ctrlPressed = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
             bool shiftPressed = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             bool ctrlOrSuperPressed =  superPressed || ctrlPressed;
 
-            // Ctrl+A: select all
             if (ctrlOrSuperPressed && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
+                // Ctrl+A: select all
                 m_SharedData.SelectAll();
-            }
-
-            // Ctrl+Z: undo
-            if (ctrlOrSuperPressed && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
+            } else if (ctrlOrSuperPressed && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
+                // Ctrl+Z: undo
                 m_SharedData.UndoCurrentModelGraph();
-            }
-
-            // Ctrl+Shift+Z: redo
-            if (ctrlOrSuperPressed && shiftPressed && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
+            } else if (ctrlOrSuperPressed && shiftPressed && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
+                // Ctrl+Shift+Z: redo
                 m_SharedData.RedoCurrentModelGraph();
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE) || ImGui::IsKeyPressed(SDL_SCANCODE_BACKSPACE)) {
+                // DELETE/BACKSPACE: delete any selected elements
+                m_SharedData.DeleteSelected();
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
+                // B: add body to hovered element
+                AddBodyToHoveredElement();
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
+                // A: assign a parent for the hovered element
+                TryTransitionToAssigningHoveredMeshNextFrame();
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+                // S: set manipulation mode to "scale"
+                if (m_ImGuizmoState.op == ImGuizmo::SCALE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::SCALE;
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
+                // R: set manipulation mode to "rotate"
+                if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::ROTATE;
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
+                // G: set manipulation mode to "grab" (translate)
+                if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
             }
         }
 
@@ -3910,36 +3882,44 @@ namespace {
             }
         }
 
-        void DrawMeshHoverTooltip(MeshEl const& meshEl)
+        char const* BodyOrGroundString(IDT<BodyEl> id) const
+        {
+            return id == g_GroundID ? "ground" : m_SharedData.GetCurrentModelGraph().GetBodyByIDOrThrow(id).Name.c_str();
+        }
+
+        void DrawMeshHoverTooltip(MeshEl const& meshEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("Imported Mesh");
-            ImGui::Indent();
-            ImGui::Text("Name = %s", meshEl.Name.c_str());
-            ImGui::Text("Filename = %s", meshEl.Path.filename().string().c_str());
-
-            auto pos = GetAABBCenterPointInGround(meshEl);
-            ImGui::Text("Center = (%.2f, %.2f, %.2f)", pos.x, pos.y, pos.z);
-            ImGui::Unindent();
+            ImGui::Text("%s", meshEl.Name.c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(%s, attached to %s)", meshEl.Path.filename().string().c_str(), BodyOrGroundString(meshEl.Attachment));
             ImGui::EndTooltip();
         }
 
-        void DrawBodyHoverTooltip(BodyEl const& bodyEl)
+        void DrawBodyHoverTooltip(BodyEl const& bodyEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("Body");
-            ImGui::Indent();
-            ImGui::Text("Name = %s", bodyEl.Name.c_str());
-            ImGui::Text("Pos = %s", PosString(bodyEl.Xform.shift).c_str());
-            ImGui::Text("Orientation = %s", EulerAnglesString(bodyEl.Xform.rot).c_str());
-            ImGui::Unindent();
+            ImGui::Text("%s", bodyEl.Name.c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(body)");
             ImGui::EndTooltip();
         }
 
-        void DrawJointHoverTooltip(JointEl const& jointEl)
+        void DrawJointHoverTooltip(JointEl const& jointEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("joint");
+            ImGui::Text("%s", GetJointLabel(jointEl).c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(%s, %s --> %s)", GetJointTypeName(jointEl).c_str(), BodyOrGroundString(jointEl.Parent.BodyID), BodyOrGroundString(jointEl.Child.BodyID));
+            ImGui::EndTooltip();
+        }
+
+        void DrawGroundHoverTooltip()
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("ground");
+            ImGui::SameLine();
+            ImGui::TextDisabled("(scene origin)");
             ImGui::EndTooltip();
         }
 
@@ -3951,7 +3931,9 @@ namespace {
 
             ModelGraph const& mg = m_SharedData.GetCurrentModelGraph();
 
-            if (MeshEl const* meshEl = mg.TryGetMeshElByID(m_Hover.ID)) {
+            if (m_Hover.ID == g_GroundID) {
+                DrawGroundHoverTooltip();
+            } else if (MeshEl const* meshEl = mg.TryGetMeshElByID(m_Hover.ID)) {
                 DrawMeshHoverTooltip(*meshEl);
             } else if (BodyEl const* bodyEl = mg.TryGetBodyElByID(m_Hover.ID)) {
                 DrawBodyHoverTooltip(*bodyEl);
@@ -4070,6 +4052,18 @@ namespace {
             }
         }
 
+        bool MouseWasReleasedWithoutDragging(ImGuiMouseButton btn) const
+        {
+            using osc::operator<<;
+
+            if (!ImGui::IsMouseReleased(btn)) {
+                return false;
+            }
+
+            glm::vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
+            return glm::length(dragDelta) < 5.0f;
+        }
+
         void DoHovertest(std::vector<DrawableThing> const& drawables)
         {
             if (!m_SharedData.IsRenderHovered() || ImGuizmo::IsUsing()) {
@@ -4079,17 +4073,17 @@ namespace {
 
             m_Hover = m_SharedData.Hovertest(drawables);
 
-            bool lcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
-            bool rcReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Right);
+            bool lcClicked = MouseWasReleasedWithoutDragging(ImGuiMouseButton_Left);
+            bool rcClicked = MouseWasReleasedWithoutDragging(ImGuiMouseButton_Right);
             bool shiftDown = ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT);
             bool isUsingGizmo = ImGuizmo::IsUsing();
 
-            if (!m_Hover && lcReleased && !isUsingGizmo && !shiftDown) {
+            if (!m_Hover && lcClicked && !isUsingGizmo && !shiftDown) {
                 m_SharedData.DeSelectAll();
                 return;
             }
 
-            if (m_Hover && lcReleased && !isUsingGizmo) {
+            if (m_Hover && lcClicked && !isUsingGizmo) {
                 if (!shiftDown) {
                     m_SharedData.DeSelectAll();
                 }
@@ -4097,7 +4091,7 @@ namespace {
                 return;
             }
 
-            if (m_Hover && rcReleased && !isUsingGizmo) {
+            if (m_Hover && rcClicked && !isUsingGizmo) {
                 OpenHoverContextMenu();
             }
 
@@ -4122,6 +4116,10 @@ namespace {
                 for (auto const& [bodyID, bodyEl] : m_SharedData.GetCurrentModelGraph().GetBodies()) {
                     m_SharedData.AppendBodyElAsFrame(bodyEl, sceneEls);
                 }
+            }
+
+            if (m_SharedData.IsShowingGround()) {
+                sceneEls.push_back(m_SharedData.GenerateGroundSphere(m_SharedData.GetGroundColor()));
             }
 
             for (auto const& [jointID, jointEl] : m_SharedData.GetCurrentModelGraph().GetJoints()) {
@@ -4153,15 +4151,13 @@ namespace {
 
         std::unique_ptr<MWState> onEvent(SDL_Event const&) override
         {
-            if (m_SharedData.IsRenderHovered()) {
-                UpdateFromImGuiKeyboardState();
-            }
-
             return std::move(m_MaybeNextState);
         }
 
         std::unique_ptr<MWState> tick(float) override
         {
+            UpdateFromImGuiKeyboardState();
+
             bool isRenderHovered = m_SharedData.IsRenderHovered();
             bool isUsingGizmo = ImGuizmo::IsUsing();
 
