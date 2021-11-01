@@ -303,7 +303,7 @@ namespace {
         glm::vec3 avgShift = (a.shift + b.shift) / 2.0f;
         glm::vec3 avgRot = (a.rot + b.rot) / 2.0f;
 
-        return Ras{avgShift, avgRot};
+        return Ras{avgRot, avgShift};
     }
 
     // print to an output stream
@@ -509,7 +509,7 @@ namespace {
         IDT<BodyEl> AddBody(std::string name, glm::vec3 const& position, glm::vec3 const& orientation)
         {
             IDT<BodyEl> id = GenerateIDT<BodyEl>();
-            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, Ras{position, orientation})).first->first;
+            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, Ras{orientation, position})).first->first;
         }
 
         IDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, IDT<BodyEl> attachment, std::filesystem::path const& path)
@@ -670,7 +670,7 @@ namespace {
 
         Ras GetTranslationOrientationInGround(ID id) const
         {
-            return {GetTranslationInGround(id), GetOrientationInGround(id)};
+            return {GetOrientationInGround(id), GetTranslationInGround(id)};
         }
 
         // returns empty AABB at point if a point-like element (e.g. mesh, joint pivot)
@@ -1071,7 +1071,7 @@ namespace {
         glm::vec3 translation = base2parent * glm::vec4{childInBase.shift, 1.0f};
         glm::vec3 orientation = MatToEulerAngles(child2parent);
 
-        return Ras{translation, orientation};
+        return Ras{orientation, translation};
     }
 
     // expresses if a joint has a degree of freedom (i.e. != -1) and the coordinate index of
@@ -1135,7 +1135,11 @@ namespace {
     {
         size_t jointTypeIdx = *JointRegistry::indexOf(joint);
 
+        std::cerr << "parentPofInGround = " << parentPofInGround << '\n';
+        std::cerr << "childPofInGround = " << childPofInGround << '\n';
+
         Ras toInParent = TranslationOrientationInParent(parentPofInGround, childPofInGround);
+        std::cerr << toInParent << '\n';
 
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(jointTypeIdx);
 
@@ -4239,6 +4243,13 @@ public:
     {
     }
 
+    void LoadPaths(std::vector<std::filesystem::path> meshPaths)
+    {
+        for (std::filesystem::path const& p : meshPaths) {
+            m_SharedData.PushMeshLoadRequest(p);
+        }
+    }
+
     void onMount()
     {
         osc::ImGuiInit();
@@ -4312,18 +4323,36 @@ private:
 
 // public API
 
+// HACK: save this screen's state globally, so that users can "go back" to the screen if the
+//       model import fails
+//
+//       ideally, the screen would launch into a separate tab for the export, but the main UI
+//       doesn't support a tab interface at the moment, so this is the best we've got
+//
+//       DRAGONS: globally allocating a screen like this is bad form because `atexit` is going
+//                to be called *after* the app has shutdown the window, OpenGL context, etc.
+//                so I'm using a non-unique_ptr, because I don't want the screen's destructor
+//                to crash the `atexit` phase, which cleans up all static globals.
+osc::MeshesToModelWizardScreen::Impl* GetModelWizardScreenGLOBAL()
+{
+    static osc::MeshesToModelWizardScreen::Impl* g_ModelImpoterScreenState = new osc::MeshesToModelWizardScreen::Impl{};
+    return g_ModelImpoterScreenState;
+}
+
 osc::MeshesToModelWizardScreen::MeshesToModelWizardScreen() :
-    m_Impl{new Impl{}}
+    m_Impl{GetModelWizardScreenGLOBAL()}
 {
 }
 
 osc::MeshesToModelWizardScreen::MeshesToModelWizardScreen(std::vector<std::filesystem::path> paths) :
-    m_Impl{new Impl{paths}}
+    m_Impl{GetModelWizardScreenGLOBAL()}
 {
+    m_Impl->LoadPaths(std::move(paths));
 }
 
 osc::MeshesToModelWizardScreen::~MeshesToModelWizardScreen() noexcept
 {
+    // HACK: don't delete Impl, because we're sharing it globally
 }
 
 void osc::MeshesToModelWizardScreen::onMount()

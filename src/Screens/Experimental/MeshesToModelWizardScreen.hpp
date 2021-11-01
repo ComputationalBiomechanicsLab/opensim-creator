@@ -20,7 +20,7 @@ namespace osc {
     public:
         struct Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
 
     public:
         // shows blank scene that a user can import meshes into
