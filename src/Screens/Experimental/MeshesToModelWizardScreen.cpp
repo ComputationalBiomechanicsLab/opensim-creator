@@ -2539,11 +2539,13 @@ namespace {
 
             std::vector<DrawableThing> sceneEls;
 
-            // draw mesh slightly faded and with a rim highlight
+            // draw mesh slightly faded and with a rim highlight, but non-clickable
             {
                 DrawableThing& meshDrawable = sceneEls.emplace_back(m_SharedData.GenerateMeshElDrawable(meshEl, m_SharedData.GetMeshColor()));
                 meshDrawable.color.a = 0.25f;
                 meshDrawable.rimColor = 0.25f;
+                meshDrawable.id = g_EmptyID;
+                meshDrawable.groupId = g_EmptyID;
             }
 
             // draw bodies as spheres the user can click
