@@ -66,3 +66,29 @@ void osc::DrawTextureAsImGuiImage(gl::Texture2D& t, glm::vec2 dims)
     ImVec2 uv1{1.0f, 0.0f};
     ImGui::Image(textureHandle, dims, uv0, uv1);
 }
+
+bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
+{
+    for (auto key : keys) {
+        if (ImGui::IsKeyDown(key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool osc::IsAnyKeyDown(std::initializer_list<int const> keys)
+{
+
+    return IsAnyKeyDown(nonstd::span<int const>{keys.begin(), keys.end()});
+}
+
+bool osc::IsCtrlOrSuperDown()
+{
+    return IsAnyKeyDown({ SDL_SCANCODE_LCTRL, SDL_SCANCODE_RCTRL, SDL_SCANCODE_LGUI, SDL_SCANCODE_RGUI });
+}
+
+bool osc::IsShiftDown()
+{
+    return IsAnyKeyDown({SDL_SCANCODE_LSHIFT, SDL_SCANCODE_RSHIFT});
+}
