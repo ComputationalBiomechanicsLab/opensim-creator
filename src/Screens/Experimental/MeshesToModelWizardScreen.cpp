@@ -1677,7 +1677,7 @@ namespace {
         operator bool () const noexcept { return ID != g_EmptyID; }
         void reset() { *this = Hover{}; }
 
-        ID ID;
+        class ID ID;
         glm::vec3 Pos;
     };
 
