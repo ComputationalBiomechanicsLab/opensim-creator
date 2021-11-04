@@ -92,3 +92,21 @@ bool osc::IsShiftDown()
 {
     return IsAnyKeyDown({SDL_SCANCODE_LSHIFT, SDL_SCANCODE_RSHIFT});
 }
+
+bool osc::IsAltDown()
+{
+    return IsAnyKeyDown({SDL_SCANCODE_LALT, SDL_SCANCODE_RALT});
+}
+
+bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
+{
+    using osc::operator<<;
+
+    if (!ImGui::IsMouseReleased(btn)) {
+        return false;
+    }
+
+    glm::vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
+    return glm::length(dragDelta) < threshold;
+}
+

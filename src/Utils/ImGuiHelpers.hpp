@@ -5,6 +5,7 @@
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
+#include <imgui.h>
 
 namespace osc {
 
@@ -31,4 +32,10 @@ namespace osc {
 
     // returns `true` if the user is pressing either left- or right-shift
     bool IsShiftDown();
+
+    // returns `true` if the user is pressing either left- or right-alt
+    bool IsAltDown();
+
+    // returns `true` if the specified moouse button was released without the user dragging
+    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = 5.0f);
 }
