@@ -117,16 +117,16 @@ namespace {
 //   types in the system (e.g. if we're storing a variety of types)
 //
 // - IDs can only be "generated" or "copied". Either you generate a new ID or you copy an
-//   existing one. You can't (safely) stuff an arbitrary integer into an ID type. This
+//   existing one. You can't implicitly convert an arbitrary integer into an ID type. This
 //   prevents IDs being "mixed around" from various (unsafe) sources
 namespace {
 
-    class ID {
-        friend ID GenerateID() noexcept;
-        friend constexpr int64_t UnwrapID(ID const&) noexcept;
+    class UID {
+        friend UID GenerateID() noexcept;
+        friend constexpr int64_t UnwrapID(UID const&) noexcept;
 
     protected:
-        explicit constexpr ID(int64_t value) noexcept : m_Value{value} {}
+        explicit constexpr UID(int64_t value) noexcept : m_Value{value} {}
 
     private:
         int64_t m_Value;
@@ -136,52 +136,52 @@ namespace {
     //
     // adds compile-time type checking to IDs
     template<typename T>
-    class IDT : public ID {
+    class UIDT : public UID {
         template<typename U>
-        friend IDT<U> GenerateIDT() noexcept;
+        friend UIDT<U> GenerateIDT() noexcept;
 
         template<typename U>
-        friend constexpr IDT<U> DowncastID(ID const&) noexcept;
+        friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
 
     private:
-        explicit constexpr IDT(ID id) : ID{id} {}
+        explicit constexpr UIDT(UID id) : UID{id} {}
     };
 
-    ID GenerateID() noexcept
+    UID GenerateID() noexcept
     {
         static std::atomic<int64_t> g_NextID = 1;
-        return ID{g_NextID++};
+        return UID{g_NextID++};
     }
 
     template<typename T>
-    IDT<T> GenerateIDT() noexcept
+    UIDT<T> GenerateIDT() noexcept
     {
-        return IDT<T>{GenerateID()};
+        return UIDT<T>{GenerateID()};
     }
 
-    constexpr int64_t UnwrapID(ID const& id) noexcept
+    constexpr int64_t UnwrapID(UID const& id) noexcept
     {
         return id.m_Value;
     }
 
-    std::ostream& operator<<(std::ostream& o, ID const& id) { return o << UnwrapID(id); }
-    constexpr bool operator==(ID const& lhs, ID const& rhs) noexcept { return UnwrapID(lhs) == UnwrapID(rhs); }
-    constexpr bool operator!=(ID const& lhs, ID const& rhs) noexcept { return UnwrapID(lhs) != UnwrapID(rhs); }
+    std::ostream& operator<<(std::ostream& o, UID const& id) { return o << UnwrapID(id); }
+    constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept { return UnwrapID(lhs) == UnwrapID(rhs); }
+    constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept { return UnwrapID(lhs) != UnwrapID(rhs); }
 
     template<typename T>
-    constexpr IDT<T> DowncastID(ID const& id) noexcept {
-        return IDT<T>{id};
+    constexpr UIDT<T> DowncastID(UID const& id) noexcept {
+        return UIDT<T>{id};
     }
 
     // senteniel values used in this codebase
     class BodyEl;
-    IDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
-    ID const g_EmptyID = GenerateID();
-    ID const g_RightClickedNothingID = GenerateID();
-    ID const g_GroundGroupID = GenerateID();
-    ID const g_MeshGroupID = GenerateID();
-    ID const g_BodyGroupID = GenerateID();
-    ID const g_JointGroupID = GenerateID();
+    UIDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
+    UID const g_EmptyID = GenerateID();
+    UID const g_RightClickedNothingID = GenerateID();
+    UID const g_GroundGroupID = GenerateID();
+    UID const g_MeshGroupID = GenerateID();
+    UID const g_BodyGroupID = GenerateID();
+    UID const g_JointGroupID = GenerateID();
 }
 
 // hashing support for LogicalIDs
@@ -190,13 +190,13 @@ namespace {
 namespace std {
 
     template<>
-    struct hash<ID> {
-        size_t operator()(ID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
+    struct hash<UID> {
+        size_t operator()(UID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
     };
 
     template<typename T>
-    struct hash<IDT<T>> {
-        size_t operator()(ID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
+    struct hash<UIDT<T>> {
+        size_t operator()(UID const& id) const { return static_cast<size_t>(UnwrapID(id)); }
     };
 }
 
@@ -217,20 +217,20 @@ namespace {
 
     // a mesh loading request
     struct MeshLoadRequest final {
-        IDT<BodyEl> PreferredAttachmentPoint;
+        UIDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
     };
 
     // an OK response to a mesh loading request
     struct MeshLoadOKResponse final {
-        IDT<BodyEl> PreferredAttachmentPoint;
+        UIDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
         std::shared_ptr<Mesh> mesh;
     };
 
     // an ERROR response to a mesh loading request
     struct MeshLoadErrorResponse final {
-        IDT<BodyEl> PreferredAttachmentPoint;
+        UIDT<BodyEl> PreferredAttachmentPoint;
         std::filesystem::path Path;
         std::string Error;
     };
@@ -340,8 +340,8 @@ namespace {
     class BodyEl;
     class MeshEl final {
     public:
-        MeshEl(IDT<MeshEl> id,
-               IDT<BodyEl> attachment,  // can be g_GroundID
+        MeshEl(UIDT<MeshEl> id,
+               UIDT<BodyEl> attachment,  // can be g_GroundID
                std::shared_ptr<Mesh> meshData,
                std::filesystem::path const& path) :
 
@@ -352,8 +352,8 @@ namespace {
         {
         }
 
-        IDT<MeshEl> ID;
-        IDT<BodyEl> Attachment;  // can be g_GroundID
+        UIDT<MeshEl> ID;
+        UIDT<BodyEl> Attachment;  // can be g_GroundID
         Ras Xform;
         std::shared_ptr<Mesh> MeshData;
         std::filesystem::path Path;
@@ -393,7 +393,7 @@ namespace {
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
     class BodyEl final {
     public:
-        BodyEl(IDT<BodyEl> id,
+        BodyEl(UIDT<BodyEl> id,
                std::string const& name,
                Ras xform) :
 
@@ -403,7 +403,7 @@ namespace {
         {
         }
 
-        IDT<BodyEl> ID;
+        UIDT<BodyEl> ID;
         std::string Name;
         Ras Xform;
         double Mass{1.0f};  // OpenSim goes bananas if a body has a mass <= 0
@@ -414,11 +414,11 @@ namespace {
     // see `JointAttachment` comment for an explanation of why it's designed this way.
     class JointEl final {
     public:
-        JointEl(IDT<JointEl> id,
+        JointEl(UIDT<JointEl> id,
                 size_t jointTypeIdx,
                 std::string userAssignedName,  // can be empty
-                ID parent,
-                IDT<BodyEl> child,
+                UID parent,
+                UIDT<BodyEl> child,
                 Ras pos) :
 
             ID{std::move(id)},
@@ -430,11 +430,11 @@ namespace {
         {
         }
 
-        IDT<JointEl> ID;
+        UIDT<JointEl> ID;
         size_t JointTypeIndex;
         std::string UserAssignedName;
-        class ID Parent;  // can be ground
-        IDT<BodyEl> Child;
+        UID Parent;  // can be ground
+        UIDT<BodyEl> Child;
         Ras Center;
     };
 
@@ -473,91 +473,91 @@ namespace {
     //   which don't play well with copying, multiple versions, etc.)
     class ModelGraph final {
     public:
-        std::unordered_map<IDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
-        std::unordered_map<IDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
-        std::unordered_map<IDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
-        std::unordered_set<ID> const& GetSelected() const { return m_Selected; }
+        std::unordered_map<UIDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
+        std::unordered_map<UIDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
+        std::unordered_map<UIDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
+        std::unordered_set<UID> const& GetSelected() const { return m_Selected; }
 
-        bool ContainsMeshEl(ID id) const { return TryGetMeshElByID(id) != nullptr; }
-        bool ContainsBodyEl(ID id) const { return TryGetBodyElByID(id) != nullptr; }
-        bool ContainsJointEl(ID id) const { return TryGetJointElByID(id) != nullptr; }
+        bool ContainsMeshEl(UID id) const { return TryGetMeshElByID(id) != nullptr; }
+        bool ContainsBodyEl(UID id) const { return TryGetBodyElByID(id) != nullptr; }
+        bool ContainsJointEl(UID id) const { return TryGetJointElByID(id) != nullptr; }
 
-        MeshEl const* TryGetMeshElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
-        BodyEl const* TryGetBodyElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
-        JointEl const* TryGetJointElByID(ID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
+        MeshEl const* TryGetMeshElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
+        BodyEl const* TryGetBodyElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
+        JointEl const* TryGetJointElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
 
-        MeshEl const& GetMeshByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
-        BodyEl const& GetBodyByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
-        JointEl const& GetJointByIDOrThrow(ID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+        MeshEl const& GetMeshByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
+        BodyEl const& GetBodyByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
+        JointEl const& GetJointByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
 
-        IDT<BodyEl> AddBody(std::string name, glm::vec3 const& shift, glm::vec3 const& rotation)
+        UIDT<BodyEl> AddBody(std::string name, glm::vec3 const& shift, glm::vec3 const& rotation)
         {
-            IDT<BodyEl> id = GenerateIDT<BodyEl>();
+            UIDT<BodyEl> id = GenerateIDT<BodyEl>();
             return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, Ras{rotation, shift})).first->first;
         }
 
-        IDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, IDT<BodyEl> attachment, std::filesystem::path const& path)
+        UIDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, UIDT<BodyEl> attachment, std::filesystem::path const& path)
         {
             if (attachment != g_GroundID && !ContainsBodyEl(attachment)) {
                 throw std::runtime_error{"implementation error: tried to assign a body to a mesh, but the body does not exist"};
             }
 
-            IDT<MeshEl> id = GenerateIDT<MeshEl>();
+            UIDT<MeshEl> id = GenerateIDT<MeshEl>();
             return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, mesh, path)).first->first;
         }
 
-        IDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, ID parent, IDT<BodyEl> child, Ras center)
+        UIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, UID parent, UIDT<BodyEl> child, Ras center)
         {
-            IDT<JointEl> id = GenerateIDT<JointEl>();
+            UIDT<JointEl> id = GenerateIDT<JointEl>();
             return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parent, child, center)).first->first;
         }
 
-        void SetMeshAttachmentPoint(IDT<MeshEl> meshID, IDT<BodyEl> bodyID)
+        void SetMeshAttachmentPoint(UIDT<MeshEl> meshID, UIDT<BodyEl> bodyID)
         {
             UpdMeshByIDOrThrow(meshID).Attachment = bodyID;
         }
 
-        void UnsetMeshAttachmentPoint(IDT<MeshEl> meshID)
+        void UnsetMeshAttachmentPoint(UIDT<MeshEl> meshID)
         {
             UpdMeshByIDOrThrow(meshID).Attachment = g_GroundID;
         }
 
-        void SetMeshXform(IDT<MeshEl> meshID, Ras const& newXform)
+        void SetMeshXform(UIDT<MeshEl> meshID, Ras const& newXform)
         {
             UpdMeshByIDOrThrow(meshID).Xform = newXform;
         }
 
-        void SetMeshName(IDT<MeshEl> meshID, std::string_view newName)
+        void SetMeshName(UIDT<MeshEl> meshID, std::string_view newName)
         {
             UpdMeshByIDOrThrow(meshID).Name = newName;
         }
 
-        void SetBodyName(IDT<BodyEl> bodyID, std::string_view newName)
+        void SetBodyName(UIDT<BodyEl> bodyID, std::string_view newName)
         {
             UpdBodyByIDOrThrow(bodyID).Name = newName;
         }
 
-        void SetJointName(IDT<JointEl> jointID, std::string_view newName)
+        void SetJointName(UIDT<JointEl> jointID, std::string_view newName)
         {
             UpdJointByIDOrThrow(jointID).UserAssignedName = newName;
         }
 
-        void SetBodyXform(IDT<BodyEl> bodyID, Ras const& newXform)
+        void SetBodyXform(UIDT<BodyEl> bodyID, Ras const& newXform)
         {
             UpdBodyByIDOrThrow(bodyID).Xform = newXform;
         }
 
-        void SetJointCenter(IDT<JointEl> jointID, Ras const& newCenter)
+        void SetJointCenter(UIDT<JointEl> jointID, Ras const& newCenter)
         {
             UpdJointByIDOrThrow(jointID).Center = newCenter;
         }
 
-        void SetJointTypeIdx(IDT<JointEl> jointID, size_t newIdx)
+        void SetJointTypeIdx(UIDT<JointEl> jointID, size_t newIdx)
         {
             UpdJointByIDOrThrow(jointID).JointTypeIndex = newIdx;
         }
 
-        void SetBodyMass(IDT<BodyEl> bodyID, double newMass)
+        void SetBodyMass(UIDT<BodyEl> bodyID, double newMass)
         {
             UpdBodyByIDOrThrow(bodyID).Mass = newMass;
         }
@@ -570,7 +570,7 @@ namespace {
             for (auto const& [jointID, joint] : GetJoints()) { idConsumer(jointID); }
         }
 
-        void DeleteMeshElByID(ID id)
+        void DeleteMeshElByID(UID id)
         {
             auto it = m_Meshes.find(DowncastID<MeshEl>(id));
             if (it != m_Meshes.end()) {
@@ -578,7 +578,7 @@ namespace {
             }
         }
 
-        void DeleteBodyElByID(ID id)
+        void DeleteBodyElByID(UID id)
         {
             auto it = m_Bodies.find(DowncastID<BodyEl>(id));
             if (it != m_Bodies.end()) {
@@ -586,7 +586,7 @@ namespace {
             }
         }
 
-        void DeleteJointElByID(ID id)
+        void DeleteJointElByID(UID id)
         {
             auto it = m_Joints.find(DowncastID<JointEl>(id));
             if (it != m_Joints.end()) {
@@ -594,14 +594,14 @@ namespace {
             }
         }
 
-        void DeleteElementByID(ID id)
+        void DeleteElementByID(UID id)
         {
             DeleteMeshElByID(id);
             DeleteBodyElByID(id);
             DeleteJointElByID(id);
         }
 
-        void ApplyTranslation(ID id, glm::vec3 const& translation)
+        void ApplyTranslation(UID id, glm::vec3 const& translation)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
                 meshPtr->Xform.shift += translation;
@@ -612,7 +612,7 @@ namespace {
             }
         }
 
-        void ApplyRotation(ID id, glm::vec3 const& eulerAngles)
+        void ApplyRotation(UID id, glm::vec3 const& eulerAngles)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
                 meshPtr->Xform.rot = EulerCompose(meshPtr->Xform.rot, eulerAngles);
@@ -623,7 +623,7 @@ namespace {
             }
         }
 
-        glm::vec3 GetShiftInGround(ID id) const
+        glm::vec3 GetShiftInGround(UID id) const
         {
             if (id == g_GroundID) {
                 return {};
@@ -638,7 +638,7 @@ namespace {
             }
         }
 
-        glm::vec3 GetRotationInGround(ID id) const
+        glm::vec3 GetRotationInGround(UID id) const
         {
             if (id == g_GroundID) {
                 return {};
@@ -653,13 +653,13 @@ namespace {
             }
         }
 
-        Ras GetRasInGround(ID id) const
+        Ras GetRasInGround(UID id) const
         {
             return Ras{GetRotationInGround(id), GetShiftInGround(id)};
         }
 
         // returns empty AABB at point if a point-like element (e.g. mesh, joint pivot)
-        AABB GetBounds(ID id) const
+        AABB GetBounds(UID id) const
         {
             if (id == g_GroundID) {
                 return {};
@@ -676,7 +676,7 @@ namespace {
 
         void SelectAll()
         {
-            auto addIDToSelectionSet = [this](ID id) { m_Selected.insert(id); };
+            auto addIDToSelectionSet = [this](UID id) { m_Selected.insert(id); };
             ForEachSceneElID(addIDToSelectionSet);
         }
 
@@ -685,14 +685,14 @@ namespace {
             m_Selected.clear();
         }
 
-        void Select(ID id)
+        void Select(UID id)
         {
             if (id != g_EmptyID && id != g_GroundID) {
                 m_Selected.insert(id);
             }
         }
 
-        void DeSelect(ID id)
+        void DeSelect(UID id)
         {
             auto it = m_Selected.find(id);
             if (it != m_Selected.end()) {
@@ -705,7 +705,7 @@ namespace {
             return !m_Selected.empty();
         }
 
-        bool IsSelected(ID id) const
+        bool IsSelected(UID id) const
         {
             return m_Selected.find(id) != m_Selected.end();
         }
@@ -713,32 +713,32 @@ namespace {
         void DeleteSelected()
         {
             auto selected = m_Selected;  // copy to ensure iterator invalidation doesn't screw us
-            for (ID id : selected) {
+            for (UID id : selected) {
                 DeleteElementByID(id);
             }
             m_Selected.clear();
         }
 
     private:
-        MeshEl* TryUpdMeshElByID(ID id)
+        MeshEl* TryUpdMeshElByID(UID id)
         {
             auto it = m_Meshes.find(DowncastID<MeshEl>(id));
             return it != m_Meshes.end() ? &it->second : nullptr;
         }
 
-        BodyEl* TryUpdBodyElByID(ID id)
+        BodyEl* TryUpdBodyElByID(UID id)
         {
             auto it = m_Bodies.find(DowncastID<BodyEl>(id));
             return it != m_Bodies.end() ? &it->second : nullptr;
         }
 
-        JointEl* TryUpdJointElByID(ID id)
+        JointEl* TryUpdJointElByID(UID id)
         {
             auto it = m_Joints.find(DowncastID<JointEl>(id));
             return it != m_Joints.end() ? &it->second : nullptr;
         }
 
-        MeshEl& UpdMeshByIDOrThrow(ID id)
+        MeshEl& UpdMeshByIDOrThrow(UID id)
         {
             MeshEl* meshEl = TryUpdMeshElByID(id);
             if (!meshEl) {
@@ -747,7 +747,7 @@ namespace {
             return *meshEl;
         }
 
-        BodyEl& UpdBodyByIDOrThrow(ID id)
+        BodyEl& UpdBodyByIDOrThrow(UID id)
         {
             BodyEl* bodyEl = TryUpdBodyElByID(id);
             if (!bodyEl) {
@@ -756,7 +756,7 @@ namespace {
             return *bodyEl;
         }
 
-        JointEl& UpdJointByIDOrThrow(ID id)
+        JointEl& UpdJointByIDOrThrow(UID id)
         {
             JointEl* jointEl = TryUpdJointElByID(id);
             if (!jointEl) {
@@ -765,13 +765,13 @@ namespace {
             return *jointEl;
         }
 
-        void DeleteMesh(std::unordered_map<IDT<MeshEl>, MeshEl>::iterator it)
+        void DeleteMesh(std::unordered_map<UIDT<MeshEl>, MeshEl>::iterator it)
         {
             DeSelect(it->first);
             m_Meshes.erase(it);
         }
 
-        void DeleteBody(std::unordered_map<IDT<BodyEl>, BodyEl>::iterator it)
+        void DeleteBody(std::unordered_map<UIDT<BodyEl>, BodyEl>::iterator it)
         {
             auto const& [bodyID, bodyEl] = *it;
 
@@ -796,16 +796,16 @@ namespace {
             m_Bodies.erase(it);
         }
 
-        void DeleteJoint(std::unordered_map<IDT<JointEl>, JointEl>::iterator it)
+        void DeleteJoint(std::unordered_map<UIDT<JointEl>, JointEl>::iterator it)
         {
             DeSelect(it->first);
             m_Joints.erase(it);
         }
 
-        std::unordered_map<IDT<MeshEl>, MeshEl> m_Meshes;
-        std::unordered_map<IDT<BodyEl>, BodyEl> m_Bodies;
-        std::unordered_map<IDT<JointEl>, JointEl> m_Joints;
-        std::unordered_set<ID> m_Selected;
+        std::unordered_map<UIDT<MeshEl>, MeshEl> m_Meshes;
+        std::unordered_map<UIDT<BodyEl>, BodyEl> m_Bodies;
+        std::unordered_map<UIDT<JointEl>, JointEl> m_Joints;
+        std::unordered_set<UID> m_Selected;
     };
 
     // returns `true` if `body` participates in any joint in the model graph
@@ -844,12 +844,12 @@ namespace {
     // returns `true` if a body is indirectly or directly attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
                                 BodyEl const& body,
-                                std::unordered_set<ID>& previouslyVisitedJoints);
+                                std::unordered_set<UID>& previouslyVisitedJoints);
 
     // returns `true` if `joint` is indirectly or directly attached to ground via its parent
     bool IsJointAttachedToGround(ModelGraph const& modelGraph,
                                  JointEl const& joint,
-                                 std::unordered_set<ID>& previousVisits)
+                                 std::unordered_set<UID>& previousVisits)
     {
         OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, joint));
 
@@ -869,7 +869,7 @@ namespace {
     // returns `true` if `body` is attached to ground
     bool IsBodyAttachedToGround(ModelGraph const& modelGraph,
                                 BodyEl const& body,
-                                std::unordered_set<ID>& previouslyVisitedJoints)
+                                std::unordered_set<UID>& previouslyVisitedJoints)
     {
         bool childInAtLeastOneJoint = false;
 
@@ -912,7 +912,7 @@ namespace {
         }
 
         for (auto const& [id, body] : modelGraph.GetBodies()) {
-            std::unordered_set<ID> previouslyVisitedJoints;
+            std::unordered_set<UID> previouslyVisitedJoints;
             if (!IsBodyAttachedToGround(modelGraph, body, previouslyVisitedJoints)) {
                 std::stringstream ss;
                 ss << body.Name << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
@@ -980,8 +980,8 @@ namespace {
     // if the frame/body doesn't exist yet, constructs it
     JointAttachmentCachedLookupResult LookupPhysFrame(ModelGraph const& mg,
                                                       OpenSim::Model& model,
-                                                      std::unordered_map<ID, OpenSim::Body*>& visitedBodies,
-                                                      ID elID)
+                                                      std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
+                                                      UID elID)
     {
         // figure out what the parent body is. There's 3 possibilities:
         //
@@ -1030,7 +1030,7 @@ namespace {
     }
 
     // returns true if the given element (ID) is in the "selection group" of
-    bool IsInSelectionGroupOf(ModelGraph const& mg, ID parent, ID id)
+    bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
     {
         if (id == g_EmptyID || parent == g_EmptyID) {
             return false;
@@ -1062,7 +1062,7 @@ namespace {
     }
 
     template<typename Consumer>
-    void ForEachIDInSelectionGroup(ModelGraph const& mg, ID parent, Consumer f)
+    void ForEachIDInSelectionGroup(ModelGraph const& mg, UID parent, Consumer f)
     {
         for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
             if (IsInSelectionGroupOf(mg, parent, meshID)) {
@@ -1135,8 +1135,8 @@ namespace {
     void AttachJointRecursive(ModelGraph const& mg,
                               OpenSim::Model& model,
                               JointEl const& joint,
-                              std::unordered_map<ID, OpenSim::Body*>& visitedBodies,
-                              std::unordered_set<ID>& visitedJoints)
+                              std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
+                              std::unordered_set<UID>& visitedJoints)
     {
         if (auto const& [it, wasInserted] = visitedJoints.emplace(joint.ID); !wasInserted) {
             return;  // graph cycle detected: joint was already previously visited and shouldn't be traversed again
@@ -1203,7 +1203,7 @@ namespace {
     void AttachBodyDirectlyToGround(ModelGraph const& mg,
                                     OpenSim::Model& model,
                                     BodyEl const& bodyEl,
-                                    std::unordered_map<ID, OpenSim::Body*>& visitedBodies)
+                                    std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
         auto addedBody = CreateDetatchedBody(mg, bodyEl);
         auto freeJoint = std::make_unique<OpenSim::FreeJoint>();
@@ -1260,8 +1260,8 @@ namespace {
         }
 
         // keep track of any bodies/joints already visited (there might be cycles)
-        std::unordered_map<ID, OpenSim::Body*> visitedBodies;
-        std::unordered_set<ID> visitedJoints;
+        std::unordered_map<UID, OpenSim::Body*> visitedBodies;
+        std::unordered_set<UID> visitedJoints;
 
         // directly connect any bodies that participate in no joints into the model with a freejoint
         for (auto const& [bodyID, bodyEl] : mg.GetBodies()) {
@@ -1509,8 +1509,8 @@ namespace {
 
     // something that is being drawn in the scene
     struct DrawableThing final {
-        ID id = g_EmptyID;
-        ID groupId = g_EmptyID;
+        UID id = g_EmptyID;
+        UID groupId = g_EmptyID;
         std::shared_ptr<Mesh> mesh;
         glm::mat4x3 modelMatrix;
         glm::mat3x3 normalMatrix;
@@ -1673,11 +1673,11 @@ namespace {
     class Hover final {
     public:
         Hover() : ID{g_EmptyID}, Pos{} {}
-        Hover(ID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_} {}
+        Hover(UID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_} {}
         operator bool () const noexcept { return ID != g_EmptyID; }
         void reset() { *this = Hover{}; }
 
-        class ID ID;
+        UID ID;
         glm::vec3 Pos;
     };
 
@@ -1757,7 +1757,7 @@ namespace {
             m_ModelGraphSnapshots.Redo();
         }
 
-        std::unordered_set<ID> const& GetCurrentSelection() const
+        std::unordered_set<UID> const& GetCurrentSelection() const
         {
             return GetModelGraph().GetSelected();
         }
@@ -1772,12 +1772,12 @@ namespace {
             UpdModelGraph().DeSelectAll();
         }
 
-        void Select(ID id)
+        void Select(UID id)
         {
             UpdModelGraph().Select(id);
         }
 
-        void DeSelect(ID id)
+        void DeSelect(UID id)
         {
             UpdModelGraph().DeSelect(id);
         }
@@ -1787,7 +1787,7 @@ namespace {
             return GetModelGraph().HasSelection();
         }
 
-        bool IsSelected(ID id) const
+        bool IsSelected(UID id) const
         {
             return GetModelGraph().IsSelected(id);
         }
@@ -1801,7 +1801,7 @@ namespace {
             CommitCurrentModelGraph("deleted selection");
         }
 
-        IDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
+        UIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
         {
             auto id = UpdModelGraph().AddBody(name, shift, rot);
             UpdModelGraph().DeSelectAll();
@@ -1810,7 +1810,7 @@ namespace {
             return id;
         }
 
-        IDT<BodyEl> AddBody(glm::vec3 const& pos)
+        UIDT<BodyEl> AddBody(glm::vec3 const& pos)
         {
             return AddBody(GenerateBodyName(), pos, {});
         }
@@ -1823,7 +1823,7 @@ namespace {
             CommitCurrentModelGraph(std::move(ss).str());
         }
 
-        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath, IDT<BodyEl> bodyToAttachTo)
+        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath, UIDT<BodyEl> bodyToAttachTo)
         {
             m_MeshLoader.send(MeshLoadRequest{bodyToAttachTo, meshFilePath});
         }
@@ -1926,7 +1926,7 @@ namespace {
             DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(bodyLoc));
         }
 
-        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, ID excludeID = g_EmptyID) const
+        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, UID excludeID = g_EmptyID) const
         {
             if (jointEl.ID == excludeID) {
                 return;
@@ -1950,7 +1950,7 @@ namespace {
             DrawConnectionLines(m_Colors.faintConnectionLine);
         }
 
-        void DrawConnectionLines(ImVec4 colorVec, ID excludeID = g_EmptyID) const
+        void DrawConnectionLines(ImVec4 colorVec, UID excludeID = g_EmptyID) const
         {
             ModelGraph const& mg = GetModelGraph();
             ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
@@ -2126,8 +2126,8 @@ namespace {
             return rv;
         }
 
-        void AppendAsFrame(ID logicalID,
-                           ID groupID,
+        void AppendAsFrame(UID logicalID,
+                           UID groupID,
                            Ras const& xform,
                            std::vector<DrawableThing>& appendOut,
                            float alpha = 1.0f,
@@ -2199,7 +2199,7 @@ namespace {
             bool hittestMeshes = IsMeshesInteractable();
             bool hittestBodies = IsBodiesInteractable();
 
-            ID closestID = g_EmptyID;
+            UID closestID = g_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
 
             for (DrawableThing const& drawable : drawables) {
@@ -2384,11 +2384,11 @@ namespace {
         bool CanChooseGround = true;
         bool CanChooseMeshes = true;
         bool CanChooseJoints = true;
-        ID MaybeElAttachingTo = g_EmptyID;
+        UID MaybeElAttachingTo = g_EmptyID;
         bool IsAttachingTowardEl = true;  // false implies "away from"
-        ID MaybeElBeingReplacedByChoice = g_EmptyID;
-        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>, ID)> OnUserChoice =
-                [](std::shared_ptr<SharedData> shared, ID) { return CreateStandardState(shared); };
+        UID MaybeElBeingReplacedByChoice = g_EmptyID;
+        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>, UID)> OnUserChoice =
+                [](std::shared_ptr<SharedData> shared, UID) { return CreateStandardState(shared); };
         std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>)> OnUserCancelled =
                 [](std::shared_ptr<SharedData> shared) { return CreateStandardState(shared); };
         std::string Header = "choose something";
@@ -2529,8 +2529,8 @@ namespace {
             for (auto const& [bodyID, bodyEl] : mg.GetBodies()) {
                 bool isSelectable = bodyID != m_Options.MaybeElAttachingTo && m_Options.CanChooseBodies;
 
-                ID id = isSelectable ? bodyID : g_EmptyID;
-                ID groupId = isSelectable ? g_BodyGroupID : g_EmptyID;
+                UID id = isSelectable ? bodyID : g_EmptyID;
+                UID groupId = isSelectable ? g_BodyGroupID : g_EmptyID;
                 float alpha = isSelectable ? 1.0f : 0.2f;
                 float rimAlpha = bodyID == m_MaybeHover.ID ? 0.8f: 0.0f;
 
@@ -2541,8 +2541,8 @@ namespace {
             for (auto const& [jointID, jointEl] : mg.GetJoints()) {
                 bool isSelectable = jointID != m_Options.MaybeElAttachingTo && m_Options.CanChooseJoints;
 
-                ID id = isSelectable? jointID : g_EmptyID;
-                ID groupId = isSelectable ? g_JointGroupID : g_EmptyID;
+                UID id = isSelectable? jointID : g_EmptyID;
+                UID groupId = isSelectable ? g_JointGroupID : g_EmptyID;
                 float alpha = isSelectable ? 1.0f : 0.2f;
                 float rimAlpha = jointID == m_MaybeHover.ID ? 0.8f : 0.0f;
 
@@ -2683,13 +2683,13 @@ namespace {
             }
 
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            ForEachIDInSelectionGroup(mg, m_Hover.ID, [&mg](ID el) {
+            ForEachIDInSelectionGroup(mg, m_Hover.ID, [&mg](UID el) {
                 mg.Select(el);
             });
         }
 
         // returns recommended rim intensity for the provided scene element
-        float RimIntensity(ID id) const
+        float RimIntensity(UID id) const
         {
             if (id == g_EmptyID) {
                 return 0.0f;
@@ -2722,7 +2722,7 @@ namespace {
             opts.IsAttachingTowardEl = false;
             opts.MaybeElBeingReplacedByChoice = meshEl.Attachment;
             opts.Header = "choose mesh attachment point (ESC to cancel)";
-            opts.OnUserChoice = [meshID = meshEl.ID](std::shared_ptr<SharedData> shared, ID choice) {
+            opts.OnUserChoice = [meshID = meshEl.ID](std::shared_ptr<SharedData> shared, UID choice) {
                 if (choice == meshID || choice == g_GroundID) {
                     shared->UpdModelGraph().UnsetMeshAttachmentPoint(meshID);
                     shared->CommitCurrentModelGraph("assigned mesh to ground");
@@ -2797,7 +2797,7 @@ namespace {
             }
         }
 
-        void TransitionToChoosingJointParent(IDT<BodyEl> childID)
+        void TransitionToChoosingJointParent(UIDT<BodyEl> childID)
         {
             ChooseSomethingOptions opts;
             opts.CanChooseBodies = true;
@@ -2807,7 +2807,7 @@ namespace {
             opts.Header = "choose joint parent (ESC to cancel)";
             opts.MaybeElAttachingTo = childID;
             opts.IsAttachingTowardEl = false;  // away from the body
-            opts.OnUserChoice = [childID](std::shared_ptr<SharedData> shared, ID parentID) {
+            opts.OnUserChoice = [childID](std::shared_ptr<SharedData> shared, UID parentID) {
                 size_t freejointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
                 glm::vec3 parentPos = shared->GetModelGraph().GetShiftInGround(parentID);
                 glm::vec3 childPos = shared->GetModelGraph().GetShiftInGround(childID);
@@ -2857,11 +2857,13 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("attach mesh to this")) {
-                    IDT<BodyEl> bodyID = bodyEl.ID;
+                    UIDT<BodyEl> bodyID = bodyEl.ID;
                     for (auto const& meshFile : m_Shared->PromptUserForMeshFiles()) {
                         m_Shared->PushMeshLoadRequest(meshFile, bodyID);
                     }
                 }
+
+                DrawReorientMenu(bodyEl);
 
                 if (ImGui::MenuItem("delete")) {
                     std::string name = bodyEl.Name;
@@ -2977,6 +2979,61 @@ namespace {
                 }
 
                 ImGui::EndPopup();
+            }
+        }
+
+        void ActionPointBodyTowards(UIDT<BodyEl> bodyID, int axis)
+        {
+            ChooseSomethingOptions opts;
+            opts.CanChooseBodies = true;
+            opts.CanChooseGround = true;
+            opts.CanChooseJoints = true;
+            opts.CanChooseMeshes = false;
+            opts.Header = "choose what to point towards (ESC to cancel)";
+            opts.OnUserChoice = [bodyID, axis](std::shared_ptr<SharedData> shared, UID userChoice) {
+                glm::vec3 choicePos = shared->GetModelGraph().GetShiftInGround(userChoice);
+                glm::vec3 sourcePos = shared->GetModelGraph().GetShiftInGround(bodyID);
+                glm::vec3 choice2source = choicePos - sourcePos;
+                glm::vec3 choice2sourceDir = glm::normalize(choice2source);
+                glm::vec3 axisDir{};
+                axisDir[axis] = 1.0f;
+
+                float cosAng = glm::dot(choice2sourceDir, axisDir);
+                if (std::fabs(cosAng) < 0.999f) {
+                    glm::vec3 axis = glm::cross(axisDir, choice2sourceDir);
+                    glm::mat4 rot = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axis);
+                    glm::vec3 euler = MatToEulerAngles(rot);
+                    Ras bodyXform = shared->GetModelGraph().GetRasInGround(bodyID);
+                    shared->UpdModelGraph().SetBodyXform(bodyID, Ras{euler, bodyXform.shift});
+                }
+
+                shared->CommitCurrentModelGraph("reoriented body");
+                return CreateStandardState(shared);
+            };
+            m_MaybeNextState = std::make_unique<ChooseSomethingMWState>(m_Shared, opts);
+        }
+
+        void DrawReorientMenu(BodyEl bodyEl)
+        {
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            if (ImGui::BeginMenu("reorient")) {
+                if (ImGui::MenuItem("Point X towards")) {
+                    ActionPointBodyTowards(bodyEl.ID, 0);
+                }
+                if (ImGui::MenuItem("Point Y towards")) {
+                    ActionPointBodyTowards(bodyEl.ID, 1);
+                }
+                if (ImGui::MenuItem("Point Z towards")) {
+                    ActionPointBodyTowards(bodyEl.ID, 2);
+                }
+                if (ImGui::MenuItem("Reset")) {
+                    Ras newCenter = Ras{{}, bodyEl.Xform.shift};
+                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, newCenter);
+                    m_Shared->CommitCurrentModelGraph("reset " + bodyEl.Name + " orientation");
+                }
+
+                ImGui::EndMenu();
             }
         }
 
@@ -3200,6 +3257,108 @@ namespace {
             }
         }
 
+        void DrawHierarchy()
+        {
+            ImGui::Text("Bodies");
+            ImGui::Indent();
+            for (auto const& [bodyID, bodyEl] : m_Shared->GetModelGraph().GetBodies()) {
+                int styles = 0;
+
+                if (m_Shared->IsSelected(bodyID)) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                    ++styles;
+                }
+
+                ImGui::Text("%s", bodyEl.Name.c_str());
+
+                ImGui::PopStyleColor(styles);
+
+                if (ImGui::IsItemHovered()) {
+                    m_Hover = {bodyID, {}};
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                    if (!IsShiftDown()) {
+                        m_Shared->UpdModelGraph().DeSelectAll();
+                    }
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_MaybeOpenedContextMenu = Hover{bodyID, {}};
+                    ImGui::OpenPopup(m_ContextMenuName);
+                    App::cur().requestRedraw();
+                }
+            }
+            ImGui::Unindent();
+
+            ImGui::Text("Joints");
+            ImGui::Indent();
+            for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
+                int styles = 0;
+
+                if (m_Shared->IsSelected(jointID)) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                    ++styles;
+                }
+
+                ImGui::Text("%s", GetJointLabel(jointEl).c_str());
+
+                ImGui::PopStyleColor(styles);
+
+                if (ImGui::IsItemHovered()) {
+                    m_Hover = {jointID, {}};
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                    if (!IsShiftDown()) {
+                        m_Shared->UpdModelGraph().DeSelectAll();
+                    }
+                    m_Shared->UpdModelGraph().Select(jointID);
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_MaybeOpenedContextMenu = Hover{jointID, {}};
+                    ImGui::OpenPopup(m_ContextMenuName);
+                    App::cur().requestRedraw();
+                }
+            }
+            ImGui::Unindent();
+
+            ImGui::Text("Meshes");
+            ImGui::Indent();
+            for (auto const& [meshID, meshEl] : m_Shared->GetModelGraph().GetMeshes()) {
+                int styles = 0;
+
+                if (m_Shared->IsSelected(meshID)) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                    ++styles;
+                }
+
+                ImGui::Text("%s", meshEl.Name.c_str());
+
+                ImGui::PopStyleColor(styles);
+
+                if (ImGui::IsItemHovered()) {
+                    m_Hover = {meshID, {}};
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                    if (!IsShiftDown()) {
+                        m_Shared->UpdModelGraph().DeSelectAll();
+                    }
+                    m_Shared->UpdModelGraph().Select(meshID);
+                }
+
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_MaybeOpenedContextMenu = Hover{meshID, {}};
+                    ImGui::OpenPopup(m_ContextMenuName);
+                    App::cur().requestRedraw();
+                }
+            }
+            ImGui::Unindent();
+        }
+
         void DrawSidebar()
         {
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
@@ -3216,7 +3375,7 @@ namespace {
             }
         }
 
-        char const* BodyOrGroundString(ID id) const
+        char const* BodyOrGroundString(UID id) const
         {
             return id == g_GroundID ? "ground" : m_Shared->GetModelGraph().GetBodyByIDOrThrow(id).Name.c_str();
         }
@@ -3369,7 +3528,7 @@ namespace {
             ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(delta), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
             rotation = glm::radians(rotation);
 
-            for (ID id : m_Shared->GetCurrentSelection()) {
+            for (UID id : m_Shared->GetCurrentSelection()) {
                 switch (m_ImGuizmoState.op) {
                 case ImGuizmo::ROTATE:
                     m_Shared->UpdModelGraph().ApplyRotation(id, rotation);
@@ -3385,7 +3544,11 @@ namespace {
 
         Hover HovertestScene(std::vector<DrawableThing> const& drawables)
         {
-            if (!m_Shared->IsRenderHovered() || ImGuizmo::IsUsing()) {
+            if (!m_Shared->IsRenderHovered()) {
+                return m_Hover;
+            }
+
+            if (ImGuizmo::IsUsing()) {
                 return Hover{};
             }
 
@@ -3479,7 +3642,6 @@ namespace {
 
             // draw overlays/gizmos
             DrawSelection3DManipulators();
-            DrawContextMenu();
             m_Shared->DrawConnectionLines();
         }
 
@@ -3519,10 +3681,17 @@ namespace {
             }
             ImGui::End();
 
+            if (ImGui::Begin("hierarchy")) {
+                DrawHierarchy();
+                            DrawContextMenu();
+            }
+            ImGui::End();
+
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
             if (ImGui::Begin("wizardsstep2viewer")) {
                 ImGui::PopStyleVar();
                 Draw3DViewer();
+                            DrawContextMenu();
             } else {
                 ImGui::PopStyleVar();
             }
