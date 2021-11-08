@@ -1651,7 +1651,7 @@ namespace {
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(eds.uRimRgba,  glm::vec4{1.0f, 0.4f, 0.0f, 0.85f});
+            gl::Uniform(eds.uRimRgba,  glm::vec4{0.4f, 0.4f, 0.4f, 0.65f});
             gl::Uniform(eds.uRimThickness, 1.0f / VecLongestDimVal(dims));
             auto quadMesh = App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -2090,7 +2090,7 @@ namespace {
 
         float GetSphereRadius() const
         {
-            return 0.0125f * m_SceneScaleFactor;
+            return 0.02f * m_SceneScaleFactor;
         }
 
         Sphere SphereAtTranslation(glm::vec3 const& translation) const
