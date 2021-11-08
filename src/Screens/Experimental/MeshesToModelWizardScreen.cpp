@@ -1103,6 +1103,17 @@ namespace {
         }
     }
 
+    glm::vec3 GetJointAxisLengths(JointEl const& joint)
+    {
+        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(joint.JointTypeIndex);
+
+        glm::vec3 rv;
+        for (int i = 0; i < 3; ++i) {
+            rv[i] = dofs.orientation[static_cast<size_t>(i)] == -1 ? 1.0f : 1.5f;
+        }
+        return rv;
+    }
+
     // sets the names of a joint's coordinates
     void SetJointCoordinateNames(OpenSim::Joint& joint, std::string const& prefix)
     {
@@ -2131,7 +2142,8 @@ namespace {
                            Ras const& xform,
                            std::vector<DrawableThing>& appendOut,
                            float alpha = 1.0f,
-                           float rimAlpha = 0.0f) const
+                           float rimAlpha = 0.0f,
+                           glm::vec3 legLen = {1.0f, 1.0f, 1.0f}) const
         {
             // stolen from SceneGeneratorNew.cpp
 
@@ -2157,7 +2169,7 @@ namespace {
             Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
             for (int i = 0; i < 3; ++i) {
                 glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-                dir[i] = 4.0f * GetSphereRadius();
+                dir[i] = 4.0f * legLen[i] * GetSphereRadius();
                 Segment axisline{origin, origin + rotation*dir};
 
                 float frameAxisThickness = GetSphereRadius()/2.0f;
@@ -2729,8 +2741,9 @@ namespace {
                 UID groupId = isSelectable ? g_JointGroupID : g_EmptyID;
                 float alpha = isSelectable ? 1.0f : 0.2f;
                 float rimAlpha = jointID == m_MaybeHover.ID ? 0.8f : 0.0f;
+                glm::vec3 axisLengths = GetJointAxisLengths(jointEl);
 
-                m_Shared->AppendAsFrame(id, groupId, jointEl.Center, m_DrawablesBuffer, alpha, rimAlpha);
+                m_Shared->AppendAsFrame(id, groupId, jointEl.Center, m_DrawablesBuffer, alpha, rimAlpha, axisLengths);
             }
 
             // ground
@@ -3842,7 +3855,7 @@ namespace {
             }
 
             for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
-                m_Shared->AppendAsFrame(jointID, g_EmptyID, jointEl.Center, m_DrawablesBuffer);
+                m_Shared->AppendAsFrame(jointID, g_EmptyID, jointEl.Center, m_DrawablesBuffer, 1.0f, 0.0f, GetJointAxisLengths(jointEl));
             }
 
             if (m_Shared->IsShowingFloor()) {
