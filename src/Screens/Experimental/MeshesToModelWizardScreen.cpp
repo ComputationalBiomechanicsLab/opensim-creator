@@ -2377,6 +2377,190 @@ namespace {
     std::unique_ptr<MWState> CreateStandardState(std::shared_ptr<SharedData>);
 
 
+    // options for when the UI transitions into "choose two mesh points" mode
+    struct SelectTwoMeshPointsOptions final {
+        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>, glm::vec3, glm::vec3)> OnTwoPointsChosen =
+            [](std::shared_ptr<SharedData> shared, glm::vec3, glm::vec3) { return CreateStandardState(shared); };
+        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>)> OnUserCancelled =
+                [](std::shared_ptr<SharedData> shared) { return CreateStandardState(shared); };
+        std::string Header = "choose first (left-click) and second (right click) mesh positions (ESC to cancel)";
+    };
+
+    class SelectTwoMeshPointsState final : public MWState {
+    public:
+        SelectTwoMeshPointsState(std::shared_ptr<SharedData> shared, SelectTwoMeshPointsOptions options) :
+            m_Shared{std::move(shared)},
+            m_Options{std::move(options)}
+        {
+        }
+
+    private:
+
+        void HandlePossibleTransitionToNextStep()
+        {
+            if (!m_MaybeFirstLocation) {
+                return;
+            }
+
+            if (!m_MaybeSecondLocation) {
+                return;
+            }
+
+            m_MaybeNextState = m_Options.OnTwoPointsChosen(m_Shared, *m_MaybeFirstLocation, *m_MaybeSecondLocation);
+        }
+
+        void HandleHovertestSideEffects()
+        {
+            if (!m_MaybeCurrentHover) {
+                return;
+            }
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                // LEFT CLICK: set first mouse location
+                m_MaybeFirstLocation = m_MaybeCurrentHover.Pos;
+                HandlePossibleTransitionToNextStep();
+            } else if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+                // RIGHT CLICK: set second mouse location
+                m_MaybeSecondLocation = m_MaybeCurrentHover.Pos;
+                HandlePossibleTransitionToNextStep();
+            }
+        }
+
+        std::vector<DrawableThing>& GenerateDrawables()
+        {
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
+                m_DrawablesBuffer.emplace_back(m_Shared->GenerateMeshElDrawable(meshEl, m_Shared->GetMeshColor()));
+            }
+
+            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
+
+            return m_DrawablesBuffer;
+        }
+
+        void DrawHoverTooltip()
+        {
+            if (!m_MaybeCurrentHover) {
+                return;
+            }
+
+            ImGui::BeginTooltip();
+            ImGui::Text("%s", PosString(m_MaybeCurrentHover.Pos).c_str());
+            ImGui::TextDisabled("(left-click to assign as first point, right-click to assign as second point)");
+            ImGui::EndTooltip();
+        }
+
+        void DrawOverlay()
+        {
+            if (!m_MaybeFirstLocation && !m_MaybeSecondLocation) {
+                return;
+            }
+
+            glm::vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
+            glm::vec2 clickedScrPos = m_Shared->WorldPosToScreenPos(clickedWorldPos);
+
+            auto color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+
+            ImDrawList* dl = ImGui::GetWindowDrawList();
+            dl->AddCircleFilled(clickedScrPos, 5.0f, color);
+
+            if (!m_MaybeCurrentHover) {
+                return;
+            }
+
+            glm::vec2 hoverScrPos = m_Shared->WorldPosToScreenPos(m_MaybeCurrentHover.Pos);
+
+            dl->AddCircleFilled(hoverScrPos, 5.0f, color);
+            dl->AddLine(clickedScrPos, hoverScrPos, color, 5.0f);
+        }
+
+        void DrawHeaderText() const
+        {
+            if (m_Options.Header.empty()) {
+                return;
+            }
+
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
+            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, m_Options.Header.c_str());
+        }
+
+        void Draw3DViewer()
+        {
+            m_Shared->SetContentRegionAvailAsSceneRect();
+            std::vector<DrawableThing>& drawables = GenerateDrawables();
+            m_MaybeCurrentHover = m_Shared->Hovertest(drawables);
+            HandleHovertestSideEffects();
+
+            m_Shared->DrawScene(drawables);
+            DrawOverlay();
+            DrawHoverTooltip();
+            DrawHeaderText();
+        }
+
+    public:
+        std::unique_ptr<MWState> onEvent(SDL_Event const& e) override
+        {
+            m_Shared->onEvent(e);
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> tick(float dt) override
+        {
+            m_Shared->tick(dt);
+
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                // ESC: user cancelled out
+                m_MaybeNextState = m_Options.OnUserCancelled(m_Shared);
+            }
+
+            bool isRenderHovered = m_Shared->IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            }
+
+            return std::move(m_MaybeNextState);
+        }
+
+        std::unique_ptr<MWState> draw() override
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            if (ImGui::Begin("wizardsstep2viewer")) {
+                ImGui::PopStyleVar();
+                Draw3DViewer();
+            } else {
+                ImGui::PopStyleVar();
+            }
+            ImGui::End();
+
+            return std::move(m_MaybeNextState);
+        }
+
+    private:
+        // data that's shared between other UI states
+        std::shared_ptr<SharedData> m_Shared;
+
+        // options for this state
+        SelectTwoMeshPointsOptions m_Options;
+
+        // (maybe) next state to transition to
+        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
+
+        // (maybe) user mouse hover
+        Hover m_MaybeCurrentHover;
+
+        // (maybe) first mesh location
+        std::optional<glm::vec3> m_MaybeFirstLocation;
+
+        // (maybe) second mesh location
+        std::optional<glm::vec3> m_MaybeSecondLocation;
+
+        // buffer that's filled with drawable geometry during a drawcall
+        std::vector<DrawableThing> m_DrawablesBuffer;
+    };
+
+
 
     // options for when the UI transitions into "choose something" mode
     struct ChooseSomethingOptions final {
@@ -2759,7 +2943,7 @@ namespace {
             App::cur().requestRedraw();
         }
 
-        void UpdateFromImGuiKeyboardState()
+        bool UpdateFromImGuiKeyboardState()
         {
             bool shiftDown = osc::IsShiftDown();
             bool ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
@@ -2767,33 +2951,43 @@ namespace {
             if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
                 // Ctrl+A: select all
                 m_Shared->SelectAll();
+                return true;
             } else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
                 // Ctrl+Shift+Z: redo
                 m_Shared->RedoCurrentModelGraph();
+                return true;
             } else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
                 // Ctrl+Z: undo
                 m_Shared->UndoCurrentModelGraph();
+                return true;
             } else if (osc::IsAnyKeyDown({ SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE})) {
                 // DELETE/BACKSPACE: delete any selected elements
                 m_Shared->DeleteSelected();
+                return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
                 // B: add body to hovered element
                 AddBodyToHoveredElement();
+                return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
                 // A: assign a parent for the hovered element
                 TryTransitionToAssigningHoveredMeshNextFrame();
+                return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_R)) {
                 // R: set manipulation mode to "rotate"
                 if (m_ImGuizmoState.op == ImGuizmo::ROTATE) {
                     m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
                 }
                 m_ImGuizmoState.op = ImGuizmo::ROTATE;
+                return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_G)) {
                 // G: set manipulation mode to "grab" (translate)
                 if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE) {
                     m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
                 }
                 m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
+                return true;
+            } else {
+                return false;
             }
         }
 
@@ -3083,6 +3277,29 @@ namespace {
                     m_Shared->CommitCurrentModelGraph("reoriented " + GetJointLabel(jointEl));
                 }
 
+                if (ImGui::MenuItem("Orient Z along two mesh points")) {
+                    SelectTwoMeshPointsOptions opts;
+                    opts.OnTwoPointsChosen = [jointEl](std::shared_ptr<SharedData> shared, glm::vec3 a, glm::vec3 b) {
+                        glm::vec3 aTobDir = glm::normalize(a-b);
+                        glm::mat4 currentXform = XFormFromRas(jointEl.Center);
+                        glm::vec3 currentZ = currentXform * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
+
+                        float cosAng = glm::dot(aTobDir, currentZ);
+                        if (std::fabs(cosAng) < 0.999f) {
+                            glm::vec3 axis = glm::cross(aTobDir, currentZ);
+                            glm::mat4 xform = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axis);
+                            glm::mat4 overallXform = xform * currentXform;
+                            glm::vec3 newEuler = MatToEulerAngles(overallXform);
+                            Ras newRas = Ras{newEuler, jointEl.Center.shift};
+                            shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
+                            shared->CommitCurrentModelGraph("reoriented " + GetJointLabel(jointEl));
+                        }
+                        return CreateStandardState(shared);
+                    };
+
+                    m_MaybeNextState = std::make_unique<SelectTwoMeshPointsState>(m_Shared, opts);
+                }
+
                 if (ImGui::MenuItem("Rotate X 180 degrees")) {
                     Ras newCenter = {EulerCompose({fpi, 0.0f, 0.0f}, jointEl.Center.rot), jointEl.Center.shift};
                     m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
@@ -3150,6 +3367,19 @@ namespace {
                     Ras newCenter = {jointEl.Center.rot, childPos};
                     m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
                     m_Shared->CommitCurrentModelGraph("moved " + GetJointLabel(jointEl));
+                }
+
+                if (ImGui::MenuItem("Between two mesh points")) {
+                    SelectTwoMeshPointsOptions opts;
+                    opts.OnTwoPointsChosen = [jointEl](std::shared_ptr<SharedData> shared, glm::vec3 a, glm::vec3 b) {
+                        glm::vec3 midpoint = (a+b)/2.0f;
+                        Ras newRas = {shared->GetModelGraph().GetRotationInGround(jointEl.ID), midpoint};
+                        shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
+                        shared->CommitCurrentModelGraph("translated " + GetJointLabel(jointEl));
+                        return CreateStandardState(shared);
+                    };
+
+                    m_MaybeNextState = std::make_unique<SelectTwoMeshPointsState>(m_Shared, opts);
                 }
 
                 ImGui::EndMenu();
@@ -3647,7 +3877,14 @@ namespace {
 
         std::unique_ptr<MWState> onEvent(SDL_Event const& e) override
         {
-            m_Shared->onEvent(e);
+            if (m_Shared->onEvent(e)) {
+                return std::move(m_MaybeNextState);
+            }
+
+            if (UpdateFromImGuiKeyboardState()) {
+                return std::move(m_MaybeNextState);
+            }
+
             return std::move(m_MaybeNextState);
         }
 
@@ -3655,12 +3892,7 @@ namespace {
         {
             m_Shared->tick(dt);
 
-            UpdateFromImGuiKeyboardState();
-
-            bool isRenderHovered = m_Shared->IsRenderHovered();
-            bool isUsingGizmo = ImGuizmo::IsUsing();
-
-            if (isRenderHovered && !isUsingGizmo) {
+            if (m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing()) {
                 UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
 
@@ -3683,7 +3915,7 @@ namespace {
 
             if (ImGui::Begin("hierarchy")) {
                 DrawHierarchy();
-                            DrawContextMenu();
+                DrawContextMenu();
             }
             ImGui::End();
 
@@ -3691,7 +3923,7 @@ namespace {
             if (ImGui::Begin("wizardsstep2viewer")) {
                 ImGui::PopStyleVar();
                 Draw3DViewer();
-                            DrawContextMenu();
+                DrawContextMenu();
             } else {
                 ImGui::PopStyleVar();
             }
