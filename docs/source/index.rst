@@ -45,12 +45,18 @@ Table of Contents
 
    tut1
    tut2
-   tut3
-   tut4
-   tut5
-   tut6
-   tut7
-   tut8
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Challenges
+
+    chal1
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Documentation Pages
+
+    doc_meshimporterwizard
 
 .. toctree::
     :caption: Other Links

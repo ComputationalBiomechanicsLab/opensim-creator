@@ -1,3 +1,5 @@
+.. _tut2:
+
 Tutorial 2: Make a Bouncing Block
 =================================
 
