@@ -7,6 +7,7 @@
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
+#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
 #include "src/UI/HelpMarker.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
@@ -217,6 +218,10 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
         if (editor_state) {
             actionSaveCurrentModelAs(editor_state->editedModel.updUiModel());
         }
+    }
+
+    if (ImGui::MenuItem(ICON_FA_MAGIC " Open Mesh Importer")) {
+        App::cur().requestTransition<MeshesToModelWizardScreen>();
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {
