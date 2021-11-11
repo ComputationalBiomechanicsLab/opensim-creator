@@ -38,4 +38,10 @@ namespace osc {
 
     // returns `true` if the specified moouse button was released without the user dragging
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float threshold = 5.0f);
+
+    // draws an overlay tooltip with a header and description
+    void DrawTooltip(char const* header, char const* description = nullptr);
+
+    // equivalent to `if (ImGui::IsItemHovered()) DrawTooltip(header, description);`
+    void DrawTooltipIfItemHovered(char const* header, char const* description = nullptr);
 }

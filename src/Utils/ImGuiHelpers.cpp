@@ -110,3 +110,24 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
     return glm::length(dragDelta) < threshold;
 }
 
+void osc::DrawTooltip(char const* header, char const* description) {
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::TextUnformatted(header);
+
+    if (description) {
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
+        ImGui::TextUnformatted(description);
+        ImGui::PopStyleColor();
+    }
+
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
+}
+
+void osc::DrawTooltipIfItemHovered(char const* header, char const* description) {
+    if (ImGui::IsItemHovered()) {
+        DrawTooltip(header, description);
+    }
+}
