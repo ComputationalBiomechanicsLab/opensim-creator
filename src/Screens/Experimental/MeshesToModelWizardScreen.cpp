@@ -4180,7 +4180,14 @@ namespace {
         {
             int imguiID = 0;
 
-            ImGui::Button(ICON_FA_PLUS " Add");
+            if (ImGui::Button(ICON_FA_CUBE " Add Meshes")) {
+                m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            }
+            DrawTooltipIfItemHovered("Add Mesh(es) to the model", "Meshes are purely decorative scene elements that can be attached to bodies, or the ground. When attached to a body, the mesh's transformation will be linked to the body's.");
+
+            ImGui::SameLine();
+
+            ImGui::Button(ICON_FA_PLUS " Add Other");
             DrawTooltipIfItemHovered("Add components to the model");
 
             if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft)) {
@@ -4260,68 +4267,42 @@ namespace {
             }
 
             ImGui::SameLine();
-            ImGui::Dummy({15.0f, 0.0f});
-            ImGui::SameLine();
 
+            // translate/rotate/scale dropdown
             {
+                char const* modes[] = {"translate", "rotate", "scale"};
+                ImGuizmo::OPERATION ops[] = {ImGuizmo::TRANSLATE, ImGuizmo::ROTATE, ImGuizmo::SCALE};
+                int currentOp = static_cast<int>(std::distance(std::begin(ops), std::find(std::begin(ops), std::end(ops), m_ImGuizmoState.op)));
+
+                ImGui::SetNextItemWidth(ImGui::CalcTextSize(modes[0]).x + 40.0f);
+                if (ImGui::Combo("##opselect", &currentOp, modes, IM_ARRAYSIZE(modes))) {
+                    m_ImGuizmoState.op = ops[static_cast<size_t>(currentOp)];
+                }
                 char const* const tooltipTitle = "Manipulation Mode";
                 char const* const tooltipDesc = "This affects which manipulation gizmos are shown over the selected object.\n\nYou can also use keybinds to flip between these:\n    G    translate\n    R    rotate\n    S    scale";
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                if (ImGui::RadioButton("translate", m_ImGuizmoState.op == ImGuizmo::TRANSLATE)) {
-                    m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
-                }
-                ImGui::PopStyleColor();
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
-
-                ImGui::SameLine();
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                if (ImGui::RadioButton("rotate", m_ImGuizmoState.op == ImGuizmo::ROTATE)) {
-                    m_ImGuizmoState.op = ImGuizmo::ROTATE;
-                }
-                ImGui::PopStyleColor();
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
-
-                ImGui::SameLine();
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                if (ImGui::RadioButton("scale", m_ImGuizmoState.op == ImGuizmo::SCALE)) {
-                    m_ImGuizmoState.op = ImGuizmo::SCALE;
-                }
-                ImGui::PopStyleColor();
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
             }
 
             ImGui::SameLine();
-            ImGui::Dummy({15.0f, 0.0f});
-            ImGui::SameLine();
 
+            // local/global dropdown
             {
+                char const* modeLabels[] = {"local", "global"};
+                ImGuizmo::MODE modes[] = {ImGuizmo::LOCAL, ImGuizmo::WORLD};
+                int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
+
+                ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
+                if (ImGui::Combo("##modeselect", &currentMode, modeLabels, IM_ARRAYSIZE(modeLabels))) {
+                    m_ImGuizmoState.mode = modes[static_cast<size_t>(currentMode)];
+                }
                 char const* const tooltipTitle = "Manipulation coordinate system";
                 char const* const tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                if (ImGui::RadioButton("local", m_ImGuizmoState.mode == ImGuizmo::LOCAL)) {
-                    m_ImGuizmoState.mode = ImGuizmo::LOCAL;
-                }
-                ImGui::PopStyleColor();
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
-
-                ImGui::SameLine();
-
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                if (ImGui::RadioButton("global", m_ImGuizmoState.mode == ImGuizmo::WORLD)) {
-                    m_ImGuizmoState.mode = ImGuizmo::WORLD;
-                }
-                ImGui::PopStyleColor();
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
             }
 
             ImGui::SameLine();
-            ImGui::Dummy({15.0f, 0.0f});
-            ImGui::SameLine();
 
+            // scale factor
             {
                 char const* const tooltipTitle = "Change scene scale factor";
                 char const* const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
