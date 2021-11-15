@@ -3425,6 +3425,13 @@ namespace {
                 }
                 m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
                 return true;
+            } else if (ImGui::IsKeyPressed(SDL_SCANCODE_S)) {
+                // S: set manipulation mode to "scale"
+                if (m_ImGuizmoState.op == ImGuizmo::SCALE) {
+                    m_ImGuizmoState.mode = m_ImGuizmoState.mode == ImGuizmo::LOCAL ? ImGuizmo::WORLD : ImGuizmo::LOCAL;
+                }
+                m_ImGuizmoState.op = ImGuizmo::SCALE;
+                return true;
             } else {
                 return false;
             }
