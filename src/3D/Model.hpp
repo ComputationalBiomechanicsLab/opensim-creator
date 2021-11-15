@@ -307,6 +307,9 @@ namespace osc {
 
         PolarPerspectiveCamera();
 
+        // reset the camera to its initial state
+        void reset();
+
         // note: relative deltas here are relative to whatever "screen" the camera
         // is handling.
         //

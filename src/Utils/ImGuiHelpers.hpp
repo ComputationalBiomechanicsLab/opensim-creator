@@ -44,4 +44,7 @@ namespace osc {
 
     // equivalent to `if (ImGui::IsItemHovered()) DrawTooltip(header, description);`
     void DrawTooltipIfItemHovered(char const* header, char const* description = nullptr);
+
+    // draw overlay axes in bottom-right of screenspace rect
+    void DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect);
 }

@@ -1754,6 +1754,11 @@ namespace {
         std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
     };
 
+    AABB CalcBounds(DrawableThing const& dt)
+    {
+        return CalcBounds(*dt.mesh, dt.modelMatrix);
+    }
+
     // an instance of something that is being drawn, once uploaded to the GPU
     struct SceneGPUInstanceData final {
         glm::mat4x3 modelMtx;
@@ -4332,6 +4337,66 @@ namespace {
                 ImGui::Text("Scene Scale Factor");
                 ImGui::PopStyleColor();
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+            }
+
+            // bottom-left axes overlay
+            DrawAlignmentAxesOverlayInBottomRightOf(m_Shared->GetCamera().getViewMtx(), m_Shared->Get3DSceneRect());
+
+            // zoom in/out buttons?
+            {
+                Rect sceneRect = m_Shared->Get3DSceneRect();
+                glm::vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
+                ImGui::SetCursorScreenPos(trPos);
+
+                if (ImGui::Button(ICON_FA_SEARCH_MINUS)) {
+                    m_Shared->UpdCamera().radius *= 1.2f;
+                }
+                DrawTooltipIfItemHovered("Zoom Out");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_FA_SEARCH_PLUS)) {
+                    m_Shared->UpdCamera().radius *= 0.8f;
+                }
+                DrawTooltipIfItemHovered("Zoom In");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT)) {
+                    auto it = m_DrawablesBuffer.begin();
+                    bool containsAtLeastOne = false;
+                    AABB aabb;
+                    while (it != m_DrawablesBuffer.end()) {
+                        if (it->id != g_EmptyID) {
+                            aabb = CalcBounds(*it);
+                            it++;
+                            containsAtLeastOne = true;
+                            break;
+                        }
+                        it++;
+                    }
+                    if (containsAtLeastOne) {
+                        while (it != m_DrawablesBuffer.end()) {
+                            if (it->id != g_EmptyID) {
+                                aabb = AABBUnion(aabb, CalcBounds(*it));
+                            }
+                            ++it;
+                        }
+                        m_Shared->UpdCamera().focusPoint = -AABBCenter(aabb);
+                        m_Shared->UpdCamera().radius = 2.0f * AABBLongestDim(aabb);
+                    }
+                }
+                DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(ICON_FA_CAMERA)) {
+                    m_Shared->UpdCamera().reset();
+                    m_Shared->UpdCamera().phi = fpi4;
+                    m_Shared->UpdCamera().theta = fpi4;
+                    m_Shared->UpdCamera().radius = 5.0f;
+                }
+                DrawTooltipIfItemHovered("Reset camera");
             }
 
             // bottom-right "finish" button

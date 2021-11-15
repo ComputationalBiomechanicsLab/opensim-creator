@@ -1342,8 +1342,13 @@ osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     focusPoint{0.0f, 0.0f, 0.0f},
     fov{120.0f},
     znear{0.1f},
-    zfar{100.0f} {
+    zfar{100.0f}
+{
+}
 
+void osc::PolarPerspectiveCamera::reset()
+{
+    *this = {};
 }
 
 void osc::PolarPerspectiveCamera::pan(float aspectRatio, glm::vec2 delta) noexcept {

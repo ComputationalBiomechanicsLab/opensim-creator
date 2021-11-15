@@ -131,3 +131,36 @@ void osc::DrawTooltipIfItemHovered(char const* header, char const* description) 
         DrawTooltip(header, description);
     }
 }
+
+void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect)
+{
+    ImDrawList* dd = ImGui::GetForegroundDrawList();
+
+    constexpr float linelen = 35.0f;
+    float fontSize = ImGui::GetFontSize();
+    float circleRadius = fontSize/1.5f;
+    float padding = circleRadius + 3.0f;
+    glm::vec2 origin{renderRect.p1.x, renderRect.p2.y};
+    origin.x += linelen + padding;
+    origin.y -= linelen + padding;
+
+    char const* labels[] = {"X", "Y", "Z"};
+
+    for (int i = 0; i < 3; ++i) {
+        glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
+        world[i] = 1.0f;
+        glm::vec2 view = glm::vec2{viewMtx * world};
+        view.y = -view.y;  // y goes down in screen-space
+
+        glm::vec2 p1 = origin;
+        glm::vec2 p2 = origin + linelen*view;
+
+        glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+        color[i] = 1.0f;
+        ImVec4 col{color.x, color.y, color.z, color.a};
+        dd->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32(col), 3.0f);
+        dd->AddCircleFilled(p2, circleRadius, ImGui::ColorConvertFloat4ToU32(col));
+        glm::vec2 ts = ImGui::CalcTextSize(labels[i]);
+        dd->AddText(p2 - ts/2.0f, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), labels[i]);
+    }
+}
