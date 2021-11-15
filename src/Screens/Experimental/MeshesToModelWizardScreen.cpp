@@ -777,25 +777,60 @@ namespace {
         void DeleteMeshElByID(UID id)
         {
             auto it = m_Meshes.find(DowncastID<MeshEl>(id));
-            if (it != m_Meshes.end()) {
-                DeleteMesh(it);
+
+            if (it == m_Meshes.end()) {
+                return;  // ID doesn't exist in mesh collection
             }
+
+            DeSelect(it->first);
+            m_Meshes.erase(it);
         }
 
         void DeleteBodyElByID(UID id)
         {
             auto it = m_Bodies.find(DowncastID<BodyEl>(id));
-            if (it != m_Bodies.end()) {
-                DeleteBody(it);
+
+            if (it == m_Bodies.end()) {
+                return;  // ID doesn't exist in body collection
             }
+
+            // delete any joints that reference the body
+            for (auto jointIt = m_Joints.begin(); jointIt != m_Joints.end();) {
+
+                if (IsAttachedToJoint(jointIt->second, it->second)) {
+                    DeSelect(jointIt->first);
+                    jointIt = m_Joints.erase(jointIt);
+                } else {
+                    ++jointIt;
+                }
+            }
+
+            // delete any meshes attached to the body
+            for (auto meshIt = m_Meshes.begin(); meshIt != m_Meshes.end();) {
+
+                if (meshIt->second.Attachment == it->first) {
+                    DeSelect(meshIt->first);
+                    meshIt = m_Meshes.erase(meshIt);
+                } else {
+                    ++meshIt;
+                }
+            }
+
+            // delete the body
+            DeSelect(it->first);
+            m_Bodies.erase(it);
         }
 
         void DeleteJointElByID(UID id)
         {
             auto it = m_Joints.find(DowncastID<JointEl>(id));
-            if (it != m_Joints.end()) {
-                DeleteJoint(it);
+
+            if (it == m_Joints.end()) {
+                return;
             }
+
+            DeSelect(it->first);
+            m_Joints.erase(it);
         }
 
         void DeleteElementByID(UID id)
@@ -988,43 +1023,6 @@ namespace {
                 throw std::runtime_error{"could not find a joint"};
             }
             return *jointEl;
-        }
-
-        void DeleteMesh(std::unordered_map<UIDT<MeshEl>, MeshEl>::iterator it)
-        {
-            DeSelect(it->first);
-            m_Meshes.erase(it);
-        }
-
-        void DeleteBody(std::unordered_map<UIDT<BodyEl>, BodyEl>::iterator it)
-        {
-            auto const& [bodyID, bodyEl] = *it;
-
-            // delete any joints that reference the body
-            for (auto jointIt = m_Joints.begin(); jointIt != m_Joints.end(); ++jointIt) {
-                if (IsAttachedToJoint(jointIt->second, bodyEl)) {
-                    DeSelect(jointIt->first);
-                    jointIt = m_Joints.erase(jointIt);
-                }
-            }
-
-            // delete any meshes attached to the body
-            for (auto meshIt = m_Meshes.begin(); meshIt != m_Meshes.end(); ++meshIt) {
-                if (meshIt->second.Attachment == bodyID) {
-                    DeSelect(meshIt->first);
-                    meshIt = m_Meshes.erase(meshIt);
-                }
-            }
-
-            // delete the body
-            DeSelect(it->first);
-            m_Bodies.erase(it);
-        }
-
-        void DeleteJoint(std::unordered_map<UIDT<JointEl>, JointEl>::iterator it)
-        {
-            DeSelect(it->first);
-            m_Joints.erase(it);
         }
 
         std::unordered_map<UIDT<MeshEl>, MeshEl> m_Meshes;
@@ -3336,6 +3334,32 @@ namespace {
             App::cur().requestRedraw();
         }
 
+        void DeleteSelected()
+        {
+            if (Contains(m_Shared->GetModelGraph().GetSelected(), m_Hover.ID)) {
+                m_Hover.reset();
+            }
+
+            if (Contains(m_Shared->GetModelGraph().GetSelected(), m_MaybeOpenedContextMenu.ID)) {
+                m_MaybeOpenedContextMenu.reset();
+            }
+
+            m_Shared->DeleteSelected();
+        }
+
+        void DeleteEl(UID elID)
+        {
+            if (m_Hover.ID == elID) {
+                m_Hover.reset();
+            }
+
+            if (m_MaybeOpenedContextMenu.ID == elID) {
+                m_MaybeOpenedContextMenu.reset();
+            }
+
+            m_Shared->UpdModelGraph().DeleteElementByID(elID);
+        }
+
         bool UpdateFromImGuiKeyboardState()
         {
             if (ImGui::GetIO().WantCaptureKeyboard) {
@@ -3359,7 +3383,7 @@ namespace {
                 return true;
             } else if (osc::IsAnyKeyDown({ SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE})) {
                 // DELETE/BACKSPACE: delete any selected elements
-                m_Shared->DeleteSelected();
+                DeleteSelected();
                 return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
                 // B: add body to hovered element
@@ -3458,10 +3482,10 @@ namespace {
 
                 if (ImGui::MenuItem("delete")) {
                     std::string name = bodyEl.Name;
-                    m_Shared->UpdModelGraph().DeleteBodyElByID(bodyEl.ID);
-                    m_Hover = Hover{};
-                    m_MaybeOpenedContextMenu = Hover{};
+                    DeleteEl(bodyEl.ID);
                     m_Shared->CommitCurrentModelGraph("deleted " + name);
+                    ImGui::EndPopup();
+                    return;
                 }
 
                 // draw name editor
@@ -3538,8 +3562,10 @@ namespace {
 
                 if (ImGui::MenuItem("delete")) {
                     std::string name = meshEl.Name;
-                    m_Shared->UpdModelGraph().DeleteMeshElByID(meshEl.ID);
+                    DeleteEl(meshEl.ID);
                     m_Shared->CommitCurrentModelGraph("deleted " + name);
+                    ImGui::EndPopup();
+                    return;
                 }
 
                 ImGui::Dummy({0.0f, 5.0f});
@@ -3807,12 +3833,11 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("delete")) {
-                    m_Hover.reset();
-                    m_MaybeOpenedContextMenu.reset();
-
                     std::string name = GetLabel(jointEl);
-                    m_Shared->UpdModelGraph().DeleteJointElByID(jointEl.ID);
+                    DeleteEl(jointEl.ID);
                     m_Shared->CommitCurrentModelGraph("deleted " + name);
+                    ImGui::EndPopup();
+                    return;
                 }
 
                 DrawReorientMenu(jointEl);
