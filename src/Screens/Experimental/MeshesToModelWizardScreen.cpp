@@ -1992,6 +1992,11 @@ namespace {
             m_ModelGraphSnapshots.Redo();
         }
 
+        void ResetModelGraph()
+        {
+            m_ModelGraphSnapshots = SnapshottableModelGraph{};
+        }
+
         std::unordered_set<UID> const& GetCurrentSelection() const
         {
             return GetModelGraph().GetSelected();
@@ -3369,7 +3374,15 @@ namespace {
             bool shiftDown = osc::IsShiftDown();
             bool ctrlOrSuperDown = osc::IsCtrlOrSuperDown();
 
-            if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
+            if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N)) {
+                // Ctrl+N: new scene
+                m_Shared->ResetModelGraph();
+                return true;
+            } else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q)) {
+                // Ctrl+Q: quit application
+                App::cur().requestQuit();
+                return true;
+            } else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A)) {
                 // Ctrl+A: select all
                 m_Shared->SelectAll();
                 return true;
@@ -3382,7 +3395,7 @@ namespace {
                 m_Shared->UndoCurrentModelGraph();
                 return true;
             } else if (osc::IsAnyKeyDown({ SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE})) {
-                // DELETE/BACKSPACE: delete any selected elements
+                // Delete/Backspace: delete any selected elements
                 DeleteSelected();
                 return true;
             } else if (ImGui::IsKeyPressed(SDL_SCANCODE_B)) {
@@ -4645,23 +4658,27 @@ namespace {
         {
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
-                    if (ImGui::MenuItem(ICON_FA_CUBE " Import meshes")) {
+                    if (ImGui::MenuItem(ICON_FA_FILE " New Scene", "Ctrl+N")) {
+                        m_Shared->ResetModelGraph();
+                    }
+
+                    if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes")) {
                         m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
                     }
                     if (ImGui::MenuItem(ICON_FA_ARROW_LEFT " Back to experiments screen")) {
                         App::cur().requestTransition<ExperimentsScreen>();
                     }
-                    if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit")) {
+                    if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
                         App::cur().requestQuit();
                     }
                     ImGui::EndMenu();
                 }
 
                 if (ImGui::BeginMenu("Edit")) {
-                    if (ImGui::MenuItem(ICON_FA_UNDO " Undo", NULL, false, m_Shared->CanUndoCurrentModelGraph())) {
+                    if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Shared->CanUndoCurrentModelGraph())) {
                         m_Shared->UndoCurrentModelGraph();
                     }
-                    if (ImGui::MenuItem(ICON_FA_REDO " Redo", NULL, false, m_Shared->CanRedoCurrentModelGraph())) {
+                    if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->CanRedoCurrentModelGraph())) {
                         m_Shared->RedoCurrentModelGraph();
                     }
                     ImGui::EndMenu();
