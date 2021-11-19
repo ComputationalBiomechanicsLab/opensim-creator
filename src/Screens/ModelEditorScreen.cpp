@@ -313,6 +313,8 @@ namespace {
                 }
             }
         }
+
+        uim.updateIfDirty();
     }
 
     // draw an editor for top-level selected Component members (e.g. name)
@@ -1351,6 +1353,9 @@ namespace {
             draw3DViewers(impl);
         }
 
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
+
         // draw editor actions panel
         //
         // contains top-level actions (e.g. "add body")
@@ -1360,6 +1365,9 @@ namespace {
             }
             ImGui::End();
         }
+
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
 
         // draw hierarchy viewer
         if (impl.st->showing.hierarchy) {
@@ -1378,6 +1386,9 @@ namespace {
             ImGui::End();
         }
 
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
+
         // draw property editor
         if (impl.st->showing.propertyEditor) {
             if (ImGui::Begin("Edit Props", &impl.st->showing.propertyEditor)) {
@@ -1385,6 +1396,9 @@ namespace {
             }
             ImGui::End();
         }
+
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
 
         // draw application log
         if (impl.st->showing.log) {
@@ -1394,12 +1408,17 @@ namespace {
             ImGui::End();
         }
 
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
 
         if (impl.st->showing.coordinateEditor) {
             if (ImGui::Begin("Coordinate Editor")) {
                 impl.ui.coordEditor.draw(impl.st->editedModel.updUiModel());
             }
         }
+
+        // apply any updates made during this frame (can throw)
+        impl.st->editedModel.updateIfDirty();
 
         // draw sim params editor popup (if applicable)
         {

@@ -214,10 +214,12 @@ StateModifications const& osc::UiModel::getStateModifications() const {
 }
 
 OpenSim::Model const& osc::UiModel::getModel() const {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     return *m_Impl->m_Model;
 }
 
 OpenSim::Model& osc::UiModel::updModel() {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     setDirty(true);
     return *m_Impl->m_Model;
 }
@@ -231,10 +233,12 @@ void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m) {
 }
 
 SimTK::State const& osc::UiModel::getState() const {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     return *m_Impl->m_State;
 }
 
 SimTK::State& osc::UiModel::updState() {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     setStateDirtyADVANCED(true);
     setDecorationsDirtyADVANCED(true);
     return *m_Impl->m_State;
@@ -254,7 +258,6 @@ void osc::UiModel::updateIfDirty() {
 
     auto overallTimerGuard = overallTimer.measure();
 
-    bool modelWasDirty = m_Impl->m_ModelIsDirty;
     if (m_Impl->m_ModelIsDirty) {
         auto modelUpdateTimerGuard = modelUpdateTimer.measure();
         m_Impl->m_Model->finalizeFromProperties();
@@ -307,10 +310,12 @@ void osc::UiModel::setDirty(bool v) {
 }
 
 nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     return m_Impl->m_Decorations;
 }
 
 osc::BVH const& osc::UiModel::getSceneBVH() const {
+    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
     return m_Impl->m_SceneBVH;
 }
 
