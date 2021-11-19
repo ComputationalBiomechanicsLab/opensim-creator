@@ -1793,7 +1793,7 @@ namespace {
             lightDir = glm::normalize(mp + -up);
         }
 
-        glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
+        glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
 
         glm::mat4 projMat = camera.getProjMtx(VecAspectRatio(dims));
         glm::mat4 viewMat = camera.getViewMtx();
@@ -1801,7 +1801,7 @@ namespace {
 
         auto samples = App::cur().getSamples();
 
-        gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGBA, dims);
+        gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
         gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
         gl::FrameBuffer sceneFBO = FrameBufferWithBindings(
             RboBinding{GL_COLOR_ATTACHMENT0, sceneRBO},
@@ -1831,7 +1831,7 @@ namespace {
                     gl::ActiveTexture(GL_TEXTURE0);
                     gl::BindTexture(*d.maybeDiffuseTex);
                     gl::Uniform(shader.uIsTextured, true);
-                    gl::Uniform(shader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+                    gl::Uniform(shader.uSampler0, GL_TEXTURE0-GL_TEXTURE0);
                 } else {
                     gl::Uniform(shader.uIsTextured, false);
                 }
@@ -2421,7 +2421,7 @@ namespace {
             dt.mesh = m_FloorMesh;
             dt.modelMatrix = GetFloorModelMtx();
             dt.normalMatrix = NormalMatrix(dt.modelMatrix);
-            dt.color = {0.0f, 0.0f, 0.0f, 1.0f};  // doesn't matter: it's textured
+            dt.color = m_Colors.FloorTint;
             dt.rimColor = 0.0f;
             dt.maybeDiffuseTex = m_FloorChequerTex;
             return dt;
@@ -2666,8 +2666,9 @@ namespace {
             glm::vec4 TransparentFaintConnection{0.0f, 0.0f, 0.0f, 0.2f};
             glm::vec4 SceneBackground{0.89f, 0.89f, 0.89f, 1.0f};
             glm::vec4 JointFrameCore{0.8f, 0.8f, 0.8f, 1.0f};
+            glm::vec4 FloorTint{1.0f, 1.0f, 1.0f, 0.4f};
         } m_Colors;
-        static constexpr std::array<char const*, 9> g_ColorNames = {
+        static constexpr std::array<char const*, 10> g_ColorNames = {
             "mesh",
             "unassigned mesh",
             "ground",
@@ -2677,6 +2678,7 @@ namespace {
             "transparent faint connection line",
             "scene background",
             "joint frame core",
+            "floor tint",
         };
         static_assert(sizeof(decltype(m_Colors))/sizeof(glm::vec4) == g_ColorNames.size());
 
