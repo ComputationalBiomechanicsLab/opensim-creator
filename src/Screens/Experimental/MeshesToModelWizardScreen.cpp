@@ -220,14 +220,18 @@ namespace {
     // a mesh loading request
     struct MeshLoadRequest final {
         UIDT<BodyEl> PreferredAttachmentPoint;
+        std::vector<std::filesystem::path> Paths;
+    };
+
+    struct LoadedMesh final {
         std::filesystem::path Path;
+        std::shared_ptr<Mesh> Mesh;
     };
 
     // an OK response to a mesh loading request
     struct MeshLoadOKResponse final {
         UIDT<BodyEl> PreferredAttachmentPoint;
-        std::filesystem::path Path;
-        std::shared_ptr<Mesh> mesh;
+        std::vector<LoadedMesh> Meshes;
     };
 
     // an ERROR response to a mesh loading request
@@ -243,14 +247,17 @@ namespace {
     // function that's used by the meshloader to respond to a mesh loading request
     MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg) noexcept
     {
-        try {
-            auto mesh = std::make_shared<Mesh>(SimTKLoadMesh(msg.Path));
-            auto resp = MeshLoadOKResponse{msg.PreferredAttachmentPoint, msg.Path, std::move(mesh)};
-            App::cur().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
-            return resp;
-        } catch (std::exception const& ex) {
-            return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, msg.Path, ex.what()};
+        std::vector<LoadedMesh> loadedMeshes;
+        for (std::filesystem::path const& path : msg.Paths) {
+            try {
+                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(SimTKLoadMesh(path));
+                loadedMeshes.push_back(LoadedMesh{path, mesh});
+            } catch (std::exception const& ex) {
+                return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, path, ex.what()};
+            }
         }
+        App::cur().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
+        return MeshLoadOKResponse{msg.PreferredAttachmentPoint, std::move(loadedMeshes)};
     }
 
     // top-level MeshLoader class that the UI thread can safely poll
@@ -1927,9 +1934,7 @@ namespace {
 
         SharedData(std::vector<std::filesystem::path> meshFiles)
         {
-            for (auto const& meshFile : meshFiles) {
-                PushMeshLoadRequest(meshFile);
-            }
+            PushMeshLoadRequests(meshFiles);
         }
 
         bool HasOutputModel() const
@@ -2068,14 +2073,24 @@ namespace {
             CommitCurrentModelGraph(std::move(ss).str());
         }
 
-        void PushMeshLoadRequest(std::filesystem::path const& meshFilePath, UIDT<BodyEl> bodyToAttachTo)
+        void PushMeshLoadRequests(UIDT<BodyEl> bodyToAttachTo, std::vector<std::filesystem::path> paths)
         {
-            m_MeshLoader.send(MeshLoadRequest{bodyToAttachTo, meshFilePath});
+            m_MeshLoader.send(MeshLoadRequest{bodyToAttachTo, std::move(paths)});
+        }
+
+        void PushMeshLoadRequests(std::vector<std::filesystem::path> paths)
+        {
+            PushMeshLoadRequests(g_GroundID, std::move(paths));
+        }
+
+        void PushMeshLoadRequest(UIDT<BodyEl> bodyToAttachTo, std::filesystem::path const& path)
+        {
+            PushMeshLoadRequests(bodyToAttachTo, std::vector<std::filesystem::path>{path});
         }
 
         void PushMeshLoadRequest(std::filesystem::path const& meshFilePath)
         {
-            m_MeshLoader.send(MeshLoadRequest{g_GroundID, meshFilePath});
+            PushMeshLoadRequest(g_GroundID, meshFilePath);
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
@@ -2083,15 +2098,28 @@ namespace {
         {
             ModelGraph& mg = UpdModelGraph();
 
-            auto meshID = mg.AddMesh(ok.mesh, ok.PreferredAttachmentPoint, ok.Path);
+            mg.DeSelectAll();
+            for (LoadedMesh const& lm : ok.Meshes) {
+                auto meshID = mg.AddMesh(lm.Mesh, ok.PreferredAttachmentPoint, lm.Path);
 
-            auto const* maybeBody = mg.TryGetBodyElByID(ok.PreferredAttachmentPoint);
-            if (maybeBody) {
-                mg.SetMeshXform(meshID, maybeBody->Xform);
+                auto const* maybeBody = mg.TryGetBodyElByID(ok.PreferredAttachmentPoint);
+                if (maybeBody) {
+                    mg.Select(maybeBody->ID);
+                    mg.SetMeshXform(meshID, maybeBody->Xform);
+                }
+
+                mg.Select(meshID);
             }
 
             std::stringstream commitMsgSS;
-            commitMsgSS << "loaded " << ok.Path.filename();
+            if (ok.Meshes.empty()) {
+                commitMsgSS << "loaded 0 meshes";
+            } else if (ok.Meshes.size() == 1) {
+                commitMsgSS << "loaded " << ok.Meshes[0].Path.filename();
+            } else {
+                commitMsgSS << "loaded " << ok.Meshes.size() << " meshes";
+            }
+
             CommitCurrentModelGraph(std::move(commitMsgSS).str());
         }
 
@@ -2121,9 +2149,7 @@ namespace {
 
         void PromptUserForMeshFilesAndPushThemOntoMeshLoader()
         {
-            for (auto const& meshFile : PromptUserForMeshFiles()) {
-                PushMeshLoadRequest(meshFile);
-            }
+            PushMeshLoadRequests(PromptUserForMeshFiles());
         }
 
         glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) const
@@ -3500,9 +3526,7 @@ namespace {
 
                 if (ImGui::MenuItem("attach mesh to this")) {
                     UIDT<BodyEl> bodyID = bodyEl.ID;
-                    for (auto const& meshFile : m_Shared->PromptUserForMeshFiles()) {
-                        m_Shared->PushMeshLoadRequest(meshFile, bodyID);
-                    }
+                    m_Shared->PushMeshLoadRequests(bodyID, m_Shared->PromptUserForMeshFiles());
                 }
 
                 DrawReorientMenu(bodyEl);
