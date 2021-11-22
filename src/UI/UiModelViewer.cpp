@@ -1158,6 +1158,9 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
                 actionResetCamera(impl);
             }
         }
+        if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8))) {  // solidworks keybind
+            impl.autoFocusCameraNextFrame = true;
+        }
         UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
     }
 
