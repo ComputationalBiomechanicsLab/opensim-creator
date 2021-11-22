@@ -72,6 +72,8 @@ namespace osc {
 
         bool isMousedOver() const noexcept;
 
+        void requestAutoFocus();
+
         UiModelViewerResponse draw(RenderableScene const&);
     };
 }

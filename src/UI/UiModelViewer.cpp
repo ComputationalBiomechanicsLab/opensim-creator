@@ -1116,6 +1116,11 @@ static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
     }
 }
 
+void osc::UiModelViewer::requestAutoFocus()
+{
+    m_Impl->autoFocusCameraNextFrame = true;
+}
+
 UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
     Impl& impl = *m_Impl;
 

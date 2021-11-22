@@ -11,6 +11,7 @@
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
 #include "src/SimTKBindings/SimTKLoadMesh.hpp"
@@ -2701,6 +2702,13 @@ namespace {
             // if some screen generated an OpenSim::Model, transition to the main editor
             if (HasOutputModel()) {
                 auto mainEditorState = std::make_shared<MainEditorState>(std::move(UpdOutputModel()));
+                mainEditorState->editedModel.setFixupScaleFactor(mainEditorState->editedModel.getFixupScaleFactor());
+                for (auto& viewerPtr : mainEditorState->viewers) {
+                    if (viewerPtr) {
+                        viewerPtr->requestAutoFocus();
+                    }
+                }
+
                 App::cur().requestTransition<ModelEditorScreen>(mainEditorState);
             }
         }
