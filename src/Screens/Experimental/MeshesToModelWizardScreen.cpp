@@ -62,6 +62,7 @@ using namespace osc;
 #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, models conventionally use meters."
 #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all Frames and points may conveniently and efficiently be expressed."
 #define OSC_MESH_DESC "Meshes are purely decorational elements in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will translate/rotate whenever the thing they are attached to translates/rotates"
+#define OSC_FLOAT_INPUT_FORMAT "%.6f"
 
 // generic helpers
 namespace {
@@ -3619,7 +3620,7 @@ namespace {
                 // mass editor
                 {
                     float curMass = static_cast<float>(bodyEl.Mass);
-                    if (ImGui::InputFloat("mass", &curMass, 0.0f, 0.0f, "%.3f")) {
+                    if (ImGui::InputFloat("mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT)) {
                         m_Shared->UpdModelGraph().SetBodyMass(bodyEl.ID, static_cast<double>(curMass));
                     }
                     if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3631,7 +3632,7 @@ namespace {
                 // pos editor
                 {
                     glm::vec3 translation = bodyEl.Xform.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f")) {
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = bodyEl.Xform;
                         to.shift = translation;
                         m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
@@ -3645,7 +3646,7 @@ namespace {
                 // rotation editor
                 {
                     glm::vec3 orientationDegrees = glm::degrees(bodyEl.Xform.rot);
-                    if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), "%.3f")) {
+                    if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = bodyEl.Xform;
                         to.rot = glm::radians(orientationDegrees);
                         m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
@@ -3716,7 +3717,7 @@ namespace {
                 // pos editor
                 {
                     glm::vec3 translation = meshEl.Xform.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f")) {
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = meshEl.Xform;
                         to.shift = translation;
                         m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
@@ -3732,7 +3733,7 @@ namespace {
                 // rotation editor
                 {
                     glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
-                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f")) {
+                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = meshEl.Xform;
                         to.rot = glm::radians(orientationDegrees);
                         m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
@@ -3744,7 +3745,7 @@ namespace {
                 // scale factor editor
                 {
                     glm::vec3 scaleFactors = meshEl.ScaleFactors;
-                    if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), "%.3f")) {
+                    if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT)) {
                         m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
                     }
                     if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -4056,7 +4057,7 @@ namespace {
                 // pos editor
                 {
                     glm::vec3 translation = jointEl.Center.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f")) {
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = jointEl.Center;
                         to.shift = translation;
                         m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
@@ -4070,7 +4071,7 @@ namespace {
                 // rotation editor
                 {
                     glm::vec3 orientationDegrees = glm::degrees(jointEl.Center.rot);
-                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f")) {
+                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                         Ras to = jointEl.Center;
                         to.rot = glm::radians(orientationDegrees);
                         m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
