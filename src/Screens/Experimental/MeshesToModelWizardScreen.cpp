@@ -2559,6 +2559,52 @@ namespace {
             }
         }
 
+        void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        {
+            glm::mat4 baseMmtx = CalcXformMatrix(bodyEl.Xform);
+
+            float halfWidths = 1.5f * GetSphereRadius();
+            glm::vec3 scaleFactors{halfWidths, halfWidths, halfWidths};
+
+            glm::mat4 mmtx = baseMmtx * glm::scale(glm::mat4{1.0f}, glm::vec3{scaleFactors});
+
+            {
+                DrawableThing& originCube = appendOut.emplace_back();
+                originCube.id = bodyEl.ID;
+                originCube.groupId = g_BodyGroupID;
+                originCube.mesh = App::cur().meshes().getBrickMesh();
+                originCube.modelMatrix = mmtx;
+                originCube.normalMatrix = NormalMatrix(mmtx);
+                originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
+                originCube.rimColor = 0.0f;
+                originCube.maybeDiffuseTex = nullptr;
+            }
+
+            // stretch origin cube for legs
+            for (int i = 0; i < 3; ++i) {
+                Segment coneLine{glm::vec3{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+                Segment outputLine{};
+                outputLine.p1[i] = halfWidths;
+                outputLine.p2[i] = 1.75f * halfWidths;
+
+                glm::mat4 xform = SegmentToSegmentXform(coneLine, outputLine);
+                xform = baseMmtx * xform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
+
+                glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                color[i] = 1.0f;
+
+                DrawableThing& legCube = appendOut.emplace_back();
+                legCube.id = bodyEl.ID;
+                legCube.groupId = g_BodyGroupID;
+                legCube.mesh = App::cur().meshes().getConeMesh();
+                legCube.modelMatrix = xform;
+                legCube.normalMatrix = NormalMatrix(xform);
+                legCube.color = color;
+                legCube.rimColor = 0.0f;
+                legCube.maybeDiffuseTex = nullptr;
+            }
+        }
+
         void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
             AppendAsFrame(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
@@ -4078,137 +4124,6 @@ namespace {
             ImGui::Unindent();
         }
 
-        void DrawSidebar()
-        {
-            ImGui::Text("Actions");
-            ImGui::Indent();
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-            if (ImGui::Button(ICON_FA_PLUS "Add Mesh(es)")) {
-                m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button(ICON_FA_PLUS "Add Body")) {
-                m_Shared->AddBody({0.0f, 0.0f, 0.0f});
-            }
-            ImGui::PopStyleColor();
-            ImGui::Unindent();
-
-            ImGui::Text("Scaling");
-            ImGui::Indent();
-            {
-                float sf = m_Shared->GetSceneScaleFactor();
-                if (ImGui::InputFloat("scale factor", &sf)) {
-                    m_Shared->SetSceneScaleFactor(sf);
-                }
-            }
-            ImGui::Unindent();
-
-            int imguiID = 0;
-
-            // color editors
-            ImGui::Text("Colors");
-
-            ImGui::Indent();
-            {
-                nonstd::span<glm::vec4 const> colors = m_Shared->GetColors();
-                nonstd::span<char const* const> labels = m_Shared->GetColorLabels();
-                OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
-
-                for (size_t i = 0; i < colors.size(); ++i) {
-                    glm::vec4 colorVal = colors[i];
-                    ImGui::PushID(imguiID++);
-                    if (ImGui::ColorEdit4(labels[i], glm::value_ptr(colorVal))) {
-                        m_Shared->SetColor(i, colorVal);
-                    }
-                    ImGui::PopID();
-                }
-            }
-            ImGui::Unindent();
-
-            // visibility editors
-            ImGui::Text("Visibility");
-            ImGui::Indent();
-            {
-                nonstd::span<bool const> visibilities = m_Shared->GetVisibilityFlags();
-                nonstd::span<char const* const> labels = m_Shared->GetVisibilityFlagLabels();
-                OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
-
-                for (size_t i = 0; i < visibilities.size(); ++i) {
-                    bool v = visibilities[i];
-                    ImGui::PushID(imguiID++);
-                    if (ImGui::Checkbox(labels[i], &v)) {
-                        m_Shared->SetVisibilityFlag(i, v);
-                    }
-                    ImGui::PopID();
-                }
-            }
-            ImGui::Unindent();
-
-            // lock editors
-            ImGui::Text("Locking");
-            ImGui::Indent();
-            {
-                nonstd::span<bool const> interactables = m_Shared->GetIneractivityFlags();
-                nonstd::span<char const* const> labels =  m_Shared->GetInteractivityFlagLabels();
-                OSC_ASSERT(interactables.size() == labels.size());
-
-                for (size_t i = 0; i < interactables.size(); ++i) {
-                    bool v = interactables[i];
-                    ImGui::PushID(imguiID++);
-                    if (ImGui::Checkbox(labels[i], &v)) {
-                        m_Shared->SetInteractivityFlag(i, v);
-                    }
-                    ImGui::PopID();
-                }
-            }
-            ImGui::Unindent();
-
-            // switch between grab, rotate, scale
-            ImGui::Text("Manipulation Mode");
-            ImGui::Indent();
-            {
-                if (ImGui::RadioButton("translate", m_ImGuizmoState.op == ImGuizmo::TRANSLATE)) {
-                    m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::RadioButton("rotate", m_ImGuizmoState.op == ImGuizmo::ROTATE)) {
-                    m_ImGuizmoState.op = ImGuizmo::ROTATE;
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::RadioButton("scale", m_ImGuizmoState.op == ImGuizmo::SCALE)) {
-                    m_ImGuizmoState.op = ImGuizmo::SCALE;
-                }
-            }
-            ImGui::Unindent();
-
-            // switch between global and local manipulations
-            ImGui::Text("Manipulation coordinate system");
-            ImGui::Indent();
-            {
-                if (ImGui::RadioButton("local", m_ImGuizmoState.mode == ImGuizmo::LOCAL)) {
-                    m_ImGuizmoState.mode = ImGuizmo::LOCAL;
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::RadioButton("global", m_ImGuizmoState.mode == ImGuizmo::WORLD)) {
-                    m_ImGuizmoState.mode = ImGuizmo::WORLD;
-                }
-            }
-            ImGui::Unindent();
-
-            ImGui::Text("Finishing");
-            ImGui::Indent();
-            if (ImGui::Button(ICON_FA_ARROW_RIGHT " Convert to OpenSim model")) {
-                m_Shared->TryCreateOutputModel();
-            }
-            ImGui::Unindent();
-        }
-
         void Draw3DViewerOverlay()
         {
             int imguiID = 0;
@@ -4665,7 +4580,7 @@ namespace {
 
             if (m_Shared->IsShowingBodies()) {
                 for (auto const& [bodyID, bodyEl] : m_Shared->GetModelGraph().GetBodies()) {
-                    m_Shared->AppendBodyElAsFrame(bodyEl, m_DrawablesBuffer);
+                    m_Shared->AppendBodyElAsCubeThing(bodyEl, m_DrawablesBuffer);
                 }
             }
 
@@ -4769,13 +4684,6 @@ namespace {
             }
 
             ImGuizmo::BeginFrame();
-
-            /* TODO: nuke it
-            if (ImGui::Begin("wizardstep2sidebar")) {
-                DrawSidebar();
-            }
-            ImGui::End();
-            */
 
             if (ImGui::Begin("history")) {
                 DrawHistory();

@@ -534,6 +534,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::Uniform(basicShader.uLightDir, impl.lightDir);
             gl::Uniform(basicShader.uLightColor, impl.lightCol);
             gl::Uniform(basicShader.uViewPos, viewerPos);
+            gl::Uniform(basicShader.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
             gl::Uniform(basicShader.uIsTextured, true);
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(impl.chequerTex);
