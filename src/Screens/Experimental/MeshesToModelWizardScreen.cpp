@@ -2559,24 +2559,31 @@ namespace {
             }
         }
 
-        void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        void AppendAsCubeThing(UID logicalID,
+                               UID groupID,
+                               Ras const& xform,
+                               std::vector<DrawableThing>& appendOut,
+                               float alpha = 1.0f,
+                               float rimAlpha = 0.0f,
+                               glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
+                               glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
         {
-            glm::mat4 baseMmtx = CalcXformMatrix(bodyEl.Xform);
+            glm::mat4 baseMmtx = CalcXformMatrix(xform);
 
             float halfWidths = 1.5f * GetSphereRadius();
-            glm::vec3 scaleFactors{halfWidths, halfWidths, halfWidths};
+            glm::vec3 scaleFactors = halfWidths * glm::vec3{1.0f, 1.0f, 1.0f};
 
             glm::mat4 mmtx = baseMmtx * glm::scale(glm::mat4{1.0f}, glm::vec3{scaleFactors});
 
             {
                 DrawableThing& originCube = appendOut.emplace_back();
-                originCube.id = bodyEl.ID;
-                originCube.groupId = g_BodyGroupID;
+                originCube.id = logicalID;
+                originCube.groupId = groupID;
                 originCube.mesh = App::cur().meshes().getBrickMesh();
                 originCube.modelMatrix = mmtx;
                 originCube.normalMatrix = NormalMatrix(mmtx);
-                originCube.color = glm::vec4{1.0f, 1.0f, 1.0f, 1.0f};
-                originCube.rimColor = 0.0f;
+                originCube.color = glm::vec4{coreColor, alpha};
+                originCube.rimColor = rimAlpha;
                 originCube.maybeDiffuseTex = nullptr;
             }
 
@@ -2585,24 +2592,29 @@ namespace {
                 Segment coneLine{glm::vec3{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
                 Segment outputLine{};
                 outputLine.p1[i] = halfWidths;
-                outputLine.p2[i] = 1.75f * halfWidths;
+                outputLine.p2[i] = 1.75f * halfWidths * legLen[i];
 
                 glm::mat4 xform = SegmentToSegmentXform(coneLine, outputLine);
                 xform = baseMmtx * xform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
 
-                glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+                glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
 
                 DrawableThing& legCube = appendOut.emplace_back();
-                legCube.id = bodyEl.ID;
-                legCube.groupId = g_BodyGroupID;
+                legCube.id = logicalID;
+                legCube.groupId = groupID;
                 legCube.mesh = App::cur().meshes().getConeMesh();
                 legCube.modelMatrix = xform;
                 legCube.normalMatrix = NormalMatrix(xform);
                 legCube.color = color;
-                legCube.rimColor = 0.0f;
+                legCube.rimColor = rimAlpha;
                 legCube.maybeDiffuseTex = nullptr;
             }
+        }
+
+        void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        {
+            AppendAsCubeThing(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
         }
 
         void AppendBodyElAsFrame(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
@@ -3192,7 +3204,7 @@ namespace {
                 float alpha = isSelectable ? 1.0f : 0.2f;
                 float rimAlpha = bodyID == m_MaybeHover.ID ? 0.8f: 0.0f;
 
-                m_Shared->AppendAsFrame(id, groupId, bodyEl.Xform, m_DrawablesBuffer, alpha, rimAlpha);
+                m_Shared->AppendAsCubeThing(id, groupId, bodyEl.Xform, m_DrawablesBuffer, alpha, rimAlpha);
             }
 
             // joints
@@ -3638,22 +3650,43 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("add body at click location")) {
-                    m_Shared->AddBody(clickPos);
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, clickPos});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
+                    }
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
                 }
 
                 if (ImGui::MenuItem("add body at mesh origin")) {
-                    m_Shared->AddBody(meshEl.Xform.shift);
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, meshEl.Xform.shift});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
+                    }
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
                 }
 
                 if (ImGui::MenuItem("add body at mesh bounds center")) {
-                    m_Shared->AddBody(CalcBoundsCenter(meshEl));
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, CalcBoundsCenter(meshEl)});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
+                    }
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
                 }
 
                 if (ImGui::MenuItem("assign to body")) {
                     TransitionToAssigningMeshNextFrame(meshEl);
                 }
 
-                if (ImGui::MenuItem("unassign from body", NULL, false, meshEl.Attachment != g_EmptyID)) {
+                if (ImGui::MenuItem("unassign from body", NULL, false, !(meshEl.Attachment == g_EmptyID || meshEl.Attachment == g_GroundID))) {
                     m_Shared->UnassignMesh(meshEl);
                 }
 
@@ -3661,6 +3694,7 @@ namespace {
                     std::string name = meshEl.Name;
                     DeleteEl(meshEl.ID);
                     m_Shared->CommitCurrentModelGraph("deleted " + name);
+                    m_MaybeOpenedContextMenu.reset();
                     ImGui::EndPopup();
                     return;
                 }
