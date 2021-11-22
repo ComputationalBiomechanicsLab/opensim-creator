@@ -3682,7 +3682,7 @@ namespace {
 
                 ImGui::EndPopup();
 
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN)) {
+                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
                     m_MaybeOpenedContextMenu.reset();
                 }
             }
@@ -3716,7 +3716,7 @@ namespace {
                 // pos editor
                 {
                     glm::vec3 translation = meshEl.Xform.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), "%.3f")) {
                         Ras to = meshEl.Xform;
                         to.shift = translation;
                         m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
@@ -3732,7 +3732,7 @@ namespace {
                 // rotation editor
                 {
                     glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
-                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), "%.3f")) {
                         Ras to = meshEl.Xform;
                         to.rot = glm::radians(orientationDegrees);
                         m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
@@ -3744,7 +3744,7 @@ namespace {
                 // scale factor editor
                 {
                     glm::vec3 scaleFactors = meshEl.ScaleFactors;
-                    if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), "%.3f")) {
                         m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
                     }
                     if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3815,7 +3815,7 @@ namespace {
 
                 ImGui::EndPopup();
 
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN)) {
+                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
                     m_MaybeOpenedContextMenu.reset();
                 }
             }
@@ -4107,7 +4107,7 @@ namespace {
 
                 ImGui::EndPopup();
 
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN)) {
+                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
                     m_MaybeOpenedContextMenu.reset();
                 }
             }
