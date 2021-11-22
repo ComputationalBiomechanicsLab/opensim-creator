@@ -1,7 +1,7 @@
 #include "PropertyEditors.hpp"
 
 #include "src/Assertions.hpp"
-#include "src/UI/HelpMarker.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/UI/F3Editor.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>

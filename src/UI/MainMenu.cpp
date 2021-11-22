@@ -8,7 +8,7 @@
 #include "src/Screens/SplashScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
 #include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
-#include "src/UI/HelpMarker.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"

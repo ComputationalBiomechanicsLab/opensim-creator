@@ -6,7 +6,7 @@
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
-#include "src/UI/HelpMarker.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"

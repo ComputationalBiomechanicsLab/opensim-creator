@@ -1,8 +1,8 @@
 #include "CoordinateEditor.hpp"
 
-#include "src/UI/HelpMarker.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>

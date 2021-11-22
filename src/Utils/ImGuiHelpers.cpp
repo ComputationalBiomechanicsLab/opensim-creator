@@ -164,3 +164,17 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
         dd->AddText(p2 - ts/2.0f, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f}), labels[i]);
     }
 }
+
+// draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
+void osc::DrawHelpMarker(char const* header, char const* desc)
+{
+    ImGui::TextDisabled("(?)");
+    DrawTooltipIfItemHovered(header, desc);
+}
+
+// draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
+void osc::DrawHelpMarker(char const* desc)
+{
+    ImGui::TextDisabled("(?)");
+    DrawTooltipIfItemHovered(desc);
+}

@@ -1,7 +1,7 @@
 #include "FdParamsEditorPopup.hpp"
 
 #include "src/OpenSimBindings/Simulation.hpp"
-#include "src/UI/HelpMarker.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 
 #include <imgui.h>
 

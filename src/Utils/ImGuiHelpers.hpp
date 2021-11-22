@@ -47,4 +47,10 @@ namespace osc {
 
     // draw overlay axes in bottom-right of screenspace rect
     void DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect);
+
+    // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
+    void DrawHelpMarker(char const* header, char const* desc);
+
+    // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
+    void DrawHelpMarker(char const* desc);
 }

@@ -262,8 +262,6 @@ add_executable(osc
     src/UI/F3Editor.hpp
     src/UI/FdParamsEditorPopup.cpp
     src/UI/FdParamsEditorPopup.hpp
-    src/UI/HelpMarker.cpp
-    src/UI/HelpMarker.hpp
     src/UI/LogViewer.cpp
     src/UI/LogViewer.hpp
     src/UI/MainMenu.cpp
