@@ -17,6 +17,7 @@
 #include "src/SimTKBindings/SimTKLoadMesh.hpp"
 #include "src/SimTKBindings/SimTKConverters.hpp"
 #include "src/UI/MainMenu.hpp"
+#include "src/UI/LogViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
@@ -2427,8 +2428,6 @@ namespace {
         bool IsGroundInteractable() const { return m_InteractivityFlags.Ground; }
         void SetIsGroundInteractable(bool newIsInteractable) { m_InteractivityFlags.Ground = newIsInteractable; }
 
-
-
         float GetSceneScaleFactor() const { return m_SceneScaleFactor; }
         void SetSceneScaleFactor(float newScaleFactor) { m_SceneScaleFactor = newScaleFactor; }
 
@@ -2806,7 +2805,6 @@ namespace {
         };
         static_assert(sizeof(decltype(m_VisibilityFlags))/sizeof(bool) == g_VisibilityFlagNames.size());
 
-
         // LOCKING
         //
         // these are runtime-editable flags that dictate what gets hit-tested
@@ -2824,6 +2822,24 @@ namespace {
         };
         static_assert(sizeof(decltype(m_InteractivityFlags))/sizeof(bool) == g_InteractivityFlagNames.size());
 
+    public:
+        // WINDOWS
+        //
+        // these are runtime-editable flags that dictate which panels are open
+        std::array<bool, 3> m_PanelStates{false, true, true};
+        static constexpr std::array<char const*, 3> g_OpenedPanelNames = {
+            "History",
+            "Hierarchy",
+            "Log",
+        };
+        enum PanelIndex_ {
+            PanelIndex_History = 0,
+            PanelIndex_Hierarchy,
+            PanelIndex_Log,
+            PanelIndex_COUNT,
+        };
+        LogViewer m_Logviewer;
+    private:
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)
@@ -4810,6 +4826,15 @@ namespace {
                     ImGui::EndMenu();
                 }
 
+                if (ImGui::BeginMenu("Window")) {
+                    for (int i = 0; i < SharedData::PanelIndex_COUNT; ++i) {
+                        if (ImGui::MenuItem(SharedData::g_OpenedPanelNames[i], nullptr, m_Shared->m_PanelStates[i])) {
+                            m_Shared->m_PanelStates[i] = !m_Shared->m_PanelStates[i];
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
                 MainMenuAboutTab{}.draw();
 
                 ImGui::EndMainMenuBar();
@@ -4817,16 +4842,27 @@ namespace {
 
             ImGuizmo::BeginFrame();
 
-            if (ImGui::Begin("history")) {
-                DrawHistory();
+            if (m_Shared->m_PanelStates[SharedData::PanelIndex_History]) {
+                if (ImGui::Begin("history", &m_Shared->m_PanelStates[SharedData::PanelIndex_History])) {
+                    DrawHistory();
+                }
+                ImGui::End();
             }
-            ImGui::End();
 
-            if (ImGui::Begin("hierarchy")) {
-                DrawHierarchy();
-                DrawContextMenu();
+            if (m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy]) {
+                if (ImGui::Begin("hierarchy", &m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy])) {
+                    DrawHierarchy();
+                    DrawContextMenu();
+                }
+                ImGui::End();
             }
-            ImGui::End();
+
+            if (m_Shared->m_PanelStates[SharedData::PanelIndex_Log]) {
+                if (ImGui::Begin("log", &m_Shared->m_PanelStates[SharedData::PanelIndex_Log])) {
+                    m_Shared->m_Logviewer.draw();
+                }
+                ImGui::End();
+            }
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
             if (ImGui::Begin("wizardsstep2viewer")) {
