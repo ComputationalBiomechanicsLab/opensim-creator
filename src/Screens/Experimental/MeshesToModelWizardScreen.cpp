@@ -2828,7 +2828,7 @@ namespace {
         // WINDOWS
         //
         // these are runtime-editable flags that dictate which panels are open
-        std::array<bool, 3> m_PanelStates{false, true, true};
+        std::array<bool, 3> m_PanelStates{false, true, false};
         static constexpr std::array<char const*, 3> g_OpenedPanelNames = {
             "History",
             "Hierarchy",
