@@ -2168,8 +2168,8 @@ namespace {
         void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
         {
             // triangle indicating connection directionality
-            constexpr float lineWidth = 2.0f;
-            constexpr float triangleWidth = 5.0f * lineWidth;
+            constexpr float lineWidth = 1.0f;
+            constexpr float triangleWidth = 6.0f * lineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
             // the line
@@ -2224,10 +2224,6 @@ namespace {
             }
         }
 
-        void DrawConnectionLines() const
-        {
-            DrawConnectionLines(m_Colors.FaintConnection);
-        }
 
         void DrawConnectionLines(ImVec4 colorVec, UID excludeID = g_EmptyID) const
         {
@@ -2272,6 +2268,12 @@ namespace {
                 }
             }
         }
+
+        void DrawConnectionLines() const
+        {
+            DrawConnectionLines(m_Colors.FaintConnection);
+        }
+
 
         void SetContentRegionAvailAsSceneRect()
         {
