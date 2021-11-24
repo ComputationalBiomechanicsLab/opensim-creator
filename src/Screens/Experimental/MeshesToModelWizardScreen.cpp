@@ -1907,8 +1907,8 @@ namespace {
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(eds.uRimRgba,  glm::vec4{0.4f, 0.4f, 0.4f, 0.65f});
-            gl::Uniform(eds.uRimThickness, 1.0f / VecLongestDimVal(dims));
+            gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
+            gl::Uniform(eds.uRimThickness, 1.5f / VecLongestDimVal(dims));
             auto quadMesh = App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_BLEND);
@@ -2344,7 +2344,6 @@ namespace {
         glm::vec4 const& GetColorUnassignedMesh() const { return m_Colors.UnassignedMesh; }
         void GetColorUnassignedMesh(glm::vec4 const& newColor) { m_Colors.UnassignedMesh = newColor; }
 
-        glm::vec4 const& GetColorBody() const { return m_Colors.Body; }
         glm::vec4 const& GetColorGround() const { return m_Colors.Ground; }
 
         glm::vec4 const& GetColorSolidConnectionLine() const { return m_Colors.SolidConnection; }
@@ -2352,9 +2351,6 @@ namespace {
 
         glm::vec4 const& GetColorTransparentFaintConnectionLine() const { return m_Colors.TransparentFaintConnection; }
         void SetColorTransparentFaintConnectionLine(glm::vec4 const& newColor) { m_Colors.TransparentFaintConnection = newColor; }
-
-        glm::vec4 const& GetColorJointFrameCore() const { return m_Colors.JointFrameCore; }
-        void SetColorJointFrameCore(glm::vec4 const& newColor) { m_Colors.JointFrameCore = newColor; }
 
 
 
@@ -2452,12 +2448,12 @@ namespace {
             DrawableThing dt;
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
-            dt.mesh = m_FloorMesh;
-            dt.modelMatrix = GetFloorModelMtx();
+            dt.mesh = App::meshes().get100x100GridMesh();// m_FloorMesh;
+            dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
             dt.normalMatrix = NormalMatrix(dt.modelMatrix);
             dt.color = m_Colors.FloorTint;
             dt.rimColor = 0.0f;
-            dt.maybeDiffuseTex = m_FloorChequerTex;
+            dt.maybeDiffuseTex = nullptr;//m_FloorChequerTex;
             return dt;
         }
 
@@ -2758,25 +2754,21 @@ namespace {
         struct {
             glm::vec4 Mesh{1.0f, 1.0f, 1.0f, 1.0f};
             glm::vec4 UnassignedMesh{1.0f, 0.95f, 0.95, 1.0f};
-            glm::vec4 Ground{0.0f, 0.0f, 0.0f, 1.0f};
-            glm::vec4 Body{0.0f, 0.0f, 0.0f, 1.0f};
+            glm::vec4 Ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
             glm::vec4 FaintConnection{0.6f, 0.6f, 0.6f, 1.0f};
-            glm::vec4 SolidConnection{0.0f, 0.0f, 0.0f, 1.0f};
-            glm::vec4 TransparentFaintConnection{0.0f, 0.0f, 0.0f, 0.2f};
-            glm::vec4 SceneBackground{0.89f, 0.89f, 0.89f, 1.0f};
-            glm::vec4 JointFrameCore{0.8f, 0.8f, 0.8f, 1.0f};
-            glm::vec4 FloorTint{1.0f, 1.0f, 1.0f, 0.4f};
+            glm::vec4 SolidConnection{0.9f, 0.9f, 0.9f, 1.0f};
+            glm::vec4 TransparentFaintConnection{0.6f, 0.6f, 0.6f, 0.2f};
+            glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
+            glm::vec4 FloorTint{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
         } m_Colors;
-        static constexpr std::array<char const*, 10> g_ColorNames = {
+        static constexpr std::array<char const*, 8> g_ColorNames = {
             "mesh",
             "unassigned mesh",
             "ground",
-            "body",
             "faint connection line",
             "solid connection line",
             "transparent faint connection line",
             "scene background",
-            "joint frame core",
             "floor tint",
         };
         static_assert(sizeof(decltype(m_Colors))/sizeof(glm::vec4) == g_ColorNames.size());
@@ -3249,14 +3241,14 @@ namespace {
                 float rimAlpha = jointID == m_MaybeHover.ID ? 0.8f : 0.0f;
                 glm::vec3 axisLengths = GetJointAxisLengths(jointEl);
 
-                m_Shared->AppendAsFrame(id, groupId, jointEl.Center, m_DrawablesBuffer, alpha, rimAlpha, axisLengths, m_Shared->GetColorJointFrameCore());
+                m_Shared->AppendAsFrame(id, groupId, jointEl.Center, m_DrawablesBuffer, alpha, rimAlpha, axisLengths);
             }
 
             // ground
             {
                 bool isSelectable = g_GroundID != m_Options.MaybeElAttachingTo && m_Options.CanChooseGround;
 
-                DrawableThing& d = m_DrawablesBuffer.emplace_back(m_Shared->GenerateGroundSphere({0.0f, 0.0f, 0.0f, 1.0f}));
+                DrawableThing& d = m_DrawablesBuffer.emplace_back(m_Shared->GenerateGroundSphere(m_Shared->GetColorGround()));
                 d.id = isSelectable ? g_GroundID : g_EmptyID;
                 d.groupId = isSelectable ? g_GroundGroupID : g_EmptyID;
                 d.color.a = isSelectable ? 1.0f : 0.2f;
@@ -3563,7 +3555,9 @@ namespace {
                 glm::vec3 parentPos = shared->GetModelGraph().GetShiftInGround(parentID);
                 glm::vec3 childPos = shared->GetModelGraph().GetShiftInGround(childID);
                 glm::vec3 midPoint = (parentPos + childPos) / 2.0f;
-                shared->UpdModelGraph().AddJoint(freejointIdx, "", parentID, childID, Ras{{}, midPoint});
+                auto jointID = shared->UpdModelGraph().AddJoint(freejointIdx, "", parentID, childID, Ras{{}, midPoint});
+                shared->UpdModelGraph().DeSelectAll();
+                shared->UpdModelGraph().Select(jointID);
                 shared->CommitCurrentModelGraph("added joint");
                 return CreateStandardState(shared);
             };
@@ -4420,14 +4414,9 @@ namespace {
 
                 float sf = m_Shared->GetSceneScaleFactor();
                 ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);
-                if (ImGui::InputFloat("##", &sf)) {
+                if (ImGui::InputFloat("scene scale factor", &sf)) {
                     m_Shared->SetSceneScaleFactor(sf);
                 }
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
-                ImGui::SameLine();
-                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f}));
-                ImGui::Text("Scene Scale Factor");
-                ImGui::PopStyleColor();
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
             }
 
@@ -4482,13 +4471,49 @@ namespace {
 
                 ImGui::SameLine();
 
+                if (ImGui::Button("X")) {
+                    m_Shared->UpdCamera().theta = fpi2;
+                    m_Shared->UpdCamera().phi = 0.0f;
+                }
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_Shared->UpdCamera().theta = -fpi2;
+                    m_Shared->UpdCamera().phi = 0.0f;
+                }
+                DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Y")) {
+                    m_Shared->UpdCamera().theta = 0.0f;
+                    m_Shared->UpdCamera().phi = fpi2;
+                }
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_Shared->UpdCamera().theta = 0.0f;
+                    m_Shared->UpdCamera().phi = -fpi2;
+                }
+                DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Z")) {
+                    m_Shared->UpdCamera().theta = 0.0f;
+                    m_Shared->UpdCamera().phi = 0.0f;
+                }
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                    m_Shared->UpdCamera().theta = fpi;
+                    m_Shared->UpdCamera().phi = 0.0f;
+                }
+                DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
+
+                ImGui::SameLine();
+
                 if (ImGui::Button(ICON_FA_CAMERA)) {
                     m_Shared->UpdCamera().reset();
                     m_Shared->UpdCamera().phi = fpi4;
                     m_Shared->UpdCamera().theta = fpi4;
                     m_Shared->UpdCamera().radius = 5.0f;
                 }
-                DrawTooltipIfItemHovered("Reset camera");
+                DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
             }
 
             // bottom-right "finish" button
@@ -4496,7 +4521,7 @@ namespace {
                 char const* const text = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
 
                 glm::vec2 framePad = {10.0f, 10.0f};
-                glm::vec2 margin = {25.0f, 25.0f};
+                glm::vec2 margin = {25.0f, 35.0f};
                 Rect sceneRect = m_Shared->Get3DSceneRect();
                 glm::vec2 textDims = ImGui::CalcTextSize(text);
 
@@ -4748,7 +4773,7 @@ namespace {
 
             if (m_Shared->IsShowingJointCenters()) {
                 for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
-                    m_Shared->AppendAsFrame(jointID, g_JointGroupID, jointEl.Center, m_DrawablesBuffer, 1.0f, 0.0f, GetJointAxisLengths(jointEl), m_Shared->GetColorJointFrameCore());
+                    m_Shared->AppendAsFrame(jointID, g_JointGroupID, jointEl.Center, m_DrawablesBuffer, 1.0f, 0.0f, GetJointAxisLengths(jointEl));
                 }
             }
 

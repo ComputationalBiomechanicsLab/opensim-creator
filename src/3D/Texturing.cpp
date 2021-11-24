@@ -125,7 +125,7 @@ gl::Texture2D osc::genChequeredFloorTexture() {
 
     struct Rgb { unsigned char r, g, b; };
     constexpr Rgb on_color = {0xff, 0xff, 0xff};
-    constexpr Rgb off_color = {0xf5, 0xf5, 0xf5};
+    constexpr Rgb off_color = {0xf3, 0xf3, 0xf3};
 
     std::array<Rgb, w * h> pixels;
     for (size_t row = 0; row < h; ++row) {

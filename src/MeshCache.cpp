@@ -21,7 +21,7 @@ struct osc::MeshCache::Impl final {
         rv->scaleTexCoords(200.0f);
         return rv;
     }();
-    std::shared_ptr<Mesh> grid100x100 = std::make_shared<Mesh>(GenNbyNGrid(100));
+    std::shared_ptr<Mesh> grid100x100 = std::make_shared<Mesh>(GenNbyNGrid(1000));
     std::shared_ptr<Mesh> cubeWire = std::make_shared<Mesh>(GenCubeLines());
     std::shared_ptr<Mesh> yLine = std::make_shared<Mesh>(GenYLine());
     std::shared_ptr<Mesh> texturedQuad = std::make_shared<Mesh>(GenTexturedQuad());

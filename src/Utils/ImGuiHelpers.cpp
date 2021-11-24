@@ -134,7 +134,7 @@ void osc::DrawTooltipIfItemHovered(char const* header, char const* description) 
 
 void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect const& renderRect)
 {
-    ImDrawList* dd = ImGui::GetForegroundDrawList();
+    ImDrawList* dd = ImGui::GetWindowDrawList();
 
     constexpr float linelen = 35.0f;
     float fontSize = ImGui::GetFontSize();
@@ -155,8 +155,8 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
         glm::vec2 p1 = origin;
         glm::vec2 p2 = origin + linelen*view;
 
-        glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
-        color[i] = 1.0f;
+        glm::vec4 color = {0.2f, 0.2f, 0.2f, 1.0f};
+        color[i] = 0.7f;
         ImVec4 col{color.x, color.y, color.z, color.a};
         dd->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32(col), 3.0f);
         dd->AddCircleFilled(p2, circleRadius, ImGui::ColorConvertFloat4ToU32(col));

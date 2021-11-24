@@ -18,9 +18,9 @@ static char g_VertexShader[] = R"(
     out vec4 GouraudBrightness;
     out vec2 TexCoord;
 
-    const float ambientStrength = 0.8;
-    const float diffuseStrength = 0.3;
-    const float specularStrength = 0.1;
+    const float ambientStrength = 0.7f;
+    const float diffuseStrength = 0.3f;
+    const float specularStrength = 0.1f;
     const float shininess = 32;
 
     void main() {
