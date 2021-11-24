@@ -111,6 +111,21 @@ namespace {
         glm::mat3 comp = bm * am;
         return MatToEulerAngles(comp);
     }
+
+    float easeOutElastic(float x)
+    {
+        constexpr float c4 = 2.0f*fpi / 3.0f;
+
+        if (x == 0.0f) {
+            return 0.0f;
+        }
+
+        if (x == 1.0f) {
+            return 1.0f;
+        }
+
+        return powf(2, -10.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
+    }
 }
 
 // global ID support
@@ -2570,12 +2585,13 @@ namespace {
                                float alpha = 1.0f,
                                float rimAlpha = 0.0f,
                                glm::vec3 legLen = {1.0f, 1.0f, 1.0f},
-                               glm::vec3 coreColor = {1.0f, 1.0f, 1.0f}) const
+                               glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
+                               glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
         {
             glm::mat4 baseMmtx = CalcXformMatrix(xform);
 
             float halfWidths = 1.5f * GetSphereRadius();
-            glm::vec3 scaleFactors = halfWidths * glm::vec3{1.0f, 1.0f, 1.0f};
+            glm::vec3 scaleFactors = halfWidths * sfs;
 
             glm::mat4 mmtx = baseMmtx * glm::scale(glm::mat4{1.0f}, glm::vec3{scaleFactors});
 
@@ -3188,6 +3204,7 @@ namespace {
             ModelGraph const& mg = m_Shared->GetModelGraph();
 
             float fadedAlpha = 0.2f;
+            float animScale = easeOutElastic(m_AnimationFraction);
 
             // meshes
             for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
@@ -3214,8 +3231,9 @@ namespace {
                 UID groupId = isSelectable ? g_BodyGroupID : g_EmptyID;
                 float alpha = isSelectable ? 1.0f : 0.2f;
                 float rimAlpha = bodyID == m_MaybeHover.ID ? 0.8f: 0.0f;
+                glm::vec3 sf = isSelectable ? glm::vec3{animScale, animScale, animScale} : glm::vec3{1.0f, 1.0f, 1.0f};
 
-                m_Shared->AppendAsCubeThing(id, groupId, bodyEl.Xform, m_DrawablesBuffer, alpha, rimAlpha);
+                m_Shared->AppendAsCubeThing(id, groupId, bodyEl.Xform, m_DrawablesBuffer, alpha, rimAlpha, sf);
             }
 
             // joints
@@ -3240,6 +3258,8 @@ namespace {
                 d.groupId = isSelectable ? g_GroundGroupID : g_EmptyID;
                 d.color.a = isSelectable ? 1.0f : 0.2f;
                 d.rimColor = g_GroundID == m_MaybeHover.ID ? 0.8f : 0.0f;
+                d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
+                d.normalMatrix = NormalMatrix(d.modelMatrix);
             }
 
             // floor
@@ -3299,6 +3319,11 @@ namespace {
             if (isRenderHovered) {
                 UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
+
+            if (m_AnimationFraction < 1.0f) {
+                m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
+                App::cur().requestRedraw();
+            }
         }
 
         void draw() override
@@ -3328,6 +3353,9 @@ namespace {
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;
+
+        // fraction that the system is through its animation cycle: ranges from 0.0 to 1.0 inclusive
+        float m_AnimationFraction = 0.0f;
     };
 
     // "standard" UI state
@@ -4906,14 +4934,14 @@ namespace {
             }
 
             if (m_Maybe3DViewerModal) {
-                ImGui::OpenPopup("lol");
+                ImGui::OpenPopup("##visualizermodalpopup");
                 ImGui::SetNextWindowSize(m_Shared->Get3DSceneDims());
                 ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-                if (ImGui::BeginPopupModal("lol", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+                if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+                    ImGui::PopStyleVar();
                     m_Maybe3DViewerModal->draw();
                     ImGui::EndPopup();
-                    ImGui::PopStyleVar();
                 } else {
                     ImGui::PopStyleVar();
                 }
