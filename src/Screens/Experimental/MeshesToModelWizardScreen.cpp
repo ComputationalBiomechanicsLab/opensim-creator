@@ -2874,31 +2874,38 @@ namespace {
 // of doing that midway by pressing ESC.
 namespace {
 
-    // base class that declares the API that each state must implement
-    class MWState {
+    class ModalHost {
     public:
-        virtual ~MWState() noexcept = default;
-        virtual std::unique_ptr<MWState> onEvent(SDL_Event const&) = 0;
-        virtual std::unique_ptr<MWState> tick(float) = 0;
-        virtual std::unique_ptr<MWState> draw() = 0;
+        virtual ~ModalHost() noexcept = default;
+        virtual void pop() = 0;
     };
 
-    // forward-declaration so that subscreens can transition to the standard top-level state
-    std::unique_ptr<MWState> CreateStandardState(std::shared_ptr<SharedData>);
+    class VisualizerModal {
+    public:
+        VisualizerModal(ModalHost& parent) : m_Parent{parent} {}
+        virtual ~VisualizerModal() noexcept = default;
 
+        virtual bool onEvent(SDL_Event const&) = 0;
+        virtual void tick(float) = 0;
+        virtual void draw() = 0;
+
+    protected:
+        ModalHost& m_Parent;
+    };
 
     // options for when the UI transitions into "choose two mesh points" mode
     struct SelectTwoMeshPointsOptions final {
-        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>, glm::vec3, glm::vec3)> OnTwoPointsChosen =
-            [](std::shared_ptr<SharedData> shared, glm::vec3, glm::vec3) { return CreateStandardState(shared); };
-        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>)> OnUserCancelled =
-                [](std::shared_ptr<SharedData> shared) { return CreateStandardState(shared); };
+        // returns true if the two points are accepted
+        std::function<bool(glm::vec3, glm::vec3)> OnTwoPointsChosen = [](glm::vec3, glm::vec3) { return true; };
         std::string Header = "choose first (left-click) and second (right click) mesh positions (ESC to cancel)";
     };
 
-    class SelectTwoMeshPointsState final : public MWState {
+    class SelectTwoMeshPointsModal final : public VisualizerModal {
     public:
-        SelectTwoMeshPointsState(std::shared_ptr<SharedData> shared, SelectTwoMeshPointsOptions options) :
+        SelectTwoMeshPointsModal(ModalHost& parent,
+                                 std::shared_ptr<SharedData> shared,
+                                 SelectTwoMeshPointsOptions options) :
+            VisualizerModal{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
         {
@@ -2916,7 +2923,9 @@ namespace {
                 return;
             }
 
-            m_MaybeNextState = m_Options.OnTwoPointsChosen(m_Shared, *m_MaybeFirstLocation, *m_MaybeSecondLocation);
+            if (m_Options.OnTwoPointsChosen(*m_MaybeFirstLocation, *m_MaybeSecondLocation)) {
+                m_Parent.pop();
+            }
         }
 
         void HandleHovertestSideEffects()
@@ -2938,6 +2947,8 @@ namespace {
 
         std::vector<DrawableThing>& GenerateDrawables()
         {
+            m_DrawablesBuffer.clear();
+
             ModelGraph const& mg = m_Shared->GetModelGraph();
 
             for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
@@ -2991,11 +3002,33 @@ namespace {
                 return;
             }
 
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, m_Options.Header.c_str());
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            ImGui::GetWindowDrawList()->AddText(m_Shared->Get3DSceneRect().p1 + glm::vec2{10.0f, 10.0f}, color, m_Options.Header.c_str());
         }
 
-        void Draw3DViewer()
+    public:
+        bool onEvent(SDL_Event const& e) override
+        {
+            return m_Shared->onEvent(e);
+        }
+
+        void tick(float dt) override
+        {
+            m_Shared->tick(dt);
+
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                // ESC: user cancelled out
+                m_Parent.pop();
+            }
+
+            bool isRenderHovered = m_Shared->IsRenderHovered();
+
+            if (isRenderHovered) {
+                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
+            }
+        }
+
+        void draw() override
         {
             m_Shared->SetContentRegionAvailAsSceneRect();
             std::vector<DrawableThing>& drawables = GenerateDrawables();
@@ -3008,54 +3041,12 @@ namespace {
             DrawHeaderText();
         }
 
-    public:
-        std::unique_ptr<MWState> onEvent(SDL_Event const& e) override
-        {
-            m_Shared->onEvent(e);
-            return std::move(m_MaybeNextState);
-        }
-
-        std::unique_ptr<MWState> tick(float dt) override
-        {
-            m_Shared->tick(dt);
-
-            if (!ImGui::GetIO().WantCaptureKeyboard && ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
-                // ESC: user cancelled out
-                m_MaybeNextState = m_Options.OnUserCancelled(m_Shared);
-            }
-
-            bool isRenderHovered = m_Shared->IsRenderHovered();
-
-            if (isRenderHovered) {
-                UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
-            }
-
-            return std::move(m_MaybeNextState);
-        }
-
-        std::unique_ptr<MWState> draw() override
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("wizardsstep2viewer")) {
-                ImGui::PopStyleVar();
-                Draw3DViewer();
-            } else {
-                ImGui::PopStyleVar();
-            }
-            ImGui::End();
-
-            return std::move(m_MaybeNextState);
-        }
-
     private:
         // data that's shared between other UI states
         std::shared_ptr<SharedData> m_Shared;
 
         // options for this state
         SelectTwoMeshPointsOptions m_Options;
-
-        // (maybe) next state to transition to
-        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
 
         // (maybe) user mouse hover
         Hover m_MaybeCurrentHover;
@@ -3070,8 +3061,6 @@ namespace {
         std::vector<DrawableThing> m_DrawablesBuffer;
     };
 
-
-
     // options for when the UI transitions into "choose something" mode
     struct ChooseSomethingOptions final {
         bool CanChooseBodies = true;
@@ -3081,10 +3070,7 @@ namespace {
         UID MaybeElAttachingTo = g_EmptyID;
         bool IsAttachingTowardEl = true;  // false implies "away from"
         UID MaybeElBeingReplacedByChoice = g_EmptyID;
-        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>, UID)> OnUserChoice =
-                [](std::shared_ptr<SharedData> shared, UID) { return CreateStandardState(shared); };
-        std::function<std::unique_ptr<MWState>(std::shared_ptr<SharedData>)> OnUserCancelled =
-                [](std::shared_ptr<SharedData> shared) { return CreateStandardState(shared); };
+        std::function<bool(UID)> OnUserChoice = [](UID) { return true; };
         std::string Header = "choose something";
     };
 
@@ -3092,9 +3078,10 @@ namespace {
     //
     // this is what's drawn when the user's being prompted to choose something
     // else in the scene
-    class ChooseSomethingMWState final : public MWState {
+    class ChooseSomethingMWState final : public VisualizerModal {
     public:
-        ChooseSomethingMWState(std::shared_ptr<SharedData> shared, ChooseSomethingOptions options) :
+        ChooseSomethingMWState(ModalHost& parent, std::shared_ptr<SharedData> shared, ChooseSomethingOptions options) :
+            VisualizerModal{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
         {
@@ -3189,8 +3176,8 @@ namespace {
                 return;
             }
 
-            ImU32 color = ImGui::ColorConvertFloat4ToU32({0.0f, 0.0f, 0.0f, 1.0f});
-            ImGui::GetWindowDrawList()->AddText({10.0f, 10.0f}, color, m_Options.Header.c_str());
+            ImU32 color = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 1.0f});
+            ImGui::GetWindowDrawList()->AddText(m_Shared->Get3DSceneRect().p1 + glm::vec2{10.0f, 10.0f}, color, m_Options.Header.c_str());
         }
 
         // generates 3D scene
@@ -3271,7 +3258,9 @@ namespace {
 
             // if user clicks on hovered element, then they are trying to select it
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                m_MaybeNextState = m_Options.OnUserChoice(m_Shared, m_MaybeHover.ID);
+                if (m_Options.OnUserChoice(m_MaybeHover.ID)) {
+                    m_Parent.pop();
+                }
             }
         }
 
@@ -3291,19 +3280,18 @@ namespace {
         }
 
     public:
-        std::unique_ptr<MWState> onEvent(SDL_Event const& e) override
+        bool onEvent(SDL_Event const& e) override
         {
-            m_Shared->onEvent(e);
-            return std::move(m_MaybeNextState);
+            return m_Shared->onEvent(e);
         }
 
-        std::unique_ptr<MWState> tick(float dt) override
+        void tick(float dt) override
         {
             m_Shared->tick(dt);
 
             if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
                 // ESC: user cancelled out
-                m_MaybeNextState = m_Options.OnUserCancelled(m_Shared);
+                m_Parent.pop();
             }
 
             bool isRenderHovered = m_Shared->IsRenderHovered();
@@ -3311,22 +3299,20 @@ namespace {
             if (isRenderHovered) {
                 UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
-
-            return std::move(m_MaybeNextState);
         }
 
-        std::unique_ptr<MWState> draw() override
+        void draw() override
         {
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("wizardsstep2viewer")) {
-                ImGui::PopStyleVar();
-                Draw3DViewer();
-            } else {
-                ImGui::PopStyleVar();
-            }
-            ImGui::End();
+            m_Shared->SetContentRegionAvailAsSceneRect();
 
-            return std::move(m_MaybeNextState);
+            std::vector<DrawableThing>& drawables = GenerateDrawables();
+
+            m_MaybeHover = m_Shared->Hovertest(drawables);
+            HandleHovertestSideEffects();
+
+            m_Shared->DrawScene(drawables);
+            DrawConnectionLines();
+            DrawHeaderText();
         }
 
 
@@ -3336,9 +3322,6 @@ namespace {
 
         // options for this state
         ChooseSomethingOptions m_Options;
-
-        // (maybe) next state to transition to
-        std::unique_ptr<MWState> m_MaybeNextState = nullptr;
 
         // (maybe) user mouse hover
         Hover m_MaybeHover;
@@ -3350,11 +3333,16 @@ namespace {
     // "standard" UI state
     //
     // this is what the user is typically interacting with when the UI loads
-    class StandardMWState final : public MWState {
+    class StandardMWState final : public ModalHost {
     public:
 
         StandardMWState(std::shared_ptr<SharedData> shared) : m_Shared{std::move(shared)}
         {
+        }
+
+        void pop() override
+        {
+            m_Maybe3DViewerModal.reset();
         }
 
         // try to select *only* what is currently hovered
@@ -3417,7 +3405,7 @@ namespace {
             opts.IsAttachingTowardEl = false;
             opts.MaybeElBeingReplacedByChoice = meshEl.Attachment;
             opts.Header = "choose mesh attachment point (ESC to cancel)";
-            opts.OnUserChoice = [meshID = meshEl.ID](std::shared_ptr<SharedData> shared, UID choice) {
+            opts.OnUserChoice = [shared = m_Shared, meshID = meshEl.ID](UID choice) {
                 if (choice == meshID || choice == g_GroundID) {
                     shared->UpdModelGraph().UnsetMeshAttachmentPoint(meshID);
                     shared->CommitCurrentModelGraph("assigned mesh to ground");
@@ -3425,11 +3413,11 @@ namespace {
                     shared->UpdModelGraph().SetMeshAttachmentPoint(meshID, DowncastID<BodyEl>(choice));
                     shared->CommitCurrentModelGraph("assigned mesh to body");
                 }
-                return CreateStandardState(shared);
+                return true;
             };
 
             // request a state transition
-            m_MaybeNextState = std::make_unique<ChooseSomethingMWState>(m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void TryTransitionToAssigningHoveredMeshNextFrame()
@@ -3550,7 +3538,7 @@ namespace {
             opts.Header = "choose joint parent (ESC to cancel)";
             opts.MaybeElAttachingTo = childID;
             opts.IsAttachingTowardEl = false;  // away from the body
-            opts.OnUserChoice = [childID](std::shared_ptr<SharedData> shared, UID parentID) {
+            opts.OnUserChoice = [shared = m_Shared, childID](UID parentID) {
                 size_t freejointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
                 glm::vec3 parentPos = shared->GetModelGraph().GetShiftInGround(parentID);
                 glm::vec3 childPos = shared->GetModelGraph().GetShiftInGround(childID);
@@ -3559,9 +3547,9 @@ namespace {
                 shared->UpdModelGraph().DeSelectAll();
                 shared->UpdModelGraph().Select(jointID);
                 shared->CommitCurrentModelGraph("added joint");
-                return CreateStandardState(shared);
+                return true;
             };
-            m_MaybeNextState = std::make_unique<ChooseSomethingMWState>(m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void DrawGroundContextMenuContent()
@@ -3840,7 +3828,7 @@ namespace {
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
             opts.Header = "choose what to point towards (ESC to cancel)";
-            opts.OnUserChoice = [bodyID, axis](std::shared_ptr<SharedData> shared, UID userChoice) {
+            opts.OnUserChoice = [shared = m_Shared, bodyID, axis](UID userChoice) {
                 glm::vec3 choicePos = shared->GetModelGraph().GetShiftInGround(userChoice);
                 glm::vec3 sourcePos = shared->GetModelGraph().GetShiftInGround(bodyID);
                 glm::vec3 choice2source = choicePos - sourcePos;
@@ -3858,9 +3846,9 @@ namespace {
                 }
 
                 shared->CommitCurrentModelGraph("reoriented body");
-                return CreateStandardState(shared);
+                return true;
             };
-            m_MaybeNextState = std::make_unique<ChooseSomethingMWState>(m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void DrawReorientMenu(BodyEl bodyEl)
@@ -3933,7 +3921,7 @@ namespace {
 
                 if (ImGui::MenuItem("Orient Z along two mesh points")) {
                     SelectTwoMeshPointsOptions opts;
-                    opts.OnTwoPointsChosen = [jointEl](std::shared_ptr<SharedData> shared, glm::vec3 a, glm::vec3 b) {
+                    opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
                         glm::vec3 aTobDir = glm::normalize(a-b);
                         glm::mat4 currentXform = CalcXformMatrix(jointEl);
                         glm::vec3 currentZ = currentXform * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
@@ -3948,10 +3936,10 @@ namespace {
                             shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
                             shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
                         }
-                        return CreateStandardState(shared);
+                        return true;
                     };
 
-                    m_MaybeNextState = std::make_unique<SelectTwoMeshPointsState>(m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_unique<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
                 }
 
                 if (ImGui::MenuItem("Rotate X 180 degrees")) {
@@ -4025,15 +4013,15 @@ namespace {
 
                 if (ImGui::MenuItem("Between two mesh points")) {
                     SelectTwoMeshPointsOptions opts;
-                    opts.OnTwoPointsChosen = [jointEl](std::shared_ptr<SharedData> shared, glm::vec3 a, glm::vec3 b) {
+                    opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
                         glm::vec3 midpoint = (a+b)/2.0f;
                         Ras newRas = {shared->GetModelGraph().GetRotationInGround(jointEl.ID), midpoint};
                         shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
                         shared->CommitCurrentModelGraph("translated " + GetLabel(jointEl));
-                        return CreateStandardState(shared);
+                        return true;
                     };
 
-                    m_MaybeNextState = std::make_unique<SelectTwoMeshPointsState>(m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_unique<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
                 }
 
                 ImGui::EndMenu();
@@ -4820,31 +4808,37 @@ namespace {
             m_Shared->DrawConnectionLines();
         }
 
-        std::unique_ptr<MWState> onEvent(SDL_Event const& e) override
+        bool onEvent(SDL_Event const& e)
         {
             if (m_Shared->onEvent(e)) {
-                return std::move(m_MaybeNextState);
+                return true;
+            }
+
+            if (m_Maybe3DViewerModal && m_Maybe3DViewerModal->onEvent(e)) {
+                return true;
             }
 
             if (UpdateFromImGuiKeyboardState()) {
-                return std::move(m_MaybeNextState);
+                return true;
             }
 
-            return std::move(m_MaybeNextState);
+            return false;
         }
 
-        std::unique_ptr<MWState> tick(float dt) override
+        void tick(float dt)
         {
             m_Shared->tick(dt);
 
-            if (m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing()) {
+            if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing()) {
                 UpdatePolarCameraFromImGuiUserInput(m_Shared->Get3DSceneDims(), m_Shared->UpdCamera());
             }
 
-            return std::move(m_MaybeNextState);
+            if (m_Maybe3DViewerModal) {
+                m_Maybe3DViewerModal->tick(dt);
+            }
         }
 
-        std::unique_ptr<MWState> draw() override
+        void draw()
         {
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
@@ -4911,19 +4905,31 @@ namespace {
                 ImGui::End();
             }
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("wizard_3dViewer")) {
-                ImGui::PopStyleVar();
-                Draw3DViewer();
-
-                ImGui::SetCursorPos(glm::vec2{ImGui::GetCursorStartPos()} + glm::vec2{10.0f, 10.0f});
-                Draw3DViewerOverlay();
+            if (m_Maybe3DViewerModal) {
+                ImGui::OpenPopup("lol");
+                ImGui::SetNextWindowSize(m_Shared->Get3DSceneDims());
+                ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+                if (ImGui::BeginPopupModal("lol", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+                    m_Maybe3DViewerModal->draw();
+                    ImGui::EndPopup();
+                    ImGui::PopStyleVar();
+                } else {
+                    ImGui::PopStyleVar();
+                }
             } else {
-                ImGui::PopStyleVar();
-            }
-            ImGui::End();
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+                if (ImGui::Begin("wizard_3dViewer")) {
+                    ImGui::PopStyleVar();
+                    Draw3DViewer();
 
-            return std::move(m_MaybeNextState);
+                    ImGui::SetCursorPos(glm::vec2{ImGui::GetCursorStartPos()} + glm::vec2{10.0f, 10.0f});
+                    Draw3DViewerOverlay();
+                } else {
+                    ImGui::PopStyleVar();
+                }
+                ImGui::End();
+            }
         }
 
     private:
@@ -4940,7 +4946,7 @@ namespace {
         Hover m_MaybeOpenedContextMenu;
 
         // (maybe) the next state the host screen should transition to
-        std::unique_ptr<MWState> m_MaybeNextState;
+        std::shared_ptr<VisualizerModal> m_Maybe3DViewerModal;
 
         // ImGuizmo state
         struct {
@@ -4952,11 +4958,6 @@ namespace {
 
         static constexpr char const* const m_ContextMenuName = "standardmodecontextmenu";
     };
-
-    std::unique_ptr<MWState> CreateStandardState(std::shared_ptr<SharedData> sd)
-    {
-        return std::make_unique<StandardMWState>(sd);
-    }
 }
 
 // top-level screen implementation
@@ -4966,12 +4967,12 @@ namespace {
 struct osc::MeshesToModelWizardScreen::Impl final {
 public:
     Impl() :
-        m_CurrentState{std::make_unique<StandardMWState>(std::make_shared<SharedData>())}
+        m_MainState{std::make_shared<SharedData>()}
     {
     }
 
     Impl(std::vector<std::filesystem::path> meshPaths) :
-        m_CurrentState{std::make_unique<StandardMWState>(std::make_shared<SharedData>(meshPaths))}
+        m_MainState{std::make_shared<SharedData>(meshPaths)}
     {
     }
 
@@ -4987,27 +4988,18 @@ public:
         App::cur().makeMainEventLoopPolling();
     }
 
-    // handle any potential new states returned by an MWState method
-    void HandleStateReturn(std::unique_ptr<MWState> maybeNewState)
-    {
-        if (maybeNewState) {
-            m_CurrentState = std::move(maybeNewState);
-            m_ShouldRequestRedraw = true;
-        }
-    }
-
     void onEvent(SDL_Event const& e)
     {
         if (osc::ImGuiOnEvent(e)) {
             m_ShouldRequestRedraw = true;
         }
 
-        HandleStateReturn(m_CurrentState->onEvent(e));
+        m_MainState.onEvent(e);
     }
 
     void tick(float dt)
     {
-        HandleStateReturn(m_CurrentState->tick(dt));
+        m_MainState.tick(dt);
     }
 
     void draw()
@@ -5023,7 +5015,7 @@ public:
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // draw current state
-        HandleStateReturn(m_CurrentState->draw());
+        m_MainState.draw();
 
         // draw ImGui
         osc::ImGuiRender();
@@ -5036,7 +5028,7 @@ public:
     }
 
 private:
-    std::unique_ptr<MWState> m_CurrentState;
+    StandardMWState m_MainState;
     bool m_ShouldRequestRedraw = false;
 };
 
