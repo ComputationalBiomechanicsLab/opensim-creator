@@ -64,6 +64,7 @@ using namespace osc;
 #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, models conventionally use meters."
 #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all Frames and points may conveniently and efficiently be expressed."
 #define OSC_MESH_DESC "Meshes are purely decorational elements in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will translate/rotate whenever the thing they are attached to translates/rotates"
+#define OSC_JOINT_DESC "Joints connect two PhysicalFrames (body/ground) together and specifies their relative permissible motion."
 #define OSC_FLOAT_INPUT_FORMAT "%.6f"
 
 // generic helpers
@@ -2224,7 +2225,6 @@ namespace {
             }
         }
 
-
         void DrawConnectionLines(ImVec4 colorVec, UID excludeID = g_EmptyID) const
         {
             ModelGraph const& mg = GetModelGraph();
@@ -2297,7 +2297,7 @@ namespace {
             DrawTextureAsImGuiImage(UpdSceneTex(), RectDims(Get3DSceneRect()));
 
             // handle hittesting, etc.
-            SetIsRenderHovered(ImGui::IsItemHovered());
+            SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
         bool IsRenderHovered() const { return m_IsRenderHovered; }
@@ -3455,13 +3455,6 @@ namespace {
             TransitionToAssigningMeshNextFrame(*maybeMesh);
         }
 
-        void OpenHoverContextMenu()
-        {
-            m_MaybeOpenedContextMenu = m_Hover ? m_Hover : Hover{g_RightClickedNothingID, {}};
-            ImGui::OpenPopup(m_ContextMenuName);
-            App::cur().requestRedraw();
-        }
-
         void DeleteSelected()
         {
             if (Contains(m_Shared->GetModelGraph().GetSelected(), m_Hover.ID)) {
@@ -3577,274 +3570,271 @@ namespace {
             m_MaybeNextState = std::make_unique<ChooseSomethingMWState>(m_Shared, opts);
         }
 
-        void DrawGroundContextMenu()
+        void DrawGroundContextMenuContent()
         {
-            if (ImGui::BeginPopup(m_ContextMenuName)) {
-                ImGui::Text("ground");
-                ImGui::SameLine();
-                ImGui::TextDisabled("(scene origin)");
-                ImGui::SameLine();
-                DrawHelpMarker("Ground", OSC_GROUND_DESC);
+            ImGui::Text("ground");
+            ImGui::SameLine();
+            ImGui::TextDisabled("(scene origin)");
+            ImGui::SameLine();
+            DrawHelpMarker("Ground", OSC_GROUND_DESC);
+            ImGui::Separator();
 
-                ImGui::Dummy({0.0f, 5.0f});
+            ImGui::Dummy({0.0f, 5.0f});
 
-                if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                    m_Shared->FocusCameraOn({});
-                }
-                if (ImGui::MenuItem(ICON_FA_CUBE " add mesh(es)")) {
-                    m_Shared->PushMeshLoadRequests(m_Shared->PromptUserForMeshFiles());
-                }
-
-                ImGui::EndPopup();
+            if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
+                m_Shared->FocusCameraOn({});
+            }
+            if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh(es)")) {
+                m_Shared->PushMeshLoadRequests(m_Shared->PromptUserForMeshFiles());
             }
         }
 
-        void DrawRightClickedNothingContextMenu()
+        void DrawNothingContextMenuContent()
         {
-            if (ImGui::BeginPopup(m_ContextMenuName)) {
-                ImGui::Text("actions");
+            ImGui::Text("actions");
+            ImGui::SameLine();
+            ImGui::TextDisabled("(nothing clicked)");
+            ImGui::Separator();
 
-                ImGui::Separator();
+            ImGui::Dummy({0.0f, 5.0f});
 
-                if (ImGui::MenuItem("import meshes")) {
+            if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes")) {
+                m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            }
+            if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other")) {
+                if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)")) {
                     m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
                 }
-                if (ImGui::MenuItem("add body")) {
+                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body")) {
                     m_Shared->AddBody({0.0f, 0.0f, 0.0f});
                 }
-                if (ImGui::MenuItem(ICON_FA_ARROW_RIGHT " convert to OpenSim model")) {
-                    m_Shared->TryCreateOutputModel();
-                }
-                ImGui::EndPopup();
+
+                ImGui::EndMenu();
             }
         }
 
-        void DrawBodyContextMenu(BodyEl bodyEl)
+        void DrawBodyContextMenuContent(BodyEl bodyEl)
         {
-            if (ImGui::BeginPopup(m_ContextMenuName)) {
-                // title
-                ImGui::Text(ICON_FA_CIRCLE" %s", bodyEl.Name.c_str());
+            // title
+            ImGui::Text(ICON_FA_CIRCLE" %s", bodyEl.Name.c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(body)");
+            ImGui::SameLine();
+            DrawHelpMarker("Body", OSC_BODY_DESC);
+            ImGui::Separator();
+
+            ImGui::Dummy({0.0f, 5.0f});
+
+            // editors
+            // name editor
+            {
+                char buf[256];
+                std::strcpy(buf, bodyEl.Name.c_str());
+                if (ImGui::InputText("name", buf, sizeof(buf))) {
+                    m_Shared->UpdModelGraph().SetBodyName(bodyEl.ID, buf);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed body name");
+                }
+            }
+            // mass editor
+            {
+                float curMass = static_cast<float>(bodyEl.Mass);
+                if (ImGui::InputFloat("mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT)) {
+                    m_Shared->UpdModelGraph().SetBodyMass(bodyEl.ID, static_cast<double>(curMass));
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed body mass");
+                }
                 ImGui::SameLine();
-                ImGui::TextDisabled("(body)");
+                DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
+            }
+            // pos editor
+            {
+                glm::vec3 translation = bodyEl.Xform.shift;
+                if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = bodyEl.Xform;
+                    to.shift = translation;
+                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed body translation");
+                }
                 ImGui::SameLine();
-                DrawHelpMarker("Body", OSC_BODY_DESC);
+                DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+            }
+            // rotation editor
+            {
+                glm::vec3 orientationDegrees = glm::degrees(bodyEl.Xform.rot);
+                if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = bodyEl.Xform;
+                    to.rot = glm::radians(orientationDegrees);
+                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("cFMehanged body orientation");
+                }
+            }
 
-                ImGui::Dummy({0.0f, 5.0f});
+            ImGui::Dummy({0.0f, 5.0f});
 
-                // editors
-                // name editor
-                {
-                    char buf[256];
-                    std::strcpy(buf, bodyEl.Name.c_str());
-                    if (ImGui::InputText("name", buf, sizeof(buf))) {
-                        m_Shared->UpdModelGraph().SetBodyName(bodyEl.ID, buf);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed body name");
-                    }
-                }
-                // mass editor
-                {
-                    float curMass = static_cast<float>(bodyEl.Mass);
-                    if (ImGui::InputFloat("mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT)) {
-                        m_Shared->UpdModelGraph().SetBodyMass(bodyEl.ID, static_cast<double>(curMass));
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed body mass");
-                    }
-                    ImGui::SameLine();
-                    DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
-                }
-                // pos editor
-                {
-                    glm::vec3 translation = bodyEl.Xform.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = bodyEl.Xform;
-                        to.shift = translation;
-                        m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed body translation");
-                    }
-                    ImGui::SameLine();
-                    DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
-                }
-                // rotation editor
-                {
-                    glm::vec3 orientationDegrees = glm::degrees(bodyEl.Xform.rot);
-                    if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = bodyEl.Xform;
-                        to.rot = glm::radians(orientationDegrees);
-                        m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("cFMehanged body orientation");
-                    }
-                }
+            // actions
+            if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
+                m_Shared->FocusCameraOn(bodyEl.Xform.shift);
+            }
+            if (ImGui::MenuItem(ICON_FA_LINK " join to")) {
+                TransitionToChoosingJointParent(bodyEl.ID);
+            }
+            DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
+            if (ImGui::MenuItem(ICON_FA_CUBE " attach mesh to this")) {
+                UIDT<BodyEl> bodyID = bodyEl.ID;
+                m_Shared->PushMeshLoadRequests(bodyID, m_Shared->PromptUserForMeshFiles());
+            }
 
-                ImGui::Dummy({0.0f, 5.0f});
+            DrawReorientMenu(bodyEl);
 
-                // actions
-                if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                    m_Shared->FocusCameraOn(bodyEl.Xform.shift);
-                }
-                if (ImGui::MenuItem(ICON_FA_LINK " join to")) {
-                    TransitionToChoosingJointParent(bodyEl.ID);
-                }
-                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
-                if (ImGui::MenuItem(ICON_FA_CUBE " attach mesh to this")) {
-                    UIDT<BodyEl> bodyID = bodyEl.ID;
-                    m_Shared->PushMeshLoadRequests(bodyID, m_Shared->PromptUserForMeshFiles());
-                }
-
-                DrawReorientMenu(bodyEl);
-
-                if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
-                    std::string name = bodyEl.Name;
-                    DeleteEl(bodyEl.ID);
-                    m_Shared->CommitCurrentModelGraph("deleted " + name);
-                    ImGui::EndPopup();
-                    return;
-                }
-
+            if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
+                std::string name = bodyEl.Name;
+                DeleteEl(bodyEl.ID);
+                m_Shared->CommitCurrentModelGraph("deleted " + name);
                 ImGui::EndPopup();
+                return;
+            }
 
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
-                    m_MaybeOpenedContextMenu.reset();
-                }
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                m_MaybeOpenedContextMenu.reset();
+                ImGui::CloseCurrentPopup();
             }
         }
 
-        void DrawMeshContextMenu(MeshEl meshEl, glm::vec3 clickPos)
+        void DrawMeshContextMenuContent(MeshEl meshEl, glm::vec3 clickPos)
         {
-            if (ImGui::BeginPopup(m_ContextMenuName)) {
-                // title
-                ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
+            // title
+            ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(mesh)");
+            ImGui::SameLine();
+            DrawHelpMarker("Mesh", OSC_MESH_DESC);
+            ImGui::Separator();
+
+            ImGui::Dummy({0.0f, 5.0f});
+
+            // editors
+            // draw name editor
+            {
+                char buf[256];
+                std::strcpy(buf, meshEl.Name.c_str());
+                ImGui::InputText("name", buf, sizeof(buf));
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->UpdModelGraph().SetMeshName(meshEl.ID, buf);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed mesh name");
+                }
+            }
+            // pos editor
+            {
+                glm::vec3 translation = meshEl.Xform.shift;
+                if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = meshEl.Xform;
+                    to.shift = translation;
+                    m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
+                }
+
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed mesh translation");
+                }
+
                 ImGui::SameLine();
-                ImGui::TextDisabled("(mesh)");
-                ImGui::SameLine();
-                DrawHelpMarker("Mesh", OSC_MESH_DESC);
-
-                ImGui::Dummy({0.0f, 5.0f});
-
-                // editors
-                // draw name editor
-                {
-                    char buf[256];
-                    std::strcpy(buf, meshEl.Name.c_str());
-                    ImGui::InputText("name", buf, sizeof(buf));
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->UpdModelGraph().SetMeshName(meshEl.ID, buf);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed mesh name");
-                    }
+                DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+            }
+            // rotation editor
+            {
+                glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
+                if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = meshEl.Xform;
+                    to.rot = glm::radians(orientationDegrees);
+                    m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
                 }
-                // pos editor
-                {
-                    glm::vec3 translation = meshEl.Xform.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = meshEl.Xform;
-                        to.shift = translation;
-                        m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
-                    }
-
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed mesh translation");
-                    }
-
-                    ImGui::SameLine();
-                    DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed mesh orientation");
                 }
-                // rotation editor
-                {
-                    glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
-                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = meshEl.Xform;
-                        to.rot = glm::radians(orientationDegrees);
-                        m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed mesh orientation");
-                    }
+            }
+            // scale factor editor
+            {
+                glm::vec3 scaleFactors = meshEl.ScaleFactors;
+                if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT)) {
+                    m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
                 }
-                // scale factor editor
-                {
-                    glm::vec3 scaleFactors = meshEl.ScaleFactors;
-                    if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT)) {
-                        m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed mesh scale factors");
+                }
+            }
+
+            // actions
+            ImGui::Dummy({0.0f, 5.0f});
+
+            if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
+                m_Shared->FocusCameraOn(meshEl.Xform.shift);
+            }
+
+            if (ImGui::BeginMenu(ICON_FA_CIRCLE " add body")) {
+                if (ImGui::MenuItem("at click location")) {
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, clickPos});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
                     }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed mesh scale factors");
-                    }
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
                 }
 
-                // actions
-                ImGui::Dummy({0.0f, 5.0f});
-
-                if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                    m_Shared->FocusCameraOn(meshEl.Xform.shift);
-                }
-
-                if (ImGui::BeginMenu(ICON_FA_CIRCLE " add body")) {
-                    if (ImGui::MenuItem("at click location")) {
-                        std::string bodyName = GenerateBodyName();
-                        UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, clickPos});
-                        m_Shared->UpdModelGraph().DeSelectAll();
-                        m_Shared->UpdModelGraph().Select(bodyID);
-                        if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
-                            m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
-                        }
-                        m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
+                if (ImGui::MenuItem("at mesh origin")) {
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, meshEl.Xform.shift});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
                     }
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
+                }
 
-                    if (ImGui::MenuItem("at mesh origin")) {
-                        std::string bodyName = GenerateBodyName();
-                        UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, meshEl.Xform.shift});
-                        m_Shared->UpdModelGraph().DeSelectAll();
-                        m_Shared->UpdModelGraph().Select(bodyID);
-                        if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
-                            m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
-                        }
-                        m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
+                if (ImGui::MenuItem("at mesh bounds center")) {
+                    std::string bodyName = GenerateBodyName();
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, CalcBoundsCenter(meshEl)});
+                    m_Shared->UpdModelGraph().DeSelectAll();
+                    m_Shared->UpdModelGraph().Select(bodyID);
+                    if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
+                        m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
                     }
-
-                    if (ImGui::MenuItem("at mesh bounds center")) {
-                        std::string bodyName = GenerateBodyName();
-                        UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, CalcBoundsCenter(meshEl)});
-                        m_Shared->UpdModelGraph().DeSelectAll();
-                        m_Shared->UpdModelGraph().Select(bodyID);
-                        if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
-                            m_Shared->UpdModelGraph().SetMeshAttachmentPoint(meshEl.ID, bodyID);
-                        }
-                        m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
-                    }
-
-                    ImGui::EndMenu();
+                    m_Shared->CommitCurrentModelGraph(std::string{"added "} + bodyName);
                 }
 
-                if (ImGui::MenuItem("assign to body")) {
-                    TransitionToAssigningMeshNextFrame(meshEl);
-                }
+                ImGui::EndMenu();
+            }
 
-                if (ImGui::MenuItem("unassign from body", NULL, false, !(meshEl.Attachment == g_EmptyID || meshEl.Attachment == g_GroundID))) {
-                    m_Shared->UnassignMesh(meshEl);
-                }
+            if (ImGui::MenuItem(ICON_FA_LINK " assign to body")) {
+                TransitionToAssigningMeshNextFrame(meshEl);
+            }
 
-                if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
-                    std::string name = meshEl.Name;
-                    DeleteEl(meshEl.ID);
-                    m_Shared->CommitCurrentModelGraph("deleted " + name);
-                    m_MaybeOpenedContextMenu.reset();
-                    ImGui::EndPopup();
-                    return;
-                }
+            if (ImGui::MenuItem(ICON_FA_UNLINK " unassign from body", NULL, false, !(meshEl.Attachment == g_EmptyID || meshEl.Attachment == g_GroundID))) {
+                m_Shared->UnassignMesh(meshEl);
+            }
 
-                ImGui::EndPopup();
+            if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
+                std::string name = meshEl.Name;
+                DeleteEl(meshEl.ID);
+                m_Shared->CommitCurrentModelGraph("deleted " + name);
+                m_MaybeOpenedContextMenu.reset();
+                ImGui::CloseCurrentPopup();
+                return;
+            }
 
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
-                    m_MaybeOpenedContextMenu.reset();
-                }
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                m_MaybeOpenedContextMenu.reset();
+                ImGui::CloseCurrentPopup();
             }
         }
 
@@ -4056,104 +4046,100 @@ namespace {
             }
         }
 
-        void DrawJointContextMenu(JointEl jointEl)
+        void DrawJointContextMenuConent(JointEl jointEl)
         {
-            if (ImGui::BeginPopup(m_ContextMenuName)) {
-                // title
-                ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
+            // title
+            ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
+            ImGui::SameLine();
+            ImGui::TextDisabled("(%s)", GetJointTypeName(jointEl).c_str());
+            ImGui::SameLine();
+            DrawHelpMarker("Joints", OSC_JOINT_DESC);
+            ImGui::Separator();
+
+            ImGui::Dummy({0.0f, 5.0f});
+
+            // editors
+            // name editor
+            {
+                char buf[256];
+                std::strcpy(buf, jointEl.UserAssignedName.c_str());
+                if (ImGui::InputText("name", buf, sizeof(buf))) {
+                    m_Shared->UpdModelGraph().SetJointName(jointEl.ID, buf);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed joint name");
+                }
+            }
+            // pos editor
+            {
+                glm::vec3 translation = jointEl.Center.shift;
+                if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = jointEl.Center;
+                    to.shift = translation;
+                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed joint translation");
+                }
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%s)", GetJointTypeName(jointEl).c_str());
-                ImGui::SameLine();
-                DrawHelpMarker("Joints", "Joints connect two PhysicalFrames (body/ground) together and specifies their relative permissible motion.");
+                DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+            }
+            // rotation editor
+            {
+                glm::vec3 orientationDegrees = glm::degrees(jointEl.Center.rot);
+                if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
+                    Ras to = jointEl.Center;
+                    to.rot = glm::radians(orientationDegrees);
+                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
+                }
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    m_Shared->CommitCurrentModelGraph("changed joint orientation");
+                }
+            }
+            // joint type editor
+            {
+                int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
+                nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
+                if (ImGui::Combo("joint type", &currentIdx, labels.data(), static_cast<int>(labels.size()))) {
+                    m_Shared->UpdModelGraph().SetJointTypeIdx(jointEl.ID, static_cast<size_t>(currentIdx));
+                    m_Shared->CommitCurrentModelGraph("changed joint type");
+                }
+            }
 
-                ImGui::Dummy({0.0f, 5.0f});
+            ImGui::Dummy({0.0f, 5.0f});
 
-                // editors
-                // name editor
-                {
-                    char buf[256];
-                    std::strcpy(buf, jointEl.UserAssignedName.c_str());
-                    if (ImGui::InputText("name", buf, sizeof(buf))) {
-                        m_Shared->UpdModelGraph().SetJointName(jointEl.ID, buf);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed joint name");
-                    }
-                }
-                // pos editor
-                {
-                    glm::vec3 translation = jointEl.Center.shift;
-                    if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = jointEl.Center;
-                        to.shift = translation;
-                        m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed joint translation");
-                    }
-                    ImGui::SameLine();
-                    DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
-                }
-                // rotation editor
-                {
-                    glm::vec3 orientationDegrees = glm::degrees(jointEl.Center.rot);
-                    if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                        Ras to = jointEl.Center;
-                        to.rot = glm::radians(orientationDegrees);
-                        m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
-                    }
-                    if (ImGui::IsItemDeactivatedAfterEdit()) {
-                        m_Shared->CommitCurrentModelGraph("changed joint orientation");
-                    }
-                }
-                // joint type editor
-                {
-                    int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
-                    nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
-                    if (ImGui::Combo("joint type", &currentIdx, labels.data(), static_cast<int>(labels.size()))) {
-                        m_Shared->UpdModelGraph().SetJointTypeIdx(jointEl.ID, static_cast<size_t>(currentIdx));
-                        m_Shared->CommitCurrentModelGraph("changed joint type");
-                    }
-                }
+            // actions
+            if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
+                m_Shared->FocusCameraOn(jointEl.Center.shift);
+            }
+            DrawReorientMenu(jointEl);
+            DrawTranslateMenu(jointEl);
+            if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
+                std::string name = GetLabel(jointEl);
+                DeleteEl(jointEl.ID);
+                m_Shared->CommitCurrentModelGraph("deleted " + name);
+                ImGui::CloseCurrentPopup();
+                return;
+            }
 
-                ImGui::Dummy({0.0f, 5.0f});
-
-                // actions
-                if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                    m_Shared->FocusCameraOn(jointEl.Center.shift);
-                }
-                DrawReorientMenu(jointEl);
-                DrawTranslateMenu(jointEl);
-                if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
-                    std::string name = GetLabel(jointEl);
-                    DeleteEl(jointEl.ID);
-                    m_Shared->CommitCurrentModelGraph("deleted " + name);
-                    ImGui::EndPopup();
-                    return;
-                }
-
-                ImGui::EndPopup();
-
-                if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
-                    m_MaybeOpenedContextMenu.reset();
-                }
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
+                m_MaybeOpenedContextMenu.reset();
+                ImGui::CloseCurrentPopup();
             }
         }
 
-        void DrawContextMenu()
+        void DrawContextMenuContent()
         {
-            if (!m_MaybeOpenedContextMenu) {
-                return;  // draw nothing
+            if (!m_MaybeOpenedContextMenu || m_MaybeOpenedContextMenu.ID == g_RightClickedNothingID) {
+                DrawNothingContextMenuContent();
             } else if (m_MaybeOpenedContextMenu.ID == g_GroundID) {
-                DrawGroundContextMenu();
-            } else if (m_MaybeOpenedContextMenu.ID == g_RightClickedNothingID) {
-                DrawRightClickedNothingContextMenu();
+                DrawGroundContextMenuContent();
             } else if (MeshEl const* meshEl = m_Shared->GetModelGraph().TryGetMeshElByID(m_MaybeOpenedContextMenu.ID)) {
-                DrawMeshContextMenu(*meshEl, m_MaybeOpenedContextMenu.Pos);
+                DrawMeshContextMenuContent(*meshEl, m_MaybeOpenedContextMenu.Pos);
             } else if (BodyEl const* bodyEl = m_Shared->GetModelGraph().TryGetBodyElByID(m_MaybeOpenedContextMenu.ID)) {
-                DrawBodyContextMenu(*bodyEl);
+                DrawBodyContextMenuContent(*bodyEl);
             } else if (JointEl const* jointEl = m_Shared->GetModelGraph().TryGetJointElByID(m_MaybeOpenedContextMenu.ID)) {
-                DrawJointContextMenu(*jointEl);
+                DrawJointContextMenuConent(*jointEl);
             }
         }
 
@@ -4174,7 +4160,10 @@ namespace {
 
         void DrawHierarchy()
         {
-            ImGui::Text("Bodies");
+            ImGui::Text(ICON_FA_CIRCLE " Bodies");
+            ImGui::SameLine();
+            DrawHelpMarker("Bodies", OSC_BODY_DESC);
+            ImGui::Dummy({0.0f, 1.0f});
             ImGui::Indent();
             for (auto const& [bodyID, bodyEl] : m_Shared->GetModelGraph().GetBodies()) {
                 int styles = 0;
@@ -4184,7 +4173,7 @@ namespace {
                     ++styles;
                 }
 
-                ImGui::Text("%s", bodyEl.Name.c_str());
+                ImGui::Text("%s", GetLabel(bodyEl).c_str());
 
                 ImGui::PopStyleColor(styles);
 
@@ -4201,13 +4190,21 @@ namespace {
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                     m_MaybeOpenedContextMenu = Hover{bodyID, {}};
-                    ImGui::OpenPopup(m_ContextMenuName);
+                    ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
+            if (m_Shared->GetModelGraph().GetBodies().empty()) {
+                ImGui::TextDisabled("(no bodies)");
+            }
             ImGui::Unindent();
 
-            ImGui::Text("Joints");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            ImGui::Text(ICON_FA_LINK " Joints");
+            ImGui::SameLine();
+            DrawHelpMarker("Joints", OSC_JOINT_DESC);
+            ImGui::Dummy({0.0f, 1.0f});
             ImGui::Indent();
             for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
                 int styles = 0;
@@ -4234,13 +4231,21 @@ namespace {
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                     m_MaybeOpenedContextMenu = Hover{jointID, {}};
-                    ImGui::OpenPopup(m_ContextMenuName);
+                    ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
+            if (m_Shared->GetModelGraph().GetJoints().empty()) {
+                ImGui::TextDisabled("(no joints)");
+            }
             ImGui::Unindent();
 
-            ImGui::Text("Meshes");
+            ImGui::Dummy({0.0f, 5.0f});
+
+            ImGui::Text(ICON_FA_CUBE " Meshes");
+            ImGui::SameLine();
+            DrawHelpMarker("Meshes", OSC_MESH_DESC);
+            ImGui::Dummy({0.0f, 1.0f});
             ImGui::Indent();
             for (auto const& [meshID, meshEl] : m_Shared->GetModelGraph().GetMeshes()) {
                 int styles = 0;
@@ -4267,11 +4272,19 @@ namespace {
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
                     m_MaybeOpenedContextMenu = Hover{meshID, {}};
-                    ImGui::OpenPopup(m_ContextMenuName);
+                    ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
+            if (m_Shared->GetModelGraph().GetMeshes().empty()) {
+                ImGui::TextDisabled("(no meshes)");
+            }
             ImGui::Unindent();
+
+            if (ImGui::BeginPopup("##maincontextmenu")) {
+                DrawContextMenuContent();
+                ImGui::EndPopup();
+            }
         }
 
         void Draw3DViewerOverlay()
@@ -4689,7 +4702,6 @@ namespace {
             }
 
             bool lcClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-            bool rcClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
             bool shiftDown = osc::IsShiftDown();
             bool altDown = osc::IsAltDown();
             bool isUsingGizmo = ImGuizmo::IsUsing();
@@ -4711,10 +4723,6 @@ namespace {
                     // NO ALT: select the "grouped items"
                     SelectAnythingGroupedWithHover();
                 }
-            } else if (rcClicked && !isUsingGizmo) {  // user can also right click nothing
-                OpenHoverContextMenu();
-            } else if (m_Hover && !ImGui::IsPopupOpen(m_ContextMenuName)) {
-                DrawHoverTooltip();
             }
         }
 
@@ -4768,6 +4776,19 @@ namespace {
 
             // draw 3D scene (effectively, as an ImGui::Image)
             m_Shared->DrawScene(sceneEls);
+            if (m_Shared->IsRenderHovered() && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing()) {
+                m_MaybeOpenedContextMenu = m_Hover;
+                ImGui::OpenPopup("##maincontextmenu");
+            }
+            bool ctxMenuShowing = false;
+            if (ImGui::BeginPopup("##maincontextmenu")) {
+                ctxMenuShowing = true;
+                DrawContextMenuContent();
+                ImGui::EndPopup();
+            }
+            if (m_Shared->IsRenderHovered() && m_Hover && (ctxMenuShowing ? m_Hover.ID != m_MaybeOpenedContextMenu.ID : true)) {
+                DrawHoverTooltip();
+            }
 
             // draw overlays/gizmos
             DrawSelection3DManipulators();
@@ -4854,7 +4875,6 @@ namespace {
             if (m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy]) {
                 if (ImGui::Begin("hierarchy", &m_Shared->m_PanelStates[SharedData::PanelIndex_Hierarchy])) {
                     DrawHierarchy();
-                    DrawContextMenu();
                 }
                 ImGui::End();
             }
@@ -4867,14 +4887,12 @@ namespace {
             }
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("wizardsstep2viewer")) {
+            if (ImGui::Begin("wizard_3dViewer")) {
                 ImGui::PopStyleVar();
                 Draw3DViewer();
 
-                ImGui::SetCursorPos({10.0f, 10.0f});
+                ImGui::SetCursorPos(glm::vec2{ImGui::GetCursorStartPos()} + glm::vec2{10.0f, 10.0f});
                 Draw3DViewerOverlay();
-
-                DrawContextMenu();
             } else {
                 ImGui::PopStyleVar();
             }
@@ -4977,7 +4995,7 @@ public:
         osc::ImGuiNewFrame();
 
         // enable panel docking
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // draw current state
         HandleStateReturn(m_CurrentState->draw());

@@ -255,7 +255,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
 
         // handle display mode (node vs leaf)
         bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
-        ImGuiTreeNodeFlags nodeFlags = isInternalNode ? 0 : ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
+        ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_None : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
         // handle coloring
         int styles = 0;
