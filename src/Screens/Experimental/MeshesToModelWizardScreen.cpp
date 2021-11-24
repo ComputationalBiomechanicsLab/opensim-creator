@@ -124,7 +124,7 @@ namespace {
             return 1.0f;
         }
 
-        return powf(2, -10.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
+        return powf(2.0f, -5.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
     }
 }
 
