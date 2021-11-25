@@ -1923,7 +1923,7 @@ namespace {
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
             gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, 1.5f / VecLongestDimVal(dims));
+            gl::Uniform(eds.uRimThickness, 1.75f / VecLongestDimVal(dims));
             auto quadMesh = App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_BLEND);
@@ -3405,9 +3405,9 @@ namespace {
             if (id == g_EmptyID) {
                 return 0.0f;
             } else if (m_Shared->IsSelected(id)) {
-                return 0.9f;
+                return 1.0f;
             } else if (IsInSelectionGroupOf(m_Shared->GetModelGraph(), m_Hover.ID, id)) {
-                return 0.4f;
+                return 0.6f;
             } else {
                 return 0.0f;
             }
@@ -4190,7 +4190,10 @@ namespace {
             for (auto const& [bodyID, bodyEl] : m_Shared->GetModelGraph().GetBodies()) {
                 int styles = 0;
 
-                if (m_Shared->IsSelected(bodyID)) {
+                if (bodyID == m_Hover.ID) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                    ++styles;
+                } else if (m_Shared->IsSelected(bodyID)) {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
@@ -4231,7 +4234,10 @@ namespace {
             for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
                 int styles = 0;
 
-                if (m_Shared->IsSelected(jointID)) {
+                if (jointID == m_Hover.ID) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                    ++styles;
+                } else if (m_Shared->IsSelected(jointID)) {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
@@ -4272,7 +4278,10 @@ namespace {
             for (auto const& [meshID, meshEl] : m_Shared->GetModelGraph().GetMeshes()) {
                 int styles = 0;
 
-                if (m_Shared->IsSelected(meshID)) {
+                if (meshID == m_Hover.ID) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                    ++styles;
+                } else if (m_Shared->IsSelected(meshID)) {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
