@@ -2614,8 +2614,8 @@ namespace {
                 outputLine.p1[i] = halfWidths;
                 outputLine.p2[i] = 1.75f * halfWidths * legLen[i];
 
-                glm::mat4 xform = SegmentToSegmentXform(coneLine, outputLine);
-                xform = baseMmtx * xform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
+                glm::mat4 segXform = SegmentToSegmentXform(coneLine, outputLine);
+                segXform = baseMmtx * segXform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
 
                 glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};
                 color[i] = 1.0f;
@@ -2624,8 +2624,8 @@ namespace {
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
                 legCube.mesh = App::cur().meshes().getConeMesh();
-                legCube.modelMatrix = xform;
-                legCube.normalMatrix = NormalMatrix(xform);
+                legCube.modelMatrix = segXform;
+                legCube.normalMatrix = NormalMatrix(segXform);
                 legCube.color = color;
                 legCube.rimColor = rimAlpha;
                 legCube.maybeDiffuseTex = nullptr;
