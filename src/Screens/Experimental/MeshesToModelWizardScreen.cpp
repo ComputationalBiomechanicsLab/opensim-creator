@@ -249,7 +249,7 @@ namespace {
 
     struct LoadedMesh final {
         std::filesystem::path Path;
-        std::shared_ptr<Mesh> Mesh;
+        std::shared_ptr<Mesh> MeshData;
     };
 
     // an OK response to a mesh loading request
@@ -2124,7 +2124,7 @@ namespace {
 
             mg.DeSelectAll();
             for (LoadedMesh const& lm : ok.Meshes) {
-                auto meshID = mg.AddMesh(lm.Mesh, ok.PreferredAttachmentPoint, lm.Path);
+                auto meshID = mg.AddMesh(lm.MeshData, ok.PreferredAttachmentPoint, lm.Path);
 
                 auto const* maybeBody = mg.TryGetBodyElByID(ok.PreferredAttachmentPoint);
                 if (maybeBody) {
