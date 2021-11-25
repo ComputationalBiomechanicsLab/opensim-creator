@@ -39,14 +39,17 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
         if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
             camera.pan(aspectRatio, delta/viewportDims);
         } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
-            camera.radius *= 1.0f + delta.y/viewportDims.y;
+            camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
         } else {
             camera.drag(delta/viewportDims);
         }
 
     } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-        camera.pan(aspectRatio, delta/viewportDims);
-
+        if (ImGui::IsKeyDown(SDL_SCANCODE_LALT) || ImGui::IsKeyDown(SDL_SCANCODE_RALT)) {
+            camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
+        } else {
+            camera.pan(aspectRatio, delta/viewportDims);
+        }
     }
 }
 
