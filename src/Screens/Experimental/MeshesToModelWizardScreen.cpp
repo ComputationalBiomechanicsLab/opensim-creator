@@ -3445,7 +3445,7 @@ namespace {
             };
 
             // request a state transition
-            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void TryTransitionToAssigningHoveredMeshNextFrame()
@@ -3589,7 +3589,7 @@ namespace {
                 shared->CommitCurrentModelGraph("added joint");
                 return true;
             };
-            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void DrawGroundContextMenuContent()
@@ -3888,7 +3888,7 @@ namespace {
                 shared->CommitCurrentModelGraph("reoriented body");
                 return true;
             };
-            m_Maybe3DViewerModal = std::make_unique<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
         }
 
         void DrawReorientMenu(BodyEl bodyEl)
@@ -3979,7 +3979,7 @@ namespace {
                         return true;
                     };
 
-                    m_Maybe3DViewerModal = std::make_unique<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_shared<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
                 }
 
                 if (ImGui::MenuItem("Rotate X 180 degrees")) {
@@ -4061,7 +4061,7 @@ namespace {
                         return true;
                     };
 
-                    m_Maybe3DViewerModal = std::make_unique<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_shared<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
                 }
 
                 ImGui::EndMenu();
@@ -4863,8 +4863,11 @@ namespace {
                 return true;
             }
 
-            if (m_Maybe3DViewerModal && m_Maybe3DViewerModal->onEvent(e)) {
-                return true;
+            if (m_Maybe3DViewerModal) {
+                auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
+                if (ptr->onEvent(e)) {
+                    return true;
+                }
             }
 
             if (UpdateFromImGuiKeyboardState()) {
@@ -4883,7 +4886,8 @@ namespace {
             }
 
             if (m_Maybe3DViewerModal) {
-                m_Maybe3DViewerModal->tick(dt);
+                auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
+                ptr->tick(dt);
             }
         }
 
@@ -4955,13 +4959,14 @@ namespace {
             }
 
             if (m_Maybe3DViewerModal) {
+                auto ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
                 ImGui::OpenPopup("##visualizermodalpopup");
                 ImGui::SetNextWindowSize(m_Shared->Get3DSceneDims());
                 ImGui::SetNextWindowPos(m_Shared->Get3DSceneRect().p1);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
                 if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
                     ImGui::PopStyleVar();
-                    m_Maybe3DViewerModal->draw();
+                    ptr->draw();
                     ImGui::EndPopup();
                 } else {
                     ImGui::PopStyleVar();
