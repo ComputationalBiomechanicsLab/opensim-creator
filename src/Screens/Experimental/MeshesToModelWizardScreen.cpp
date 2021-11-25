@@ -2750,7 +2750,7 @@ namespace {
             PolarPerspectiveCamera rv;
             rv.phi = fpi4;
             rv.theta = fpi4;
-            rv.radius = 5.0f;
+            rv.radius = 2.5f;
             return rv;
         }();
 
