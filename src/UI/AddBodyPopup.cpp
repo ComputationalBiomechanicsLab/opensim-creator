@@ -2,8 +2,8 @@
 
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/SimTKBindings/SimTKConverters.hpp"
-#include "src/UI/HelpMarker.hpp"
 #include "src/UI/F3Editor.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>

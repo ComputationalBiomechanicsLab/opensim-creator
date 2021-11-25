@@ -1,8 +1,8 @@
 #include "AddComponentPopup.hpp"
 
 #include "src/Assertions.hpp"
-#include "src/UI/HelpMarker.hpp"
 #include "src/UI/PropertyEditors.hpp"
+#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Common/Component.h>
