@@ -3551,6 +3551,18 @@ namespace {
                 }
                 m_ImGuizmoState.op = ImGuizmo::SCALE;
                 return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_UP)) {
+                m_Shared->UpdCamera().phi += glm::radians(10.0f);
+                return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN)) {
+                m_Shared->UpdCamera().phi -= glm::radians(10.0f);
+                return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_LEFT)) {
+                m_Shared->UpdCamera().theta -= glm::radians(10.0f);
+                return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_RIGHT)) {
+                m_Shared->UpdCamera().theta += glm::radians(10.0f);
+                return true;
             } else {
                 return false;
             }
