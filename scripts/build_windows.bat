@@ -3,6 +3,8 @@ REM
 REM     - this script should be able to build osc on a clean Windows 2019
 REM       Server PC /w basic toolchain installs (Visual Studio, MSVC, CMake)
 
+REM typical usage in cmd.exe: `set OSC_OPENSIM_REPO=https://github.com/custom/repo && set OSC_OPENSIM_REPO_BRANCH=custom && call .\scripts\build_windows.bat`
+
 REM where to clone the OpenSim source from
 REM
 REM handy to override if you are developing against a fork, locally, etc.
