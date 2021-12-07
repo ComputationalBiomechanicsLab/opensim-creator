@@ -330,6 +330,20 @@ namespace {
         Ras(glm::vec3 const& rot_, glm::vec3 const& shift_) : rot{rot_}, shift{shift_} {}
     };
 
+    Ras& operator+=(Ras& a, Ras const& b)
+    {
+        a.rot += b.rot;
+        a.shift += b.shift;
+        return a;
+    }
+
+    Ras& operator/=(Ras& a, float scalar)
+    {
+        a.rot /= scalar;
+        a.shift /= scalar;
+        return a;
+    }
+
     // print to an output stream
     std::ostream& operator<<(std::ostream& o, Ras const& to)
     {
@@ -358,14 +372,31 @@ namespace {
         return Ras{rotation, shift};
     }
 
+    // returns a ras that xforms quantities expressed in A*B to quantities expressed in ground
+    Ras RasCompose(Ras const& a, Ras const& b)
+    {
+        glm::mat3 aRot = EulerAnglesToMat(a.rot);
+        glm::mat3 bRot = EulerAnglesToMat(b.rot);
+        glm::mat3 overallRotMtx = bRot * aRot;
+        glm::vec3 overallRotAng = MatToEulerAngles(overallRotMtx);
+
+        glm::vec3 aShift = a.shift;
+        glm::vec3 bShift = aRot * b.shift;
+        glm::vec3 overallShift = aShift + bShift;
+
+        return Ras{overallRotAng, overallShift};
+    }
+
     void ApplyTranslation(Ras& ras, glm::vec3 const& translation)
     {
         ras.shift += translation;
     }
 
-    void ApplyRotation(Ras& ras, glm::vec3 const& eulerAngles)
+    void ApplyRotation(Ras& ras, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
     {
-        ras.rot = EulerCompose(ras.rot, eulerAngles);
+        glm::mat3 rot = EulerAnglesToMat(eulerAngles);
+        ras.shift = rot*(ras.shift - rotationCenter) + rotationCenter;
+        ras.rot = MatToEulerAngles(glm::mat4{rot} * EulerAnglesToMat(ras.rot));
     }
 
     // a mesh in the scene
@@ -486,9 +517,9 @@ namespace {
         ApplyTranslation(mesh.Xform, translation);
     }
 
-    void ApplyRotation(MeshEl& mesh, glm::vec3 const& eulerAngles)
+    void ApplyRotation(MeshEl& mesh, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
     {
-        ApplyRotation(mesh.Xform, eulerAngles);
+        ApplyRotation(mesh.Xform, eulerAngles, rotationCenter);
     }
 
     void ApplyScale(MeshEl& mesh, glm::vec3 const& scaleFactors)
@@ -570,9 +601,9 @@ namespace {
         ApplyTranslation(body.Xform, translation);
     }
 
-    void ApplyRotation(BodyEl& body, glm::vec3 const& eulerAngles)
+    void ApplyRotation(BodyEl& body, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
     {
-        ApplyRotation(body.Xform, eulerAngles);
+        ApplyRotation(body.Xform, eulerAngles, rotationCenter);
     }
 
     void ApplyScale(BodyEl&, glm::vec3 const&)
@@ -670,9 +701,9 @@ namespace {
         ApplyTranslation(joint.Center, translation);
     }
 
-    void ApplyRotation(JointEl& joint, glm::vec3 const& eulerAngles)
+    void ApplyRotation(JointEl& joint, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
     {
-        ApplyRotation(joint.Center, eulerAngles);
+        ApplyRotation(joint.Center, eulerAngles, rotationCenter);
     }
 
     void ApplyScale(JointEl&, glm::vec3 const&)
@@ -882,14 +913,14 @@ namespace {
             }
         }
 
-        void ApplyRotation(UID id, glm::vec3 const& eulerAngles)
+        void ApplyRotation(UID id, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                ::ApplyRotation(*meshPtr, eulerAngles);
+                ::ApplyRotation(*meshPtr, eulerAngles, rotationCenter);
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                ::ApplyRotation(*bodyPtr, eulerAngles);
+                ::ApplyRotation(*bodyPtr, eulerAngles, rotationCenter);
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                ::ApplyRotation(*jointPtr, eulerAngles);
+                ::ApplyRotation(*jointPtr, eulerAngles, rotationCenter);
             }
         }
 
@@ -2873,55 +2904,47 @@ namespace {
     };
 }
 
-// state pattern support
+// layer support
 //
-// The mesh importer UI isn't always in one particular state with one particular update->tick->draw
-// algorithm. The UI could be in:
+// the visualizer can push the 3D visualizer into different modes (here, "layers") that
+// have different behavior. E.g.:
 //
-// - "standard editing mode"           showing the scene, handling hovering, tooltips, move things around, etc.
-// - "assigning mesh mode"             shows the scene differently: only assignable things will be highlighted, etc.
-// - "assigning joint mode (step 1)"   shows the scene differently: can only click other bodies to join to
-// - "assigning joint mode (step 2)"   (e.g.) might be asking the user what joint type they want, etc.
-// - (etc.)
-//
-// The UI needs to be able to handle these states without resorting to a bunch of `if` statements littering
-// every method. The states also need to be able to transition into arbitrary other states because state
-// transitions aren't always linear. For example, the user might start assigning a joint, but cancel out
-// of doing that midway by pressing ESC.
+// - normal mode (editing stuff)
+// - picking another body in the scene mode
 namespace {
 
-    class ModalHost {
+    class LayerHost {
     public:
-        virtual ~ModalHost() noexcept = default;
+        virtual ~LayerHost() noexcept = default;
         virtual void pop() = 0;
     };
 
-    class VisualizerModal {
+    class Layer {
     public:
-        VisualizerModal(ModalHost& parent) : m_Parent{parent} {}
-        virtual ~VisualizerModal() noexcept = default;
+        Layer(LayerHost& parent) : m_Parent{parent} {}
+        virtual ~Layer() noexcept = default;
 
         virtual bool onEvent(SDL_Event const&) = 0;
         virtual void tick(float) = 0;
         virtual void draw() = 0;
 
     protected:
-        ModalHost& m_Parent;
+        LayerHost& m_Parent;
     };
 
     // options for when the UI transitions into "choose two mesh points" mode
-    struct SelectTwoMeshPointsOptions final {
+    struct Select2MeshPointsOptions final {
         // returns true if the two points are accepted
         std::function<bool(glm::vec3, glm::vec3)> OnTwoPointsChosen = [](glm::vec3, glm::vec3) { return true; };
         std::string Header = "choose first (left-click) and second (right click) mesh positions (ESC to cancel)";
     };
 
-    class SelectTwoMeshPointsModal final : public VisualizerModal {
+    class Select2MeshPointsLayer final : public Layer {
     public:
-        SelectTwoMeshPointsModal(ModalHost& parent,
+        Select2MeshPointsLayer(LayerHost& parent,
                                  std::shared_ptr<SharedData> shared,
-                                 SelectTwoMeshPointsOptions options) :
-            VisualizerModal{parent},
+                                 Select2MeshPointsOptions options) :
+            Layer{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
         {
@@ -3062,7 +3085,7 @@ namespace {
         std::shared_ptr<SharedData> m_Shared;
 
         // options for this state
-        SelectTwoMeshPointsOptions m_Options;
+        Select2MeshPointsOptions m_Options;
 
         // (maybe) user mouse hover
         Hover m_MaybeCurrentHover;
@@ -3078,7 +3101,7 @@ namespace {
     };
 
     // options for when the UI transitions into "choose something" mode
-    struct ChooseSomethingOptions final {
+    struct ChooseElLayerOptions final {
         bool CanChooseBodies = true;
         bool CanChooseGround = true;
         bool CanChooseMeshes = true;
@@ -3094,10 +3117,10 @@ namespace {
     //
     // this is what's drawn when the user's being prompted to choose something
     // else in the scene
-    class ChooseSomethingMWState final : public VisualizerModal {
+    class ChooseElLayer final : public Layer {
     public:
-        ChooseSomethingMWState(ModalHost& parent, std::shared_ptr<SharedData> shared, ChooseSomethingOptions options) :
-            VisualizerModal{parent},
+        ChooseElLayer(LayerHost& parent, std::shared_ptr<SharedData> shared, ChooseElLayerOptions options) :
+            Layer{parent},
             m_Shared{std::move(shared)},
             m_Options{std::move(options)}
         {
@@ -3159,7 +3182,7 @@ namespace {
         {
             if (!m_MaybeHover) {
                 // user isn't hovering anything, so just draw all existing connection
-                // lines faintly
+                // lines, but faintly
                 m_Shared->DrawConnectionLines(m_Shared->GetColorTransparentFaintConnectionLine());
                 return;
             }
@@ -3346,7 +3369,7 @@ namespace {
         std::shared_ptr<SharedData> m_Shared;
 
         // options for this state
-        ChooseSomethingOptions m_Options;
+        ChooseElLayerOptions m_Options;
 
         // (maybe) user mouse hover
         Hover m_MaybeHover;
@@ -3361,10 +3384,10 @@ namespace {
     // "standard" UI state
     //
     // this is what the user is typically interacting with when the UI loads
-    class StandardMWState final : public ModalHost {
+    class MainUIState final : public LayerHost {
     public:
 
-        StandardMWState(std::shared_ptr<SharedData> shared) : m_Shared{std::move(shared)}
+        MainUIState(std::shared_ptr<SharedData> shared) : m_Shared{std::move(shared)}
         {
         }
 
@@ -3424,7 +3447,7 @@ namespace {
 
         void TransitionToAssigningMeshNextFrame(MeshEl meshEl)
         {
-            ChooseSomethingOptions opts;
+            ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = false;
@@ -3445,7 +3468,7 @@ namespace {
             };
 
             // request a state transition
-            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
         void TryTransitionToAssigningHoveredMeshNextFrame()
@@ -3570,7 +3593,7 @@ namespace {
 
         void TransitionToChoosingJointParent(UIDT<BodyEl> childID)
         {
-            ChooseSomethingOptions opts;
+            ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = false;
@@ -3589,7 +3612,7 @@ namespace {
                 shared->CommitCurrentModelGraph("added joint");
                 return true;
             };
-            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
         void DrawGroundContextMenuContent()
@@ -3862,7 +3885,7 @@ namespace {
 
         void ActionPointBodyTowards(UIDT<BodyEl> bodyID, int axis)
         {
-            ChooseSomethingOptions opts;
+            ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
@@ -3888,7 +3911,7 @@ namespace {
                 shared->CommitCurrentModelGraph("reoriented body");
                 return true;
             };
-            m_Maybe3DViewerModal = std::make_shared<ChooseSomethingMWState>(*this, m_Shared, opts);
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
         void DrawReorientMenu(BodyEl bodyEl)
@@ -3960,7 +3983,7 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("Orient Z along two mesh points")) {
-                    SelectTwoMeshPointsOptions opts;
+                    Select2MeshPointsOptions opts;
                     opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
                         glm::vec3 aTobDir = glm::normalize(a-b);
                         glm::mat4 currentXform = CalcXformMatrix(jointEl);
@@ -3979,7 +4002,7 @@ namespace {
                         return true;
                     };
 
-                    m_Maybe3DViewerModal = std::make_shared<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
                 }
 
                 if (ImGui::MenuItem("Rotate X 180 degrees")) {
@@ -4052,7 +4075,7 @@ namespace {
                 }
 
                 if (ImGui::MenuItem("Between two mesh points")) {
-                    SelectTwoMeshPointsOptions opts;
+                    Select2MeshPointsOptions opts;
                     opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
                         glm::vec3 midpoint = (a+b)/2.0f;
                         Ras newRas = {shared->GetModelGraph().GetRotationInGround(jointEl.ID), midpoint};
@@ -4061,7 +4084,7 @@ namespace {
                         return true;
                     };
 
-                    m_Maybe3DViewerModal = std::make_shared<SelectTwoMeshPointsModal>(*this, m_Shared, opts);
+                    m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
                 }
 
                 ImGui::EndMenu();
@@ -4635,14 +4658,14 @@ namespace {
         }
 
         // draws 3D manipulator overlays (drag handles, etc.)
-        void DrawSelection3DManipulators()
+        void DrawSelection3DManipulatorGizmos()
         {
             if (!m_Shared->HasSelection()) {
-                return;  // can only manipulate selected stuff
+                return;  // can only manipulate if selecting something
             }
 
-            // if the user isn't manipulating anything, create an up-to-date
-            // manipulation matrix
+            // if the user isn't *currently* manipulating anything, create an
+            // up-to-date manipulation matrix
             //
             // this is so that ImGuizmo can *show* the manipulation axes, and
             // because the user might start manipulating during this frame
@@ -4652,32 +4675,26 @@ namespace {
                 auto end = m_Shared->GetCurrentSelection().end();
 
                 if (it == end) {
-                    return;
+                    return;  // sanity exit
                 }
 
                 ModelGraph const& mg = m_Shared->GetModelGraph();
 
                 int n = 0;
 
-                glm::vec3 translation = mg.GetShiftInGround(*it);
-                glm::vec3 orientation = mg.GetRotationInGround(*it);
+                Ras ras = mg.GetRasInGround(*it);
                 ++it;
                 ++n;
 
                 while (it != end) {
-                    translation += mg.GetShiftInGround(*it);  // TODO: numerically unstable
-                    orientation += mg.GetRotationInGround(*it);  // TODO: numerically unstable
+                    ras += mg.GetRasInGround(*it);
                     ++it;
                     ++n;
                 }
 
-                orientation /= static_cast<float>(n);
-                translation /= static_cast<float>(n);
+                ras /= static_cast<float>(n);
 
-                glm::mat4 rotationMtx = EulerAnglesToMat(orientation);
-                glm::mat4 translationMtx = glm::translate(glm::mat4{1.0f}, translation);
-
-                m_ImGuizmoState.mtx = translationMtx * rotationMtx;
+                m_ImGuizmoState.mtx = CalcXformMatrix(ras);
             }
 
             // else: is using OR nselected > 0 (so draw it)
@@ -4690,7 +4707,7 @@ namespace {
                 RectDims(sceneRect).x,
                 RectDims(sceneRect).y);
             ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
-            ImGuizmo::AllowAxisFlip(false);
+            ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
             glm::mat4 delta;
             bool manipulated = ImGuizmo::Manipulate(
@@ -4706,11 +4723,11 @@ namespace {
 
             bool isUsingThisFrame = ImGuizmo::IsUsing();
             bool wasUsingLastFrame = m_ImGuizmoState.wasUsingLastFrame;
-            m_ImGuizmoState.wasUsingLastFrame = isUsingThisFrame;  // for the next frame
+            m_ImGuizmoState.wasUsingLastFrame = isUsingThisFrame;  // so next frame can know
 
-            // if the user was manipulating something last frame, and isn't manipulaitng
-            // this frame, then they just finished a manipulation and it should be
-            // snapshotted for undo/redo support
+            // if the user was using the gizmo last frame, and isn't using it this frame,
+            // then they probably just finished a manipulation, which should be snapshotted
+            // for undo/redo support
             if (wasUsingLastFrame && !isUsingThisFrame) {
                 m_Shared->CommitCurrentModelGraph("manipulated selection");
                 App::cur().requestRedraw();
@@ -4730,7 +4747,7 @@ namespace {
             for (UID id : m_Shared->GetCurrentSelection()) {
                 switch (m_ImGuizmoState.op) {
                 case ImGuizmo::ROTATE:
-                    m_Shared->UpdModelGraph().ApplyRotation(id, rotation);
+                    m_Shared->UpdModelGraph().ApplyRotation(id, rotation, m_ImGuizmoState.mtx[3]);
                     break;
                 case ImGuizmo::TRANSLATE:
                     m_Shared->UpdModelGraph().ApplyTranslation(id, translation);
@@ -4853,7 +4870,7 @@ namespace {
             }
 
             // draw overlays/gizmos
-            DrawSelection3DManipulators();
+            DrawSelection3DManipulatorGizmos();
             m_Shared->DrawConnectionLines();
         }
 
@@ -5000,7 +5017,7 @@ namespace {
         Hover m_MaybeOpenedContextMenu;
 
         // (maybe) the next state the host screen should transition to
-        std::shared_ptr<VisualizerModal> m_Maybe3DViewerModal;
+        std::shared_ptr<Layer> m_Maybe3DViewerModal;
 
         // ImGuizmo state
         struct {
@@ -5082,7 +5099,7 @@ public:
     }
 
 private:
-    StandardMWState m_MainState;
+    MainUIState m_MainState;
     bool m_ShouldRequestRedraw = false;
 };
 
