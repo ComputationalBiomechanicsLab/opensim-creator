@@ -6,6 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <iosfwd>
 #include <array>
@@ -27,6 +28,7 @@ namespace osc {
     std::ostream& operator<<(std::ostream&, glm::mat3 const&);
     std::ostream& operator<<(std::ostream&, glm::mat4x3 const&);
     std::ostream& operator<<(std::ostream&, glm::mat4 const&);
+    std::ostream& operator<<(std::ostream&, glm::quat const&);
 
     // returns true if the provided vectors are at the same location
     bool AreAtSameLocation(glm::vec3 const&, glm::vec3 const&) noexcept;

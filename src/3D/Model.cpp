@@ -368,6 +368,11 @@ std::ostream& osc::operator<<(std::ostream& o, glm::mat4 const& m) {
     return o;
 }
 
+std::ostream& osc::operator<<(std::ostream& o, glm::quat const& q)
+{
+    return o << "quat(x = " << q.x << ", y = " << q.y << ", z = " << q.z << ", w = " << q.w << ')';
+}
+
 bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept {
     float eps = std::numeric_limits<float>::epsilon();
     float eps2 = eps * eps;
