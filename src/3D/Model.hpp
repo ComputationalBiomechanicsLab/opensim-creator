@@ -90,6 +90,64 @@ namespace osc {
     // returns matrix that rotates dir1 to point in the same direction as dir2
     glm::mat4 Dir1ToDir2Xform(glm::vec3 const& dir1, glm::vec3 const& dir2) noexcept;
 
+    // high-level "transform" abstraction
+    //
+    // this is easier for high-level code to use, and enables some nice optimizations
+    // (e.g. computing inverses, normal matrices, etc.)
+    struct Transform final {
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
+
+        // returns a default transform with position `pos`
+        static Transform withPosition(glm::vec3 const& pos) noexcept;
+
+        // default-construct as an identity transform
+        Transform() noexcept;
+
+        Transform(glm::vec3 const& position_,
+                  glm::quat const& rotation_,
+                  glm::vec3 const& scale_) noexcept;
+
+        // component-wise addition
+        Transform& operator+=(Transform const& o) noexcept;
+
+        // component-wise scalar division
+        Transform& operator/=(float s) noexcept;
+
+        // generate a transform matrix that maps quantities in local space into world space
+        glm::mat4 localToWorldMatrix() noexcept;
+
+        // generate a transform matrix that maps quantities in world space into local space
+        glm::mat4 worldToLocalMatrix() noexcept;
+
+        // transform a direction from local space to world space
+        //
+        // not affected by scale or position of the transform. The returned vector has
+        // the same length as `localDir`
+        glm::vec3 transformDirection(glm::vec3 const& localDir) noexcept;
+
+        // transforms a direction vector from world space to local space
+        //
+        // not affected by scale
+        glm::vec3 inverseTransformDirection(glm::vec3 const& worldDir) noexcept;
+
+        // transform a point from local space to world space
+        //
+        // the returned position is affected by scale
+        glm::vec3 transformPoint(glm::vec3 const& localPoint) noexcept;
+
+        glm::vec3 inverseTransformPoint(glm::vec3 const& worldPoint) noexcept;
+
+        // re-express this transform, in one base frame, such that it is relative to some
+        // parent (which is in the same base frame)
+        Transform reexpressedIn(Transform const& parent) noexcept;
+    };
+
+    // pretty-print a `Transform` for readability
+    std::ostream& operator<<(std::ostream& o, Transform const& t);
+
+
     struct Rect final {
         glm::vec2 p1;
         glm::vec2 p2;
