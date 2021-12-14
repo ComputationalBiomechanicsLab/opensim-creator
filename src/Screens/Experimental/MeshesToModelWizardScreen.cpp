@@ -1884,7 +1884,18 @@ namespace {
 
         void ResetModelGraph()
         {
-            m_ModelGraphSnapshots = SnapshottableModelGraph{};
+            // instead of completely wiping the history, just wipe the current
+            // state and commit that at the end of the history
+            //
+            // this way, users can still hit "undo" if they accidently create a
+            // new scene and want to go back
+            //
+            // TODO: potential memory leak from doing this (because the user doesn't
+            // have an obvious way of wiping the history) should be fixed by implementing
+            // a cap on the number of commits that may be made
+
+            m_ModelGraphSnapshots.Current() = ModelGraph{};
+            m_ModelGraphSnapshots.CommitCurrent("created new scene");
         }
 
         std::unordered_set<UID> const& GetCurrentSelection() const
