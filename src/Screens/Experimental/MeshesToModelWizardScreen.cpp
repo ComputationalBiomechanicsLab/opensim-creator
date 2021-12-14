@@ -2574,7 +2574,7 @@ namespace {
             // if some screen generated an OpenSim::Model, transition to the main editor
             if (HasOutputModel()) {
                 auto mainEditorState = std::make_shared<MainEditorState>(std::move(UpdOutputModel()));
-                mainEditorState->editedModel.setFixupScaleFactor(mainEditorState->editedModel.getFixupScaleFactor());
+                mainEditorState->editedModel.setFixupScaleFactor(m_SceneScaleFactor);
                 for (auto& viewerPtr : mainEditorState->viewers) {
                     if (viewerPtr) {
                         viewerPtr->requestAutoFocus();
