@@ -3605,7 +3605,7 @@ namespace {
             // title
             ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
             ImGui::SameLine();
-            ImGui::TextDisabled("(mesh)");
+            ImGui::TextDisabled("(%s, attached to %s)", meshEl.Path.filename().string().c_str(), BodyOrGroundString(meshEl.Attachment));
             ImGui::SameLine();
             DrawHelpMarker("Mesh", OSC_MESH_DESC);
             ImGui::Separator();
@@ -3971,7 +3971,7 @@ namespace {
             // title
             ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
             ImGui::SameLine();
-            ImGui::TextDisabled("(%s)", GetJointTypeName(jointEl).c_str());
+            ImGui::TextDisabled("(%s, %s --> %s)", GetJointTypeName(jointEl).c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
             ImGui::SameLine();
             DrawHelpMarker("Joints", OSC_JOINT_DESC);
             ImGui::Separator();
@@ -4480,7 +4480,7 @@ namespace {
         void DrawMeshHoverTooltip(MeshEl const& meshEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("%s", GetLabel(meshEl).c_str());
+            ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(%s, attached to %s)", meshEl.Path.filename().string().c_str(), BodyOrGroundString(meshEl.Attachment));
             ImGui::EndTooltip();
@@ -4489,7 +4489,7 @@ namespace {
         void DrawBodyHoverTooltip(BodyEl const& bodyEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("%s", bodyEl.Name.c_str());
+            ImGui::Text(ICON_FA_CIRCLE " %s", bodyEl.Name.c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(body)");
             ImGui::EndTooltip();
@@ -4498,7 +4498,7 @@ namespace {
         void DrawJointHoverTooltip(JointEl const& jointEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("%s", GetLabel(jointEl).c_str());
+            ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(%s, %s --> %s)", GetJointTypeName(jointEl).c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
             ImGui::EndTooltip();
