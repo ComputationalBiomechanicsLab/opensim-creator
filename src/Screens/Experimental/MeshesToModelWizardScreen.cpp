@@ -3596,6 +3596,7 @@ namespace {
             }
 
             DrawReorientMenu(bodyEl);
+            DrawTranslateMenu(bodyEl);
 
             if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
                 std::string name = bodyEl.Name;
@@ -3925,6 +3926,45 @@ namespace {
             }
         }
 
+        void DrawTranslateBetweenTwoMeshPointsMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Between two mesh points")) {
+                Select2MeshPointsOptions opts;
+                opts.OnTwoPointsChosen = [shared = m_Shared, id](glm::vec3 a, glm::vec3 b) {
+                    glm::vec3 midpoint = (a+b)/2.0f;
+                    Transform newRas = Transform{midpoint, glm::quat{shared->GetModelGraph().GetRotationInGround(id)}, {1.0f, 1.0f, 1.0f}};
+                    shared->UpdModelGraph().SetXform(id, newRas);
+                    shared->CommitCurrentModelGraph("translated " + shared->GetModelGraph().GetLabel(id));
+                    return true;
+                };
+
+                m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
+            }
+        }
+
+        void DrawTranslateToAnotherObjectCenterMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("To another object's center")) {
+                ChooseElLayerOptions opts;
+                opts.CanChooseBodies = true;
+                opts.CanChooseGround = true;
+                opts.CanChooseJoints = true;
+                opts.CanChooseMeshes = true;
+                opts.Header = "choose where to place it (ESC to cancel)";
+                opts.OnUserChoice = [shared = m_Shared, id](UID userChoice) {
+                    glm::vec3 choicePos = shared->GetModelGraph().GetShiftInGround(userChoice);
+                    Transform sourceXform = shared->GetModelGraph().GetTransformInGround(id);
+
+                    Transform newXform = sourceXform.withPosition(choicePos);
+
+                    shared->UpdModelGraph().SetXform(id, newXform);
+                    shared->CommitCurrentModelGraph("moved " + shared->GetModelGraph().GetLabel(id));
+                    return true;
+                };
+                m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+            }
+        }
+
         void DrawTranslateMenu(JointEl jointEl)
         {
             ModelGraph const& mg = m_Shared->GetModelGraph();
@@ -3960,18 +4000,19 @@ namespace {
                     m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
                 }
 
-                if (ImGui::MenuItem("Between two mesh points")) {
-                    Select2MeshPointsOptions opts;
-                    opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
-                        glm::vec3 midpoint = (a+b)/2.0f;
-                        Transform newRas = Transform{midpoint, glm::quat{shared->GetModelGraph().GetRotationInGround(jointEl.ID)}, {1.0f, 1.0f, 1.0f}};
-                        shared->UpdModelGraph().SetJointXform(jointEl.ID, newRas);
-                        shared->CommitCurrentModelGraph("translated " + GetLabel(jointEl));
-                        return true;
-                    };
+                DrawTranslateBetweenTwoMeshPointsMenuItem(jointEl.ID);
+                DrawTranslateToAnotherObjectCenterMenuItem(jointEl.ID);
 
-                    m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
-                }
+                ImGui::EndMenu();
+            }
+        }
+
+        void DrawTranslateMenu(BodyEl bodyEl)
+        {
+            if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " translate")) {
+
+                DrawTranslateBetweenTwoMeshPointsMenuItem(bodyEl.ID);
+                DrawTranslateToAnotherObjectCenterMenuItem(bodyEl.ID);
 
                 ImGui::EndMenu();
             }
