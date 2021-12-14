@@ -61,6 +61,8 @@ namespace osc {
         void setIndicesU32(nonstd::span<uint32_t const>);  // note: format trumps this, value will be truncated
 
         AABB const& getAABB() const;
+        AABB getWorldspaceAABB(Transform const& localToWorldXform) const;
+        AABB getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const;
 
         Sphere const& getBoundingSphere() const;
 

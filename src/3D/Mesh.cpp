@@ -314,6 +314,16 @@ AABB const& osc::Mesh::getAABB() const {
     return m_Impl->aabb;
 }
 
+AABB osc::Mesh::getWorldspaceAABB(Transform const& localToWorldXform) const
+{
+    return AABBApplyXform(m_Impl->aabb, toMat4(localToWorldXform));
+}
+
+AABB osc::Mesh::getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const
+{
+    return AABBApplyXform(m_Impl->aabb, modelMatrix);
+}
+
 Sphere const& osc::Mesh::getBoundingSphere() const {
     return m_Impl->boundingSphere;
 }

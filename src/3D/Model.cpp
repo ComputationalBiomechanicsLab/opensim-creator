@@ -5,6 +5,8 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <array>
 #include <iostream>
@@ -505,16 +507,50 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept 
     return glm::rotate(glm::mat4{1.0f}, angle, rotAxis);
 }
 
+glm::vec3 osc::extractEulerAngleXYZ(glm::mat4 const& m) noexcept
+{
+    glm::vec3 v;
+    glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
+    return v;
+}
+
 // Transform impl.
 
-Transform osc::Transform::withPosition(glm::vec3 const& pos) noexcept
+Transform osc::Transform::atPosition(glm::vec3 const& pos) noexcept
 {
-    return Transform{pos, {1.0f, 0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}};
+    Transform rv;
+    rv.position = pos;
+    return rv;
+}
+
+Transform osc::Transform::byDecomposing(glm::mat4 const& mtx)
+{
+    Transform rv;
+    glm::vec3 skew;
+    glm::vec4 perspective;
+    if (!glm::decompose(mtx, rv.scale, rv.rotation, rv.position, skew, perspective)) {
+        throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
+    }
+    return rv;
 }
 
 osc::Transform::Transform() noexcept :
     position{0.0f, 0.0f, 0.0f},
     rotation{1.0f, 0.0f, 0.0f, 0.0f},
+    scale{1.0f, 1.0f, 1.0f}
+{
+}
+
+osc::Transform::Transform(glm::vec3 const& position_) noexcept :
+    position{std::move(position_)},
+    rotation{1.0f, 0.0f, 0.0f, 0.0f},
+    scale{1.0f, 1.0f, 1.0f}
+{
+}
+
+osc::Transform::Transform(glm::vec3 const& position_, glm::quat const& rotation_) noexcept :
+    position{std::move(position_)},
+    rotation{std::move(rotation_)},
     scale{1.0f, 1.0f, 1.0f}
 {
 }
@@ -528,84 +564,119 @@ osc::Transform::Transform(glm::vec3 const& position_,
 {
 }
 
-Transform& osc::Transform::operator+=(Transform const& o) noexcept
+Transform osc::Transform::withPosition(glm::vec3 const& pos) const noexcept
 {
-    position += o.position;
-    rotation += o.rotation;
-    scale += o.scale;
-    return *this;
+    Transform t{*this};
+    t.position = pos;
+    return t;
 }
 
-Transform& osc::Transform::operator/=(float s) noexcept
+Transform osc::Transform::withRotation(glm::quat const& rot) const noexcept
 {
-    position /= s;
-    rotation /= s;
-    scale /= s;
-    return *this;
+    Transform t{*this};
+    t.rotation = rot;
+    return t;
 }
 
-glm::mat4 osc::Transform::localToWorldMatrix() noexcept
+Transform osc::Transform::withScale(glm::vec3 const& s) const noexcept
 {
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, scale);
-    glm::mat4 rotater = glm::toMat4(rotation);
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, position);
-
-    return translater * rotater * scaler;
-}
-
-glm::mat4 osc::Transform::worldToLocalMatrix() noexcept
-{
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -position);
-    glm::mat4 rotater = glm::toMat4(glm::conjugate(rotation));
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 1.0f/scale);
-
-    return scaler * rotater * translater;
-}
-
-glm::vec3 osc::Transform::transformDirection(glm::vec3 const& localDir) noexcept
-{
-    return rotation * localDir;
-}
-
-glm::vec3 osc::Transform::inverseTransformDirection(glm::vec3 const& worldDir) noexcept
-{
-    return glm::conjugate(rotation) * worldDir;
-}
-
-glm::vec3 osc::Transform::transformPoint(glm::vec3 const& localPoint) noexcept
-{
-    glm::vec3 rv = localPoint;
-    rv *= scale;
-    rv = rotation * rv;
-    rv += position;
-
-    return rv;
-}
-
-glm::vec3 osc::Transform::inverseTransformPoint(glm::vec3 const& worldPoint) noexcept
-{
-    glm::vec3 rv = worldPoint;
-    rv -= position;
-    rv = glm::conjugate(rotation) * rv;
-    rv /= scale;
-
-    return rv;
-}
-
-Transform osc::Transform::reexpressedIn(Transform const& parent) noexcept
-{
-    return Transform{
-        (parent.rotation * (position - parent.position)) / parent.scale,
-        // see: https://stackoverflow.com/questions/22157435/difference-between-the-two-quaternions
-        rotation * glm::conjugate(parent.rotation),
-        scale
-    };
+    Transform t{*this};
+    t.scale = s;
+    return t;
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 {
     using osc::operator<<;
     return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
+}
+
+Transform& osc::operator+=(Transform& t, Transform const& o) noexcept
+{
+    t.position += o.position;
+    t.rotation += o.rotation;
+    t.scale += o.scale;
+    return t;
+}
+
+Transform& osc::operator/=(Transform& t, float s) noexcept
+{
+    t.position /= s;
+    t.rotation /= s;
+    t.scale /= s;
+    return t;
+}
+
+glm::mat4 osc::toMat4(Transform const& t) noexcept
+{
+    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, t.scale);
+    glm::mat4 rotater = glm::toMat4(t.rotation);
+    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, t.position);
+
+    return translater * rotater * scaler;
+}
+
+glm::mat4 osc::toInverseMat4(Transform const& t) noexcept
+{
+    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -t.position);
+    glm::mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
+    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, 1.0f/t.scale);
+
+    return scaler * rotater * translater;
+}
+
+glm::mat3x3 osc::toNormalMatrix(Transform const& t) noexcept
+{
+    return NormalMatrix(toMat4(t));
+}
+
+glm::vec3 osc::transformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
+{
+    return t.rotation * localDir;
+}
+
+glm::vec3 osc::inverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
+{
+    return glm::conjugate(t.rotation) * worldDir;
+}
+
+glm::vec3 osc::transformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
+{
+    glm::vec3 rv = localPoint;
+    rv *= t.scale;
+    rv = t.rotation * rv;
+    rv += t.position;
+    return rv;
+}
+
+glm::vec3 osc::inverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
+{
+    glm::vec3 rv = worldPoint;
+    rv -= t.position;
+    rv = glm::conjugate(t.rotation) * rv;
+    rv /= t.scale;
+    return rv;
+}
+
+void osc::applyWorldspaceRotation(Transform& t,
+                                  glm::vec3 const& eulerAngles,
+                                  glm::vec3 const& rotationCenter) noexcept
+{
+    glm::quat q{eulerAngles};
+    t.position = q*(t.position - rotationCenter) + rotationCenter;
+    t.rotation = q*t.rotation;
+}
+
+glm::vec3 osc::eulerAnglesXYZ(Transform const& t) noexcept
+{
+    glm::vec3 rv;
+    glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
+    return rv;
+}
+
+glm::vec3 osc::eulerAnglesExtrinsic(Transform const& t) noexcept
+{
+    return glm::eulerAngles(t.rotation);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, Rect const& r) {

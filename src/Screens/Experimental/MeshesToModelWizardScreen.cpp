@@ -1,10 +1,8 @@
 #include "MeshesToModelWizardScreen.hpp"
 
-#include "src/3D/Shaders/InstancedGouraudColorShader.hpp"
 #include "src/3D/Shaders/EdgeDetectionShader.hpp"
 #include "src/3D/Shaders/GouraudShader.hpp"
 #include "src/3D/Shaders/SolidColorShader.hpp"
-#include "src/3D/BVH.hpp"
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
@@ -34,7 +32,6 @@
 #include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
@@ -51,10 +48,10 @@
 #include <cstddef>
 #include <filesystem>
 #include <memory>
-#include <unordered_set>
 #include <stdexcept>
 #include <string.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <variant>
 
@@ -65,7 +62,7 @@ using namespace osc;
 #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all Frames and points may conveniently and efficiently be expressed."
 #define OSC_MESH_DESC "Meshes are purely decorational elements in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will translate/rotate whenever the thing they are attached to translates/rotates"
 #define OSC_JOINT_DESC "Joints connect two PhysicalFrames (body/ground) together and specifies their relative permissible motion."
-#define OSC_FLOAT_INPUT_FORMAT "%.6f"
+#define OSC_FLOAT_INPUT_FORMAT "%.4f"
 
 // generic helpers
 namespace {
@@ -77,39 +74,6 @@ namespace {
         ss.precision(4);
         ss << '(' << pos.x << ", " << pos.y << ", " << pos.z << ')';
         return std::move(ss).str();
-    }
-
-    // returns a string representation of euler angles in degrees
-    std::string EulerAnglesString(glm::vec3 const& eulerAngles)
-    {
-        glm::vec3 degrees = glm::degrees(eulerAngles);
-        std::stringstream ss;
-        ss << '(' << degrees.x << ", " << degrees.y << ", " << degrees.z << ')';
-        return std::move(ss).str();
-    }
-
-    // returns an orthogonal rotation matrix representation of the given Euler angles
-    glm::mat4 EulerAnglesToMat(glm::vec3 const& eulerAngles)
-    {
-        return glm::eulerAngleXYZ(eulerAngles.x, eulerAngles.y, eulerAngles.z);
-    }
-
-    // returns a Euler-angle representation of the provided rotation matrix
-    glm::vec3 MatToEulerAngles(glm::mat3 const& mat)
-    {
-        glm::mat4 m{mat};
-        glm::vec3 rv;
-        glm::extractEulerAngleXYZ(m, rv.x, rv.y, rv.z);
-        return rv;
-    }
-
-    // composes two euler angle rotations together
-    glm::vec3 EulerCompose(glm::vec3 const& a, glm::vec3 const& b)
-    {
-        glm::mat3 am = EulerAnglesToMat(a);
-        glm::mat3 bm = EulerAnglesToMat(b);
-        glm::mat3 comp = bm * am;
-        return MatToEulerAngles(comp);
     }
 
     float easeOutElastic(float x)
@@ -125,6 +89,32 @@ namespace {
         }
 
         return powf(2.0f, -5.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
+    }
+
+    Transform pointAxisTowards(Transform const& t, int axis, glm::vec3 const& p)
+    {
+        glm::vec3 before{};
+        before[axis] = 1.0f;
+        before = t.rotation * before;
+
+        glm::vec3 after = glm::normalize(p - t.position);
+
+        Transform rv{t};
+        rv.rotation = glm::normalize(glm::rotation(before, after) * rv.rotation);
+        return rv;
+    }
+
+    // perform an intrinsic rotation about a transform's axis
+    Transform rotateAxis(Transform const& t, int axis, float angRadians)
+    {
+        glm::vec3 ax{};
+        ax[axis] = 1.0f;
+        ax = t.rotation * ax;
+
+        Transform cpy{t};
+        cpy.rotation = glm::angleAxis(angRadians, ax) * t.rotation;
+
+        return cpy;
     }
 }
 
@@ -321,84 +311,6 @@ namespace {
 //     be exported directly into the main (OpenSim::Model-manipulating) UI
 namespace {
 
-    // rotate-and-shift transform
-    struct Ras final {
-        glm::vec3 rot;  // Euler angles
-        glm::vec3 shift;
-
-        Ras() : rot{}, shift{} {}  // effectively, default-constructs to ground location
-        Ras(glm::vec3 const& rot_, glm::vec3 const& shift_) : rot{rot_}, shift{shift_} {}
-    };
-
-    Ras& operator+=(Ras& a, Ras const& b)
-    {
-        a.rot += b.rot;
-        a.shift += b.shift;
-        return a;
-    }
-
-    Ras& operator/=(Ras& a, float scalar)
-    {
-        a.rot /= scalar;
-        a.shift /= scalar;
-        return a;
-    }
-
-    // print to an output stream
-    std::ostream& operator<<(std::ostream& o, Ras const& to)
-    {
-        using osc::operator<<;
-        return o << "Ras(rot = " << to.rot << ", shift = " << to.shift << ')';
-    }
-
-    glm::mat4 CalcXformMatrix(Ras const& ras)
-    {
-        glm::mat4 mtx = EulerAnglesToMat(ras.rot);
-        mtx[3] = glm::vec4{ras.shift, 1.0f};
-        return mtx;
-    }
-
-    // returns a `Ras` that can reorient things expressed in base to things expressed in parent
-    Ras RasInParent(Ras const& parentInBase, Ras const& childInBase)
-    {
-        glm::mat4 parent2base = CalcXformMatrix(parentInBase);
-        glm::mat4 base2parent = glm::inverse(parent2base);
-        glm::mat4 child2base = CalcXformMatrix(childInBase);
-        glm::mat4 child2parent = base2parent * child2base;
-
-        glm::vec3 shift = base2parent * glm::vec4{childInBase.shift, 1.0f};
-        glm::vec3 rotation = MatToEulerAngles(child2parent);
-
-        return Ras{rotation, shift};
-    }
-
-    // returns a ras that xforms quantities expressed in A*B to quantities expressed in ground
-    Ras RasCompose(Ras const& a, Ras const& b)
-    {
-        glm::mat3 aRot = EulerAnglesToMat(a.rot);
-        glm::mat3 bRot = EulerAnglesToMat(b.rot);
-        glm::mat3 overallRotMtx = bRot * aRot;
-        glm::vec3 overallRotAng = MatToEulerAngles(overallRotMtx);
-
-        glm::vec3 aShift = a.shift;
-        glm::vec3 bShift = aRot * b.shift;
-        glm::vec3 overallShift = aShift + bShift;
-
-        return Ras{overallRotAng, overallShift};
-    }
-
-    void ApplyTranslation(Ras& ras, glm::vec3 const& translation)
-    {
-        ras.shift += translation;
-    }
-
-    void ApplyRotation(Ras& ras, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
-    {
-        glm::mat3 rot = EulerAnglesToMat(eulerAngles);
-        ras.shift = rot*(ras.shift - rotationCenter) + rotationCenter;
-        ras.rot = MatToEulerAngles(glm::mat4{rot} * EulerAnglesToMat(ras.rot));
-    }
-
     // a mesh in the scene
     //
     // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
@@ -426,8 +338,7 @@ namespace {
 
         UIDT<MeshEl> ID;
         UIDT<BodyEl> Attachment;  // can be g_GroundID
-        Ras Xform;
-        glm::vec3 ScaleFactors{1.0f, 1.0f, 1.0f};
+        Transform Xform;
         std::shared_ptr<Mesh> MeshData;
         std::filesystem::path Path;
         std::string Name{FileNameWithoutExtension(Path)};
@@ -438,10 +349,10 @@ namespace {
     {
         using osc::operator<<;
 
-        return o << "MeshEl(ID = " << mesh.ID
+        return o << "MeshEl("
+                 << "ID = " << mesh.ID
                  << ", Attachment = " << mesh.Attachment
                  << ", Xform = " << mesh.Xform
-                 << ", ScaleFactors = " << mesh.ScaleFactors
                  << ", MeshData = " << mesh.MeshData.get()
                  << ", Path = " << mesh.Path
                  << ", Name = " << mesh.Name
@@ -460,46 +371,15 @@ namespace {
         return mesh.Name;
     }
 
-    glm::vec3 GetShift(MeshEl const& mesh)
-    {
-        return mesh.Xform.shift;
-    }
-
-    glm::vec3 GetRotation(MeshEl const& mesh)
-    {
-        return mesh.Xform.rot;
-    }
-
-    Ras GetRas(MeshEl const& mesh)
+    Transform const& GetXform(MeshEl const& mesh)
     {
         return mesh.Xform;
-    }
-
-    // returns transform matrix for the mesh (transforms origin-centered meshes into worldspace)
-    glm::mat4 CalcXformMatrix(MeshEl const& mesh)
-    {
-        glm::mat4 baseXform = CalcXformMatrix(mesh.Xform);
-        glm::mat4 scalingXform = glm::scale(glm::mat4{1.0f}, mesh.ScaleFactors);
-        return baseXform * scalingXform;
-    }
-
-    // returns the groundspace bounds of the mesh
-    AABB CalcBounds(Mesh const& mesh, glm::mat4 const& modelMtx)
-    {
-        AABB modelspaceBounds = mesh.getAABB();
-        return AABBApplyXform(modelspaceBounds, modelMtx);
     }
 
     // returns the groundspace bounds of the mesh
     AABB CalcBounds(MeshEl const& mesh)
     {
-        return CalcBounds(*mesh.MeshData, CalcXformMatrix(mesh));
-    }
-
-    // returns the groundspace bounds center point of the mesh
-    glm::vec3 CalcBoundsCenter(MeshEl const& mesh)
-    {
-        return AABBCenter(CalcBounds(mesh));
+        return mesh.MeshData->getWorldspaceAABB(mesh.Xform);
     }
 
     // returns a unique, generated body name
@@ -512,30 +392,12 @@ namespace {
         return std::move(ss).str();
     }
 
-    void ApplyTranslation(MeshEl& mesh, glm::vec3 const& translation)
-    {
-        ApplyTranslation(mesh.Xform, translation);
-    }
-
-    void ApplyRotation(MeshEl& mesh, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
-    {
-        ApplyRotation(mesh.Xform, eulerAngles, rotationCenter);
-    }
-
-    void ApplyScale(MeshEl& mesh, glm::vec3 const& scaleFactors)
-    {
-        mesh.ScaleFactors *= scaleFactors;
-    }
-
     // a body scene element
     //
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
     class BodyEl final {
     public:
-        BodyEl(UIDT<BodyEl> id,
-               std::string const& name,
-               Ras xform) :
-
+        BodyEl(UIDT<BodyEl> id, std::string const& name, Transform const& xform) :
             ID{id},
             Name{name},
             Xform{xform}
@@ -544,7 +406,7 @@ namespace {
 
         UIDT<BodyEl> ID;
         std::string Name;
-        Ras Xform;
+        Transform Xform;
         double Mass{1.0f};  // OpenSim goes bananas if a body has a mass <= 0
     };
 
@@ -569,46 +431,15 @@ namespace {
         return body.Name;
     }
 
-    glm::vec3 GetShift(BodyEl const& body)
-    {
-        return body.Xform.shift;
-    }
-
-    glm::vec3 GetRotation(BodyEl const& body)
-    {
-        return body.Xform.rot;
-    }
-
-    Ras GetRas(BodyEl const& body)
+    Transform const& GetXform(BodyEl const& body)
     {
         return body.Xform;
-    }
-
-    // returns transform matrix for the body element
-    glm::mat4 CalcXformMatrix(BodyEl const& body)
-    {
-        return CalcXformMatrix(body.Xform);
     }
 
     // returns groundspace bounds of the body element (volume == 0)
     AABB CalcBounds(BodyEl const& body)
     {
-        return AABB{body.Xform.shift, body.Xform.shift};
-    }
-
-    void ApplyTranslation(BodyEl& body, glm::vec3 const& translation)
-    {
-        ApplyTranslation(body.Xform, translation);
-    }
-
-    void ApplyRotation(BodyEl& body, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
-    {
-        ApplyRotation(body.Xform, eulerAngles, rotationCenter);
-    }
-
-    void ApplyScale(BodyEl&, glm::vec3 const&)
-    {
-        return;  // can't scale a body
+        return AABB{body.Xform.position, body.Xform.position};
     }
 
     // a joint scene element
@@ -621,14 +452,14 @@ namespace {
                 std::string userAssignedName,  // can be empty
                 UID parent,
                 UIDT<BodyEl> child,
-                Ras pos) :
+                Transform const& xform) :
 
             ID{std::move(id)},
             JointTypeIndex{std::move(jointTypeIdx)},
             UserAssignedName{std::move(userAssignedName)},
             Parent{std::move(parent)},
             Child{std::move(child)},
-            Center{std::move(pos)}
+            Xform{std::move(xform)}
         {
         }
 
@@ -637,7 +468,7 @@ namespace {
         std::string UserAssignedName;
         UID Parent;  // can be ground
         UIDT<BodyEl> Child;
-        Ras Center;
+        Transform Xform;  // joint center
     };
 
     std::ostream& operator<<(std::ostream& o, JointEl const& j)
@@ -647,7 +478,7 @@ namespace {
                  << ", UserAssignedName = " << j.UserAssignedName
                  << ", Parent = " << j.Parent
                  << ", Child = " << j.Child
-                 << ", Center = " << j.Center
+                 << ", Xform = " << j.Xform
                  << ')';
     }
 
@@ -669,46 +500,15 @@ namespace {
         return joint.UserAssignedName.empty() ? GetJointTypeName(joint) : joint.UserAssignedName;
     }
 
-    glm::vec3 GetShift(JointEl const& joint)
+    Transform GetXform(JointEl const& joint)
     {
-        return joint.Center.shift;
-    }
-
-    glm::vec3 GetRotation(JointEl const& joint)
-    {
-        return joint.Center.rot;
-    }
-
-    Ras GetRas(JointEl const& joint)
-    {
-        return joint.Center;
-    }
-
-    // returns transform matrix for the joint center
-    glm::mat4 CalcXformMatrix(JointEl const& joint)
-    {
-        return CalcXformMatrix(joint.Center);
+        return joint.Xform;
     }
 
     // returns groundspace bounds of the joint center (volume == 0)
     AABB CalcBounds(JointEl const& joint)
     {
-        return AABB{joint.Center.shift, joint.Center.shift};
-    }
-
-    void ApplyTranslation(JointEl& joint, glm::vec3 const& translation)
-    {
-        ApplyTranslation(joint.Center, translation);
-    }
-
-    void ApplyRotation(JointEl& joint, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
-    {
-        ApplyRotation(joint.Center, eulerAngles, rotationCenter);
-    }
-
-    void ApplyScale(JointEl&, glm::vec3 const&)
-    {
-        return;  // can't scale a joint center
+        return AABB{joint.Xform.position, joint.Xform.position};
     }
 
     // returns `true` if body is either the parent or the child attachment of `joint`
@@ -751,10 +551,10 @@ namespace {
         BodyEl const& GetBodyByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
         JointEl const& GetJointByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
 
-        UIDT<BodyEl> AddBody(std::string name, Ras const& ras)
+        UIDT<BodyEl> AddBody(std::string name, Transform const& xform)
         {
             UIDT<BodyEl> id = GenerateIDT<BodyEl>();
-            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, ras)).first->first;
+            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, xform)).first->first;
         }
 
         UIDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, UIDT<BodyEl> attachment, std::filesystem::path const& path)
@@ -767,10 +567,10 @@ namespace {
             return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, mesh, path)).first->first;
         }
 
-        UIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, UID parent, UIDT<BodyEl> child, Ras center)
+        UIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, UID parent, UIDT<BodyEl> child, Transform const& xform)
         {
             UIDT<JointEl> id = GenerateIDT<JointEl>();
-            return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parent, child, center)).first->first;
+            return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parent, child, xform)).first->first;
         }
 
         void SetMeshAttachmentPoint(UIDT<MeshEl> meshID, UIDT<BodyEl> bodyID)
@@ -783,14 +583,14 @@ namespace {
             UpdMeshByIDOrThrow(meshID).Attachment = g_GroundID;
         }
 
-        void SetMeshXform(UIDT<MeshEl> meshID, Ras const& newXform)
+        void SetMeshXform(UIDT<MeshEl> meshID, Transform const& newXform)
         {
             UpdMeshByIDOrThrow(meshID).Xform = newXform;
         }
 
         void SetMeshScaleFactors(UIDT<MeshEl> meshID, glm::vec3 const& newScaleFactors)
         {
-            UpdMeshByIDOrThrow(meshID).ScaleFactors = newScaleFactors;
+            UpdMeshByIDOrThrow(meshID).Xform.scale = newScaleFactors;
         }
 
         void SetMeshName(UIDT<MeshEl> meshID, std::string_view newName)
@@ -808,14 +608,14 @@ namespace {
             UpdJointByIDOrThrow(jointID).UserAssignedName = newName;
         }
 
-        void SetBodyXform(UIDT<BodyEl> bodyID, Ras const& newXform)
+        void SetBodyXform(UIDT<BodyEl> bodyID, Transform const& newXform)
         {
             UpdBodyByIDOrThrow(bodyID).Xform = newXform;
         }
 
-        void SetJointCenter(UIDT<JointEl> jointID, Ras const& newCenter)
+        void SetJointXform(UIDT<JointEl> jointID, Transform const& newCenter)
         {
-            UpdJointByIDOrThrow(jointID).Center = newCenter;
+            UpdJointByIDOrThrow(jointID).Xform = newCenter;
         }
 
         void SetJointTypeIdx(UIDT<JointEl> jointID, size_t newIdx)
@@ -826,6 +626,17 @@ namespace {
         void SetBodyMass(UIDT<BodyEl> bodyID, double newMass)
         {
             UpdBodyByIDOrThrow(bodyID).Mass = newMass;
+        }
+
+        void SetXform(UID id, Transform const& newXform)
+        {
+            if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
+                meshPtr->Xform = newXform;
+            } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
+                bodyPtr->Xform = newXform;
+            } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
+                jointPtr->Xform = newXform;
+            }
         }
 
         template<typename Consumer>
@@ -905,33 +716,33 @@ namespace {
         void ApplyTranslation(UID id, glm::vec3 const& translation)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                ::ApplyTranslation(*meshPtr, translation);
+                meshPtr->Xform.position += translation;
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                ::ApplyTranslation(*bodyPtr, translation);
+                bodyPtr->Xform.position += translation;
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                ::ApplyTranslation(*jointPtr, translation);
+                jointPtr->Xform.position += translation;
             }
         }
 
         void ApplyRotation(UID id, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                ::ApplyRotation(*meshPtr, eulerAngles, rotationCenter);
+                applyWorldspaceRotation(meshPtr->Xform, eulerAngles, rotationCenter);
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                ::ApplyRotation(*bodyPtr, eulerAngles, rotationCenter);
+                applyWorldspaceRotation(bodyPtr->Xform, eulerAngles, rotationCenter);
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                ::ApplyRotation(*jointPtr, eulerAngles, rotationCenter);
+                applyWorldspaceRotation(jointPtr->Xform, eulerAngles, rotationCenter);
             }
         }
 
         void ApplyScale(UID id, glm::vec3 const& scaleFactors)
         {
             if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                ::ApplyScale(*meshPtr, scaleFactors);
+                meshPtr->Xform.scale *= scaleFactors;
             } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                ::ApplyScale(*bodyPtr, scaleFactors);
+                return;  // not scale-able
             } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                ::ApplyScale(*jointPtr, scaleFactors);
+                return;  // not scale-able
             }
         }
 
@@ -940,11 +751,11 @@ namespace {
             if (id == g_GroundID) {
                 return {};
             } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return GetShift(*meshPtr);
+                return meshPtr->Xform.position;
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return GetShift(*bodyPtr);
+                return bodyPtr->Xform.position;
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return GetShift(*jointPtr);
+                return jointPtr->Xform.position;
             } else {
                 throw std::runtime_error{"GetShiftInGround(): cannot find element by ID"};
             }
@@ -955,26 +766,26 @@ namespace {
             if (id == g_GroundID) {
                 return {};
             } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return GetRotation(*meshPtr);
+                return glm::eulerAngles(meshPtr->Xform.rotation);
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return GetRotation(*bodyPtr);
+                return glm::eulerAngles(bodyPtr->Xform.rotation);
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return GetRotation(*jointPtr);
+                return glm::eulerAngles(jointPtr->Xform.rotation);
             } else {
                 throw std::runtime_error{"GetRotationInGround(): cannot find element by ID"};
             }
         }
 
-        Ras GetRasInGround(UID id) const
+        Transform GetTransformInGround(UID id) const
         {
             if (id == g_GroundID) {
                 return {};
             } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return GetRas(*meshPtr);
+                return GetXform(*meshPtr);
             } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return GetRas(*bodyPtr);
+                return GetXform(*bodyPtr);
             } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return GetRas(*jointPtr);
+                return GetXform(*jointPtr);
             } else {
                 throw std::runtime_error{"GetRasInGround(): cannot find element by ID"};
             }
@@ -993,6 +804,22 @@ namespace {
                 return CalcBounds(*jointPtr);
             } else {
                 throw std::runtime_error{"GetBounds(): could not find supplied ID"};
+            }
+        }
+
+        std::string const& GetLabel(UID id) const
+        {
+            if (id == g_GroundID) {
+                static std::string g_GroundLabel{"Ground"};
+                return g_GroundLabel;
+            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
+                return ::GetLabel(*meshPtr);
+            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
+                return ::GetLabel(*bodyPtr);
+            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
+                return ::GetLabel(*jointPtr);
+            } else {
+                throw std::runtime_error{"GetLabel(): could not find the supplied ID"};
             }
         }
 
@@ -1210,7 +1037,7 @@ namespace {
 
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
-                             Ras const& parentRas,
+                             Transform const& parentXform,
                              OpenSim::PhysicalFrame& parentPhysFrame)
     {
         // create a POF that attaches to the body
@@ -1219,10 +1046,7 @@ namespace {
         meshPhysOffsetFrame->setName(meshEl.Name + "_offset");
 
         // re-express the transform matrix in the parent's frame
-        glm::mat4 parent2ground = CalcXformMatrix(parentRas);
-        glm::mat4 ground2parent = glm::inverse(parent2ground);
-        glm::mat4 mesh2ground = CalcXformMatrix(meshEl.Xform);
-        glm::mat4 mesh2parent = ground2parent * mesh2ground;
+        glm::mat4 mesh2parent = toInverseMat4(parentXform) * toMat4(meshEl.Xform);
 
         // set it as the transform
         meshPhysOffsetFrame->setOffsetTransform(SimTKTransformFromMat4x3(mesh2parent));
@@ -1230,7 +1054,7 @@ namespace {
         // attach mesh to the POF
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.Path.string());
         mesh->setName(meshEl.Name);
-        mesh->set_scale_factors(SimTKVec3FromV3(meshEl.ScaleFactors));
+        mesh->set_scale_factors(SimTKVec3FromV3(meshEl.Xform.scale));
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
         parentPhysFrame.addComponent(meshPhysOffsetFrame.release());
@@ -1447,17 +1271,17 @@ namespace {
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        Ras toParentPofInParent = RasInParent(mg.GetRasInGround(joint.Parent), joint.Center);
-        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent.shift));
-        parentPOF->set_orientation(SimTKVec3FromV3(toParentPofInParent.rot));
+        glm::mat4 toParentPofInParent = toInverseMat4(mg.GetTransformInGround(joint.Parent)) * toMat4(joint.Xform);
+        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent[3]));
+        parentPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Ras toChildPofInChild = RasInParent(mg.GetRasInGround(joint.Child), joint.Center);
-        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild.shift));
-        childPOF->set_orientation(SimTKVec3FromV3(toChildPofInChild.rot));
+        glm::mat4 toChildPofInChild = toInverseMat4(mg.GetTransformInGround(joint.Child)) * toMat4(joint.Xform);
+        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild[3]));
+        childPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
         auto jointUniqPtr = ConstructOpenSimJointFromTypeIndex(joint.JointTypeIndex);
@@ -1512,12 +1336,13 @@ namespace {
         SetJointCoordinateNames(*freeJoint, bodyEl.Name);
 
         // set joint's default location of the body's xform in ground
-        freeJoint->upd_coordinates(0).setDefaultValue(static_cast<double>(bodyEl.Xform.rot[0]));
-        freeJoint->upd_coordinates(1).setDefaultValue(static_cast<double>(bodyEl.Xform.rot[1]));
-        freeJoint->upd_coordinates(2).setDefaultValue(static_cast<double>(bodyEl.Xform.rot[2]));
-        freeJoint->upd_coordinates(3).setDefaultValue(static_cast<double>(bodyEl.Xform.shift[0]));
-        freeJoint->upd_coordinates(4).setDefaultValue(static_cast<double>(bodyEl.Xform.shift[1]));
-        freeJoint->upd_coordinates(5).setDefaultValue(static_cast<double>(bodyEl.Xform.shift[2]));
+        glm::vec3 eulers = eulerAnglesXYZ(bodyEl.Xform);
+        freeJoint->upd_coordinates(0).setDefaultValue(static_cast<double>(eulers[0]));
+        freeJoint->upd_coordinates(1).setDefaultValue(static_cast<double>(eulers[1]));
+        freeJoint->upd_coordinates(2).setDefaultValue(static_cast<double>(eulers[2]));
+        freeJoint->upd_coordinates(3).setDefaultValue(static_cast<double>(bodyEl.Xform.position[0]));
+        freeJoint->upd_coordinates(4).setDefaultValue(static_cast<double>(bodyEl.Xform.position[1]));
+        freeJoint->upd_coordinates(5).setDefaultValue(static_cast<double>(bodyEl.Xform.position[2]));
 
         // connect joint from ground to the body
         freeJoint->connectSocket_parent_frame(model.getGround());
@@ -1552,7 +1377,7 @@ namespace {
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
         for (auto const& [meshID, meshEl] : mg.GetMeshes()) {
             if (meshEl.Attachment == g_GroundID) {
-                AttachMeshElToFrame(meshEl, Ras{}, model->updGround());
+                AttachMeshElToFrame(meshEl, Transform{}, model->updGround());
             }
         }
 
@@ -1818,7 +1643,7 @@ namespace {
 
     AABB CalcBounds(DrawableThing const& dt)
     {
-        return CalcBounds(*dt.mesh, dt.modelMatrix);
+        return dt.mesh->getWorldspaceAABB(dt.modelMatrix);
     }
 
     // an instance of something that is being drawn, once uploaded to the GPU
@@ -2108,7 +1933,10 @@ namespace {
 
         UIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
         {
-            auto id = UpdModelGraph().AddBody(name, Ras{rot, shift});
+            Transform t;
+            t.position = shift;
+            t.rotation = glm::quat{rot};
+            auto id = UpdModelGraph().AddBody(name, t);
             UpdModelGraph().DeSelectAll();
             UpdModelGraph().Select(id);
             CommitCurrentModelGraph(std::string{"added "} + name);
@@ -2238,7 +2066,7 @@ namespace {
 
         void DrawConnectionLine(MeshEl const& meshEl, ImU32 color) const
         {
-            glm::vec3 meshLoc = meshEl.Xform.shift;
+            glm::vec3 meshLoc = meshEl.Xform.position;
             glm::vec3 otherLoc = GetModelGraph().GetShiftInGround(meshEl.Attachment);
 
             DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(meshLoc));
@@ -2246,7 +2074,7 @@ namespace {
 
         void DrawConnectionLineToGround(BodyEl const& bodyEl, ImU32 color) const
         {
-            glm::vec3 bodyLoc = bodyEl.Xform.shift;
+            glm::vec3 bodyLoc = bodyEl.Xform.position;
             glm::vec3 otherLoc = {};
 
             DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(bodyLoc));
@@ -2258,7 +2086,7 @@ namespace {
                 return;
             }
 
-            glm::vec3 const& pivotLoc = jointEl.Center.shift;
+            glm::vec3 const& pivotLoc = jointEl.Xform.position;
 
             if (jointEl.Child != excludeID) {
                 glm::vec3 childLoc = GetModelGraph().GetShiftInGround(jointEl.Child);
@@ -2509,8 +2337,8 @@ namespace {
             rv.id = meshEl.ID;
             rv.groupId = g_MeshGroupID;
             rv.mesh = meshEl.MeshData;
-            rv.modelMatrix = CalcXformMatrix(meshEl);
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.modelMatrix = toMat4(meshEl.Xform);
+            rv.normalMatrix = toNormalMatrix(meshEl.Xform);
             rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? GetColorUnassignedMesh() : GetColorMesh();
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -2533,7 +2361,7 @@ namespace {
             rv.id = bodyEl.ID;
             rv.groupId = g_BodyGroupID;
             rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.shift));
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
             rv.normalMatrix = NormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
@@ -2557,7 +2385,7 @@ namespace {
 
         void AppendAsFrame(UID logicalID,
                            UID groupID,
-                           Ras const& xform,
+                           Transform const& xform,
                            std::vector<DrawableThing>& appendOut,
                            float alpha = 1.0f,
                            float rimAlpha = 0.0f,
@@ -2566,8 +2394,8 @@ namespace {
         {
             // stolen from SceneGeneratorNew.cpp
 
-            glm::vec3 origin = xform.shift;
-            glm::mat3 rotation = EulerAnglesToMat(xform.rot);
+            glm::vec3 origin = xform.position;
+            glm::mat3 rotation = glm::toMat3(xform.rotation);
 
             // emit origin sphere
             {
@@ -2611,7 +2439,7 @@ namespace {
 
         void AppendAsCubeThing(UID logicalID,
                                UID groupID,
-                               Ras const& xform,
+                               Transform const& xform,
                                std::vector<DrawableThing>& appendOut,
                                float alpha = 1.0f,
                                float rimAlpha = 0.0f,
@@ -2619,7 +2447,7 @@ namespace {
                                glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
                                glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
         {
-            glm::mat4 baseMmtx = CalcXformMatrix(xform);
+            glm::mat4 baseMmtx = toMat4(xform);
 
             float halfWidths = 1.5f * GetSphereRadius();
             glm::vec3 scaleFactors = halfWidths * sfs;
@@ -3269,7 +3097,7 @@ namespace {
                 float rimAlpha = jointID == m_MaybeHover.ID ? 0.8f : 0.0f;
                 glm::vec3 axisLengths = GetJointAxisLengths(jointEl);
 
-                m_Shared->AppendAsFrame(id, groupId, jointEl.Center, m_DrawablesBuffer, alpha, rimAlpha, axisLengths);
+                m_Shared->AppendAsFrame(id, groupId, jointEl.Xform, m_DrawablesBuffer, alpha, rimAlpha, axisLengths);
             }
 
             // ground
@@ -3606,7 +3434,7 @@ namespace {
                 glm::vec3 parentPos = shared->GetModelGraph().GetShiftInGround(parentID);
                 glm::vec3 childPos = shared->GetModelGraph().GetShiftInGround(childID);
                 glm::vec3 midPoint = (parentPos + childPos) / 2.0f;
-                auto jointID = shared->UpdModelGraph().AddJoint(freejointIdx, "", parentID, childID, Ras{{}, midPoint});
+                auto jointID = shared->UpdModelGraph().AddJoint(freejointIdx, "", parentID, childID, Transform::atPosition(midPoint));
                 shared->UpdModelGraph().DeSelectAll();
                 shared->UpdModelGraph().Select(jointID);
                 shared->CommitCurrentModelGraph("added joint");
@@ -3696,11 +3524,9 @@ namespace {
             }
             // pos editor
             {
-                glm::vec3 translation = bodyEl.Xform.shift;
+                glm::vec3 translation = bodyEl.Xform.position;
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = bodyEl.Xform;
-                    to.shift = translation;
-                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
+                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, bodyEl.Xform.withPosition(translation));
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed body translation");
@@ -3710,11 +3536,10 @@ namespace {
             }
             // rotation editor
             {
-                glm::vec3 orientationDegrees = glm::degrees(bodyEl.Xform.rot);
+                glm::vec3 orientationDegrees = glm::degrees(glm::eulerAngles(bodyEl.Xform.rotation));
                 if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = bodyEl.Xform;
-                    to.rot = glm::radians(orientationDegrees);
-                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, to);
+                    Transform newXform = bodyEl.Xform.withRotation(glm::quat{glm::radians(orientationDegrees)});
+                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, newXform);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("cFMehanged body orientation");
@@ -3725,7 +3550,7 @@ namespace {
 
             // actions
             if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                m_Shared->FocusCameraOn(bodyEl.Xform.shift);
+                m_Shared->FocusCameraOn(bodyEl.Xform.position);
             }
             if (ImGui::MenuItem(ICON_FA_LINK " join to")) {
                 TransitionToChoosingJointParent(bodyEl.ID);
@@ -3779,10 +3604,10 @@ namespace {
             }
             // pos editor
             {
-                glm::vec3 translation = meshEl.Xform.shift;
+                glm::vec3 translation = meshEl.Xform.position;
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = meshEl.Xform;
-                    to.shift = translation;
+                    Transform to = meshEl.Xform;
+                    to.position = translation;
                     m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
                 }
 
@@ -3795,10 +3620,10 @@ namespace {
             }
             // rotation editor
             {
-                glm::vec3 orientationDegrees = glm::degrees(meshEl.Xform.rot);
+                glm::vec3 orientationDegrees = glm::degrees(glm::eulerAngles(meshEl.Xform.rotation));
                 if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = meshEl.Xform;
-                    to.rot = glm::radians(orientationDegrees);
+                    Transform to = meshEl.Xform;
+                    to.rotation = glm::quat{glm::radians(orientationDegrees)};
                     m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3807,7 +3632,7 @@ namespace {
             }
             // scale factor editor
             {
-                glm::vec3 scaleFactors = meshEl.ScaleFactors;
+                glm::vec3 scaleFactors = meshEl.Xform.scale;
                 if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT)) {
                     m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
                 }
@@ -3820,13 +3645,13 @@ namespace {
             ImGui::Dummy({0.0f, 5.0f});
 
             if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                m_Shared->FocusCameraOn(meshEl.Xform.shift);
+                m_Shared->FocusCameraOn(meshEl.Xform.position);
             }
 
             if (ImGui::BeginMenu(ICON_FA_CIRCLE " add body")) {
                 if (ImGui::MenuItem("at click location")) {
                     std::string bodyName = GenerateBodyName();
-                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, clickPos});
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Transform::atPosition(clickPos));
                     m_Shared->UpdModelGraph().DeSelectAll();
                     m_Shared->UpdModelGraph().Select(bodyID);
                     if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
@@ -3837,7 +3662,7 @@ namespace {
 
                 if (ImGui::MenuItem("at mesh origin")) {
                     std::string bodyName = GenerateBodyName();
-                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, meshEl.Xform.shift});
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Transform::atPosition(meshEl.Xform.position));
                     m_Shared->UpdModelGraph().DeSelectAll();
                     m_Shared->UpdModelGraph().Select(bodyID);
                     if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
@@ -3848,7 +3673,7 @@ namespace {
 
                 if (ImGui::MenuItem("at mesh bounds center")) {
                     std::string bodyName = GenerateBodyName();
-                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Ras{{}, CalcBoundsCenter(meshEl)});
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Transform::atPosition(AABBCenter(CalcBounds(meshEl))));
                     m_Shared->UpdModelGraph().DeSelectAll();
                     m_Shared->UpdModelGraph().Select(bodyID);
                     if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
@@ -3883,7 +3708,7 @@ namespace {
             }
         }
 
-        void ActionPointBodyTowards(UIDT<BodyEl> bodyID, int axis)
+        void ActionPointElTowards(UID id, int axis)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
@@ -3891,46 +3716,119 @@ namespace {
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
             opts.Header = "choose what to point towards (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, bodyID, axis](UID userChoice) {
+            opts.OnUserChoice = [shared = m_Shared, id, axis](UID userChoice) {
                 glm::vec3 choicePos = shared->GetModelGraph().GetShiftInGround(userChoice);
-                glm::vec3 sourcePos = shared->GetModelGraph().GetShiftInGround(bodyID);
-                glm::vec3 choice2source = choicePos - sourcePos;
-                glm::vec3 choice2sourceDir = glm::normalize(choice2source);
-                glm::vec3 axisDir{};
-                axisDir[axis] = 1.0f;
+                Transform sourceXform = shared->GetModelGraph().GetTransformInGround(id);
 
-                float cosAng = glm::dot(choice2sourceDir, axisDir);
-                if (std::fabs(cosAng) < 0.999f) {
-                    glm::vec3 axisVec = glm::cross(axisDir, choice2sourceDir);
-                    glm::mat4 rot = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axisVec);
-                    glm::vec3 euler = MatToEulerAngles(rot);
-                    Ras bodyXform = shared->GetModelGraph().GetRasInGround(bodyID);
-                    shared->UpdModelGraph().SetBodyXform(bodyID, Ras{euler, bodyXform.shift});
-                }
+                Transform newXform = pointAxisTowards(sourceXform, axis, choicePos);
 
-                shared->CommitCurrentModelGraph("reoriented body");
+                shared->UpdModelGraph().SetXform(id, newXform);
+                shared->CommitCurrentModelGraph("reoriented " + shared->GetModelGraph().GetLabel(id));
                 return true;
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
+        void DrawPointXAxisTowardsMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Point X towards")) {
+                ActionPointElTowards(id, 0);
+            }
+        }
+
+        void DrawPointYAxisTowardsMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Point Y towards")) {
+                ActionPointElTowards(id, 1);
+            }
+        }
+
+        void DrawPointZAxisTowardsMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Point Z towards")) {
+                ActionPointElTowards(id, 2);
+            }
+        }
+
+        void DrawResetOrientationMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Reset")) {
+                glm::vec3 pos = m_Shared->GetModelGraph().GetShiftInGround(id);
+                Transform newCenter = Transform::atPosition(pos);
+                m_Shared->UpdModelGraph().SetXform(id, newCenter);
+                m_Shared->CommitCurrentModelGraph("reset " + m_Shared->GetModelGraph().GetLabel(id) + " orientation");
+            }
+        }
+
+        void DrawOrientAlongToMeshPointsMenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Orient Z along two mesh points")) {
+                Select2MeshPointsOptions opts;
+                opts.OnTwoPointsChosen = [shared = m_Shared, id](glm::vec3 a, glm::vec3 b) {
+                    glm::vec3 aTobDir = glm::normalize(a-b);
+                    glm::mat4 currentXform = toMat4(shared->GetModelGraph().GetTransformInGround(id));
+                    glm::vec3 currentZ = currentXform * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
+
+                    float cosAng = glm::dot(aTobDir, currentZ);
+                    if (std::fabs(cosAng) < 0.999f) {
+                        glm::vec3 axis = glm::cross(aTobDir, currentZ);
+                        glm::mat4 xform = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axis);
+                        glm::mat4 overallXform = xform * currentXform;
+                        Transform newRas = shared->GetModelGraph().GetTransformInGround(id).withRotation(glm::quat_cast(overallXform));
+                        shared->UpdModelGraph().SetXform(id, newRas);
+                        shared->CommitCurrentModelGraph("reoriented " + shared->GetModelGraph().GetLabel(id));
+                    }
+                    return true;
+                };
+
+                m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
+            }
+        }
+
+        void DrawRotateX180MenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Rotate X 180 degrees")) {
+                Transform newXform = rotateAxis(m_Shared->GetModelGraph().GetTransformInGround(id) , 0, fpi);
+
+                m_Shared->UpdModelGraph().SetXform(id, newXform);
+                m_Shared->CommitCurrentModelGraph("reoriented " + m_Shared->GetModelGraph().GetLabel(id));
+            }
+        }
+
+        void DrawRotateY180MenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Rotate Y 180 degrees")) {
+                Transform newXform = rotateAxis(m_Shared->GetModelGraph().GetTransformInGround(id) , 1, fpi);
+
+                m_Shared->UpdModelGraph().SetXform(id, newXform);
+                m_Shared->CommitCurrentModelGraph("reoriented " + m_Shared->GetModelGraph().GetLabel(id));
+            }
+        }
+
+        void DrawRotateZ180MenuItem(UID id)
+        {
+            if (ImGui::MenuItem("Rotate Z 180 degrees")) {
+                Transform newXform = rotateAxis(m_Shared->GetModelGraph().GetTransformInGround(id) , 2, fpi);
+
+                m_Shared->UpdModelGraph().SetXform(id, newXform);
+                m_Shared->CommitCurrentModelGraph("reoriented " + m_Shared->GetModelGraph().GetLabel(id));
+            }
+        }
+
         void DrawReorientMenu(BodyEl bodyEl)
         {
             if (ImGui::BeginMenu(ICON_FA_REDO " reorient")) {
-                if (ImGui::MenuItem("Point X towards")) {
-                    ActionPointBodyTowards(bodyEl.ID, 0);
-                }
-                if (ImGui::MenuItem("Point Y towards")) {
-                    ActionPointBodyTowards(bodyEl.ID, 1);
-                }
-                if (ImGui::MenuItem("Point Z towards")) {
-                    ActionPointBodyTowards(bodyEl.ID, 2);
-                }
-                if (ImGui::MenuItem("Reset")) {
-                    Ras newCenter = Ras{{}, bodyEl.Xform.shift};
-                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, newCenter);
-                    m_Shared->CommitCurrentModelGraph("reset " + bodyEl.Name + " orientation");
-                }
+
+                DrawOrientAlongToMeshPointsMenuItem(bodyEl.ID);
+
+                DrawRotateX180MenuItem(bodyEl.ID);
+                DrawRotateY180MenuItem(bodyEl.ID);
+                DrawRotateZ180MenuItem(bodyEl.ID);
+                DrawPointXAxisTowardsMenuItem(bodyEl.ID);
+                DrawPointYAxisTowardsMenuItem(bodyEl.ID);
+                DrawPointZAxisTowardsMenuItem(bodyEl.ID);
+
+                DrawResetOrientationMenuItem(bodyEl.ID);
 
                 ImGui::EndMenu();
             }
@@ -3944,102 +3842,50 @@ namespace {
 
                 if (ImGui::MenuItem("Point X towards parent")) {
                     glm::vec3 parentPos = mg.GetShiftInGround(jointEl.Parent);
-                    glm::vec3 childPos = mg.GetShiftInGround(jointEl.Child);
-                    glm::vec3 pivotPos = jointEl.Center.shift;
-                    glm::vec3 pivot2parent = parentPos - pivotPos;
-                    glm::vec3 pivot2child = childPos - pivotPos;
-                    glm::vec3 pivot2parentDir = glm::normalize(pivot2parent);
-                    glm::vec3 pivot2childDir = glm::normalize(pivot2child);
 
-                    glm::vec3 xAxis = pivot2parentDir;  // user requested this
-                    glm::vec3 zAxis = glm::normalize(glm::cross(pivot2parentDir, pivot2childDir));  // from the triangle
-                    glm::vec3 yAxis = glm::normalize(glm::cross(zAxis, xAxis));
+                    Transform newXform = pointAxisTowards(jointEl.Xform, 0, parentPos);
 
-                    glm::mat3 m{xAxis, yAxis, zAxis};
-                    Ras newCenter{MatToEulerAngles(m), jointEl.Center.shift};
-
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
                 }
 
                 if (ImGui::MenuItem("Point X towards child")) {
-                    glm::vec3 parentPos = mg.GetShiftInGround(jointEl.Parent);
                     glm::vec3 childPos = mg.GetShiftInGround(jointEl.Child);
-                    glm::vec3 pivotPos = jointEl.Center.shift;
-                    glm::vec3 pivot2parent = parentPos - pivotPos;
-                    glm::vec3 pivot2child = childPos - pivotPos;
-                    glm::vec3 pivot2parentDir = glm::normalize(pivot2parent);
-                    glm::vec3 pivot2childDir = glm::normalize(pivot2child);
 
-                    glm::vec3 xAxis = pivot2childDir;  // user requested this
-                    glm::vec3 zAxis = glm::normalize(glm::cross(pivot2parentDir, pivot2childDir));  // from the triangle
-                    glm::vec3 yAxis = glm::normalize(glm::cross(zAxis, xAxis));
+                    Transform newXform = pointAxisTowards(jointEl.Xform, 0,  childPos);
 
-                    glm::mat3 m{xAxis, yAxis, zAxis};
-                    Ras newCenter{MatToEulerAngles(m), jointEl.Center.shift};
-
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
-                }
-
-                if (ImGui::MenuItem("Orient Z along two mesh points")) {
-                    Select2MeshPointsOptions opts;
-                    opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
-                        glm::vec3 aTobDir = glm::normalize(a-b);
-                        glm::mat4 currentXform = CalcXformMatrix(jointEl);
-                        glm::vec3 currentZ = currentXform * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
-
-                        float cosAng = glm::dot(aTobDir, currentZ);
-                        if (std::fabs(cosAng) < 0.999f) {
-                            glm::vec3 axis = glm::cross(aTobDir, currentZ);
-                            glm::mat4 xform = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axis);
-                            glm::mat4 overallXform = xform * currentXform;
-                            glm::vec3 newEuler = MatToEulerAngles(overallXform);
-                            Ras newRas = Ras{newEuler, jointEl.Center.shift};
-                            shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
-                            shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
-                        }
-                        return true;
-                    };
-
-                    m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
-                }
-
-                if (ImGui::MenuItem("Rotate X 180 degrees")) {
-                    Ras newCenter = {EulerCompose({fpi, 0.0f, 0.0f}, jointEl.Center.rot), jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
-                }
-
-                if (ImGui::MenuItem("Rotate Y 180 degrees")) {
-                    Ras newCenter = {EulerCompose({0.0f, fpi, 0.0f}, jointEl.Center.rot), jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
-                }
-
-                if (ImGui::MenuItem("Rotate Z 180 degrees")) {
-                    Ras newCenter = {EulerCompose({0.0f, 0.0f, fpi}, jointEl.Center.rot), jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
                 }
 
                 if (ImGui::MenuItem("Use parent's orientation")) {
-                    Ras newCenter = Ras{mg.GetRotationInGround(jointEl.Parent), jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+                    Transform parentXform = mg.GetTransformInGround(jointEl.Parent);
+
+                    Transform newXform = jointEl.Xform.withRotation(parentXform.rotation);
+
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
                 }
 
                 if (ImGui::MenuItem("Use child's orientation")) {
-                    Ras newCenter = Ras{mg.GetRotationInGround(jointEl.Child), jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+                    Transform childXform = mg.GetTransformInGround(jointEl.Child);
+
+                    Transform newXform = jointEl.Xform.withRotation(childXform.rotation);
+
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
                 }
 
-                if (ImGui::MenuItem("Reset")) {
-                    Ras newCenter = Ras{{}, jointEl.Center.shift};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
-                    m_Shared->CommitCurrentModelGraph("reset " + GetLabel(jointEl) + " orientation");
-                }
+                DrawOrientAlongToMeshPointsMenuItem(jointEl.ID);
+
+                DrawRotateX180MenuItem(jointEl.ID);
+                DrawRotateY180MenuItem(jointEl.ID);
+                DrawRotateZ180MenuItem(jointEl.ID);
+                DrawPointXAxisTowardsMenuItem(jointEl.ID);
+                DrawPointYAxisTowardsMenuItem(jointEl.ID);
+                DrawPointZAxisTowardsMenuItem(jointEl.ID);
+
+                DrawResetOrientationMenuItem(jointEl.ID);
 
                 ImGui::EndMenu();
             }
@@ -4055,22 +3901,28 @@ namespace {
                     glm::vec3 parentPos = mg.GetShiftInGround(jointEl.Parent);
                     glm::vec3 childPos = mg.GetShiftInGround(jointEl.Child);
                     glm::vec3 centerPos = (parentPos + childPos)/2.0f;
-                    Ras newCenter = {jointEl.Center.rot, centerPos};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+
+                    Transform newXform = jointEl.Xform.withPosition(centerPos);
+
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
                 }
 
                 if (ImGui::MenuItem("Use parent's translation")) {
                     glm::vec3 parentPos = mg.GetShiftInGround(jointEl.Parent);
-                    Ras newCenter = {jointEl.Center.rot, parentPos};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+
+                    Transform newXform = jointEl.Xform.withPosition(parentPos);
+
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
                 }
 
                 if (ImGui::MenuItem("Use child's translation")) {
                     glm::vec3 childPos = mg.GetShiftInGround(jointEl.Child);
-                    Ras newCenter = {jointEl.Center.rot, childPos};
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, newCenter);
+
+                    Transform newXform = jointEl.Xform.withPosition(childPos);
+
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
                     m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
                 }
 
@@ -4078,8 +3930,8 @@ namespace {
                     Select2MeshPointsOptions opts;
                     opts.OnTwoPointsChosen = [shared = m_Shared, jointEl](glm::vec3 a, glm::vec3 b) {
                         glm::vec3 midpoint = (a+b)/2.0f;
-                        Ras newRas = {shared->GetModelGraph().GetRotationInGround(jointEl.ID), midpoint};
-                        shared->UpdModelGraph().SetJointCenter(jointEl.ID, newRas);
+                        Transform newRas = Transform{midpoint, glm::quat{shared->GetModelGraph().GetRotationInGround(jointEl.ID)}, {1.0f, 1.0f, 1.0f}};
+                        shared->UpdModelGraph().SetJointXform(jointEl.ID, newRas);
                         shared->CommitCurrentModelGraph("translated " + GetLabel(jointEl));
                         return true;
                     };
@@ -4117,11 +3969,11 @@ namespace {
             }
             // pos editor
             {
-                glm::vec3 translation = jointEl.Center.shift;
+                glm::vec3 translation = jointEl.Xform.position;
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = jointEl.Center;
-                    to.shift = translation;
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
+                    Transform to = jointEl.Xform;
+                    to.position = translation;
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed joint translation");
@@ -4131,11 +3983,11 @@ namespace {
             }
             // rotation editor
             {
-                glm::vec3 orientationDegrees = glm::degrees(jointEl.Center.rot);
+                glm::vec3 orientationDegrees = glm::degrees(glm::eulerAngles(jointEl.Xform.rotation));
                 if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
-                    Ras to = jointEl.Center;
-                    to.rot = glm::radians(orientationDegrees);
-                    m_Shared->UpdModelGraph().SetJointCenter(jointEl.ID, to);
+                    Transform to = jointEl.Xform;
+                    to.rotation = glm::quat{glm::radians(orientationDegrees)};
+                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed joint orientation");
@@ -4155,7 +4007,7 @@ namespace {
 
             // actions
             if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
-                m_Shared->FocusCameraOn(jointEl.Center.shift);
+                m_Shared->FocusCameraOn(jointEl.Xform.position);
             }
             DrawReorientMenu(jointEl);
             DrawTranslateMenu(jointEl);
@@ -4682,19 +4534,20 @@ namespace {
 
                 int n = 0;
 
-                Ras ras = mg.GetRasInGround(*it);
+                Transform ras = mg.GetTransformInGround(*it);
                 ++it;
                 ++n;
 
                 while (it != end) {
-                    ras += mg.GetRasInGround(*it);
+                    ras += mg.GetTransformInGround(*it);
                     ++it;
                     ++n;
                 }
 
                 ras /= static_cast<float>(n);
+                ras.rotation = glm::normalize(ras.rotation);
 
-                m_ImGuizmoState.mtx = CalcXformMatrix(ras);
+                m_ImGuizmoState.mtx = toMat4(ras);
             }
 
             // else: is using OR nselected > 0 (so draw it)
@@ -4827,7 +4680,7 @@ namespace {
 
             if (m_Shared->IsShowingJointCenters()) {
                 for (auto const& [jointID, jointEl] : m_Shared->GetModelGraph().GetJoints()) {
-                    m_Shared->AppendAsFrame(jointID, g_JointGroupID, jointEl.Center, m_DrawablesBuffer, 1.0f, 0.0f, GetJointAxisLengths(jointEl));
+                    m_Shared->AppendAsFrame(jointID, g_JointGroupID, jointEl.Xform, m_DrawablesBuffer, 1.0f, 0.0f, GetJointAxisLengths(jointEl));
                 }
             }
 
@@ -5026,8 +4879,6 @@ namespace {
             ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
             ImGuizmo::MODE mode = ImGuizmo::WORLD;
         } m_ImGuizmoState;
-
-        static constexpr char const* const m_ContextMenuName = "standardmodecontextmenu";
     };
 }
 

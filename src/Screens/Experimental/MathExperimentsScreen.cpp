@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 struct osc::MathExperimentsScreen::Impl final {
-    Transform boxTransform = Transform::withPosition({75.0f, 75.0f, 0.0f});
+    Transform boxTransform = Transform::atPosition({75.0f, 75.0f, 0.0f});
 };
 
 // public API
@@ -74,7 +74,7 @@ void osc::MathExperimentsScreen::draw() {
         m_Impl->boxTransform.scale = glm::vec3{100.0f, 100.0f, 100.0f};
         m_Impl->boxTransform.position = glm::vec3{screenCenter, 0.0f};
         m_Impl->boxTransform.rotation = glm::quat{glm::vec3{0.0f, 0.0f, 0.01f}} * m_Impl->boxTransform.rotation;
-        glm::mat4 m = m_Impl->boxTransform.localToWorldMatrix();
+        glm::mat4 m = toMat4(m_Impl->boxTransform);
         glm::vec2 tl = m * glm::vec4{-1.0f, -1.0f, 0.0f, 1.0f};
         glm::vec2 bl = m * glm::vec4{-1.0f, +1.0f, 0.0f, 1.0f};
         glm::vec2 tr = m * glm::vec4{+1.0f, -1.0f, 0.0f, 1.0f};
@@ -124,9 +124,9 @@ void osc::MathExperimentsScreen::draw() {
     ImGui::Begin("cookiecutter panel");
     ImGui::Text("screen center = %.2f, %.2f", screenCenter.x, screenCenter.y);
     ImGui::Text("mainvec = %.2f, %.2f", mainVec.x, mainVec.y);
-    glm::vec2 relVec = m_Impl->boxTransform.worldToLocalMatrix() * glm::vec4{mousePos, 0.0f, 1.0f};
+    glm::vec2 relVec = toMat4(m_Impl->boxTransform) * glm::vec4{mousePos, 0.0f, 1.0f};
     ImGui::Text("relvec (mtx) = %.2f, %.2f", relVec.x, relVec.y);
-    glm::vec2 relVecF = m_Impl->boxTransform.inverseTransformPoint(glm::vec3{mousePos, 0.0f});
+    glm::vec2 relVecF = transformPoint(m_Impl->boxTransform, glm::vec3{mousePos, 0.0f});
     ImGui::Text("relvec (func) = %.2f, %.2f", relVecF.x, relVecF.y);
 
     osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
