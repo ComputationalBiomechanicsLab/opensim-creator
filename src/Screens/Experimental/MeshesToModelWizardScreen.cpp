@@ -3431,6 +3431,12 @@ namespace {
                     m_Shared->UpdCamera().theta += glm::radians(10.0f);
                 }
                 return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_MINUS)) {
+                m_Shared->UpdCamera().radius *= 1.1f;
+                return true;
+            } else if (ImGui::IsKeyDown(SDL_SCANCODE_EQUALS)) {
+                m_Shared->UpdCamera().radius *= 0.9f;
+                return true;
             } else {
                 return false;
             }
