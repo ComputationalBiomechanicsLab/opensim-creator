@@ -3417,21 +3417,21 @@ namespace {
                 if (shiftDown) {
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
                 } else {
-                    m_Shared->UpdCamera().phi += glm::radians(10.0f);
+                    m_Shared->UpdCamera().phi -= glm::radians(10.0f);
                 }
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN)) {
                 if (shiftDown) {
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
                 } else {
-                    m_Shared->UpdCamera().phi -= glm::radians(10.0f);
+                    m_Shared->UpdCamera().phi += glm::radians(10.0f);
                 }
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_LEFT)) {
                 if (shiftDown) {
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
                 } else {
-                    m_Shared->UpdCamera().theta -= glm::radians(10.0f);
+                    m_Shared->UpdCamera().theta += glm::radians(10.0f);
                 }
 
                 return true;
@@ -3439,7 +3439,7 @@ namespace {
                 if (shiftDown) {
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
                 } else {
-                    m_Shared->UpdCamera().theta += glm::radians(10.0f);
+                    m_Shared->UpdCamera().theta -= glm::radians(10.0f);
                 }
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_MINUS)) {
