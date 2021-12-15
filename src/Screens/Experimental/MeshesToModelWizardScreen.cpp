@@ -3414,31 +3414,50 @@ namespace {
                 m_ImGuizmoState.op = ImGuizmo::SCALE;
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_UP)) {
-                if (shiftDown) {
+                if (ctrlOrSuperDown) {
+                    // pan
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
+                } else if (shiftDown) {
+                    // rotate in 90-deg increments
+                    m_Shared->UpdCamera().phi -= glm::radians(90.0f);
                 } else {
+                    // rotate in 10-deg increments
                     m_Shared->UpdCamera().phi -= glm::radians(10.0f);
                 }
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_DOWN)) {
-                if (shiftDown) {
+                if (ctrlOrSuperDown) {
+                    // pan
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
+                } else if (shiftDown) {
+                    // rotate in 90-deg increments
+                    m_Shared->UpdCamera().phi += glm::radians(90.0f);
                 } else {
+                    // rotate in 10-deg increments
                     m_Shared->UpdCamera().phi += glm::radians(10.0f);
                 }
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_LEFT)) {
-                if (shiftDown) {
+                if (ctrlOrSuperDown) {
+                    // pan
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
+                } else if (shiftDown) {
+                    // rotate in 90-deg increments
+                    m_Shared->UpdCamera().theta += glm::radians(90.0f);
                 } else {
+                    // rotate in 10-deg increments
                     m_Shared->UpdCamera().theta += glm::radians(10.0f);
                 }
-
                 return true;
             } else if (ImGui::IsKeyDown(SDL_SCANCODE_RIGHT)) {
-                if (shiftDown) {
+                if (ctrlOrSuperDown) {
+                    // pan
                     m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
+                } else if (shiftDown) {
+                    // rotate in 90-deg increments
+                    m_Shared->UpdCamera().theta -= glm::radians(90.0f);
                 } else {
+                    // rotate in 10-deg increments
                     m_Shared->UpdCamera().theta -= glm::radians(10.0f);
                 }
                 return true;
@@ -3491,7 +3510,7 @@ namespace {
             if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this")) {
                 m_Shared->FocusCameraOn({});
             }
-            if (ImGui::MenuItem(ICON_FA_CUBE " Add Mesh(es)")) {
+            if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes")) {
                 m_Shared->PushMeshLoadRequests(m_Shared->PromptUserForMeshFiles());
             }
         }
@@ -3576,7 +3595,7 @@ namespace {
                     m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, newXform);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
-                    m_Shared->CommitCurrentModelGraph("cFMehanged body orientation");
+                    m_Shared->CommitCurrentModelGraph("changed body orientation");
                 }
             }
 
