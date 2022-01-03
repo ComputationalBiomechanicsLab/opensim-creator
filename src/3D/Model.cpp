@@ -664,7 +664,7 @@ void osc::applyWorldspaceRotation(Transform& t,
 {
     glm::quat q{eulerAngles};
     t.position = q*(t.position - rotationCenter) + rotationCenter;
-    t.rotation = q*t.rotation;
+    t.rotation = glm::normalize(q*t.rotation);
 }
 
 glm::vec3 osc::eulerAnglesXYZ(Transform const& t) noexcept

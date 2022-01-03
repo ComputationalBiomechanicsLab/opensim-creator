@@ -311,6 +311,120 @@ namespace {
 //     be exported directly into the main (OpenSim::Model-manipulating) UI
 namespace {
 
+    // virtual interface that all scene elements must implement
+    class ISceneEl {
+    public:
+        virtual ~ISceneEl() noexcept = default;
+
+        virtual UID GetID() const = 0;
+
+        virtual std::ostream& operator<<(std::ostream&) const = 0;
+
+        virtual std::string const& GetLabel() const = 0;
+        virtual void SetLabel(std::string_view) = 0;
+
+        virtual Transform GetXform() const = 0;
+        virtual void SetXform(Transform const&) = 0;
+
+        virtual bool UsesPosition() const { return true; }
+        virtual bool UsesRotation() const { return true; }
+        virtual bool UsesScale() const { return true; }
+
+        virtual glm::vec3 GetPos() const
+        {
+            return GetXform().position;
+        }
+        virtual void SetPos(glm::vec3 const& newPos)
+        {
+            Transform t = GetXform();
+            t.position = newPos;
+            SetXform(t);
+        }
+
+        virtual glm::vec3 GetScale() const
+        {
+            return GetXform().scale;
+        }
+        virtual void SetScale(glm::vec3 const& newScale)
+        {
+            Transform t = GetXform();
+            t.scale = newScale;
+            SetXform(t);
+        }
+
+        virtual glm::quat GetRotation() const
+        {
+            return GetXform().rotation;
+        }
+        virtual void SetRotation(glm::quat const& newRotation)
+        {
+            Transform t = GetXform();
+            t.rotation = newRotation;
+            SetXform(t);
+        }
+
+        virtual AABB CalcBounds() const = 0;
+    };
+
+    void ApplyTranslation(ISceneEl& el, glm::vec3 const& translation)
+    {
+        el.SetPos(el.GetPos() + translation);
+    }
+
+    void ApplyRotation(ISceneEl& el, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
+    {
+        Transform t = el.GetXform();
+        applyWorldspaceRotation(t, eulerAngles, rotationCenter);
+        el.SetXform(t);
+    }
+
+    void ApplyScale(ISceneEl& el, glm::vec3 const& scaleFactors)
+    {
+        el.SetScale(el.GetScale() * scaleFactors);
+    }
+
+    glm::vec3 GetRotationEulersInGround(ISceneEl const& el)
+    {
+        return glm::eulerAngles(el.GetRotation());
+    }
+
+
+    class GroundEl final : public ISceneEl {
+    public:
+        UID GetID() const override
+        {
+            return g_GroundID;
+        }
+
+        std::ostream& operator<<(std::ostream& o) const override
+        {
+            return o << "Ground()";
+        }
+
+        std::string const& GetLabel() const override
+        {
+            static std::string const g_GroundLabel = "Ground";
+            return g_GroundLabel;
+        }
+
+        void SetLabel(std::string_view) override {}  // ignore
+
+        Transform GetXform() const override
+        {
+            return Transform{};
+        }
+
+        void SetXform(Transform const&) override {}  // ignore
+
+        bool UsesPosition() const override { return false; }
+        bool UsesRotation() const override { return false; }
+        bool UsesScale() const override { return false; }
+
+        AABB CalcBounds() const override { return AABB{}; }
+    };
+
+    static GroundEl g_GroundEl;  // global used to access ground in an abstract way
+
     // a mesh in the scene
     //
     // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
@@ -322,7 +436,7 @@ namespace {
     // move meshes/bodies/joints in the mesh importer without everything else in the scene moving around (which
     // is what would happen in a relative topology-sensitive attachment graph).
     class BodyEl;
-    class MeshEl final {
+    class MeshEl final : public ISceneEl {
     public:
         MeshEl(UIDT<MeshEl> id,
                UIDT<BodyEl> attachment,  // can be g_GroundID
@@ -336,6 +450,49 @@ namespace {
         {
         }
 
+        UID GetID() const override
+        {
+            return ID;
+        }
+
+        std::ostream& operator<<(std::ostream& o) const override
+        {
+            return o << "MeshEl("
+                     << "ID = " << ID
+                     << ", Attachment = " << Attachment
+                     << ", Xform = " << Xform
+                     << ", MeshData = " << MeshData.get()
+                     << ", Path = " << Path
+                     << ", Name = " << Name
+                     << ')';
+        }
+
+        std::string const& GetLabel() const override
+        {
+            return Name;
+        }
+
+        void SetLabel(std::string_view sv) override
+        {
+            Name = std::move(sv);
+        }
+
+        Transform GetXform() const override
+        {
+            return Xform;
+        }
+
+        void SetXform(Transform const& t) override
+        {
+            Xform = std::move(t);
+        }
+
+        AABB CalcBounds() const override
+        {
+            return MeshData->getWorldspaceAABB(Xform);
+        }
+
+
         UIDT<MeshEl> ID;
         UIDT<BodyEl> Attachment;  // can be g_GroundID
         Transform Xform;
@@ -344,42 +501,10 @@ namespace {
         std::string Name{FileNameWithoutExtension(Path)};
     };
 
-    // write MeshEl to output stream in a human-readable format
-    std::ostream& operator<<(std::ostream& o, MeshEl const& mesh)
-    {
-        using osc::operator<<;
-
-        return o << "MeshEl("
-                 << "ID = " << mesh.ID
-                 << ", Attachment = " << mesh.Attachment
-                 << ", Xform = " << mesh.Xform
-                 << ", MeshData = " << mesh.MeshData.get()
-                 << ", Path = " << mesh.Path
-                 << ", Name = " << mesh.Name
-                 << ')';
-    }
-
-    // returns human-readable label for the mesh
-    std::string const& GetLabel(MeshEl const& mesh)
-    {
-        return mesh.Name;
-    }
-
-    Transform const& GetXform(MeshEl const& mesh)
-    {
-        return mesh.Xform;
-    }
-
-    // returns the groundspace bounds of the mesh
-    AABB CalcBounds(MeshEl const& mesh)
-    {
-        return mesh.MeshData->getWorldspaceAABB(mesh.Xform);
-    }
-
     // a body scene element
     //
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
-    class BodyEl final {
+    class BodyEl final : public ISceneEl {
     public:
         BodyEl(UIDT<BodyEl> id, std::string const& name, Transform const& xform) :
             ID{id},
@@ -388,37 +513,54 @@ namespace {
         {
         }
 
+        UID GetID() const override
+        {
+            return ID;
+        }
+
+        std::ostream& operator<<(std::ostream& o) const override
+        {
+            return o << "BodyEl(ID = " << ID
+                     << ", Name = " << Name
+                     << ", Xform = " << Xform
+                     << ", Mass = " << Mass
+                     << ')';
+        }
+
+        std::string const& GetLabel() const override
+        {
+            return Name;
+        }
+
+        void SetLabel(std::string_view sv) override
+        {
+            Name = std::move(sv);
+        }
+
+        Transform GetXform() const override
+        {
+            return Xform;
+        }
+
+        void SetXform(Transform const& newXform) override
+        {
+            Xform = newXform;
+            Xform.scale = {1.0f, 1.0f, 1.0f};
+        }
+
+        bool UsesScale() const override { return false; }
+        void SetScale(glm::vec3 const&) override {}  // ignored
+
+        AABB CalcBounds() const override
+        {
+            return AABB{Xform.position, Xform.position};
+        }
+
         UIDT<BodyEl> ID;
         std::string Name;
         Transform Xform;
         double Mass{1.0f};  // OpenSim goes bananas if a body has a mass <= 0
     };
-
-    std::ostream& operator<<(std::ostream& o, BodyEl const& b)
-    {
-        return o << "BodyEl(ID = " << b.ID
-                 << ", Name = " << b.Name
-                 << ", Xform = " << b.Xform
-                 << ", Mass = " << b.Mass
-                 << ')';
-    }
-
-    // returns human-readable label for the body element
-    std::string const& GetLabel(BodyEl const& body)
-    {
-        return body.Name;
-    }
-
-    Transform const& GetXform(BodyEl const& body)
-    {
-        return body.Xform;
-    }
-
-    // returns groundspace bounds of the body element (volume == 0)
-    AABB CalcBounds(BodyEl const& body)
-    {
-        return AABB{body.Xform.position, body.Xform.position};
-    }
 
     // returns a unique, generated body name
     std::string GenerateBodyName()
@@ -433,7 +575,7 @@ namespace {
     // a joint scene element
     //
     // see `JointAttachment` comment for an explanation of why it's designed this way.
-    class JointEl final {
+    class JointEl final : public ISceneEl {
     public:
         JointEl(UIDT<JointEl> id,
                 size_t jointTypeIdx,
@@ -451,6 +593,62 @@ namespace {
         {
         }
 
+        UID GetID() const override
+        {
+            return ID;
+        }
+
+        std::ostream& operator<<(std::ostream& o) const override
+        {
+            return o << "JointEl(ID = " << ID
+                     << ", JointTypeIndex = " << JointTypeIndex
+                     << ", UserAssignedName = " << UserAssignedName
+                     << ", Parent = " << Parent
+                     << ", Child = " << Child
+                     << ", Xform = " << Xform
+                     << ')';
+        }
+
+        // returns a human-readable typename for the joint
+        std::string const& GetJointTypeName() const
+        {
+            return JointRegistry::nameStrings()[JointTypeIndex];
+        }
+
+        std::string const& GetLabel() const override
+        {
+            return UserAssignedName.empty() ? GetJointTypeName() : UserAssignedName;
+        }
+
+        void SetLabel(std::string_view sv) override
+        {
+            UserAssignedName = std::move(sv);
+        }
+
+        Transform GetXform() const override
+        {
+            return Xform;
+        }
+
+        void SetXform(Transform const& t) override
+        {
+            Xform = std::move(t);
+            Xform.scale = {1.0f, 1.0f, 1.0f};
+        }
+
+        bool UsesScale() const override { return false; }
+        void SetScale(glm::vec3 const&) override {}  // ignore
+
+        AABB CalcBounds() const override
+        {
+            return AABB{Xform.position, Xform.position};
+        }
+
+        bool IsAttachedTo(BodyEl const& b) const
+        {
+            return Parent == b.ID || Child == b.ID;
+        }
+
         UIDT<JointEl> ID;
         size_t JointTypeIndex;
         std::string UserAssignedName;
@@ -459,56 +657,10 @@ namespace {
         Transform Xform;  // joint center
     };
 
-    std::ostream& operator<<(std::ostream& o, JointEl const& j)
-    {
-        return o << "JointEl(ID = " << j.ID
-                 << ", JointTypeIndex = " << j.JointTypeIndex
-                 << ", UserAssignedName = " << j.UserAssignedName
-                 << ", Parent = " << j.Parent
-                 << ", Child = " << j.Child
-                 << ", Xform = " << j.Xform
-                 << ')';
-    }
-
-    // returns a human-readable typename for the joint
-    std::string const& GetJointTypeName(JointEl const& joint)
-    {
-        return JointRegistry::nameStrings()[joint.JointTypeIndex];
-    }
-
-    // returns human-readable label for the joint element
-    std::string const& GetLabel(JointEl const& joint)
-    {
-        return joint.UserAssignedName.empty() ? GetJointTypeName(joint) : joint.UserAssignedName;
-    }
-
-    Transform GetXform(JointEl const& joint)
-    {
-        return joint.Xform;
-    }
-
-    // returns groundspace bounds of the joint center (volume == 0)
-    AABB CalcBounds(JointEl const& joint)
-    {
-        return AABB{joint.Xform.position, joint.Xform.position};
-    }
-
-    // returns `true` if body is either the parent or the child attachment of `joint`
-    bool IsAttachedToJoint(JointEl const& joint, BodyEl const& body)
-    {
-        return joint.Parent == body.ID || joint.Child == body.ID;
-    }
-
-    // returns an OpenSim::Joint that has the specified type index (from the type registry)
-    std::unique_ptr<OpenSim::Joint> ConstructOpenSimJointFromTypeIndex(size_t typeIndex)
-    {
-        return std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[typeIndex]->clone());
-    }
-
 
     // a station (point of interest)
     class BodyEl;
-    class StationEl final {
+    class StationEl final : public ISceneEl {
     public:
         StationEl(UIDT<StationEl> id,
                   UIDT<BodyEl> attachment,  // can be g_GroundID
@@ -521,38 +673,56 @@ namespace {
         {
         }
 
+        UID GetID() const override
+        {
+            return ID;
+        }
+
+        std::ostream& operator<<(std::ostream& o) const override
+        {
+            using osc::operator<<;
+
+            return o << "StationEl("
+                     << "ID = " << ID
+                     << ", Attachment = " << Attachment
+                     << ", Position = " << Position
+                     << ", Name = " << Name
+                     << ')';
+        }
+
+        std::string const& GetLabel() const override
+        {
+            return Name;
+        }
+
+        void SetLabel(std::string_view sv) override
+        {
+            Name = std::move(sv);
+        }
+
+        Transform GetXform() const override
+        {
+            return Transform::atPosition(Position);
+        }
+
+        void SetXform(Transform const& t) override
+        {
+            Position = t.position;
+        }
+
+        bool UsesRotation() const override { return false; }
+        bool UsesScale() const override { return false; }
+
+        AABB CalcBounds() const override
+        {
+            return AABB{Position, Position};
+        }
+
         UIDT<StationEl> ID;
         UIDT<BodyEl> Attachment;  // can be g_GroundID
         glm::vec3 Position;
         std::string Name;
     };
-
-    std::ostream& operator<<(std::ostream& o, StationEl const& se)
-    {
-        using osc::operator<<;
-
-        return o << "StationEl("
-                 << "ID = " << se.ID
-                 << ", Attachment = " << se.Attachment
-                 << ", Position = " << se.Position
-                 << ", Name = " << se.Name
-                 << ')';
-    }
-
-    std::string const& GetLabel(StationEl const& se)
-    {
-        return se.Name;
-    }
-
-    Transform GetXform(StationEl const& se)
-    {
-        return Transform::atPosition(se.Position);
-    }
-
-    AABB CalcBounds(StationEl const& se)
-    {
-        return AABB{se.Position, se.Position};
-    }
 
     // top-level model structure
     //
@@ -568,24 +738,125 @@ namespace {
         std::unordered_map<UIDT<MeshEl>, MeshEl> const& GetMeshes() const { return m_Meshes; }
         std::unordered_map<UIDT<BodyEl>, BodyEl> const& GetBodies() const { return m_Bodies; }
         std::unordered_map<UIDT<JointEl>, JointEl> const& GetJoints() const { return m_Joints; }
+        std::unordered_map<UIDT<StationEl>, StationEl> const& GetStations() const { return m_Stations; }
         std::unordered_set<UID> const& GetSelected() const { return m_Selected; }
+
+    private:
+        MeshEl* TryUpdMeshElByID(UID id)
+        {
+            auto it = m_Meshes.find(DowncastID<MeshEl>(id));
+            return it != m_Meshes.end() ? &it->second : nullptr;
+        }
+
+        BodyEl* TryUpdBodyElByID(UID id)
+        {
+            auto it = m_Bodies.find(DowncastID<BodyEl>(id));
+            return it != m_Bodies.end() ? &it->second : nullptr;
+        }
+
+        JointEl* TryUpdJointElByID(UID id)
+        {
+            auto it = m_Joints.find(DowncastID<JointEl>(id));
+            return it != m_Joints.end() ? &it->second : nullptr;
+        }
+
+        StationEl* TryUpdStationElByID(UID id)
+        {
+            auto it = m_Stations.find(DowncastID<StationEl>(id));
+            return it != m_Stations.end() ? &it->second : nullptr;
+        }
+
+        ISceneEl* TryUpdSceneElByID(UID id)
+        {
+            if (id == g_GroundID) {
+                return &g_GroundEl;
+            } else if (MeshEl* ptr = TryUpdMeshElByID(id)) {
+                return ptr;
+            } else if (BodyEl* ptr = TryUpdBodyElByID(id)) {
+                return ptr;
+            } else if (JointEl* ptr = TryUpdJointElByID(id)) {
+                return ptr;
+            } else if (StationEl* ptr = TryUpdStationElByID(id)) {
+                return ptr;
+            } else {
+                return nullptr;
+            }
+        }
+
+    public:
+        MeshEl const* TryGetMeshElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
+        BodyEl const* TryGetBodyElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
+        JointEl const* TryGetJointElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
+        StationEl const* TryGetStationElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdStationElByID(id); }
+        ISceneEl const* TryGetSceneElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdSceneElByID(id); }
+
+    private:
+        MeshEl& UpdMeshByIDOrThrow(UID id)
+        {
+            MeshEl* meshEl = TryUpdMeshElByID(id);
+            if (!meshEl) {
+                throw std::runtime_error{"could not find a mesh"};
+            }
+            return *meshEl;
+        }
+
+        BodyEl& UpdBodyByIDOrThrow(UID id)
+        {
+            BodyEl* bodyEl = TryUpdBodyElByID(id);
+            if (!bodyEl) {
+                throw std::runtime_error{"could not find a body"};
+            }
+            return *bodyEl;
+        }
+
+        JointEl& UpdJointByIDOrThrow(UID id)
+        {
+            JointEl* jointEl = TryUpdJointElByID(id);
+            if (!jointEl) {
+                throw std::runtime_error{"could not find a joint"};
+            }
+            return *jointEl;
+        }
+
+        StationEl& UpdStationByIDOrThrow(UID id)
+        {
+            StationEl* stationEl = TryUpdStationElByID(id);
+            if (!stationEl) {
+                throw std::runtime_error{"could not find a station"};
+            }
+            return *stationEl;
+        }
+
+        ISceneEl& UpdSceneElByIDOrThrow(UID id)
+        {
+            ISceneEl* sceneEl = TryUpdSceneElByID(id);
+            if (!sceneEl) {
+                throw std::runtime_error{"could not find a scene el"};
+            }
+            return *sceneEl;
+        }
+
+    public:
+        MeshEl const& GetMeshByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
+        BodyEl const& GetBodyByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
+        JointEl const& GetJointByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+        StationEl const& GetStationByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdStationByIDOrThrow(id); }
+        ISceneEl const& GetSceneElByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdSceneElByIDOrThrow(id); }
 
         bool ContainsMeshEl(UID id) const { return TryGetMeshElByID(id) != nullptr; }
         bool ContainsBodyEl(UID id) const { return TryGetBodyElByID(id) != nullptr; }
         bool ContainsJointEl(UID id) const { return TryGetJointElByID(id) != nullptr; }
+        bool ContainsStationEl(UID id) const { return TryGetStationElByID(id) != nullptr; }
+        bool ContainsSceneEl(UID id) const { return TryGetSceneElByID(id) != nullptr; };
 
-        MeshEl const* TryGetMeshElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdMeshElByID(id); }
-        BodyEl const* TryGetBodyElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdBodyElByID(id); }
-        JointEl const* TryGetJointElByID(UID id) const { return const_cast<ModelGraph&>(*this).TryUpdJointElByID(id); }
 
-        MeshEl const& GetMeshByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdMeshByIDOrThrow(id); }
-        BodyEl const& GetBodyByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdBodyByIDOrThrow(id); }
-        JointEl const& GetJointByIDOrThrow(UID id) const { return const_cast<ModelGraph&>(*this).UpdJointByIDOrThrow(id); }
+        // adders
 
         UIDT<BodyEl> AddBody(std::string name, Transform const& xform)
         {
             UIDT<BodyEl> id = GenerateIDT<BodyEl>();
-            return m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, xform)).first->first;
+            m_Bodies.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, name, xform));
+            return id;
         }
 
         UIDT<MeshEl> AddMesh(std::shared_ptr<Mesh> mesh, UIDT<BodyEl> attachment, std::filesystem::path const& path)
@@ -595,88 +866,30 @@ namespace {
             }
 
             UIDT<MeshEl> id = GenerateIDT<MeshEl>();
-            return m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, mesh, path)).first->first;
+            m_Meshes.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, mesh, path));
+            return id;
         }
 
         UIDT<JointEl> AddJoint(size_t jointTypeIdx, std::string maybeName, UID parent, UIDT<BodyEl> child, Transform const& xform)
         {
             UIDT<JointEl> id = GenerateIDT<JointEl>();
-            return m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parent, child, xform)).first->first;
+            m_Joints.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, jointTypeIdx, maybeName, parent, child, xform));
+            return id;
         }
 
-        void SetMeshAttachmentPoint(UIDT<MeshEl> meshID, UIDT<BodyEl> bodyID)
+        UIDT<StationEl> AddStation(std::string name, UIDT<BodyEl> attachment, glm::vec3 const& position)
         {
-            UpdMeshByIDOrThrow(meshID).Attachment = bodyID;
-        }
-
-        void UnsetMeshAttachmentPoint(UIDT<MeshEl> meshID)
-        {
-            UpdMeshByIDOrThrow(meshID).Attachment = g_GroundID;
-        }
-
-        void SetMeshXform(UIDT<MeshEl> meshID, Transform const& newXform)
-        {
-            UpdMeshByIDOrThrow(meshID).Xform = newXform;
-        }
-
-        void SetMeshScaleFactors(UIDT<MeshEl> meshID, glm::vec3 const& newScaleFactors)
-        {
-            UpdMeshByIDOrThrow(meshID).Xform.scale = newScaleFactors;
-        }
-
-        void SetMeshName(UIDT<MeshEl> meshID, std::string_view newName)
-        {
-            UpdMeshByIDOrThrow(meshID).Name = newName;
-        }
-
-        void SetBodyName(UIDT<BodyEl> bodyID, std::string_view newName)
-        {
-            UpdBodyByIDOrThrow(bodyID).Name = newName;
-        }
-
-        void SetJointName(UIDT<JointEl> jointID, std::string_view newName)
-        {
-            UpdJointByIDOrThrow(jointID).UserAssignedName = newName;
-        }
-
-        void SetBodyXform(UIDT<BodyEl> bodyID, Transform const& newXform)
-        {
-            UpdBodyByIDOrThrow(bodyID).Xform = newXform;
-        }
-
-        void SetJointXform(UIDT<JointEl> jointID, Transform const& newCenter)
-        {
-            UpdJointByIDOrThrow(jointID).Xform = newCenter;
-        }
-
-        void SetJointTypeIdx(UIDT<JointEl> jointID, size_t newIdx)
-        {
-            UpdJointByIDOrThrow(jointID).JointTypeIndex = newIdx;
-        }
-
-        void SetBodyMass(UIDT<BodyEl> bodyID, double newMass)
-        {
-            UpdBodyByIDOrThrow(bodyID).Mass = newMass;
-        }
-
-        void SetXform(UID id, Transform const& newXform)
-        {
-            if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                meshPtr->Xform = newXform;
-            } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                bodyPtr->Xform = newXform;
-            } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                jointPtr->Xform = newXform;
+            if (attachment != g_GroundID && !ContainsBodyEl(attachment)) {
+                throw std::runtime_error{"implementation error: tried to assign a station to a body, but the body does not exist?"};
             }
+
+            UIDT<StationEl> id = GenerateIDT<StationEl>();
+            m_Stations.emplace(std::piecewise_construct, std::make_tuple(id), std::make_tuple(id, attachment, position, std::move(name)));
+            return id;
         }
 
-        template<typename Consumer>
-        void ForEachSceneElID(Consumer idConsumer) const
-        {
-            for (auto const& [meshID, mesh] : GetMeshes()) { idConsumer(meshID); }
-            for (auto const& [bodyID, body] : GetBodies()) { idConsumer(bodyID); }
-            for (auto const& [jointID, joint] : GetJoints()) { idConsumer(jointID); }
-        }
+
+        // deleters
 
         void DeleteMeshElByID(UID id)
         {
@@ -701,7 +914,7 @@ namespace {
             // delete any joints that reference the body
             for (auto jointIt = m_Joints.begin(); jointIt != m_Joints.end();) {
 
-                if (IsAttachedToJoint(jointIt->second, it->second)) {
+                if (jointIt->second.IsAttachedTo(it->second)) {
                     DeSelect(jointIt->first);
                     jointIt = m_Joints.erase(jointIt);
                 } else {
@@ -717,6 +930,16 @@ namespace {
                     meshIt = m_Meshes.erase(meshIt);
                 } else {
                     ++meshIt;
+                }
+            }
+
+            // delete any stations that reference the body
+            for (auto stationIt = m_Stations.begin(); stationIt != m_Stations.end();) {
+                if (stationIt->second.Attachment == DowncastID<BodyEl>(id)) {
+                    DeSelect(stationIt->first);
+                    stationIt = m_Stations.erase(stationIt);
+                } else {
+                    ++stationIt;
                 }
             }
 
@@ -737,56 +960,122 @@ namespace {
             m_Joints.erase(it);
         }
 
+        void DeleteStationElByID(UID id)
+        {
+            auto it = m_Stations.find(DowncastID<StationEl>(id));
+            if (it == m_Stations.end()) {
+                return;
+            }
+            DeSelect(id);
+            m_Stations.erase(it);
+        }
+
         void DeleteElementByID(UID id)
         {
             DeleteMeshElByID(id);
             DeleteBodyElByID(id);
             DeleteJointElByID(id);
+            DeleteStationElByID(id);
+        }
+
+
+        // mesh mutators
+
+        void SetMeshAttachmentPoint(UIDT<MeshEl> meshID, UIDT<BodyEl> bodyID)
+        {
+            UpdMeshByIDOrThrow(meshID).Attachment = bodyID;
+        }
+
+        void UnsetMeshAttachmentPoint(UIDT<MeshEl> meshID)
+        {
+            UpdMeshByIDOrThrow(meshID).Attachment = g_GroundID;
+        }
+
+
+        // body mutators
+
+        void SetBodyMass(UIDT<BodyEl> bodyID, double newMass)
+        {
+            UpdBodyByIDOrThrow(bodyID).Mass = newMass;
+        }
+
+
+        // joint mutators
+
+        void SetJointTypeIdx(UIDT<JointEl> jointID, size_t newIdx)
+        {
+            UpdJointByIDOrThrow(jointID).JointTypeIndex = newIdx;
+        }
+
+
+        // generic mutators (i.e. not dependent on element type)
+
+        template<typename Consumer>
+        void ForEachSceneElID(Consumer idConsumer) const
+        {
+            for (auto const& [meshID, mesh] : GetMeshes()) { idConsumer(meshID); }
+            for (auto const& [bodyID, body] : GetBodies()) { idConsumer(bodyID); }
+            for (auto const& [jointID, joint] : GetJoints()) { idConsumer(jointID); }
+            for (auto const& [stationID, station] : GetStations()) { idConsumer(stationID); }
+        }
+
+        void SetLabel(UID id, std::string_view sv)
+        {
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                se->SetLabel(std::move(sv));
+            }
+        }
+
+        void SetXform(UID id, Transform const& newXform)
+        {
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                se->SetXform(newXform);
+            }
+        }
+
+        void SetScale(UID id, glm::vec3 const& newScale)
+        {
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                se->SetScale(newScale);
+            }
         }
 
         void ApplyTranslation(UID id, glm::vec3 const& translation)
         {
-            if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                meshPtr->Xform.position += translation;
-            } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                bodyPtr->Xform.position += translation;
-            } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                jointPtr->Xform.position += translation;
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                ::ApplyTranslation(*se, translation);
             }
         }
 
         void ApplyRotation(UID id, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
         {
-            if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                applyWorldspaceRotation(meshPtr->Xform, eulerAngles, rotationCenter);
-            } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                applyWorldspaceRotation(bodyPtr->Xform, eulerAngles, rotationCenter);
-            } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                applyWorldspaceRotation(jointPtr->Xform, eulerAngles, rotationCenter);
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                ::ApplyRotation(*se, eulerAngles, rotationCenter);
             }
         }
 
         void ApplyScale(UID id, glm::vec3 const& scaleFactors)
         {
-            if (MeshEl* meshPtr = TryUpdMeshElByID(id)) {
-                meshPtr->Xform.scale *= scaleFactors;
-            } else if (BodyEl* bodyPtr = TryUpdBodyElByID(id)) {
-                return;  // not scale-able
-            } else if (JointEl* jointPtr = TryUpdJointElByID(id)) {
-                return;  // not scale-able
+            if (ISceneEl* se = TryUpdSceneElByID(id)) {
+                ::ApplyScale(*se, scaleFactors);
+            }
+        }
+
+        Transform GetTransformInGround(UID id) const
+        {
+            if (id == g_GroundID) {
+                return Transform{};
+            } else if (ISceneEl const* se = TryGetSceneElByID(id)) {
+                return se->GetXform();
+            } else {
+                throw std::runtime_error{"GetRasInGround(): cannot find element by ID"};
             }
         }
 
         glm::vec3 GetShiftInGround(UID id) const
         {
-            if (id == g_GroundID) {
-                return {};
-            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return meshPtr->Xform.position;
-            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return bodyPtr->Xform.position;
-            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return jointPtr->Xform.position;
+            if (ISceneEl const* se = TryGetSceneElByID(id)) {
+                return se->GetPos();
             } else {
                 throw std::runtime_error{"GetShiftInGround(): cannot find element by ID"};
             }
@@ -794,45 +1083,18 @@ namespace {
 
         glm::vec3 GetRotationInGround(UID id) const
         {
-            if (id == g_GroundID) {
-                return {};
-            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return glm::eulerAngles(meshPtr->Xform.rotation);
-            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return glm::eulerAngles(bodyPtr->Xform.rotation);
-            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return glm::eulerAngles(jointPtr->Xform.rotation);
-            } else {
+            if (ISceneEl const* se = TryGetSceneElByID(id)) {
+                return ::GetRotationEulersInGround(*se);
+            }  else {
                 throw std::runtime_error{"GetRotationInGround(): cannot find element by ID"};
-            }
-        }
-
-        Transform GetTransformInGround(UID id) const
-        {
-            if (id == g_GroundID) {
-                return {};
-            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return GetXform(*meshPtr);
-            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return GetXform(*bodyPtr);
-            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return GetXform(*jointPtr);
-            } else {
-                throw std::runtime_error{"GetRasInGround(): cannot find element by ID"};
             }
         }
 
         // returns empty AABB at point if a point-like element (e.g. mesh, joint pivot)
         AABB GetBounds(UID id) const
         {
-            if (id == g_GroundID) {
-                return {};
-            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return CalcBounds(*meshPtr);
-            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return CalcBounds(*bodyPtr);
-            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return CalcBounds(*jointPtr);
+            if (ISceneEl const* se = TryGetSceneElByID(id)) {
+                return se->CalcBounds();
             } else {
                 throw std::runtime_error{"GetBounds(): could not find supplied ID"};
             }
@@ -840,15 +1102,8 @@ namespace {
 
         std::string const& GetLabel(UID id) const
         {
-            if (id == g_GroundID) {
-                static std::string g_GroundLabel{"Ground"};
-                return g_GroundLabel;
-            } else if (MeshEl const* meshPtr = TryGetMeshElByID(id)) {
-                return ::GetLabel(*meshPtr);
-            } else if (BodyEl const* bodyPtr = TryGetBodyElByID(id)) {
-                return ::GetLabel(*bodyPtr);
-            } else if (JointEl const* jointPtr = TryGetJointElByID(id)) {
-                return ::GetLabel(*jointPtr);
+            if (ISceneEl const* se = TryGetSceneElByID(id)) {
+                return se->GetLabel();
             } else {
                 throw std::runtime_error{"GetLabel(): could not find the supplied ID"};
             }
@@ -900,54 +1155,10 @@ namespace {
         }
 
     private:
-        MeshEl* TryUpdMeshElByID(UID id)
-        {
-            auto it = m_Meshes.find(DowncastID<MeshEl>(id));
-            return it != m_Meshes.end() ? &it->second : nullptr;
-        }
-
-        BodyEl* TryUpdBodyElByID(UID id)
-        {
-            auto it = m_Bodies.find(DowncastID<BodyEl>(id));
-            return it != m_Bodies.end() ? &it->second : nullptr;
-        }
-
-        JointEl* TryUpdJointElByID(UID id)
-        {
-            auto it = m_Joints.find(DowncastID<JointEl>(id));
-            return it != m_Joints.end() ? &it->second : nullptr;
-        }
-
-        MeshEl& UpdMeshByIDOrThrow(UID id)
-        {
-            MeshEl* meshEl = TryUpdMeshElByID(id);
-            if (!meshEl) {
-                throw std::runtime_error{"could not find a mesh"};
-            }
-            return *meshEl;
-        }
-
-        BodyEl& UpdBodyByIDOrThrow(UID id)
-        {
-            BodyEl* bodyEl = TryUpdBodyElByID(id);
-            if (!bodyEl) {
-                throw std::runtime_error{"could not find a body"};
-            }
-            return *bodyEl;
-        }
-
-        JointEl& UpdJointByIDOrThrow(UID id)
-        {
-            JointEl* jointEl = TryUpdJointElByID(id);
-            if (!jointEl) {
-                throw std::runtime_error{"could not find a joint"};
-            }
-            return *jointEl;
-        }
-
         std::unordered_map<UIDT<MeshEl>, MeshEl> m_Meshes;
         std::unordered_map<UIDT<BodyEl>, BodyEl> m_Bodies;
         std::unordered_map<UIDT<JointEl>, JointEl> m_Joints;
+        std::unordered_map<UIDT<StationEl>, StationEl> m_Stations;
         std::unordered_set<UID> m_Selected;
     };
 
@@ -1049,7 +1260,7 @@ namespace {
         for (auto const& [id, joint] : modelGraph.GetJoints()) {
             if (IsGarbageJoint(modelGraph, joint)) {
                 std::stringstream ss;
-                ss << GetLabel(joint) << ": joint is garbage (this is an implementation error)";
+                ss << joint.GetLabel() << ": joint is garbage (this is an implementation error)";
                 throw std::runtime_error{std::move(ss).str()};
             }
         }
@@ -1315,7 +1526,7 @@ namespace {
         childPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = ConstructOpenSimJointFromTypeIndex(joint.JointTypeIndex);
+        auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[joint.JointTypeIndex]->clone());
 
         // set its name
         std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -2030,7 +2241,7 @@ namespace {
                 auto const* maybeBody = mg.TryGetBodyElByID(ok.PreferredAttachmentPoint);
                 if (maybeBody) {
                     mg.Select(maybeBody->ID);
-                    mg.SetMeshXform(meshID, maybeBody->Xform);
+                    mg.SetXform(meshID, maybeBody->Xform);
                 }
 
                 mg.Select(meshID);
@@ -3000,7 +3211,7 @@ namespace {
         void DrawMeshHoverTooltip(MeshEl const& meshEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(GetLabel(meshEl).c_str());
+            ImGui::TextUnformatted(meshEl.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(Mesh, click to choose)");
             ImGui::EndTooltip();
@@ -3009,7 +3220,7 @@ namespace {
         void DrawBodyHoverTooltip(BodyEl const& bodyEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(GetLabel(bodyEl).c_str());
+            ImGui::TextUnformatted(bodyEl.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(Body, click to choose)");
             ImGui::EndTooltip();
@@ -3018,7 +3229,7 @@ namespace {
         void DrawJointHoverTooltip(JointEl const& jointEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::TextUnformatted(GetLabel(jointEl).c_str());
+            ImGui::TextUnformatted(jointEl.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(Joint, click to choose)");
             ImGui::EndTooltip();
@@ -3588,7 +3799,7 @@ namespace {
                 char buf[256];
                 std::strcpy(buf, bodyEl.Name.c_str());
                 if (ImGui::InputText("name", buf, sizeof(buf))) {
-                    m_Shared->UpdModelGraph().SetBodyName(bodyEl.ID, buf);
+                    m_Shared->UpdModelGraph().SetLabel(bodyEl.ID, buf);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed body name");
@@ -3610,7 +3821,7 @@ namespace {
             {
                 glm::vec3 translation = bodyEl.Xform.position;
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
-                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, bodyEl.Xform.withPosition(translation));
+                    m_Shared->UpdModelGraph().SetXform(bodyEl.ID, bodyEl.Xform.withPosition(translation));
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed body translation");
@@ -3623,7 +3834,7 @@ namespace {
                 glm::vec3 orientationDegrees = glm::degrees(glm::eulerAngles(bodyEl.Xform.rotation));
                 if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                     Transform newXform = bodyEl.Xform.withRotation(glm::quat{glm::radians(orientationDegrees)});
-                    m_Shared->UpdModelGraph().SetBodyXform(bodyEl.ID, newXform);
+                    m_Shared->UpdModelGraph().SetXform(bodyEl.ID, newXform);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed body orientation");
@@ -3665,7 +3876,7 @@ namespace {
         void DrawMeshContextMenuContent(MeshEl meshEl, glm::vec3 clickPos)
         {
             // title
-            ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
+            ImGui::Text(ICON_FA_CUBE " %s", meshEl.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(%s, attached to %s)", meshEl.Path.filename().string().c_str(), BodyOrGroundString(meshEl.Attachment));
             ImGui::SameLine();
@@ -3681,7 +3892,7 @@ namespace {
                 std::strcpy(buf, meshEl.Name.c_str());
                 ImGui::InputText("name", buf, sizeof(buf));
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
-                    m_Shared->UpdModelGraph().SetMeshName(meshEl.ID, buf);
+                    m_Shared->UpdModelGraph().SetLabel(meshEl.ID, buf);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed mesh name");
@@ -3693,7 +3904,7 @@ namespace {
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
                     Transform to = meshEl.Xform;
                     to.position = translation;
-                    m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
+                    m_Shared->UpdModelGraph().SetXform(meshEl.ID, to);
                 }
 
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3709,7 +3920,7 @@ namespace {
                 if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                     Transform to = meshEl.Xform;
                     to.rotation = glm::quat{glm::radians(orientationDegrees)};
-                    m_Shared->UpdModelGraph().SetMeshXform(meshEl.ID, to);
+                    m_Shared->UpdModelGraph().SetXform(meshEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed mesh orientation");
@@ -3719,7 +3930,7 @@ namespace {
             {
                 glm::vec3 scaleFactors = meshEl.Xform.scale;
                 if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT)) {
-                    m_Shared->UpdModelGraph().SetMeshScaleFactors(meshEl.ID, scaleFactors);
+                    m_Shared->UpdModelGraph().SetScale(meshEl.ID, scaleFactors);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed mesh scale factors");
@@ -3758,7 +3969,7 @@ namespace {
 
                 if (ImGui::MenuItem("at mesh bounds center")) {
                     std::string bodyName = GenerateBodyName();
-                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Transform::atPosition(AABBCenter(CalcBounds(meshEl))));
+                    UIDT<BodyEl> bodyID = m_Shared->UpdModelGraph().AddBody(bodyName, Transform::atPosition(AABBCenter(meshEl.CalcBounds())));
                     m_Shared->UpdModelGraph().DeSelectAll();
                     m_Shared->UpdModelGraph().Select(bodyID);
                     if (meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID) {
@@ -3930,8 +4141,8 @@ namespace {
 
                     Transform newXform = pointAxisTowards(jointEl.Xform, 0, parentPos);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("reoriented " + jointEl.GetLabel());
                 }
 
                 if (ImGui::MenuItem("Point X towards child")) {
@@ -3939,8 +4150,8 @@ namespace {
 
                     Transform newXform = pointAxisTowards(jointEl.Xform, 0,  childPos);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("reoriented " + jointEl.GetLabel());
                 }
 
                 if (ImGui::MenuItem("Use parent's orientation")) {
@@ -3948,8 +4159,8 @@ namespace {
 
                     Transform newXform = jointEl.Xform.withRotation(parentXform.rotation);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("reoriented " + jointEl.GetLabel());
                 }
 
                 if (ImGui::MenuItem("Use child's orientation")) {
@@ -3957,8 +4168,8 @@ namespace {
 
                     Transform newXform = jointEl.Xform.withRotation(childXform.rotation);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("reoriented " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("reoriented " + jointEl.GetLabel());
                 }
 
                 DrawOrientAlongToMeshPointsMenuItem(jointEl.ID);
@@ -4028,8 +4239,8 @@ namespace {
 
                     Transform newXform = jointEl.Xform.withPosition(centerPos);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("moved " + jointEl.GetLabel());
                 }
 
                 if (ImGui::MenuItem("Use parent's translation")) {
@@ -4037,8 +4248,8 @@ namespace {
 
                     Transform newXform = jointEl.Xform.withPosition(parentPos);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("moved " + jointEl.GetLabel());
                 }
 
                 if (ImGui::MenuItem("Use child's translation")) {
@@ -4046,8 +4257,8 @@ namespace {
 
                     Transform newXform = jointEl.Xform.withPosition(childPos);
 
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, newXform);
-                    m_Shared->CommitCurrentModelGraph("moved " + GetLabel(jointEl));
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, newXform);
+                    m_Shared->CommitCurrentModelGraph("moved " + jointEl.GetLabel());
                 }
 
                 DrawTranslateBetweenTwoMeshPointsMenuItem(jointEl.ID);
@@ -4071,9 +4282,9 @@ namespace {
         void DrawJointContextMenuConent(JointEl jointEl)
         {
             // title
-            ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
+            ImGui::Text(ICON_FA_LINK " %s", jointEl.GetLabel().c_str());
             ImGui::SameLine();
-            ImGui::TextDisabled("(%s, %s --> %s)", GetJointTypeName(jointEl).c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
+            ImGui::TextDisabled("(%s, %s --> %s)", jointEl.GetJointTypeName().c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
             ImGui::SameLine();
             DrawHelpMarker("Joints", OSC_JOINT_DESC);
             ImGui::Separator();
@@ -4086,7 +4297,7 @@ namespace {
                 char buf[256];
                 std::strcpy(buf, jointEl.UserAssignedName.c_str());
                 if (ImGui::InputText("name", buf, sizeof(buf))) {
-                    m_Shared->UpdModelGraph().SetJointName(jointEl.ID, buf);
+                    m_Shared->UpdModelGraph().SetLabel(jointEl.ID, buf);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed joint name");
@@ -4098,7 +4309,7 @@ namespace {
                 if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT)) {
                     Transform to = jointEl.Xform;
                     to.position = translation;
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, to);
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed joint translation");
@@ -4112,7 +4323,7 @@ namespace {
                 if (ImGui::InputFloat3("orientation", glm::value_ptr(orientationDegrees), OSC_FLOAT_INPUT_FORMAT)) {
                     Transform to = jointEl.Xform;
                     to.rotation = glm::quat{glm::radians(orientationDegrees)};
-                    m_Shared->UpdModelGraph().SetJointXform(jointEl.ID, to);
+                    m_Shared->UpdModelGraph().SetXform(jointEl.ID, to);
                 }
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     m_Shared->CommitCurrentModelGraph("changed joint orientation");
@@ -4137,7 +4348,7 @@ namespace {
             DrawReorientMenu(jointEl);
             DrawTranslateMenu(jointEl);
             if (ImGui::MenuItem(ICON_FA_TRASH " delete")) {
-                std::string name = GetLabel(jointEl);
+                std::string name = jointEl.GetLabel();
                 DeleteEl(jointEl.ID);
                 m_Shared->CommitCurrentModelGraph("deleted " + name);
                 ImGui::CloseCurrentPopup();
@@ -4198,7 +4409,7 @@ namespace {
                     ++styles;
                 }
 
-                ImGui::Text("%s", GetLabel(bodyEl).c_str());
+                ImGui::Text("%s", bodyEl.GetLabel().c_str());
 
                 ImGui::PopStyleColor(styles);
 
@@ -4242,7 +4453,7 @@ namespace {
                     ++styles;
                 }
 
-                ImGui::Text("%s", GetLabel(jointEl).c_str());
+                ImGui::Text("%s", jointEl.GetLabel().c_str());
 
                 ImGui::PopStyleColor(styles);
 
@@ -4582,7 +4793,7 @@ namespace {
         void DrawMeshHoverTooltip(MeshEl const& meshEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text(ICON_FA_CUBE " %s", GetLabel(meshEl).c_str());
+            ImGui::Text(ICON_FA_CUBE " %s", meshEl.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("(%s, attached to %s)", meshEl.Path.filename().string().c_str(), BodyOrGroundString(meshEl.Attachment));
             ImGui::EndTooltip();
@@ -4600,9 +4811,9 @@ namespace {
         void DrawJointHoverTooltip(JointEl const& jointEl) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text(ICON_FA_LINK " %s", GetLabel(jointEl).c_str());
+            ImGui::Text(ICON_FA_LINK " %s", jointEl.GetLabel().c_str());
             ImGui::SameLine();
-            ImGui::TextDisabled("(%s, %s --> %s)", GetJointTypeName(jointEl).c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
+            ImGui::TextDisabled("(%s, %s --> %s)", jointEl.GetJointTypeName().c_str(), BodyOrGroundString(jointEl.Child), BodyOrGroundString(jointEl.Parent));
             ImGui::EndTooltip();
         }
 
