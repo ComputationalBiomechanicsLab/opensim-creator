@@ -311,27 +311,6 @@ namespace {
 //     be exported directly into the main (OpenSim::Model-manipulating) UI
 namespace {
 
-    // a station (point of interest)
-    class BodyEl;
-    class StationEl final {
-    public:
-        StationEl(UIDT<StationEl> id,
-                  UIDT<BodyEl> attachment,  // can be g_GroundID
-                  glm::vec3 const& position,
-                  std::string name) :
-            ID{std::move(id)},
-            Attachment{std::move(attachment)},
-            Position{std::move(position)},
-            Name{std::move(name)}
-        {
-        }
-
-        UIDT<StationEl> ID;
-        UIDT<BodyEl> Attachment;  // can be g_GroundID
-        glm::vec3 Position;
-        std::string Name;
-    };
-
     // a mesh in the scene
     //
     // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
@@ -380,12 +359,6 @@ namespace {
                  << ')';
     }
 
-    // returns unique ID for the mesh element
-    UID GetID(MeshEl const& mesh)
-    {
-        return mesh.ID;
-    }
-
     // returns human-readable label for the mesh
     std::string const& GetLabel(MeshEl const& mesh)
     {
@@ -401,16 +374,6 @@ namespace {
     AABB CalcBounds(MeshEl const& mesh)
     {
         return mesh.MeshData->getWorldspaceAABB(mesh.Xform);
-    }
-
-    // returns a unique, generated body name
-    std::string GenerateBodyName()
-    {
-        static std::atomic<int> g_LatestBodyIdx = 0;
-
-        std::stringstream ss;
-        ss << "body" << g_LatestBodyIdx++;
-        return std::move(ss).str();
     }
 
     // a body scene element
@@ -440,12 +403,6 @@ namespace {
                  << ')';
     }
 
-    // returns unique ID for the body element
-    UID GetID(BodyEl const& body)
-    {
-        return body.ID;
-    }
-
     // returns human-readable label for the body element
     std::string const& GetLabel(BodyEl const& body)
     {
@@ -461,6 +418,16 @@ namespace {
     AABB CalcBounds(BodyEl const& body)
     {
         return AABB{body.Xform.position, body.Xform.position};
+    }
+
+    // returns a unique, generated body name
+    std::string GenerateBodyName()
+    {
+        static std::atomic<int> g_LatestBodyIdx = 0;
+
+        std::stringstream ss;
+        ss << "body" << g_LatestBodyIdx++;
+        return std::move(ss).str();
     }
 
     // a joint scene element
@@ -503,12 +470,6 @@ namespace {
                  << ')';
     }
 
-    // returns unique ID for the joint element
-    UID GetID(JointEl const& joint)
-    {
-        return joint.ID;
-    }
-
     // returns a human-readable typename for the joint
     std::string const& GetJointTypeName(JointEl const& joint)
     {
@@ -542,6 +503,55 @@ namespace {
     std::unique_ptr<OpenSim::Joint> ConstructOpenSimJointFromTypeIndex(size_t typeIndex)
     {
         return std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[typeIndex]->clone());
+    }
+
+
+    // a station (point of interest)
+    class BodyEl;
+    class StationEl final {
+    public:
+        StationEl(UIDT<StationEl> id,
+                  UIDT<BodyEl> attachment,  // can be g_GroundID
+                  glm::vec3 const& position,
+                  std::string name) :
+            ID{std::move(id)},
+            Attachment{std::move(attachment)},
+            Position{std::move(position)},
+            Name{std::move(name)}
+        {
+        }
+
+        UIDT<StationEl> ID;
+        UIDT<BodyEl> Attachment;  // can be g_GroundID
+        glm::vec3 Position;
+        std::string Name;
+    };
+
+    std::ostream& operator<<(std::ostream& o, StationEl const& se)
+    {
+        using osc::operator<<;
+
+        return o << "StationEl("
+                 << "ID = " << se.ID
+                 << ", Attachment = " << se.Attachment
+                 << ", Position = " << se.Position
+                 << ", Name = " << se.Name
+                 << ')';
+    }
+
+    std::string const& GetLabel(StationEl const& se)
+    {
+        return se.Name;
+    }
+
+    Transform GetXform(StationEl const& se)
+    {
+        return Transform::atPosition(se.Position);
+    }
+
+    AABB CalcBounds(StationEl const& se)
+    {
+        return AABB{se.Position, se.Position};
     }
 
     // top-level model structure
