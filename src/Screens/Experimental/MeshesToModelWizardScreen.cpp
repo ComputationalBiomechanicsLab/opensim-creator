@@ -311,6 +311,27 @@ namespace {
 //     be exported directly into the main (OpenSim::Model-manipulating) UI
 namespace {
 
+    // a station (point of interest)
+    class BodyEl;
+    class StationEl final {
+    public:
+        StationEl(UIDT<StationEl> id,
+                  UIDT<BodyEl> attachment,  // can be g_GroundID
+                  glm::vec3 const& position,
+                  std::string name) :
+            ID{std::move(id)},
+            Attachment{std::move(attachment)},
+            Position{std::move(position)},
+            Name{std::move(name)}
+        {
+        }
+
+        UIDT<StationEl> ID;
+        UIDT<BodyEl> Attachment;  // can be g_GroundID
+        glm::vec3 Position;
+        std::string Name;
+    };
+
     // a mesh in the scene
     //
     // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
