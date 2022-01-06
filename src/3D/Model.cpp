@@ -445,6 +445,11 @@ float osc::VecAspectRatio(glm::vec2 v) noexcept {
     return v.x/v.y;
 }
 
+glm::vec3 osc::VecMidpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
+{
+    return (a+b)/2.0f;
+}
+
 glm::vec3 osc::VecKahanSum(glm::vec3 const* vs, size_t n) noexcept
 {
     glm::vec3 sum{};  // accumulator

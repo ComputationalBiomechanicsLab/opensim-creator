@@ -69,6 +69,9 @@ namespace osc {
     // returns the aspect ratio of the vec (effectively: x/y)
     float VecAspectRatio(glm::vec2) noexcept;
 
+    // returns the midpoint between two vectors (effectively: (x+y)/2.0)
+    glm::vec3 VecMidpoint(glm::vec3 const&, glm::vec3 const&) noexcept;
+
     // returns the sum of `n` vectors using the "Kahan Summation Algorithm" to reduce errors
     glm::vec3 VecKahanSum(glm::vec3 const*, size_t n) noexcept;
 

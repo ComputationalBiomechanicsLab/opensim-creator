@@ -284,6 +284,7 @@ add_executable(osc
     src/Utils/Algorithms.hpp
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
+    src/Utils/ClonePtr.hpp
     src/Utils/ConcurrencyHelpers.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/FilesystemHelpers.cpp
@@ -296,6 +297,7 @@ add_executable(osc
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
     src/Utils/Spsc.hpp
+    src/Utils/UID.hpp
 
     src/App.cpp
     src/App.hpp
