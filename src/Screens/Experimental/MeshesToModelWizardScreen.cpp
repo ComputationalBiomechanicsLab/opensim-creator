@@ -100,6 +100,22 @@ namespace {
     std::string const g_StationParentCrossrefName = "parent";
 }
 
+// senteniel ID support
+//
+// this screen uses UIDs all over the place, senteniel IDs are handy for quick
+// comparison operations
+namespace {
+
+    class BodyEl;
+    UIDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
+    UID const g_EmptyID = GenerateID();
+    UID const g_RightClickedNothingID = GenerateID();
+    UID const g_GroundGroupID = GenerateID();
+    UID const g_MeshGroupID = GenerateID();
+    UID const g_BodyGroupID = GenerateID();
+    UID const g_JointGroupID = GenerateID();
+}
+
 // generic helper functions
 namespace {
 
@@ -132,6 +148,8 @@ namespace {
         return powf(2.0f, -5.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
     }
 
+    // performs the shortest (angular) rotation of a transform such that the
+    // designated axis points towards a point in the same space
     Transform PointAxisTowards(Transform const& t, int axis, glm::vec3 const& p)
     {
         glm::vec3 beforeDir{};
@@ -156,6 +174,7 @@ namespace {
         return t.withRotation(glm::angleAxis(angRadians, ax) * t.rotation);
     }
 
+    // returns a camera that is in the initial position the camera should be in for this screen
     PolarPerspectiveCamera CreateDefaultCamera()
     {
         PolarPerspectiveCamera rv;
@@ -167,6 +186,281 @@ namespace {
 
     // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
     template <auto A, typename...> auto dependent_value = A;
+}
+
+// 3D rendering support
+//
+// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
+// renderable in the UI
+namespace {
+
+    // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
+    // to some sphere in the scene (e.g. a body/ground)
+    glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
+    {
+        Sphere sphereMesh{{0.0f, 0.0f, 0.0f}, 1.0f};
+        return SphereToSphereXform(sphereMesh, sceneSphere);
+    }
+
+
+    // returns a quad used for rendering the chequered floor
+    Mesh generateFloorMesh()
+    {
+        Mesh m{GenTexturedQuad()};
+        m.scaleTexCoords(200.0f);
+        return m;
+    }
+
+    // returns a multiampled render buffer with the given format + dimensions
+    gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
+    {
+        gl::RenderBuffer rv;
+        gl::BindRenderBuffer(rv);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, dims.x, dims.y);
+        return rv;
+    }
+
+    // returns a non-multisampled render buffer with the given format + dimensions
+    gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
+    {
+        gl::RenderBuffer rv;
+        gl::BindRenderBuffer(rv);
+        glRenderbufferStorage(GL_RENDERBUFFER, format, dims.x, dims.y);
+        return rv;
+    }
+
+    // sets the supplied texture with the appropriate dimensions, parameters, etc. to be used as a scene texture
+    void SetTextureAsSceneTextureTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
+    {
+        gl::BindTexture(out);
+        gl::TexImage2D(out.type, level, internalFormat, dims.x, dims.y, 0, format, type, nullptr);
+        gl::TexParameteri(out.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(out.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
+        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        gl::BindTexture();
+    }
+
+    // returns a texture as a scene texture (specific params, etc.) with the given format, dims, etc.
+    gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
+    {
+        gl::Texture2D rv;
+        SetTextureAsSceneTextureTex(rv, level, internalFormat, dims, format, type);
+        return rv;
+    }
+
+    // declares a type that can bind an OpenGL buffer type to an FBO in the current OpenGL context
+    struct FboBinding {
+        virtual ~FboBinding() noexcept = default;
+        virtual void Bind() = 0;
+    };
+
+    // defines a way of binding to a render buffer to the current FBO
+    struct RboBinding final : FboBinding {
+        GLenum attachment;
+        gl::RenderBuffer& rbo;
+
+        RboBinding(GLenum attachment_, gl::RenderBuffer& rbo_) :
+            attachment{attachment_}, rbo{rbo_}
+        {
+        }
+
+        void Bind() override
+        {
+            gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, rbo);
+        }
+    };
+
+    // defines a way of binding to a texture buffer to the current FBO
+    struct TexBinding final : FboBinding {
+        GLenum attachment;
+        gl::Texture2D& tex;
+        GLint level;
+
+        TexBinding(GLenum attachment_, gl::Texture2D& tex_, GLint level_) :
+            attachment{attachment_}, tex{tex_}, level{level_}
+        {
+        }
+
+        void Bind() override
+        {
+            gl::FramebufferTexture2D(GL_FRAMEBUFFER, attachment, tex, level);
+        }
+    };
+
+    // returns an OpenGL framebuffer that is bound to the specified `FboBinding`s
+    template<typename... Binding>
+    gl::FrameBuffer FrameBufferWithBindings(Binding... bindings)
+    {
+        gl::FrameBuffer rv;
+        gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
+        (bindings.Bind(), ...);
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        return rv;
+    }
+
+    // something that is being drawn in the scene
+    struct DrawableThing final {
+        UID id = g_EmptyID;
+        UID groupId = g_EmptyID;
+        std::shared_ptr<Mesh> mesh;
+        glm::mat4x3 modelMatrix;
+        glm::mat3x3 normalMatrix;
+        glm::vec4 color;
+        float rimColor;
+        std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
+    };
+
+    AABB CalcBounds(DrawableThing const& dt)
+    {
+        return dt.mesh->getWorldspaceAABB(dt.modelMatrix);
+    }
+
+    // an instance of something that is being drawn, once uploaded to the GPU
+    struct SceneGPUInstanceData final {
+        glm::mat4x3 modelMtx;
+        glm::mat3 normalMtx;
+        glm::vec4 rgba;
+    };
+
+    // a predicate used for drawcall ordering
+    bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
+    {
+        if (a.color.a != b.color.a) {
+            return a.color.a > b.color.a;  // alpha descending
+        } else {
+            return a.mesh < b.mesh;
+        }
+    }
+
+    // draws the drawables to the output texture
+    //
+    // effectively, this is the main top-level rendering function
+    void DrawScene(glm::ivec2 dims,
+                   PolarPerspectiveCamera const& camera,
+                   glm::vec4 const& bgCol,
+                   nonstd::span<DrawableThing const> drawables,
+                   gl::Texture2D& outSceneTex)
+    {
+        glm::vec3 lightDir;
+        {
+            glm::vec3 p = glm::normalize(-camera.focusPoint - camera.getPos());
+            glm::vec3 up = {0.0f, 1.0f, 0.0f};
+            glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
+            lightDir = glm::normalize(mp + -up);
+        }
+
+        glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
+
+        glm::mat4 projMat = camera.getProjMtx(VecAspectRatio(dims));
+        glm::mat4 viewMat = camera.getViewMtx();
+        glm::vec3 viewPos = camera.getPos();
+
+        auto samples = App::cur().getSamples();
+
+        gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
+        gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
+        gl::FrameBuffer sceneFBO = FrameBufferWithBindings(
+            RboBinding{GL_COLOR_ATTACHMENT0, sceneRBO},
+            RboBinding{GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24Stencil8RBO});
+
+        gl::Viewport(0, 0, dims.x, dims.y);
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
+        gl::ClearColor(bgCol);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // draw the scene to the scene FBO
+        if (true) {
+            GouraudShader& shader = App::cur().getShaderCache().getShader<GouraudShader>();
+
+            gl::UseProgram(shader.program);
+            gl::Uniform(shader.uProjMat, projMat);
+            gl::Uniform(shader.uViewMat, viewMat);
+            gl::Uniform(shader.uLightDir, lightDir);
+            gl::Uniform(shader.uLightColor, lightCol);
+            gl::Uniform(shader.uViewPos, viewPos);
+            for (auto const& d : drawables) {
+                gl::Uniform(shader.uModelMat, d.modelMatrix);
+                gl::Uniform(shader.uNormalMat, d.normalMatrix);
+                gl::Uniform(shader.uDiffuseColor, d.color);
+                if (d.maybeDiffuseTex) {
+                    gl::ActiveTexture(GL_TEXTURE0);
+                    gl::BindTexture(*d.maybeDiffuseTex);
+                    gl::Uniform(shader.uIsTextured, true);
+                    gl::Uniform(shader.uSampler0, GL_TEXTURE0-GL_TEXTURE0);
+                } else {
+                    gl::Uniform(shader.uIsTextured, false);
+                }
+                gl::BindVertexArray(d.mesh->GetVertexArray());
+                d.mesh->Draw();
+                gl::BindVertexArray();
+            }
+        }
+
+        // blit it to the (non-MSXAAed) output texture
+
+        SetTextureAsSceneTextureTex(outSceneTex, 0, GL_RGBA, dims, GL_RGBA, GL_UNSIGNED_BYTE);
+        gl::FrameBuffer outputFBO = FrameBufferWithBindings(
+            TexBinding{GL_COLOR_ATTACHMENT0, outSceneTex, 0}
+        );
+
+        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, sceneFBO);
+        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, outputFBO);
+        gl::BlitFramebuffer(0, 0, dims.x, dims.y, 0, 0, dims.x, dims.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+        // draw rims directly over the output texture
+        if (true) {
+            gl::Texture2D rimsTex;
+            SetTextureAsSceneTextureTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
+            gl::FrameBuffer rimsFBO = FrameBufferWithBindings(
+                TexBinding{GL_COLOR_ATTACHMENT0, rimsTex, 0}
+            );
+
+            gl::BindFramebuffer(GL_FRAMEBUFFER, rimsFBO);
+            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            gl::Clear(GL_COLOR_BUFFER_BIT);
+
+            SolidColorShader& scs = App::cur().getShaderCache().getShader<SolidColorShader>();
+            gl::UseProgram(scs.program);
+            gl::Uniform(scs.uProjection, projMat);
+            gl::Uniform(scs.uView, viewMat);
+
+            gl::Disable(GL_DEPTH_TEST);
+            for (auto const& d : drawables) {
+                if (d.rimColor <= 0.05f) {
+                    continue;
+                }
+
+                gl::Uniform(scs.uColor, {d.rimColor, 0.0f, 0.0f, 1.0f});
+                gl::Uniform(scs.uModel, d.modelMatrix);
+                gl::BindVertexArray(d.mesh->GetVertexArray());
+                d.mesh->Draw();
+                gl::BindVertexArray();
+            }
+            gl::Enable(GL_DEPTH_TEST);
+
+
+            gl::BindFramebuffer(GL_FRAMEBUFFER, outputFBO);
+            EdgeDetectionShader& eds = App::cur().getShaderCache().getShader<EdgeDetectionShader>();
+            gl::UseProgram(eds.program);
+            gl::Uniform(eds.uMVP, gl::identity);
+            gl::ActiveTexture(GL_TEXTURE0);
+            gl::BindTexture(rimsTex);
+            gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
+            gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
+            gl::Uniform(eds.uRimThickness, 1.75f / VecLongestDimVal(dims));
+            auto quadMesh = App::meshes().getTexturedQuadMesh();
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            gl::Enable(GL_BLEND);
+            gl::BindVertexArray(quadMesh->GetVertexArray());
+            quadMesh->Draw();
+            gl::BindVertexArray();
+        }
+
+        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    }
 }
 
 // background mesh loading support
@@ -182,14 +476,13 @@ namespace {
 // mesh appropriately
 namespace {
 
-    class BodyEl;
-
     // a mesh loading request
     struct MeshLoadRequest final {
-        UIDT<BodyEl> PreferredAttachmentPoint;
+        UID PreferredAttachmentPoint;
         std::vector<std::filesystem::path> Paths;
     };
 
+    // a successfully-loaded mesh
     struct LoadedMesh final {
         std::filesystem::path Path;
         std::shared_ptr<Mesh> MeshData;
@@ -197,22 +490,22 @@ namespace {
 
     // an OK response to a mesh loading request
     struct MeshLoadOKResponse final {
-        UIDT<BodyEl> PreferredAttachmentPoint;
+        UID PreferredAttachmentPoint;
         std::vector<LoadedMesh> Meshes;
     };
 
     // an ERROR response to a mesh loading request
     struct MeshLoadErrorResponse final {
-        UIDT<BodyEl> PreferredAttachmentPoint;
+        UID PreferredAttachmentPoint;
         std::filesystem::path Path;
         std::string Error;
     };
 
-    // an OK/ERROR response to a mesh loading request
+    // an OK or ERROR response to a mesh loading request
     using MeshLoadResponse = std::variant<MeshLoadOKResponse, MeshLoadErrorResponse>;
 
-    // function that's used by the meshloader to respond to a mesh loading request
-    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg) noexcept
+    // returns an OK or ERROR response to a mesh load request
+    MeshLoadResponse respondToMeshloadRequest(MeshLoadRequest msg)
     {
         std::vector<LoadedMesh> loadedMeshes;
         loadedMeshes.reserve(msg.Paths.size());
@@ -233,7 +526,9 @@ namespace {
         return MeshLoadOKResponse{msg.PreferredAttachmentPoint, std::move(loadedMeshes)};
     }
 
-    // top-level MeshLoader class that the UI thread can safely poll
+    // a class that loads meshes in a background thread
+    //
+    // the UI thread must `.poll()` this to check for responses
     class MeshLoader final {
         using Worker = spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
 
@@ -242,11 +537,18 @@ namespace {
         {
         }
 
-        void send(MeshLoadRequest req) { m_Worker.send(std::move(req)); }
-        std::optional<MeshLoadResponse> poll() { return m_Worker.poll(); }
+        void send(MeshLoadRequest req)
+        {
+            m_Worker.send(std::move(req));
+        }
+
+        std::optional<MeshLoadResponse> poll()
+        {
+            return m_Worker.poll();
+        }
 
     private:
-        spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)> m_Worker;
+        Worker m_Worker;
     };
 }
 
@@ -267,15 +569,6 @@ namespace {
     class BodyEl;
     class JointEl;
     class StationEl;
-
-    // constants used in this codebase
-    UIDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
-    UID const g_EmptyID = GenerateID();
-    UID const g_RightClickedNothingID = GenerateID();
-    UID const g_GroundGroupID = GenerateID();
-    UID const g_MeshGroupID = GenerateID();
-    UID const g_BodyGroupID = GenerateID();
-    UID const g_JointGroupID = GenerateID();
 
     // a visitor for `const` scene elements
     class ConstSceneElVisitor {
@@ -417,7 +710,7 @@ namespace {
         }
     };
 
-    // ISceneEl helper methods
+    // SceneEl helper methods
 
     void ApplyTranslation(SceneEl& el, glm::vec3 const& translation)
     {
@@ -1174,6 +1467,7 @@ namespace {
     };
 
 
+    // returns true if a mesh can be attached to the given element
     bool CanAttachMeshTo(SceneEl const& e)
     {
         struct Visitor final : public ConstSceneElVisitor
@@ -2007,8 +2301,10 @@ namespace {
         addedBody->setMass(bodyEl.Mass);
         addedBody->setName(bodyEl.Name);
 
-        for (MeshEl const& mesh : mg.iter<MeshEl>()) {
-            if (mesh.Attachment == bodyEl.ID) {
+        for (MeshEl const& mesh : mg.iter<MeshEl>())
+        {
+            if (mesh.Attachment == bodyEl.ID)
+            {
                 AttachMeshElToFrame(mesh, bodyEl.Xform, *addedBody);
             }
         }
@@ -2042,21 +2338,27 @@ namespace {
         rv.createdBody = nullptr;
         rv.physicalFrame = nullptr;
 
-        if (rv.bodyEl) {
+        if (rv.bodyEl)
+        {
             auto it = visitedBodies.find(elID);
-            if (it == visitedBodies.end()) {
+            if (it == visitedBodies.end())
+            {
                 // haven't visited the body before
                 rv.createdBody = CreateDetatchedBody(mg, *rv.bodyEl);
                 rv.physicalFrame = rv.createdBody.get();
 
                 // add it to the cache
                 visitedBodies.emplace(elID, rv.createdBody.get());
-            } else {
+            }
+            else
+            {
                 // visited the body before, use cached result
                 rv.createdBody = nullptr;  // it's not this function's responsibility to add it
                 rv.physicalFrame = it->second;
             }
-        } else {
+        }
+        else
+        {
             // the element is connected to ground
             rv.createdBody = nullptr;
             rv.physicalFrame = &model.updGround();
@@ -2070,9 +2372,12 @@ namespace {
                               OpenSim::PhysicalFrame const& parentFrame,
                               OpenSim::PhysicalFrame const& childFrame)
     {
-        if (!jointEl.UserAssignedName.empty()) {
+        if (!jointEl.UserAssignedName.empty())
+        {
             return jointEl.UserAssignedName;
-        } else {
+        }
+        else
+        {
             return childFrame.getName() + "_to_" + parentFrame.getName();
         }
     }
@@ -2080,31 +2385,42 @@ namespace {
     // returns true if the given element (ID) is in the "selection group" of
     bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
     {
-        if (id == g_EmptyID || parent == g_EmptyID) {
+        if (id == g_EmptyID || parent == g_EmptyID)
+        {
             return false;
         }
 
-        if (id == parent) {
+        if (id == parent)
+        {
             return true;
         }
 
         BodyEl const* bodyEl = nullptr;
 
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(parent)) {
+        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(parent))
+        {
             bodyEl = be;
-        } else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(parent)) {
+        }
+        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(parent))
+        {
             bodyEl = mg.TryGetElByID<BodyEl>(me->Attachment);
         }
 
-        if (!bodyEl) {
+        if (!bodyEl)
+        {
             return false;  // parent isn't attached to any body (or isn't a body)
         }
 
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(id)) {
+        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(id))
+        {
             return be->ID == bodyEl->ID;
-        } else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(id)) {
+        }
+        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(id))
+        {
             return me->Attachment == bodyEl->ID;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -2136,11 +2452,16 @@ namespace {
         OpenSim::Joint const* proto = JointRegistry::prototypes()[jointTypeIdx].get();
         size_t typeHash = typeid(*proto).hash_code();
 
-        if (typeHash == typeid(OpenSim::FreeJoint).hash_code()) {
+        if (typeHash == typeid(OpenSim::FreeJoint).hash_code())
+        {
             return JointDegreesOfFreedom{{0, 1, 2}, {3, 4, 5}};
-        } else if (typeHash == typeid(OpenSim::PinJoint).hash_code()) {
+        }
+        else if (typeHash == typeid(OpenSim::PinJoint).hash_code())
+        {
             return JointDegreesOfFreedom{{-1, -1, 0}, {-1, -1, -1}};
-        } else {
+        }
+        else
+        {
             return JointDegreesOfFreedom{};  // unknown joint type
         }
     }
@@ -2150,7 +2471,8 @@ namespace {
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(joint.JointTypeIndex);
 
         glm::vec3 rv;
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 3; ++i)
+        {
             rv[i] = dofs.orientation[static_cast<size_t>(i)] == -1 ? 0.6f : 1.0f;
         }
         return rv;
@@ -2165,14 +2487,19 @@ namespace {
         JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*JointRegistry::indexOf(joint));
 
         // translations
-        for (int i = 0; i < 3; ++i) {
-            if (dofs.translation[i] != -1) {
+        for (int i = 0; i < 3; ++i)
+        {
+            if (dofs.translation[i] != -1)
+            {
                 joint.upd_coordinates(dofs.translation[i]).setName(prefix + translationNames[i]);
             }
         }
 
-        for (int i = 0; i < 3; ++i) {
-            if (dofs.orientation[i] != -1) {
+        // rotations
+        for (int i = 0; i < 3; ++i)
+        {
+            if (dofs.orientation[i] != -1)
+            {
                 joint.upd_coordinates(dofs.orientation[i]).setName(prefix + rotationNames[i]);
             }
         }
@@ -2191,8 +2518,13 @@ namespace {
                               std::unordered_map<UID, OpenSim::Body*>& visitedBodies,
                               std::unordered_set<UID>& visitedJoints)
     {
-        if (auto const& [it, wasInserted] = visitedJoints.emplace(joint.ID); !wasInserted) {
-            return;  // graph cycle detected: joint was already previously visited and shouldn't be traversed again
+        {
+            bool wasInserted = visitedJoints.emplace(joint.ID).second;
+            if (!wasInserted)
+            {
+                // graph cycle detected: joint was already previously visited and shouldn't be traversed again
+                return;
+            }
         }
 
         // lookup each side of the joint, creating the bodies if necessary
@@ -2236,7 +2568,8 @@ namespace {
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
         // then add it to the model
         OSC_ASSERT_ALWAYS(parent.createdBody == nullptr && "at this point in the algorithm, all parents should have already been created");
-        if (child.createdBody) {
+        if (child.createdBody)
+        {
             model.addBody(child.createdBody.release());  // add created body to model
         }
 
@@ -2245,8 +2578,10 @@ namespace {
 
         // recurse by finding where the child of this joint is the parent of some other joint
         OSC_ASSERT_ALWAYS(child.bodyEl != nullptr && "child should always be an identifiable body element");
-        for (JointEl const& otherJoint : mg.iter<JointEl>()) {
-            if (otherJoint.Parent == child.bodyEl->ID) {
+        for (JointEl const& otherJoint : mg.iter<JointEl>())
+        {
+            if (otherJoint.Parent == child.bodyEl->ID)
+            {
                 AttachJointRecursive(mg, model, otherJoint, visitedBodies, visitedJoints);
             }
         }
@@ -2294,9 +2629,11 @@ namespace {
     std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromModelGraph(ModelGraph const& mg,
                                                                      std::vector<std::string>& issuesOut)
     {
-        if (GetModelGraphIssues(mg, issuesOut)) {
+        if (GetModelGraphIssues(mg, issuesOut))
+        {
             log::error("cannot create an osim model: issues detected");
-            for (std::string const& issue : issuesOut) {
+            for (std::string const& issue : issuesOut)
+            {
                 log::error("issue: %s", issue.c_str());
             }
             return nullptr;
@@ -2307,8 +2644,10 @@ namespace {
         model->updDisplayHints().upd_show_frames() = true;
 
         // add any meshes that are directly connected to ground (i.e. meshes that are not attached to a body)
-        for (MeshEl const& meshEl : mg.iter<MeshEl>()) {
-            if (meshEl.Attachment == g_GroundID) {
+        for (MeshEl const& meshEl : mg.iter<MeshEl>())
+        {
+            if (meshEl.Attachment == g_GroundID)
+            {
                 AttachMeshElToFrame(meshEl, Transform{}, model->updGround());
             }
         }
@@ -2318,8 +2657,10 @@ namespace {
         std::unordered_set<UID> visitedJoints;
 
         // directly connect any bodies that participate in no joints into the model with a freejoint
-        for (BodyEl const& bodyEl : mg.iter<BodyEl>()) {
-            if (!IsAChildAttachmentInAnyJoint(mg, bodyEl)) {
+        for (BodyEl const& bodyEl : mg.iter<BodyEl>())
+        {
+            if (!IsAChildAttachmentInAnyJoint(mg, bodyEl))
+            {
                 AttachBodyDirectlyToGround(mg, *model, bodyEl, visitedBodies);
             }
         }
@@ -2327,288 +2668,15 @@ namespace {
         // add bodies that do participate in joints into the model
         //
         // note: these bodies may use the non-participating bodies (above) as parents
-        for (JointEl const& jointEl : mg.iter<JointEl>()) {
-            if (jointEl.Parent == g_GroundID || ContainsKey(visitedBodies, jointEl.Parent)) {
+        for (JointEl const& jointEl : mg.iter<JointEl>())
+        {
+            if (jointEl.Parent == g_GroundID || ContainsKey(visitedBodies, jointEl.Parent))
+            {
                 AttachJointRecursive(mg, *model, jointEl, visitedBodies, visitedJoints);
             }
         }
 
         return model;
-    }
-}
-
-// 3D rendering support
-//
-// this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
-// renderable in the UI
-namespace {
-
-    // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
-    // to some sphere in the scene (e.g. a body/ground)
-    glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
-    {
-        Sphere sphereMesh{{0.0f, 0.0f, 0.0f}, 1.0f};
-        return SphereToSphereXform(sphereMesh, sceneSphere);
-    }
-
-
-    // returns a quad used for rendering the chequered floor
-    Mesh generateFloorMesh()
-    {
-        Mesh m{GenTexturedQuad()};
-        m.scaleTexCoords(200.0f);
-        return m;
-    }
-
-    // returns a multiampled render buffer with the given format + dimensions
-    gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, dims.x, dims.y);
-        return rv;
-    }
-
-    // returns a non-multisampled render buffer with the given format + dimensions
-    gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorage(GL_RENDERBUFFER, format, dims.x, dims.y);
-        return rv;
-    }
-
-    // sets the supplied texture with the appropriate dimensions, parameters, etc. to be used as a scene texture
-    void SetTextureAsSceneTextureTex(gl::Texture2D& out, GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
-    {
-        gl::BindTexture(out);
-        gl::TexImage2D(out.type, level, internalFormat, dims.x, dims.y, 0, format, type, nullptr);
-        gl::TexParameteri(out.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(out.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        gl::TexParameteri(out.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        gl::BindTexture();
-    }
-
-    // returns a texture as a scene texture (specific params, etc.) with the given format, dims, etc.
-    gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
-    {
-        gl::Texture2D rv;
-        SetTextureAsSceneTextureTex(rv, level, internalFormat, dims, format, type);
-        return rv;
-    }
-
-    // declares a type that can bind an OpenGL buffer type to an FBO in the current OpenGL context
-    struct FboBinding {
-        virtual ~FboBinding() noexcept = default;
-        virtual void Bind() = 0;
-    };
-
-    // defines a way of binding to a render buffer to the current FBO
-    struct RboBinding final : FboBinding {
-        GLenum attachment;
-        gl::RenderBuffer& rbo;
-
-        RboBinding(GLenum attachment_, gl::RenderBuffer& rbo_) :
-            attachment{attachment_}, rbo{rbo_}
-        {
-        }
-
-        void Bind() override
-        {
-            gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, rbo);
-        }
-    };
-
-    // defines a way of binding to a texture buffer to the current FBO
-    struct TexBinding final : FboBinding {
-        GLenum attachment;
-        gl::Texture2D& tex;
-        GLint level;
-
-        TexBinding(GLenum attachment_, gl::Texture2D& tex_, GLint level_) :
-            attachment{attachment_}, tex{tex_}, level{level_}
-        {
-        }
-
-        void Bind() override
-        {
-            gl::FramebufferTexture2D(GL_FRAMEBUFFER, attachment, tex, level);
-        }
-    };
-
-    // returns an OpenGL framebuffer that is bound to the specified `FboBinding`s
-    template<typename... Binding>
-    gl::FrameBuffer FrameBufferWithBindings(Binding... bindings)
-    {
-        gl::FrameBuffer rv;
-        gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-        (bindings.Bind(), ...);
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-        return rv;
-    }
-
-    // something that is being drawn in the scene
-    struct DrawableThing final {
-        UID id = g_EmptyID;
-        UID groupId = g_EmptyID;
-        std::shared_ptr<Mesh> mesh;
-        glm::mat4x3 modelMatrix;
-        glm::mat3x3 normalMatrix;
-        glm::vec4 color;
-        float rimColor;
-        std::shared_ptr<gl::Texture2D> maybeDiffuseTex;
-    };
-
-    AABB CalcBounds(DrawableThing const& dt)
-    {
-        return dt.mesh->getWorldspaceAABB(dt.modelMatrix);
-    }
-
-    // an instance of something that is being drawn, once uploaded to the GPU
-    struct SceneGPUInstanceData final {
-        glm::mat4x3 modelMtx;
-        glm::mat3 normalMtx;
-        glm::vec4 rgba;
-    };
-
-    // a predicate used for drawcall ordering
-    bool OptimalDrawOrder(DrawableThing const& a, DrawableThing const& b)
-    {
-        if (a.color.a != b.color.a) {
-            return a.color.a > b.color.a;  // alpha descending
-        } else {
-            return a.mesh < b.mesh;
-        }
-    }
-
-    // draws the drawables to the output texture
-    //
-    // effectively, this is the main top-level rendering function
-    void DrawScene(glm::ivec2 dims,
-                   PolarPerspectiveCamera const& camera,
-                   glm::vec4 const& bgCol,
-                   nonstd::span<DrawableThing const> drawables,
-                   gl::Texture2D& outSceneTex)
-    {
-        glm::vec3 lightDir;
-        {
-            glm::vec3 p = glm::normalize(-camera.focusPoint - camera.getPos());
-            glm::vec3 up = {0.0f, 1.0f, 0.0f};
-            glm::vec3 mp = glm::rotate(glm::mat4{1.0f}, 1.25f * fpi4, up) * glm::vec4{p, 0.0f};
-            lightDir = glm::normalize(mp + -up);
-        }
-
-        glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
-
-        glm::mat4 projMat = camera.getProjMtx(VecAspectRatio(dims));
-        glm::mat4 viewMat = camera.getViewMtx();
-        glm::vec3 viewPos = camera.getPos();
-
-        auto samples = App::cur().getSamples();
-
-        gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
-        gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
-        gl::FrameBuffer sceneFBO = FrameBufferWithBindings(
-            RboBinding{GL_COLOR_ATTACHMENT0, sceneRBO},
-            RboBinding{GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24Stencil8RBO});
-
-        gl::Viewport(0, 0, dims.x, dims.y);
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, sceneFBO);
-        gl::ClearColor(bgCol);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // draw the scene to the scene FBO
-        if (true) {
-            GouraudShader& shader = App::cur().getShaderCache().getShader<GouraudShader>();
-
-            gl::UseProgram(shader.program);
-            gl::Uniform(shader.uProjMat, projMat);
-            gl::Uniform(shader.uViewMat, viewMat);
-            gl::Uniform(shader.uLightDir, lightDir);
-            gl::Uniform(shader.uLightColor, lightCol);
-            gl::Uniform(shader.uViewPos, viewPos);
-            for (auto const& d : drawables) {
-                gl::Uniform(shader.uModelMat, d.modelMatrix);
-                gl::Uniform(shader.uNormalMat, d.normalMatrix);
-                gl::Uniform(shader.uDiffuseColor, d.color);
-                if (d.maybeDiffuseTex) {
-                    gl::ActiveTexture(GL_TEXTURE0);
-                    gl::BindTexture(*d.maybeDiffuseTex);
-                    gl::Uniform(shader.uIsTextured, true);
-                    gl::Uniform(shader.uSampler0, GL_TEXTURE0-GL_TEXTURE0);
-                } else {
-                    gl::Uniform(shader.uIsTextured, false);
-                }
-                gl::BindVertexArray(d.mesh->GetVertexArray());
-                d.mesh->Draw();
-                gl::BindVertexArray();
-            }
-        }
-
-        // blit it to the (non-MSXAAed) output texture
-
-        SetTextureAsSceneTextureTex(outSceneTex, 0, GL_RGBA, dims, GL_RGBA, GL_UNSIGNED_BYTE);
-        gl::FrameBuffer outputFBO = FrameBufferWithBindings(
-            TexBinding{GL_COLOR_ATTACHMENT0, outSceneTex, 0}
-        );
-
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, sceneFBO);
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, outputFBO);
-        gl::BlitFramebuffer(0, 0, dims.x, dims.y, 0, 0, dims.x, dims.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-
-        // draw rims directly over the output texture
-        if (true) {
-            gl::Texture2D rimsTex;
-            SetTextureAsSceneTextureTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
-            gl::FrameBuffer rimsFBO = FrameBufferWithBindings(
-                TexBinding{GL_COLOR_ATTACHMENT0, rimsTex, 0}
-            );
-
-            gl::BindFramebuffer(GL_FRAMEBUFFER, rimsFBO);
-            gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            gl::Clear(GL_COLOR_BUFFER_BIT);
-
-            SolidColorShader& scs = App::cur().getShaderCache().getShader<SolidColorShader>();
-            gl::UseProgram(scs.program);
-            gl::Uniform(scs.uProjection, projMat);
-            gl::Uniform(scs.uView, viewMat);
-
-            gl::Disable(GL_DEPTH_TEST);
-            for (auto const& d : drawables) {
-                if (d.rimColor <= 0.05f) {
-                    continue;
-                }
-
-                gl::Uniform(scs.uColor, {d.rimColor, 0.0f, 0.0f, 1.0f});
-                gl::Uniform(scs.uModel, d.modelMatrix);
-                gl::BindVertexArray(d.mesh->GetVertexArray());
-                d.mesh->Draw();
-                gl::BindVertexArray();
-            }
-            gl::Enable(GL_DEPTH_TEST);
-
-
-            gl::BindFramebuffer(GL_FRAMEBUFFER, outputFBO);
-            EdgeDetectionShader& eds = App::cur().getShaderCache().getShader<EdgeDetectionShader>();
-            gl::UseProgram(eds.program);
-            gl::Uniform(eds.uMVP, gl::identity);
-            gl::ActiveTexture(GL_TEXTURE0);
-            gl::BindTexture(rimsTex);
-            gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-            gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, 1.75f / VecLongestDimVal(dims));
-            auto quadMesh = App::meshes().getTexturedQuadMesh();
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            gl::Enable(GL_BLEND);
-            gl::BindVertexArray(quadMesh->GetVertexArray());
-            quadMesh->Draw();
-            gl::BindVertexArray();
-        }
-
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
     }
 }
 
@@ -2628,6 +2696,7 @@ namespace {
         virtual void pop() = 0;
     };
 
+    // a layer that is hosted by the parent
     class Layer {
     public:
         Layer(LayerHost& parent) : m_Parent{parent} {}
@@ -2668,6 +2737,10 @@ namespace {
         }
 
 
+        //
+        // MODEL EXPORT STUFF
+        //
+
         bool HasOutputModel() const
         {
             return m_MaybeOutputModel.get() != nullptr;
@@ -2682,6 +2755,11 @@ namespace {
         {
             m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_IssuesBuffer);
         }
+
+
+        //
+        // MODEL GRAPH STUFF
+        //
 
         ModelGraph const& GetModelGraph() const
         {
@@ -2785,32 +2863,10 @@ namespace {
             CommitCurrentModelGraph("deleted selection");
         }
 
-        UIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
-        {
-            ModelGraph& mg = UpdModelGraph();
 
-            BodyEl& b = mg.AddEl<BodyEl>(name, Transform{shift, rot});
-            mg.DeSelectAll();
-            mg.Select(b.ID);
-
-            CommitCurrentModelGraph(std::string{"added "} + b.GetLabel());
-
-            return b.ID;
-        }
-
-        UIDT<BodyEl> AddBody(glm::vec3 const& pos)
-        {
-            return AddBody(GenerateBodyName(), pos, {});
-        }
-
-        void UnassignMesh(MeshEl const& me)
-        {
-            UpdModelGraph().UpdElByID<MeshEl>(me.ID).Attachment = g_GroundID;
-
-            std::stringstream ss;
-            ss << "unassigned '" << me.Name << "' back to ground";
-            CommitCurrentModelGraph(std::move(ss).str());
-        }
+        //
+        // MESH LOADING STUFF
+        //
 
         void PushMeshLoadRequests(UIDT<BodyEl> bodyToAttachTo, std::vector<std::filesystem::path> paths)
         {
@@ -2840,12 +2896,14 @@ namespace {
                 return;
             }
 
+
+            // add each loaded mesh into the model graph
             ModelGraph& mg = UpdModelGraph();
             mg.DeSelectAll();
-
             for (LoadedMesh const& lm : ok.Meshes)
             {
-                MeshEl& mesh = mg.AddEl<MeshEl>(ok.PreferredAttachmentPoint, lm.MeshData, lm.Path);
+                UIDT<BodyEl> attachmentID = DowncastID<BodyEl>(ok.PreferredAttachmentPoint);
+                MeshEl& mesh = mg.AddEl<MeshEl>(attachmentID, lm.MeshData, lm.Path);
 
                 BodyEl* maybeBody = mg.TryUpdElByID<BodyEl>(ok.PreferredAttachmentPoint);
                 if (maybeBody)
@@ -2857,21 +2915,24 @@ namespace {
                 mg.Select(mesh.ID);
             }
 
-            std::stringstream commitMsgSS;
-            if (ok.Meshes.empty())
+            // commit
             {
-                commitMsgSS << "loaded 0 meshes";
-            }
-            else if (ok.Meshes.size() == 1)
-            {
-                commitMsgSS << "loaded " << ok.Meshes[0].Path.filename();
-            }
-            else
-            {
-                commitMsgSS << "loaded " << ok.Meshes.size() << " meshes";
-            }
+                std::stringstream commitMsgSS;
+                if (ok.Meshes.empty())
+                {
+                    commitMsgSS << "loaded 0 meshes";
+                }
+                else if (ok.Meshes.size() == 1)
+                {
+                    commitMsgSS << "loaded " << ok.Meshes[0].Path.filename();
+                }
+                else
+                {
+                    commitMsgSS << "loaded " << ok.Meshes.size() << " meshes";
+                }
 
-            CommitCurrentModelGraph(std::move(commitMsgSS).str());
+                CommitCurrentModelGraph(std::move(commitMsgSS).str());
+            }
         }
 
         // called when the mesh loader responds with a mesh loading error
@@ -2906,6 +2967,11 @@ namespace {
         {
             PushMeshLoadRequests(PromptUserForMeshFiles());
         }
+
+
+        //
+        // UI OVERLAY STUFF
+        //
 
         glm::vec2 WorldPosToScreenPos(glm::vec3 const& worldPos) const
         {
@@ -3035,6 +3101,10 @@ namespace {
         }
 
 
+        //
+        // RENDERING STUFF
+        //
+
         void SetContentRegionAvailAsSceneRect()
         {
             Set3DSceneRect(ContentRegionAvailScreenRect());
@@ -3060,27 +3130,51 @@ namespace {
             SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
-        bool IsRenderHovered() const { return m_IsRenderHovered; }
+        bool IsRenderHovered() const
+        {
+            return m_IsRenderHovered;
+        }
 
-        void SetIsRenderHovered(bool newIsHovered) { m_IsRenderHovered = newIsHovered; }
+        void SetIsRenderHovered(bool newIsHovered)
+        {
+            m_IsRenderHovered = newIsHovered;
+        }
 
-        Rect const& Get3DSceneRect() const { return m_3DSceneRect; }
-        void Set3DSceneRect(Rect const& newRect) { m_3DSceneRect = newRect; }
+        Rect const& Get3DSceneRect() const
+        {
+            return m_3DSceneRect;
+        }
 
-        glm::vec2 Get3DSceneDims() const { return RectDims(m_3DSceneRect); }
+        void Set3DSceneRect(Rect const& newRect)
+        {
+            m_3DSceneRect = newRect;
+        }
 
-        PolarPerspectiveCamera const& GetCamera() const { return m_3DSceneCamera; }
-        PolarPerspectiveCamera& UpdCamera() { return m_3DSceneCamera; }
+        glm::vec2 Get3DSceneDims() const
+        {
+            return RectDims(m_3DSceneRect);
+        }
+
+        PolarPerspectiveCamera const& GetCamera() const
+        {
+            return m_3DSceneCamera;
+        }
+
+        PolarPerspectiveCamera& UpdCamera()
+        {
+            return m_3DSceneCamera;
+        }
+
         void FocusCameraOn(glm::vec3 const& focusPoint)
         {
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        gl::Texture2D& UpdSceneTex() { return m_3DSceneTex; }
+        gl::Texture2D& UpdSceneTex()
+        {
+            return m_3DSceneTex;
+        }
 
-
-
-        // COLOR METHODS
         nonstd::span<glm::vec4 const> GetColors() const
         {
             static_assert(alignof(decltype(m_Colors)) == alignof(glm::vec4));
@@ -3094,27 +3188,61 @@ namespace {
             reinterpret_cast<glm::vec4*>(&m_Colors)[i] = newColorValue;
         }
 
-        nonstd::span<char const* const> GetColorLabels() const { return g_ColorNames; }
+        nonstd::span<char const* const> GetColorLabels() const
+        {
+            return g_ColorNames;
+        }
 
-        glm::vec4 const& GetColorSceneBackground() const { return m_Colors.SceneBackground; }
+        glm::vec4 const& GetColorSceneBackground() const
+        {
+            return m_Colors.SceneBackground;
+        }
 
-        glm::vec4 const& GetColorMesh() const { return m_Colors.Mesh; }
-        void SetColorMesh(glm::vec4 const& newColor) { m_Colors.Mesh = newColor; }
+        glm::vec4 const& GetColorMesh() const
+        {
+            return m_Colors.Mesh;
+        }
 
-        glm::vec4 const& GetColorUnassignedMesh() const { return m_Colors.UnassignedMesh; }
-        void GetColorUnassignedMesh(glm::vec4 const& newColor) { m_Colors.UnassignedMesh = newColor; }
+        void SetColorMesh(glm::vec4 const& newColor)
+        {
+            m_Colors.Mesh = newColor;
+        }
 
-        glm::vec4 const& GetColorGround() const { return m_Colors.Ground; }
+        glm::vec4 const& SetColorUnassignedMesh() const
+        {
+            return m_Colors.UnassignedMesh;
+        }
 
-        glm::vec4 const& GetColorSolidConnectionLine() const { return m_Colors.SolidConnection; }
-        void SetColorSolidConnectionLine(glm::vec4 const& newColor) { m_Colors.SolidConnection = newColor; }
+        void SetColorUnassignedMesh(glm::vec4 const& newColor)
+        {
+            m_Colors.UnassignedMesh = newColor;
+        }
 
-        glm::vec4 const& GetColorTransparentFaintConnectionLine() const { return m_Colors.TransparentFaintConnection; }
-        void SetColorTransparentFaintConnectionLine(glm::vec4 const& newColor) { m_Colors.TransparentFaintConnection = newColor; }
+        glm::vec4 const& GetColorGround() const
+        {
+            return m_Colors.Ground;
+        }
 
+        glm::vec4 const& GetColorSolidConnectionLine() const
+        {
+            return m_Colors.SolidConnection;
+        }
 
+        void SetColorSolidConnectionLine(glm::vec4 const& newColor)
+        {
+            m_Colors.SolidConnection = newColor;
+        }
 
-        // VISIBILITY METHODS
+        glm::vec4 const& GetColorTransparentFaintConnectionLine() const
+        {
+            return m_Colors.TransparentFaintConnection;
+        }
+
+        void SetColorTransparentFaintConnectionLine(glm::vec4 const& newColor)
+        {
+            m_Colors.TransparentFaintConnection = newColor;
+        }
+
         nonstd::span<bool const> GetVisibilityFlags() const
         {
             static_assert(alignof(decltype(m_VisibilityFlags)) == alignof(bool));
@@ -3128,75 +3256,95 @@ namespace {
             reinterpret_cast<bool*>(&m_VisibilityFlags)[i] = newVisibilityValue;
         }
 
-        nonstd::span<char const* const> GetVisibilityFlagLabels() const { return g_VisibilityFlagNames; }
-
-        bool IsShowingMeshes() const { return m_VisibilityFlags.Meshes; }
-        void SetIsShowingMeshes(bool newIsShowing) { m_VisibilityFlags.Meshes = newIsShowing; }
-
-        bool IsShowingBodies() const { return m_VisibilityFlags.Bodies; }
-        void SetIsShowingBodies(bool newIsShowing) { m_VisibilityFlags.Bodies = newIsShowing; }
-
-        bool IsShowingJointCenters() const { return m_VisibilityFlags.JointCenters; }
-        void SetIsShowingJointCenters(bool newIsShowing) { m_VisibilityFlags.JointCenters = newIsShowing; }
-
-        bool IsShowingGround() const { return m_VisibilityFlags.Ground; }
-        void SetIsShowingGround(bool newIsShowing) { m_VisibilityFlags.Ground = newIsShowing; }
-
-        bool IsShowingFloor() const { return m_VisibilityFlags.Floor; }
-        void SetIsShowingFloor(bool newIsShowing) { m_VisibilityFlags.Floor = newIsShowing; }
-
-        bool IsShowingJointConnectionLines() const { return m_VisibilityFlags.JointConnectionLines; }
-        void SetIsShowingJointConnectionLines(bool newIsShowing) { m_VisibilityFlags.JointConnectionLines = newIsShowing; }
-
-        bool IsShowingMeshConnectionLines() const { return m_VisibilityFlags.MeshConnectionLines; }
-        void SetIsShowingMeshConnectionLines(bool newIsShowing) { m_VisibilityFlags.MeshConnectionLines = newIsShowing; }
-
-        bool IsShowingBodyConnectionLines() const { return m_VisibilityFlags.BodyToGroundConnectionLines; }
-        void SetIsShowingBodyConnectionLines(bool newIsShowing) { m_VisibilityFlags.BodyToGroundConnectionLines = newIsShowing; }
-
-
-        // LOCKING/INTERACTIVITY METHODS
-        nonstd::span<bool const> GetIneractivityFlags() const
+        nonstd::span<char const* const> GetVisibilityFlagLabels() const
         {
-            static_assert(alignof(decltype(m_InteractivityFlags)) == alignof(bool));
-            static_assert(sizeof(m_InteractivityFlags) % sizeof(bool) == 0);
-            bool const* start = reinterpret_cast<bool const*>(&m_InteractivityFlags);
-            return {start, start + sizeof(m_InteractivityFlags)/sizeof(bool)};
+            return g_VisibilityFlagNames;
         }
 
-        void SetInteractivityFlag(size_t i, bool newInteractivityValue)
+        bool IsShowingMeshes() const
         {
-            reinterpret_cast<bool*>(&m_InteractivityFlags)[i] = newInteractivityValue;
+            return m_VisibilityFlags.Meshes;
         }
 
-        nonstd::span<char const* const> GetInteractivityFlagLabels() const
+        void SetIsShowingMeshes(bool newIsShowing)
         {
-            return g_InteractivityFlagNames;
+            m_VisibilityFlags.Meshes = newIsShowing;
         }
 
-        bool IsMeshesInteractable() const { return m_InteractivityFlags.Meshes; }
-        void SetIsMeshesInteractable(bool newIsInteractable) { m_InteractivityFlags.Meshes = newIsInteractable; }
+        bool IsShowingBodies() const
+        {
+            return m_VisibilityFlags.Bodies;
+        }
 
-        bool IsBodiesInteractable() const { return m_InteractivityFlags.Bodies; }
-        void SetIsBodiesInteractable(bool newIsInteractable) { m_InteractivityFlags.Bodies = newIsInteractable; }
+        void SetIsShowingBodies(bool newIsShowing)
+        {
+            m_VisibilityFlags.Bodies = newIsShowing;
+        }
 
-        bool IsJointCentersInteractable() const { return m_InteractivityFlags.JointCenters; }
-        void SetIsJointCentersInteractable(bool newIsInteractable) { m_InteractivityFlags.JointCenters = newIsInteractable; }
+        bool IsShowingJointCenters() const
+        {
+            return m_VisibilityFlags.JointCenters;
+        }
 
-        bool IsGroundInteractable() const { return m_InteractivityFlags.Ground; }
-        void SetIsGroundInteractable(bool newIsInteractable) { m_InteractivityFlags.Ground = newIsInteractable; }
+        void SetIsShowingJointCenters(bool newIsShowing)
+        {
+            m_VisibilityFlags.JointCenters = newIsShowing;
+        }
 
-        float GetSceneScaleFactor() const { return m_SceneScaleFactor; }
-        void SetSceneScaleFactor(float newScaleFactor) { m_SceneScaleFactor = newScaleFactor; }
+        bool IsShowingGround() const
+        {
+            return m_VisibilityFlags.Ground;
+        }
+
+        void SetIsShowingGround(bool newIsShowing)
+        {
+            m_VisibilityFlags.Ground = newIsShowing;
+        }
+
+        bool IsShowingFloor() const
+        {
+            return m_VisibilityFlags.Floor;
+        }
+
+        void SetIsShowingFloor(bool newIsShowing)
+        {
+            m_VisibilityFlags.Floor = newIsShowing;
+        }
+
+        bool IsShowingJointConnectionLines() const
+        {
+            return m_VisibilityFlags.JointConnectionLines;
+        }
+
+        void SetIsShowingJointConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.JointConnectionLines = newIsShowing;
+        }
+
+        bool IsShowingMeshConnectionLines() const
+        {
+            return m_VisibilityFlags.MeshConnectionLines;
+        }
+
+        void SetIsShowingMeshConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.MeshConnectionLines = newIsShowing;
+        }
+
+        bool IsShowingBodyConnectionLines() const
+        {
+            return m_VisibilityFlags.BodyToGroundConnectionLines;
+        }
+
+        void SetIsShowingBodyConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.BodyToGroundConnectionLines = newIsShowing;
+        }
 
         glm::mat4 GetFloorModelMtx() const
         {
             glm::mat4 rv{1.0f};
 
-            // OpenSim: might contain floors at *exactly* Y = 0.0, so shift the chequered
-            // floor down *slightly* to prevent Z fighting from planes rendered from the
-            // model itself (the contact planes, etc.)
-            rv = glm::translate(rv, {0.0f, -0.0001f, 0.0f});
             rv = glm::rotate(rv, fpi2, {-1.0, 0.0, 0.0});
             rv = glm::scale(rv, {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f});
 
@@ -3208,27 +3356,13 @@ namespace {
             DrawableThing dt;
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
-            dt.mesh = App::meshes().get100x100GridMesh();// m_FloorMesh;
+            dt.mesh = App::meshes().get100x100GridMesh();
             dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
             dt.normalMatrix = NormalMatrix(dt.modelMatrix);
             dt.color = m_Colors.FloorTint;
             dt.rimColor = 0.0f;
-            dt.maybeDiffuseTex = nullptr;//m_FloorChequerTex;
+            dt.maybeDiffuseTex = nullptr;
             return dt;
-        }
-
-        DrawableThing GenerateMeshElDrawable(MeshEl const& meshEl) const
-        {
-            DrawableThing rv;
-            rv.id = meshEl.ID;
-            rv.groupId = g_MeshGroupID;
-            rv.mesh = meshEl.MeshData;
-            rv.modelMatrix = toMat4(meshEl.Xform);
-            rv.normalMatrix = toNormalMatrix(meshEl.Xform);
-            rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? GetColorUnassignedMesh() : GetColorMesh();
-            rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
-            return rv;
         }
 
         float GetSphereRadius() const
@@ -3239,34 +3373,6 @@ namespace {
         Sphere SphereAtTranslation(glm::vec3 const& translation) const
         {
             return Sphere{translation, GetSphereRadius()};
-        }
-
-        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, glm::vec4 const& color) const
-        {
-            DrawableThing rv;
-            rv.id = bodyEl.ID;
-            rv.groupId = g_BodyGroupID;
-            rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
-            rv.color = color;
-            rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
-            return rv;
-        }
-
-        DrawableThing GenerateGroundSphere(glm::vec4 const& color) const
-        {
-            DrawableThing rv;
-            rv.id = g_GroundID;
-            rv.groupId = g_GroundGroupID;
-            rv.mesh = m_SphereMesh;
-            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
-            rv.color = color;
-            rv.rimColor = 0.0f;
-            rv.maybeDiffuseTex = nullptr;
-            return rv;
         }
 
         void AppendAsFrame(UID logicalID,
@@ -3300,7 +3406,8 @@ namespace {
 
             // emit "legs"
             Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 3; ++i)
+            {
                 glm::vec3 dir = {0.0f, 0.0f, 0.0f};
                 dir[i] = 4.0f * legLen[i] * GetSphereRadius();
                 Segment axisline{origin, origin + rotation*dir};
@@ -3353,7 +3460,8 @@ namespace {
             }
 
             // stretch origin cube for legs
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 3; ++i)
+            {
                 Segment coneLine{glm::vec3{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
                 Segment outputLine{};
                 outputLine.p1[i] = halfWidths;
@@ -3375,6 +3483,214 @@ namespace {
                 legCube.rimColor = rimAlpha;
                 legCube.maybeDiffuseTex = nullptr;
             }
+        }
+
+
+        //
+        // HOVERTEST/INTERACTIVITY
+        //
+
+        nonstd::span<bool const> GetIneractivityFlags() const
+        {
+            static_assert(alignof(decltype(m_InteractivityFlags)) == alignof(bool));
+            static_assert(sizeof(m_InteractivityFlags) % sizeof(bool) == 0);
+            bool const* start = reinterpret_cast<bool const*>(&m_InteractivityFlags);
+            return {start, start + sizeof(m_InteractivityFlags)/sizeof(bool)};
+        }
+
+        void SetInteractivityFlag(size_t i, bool newInteractivityValue)
+        {
+            reinterpret_cast<bool*>(&m_InteractivityFlags)[i] = newInteractivityValue;
+        }
+
+        nonstd::span<char const* const> GetInteractivityFlagLabels() const
+        {
+            return g_InteractivityFlagNames;
+        }
+
+        bool IsMeshesInteractable() const
+        {
+            return m_InteractivityFlags.Meshes;
+        }
+
+        void SetIsMeshesInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.Meshes = newIsInteractable;
+        }
+
+        bool IsBodiesInteractable() const
+        {
+            return m_InteractivityFlags.Bodies;
+        }
+
+        void SetIsBodiesInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.Bodies = newIsInteractable;
+        }
+
+        bool IsJointCentersInteractable() const
+        {
+            return m_InteractivityFlags.JointCenters;
+        }
+
+        void SetIsJointCentersInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.JointCenters = newIsInteractable;
+        }
+
+        bool IsGroundInteractable() const
+        {
+            return m_InteractivityFlags.Ground;
+        }
+
+        void SetIsGroundInteractable(bool newIsInteractable)
+        {
+            m_InteractivityFlags.Ground = newIsInteractable;
+        }
+
+        float GetSceneScaleFactor() const
+        {
+            return m_SceneScaleFactor;
+        }
+
+        void SetSceneScaleFactor(float newScaleFactor)
+        {
+            m_SceneScaleFactor = newScaleFactor;
+        }
+
+        Hover Hovertest(std::vector<DrawableThing> const& drawables) const
+        {
+            Rect sceneRect = Get3DSceneRect();
+            glm::vec2 mousePos = ImGui::GetMousePos();
+
+            if (!PointIsInRect(sceneRect, mousePos))
+            {
+                return Hover{};
+            }
+
+            glm::vec2 sceneDims = RectDims(sceneRect);
+            glm::vec2 relMousePos = mousePos - sceneRect.p1;
+
+            Line ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
+            bool hittestMeshes = IsMeshesInteractable();
+            bool hittestBodies = IsBodiesInteractable();
+            bool hittestJointCenters = IsJointCentersInteractable();
+            bool hittestGround = IsGroundInteractable();
+
+            UID closestID = g_EmptyID;
+            float closestDist = std::numeric_limits<float>::max();
+
+            for (DrawableThing const& drawable : drawables)
+            {
+                if (drawable.id == g_EmptyID)
+                {
+                    continue;  // no hittest data
+                }
+
+                if (drawable.groupId == g_BodyGroupID && !hittestBodies)
+                {
+                    continue;
+                }
+
+                if (drawable.groupId == g_MeshGroupID && !hittestMeshes)
+                {
+                    continue;
+                }
+
+                if (drawable.groupId == g_JointGroupID && !hittestJointCenters)
+                {
+                    continue;
+                }
+
+                if (drawable.groupId == g_GroundGroupID && !hittestGround)
+                {
+                    continue;
+                }
+
+                RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.modelMatrix, ray);
+                if (rc.hit && rc.distance < closestDist)
+                {
+                    closestID = drawable.id;
+                    closestDist = rc.distance;
+                }
+            }
+
+            glm::vec3 hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
+
+            return Hover{closestID, hitPos};
+        }
+
+        //
+        // SCENE ELEMENT STUFF (specific methods for specific scene element types)
+        //
+
+        UIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
+        {
+            ModelGraph& mg = UpdModelGraph();
+
+            BodyEl& b = mg.AddEl<BodyEl>(name, Transform{shift, rot});
+            mg.DeSelectAll();
+            mg.Select(b.ID);
+
+            CommitCurrentModelGraph(std::string{"added "} + b.GetLabel());
+
+            return b.ID;
+        }
+
+        UIDT<BodyEl> AddBody(glm::vec3 const& pos)
+        {
+            return AddBody(GenerateBodyName(), pos, {});
+        }
+
+        void UnassignMesh(MeshEl const& me)
+        {
+            UpdModelGraph().UpdElByID<MeshEl>(me.ID).Attachment = g_GroundID;
+
+            std::stringstream ss;
+            ss << "unassigned '" << me.Name << "' back to ground";
+            CommitCurrentModelGraph(std::move(ss).str());
+        }
+
+        DrawableThing GenerateMeshElDrawable(MeshEl const& meshEl) const
+        {
+            DrawableThing rv;
+            rv.id = meshEl.ID;
+            rv.groupId = g_MeshGroupID;
+            rv.mesh = meshEl.MeshData;
+            rv.modelMatrix = toMat4(meshEl.Xform);
+            rv.normalMatrix = toNormalMatrix(meshEl.Xform);
+            rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? SetColorUnassignedMesh() : GetColorMesh();
+            rv.rimColor = 0.0f;
+            rv.maybeDiffuseTex = nullptr;
+            return rv;
+        }
+
+        DrawableThing GenerateBodyElSphere(BodyEl const& bodyEl, glm::vec4 const& color) const
+        {
+            DrawableThing rv;
+            rv.id = bodyEl.ID;
+            rv.groupId = g_BodyGroupID;
+            rv.mesh = m_SphereMesh;
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
+            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.color = color;
+            rv.rimColor = 0.0f;
+            rv.maybeDiffuseTex = nullptr;
+            return rv;
+        }
+
+        DrawableThing GenerateGroundSphere(glm::vec4 const& color) const
+        {
+            DrawableThing rv;
+            rv.id = g_GroundID;
+            rv.groupId = g_GroundGroupID;
+            rv.mesh = m_SphereMesh;
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
+            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.color = color;
+            rv.rimColor = 0.0f;
+            rv.maybeDiffuseTex = nullptr;
+            return rv;
         }
 
         void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
@@ -3449,71 +3765,15 @@ namespace {
             e.Accept(visitor);
         }
 
-        Hover Hovertest(std::vector<DrawableThing> const& drawables) const
-        {
-            Rect sceneRect = Get3DSceneRect();
-            glm::vec2 mousePos = ImGui::GetMousePos();
 
-            if (!PointIsInRect(sceneRect, mousePos))
-            {
-                return Hover{};
-            }
-
-            glm::vec2 sceneDims = RectDims(sceneRect);
-            glm::vec2 relMousePos = mousePos - sceneRect.p1;
-
-            Line ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
-            bool hittestMeshes = IsMeshesInteractable();
-            bool hittestBodies = IsBodiesInteractable();
-            bool hittestJointCenters = IsJointCentersInteractable();
-            bool hittestGround = IsGroundInteractable();
-
-            UID closestID = g_EmptyID;
-            float closestDist = std::numeric_limits<float>::max();
-
-            for (DrawableThing const& drawable : drawables)
-            {
-                if (drawable.id == g_EmptyID)
-                {
-                    continue;  // no hittest data
-                }
-
-                if (drawable.groupId == g_BodyGroupID && !hittestBodies)
-                {
-                    continue;
-                }
-
-                if (drawable.groupId == g_MeshGroupID && !hittestMeshes)
-                {
-                    continue;
-                }
-
-                if (drawable.groupId == g_JointGroupID && !hittestJointCenters)
-                {
-                    continue;
-                }
-
-                if (drawable.groupId == g_GroundGroupID && !hittestGround)
-                {
-                    continue;
-                }
-
-                RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.modelMatrix, ray);
-                if (rc.hit && rc.distance < closestDist)
-                {
-                    closestID = drawable.id;
-                    closestDist = rc.distance;
-                }
-            }
-
-            glm::vec3 hitPos = closestID != g_EmptyID ? ray.origin + closestDist*ray.dir : glm::vec3{};
-
-            return Hover{closestID, hitPos};
-        }
+        //
+        // TOP-LEVEL STUFF
+        //
 
         bool onEvent(SDL_Event const& e)
         {
             // if the user drags + drops a file into the window, assume it's a meshfile
+            // and start loading it
             if (e.type == SDL_DROPFILE && e.drop.file != nullptr)
             {
                 PushMeshLoadRequest(std::filesystem::path{e.drop.file});
@@ -3533,8 +3793,10 @@ namespace {
             {
                 auto mainEditorState = std::make_shared<MainEditorState>(std::move(UpdOutputModel()));
                 mainEditorState->editedModel.setFixupScaleFactor(m_SceneScaleFactor);
-                for (auto& viewerPtr : mainEditorState->viewers) {
-                    if (viewerPtr) {
+                for (auto& viewerPtr : mainEditorState->viewers)
+                {
+                    if (viewerPtr)
+                    {
                         viewerPtr->requestAutoFocus();
                     }
                 }
@@ -3717,25 +3979,36 @@ namespace {
 
     private:
 
+        bool IsBothPointsSelected() const
+        {
+            return m_MaybeFirstLocation && m_MaybeSecondLocation;
+        }
+
+        bool IsAnyPointSelected() const
+        {
+            return m_MaybeFirstLocation || m_MaybeSecondLocation;
+        }
+
         // handle the transition that may occur after the user clicks two points
         void HandlePossibleTransitionToNextStep()
         {
-            if (m_MaybeFirstLocation && m_MaybeSecondLocation)
+            if (!IsBothPointsSelected())
             {
-                bool pointsAccepted = m_Options.OnTwoPointsChosen(*m_MaybeFirstLocation, *m_MaybeSecondLocation);
-
-                if (pointsAccepted)
-                {
-                    m_Parent.pop();
-                }
-                else
-                {
-                    // points were rejected, so reset them
-                    m_MaybeFirstLocation.reset();
-                    m_MaybeSecondLocation.reset();
-                }
+                return;  // user hasn't selected two points yet
             }
-            // else: don't transition because the user hasn't selected two accepted points
+
+            bool pointsAccepted = m_Options.OnTwoPointsChosen(*m_MaybeFirstLocation, *m_MaybeSecondLocation);
+
+            if (pointsAccepted)
+            {
+                m_Parent.pop();
+            }
+            else
+            {
+                // points were rejected, so reset them
+                m_MaybeFirstLocation.reset();
+                m_MaybeSecondLocation.reset();
+            }
         }
 
         // handle any side-effects of the user interacting with whatever they are
@@ -3794,9 +4067,9 @@ namespace {
         // draw 2D overlay over the render, things like connection lines, dots, etc.
         void DrawOverlay()
         {
-            if (!(m_MaybeFirstLocation || m_MaybeSecondLocation))
+            if (!IsAnyPointSelected())
             {
-                return;  // only draw this overlay if at least one point is selected
+                return;
             }
 
             glm::vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
@@ -3930,16 +4203,14 @@ namespace {
 
             SceneEl const* se = m_Shared->GetModelGraph().TryGetElByID(m_MaybeHover.ID);
 
-            if (!se)
+            if (se)
             {
-                return;
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted(se->GetLabel().c_str());
+                ImGui::SameLine();
+                ImGui::TextDisabled("(%s, click to choose)", se->GetTypeName().c_str());
+                ImGui::EndTooltip();
             }
-
-            ImGui::BeginTooltip();
-            ImGui::TextUnformatted(se->GetLabel().c_str());
-            ImGui::SameLine();
-            ImGui::TextDisabled("(%s, click to choose)", se->GetTypeName().c_str());
-            ImGui::EndTooltip();
         }
 
         // draw 2D connection overlay lines that show what's connected to what in the graph
@@ -3993,6 +4264,59 @@ namespace {
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.Header.c_str());
         }
 
+        bool IsSelectable(SceneEl const& el)
+        {
+            if (el.GetID() == m_Options.MaybeElAttachingTo)
+            {
+                return false;
+            }
+
+            struct Visitor final : public ConstSceneElVisitor {
+            public:
+                Visitor(ChooseElLayerOptions& opts) : m_Opts{opts}
+                {
+                }
+
+                bool result() const
+                {
+                    return m_Result;
+                }
+
+                void operator()(GroundEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseGround;
+                }
+
+                void operator()(MeshEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseMeshes;
+                }
+
+                void operator()(BodyEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseBodies;
+                }
+
+                void operator()(JointEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseJoints;
+                }
+
+                void operator()(StationEl const&) override
+                {
+                    // TODO
+                }
+
+            private:
+                bool m_Result = false;
+                ChooseElLayerOptions const& m_Opts;
+            };
+
+            Visitor v{m_Options};
+            el.Accept(v);
+            return v.result();
+        }
+
         // returns a list of 3D drawable scene objects for this layer
         std::vector<DrawableThing>& GenerateDrawables()
         {
@@ -4003,65 +4327,31 @@ namespace {
             float fadedAlpha = 0.2f;
             float animScale = EaseOutElastic(m_AnimationFraction);
 
-            // meshes
-            for (MeshEl const& meshEl : mg.iter<MeshEl>())
+            for (SceneEl const& el : mg.iter())
             {
-                DrawableThing& d = m_DrawablesBuffer.emplace_back(m_Shared->GenerateMeshElDrawable(meshEl));
+                size_t start = m_DrawablesBuffer.size();
+                m_Shared->AppendDrawables(el, m_DrawablesBuffer);
+                size_t end = m_DrawablesBuffer.size();
 
-                if (meshEl.ID == m_MaybeHover.ID)
+                bool isSelectable = IsSelectable(el);
+                float rimColor = el.GetID() == m_MaybeHover.ID ? 0.8f : 0.0f;
+
+                for (size_t i = start; i < end; ++i)
                 {
-                    d.rimColor = 0.8f;
+                    DrawableThing& d = m_DrawablesBuffer[i];
+                    d.rimColor = rimColor;
+
+                    if (!isSelectable)
+                    {
+                        d.color.a = fadedAlpha;
+                        d.id = g_EmptyID;
+                        d.groupId = g_EmptyID;
+                    }
+                    else
+                    {
+                        d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
+                    }
                 }
-
-                bool isSelectable = meshEl.ID != m_Options.MaybeElAttachingTo && m_Options.CanChooseMeshes;
-
-                if (!isSelectable)
-                {
-                    d.color.a = fadedAlpha;
-                    d.id = g_EmptyID;
-                    d.groupId = g_EmptyID;
-                }
-            }
-
-            // bodies
-            for (BodyEl const& bodyEl : mg.iter<BodyEl>())
-            {
-                bool isSelectable = bodyEl.ID != m_Options.MaybeElAttachingTo && m_Options.CanChooseBodies;
-
-                UID id = isSelectable ? bodyEl.ID : g_EmptyID;
-                UID groupId = isSelectable ? g_BodyGroupID : g_EmptyID;
-                float alpha = isSelectable ? 1.0f : 0.2f;
-                float rimAlpha = bodyEl.ID == m_MaybeHover.ID ? 0.8f: 0.0f;
-                glm::vec3 sf = isSelectable ? glm::vec3{animScale, animScale, animScale} : glm::vec3{1.0f, 1.0f, 1.0f};
-
-                m_Shared->AppendAsCubeThing(id, groupId, bodyEl.Xform, m_DrawablesBuffer, alpha, rimAlpha, sf);
-            }
-
-            // joints
-            for (JointEl const& jointEl : mg.iter<JointEl>())
-            {
-                bool isSelectable = jointEl.ID != m_Options.MaybeElAttachingTo && m_Options.CanChooseJoints;
-
-                UID id = isSelectable? jointEl.ID : g_EmptyID;
-                UID groupId = isSelectable ? g_JointGroupID : g_EmptyID;
-                float alpha = isSelectable ? 1.0f : 0.2f;
-                float rimAlpha = jointEl.ID == m_MaybeHover.ID ? 0.8f : 0.0f;
-                glm::vec3 axisLengths = GetJointAxisLengths(jointEl);
-
-                m_Shared->AppendAsFrame(id, groupId, jointEl.Xform, m_DrawablesBuffer, alpha, rimAlpha, axisLengths);
-            }
-
-            // ground
-            {
-                bool isSelectable = g_GroundID != m_Options.MaybeElAttachingTo && m_Options.CanChooseGround;
-
-                DrawableThing& d = m_DrawablesBuffer.emplace_back(m_Shared->GenerateGroundSphere(m_Shared->GetColorGround()));
-                d.id = isSelectable ? g_GroundID : g_EmptyID;
-                d.groupId = isSelectable ? g_GroundGroupID : g_EmptyID;
-                d.color.a = isSelectable ? 1.0f : 0.2f;
-                d.rimColor = g_GroundID == m_MaybeHover.ID ? 0.8f : 0.0f;
-                d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
-                d.normalMatrix = NormalMatrix(d.modelMatrix);
             }
 
             // floor
@@ -4219,13 +4509,16 @@ namespace {
             if (id == g_EmptyID)
             {
                 return 0.0f;
-            } else if (m_Shared->IsSelected(id))
+            }
+            else if (m_Shared->IsSelected(id))
             {
                 return 1.0f;
-            } else if (IsInSelectionGroupOf(m_Shared->GetModelGraph(), m_MaybeHover.ID, id))
+            }
+            else if (IsInSelectionGroupOf(m_Shared->GetModelGraph(), m_MaybeHover.ID, id))
             {
                 return 0.6f;
-            } else
+            }
+            else
             {
                 return 0.0f;
             }
@@ -4243,10 +4536,11 @@ namespace {
         }
 
 
+        //
         // TRANSITIONS
         //
         // methods for transitioning the main 3D UI to some other state
-
+        //
 
         // transition the shown UI layer to one where the user is assigning a mesh
         void TransitionToAssigningMeshNextFrame(MeshEl const& meshEl)
@@ -4335,6 +4629,7 @@ namespace {
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
+            opts.MaybeElAttachingTo = id;
             opts.Header = "choose what to point towards (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id, axis](UID userChoice)
             {
@@ -4416,6 +4711,7 @@ namespace {
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = true;
+            opts.MaybeElAttachingTo = id;
             opts.Header = "choose where to place it (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id](UID userChoice)
             {
@@ -4780,7 +5076,7 @@ namespace {
             m_Shared->CommitCurrentModelGraph("translated " + el.GetLabel());
         }
 
-        void DrawReorientMenu(JointEl jointEl)
+        void DrawReorientMenu(JointEl const& jointEl)
         {
             if (ImGui::BeginMenu(ICON_FA_REDO " reorient"))
             {
@@ -4819,7 +5115,7 @@ namespace {
             }
         }
 
-        void DrawTranslateMenu(JointEl jointEl)
+        void DrawTranslateMenu(JointEl const& jointEl)
         {
             if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " translate"))
             {
@@ -5305,15 +5601,19 @@ namespace {
             ImGui::Indent();
 
             bool hasBody = false;
-            for (BodyEl const& body : m_Shared->GetModelGraph().iter<BodyEl>()) {
+            for (BodyEl const& body : m_Shared->GetModelGraph().iter<BodyEl>())
+            {
                 hasBody = true;
 
                 int styles = 0;
 
-                if (body.ID == m_MaybeHover.ID) {
+                if (body.ID == m_MaybeHover.ID)
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                     ++styles;
-                } else if (m_Shared->IsSelected(body.ID)) {
+                }
+                else if (m_Shared->IsSelected(body.ID))
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
@@ -5322,24 +5622,29 @@ namespace {
 
                 ImGui::PopStyleColor(styles);
 
-                if (ImGui::IsItemHovered()) {
+                if (ImGui::IsItemHovered())
+                {
                     m_MaybeHover = {body.ID, {}};
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-                    if (!IsShiftDown()) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                {
+                    if (!IsShiftDown())
+                    {
                         m_Shared->UpdModelGraph().DeSelectAll();
                     }
                     m_Shared->UpdModelGraph().Select(body.ID);
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                {
                     m_MaybeOpenedContextMenu = Hover{body.ID, {}};
                     ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
-            if (!hasBody) {
+            if (!hasBody)
+            {
                 ImGui::TextDisabled("(no bodies)");
             }
             ImGui::Unindent();
@@ -5354,14 +5659,18 @@ namespace {
             ImGui::Indent();
 
             bool hasJoint = false;
-            for (JointEl const& joint : m_Shared->GetModelGraph().iter<JointEl>()) {
+            for (JointEl const& joint : m_Shared->GetModelGraph().iter<JointEl>())
+            {
                 hasJoint = true;
                 int styles = 0;
 
-                if (joint.ID == m_MaybeHover.ID) {
+                if (joint.ID == m_MaybeHover.ID)
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                     ++styles;
-                } else if (m_Shared->IsSelected(joint.ID)) {
+                }
+                else if (m_Shared->IsSelected(joint.ID))
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
@@ -5370,24 +5679,29 @@ namespace {
 
                 ImGui::PopStyleColor(styles);
 
-                if (ImGui::IsItemHovered()) {
+                if (ImGui::IsItemHovered())
+                {
                     m_MaybeHover = {joint.ID, {}};
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-                    if (!IsShiftDown()) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                {
+                    if (!IsShiftDown())
+                    {
                         m_Shared->UpdModelGraph().DeSelectAll();
                     }
                     m_Shared->UpdModelGraph().Select(joint.ID);
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                {
                     m_MaybeOpenedContextMenu = Hover{joint.ID, {}};
                     ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
-            if (!hasJoint) {
+            if (!hasJoint)
+            {
                 ImGui::TextDisabled("(no joints)");
             }
             ImGui::Unindent();
@@ -5401,14 +5715,18 @@ namespace {
             ImGui::Dummy({0.0f, 1.0f});
             ImGui::Indent();
             bool hasMesh = false;
-            for (MeshEl const& mesh : m_Shared->GetModelGraph().iter<MeshEl>()) {
+            for (MeshEl const& mesh : m_Shared->GetModelGraph().iter<MeshEl>())
+            {
                 hasMesh = true;
                 int styles = 0;
 
-                if (mesh.ID == m_MaybeHover.ID) {
+                if (mesh.ID == m_MaybeHover.ID)
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                     ++styles;
-                } else if (m_Shared->IsSelected(mesh.ID)) {
+                }
+                else if (m_Shared->IsSelected(mesh.ID))
+                {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
@@ -5421,20 +5739,24 @@ namespace {
                     m_MaybeHover = {mesh.ID, {}};
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-                    if (!IsShiftDown()) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+                {
+                    if (!IsShiftDown())
+                    {
                         m_Shared->UpdModelGraph().DeSelectAll();
                     }
                     m_Shared->UpdModelGraph().Select(mesh.ID);
                 }
 
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                {
                     m_MaybeOpenedContextMenu = Hover{mesh.ID, {}};
                     ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
-            if (!hasMesh) {
+            if (!hasMesh)
+            {
                 ImGui::TextDisabled("(no meshes)");
             }
             ImGui::Unindent();
@@ -5455,7 +5777,8 @@ namespace {
             // a hierarchy element might have opened the context menu in the hierarchy panel
             //
             // this can happen when the user right-clicks something in the hierarchy
-            if (ImGui::BeginPopup("##maincontextmenu")) {
+            if (ImGui::BeginPopup("##maincontextmenu"))
+            {
                 DrawContextMenuContent();
                 ImGui::EndPopup();
             }
@@ -5465,7 +5788,8 @@ namespace {
         {
             int imguiID = 0;
 
-            if (ImGui::Button(ICON_FA_CUBE " Add Meshes")) {
+            if (ImGui::Button(ICON_FA_CUBE " Add Meshes"))
+            {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
             DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
@@ -5475,13 +5799,16 @@ namespace {
             ImGui::Button(ICON_FA_PLUS " Add Other");
             DrawTooltipIfItemHovered("Add components to the model");
 
-            if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft)) {
-                if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)")) {
+            if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+            {
+                if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)"))
+                {
                     m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
                 }
                 DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
 
-                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body")) {
+                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
+                {
                     m_Shared->AddBody({0.0f, 0.0f, 0.0f});
                 }
                 DrawTooltipIfItemHovered("Add Body at Ground Location", OSC_BODY_DESC);
@@ -5493,15 +5820,18 @@ namespace {
             ImGui::Button(ICON_FA_PAINT_ROLLER " Colors");
             DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
-            if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft)) {
+            if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+            {
                 nonstd::span<glm::vec4 const> colors = m_Shared->GetColors();
                 nonstd::span<char const* const> labels = m_Shared->GetColorLabels();
                 OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
-                for (size_t i = 0; i < colors.size(); ++i) {
+                for (size_t i = 0; i < colors.size(); ++i)
+                {
                     glm::vec4 colorVal = colors[i];
                     ImGui::PushID(imguiID++);
-                    if (ImGui::ColorEdit4(labels[i], glm::value_ptr(colorVal))) {
+                    if (ImGui::ColorEdit4(labels[i], glm::value_ptr(colorVal)))
+                    {
                         m_Shared->SetColor(i, colorVal);
                     }
                     ImGui::PopID();
@@ -5514,15 +5844,18 @@ namespace {
             ImGui::Button(ICON_FA_EYE " Visibility");
             DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
-            if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft)) {
+            if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
+            {
                 nonstd::span<bool const> visibilities = m_Shared->GetVisibilityFlags();
                 nonstd::span<char const* const> labels = m_Shared->GetVisibilityFlagLabels();
                 OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
 
-                for (size_t i = 0; i < visibilities.size(); ++i) {
+                for (size_t i = 0; i < visibilities.size(); ++i)
+                {
                     bool v = visibilities[i];
                     ImGui::PushID(imguiID++);
-                    if (ImGui::Checkbox(labels[i], &v)) {
+                    if (ImGui::Checkbox(labels[i], &v))
+                    {
                         m_Shared->SetVisibilityFlag(i, v);
                     }
                     ImGui::PopID();
@@ -5535,15 +5868,18 @@ namespace {
             ImGui::Button(ICON_FA_LOCK " Interactivity");
             DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
-            if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft)) {
+            if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
+            {
                 nonstd::span<bool const> interactables = m_Shared->GetIneractivityFlags();
                 nonstd::span<char const* const> labels =  m_Shared->GetInteractivityFlagLabels();
                 OSC_ASSERT(interactables.size() == labels.size());
 
-                for (size_t i = 0; i < interactables.size(); ++i) {
+                for (size_t i = 0; i < interactables.size(); ++i)
+                {
                     bool v = interactables[i];
                     ImGui::PushID(imguiID++);
-                    if (ImGui::Checkbox(labels[i], &v)) {
+                    if (ImGui::Checkbox(labels[i], &v))
+                    {
                         m_Shared->SetInteractivityFlag(i, v);
                     }
                     ImGui::PopID();
@@ -5560,7 +5896,8 @@ namespace {
                 int currentOp = static_cast<int>(std::distance(std::begin(ops), std::find(std::begin(ops), std::end(ops), m_ImGuizmoState.op)));
 
                 ImGui::SetNextItemWidth(ImGui::CalcTextSize(modes[0]).x + 40.0f);
-                if (ImGui::Combo("##opselect", &currentOp, modes, IM_ARRAYSIZE(modes))) {
+                if (ImGui::Combo("##opselect", &currentOp, modes, IM_ARRAYSIZE(modes)))
+                {
                     m_ImGuizmoState.op = ops[static_cast<size_t>(currentOp)];
                 }
                 char const* const tooltipTitle = "Manipulation Mode";
@@ -5577,7 +5914,8 @@ namespace {
                 int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
 
                 ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
-                if (ImGui::Combo("##modeselect", &currentMode, modeLabels, IM_ARRAYSIZE(modeLabels))) {
+                if (ImGui::Combo("##modeselect", &currentMode, modeLabels, IM_ARRAYSIZE(modeLabels)))
+                {
                     m_ImGuizmoState.mode = modes[static_cast<size_t>(currentMode)];
                 }
                 char const* const tooltipTitle = "Manipulation coordinate system";
@@ -5594,7 +5932,8 @@ namespace {
 
                 float sf = m_Shared->GetSceneScaleFactor();
                 ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);
-                if (ImGui::InputFloat("scene scale factor", &sf)) {
+                if (ImGui::InputFloat("scene scale factor", &sf))
+                {
                     m_Shared->SetSceneScaleFactor(sf);
                 }
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
@@ -5606,95 +5945,107 @@ namespace {
             // bottom-left axes overlay
             DrawAlignmentAxesOverlayInBottomRightOf(m_Shared->GetCamera().getViewMtx(), m_Shared->Get3DSceneRect());
 
-            // zoom in/out buttons?
+            Rect sceneRect = m_Shared->Get3DSceneRect();
+            glm::vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
+            ImGui::SetCursorScreenPos(trPos);
+
+            if (ImGui::Button(ICON_FA_SEARCH_MINUS))
             {
-                Rect sceneRect = m_Shared->Get3DSceneRect();
-                glm::vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-                ImGui::SetCursorScreenPos(trPos);
-
-                if (ImGui::Button(ICON_FA_SEARCH_MINUS)) {
-                    m_Shared->UpdCamera().radius *= 1.2f;
-                }
-                DrawTooltipIfItemHovered("Zoom Out");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button(ICON_FA_SEARCH_PLUS)) {
-                    m_Shared->UpdCamera().radius *= 0.8f;
-                }
-                DrawTooltipIfItemHovered("Zoom In");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT)) {
-                    auto it = m_DrawablesBuffer.begin();
-                    bool containsAtLeastOne = false;
-                    AABB aabb;
-                    while (it != m_DrawablesBuffer.end()) {
-                        if (it->id != g_EmptyID) {
-                            aabb = CalcBounds(*it);
-                            it++;
-                            containsAtLeastOne = true;
-                            break;
-                        }
-                        it++;
-                    }
-                    if (containsAtLeastOne) {
-                        while (it != m_DrawablesBuffer.end()) {
-                            if (it->id != g_EmptyID) {
-                                aabb = AABBUnion(aabb, CalcBounds(*it));
-                            }
-                            ++it;
-                        }
-                        m_Shared->UpdCamera().focusPoint = -AABBCenter(aabb);
-                        m_Shared->UpdCamera().radius = 2.0f * AABBLongestDim(aabb);
-                    }
-                }
-                DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("X")) {
-                    m_Shared->UpdCamera().theta = fpi2;
-                    m_Shared->UpdCamera().phi = 0.0f;
-                }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    m_Shared->UpdCamera().theta = -fpi2;
-                    m_Shared->UpdCamera().phi = 0.0f;
-                }
-                DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Y")) {
-                    m_Shared->UpdCamera().theta = 0.0f;
-                    m_Shared->UpdCamera().phi = fpi2;
-                }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    m_Shared->UpdCamera().theta = 0.0f;
-                    m_Shared->UpdCamera().phi = -fpi2;
-                }
-                DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Z")) {
-                    m_Shared->UpdCamera().theta = 0.0f;
-                    m_Shared->UpdCamera().phi = 0.0f;
-                }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                    m_Shared->UpdCamera().theta = fpi;
-                    m_Shared->UpdCamera().phi = 0.0f;
-                }
-                DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
-
-                ImGui::SameLine();
-
-                if (ImGui::Button(ICON_FA_CAMERA)) {
-                    m_Shared->UpdCamera() = CreateDefaultCamera();
-                }
-                DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
+                m_Shared->UpdCamera().radius *= 1.2f;
             }
+            DrawTooltipIfItemHovered("Zoom Out");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(ICON_FA_SEARCH_PLUS))
+            {
+                m_Shared->UpdCamera().radius *= 0.8f;
+            }
+            DrawTooltipIfItemHovered("Zoom In");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+            {
+                auto it = m_DrawablesBuffer.begin();
+                bool containsAtLeastOne = false;
+                AABB aabb;
+                while (it != m_DrawablesBuffer.end())
+                {
+                    if (it->id != g_EmptyID)
+                    {
+                        aabb = CalcBounds(*it);
+                        it++;
+                        containsAtLeastOne = true;
+                        break;
+                    }
+                    it++;
+                }
+                if (containsAtLeastOne)
+                {
+                    while (it != m_DrawablesBuffer.end())
+                    {
+                        if (it->id != g_EmptyID)
+                        {
+                            aabb = AABBUnion(aabb, CalcBounds(*it));
+                        }
+                        ++it;
+                    }
+                    m_Shared->UpdCamera().focusPoint = -AABBCenter(aabb);
+                    m_Shared->UpdCamera().radius = 2.0f * AABBLongestDim(aabb);
+                }
+            }
+            DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("X"))
+            {
+                m_Shared->UpdCamera().theta = fpi2;
+                m_Shared->UpdCamera().phi = 0.0f;
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                m_Shared->UpdCamera().theta = -fpi2;
+                m_Shared->UpdCamera().phi = 0.0f;
+            }
+            DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Y"))
+            {
+                m_Shared->UpdCamera().theta = 0.0f;
+                m_Shared->UpdCamera().phi = fpi2;
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                m_Shared->UpdCamera().theta = 0.0f;
+                m_Shared->UpdCamera().phi = -fpi2;
+            }
+            DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Z"))
+            {
+                m_Shared->UpdCamera().theta = 0.0f;
+                m_Shared->UpdCamera().phi = 0.0f;
+            }
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                m_Shared->UpdCamera().theta = fpi;
+                m_Shared->UpdCamera().phi = 0.0f;
+            }
+            DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(ICON_FA_CAMERA))
+            {
+                m_Shared->UpdCamera() = CreateDefaultCamera();
+            }
+            DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
         }
 
         void Draw3DViewerOverlayConvertToOpenSimModelButton()
@@ -5709,7 +6060,8 @@ namespace {
             ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-            if (ImGui::Button(text)) {
+            if (ImGui::Button(text))
+            {
                 m_Shared->TryCreateOutputModel();
             }
             ImGui::PopStyleColor();
