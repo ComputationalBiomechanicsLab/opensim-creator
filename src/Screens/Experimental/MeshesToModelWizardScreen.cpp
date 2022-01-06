@@ -216,6 +216,7 @@ namespace {
     {
         std::vector<LoadedMesh> loadedMeshes;
         loadedMeshes.reserve(msg.Paths.size());
+
         for (std::filesystem::path const& path : msg.Paths)
         {
             try
@@ -1687,29 +1688,28 @@ namespace {
     {
         bool childInAtLeastOneJoint = false;
 
-        for (JointEl const& jointEl : modelGraph.iter<JointEl>()) {
-            OSC_ASSERT_ALWAYS(!IsGarbageJoint(modelGraph, jointEl));
+        for (JointEl const& jointEl : modelGraph.iter<JointEl>())
+        {
+            OSC_ASSERT(!IsGarbageJoint(modelGraph, jointEl));
 
-            if (jointEl.Child == body.ID) {
-
+            if (jointEl.Child == body.ID)
+            {
                 childInAtLeastOneJoint = true;
 
                 bool alreadyVisited = !previouslyVisitedJoints.emplace(jointEl.ID).second;
-                if (alreadyVisited) {
+                if (alreadyVisited)
+                {
                     continue;  // skip this joint: was previously visited
                 }
 
-                if (IsJointAttachedToGround(modelGraph, jointEl, previouslyVisitedJoints)) {
-                    return true;
+                if (IsJointAttachedToGround(modelGraph, jointEl, previouslyVisitedJoints))
+                {
+                    return true;  // recurse
                 }
             }
         }
 
-        if (childInAtLeastOneJoint) {
-            return false;  // particiaptes as a child in at least one joint but doesn't ultimately join to ground
-        } else {
-            return true;
-        }
+        return !childInAtLeastOneJoint;
     }
 
     // returns `true` if `modelGraph` contains issues
@@ -1717,17 +1717,21 @@ namespace {
     {
         issuesOut.clear();
 
-        for (JointEl const& joint : modelGraph.iter<JointEl>()) {
-            if (IsGarbageJoint(modelGraph, joint)) {
+        for (JointEl const& joint : modelGraph.iter<JointEl>())
+        {
+            if (IsGarbageJoint(modelGraph, joint))
+            {
                 std::stringstream ss;
                 ss << joint.GetLabel() << ": joint is garbage (this is an implementation error)";
                 throw std::runtime_error{std::move(ss).str()};
             }
         }
 
-        for (BodyEl const& body : modelGraph.iter<BodyEl>()) {
+        for (BodyEl const& body : modelGraph.iter<BodyEl>())
+        {
             std::unordered_set<UID> previouslyVisitedJoints;
-            if (!IsBodyAttachedToGround(modelGraph, body, previouslyVisitedJoints)) {
+            if (!IsBodyAttachedToGround(modelGraph, body, previouslyVisitedJoints))
+            {
                 std::stringstream ss;
                 ss << body.Name << ": body is not attached to ground: it is connected by a joint that, itself, does not connect to ground";
                 issuesOut.push_back(std::move(ss).str());
@@ -1737,6 +1741,7 @@ namespace {
         return !issuesOut.empty();
     }
 
+    // returns a string representing the subheader of a scene element
     std::string GetContextMenuSubHeaderText(ModelGraph const& mg, SceneEl const& e)
     {
         struct Visitor final : public ConstSceneElVisitor
@@ -1788,103 +1793,177 @@ namespace {
     // a single immutable and independent snapshot of the model, with a commit message + time
     // explaining what the snapshot "is" (e.g. "loaded file", "rotated body") and when it was
     // created
-    class ModelGraphSnapshot {
+    class ModelGraphCommit {
     public:
-        ModelGraphSnapshot(ClonePtr<ModelGraph> modelGraph,
-                           std::string_view commitMessage) :
+        ModelGraphCommit(UID parentID,  // can be g_EmptyID
+                         ClonePtr<ModelGraph> modelGraph,
+                         std::string_view commitMessage) :
 
+            m_ID{GenerateID()},
+            m_ParentID{parentID},
             m_ModelGraph{std::move(modelGraph)},
             m_CommitMessage{std::move(commitMessage)},
             m_CommitTime{std::chrono::system_clock::now()}
         {
         }
 
+        UID GetID() const { return m_ID; }
+        UID GetParentID() const { return m_ParentID; }
         ModelGraph const& GetModelGraph() const { return *m_ModelGraph; }
         std::string const& GetCommitMessage() const { return m_CommitMessage; }
         std::chrono::system_clock::time_point const& GetCommitTime() const { return m_CommitTime; }
-        std::unique_ptr<ModelGraphSnapshot> clone() { return std::make_unique<ModelGraphSnapshot>(*this); }
+        std::unique_ptr<ModelGraphCommit> clone() { return std::make_unique<ModelGraphCommit>(*this); }
 
     private:
+        UID m_ID;
+        UID m_ParentID;
         ClonePtr<ModelGraph> m_ModelGraph;
         std::string m_CommitMessage;
         std::chrono::system_clock::time_point m_CommitTime;
     };
 
-
     // undoable model graph storage
-    class SnapshottableModelGraph final {
+    class CommittableModelGraph final {
     public:
-        SnapshottableModelGraph() :
-            m_Current{new ModelGraph{}},
-            m_Snapshots{ModelGraphSnapshot{m_Current, "created model"}},
-            m_CurrentIsBasedOn{0}
+        CommittableModelGraph() :
+            m_Scratch{new ModelGraph{}},
+            m_Current{g_EmptyID},
+            m_BranchHead{g_EmptyID},
+            m_Commits{}
         {
+            Commit("created model graph");
         }
 
-        ModelGraph& Current() { return *m_Current; }
-        ModelGraph const& Current() const { return *m_Current; }
-
-        void CreateSnapshot(ModelGraph const& src, std::string_view commitMessage)
+        void Commit(std::string_view commitMsg)
         {
-            m_Snapshots.emplace_back(ClonePtr<ModelGraph>{src}, commitMessage);
-            m_CurrentIsBasedOn = m_Snapshots.size()-1;
+            auto snapshot = std::make_unique<ModelGraphCommit>(m_Current, ClonePtr<ModelGraph>{*m_Scratch}, commitMsg);
+            UID id = snapshot->GetID();
+            m_Commits.try_emplace(id, std::move(snapshot));
+            m_Current = id;
+            m_BranchHead = id;
         }
 
-        void CommitCurrent(std::string_view commitMessage)
+        ModelGraphCommit const* TryGetCommitByID(UID id) const
         {
-            CreateSnapshot(*m_Current, commitMessage);
+            auto hasSameID = [id](auto const& p)
+            {
+                return p.second->GetID() == id;
+            };
+
+            auto it = FindIf(m_Commits, hasSameID);
+
+            return it != m_Commits.end() ? it->second.get() : nullptr;
         }
 
-        std::vector<ModelGraphSnapshot> const& GetSnapshots() const { return m_Snapshots; }
-
-        size_t GetCurrentIsBasedOnIdx() const { return m_CurrentIsBasedOn; }
-
-        void UseSnapshot(size_t i)
+        ModelGraphCommit const& GetCommitByID(UID id) const
         {
-            m_Current = ClonePtr<ModelGraph>{m_Snapshots.at(i).GetModelGraph()};
-            m_CurrentIsBasedOn = i;
+            ModelGraphCommit const* ptr = TryGetCommitByID(id);
+            if (!ptr)
+            {
+                std::stringstream ss;
+                ss << "failed to find commit with ID = " << id;
+                throw std::runtime_error{std::move(ss).str()};
+            }
+            return *ptr;
+        }
+
+        bool HasCommit(UID id) const
+        {
+            return TryGetCommitByID(id);
+        }
+
+        template<typename Consumer>
+        void ForEachCommitUnordered(Consumer f) const
+        {
+            for (auto const& [id, commit] : m_Commits)
+            {
+                f(*commit);
+            }
+        }
+
+        UID GetCheckoutID() const
+        {
+            return m_Current;
+        }
+
+        void Checkout(UID id)
+        {
+            ModelGraphCommit const* c = TryGetCommitByID(id);
+
+            if (c)
+            {
+                m_Scratch = c->GetModelGraph();
+                m_Current = c->GetID();
+                m_BranchHead = c->GetID();
+            }
         }
 
         bool CanUndo() const
         {
-            return m_CurrentIsBasedOn > 0;
+            ModelGraphCommit const* c = TryGetCommitByID(m_Current);
+            return c ? c->GetParentID() != g_EmptyID : false;
         }
 
         void Undo()
         {
-            if (m_Snapshots.empty()) {
-                return;  // this shouldn't happen, but I'm paranoid
+            ModelGraphCommit const* cur = TryGetCommitByID(m_Current);
+
+            if (!cur)
+            {
+                return;
             }
 
-            m_CurrentIsBasedOn = m_CurrentIsBasedOn <= 0 ? 0 : m_CurrentIsBasedOn-1;
-            m_Current = ClonePtr<ModelGraph>{m_Snapshots.at(m_CurrentIsBasedOn).GetModelGraph()};
+            ModelGraphCommit const* parent = TryGetCommitByID(cur->GetParentID());
+
+            if (parent)
+            {
+                m_Scratch = parent->GetModelGraph();
+                m_Current = parent->GetID();
+                // don't update m_BranchHead
+            }
         }
 
         bool CanRedo() const
         {
-            if (m_Snapshots.empty()) {
-                return false;
-            }
-
-            return m_CurrentIsBasedOn < m_Snapshots.size()-1;
+            return m_BranchHead != m_Current && HasCommit(m_BranchHead);
         }
 
         void Redo()
         {
-            if (m_Snapshots.empty()) {
-                return;  // this shouldn't happen, but I'm paranoid
+            if (m_BranchHead == m_Current)
+            {
+                return;
             }
 
-            size_t lastSnapshot = m_Snapshots.size()-1;
+            ModelGraphCommit const* c = TryGetCommitByID(m_BranchHead);
+            while (c && c->GetParentID() != m_Current)
+            {
+                c = TryGetCommitByID(c->GetParentID());
+            }
 
-            m_CurrentIsBasedOn = m_CurrentIsBasedOn >= lastSnapshot ? lastSnapshot : m_CurrentIsBasedOn+1;
-            m_Current = ClonePtr<ModelGraph>{m_Snapshots.at(m_CurrentIsBasedOn).GetModelGraph()};
+            if (c)
+            {
+                m_Scratch = c->GetModelGraph();
+                m_Current = c->GetID();
+                // don't update m_BranchHead
+            }
+        }
+
+        ModelGraph& UpdScratch()
+        {
+            return *m_Scratch;
+        }
+
+        ModelGraph const& GetScratch() const
+        {
+            return *m_Scratch;
         }
 
     private:
-        ClonePtr<ModelGraph> m_Current;  // mutatable staging area from which commits can be made
-        std::vector<ModelGraphSnapshot> m_Snapshots;  // frozen snapshots of previously-made states
-        size_t m_CurrentIsBasedOn;
+        ClonePtr<ModelGraph> m_Scratch;  // mutable staging area
+        UID m_Current;  // where scratch will commit to
+        UID m_BranchHead;  // head of current branch (for redo)
+        std::unordered_map<UID, ClonePtr<ModelGraphCommit>> m_Commits;
     };
 }
 
@@ -2606,32 +2685,22 @@ namespace {
 
         ModelGraph const& GetModelGraph() const
         {
-            return m_ModelGraphSnapshots.Current();
+            return m_ModelGraphSnapshots.GetScratch();
         }
 
         ModelGraph& UpdModelGraph()
         {
-            return m_ModelGraphSnapshots.Current();
+            return m_ModelGraphSnapshots.UpdScratch();
+        }
+
+        CommittableModelGraph& UpdCommittableModelGraph()
+        {
+            return m_ModelGraphSnapshots;
         }
 
         void CommitCurrentModelGraph(std::string_view commitMsg)
         {
-            m_ModelGraphSnapshots.CommitCurrent(commitMsg);
-        }
-
-        std::vector<ModelGraphSnapshot> const& GetModelGraphSnapshots() const
-        {
-            return m_ModelGraphSnapshots.GetSnapshots();
-        }
-
-        size_t GetModelGraphIsBasedOn() const
-        {
-            return m_ModelGraphSnapshots.GetCurrentIsBasedOnIdx();
-        }
-
-        void UseModelGraphSnapshot(size_t i)
-        {
-            m_ModelGraphSnapshots.UseSnapshot(i);
+            m_ModelGraphSnapshots.Commit(commitMsg);
         }
 
         bool CanUndoCurrentModelGraph() const
@@ -2666,8 +2735,8 @@ namespace {
             // have an obvious way of wiping the history) should be fixed by implementing
             // a cap on the number of commits that may be made
 
-            m_ModelGraphSnapshots.Current() = ModelGraph{};
-            m_ModelGraphSnapshots.CommitCurrent("created new scene");
+            m_ModelGraphSnapshots.UpdScratch() = ModelGraph{};
+            m_ModelGraphSnapshots.Commit("created new scene");
         }
 
         std::unordered_set<UID> const& GetCurrentSelection() const
@@ -3476,7 +3545,7 @@ namespace {
 
     private:
         // model graph (snapshots) the user is working on
-        SnapshottableModelGraph m_ModelGraphSnapshots;
+        CommittableModelGraph m_ModelGraphSnapshots;
 
         // loads meshes in a background thread
         MeshLoader m_MeshLoader;
@@ -4752,8 +4821,6 @@ namespace {
 
         void DrawTranslateMenu(JointEl jointEl)
         {
-            ModelGraph const& mg = m_Shared->GetModelGraph();
-
             if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " translate"))
             {
                 if (ImGui::MenuItem("Translate to midpoint"))
@@ -5200,15 +5267,31 @@ namespace {
 
         void DrawHistoryPanelContent()
         {
-            auto const& snapshots = m_Shared->GetModelGraphSnapshots();
-            size_t currentSnapshot = m_Shared->GetModelGraphIsBasedOn();
-            for (size_t i = 0; i < snapshots.size(); ++i) {
-                ModelGraphSnapshot const& snapshot = snapshots[i];
+            CommittableModelGraph& storage = m_Shared->UpdCommittableModelGraph();
 
-                ImGui::PushID(static_cast<int>(i));
-                if (ImGui::Selectable(snapshot.GetCommitMessage().c_str(), i == currentSnapshot)) {
-                    m_Shared->UseModelGraphSnapshot(i);
+            std::vector<ModelGraphCommit const*> commits;
+            storage.ForEachCommitUnordered([&commits](ModelGraphCommit const& c)
+            {
+                commits.push_back(&c);
+            });
+
+            auto orderedByTime = [](ModelGraphCommit const* a, ModelGraphCommit const* b)
+            {
+                return a->GetCommitTime() < b->GetCommitTime();
+            };
+
+            Sort(commits, orderedByTime);
+
+            int i = 0;
+            for (ModelGraphCommit const* c : commits)
+            {
+                ImGui::PushID(static_cast<int>(i++));
+
+                if (ImGui::Selectable(c->GetCommitMessage().c_str(), c->GetID() == storage.GetCheckoutID()))
+                {
+                    storage.Checkout(c->GetID());
                 }
+
                 ImGui::PopID();
             }
         }

@@ -69,6 +69,19 @@ namespace osc {
             return *this;
         }
 
+        ClonePtr& operator=(T const& other)
+        {
+            if (m_Value)
+            {
+                *m_Value = other;
+            }
+            else
+            {
+                m_Value = std::make_unique<T>(other);
+            }
+            return *this;
+        }
+
         ClonePtr& operator=(ClonePtr&&) = default;
 
         template<typename U, typename E>
