@@ -183,6 +183,11 @@ namespace
         return rv;
     }
 
+    void SpacerDummy()
+    {
+        ImGui::Dummy({0.0f, 5.0f});
+    }
+
     // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
     template <auto A, typename...> auto dependent_value = A;
 }
@@ -601,6 +606,101 @@ namespace
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
 namespace
 {
+    // a "class" for a scene element
+    class SceneEl;
+    class SceneElClass final {
+    public:
+        SceneElClass(std::string name,
+                     std::string namePluralized,
+                     std::string nameOptionallyPluralized,
+                     std::string icon,
+                     std::string description,
+                     std::unique_ptr<SceneEl> defaultObject) :
+            m_ID{GenerateID()},
+            m_Name{std::move(name)},
+            m_NamePluralized{std::move(namePluralized)},
+            m_NameOptionallyPluralized{std::move(nameOptionallyPluralized)},
+            m_Icon{std::move(icon)},
+            m_Description{std::move(description)},
+            m_DefaultObject{std::move(defaultObject)},
+            m_UniqueCounter{0}
+        {
+        }
+
+        UID GetID() const
+        {
+            return m_ID;
+        }
+
+        char const* GetNameCStr() const
+        {
+            return m_Name.c_str();
+        }
+
+        std::string_view GetNameSV() const
+        {
+            return m_Name;
+        }
+
+        char const* GetNamePluralizedCStr() const
+        {
+            return m_NamePluralized.c_str();
+        }
+
+        char const* GetNameOptionallyPluralized() const
+        {
+            return m_NameOptionallyPluralized.c_str();
+        }
+
+        char const* GetIconCStr() const
+        {
+            return m_Icon.c_str();
+        }
+
+        char const* GetDescriptionCStr() const
+        {
+            return m_Description.c_str();
+        }
+
+        int FetchAddUniqueCounter() const
+        {
+            return m_UniqueCounter++;
+        }
+
+        SceneEl const& GetDefaultObject() const
+        {
+            return *m_DefaultObject;
+        }
+
+    private:
+        UID m_ID;
+        std::string m_Name;
+        std::string m_NamePluralized;
+        std::string m_NameOptionallyPluralized;
+        std::string m_Icon;
+        std::string m_Description;
+        std::unique_ptr<SceneEl> m_DefaultObject;
+        mutable std::atomic<uint32_t> m_UniqueCounter;
+    };
+
+    bool operator==(SceneElClass const& a, SceneElClass const& b)
+    {
+        return a.GetID() == b.GetID();
+    }
+
+    bool operator!=(SceneElClass const& a, SceneElClass const& b)
+    {
+        return !(a == b);
+    }
+
+    // returns a unique, generated body name
+    std::string GenerateName(SceneElClass const& c)
+    {
+        std::stringstream ss;
+        ss << c.GetNameSV() << c.FetchAddUniqueCounter();
+        return std::move(ss).str();
+    }
+
     // forward decls for supported scene elements
     class GroundEl;
     class MeshEl;
@@ -654,8 +754,15 @@ namespace
         {
         }
 
-        UID GetID() const { return m_ID; }
-        std::string const& GetLabel() const { return m_Label; }
+        UID GetID() const
+        {
+            return m_ID;
+        }
+
+        std::string const& GetLabel() const
+        {
+            return m_Label;
+        }
 
     private:
         UID m_ID;
@@ -667,13 +774,7 @@ namespace
     public:
         virtual ~SceneEl() noexcept = default;
 
-        // type-level methods: used for describing the `type` of the instance (e.g. in
-        // documentation strings)
-        virtual std::string const& GetTypeName() const = 0;
-        virtual std::string const& GetTypeNamePluralized() const = 0;
-        virtual std::string const& GetTypeNameOptionallyPluralized() const = 0;
-        virtual char const* GetTypeIconCStr() const = 0;
-        virtual std::string const& GetTypeDescription() const = 0;
+        virtual SceneElClass const& GetClass() const = 0;
 
         // allow runtime cloning of a particular instance
         virtual std::unique_ptr<SceneEl> clone() const = 0;
@@ -812,29 +913,24 @@ namespace
     class GroundEl final : public SceneEl {
     public:
 
-        std::string const& GetTypeName() const override
+        static SceneElClass const& Class()
         {
-            return g_GroundLabel;
+            static SceneElClass g_Class =
+            {
+                g_GroundLabel,
+                g_GroundLabelPluralized,
+                g_GroundLabelOptionallyPluralized,
+                ICON_FA_DOT_CIRCLE,
+                g_GroundDescription,
+                std::unique_ptr<SceneEl>{new GroundEl{}}
+            };
+
+            return g_Class;
         }
 
-        std::string const& GetTypeNamePluralized() const override
+        SceneElClass const& GetClass() const override
         {
-            return g_GroundLabelPluralized;
-        }
-
-        std::string const& GetTypeNameOptionallyPluralized() const override
-        {
-            return g_GroundLabelOptionallyPluralized;
-        }
-
-        char const* GetTypeIconCStr() const override
-        {
-            return ICON_FA_DOT_CIRCLE;
-        }
-
-        std::string const& GetTypeDescription() const override
-        {
-            return g_GroundDescription;
+            return Class();
         }
 
         std::unique_ptr<SceneEl> clone() const override
@@ -893,13 +989,6 @@ namespace
         }
     };
 
-    // this global is used whenever the implementation asks for a ISceneEl with
-    // ID == g_GroundID
-    //
-    // it doesn't matter that it's a global mutable, because GroundEl doesn't
-    // contain mutable data anyway
-    static GroundEl g_GroundEl;
-
     // a mesh in the scene
     //
     // In this mesh importer, meshes are always positioned + oriented in ground. At OpenSim::Model generation
@@ -913,6 +1002,21 @@ namespace
     class BodyEl;
     class MeshEl final : public SceneEl {
     public:
+        static SceneElClass const& Class()
+        {
+            static SceneElClass g_Class =
+            {
+                g_MeshLabel,
+                g_MeshLabelPluralized,
+                g_MeshLabelOptionallyPluralized,
+                ICON_FA_CUBE,
+                g_MeshDescription,
+                std::unique_ptr<SceneEl>{new MeshEl{}}
+            };
+
+            return g_Class;
+        }
+
         MeshEl() :
             ID{GenerateIDT<MeshEl>()},
             Attachment{GenerateIDT<BodyEl>()},
@@ -945,29 +1049,9 @@ namespace
         {
         }
 
-        std::string const& GetTypeName() const override
+        SceneElClass const& GetClass() const override
         {
-            return g_MeshLabel;
-        }
-
-        std::string const& GetTypeNamePluralized() const override
-        {
-            return g_MeshLabelPluralized;
-        }
-
-        std::string const& GetTypeNameOptionallyPluralized() const override
-        {
-            return g_MeshLabelOptionallyPluralized;
-        }
-
-        char const* GetTypeIconCStr() const override
-        {
-            return ICON_FA_CUBE;
-        }
-
-        std::string const& GetTypeDescription() const override
-        {
-            return g_MeshDescription;
+            return Class();
         }
 
         std::unique_ptr<SceneEl> clone() const override
@@ -1058,21 +1142,26 @@ namespace
         std::string Name{FileNameWithoutExtension(Path)};
     };
 
-    // returns a unique, generated body name
-    std::string GenerateBodyName()
-    {
-        static std::atomic<int> g_LatestBodyIdx = 0;
-
-        std::stringstream ss;
-        ss << "body" << g_LatestBodyIdx++;
-        return std::move(ss).str();
-    }
-
     // a body scene element
     //
     // In this mesh importer, bodies are positioned + oriented in ground (see MeshEl for explanation of why).
     class BodyEl final : public SceneEl {
     public:
+        static SceneElClass const& Class()
+        {
+            static SceneElClass g_Class =
+            {
+                g_BodyLabel,
+                g_BodyLabelPluralized,
+                g_BodyLabelOptionallyPluralized,
+                ICON_FA_CIRCLE,
+                g_BodyDescription,
+                std::unique_ptr<SceneEl>{new BodyEl{}}
+            };
+
+            return g_Class;
+        }
+
         BodyEl() :
             ID{GenerateIDT<BodyEl>()},
             Name{"prototype"},
@@ -1094,33 +1183,13 @@ namespace
         }
 
         explicit BodyEl(Transform const& xform) :
-            BodyEl{GenerateIDT<BodyEl>(), GenerateBodyName(), xform}
+            BodyEl{GenerateIDT<BodyEl>(), GenerateName(Class()), xform}
         {
         }
 
-        std::string const& GetTypeName() const override
+        SceneElClass const& GetClass() const override
         {
-            return g_BodyLabel;
-        }
-
-        std::string const& GetTypeNamePluralized() const override
-        {
-            return g_BodyLabelPluralized;
-        }
-
-        std::string const& GetTypeNameOptionallyPluralized() const override
-        {
-            return g_BodyLabelOptionallyPluralized;
-        }
-
-        char const* GetTypeIconCStr() const override
-        {
-            return ICON_FA_CIRCLE;
-        }
-
-        std::string const& GetTypeDescription() const override
-        {
-            return g_BodyDescription;
+            return Class();
         }
 
         std::unique_ptr<SceneEl> clone() const override
@@ -1203,6 +1272,21 @@ namespace
     // see `JointAttachment` comment for an explanation of why it's designed this way.
     class JointEl final : public SceneEl {
     public:
+        static SceneElClass const& Class()
+        {
+            static SceneElClass g_Class =
+            {
+                g_JointLabel,
+                g_JointLabelPluralized,
+                g_JointLabelOptionallyPluralized,
+                ICON_FA_LINK,
+                g_JointDescription,
+                std::unique_ptr<SceneEl>{new JointEl{}}
+            };
+
+            return g_Class;
+        }
+
         JointEl() :
             ID{GenerateIDT<JointEl>()},
             JointTypeIndex{0},
@@ -1245,29 +1329,9 @@ namespace
         {
         }
 
-        std::string const& GetTypeName() const override
+        SceneElClass const& GetClass() const override
         {
-            return JointRegistry::nameStrings()[JointTypeIndex];
-        }
-
-        std::string const& GetTypeNamePluralized() const override
-        {
-            return g_JointLabelPluralized;
-        }
-
-        std::string const& GetTypeNameOptionallyPluralized() const override
-        {
-            return g_JointLabelOptionallyPluralized;
-        }
-
-        char const* GetTypeIconCStr() const override
-        {
-            return ICON_FA_LINK;
-        }
-
-        std::string const& GetTypeDescription() const override
-        {
-            return g_JointDescription;
+            return Class();
         }
 
         std::unique_ptr<SceneEl> clone() const override
@@ -1327,9 +1391,14 @@ namespace
                      << ')';
         }
 
+        std::string const& GetSpecificTypeName() const
+        {
+             return JointRegistry::nameStrings()[JointTypeIndex];
+        }
+
         std::string const& GetLabel() const override
         {
-            return UserAssignedName.empty() ? GetTypeName() : UserAssignedName;
+            return UserAssignedName.empty() ? GetSpecificTypeName() : UserAssignedName;
         }
 
         void SetLabel(std::string_view sv) override
@@ -1373,6 +1442,21 @@ namespace
     class BodyEl;
     class StationEl final : public SceneEl {
     public:
+        static SceneElClass const& Class()
+        {
+            static SceneElClass g_Class =
+            {
+                g_StationLabel,
+                g_StationLabelPluralized,
+                g_StationLabelOptionallyPluralized,
+                ICON_FA_MAP_PIN,
+                g_StationDescription,
+                std::unique_ptr<SceneEl>{new StationEl{}}
+            };
+
+            return g_Class;
+        }
+
         StationEl() :
             ID{GenerateIDT<StationEl>()},
             Attachment{GenerateIDT<BodyEl>()},
@@ -1393,29 +1477,9 @@ namespace
         {
         }
 
-        std::string const& GetTypeName() const override
+        SceneElClass const& GetClass() const override
         {
-            return g_StationLabel;
-        }
-
-        std::string const& GetTypeNamePluralized() const override
-        {
-            return g_StationLabelPluralized;
-        }
-
-        std::string const& GetTypeNameOptionallyPluralized() const override
-        {
-            return g_StationLabelOptionallyPluralized;
-        }
-
-        char const* GetTypeIconCStr() const override
-        {
-            return ICON_FA_MAP_PIN;
-        }
-
-        std::string const& GetTypeDescription() const override
-        {
-            return g_StationDescription;
+            return Class();
         }
 
         std::unique_ptr<SceneEl> clone() const override
@@ -1522,6 +1586,24 @@ namespace
         Visitor v;
         e.Accept(v);
         return v.m_Result;
+    }
+
+    std::vector<SceneElClass const*> GenerateSceneElClassList()
+    {
+        return {
+            &GroundEl::Class(),
+            &MeshEl::Class(),
+            &BodyEl::Class(),
+            &JointEl::Class(),
+            &StationEl::Class()
+        };
+    }
+
+    std::vector<SceneElClass const*> GetSceneElClasses()
+    {
+        static std::vector<SceneElClass const*> g_Classes = GenerateSceneElClassList();
+
+        return g_Classes;
     }
 }
 
@@ -1648,7 +1730,7 @@ namespace
         ModelGraph() :
             // insert a senteniel ground element into the model graph (it should always
             // be there)
-            m_Els{{g_GroundID, ClonePtr<SceneEl>{g_GroundEl}}}
+            m_Els{{g_GroundID, ClonePtr<SceneEl>{GroundEl{}}}}
         {
         }
 
@@ -2102,19 +2184,19 @@ namespace
             }
             void operator()(MeshEl const& m) override
             {
-                m_SS << '(' << m.GetTypeName() << ", attached to " <<  m.Path.filename() << ')';
+                m_SS << '(' << m.GetClass().GetNameSV() << ", attached to " <<  m.Path.filename() << ')';
             }
             void operator()(BodyEl const& b) override
             {
-                m_SS << '(' << b.GetTypeName() << ')';
+                m_SS << '(' << b.GetClass().GetNameSV() << ')';
             }
             void operator()(JointEl const& j) override
             {
-                m_SS << '(' << j.GetTypeName() << ", " << GetLabel(m_Mg, j.Child) << " --> " << GetLabel(m_Mg, j.Parent) << ')';
+                m_SS << '(' << j.GetSpecificTypeName() << ", " << GetLabel(m_Mg, j.Child) << " --> " << GetLabel(m_Mg, j.Parent) << ')';
             }
             void operator()(StationEl const& s) override
             {
-                m_SS << '(' << s.GetTypeName() << ')';
+                m_SS << '(' << s.GetClass().GetNameSV() << ')';
             }
         };
 
@@ -3739,7 +3821,7 @@ namespace
 
         UIDT<BodyEl> AddBody(glm::vec3 const& pos)
         {
-            return AddBody(GenerateBodyName(), pos, {});
+            return AddBody(GenerateName(BodyEl::Class()), pos, {});
         }
 
         void UnassignMesh(MeshEl const& me)
@@ -4078,8 +4160,9 @@ namespace
     };
 }
 
-
-namespace {
+// select 2 mesh points layer
+namespace
+{
 
     // runtime options for "Select two mesh points" UI layer
     struct Select2MeshPointsOptions final {
@@ -4292,7 +4375,11 @@ namespace {
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;
     };
+}
 
+// choose specific element layer
+namespace
+{
     // options for when the UI transitions into "choose something" mode
     struct ChooseElLayerOptions final {
         bool CanChooseBodies = true;
@@ -4340,7 +4427,7 @@ namespace {
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted(se->GetLabel().c_str());
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%s, click to choose)", se->GetTypeName().c_str());
+                ImGui::TextDisabled("(%s, click to choose)", se->GetClass().GetNameCStr());
                 ImGui::EndTooltip();
             }
         }
@@ -4588,7 +4675,11 @@ namespace {
         // fraction that the system is through its animation cycle: ranges from 0.0 to 1.0 inclusive
         float m_AnimationFraction = 0.0f;
     };
+}
 
+// main state
+namespace
+{
     // "standard" UI state
     //
     // this is what the user is typically interacting with when the UI loads
@@ -5283,11 +5374,11 @@ namespace {
 
         void DrawSceneElContextMenuContentHeader(SceneEl const& e)
         {
-            ImGui::Text("%s %s", e.GetTypeIconCStr(), e.GetLabel().c_str());
+            ImGui::Text("%s %s", e.GetClass().GetIconCStr(), e.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
             ImGui::SameLine();
-            DrawHelpMarker(e.GetTypeName().c_str(), e.GetTypeDescription().c_str());
+            DrawHelpMarker(e.GetClass().GetNameCStr(), e.GetClass().GetDescriptionCStr());
             ImGui::Separator();
         }
 
@@ -5307,7 +5398,7 @@ namespace {
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
                     std::stringstream ss;
-                    ss << "changed " << e.GetTypeName() << " name";
+                    ss << "changed " << e.GetClass().GetNameSV() << " name";
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
             }
@@ -5408,7 +5499,7 @@ namespace {
         }
 
         // returns true if early-return required
-        bool DrawSceneElActions(SceneEl& el)
+        bool DrawSceneElActions(SceneEl const& el)
         {
             if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this"))
             {
@@ -5479,23 +5570,38 @@ namespace {
             ImGui::EndMenu();
         }
 
+        void AddBodyToMeshAtPosition(MeshEl const& mesh, glm::vec3 const& pos)
+        {
+            ModelGraph& mg = m_Shared->UpdModelGraph();
+
+            BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
+            SelectOnly(mg, b.ID);
+
+            if (!IsAssignedToBody(mg, mesh))
+            {
+                mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
+            }
+
+            m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
+        }
+
         // shown when user right-clicks on nothing in the scene
         void DrawNothingContextMenuContent()
         {
             DrawNothingContextMenuContentHeader();
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             DrawNothingActions();
         }
 
-        void DrawGroundContextMenuContent()
+        void DrawGroundContextMenuContent(GroundEl const& el)
         {
-            DrawSceneElContextMenuContentHeader(g_GroundEl);
+            DrawSceneElContextMenuContentHeader(el);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
-            if (DrawSceneElActions(g_GroundEl))
+            if (DrawSceneElActions(el))
             {
                 return;
             }
@@ -5505,11 +5611,11 @@ namespace {
         {
             DrawSceneElContextMenuContentHeader(bodyEl);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             DrawPropEditors(bodyEl);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             if (DrawSceneElActions(bodyEl))
             {
@@ -5526,37 +5632,22 @@ namespace {
             DrawReorientMenu(bodyEl);
             DrawTranslateMenu(bodyEl);
 
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
             {
                 m_MaybeOpenedContextMenu.reset();
                 ImGui::CloseCurrentPopup();
             }
         }
 
-        void AddBodyToMeshAtPosition(MeshEl const& mesh, glm::vec3 const& pos)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
-            SelectOnly(mg, b.ID);
-
-            if (!IsAssignedToBody(mg, mesh))
-            {
-                mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
-            }
-
-            m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
-        }
-
         void DrawMeshContextMenuContent(MeshEl meshEl, glm::vec3 clickPos)
         {
             DrawSceneElContextMenuContentHeader(meshEl);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             DrawSceneElPropEditors(meshEl);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             if (DrawSceneElActions(meshEl))
             {
@@ -5596,10 +5687,21 @@ namespace {
             DrawReorientMenu(meshEl);
             DrawTranslateMenu(meshEl);
 
-            if (IsAnyKeyDown({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
+            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
             {
                 m_MaybeOpenedContextMenu.reset();
                 ImGui::CloseCurrentPopup();
+            }
+        }
+
+        void DrawJointTypeEditor(JointEl const& jointEl)
+        {
+            int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
+            nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
+            if (ImGui::Combo("joint type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
+            {
+                m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.ID).JointTypeIndex = static_cast<size_t>(currentIdx);
+                m_Shared->CommitCurrentModelGraph("changed joint type");
             }
         }
 
@@ -5607,32 +5709,21 @@ namespace {
         {
             DrawSceneElContextMenuContentHeader(jointEl);
 
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             DrawSceneElPropEditors(jointEl);
+            DrawJointTypeEditor(jointEl);
 
-            // joint type editor
-            {
-                int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
-                nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
-                if (ImGui::Combo("joint type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
-                {
-                    m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.ID).JointTypeIndex = static_cast<size_t>(currentIdx);
-                    m_Shared->CommitCurrentModelGraph("changed joint type");
-                }
-            }
-
-            ImGui::Dummy({0.0f, 5.0f});
+            SpacerDummy();
 
             if (DrawSceneElActions(jointEl))
             {
                 return;
             }
-
             DrawReorientMenu(jointEl);
             DrawTranslateMenu(jointEl);
 
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_RETURN) || ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
+            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
             {
                 m_MaybeOpenedContextMenu.reset();
                 ImGui::CloseCurrentPopup();
@@ -5647,9 +5738,9 @@ namespace {
             public:
                 explicit Visitor(MainUIState& state) : m_State{state} {}
 
-                void operator()(GroundEl const&) override
+                void operator()(GroundEl const& el) override
                 {
-                    m_State.DrawGroundContextMenuContent();
+                    m_State.DrawGroundContextMenuContent(el);
                 }
 
                 void operator()(MeshEl const& el) override
@@ -5724,39 +5815,47 @@ namespace {
             }
         }
 
-        void DrawBodiesHierarchyElement()
+        void DrawHierarchyElement(SceneElClass const& c)
         {
-            ImGui::Text(ICON_FA_CIRCLE " Bodies");
+            ModelGraph& mg = m_Shared->UpdModelGraph();
+
+            ImGui::Text("%s %s", c.GetIconCStr(), c.GetNameCStr());
             ImGui::SameLine();
-            DrawHelpMarker("Bodies", OSC_BODY_DESC);
-            ImGui::Dummy({0.0f, 1.0f});
+            DrawHelpMarker(c.GetNameCStr(), c.GetDescriptionCStr());
+            SpacerDummy();
             ImGui::Indent();
 
-            bool hasBody = false;
-            for (BodyEl const& body : m_Shared->GetModelGraph().iter<BodyEl>())
+            bool empty = true;
+            for (SceneEl const& el : mg.iter())
             {
-                hasBody = true;
+                if (el.GetClass() != c)
+                {
+                    continue;
+                }
 
+                empty = false;
+
+                UID id = el.GetID();
                 int styles = 0;
 
-                if (body.ID == m_MaybeHover.ID)
+                if (id == m_MaybeHover.ID)
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                     ++styles;
                 }
-                else if (m_Shared->IsSelected(body.ID))
+                else if (m_Shared->IsSelected(id))
                 {
                     ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                     ++styles;
                 }
 
-                ImGui::Text("%s", body.GetLabel().c_str());
+                ImGui::Text("%s", el.GetLabel().c_str());
 
                 ImGui::PopStyleColor(styles);
 
                 if (ImGui::IsItemHovered())
                 {
-                    m_MaybeHover = {body.ID, {}};
+                    m_MaybeHover = {id, {}};
                 }
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -5765,146 +5864,31 @@ namespace {
                     {
                         m_Shared->UpdModelGraph().DeSelectAll();
                     }
-                    m_Shared->UpdModelGraph().Select(body.ID);
+                    m_Shared->UpdModelGraph().Select(id);
                 }
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                 {
-                    m_MaybeOpenedContextMenu = Hover{body.ID, {}};
+                    m_MaybeOpenedContextMenu = Hover{id, {}};
                     ImGui::OpenPopup("##maincontextmenu");
                     App::cur().requestRedraw();
                 }
             }
-            if (!hasBody)
+
+            if (empty)
             {
-                ImGui::TextDisabled("(no bodies)");
-            }
-            ImGui::Unindent();
-        }
-
-        void DrawJointsHierarchyElement()
-        {
-            ImGui::Text(ICON_FA_LINK " Joints");
-            ImGui::SameLine();
-            DrawHelpMarker("Joints", OSC_JOINT_DESC);
-            ImGui::Dummy({0.0f, 1.0f});
-            ImGui::Indent();
-
-            bool hasJoint = false;
-            for (JointEl const& joint : m_Shared->GetModelGraph().iter<JointEl>())
-            {
-                hasJoint = true;
-                int styles = 0;
-
-                if (joint.ID == m_MaybeHover.ID)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-                    ++styles;
-                }
-                else if (m_Shared->IsSelected(joint.ID))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
-                    ++styles;
-                }
-
-                ImGui::Text("%s", joint.GetLabel().c_str());
-
-                ImGui::PopStyleColor(styles);
-
-                if (ImGui::IsItemHovered())
-                {
-                    m_MaybeHover = {joint.ID, {}};
-                }
-
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-                {
-                    if (!IsShiftDown())
-                    {
-                        m_Shared->UpdModelGraph().DeSelectAll();
-                    }
-                    m_Shared->UpdModelGraph().Select(joint.ID);
-                }
-
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-                {
-                    m_MaybeOpenedContextMenu = Hover{joint.ID, {}};
-                    ImGui::OpenPopup("##maincontextmenu");
-                    App::cur().requestRedraw();
-                }
-            }
-            if (!hasJoint)
-            {
-                ImGui::TextDisabled("(no joints)");
-            }
-            ImGui::Unindent();
-        }
-
-        void DrawMeshesHierarchyElement()
-        {
-            ImGui::Text(ICON_FA_CUBE " Meshes");
-            ImGui::SameLine();
-            DrawHelpMarker("Meshes", OSC_MESH_DESC);
-            ImGui::Dummy({0.0f, 1.0f});
-            ImGui::Indent();
-            bool hasMesh = false;
-            for (MeshEl const& mesh : m_Shared->GetModelGraph().iter<MeshEl>())
-            {
-                hasMesh = true;
-                int styles = 0;
-
-                if (mesh.ID == m_MaybeHover.ID)
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-                    ++styles;
-                }
-                else if (m_Shared->IsSelected(mesh.ID))
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
-                    ++styles;
-                }
-
-                ImGui::Text("%s", mesh.Name.c_str());
-
-                ImGui::PopStyleColor(styles);
-
-                if (ImGui::IsItemHovered()) {
-                    m_MaybeHover = {mesh.ID, {}};
-                }
-
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-                {
-                    if (!IsShiftDown())
-                    {
-                        m_Shared->UpdModelGraph().DeSelectAll();
-                    }
-                    m_Shared->UpdModelGraph().Select(mesh.ID);
-                }
-
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-                {
-                    m_MaybeOpenedContextMenu = Hover{mesh.ID, {}};
-                    ImGui::OpenPopup("##maincontextmenu");
-                    App::cur().requestRedraw();
-                }
-            }
-            if (!hasMesh)
-            {
-                ImGui::TextDisabled("(no meshes)");
+                ImGui::TextDisabled("(no %s)", c.GetNamePluralizedCStr());
             }
             ImGui::Unindent();
         }
 
         void DrawHierarchyPanelContent()
         {
-            DrawBodiesHierarchyElement();
-
-            ImGui::Dummy({0.0f, 5.0f});
-
-            DrawJointsHierarchyElement();
-
-            ImGui::Dummy({0.0f, 5.0f});
-
-            DrawMeshesHierarchyElement();
+            for (SceneElClass const* c : GetSceneElClasses())
+            {
+                DrawHierarchyElement(*c);
+                SpacerDummy();
+            }
 
             // a hierarchy element might have opened the context menu in the hierarchy panel
             //
@@ -5944,6 +5928,7 @@ namespace {
                     m_Shared->AddBody({0.0f, 0.0f, 0.0f});
                 }
                 DrawTooltipIfItemHovered("Add Body at Ground Location", OSC_BODY_DESC);
+
                 ImGui::EndPopup();
             }
 
@@ -6211,7 +6196,7 @@ namespace {
         void DrawSceneElTooltip(SceneEl const& e) const
         {
             ImGui::BeginTooltip();
-            ImGui::Text("%s %s", e.GetTypeIconCStr(), e.GetLabel().c_str());
+            ImGui::Text("%s %s", e.GetClass().GetIconCStr(), e.GetLabel().c_str());
             ImGui::SameLine();
             ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
             ImGui::EndTooltip();

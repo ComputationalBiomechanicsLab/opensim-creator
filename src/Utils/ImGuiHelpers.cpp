@@ -86,6 +86,22 @@ bool osc::IsAnyKeyDown(std::initializer_list<int const> keys)
     return IsAnyKeyDown(nonstd::span<int const>{keys.begin(), keys.end()});
 }
 
+bool osc::IsAnyKeyPressed(nonstd::span<int const> keys)
+{
+    for (int key : keys)
+    {
+        if (ImGui::IsKeyPressed(key))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+bool osc::IsAnyKeyPressed(std::initializer_list<int const> keys)
+{
+    return IsAnyKeyPressed(nonstd::span<int const>{keys.begin(), keys.end()});
+}
+
 bool osc::IsCtrlOrSuperDown()
 {
     return IsAnyKeyDown({ SDL_SCANCODE_LCTRL, SDL_SCANCODE_RCTRL, SDL_SCANCODE_LGUI, SDL_SCANCODE_RGUI });
