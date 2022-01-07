@@ -2766,6 +2766,21 @@ namespace
         model.addJoint(freeJoint.release());
     }
 
+    void AddStationToModel(ModelGraph const& mg,
+                           OpenSim::Model& model,
+                           StationEl const& stationEl,
+                           std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
+    {
+
+        JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.Attachment);
+        OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr);
+
+        SimTK::Vec3 locationInFrame = {};  // TODO
+        auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInFrame);
+
+        model.addComponent(station.release());
+    }
+
     // if there are no issues, returns a new OpenSim::Model created from the Modelgraph
     //
     // otherwise, returns nullptr and issuesOut will be populated with issue messages
@@ -2817,6 +2832,12 @@ namespace
             {
                 AttachJointRecursive(mg, *model, jointEl, visitedBodies, visitedJoints);
             }
+        }
+
+        // add stations into the model
+        for (StationEl const& el : mg.iter<StationEl>())
+        {
+            AddStationToModel(mg, *model, el, visitedBodies);
         }
 
         return model;
