@@ -2775,7 +2775,12 @@ namespace
         JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.Attachment);
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr);
 
-        SimTK::Vec3 locationInFrame = {};  // TODO
+        Transform parentXform = mg.GetElByID(stationEl.Attachment).GetXform();
+        Transform stationXform = stationEl.GetXform();
+        glm::vec3 pos = (toInverseMat4(parentXform) * toMat4(stationXform))[3];
+
+        SimTK::Vec3 locationInFrame = SimTKVec3FromV3(pos);
+
         auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInFrame);
 
         model.addComponent(station.release());

@@ -75,6 +75,24 @@ static void getSceneElements(OpenSim::Model const& m,
 
             onEmit(se);
         }
+        else if (typeid(c) == typeid(OpenSim::Station))
+        {
+            OpenSim::Station const& s = dynamic_cast<OpenSim::Station const&>(c);
+
+            glm::vec3 loc = SimTKVec3FromVec3(s.getLocationInGround(st));
+            float r = fixupScaleFactor * 0.005f;
+            glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
+            glm::mat4 translater = glm::translate(glm::mat4{1.0f}, loc);
+
+            SceneElement se;
+            se.mesh = App::cur().getMeshCache().getSphereMesh();
+            se.modelMtx = translater * scaler;
+            se.normalMtx = NormalMatrix(se.modelMtx);
+            se.color = {1.0f, 0.0f, 0.0f, 1.0f};
+            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
+
+            onEmit(se);
+        }
 
         // if the component is a geometry path that is owned by a muscle then coerce the selection
         // to the muscle, so that users see+select muscle components in the UI
