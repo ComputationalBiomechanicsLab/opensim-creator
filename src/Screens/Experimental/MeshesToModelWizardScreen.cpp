@@ -4050,7 +4050,7 @@ namespace
             glm::vec4 Mesh{1.0f, 1.0f, 1.0f, 1.0f};
             glm::vec4 UnassignedMesh{1.0f, 0.95f, 0.95, 1.0f};
             glm::vec4 Ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
-            glm::vec4 Station{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
+            glm::vec4 Station{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
             glm::vec4 FaintConnection{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SolidConnection{0.9f, 0.9f, 0.9f, 1.0f};
             glm::vec4 TransparentFaintConnection{0.6f, 0.6f, 0.6f, 0.2f};
@@ -5485,14 +5485,7 @@ namespace
 
             if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
             {
-                if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)"))
-                {
-                    m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
-                }
-                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
-                {
-                    m_Shared->AddBody({0.0f, 0.0f, 0.0f});
-                }
+                DrawAddOtherMenuItems();
 
                 ImGui::EndMenu();
             }
@@ -5900,6 +5893,30 @@ namespace
             }
         }
 
+        void DrawAddOtherMenuItems()
+        {
+
+            if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)"))
+            {
+                m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
+            }
+            DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
+
+            if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
+            {
+                m_Shared->AddBody({0.0f, 0.0f, 0.0f});
+            }
+            DrawTooltipIfItemHovered("Add Body at Ground Location", OSC_BODY_DESC);
+
+            if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
+            {
+                ModelGraph& mg = m_Shared->UpdModelGraph();
+                StationEl& e = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), g_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
+                SelectOnly(mg, e);
+            }
+            DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
+        }
+
         void Draw3DViewerOverlayTopBar()
         {
             int imguiID = 0;
@@ -5917,18 +5934,7 @@ namespace
 
             if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)"))
-                {
-                    m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
-                }
-                DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
-
-                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
-                {
-                    m_Shared->AddBody({0.0f, 0.0f, 0.0f});
-                }
-                DrawTooltipIfItemHovered("Add Body at Ground Location", OSC_BODY_DESC);
-
+                DrawAddOtherMenuItems();
                 ImGui::EndPopup();
             }
 
