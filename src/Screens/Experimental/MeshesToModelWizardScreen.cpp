@@ -18,6 +18,7 @@
 #include "src/UI/LogViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
+#include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
@@ -59,9 +60,9 @@
 
 using namespace osc;
 
-// user-facing string support
-namespace {
-
+// user-facing string constants
+namespace
+{
     #define OSC_BODY_DESC "Bodies are active elements in the model. They define a frame (location + orientation) with a mass. Other properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
     #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, models conventionally use meters."
     #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all Frames and points may conveniently and efficiently be expressed."
@@ -100,12 +101,9 @@ namespace {
     std::string const g_StationParentCrossrefName = "parent";
 }
 
-// senteniel ID support
-//
-// this screen uses UIDs all over the place, senteniel IDs are handy for quick
-// comparison operations
-namespace {
-
+// senteniel UID constants
+namespace
+{
     class BodyEl;
     UIDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
     UID const g_EmptyID = GenerateID();
@@ -114,11 +112,12 @@ namespace {
     UID const g_MeshGroupID = GenerateID();
     UID const g_BodyGroupID = GenerateID();
     UID const g_JointGroupID = GenerateID();
+    UID const g_StationGroupID = GenerateID();
 }
 
 // generic helper functions
-namespace {
-
+namespace
+{
     // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
     std::string PosString(glm::vec3 const& pos)
     {
@@ -188,12 +187,43 @@ namespace {
     template <auto A, typename...> auto dependent_value = A;
 }
 
+// UI layering support
+//
+// the visualizer can push the 3D visualizer into different modes (here, "layers") that
+// have different behavior. E.g.:
+//
+// - normal mode (editing stuff)
+// - picking another body in the scene mode
+namespace
+{
+    // the "parent" thing that is hosting the layer
+    class LayerHost {
+    public:
+        virtual ~LayerHost() noexcept = default;
+        virtual void pop() = 0;
+    };
+
+    // a layer that is hosted by the parent
+    class Layer {
+    public:
+        Layer(LayerHost& parent) : m_Parent{parent} {}
+        virtual ~Layer() noexcept = default;
+
+        virtual bool onEvent(SDL_Event const&) = 0;
+        virtual void tick(float) = 0;
+        virtual void draw() = 0;
+
+    protected:
+        LayerHost& m_Parent;
+    };
+}
+
 // 3D rendering support
 //
 // this code exists to make the modelgraph, and any other decorations (lines, hovers, selections, etc.)
 // renderable in the UI
-namespace {
-
+namespace
+{
     // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
     // to some sphere in the scene (e.g. a body/ground)
     glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
@@ -363,7 +393,8 @@ namespace {
         gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
         gl::FrameBuffer sceneFBO = FrameBufferWithBindings(
             RboBinding{GL_COLOR_ATTACHMENT0, sceneRBO},
-            RboBinding{GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24Stencil8RBO});
+            RboBinding{GL_DEPTH_STENCIL_ATTACHMENT, sceneDepth24Stencil8RBO}
+        );
 
         gl::Viewport(0, 0, dims.x, dims.y);
 
@@ -372,7 +403,8 @@ namespace {
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw the scene to the scene FBO
-        if (true) {
+        if (true)
+        {
             GouraudShader& shader = App::cur().getShaderCache().getShader<GouraudShader>();
 
             gl::UseProgram(shader.program);
@@ -381,16 +413,20 @@ namespace {
             gl::Uniform(shader.uLightDir, lightDir);
             gl::Uniform(shader.uLightColor, lightCol);
             gl::Uniform(shader.uViewPos, viewPos);
-            for (auto const& d : drawables) {
+            for (DrawableThing const& d : drawables)
+            {
                 gl::Uniform(shader.uModelMat, d.modelMatrix);
                 gl::Uniform(shader.uNormalMat, d.normalMatrix);
                 gl::Uniform(shader.uDiffuseColor, d.color);
-                if (d.maybeDiffuseTex) {
+                if (d.maybeDiffuseTex)
+                {
                     gl::ActiveTexture(GL_TEXTURE0);
                     gl::BindTexture(*d.maybeDiffuseTex);
                     gl::Uniform(shader.uIsTextured, true);
                     gl::Uniform(shader.uSampler0, GL_TEXTURE0-GL_TEXTURE0);
-                } else {
+                }
+                else
+                {
                     gl::Uniform(shader.uIsTextured, false);
                 }
                 gl::BindVertexArray(d.mesh->GetVertexArray());
@@ -411,7 +447,7 @@ namespace {
         gl::BlitFramebuffer(0, 0, dims.x, dims.y, 0, 0, dims.x, dims.y, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
         // draw rims directly over the output texture
-        if (true) {
+        {
             gl::Texture2D rimsTex;
             SetTextureAsSceneTextureTex(rimsTex, 0, GL_RED, dims, GL_RED, GL_UNSIGNED_BYTE);
             gl::FrameBuffer rimsFBO = FrameBufferWithBindings(
@@ -428,8 +464,10 @@ namespace {
             gl::Uniform(scs.uView, viewMat);
 
             gl::Disable(GL_DEPTH_TEST);
-            for (auto const& d : drawables) {
-                if (d.rimColor <= 0.05f) {
+            for (DrawableThing const& d : drawables)
+            {
+                if (d.rimColor <= 0.05f)
+                {
                     continue;
                 }
 
@@ -474,8 +512,8 @@ namespace {
 //
 // the main (UI) thread then regularly polls the response channel and handles the (loaded)
 // mesh appropriately
-namespace {
-
+namespace
+{
     // a mesh loading request
     struct MeshLoadRequest final {
         UID PreferredAttachmentPoint;
@@ -561,8 +599,8 @@ namespace {
 // - value semantics (undo/redo, rollbacks, etc.)
 // - groundspace manipulation (3D gizmos, drag and drop)
 // - easy UI integration (GLM datatypes, designed to be easy to dump into OpenGL, etc.)
-namespace {
-
+namespace
+{
     // forward decls for supported scene elements
     class GroundEl;
     class MeshEl;
@@ -1500,7 +1538,8 @@ namespace {
 // - Must have value semantics, so that other code such as the undo/redo buffer can
 //   copy an entire ModelGraph somewhere else in memory without having to worry about
 //   aliased mutations
-namespace {
+namespace
+{
     class ModelGraph final {
         // helper class for iterating over model graph elements
         template<bool IsConst, typename T = SceneEl>
@@ -1742,7 +1781,7 @@ namespace {
                 auto it = m_Els.find(el);
                 if (it != m_Els.end())
                 {
-                    m_DeletedEls.push_back(std::move(it->second));
+                    m_DeletedEls->push_back(std::move(it->second));
                     m_Els.erase(it);
                 }
             }
@@ -1757,7 +1796,7 @@ namespace {
 
         void GarbageCollect()
         {
-            m_DeletedEls.clear();
+            m_DeletedEls->clear();
         }
 
 
@@ -1849,7 +1888,7 @@ namespace {
 
         std::map<UID, ClonePtr<SceneEl>> m_Els;
         std::unordered_set<UID> m_SelectedEls;
-        std::vector<ClonePtr<SceneEl>> m_DeletedEls;
+        DefaultConstructOnCopy<std::vector<ClonePtr<SceneEl>>> m_DeletedEls;
     };
 
     // returns true if the mesh el has been assigned to a body that exists in the model graph
@@ -1886,6 +1925,18 @@ namespace {
         }
 
         mg.DeSelectAll();
+    }
+
+    bool IsCrossReferencedBySomethingElse(ModelGraph const& mg, UID id)
+    {
+        for (SceneEl const& el : mg.iter())
+        {
+            if (IsCrossReferencing(el, id))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     std::string const& GetLabel(ModelGraph const& mg, UID id)
@@ -2082,8 +2133,8 @@ namespace {
 // this implementation leans on the fact that the modelgraph (above) tries to follow value
 // semantics, so copying an entire modelgraph into a buffer results in an independent copy
 // that can't be indirectly mutated via references from other copies
-namespace {
-
+namespace
+{
     // a single immutable and independent snapshot of the model, with a commit message + time
     // explaining what the snapshot "is" (e.g. "loaded file", "rotated body") and when it was
     // created
@@ -2253,6 +2304,11 @@ namespace {
             return *m_Scratch;
         }
 
+        void GarbageCollect()
+        {
+            m_Scratch->GarbageCollect();
+        }
+
     private:
         ClonePtr<ModelGraph> m_Scratch;  // mutable staging area
         UID m_Current;  // where scratch will commit to
@@ -2265,8 +2321,8 @@ namespace {
 //
 // the ModelGraph that this UI manipulates ultimately needs to be transformed
 // into a standard OpenSim model. This code does that.
-namespace {
-
+namespace
+{
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
                              Transform const& parentXform,
@@ -2314,9 +2370,14 @@ namespace {
 
     // result of a lookup for (effectively) a physicalframe
     struct JointAttachmentCachedLookupResult {
-        BodyEl const* bodyEl;  // can be nullptr (indicating Ground)
-        std::unique_ptr<OpenSim::Body> createdBody;  // can be nullptr (indicating ground/cache hit)
-        OpenSim::PhysicalFrame* physicalFrame;  // always != nullptr, can point to `createdBody`, or an existing body from the cache, or Ground
+        // can be nullptr (indicating Ground)
+        BodyEl const* bodyEl;
+
+        // can be nullptr (indicating ground/cache hit)
+        std::unique_ptr<OpenSim::Body> createdBody;
+
+        // always != nullptr, can point to `createdBody`, or an existing body from the cache, or Ground
+        OpenSim::PhysicalFrame* physicalFrame;
     };
 
     // cached lookup of a physical frame
@@ -2680,48 +2741,28 @@ namespace {
     }
 }
 
-// UI layering support
-//
-// the visualizer can push the 3D visualizer into different modes (here, "layers") that
-// have different behavior. E.g.:
-//
-// - normal mode (editing stuff)
-// - picking another body in the scene mode
-namespace {
-
-    // the "parent" thing that is hosting the layer
-    class LayerHost {
-    public:
-        virtual ~LayerHost() noexcept = default;
-        virtual void pop() = 0;
-    };
-
-    // a layer that is hosted by the parent
-    class Layer {
-    public:
-        Layer(LayerHost& parent) : m_Parent{parent} {}
-        virtual ~Layer() noexcept = default;
-
-        virtual bool onEvent(SDL_Event const&) = 0;
-        virtual void tick(float) = 0;
-        virtual void draw() = 0;
-
-    protected:
-        LayerHost& m_Parent;
-    };
-}
-
 // shared data support
 //
-// Data that's shared between multiple UI states.
-namespace {
-
+// data that's shared between multiple UI states.
+namespace
+{
+    // a class that holds hover user mousehover information
     class Hover final {
     public:
-        Hover() : ID{g_EmptyID}, Pos{} {}
-        Hover(UID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_} {}
-        operator bool () const noexcept { return ID != g_EmptyID; }
-        void reset() { *this = Hover{}; }
+        Hover() : ID{g_EmptyID}, Pos{}
+        {
+        }
+        Hover(UID id_, glm::vec3 pos_) : ID{id_}, Pos{pos_}
+        {
+        }
+        operator bool () const noexcept
+        {
+            return ID != g_EmptyID;
+        }
+        void reset()
+        {
+            *this = Hover{};
+        }
 
         UID ID;
         glm::vec3 Pos;
@@ -3003,42 +3044,89 @@ namespace {
             }
         }
 
-        void DrawConnectionLine(MeshEl const& meshEl, ImU32 color) const
+        void DrawConnectionLines(SceneEl const& el, ImU32 color, UID excludeID = g_EmptyID) const
         {
-            glm::vec3 meshLoc = meshEl.Xform.position;
-            glm::vec3 otherLoc = GetPosition(GetModelGraph(), meshEl.Attachment);
+            glm::vec2 a = WorldPosToScreenPos(el.GetPos());
 
-            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(meshLoc));
+            for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+            {
+                UID refID = el.GetCrossReference(i).GetID();
+
+                if (refID == excludeID)
+                {
+                    continue;
+                }
+
+                SceneEl const* other = GetModelGraph().TryGetElByID(refID);
+
+                if (!other)
+                {
+                    continue;
+                }
+
+                glm::vec2 b = WorldPosToScreenPos(other->GetPos());
+
+                DrawConnectionLine(color, a, b);
+            }
         }
 
-        void DrawConnectionLineToGround(BodyEl const& bodyEl, ImU32 color) const
+        void DrawConnectionLineToGround(SceneEl const& el, ImU32 color) const
         {
-            glm::vec3 bodyLoc = bodyEl.Xform.position;
-            glm::vec3 otherLoc = {};
-
-            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(bodyLoc));
-        }
-
-        void DrawConnectionLine(JointEl const& jointEl, ImU32 color, UID excludeID = g_EmptyID) const
-        {
-            if (jointEl.ID == excludeID)
+            if (el.GetID() == g_GroundID)
             {
                 return;
             }
 
-            glm::vec3 const& pivotLoc = jointEl.Xform.position;
+            glm::vec3 loc = el.GetPos();
+            glm::vec3 otherLoc = {};
 
-            if (jointEl.Child != excludeID)
-            {
-                glm::vec3 childLoc = GetPosition(GetModelGraph(), jointEl.Child);
-                DrawConnectionLine(color, WorldPosToScreenPos(pivotLoc), WorldPosToScreenPos(childLoc));
-            }
+            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(loc));
+        }
 
-            if (jointEl.Parent != excludeID)
-            {
-                glm::vec3 parentLoc = GetPosition(GetModelGraph(), jointEl.Parent);
-                DrawConnectionLine(color, WorldPosToScreenPos(parentLoc), WorldPosToScreenPos(pivotLoc));
-            }
+        bool ShouldShowConnectionLines(SceneEl const& el) const
+        {
+            class Visitor final : public ConstSceneElVisitor {
+            public:
+                Visitor(SharedData const& shared) : m_Shared{shared} {}
+
+                void operator()(GroundEl const&) override
+                {
+                    m_Result = false;
+                }
+
+                void operator()(MeshEl const&) override
+                {
+                    m_Result = m_Shared.IsShowingMeshConnectionLines();
+                }
+
+                void operator()(BodyEl const&) override
+                {
+                    m_Result = m_Shared.IsShowingBodyConnectionLines();
+                }
+
+                void operator()(JointEl const&) override
+                {
+                    m_Result = m_Shared.IsShowingJointConnectionLines();
+                }
+
+                void operator()(StationEl const&) override
+                {
+                    m_Result = m_Shared.IsShowingMeshConnectionLines();
+                }
+
+                bool result() const
+                {
+                    return m_Result;
+                }
+
+            private:
+                SharedData const& m_Shared;
+                bool m_Result = false;
+            };
+
+            Visitor v{*this};
+            el.Accept(v);
+            return v.result();
         }
 
         void DrawConnectionLines(ImVec4 colorVec, UID excludeID = g_EmptyID) const
@@ -3046,51 +3134,22 @@ namespace {
             ModelGraph const& mg = GetModelGraph();
             ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
 
-            // draw each mesh's connection line
-            if (IsShowingMeshConnectionLines())
+            for (SceneEl const& el : mg.iter())
             {
-                for (MeshEl const& meshEl : mg.iter<MeshEl>())
-                {
-                    if (meshEl.ID == excludeID)
-                    {
-                        continue;
-                    }
+                UID id = el.GetID();
 
-                    DrawConnectionLine(meshEl, color);
+                if (id == excludeID)
+                {
+                    continue;
                 }
-            }
 
-            // draw connection lines for bodies that have a direct (implicit) connection to ground
-            // because they do not participate as a child of any joint
-            if (IsShowingBodyConnectionLines())
-            {
-                for (BodyEl const& bodyEl : mg.iter<BodyEl>())
+                if (el.GetNumCrossReferences() > 0)
                 {
-                    if (bodyEl.ID == excludeID)
-                    {
-                        continue;
-                    }
-
-                    if (IsAChildAttachmentInAnyJoint(mg, bodyEl))
-                    {
-                        continue;  // will be handled during joint drawing
-                    }
-
-                    DrawConnectionLineToGround(bodyEl, color);
+                    DrawConnectionLines(el, color, excludeID);
                 }
-            }
-
-            // draw connection lines for each joint
-            if (IsShowingJointConnectionLines())
-            {
-                for (JointEl const& jointEl : mg.iter<JointEl>())
+                else if (!IsCrossReferencedBySomethingElse(mg, id))
                 {
-                    if (jointEl.ID == excludeID)
-                    {
-                        continue;
-                    }
-
-                    DrawConnectionLine(jointEl, color, excludeID);
+                    DrawConnectionLineToGround(el, color);
                 }
             }
         }
@@ -3223,6 +3282,11 @@ namespace {
             return m_Colors.Ground;
         }
 
+        glm::vec4 const& GetColorStation() const
+        {
+            return m_Colors.Station;
+        }
+
         glm::vec4 const& GetColorSolidConnectionLine() const
         {
             return m_Colors.SolidConnection;
@@ -3311,6 +3375,16 @@ namespace {
             m_VisibilityFlags.Floor = newIsShowing;
         }
 
+        bool IsShowingStations() const
+        {
+            return m_VisibilityFlags.Stations;
+        }
+
+        void SetIsShowingStations(bool v)
+        {
+            m_VisibilityFlags.Stations = v;
+        }
+
         bool IsShowingJointConnectionLines() const
         {
             return m_VisibilityFlags.JointConnectionLines;
@@ -3339,6 +3413,16 @@ namespace {
         void SetIsShowingBodyConnectionLines(bool newIsShowing)
         {
             m_VisibilityFlags.BodyToGroundConnectionLines = newIsShowing;
+        }
+
+        bool IsShowingStationConnectionLines() const
+        {
+            return m_VisibilityFlags.StationConnectionLines;
+        }
+
+        void SetIsShowingStationConnectionLines(bool newIsShowing)
+        {
+            m_VisibilityFlags.StationConnectionLines = newIsShowing;
         }
 
         glm::mat4 GetFloorModelMtx() const
@@ -3548,6 +3632,16 @@ namespace {
             m_InteractivityFlags.Ground = newIsInteractable;
         }
 
+        bool IsStationsInteractable() const
+        {
+            return m_InteractivityFlags.Stations;
+        }
+
+        void SetIsStationsInteractable(bool v)
+        {
+            m_InteractivityFlags.Stations = v;
+        }
+
         float GetSceneScaleFactor() const
         {
             return m_SceneScaleFactor;
@@ -3576,6 +3670,7 @@ namespace {
             bool hittestBodies = IsBodiesInteractable();
             bool hittestJointCenters = IsJointCentersInteractable();
             bool hittestGround = IsGroundInteractable();
+            bool hittestStations = IsStationsInteractable();
 
             UID closestID = g_EmptyID;
             float closestDist = std::numeric_limits<float>::max();
@@ -3603,6 +3698,11 @@ namespace {
                 }
 
                 if (drawable.groupId == g_GroundGroupID && !hittestGround)
+                {
+                    continue;
+                }
+
+                if (drawable.groupId == g_StationGroupID && !hittestStations)
                 {
                     continue;
                 }
@@ -3693,6 +3793,20 @@ namespace {
             return rv;
         }
 
+        DrawableThing GenerateStationSphere(StationEl const& el, glm::vec4 const& color) const
+        {
+            DrawableThing rv;
+            rv.id = el.GetID();
+            rv.groupId = g_StationGroupID;
+            rv.mesh = m_SphereMesh;
+            rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(el.GetPos()));
+            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.color = color;
+            rv.rimColor = 0.0f;
+            rv.maybeDiffuseTex = nullptr;
+            return rv;
+        }
+
         void AppendBodyElAsCubeThing(BodyEl const& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
             AppendAsCubeThing(bodyEl.ID, g_BodyGroupID, bodyEl.Xform, appendOut);
@@ -3716,7 +3830,8 @@ namespace {
 
                 void operator()(GroundEl const&) override
                 {
-                    if (!m_Data.IsShowingGround()) {
+                    if (!m_Data.IsShowingGround())
+                    {
                         return;
                     }
 
@@ -3724,7 +3839,8 @@ namespace {
                 }
                 void operator()(MeshEl const& el) override
                 {
-                    if (!m_Data.IsShowingMeshes()) {
+                    if (!m_Data.IsShowingMeshes())
+                    {
                         return;
                     }
 
@@ -3732,7 +3848,8 @@ namespace {
                 }
                 void operator()(BodyEl const& el) override
                 {
-                    if (!m_Data.IsShowingBodies()) {
+                    if (!m_Data.IsShowingBodies())
+                    {
                         return;
                     }
 
@@ -3752,9 +3869,14 @@ namespace {
                                          0.0f,
                                          GetJointAxisLengths(el));
                 }
-                void operator()(StationEl const&) override
+                void operator()(StationEl const& el) override
                 {
-                    // TODO
+                    if (!m_Data.IsShowingStations())
+                    {
+                        return;
+                    }
+
+                    m_Out.push_back(m_Data.GenerateStationSphere(el, m_Data.GetColorStation()));
                 }
             private:
                 SharedData const& m_Data;
@@ -3803,6 +3925,8 @@ namespace {
 
                 App::cur().requestTransition<ModelEditorScreen>(mainEditorState);
             }
+
+            m_ModelGraphSnapshots.GarbageCollect();
         }
 
     private:
@@ -3844,16 +3968,18 @@ namespace {
             glm::vec4 Mesh{1.0f, 1.0f, 1.0f, 1.0f};
             glm::vec4 UnassignedMesh{1.0f, 0.95f, 0.95, 1.0f};
             glm::vec4 Ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
+            glm::vec4 Station{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
             glm::vec4 FaintConnection{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SolidConnection{0.9f, 0.9f, 0.9f, 1.0f};
             glm::vec4 TransparentFaintConnection{0.6f, 0.6f, 0.6f, 0.2f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
             glm::vec4 FloorTint{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
         } m_Colors;
-        static constexpr std::array<char const*, 8> g_ColorNames = {
+        static constexpr std::array<char const*, 9> g_ColorNames = {
             "mesh",
             "unassigned mesh",
             "ground",
+            "station",
             "faint connection line",
             "solid connection line",
             "transparent faint connection line",
@@ -3872,19 +3998,23 @@ namespace {
             bool Ground = true;
             bool Bodies = true;
             bool JointCenters = true;
+            bool Stations = true;
             bool JointConnectionLines = true;
             bool MeshConnectionLines = true;
             bool BodyToGroundConnectionLines = true;
+            bool StationConnectionLines = true;
         } m_VisibilityFlags;
-        static constexpr std::array<char const*, 8> g_VisibilityFlagNames = {
+        static constexpr std::array<char const*, 10> g_VisibilityFlagNames = {
             "floor",
             "meshes",
             "ground",
             "bodies",
             "joint centers",
+            "stations",
             "joint connection lines",
             "mesh connection lines",
             "body-to-ground connection lines",
+            "station connection lines"
         };
         static_assert(sizeof(decltype(m_VisibilityFlags))/sizeof(bool) == g_VisibilityFlagNames.size());
 
@@ -3896,12 +4026,14 @@ namespace {
             bool Bodies = true;
             bool JointCenters = true;
             bool Ground = true;
+            bool Stations = true;
         } m_InteractivityFlags;
-        static constexpr std::array<char const*, 4> g_InteractivityFlagNames = {
+        static constexpr std::array<char const*, 5> g_InteractivityFlagNames = {
             "meshes",
             "bodies",
             "joint centers",
             "ground",
+            "stations",
         };
         static_assert(sizeof(decltype(m_InteractivityFlags))/sizeof(bool) == g_InteractivityFlagNames.size());
 

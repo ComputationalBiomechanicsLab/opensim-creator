@@ -287,12 +287,14 @@ add_executable(osc
     src/Utils/ClonePtr.hpp
     src/Utils/ConcurrencyHelpers.hpp
     src/Utils/Cpp20Shims.hpp
+    src/Utils/DefaultConstructOnCopy.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
     src/Utils/ImGuiHelpers.cpp
     src/Utils/ImGuiHelpers.hpp
     src/Utils/IoPoller.cpp
     src/Utils/IoPoller.hpp
+    src/Utils/MethodTestMacro.hpp
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
