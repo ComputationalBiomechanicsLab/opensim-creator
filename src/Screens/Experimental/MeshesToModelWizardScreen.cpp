@@ -693,7 +693,7 @@ namespace
         return !(a == b);
     }
 
-    // returns a unique, generated body name
+    // returns a unique string that can be used to name an instance of the given class
     std::string GenerateName(SceneElClass const& c)
     {
         std::stringstream ss;
@@ -745,30 +745,6 @@ namespace
         SceneElFlags_CanSelect = 1<<5,
     };
 
-    // description of a cross reference (i.e. 'socket') a scene element has
-    class SceneElCrossRef final {
-    public:
-        SceneElCrossRef(UID id, std::string const& label) :
-            m_ID{std::move(id)},
-            m_Label{label}
-        {
-        }
-
-        UID GetID() const
-        {
-            return m_ID;
-        }
-
-        std::string const& GetLabel() const
-        {
-            return m_Label;
-        }
-
-    private:
-        UID m_ID;
-        std::string const& m_Label;
-    };
-
     // base class for all scene elements
     class SceneEl {
     public:
@@ -790,9 +766,13 @@ namespace
         {
             return 0;
         }
-        virtual SceneElCrossRef GetCrossReference(int) const
+        virtual UID GetCrossReferenceConnecteeID(int) const
         {
-            throw std::runtime_error{"cannot get cross reference: no method implemented"};
+            throw std::runtime_error{"cannot get cross reference ID: no method implemented"};
+        }
+        virtual std::string const& GetCrossReferenceLabel(int) const
+        {
+            throw std::runtime_error{"cannot get cross reference label: no method implemented"};
         }
 
         virtual SceneElFlags GetFlags() const = 0;
@@ -902,7 +882,7 @@ namespace
     {
         for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
         {
-            if (el.GetCrossReference(i).GetID() == id)
+            if (el.GetCrossReferenceConnecteeID(i) == id)
             {
                 return true;
             }
@@ -1074,12 +1054,24 @@ namespace
             return 1;
         }
 
-        SceneElCrossRef GetCrossReference(int i) const override
+        UID GetCrossReferenceConnecteeID(int i) const override
         {
-            if (i != 0) {
+            switch (i) {
+            case 0:
+                return Attachment;
+            default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
-            return SceneElCrossRef{Attachment, g_MeshAttachmentCrossrefName};
+        }
+
+        std::string const& GetCrossReferenceLabel(int i) const override
+        {
+            switch (i) {
+            case 0:
+                return g_MeshAttachmentCrossrefName;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
         }
 
         SceneElFlags GetFlags() const override
@@ -1354,15 +1346,27 @@ namespace
             return 2;
         }
 
-        SceneElCrossRef GetCrossReference(int i) const override
+        UID GetCrossReferenceConnecteeID(int i) const override
         {
             switch (i) {
             case 0:
-                return SceneElCrossRef{Parent, g_JointParentCrossrefName};
+                return Parent;
             case 1:
-                return SceneElCrossRef{Child, g_JointChildCrossrefName};
+                return Child;
             default:
-                throw std::runtime_error{"invalid index accessed for joint cross reference"};
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
+        std::string const& GetCrossReferenceLabel(int i) const override
+        {
+            switch (i) {
+            case 0:
+                return g_JointParentCrossrefName;
+            case 1:
+                return g_JointChildCrossrefName;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
             }
         }
 
@@ -1502,13 +1506,23 @@ namespace
             return 1;
         }
 
-        SceneElCrossRef GetCrossReference(int i) const override
+        UID GetCrossReferenceConnecteeID(int i) const override
         {
             switch (i) {
             case 0:
-                return SceneElCrossRef{Attachment, g_StationParentCrossrefName};
+                return Attachment;
             default:
-                throw std::runtime_error{"invalid index accessed for joint cross reference"};
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
+        std::string const& GetCrossReferenceLabel(int i) const override
+        {
+            switch (i) {
+            case 0:
+                return g_StationParentCrossrefName;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
             }
         }
 
@@ -1825,11 +1839,10 @@ namespace
 
             for (int i = 0, len = el->GetNumCrossReferences(); i < len; ++i)
             {
-                SceneElCrossRef desc = el->GetCrossReference(i);
-                if (!ContainsEl(desc.GetID()))
+                if (!ContainsEl(el->GetCrossReferenceConnecteeID(i)))
                 {
                     std::stringstream ss;
-                    ss << "cannot add '" << el->GetLabel() << "' (ID = " << el->GetID() << ") to model graph because it contains a cross reference (label = " << desc.GetLabel() << ") to a scene element that does not exist in the model graph";
+                    ss << "cannot add '" << el->GetLabel() << "' (ID = " << el->GetID() << ") to model graph because it contains a cross reference (label = " << el->GetCrossReferenceLabel(i) << ") to a scene element that does not exist in the model graph";
                     throw std::runtime_error{std::move(ss).str()};
                 }
             }
@@ -3163,7 +3176,7 @@ namespace
 
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
-                UID refID = el.GetCrossReference(i).GetID();
+                UID refID = el.GetCrossReferenceConnecteeID(i);
 
                 if (refID == excludeID)
                 {
