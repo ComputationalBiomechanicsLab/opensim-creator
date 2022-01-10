@@ -1588,6 +1588,11 @@ namespace
         return v.m_Result;
     }
 
+    bool IsJointEl(SceneEl const& el)
+    {
+        return dynamic_cast<JointEl const*>(&el);
+    }
+
     std::vector<SceneElClass const*> GenerateSceneElClassList()
     {
         return {
@@ -2009,11 +2014,11 @@ namespace
         mg.DeSelectAll();
     }
 
-    bool IsCrossReferencedBySomethingElse(ModelGraph const& mg, UID id)
+    bool IsCrossReferencedByAJoint(ModelGraph const& mg, UID id)
     {
         for (SceneEl const& el : mg.iter())
         {
-            if (IsCrossReferencing(el, id))
+            if (IsJointEl(el) && IsCrossReferencing(el, id))
             {
                 return true;
             }
@@ -3255,7 +3260,7 @@ namespace
                 {
                     DrawConnectionLines(el, color, excludeID);
                 }
-                else if (!IsCrossReferencedBySomethingElse(mg, id))
+                else if (!IsCrossReferencedByAJoint(mg, id))
                 {
                     DrawConnectionLineToGround(el, color);
                 }
