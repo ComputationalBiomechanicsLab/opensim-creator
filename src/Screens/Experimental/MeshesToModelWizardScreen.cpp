@@ -5648,6 +5648,13 @@ namespace
             }
             DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
 
+            if (ImGui::MenuItem(ICON_FA_LINK " TODO add station"))
+            {
+                ModelGraph& mg = m_Shared->UpdModelGraph();
+                StationEl& e = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), bodyEl.ID, glm::vec3{}, GenerateName(StationEl::Class()));
+                SelectOnly(mg, e);
+            }
+
             DrawReorientMenu(bodyEl);
             DrawTranslateMenu(bodyEl);
 
