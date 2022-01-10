@@ -683,11 +683,13 @@ namespace
         mutable std::atomic<uint32_t> m_UniqueCounter;
     };
 
+    // logical comparison
     bool operator==(SceneElClass const& a, SceneElClass const& b)
     {
         return a.GetID() == b.GetID();
     }
 
+    // logical comparison
     bool operator!=(SceneElClass const& a, SceneElClass const& b)
     {
         return !(a == b);
@@ -745,6 +747,19 @@ namespace
         SceneElFlags_CanSelect = 1<<5,
     };
 
+    // returns the "direction" of a cross reference
+    //
+    // most of the time, the direction is towards whatever's being connected to,
+    // but sometimes it can be the opposite, depending on how the datastructure
+    // is ultimately used
+    using CrossrefDirection = int;
+    enum CrossrefDirection_ {
+        CrossrefDirection_None = 0,
+        CrossrefDirection_ToParent = 1<<0,
+        CrossrefDirection_ToChild = 1<<1,
+        CrossrefDirection_Both = CrossrefDirection_ToChild | CrossrefDirection_ToParent
+    };
+
     // base class for all scene elements
     class SceneEl {
     public:
@@ -773,6 +788,10 @@ namespace
         virtual std::string const& GetCrossReferenceLabel(int) const
         {
             throw std::runtime_error{"cannot get cross reference label: no method implemented"};
+        }
+        virtual CrossrefDirection GetCrossReferenceDirection(int) const
+        {
+            return CrossrefDirection_ToParent;
         }
 
         virtual SceneElFlags GetFlags() const = 0;
@@ -878,11 +897,11 @@ namespace
         return el.GetFlags() & SceneElFlags_CanSelect;
     }
 
-    bool IsCrossReferencing(SceneEl const& el, UID id)
+    bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection_Both)
     {
         for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
         {
-            if (el.GetCrossReferenceConnecteeID(i) == id)
+            if (el.GetCrossReferenceConnecteeID(i) == id && el.GetCrossReferenceDirection(i) & direction)
             {
                 return true;
             }
@@ -1370,6 +1389,18 @@ namespace
             }
         }
 
+        CrossrefDirection GetCrossReferenceDirection(int i) const override
+        {
+            switch (i) {
+            case 0:
+                return CrossrefDirection_ToParent;
+            case 1:
+                return CrossrefDirection_ToChild;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
         SceneElFlags GetFlags() const override
         {
             return SceneElFlags_CanChangeLabel |
@@ -1600,11 +1631,6 @@ namespace
         Visitor v;
         e.Accept(v);
         return v.m_Result;
-    }
-
-    bool IsJointEl(SceneEl const& el)
-    {
-        return dynamic_cast<JointEl const*>(&el);
     }
 
     std::vector<SceneElClass const*> GenerateSceneElClassList()
@@ -2027,18 +2053,6 @@ namespace
         mg.DeSelectAll();
     }
 
-    bool IsCrossReferencedByAJoint(ModelGraph const& mg, UID id)
-    {
-        for (SceneEl const& el : mg.iter())
-        {
-            if (IsJointEl(el) && IsCrossReferencing(el, id))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     std::string const& GetLabel(ModelGraph const& mg, UID id)
     {
         return mg.GetElByID(id).GetLabel();
@@ -2060,11 +2074,12 @@ namespace
     }
 
     // returns `true` if `body` participates in any joint in the model graph
-    bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, BodyEl const& body)
+    bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
+        UID elID = el.GetID();
         for (JointEl const& el : mg.iter<JointEl>())
         {
-            if (el.Child == body.ID)
+            if (el.Child == elID)
             {
                 return true;
             }
@@ -3145,15 +3160,12 @@ namespace
             return GetCamera().projectOntoScreenRect(worldPos, Get3DSceneRect());
         }
 
-        void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
-        {
-            // triangle indicating connection directionality
-            constexpr float lineWidth = 1.0f;
-            constexpr float triangleWidth = 6.0f * lineWidth;
-            constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
+        static constexpr float connectionLineWidth = 1.0f;
 
-            // the line
-            ImGui::GetWindowDrawList()->AddLine(parent, child, color, lineWidth);
+        void DrawConnectionLineTriangle(ImU32 color, glm::vec2 parent, glm::vec2 child) const
+        {
+            constexpr float triangleWidth = 6.0f * connectionLineWidth;
+            constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
             glm::vec2 child2parent = parent - child;
             if (glm::dot(child2parent, child2parent) > triangleWidthSquared)
@@ -3170,9 +3182,18 @@ namespace
             }
         }
 
+        void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
+        {
+            // the line
+            ImGui::GetWindowDrawList()->AddLine(parent, child, color, connectionLineWidth);
+
+            // the triangle
+            DrawConnectionLineTriangle(color, parent, child);
+        }
+
         void DrawConnectionLines(SceneEl const& el, ImU32 color, UID excludeID = g_EmptyID) const
         {
-            glm::vec2 a = WorldPosToScreenPos(el.GetPos());
+            glm::vec2 child = WorldPosToScreenPos(el.GetPos());
 
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
@@ -3190,9 +3211,13 @@ namespace
                     continue;
                 }
 
-                glm::vec2 b = WorldPosToScreenPos(other->GetPos());
+                glm::vec2 parent = WorldPosToScreenPos(other->GetPos());
 
-                DrawConnectionLine(color, a, b);
+                if (el.GetCrossReferenceDirection(i) == CrossrefDirection_ToChild) {
+                    std::swap(parent, child);
+                }
+
+                DrawConnectionLine(color, parent, child);
             }
         }
 
@@ -3204,9 +3229,9 @@ namespace
             }
 
             glm::vec3 loc = el.GetPos();
-            glm::vec3 otherLoc = {};
+            glm::vec3 groundLoc = {};
 
-            DrawConnectionLine(color, WorldPosToScreenPos(otherLoc), WorldPosToScreenPos(loc));
+            DrawConnectionLine(color, WorldPosToScreenPos(groundLoc), WorldPosToScreenPos(loc));
         }
 
         bool ShouldShowConnectionLines(SceneEl const& el) const
@@ -3273,7 +3298,7 @@ namespace
                 {
                     DrawConnectionLines(el, color, excludeID);
                 }
-                else if (!IsCrossReferencedByAJoint(mg, id))
+                else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
                     DrawConnectionLineToGround(el, color);
                 }
