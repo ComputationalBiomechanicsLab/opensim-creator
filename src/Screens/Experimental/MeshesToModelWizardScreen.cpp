@@ -63,12 +63,13 @@ using namespace osc;
 // user-facing string constants
 namespace
 {
-    #define OSC_BODY_DESC "Bodies are active elements in the model. They define a frame (location + orientation) with a mass. Other properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
-    #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, models conventionally use meters."
-    #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all Frames and points may conveniently and efficiently be expressed."
-    #define OSC_MESH_DESC "Meshes are purely decorational elements in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will translate/rotate whenever the thing they are attached to translates/rotates"
-    #define OSC_JOINT_DESC "Joints connect two PhysicalFrames (body/ground) together and specifies their relative permissible motion."
-    #define OSC_STATION_DESC "A point of interest (documentation TODO)"
+    #define OSC_GROUND_DESC "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints."
+    #define OSC_BODY_DESC "Bodies are active elements in the model. They define a 'frame' (effectively, a location + orientation) with a mass.\n\nOther body properties (e.g. inertia) can be edited in the main OpenSim Creator editor after you have converted the model into an OpenSim model."
+    #define OSC_MESH_DESC "Meshes are decorational components in the model. They can be translated, rotated, and scaled. Typically, meshes are 'attached' to other elements in the model, such as bodies. When meshes are 'attached' to something, they will 'follow' the thing they are attached to."
+    #define OSC_JOINT_DESC "Joints connect two physical frames (i.e. bodies and ground) together and specifies their relative permissible motion (e.g. PinJoints only allow rotation along one axis).\n\nIn OpenSim, joints are the 'edges' of a directed topology graph where bodies are the 'nodes'. All bodies in the model must ultimately connect to ground via joints."
+    #define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
+
+    #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
     #define OSC_FLOAT_INPUT_FORMAT "%.4f"
 
     std::string const g_GroundLabel = "Ground";
@@ -745,6 +746,7 @@ namespace
         SceneElFlags_CanChangeScale = 1<<3,
         SceneElFlags_CanDelete = 1<<4,
         SceneElFlags_CanSelect = 1<<5,
+        SceneElFlags_HasPhysicalSize = 1<<6,
     };
 
     // returns the "direction" of a cross reference
@@ -899,6 +901,11 @@ namespace
     bool CanSelect(SceneEl const& el)
     {
         return el.GetFlags() & SceneElFlags_CanSelect;
+    }
+
+    bool HasPhysicalSize(SceneEl const& el)
+    {
+        return el.GetFlags() & SceneElFlags_HasPhysicalSize;
     }
 
     bool IsCrossReferencing(SceneEl const& el, UID id, CrossrefDirection direction = CrossrefDirection_Both)
@@ -1115,7 +1122,8 @@ namespace
                     SceneElFlags_CanChangeRotation |
                     SceneElFlags_CanChangeScale |
                     SceneElFlags_CanDelete |
-                    SceneElFlags_CanSelect;
+                    SceneElFlags_CanSelect |
+                    SceneElFlags_HasPhysicalSize;
         }
 
         UID GetID() const override
@@ -3249,30 +3257,36 @@ namespace
 
         static constexpr float connectionLineWidth = 1.0f;
 
-        void DrawConnectionLineTriangle(ImU32 color, glm::vec2 parent, glm::vec2 child) const
+        void DrawConnectionLineTriangle(ImU32 color, glm::vec3 parent, glm::vec3 child) const
         {
             constexpr float triangleWidth = 6.0f * connectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            glm::vec2 child2parent = parent - child;
-            if (glm::dot(child2parent, child2parent) > triangleWidthSquared)
+            glm::vec2 parentScr = WorldPosToScreenPos(parent);
+            glm::vec2 childScr = WorldPosToScreenPos(child);
+            glm::vec2 child2ParentScr = parentScr - childScr;
+
+            if (glm::dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
-                glm::vec2 midpoint = (parent + child) / 2.0f;
-                glm::vec2 direction = glm::normalize(child2parent);
-                glm::vec2 normal = {-direction.y, direction.x};
-
-                glm::vec2 p1 = midpoint + (triangleWidth/2.0f)*normal;
-                glm::vec2 p2 = midpoint - (triangleWidth/2.0f)*normal;
-                glm::vec2 p3 = midpoint + triangleWidth*direction;
-
-                ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
+                return;
             }
+
+            glm::vec3 midpoint = VecMidpoint(parent, child);
+            glm::vec2 midpointScr = WorldPosToScreenPos(midpoint);
+            glm::vec2 directionScr = glm::normalize(child2ParentScr);
+            glm::vec2 directionNormalScr = {-directionScr.y, directionScr.x};
+
+            glm::vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            glm::vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            glm::vec2 p3 = midpointScr + triangleWidth*directionScr;
+
+            ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
-        void DrawConnectionLine(ImU32 color, glm::vec2 parent, glm::vec2 child) const
+        void DrawConnectionLine(ImU32 color, glm::vec3 const& parent, glm::vec3 const& child) const
         {
             // the line
-            ImGui::GetWindowDrawList()->AddLine(parent, child, color, connectionLineWidth);
+            ImGui::GetWindowDrawList()->AddLine(WorldPosToScreenPos(parent), WorldPosToScreenPos(child), color, connectionLineWidth);
 
             // the triangle
             DrawConnectionLineTriangle(color, parent, child);
@@ -3280,8 +3294,6 @@ namespace
 
         void DrawConnectionLines(SceneEl const& el, ImU32 color, UID excludeID = g_EmptyID) const
         {
-            glm::vec2 child = WorldPosToScreenPos(el.GetPos());
-
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
                 UID refID = el.GetCrossReferenceConnecteeID(i);
@@ -3298,7 +3310,8 @@ namespace
                     continue;
                 }
 
-                glm::vec2 parent = WorldPosToScreenPos(other->GetPos());
+                glm::vec3 child = el.GetPos();
+                glm::vec3 parent = other->GetPos();
 
                 if (el.GetCrossReferenceDirection(i) == CrossrefDirection_ToChild) {
                     std::swap(parent, child);
@@ -3315,10 +3328,7 @@ namespace
                 return;
             }
 
-            glm::vec3 loc = el.GetPos();
-            glm::vec3 groundLoc = {};
-
-            DrawConnectionLine(color, WorldPosToScreenPos(groundLoc), WorldPosToScreenPos(loc));
+            DrawConnectionLine(color, glm::vec3{}, el.GetPos());
         }
 
         bool ShouldShowConnectionLines(SceneEl const& el) const
@@ -4612,17 +4622,17 @@ namespace
             }
 
             // draw strong connection line between the thing being attached to and the hover
-            glm::vec2 parentScrPos = m_Shared->WorldPosToScreenPos(GetPosition(m_Shared->GetModelGraph(), m_Options.MaybeElAttachingTo));
-            glm::vec2 childScrPos = m_Shared->WorldPosToScreenPos(GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID));
+            glm::vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), m_Options.MaybeElAttachingTo);
+            glm::vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
 
             if (!m_Options.IsAttachingTowardEl)
             {
-                std::swap(parentScrPos, childScrPos);
+                std::swap(parentPos, childPos);
             }
 
             ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorSolidConnectionLine());
 
-            m_Shared->DrawConnectionLine(strongColorU2, parentScrPos, childScrPos);
+            m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
         }
 
         // draw 2D header text in top-left corner of the screen
@@ -5553,7 +5563,7 @@ namespace
 
         void DrawNothingContextMenuContentHeader()
         {
-            ImGui::Text("actions");
+            ImGui::Text(ICON_FA_BOLT " Actions");
             ImGui::SameLine();
             ImGui::TextDisabled("(nothing clicked)");
             ImGui::Separator();
@@ -5578,7 +5588,7 @@ namespace
             {
                 char buf[256];
                 std::strcpy(buf, e.GetLabel().c_str());
-                if (ImGui::InputText("name", buf, sizeof(buf)))
+                if (ImGui::InputText("Name", buf, sizeof(buf)))
                 {
                     mg.UpdElByID(e.GetID()).SetLabel(buf);
                 }
@@ -5588,13 +5598,15 @@ namespace
                     ss << "changed " << e.GetClass().GetNameSV() << " name";
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
+                ImGui::SameLine();
+                DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
             }
 
             // position editor
             if (CanChangePosition(e))
             {
                 glm::vec3 translation = e.GetPos();
-                if (ImGui::InputFloat3("translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT))
                 {
                     mg.UpdElByID(e.GetID()).SetPos(translation);
                 }
@@ -5613,7 +5625,7 @@ namespace
             {
                 glm::vec3 eulerDegs = glm::degrees(glm::eulerAngles(e.GetRotation()));
 
-                if (ImGui::InputFloat3("orientation (deg)", glm::value_ptr(eulerDegs), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), OSC_FLOAT_INPUT_FORMAT))
                 {
                     glm::quat quatRads = glm::quat{glm::radians(eulerDegs)};
                     mg.UpdElByID(e.GetID()).SetRotation(quatRads);
@@ -5621,9 +5633,11 @@ namespace
                 if (ImGui::IsItemDeactivatedAfterEdit())
                 {
                     std::stringstream ss;
-                    ss << "changed " << e.GetLabel() << "'s orientation";
+                    ss << "changed " << e.GetLabel() << "'s rotation";
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
+                ImGui::SameLine();
+                DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
             }
 
             // scale factor editor
@@ -5640,6 +5654,8 @@ namespace
                     ss << "changed " << e.GetLabel() << "'s scale";
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
+                ImGui::SameLine();
+                DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
             }
         }
 
@@ -5650,7 +5666,7 @@ namespace
             // mass editor
             {
                 float curMass = static_cast<float>(bodyEl.Mass);
-                if (ImGui::InputFloat("mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT))
                 {
                     m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.ID).Mass = static_cast<double>(curMass);
                 }
@@ -5679,30 +5695,40 @@ namespace
             ImGui::PopID();
 
             ImGui::PushID(imguiID++);
-            if (ImGui::BeginMenu(ICON_FA_CIRCLE " Body"))
+            if (HasPhysicalSize(el))
             {
-                if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                if (ImGui::BeginMenu(ICON_FA_CIRCLE " Body"))
+                {
+                    if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                    {
+                        m_Shared->AddBody(el.GetPos());
+                    }
+                    DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+
+                    if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                    {
+                        m_Shared->AddBody(clickPos);
+                    }
+                    DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+
+                    if (Is<MeshEl>(el))
+                    {
+                        if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                        {
+                            m_Shared->AddBody(AABBCenter(el.CalcBounds()));
+                        }
+                        DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                    }
+
+                    ImGui::EndMenu();
+                }
+            }
+            else
+            {
+                if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
                 {
                     m_Shared->AddBody(el.GetPos());
                 }
-
-                if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
-                {
-                    m_Shared->AddBody(clickPos);
-                }
-
-                if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
-                {
-                    m_Shared->AddBody({});
-                }
-
-                if (Is<MeshEl>(el) && ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
-                {
-                    m_Shared->AddBody(AABBCenter(el.CalcBounds()));
-                }
-
-                ImGui::EndMenu();
-
                 DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
             }
             ImGui::PopID();
@@ -5721,40 +5747,57 @@ namespace
             ImGui::PushID(imguiID++);
             if (CanAttachStationTo(el))
             {
-                if (ImGui::BeginMenu(ICON_FA_MAP_PIN " Station"))
+                auto addStationAtLocation = [&](glm::vec3 const& loc)
                 {
-                    auto addStationAtLocation = [&](glm::vec3 const& loc)
-                    {
-                        ModelGraph& mg = m_Shared->UpdModelGraph();
-                        StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), StationAttachmentParent(el), loc, GenerateName(StationEl::Class()));
-                        SelectOnly(mg, station);
-                        m_Shared->CommitCurrentModelGraph("added station " + station.GetLabel());
-                    };
+                    ModelGraph& mg = m_Shared->UpdModelGraph();
+                    StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), StationAttachmentParent(el), loc, GenerateName(StationEl::Class()));
+                    SelectOnly(mg, station);
+                    m_Shared->CommitCurrentModelGraph("added station " + station.GetLabel());
+                };
 
-                    if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                if (HasPhysicalSize(el))
+                {
+                    if (ImGui::BeginMenu(ICON_FA_MAP_PIN " Station"))
+                    {
+                        if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                        {
+                            addStationAtLocation(el.GetPos());
+                        }
+                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+
+                        if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                        {
+                            addStationAtLocation(clickPos);
+                        }
+                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+
+                        if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                        {
+                            addStationAtLocation(glm::vec3{});
+                        }
+                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+
+                        if (Is<MeshEl>(el))
+                        {
+                            if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                            {
+                                addStationAtLocation(AABBCenter(el.CalcBounds()));
+                            }
+                            DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                        }
+
+                        ImGui::EndMenu();
+                    }
+                }
+                else
+                {
+                    if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
                     {
                         addStationAtLocation(el.GetPos());
                     }
-
-                    if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
-                    {
-                        addStationAtLocation(clickPos);
-                    }
-
-                    if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
-                    {
-                        addStationAtLocation(glm::vec3{});
-                    }
-
-                    if (Is<MeshEl>(el) && ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
-                    {
-                        addStationAtLocation(AABBCenter(el.CalcBounds()));
-                    }
-
-                    ImGui::EndMenu();
-
                     DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                 }
+
             }
             ImGui::PopID();
         }
@@ -5781,7 +5824,7 @@ namespace
             {
                 m_Shared->FocusCameraOn(AABBCenter(el.CalcBounds()));
             }
-            DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking around that particular object in the scene");
+            DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
             if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
             {
@@ -5798,13 +5841,17 @@ namespace
                 DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
             }
 
-            if (CanDelete(el) && ImGui::MenuItem(ICON_FA_TRASH " Delete"))
+            if (CanDelete(el))
             {
-                std::string label = el.GetLabel();
-                DeleteEl(el.GetID());
-                m_Shared->CommitCurrentModelGraph("deleted " + label);
-                m_MaybeOpenedContextMenu.reset();
-                ImGui::CloseCurrentPopup();
+                if (ImGui::MenuItem(ICON_FA_TRASH " Delete"))
+                {
+                    std::string label = el.GetLabel();
+                    DeleteEl(el.GetID());
+                    m_Shared->CommitCurrentModelGraph("deleted " + label);
+                    m_MaybeOpenedContextMenu.reset();
+                    ImGui::CloseCurrentPopup();
+                }
+                DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
             }
         }
 
@@ -6735,11 +6782,6 @@ namespace
                 if (ImGui::MenuItem(ICON_FA_FILE " New Scene", "Ctrl+N"))
                 {
                     m_Shared->ResetModelGraph();
-                }
-
-                if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes"))
-                {
-                    m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_ARROW_LEFT " Back to experiments screen"))
