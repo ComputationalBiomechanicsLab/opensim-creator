@@ -148,20 +148,25 @@ namespace
         return powf(2.0f, -5.0f*x) * sinf((x*10.0f - 0.75f) * c4) + 1.0f;
     }
 
-    // performs the shortest (angular) rotation of a transform such that the
-    // designated axis points towards a point in the same space
-    Transform PointAxisTowards(Transform const& t, int axis, glm::vec3 const& p)
+    // returns the transform, but rotated such that the given axis points along the
+    // given direction
+    Transform PointAxisAlong(Transform const& t, int axis, glm::vec3 const& dir)
     {
         glm::vec3 beforeDir{};
         beforeDir[axis] = 1.0f;
         beforeDir = t.rotation * beforeDir;
 
-        glm::vec3 afterDir = glm::normalize(p - t.position);
-
-        glm::quat rotBeforeToAfter = glm::rotation(beforeDir, afterDir);
+        glm::quat rotBeforeToAfter = glm::rotation(beforeDir, dir);
         glm::quat newRotation = glm::normalize(rotBeforeToAfter * t.rotation);
 
         return t.withRotation(newRotation);
+    }
+
+    // performs the shortest (angular) rotation of a transform such that the
+    // designated axis points towards a point in the same space
+    Transform PointAxisTowards(Transform const& t, int axis, glm::vec3 const& p)
+    {
+        return PointAxisAlong(t, axis, glm::normalize(p - t.position));
     }
 
     // perform an intrinsic rotation about a transform's axis
@@ -2333,6 +2338,115 @@ namespace
         e.Accept(v);
         return std::move(ss).str();
     }
+
+    // returns true if the given element (ID) is in the "selection group" of
+    bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
+    {
+        if (id == g_EmptyID || parent == g_EmptyID)
+        {
+            return false;
+        }
+
+        if (id == parent)
+        {
+            return true;
+        }
+
+        BodyEl const* bodyEl = nullptr;
+
+        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(parent))
+        {
+            bodyEl = be;
+        }
+        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(parent))
+        {
+            bodyEl = mg.TryGetElByID<BodyEl>(me->Attachment);
+        }
+
+        if (!bodyEl)
+        {
+            return false;  // parent isn't attached to any body (or isn't a body)
+        }
+
+        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(id))
+        {
+            return be->ID == bodyEl->ID;
+        }
+        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(id))
+        {
+            return me->Attachment == bodyEl->ID;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    template<typename Consumer>
+    void ForEachIDInSelectionGroup(ModelGraph const& mg, UID parent, Consumer f)
+    {
+        for (SceneEl const& e : mg.iter())
+        {
+            UID id = e.GetID();
+
+            if (IsInSelectionGroupOf(mg, parent, id))
+            {
+                f(id);
+            }
+        }
+    }
+
+    void SelectAnythingGroupedWith(ModelGraph& mg, UID el)
+    {
+        ForEachIDInSelectionGroup(mg, el, [&mg](UID other)
+        {
+            mg.Select(other);
+        });
+    }
+
+    // adds a body to a mesh at a given position
+    BodyEl& AddBodyToMeshAtPosition(ModelGraph& mg, MeshEl const& mesh, glm::vec3 const& pos)
+    {
+        BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
+        SelectOnly(mg, b.ID);
+
+        if (!IsAssignedToBody(mg, mesh))
+        {
+            mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
+        }
+
+        return b;
+    }
+
+    // points an axis of a given element towards some other element in the model graph
+    void PointAxisTowards(ModelGraph& mg, UID id, int axis, UID other)
+    {
+        glm::vec3 choicePos = GetPosition(mg, other);
+        Transform sourceXform = GetPosition(mg, id);
+
+        mg.UpdElByID(id).SetXform(PointAxisTowards(sourceXform, axis, choicePos));
+    }
+
+    // returns recommended rim intensity for an element in the model graph
+    float CalcRimIntensity(ModelGraph const& mg, UID id, UID hoverID = g_EmptyID)
+    {
+        if (id == g_EmptyID)
+        {
+            return 0.0f;
+        }
+        else if (mg.IsSelected(id))
+        {
+            return 1.0f;
+        }
+        else if (IsInSelectionGroupOf(mg, hoverID, id))
+        {
+            return 0.6f;
+        }
+        else
+        {
+            return 0.0f;
+        }
+    }
 }
 
 // undo/redo/snapshot support
@@ -2525,6 +2639,232 @@ namespace
         UID m_BranchHead;  // head of current branch (for redo)
         std::unordered_map<UID, ClonePtr<ModelGraphCommit>> m_Commits;
     };
+
+    bool PointAxisTowards(CommittableModelGraph& cmg, UID id, int axis, UID other)
+    {
+        PointAxisTowards(cmg.UpdScratch(), id, axis, other);
+        cmg.Commit("reoriented " + GetLabel(cmg.GetScratch(), id));
+        return true;
+    }
+
+    bool AddBodyToMeshAtPosition(CommittableModelGraph& cmg, MeshEl const& mesh, glm::vec3 const& pos)
+    {
+        BodyEl& b = AddBodyToMeshAtPosition(cmg.UpdScratch(), mesh, pos);
+        cmg.Commit("added " + b.GetLabel());
+        return true;
+    }
+
+    bool TryAssignMeshAttachment(CommittableModelGraph& cmg, UID meshID, UID newAttachment)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        MeshEl* el = mg.TryUpdElByID<MeshEl>(meshID);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        // can only attach to itself (ground), ground, or a body that exists in the model graph
+        if (!(newAttachment == meshID || newAttachment == g_GroundID || mg.TryUpdElByID<BodyEl>(newAttachment)))
+        {
+            return false;
+        }
+
+        if (newAttachment == meshID || newAttachment == g_GroundID)
+        {
+            el->Attachment = g_GroundID;
+            cmg.Commit("assigned mesh to ground");
+        }
+        else
+        {
+            el->Attachment = DowncastID<BodyEl>(newAttachment);
+            cmg.Commit("assigned mesh to body");
+        }
+
+        return true;
+    }
+
+    bool TryCreateJoint(CommittableModelGraph& cmg, UID childID, UID parentID)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        size_t freejointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
+        glm::vec3 parentPos = GetPosition(mg, parentID);
+        glm::vec3 childPos = GetPosition(mg, childID);
+        glm::vec3 midPoint = VecMidpoint(parentPos, childPos);
+
+        JointEl& jointEl = mg.AddEl<JointEl>(freejointIdx, "", parentID, DowncastID<BodyEl>(childID), Transform::atPosition(midPoint));
+        SelectOnly(mg, jointEl);
+
+        cmg.Commit("added " + jointEl.GetLabel());
+
+        return true;
+    }
+
+    bool TryOrientElementAxisAlongTwoPoints(CommittableModelGraph& cmg, UID id, int axis, glm::vec3 p1, glm::vec3 p2)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        glm::vec3 dir = glm::normalize(p2 - p1);
+        Transform t = el->GetXform();
+
+        el->SetXform(PointAxisAlong(t, axis, dir));
+        cmg.Commit("reoriented " + el->GetLabel());
+
+        return true;
+    }
+
+    bool TryTranslateElementBetweenTwoPoints(CommittableModelGraph& cmg, UID id, glm::vec3 const& a, glm::vec3 const& b)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        el->SetPos(VecMidpoint(a, b));
+        cmg.Commit("translated " + el->GetLabel());
+
+        return true;
+    }
+
+    bool TryTranslateBetweenTwoElements(CommittableModelGraph& cmg, UID id, UID a, UID b)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        SceneEl const* aEl = mg.TryGetElByID(a);
+
+        if (!aEl)
+        {
+            return false;
+        }
+
+        SceneEl const* bEl = mg.TryGetElByID(b);
+
+        if (!bEl)
+        {
+            return false;
+        }
+
+        el->SetPos(VecMidpoint(aEl->GetPos(), bEl->GetPos()));
+        cmg.Commit("translated " + el->GetLabel());
+
+        return true;
+    }
+
+    bool TryTranslateElementToAnotherElement(CommittableModelGraph& cmg, UID id, UID other)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        SceneEl* otherEl = mg.TryUpdElByID(other);
+
+        if (!otherEl)
+        {
+            return false;
+        }
+
+        el->SetPos(otherEl->GetPos());
+        cmg.Commit("moved " + el->GetLabel());
+
+        return true;
+    }
+
+    bool TryReassignCrossref(CommittableModelGraph& cmg, UID id, int crossref, UID other)
+    {
+        if (other == id)
+        {
+            return false;
+        }
+
+        ModelGraph& mg = cmg.UpdScratch();
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        if (!mg.ContainsEl(other))
+        {
+            return false;
+        }
+
+        el->SetCrossReferenceConnecteeID(crossref, other);
+        cmg.Commit("reassigned " + el->GetLabel() + " " + el->GetCrossReferenceLabel(crossref));
+
+        return true;
+    }
+
+    bool DeleteSelected(CommittableModelGraph& cmg)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        if (!HasSelection(mg))
+        {
+            return false;
+        }
+
+        DeleteSelected(cmg.UpdScratch());
+        cmg.Commit("deleted selection");
+
+        return true;
+    }
+
+    bool DeleteEl(CommittableModelGraph& cmg, UID id)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        std::string label = el->GetLabel();
+
+        if (!mg.DeleteEl(*el))
+        {
+            return false;
+        }
+
+        cmg.Commit("deleted " + label);
+        return true;
+    }
+
+    void ResetModelGraph(CommittableModelGraph& cmg)
+    {
+        cmg.UpdScratch() = ModelGraph{};
+        cmg.Commit("created new scene");
+    }
+
+    void RotateAxis180Degrees(CommittableModelGraph& cmg, SceneEl& el, int axis)
+    {
+        el.SetXform(RotateAxis(el.GetXform(), axis, fpi));
+        cmg.Commit("reoriented " + el.GetLabel());
+    }
 }
 
 // OpenSim::Model generation support
@@ -2650,63 +2990,6 @@ namespace
         else
         {
             return childFrame.getName() + "_to_" + parentFrame.getName();
-        }
-    }
-
-    // returns true if the given element (ID) is in the "selection group" of
-    bool IsInSelectionGroupOf(ModelGraph const& mg, UID parent, UID id)
-    {
-        if (id == g_EmptyID || parent == g_EmptyID)
-        {
-            return false;
-        }
-
-        if (id == parent)
-        {
-            return true;
-        }
-
-        BodyEl const* bodyEl = nullptr;
-
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(parent))
-        {
-            bodyEl = be;
-        }
-        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(parent))
-        {
-            bodyEl = mg.TryGetElByID<BodyEl>(me->Attachment);
-        }
-
-        if (!bodyEl)
-        {
-            return false;  // parent isn't attached to any body (or isn't a body)
-        }
-
-        if (BodyEl const* be = mg.TryGetElByID<BodyEl>(id))
-        {
-            return be->ID == bodyEl->ID;
-        }
-        else if (MeshEl const* me = mg.TryGetElByID<MeshEl>(id))
-        {
-            return me->Attachment == bodyEl->ID;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    template<typename Consumer>
-    void ForEachIDInSelectionGroup(ModelGraph const& mg, UID parent, Consumer f)
-    {
-        for (SceneEl const& e : mg.iter())
-        {
-            UID id = e.GetID();
-
-            if (IsInSelectionGroupOf(mg, parent, id))
-            {
-                f(id);
-            }
         }
     }
 
@@ -3078,22 +3361,6 @@ namespace
             m_ModelGraphSnapshots.Redo();
         }
 
-        void ResetModelGraph()
-        {
-            // instead of completely wiping the history, just wipe the current
-            // state and commit that at the end of the history
-            //
-            // this way, users can still hit "undo" if they accidently create a
-            // new scene and want to go back
-            //
-            // TODO: potential memory leak from doing this (because the user doesn't
-            // have an obvious way of wiping the history) should be fixed by implementing
-            // a cap on the number of commits that may be made
-
-            m_ModelGraphSnapshots.UpdScratch() = ModelGraph{};
-            m_ModelGraphSnapshots.Commit("created new scene");
-        }
-
         std::unordered_set<UID> const& GetCurrentSelection() const
         {
             return GetModelGraph().GetSelected();
@@ -3127,17 +3394,6 @@ namespace
         bool IsSelected(UID id) const
         {
             return GetModelGraph().IsSelected(id);
-        }
-
-        void DeleteSelected()
-        {
-            if (!HasSelection())
-            {
-                return;
-            }
-
-            ::DeleteSelected(UpdModelGraph());
-            CommitCurrentModelGraph("deleted selection");
         }
 
 
@@ -4888,49 +5144,7 @@ namespace
                 return;
             }
 
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            ForEachIDInSelectionGroup(mg, m_MaybeHover.ID, [&mg](UID el)
-            {
-                mg.Select(el);
-            });
-        }
-
-        // adds a body to a mesh at a given position
-        void AddBodyToMeshAtPosition(MeshEl const& mesh, glm::vec3 const& pos)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
-            SelectOnly(mg, b.ID);
-
-            if (!IsAssignedToBody(mg, mesh))
-            {
-                mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
-            }
-
-            m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
-        }
-
-        // returns recommended rim intensity for the provided scene element
-        float RimIntensity(UID id) const
-        {
-            if (id == g_EmptyID)
-            {
-                return 0.0f;
-            }
-            else if (m_Shared->IsSelected(id))
-            {
-                return 1.0f;
-            }
-            else if (IsInSelectionGroupOf(m_Shared->GetModelGraph(), m_MaybeHover.ID, id))
-            {
-                return 0.6f;
-            }
-            else
-            {
-                return 0.0f;
-            }
+            SelectAnythingGroupedWith(m_Shared->UpdModelGraph(), m_MaybeHover.ID);
         }
 
         // add a body element to whatever's currently hovered at the hover (raycast) position
@@ -4942,6 +5156,24 @@ namespace
             }
 
             m_Shared->AddBody(m_MaybeHover.Pos);
+        }
+
+        // try transitioning the shown UI layer to one where the user is assigning a mesh
+        void TryTransitionToAssigningHoveredMeshNextFrame()
+        {
+            if (!m_MaybeHover)
+            {
+                return;
+            }
+
+            MeshEl* maybeMesh = m_Shared->UpdModelGraph().TryUpdElByID<MeshEl>(m_MaybeHover.ID);
+
+            if (!maybeMesh)
+            {
+                return;  // not hovering a mesh
+            }
+
+            TransitionToAssigningMeshNextFrame(*maybeMesh);
         }
 
         //
@@ -4964,39 +5196,11 @@ namespace
             opts.Header = "choose mesh attachment point (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, meshID = meshEl.ID](UID choice)
             {
-                if (choice == meshID || choice == g_GroundID)
-                {
-                    shared->UpdModelGraph().UpdElByID<MeshEl>(meshID).Attachment = g_GroundID;
-                    shared->CommitCurrentModelGraph("assigned mesh to ground");
-                }
-                else if (shared->GetModelGraph().ContainsEl<BodyEl>(choice))
-                {
-                    shared->UpdModelGraph().UpdElByID<MeshEl>(meshID).Attachment = DowncastID<BodyEl>(choice);
-                    shared->CommitCurrentModelGraph("assigned mesh to body");
-                }
-                return true;
+                return TryAssignMeshAttachment(shared->UpdCommittableModelGraph(), meshID, choice);
             };
 
             // request a state transition
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
-        }
-
-        // try transitioning the shown UI layer to one where the user is assigning a mesh
-        void TryTransitionToAssigningHoveredMeshNextFrame()
-        {
-            if (!m_MaybeHover)
-            {
-                return;
-            }
-
-            MeshEl* maybeMesh = m_Shared->UpdModelGraph().TryUpdElByID<MeshEl>(m_MaybeHover.ID);
-
-            if (!maybeMesh)
-            {
-                return;  // not hovering a mesh
-            }
-
-            TransitionToAssigningMeshNextFrame(*maybeMesh);
         }
 
         // transition the shown UI layer to one where the user is choosing a joint parent
@@ -5012,18 +5216,7 @@ namespace
             opts.IsAttachingTowardEl = false;  // away from the body
             opts.OnUserChoice = [shared = m_Shared, childID = child.ID](UID parentID)
             {
-                ModelGraph& mg = shared->UpdModelGraph();
-
-                size_t freejointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
-                glm::vec3 parentPos = GetPosition(mg, parentID);
-                glm::vec3 childPos = GetPosition(mg, childID);
-                glm::vec3 midPoint = VecMidpoint(parentPos, childPos);
-
-                JointEl& jointEl = mg.AddEl<JointEl>(freejointIdx, "", parentID, childID, Transform::atPosition(midPoint));
-                SelectOnly(mg, jointEl);
-                shared->CommitCurrentModelGraph(std::string{"added "} + jointEl.GetLabel());
-
-                return true;
+                return TryCreateJoint(shared->UpdCommittableModelGraph(), childID, parentID);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5041,52 +5234,20 @@ namespace
             opts.Header = "choose what to point towards (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), axis](UID userChoice)
             {
-                ModelGraph& mg = shared->UpdModelGraph();
-
-                glm::vec3 choicePos = GetPosition(mg, userChoice);
-                Transform sourceXform = GetPosition(mg, id);
-
-                mg.UpdElByID(id).SetXform(PointAxisTowards(sourceXform, axis, choicePos));
-
-                shared->CommitCurrentModelGraph("reoriented " + GetLabel(mg, id));
-
-                return true;
+                return PointAxisTowards(shared->UpdCommittableModelGraph(), id, axis, userChoice);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
         // transition the shown UI layer to one where the user is choosing two mesh points that
         // the element should be oriented along
-        void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el)
+        void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
         {
             Select2MeshPointsOptions opts;
-            opts.OnTwoPointsChosen = [shared = m_Shared, id = el.GetID()](glm::vec3 a, glm::vec3 b)
+            opts.OnTwoPointsChosen = [shared = m_Shared, id = el.GetID(), axis](glm::vec3 a, glm::vec3 b)
             {
-
-                ModelGraph& mg = shared->UpdModelGraph();
-                SceneEl& el = mg.UpdElByID(id);
-
-                glm::vec3 aTobDir = glm::normalize(a-b);
-                glm::mat4 currentXform = toMat4(el.GetXform());
-                glm::vec3 currentZ = currentXform * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f};
-
-                float cosAng = glm::dot(aTobDir, currentZ);
-                if (std::fabs(cosAng) < 0.999f)
-                {
-                    glm::vec3 axis = glm::cross(aTobDir, currentZ);
-                    glm::mat4 xform = glm::rotate(glm::mat4{1.0f}, glm::acos(cosAng), axis);
-                    glm::mat4 overallXform = xform * currentXform;
-
-                    Transform newXform = el.GetXform().withRotation(glm::quat_cast(overallXform));
-
-                    mg.UpdElByID(id).SetXform(newXform);
-
-                    shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
-                }
-
-                return true;
+                return TryOrientElementAxisAlongTwoPoints(shared->UpdCommittableModelGraph(), id, axis, a, b);
             };
-
             m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
         }
 
@@ -5097,16 +5258,8 @@ namespace
             Select2MeshPointsOptions opts;
             opts.OnTwoPointsChosen = [shared = m_Shared, id = el.GetID()](glm::vec3 a, glm::vec3 b)
             {
-                ModelGraph& mg = shared->UpdModelGraph();
-
-                SceneEl& el = mg.UpdElByID(id);
-                el.SetPos(VecMidpoint(a, b));
-
-                shared->CommitCurrentModelGraph("translated " + el.GetLabel());
-
-                return true;
+                return TryTranslateElementBetweenTwoPoints(shared->UpdCommittableModelGraph(), id, a, b);
             };
-
             m_Maybe3DViewerModal = std::make_shared<Select2MeshPointsLayer>(*this, m_Shared, opts);
         }
 
@@ -5123,13 +5276,7 @@ namespace
             opts.Header = "choose where to place it (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](UID userChoice)
             {
-                ModelGraph& mg = shared->UpdModelGraph();
-                SceneEl& el = mg.UpdElByID(id);
-
-                el.SetPos(GetPosition(mg, userChoice));
-
-                shared->CommitCurrentModelGraph("moved " + el.GetLabel());
-                return true;
+                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, userChoice);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5159,57 +5306,39 @@ namespace
             opts.Header = "choose what to attach to";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](UID userChoice)
             {
-                if (userChoice == id)
-                {
-                    return false;
-                }
-
-                ModelGraph& mg = shared->UpdModelGraph();
-                SceneEl* el = mg.TryUpdElByID(id);
-
-                if (!el)
-                {
-                    return true;  // accept user choice but can't actually process it
-                }
-
-                el->SetCrossReferenceConnecteeID(crossrefIdx, userChoice);
-                shared->CommitCurrentModelGraph("reassigned connection");
-                return true;
+                return TryReassignCrossref(shared->UpdCommittableModelGraph(), id, crossrefIdx, userChoice);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
-
-        // delete currently-selected scene elements
-        void DeleteSelected()
+        // ensure any stale references into the modelgrah are cleaned up
+        void GarbageCollectStaleRefs()
         {
-            if (Contains(m_Shared->GetModelGraph().GetSelected(), m_MaybeHover.ID))
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            if (m_MaybeHover && !mg.ContainsEl(m_MaybeHover.ID))
             {
                 m_MaybeHover.reset();
             }
 
-            if (Contains(m_Shared->GetModelGraph().GetSelected(), m_MaybeOpenedContextMenu.ID))
+            if (m_MaybeOpenedContextMenu && !mg.ContainsEl(m_MaybeOpenedContextMenu.ID))
             {
                 m_MaybeOpenedContextMenu.reset();
             }
+        }
 
-            m_Shared->DeleteSelected();
+        // delete currently-selected scene elements
+        void DeleteSelected()
+        {
+            ::DeleteSelected(m_Shared->UpdCommittableModelGraph());
+            GarbageCollectStaleRefs();
         }
 
         // delete a particular scene element
         void DeleteEl(UID elID)
         {
-            if (m_MaybeHover.ID == elID)
-            {
-                m_MaybeHover.reset();
-            }
-
-            if (m_MaybeOpenedContextMenu.ID == elID)
-            {
-                m_MaybeOpenedContextMenu.reset();
-            }
-
-            m_Shared->UpdModelGraph().DeleteElByID(elID);
+            ::DeleteEl(m_Shared->UpdCommittableModelGraph(), elID);
+            GarbageCollectStaleRefs();
         }
 
         // update this scene from the current keyboard state, as saved by ImGui
@@ -5226,7 +5355,7 @@ namespace
             if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N))
             {
                 // Ctrl+N: new scene
-                m_Shared->ResetModelGraph();
+                ResetModelGraph(m_Shared->UpdCommittableModelGraph());
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
@@ -5393,194 +5522,6 @@ namespace
             }
         }
 
-        void DrawPointXAxisTowardsMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Point X towards"))
-            {
-                TransitionToChoosingWhichElementToPointAxisTowards(el, 0);
-            }
-        }
-
-        void DrawPointYAxisTowardsMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Point Y towards"))
-            {
-                TransitionToChoosingWhichElementToPointAxisTowards(el, 1);
-            }
-        }
-
-        void DrawPointZAxisTowardsMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Point Z towards"))
-            {
-                TransitionToChoosingWhichElementToPointAxisTowards(el, 2);
-            }
-        }
-
-        void DrawResetOrientationMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Reset"))
-            {
-                el.SetXform(Transform::atPosition(el.GetPos()));
-                m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
-            }
-        }
-
-        void DrawOrientAlongToMeshPointsMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Orient Z along two mesh points"))
-            {
-                TransitionToOrientingElementAlongTwoMeshPoints(el);
-            }
-        }
-
-        void RotateAxis180Degrees(SceneEl& el, int axis)
-        {
-            el.SetXform(RotateAxis(el.GetXform(), axis, fpi));
-            m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
-        }
-
-        void DrawRotateX180MenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Rotate X 180 degrees"))
-            {
-                RotateAxis180Degrees(el, 0);
-            }
-        }
-
-        void DrawRotateY180MenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Rotate Y 180 degrees"))
-            {
-                RotateAxis180Degrees(el, 1);
-            }
-        }
-
-        void DrawRotateZ180MenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Rotate Z 180 degrees"))
-            {
-                RotateAxis180Degrees(el, 2);
-            }
-        }
-
-        void DrawTranslateBetweenTwoMeshPointsMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("Between two mesh points"))
-            {
-                TransitionToTranslatingElementAlongTwoMeshPoints(el);
-            }
-        }
-
-        void DrawTranslateToAnotherObjectCenterMenuItem(SceneEl& el)
-        {
-            if (ImGui::MenuItem("To another object's center"))
-            {
-                TransitionToTranslatingElementToAnotherElementsCenter(el);
-            }
-        }
-
-        void PointXTowards(SceneEl& el, UID otherID)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            el.SetXform(PointAxisTowards(el.GetXform(), 0, GetPosition(mg, otherID)));
-            m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
-        }
-
-        void UseOrientationOf(SceneEl& el, UID otherID)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            el.SetXform(el.GetXform().withRotation(GetRotation(mg, otherID)));
-            m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
-        }
-
-        void UseTranslationOf(SceneEl& el, UID otherID)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            el.SetXform(el.GetXform().withPosition(GetPosition(mg, otherID)));
-            m_Shared->CommitCurrentModelGraph("translated " + el.GetLabel());
-        }
-
-        void TranslateToMidpoint(SceneEl& el, UID a, UID b)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            glm::vec3 p1 = GetPosition(mg, a);
-            glm::vec3 p2 = GetPosition(mg, b);
-            glm::vec3 midpoint = VecMidpoint(p1, p2);
-
-            el.SetPos(midpoint);
-            m_Shared->CommitCurrentModelGraph("translated " + el.GetLabel());
-        }
-
-        void DrawReorientMenu(JointEl& el)
-        {
-            if (ImGui::BeginMenu(ICON_FA_REDO " reorient"))
-            {
-                if (ImGui::MenuItem("Point X towards parent"))
-                {
-                    PointXTowards(el, el.Parent);
-                }
-
-                if (ImGui::MenuItem("Point X towards child"))
-                {
-                    PointXTowards(el, el.Child);
-                }
-
-                if (ImGui::MenuItem("Use parent's orientation"))
-                {
-                    UseOrientationOf(el, el.Parent);
-                }
-
-                if (ImGui::MenuItem("Use child's orientation"))
-                {
-                    UseOrientationOf(el, el.Child);
-                }
-
-                DrawOrientAlongToMeshPointsMenuItem(el);
-
-                DrawRotateX180MenuItem(el);
-                DrawRotateY180MenuItem(el);
-                DrawRotateZ180MenuItem(el);
-                DrawPointXAxisTowardsMenuItem(el);
-                DrawPointYAxisTowardsMenuItem(el);
-                DrawPointZAxisTowardsMenuItem(el);
-
-                DrawResetOrientationMenuItem(el);
-
-                ImGui::EndMenu();
-            }
-        }
-
-        void DrawTranslateMenu(JointEl& el)
-        {
-            if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Translate"))
-            {
-                if (ImGui::MenuItem("To midpoint"))
-                {
-                    TranslateToMidpoint(el, el.Parent, el.Child);
-                }
-
-                if (ImGui::MenuItem("To parent"))
-                {
-                    UseTranslationOf(el, el.Parent);
-                }
-
-                if (ImGui::MenuItem("To child"))
-                {
-                    UseTranslationOf(el, el.Child);
-                }
-
-                DrawTranslateBetweenTwoMeshPointsMenuItem(el);
-                DrawTranslateToAnotherObjectCenterMenuItem(el);
-
-                ImGui::EndMenu();
-            }
-        }
-
         void DrawNothingContextMenuContentHeader()
         {
             ImGui::Text(ICON_FA_BOLT " Actions");
@@ -5679,26 +5620,7 @@ namespace
             }
         }
 
-        void DrawPropEditors(BodyEl const& bodyEl)
-        {
-            DrawSceneElPropEditors(bodyEl);
-
-            // mass editor
-            {
-                float curMass = static_cast<float>(bodyEl.Mass);
-                if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT))
-                {
-                    m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.ID).Mass = static_cast<double>(curMass);
-                }
-                if (ImGui::IsItemDeactivatedAfterEdit())
-                {
-                    m_Shared->CommitCurrentModelGraph("changed body mass");
-                }
-                ImGui::SameLine();
-                DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
-            }
-        }
-
+        // draw content of "Add" menu for some scene element
         void DrawAddOtherToSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
         {
             int imguiID = 0;
@@ -5865,16 +5787,15 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_TRASH " Delete"))
                 {
-                    std::string label = el.GetLabel();
-                    DeleteEl(el.GetID());
-                    m_Shared->CommitCurrentModelGraph("deleted " + label);
-                    m_MaybeOpenedContextMenu.reset();
+                    ::DeleteEl(m_Shared->UpdCommittableModelGraph(), el.GetID());
+                    GarbageCollectStaleRefs();
                     ImGui::CloseCurrentPopup();
                 }
                 DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
             }
         }
 
+        // draw the "Translate" menu for any generic `SceneEl`
         void DrawTranslateMenu(SceneEl& el)
         {
             if (!CanChangePosition(el))
@@ -5882,16 +5803,40 @@ namespace
                 return;  // can't change its position
             }
 
-            if (!ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Translate")) {
+            if (!ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Translate"))
+            {
                 return;  // top-level menu isn't open
             }
 
-            DrawTranslateToAnotherObjectCenterMenuItem(el);
-            DrawTranslateBetweenTwoMeshPointsMenuItem(el);
+            for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+            {
+                std::string label = "To " + el.GetCrossReferenceLabel(i);
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    TryTranslateElementToAnotherElement(m_Shared->UpdCommittableModelGraph(), el.GetID(), el.GetCrossReferenceConnecteeID(i));
+                }
+            }
+
+            if (el.GetNumCrossReferences() == 2)
+            {
+                std::string label = "Between " + el.GetCrossReferenceLabel(0) + " and " + el.GetCrossReferenceLabel(1);
+                if (ImGui::MenuItem(label.c_str()))
+                {
+                    UID a = el.GetCrossReferenceConnecteeID(0);
+                    UID b = el.GetCrossReferenceConnecteeID(1);
+                    TryTranslateBetweenTwoElements(m_Shared->UpdCommittableModelGraph(), el.GetID(), a, b);
+                }
+            }
+
+            if (ImGui::MenuItem("Between two mesh points"))
+            {
+                TransitionToTranslatingElementAlongTwoMeshPoints(el);
+            }
 
             ImGui::EndMenu();
         }
 
+        // draw the "Reorient" menu for any generic `SceneEl`
         void DrawReorientMenu(SceneEl& el)
         {
             if (!CanChangeRotation(el))
@@ -5905,23 +5850,80 @@ namespace
             }
             DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
 
-            for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
-                ImGui::Text("%s", el.GetCrossReferenceLabel(i).c_str());
+                auto DrawMenuContent = [&](int axis)
+                {
+                    for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+                    {
+                        std::string label = "Towards " + el.GetCrossReferenceLabel(i);
+
+                        if (ImGui::MenuItem(label.c_str()))
+                        {
+                            PointAxisTowards(m_Shared->UpdCommittableModelGraph(), el.GetID(), axis, el.GetCrossReferenceConnecteeID(i));
+                        }
+                    }
+
+                    if (ImGui::MenuItem("Towards (select something)"))
+                    {
+                        TransitionToChoosingWhichElementToPointAxisTowards(el, axis);
+                    }
+
+                    if (ImGui::MenuItem("180 degrees"))
+                    {
+                        RotateAxis180Degrees(m_Shared->UpdCommittableModelGraph(), el, axis);
+                    }
+
+                    if (ImGui::MenuItem("Along two mesh points"))
+                    {
+                        TransitionToOrientingElementAlongTwoMeshPoints(el, axis);
+                    }
+                };
+
+                if (ImGui::BeginMenu("x"))
+                {
+                    DrawMenuContent(0);
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("y"))
+                {
+                    DrawMenuContent(1);
+                    ImGui::EndMenu();
+                }
+
+                if (ImGui::BeginMenu("z"))
+                {
+                    DrawMenuContent(2);
+                    ImGui::EndMenu();
+                }
             }
 
-            DrawRotateX180MenuItem(el);
-            DrawRotateY180MenuItem(el);
-            DrawRotateZ180MenuItem(el);
-            DrawPointXAxisTowardsMenuItem(el);
-            DrawPointYAxisTowardsMenuItem(el);
-            DrawPointZAxisTowardsMenuItem(el);
-            DrawOrientAlongToMeshPointsMenuItem(el);
-            DrawResetOrientationMenuItem(el);
+            if (ImGui::MenuItem("reset"))
+            {
+                el.SetXform(Transform::atPosition(el.GetPos()));
+                m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
+            }
 
             ImGui::EndMenu();
         }
 
+        // draw the "Mass" editor for a `BodyEl`
+        void DrawMassEditor(BodyEl const& bodyEl)
+        {
+            float curMass = static_cast<float>(bodyEl.Mass);
+            if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT))
+            {
+                m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.ID).Mass = static_cast<double>(curMass);
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+                m_Shared->CommitCurrentModelGraph("changed body mass");
+            }
+            ImGui::SameLine();
+            DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
+        }
+
+        // draw the "Joint Type" editor for a `JointEl`
         void DrawJointTypeEditor(JointEl const& jointEl)
         {
             int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
@@ -5931,9 +5933,11 @@ namespace
                 m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.ID).JointTypeIndex = static_cast<size_t>(currentIdx);
                 m_Shared->CommitCurrentModelGraph("changed joint type");
             }
+            ImGui::SameLine();
             DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
         }
 
+        // draw the "Reassign Connection" menu, which lets users change an element's cross reference
         void DrawReassignCrossrefMenu(SceneEl& el)
         {
             int nRefs = el.GetNumCrossReferences();
@@ -5985,7 +5989,8 @@ namespace
 
             SpacerDummy();
 
-            DrawPropEditors(el);
+            DrawSceneElPropEditors(el);
+            DrawMassEditor(el);
 
             SpacerDummy();
 
@@ -6047,9 +6052,10 @@ namespace
             DrawSceneElActions(el, clickPos);
         }
 
+        // draw context menu content for some scene element
         void DrawContextMenuContent(SceneEl& el, glm::vec3 const& clickPos)
         {
-            // helper class for visiting each scene element type
+            // helper class for visiting each type of scene element
             class Visitor : public SceneElVisitor
             {
             public:
@@ -6094,6 +6100,7 @@ namespace
             el.Accept(visitor);
         }
 
+        // draw a context menu for the current state (if applicable)
         void DrawContextMenuContent()
         {
             if (!m_MaybeOpenedContextMenu)
@@ -6121,6 +6128,7 @@ namespace
             }
         }
 
+        // draw the content of the (undo/redo) "History" panel
         void DrawHistoryPanelContent()
         {
             CommittableModelGraph& storage = m_Shared->UpdCommittableModelGraph();
@@ -6764,7 +6772,7 @@ namespace
             // assign rim highlights based on hover
             for (DrawableThing& dt : sceneEls)
             {
-                dt.rimColor = RimIntensity(dt.id);
+                dt.rimColor = CalcRimIntensity(m_Shared->GetModelGraph(), dt.id, m_MaybeHover.ID);
             }
 
             // draw 3D scene (effectively, as an ImGui::Image)
@@ -6799,7 +6807,7 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_FILE " New Scene", "Ctrl+N"))
                 {
-                    m_Shared->ResetModelGraph();
+                    ResetModelGraph(m_Shared->UpdCommittableModelGraph());
                 }
 
                 if (ImGui::MenuItem(ICON_FA_ARROW_LEFT " Back to experiments screen"))
