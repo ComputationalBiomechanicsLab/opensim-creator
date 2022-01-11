@@ -785,6 +785,10 @@ namespace
         {
             throw std::runtime_error{"cannot get cross reference ID: no method implemented"};
         }
+        virtual void SetCrossReferenceConnecteeID(int, UID)
+        {
+            throw std::runtime_error{"cannot set cross reference ID: no method implemented"};
+        }
         virtual std::string const& GetCrossReferenceLabel(int) const
         {
             throw std::runtime_error{"cannot get cross reference label: no method implemented"};
@@ -1078,6 +1082,17 @@ namespace
             switch (i) {
             case 0:
                 return Attachment;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
+        void SetCrossReferenceConnecteeID(int i, UID id) override
+        {
+            switch (i) {
+            case 0:
+                Attachment = DowncastID<BodyEl>(id);
+                break;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
             }
@@ -1377,6 +1392,20 @@ namespace
             }
         }
 
+        void SetCrossReferenceConnecteeID(int i, UID id) override
+        {
+            switch (i) {
+            case 0:
+                Parent = id;
+                break;
+            case 1:
+                Child = DowncastID<BodyEl>(id);
+                break;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
         std::string const& GetCrossReferenceLabel(int i) const override
         {
             switch (i) {
@@ -1547,6 +1576,17 @@ namespace
             }
         }
 
+        void SetCrossReferenceConnecteeID(int i, UID id) override
+        {
+            switch (i) {
+            case 0:
+                Attachment = DowncastID<BodyEl>(id);
+                break;
+            default:
+                throw std::runtime_error{"invalid index accessed for cross reference"};
+            }
+        }
+
         std::string const& GetCrossReferenceLabel(int i) const override
         {
             switch (i) {
@@ -1631,6 +1671,53 @@ namespace
         Visitor v;
         e.Accept(v);
         return v.m_Result;
+    }
+
+    // returns `true` if a `StationEl` can be attached to the element
+    bool CanAttachStationTo(SceneEl const& e)
+    {
+        struct Visitor final : public ConstSceneElVisitor
+        {
+            bool m_Result = false;
+
+            void operator()(GroundEl const&) override { m_Result = true; }
+            void operator()(MeshEl const&) override { m_Result = true; }
+            void operator()(BodyEl const&) override { m_Result = true; }
+            void operator()(JointEl const&) override { m_Result = false; }
+            void operator()(StationEl const&) override { m_Result = false; }
+        };
+
+        Visitor v;
+        e.Accept(v);
+        return v.m_Result;
+    }
+
+    // returns the ID of the thing the station should attach to when trying to
+    // attach to something in the scene
+    UIDT<BodyEl> StationAttachmentParent(SceneEl const& el)
+    {
+        struct Visitor final : public ConstSceneElVisitor
+        {
+            UIDT<BodyEl> m_Result = g_GroundID;
+
+            void operator()(GroundEl const&) { m_Result = g_GroundID; }
+            void operator()(MeshEl const& el) { m_Result = el.Attachment; }
+            void operator()(BodyEl const& el) { m_Result = el.ID; }
+            void operator()(JointEl const&) { m_Result = g_GroundID; }  // can't be attached
+            void operator()(StationEl const&) { m_Result = g_GroundID; }  // can't be attached
+        };
+
+        Visitor v;
+        el.Accept(v);
+        return v.m_Result;
+    }
+
+    // returns true if the given SceneEl is of a particular scene el type
+    template<typename T>
+    bool Is(SceneEl const& el)
+    {
+        static_assert(std::is_base_of_v<SceneEl, T>);
+        return dynamic_cast<T const*>(&el);
     }
 
     std::vector<SceneElClass const*> GenerateSceneElClassList()
@@ -2229,7 +2316,7 @@ namespace
             }
             void operator()(StationEl const& s) override
             {
-                m_SS << '(' << s.GetClass().GetNameSV() << ')';
+                m_SS << '(' << s.GetClass().GetNameSV() << ", attached to " << GetLabel(m_Mg, s.Attachment) << ')';
             }
         };
 
@@ -2815,8 +2902,8 @@ namespace
         SimTK::Vec3 locationInFrame = SimTKVec3FromV3(pos);
 
         auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInFrame);
-
-        model.addComponent(station.release());
+        station->setName(stationEl.GetLabel());
+        res.physicalFrame->addComponent(station.release());
     }
 
     // if there are no issues, returns a new OpenSim::Model created from the Modelgraph
@@ -4827,7 +4914,6 @@ namespace
             m_Shared->AddBody(m_MaybeHover.Pos);
         }
 
-
         //
         // TRANSITIONS
         //
@@ -4835,7 +4921,7 @@ namespace
         //
 
         // transition the shown UI layer to one where the user is assigning a mesh
-        void TransitionToAssigningMeshNextFrame(MeshEl const& meshEl)
+        void TransitionToAssigningMeshNextFrame(MeshEl& meshEl)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
@@ -4873,7 +4959,7 @@ namespace
                 return;
             }
 
-            MeshEl const* maybeMesh = m_Shared->UpdModelGraph().TryGetElByID<MeshEl>(m_MaybeHover.ID);
+            MeshEl* maybeMesh = m_Shared->UpdModelGraph().TryUpdElByID<MeshEl>(m_MaybeHover.ID);
 
             if (!maybeMesh)
             {
@@ -4884,7 +4970,7 @@ namespace
         }
 
         // transition the shown UI layer to one where the user is choosing a joint parent
-        void TransitionToChoosingJointParent(UIDT<BodyEl> childID)
+        void TransitionToChoosingJointParent(BodyEl const& child)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
@@ -4892,9 +4978,9 @@ namespace
             opts.CanChooseJoints = false;
             opts.CanChooseMeshes = false;
             opts.Header = "choose joint parent (ESC to cancel)";
-            opts.MaybeElAttachingTo = childID;
+            opts.MaybeElAttachingTo = child.GetID();
             opts.IsAttachingTowardEl = false;  // away from the body
-            opts.OnUserChoice = [shared = m_Shared, childID](UID parentID)
+            opts.OnUserChoice = [shared = m_Shared, childID = child.ID](UID parentID)
             {
                 ModelGraph& mg = shared->UpdModelGraph();
 
@@ -4914,16 +5000,16 @@ namespace
 
         // transition the shown UI layer to one where the user is choosing which element in the scene to point
         // an element's axis towards
-        void TransitionToChoosingWhichElementToPointAxisTowards(UID id, int axis)
+        void TransitionToChoosingWhichElementToPointAxisTowards(SceneEl& el, int axis)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
-            opts.MaybeElAttachingTo = id;
+            opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose what to point towards (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, id, axis](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), axis](UID userChoice)
             {
                 ModelGraph& mg = shared->UpdModelGraph();
 
@@ -4941,10 +5027,10 @@ namespace
 
         // transition the shown UI layer to one where the user is choosing two mesh points that
         // the element should be oriented along
-        void TransitionToOrientingElementAlongTwoMeshPoints(UID id)
+        void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el)
         {
             Select2MeshPointsOptions opts;
-            opts.OnTwoPointsChosen = [shared = m_Shared, id](glm::vec3 a, glm::vec3 b)
+            opts.OnTwoPointsChosen = [shared = m_Shared, id = el.GetID()](glm::vec3 a, glm::vec3 b)
             {
 
                 ModelGraph& mg = shared->UpdModelGraph();
@@ -4976,10 +5062,10 @@ namespace
 
         // transition the shown UI layer to one where the user is choosing two mesh points that
         // the element sould be translated to the midpoint of
-        void TransitionToTranslatingElementAlongTwoMeshPoints(UID id)
+        void TransitionToTranslatingElementAlongTwoMeshPoints(SceneEl& el)
         {
             Select2MeshPointsOptions opts;
-            opts.OnTwoPointsChosen = [shared = m_Shared, id](glm::vec3 a, glm::vec3 b)
+            opts.OnTwoPointsChosen = [shared = m_Shared, id = el.GetID()](glm::vec3 a, glm::vec3 b)
             {
                 ModelGraph& mg = shared->UpdModelGraph();
 
@@ -4996,16 +5082,16 @@ namespace
 
         // transition the shown UI layer to one where the user is choosing another element that
         // the element should be translated to the midpoint of
-        void TransitionToTranslatingElementToAnotherElementsCenter(UID id)
+        void TransitionToTranslatingElementToAnotherElementsCenter(SceneEl& el)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = true;
-            opts.MaybeElAttachingTo = id;
+            opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose where to place it (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, id](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](UID userChoice)
             {
                 ModelGraph& mg = shared->UpdModelGraph();
                 SceneEl& el = mg.UpdElByID(id);
@@ -5013,6 +5099,51 @@ namespace
                 el.SetPos(GetPosition(mg, userChoice));
 
                 shared->CommitCurrentModelGraph("moved " + el.GetLabel());
+                return true;
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
+        void TransitionToReassigningCrossRef(SceneEl& el, int crossrefIdx)
+        {
+            int nRefs = el.GetNumCrossReferences();
+
+            if (crossrefIdx < 0 || crossrefIdx >= nRefs)
+            {
+                return;  // invalid index?
+            }
+
+            SceneEl const* old = m_Shared->GetModelGraph().TryGetElByID(el.GetCrossReferenceConnecteeID(crossrefIdx));
+
+            if (!old)
+            {
+                return;  // old el doesn't exist?
+            }
+
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = Is<BodyEl>(*old) || Is<GroundEl>(*old);
+            opts.CanChooseGround = Is<BodyEl>(*old) || Is<GroundEl>(*old);
+            opts.CanChooseJoints = Is<JointEl>(*old);
+            opts.CanChooseMeshes = Is<MeshEl>(*old);
+            opts.MaybeElAttachingTo = el.GetID();
+            opts.Header = "choose what to attach to";
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](UID userChoice)
+            {
+                if (userChoice == id)
+                {
+                    return false;
+                }
+
+                ModelGraph& mg = shared->UpdModelGraph();
+                SceneEl* el = mg.TryUpdElByID(id);
+
+                if (!el)
+                {
+                    return true;  // accept user choice but can't actually process it
+                }
+
+                el->SetCrossReferenceConnecteeID(crossrefIdx, userChoice);
+                shared->CommitCurrentModelGraph("reassigned connection");
                 return true;
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
@@ -5232,202 +5363,189 @@ namespace
             }
         }
 
-        void DrawPointXAxisTowardsMenuItem(UID id)
+        void DrawPointXAxisTowardsMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Point X towards"))
             {
-                TransitionToChoosingWhichElementToPointAxisTowards(id, 0);
+                TransitionToChoosingWhichElementToPointAxisTowards(el, 0);
             }
         }
 
-        void DrawPointYAxisTowardsMenuItem(UID id)
+        void DrawPointYAxisTowardsMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Point Y towards"))
             {
-                TransitionToChoosingWhichElementToPointAxisTowards(id, 1);
+                TransitionToChoosingWhichElementToPointAxisTowards(el, 1);
             }
         }
 
-        void DrawPointZAxisTowardsMenuItem(UID id)
+        void DrawPointZAxisTowardsMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Point Z towards"))
             {
-                TransitionToChoosingWhichElementToPointAxisTowards(id, 2);
+                TransitionToChoosingWhichElementToPointAxisTowards(el, 2);
             }
         }
 
-        void DrawResetOrientationMenuItem(UID id)
+        void DrawResetOrientationMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Reset"))
             {
-                ModelGraph& mg = m_Shared->UpdModelGraph();
-                SceneEl& el = mg.UpdElByID(id);
-
                 el.SetXform(Transform::atPosition(el.GetPos()));
                 m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
             }
         }
 
-        void DrawOrientAlongToMeshPointsMenuItem(UID id)
+        void DrawOrientAlongToMeshPointsMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Orient Z along two mesh points"))
             {
-                TransitionToOrientingElementAlongTwoMeshPoints(id);
+                TransitionToOrientingElementAlongTwoMeshPoints(el);
             }
         }
 
-        void RotateAxis180Degrees(UID id, int axis)
+        void RotateAxis180Degrees(SceneEl& el, int axis)
         {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-            SceneEl& el = mg.UpdElByID(id);
-
             el.SetXform(RotateAxis(el.GetXform(), axis, fpi));
-
             m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
         }
 
-        void DrawRotateX180MenuItem(UID id)
+        void DrawRotateX180MenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Rotate X 180 degrees"))
             {
-                RotateAxis180Degrees(id, 0);
+                RotateAxis180Degrees(el, 0);
             }
         }
 
-        void DrawRotateY180MenuItem(UID id)
+        void DrawRotateY180MenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Rotate Y 180 degrees"))
             {
-                RotateAxis180Degrees(id, 1);
+                RotateAxis180Degrees(el, 1);
             }
         }
 
-        void DrawRotateZ180MenuItem(UID id)
+        void DrawRotateZ180MenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Rotate Z 180 degrees"))
             {
-                RotateAxis180Degrees(id, 2);
+                RotateAxis180Degrees(el, 2);
             }
         }
 
-        void DrawTranslateBetweenTwoMeshPointsMenuItem(UID id)
+        void DrawTranslateBetweenTwoMeshPointsMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("Between two mesh points"))
             {
-                TransitionToTranslatingElementAlongTwoMeshPoints(id);
+                TransitionToTranslatingElementAlongTwoMeshPoints(el);
             }
         }
 
-        void DrawTranslateToAnotherObjectCenterMenuItem(UID id)
+        void DrawTranslateToAnotherObjectCenterMenuItem(SceneEl& el)
         {
             if (ImGui::MenuItem("To another object's center"))
             {
-                TransitionToTranslatingElementToAnotherElementsCenter(id);
+                TransitionToTranslatingElementToAnotherElementsCenter(el);
             }
         }
 
-        void PointXTowards(UID elID, UID otherID)
+        void PointXTowards(SceneEl& el, UID otherID)
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            SceneEl& el = mg.UpdElByID(elID);
 
             el.SetXform(PointAxisTowards(el.GetXform(), 0, GetPosition(mg, otherID)));
-
             m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
         }
 
-        void UseOrientationOf(UID elID, UID otherID)
+        void UseOrientationOf(SceneEl& el, UID otherID)
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            SceneEl& el = mg.UpdElByID(elID);
 
             el.SetXform(el.GetXform().withRotation(GetRotation(mg, otherID)));
-
             m_Shared->CommitCurrentModelGraph("reoriented " + el.GetLabel());
         }
 
-        void UseTranslationOf(UID elID, UID otherID)
+        void UseTranslationOf(SceneEl& el, UID otherID)
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            SceneEl& el = mg.UpdElByID(elID);
 
             el.SetXform(el.GetXform().withPosition(GetPosition(mg, otherID)));
-
             m_Shared->CommitCurrentModelGraph("translated " + el.GetLabel());
         }
 
-        void TranslateToMidpoint(UID elID, UID a, UID b)
+        void TranslateToMidpoint(SceneEl& el, UID a, UID b)
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
-            SceneEl& el = mg.UpdElByID(elID);
 
-            glm::vec3 midpoint = VecMidpoint(GetPosition(mg, a), GetPosition(mg, b));
+            glm::vec3 p1 = GetPosition(mg, a);
+            glm::vec3 p2 = GetPosition(mg, b);
+            glm::vec3 midpoint = VecMidpoint(p1, p2);
 
             el.SetPos(midpoint);
-
             m_Shared->CommitCurrentModelGraph("translated " + el.GetLabel());
         }
 
-        void DrawReorientMenu(JointEl const& jointEl)
+        void DrawReorientMenu(JointEl& el)
         {
             if (ImGui::BeginMenu(ICON_FA_REDO " reorient"))
             {
                 if (ImGui::MenuItem("Point X towards parent"))
                 {
-                    PointXTowards(jointEl.ID, jointEl.Parent);
+                    PointXTowards(el, el.Parent);
                 }
 
                 if (ImGui::MenuItem("Point X towards child"))
                 {
-                    PointXTowards(jointEl.ID, jointEl.Child);
+                    PointXTowards(el, el.Child);
                 }
 
                 if (ImGui::MenuItem("Use parent's orientation"))
                 {
-                    UseOrientationOf(jointEl.ID, jointEl.Parent);
+                    UseOrientationOf(el, el.Parent);
                 }
 
                 if (ImGui::MenuItem("Use child's orientation"))
                 {
-                    UseOrientationOf(jointEl.ID, jointEl.Child);
+                    UseOrientationOf(el, el.Child);
                 }
 
-                DrawOrientAlongToMeshPointsMenuItem(jointEl.ID);
+                DrawOrientAlongToMeshPointsMenuItem(el);
 
-                DrawRotateX180MenuItem(jointEl.ID);
-                DrawRotateY180MenuItem(jointEl.ID);
-                DrawRotateZ180MenuItem(jointEl.ID);
-                DrawPointXAxisTowardsMenuItem(jointEl.ID);
-                DrawPointYAxisTowardsMenuItem(jointEl.ID);
-                DrawPointZAxisTowardsMenuItem(jointEl.ID);
+                DrawRotateX180MenuItem(el);
+                DrawRotateY180MenuItem(el);
+                DrawRotateZ180MenuItem(el);
+                DrawPointXAxisTowardsMenuItem(el);
+                DrawPointYAxisTowardsMenuItem(el);
+                DrawPointZAxisTowardsMenuItem(el);
 
-                DrawResetOrientationMenuItem(jointEl.ID);
+                DrawResetOrientationMenuItem(el);
 
                 ImGui::EndMenu();
             }
         }
 
-        void DrawTranslateMenu(JointEl const& jointEl)
+        void DrawTranslateMenu(JointEl& el)
         {
-            if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " translate"))
+            if (ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Translate"))
             {
-                if (ImGui::MenuItem("Translate to midpoint"))
+                if (ImGui::MenuItem("To midpoint"))
                 {
-                    TranslateToMidpoint(jointEl.ID, jointEl.Parent, jointEl.Child);
+                    TranslateToMidpoint(el, el.Parent, el.Child);
                 }
 
-                if (ImGui::MenuItem("Use parent's translation"))
+                if (ImGui::MenuItem("To parent"))
                 {
-                    UseTranslationOf(jointEl.ID, jointEl.Parent);
+                    UseTranslationOf(el, el.Parent);
                 }
 
-                if (ImGui::MenuItem("Use child's translation"))
+                if (ImGui::MenuItem("To child"))
                 {
-                    UseTranslationOf(jointEl.ID, jointEl.Child);
+                    UseTranslationOf(el, el.Child);
                 }
 
-                DrawTranslateBetweenTwoMeshPointsMenuItem(jointEl.ID);
-                DrawTranslateToAnotherObjectCenterMenuItem(jointEl.ID);
+                DrawTranslateBetweenTwoMeshPointsMenuItem(el);
+                DrawTranslateToAnotherObjectCenterMenuItem(el);
 
                 ImGui::EndMenu();
             }
@@ -5545,12 +5663,109 @@ namespace
             }
         }
 
+        void DrawAddOtherToSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
+        {
+            int imguiID = 0;
+
+            ImGui::PushID(imguiID++);
+            if (CanAttachMeshTo(el))
+            {
+                if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
+                {
+                    m_Shared->PushMeshLoadRequests(DowncastID<BodyEl>(el.GetID()), m_Shared->PromptUserForMeshFiles());
+                }
+                DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
+            }
+            ImGui::PopID();
+
+            ImGui::PushID(imguiID++);
+            if (ImGui::BeginMenu(ICON_FA_CIRCLE " Body"))
+            {
+                if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                {
+                    m_Shared->AddBody(el.GetPos());
+                }
+
+                if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                {
+                    m_Shared->AddBody(clickPos);
+                }
+
+                if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                {
+                    m_Shared->AddBody({});
+                }
+
+                if (Is<MeshEl>(el) && ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                {
+                    m_Shared->AddBody(AABBCenter(el.CalcBounds()));
+                }
+
+                ImGui::EndMenu();
+
+                DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+            }
+            ImGui::PopID();
+
+            ImGui::PushID(imguiID++);
+            if (Is<BodyEl>(el))
+            {
+                if (ImGui::MenuItem(ICON_FA_LINK " Joint"))
+                {
+                    TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
+                }
+                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
+            }
+            ImGui::PopID();
+
+            ImGui::PushID(imguiID++);
+            if (CanAttachStationTo(el))
+            {
+                if (ImGui::BeginMenu(ICON_FA_MAP_PIN " Station"))
+                {
+                    auto addStationAtLocation = [&](glm::vec3 const& loc)
+                    {
+                        ModelGraph& mg = m_Shared->UpdModelGraph();
+                        StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), StationAttachmentParent(el), loc, GenerateName(StationEl::Class()));
+                        SelectOnly(mg, station);
+                        m_Shared->CommitCurrentModelGraph("added station " + station.GetLabel());
+                    };
+
+                    if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                    {
+                        addStationAtLocation(el.GetPos());
+                    }
+
+                    if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                    {
+                        addStationAtLocation(clickPos);
+                    }
+
+                    if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                    {
+                        addStationAtLocation(glm::vec3{});
+                    }
+
+                    if (Is<MeshEl>(el) && ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                    {
+                        addStationAtLocation(AABBCenter(el.CalcBounds()));
+                    }
+
+                    ImGui::EndMenu();
+
+                    DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                }
+            }
+            ImGui::PopID();
+        }
+
         void DrawNothingActions()
         {
             if (ImGui::MenuItem(ICON_FA_CUBE " Add Meshes"))
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
+            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
 
             if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
             {
@@ -5560,74 +5775,82 @@ namespace
             }
         }
 
-        // returns true if early-return required
-        bool DrawSceneElActions(SceneEl const& el)
+        void DrawSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
         {
-            if (ImGui::MenuItem(ICON_FA_CAMERA " focus camera on this"))
+            if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
             {
                 m_Shared->FocusCameraOn(AABBCenter(el.CalcBounds()));
             }
+            DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking around that particular object in the scene");
 
-            if (CanAttachMeshTo(el) && ImGui::MenuItem(ICON_FA_CUBE " attach mesh(es)"))
+            if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
             {
-                UIDT<BodyEl> id = DowncastID<BodyEl>(el.GetID());
-                m_Shared->PushMeshLoadRequests(id, m_Shared->PromptUserForMeshFiles());
+                DrawAddOtherToSceneElActions(el, clickPos);
+                ImGui::EndMenu();
             }
 
-            if (CanDelete(el) && ImGui::MenuItem(ICON_FA_TRASH " delete"))
+            if (Is<BodyEl>(el))
+            {
+                if (ImGui::MenuItem(ICON_FA_LINK " Join to"))
+                {
+                    TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
+                }
+                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
+            }
+
+            if (CanDelete(el) && ImGui::MenuItem(ICON_FA_TRASH " Delete"))
             {
                 std::string label = el.GetLabel();
                 DeleteEl(el.GetID());
                 m_Shared->CommitCurrentModelGraph("deleted " + label);
                 m_MaybeOpenedContextMenu.reset();
                 ImGui::CloseCurrentPopup();
-                return true;
             }
-
-            return false;
         }
 
-        void DrawReorientMenu(SceneEl& e)
+        void DrawTranslateMenu(SceneEl& el)
         {
-            if (!CanChangeRotation(e))
-            {
-                return;  // can't change its rotation
-            }
-
-            if (!ImGui::BeginMenu(ICON_FA_REDO " reorient"))
-            {
-                return;  // top-level menu isn't open
-            }
-
-            UID id = e.GetID();
-
-            DrawRotateX180MenuItem(id);
-            DrawRotateY180MenuItem(id);
-            DrawRotateZ180MenuItem(id);
-            DrawPointXAxisTowardsMenuItem(id);
-            DrawPointYAxisTowardsMenuItem(id);
-            DrawPointZAxisTowardsMenuItem(id);
-            DrawOrientAlongToMeshPointsMenuItem(id);
-            DrawResetOrientationMenuItem(id);
-
-            ImGui::EndMenu();
-        }
-
-        void DrawTranslateMenu(SceneEl& e)
-        {
-            if (!CanChangePosition(e))
+            if (!CanChangePosition(el))
             {
                 return;  // can't change its position
             }
 
-            if (!ImGui::BeginMenu(ICON_FA_ARROWS_ALT " translate")) {
+            if (!ImGui::BeginMenu(ICON_FA_ARROWS_ALT " Translate")) {
                 return;  // top-level menu isn't open
             }
 
-            UID id = e.GetID();
+            DrawTranslateToAnotherObjectCenterMenuItem(el);
+            DrawTranslateBetweenTwoMeshPointsMenuItem(el);
 
-            DrawTranslateToAnotherObjectCenterMenuItem(id);
-            DrawTranslateBetweenTwoMeshPointsMenuItem(id);            
+            ImGui::EndMenu();
+        }
+
+        void DrawReorientMenu(SceneEl& el)
+        {
+            if (!CanChangeRotation(el))
+            {
+                return;  // can't change its rotation
+            }
+
+            if (!ImGui::BeginMenu(ICON_FA_REDO " Reorient"))
+            {
+                return;  // top-level menu isn't open
+            }
+            DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
+
+            for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
+            {
+                ImGui::Text("%s", el.GetCrossReferenceLabel(i).c_str());
+            }
+
+            DrawRotateX180MenuItem(el);
+            DrawRotateY180MenuItem(el);
+            DrawRotateZ180MenuItem(el);
+            DrawPointXAxisTowardsMenuItem(el);
+            DrawPointYAxisTowardsMenuItem(el);
+            DrawPointZAxisTowardsMenuItem(el);
+            DrawOrientAlongToMeshPointsMenuItem(el);
+            DrawResetOrientationMenuItem(el);
 
             ImGui::EndMenu();
         }
@@ -5647,122 +5870,6 @@ namespace
             m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
         }
 
-        // shown when user right-clicks on nothing in the scene
-        void DrawNothingContextMenuContent()
-        {
-            DrawNothingContextMenuContentHeader();
-
-            SpacerDummy();
-
-            DrawNothingActions();
-        }
-
-        void DrawGroundContextMenuContent(GroundEl const& el)
-        {
-            DrawSceneElContextMenuContentHeader(el);
-
-            SpacerDummy();
-
-            if (DrawSceneElActions(el))
-            {
-                return;
-            }
-        }
-
-        void DrawBodyContextMenuContent(BodyEl bodyEl)
-        {
-            DrawSceneElContextMenuContentHeader(bodyEl);
-
-            SpacerDummy();
-
-            DrawPropEditors(bodyEl);
-
-            SpacerDummy();
-
-            if (DrawSceneElActions(bodyEl))
-            {
-                return;
-            }
-
-            // specific action for a BodyEl
-            if (ImGui::MenuItem(ICON_FA_LINK " join to"))
-            {
-                TransitionToChoosingJointParent(bodyEl.ID);
-            }
-            DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
-
-            if (ImGui::MenuItem(ICON_FA_LINK " TODO add station"))
-            {
-                ModelGraph& mg = m_Shared->UpdModelGraph();
-                StationEl& e = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), bodyEl.ID, glm::vec3{}, GenerateName(StationEl::Class()));
-                SelectOnly(mg, e);
-            }
-
-            DrawReorientMenu(bodyEl);
-            DrawTranslateMenu(bodyEl);
-
-            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
-            {
-                m_MaybeOpenedContextMenu.reset();
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
-        void DrawMeshContextMenuContent(MeshEl meshEl, glm::vec3 clickPos)
-        {
-            DrawSceneElContextMenuContentHeader(meshEl);
-
-            SpacerDummy();
-
-            DrawSceneElPropEditors(meshEl);
-
-            SpacerDummy();
-
-            if (DrawSceneElActions(meshEl))
-            {
-                return;
-            }
-
-            if (ImGui::BeginMenu(ICON_FA_CIRCLE " add body"))
-            {
-                if (ImGui::MenuItem("at click location"))
-                {
-                    AddBodyToMeshAtPosition(meshEl, clickPos);
-                }
-
-                if (ImGui::MenuItem("at mesh origin"))
-                {
-                    AddBodyToMeshAtPosition(meshEl, meshEl.Xform.position);
-                }
-
-                if (ImGui::MenuItem("at mesh bounds center"))
-                {
-                    AddBodyToMeshAtPosition(meshEl, AABBCenter(meshEl.CalcBounds()));
-                }
-
-                ImGui::EndMenu();
-            }
-
-            if (ImGui::MenuItem(ICON_FA_LINK " assign to body"))
-            {
-                TransitionToAssigningMeshNextFrame(meshEl);
-            }
-
-            if (ImGui::MenuItem(ICON_FA_UNLINK " unassign from body", NULL, false, IsAssignedToBody(m_Shared->GetModelGraph(), meshEl)))
-            {
-                m_Shared->UnassignMesh(meshEl);
-            }
-
-            DrawReorientMenu(meshEl);
-            DrawTranslateMenu(meshEl);
-
-            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
-            {
-                m_MaybeOpenedContextMenu.reset();
-                ImGui::CloseCurrentPopup();
-            }
-        }
-
         void DrawJointTypeEditor(JointEl const& jointEl)
         {
             int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
@@ -5774,62 +5881,150 @@ namespace
             }
         }
 
-        void DrawJointContextMenuConent(JointEl jointEl)
+        // draw context menu content for when user right-clicks nothing
+        void DrawNothingContextMenuContent()
         {
-            DrawSceneElContextMenuContentHeader(jointEl);
+            DrawNothingContextMenuContentHeader();
 
             SpacerDummy();
 
-            DrawSceneElPropEditors(jointEl);
-            DrawJointTypeEditor(jointEl);
+            DrawNothingActions();
+        }
+
+        // draw context menu content for a `GroundEl`
+        void DrawContextMenuContent(GroundEl& el, glm::vec3 const& clickPos)
+        {
+            DrawSceneElContextMenuContentHeader(el);
 
             SpacerDummy();
 
-            if (DrawSceneElActions(jointEl))
+            DrawSceneElActions(el, clickPos);
+        }
+
+        // draw context menu content for a `BodyEl`
+        void DrawContextMenuContent(BodyEl& el, glm::vec3 const& clickPos)
+        {
+            DrawSceneElContextMenuContentHeader(el);
+
+            SpacerDummy();
+
+            DrawPropEditors(el);
+
+            SpacerDummy();
+
+            DrawTranslateMenu(el);
+            DrawReorientMenu(el);
+            DrawReassignCrossrefMenu(el);
+            DrawSceneElActions(el, clickPos);
+        }
+
+        // draw context menu content for a `MeshEl`
+        void DrawContextMenuContent(MeshEl& el, glm::vec3 const& clickPos)
+        {
+            DrawSceneElContextMenuContentHeader(el);
+
+            SpacerDummy();
+
+            DrawSceneElPropEditors(el);
+
+            SpacerDummy();
+
+            DrawTranslateMenu(el);
+            DrawReorientMenu(el);
+            DrawReassignCrossrefMenu(el);
+            DrawSceneElActions(el, clickPos);
+        }
+
+        // draw context menu content for a `JointEl`
+        void DrawContextMenuContent(JointEl& el, glm::vec3 const& clickPos)
+        {
+            DrawSceneElContextMenuContentHeader(el);
+
+            SpacerDummy();
+
+            DrawSceneElPropEditors(el);
+            DrawJointTypeEditor(el);
+
+            SpacerDummy();
+
+            DrawTranslateMenu(el);
+            DrawReorientMenu(el);
+            DrawReassignCrossrefMenu(el);
+            DrawSceneElActions(el, clickPos);
+        }
+
+        void DrawReassignCrossrefMenu(SceneEl& el)
+        {
+            int nRefs = el.GetNumCrossReferences();
+
+            if (nRefs == 0)
             {
                 return;
             }
-            DrawReorientMenu(jointEl);
-            DrawTranslateMenu(jointEl);
 
-            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
+            if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
             {
-                m_MaybeOpenedContextMenu.reset();
-                ImGui::CloseCurrentPopup();
+                for (int i = 0; i < nRefs; ++i)
+                {
+                    std::string const& label = el.GetCrossReferenceLabel(i);
+                    if (ImGui::MenuItem(label.c_str()))
+                    {
+                        TransitionToReassigningCrossRef(el, i);
+                    }
+                }
+
+                ImGui::EndMenu();
             }
+        }
+
+        // draw context menu content for a `StationEl`
+        void DrawContextMenuContent(StationEl& el, glm::vec3 const& clickPos)
+        {
+            DrawSceneElContextMenuContentHeader(el);
+
+            SpacerDummy();
+
+            DrawSceneElPropEditors(el);
+
+            SpacerDummy();
+
+            DrawTranslateMenu(el);
+            DrawReorientMenu(el);
+            DrawReassignCrossrefMenu(el);
+            DrawSceneElActions(el, clickPos);
         }
 
         void DrawContextMenuContent()
         {
             // helper class for visiting each scene element type
-            class Visitor : public ConstSceneElVisitor
+            class Visitor : public SceneElVisitor
             {
             public:
                 explicit Visitor(MainUIState& state) : m_State{state} {}
 
-                void operator()(GroundEl const& el) override
+                void operator()(GroundEl& el) override
                 {
-                    m_State.DrawGroundContextMenuContent(el);
+                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
                 }
 
-                void operator()(MeshEl const& el) override
+                void operator()(MeshEl& el) override
                 {
-                    m_State.DrawMeshContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
                 }
 
-                void operator()(BodyEl const& el) override
+                void operator()(BodyEl& el) override
                 {
-                    m_State.DrawBodyContextMenuContent(el);
+                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
                 }
 
-                void operator()(JointEl const& el) override
+                void operator()(JointEl& el) override
                 {
-                    m_State.DrawJointContextMenuConent(el);
+                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
                 }
 
-                void operator()(StationEl const&) override
+                void operator()(StationEl& el) override
                 {
-                    // TODO: station should produce a menu
+                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
                 }
             private:
                 MainUIState& m_State;
@@ -5846,10 +6041,18 @@ namespace
                 // context menu was opened on "nothing" specifically
                 DrawNothingContextMenuContent();
             }
-            else if (SceneEl const* el = m_Shared->GetModelGraph().TryGetElByID(m_MaybeOpenedContextMenu.ID))
+            else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
             {
+                // context menu was opened on a scene element that exists in the modelgraph
                 Visitor visitor{*this};
                 el->Accept(visitor);
+            }
+
+            // context menu should be closed under these conditions
+            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
+            {
+                m_MaybeOpenedContextMenu.reset();
+                ImGui::CloseCurrentPopup();
             }
         }
 
@@ -5971,12 +6174,11 @@ namespace
 
         void DrawAddOtherMenuItems()
         {
-
-            if (ImGui::MenuItem(ICON_FA_CUBE " Mesh(es)"))
+            if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
+            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
 
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
@@ -6001,7 +6203,7 @@ namespace
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Mesh(es) to the model", OSC_MESH_DESC);
+            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
 
             ImGui::SameLine();
 
