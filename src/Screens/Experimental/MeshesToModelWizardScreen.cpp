@@ -4856,6 +4856,10 @@ namespace
         {
         }
 
+        //
+        // ACTIONS
+        //
+
         // pop the current UI layer
         void pop() override
         {
@@ -4890,6 +4894,22 @@ namespace
             {
                 mg.Select(el);
             });
+        }
+
+        // adds a body to a mesh at a given position
+        void AddBodyToMeshAtPosition(MeshEl const& mesh, glm::vec3 const& pos)
+        {
+            ModelGraph& mg = m_Shared->UpdModelGraph();
+
+            BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
+            SelectOnly(mg, b.ID);
+
+            if (!IsAssignedToBody(mg, mesh))
+            {
+                mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
+            }
+
+            m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
         }
 
         // returns recommended rim intensity for the provided scene element
@@ -5902,29 +5922,39 @@ namespace
             ImGui::EndMenu();
         }
 
-        void AddBodyToMeshAtPosition(MeshEl const& mesh, glm::vec3 const& pos)
-        {
-            ModelGraph& mg = m_Shared->UpdModelGraph();
-
-            BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
-            SelectOnly(mg, b.ID);
-
-            if (!IsAssignedToBody(mg, mesh))
-            {
-                mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
-            }
-
-            m_Shared->CommitCurrentModelGraph("added " + b.GetLabel());
-        }
-
         void DrawJointTypeEditor(JointEl const& jointEl)
         {
             int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
             nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
-            if (ImGui::Combo("joint type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
+            if (ImGui::Combo("Joint Type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
             {
                 m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.ID).JointTypeIndex = static_cast<size_t>(currentIdx);
                 m_Shared->CommitCurrentModelGraph("changed joint type");
+            }
+            DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
+        }
+
+        void DrawReassignCrossrefMenu(SceneEl& el)
+        {
+            int nRefs = el.GetNumCrossReferences();
+
+            if (nRefs == 0)
+            {
+                return;
+            }
+
+            if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
+            {
+                for (int i = 0; i < nRefs; ++i)
+                {
+                    std::string const& label = el.GetCrossReferenceLabel(i);
+                    if (ImGui::MenuItem(label.c_str()))
+                    {
+                        TransitionToReassigningCrossRef(el, i);
+                    }
+                }
+
+                ImGui::EndMenu();
             }
         }
 
@@ -6000,30 +6030,6 @@ namespace
             DrawSceneElActions(el, clickPos);
         }
 
-        void DrawReassignCrossrefMenu(SceneEl& el)
-        {
-            int nRefs = el.GetNumCrossReferences();
-
-            if (nRefs == 0)
-            {
-                return;
-            }
-
-            if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
-            {
-                for (int i = 0; i < nRefs; ++i)
-                {
-                    std::string const& label = el.GetCrossReferenceLabel(i);
-                    if (ImGui::MenuItem(label.c_str()))
-                    {
-                        TransitionToReassigningCrossRef(el, i);
-                    }
-                }
-
-                ImGui::EndMenu();
-            }
-        }
-
         // draw context menu content for a `StationEl`
         void DrawContextMenuContent(StationEl& el, glm::vec3 const& clickPos)
         {
@@ -6041,43 +6047,55 @@ namespace
             DrawSceneElActions(el, clickPos);
         }
 
-        void DrawContextMenuContent()
+        void DrawContextMenuContent(SceneEl& el, glm::vec3 const& clickPos)
         {
             // helper class for visiting each scene element type
             class Visitor : public SceneElVisitor
             {
             public:
-                explicit Visitor(MainUIState& state) : m_State{state} {}
+                Visitor(MainUIState& state,
+                        glm::vec3 const& clickPos) :
+                    m_State{state},
+                    m_ClickPos{clickPos}
+                {
+                }
 
                 void operator()(GroundEl& el) override
                 {
-                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_ClickPos);
                 }
 
                 void operator()(MeshEl& el) override
                 {
-                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_ClickPos);
                 }
 
                 void operator()(BodyEl& el) override
                 {
-                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_ClickPos);
                 }
 
                 void operator()(JointEl& el) override
                 {
-                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_ClickPos);
                 }
 
                 void operator()(StationEl& el) override
                 {
-                    m_State.DrawContextMenuContent(el, m_State.m_MaybeOpenedContextMenu.Pos);
+                    m_State.DrawContextMenuContent(el, m_ClickPos);
                 }
             private:
                 MainUIState& m_State;
+                glm::vec3 const& m_ClickPos;
             };
 
+            // context menu was opened on a scene element that exists in the modelgraph
+            Visitor visitor{*this, clickPos};
+            el.Accept(visitor);
+        }
 
+        void DrawContextMenuContent()
+        {
             if (!m_MaybeOpenedContextMenu)
             {
                 // context menu not open, but just draw the "nothing" menu
@@ -6091,9 +6109,9 @@ namespace
             else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
             {
                 // context menu was opened on a scene element that exists in the modelgraph
-                Visitor visitor{*this};
-                el->Accept(visitor);
+                DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
             }
+
 
             // context menu should be closed under these conditions
             if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
