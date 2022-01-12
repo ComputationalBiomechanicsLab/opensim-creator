@@ -219,7 +219,7 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
         }
     }
 
-    if (ImGui::MenuItem(ICON_FA_MAGIC " Open Mesh Importer")) {
+    if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes")) {
         App::cur().requestTransition<MeshesToModelWizardScreen>();
     }
 

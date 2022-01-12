@@ -11,6 +11,7 @@
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/Screens/LoadingScreen.hpp"
+#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/App.hpp"
@@ -202,6 +203,19 @@ void osc::SplashScreen::draw() {
         {
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
+            if (ImGui::Button(ICON_FA_MAGIC " Import Meshes"))
+            {
+                App::cur().requestTransition<MeshesToModelWizardScreen>();
+            }
+            ImGui::PopStyleColor(2);
+        }
+
+        ImGui::SameLine();
+
+        // `new` button
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
             if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
                 actionNewModel(impl.maybeMainEditorState);
             }
@@ -218,7 +232,7 @@ void osc::SplashScreen::draw() {
         ImGui::SameLine();
 
         // `docs` button
-        if (ImGui::Button(ICON_FA_LINK " Open Documentation")) {
+        if (ImGui::Button(ICON_FA_BOOK " Open Documentation")) {
             OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
         }
 
