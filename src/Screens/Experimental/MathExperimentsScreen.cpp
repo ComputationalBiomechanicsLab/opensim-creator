@@ -69,20 +69,6 @@ void osc::MathExperimentsScreen::draw() {
     // draw vector
     dl->AddLine(screenCenter, mousePos, 0xff000000, 1.0f);
 
-    // setup + draw box
-    {
-        m_Impl->boxTransform.scale = glm::vec3{100.0f, 100.0f, 100.0f};
-        m_Impl->boxTransform.position = glm::vec3{screenCenter, 0.0f};
-        m_Impl->boxTransform.rotation = glm::quat{glm::vec3{0.0f, 0.0f, 0.01f}} * m_Impl->boxTransform.rotation;
-        glm::mat4 m = toMat4(m_Impl->boxTransform);
-        glm::vec2 tl = m * glm::vec4{-1.0f, -1.0f, 0.0f, 1.0f};
-        glm::vec2 bl = m * glm::vec4{-1.0f, +1.0f, 0.0f, 1.0f};
-        glm::vec2 tr = m * glm::vec4{+1.0f, -1.0f, 0.0f, 1.0f};
-        glm::vec2 br = m * glm::vec4{+1.0f, +1.0f, 0.0f, 1.0f};
-        dl->AddTriangleFilled(tl, bl, tr, 0xffaaaaaa);
-        dl->AddTriangleFilled(tr, bl, br, 0xffaaaaaa);
-    }
-
     // draw x component
     {
         glm::vec2 xBegin = screenCenter;
