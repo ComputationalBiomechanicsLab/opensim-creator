@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
 
 static char const g_VertexShader[] = R"(
     #version 330 core
@@ -23,7 +24,8 @@ static char const g_VertexShader[] = R"(
 
     layout (location = 0) in vec3 aPos;
 
-    void main() {
+    void main()
+    {
         gl_Position = uProjection * uView * uModel * vec4(aPos, 1.0);
     }
 )";
@@ -35,7 +37,8 @@ static char const g_FragmentShader[] = R"(
 
     out vec4 FragColor;
 
-    void main() {
+    void main()
+    {
         FragColor = uColor;
     }
 )";
@@ -60,8 +63,7 @@ namespace {
         glm::vec3 pos;
         bool isHovered = false;
 
-        SceneSphere(glm::vec3 pos_) : pos{pos_} {
-        }
+        SceneSphere(glm::vec3 pos_) : pos{pos_} {}
     };
 }
 
@@ -76,7 +78,8 @@ static constexpr std::array<glm::vec3, 4> g_CrosshairVerts = {{
 }};
 
 // make a VAO for the basic shader
-static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& vbo) {
+static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& vbo)
+{
     gl::VertexArray rv;
     gl::BindVertexArray(rv);
     gl::BindBuffer(vbo);
@@ -86,15 +89,19 @@ static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& 
     return rv;
 }
 
-static std::vector<SceneSphere> generateSceneSpheres() {
+static std::vector<SceneSphere> generateSceneSpheres()
+{
     constexpr int min = -30;
     constexpr int max = 30;
     constexpr int step = 6;
 
     std::vector<SceneSphere> rv;
-    for (int x = min; x <= max; x += step) {
-        for (int y = min; y <= max; y += step) {
-            for (int z = min; z <= max; z += step) {
+    for (int x = min; x <= max; x += step)
+    {
+        for (int y = min; y <= max; y += step)
+        {
+            for (int z = min; z <= max; z += step)
+            {
                 rv.emplace_back(glm::vec3{x, 50.0f + 2.0f*y, z});
             }
         }
@@ -153,19 +160,20 @@ osc::HittestScreen::HittestScreen() :
 osc::HittestScreen::~HittestScreen() noexcept = default;
 
 void osc::HittestScreen::onMount() {
-    App::cur().setRelativeMouseMode(true);
+    App::cur().showCursor(false);
     gl::Disable(GL_CULL_FACE);
 }
 
 void osc::HittestScreen::onUnmount() {
-    App::cur().setRelativeMouseMode(false);
+    App::cur().showCursor(true);
     gl::Enable(GL_CULL_FACE);
 }
 
 void osc::HittestScreen::onEvent(SDL_Event const& e) {
     m_Impl->io.onEvent(e);
 
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    {
         App::cur().requestTransition<ExperimentsScreen>();
     }
 }
@@ -178,31 +186,38 @@ void osc::HittestScreen::tick(float) {
     float speed = 10.0f;
     float sensitivity = 0.005f;
 
-    if (io.KeysDown[SDL_SCANCODE_ESCAPE]) {
+    if (io.KeysDown[SDL_SCANCODE_ESCAPE])
+    {
         App::cur().requestTransition<ExperimentsScreen>();
     }
 
-    if (io.KeysDown[SDL_SCANCODE_W]) {
+    if (io.KeysDown[SDL_SCANCODE_W])
+    {
         camera.pos += speed * camera.getFront() * io.DeltaTime;
     }
 
-    if (io.KeysDown[SDL_SCANCODE_S]) {
+    if (io.KeysDown[SDL_SCANCODE_S])
+    {
         camera.pos -= speed * camera.getFront() * io.DeltaTime;
     }
 
-    if (io.KeysDown[SDL_SCANCODE_A]) {
+    if (io.KeysDown[SDL_SCANCODE_A])
+    {
         camera.pos -= speed * camera.getRight() * io.DeltaTime;
     }
 
-    if (io.KeysDown[SDL_SCANCODE_D]) {
+    if (io.KeysDown[SDL_SCANCODE_D])
+    {
         camera.pos += speed * camera.getRight() * io.DeltaTime;
     }
 
-    if (io.KeysDown[SDL_SCANCODE_SPACE]) {
+    if (io.KeysDown[SDL_SCANCODE_SPACE])
+    {
         camera.pos += speed * camera.getUp() * io.DeltaTime;
     }
 
-    if (io.KeyCtrl) {
+    if (io.KeyCtrl)
+    {
         camera.pos -= speed * camera.getUp() * io.DeltaTime;
     }
 
@@ -211,7 +226,6 @@ void osc::HittestScreen::tick(float) {
     camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.1f, fpi2 - 0.1f);
     io.WantMousePosWarpTo = true;
     io.MousePosWarpTo = io.DisplaySize/2.0f;
-
 
     // compute hits
 
@@ -259,9 +273,10 @@ void osc::HittestScreen::draw() {
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(app.aspectRatio()));
 
     // main scene render
-    if (true) {
+    {
         gl::BindVertexArray(impl.sphereVAO);
-        for (SceneSphere const& s : impl.spheres) {
+        for (SceneSphere const& s : impl.spheres)
+        {
             glm::vec4 color = s.isHovered ?
                 glm::vec4{0.0f, 0.0f, 1.0f, 1.0f} :
                 glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
@@ -290,7 +305,7 @@ void osc::HittestScreen::draw() {
     }
 
     // draw disc
-    if (true) {
+    {
         Disc d;
         d.origin = {0.0f, 0.0f, 0.0f};
         d.normal = {0.0f, 1.0f, 0.0f};
@@ -311,8 +326,8 @@ void osc::HittestScreen::draw() {
         gl::BindVertexArray();
     }
 
-    // draw triangle
-    if (true) {
+    // triangle
+    {
         RayCollision res = GetRayCollisionTriangle(cameraRay, impl.triangle.data());
 
         glm::vec4 color = res.hit ?
@@ -327,7 +342,7 @@ void osc::HittestScreen::draw() {
     }
 
     // crosshair
-    if (true) {
+    {
         gl::Uniform(shader.uModel, gl::identity);
         gl::Uniform(shader.uView, gl::identity);
         gl::Uniform(shader.uProjection, gl::identity);

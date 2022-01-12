@@ -1,4 +1,4 @@
-#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/Experimental/HittestScreen.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
     try {
         // init main app (window, OpenGL, etc.)
         App app;
+        app.show<HittestScreen>(); return 0;
 
         if (argc <= 0) {
             app.show<SplashScreen>();

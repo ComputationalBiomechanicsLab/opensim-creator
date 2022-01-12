@@ -97,8 +97,8 @@ namespace osc {
         // returns current window aspect ratio
         [[nodiscard]] float aspectRatio() const noexcept;
 
-        // hides mouse in screen and makes it operate relative per-frame
-        void setRelativeMouseMode(bool) noexcept;
+        // sets whether the application should show/hide the cursor
+        void showCursor(bool);
 
         // makes the application window fullscreen
         void makeFullscreen();

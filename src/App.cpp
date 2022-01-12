@@ -756,8 +756,9 @@ float osc::App::aspectRatio() const noexcept {
     return v.x / v.y;
 }
 
-void osc::App::setRelativeMouseMode(bool v) noexcept {
-    SDL_SetRelativeMouseMode(v ? SDL_TRUE : SDL_FALSE);
+void osc::App::showCursor(bool v)
+{
+    SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
 }
 
 void osc::App::makeFullscreen() {
@@ -907,8 +908,10 @@ App::MouseState osc::App::getMouseState() const noexcept {
     rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
     rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
 
-    static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
     if (isWindowFocused()) {
+
+        static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+
         if (canUseGlobalMouseState) {
             glm::ivec2 mouseGlobal;
             SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);

@@ -32,14 +32,18 @@ osc::IoPoller::IoPoller() :
 }
 
 // feed an event into `IoPoller`, which may update some internal datastructures
-void osc::IoPoller::onEvent(SDL_Event const& e) {
-    if (e.type == SDL_MOUSEBUTTONDOWN) {
+void osc::IoPoller::onEvent(SDL_Event const& e)
+{
+    if (e.type == SDL_MOUSEBUTTONDOWN)
+    {
         switch (e.button.button) {
         case SDL_BUTTON_LEFT: _mousePressedEvents[0] = true; break;
         case SDL_BUTTON_RIGHT: _mousePressedEvents[1] = true; break;
         case SDL_BUTTON_MIDDLE: _mousePressedEvents[2] = true; break;
         }
-    } else if (e.type == SDL_KEYUP || e.type == SDL_KEYDOWN) {
+    }
+    else if (e.type == SDL_KEYUP || e.type == SDL_KEYDOWN)
+    {
         KeysDown[e.key.keysym.scancode] = e.type == SDL_KEYDOWN;
         KeyShift = App::cur().isShiftPressed();
         KeyCtrl = App::cur().isCtrlPressed();
@@ -48,7 +52,8 @@ void osc::IoPoller::onEvent(SDL_Event const& e) {
 }
 
 // update the `IoPoller`: should be called once per frame
-void osc::IoPoller::onUpdate() {
+void osc::IoPoller::onUpdate()
+{
     DisplaySize = App::cur().dims();
 
     // Ticks, (IO ctor: TickFrequency), DeltaTime
@@ -72,10 +77,11 @@ void osc::IoPoller::onUpdate() {
     // set. However, to ensure that Delta == Cur-Prev, we need to create
     // a "fake"  *prev* that behaves "as if" the mouse moved from some
     // location to the warp location
-    if (WantMousePosWarpTo && App::cur().isWindowFocused()) {
+    if (WantMousePosWarpTo && App::cur().isWindowFocused())
+    {
         App::cur().warpMouseInWindow(MousePosWarpTo);
-        MousePosPrevious = MousePos - MouseDelta;
         MousePos = MousePosWarpTo;
+        MousePosPrevious = MousePosWarpTo - MouseDelta;
         WantMousePosWarpTo = false;
     }
 
@@ -85,10 +91,14 @@ void osc::IoPoller::onUpdate() {
     std::copy(KeysDownDuration.begin(), KeysDownDuration.end(), KeysDownDurationPrev.begin());
 
     // KeysDownDuration
-    for (size_t i = 0; i < KeysDown.size(); ++i) {
-        if (!KeysDown[i]) {
+    for (size_t i = 0; i < KeysDown.size(); ++i)
+    {
+        if (!KeysDown[i])
+        {
             KeysDownDuration[i] = -1.0f;
-        } else {
+        }
+        else
+        {
             KeysDownDuration[i] = KeysDownDuration[i] < 0.0f ? 0.0f : KeysDownDuration[i] + DeltaTime;
         }
     }
