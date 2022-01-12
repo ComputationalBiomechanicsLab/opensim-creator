@@ -124,7 +124,6 @@ void osc::actionNewModel(std::shared_ptr<MainEditorState> st) {
 }
 
 void osc::actionOpenModel(std::shared_ptr<MainEditorState> mes) {
-    OSC_ASSERT(mes && "editor state should be set");
     doOpenFileViaDialog(mes);
 }
 

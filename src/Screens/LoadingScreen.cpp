@@ -65,9 +65,14 @@ struct LoadingScreen::Impl final {
         // save the editor state (if any): it will be forwarded after loading the model
         mes{std::move(_mes)},
 
-        progress{0.0f} {
+        progress{0.0f}
+    {
+        if (!mes)
+        {
+            mes = std::make_shared<MainEditorState>();
+        }
 
-        OSC_ASSERT(mes != nullptr);
+        OSC_ASSERT(mes);
     }
 };
 

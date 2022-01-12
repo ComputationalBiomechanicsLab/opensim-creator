@@ -85,10 +85,10 @@ struct SplashScreen::Impl final {
     MainMenuFileTab mmFileTab;
     MainMenuAboutTab mmAboutTab;
 
-    // top-level UI state that's shared between screens
-    std::shared_ptr<MainEditorState> mes;
+    // top-level UI state that's shared between screens (can be null)
+    std::shared_ptr<MainEditorState> maybeMainEditorState;
 
-    Impl(std::shared_ptr<MainEditorState> mes_) : mes{std::move(mes_)} {
+    Impl(std::shared_ptr<MainEditorState> mes_) : maybeMainEditorState{std::move(mes_)} {
         camera.phi = fpi4/1.5f;
         camera.radius = 10.0f;
         camera.theta = fpi4;
@@ -99,11 +99,13 @@ struct SplashScreen::Impl final {
 // public API
 
 osc::SplashScreen::SplashScreen() :
-    m_Impl{new Impl{std::make_shared<MainEditorState>()}} {
+    m_Impl{new Impl{nullptr}}
+{
 }
 
 osc::SplashScreen::SplashScreen(std::shared_ptr<MainEditorState> mes_) :
-    m_Impl{new Impl{std::move(mes_)}} {
+    m_Impl{new Impl{std::move(mes_)}}
+{
 }
 
 osc::SplashScreen::~SplashScreen() noexcept = default;
@@ -124,7 +126,7 @@ void osc::SplashScreen::onEvent(SDL_Event const& e) {
     }
 
     if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim")) {
-        App::cur().requestTransition<LoadingScreen>(m_Impl->mes, e.drop.file);
+        App::cur().requestTransition<LoadingScreen>(m_Impl->maybeMainEditorState, e.drop.file);
     }
 }
 
@@ -163,7 +165,7 @@ void osc::SplashScreen::draw() {
     }
 
     if (ImGui::BeginMainMenuBar()) {
-        impl.mmFileTab.draw(impl.mes);
+        impl.mmFileTab.draw(impl.maybeMainEditorState);
         impl.mmAboutTab.draw();
         ImGui::EndMainMenuBar();
     }
@@ -201,7 +203,7 @@ void osc::SplashScreen::draw() {
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
             if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
-                actionNewModel(impl.mes);
+                actionNewModel(impl.maybeMainEditorState);
             }
             ImGui::PopStyleColor(2);
         }
@@ -210,7 +212,7 @@ void osc::SplashScreen::draw() {
 
         // `open` button
         if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
-            actionOpenModel(impl.mes);
+            actionOpenModel(impl.maybeMainEditorState);
         }
 
         ImGui::SameLine();
@@ -238,7 +240,7 @@ void osc::SplashScreen::draw() {
                 RecentFile const& rf = *it;
                 ImGui::PushID(++id);
                 if (ImGui::Button(rf.path.filename().string().c_str())) {
-                    app.requestTransition<osc::LoadingScreen>(impl.mes, rf.path);
+                    app.requestTransition<osc::LoadingScreen>(impl.maybeMainEditorState, rf.path);
                 }
                 ImGui::PopID();
             }
@@ -260,7 +262,7 @@ void osc::SplashScreen::draw() {
             for (std::filesystem::path const& ex : impl.mmFileTab.exampleOsimFiles) {
                 ImGui::PushID(++id);
                 if (ImGui::Button(ex.filename().string().c_str())) {
-                    app.requestTransition<LoadingScreen>(impl.mes, ex);
+                    app.requestTransition<LoadingScreen>(impl.maybeMainEditorState, ex);
                 }
                 ImGui::PopID();
             }
