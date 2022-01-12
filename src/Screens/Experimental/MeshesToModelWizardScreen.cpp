@@ -11,6 +11,7 @@
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
+#include "src/Screens/SplashScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
 #include "src/SimTKBindings/SimTKLoadMesh.hpp"
 #include "src/SimTKBindings/SimTKConverters.hpp"
@@ -5358,6 +5359,12 @@ namespace
                 ResetModelGraph(m_Shared->UpdCommittableModelGraph());
                 return true;
             }
+            else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_W))
+            {
+                // Ctrl+W: close
+                App::cur().requestTransition<SplashScreen>();
+                return true;
+            }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
             {
                 // Ctrl+Q: quit application
@@ -6805,14 +6812,14 @@ namespace
         {
             if (ImGui::BeginMenu("File"))
             {
-                if (ImGui::MenuItem(ICON_FA_FILE " New Scene", "Ctrl+N"))
+                if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
                 {
                     ResetModelGraph(m_Shared->UpdCommittableModelGraph());
                 }
 
-                if (ImGui::MenuItem(ICON_FA_ARROW_LEFT " Back to experiments screen"))
+                if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
                 {
-                    App::cur().requestTransition<ExperimentsScreen>();
+                    App::cur().requestTransition<SplashScreen>();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
