@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
     try {
         // init main app (window, OpenGL, etc.)
         App app;
-        app.show<HittestScreen>(); return 0;
 
         if (argc <= 0) {
             app.show<SplashScreen>();
