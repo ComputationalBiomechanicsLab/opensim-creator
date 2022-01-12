@@ -353,17 +353,6 @@ void osc::MainMenuAboutTab::draw() {
     {
         ImGui::Columns(2);
 
-        ImGui::TextUnformatted("ImGui demo");
-        ImGui::SameLine();
-        DrawHelpMarker("shows the standard ImGui demo screen (ImGui::ShowDemoWindow). Useful for finding an ImGui feature.");
-        ImGui::NextColumn();
-        ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_EYE " show")) {
-            App::cur().requestTransition<ImGuiDemoScreen>();
-        }
-        ImGui::PopID();
-        ImGui::NextColumn();
-
         ImGui::TextUnformatted("Experimental Screens");
         ImGui::SameLine();
         DrawHelpMarker("opens a test screen for experimental features - you probably don't care about this, but it's useful for testing hardware features in prod");

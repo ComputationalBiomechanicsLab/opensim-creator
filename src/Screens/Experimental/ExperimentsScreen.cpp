@@ -4,6 +4,7 @@
 #include "src/Screens/Experimental/HelloTriangleScreen.hpp"
 #include "src/Screens/Experimental/HittestScreen.hpp"
 #include "src/Screens/Experimental/ImGuizmoDemoScreen.hpp"
+#include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/Experimental/InstancedRendererScreen.hpp"
 #include "src/Screens/Experimental/MathExperimentsScreen.hpp"
 #include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
@@ -38,6 +39,7 @@ struct ExperimentsScreen::Impl final {
         { "OpenSim mesh importer wizard", transition<MeshesToModelWizardScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
+        { "ImGui", transition<ImGuiDemoScreen> }
     };
 };
 
