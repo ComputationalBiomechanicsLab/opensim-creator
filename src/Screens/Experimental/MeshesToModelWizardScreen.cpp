@@ -1885,17 +1885,7 @@ namespace
             return std::make_unique<ModelGraph>(*this);
         }
 
-        template<typename T = SceneEl>
-        T* TryUpdElByID(UID id)
-        {
-            static_assert(std::is_base_of_v<SceneEl, T>);
 
-            SceneEl* p = TryUpdElByID<SceneEl>(id);
-
-            return p ? dynamic_cast<T*>(p) : nullptr;
-        }
-
-        template<>
         SceneEl* TryUpdElByID(UID id)
         {
             auto it = m_Els.find(id);
@@ -1906,6 +1896,16 @@ namespace
             }
 
             return it->second.get();
+        }
+
+        template<typename T = SceneEl>
+        T* TryUpdElByID(UID id)
+        {
+            static_assert(std::is_base_of_v<SceneEl, T>);
+
+            SceneEl* p = TryUpdElByID(id);
+
+            return p ? dynamic_cast<T*>(p) : nullptr;
         }
 
         template<typename T = SceneEl>
@@ -1932,13 +1932,13 @@ namespace
         template<typename T = SceneEl>
         T const& GetElByID(UID id) const
         {
-            return const_cast<ModelGraph&>(*this).UpdElByID(id);
+            return const_cast<ModelGraph&>(*this).UpdElByID<T>(id);
         }
 
         template<typename T = SceneEl>
         bool ContainsEl(UID id) const
         {
-            return TryGetElByID(id);
+            return TryGetElByID<T>(id);
         }
 
         template<typename T = SceneEl>
@@ -1997,15 +1997,15 @@ namespace
             std::unordered_set<UID> deletionSet;
             PopulateDeletionSet(*el, deletionSet);
 
-            for (UID el : deletionSet)
+            for (UID id : deletionSet)
             {
-                DeSelect(el);
+                DeSelect(id);
 
                 // move element into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted element
                 // still works until an explicit `.GarbageCollect()` call
 
-                auto it = m_Els.find(el);
+                auto it = m_Els.find(id);
                 if (it != m_Els.end())
                 {
                     m_DeletedEls->push_back(std::move(it->second));
@@ -2177,10 +2177,10 @@ namespace
     // returns `true` if `body` participates in any joint in the model graph
     bool IsAChildAttachmentInAnyJoint(ModelGraph const& mg, SceneEl const& el)
     {
-        UID elID = el.GetID();
-        for (JointEl const& el : mg.iter<JointEl>())
+        UID id = el.GetID();
+        for (JointEl const& j : mg.iter<JointEl>())
         {
-            if (el.Child == elID)
+            if (j.Child == id)
             {
                 return true;
             }
