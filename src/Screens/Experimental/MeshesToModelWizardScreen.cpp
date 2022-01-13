@@ -2318,7 +2318,7 @@ namespace
             }
             void operator()(MeshEl const& m) override
             {
-                m_SS << '(' << m.GetClass().GetNameSV() << ", attached to " <<  m.Path.filename() << ')';
+                m_SS << '(' << m.GetClass().GetNameSV() << ", " << m.Path.filename().string() << ", attached to " << GetLabel(m_Mg, m.Attachment) << ')';
             }
             void operator()(BodyEl const& b) override
             {
