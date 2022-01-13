@@ -21,11 +21,11 @@ Getting Started
 
 This is a quick guide for new users. If you have already installed and used OpenSim Creator and are here for specific documentation pages, go to the `Table of Contents`_ section to find something specific.
 
-* Grab an OpenSim Creator release from the `releases <https://github.com/adamkewley/opensim-creator/releases>`_ page on GitHub. Make sure you download a release that is suitable for your machine. Install it according to the installer's instructions.
+* Grab an OpenSim Creator release from the  `📥 releases <https://github.com/adamkewley/opensim-creator/releases>`_ page on GitHub. Make sure you download a release that is suitable for your machine. Install it according to the installer's instructions.
 
 * Boot OpenSim Creator by either:
 
-  * (Windows): Search for "osc" in the start menu and open that. Alternatively, browse to your install location (default: ``C:\Program Files\osc (VERSION)\bin\osc.exe``)
+  * (Windows): Search for "osc" in the start menu and open that. Alternatively, browse to your install location (default: ``C:\Program Files\osc\bin\osc.exe``)
   * (Mac): Search for "osc" in the finder (Super+Space, search, enter). Alternatively, browse to your install location (default: ``/Applications/osc (VERSION)``)
   * (Linux): Search for "osc" in your desktop. Alternatively, browse to your install location (default: ``/opt/osc (VERSION)/bin/osc``)
 
@@ -33,7 +33,7 @@ This is a quick guide for new users. If you have already installed and used Open
 
   * You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. I'd reccommend ``double_pendulum.osim``  for a basic model and ``ToyDropLanding.osim`` for something "meatier"
 
-  * Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start :ref:`tut1`
+  * Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start 📖 :ref:`tut1`
 
 
 Table of Contents
