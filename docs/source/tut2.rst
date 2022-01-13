@@ -10,11 +10,20 @@ In this tutorial, we will be making a bouncing block using OpenSim Creator:
 
     The final model made in this tutorial. It is a three-body system with a spring attached between the head to the foot. Contact geometries are used to make the model bounce on the floor, and constraints are used to prevent it from rolling around (:download:`download model <_static/tut2_constraints-added.osim>`).
 
-In :ref:`tut1`, we created one of the most basic physical systems that can be modelled. This tutorial reinforces those concepts by building a slightly more complex model that requires the use of **collisions**, **forces**, and **constraints**. This tutorial builds the model *incrementally* (i.e. from the ground up), so that we can explore each model-making decision one step at a time.
+In :ref:`tut1`, we created a pendulum: one of the most basic physical systems that can be modelled. This tutorial reinforces those concepts by building a slightly more complex model that requires the use of **collisions**, **forces**, and **constraints**. This tutorial builds the model *incrementally* (i.e. from the ground up), so that we can explore each model-making decision one step at a time.
 
 .. warning::
 
     This tutorial also assumes that you have already completed :ref:`tut1`. The content here will skip over some of the steps that were introduced in that tutorial. If you feel lost at any point, there should be partial solutions available along the way. Keep an eye out for the *download model* links.
+
+
+Topics Covered by this Tutorial
+-------------------------------
+
+* Creating a slightly more advanced (than :ref:`tut1`) model that also contains collisions, forces, and constraints.
+* Setting up the model by editing the collision surfaces/forces (orientations, radii, etc.).
+* How forces are used in OpenSim models. An example of how they can be used (in this tutorial, by adding a spring between model elements)
+* Why constraints are sometimes necessary in OpenSim models.
 
 
 Step 1: Create the Foot
@@ -177,7 +186,7 @@ Step 4: Add a Spring between ``foot`` and ``head``
 
 We now have the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the collision force. If you simulate the model, it won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
 
-The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The only forces acting on the model are external (i.e. gravity), so the model is acting like a passive swing and rolling along its joints.
+The reason this model is unexciting is because there are no forces between the model's bodies. We have attached three bodies (``foot``, ``knee``, and ``head``) with two ``PinJoint`` s and let them drop through space. The only forces acting on the model are external (i.e. gravity), so the model is acting like a passive device that rolls along its joints.
 
 We can add **forces** to the model to make it more interesting. This step will add a ``PointToPointSpring`` between ``foot`` and ``head`` to make the model's head "bounce" away from the foot whenever the model hits the floor.
 
@@ -208,7 +217,7 @@ The model is now *logically* complete--in the sense that it contains all of the 
 
 The reason this happens is because the model isn't perfectly balanced. It is slightly heavier on one side, which causes the whole model to start leaning and, ultimately, roll around. One way to prevent this from happening is to add **constraints** into the model that prevent it from rolling.
 
-One way to think of constraints is as extra "rules" the model must obey. When the model is assembled and simulated, the simulator has to ensure that each state of the model obeys the model's constraints. A common use-case for constraints is to constrain a degree of freedom in the model to simplify the model in some way.
+One way to think of constraints is that they are extra "rules" that the model must obey. When the model is assembled and simulated, the simulator has to ensure that each state of the model obeys the its constraints. A common use-case for constraints is to constrain a degree of freedom in the model to simplify the model in some way.
 
 OpenSim has support for a few different constraints, such as:
 
@@ -239,17 +248,17 @@ With both of those constraints in place, the model now bounces up and down witho
 
 .. note::
 
-    Wait a second, did we just cheat? A "real" model wouldn't have these invisible constraints, right?
+    Wait a second, did we just cheat 🤔? A "real" model wouldn't have these invisible constraints, right?
 
-    Using constraints in this way is a design choice. It depends what you want out of your model.
+    Yes. But using constraints in this way should be seen as a **design** choice. Design choices are dictated by what you ultimately want out of your model.
 
-    Take this model as an example. If your main objective is to figure out which angles, masses, and spring strains lead to a perfectly balanced model (e.g. because optimizing the model's *balance* is the thing you're interested in), then you probably don't want to use constraints: they're interrupting the main objective of the model.
+    Take this model as an example. If your main objective is to figure out which angles, masses, and spring strains lead to a perfectly balanced model (e.g. because optimizing the model's *balance* is what you want out of the model), then you probably don't want to use constraints because they are interrupting the main objective of your model.
 
-    Conversely, if your main objective is to tune the spring and weights to get the vertical "bounce" you want, and you know that the model's balance isn't relevant (e.g. because other investigations or assumptions indicate it will not be relevant),  then you probably do want to use constraints: they will make it easier to focus on the main objective of the model.
+    Conversely, if your main objective is to tune the spring and weights to get the right amount of vertical "bounce" that you want, and you know that the model's balance isn't relevant (e.g. because other investigations or assumptions indicate it will not be relevant, or because you know the device is going to be bounced down something constrained like a tube, etc.),  then you probably do want to use constraints because they will make it easier to focus on the main objective of the model.
 
-    Choosing the right constraints is even more important with complex models. Sure, you *could* perfectly balance a perfectly-represented human on a perfectly-designed bicycle, and ensure that the various muscle controls etc. keep the bike balanced, but getting that right will *probably* take a very long time. For your particular research problem, you might be satisfied with a lower-resolution (e.g. 2D) representation of someone riding a bike. 
+    Choosing the right constraints is even more important with complex models. Sure, you *could* perfectly balance a perfectly-represented human on a perfectly-designed bicycle, and ensure that the various muscle controls etc. keep the bike balanced, but getting that right will *probably* take a very long time (assuming it's even possible). Conversely, you could model a rougher human model on a simpler bicycle model that is constrained to only roll along a 2D plane. That would take significantly less time to build and might be "good enough" for your research question.
 
-    The art of modelling is in figuring out which constraints and simplifications are suitable for your problem. There's a reason why physicists tend to model everything as a sphere - and usually get away with it 😉.
+    The art of modelling is in figuring out which constraints and simplifications are suitable for your problem. There's a reason why physicists tend to model everything as a sphere - and frequently get away with it 😉.
 
 
 (Optional) Extra Exercises
@@ -259,7 +268,7 @@ Now that you have a working model, you can experiment a little bit by doing thes
 
 * **Experiment with the body masses and spring parameters**. What happens if ``head`` is heavier? How does the spring ``stiffness`` affect how the model bounces? Can the floor's contact forces be modified to reduce how much of the drop force is dissipated each bounce? Can you make it bounce for longer?
 
-* **Try opening your model in the official OpenSim GUI**. Save your model to an ``.osim`` and open it in the official OpenSim GUI. This should let you edit coordinates, plot things, etc. The official GUI has features that OpenSim Creator does not have. The benefit of using open file types (here, ``.osim`` s) is that you can use multiple tools with the same file.
+* **Try opening your model in the official OpenSim GUI**. Save your model to an ``.osim`` and open it in the official OpenSim GUI. This should let you edit coordinates, plot things, etc. The official GUI has features that OpenSim Creator does not have. The benefit of using open file types (``.osim`` s) is that you can use multiple tools with your model file.
 
 
 Next Steps
@@ -267,4 +276,4 @@ Next Steps
 
 This tutorial was similar to :ref:`tut1`, but it focused on introducing some of the more practical parts of designing a more complex model. Things like adding **collision geometry**, adding **forces**, and deciding on **constraints**. These are all important parts of the model-building process that come up repeatably when designing OpenSim models.
 
-The next tutorial, :ref:`tut3`, is going to focus on **muscles**, which can be seen as a specialized forces (e.g. like the ``PointToPointSpring`` force we used here) that are typically used in biomechanical models.
+The next tutorial build
