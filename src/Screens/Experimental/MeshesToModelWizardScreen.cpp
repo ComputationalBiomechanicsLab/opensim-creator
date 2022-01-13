@@ -1997,15 +1997,15 @@ namespace
             std::unordered_set<UID> deletionSet;
             PopulateDeletionSet(*el, deletionSet);
 
-            for (UID id : deletionSet)
+            for (UID deletedID : deletionSet)
             {
-                DeSelect(id);
+                DeSelect(deletedID);
 
                 // move element into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted element
                 // still works until an explicit `.GarbageCollect()` call
 
-                auto it = m_Els.find(id);
+                auto it = m_Els.find(deletedID);
                 if (it != m_Els.end())
                 {
                     m_DeletedEls->push_back(std::move(it->second));
