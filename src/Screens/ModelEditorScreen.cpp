@@ -1058,6 +1058,7 @@ namespace {
             if (ImGui::MenuItem("autoscale scale factor")) {
                 float sf = impl.st->editedModel.getUiModel().getRecommendedScaleFactor();
                 impl.st->editedModel.updUiModel().setFixupScaleFactor(sf);
+                impl.st->editedModel.updUiModel().updateIfDirty();
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();

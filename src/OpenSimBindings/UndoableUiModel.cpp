@@ -28,6 +28,7 @@ struct osc::UndoableUiModel::Impl final {
     UiModel m_Backup;
     CircularBuffer<UiModel, 32> m_UndoBuffer;
     CircularBuffer<UiModel, 32> m_RedoBuffer;
+    bool m_Dirty = false;
 
     Impl() :
         m_Current{},
@@ -164,12 +165,13 @@ float osc::UndoableUiModel::getReccommendedScaleFactor() const {
 }
 
 void osc::UndoableUiModel::updateIfDirty() {
-    if (!m_Impl->m_Current.isDirty()) {
+    if (!m_Impl->m_Dirty && !m_Impl->m_Current.isDirty()) {
         return;
     }
 
     try {
         m_Impl->m_Current.updateIfDirty();
+        m_Impl->m_Dirty = false;
     } catch (std::exception const& ex) {
         log::error("exception occurred after applying changes to a model:");
         log::error("%s", ex.what());
@@ -187,18 +189,22 @@ void osc::UndoableUiModel::updateIfDirty() {
 }
 
 void osc::UndoableUiModel::setModelDirtyADVANCED(bool v) {
+    m_Impl->m_Dirty = true;
     m_Impl->m_Current.setModelDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setStateDirtyADVANCED(bool v) {
+    m_Impl->m_Dirty = true;
     m_Impl->m_Current.setStateDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setDecorationsDirtyADVANCED(bool v) {
+    m_Impl->m_Dirty = true;
     m_Impl->m_Current.setDecorationsDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setDirty(bool v) {
+    m_Impl->m_Dirty = true;
     m_Impl->m_Current.setDirty(v);
 }
 
