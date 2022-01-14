@@ -50,8 +50,25 @@ One opened, you will be greeted with a new mesh importer scene, which will be us
     The mesh importer screen, which initially loads with a blank scene that's ready for your masterpiece 🎨
 
 
-Step 2: Add Bodies & PinJoints to Scene
----------------------------------------
+Step 2: Add Bodies & PinJoints
+------------------------------
+
+You can add bodies to the scene by either:
+
+* Right-clicking somewhere in the 3D scene and clicking ``Add Other > Body``
+* Using the dropdown at the top of the scene: ``Add Other > Body``
+
+Joints can be created in the scene by:
+
+* Right-clicking on a **body** in the scene and clicking ``Join to`` or ``Add Other > Joint``
+* Clicking on the thing in the scene that the body should join to
+
+All scene elements can be edited by right-clicking them. Feel free to experiment 👩‍🔬 with the available menus/actions: accidents can always be reversed (``Ctrl+Z`` or ``Edit > Undo``).
+
+
+For this particular model, you will need to:
+
+- Add a body called TODO
 
 
 Step 3: Add Decorative Geometry
