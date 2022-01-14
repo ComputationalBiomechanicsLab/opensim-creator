@@ -71,16 +71,16 @@ When we made ``pendulum_base``, we attached it to the ground with a ``WeldJoint`
 
     OpenSim models are stored in a **hierarchy**. The top-level model "root" contains child components--things like **bodies** and **joints**--and those children, in turn, contain child components--e.g. things like **offset frames** and **decorative geometry**. Clicking something in OpenSim Creator typically selects the exact component you clicked on, so clicking the ``Brick`` in the 3D scene will select the ``Brick`` geometry child of ``pendulum_base``. You can use the hierarchy viewer to see where the selected component is in the model's hierarchy.
 
-    Components in an OpenSim model can also use **sockets** to form a **graph-like** connectivity between eachover. This enables parts of the hierarchy to connect to eachother in a non-hierarchical manner. For example, bodies and joints are direct children of a model--they are siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect two frames, which can be bodies, to eachover in the model.
+    Components in an OpenSim model can also use **sockets** to form a **graph-like** connectivity between each other. This enables parts of the hierarchy to connect to each other in a non-hierarchical manner. For example, bodies and joints are direct children of a model--they are siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect two frames, which can be bodies, to each other in the model.
 
-    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect eachover. That is dictated by the socket connectivity graph. By constrast, the model hierarchy, as shown in the UI, is focused on the **storage structure** of the model, which affects things like where the component's data is ultimately saved in the ``.osim`` file.
+    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That is dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in the UI, is focused on the **storage structure** of the model, which affects things like where the component's data is ultimately saved in the ``.osim`` file.
 
-To reposition ``pendulum_base`` in the scene, we can change the ``translate`` property of either ``ground_offset`` or ``pendulum_base_offset``, which are offset frames that were added into the scene when the ``pendulum_base`` was added with the ``add offset frames`` checkbox ticked. Offset frames dictate that they must be some distance (``translation``) and orientation (``orientation``) away from whichever frame they are connected to (the ``parent`` socket).
+To reposition ``pendulum_base`` in the scene, we can change the ``translate`` property of either ``ground_offset`` or ``pendulum_base_offset``. These are offset frames that were added into the scene because ``pendulum_base`` was added with the ``add offset frames`` checkbox ticked. Offset frames dictate that they must be some distance (``translation``) and orientation (``orientation``) away from whichever frame they are connected to (the ``parent`` socket).
 
 So, to move ``pendulum_base`` in the scene:
 
 * Find ``jointset`` in the hierarchy viewer
-* Find ``base_to_ground`` in the ``jointset``
+* Find ``pendulum_base_to_ground`` in the ``jointset``
 * Find ``ground_offset`` and click it
 * Change the ``translation`` property to ``(0.00, 1.00, 0.00)``
 
@@ -93,9 +93,9 @@ This will move the ``ground_offset`` frame +1 in ground's Y, which is the same a
 
 .. note::
 
-    Although this is only a small part of the model-building process, this first step covers *a lot* of core OpenSim topics such as adding bodies, selecting joints, attaching frames to eachover, and understanding the relative coordinate system.
+    Although this is only a small part of the model-building process, this first step covers *a lot* of core OpenSim topics such as adding bodies, selecting joints, attaching frames to each other, and understanding the relative coordinate system.
 
-    Try to get familiar with these basics. You will encounter them frequently. Experiment by changing the translation of the other offset frame (``base_offset``), use negative translations, attach different geometry, or change the geometry's appearange (for a ``Brick``, half widths can be changed to make it smaller/bigger).
+    Try to get familiar with these basics. You will encounter them frequently. Experiment by changing the translation of the other offset frame (``base_offset``), use negative translations, attach different geometry, or change the geometry's appearance (for a ``Brick``, half widths can be changed to make it smaller/bigger).
 
 
 Step 3: Add the pendulum head
@@ -110,7 +110,7 @@ In the UI, click the ``add body`` button. Create a body with the following detai
     ``pendulum_head``'s' body properties. **Note**: Make sure to also attach a ``Sphere`` generated geometry so the body so that you can see it in the visualizer.
 
 .. warning::
-    This should add ``pendulum_head`` into the scene. **However** you may not be able to see it yet. This is because ``pendulum_head`` is initially at the exact same location as ``pendulum_base`` (it's attached to it) and its represenation (a ``Sphere``) is smaller than ``pendulum_base``'s ``Brick``, so it's initially *inside* ``pendulum_base``.
+    This should add ``pendulum_head`` into the scene. **However** you may not be able to see it yet. This is because ``pendulum_head`` is initially at the exact same location as ``pendulum_base`` (it's attached to it) and its representation (a ``Sphere``) is smaller than ``pendulum_base``'s ``Brick``, so it's initially *inside* ``pendulum_base``.
 
 Next, we need to move ``pendulum_head`` such that it is below ``pendulum_base`` in the scene. It's best to keep the model's topology in mind when doing this. After adding ``pendulum_head``, the new model graph looks something like this:
 
@@ -120,7 +120,7 @@ Next, we need to move ``pendulum_head`` such that it is below ``pendulum_base`` 
 
     Topology of the model after adding ``pendulum_head``. Although we have only added two bodies, ``PhysicalOffsetFrame`` s have also been added between the bodies and their joints. This enables later moving (offsetting) a body relative to a joint it's (indirectly) attached to. Without the offset frames, the bodies would have to be attached at the joint's location. This isn't suitable for a pendulum, where the pendulum's head is typically *offset* from the ``PinJoint`` it will swing on.
 
-The model's topology may look complicated, but keep the main goal in mind: we want ``pendulum_head`` to be offset from the ``PinJoint`` that it will be swinging on. Therefore, we need to change the ``translation`` property of the ``pendulum_head_offset`` that the ``PinJoint`` (``pendulum_head_to_pendulum_base``) is attached to.
+The model's topology may look complicated, but keep our main goal in mind: we want ``pendulum_head`` to be offset from the ``PinJoint`` that it will be swinging on. Therefore, we need to change the ``translation`` property of the ``pendulum_head_offset`` that the ``PinJoint`` (``pendulum_head_to_pendulum_base``) is attached to.
 
 To change the offset between the pendulum head and the ``PinJoint`` it swings on:
 
@@ -144,7 +144,7 @@ After setting ``pendulum_head_offset``'s ``translation`` to ``(0.0, 0.5, 0.0)``,
 
     Looking at the topography graph (above), you'll see that the ``PinJoint`` is attached to both the ``pendulum_head_offset``  and ``pendulum_base_offset`` frames. The ``PinJoint`` enforces that the two frames its attached to are constrained to the same location (the only degree of freedom a ``PinJoint`` has is its single rotational axis). By setting ``pendulum_head_offset``'s translation to ``(0.0, 0.5, 0.0)``, we are stipulating that ``pendulum_head_offset`` *must* be 0.5Y above ``pendulum_head`` (in ``pendulum_head``'s coordinate system). The only way to do this, while ensuring that ``pendulum_head_offset`` is still at the same location as the ``PinJoint``, is to put the ``pendulum_head`` 0.5Y below ``pendulum_head_offset`` in the scene.
 
-    A rule of thumb for understanding how OpenSim resolves locations in the scene is to mentally traverse the topography graph. Start at the ground, which *must* be at ``(0.0, 0.0, 0.0)``, and work towards what you are working on (in this case, ``pendulum_head``). Each element you encounter (e.g. a body, a ``PinJoint``, or an offset frame) may additively enforce some kind of constraint or change in orientation.
+    A rule of thumb for understanding how OpenSim resolves locations in the scene is to mentally traverse the topography graph. Start at the ground, which *must* be at ``(0.0, 0.0, 0.0)``, and work towards what you are working on (in this case, ``pendulum_head``). Each element you encounter (e.g. a body, a ``PinJoint``, or an offset frame) may additively enforce some kind of constraint or change in orientation. A "hacky" trick is just to play around with the offsets to get an idea of their overall effect on the model's layout.
 
 Next, we are going to rotate the pendulum head along its swing direction slightly. At the moment, ``pendulum_head`` is directly below ``pendulum_base``. The only force acting on the scene is gravity, so the pendulum head won't move when we simulate it. You can see this problem for yourself by running a simulation. The scene should be motionless.
 
@@ -169,11 +169,11 @@ If you simulate the model now, you should see that ``pendulum_head`` swings like
 
     Hooray 🎉, we have created a functioning pendulum by adding two bodies and two joints into a model.
 
-    Think about that for a second: at no point in this tutorial did we add anything pendulum-specific into the model (e.g. the pendulum equation). Instead, we created a physical system that has the same **topology** and **constraints** as a pendulum and simulated that system. The simulation then produced the same *behavior* as an ideal pendulum would.
+    Think about that for a second: at no point in this tutorial did we add anything pendulum-specific into the model (e.g. the pendulum equation). Instead, we created a physical system that has the same **topology** and **constraints** as a pendulum and simulated that system. The simulation then produced the same *behavior* as an ideal pendulum.
 
     This approach can be *extremely* useful. It lets us design physical systems on a computer from basic building blocks, followed by simulating those systems to yield physically-representative data. That data can then be compared to scientific predictions, or experimental measurements, to provide a deeper insight.
 
-    Although a pendulum may not be all that impressive, the principles shown here scale to complex systems. Maybe the pendulum equation is simple, but what about a double pendulum, or a triple pendulum? What if we attach the weights to eachover with springs? What about a human leg containing many bodies, muscles, and joints that are attached to eachover in a complex ways? What if the pendulum hits a wall midway through its swing?
+    Although a pendulum may not be all that impressive, the principles shown here scale more easily to complex systems. Maybe the pendulum equation is simple, but what about a double pendulum, or a triple pendulum? What if we attach the weights to each other with muscles? What about a human leg containing many bodies, muscles, and joints that are attached to each other?
 
 
 Step 4: (optional) Make the Pendulum Look Nicer
@@ -205,21 +205,23 @@ Once you've done that, you should end up with a more convincing-looking pendulum
 .. figure:: _static/tut1_appearanceformatted.png
     :width: 60%
 
-    Final pendulum model after updating the appearance. You can download the final model :download:`here <_static/tut1_final-model.osim>`
+    Final pendulum model after updating the appearance. You can download the final model :download:`📥 download model <_static/tut1_final-model.osim>`
 
 
 
 (Optional) Extra Exercises
 --------------------------
 
-* **Make a double pendulum**. Using similar steps to the ones used to set up ``pendulum_head``, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum.
+* **Make a double pendulum**. Using similar steps to the ones used to set up ``pendulum_head``, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :ref:`tut3`.
 
-* **Open the pendulum in the official OpenSim GUI**. Save your pendulum to an ``.osim`` file and open it in the official OpenSim GUI. This will give you the chance to view your model in other software, which might give you extra modelling options (e.g. different plotting tools, more functionality).
+* **Open the pendulum in the official OpenSim GUI**. Save your pendulum to an ``.osim`` file and open it in the official `OpenSim GUI`_. This will give you the chance to view your model in other software, which might give you extra modelling options (e.g. different plotting tools, more functionality).
 
 
 Next Steps
 ----------
 
-Although the model created here is simple, this tutorial had to  introduce quite a few OpenSim concepts that you will encounter again and again. Concepts like **bodies**, **joints**, **constraints**, and the **relative coordinate system**.
+Although the model created here is simple, this tutorial had to  introduce quite a few OpenSim concepts that you will repeatably encounter. Concepts like **bodies**, **joints**, **constraints**, and the **relative coordinate system**.
 
 The next tutorial will reinforce these concepts by creating a more complex (but not quite biomechanical, yet 😉) model using these concepts, while introducing new things like collision detection and data extraction.
+
+.. _OpenSim GUI: https://github.com/opensim-org/opensim-gui

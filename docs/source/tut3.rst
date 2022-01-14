@@ -8,19 +8,11 @@ In this tutorial, we will be using the mesh importer feature of OpenSim Creator 
 .. figure:: _static/tut3_result.png
     :width: 60%
 
-    The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pinjoints, with decorative meshes used for the heads + struts. The mesh importer screen can be handy for creating new models because it is designed to use absolute coordinates and have multiple utilities for moving and orienting things in the model.
+    The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pinjoints, with decorative meshes used for the heads + struts. TODO DOWNLOAD MODEL
 
-Although the model we will make in this tutorial is effectively an extension of :ref:`tut1`, the **method** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor.
+Although the model we will make in this tutorial is effectively an extension of :ref:`tut1`, the **method** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
 
-The mesh importer is designed to be *a lot* more relaxed about how/when things can be placed in the scene. Key differences:
-
-* **You can add bodies whenever/wherever you want in the scene**. The mesh importer will automatically add a ``FreeJoint`` if it detects that the body isn't connected to ground. Connections between bodies and joints can be modified at any time. A body's location in 3D space is free-form and the mesh importer will automatically compute the ``OffsetFrame`` necessary to place the body in the exported OpenSim model.
-
-* **You can freely move, orient, and scale anything in the scene - including joints**. The mesh importer uses an absolute coordinate system, rather than a relative one (OpenSim's default). This is a disadvantage when simulating relative quantities (e.g. joint angles), but can be simpler to work with when initially designing the topology of a model. You can move any element in the scene without having to worry about relative coordinate systems, attached elements shifting around, etc.
-
-* **There are more tools for placement/orientation**. Because of the above points (free-form placement, absolute coordinate systems), the mesh importer has more tools available for freely placing things in the model. E.g. it contains tools for orienting things along mesh points, moving elements between other elements, etc.
-
-Overall, the mesh importer is "looser" than the main ``osim`` editor. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended a *first-step* utility that helps set up the top-level model (e.g. body placement, joint placement) such that it's ready for ``osim`` editor to tackle the more complicated steps (adding/editing forces, contact surfaces, muscles, etc.).
+The mesh importer is "looser" than the main ``osim`` editor. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended a *first-step* utility that helps set up the top-level ``osim`` model ready for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
 
 
 Topics Covered by this Tutorial
@@ -69,6 +61,17 @@ All scene elements can be edited by right-clicking them. Feel free to experiment
 For this particular model, you will need to:
 
 - Add a body called TODO
+
+NAMING CONVENTIONS
+
+* pendulum_base
+* ground_offset, pendulum_base_offset (uh - weld joint?)
+* pendulum_base_to_ground (WeldJoint)
+* pendulum_head
+* pendulum_head_to_pendulum_base
+* pendulum_head_2
+* pendulum_head_2_to_pendulum_head
+
 
 
 Step 3: Add Decorative Geometry

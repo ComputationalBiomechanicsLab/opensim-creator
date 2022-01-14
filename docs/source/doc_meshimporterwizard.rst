@@ -14,6 +14,17 @@ This is a standalone documentation page for the Mesh Importer Wizard feature in 
 
     🚧 This documentation is work in progress 🚧. The mesh importer wizard is a new feature in OpenSim Creator and is still being changed frequently. Because of that, this documentation might not be accurate.
 
+TODO
+The mesh importer is designed to be *a lot* more relaxed about how/when things can be placed in the scene. Key differences:
+
+* **You can add bodies whenever/wherever you want in the scene**. The mesh importer will automatically add a ``FreeJoint`` if it detects that the body isn't connected to ground. Connections between bodies and joints can be modified at any time. A body's location in 3D space is free-form and the mesh importer will automatically compute the ``OffsetFrame`` necessary to place the body in the exported OpenSim model.
+
+* **You can freely move, orient, and scale anything in the scene - including joints**. The mesh importer uses an absolute coordinate system, rather than a relative one (OpenSim's default). This is a disadvantage when simulating relative quantities (e.g. joint angles), but can be simpler to work with when initially designing the topology of a model. You can move any element in the scene without having to worry about relative coordinate systems, attached elements shifting around, etc.
+
+* **There are more tools for placement/orientation**. Because of the above points (free-form placement, absolute coordinate systems), the mesh importer has more tools available for freely placing things in the model. E.g. it contains tools for orienting things along mesh points, moving elements between other elements, etc.
+
+The mesh importer is "looser" than the main ``osim`` editor. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended a *first-step* utility that helps set up the top-level model (e.g. body placement, joint placement) such that it's ready for ``osim`` editor to tackle the more complicated steps (adding/editing forces, contact surfaces, muscles, etc.).
+
 
 Accessing
 ---------
