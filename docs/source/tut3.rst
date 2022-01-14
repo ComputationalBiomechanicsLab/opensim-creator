@@ -3,16 +3,18 @@
 Tutorial 3: Use the Mesh Importer
 =================================
 
-In this tutorial, we will be using the mesh importer feature of OpenSim Creator to create a pendulum:
+In this tutorial, we will be using the mesh importer feature of OpenSim Creator to create a double pendulum:
 
 .. figure:: _static/tut3_result.png
     :width: 60%
 
     The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pinjoints, with decorative meshes used for the heads + struts. TODO DOWNLOAD MODEL
 
-Although the model we will make in this tutorial is effectively an extension of :ref:`tut1`, the **method** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
+The mesh importer is "looser" than the main ``osim`` editor, which can make placing and orienting bodies/joints easier. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
 
-The mesh importer is "looser" than the main ``osim`` editor. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended a *first-step* utility that helps set up the top-level ``osim`` model ready for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
+Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
+
+Because this is a later tutorial that re-visits earlier content (albeit, with a new approach), this tutorial assumes the reader knows a little bit more about OpenSim, bodies, joints, etc. Because of that, each step here will require more--but hopefully, by now, familiar--actions. You're getting faster ⚡!
 
 
 Topics Covered by this Tutorial
@@ -39,52 +41,126 @@ One opened, you will be greeted with a new mesh importer scene, which will be us
 .. figure:: _static/tut3_opened-meshimporter.png
     :width: 60%
 
-    The mesh importer screen, which initially loads with a blank scene that's ready for your masterpiece 🎨
+    The mesh importer screen, which initially loads with a blank scene that's ready for your masterpiece 🎨. The majority of this tutorial is carried out through this screen.
 
 
 Step 2: Add Bodies & PinJoints
 ------------------------------
 
-You can add bodies to the scene by either:
+.. note::
 
-* Right-clicking somewhere in the 3D scene and clicking ``Add Other > Body``
-* Using the dropdown at the top of the scene: ``Add Other > Body``
+    In the mesh importer, bodies are added into the scene by either right-clicking somewhere in the 3D scene and clicking ``Add Other > Body`` or by using the dropdown at the top of the scene: ``Add Other > Body``.
 
-Joints can be created in the scene by:
+    Joints are added by right-clicking on a **body** in the scene and clicking ``Join to`` or ``Add Other > Joint`` (this will become the joint's child), followed by selecting what should be joined to (this will become the joint's parent).
 
-* Right-clicking on a **body** in the scene and clicking ``Join to`` or ``Add Other > Joint``
-* Clicking on the thing in the scene that the body should join to
+    All scene elements in the mesh importer can be edited by right-clicking them. Feel free to experiment 👩‍🔬 with the available menus/actions. Accidents can always be reversed with **undo** (``Ctrl+Z`` or ``Edit > Undo``).
 
-All scene elements can be edited by right-clicking them. Feel free to experiment 👩‍🔬 with the available menus/actions: accidents can always be reversed (``Ctrl+Z`` or ``Edit > Undo``).
+To add the various bodies + joints into the model, you will need to:
 
+- **Create the top pendulum body**:
 
-For this particular model, you will need to:
+  * Add a body into the scene. 
+  * Name it ``pendulum_head``.
+  * Translate it to where the top pendulum head should be (recommended: ``(0.0, 0.5, 0.0)``).
 
-- Add a body called TODO
+- **Create the bottom pendulum body**:
 
-NAMING CONVENTIONS
+  * Add another body into the scene.
+  * Name it ``pendulum_head_2``.
+  * Translate it to where the bottom pendulum head should be (recommended: ``(0.0, 0.25, 0.0)``)
 
-* pendulum_base
-* ground_offset, pendulum_base_offset (uh - weld joint?)
-* pendulum_base_to_ground (WeldJoint)
-* pendulum_head
-* pendulum_head_to_pendulum_base
-* pendulum_head_2
-* pendulum_head_2_to_pendulum_head
+- **Join the two pendulums with a PinJoint**:
 
+  * Right-click the bottom pendulum, use ``Join to`` or ``Add Other > Joint`` and click the top pendulum to create a new joint between them.
+  * Name it ``pendulum_head_2_to_pendulum_head``.
+  * Translate it to the location of the top pendulum (i.e. the pivot point, either type in ``pendulum_head``'s translation, or use ``Translate >> to parent``, to move it).
+  * Change its joint type to ``PinJoint``.
+
+- **Join the top pendulum to ground with a PinJoint**:
+
+  * Right-click the top pendulum, use ``Join to`` or ``Add other > Joint`` and click ground to create a joint between the top pendulum and ground.
+  * Name it ``pendulum_head_to_ground``
+  * Translate it to the location of the ``pendulum_base`` (i.e. "the ceiling" in this model, recommended: ``(0.0, 0.75, 0.0)``)
+  * Change its joint type to ``PinJoint``
+
+The above steps set up all the bodies + joints in the model. You should have something that looks like this:
+
+**TODO: SCREENSHOT OF PENDULUM IN MESH IMPORTER**
+
+Converting a mesh importer scene into an OpenSim model is a one-way process, but your progress in the mesh importer will be **not** be lost when you export the scene. Re-opening the mesh importer will "remember" your scene. So, if you want to test whether you have actually created a pendulum, you can:
+
+* *(optional)* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
+* *(optional)* **Simulate the model**. Confirm that both bodies swing like a double pendulum. If they don't reopen the mesh importer and start fixing things 🔧.
+* *(optional)* **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
+
+.. warning::
+
+    These optional steps above are just to test the model in OpenSim. Switch back to the mesh importer for the next step.
+
+**TODO: SCREENSHOT OF SWINGING BUT MESHLESS PENDULUM SWINGING IN SIMULATOR**
 
 
 Step 3: Add Decorative Geometry
 -------------------------------
 
+Although the previous steps create a *functionally* complete model, it doesn't look like a particularly convincing pendulum. These steps add decorative geometry to fix that.
+
+The mesh importer has the ability to add **meshes** into the scene, freely move/rotate them, and attach them to bodies/ground. This is in contrast to :ref:`tut1` and :ref:`tut2`, where we manually offset frames to be wherever we wanted decorations. Internally, the mesh importer is performing similar steps, but automates them.
+
+To decorate the model:
+
+* Attach a cube mesh to ground (the ceiling):
+
+  * TODO
+
+* Attach a cube mesh to the top pendulum:
+
+  * TODO
+
+* Attach a cube mesh to the bottom pendulum:
+
+  * TODO
+
+* Attach a cube mesh between the top pendulum and the ceiling:
+
+  * TODO
+
+* Attach a cube mesh between the bottom and top pendulums:
+
+  * TODO
+
+This should result in something like this
+
+**TODO: SCREENSHOT OF PENDULUM SWINGING IN SIMULATOR**
+
 
 Step 4: Export and Simulate
 ---------------------------
+
+Now that we have created the fully modelled and decorated pendulum, we can export it to an ``osim`` and simulate it. The ``osim`` editor also contains basic support for plotting model outputs. To do that:
+
+* Click the ``Export to OpenSim Model`` button in the mesh importer
+* Right-click the pendulum head TODO ADD OUTPUT PLOT
+* Press ``Ctrl+R`` (run simulation) to start running a forward-dynamic simulation
+
+**TODO: SCREENSHOT OF PENDULUM SWINGING IN SIMULATOR**
+
+*Et voilà*, you have created a functioning OpenSim model by mostly using the free-form mesh importer screen 🎉. You're getting good at this.
 
 
 (Optional) Extra Exercises
 --------------------------
 
+Now that you have played with both the mesh importer and ``osim`` editor a little bit, here are some extra things you can explore:
+
+* **Create more complex joint topologies**: Try a triple pendulum, attach the pendulum to ground with a ``SliderJoint``, rather than a ``PinJoint`` and watch it slide around. Look up some basic mechanical devices on Google and see if you can roughly get them simulating by placing a few joints + bodies in the mesh importer, followed by adding a few springs and contact surfaces in the ``osim`` editr (see :ref:`tut2`).
+
+* **Try attaching more complex meshes**: Swinging cubes are cool, but swinging skulls are even cooler 💀. Instead of a cuboid strut, why not join the pendulum pieces together with a finger bone mesh. Think about how you can use these simple techniques to "leap" from building simple mechanisms (pendulums) to more complex ones (human biomechanics).
+
 
 Next Steps
 ----------
+
+This tutorial mostly focused on using the mesh importer to accelerate the earliest parts of the model building process. The benefit of knowing this approach in addition to the approaches covered in :ref:`tut1` and :ref:`tut2` is that it's easier to place/rotate bodies/joints in the mesh importer.
+
+Now that we've introduced OpenSim Creator's general toolset (specifically, the mesh impoter, ``osim`` editor, and simulator), we are going to start increasing the complexity of the models we work on. :ref:`tut4` focuses on using the techniques we've covered to build something more complex: a human hand.
