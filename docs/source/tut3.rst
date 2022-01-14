@@ -10,7 +10,7 @@ In this tutorial, we will be using the mesh importer feature of OpenSim Creator 
 
     The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pinjoints, with decorative meshes used for the heads + struts. TODO DOWNLOAD MODEL
 
-The mesh importer is "looser" than the main ``osim`` editor, which can make placing and orienting bodies/joints easier. However, it's disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
+The mesh importer is "looser" than the main ``osim`` editor. This can make placing and orienting bodies/joints easier. However, its disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
 
 Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
 
@@ -109,25 +109,32 @@ The mesh importer has the ability to add **meshes** into the scene, freely move/
 
 To decorate the model:
 
-* Attach a cube mesh to ground (the ceiling):
+* **Attach a cube mesh to ground (the ceiling)**:
 
-  * TODO
+  * Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to attach ``block.vtp`` to ground. TODO need to explain where ``block.vtp`` is until there's in-UI support for analytic geometry
+  * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``)
+  * Rescale the mesh so that it's a thin "ceiling" cuboid rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``).
 
-* Attach a cube mesh to the top pendulum:
+* **Attach a cube mesh to the top pendulum**:
 
-  * TODO
+  * Right-click the top pendulum body (``pendulum_head``) and use the ``Add Other > Meshes`` to attach ``block.vtp`` to it.
+  * Move (``G``), Rotate (``R``), or Scale (``S``) the mesh however you like (recommended: keep it on top of the pendulum's body) by either using the in-UI draggable gizmos or typing values into the context menu
 
-* Attach a cube mesh to the bottom pendulum:
+* **Attach a cube mesh to the bottom pendulum**:
 
-  * TODO
+  * As above, but right-click the bottom pendulum body (``pendulum_head_2``)
 
-* Attach a cube mesh between the top pendulum and the ceiling:
+* **Attach a cube mesh between the top pendulum and the ceiling (a strut)**:
 
-  * TODO
+  * This mesh will act as a strut between the top pendulum and the ceiling. Therefore, it will move whenever the pendulum moves, so it should also be attached to the highest pendulum body.
+  * As in previous steps, you can attach it by right-clicking the pendulum body (``pendulum_head``). However, the pendulum body might now be occluded by the cube you added in the previous step. To work around this, you can right-click the body in the hierarchy viewer, which will show the same menu as right-clicking it in the 3D viwer. Alternatively, you can temporarily make meshes invisible (in the ``Visibility`` menu), or temporarily exclude meshes from being clickable (in the ``Interactivity`` TODO menu). You can also combine the two approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity. The "best" approach depends on what kind of model you are working on.
+  * Once the mesh is attached, move it between the ``pendulum_head`` and the pinjoint that's acting as the base (``pendulum_head_to_ground``)
+  * Rescale (``S``) it to make a long, thin, pendulum strut
 
 * Attach a cube mesh between the bottom and top pendulums:
 
-  * TODO
+  * As above, but this strut will track along with the bottom pendulum (``pendulum_head_2``), so make sure the mesh is attached to that.
+  * This mesh needs to be between the bottom pendulum and the top pendulum.
 
 This should result in something like this
 
