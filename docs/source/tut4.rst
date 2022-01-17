@@ -1,5 +1,6 @@
 .. _tut4:
 
+
 Tutorial 4: Make a Hand
 =======================
 
@@ -20,8 +21,10 @@ Here, we will be using those techniques *ad nauseam* to create a model with many
 Topics Covered by this Tutorial
 -------------------------------
 
+
 (Optional) Extra Exercises
 --------------------------
+
 
 Next Steps
 ----------

@@ -29,11 +29,11 @@ Topics Covered by this Tutorial
 Step 1: Create the Foot
 -----------------------
 
-Because of how OpenSim computes a model's spatial layout, the most straightforward way to develop a new OpenSim model is to start at whichever body will be directly attached to ground (e.g. ``foot``) followed by adding bodies that are, in turn, attached to that (e.g. ``knee``). Starting from the "middle" (e.g. ``knee``), or a "leaf", of a model's topography graph is more challening because the position and orientation of those entities may change when they are attached to bodies that are (topographically) closer to ground.
+Because of how OpenSim computes a model's spatial layout, the most straightforward way to develop a new OpenSim model is to start at whichever body will be directly attached to ground (e.g. ``foot``) followed by adding bodies that are, in turn, attached to that (e.g. ``knee``). Starting from the "middle" (e.g. ``knee``), or a "leaf", of a model's topology graph is more challenging because the position and orientation of those entities may change when they are attached to bodies that are (topographically) closer to ground.
 
 .. note::
 
-    The body that is attached to ground does **not** need to be the body that is spatically closest to ground in the model. It just needs to be whichever body you think should be positioned relative to ground. In this tutorial, we are starting at the ``foot``, which happens to also be the body that's closest to the ground. Conversely, OpenSim Creator contains an example model, ``bouncing_block.osim``, which is similar to the model we will build here, but built from the ``head`` towards the ``foot``.
+    The body that is attached to ground does **not** need to be the body that is spatially closest to ground in the model. It just needs to be whichever body you think should be positioned relative to ground. In this tutorial, we are starting at the ``foot``, which happens to also be the body that's closest to the ground. Conversely, OpenSim Creator contains an example model, ``bouncing_block.osim``, which is similar to the model we will build here, but built from the ``head`` towards the ``foot``.
 
     The reason that this tutorial builds this model from the ``foot`` upwards is so that we can experiment with collisions earlier in the tutorial. If we built the model from the ``head``, we would have to wait until the ``knee``, ``foot``, and ``foot_collision`` were added before we could experiment with collisions.
 
@@ -73,7 +73,7 @@ If you simulate the model at this point, the ``foot`` will just fall through the
 
 In order to give these things a "size" that can "collide", we need to explicitly add ``ContactGeometry`` into the model at locations where we *logically* expect collisions to take place. In this case, we will add ``ContactGeometry`` at the same location as the decorations.
 
-To attach a collideable floor (a ``ContactHalfSpace``) to the ground of the model:
+To attach a collidable floor (a ``ContactHalfSpace``) to the ground of the model:
 
 * Click the ``add contact geometry`` button, then ``ContactHalfSpace``
 * Give the ``ContactHalfSpace`` the following properties:

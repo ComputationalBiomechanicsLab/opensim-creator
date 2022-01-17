@@ -127,7 +127,7 @@ To decorate the model:
 * **Attach a cube mesh between the top pendulum and the ceiling (a strut)**:
 
   * This mesh will act as a strut between the top pendulum and the ceiling. Therefore, it will move whenever the pendulum moves, so it should also be attached to the highest pendulum body.
-  * As in previous steps, you can attach it by right-clicking the pendulum body (``pendulum_head``). However, the pendulum body might now be occluded by the cube you added in the previous step. To work around this, you can right-click the body in the hierarchy viewer, which will show the same menu as right-clicking it in the 3D viwer. Alternatively, you can temporarily make meshes invisible (in the ``Visibility`` menu), or temporarily exclude meshes from being clickable (in the ``Interactivity`` TODO menu). You can also combine the two approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity. The "best" approach depends on what kind of model you are working on.
+  * As in previous steps, you can attach it by right-clicking the pendulum body (``pendulum_head``). However, the pendulum body might now be occluded by the cube you added in the previous step. To work around this, you can right-click the body in the hierarchy viewer, which will show the same menu as right-clicking it in the 3D viewer. Alternatively, you can temporarily make meshes invisible (in the ``Visibility`` menu), or temporarily exclude meshes from being clickable (in the ``Interactivity`` TODO menu). You can also combine the two approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity. The "best" approach depends on what kind of model you are working on.
   * Once the mesh is attached, move it between the ``pendulum_head`` and the pinjoint that's acting as the base (``pendulum_head_to_ground``)
   * Rescale (``S``) it to make a long, thin, pendulum strut
 
@@ -160,7 +160,7 @@ Now that we have created the fully modelled and decorated pendulum, we can expor
 
 Now that you have played with both the mesh importer and ``osim`` editor a little bit, here are some extra things you can explore:
 
-* **Create more complex joint topologies**: Try a triple pendulum, attach the pendulum to ground with a ``SliderJoint``, rather than a ``PinJoint`` and watch it slide around. Look up some basic mechanical devices on Google and see if you can roughly get them simulating by placing a few joints + bodies in the mesh importer, followed by adding a few springs and contact surfaces in the ``osim`` editr (see :ref:`tut2`).
+* **Create more complex joint topologies**: Try a triple pendulum, attach the pendulum to ground with a ``SliderJoint``, rather than a ``PinJoint`` and watch it slide around. Look up some basic mechanical devices on Google and see if you can roughly get them simulating by placing a few joints + bodies in the mesh importer, followed by adding a few springs and contact surfaces in the ``osim`` editor (see :ref:`tut2`).
 
 * **Try attaching more complex meshes**: Swinging cubes are cool, but swinging skulls are even cooler 💀. Instead of a cuboid strut, why not join the pendulum pieces together with a finger bone mesh. Think about how you can use these simple techniques to "leap" from building simple mechanisms (pendulums) to more complex ones (human biomechanics).
 
@@ -170,4 +170,4 @@ Next Steps
 
 This tutorial mostly focused on using the mesh importer to accelerate the earliest parts of the model building process. The benefit of knowing this approach in addition to the approaches covered in :ref:`tut1` and :ref:`tut2` is that it's easier to place/rotate bodies/joints in the mesh importer.
 
-Now that we've introduced OpenSim Creator's general toolset (specifically, the mesh impoter, ``osim`` editor, and simulator), we are going to start increasing the complexity of the models we work on. :ref:`tut4` focuses on using the techniques we've covered to build something more complex: a human hand.
+Now that we've introduced OpenSim Creator's general toolset (specifically, the mesh importer, ``osim`` editor, and simulator), we are going to start increasing the complexity of the models we work on. :ref:`tut4` focuses on using the techniques we've covered to build something more complex: a human hand.
