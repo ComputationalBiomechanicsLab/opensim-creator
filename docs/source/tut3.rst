@@ -14,7 +14,7 @@ The mesh importer is "looser" than the main ``osim`` editor. This can make placi
 
 Although the **model** we will make in this tutorial is effectively an extension of :ref:`tut1`, the **approach** used here is different. Here, we will be using the mesh importer feature of OpenSim Creator to create the model, rather than building the model directly in the OpenSim model (``.osim``) editor screen.
 
-Because this is a later tutorial that re-visits earlier content (albeit, with a new approach), this tutorial assumes the reader knows a little bit more about OpenSim, bodies, joints, etc. Because of that, each step here will require more--but hopefully, by now, familiar--actions. You're getting faster ⚡!
+This tutorial assumes the reader knows a little bit more about OpenSim, bodies, joints, etc. Because of that, each step here will require more--but hopefully, by now, familiar--actions. You're getting faster ⚡!
 
 
 Topics Covered by this Tutorial
@@ -28,7 +28,7 @@ Topics Covered by this Tutorial
 Step 1: Open the Mesh Importer
 ------------------------------
 
-The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported (one-way) to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the splash screen:
+The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the splash screen:
 
 .. figure:: _static/tut3_open-meshimporter.png
     :width: 60%
@@ -53,7 +53,7 @@ Step 2: Add Bodies & PinJoints
 
     Joints are added by right-clicking on a **body** in the scene and clicking ``Join to`` or ``Add Other > Joint`` (this will become the joint's child), followed by selecting what should be joined to (this will become the joint's parent).
 
-    All scene elements in the mesh importer can be edited by right-clicking them. Feel free to experiment 👩‍🔬 with the available menus/actions. Accidents can always be reversed with **undo** (``Ctrl+Z`` or ``Edit > Undo``).
+    All scene elements in the mesh importer can be edited by right-clicking them. Feel free to experiment with the available menus/actions 👩‍🔬. Accidents can always be reversed with **undo** (``Ctrl+Z`` or ``Edit > Undo``).
 
 To add the various bodies + joints into the model, you will need to:
 
@@ -87,10 +87,10 @@ The above steps set up all the bodies + joints in the model. You should have som
 
 **TODO: SCREENSHOT OF PENDULUM IN MESH IMPORTER**
 
-Converting a mesh importer scene into an OpenSim model is a one-way process, but your progress in the mesh importer will be **not** be lost when you export the scene. Re-opening the mesh importer will "remember" your scene. So, if you want to test whether you have actually created a pendulum, you can:
+You can also try converting the scene to an OpenSim model (``osim``). This is a one-way process, but your progress in the mesh importer will be **not** be lost when you convert it to an ``osim``. Re-opening the mesh importer will "remember" your scene. So, if you want to test whether you have actually created a pendulum, you can:
 
 * *(optional)* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
-* *(optional)* **Simulate the model**. Confirm that both bodies swing like a double pendulum. If they don't reopen the mesh importer and start fixing things 🔧.
+* *(optional)* **Simulate the model**. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
 * *(optional)* **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 .. warning::
@@ -103,9 +103,9 @@ Converting a mesh importer scene into an OpenSim model is a one-way process, but
 Step 3: Add Decorative Geometry
 -------------------------------
 
-Although the previous steps create a *functionally* complete model, it doesn't look like a particularly convincing pendulum. These steps add decorative geometry to fix that.
+Although the previous steps create a *functionally* complete model, the model doesn't look like a particularly convincing pendulum. These steps add decorative geometry to fix that.
 
-The mesh importer has the ability to add **meshes** into the scene, freely move/rotate them, and attach them to bodies/ground. This is in contrast to :ref:`tut1` and :ref:`tut2`, where we manually offset frames to be wherever we wanted decorations. Internally, the mesh importer is performing similar steps, but automates them.
+The mesh importer has the ability to add **meshes** into the scene, freely move/rotate them, and attach them to bodies/ground. This is in contrast to :ref:`tut1` and :ref:`tut2`, where we had to manually place offset frames wherever we wanted decorations. Internally, the mesh importer is performing similar steps, but automates them.
 
 To decorate the model:
 
@@ -113,7 +113,7 @@ To decorate the model:
 
   * Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to attach ``block.vtp`` to ground. TODO need to explain where ``block.vtp`` is until there's in-UI support for analytic geometry
   * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``)
-  * Rescale the mesh so that it's a thin "ceiling" cuboid rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``).
+  * Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). TODO recommended scale factor numbers.
 
 * **Attach a cube mesh to the top pendulum**:
 
@@ -131,12 +131,13 @@ To decorate the model:
   * Once the mesh is attached, move it between the ``pendulum_head`` and the pinjoint that's acting as the base (``pendulum_head_to_ground``)
   * Rescale (``S``) it to make a long, thin, pendulum strut
 
-* Attach a cube mesh between the bottom and top pendulums:
+* **Attach a cube mesh between the bottom and top pendulums**:
 
   * As above, but this strut will track along with the bottom pendulum (``pendulum_head_2``), so make sure the mesh is attached to that.
   * This mesh needs to be between the bottom pendulum and the top pendulum.
 
-This should result in something like this
+
+This should result in a fully-decorated pendulum model:
 
 **TODO: SCREENSHOT OF PENDULUM SWINGING IN SIMULATOR**
 
@@ -149,6 +150,7 @@ Now that we have created the fully modelled and decorated pendulum, we can expor
 * Click the ``Export to OpenSim Model`` button in the mesh importer
 * Right-click the pendulum head TODO ADD OUTPUT PLOT
 * Press ``Ctrl+R`` (run simulation) to start running a forward-dynamic simulation
+* Ensure the ``Outputs`` panel is showing (``Window > Outputs`` should be enabled)
 
 **TODO: SCREENSHOT OF PENDULUM SWINGING IN SIMULATOR**
 
