@@ -1,6 +1,7 @@
 #include "os.hpp"
 
 #include "src/Log.hpp"
+#include "src/Utils/ScopeGuard.hpp"
 
 #include <nfd.h>
 #include <SDL_clipboard.h>
@@ -17,21 +18,21 @@
 
 using std::literals::string_literals::operator""s;
 
-static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p) {
-    if (p == nullptr) {
+static std::filesystem::path convertSDLPathToStdpath(char const* methodname, char* p)
+{
+    if (p == nullptr)
+    {
         std::stringstream ss;
-        ss << methodname;
-        ss << ": returned null: ";
-        ss << SDL_GetError();
+        ss << methodname << ": returned null: " << SDL_GetError();
         throw std::runtime_error{std::move(ss).str()};
     }
 
     size_t len = std::strlen(p);
 
-    if (len == 0) {
+    if (len == 0)
+    {
         std::stringstream ss;
-        ss << methodname;
-        ss << ": returned an empty string";
+        ss << methodname << ": returned an empty string";
         throw std::runtime_error{std::move(ss).str()};
     }
 
@@ -41,33 +42,43 @@ static std::filesystem::path convertSDLPathToStdpath(char const* methodname, cha
     return std::filesystem::path{p};
 }
 
-static std::filesystem::path getCurrentExeDir() {
+static std::filesystem::path getCurrentExeDir()
+{
     std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetBasePath(), SDL_free};
+
     return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
 }
 
-static std::filesystem::path getUserDataDir() {
+static std::filesystem::path getUserDataDir()
+{
     std::unique_ptr<char, decltype(&SDL_free)> p{SDL_GetPrefPath("cbl", "osc"), SDL_free};
+
     return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
 }
 
-std::filesystem::path const& osc::CurrentExeDir() {
+std::filesystem::path const& osc::CurrentExeDir()
+{
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = getCurrentExeDir();
+
     return d;
 }
 
-std::filesystem::path const& osc::GetUserDataDir() {
+std::filesystem::path const& osc::GetUserDataDir()
+{
     // can be expensive to compute: cache after first retrieval
     static std::filesystem::path const d = getUserDataDir();
+
     return d;
 }
 
-bool osc::SetClipboardText(char const* s) {
+bool osc::SetClipboardText(char const* s)
+{
     return SDL_SetClipboardText(s) == 0;
 }
 
-void osc::SetEnv(char const* name, char const* value, bool overwrite) {
+void osc::SetEnv(char const* name, char const* value, bool overwrite)
+{
     SDL_setenv(name, value, overwrite ? 1 : 0);
 }
 
@@ -77,8 +88,9 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
     nfdresult_t result = NFD_OpenDialogMultiple(extensions, defaultPath, &s);
 
     std::vector<std::filesystem::path> rv;
-    if (result == NFD_OKAY) {
 
+    if (result == NFD_OKAY)
+    {
         size_t len = NFD_PathSet_GetCount(&s);
         rv.reserve(len);
         for (size_t i = 0; i < len; ++i) {
@@ -86,9 +98,12 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
         }
 
         NFD_PathSet_Free(&s);
-
-    } else if (result == NFD_CANCEL) {
-    } else {
+    }
+    else if (result == NFD_CANCEL)
+    {
+    }
+    else
+    {
         log::error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
     }
 
@@ -204,52 +219,114 @@ void osc::InstallBacktraceHandler() {
     }
 }
 
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
+    // fork a subprocess
+    pid_t pid = fork();
+
+    if (pid == -1) {
+        // failed to fork a process
+        log::error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
+        return;
+    } else if (pid != 0) {
+        // fork successful and this thread is inside the parent
+        //
+        // have the parent thread `wait` for the child thread to finish
+        // what it's doing (xdg-open, itself, forks + detaches)
+        log::info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
+
+        int rv;
+        waitpid(pid, &rv, 0);
+
+        if (rv) {
+            log::error("fork()ed subprocess returned an error code of %i", rv);
+        }
+
+        return;
+    } else {
+        // fork successful and we're inside the child
+        //
+        // immediately `exec` into `xdg-open`, which will aggro-replace this process
+        // image (+ this thread) with xdg-open
+        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), (char*)NULL);
+
+        // this thread only reaches here if there is some kind of error in `exec`
+        //
+        // aggressively exit this thread, returning the status code. Do **not**
+        // return from this thread, because it should'nt behave as-if it were
+        // the calling thread
+        exit(rv);
+    }
+}
+
+void osc::OpenURLInDefaultBrowser(std::string_view vw) {
+    // HACK: we know that xdg-open handles this automatically
+    OpenPathInOSDefaultApplication(vw);
+}
+
 #elif defined(__APPLE__)
 #include <execinfo.h>  // backtrace(), backtrace_symbols()
 #include <signal.h>  // sigaction(), struct sigaction, strsignal()
 #include <stdlib.h>  // exit(), free()
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+{
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
 
-    if (messages == nullptr) {
+    if (messages == nullptr)
+    {
         return;
     }
 
-    for (int i = 0; i < size; ++i) {
+    OSC_SCOPE_GUARD({ free(messages); });
+
+    for (int i = 0; i < size; ++i)
+    {
         osc::log::log(lvl, "%s", messages[i]);
     }
-
-    free(messages);
 }
 
-[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext) {
+[[noreturn]] static void OSC_critical_error_handler(int sig_num, siginfo_t* info, void* ucontext)
+{
     osc::log::error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
     osc::log::error("backtrace:");
     osc::WriteTracebackToLog(osc::log::level::err);
     exit(EXIT_FAILURE);
 }
 
-void osc::InstallBacktraceHandler() {
+void osc::InstallBacktraceHandler()
+{
     struct sigaction sigact;
-
     sigact.sa_sigaction = OSC_critical_error_handler;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
     // enable SIGSEGV (segmentation fault) handler
-    if (sigaction(SIGSEGV, &sigact, nullptr) != 0) {
+    if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
+    {
         log::warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
     }
 
     // enable SIGABRT (abort) handler - usually triggers when `assert` fails or std::terminate is called
-    if (sigaction(SIGABRT, &sigact, nullptr) != 0) {
+    if (sigaction(SIGABRT, &sigact, nullptr) != 0)
+    {
         log::warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
     }
 }
-#else
 
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
+{
+    std::string cmd = "open " + p.string();
+    system(cmd.c_str());
+}
+
+void osc::OpenURLInDefaultBrowser(std::string_view url)
+{
+    std::string cmd = "open " + std::string{url};
+    system(cmd.c_str());
+}
+
+#elif defined(WIN32)
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
@@ -323,65 +400,6 @@ void osc::InstallBacktraceHandler() {
 
     signal(SIGABRT, signal_handler);
 }
-#endif
-
-#ifdef __LINUX__
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
-    // fork a subprocess
-    pid_t pid = fork();
-
-    if (pid == -1) {
-        // failed to fork a process
-        log::error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
-        return;
-    } else if (pid != 0) {
-        // fork successful and this thread is inside the parent
-        //
-        // have the parent thread `wait` for the child thread to finish
-        // what it's doing (xdg-open, itself, forks + detaches)
-        log::info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
-
-        int rv;
-        waitpid(pid, &rv, 0);
-
-        if (rv) {
-            log::error("fork()ed subprocess returned an error code of %i", rv);
-        }
-
-        return;
-    } else {
-        // fork successful and we're inside the child
-        //
-        // immediately `exec` into `xdg-open`, which will aggro-replace this process
-        // image (+ this thread) with xdg-open
-        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), (char*)NULL);
-
-        // this thread only reaches here if there is some kind of error in `exec`
-        //
-        // aggressively exit this thread, returning the status code. Do **not**
-        // return from this thread, because it should'nt behave as-if it were
-        // the calling thread
-        exit(rv);
-    }
-}
-
-void osc::OpenURLInDefaultBrowser(std::string_view vw) {
-    // HACK: we know that xdg-open handles this automatically
-    OpenPathInOSDefaultApplication(vw);
-}
-
-#elif defined(__APPLE__)
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {
-    std::string cmd = std::string{"open "};
-    cmd.append(p);
-    system(cmd.c_str());
-}
-void osc::OpenURLInDefaultBrowser(std::string_view url) {
-    std::string cmd = std::string{"open "};
-    cmd.append(url);
-    system(cmd.c_str());
-}
-#elif defined(WIN32)
 void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
 }
