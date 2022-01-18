@@ -4,13 +4,10 @@
 
 #include <memory>
 
-namespace osc {
+namespace osc
+{
+    // shows basic demo of instanced rendering
     class InstancedRendererScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         InstancedRendererScreen();
         ~InstancedRendererScreen() noexcept override;
@@ -20,5 +17,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

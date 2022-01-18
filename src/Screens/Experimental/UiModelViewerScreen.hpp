@@ -6,17 +6,10 @@
 
 #include <memory>
 
-namespace osc {
-
-    // META: this is a valid screen with `UiModelViewerScreen` as a replaceable
-    //       string that users can "Find+Replace" to make their own screen impl
-
+namespace osc
+{
+    // screen that shows a UiModelViewer widget in isolation
     class UiModelViewerScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         UiModelViewerScreen();
         ~UiModelViewerScreen() noexcept override;
@@ -26,5 +19,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

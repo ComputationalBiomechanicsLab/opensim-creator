@@ -1446,8 +1446,6 @@ osc::ModelEditorScreen::ModelEditorScreen(std::shared_ptr<MainEditorState> st) :
     m_Impl{new Impl {std::move(st)}} {
 }
 
-osc::ModelEditorScreen::ModelEditorScreen(ModelEditorScreen&&) noexcept = default;
-osc::ModelEditorScreen& osc::ModelEditorScreen::operator=(ModelEditorScreen&&) noexcept = default;
 osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
 
 void osc::ModelEditorScreen::onMount() {

@@ -6,14 +6,10 @@
 
 #include <memory>
 
-namespace osc {
-
+namespace osc
+{
+    // basic test for graphics backend: can it display a triangle
     class HelloTriangleScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         HelloTriangleScreen();
         ~HelloTriangleScreen() noexcept override;
@@ -21,5 +17,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

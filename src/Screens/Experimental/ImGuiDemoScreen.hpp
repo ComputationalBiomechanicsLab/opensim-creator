@@ -2,8 +2,8 @@
 
 #include "src/Screen.hpp"
 
-namespace osc {
-
+namespace osc
+{
     // shows the official ImGui demo
     //
     // this is useful or seeing what widgets are available and how they will

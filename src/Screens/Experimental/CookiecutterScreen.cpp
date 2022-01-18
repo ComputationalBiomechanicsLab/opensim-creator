@@ -12,35 +12,41 @@ struct osc::CookiecutterScreen::Impl final {
 // public API
 
 osc::CookiecutterScreen::CookiecutterScreen() :
-    m_Impl{new Impl{}} {
+    m_Impl{new Impl{}}
+{
 }
 
 osc::CookiecutterScreen::~CookiecutterScreen() noexcept = default;
 
-void osc::CookiecutterScreen::onMount() {
+void osc::CookiecutterScreen::onMount()
+{
     // called when app receives the screen, but before it starts pumping events
     // into it, ticking it, drawing it, etc.
 
     osc::ImGuiInit();  // boot up ImGui support
 }
 
-void osc::CookiecutterScreen::onUnmount() {
+void osc::CookiecutterScreen::onUnmount()
+{
     // called when the app is going to stop pumping events/ticks/draws into this
     // screen (e.g. because the app is quitting, or transitioning to some other screen)
 
     osc::ImGuiShutdown();  // shutdown ImGui support
 }
 
-void osc::CookiecutterScreen::onEvent(SDL_Event const& e) {
+void osc::CookiecutterScreen::onEvent(SDL_Event const& e)
+{
     // called when the app receives an event from the operating system
 
     // pump event into ImGui, if using it:
-    if (osc::ImGuiOnEvent(e)) {
+    if (osc::ImGuiOnEvent(e))
+    {
         return;  // ImGui handled this particular event
     }
 }
 
-void osc::CookiecutterScreen::tick(float) {
+void osc::CookiecutterScreen::tick(float)
+{
     // called once per frame, before drawing, with a timedelta from the last call
     // to `tick`
 
@@ -48,7 +54,8 @@ void osc::CookiecutterScreen::tick(float) {
     // file polling)
 }
 
-void osc::CookiecutterScreen::draw() {
+void osc::CookiecutterScreen::draw()
+{
     // called once per frame. Code in here should use drawing primitives, OpenGL, ImGui,
     // etc. to draw things into the screen. The application does not clear the screen
     // buffer between frames (it's assumed that your code does this when it needs to)

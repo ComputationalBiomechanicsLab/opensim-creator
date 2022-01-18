@@ -8,15 +8,10 @@
 #include <filesystem>
 #include <memory>
 
-namespace osc {
-
+namespace osc
+{
     // shows a basic loading message while an .osim file loads
     class LoadingScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         // load the supplied path (assumed to be an .osim) and then transition
         // to the editor screen
@@ -28,5 +23,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

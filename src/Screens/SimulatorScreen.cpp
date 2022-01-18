@@ -1108,34 +1108,41 @@ namespace {
 // Simulator_screen: public impl.
 
 osc::SimulatorScreen::SimulatorScreen(std::shared_ptr<MainEditorState> mes) :
-    m_Impl{new Impl{std::move(mes)}} {
+    m_Impl{new Impl{std::move(mes)}}
+{
 }
 
 osc::SimulatorScreen::~SimulatorScreen() noexcept = default;
 
-void osc::SimulatorScreen::onMount() {
+void osc::SimulatorScreen::onMount()
+{
     osc::ImGuiInit();
     App::cur().makeMainEventLoopWaiting();
 }
 
-void osc::SimulatorScreen::onUnmount() {
+void osc::SimulatorScreen::onUnmount()
+{
     osc::ImGuiShutdown();
     App::cur().makeMainEventLoopPolling();
 }
 
-void osc::SimulatorScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+void osc::SimulatorScreen::onEvent(SDL_Event const& e)
+{
+    if (osc::ImGuiOnEvent(e))
+    {
         return;
     }
 
     ::simscreenOnEvent(*m_Impl, e);
 }
 
-void osc::SimulatorScreen::tick(float) {
+void osc::SimulatorScreen::tick(float)
+{
     popAllSimulatorUpdates(*m_Impl->mes);
 }
 
-void osc::SimulatorScreen::draw() {
+void osc::SimulatorScreen::draw()
+{
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();

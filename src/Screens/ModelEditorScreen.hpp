@@ -6,28 +6,20 @@
 
 #include <memory>
 
-namespace osc {
+namespace osc
+{
     struct MainEditorState;
 }
 
-namespace osc {
-    
+namespace osc
+{
     // main editor screen
     //
     // this is the top-level screen that users see when editing a model
     class ModelEditorScreen final : public Screen {
     public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
-    public:
         ModelEditorScreen(std::shared_ptr<MainEditorState>);
 
-        ModelEditorScreen(ModelEditorScreen const&) = delete;
-        ModelEditorScreen(ModelEditorScreen&&) noexcept;
-        ModelEditorScreen& operator=(ModelEditorScreen const&) = delete;
-        ModelEditorScreen& operator=(ModelEditorScreen&&) noexcept;
         ~ModelEditorScreen() noexcept override;
 
         void onMount() override;
@@ -35,5 +27,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

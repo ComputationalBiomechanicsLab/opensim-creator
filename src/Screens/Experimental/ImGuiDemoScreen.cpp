@@ -8,26 +8,32 @@
 
 using namespace osc;
 
-void osc::ImGuiDemoScreen::onMount() {
+void osc::ImGuiDemoScreen::onMount()
+{
     osc::ImGuiInit();
 }
 
-void osc::ImGuiDemoScreen::onUnmount() {
+void osc::ImGuiDemoScreen::onUnmount()
+{
     osc::ImGuiShutdown();
 }
 
-void ImGuiDemoScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+void ImGuiDemoScreen::onEvent(SDL_Event const& e)
+{
+    if (osc::ImGuiOnEvent(e))
+    {
         return;
     }
 
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    {
         App::cur().requestTransition<ExperimentsScreen>();
         return;
     }
 }
 
-void ImGuiDemoScreen::draw() {
+void ImGuiDemoScreen::draw()
+{
     osc::ImGuiNewFrame();
 
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);

@@ -6,17 +6,15 @@
 
 #include <memory>
 
-namespace osc {
+namespace osc
+{
     struct MainEditorState;
 }
 
-namespace osc {
+namespace osc
+{
+    // shows forward-dynamic simulations
     class SimulatorScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         SimulatorScreen(std::shared_ptr<MainEditorState>);
         ~SimulatorScreen() noexcept override;
@@ -26,5 +24,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

@@ -6,7 +6,8 @@
 #include <vector>
 #include <filesystem>
 
-namespace osc {
+namespace osc
+{
     // meshes-to-model wizard
     //
     // A screen that helps users import 3D meshes into a new OpenSim model.
@@ -17,11 +18,6 @@ namespace osc {
     // into an OpenSim::Model (which has constraints, relative coordinates,
     // etc.)
     class MeshImporterScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        Impl* m_Impl;
-
     public:
         // shows blank scene that a user can import meshes into
         MeshImporterScreen();
@@ -36,5 +32,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void draw() override;
         void tick(float) override;
+
+        struct Impl;
+    private:
+        Impl* m_Impl;
     };
 }

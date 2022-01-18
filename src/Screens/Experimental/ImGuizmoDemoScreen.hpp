@@ -4,13 +4,10 @@
 
 #include <memory>
 
-namespace osc {
+namespace osc
+{
+    // shows official ImGuizmo demo
     class ImGuizmoDemoScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         ImGuizmoDemoScreen();
         ~ImGuizmoDemoScreen() noexcept override;
@@ -19,5 +16,9 @@ namespace osc {
         void onUnmount() override;
         void onEvent(SDL_Event const&) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

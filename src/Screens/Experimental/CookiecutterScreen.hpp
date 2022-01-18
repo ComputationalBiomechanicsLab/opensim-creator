@@ -6,17 +6,12 @@
 
 #include <memory>
 
-namespace osc {
-
+namespace osc
+{
     // META: this is a valid screen with `CookiecutterScreen` as a replaceable
     //       string that users can "Find+Replace" to make their own screen impl
 
     class CookiecutterScreen final : public Screen {
-    public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
     public:
         CookiecutterScreen();
         ~CookiecutterScreen() noexcept override;
@@ -26,5 +21,9 @@ namespace osc {
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

@@ -69,7 +69,7 @@ void osc::IoPoller::onUpdate()
     MousePressed[2] = _mousePressedEvents[2] || mouseState.MiddleDown;
     MousePosPrevious = MousePos;
     MousePos = mouseState.pos;
-    MouseDelta = MousePos - MousePosPrevious;
+    MouseDelta = glm::vec2{glm::ivec2{MousePos - MousePosPrevious}};
 
     // (edge-case)
     //

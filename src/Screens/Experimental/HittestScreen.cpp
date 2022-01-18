@@ -236,7 +236,8 @@ void osc::HittestScreen::tick(float) {
     float closestEl = FLT_MAX;
     SceneSphere* closestSceneSphere = nullptr;
 
-    for (SceneSphere& ss : m_Impl->spheres) {
+    for (SceneSphere& ss : m_Impl->spheres)
+    {
         ss.isHovered = false;
 
         Sphere s;
@@ -244,16 +245,17 @@ void osc::HittestScreen::tick(float) {
         s.radius = m_Impl->sphereBoundingSphere.radius;
 
         RayCollision res = GetRayCollisionSphere(cameraRay, s);
-        if (res.hit && res.distance >= 0.0f && res.distance < closestEl) {
+        if (res.hit && res.distance >= 0.0f && res.distance < closestEl)
+        {
             closestEl = res.distance;
             closestSceneSphere = &ss;
         }
     }
 
-    if (closestSceneSphere) {
+    if (closestSceneSphere)
+    {
         closestSceneSphere->isHovered = true;
     }
-
 }
 
 void osc::HittestScreen::draw() {

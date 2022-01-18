@@ -32,11 +32,13 @@
 
 using namespace osc;
 
-static gl::Texture2D loadImageResourceIntoTexture(char const* res_pth) {
+static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
+{
     return loadImageAsTexture(App::resource(res_pth).string().c_str()).texture;
 }
 
-static glm::mat4x3 generateFloorModelMatrix() {
+static glm::mat4x3 GenerateFloorModelMatrix()
+{
     // rotate from XY (+Z dir) to ZY (+Y dir)
     glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -fpi2, {1.0f, 0.0f, 0.0f});
 
@@ -51,33 +53,30 @@ static glm::mat4x3 generateFloorModelMatrix() {
 }
 
 struct SplashScreen::Impl final {
+
     // used to render floor
-    GouraudShader gouraud;
+    GouraudShader& gouraud = App::shader<GouraudShader>();
 
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
 
-    Mesh floorMesh = []() {
-        Mesh rv{GenTexturedQuad()};
-        rv.scaleTexCoords(200.0f);
-        return rv;
-    }();
+    std::shared_ptr<Mesh> floorMesh = App::meshes().getFloorMesh();
 
-    glm::mat4 floorMat = generateFloorModelMatrix();
+    glm::mat4 floorMat = GenerateFloorModelMatrix();
     glm::mat4 floorNormalMat = NormalMatrix(floorMat);
 
     // floor chequer texture
     gl::Texture2D chequer = genChequeredFloorTexture();
 
     // main app logo, blitted to top of the screen
-    gl::Texture2D logo = loadImageResourceIntoTexture("logo.png");
+    gl::Texture2D logo = LoadImageResourceIntoTexture("logo.png");
 
     // CZI attributation logo, blitted to bottom of screen
-    gl::Texture2D czLogo = loadImageResourceIntoTexture("chanzuckerberg_logo.png");
+    gl::Texture2D czLogo = LoadImageResourceIntoTexture("chanzuckerberg_logo.png");
 
     // TUD attributation logo, blitted to bottom of screen
-    gl::Texture2D tudLogo = loadImageResourceIntoTexture("tud_logo.png");
+    gl::Texture2D tudLogo = LoadImageResourceIntoTexture("tud_logo.png");
 
     // camera for top-down shot of the floor
     PolarPerspectiveCamera camera;
@@ -89,7 +88,9 @@ struct SplashScreen::Impl final {
     // top-level UI state that's shared between screens (can be null)
     std::shared_ptr<MainEditorState> maybeMainEditorState;
 
-    Impl(std::shared_ptr<MainEditorState> mes_) : maybeMainEditorState{std::move(mes_)} {
+    Impl(std::shared_ptr<MainEditorState> mes_) :
+        maybeMainEditorState{std::move(mes_)}
+    {
         camera.phi = fpi4/1.5f;
         camera.radius = 10.0f;
         camera.theta = fpi4;
@@ -111,30 +112,38 @@ osc::SplashScreen::SplashScreen(std::shared_ptr<MainEditorState> mes_) :
 
 osc::SplashScreen::~SplashScreen() noexcept = default;
 
-void osc::SplashScreen::onMount() {
+void osc::SplashScreen::onMount()
+{
     osc::ImGuiInit();
     App::cur().makeMainEventLoopWaiting();
 }
 
-void osc::SplashScreen::onUnmount() {
+void osc::SplashScreen::onUnmount()
+{
     osc::ImGuiShutdown();
     App::cur().makeMainEventLoopPolling();
 }
 
-void osc::SplashScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+void osc::SplashScreen::onEvent(SDL_Event const& e)
+{
+    if (osc::ImGuiOnEvent(e))
+    {
         return;
     }
 
-    if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim")) {
+    // if the user drops an osim onto the screen the load it
+    if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
+    {
         App::cur().requestTransition<LoadingScreen>(m_Impl->maybeMainEditorState, e.drop.file);
     }
 }
 
-void osc::SplashScreen::tick(float) {
+void osc::SplashScreen::tick(float)
+{
 }
 
-void osc::SplashScreen::draw() {
+void osc::SplashScreen::draw()
+{
     constexpr glm::vec2 menuDims = {700.0f, 500.0f};
 
     Impl& impl = *m_Impl;
@@ -160,18 +169,26 @@ void osc::SplashScreen::draw() {
         gl::ActiveTexture(GL_TEXTURE0);
         gl::BindTexture(impl.chequer);
         gl::Uniform(s.uSampler0, gl::textureIndex<GL_TEXTURE0>());
-        gl::BindVertexArray(impl.floorMesh.GetVertexArray());
-        impl.floorMesh.Draw();
+        gl::BindVertexArray(impl.floorMesh->GetVertexArray());
+        impl.floorMesh->Draw();
         gl::BindVertexArray();
     }
 
-    if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::BeginMainMenuBar())
+    {
         impl.mmFileTab.draw(impl.maybeMainEditorState);
         impl.mmAboutTab.draw();
         ImGui::EndMainMenuBar();
     }
 
-    ImGuiWindowFlags imgFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDecoration;
+    ImGuiWindowFlags imgFlags =
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoDecoration;
+
     constexpr glm::vec2 logoDims = {128.0f, 128.0f};
     constexpr float padding = 25.0f;
 
@@ -197,9 +214,9 @@ void osc::SplashScreen::draw() {
         ImGui::SetNextWindowSizeConstraints(menuDims, menuDims);
     }
 
-    if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-
-        // `new` button
+    if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
+    {
+        // `import meshes` button
         {
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
@@ -216,7 +233,8 @@ void osc::SplashScreen::draw() {
         {
             ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
-            if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)")) {
+            if (ImGui::Button(ICON_FA_FILE_ALT " New Model (Ctrl+N)"))
+            {
                 actionNewModel(impl.maybeMainEditorState);
             }
             ImGui::PopStyleColor(2);
@@ -225,14 +243,16 @@ void osc::SplashScreen::draw() {
         ImGui::SameLine();
 
         // `open` button
-        if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)")) {
+        if (ImGui::Button(ICON_FA_FOLDER_OPEN " Open Model (Ctrl+O)"))
+        {
             actionOpenModel(impl.maybeMainEditorState);
         }
 
         ImGui::SameLine();
 
         // `docs` button
-        if (ImGui::Button(ICON_FA_BOOK " Open Documentation")) {
+        if (ImGui::Button(ICON_FA_BOOK " Open Documentation"))
+        {
             OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
         }
 
@@ -248,17 +268,22 @@ void osc::SplashScreen::draw() {
         ImGui::TextUnformatted("Recent files:");
         ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-        if (!impl.mmFileTab.recentlyOpenedFiles.empty()) {
+        if (!impl.mmFileTab.recentlyOpenedFiles.empty())
+        {
             // iterate in reverse: recent files are stored oldest --> newest
-            for (auto it = impl.mmFileTab.recentlyOpenedFiles.rbegin(); it != impl.mmFileTab.recentlyOpenedFiles.rend(); ++it) {
+            for (auto it = impl.mmFileTab.recentlyOpenedFiles.rbegin(); it != impl.mmFileTab.recentlyOpenedFiles.rend(); ++it)
+            {
                 RecentFile const& rf = *it;
                 ImGui::PushID(++id);
-                if (ImGui::Button(rf.path.filename().string().c_str())) {
+                if (ImGui::Button(rf.path.filename().string().c_str()))
+                {
                     app.requestTransition<osc::LoadingScreen>(impl.maybeMainEditorState, rf.path);
                 }
                 ImGui::PopID();
             }
-        } else {
+        }
+        else
+        {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
             ImGui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
@@ -269,13 +294,16 @@ void osc::SplashScreen::draw() {
         ImGui::NextColumn();
 
         // right column: example model files
-        if (!impl.mmFileTab.exampleOsimFiles.empty()) {
+        if (!impl.mmFileTab.exampleOsimFiles.empty())
+        {
             ImGui::TextUnformatted("Example files:");
             ImGui::Dummy(ImVec2{0.0f, 3.0f});
 
-            for (std::filesystem::path const& ex : impl.mmFileTab.exampleOsimFiles) {
+            for (std::filesystem::path const& ex : impl.mmFileTab.exampleOsimFiles)
+            {
                 ImGui::PushID(++id);
-                if (ImGui::Button(ex.filename().string().c_str())) {
+                if (ImGui::Button(ex.filename().string().c_str()))
+                {
                     app.requestTransition<LoadingScreen>(impl.maybeMainEditorState, ex);
                 }
                 ImGui::PopID();
