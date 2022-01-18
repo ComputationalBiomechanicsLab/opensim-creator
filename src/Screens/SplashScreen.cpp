@@ -11,7 +11,7 @@
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/Experimental/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/MeshesToModelWizardScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/App.hpp"

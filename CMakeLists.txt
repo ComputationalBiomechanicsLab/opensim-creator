@@ -202,12 +202,16 @@ add_executable(osc
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
 
+    src/Screens/Experimental/CookiecutterScreen.cpp
+    src/Screens/Experimental/CookiecutterScreen.hpp
     src/Screens/Experimental/ExperimentsScreen.cpp
     src/Screens/Experimental/ExperimentsScreen.hpp
     src/Screens/Experimental/HelloTriangleScreen.cpp
     src/Screens/Experimental/HelloTriangleScreen.hpp
     src/Screens/Experimental/HittestScreen.cpp
     src/Screens/Experimental/HittestScreen.hpp
+    src/Screens/Experimental/ImGuiDemoScreen.cpp
+    src/Screens/Experimental/ImGuiDemoScreen.hpp
     src/Screens/Experimental/ImGuizmoDemoScreen.cpp
     src/Screens/Experimental/ImGuizmoDemoScreen.hpp
     src/Screens/Experimental/InstancedRendererScreen.cpp
@@ -220,19 +224,15 @@ add_executable(osc
     src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
     src/Screens/Experimental/MeshScreen.cpp
     src/Screens/Experimental/MeshScreen.hpp
-    src/Screens/Experimental/MeshesToModelWizardScreen.cpp
-    src/Screens/Experimental/MeshesToModelWizardScreen.hpp
     src/Screens/Experimental/UiModelViewerScreen.cpp
     src/Screens/Experimental/UiModelViewerScreen.hpp
 
-    src/Screens/CookiecutterScreen.cpp
-    src/Screens/CookiecutterScreen.hpp
     src/Screens/ErrorScreen.cpp
     src/Screens/ErrorScreen.hpp
-    src/Screens/ImGuiDemoScreen.cpp
-    src/Screens/ImGuiDemoScreen.hpp
     src/Screens/LoadingScreen.cpp
     src/Screens/LoadingScreen.hpp
+    src/Screens/MeshesToModelWizardScreen.cpp
+    src/Screens/MeshesToModelWizardScreen.hpp
     src/Screens/ModelEditorScreen.cpp
     src/Screens/ModelEditorScreen.hpp
     src/Screens/SimulatorScreen.cpp
