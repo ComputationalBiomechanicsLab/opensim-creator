@@ -624,8 +624,8 @@ struct osc::App::Impl final {
     // CAREFUL: this makes the app event-driven
     bool isInWaitMode = false;
 
-    // set to true to poll events on the next frame (even if in wait mode)
-    bool isPollingNextFrame = false;
+    // set >0 to force that `n` frames are polling-driven: even in waiting mode
+    int numFramesToPoll = 0;
 
     // current screen being shown (if any)
     std::unique_ptr<Screen> currentScreen = nullptr;
@@ -645,7 +645,7 @@ static void TransitionToNextScreen(App::Impl& impl)
     impl.currentScreen->onUnmount();
     impl.currentScreen.reset();
     impl.currentScreen = std::move(impl.nextScreen);
-    impl.isPollingNextFrame = true;
+    impl.numFramesToPoll = 2;
 
     log::info("mounting screen %s", impl.currentScreen->name());
     impl.currentScreen->onMount();
@@ -669,8 +669,8 @@ static void AppMainLoopUnguarded(App::Impl& impl)
     while (true)  // gameloop
     {
         // pump events
-        bool shouldWait = impl.isInWaitMode && !impl.isPollingNextFrame;
-        impl.isPollingNextFrame = false;
+        bool shouldWait = impl.isInWaitMode && impl.numFramesToPoll <= 0;
+        impl.numFramesToPoll = std::max(0, impl.numFramesToPoll - 1);
 
         for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
         {
@@ -690,8 +690,10 @@ static void AppMainLoopUnguarded(App::Impl& impl)
 
             if (e.type == SDL_WINDOWEVENT)
             {
-                // window was resized and should probably be double-drawn
-                impl.isPollingNextFrame = true;
+                // window was resized and should be drawn a couple of times quickly
+                // to ensure any datastructures in the screens (namely: imgui) are
+                // updated
+                impl.numFramesToPoll = 2;
             }
 
             // let screen handle the event
