@@ -10,7 +10,7 @@
 using namespace osc;
 
 osc::MainEditorState::MainEditorState() :
-    MainEditorState{std::make_unique<OpenSim::Model>()}
+    MainEditorState{UndoableUiModel{}}
 {
 }
 
