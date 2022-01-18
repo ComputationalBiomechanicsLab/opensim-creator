@@ -262,11 +262,18 @@ namespace {
             return m_State != State::Inactive;
         }
     };
+
+    PolarPerspectiveCamera CreateDefaultCamera()
+    {
+        PolarPerspectiveCamera rv;
+        rv.radius = 5.0f;
+        return rv;
+    }
 }
 
 struct osc::UiModelViewer::Impl final {
     UiModelViewerFlags flags;
-    PolarPerspectiveCamera camera;
+    PolarPerspectiveCamera camera = CreateDefaultCamera();
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
     glm::vec4 backgroundCol = {0.89f, 0.89f, 0.89f, 1.0f};
