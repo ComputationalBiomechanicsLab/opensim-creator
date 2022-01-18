@@ -1043,7 +1043,7 @@ namespace
         }
 
         MeshEl(UIDT<MeshEl> id,
-               UIDT<BodyEl> attachment,  // can be g_GroundID
+               UID attachment,  // can be g_GroundID
                std::shared_ptr<Mesh> meshData,
                std::filesystem::path const& path) :
 
@@ -1054,7 +1054,7 @@ namespace
         {
         }
 
-        MeshEl(UIDT<BodyEl> attachment,  // can be g_GroundID
+        MeshEl(UID attachment,  // can be g_GroundID
                std::shared_ptr<Mesh> meshData,
                std::filesystem::path const& path) :
 
@@ -1175,7 +1175,7 @@ namespace
         }
 
         UIDT<MeshEl> ID;
-        UIDT<BodyEl> Attachment;  // can be g_GroundID
+        UID Attachment;  // can be g_GroundID
         Transform Xform;
         std::shared_ptr<Mesh> MeshData;
         std::filesystem::path Path;
@@ -1678,7 +1678,7 @@ namespace
             void operator()(GroundEl const&) override { m_Result = true; }
             void operator()(MeshEl const&) override { m_Result = false; }
             void operator()(BodyEl const&) override { m_Result = true; }
-            void operator()(JointEl const&) override { m_Result = false; }
+            void operator()(JointEl const&) override { m_Result = true; }
             void operator()(StationEl const&) override { m_Result = false; }
         };
 
@@ -1703,26 +1703,6 @@ namespace
 
         Visitor v;
         e.Accept(v);
-        return v.m_Result;
-    }
-
-    // returns the ID of the thing the station should attach to when trying to
-    // attach to something in the scene
-    UIDT<BodyEl> StationAttachmentParent(SceneEl const& el)
-    {
-        struct Visitor final : public ConstSceneElVisitor
-        {
-            UIDT<BodyEl> m_Result = g_GroundID;
-
-            void operator()(GroundEl const&) { m_Result = g_GroundID; }
-            void operator()(MeshEl const& el) { m_Result = el.Attachment; }
-            void operator()(BodyEl const& el) { m_Result = el.ID; }
-            void operator()(JointEl const&) { m_Result = g_GroundID; }  // can't be attached
-            void operator()(StationEl const&) { m_Result = g_GroundID; }  // can't be attached
-        };
-
-        Visitor v;
-        el.Accept(v);
         return v.m_Result;
     }
 
@@ -2403,6 +2383,32 @@ namespace
         {
             mg.Select(other);
         });
+    }
+
+    // returns the ID of the thing the station should attach to when trying to
+    // attach to something in the scene
+    UIDT<BodyEl> GetStationAttachmentParent(ModelGraph const& mg, SceneEl const& el)
+    {
+        class Visitor final : public ConstSceneElVisitor {
+        public:
+            explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
+
+            void operator()(GroundEl const&) { m_Result = g_GroundID; }
+            void operator()(MeshEl const& el) { m_Mg.ContainsEl<BodyEl>(el.Attachment) ? m_Result = DowncastID<BodyEl>(el.Attachment) : g_GroundID; }
+            void operator()(BodyEl const& el) { m_Result = el.ID; }
+            void operator()(JointEl const&) { m_Result = g_GroundID; }  // can't be attached
+            void operator()(StationEl const&) { m_Result = g_GroundID; }  // can't be attached
+
+            UIDT<BodyEl> result() const { return m_Result; }
+
+        private:
+            UIDT<BodyEl> m_Result = g_GroundID;
+            ModelGraph const& m_Mg;
+        };
+
+        Visitor v{mg};
+        el.Accept(v);
+        return v.result();
     }
 
     // adds a body to a mesh at a given position
@@ -3117,7 +3123,7 @@ namespace
         jointUniqPtr->addFrame(childPOF.get());
         jointUniqPtr->connectSocket_parent_frame(*parentPOF);
         jointUniqPtr->connectSocket_child_frame(*childPOF);
-        parentPOF.release();
+        OpenSim::PhysicalOffsetFrame* parentPtr = parentPOF.release();
         childPOF.release();
 
         // if a child body was created during this step (e.g. because it's not a cyclic connection)
@@ -3130,6 +3136,15 @@ namespace
 
         // add the joint to the model
         model.addJoint(jointUniqPtr.release());
+
+        // if there are any meshes attached to the joint, attach them to the parent
+        for (MeshEl const& mesh : mg.iter<MeshEl>())
+        {
+            if (mesh.Attachment == joint.ID)
+            {
+                AttachMeshElToFrame(mesh, joint.Xform, *parentPtr);
+            }
+        }
 
         // recurse by finding where the child of this joint is the parent of some other joint
         OSC_ASSERT_ALWAYS(child.bodyEl != nullptr && "child should always be an identifiable body element");
@@ -3402,9 +3417,9 @@ namespace
         // MESH LOADING STUFF
         //
 
-        void PushMeshLoadRequests(UIDT<BodyEl> bodyToAttachTo, std::vector<std::filesystem::path> paths)
+        void PushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
         {
-            m_MeshLoader.send(MeshLoadRequest{bodyToAttachTo, std::move(paths)});
+            m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
         }
 
         void PushMeshLoadRequests(std::vector<std::filesystem::path> paths)
@@ -3412,9 +3427,9 @@ namespace
             PushMeshLoadRequests(g_GroundID, std::move(paths));
         }
 
-        void PushMeshLoadRequest(UIDT<BodyEl> bodyToAttachTo, std::filesystem::path const& path)
+        void PushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
         {
-            PushMeshLoadRequests(bodyToAttachTo, std::vector<std::filesystem::path>{path});
+            PushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
         }
 
         void PushMeshLoadRequest(std::filesystem::path const& meshFilePath)
@@ -3430,23 +3445,22 @@ namespace
                 return;
             }
 
-
             // add each loaded mesh into the model graph
             ModelGraph& mg = UpdModelGraph();
             mg.DeSelectAll();
+
             for (LoadedMesh const& lm : ok.Meshes)
             {
-                UIDT<BodyEl> attachmentID = DowncastID<BodyEl>(ok.PreferredAttachmentPoint);
-                MeshEl& mesh = mg.AddEl<MeshEl>(attachmentID, lm.MeshData, lm.Path);
+                SceneEl* el = mg.TryUpdElByID(ok.PreferredAttachmentPoint);
 
-                BodyEl* maybeBody = mg.TryUpdElByID<BodyEl>(ok.PreferredAttachmentPoint);
-                if (maybeBody)
+                if (el)
                 {
-                    mg.Select(maybeBody->ID);
-                    mesh.Xform = maybeBody->Xform;
-                }
+                    MeshEl& mesh = mg.AddEl<MeshEl>(ok.PreferredAttachmentPoint, lm.MeshData, lm.Path);
+                    mesh.Xform = el->GetXform();
 
-                mg.Select(mesh.ID);
+                    mg.Select(mesh);
+                    mg.Select(*el);
+                }
             }
 
             // commit
@@ -5794,7 +5808,7 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
                 {
-                    m_Shared->PushMeshLoadRequests(DowncastID<BodyEl>(el.GetID()), m_Shared->PromptUserForMeshFiles());
+                    m_Shared->PushMeshLoadRequests(el.GetID(), m_Shared->PromptUserForMeshFiles());
                 }
                 DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
             }
@@ -5856,7 +5870,7 @@ namespace
                 auto addStationAtLocation = [&](glm::vec3 const& loc)
                 {
                     ModelGraph& mg = m_Shared->UpdModelGraph();
-                    StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), StationAttachmentParent(el), loc, GenerateName(StationEl::Class()));
+                    StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), GetStationAttachmentParent(m_Shared->GetModelGraph(), el), loc, GenerateName(StationEl::Class()));
                     SelectOnly(mg, station);
                     m_Shared->CommitCurrentModelGraph("added station " + station.GetLabel());
                 };
