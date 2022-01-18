@@ -231,8 +231,8 @@ add_executable(osc
     src/Screens/ErrorScreen.hpp
     src/Screens/LoadingScreen.cpp
     src/Screens/LoadingScreen.hpp
-    src/Screens/MeshesToModelWizardScreen.cpp
-    src/Screens/MeshesToModelWizardScreen.hpp
+    src/Screens/MeshImporterScreen.cpp
+    src/Screens/MeshImporterScreen.hpp
     src/Screens/ModelEditorScreen.cpp
     src/Screens/ModelEditorScreen.hpp
     src/Screens/SimulatorScreen.cpp

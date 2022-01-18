@@ -9,7 +9,7 @@
 #include "src/Screens/Experimental/MathExperimentsScreen.hpp"
 #include "src/Screens/Experimental/MeshHittestScreen.hpp"
 #include "src/Screens/Experimental/MeshHittestWithBVHScreen.hpp"
-#include "src/Screens/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/MeshImporterScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
 
@@ -36,7 +36,7 @@ struct ExperimentsScreen::Impl final {
         { "Hit testing ray-triangle intersections in a mesh", transition<MeshHittestScreen> },
         { "Random math experiments", transition<MathExperimentsScreen> },
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
-        { "OpenSim mesh importer wizard", transition<MeshesToModelWizardScreen> },
+        { "OpenSim mesh importer wizard", transition<MeshImporterScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> }

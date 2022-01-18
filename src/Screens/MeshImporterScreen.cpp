@@ -1,4 +1,4 @@
-#include "MeshesToModelWizardScreen.hpp"
+#include "MeshImporterScreen.hpp"
 
 #include "src/3D/Shaders/EdgeDetectionShader.hpp"
 #include "src/3D/Shaders/GouraudShader.hpp"
@@ -7042,7 +7042,7 @@ namespace
 //
 // this effectively just feeds the underlying state machine pattern established by
 // the `ModelWizardState` class
-struct osc::MeshesToModelWizardScreen::Impl final {
+struct osc::MeshImporterScreen::Impl final {
 public:
     Impl() :
         m_MainState{std::make_shared<SharedData>()}
@@ -7125,48 +7125,48 @@ private:
 //                to be called *after* the app has shutdown the window, OpenGL context, etc.
 //                so I'm using a non-unique_ptr, because I don't want the screen's destructor
 //                to crash the `atexit` phase, which cleans up all static globals.
-osc::MeshesToModelWizardScreen::Impl* GetModelWizardScreenGLOBAL(std::vector<std::filesystem::path> paths)
+osc::MeshImporterScreen::Impl* GetModelWizardScreenGLOBAL(std::vector<std::filesystem::path> paths)
 {
-    static osc::MeshesToModelWizardScreen::Impl* g_ModelImpoterScreenState = new osc::MeshesToModelWizardScreen::Impl{paths};
+    static osc::MeshImporterScreen::Impl* g_ModelImpoterScreenState = new osc::MeshImporterScreen::Impl{paths};
     return g_ModelImpoterScreenState;
 }
 
-osc::MeshesToModelWizardScreen::MeshesToModelWizardScreen() :
+osc::MeshImporterScreen::MeshImporterScreen() :
     m_Impl{GetModelWizardScreenGLOBAL({})}
 {
 }
 
-osc::MeshesToModelWizardScreen::MeshesToModelWizardScreen(std::vector<std::filesystem::path> paths) :
+osc::MeshImporterScreen::MeshImporterScreen(std::vector<std::filesystem::path> paths) :
     m_Impl{GetModelWizardScreenGLOBAL(paths)}
 {
 }
 
-osc::MeshesToModelWizardScreen::~MeshesToModelWizardScreen() noexcept
+osc::MeshImporterScreen::~MeshImporterScreen() noexcept
 {
     // HACK: don't delete Impl, because we're sharing it globally
 }
 
-void osc::MeshesToModelWizardScreen::onMount()
+void osc::MeshImporterScreen::onMount()
 {
     m_Impl->onMount();
 }
 
-void osc::MeshesToModelWizardScreen::onUnmount()
+void osc::MeshImporterScreen::onUnmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::MeshesToModelWizardScreen::onEvent(SDL_Event const& e)
+void osc::MeshImporterScreen::onEvent(SDL_Event const& e)
 {
     m_Impl->onEvent(e);
 }
 
-void osc::MeshesToModelWizardScreen::draw()
+void osc::MeshImporterScreen::draw()
 {
     m_Impl->draw();
 }
 
-void osc::MeshesToModelWizardScreen::tick(float dt)
+void osc::MeshImporterScreen::tick(float dt)
 {
     m_Impl->tick(dt);
 }

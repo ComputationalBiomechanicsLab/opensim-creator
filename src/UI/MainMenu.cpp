@@ -7,7 +7,7 @@
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
-#include "src/Screens/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/MeshImporterScreen.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
@@ -220,7 +220,7 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> editor_state) {
     }
 
     if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes")) {
-        App::cur().requestTransition<MeshesToModelWizardScreen>();
+        App::cur().requestTransition<MeshImporterScreen>();
     }
 
     if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W", false, editor_state != nullptr)) {

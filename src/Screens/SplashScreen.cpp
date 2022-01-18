@@ -11,7 +11,7 @@
 #include "src/3D/Model.hpp"
 #include "src/3D/Texturing.hpp"
 #include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/MeshesToModelWizardScreen.hpp"
+#include "src/Screens/MeshImporterScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/App.hpp"
@@ -205,7 +205,7 @@ void osc::SplashScreen::draw() {
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
             if (ImGui::Button(ICON_FA_MAGIC " Import Meshes"))
             {
-                App::cur().requestTransition<MeshesToModelWizardScreen>();
+                App::cur().requestTransition<MeshImporterScreen>();
             }
             ImGui::PopStyleColor(2);
         }

@@ -16,7 +16,7 @@ namespace osc {
     // like if they were using Blender, *before* trying to stuff everything
     // into an OpenSim::Model (which has constraints, relative coordinates,
     // etc.)
-    class MeshesToModelWizardScreen final : public Screen {
+    class MeshImporterScreen final : public Screen {
     public:
         struct Impl;
     private:
@@ -24,13 +24,12 @@ namespace osc {
 
     public:
         // shows blank scene that a user can import meshes into
-        MeshesToModelWizardScreen();
+        MeshImporterScreen();
 
-        // shows the blank scene, but immediately starts importing the provided
-        // mesh filepaths
-        MeshesToModelWizardScreen(std::vector<std::filesystem::path>);
+        // shows the blank scene, but immediately starts importing the provided mesh files
+        MeshImporterScreen(std::vector<std::filesystem::path>);
 
-        ~MeshesToModelWizardScreen() noexcept override;
+        ~MeshImporterScreen() noexcept override;
 
         void onMount() override;
         void onUnmount() override;
