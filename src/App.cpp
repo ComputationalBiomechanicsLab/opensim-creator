@@ -767,6 +767,7 @@ static void AppMainLoopUnguarded(App::Impl& impl)
 
 // public API
 
+osc::App* osc::App::g_Current = nullptr;
 
 osc::Config const& osc::App::config() noexcept
 {
@@ -788,10 +789,7 @@ std::filesystem::path osc::App::resource(std::string_view s)
     return cur().getResource(s);
 }
 
-osc::App* osc::App::g_Current = nullptr;
-
-osc::App::App() :
-    m_Impl{new Impl{}}
+osc::App::App() : m_Impl{new Impl{}}
 {
     g_Current = this;
 }
