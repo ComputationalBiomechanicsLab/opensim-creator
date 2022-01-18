@@ -41,6 +41,12 @@ namespace osc {
         return set.find(value) != set.end();
     }
 
+    template<typename T>
+    bool Contains(std::vector<T> const& vec, T const& val)
+    {
+        return std::find(vec.begin(), vec.end(), val) != vec.end();
+    }
+
     template<typename K, typename V, typename K2>
     bool ContainsKey(std::unordered_map<K, V> const& map, K2 const& key)
     {

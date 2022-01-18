@@ -4812,17 +4812,17 @@ namespace
         UID MaybeElAttachingTo = g_EmptyID;
         bool IsAttachingTowardEl = true;  // false implies "away from"
         UID MaybeElBeingReplacedByChoice = g_EmptyID;
-        std::function<bool(UID)> OnUserChoice = [](UID)
+        int NumElementsUserMustChoose = 1;
+        std::function<bool(nonstd::span<UID>)> OnUserChoice = [](nonstd::span<UID>)
         {
             return true;
         };
         std::string Header = "choose something";
     };
 
-    // "choose something" UI layer
+    // "choose `n` things" UI layer
     //
-    // this is what's drawn when the user's being prompted to choose something
-    // else in the scene
+    // this is what's drawn when the user's being prompted to choose scene elements
     class ChooseElLayer final : public Layer {
     public:
         ChooseElLayer(LayerHost& parent,
@@ -4835,6 +4835,205 @@ namespace
         }
 
     private:
+        // returns true if the user's mouse is hovering over the given scene element
+        bool IsHovered(SceneEl const& el) const
+        {
+            return el.GetID() == m_MaybeHover.ID;
+        }
+
+        // returns true if the user has already selected the given scene element
+        bool IsSelected(SceneEl const& el) const
+        {
+            return Contains(m_SelectedEls, el.GetID());
+        }
+
+        // returns true if the user can (de)select the given element
+        bool IsSelectable(SceneEl const& el) const
+        {
+            if (el.GetID() == m_Options.MaybeElAttachingTo)
+            {
+                return false;
+            }
+
+            struct Visitor final : public ConstSceneElVisitor {
+            public:
+                Visitor(ChooseElLayerOptions const& opts) : m_Opts{opts}
+                {
+                }
+
+                bool result() const
+                {
+                    return m_Result;
+                }
+
+                void operator()(GroundEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseGround;
+                }
+
+                void operator()(MeshEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseMeshes;
+                }
+
+                void operator()(BodyEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseBodies;
+                }
+
+                void operator()(JointEl const&) override
+                {
+                    m_Result = m_Opts.CanChooseJoints;
+                }
+
+                void operator()(StationEl const&) override
+                {
+                    // TODO
+                }
+
+            private:
+                bool m_Result = false;
+                ChooseElLayerOptions const& m_Opts;
+            };
+
+            Visitor v{m_Options};
+            el.Accept(v);
+            return v.result();
+        }
+
+        void Select(SceneEl const& el)
+        {
+            if (!IsSelectable(el))
+            {
+                return;
+            }
+
+            if (IsSelected(el))
+            {
+                return;
+            }
+
+            m_SelectedEls.push_back(el.GetID());
+        }
+
+        void DeSelect(SceneEl const& el)
+        {
+            if (!IsSelectable(el))
+            {
+                return;
+            }
+
+            RemoveErase(m_SelectedEls, [elID = el.GetID()](UID id) { return id == elID; } );
+        }
+
+        void TryToggleSelectionStateOf(SceneEl const& el)
+        {
+            IsSelected(el) ? DeSelect(el) : Select(el);
+        }
+
+        void TryToggleSelectionStateOf(UID id)
+        {
+            SceneEl const* el = m_Shared->GetModelGraph().TryGetElByID(id);
+
+            if (el)
+            {
+                TryToggleSelectionStateOf(*el);
+            }
+        }
+
+        float RimColor(SceneEl const& el) const
+        {
+            if (IsSelected(el))
+            {
+                return 1.0f;
+            }
+            else if (IsHovered(el))
+            {
+                return 0.8f;
+            }
+            else
+            {
+                return 0.0f;
+            }
+        }
+
+        // returns a list of 3D drawable scene objects for this layer
+        std::vector<DrawableThing>& GenerateDrawables()
+        {
+            m_DrawablesBuffer.clear();
+
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            float fadedAlpha = 0.2f;
+            float animScale = EaseOutElastic(m_AnimationFraction);
+
+            for (SceneEl const& el : mg.iter())
+            {
+                size_t start = m_DrawablesBuffer.size();
+                m_Shared->AppendDrawables(el, m_DrawablesBuffer);
+                size_t end = m_DrawablesBuffer.size();
+
+                bool isSelectable = IsSelectable(el);
+                float rimColor = RimColor(el);
+
+                for (size_t i = start; i < end; ++i)
+                {
+                    DrawableThing& d = m_DrawablesBuffer[i];
+                    d.rimColor = rimColor;
+
+                    if (!isSelectable)
+                    {
+                        d.color.a = fadedAlpha;
+                        d.id = g_EmptyID;
+                        d.groupId = g_EmptyID;
+                    }
+                    else
+                    {
+                        d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
+                    }
+                }
+            }
+
+            // floor
+            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
+
+            return m_DrawablesBuffer;
+        }
+
+        void HandlePossibleCompletion()
+        {
+            if (static_cast<int>(m_SelectedEls.size()) < m_Options.NumElementsUserMustChoose)
+            {
+                return;  // user hasn't selected enough stuff yet
+            }
+
+            if (m_Options.OnUserChoice(m_SelectedEls))
+            {
+                m_Parent.pop();
+            }
+            else
+            {
+                // choice was rejected?
+            }
+        }
+
+        // handle any side-effects from the user's mouse hover
+        void HandleHovertestSideEffects()
+        {
+            if (!m_MaybeHover)
+            {
+                return;
+            }
+
+            DrawHoverTooltip();
+
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                TryToggleSelectionStateOf(m_MaybeHover.ID);
+                HandlePossibleCompletion();
+            }
+        }
+
         // draw 2D tooltip that pops up when user is hovered over something in the scene
         void DrawHoverTooltip() const
         {
@@ -4906,122 +5105,6 @@ namespace
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.Header.c_str());
         }
 
-        bool IsSelectable(SceneEl const& el)
-        {
-            if (el.GetID() == m_Options.MaybeElAttachingTo)
-            {
-                return false;
-            }
-
-            struct Visitor final : public ConstSceneElVisitor {
-            public:
-                Visitor(ChooseElLayerOptions& opts) : m_Opts{opts}
-                {
-                }
-
-                bool result() const
-                {
-                    return m_Result;
-                }
-
-                void operator()(GroundEl const&) override
-                {
-                    m_Result = m_Opts.CanChooseGround;
-                }
-
-                void operator()(MeshEl const&) override
-                {
-                    m_Result = m_Opts.CanChooseMeshes;
-                }
-
-                void operator()(BodyEl const&) override
-                {
-                    m_Result = m_Opts.CanChooseBodies;
-                }
-
-                void operator()(JointEl const&) override
-                {
-                    m_Result = m_Opts.CanChooseJoints;
-                }
-
-                void operator()(StationEl const&) override
-                {
-                    // TODO
-                }
-
-            private:
-                bool m_Result = false;
-                ChooseElLayerOptions const& m_Opts;
-            };
-
-            Visitor v{m_Options};
-            el.Accept(v);
-            return v.result();
-        }
-
-        // returns a list of 3D drawable scene objects for this layer
-        std::vector<DrawableThing>& GenerateDrawables()
-        {
-            m_DrawablesBuffer.clear();
-
-            ModelGraph const& mg = m_Shared->GetModelGraph();
-
-            float fadedAlpha = 0.2f;
-            float animScale = EaseOutElastic(m_AnimationFraction);
-
-            for (SceneEl const& el : mg.iter())
-            {
-                size_t start = m_DrawablesBuffer.size();
-                m_Shared->AppendDrawables(el, m_DrawablesBuffer);
-                size_t end = m_DrawablesBuffer.size();
-
-                bool isSelectable = IsSelectable(el);
-                float rimColor = el.GetID() == m_MaybeHover.ID ? 0.8f : 0.0f;
-
-                for (size_t i = start; i < end; ++i)
-                {
-                    DrawableThing& d = m_DrawablesBuffer[i];
-                    d.rimColor = rimColor;
-
-                    if (!isSelectable)
-                    {
-                        d.color.a = fadedAlpha;
-                        d.id = g_EmptyID;
-                        d.groupId = g_EmptyID;
-                    }
-                    else
-                    {
-                        d.modelMatrix = d.modelMatrix * glm::scale(glm::mat4{1.0f}, glm::vec3{animScale, animScale, animScale});
-                    }
-                }
-            }
-
-            // floor
-            m_DrawablesBuffer.push_back(m_Shared->GenerateFloorDrawable());
-
-            return m_DrawablesBuffer;
-        }
-
-        // handle any side-effects from the user's mouse hover
-        void HandleHovertestSideEffects()
-        {
-            if (!m_MaybeHover)
-            {
-                return;
-            }
-
-            DrawHoverTooltip();
-
-            // if user clicks on hovered element, then they are trying to select it
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                if (m_Options.OnUserChoice(m_MaybeHover.ID))
-                {
-                    m_Parent.pop();
-                }
-            }
-        }
-
         // draws 3D scene into an ImGui::Image and performs any hittesting etc.
         void Draw3DViewer()
         {
@@ -5091,6 +5174,9 @@ namespace
 
         // (maybe) user mouse hover
         Hover m_MaybeHover;
+
+        // elements selected by user
+        std::vector<UID> m_SelectedEls;
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;
@@ -5195,9 +5281,14 @@ namespace
             opts.IsAttachingTowardEl = false;
             opts.MaybeElBeingReplacedByChoice = meshEl.Attachment;
             opts.Header = "choose mesh attachment point (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, meshID = meshEl.ID](UID choice)
+            opts.OnUserChoice = [shared = m_Shared, meshID = meshEl.ID](nonstd::span<UID> choices)
             {
-                return TryAssignMeshAttachment(shared->UpdCommittableModelGraph(), meshID, choice);
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryAssignMeshAttachment(shared->UpdCommittableModelGraph(), meshID, choices.front());
             };
 
             // request a state transition
@@ -5215,9 +5306,14 @@ namespace
             opts.Header = "choose joint parent (ESC to cancel)";
             opts.MaybeElAttachingTo = child.GetID();
             opts.IsAttachingTowardEl = false;  // away from the body
-            opts.OnUserChoice = [shared = m_Shared, childID = child.ID](UID parentID)
+            opts.OnUserChoice = [shared = m_Shared, childID = child.ID](nonstd::span<UID> choices)
             {
-                return TryCreateJoint(shared->UpdCommittableModelGraph(), childID, parentID);
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryCreateJoint(shared->UpdCommittableModelGraph(), childID, choices.front());
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5233,9 +5329,14 @@ namespace
             opts.CanChooseMeshes = false;
             opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose what to point towards (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), axis](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
             {
-                return PointAxisTowards(shared->UpdCommittableModelGraph(), id, axis, userChoice);
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return PointAxisTowards(shared->UpdCommittableModelGraph(), id, axis, choices.front());
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5249,9 +5350,40 @@ namespace
             opts.CanChooseMeshes = false;
             opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose what to translate to (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
             {
-                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, userChoice);
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, choices.front());
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
+        void TransitionToChoosingElementsToTranslateBetween(SceneEl& el)
+        {
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = true;
+            opts.CanChooseGround = true;
+            opts.CanChooseJoints = true;
+            opts.CanChooseMeshes = false;
+            opts.MaybeElAttachingTo = el.GetID();
+            opts.Header = "choose two elements to translate between (ESC to cancel)";
+            opts.NumElementsUserMustChoose = 2;
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+            {
+                if (choices.size() < 2)
+                {
+                    return false;
+                }
+
+                return TryTranslateBetweenTwoElements(
+                            shared->UpdCommittableModelGraph(),
+                            id,
+                            choices[0],
+                            choices[1]);
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5291,9 +5423,14 @@ namespace
             opts.CanChooseMeshes = true;
             opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose where to place it (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
             {
-                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, userChoice);
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, choices.front());
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5321,9 +5458,13 @@ namespace
             opts.CanChooseMeshes = Is<MeshEl>(*old);
             opts.MaybeElAttachingTo = el.GetID();
             opts.Header = "choose what to attach to";
-            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](UID userChoice)
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](nonstd::span<UID> choices)
             {
-                return TryReassignCrossref(shared->UpdCommittableModelGraph(), id, crossrefIdx, userChoice);
+                if (choices.empty())
+                {
+                    return false;
+                }
+                return TryReassignCrossref(shared->UpdCommittableModelGraph(), id, crossrefIdx, choices.front());
             };
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
@@ -5854,6 +5995,11 @@ namespace
                     UID b = el.GetCrossReferenceConnecteeID(1);
                     TryTranslateBetweenTwoElements(m_Shared->UpdCommittableModelGraph(), el.GetID(), a, b);
                 }
+            }
+
+            if (ImGui::MenuItem("Between (select 2 things)"))
+            {
+                TransitionToChoosingElementsToTranslateBetween(el);
             }
 
             if (ImGui::MenuItem("Between two mesh points"))
