@@ -6425,13 +6425,13 @@ namespace
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
+            DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
 
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
                 m_Shared->AddBody({0.0f, 0.0f, 0.0f});
             }
-            DrawTooltipIfItemHovered("Add Body at Ground Location", OSC_BODY_DESC);
+            DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
             if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
             {
