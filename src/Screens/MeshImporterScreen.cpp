@@ -2872,6 +2872,30 @@ namespace
         el.SetXform(RotateAxis(el.GetXform(), axis, fpi));
         cmg.Commit("reoriented " + el.GetLabel());
     }
+
+    bool TryCopyOrientation(CommittableModelGraph& cmg, UID id, UID other)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl* el = mg.TryUpdElByID(id);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        SceneEl* otherEl = mg.TryUpdElByID(other);
+
+        if (!otherEl)
+        {
+            return false;
+        }
+
+        el->SetRotation(otherEl->GetRotation());
+        cmg.Commit("reoriented " + el->GetLabel());
+
+        return true;
+    }
 }
 
 // OpenSim::Model generation support
@@ -5402,6 +5426,27 @@ namespace
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
+        void TransitionToCopyingSomethingElsesOrientation(SceneEl& el)
+        {
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = true;
+            opts.CanChooseGround = true;
+            opts.CanChooseJoints = true;
+            opts.CanChooseMeshes = true;
+            opts.MaybeElAttachingTo = el.GetID();
+            opts.Header = "choose which orientation to copy (ESC to cancel)";
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
+            {
+                if (choices.empty())
+                {
+                    return false;
+                }
+
+                return TryCopyOrientation(shared->UpdCommittableModelGraph(), id, choices.front());
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
         // transition the shown UI layer to one where the user is choosing two mesh points that
         // the element should be oriented along
         void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
@@ -6084,6 +6129,11 @@ namespace
                     DrawMenuContent(2);
                     ImGui::EndMenu();
                 }
+            }
+
+            if (ImGui::MenuItem("copy (select something)"))
+            {
+                TransitionToCopyingSomethingElsesOrientation(el);
             }
 
             if (ImGui::MenuItem("reset"))
