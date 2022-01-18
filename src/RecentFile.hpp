@@ -3,10 +3,17 @@
 #include <chrono>
 #include <filesystem>
 
-namespace osc {
+namespace osc
+{
     struct RecentFile final {
-        bool exists;  // true if exists in the filesystem
-        std::chrono::seconds lastOpenedUnixTimestamp;  // unix timestamp of when it was last opened
-        std::filesystem::path path;  // absolute path to the file
+
+        // true if exists in the filesystem
+        bool exists;
+
+        // unix timestamp of when it was last opened
+        std::chrono::seconds lastOpenedUnixTimestamp;
+
+        // absolute path to the file
+        std::filesystem::path path;
     };
 }

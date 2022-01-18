@@ -93,7 +93,8 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
     {
         size_t len = NFD_PathSet_GetCount(&s);
         rv.reserve(len);
-        for (size_t i = 0; i < len; ++i) {
+        for (size_t i = 0; i < len; ++i)
+        {
             rv.push_back(NFD_PathSet_GetPath(&s, i));
         }
 
@@ -331,7 +332,8 @@ void osc::OpenURLInDefaultBrowser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+{
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
 
@@ -341,7 +343,8 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
     USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
 
     log::log(lvl, "backtrace:");
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i)
+    {
         // figure out where the address is relative to the start of the page range the address
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
@@ -356,40 +359,41 @@ void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
         // find the final element in the filename
         TCHAR* cursor = module_namebuf;
         TCHAR* filename_start = cursor;
+        while (*cursor != '\0')
         {
-            while (*cursor != '\0') {
-                if (*cursor == '\\') {
-                    filename_start = cursor + 1;  // skip the slash
-                }
-                ++cursor;
+            if (*cursor == '\\')
+            {
+                filename_start = cursor + 1;  // skip the slash
             }
+            ++cursor;
         }
 
         PVOID relative_addr = reinterpret_cast<PVOID>(reinterpret_cast<DWORD64>(return_addrs[i]) - base_addr);
 
         log::log(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
     }
-    log::log(
-        lvl,
-        "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
+    log::log(lvl, "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
     log::log(lvl, "to analyze the backtrace in WinDbg: `ln osc.exe+ADDR`");
 
     // in windbg: ln osc.exe+ADDR
     // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
-static LONG crash_handler(EXCEPTION_POINTERS* info) {
+static LONG crash_handler(EXCEPTION_POINTERS* info)
+{
     osc::log::error("exception propagated to root of OSC: might be a segfault?");
     osc::WriteTracebackToLog(osc::log::level::err);
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-static void signal_handler(int signal) {
+static void signal_handler(int signal)
+{
     osc::log::error("signal caught by OSC: printing backtrace");
     osc::WriteTracebackToLog(osc::log::level::err);
 }
 
-void osc::InstallBacktraceHandler() {
+void osc::InstallBacktraceHandler()
+{
     // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
 
     // system default: display all errors
@@ -400,10 +404,13 @@ void osc::InstallBacktraceHandler() {
 
     signal(SIGABRT, signal_handler);
 }
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p) {
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
+{
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW );
 }
-void osc::OpenURLInDefaultBrowser(std::string_view) {
+
+void osc::OpenURLInDefaultBrowser(std::string_view)
+{
     log::error("unsupported action: cannot open external URLs in Windows (yet!)");
 }
 #else

@@ -10,8 +10,8 @@
 #include <vector>
 #include <memory>
 
-namespace osc {
-
+namespace osc
+{
     // top-level UI state
     //
     // this is the main state that gets shared between the top-level editor
@@ -80,101 +80,123 @@ namespace osc {
         MainEditorState& operator=(MainEditorState const&) = delete;
         MainEditorState& operator=(MainEditorState&&) = delete;
 
-        OpenSim::Model& updModel() noexcept {
+        OpenSim::Model& updModel() noexcept
+        {
             return editedModel.updModel();
         }
 
-        OpenSim::Model const& getModel() const noexcept {
+        OpenSim::Model const& getModel() const noexcept
+        {
             return editedModel.getModel();
         }
 
-        SimTK::State const& getState() const noexcept {
+        SimTK::State const& getState() const noexcept
+        {
             return editedModel.getState();
         }
 
-        SimTK::State& updState() noexcept {
+        SimTK::State& updState() noexcept
+        {
             return editedModel.updState();
         }
 
-        [[nodiscard]] bool canUndo() const noexcept {
+        [[nodiscard]] bool canUndo() const noexcept
+        {
             return editedModel.canUndo();
         }
 
-        void doUndo() {
+        void doUndo()
+        {
             editedModel.doUndo();
         }
 
-        [[nodiscard]] bool canRedo() const noexcept {
+        [[nodiscard]] bool canRedo() const noexcept
+        {
             return editedModel.canRedo();
         }
 
-        void doRedo() {
+        void doRedo()
+        {
             editedModel.doRedo();
         }
-
-
 
         void setModel(std::unique_ptr<OpenSim::Model> new_model);
 
 
-        OpenSim::Component const* getSelected() const noexcept {
+        OpenSim::Component const* getSelected() const noexcept
+        {
             return editedModel.getSelected();
         }
 
-        OpenSim::Component* updSelected() noexcept {
+        OpenSim::Component* updSelected() noexcept
+        {
             return editedModel.updSelected();
         }
 
-        void setSelected(OpenSim::Component const* c) {
+        void setSelected(OpenSim::Component const* c)
+        {
             editedModel.setSelected(c);
         }
 
 
-        OpenSim::Component const* getHovered() const noexcept {
+        OpenSim::Component const* getHovered() const noexcept
+        {
             return editedModel.getHovered();
         }
 
-        OpenSim::Component* updHovered() {
+        OpenSim::Component* updHovered()
+        {
             return editedModel.updHovered();
         }
 
-        void setHovered(OpenSim::Component const* c) {
+        void setHovered(OpenSim::Component const* c)
+        {
             editedModel.setHovered(c);
         }
 
 
-        OpenSim::Component const* getIsolated() const noexcept {
+        OpenSim::Component const* getIsolated() const noexcept
+        {
             return editedModel.getIsolated();
         }
 
-        OpenSim::Component* updIsolated() {
+        OpenSim::Component* updIsolated()
+        {
             return editedModel.updIsolated();
         }
 
-        void setIsolated(OpenSim::Component const* c) {
+        void setIsolated(OpenSim::Component const* c)
+        {
             editedModel.setIsolated(c);
         }
 
-        void startSimulatingEditedModel() {
+        void startSimulatingEditedModel()
+        {
             int newFocus = static_cast<int>(simulations.size());
             simulations.emplace_back(new UiSimulation{editedModel.getUiModel(), simParams});
             focusedSimulation = newFocus;
             focusedSimulationScrubbingTime = -1.0f;
         }
 
-        [[nodiscard]] UiSimulation* getFocusedSim() noexcept {
-            if (!(0 <= focusedSimulation && focusedSimulation < static_cast<int>(simulations.size()))) {
+        [[nodiscard]] UiSimulation* getFocusedSim() noexcept
+        {
+            if (!(0 <= focusedSimulation && focusedSimulation < static_cast<int>(simulations.size())))
+            {
                 return nullptr;
-            } else {
+            }
+            else
+            {
                 return simulations[static_cast<size_t>(focusedSimulation)].get();
             }
         }
 
-        [[nodiscard]] UiSimulation const* getFocusedSim() const noexcept {
+        [[nodiscard]] UiSimulation const* getFocusedSim() const noexcept
+        {
             return const_cast<MainEditorState*>(this)->getFocusedSim();
         }
 
-        [[nodiscard]] bool hasSimulations() const noexcept {
+        [[nodiscard]] bool hasSimulations() const noexcept
+        {
             return !simulations.empty();
         }
     };

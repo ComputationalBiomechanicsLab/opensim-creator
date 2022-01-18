@@ -20,41 +20,53 @@
 namespace fs = std::filesystem;
 using namespace osc;
 
-namespace {
-    std::optional<std::filesystem::path> try_locate_system_config() {
+namespace
+{
+    std::optional<std::filesystem::path> TryGetConfigLocation()
+    {
         fs::path p = osc::CurrentExeDir();
         bool exists = false;
-        while (p.has_filename()) {
-            fs::path maybe_config = p / "osc.toml";
-            if (fs::exists(maybe_config)) {
-                p = maybe_config;
+
+        while (p.has_filename())
+        {
+            fs::path maybeConfig = p / "osc.toml";
+            if (fs::exists(maybeConfig))
+            {
+                p = maybeConfig;
                 exists = true;
                 break;
             }
+
             // HACK: there is a file at "MacOS/osc.toml", which is where the config
             // is relative to SDL_GetBasePath. current_exe_dir should be fixed
             // accordingly.
-            fs::path maybe_macos_config = p / "MacOS" / "osc.toml";
-            if (fs::exists(maybe_macos_config)) {
-                p = maybe_macos_config;
+            fs::path maybeMacOSConfig = p / "MacOS" / "osc.toml";
+            if (fs::exists(maybeMacOSConfig))
+            {
+                p = maybeMacOSConfig;
                 exists = true;
                 break;
             }
             p = p.parent_path();
         }
 
-        if (exists) {
+        if (exists)
+        {
             return p;
-        } else {
+        }
+        else
+        {
             return std::nullopt;
         }
     }
 
-    void try_update_config_from_config_file(Config& cfg) {
-        std::optional<std::filesystem::path> config_pth = try_locate_system_config();
+    void TryUpdateConfigFromConfigFile(Config& cfg)
+    {
+        std::optional<std::filesystem::path> maybeConfigPath = TryGetConfigLocation();
 
         // can't find underlying config file: warn about it but escape early
-        if (!config_pth) {
+        if (!maybeConfigPath)
+        {
             log::info("could not find a system configuration file: OSC will still work, but might be missing some configured behavior");
             return;
         }
@@ -62,9 +74,12 @@ namespace {
         // else: can find the config file: try to parse it
 
         toml::v2::table config;
-        try {
-            config = toml::parse_file(config_pth->c_str());
-        } catch (std::exception const& ex) {
+        try
+        {
+            config = toml::parse_file(maybeConfigPath->c_str());
+        }
+        catch (std::exception const& ex)
+        {
             log::error("error parsing config toml: %s", ex.what());
             log::error("OSC will continue to boot, but you might need to fix your config file (e.g. by deleting it)");
             return;
@@ -74,28 +89,31 @@ namespace {
 
         // resources
         {
-            auto maybe_resources = config["resources"];
-            if (maybe_resources) {
-                std::string rp = (*maybe_resources.as_string()).get();
+            auto maybeResourcePath = config["resources"];
+            if (maybeResourcePath)
+            {
+                std::string rp = (*maybeResourcePath.as_string()).get();
 
                 // configuration resource_dir is relative *to the configuration file*
-                fs::path config_file_dir = config_pth->parent_path();
-                cfg.resourceDir = config_file_dir / rp;
+                fs::path configFileDir = maybeConfigPath->parent_path();
+                cfg.resourceDir = configFileDir / rp;
             }
         }
 
         // docs dir
-        if (auto docs = config["docs"]; docs) {
+        if (auto docs = config["docs"]; docs)
+        {
             std::string pth = (*docs.as_string()).get();
-            fs::path config_file_dir = config_pth->parent_path();
-            cfg.htmlDocsDir = config_file_dir / pth;
+            fs::path configFileDir = maybeConfigPath->parent_path();
+            cfg.htmlDocsDir = configFileDir / pth;
         }
 
         // init `use_multi_viewport`
         {
-            auto maybe_usemvp = config["experimental_feature_flags"]["multiple_viewports"];
-            if (maybe_usemvp) {
-                cfg.useMultiViewport = maybe_usemvp.as_boolean();
+            auto maybeUseMultipleViewports = config["experimental_feature_flags"]["multiple_viewports"];
+            if (maybeUseMultipleViewports)
+            {
+                cfg.useMultiViewport = maybeUseMultipleViewports.as_boolean();
             }
         }
     }
@@ -103,14 +121,15 @@ namespace {
 
 // public API
 
-std::unique_ptr<Config> osc::Config::load() {
+std::unique_ptr<Config> osc::Config::load()
+{
     auto rv = std::make_unique<Config>();
 
     // set defaults (in case underlying file can't be found)
     rv->resourceDir = OSC_DEFAULT_RESOURCE_DIR;
     rv->useMultiViewport = OSC_DEFAULT_USE_MULTI_VIEWPORT;
 
-    try_update_config_from_config_file(*rv);
+    TryUpdateConfigFromConfigFile(*rv);
 
     return rv;
 }

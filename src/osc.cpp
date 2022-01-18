@@ -1,4 +1,3 @@
-#include "src/Screens/Experimental/HittestScreen.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 #include "src/App.hpp"
@@ -15,33 +14,39 @@ static const char g_Help[] = R"(OPTIONS
         Show this help
 )";
 
-static bool skipPrefix(char const* prefix, char const* s, char const** out) {
-    do {
-        if (*prefix == '\0' && (*s == '\0' || *s == '=')) {
+static bool SkipPrefix(char const* prefix, char const* s, char const** out)
+{
+    do
+    {
+        if (*prefix == '\0' && (*s == '\0' || *s == '='))
+        {
             *out = s;
             return true;
         }
-    } while (*prefix++ == *s++);
+    }
+    while (*prefix++ == *s++);
 
     return false;
 }
 
-
-int main(int argc, char** argv) {
-
+int main(int argc, char** argv)
+{
     // skip application name
     --argc;
     ++argv;
 
     // handle named flag args (e.g. --help)
-    while (argc) {
+    while (argc)
+    {
         char const* arg = *argv;
 
-        if (*arg != '-') {
+        if (*arg != '-')
+        {
             break;
         }
 
-        if (skipPrefix("--help", arg, &arg)) {
+        if (SkipPrefix("--help", arg, &arg))
+        {
             std::cout << g_Usage << '\n' << g_Help << '\n';
             return EXIT_SUCCESS;
         }
@@ -50,17 +55,23 @@ int main(int argc, char** argv) {
         --argc;
     }
 
-    try {
+    try
+    {
         // init main app (window, OpenGL, etc.)
         App app;
 
-        if (argc <= 0) {
+        if (argc <= 0)
+        {
             app.show<SplashScreen>();
-        } else {
+        }
+        else
+        {
             auto mes = std::make_shared<MainEditorState>();
             app.show<LoadingScreen>(mes, argv[0]);
         }
-    } catch (std::exception const& ex) {
+    }
+    catch (std::exception const& ex)
+    {
         log::error("osc: encountered fatal exception: %s", ex.what());
         log::error("osc: terminating due to fatal exception");
         throw;

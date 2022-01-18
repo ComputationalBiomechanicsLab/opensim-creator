@@ -3,8 +3,11 @@
 #include <filesystem>
 #include <memory>
 
-namespace osc {
+namespace osc
+{
     struct Config {
+
+        // try to load the config from disk (default location)
         static std::unique_ptr<Config> load();
 
         // full path to the runtime `resources/` dir

@@ -15,41 +15,31 @@
 #include <utility>
 #include <vector>
 
-namespace osc {
+namespace osc
+{
     struct Config;
     class ShaderCache;
 }
 
-namespace osc {
-
+namespace osc
+{
     class App final {
-        // set when App is constructed for the first time
-        static App* g_Current;
-
     public:
-        struct Impl;
-        std::unique_ptr<Impl> m_Impl;
 
-        [[nodiscard]] static App& cur() noexcept {
+        static App& cur() noexcept
+        {
             OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
             return *g_Current;
         }
-
-        [[nodiscard]] static Config const& config() noexcept {
-            return cur().getConfig();
-        }
-
-        [[nodiscard]] static std::filesystem::path resource(std::string_view s) {
-            return cur().getResource(s);
-        }
+        static Config const& config() noexcept;
+        static ShaderCache& shaders() noexcept;
+        static MeshCache& meshes() noexcept;
+        static std::filesystem::path resource(std::string_view s);
 
         template<typename TShader>
-        [[nodiscard]] static TShader& shader() {
-            return cur().getShaderCache().getShader<TShader>();
-        }
-
-        [[nodiscard]] static MeshCache& meshes() {
-            return cur().getMeshCache();
+        static TShader& shader()
+        {
+            return shaders().getShader<TShader>();
         }
 
         // init app by loading config from default location
@@ -66,39 +56,41 @@ namespace osc {
 
         // construct `TScreen` with `Args` and start showing it
         template<typename TScreen, typename... Args>
-        void show(Args&&... args) {
+        void show(Args&&... args)
+        {
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
         // request the app transitions to a new sreen
         //
         // this is a *request* that `App` will fulfill at a later time. App will
-        // first call `on_unmount` on the current screen, fully destroy the current
-        // screen, then call `on_mount` on the new screen and make the new screen
+        // first unmount the current screen, fully destroy the current
+        // screen, then mount the new screen and make the new screen
         // the current screen
         void requestTransition(std::unique_ptr<Screen>);
 
         // construct `TScreen` with `Args` then request the app transitions to it
         template<typename TScreen, typename... Args>
-        void requestTransition(Args&&... args) {
+        void requestTransition(Args&&... args)
+        {
             requestTransition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
         // request the app quits as soon as it can (usually after it's finished with a
         // screen method)
-        void requestQuit();
+        void requestQuit() noexcept;
 
         // returns current window dimensions (integer)
-        [[nodiscard]] glm::ivec2 idims() const noexcept;
+        glm::ivec2 idims() const noexcept;
 
         // returns current window dimensions (float)
-        [[nodiscard]] glm::vec2 dims() const noexcept;
+        glm::vec2 dims() const noexcept;
 
         // returns current window aspect ratio
-        [[nodiscard]] float aspectRatio() const noexcept;
+        float aspectRatio() const noexcept;
 
         // sets whether the application should show/hide the cursor
-        void showCursor(bool);
+        void showCursor(bool) noexcept;
 
         // makes the application window fullscreen
         void makeFullscreen();
@@ -107,7 +99,7 @@ namespace osc {
         void makeWindowed();
 
         // returns number of MSXAA samples multisampled rendererers should use
-        [[nodiscard]] int getSamples() const noexcept;
+        int getSamples() const noexcept;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
@@ -115,32 +107,32 @@ namespace osc {
         void setSamples(int);
 
         // returns the maximum number of MSXAA samples the backend supports
-        [[nodiscard]] int maxSamples() const noexcept;
+        int maxSamples() const noexcept;
 
         // returns true if the application is rendering in debug mode
         //
         // screen/tab/widget implementations should use this to decide whether
         // to draw extra debug elements
-        [[nodiscard]] bool isInDebugMode() const noexcept;
+        bool isInDebugMode() const noexcept;
         void enableDebugMode();
         void disableDebugMode();
 
-        [[nodiscard]] bool isVsyncEnabled() const noexcept;
+        bool isVsyncEnabled() const noexcept;
         void enableVsync();
         void disableVsync();
 
-        [[nodiscard]] Config const& getConfig() const noexcept;
+        Config const& getConfig() const noexcept;
 
         // get full path to runtime resource in `resources/` dir
-        [[nodiscard]] std::filesystem::path getResource(std::string_view) const noexcept;
+        std::filesystem::path getResource(std::string_view) const noexcept;
 
         // returns the contents of a resource in a string
-        [[nodiscard]] std::string slurpResource(std::string_view) const;
+        std::string slurpResource(std::string_view) const;
 
         // returns all files that were recently opened by the user in the app
         //
         // the list is persisted between app boots
-        [[nodiscard]] std::vector<RecentFile> getRecentFiles() const;
+        std::vector<RecentFile> getRecentFiles() const;
 
         // add a file to the recently opened files list
         //
@@ -148,7 +140,7 @@ namespace osc {
         void addRecentFile(std::filesystem::path const&);
 
         // returns true if the main app window is focused
-        [[nodiscard]] bool isWindowFocused() const noexcept;
+        bool isWindowFocused() const noexcept;
 
         struct MouseState final {
             glm::ivec2 pos;
@@ -163,22 +155,22 @@ namespace osc {
         //
         // note: this tries to be as precise as possible by fetching from the
         //       OS if possible, so it can be expensive
-        [[nodiscard]] MouseState getMouseState() const noexcept;
+        MouseState getMouseState() const noexcept;
 
         // returns the number of "ticks" that the application has counted
-        [[nodiscard]] uint64_t getTicks() const noexcept;
+        uint64_t getTicks() const noexcept;
 
         // returns the number of "ticks" the application accumulates per second
-        [[nodiscard]] uint64_t getTickFrequency() const noexcept;
+        uint64_t getTickFrequency() const noexcept;
 
         // returns true if the user is pressing the SHIFT key
-        [[nodiscard]] bool isShiftPressed() const noexcept;
+        bool isShiftPressed() const noexcept;
 
         // returns true if the user is pressing the CTRL key
-        [[nodiscard]] bool isCtrlPressed() const noexcept;
+        bool isCtrlPressed() const noexcept;
 
         // returns true if the user is pressing the ALT key
-        [[nodiscard]] bool isAltPressed() const noexcept;
+        bool isAltPressed() const noexcept;
 
         // move the mouse to a location within the window
         void warpMouseInWindow(glm::vec2) const noexcept;
@@ -205,6 +197,15 @@ namespace osc {
 
         // threadsafe: pumps a redraw event into the application's event loop
         void requestRedraw();
+
+        struct Impl;
+    private:
+        friend void ImGuiInit();
+        friend void ImGuiNewFrame();
+
+        // set when App is constructed for the first time
+        static App* g_Current;
+        std::unique_ptr<Impl> m_Impl;
     };
 
     // ImGui support

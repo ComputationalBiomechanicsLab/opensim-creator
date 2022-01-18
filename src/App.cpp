@@ -41,10 +41,11 @@ using namespace osc;
 // useful if the application fails in prod: can provide some basic backtrace
 // info that users can paste into an issue or something, which is *a lot* more
 // information than "yeah, it's broke"
-static bool ensureBacktraceHandlerEnabled() {
-    osc::log::info("enabling backtrace handler");
-
-    static bool enabledOnceGlobally = []() {
+static bool EnsureBacktraceHandlerEnabled()
+{
+    static bool enabledOnceGlobally = []()
+    {
+        osc::log::info("enabling backtrace handler");
         InstallBacktraceHandler();
         return true;
     }();
@@ -53,14 +54,17 @@ static bool ensureBacktraceHandlerEnabled() {
 }
 
 // returns a resource from the config-provided `resources/` dir
-static std::filesystem::path getResource(Config const& c, std::string_view p) noexcept {
+static std::filesystem::path GetResource(Config const& c, std::string_view p) noexcept
+{
     return c.resourceDir / p;
 }
 
-namespace {
+namespace
+{
     // an OpenSim log sink that sinks into OSC's main log
     class OpenSimLogSink final : public OpenSim::LogSink {
-        void sinkImpl(std::string const& msg) override {
+        void sinkImpl(std::string const& msg) override
+        {
             osc::log::info("%s", msg.c_str());
         }
     };
@@ -69,9 +73,10 @@ namespace {
 // initialize OpenSim for osc
 //
 // this involves setting up OpenSim's log, registering types, dirs, etc.
-static bool ensureOpensimInitialized(Config const& config) {
-    static bool initializeOnceGlobally = [&config]() {
-
+static bool EnsureOpenSimInitialized(Config const& config)
+{
+    static bool initializeOnceGlobally = [&config]()
+    {
         // these are because OpenSim is inconsistient about handling locales
         //
         // it *writes* OSIM files using the locale, so you can end up with entries like:
@@ -154,7 +159,7 @@ static bool ensureOpensimInitialized(Config const& config) {
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
         osc::log::info("registering OpenSim geometry search path to use osc resources");
-        std::filesystem::path applicationWideGeometryDir = getResource(config, "geometry");
+        std::filesystem::path applicationWideGeometryDir = GetResource(config, "geometry");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(applicationWideGeometryDir.string());
         osc::log::info("added geometry search path entry: %s", applicationWideGeometryDir.string().c_str());
 
@@ -175,7 +180,8 @@ static bool ensureOpensimInitialized(Config const& config) {
     }
 
 // initialize the main application window
-static sdl::Window createMainAppWindow() {
+static sdl::Window CreateMainAppWindow()
+{
     log::info("initializing main application (OpenGL 3.3) window");
 
     OSC_SDL_GL_SetAttribute_CHECK(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -198,13 +204,15 @@ static sdl::Window createMainAppWindow() {
 }
 
 // create an OpenGL context for an application window
-static sdl::GLContext createOpenGLContext(SDL_Window* window) {
+static sdl::GLContext CreateOpenGLContext(SDL_Window* window)
+{
     log::info("initializing application OpenGL context");
 
     sdl::GLContext ctx = sdl::GL_CreateContext(window);
 
     // enable the context
-    if (SDL_GL_MakeCurrent(window, ctx) != 0) {
+    if (SDL_GL_MakeCurrent(window, ctx) != 0)
+    {
         throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
     }
 
@@ -212,14 +220,16 @@ static sdl::GLContext createOpenGLContext(SDL_Window* window) {
     //
     // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
     // on *constrained* systems (e.g. laptops, which the majority of users are using)
-    if (SDL_GL_SetSwapInterval(-1) != 0) {
+    if (SDL_GL_SetSwapInterval(-1) != 0)
+    {
         SDL_GL_SetSwapInterval(1);
     }
 
     // initialize GLEW
     //
     // effectively, enables the OpenGL API used by this application
-    if (auto err = glewInit(); err != GLEW_OK) {
+    if (auto err = glewInit(); err != GLEW_OK)
+    {
         std::stringstream ss;
         ss << "glewInit() failed: ";
         ss << glewGetErrorString(err);
@@ -247,26 +257,30 @@ static sdl::GLContext createOpenGLContext(SDL_Window* window) {
 }
 
 // returns the maximum numbers of MSXAA samples the active OpenGL context supports
-static GLint getMaxOpenGLMSXAASamples(sdl::GLContext const&) {
+static GLint GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
+{
     GLint v = 1;
     glGetIntegerv(GL_MAX_SAMPLES, &v);
 
     // OpenGL spec: "the value must be at least 4"
     // see: https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glGet.xhtml
-    if (v < 4) {
-        static bool once = [&]() {
+    if (v < 4)
+    {
+        static bool warnOnce = [&]()
+        {
             osc::log::warn("the current OpenGl backend only supports %i samples. Technically, this is invalid (4 *should* be the minimum)", v);
             return true;
         }();
-        (void)once;
+        (void)warnOnce;
     }
     OSC_ASSERT(v < 1<<16 && "number of samples is greater than the maximum supported by the application");
 
-    return static_cast<short>(v);
+    return v;
 }
 
 // maps an OpenGL debug message severity level to a log level
-static constexpr log::level::LevelEnum glDebugSevToLogLvl(GLenum sev) noexcept {
+static constexpr log::level::LevelEnum OpenGLDebugSevToLogLvl(GLenum sev) noexcept
+{
     switch (sev) {
     case GL_DEBUG_SEVERITY_HIGH: return log::level::err;
     case GL_DEBUG_SEVERITY_MEDIUM: return log::level::warn;
@@ -277,7 +291,8 @@ static constexpr log::level::LevelEnum glDebugSevToLogLvl(GLenum sev) noexcept {
 }
 
 // returns a string representation of an OpenGL debug message severity level
-static constexpr char const* glDebugSevToCStr(GLenum sev) noexcept {
+static constexpr char const* OpenGLDebugSevToCStr(GLenum sev) noexcept
+{
     switch (sev) {
     case GL_DEBUG_SEVERITY_HIGH: return "GL_DEBUG_SEVERITY_HIGH";
     case GL_DEBUG_SEVERITY_MEDIUM: return "GL_DEBUG_SEVERITY_MEDIUM";
@@ -288,7 +303,8 @@ static constexpr char const* glDebugSevToCStr(GLenum sev) noexcept {
 }
 
 // returns a string representation of an OpenGL debug message source
-static constexpr char const* glDebugSrcToCStr(GLenum src) noexcept {
+static constexpr char const* OpenGLDebugSrcToCStr(GLenum src) noexcept
+{
     switch (src) {
     case GL_DEBUG_SOURCE_API: return "GL_DEBUG_SOURCE_API";
     case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "GL_DEBUG_SOURCE_WINDOW_SYSTEM";
@@ -301,7 +317,8 @@ static constexpr char const* glDebugSrcToCStr(GLenum src) noexcept {
 }
 
 // returns a string representation of an OpenGL debug message type
-static constexpr char const* glDebugTypeToCStr(GLenum type) noexcept {
+static constexpr char const* OpenGLDebugTypeToCStr(GLenum type) noexcept
+{
     switch (type) {
     case GL_DEBUG_TYPE_ERROR: return "GL_DEBUG_TYPE_ERROR";
     case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR";
@@ -317,14 +334,15 @@ static constexpr char const* glDebugTypeToCStr(GLenum type) noexcept {
 }
 
 // returns `true` if current OpenGL context is in debug mode
-static bool isOpenGLInDebugMode() {
-
+static bool IsOpenGLInDebugMode()
+{
     // if context is not debug-mode, then some of the glGet*s below can fail
     // (e.g. GL_DEBUG_OUTPUT_SYNCHRONOUS on apple).
     {
         GLint flags;
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-        if (!(flags & GL_CONTEXT_FLAG_DEBUG_BIT)) {
+        if (!(flags & GL_CONTEXT_FLAG_DEBUG_BIT))
+        {
             return false;
         }
     }
@@ -332,7 +350,8 @@ static bool isOpenGLInDebugMode() {
     {
         GLboolean b = false;
         glGetBooleanv(GL_DEBUG_OUTPUT, &b);
-        if (!b) {
+        if (!b)
+        {
             return false;
         }
     }
@@ -340,7 +359,8 @@ static bool isOpenGLInDebugMode() {
     {
         GLboolean b = false;
         glGetBooleanv(GL_DEBUG_OUTPUT_SYNCHRONOUS, &b);
-        if (!b) {
+        if (!b)
+        {
             return false;
         }
     }
@@ -349,19 +369,19 @@ static bool isOpenGLInDebugMode() {
 }
 
 // raw handler function that can be used with `glDebugMessageCallback`
-static void openGLDebugMessageHandler(
+static void OpenGLDebugMessageHandler(
     GLenum source,
     GLenum type,
     unsigned int id,
     GLenum severity,
     GLsizei,
     const char* message,
-    void const*) {
-
-    log::level::LevelEnum lvl = glDebugSevToLogLvl(severity);
-    char const* sourceCStr = glDebugSrcToCStr(source);
-    char const* typeCStr = glDebugTypeToCStr(type);
-    char const* severityCStr = glDebugSevToCStr(severity);
+    void const*)
+{
+    log::level::LevelEnum lvl = OpenGLDebugSevToLogLvl(severity);
+    char const* sourceCStr = OpenGLDebugSrcToCStr(source);
+    char const* typeCStr = OpenGLDebugTypeToCStr(type);
+    char const* severityCStr = OpenGLDebugSevToCStr(severity);
 
     log::log(lvl,
 R"(OpenGL Debug message:
@@ -374,55 +394,69 @@ severity = %s
 }
 
 // enable OpenGL API debugging
-static void enableOpenGLDebugMode() {
-    if (isOpenGLInDebugMode()) {
+static void EnableOpenGLDebugMessages()
+{
+    if (IsOpenGLInDebugMode())
+    {
         log::info("application appears to already be in OpenGL debug mode: skipping enabling it");
         return;
     }
 
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(openGLDebugMessageHandler, nullptr);
+        glDebugMessageCallback(OpenGLDebugMessageHandler, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         log::info("enabled OpenGL debug mode");
-    } else {
+    }
+    else
+    {
         log::error("cannot enable OpenGL debug mode: the context does not have GL_CONTEXT_FLAG_DEBUG_BIT set");
     }
 }
 
 // disable OpenGL API debugging
-static void disableOpenGLDebugMode() {
-    if (!isOpenGLInDebugMode()) {
+static void DisableOpenGLDebugMessages()
+{
+    if (!IsOpenGLInDebugMode())
+    {
         log::info("application does not need to disable OpenGL debug mode: already in it: skipping");
         return;
     }
 
     int flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
         glDisable(GL_DEBUG_OUTPUT);
         log::info("disabled OpenGL debug mode");
-    } else {
+    }
+    else
+    {
         log::error("cannot disable OpenGL debug mode: the context does not have a GL_CONTEXT_FLAG_DEBUG_BIT set");
     }
 }
 
 // returns refresh rate of highest refresh rate display on the computer
-static int getHighestRefreshRateDisplay() {
+static int GetHighestRefreshRateDisplay()
+{
     int numDisplays = SDL_GetNumVideoDisplays();
 
-    if (numDisplays < 1) {
+    if (numDisplays < 1)
+    {
         return 60;  // this should be impossible but, you know, coding.
     }
 
     int highestRefreshRate = 30;
     SDL_DisplayMode modeStruct{};
-    for (int display = 0; display < numDisplays; ++display) {
+    for (int display = 0; display < numDisplays; ++display)
+    {
         int numModes = SDL_GetNumDisplayModes(display);
-        for (int mode = 0; mode < numModes; ++mode) {
+        for (int mode = 0; mode < numModes; ++mode)
+        {
             SDL_GetDisplayMode(display, mode, &modeStruct);
             highestRefreshRate = std::max(highestRefreshRate, modeStruct.refresh_rate);
         }
@@ -430,7 +464,8 @@ static int getHighestRefreshRateDisplay() {
     return highestRefreshRate;
 }
 
-static void imGuiApplyDarkThemeStyle() {
+static void ImGuiApplyDarkTheme()
+{
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
@@ -490,11 +525,12 @@ static void imGuiApplyDarkThemeStyle() {
 }
 
 // load the "recent files" file that osc persists to disk
-static std::vector<RecentFile> loadRecentFilesFile(std::filesystem::path const& p) {
-
+static std::vector<RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
+{
     std::ifstream fd{p, std::ios::in};
 
-    if (!fd) {
+    if (!fd)
+    {
         // do not throw, because it probably shouldn't crash the application if this
         // is an issue
         osc::log::error("%s: could not be opened for reading: cannot load recent files list", p.string().c_str());
@@ -504,7 +540,8 @@ static std::vector<RecentFile> loadRecentFilesFile(std::filesystem::path const& 
     std::vector<RecentFile> rv;
     std::string line;
 
-    while (std::getline(fd, line)) {
+    while (std::getline(fd, line))
+    {
         std::istringstream ss{line};
 
         // read line content
@@ -524,34 +561,42 @@ static std::vector<RecentFile> loadRecentFilesFile(std::filesystem::path const& 
 }
 
 // returns the filesystem path to the "recent files" file
-static std::filesystem::path recentFilesFilePath() {
+static std::filesystem::path GetRecentFilesFilePath()
+{
     return osc::GetUserDataDir() / "recent_files.txt";
 }
 
 // returns a unix timestamp in seconds since the epoch
-static std::chrono::seconds nowAsUnixTimestamp() {
+static std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
+{
     return std::chrono::seconds(std::time(nullptr));
 }
 
+// main application state
+//
+// this is what "booting the application" actually initializes
 struct osc::App::Impl final {
 
     // init/load the application config first
     std::unique_ptr<Config> config = Config::load();
 
     // install the backtrace handler (if necessary - once per process)
-    bool isBacktraceHandlerInstalled = ensureBacktraceHandlerEnabled();
+    bool isBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();
 
     // init SDL context (windowing, etc.)
     sdl::Context context{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window window = createMainAppWindow();
+    sdl::Window window = CreateMainAppWindow();
 
     // get performance counter frequency (for the delta clocks)
     Uint64 appCounterFrequency = SDL_GetPerformanceFrequency();
 
+    // current performance counter value (recorded once per frame)
+    Uint64 appCounter = 0;
+
     // init OpenGL (globally)
-    sdl::GLContext gl = createOpenGLContext(window);
+    sdl::GLContext gl = CreateOpenGLContext(window);
 
     // init global shader cache
     ShaderCache shaderCache{};
@@ -560,13 +605,13 @@ struct osc::App::Impl final {
     MeshCache meshCache{};
 
     // figure out maximum number of samples supported by the OpenGL backend
-    GLint maxMSXAASamples = getMaxOpenGLMSXAASamples(gl);
+    GLint maxMSXAASamples = GetOpenGLMaxMSXAASamples(gl);
 
     // how many samples the implementation should actually use
     GLint curMSXAASamples = std::min(maxMSXAASamples, config->numMSXAASamples);
 
     // ensure OpenSim is initialized (logs, etc.)
-    bool isOpenSimInitialized = ensureOpensimInitialized(*config);
+    bool isOpenSimInitialized = EnsureOpenSimInitialized(*config);
 
     // set to true if the application should quit
     bool shouldQuit = false;
@@ -576,118 +621,143 @@ struct osc::App::Impl final {
 
     // set to true if the main loop should pause on events
     //
-    // CAREFUL: this makes the app event-driven, which may not do what you
-    //          want
+    // CAREFUL: this makes the app event-driven
     bool isInWaitMode = false;
+
+    // set to true to poll events on the next frame (even if in wait mode)
+    bool isPollingNextFrame = false;
 
     // current screen being shown (if any)
     std::unique_ptr<Screen> currentScreen = nullptr;
 
-    // number of drawcalls made on this screen
-    //
-    // some systems (especially ImGui) use the first drawcall to set up things
-    // like screen buffers etc. and won't draw a valid render until the second
-    // drawcall
-    uint64_t currentScreenDrawcalls = 0;
-
     // the *next* screen the application should show
-    //
-    // this is what "requesting a transition" ultimately sets
     std::unique_ptr<Screen> nextScreen = nullptr;
 };
 
 // perform a screen transntion between two top-level `osc::Screen`s
-static void performScreenTransition(App::Impl& impl) {
+static void TransitionToNextScreen(App::Impl& impl)
+{
+    if (!impl.nextScreen)
+    {
+        return;
+    }
+
     impl.currentScreen->onUnmount();
     impl.currentScreen.reset();
     impl.currentScreen = std::move(impl.nextScreen);
-    impl.currentScreenDrawcalls = 0;
+    impl.isPollingNextFrame = true;
 
-    Screen& sref = *impl.currentScreen;
-    log::info("mounting screen %s", typeid(sref).name());
+    log::info("mounting screen %s", impl.currentScreen->name());
     impl.currentScreen->onMount();
-    log::info("transitioned main screen to %s", typeid(sref).name());
+    log::info("transitioned main screen to %s", impl.currentScreen->name());
 }
 
-static void appEnterMainLoopUnguarded(App::Impl& impl) {
-
+// the main application loop
+//
+// this is what he application enters when it `show`s the first screen
+static void AppMainLoopUnguarded(App::Impl& impl)
+{
     // perform initial screen mount
     impl.currentScreen->onMount();
 
-    // ensure on_unmount is called before potentially destructing the screen
+    // ensure current screen is unmounted when exiting the main loop
     OSC_SCOPE_GUARD_IF(impl.currentScreen, { impl.currentScreen->onUnmount(); });
 
-    Uint64 appTickCounter = 0;
+    // reset counters
+    impl.appCounter = 0;
 
-    while (true) {  // gameloop
+    while (true)  // gameloop
+    {
+        // pump events
+        bool shouldWait = impl.isInWaitMode && !impl.isPollingNextFrame;
+        impl.isPollingNextFrame = false;
 
-        bool wait = impl.isInWaitMode && impl.currentScreenDrawcalls > 1;
-        for (SDL_Event e; wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {  // event pump
-            wait = false;
+        for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
+        {
+            shouldWait = false;
 
-            // SDL_QUIT should cause the application to immediately quit
-            if (e.type == SDL_QUIT) {
+            if (e.type == SDL_QUIT)
+            {
+                // user closed window (e.g. pressed X or Alt+F4)
                 return;
             }
 
-            if (e.type == SDL_USEREVENT) {
-                continue;  // it's a redraw event that lower layers can't handle anyway
+            if (e.type == SDL_USEREVENT)
+            {
+                // it's a redraw event that lower layers can't handle anyway
+                continue;
+            }
+
+            if (e.type == SDL_WINDOWEVENT)
+            {
+                // window was resized and should probably be double-drawn
+                impl.isPollingNextFrame = true;
             }
 
             // let screen handle the event
             impl.currentScreen->onEvent(e);
 
-            // event handling may have requested a quit
-            if (impl.shouldQuit) {
+            if (impl.shouldQuit)
+            {
+                // screen requested application quit, so exit this function
                 return;
             }
 
-            // event handling may have requested a screen transition
-            if (impl.nextScreen) {
-                performScreenTransition(impl);
+            if (impl.nextScreen)
+            {
+                // screen requested a new screen, so perform the transition
+                TransitionToNextScreen(impl);
             }
         }
+
 
         // figure out frame delta
         Uint64 counter = SDL_GetPerformanceCounter();
         float dt;
-        if (appTickCounter > 0) {
-            Uint64 ticks = counter - appTickCounter;
+        if (impl.appCounter > 0)
+        {
+            Uint64 ticks = counter - impl.appCounter;
             dt = static_cast<float>(static_cast<double>(ticks) / impl.appCounterFrequency);
-        } else {
+        }
+        else
+        {
             dt = 1.0f/60.0f;  // first iteration
         }
-        appTickCounter = counter;
+        impl.appCounter = counter;
+
 
         // "tick" the screen
         impl.currentScreen->tick(dt);
 
-        // "tick" may have requested a quit
-        if (impl.shouldQuit) {
+        if (impl.shouldQuit)
+        {
+            // screen requested application quit, so exit this function
             return;
         }
 
-        // "tick" may have requested a screen transition
-        if (impl.nextScreen) {
-            performScreenTransition(impl);
+        if (impl.nextScreen)
+        {
+            // screen requested a new screen, so perform the transition
+            TransitionToNextScreen(impl);
             continue;
         }
 
         // "draw" the screen into the window framebuffer
         impl.currentScreen->draw();
-        ++impl.currentScreenDrawcalls;
 
         // "present" the rendered screen to the user (can block on VSYNC)
         SDL_GL_SwapWindow(impl.window);
 
-        // "draw" may have requested a quit
-        if (impl.shouldQuit) {
+        if (impl.shouldQuit)
+        {
+            // screen requested application quit, so exit this function
             return;
         }
 
-        // "draw" may have requested a transition
-        if (impl.nextScreen) {
-            performScreenTransition(impl);
+        if (impl.nextScreen)
+        {
+            // screen requested a new screen, so perform the transition
+            TransitionToNextScreen(impl);
             continue;
         }
     }
@@ -695,27 +765,50 @@ static void appEnterMainLoopUnguarded(App::Impl& impl) {
 
 // public API
 
+
+osc::Config const& osc::App::config() noexcept
+{
+    return cur().getConfig();
+}
+
+osc::ShaderCache& osc::App::shaders() noexcept
+{
+    return cur().getShaderCache();
+}
+
+osc::MeshCache& osc::App::meshes() noexcept
+{
+    return cur().getMeshCache();
+}
+
+std::filesystem::path osc::App::resource(std::string_view s)
+{
+    return cur().getResource(s);
+}
+
 osc::App* osc::App::g_Current = nullptr;
 
-osc::App::App() : m_Impl{new Impl{}} {
+osc::App::App() :
+    m_Impl{new Impl{}}
+{
     g_Current = this;
 }
 
 osc::App::App(App&&) noexcept = default;
 
-osc::App::~App() noexcept {
+osc::App::~App() noexcept
+{
     g_Current = nullptr;
 }
 
 osc::App& osc::App::operator=(App&&) noexcept = default;
 
-void osc::App::show(std::unique_ptr<Screen> s) {
-    {
-        Screen& sref = *s;
-        log::info("starting application main render loop with screen %s", typeid(sref).name());
-    }
+void osc::App::show(std::unique_ptr<Screen> s)
+{
+    log::info("starting application main render loop with screen %s", s->name());
 
-    if (m_Impl->currentScreen) {
+    if (m_Impl->currentScreen)
+    {
         throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `requestTransition` instead"};
     }
 
@@ -725,152 +818,184 @@ void osc::App::show(std::unique_ptr<Screen> s) {
     // ensure screens are cleaned up - regardless of how `show` is exited from
     OSC_SCOPE_GUARD({ m_Impl->currentScreen.reset(); m_Impl->nextScreen.reset(); });
 
-    try {
-        appEnterMainLoopUnguarded(*m_Impl);
-    } catch (std::exception const& ex) {
+    try
+    {
+        AppMainLoopUnguarded(*m_Impl);
+    }
+    catch (std::exception const& ex)
+    {
         log::error("unhandled exception thrown in main render loop: %s", ex.what());
         throw;
     }
 }
 
-void osc::App::requestTransition(std::unique_ptr<Screen> s) {
+void osc::App::requestTransition(std::unique_ptr<Screen> s)
+{
     m_Impl->nextScreen = std::move(s);
 }
 
-void osc::App::requestQuit() {
+void osc::App::requestQuit() noexcept
+{
     m_Impl->shouldQuit = true;
 }
 
-glm::ivec2 osc::App::idims() const noexcept {
+glm::ivec2 osc::App::idims() const noexcept
+{
     auto [w, h] = sdl::GetWindowSize(m_Impl->window);
     return glm::ivec2{w, h};
 }
 
-glm::vec2 osc::App::dims() const noexcept {
+glm::vec2 osc::App::dims() const noexcept
+{
     auto [w, h] = sdl::GetWindowSize(m_Impl->window);
     return glm::vec2{static_cast<float>(w), static_cast<float>(h)};
 }
 
-float osc::App::aspectRatio() const noexcept {
+float osc::App::aspectRatio() const noexcept
+{
     glm::vec2 v = dims();
     return v.x / v.y;
 }
 
-void osc::App::showCursor(bool v)
+void osc::App::showCursor(bool v) noexcept
 {
     SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
 }
 
-void osc::App::makeFullscreen() {
+void osc::App::makeFullscreen()
+{
     SDL_SetWindowFullscreen(m_Impl->window, SDL_WINDOW_FULLSCREEN);
 }
 
-void osc::App::makeWindowed() {
+void osc::App::makeWindowed()
+{
     SDL_SetWindowFullscreen(m_Impl->window, 0);
 }
 
-int osc::App::getSamples() const noexcept {
+int osc::App::getSamples() const noexcept
+{
     return m_Impl->curMSXAASamples;
 }
 
-void osc::App::setSamples(int s) {
-    if (s <= 0) {
+void osc::App::setSamples(int s)
+{
+    if (s <= 0)
+    {
         throw std::runtime_error{"tried to set number of samples to <= 0"};
     }
 
-    if (s > maxSamples()) {
+    if (s > maxSamples())
+    {
         throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
     }
 
-    if (NumBitsSetIn(s) != 1) {
-        throw std::runtime_error{
-            "tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
+    if (NumBitsSetIn(s) != 1)
+    {
+        throw std::runtime_error{"tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
     }
 
     m_Impl->curMSXAASamples = s;
 }
 
-int osc::App::maxSamples() const noexcept {
+int osc::App::maxSamples() const noexcept
+{
     return m_Impl->maxMSXAASamples;
 }
 
-bool osc::App::isInDebugMode() const noexcept {
+bool osc::App::isInDebugMode() const noexcept
+{
     return m_Impl->isDebugModeEnabled;
 }
 
-void osc::App::enableDebugMode() {
-    if (isOpenGLInDebugMode()) {
+void osc::App::enableDebugMode()
+{
+    if (IsOpenGLInDebugMode())
+    {
         return;  // already in debug mode
     }
 
     log::info("enabling debug mode");
-    enableOpenGLDebugMode();
+    EnableOpenGLDebugMessages();
     m_Impl->isDebugModeEnabled = true;
 }
 
-void osc::App::disableDebugMode() {
-    if (!isOpenGLInDebugMode()) {
+void osc::App::disableDebugMode()
+{
+    if (!IsOpenGLInDebugMode())
+    {
         return;  // already not in debug mode
     }
 
     log::info("disabling debug mode");
-    disableOpenGLDebugMode();
+    DisableOpenGLDebugMessages();
     m_Impl->isDebugModeEnabled = false;
 }
 
-bool osc::App::isVsyncEnabled() const noexcept {
+bool osc::App::isVsyncEnabled() const noexcept
+{
     // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
     return SDL_GL_GetSwapInterval() != 0;
 }
 
-void osc::App::enableVsync() {
+void osc::App::enableVsync()
+{
     // try using adaptive vsync
-    if (SDL_GL_SetSwapInterval(-1) == 0) {
+    if (SDL_GL_SetSwapInterval(-1) == 0)
+    {
         return;
     }
 
     // if adaptive vsync doesn't work, then try normal vsync
-    if (SDL_GL_SetSwapInterval(1) == 0) {
+    if (SDL_GL_SetSwapInterval(1) == 0)
+    {
         return;
     }
 
     // otherwise, setting vsync isn't supported by the system
 }
 
-void osc::App::disableVsync() {
+void osc::App::disableVsync()
+{
     SDL_GL_SetSwapInterval(0);
 }
 
-Config const& osc::App::getConfig() const noexcept {
+Config const& osc::App::getConfig() const noexcept
+{
     return *m_Impl->config;
 }
 
-std::filesystem::path osc::App::getResource(std::string_view p) const noexcept {
-    return ::getResource(*m_Impl->config, p);
+std::filesystem::path osc::App::getResource(std::string_view p) const noexcept
+{
+    return ::GetResource(*m_Impl->config, p);
 }
 
-std::string osc::App::slurpResource(std::string_view p) const {
+std::string osc::App::slurpResource(std::string_view p) const
+{
     std::filesystem::path path = getResource(p);
     return SlurpFileIntoString(path);
 }
 
-std::vector<RecentFile> osc::App::getRecentFiles() const {
-    std::filesystem::path p = recentFilesFilePath();
+std::vector<RecentFile> osc::App::getRecentFiles() const
+{
+    std::filesystem::path p = GetRecentFilesFilePath();
 
-    if (!std::filesystem::exists(p)) {
+    if (!std::filesystem::exists(p))
+    {
         return {};
     }
 
-    return loadRecentFilesFile(p);
+    return LoadRecentFilesFile(p);
 }
 
-void osc::App::addRecentFile(std::filesystem::path const& p) {
-    std::filesystem::path recentFilesPath = recentFilesFilePath();
+void osc::App::addRecentFile(std::filesystem::path const& p)
+{
+    std::filesystem::path recentFilesPath = GetRecentFilesFilePath();
 
     // load existing list
     std::vector<RecentFile> rfs;
-    if (std::filesystem::exists(recentFilesPath)) {
-        rfs = loadRecentFilesFile(recentFilesPath);
+    if (std::filesystem::exists(recentFilesPath))
+    {
+        rfs = LoadRecentFilesFile(recentFilesPath);
     }
 
     // clear potentially duplicate entries from existing list
@@ -879,25 +1004,29 @@ void osc::App::addRecentFile(std::filesystem::path const& p) {
     // write by truncating existing list file
     std::ofstream fd{recentFilesPath, std::ios::trunc};
 
-    if (!fd) {
+    if (!fd)
+    {
         osc::log::error("%s: could not be opened for writing: cannot update recent files list", recentFilesPath.string().c_str());
     }
 
     // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
     auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
-    for (auto it = begin; it != rfs.end(); ++it) {
+    for (auto it = begin; it != rfs.end(); ++it)
+    {
         fd << it->lastOpenedUnixTimestamp.count() << ' ' << it->path << std::endl;
     }
 
     // append the new entry
-    fd << nowAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
+    fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
 }
 
-bool osc::App::isWindowFocused() const noexcept {
+bool osc::App::isWindowFocused() const noexcept
+{
     return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
 }
 
-App::MouseState osc::App::getMouseState() const noexcept {
+App::MouseState osc::App::getMouseState() const noexcept
+{
     MouseState rv;
 
     glm::ivec2 mouseLocal;
@@ -908,18 +1037,21 @@ App::MouseState osc::App::getMouseState() const noexcept {
     rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
     rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
 
-    if (isWindowFocused()) {
-
+    if (isWindowFocused())
+    {
         static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
 
-        if (canUseGlobalMouseState) {
+        if (canUseGlobalMouseState)
+        {
             glm::ivec2 mouseGlobal;
             SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
             glm::ivec2 mouseWindow;
             SDL_GetWindowPosition(m_Impl->window, &mouseWindow.x, &mouseWindow.y);
 
             rv.pos = mouseGlobal - mouseWindow;
-        } else {
+        }
+        else
+        {
             rv.pos = mouseLocal;
         }
     }
@@ -927,40 +1059,48 @@ App::MouseState osc::App::getMouseState() const noexcept {
     return rv;
 }
 
-uint64_t osc::App::getTicks() const noexcept {
+uint64_t osc::App::getTicks() const noexcept
+{
     return SDL_GetPerformanceCounter();
 }
 
-uint64_t osc::App::getTickFrequency() const noexcept {
+uint64_t osc::App::getTickFrequency() const noexcept
+{
     return SDL_GetPerformanceFrequency();
 }
 
-bool osc::App::isShiftPressed() const noexcept {
+bool osc::App::isShiftPressed() const noexcept
+{
     return SDL_GetModState() & KMOD_SHIFT;
 }
 
-bool osc::App::isCtrlPressed() const noexcept {
+bool osc::App::isCtrlPressed() const noexcept
+{
     return SDL_GetModState() & KMOD_CTRL;
 }
 
-bool osc::App::isAltPressed() const noexcept {
+bool osc::App::isAltPressed() const noexcept
+{
     return SDL_GetModState() & KMOD_ALT;
 }
 
-void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept {
+void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept
+{
     SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
 }
 
-ShaderCache& osc::App::getShaderCache() noexcept {
+ShaderCache& osc::App::getShaderCache() noexcept
+{
     return m_Impl->shaderCache;
 }
 
-MeshCache& osc::App::getMeshCache() noexcept {
+MeshCache& osc::App::getMeshCache() noexcept
+{
     return m_Impl->meshCache;
 }
 
-void osc::ImGuiInit() {
-
+void osc::ImGuiInit()
+{
     // init ImGui top-level context
     ImGui::CreateContext();
 
@@ -969,7 +1109,8 @@ void osc::ImGuiInit() {
     // configure ImGui from OSC's (toml) configuration
     {
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        if (App::config().useMultiViewport) {
+        if (App::config().useMultiViewport)
+        {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         }
     }
@@ -1003,45 +1144,54 @@ void osc::ImGuiInit() {
     // init ImGui for OpenGL
     ImGui_ImplOpenGL3_Init(OSC_GLSL_VERSION);
 
-    imGuiApplyDarkThemeStyle();
+    ImGuiApplyDarkTheme();
 }
 
-void osc::ImGuiShutdown() {
+void osc::ImGuiShutdown()
+{
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
-bool osc::ImGuiOnEvent(SDL_Event const& e) {
+bool osc::ImGuiOnEvent(SDL_Event const& e)
+{
     ImGui_ImplSDL2_ProcessEvent(&e);
 
     ImGuiIO const& io  = ImGui::GetIO();
 
-    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)) {
-        return true;
+    bool handledByImgui = false;
+
+    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP))
+    {
+        handledByImgui = true;
     }
 
-    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN)) {
-        return true;
+    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN))
+    {
+        handledByImgui = true;
     }
 
-    return false;
+    return handledByImgui;
 }
 
-void osc::ImGuiNewFrame() {
+void osc::ImGuiNewFrame()
+{
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(App::cur().m_Impl->window);
     ImGui::NewFrame();
 }
 
-void osc::ImGuiRender() {
+void osc::ImGuiRender()
+{
     gl::UseProgram();  // bound program can sometimes cause issues
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ImGui: handle multi-viewports if the user has requested them
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
         SDL_Window* backupCurrentWindow = SDL_GL_GetCurrentWindow();
         SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
         ImGui::UpdatePlatformWindows();
@@ -1050,17 +1200,20 @@ void osc::ImGuiRender() {
     }
 }
 
-void osc::App::makeMainEventLoopWaiting() {
+void osc::App::makeMainEventLoopWaiting()
+{
     m_Impl->isInWaitMode = true;
     requestRedraw();  // ensure it immediately draws *something*
 }
 
-void osc::App::makeMainEventLoopPolling() {
+void osc::App::makeMainEventLoopPolling()
+{
     m_Impl->isInWaitMode = false;
     requestRedraw();  // edge-case is that the main thread is waiting on something
 }
 
-void osc::App::requestRedraw() {
+void osc::App::requestRedraw()
+{
     SDL_Event e{};
     e.type = SDL_USEREVENT;
     SDL_PushEvent(&e);

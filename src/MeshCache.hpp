@@ -5,7 +5,8 @@
 #include <memory>
 #include <string>
 
-namespace osc {
+namespace osc
+{
     class MeshCache final {
 
     public:

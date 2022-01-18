@@ -6,7 +6,8 @@
 #include <string_view>
 
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
-namespace osc {
+namespace osc
+{
     // returns the full path to the currently-executing application
     std::filesystem::path const& CurrentExeDir();
 

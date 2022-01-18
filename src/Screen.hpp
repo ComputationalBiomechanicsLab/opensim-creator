@@ -2,7 +2,10 @@
 
 #include <SDL_events.h>
 
-namespace osc {
+#include <typeinfo>
+
+namespace osc
+{
     // top-level screen shown by the application
     //
     // the application shows exactly one top-level `Screen` to the user at
@@ -22,6 +25,13 @@ namespace osc {
 
         // called by app once per frame (float is a timedelta in seconds)
         virtual void tick(float) {}
+
+        // returns the name of the screen (handy for debugging/logging)
+        virtual char const* name() const
+        {
+            Screen const& s = *this;
+            return typeid(s).name();
+        }
 
         // called by app when the screen should render into the current framebuffer
         virtual void draw() = 0;

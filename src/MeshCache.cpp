@@ -29,20 +29,27 @@ struct osc::MeshCache::Impl final {
     std::unordered_map<std::string, std::shared_ptr<Mesh>> fileCache;
 };
 
-osc::MeshCache::MeshCache() : m_Impl{new Impl{}} {
+osc::MeshCache::MeshCache() :
+    m_Impl{new Impl{}}
+{
 }
 
 osc::MeshCache::~MeshCache() noexcept = default;
 
-std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p) {
+std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p)
+{
     auto guard = std::lock_guard{m_Impl->fileCacheMutex};
 
     auto [it, inserted] = m_Impl->fileCache.try_emplace(p, nullptr);
 
-    if (inserted) {
-        try {
+    if (inserted)
+    {
+        try
+        {
             it->second = std::make_shared<Mesh>(SimTKLoadMesh(p));
-        } catch (...) {
+        }
+        catch (...)
+        {
             log::error("error loading mesh file %s: it will be replaced with a cube", p.c_str());
             it->second = m_Impl->cube;  // dummy entry
         }
@@ -51,38 +58,47 @@ std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p) {
     return it->second;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getSphereMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getSphereMesh()
+{
     return m_Impl->sphere;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getCylinderMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getCylinderMesh()
+{
     return m_Impl->cylinder;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getBrickMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getBrickMesh()
+{
     return m_Impl->cube;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getConeMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getConeMesh()
+{
     return m_Impl->cone;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getFloorMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getFloorMesh()
+{
     return m_Impl->floor;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::get100x100GridMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::get100x100GridMesh()
+{
     return m_Impl->grid100x100;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getCubeWireMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getCubeWireMesh()
+{
     return m_Impl->cubeWire;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getYLineMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getYLineMesh()
+{
     return m_Impl->yLine;
 }
 
-std::shared_ptr<Mesh> osc::MeshCache::getTexturedQuadMesh() {
+std::shared_ptr<Mesh> osc::MeshCache::getTexturedQuadMesh()
+{
     return m_Impl->texturedQuad;
 }
