@@ -5240,6 +5240,22 @@ namespace
             m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
         }
 
+        void TransitionToChoosingWhichElementToTranslateTo(SceneEl& el)
+        {
+            ChooseElLayerOptions opts;
+            opts.CanChooseBodies = true;
+            opts.CanChooseGround = true;
+            opts.CanChooseJoints = true;
+            opts.CanChooseMeshes = false;
+            opts.MaybeElAttachingTo = el.GetID();
+            opts.Header = "choose what to translate to (ESC to cancel)";
+            opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](UID userChoice)
+            {
+                return TryTranslateElementToAnotherElement(shared->UpdCommittableModelGraph(), id, userChoice);
+            };
+            m_Maybe3DViewerModal = std::make_shared<ChooseElLayer>(*this, m_Shared, opts);
+        }
+
         // transition the shown UI layer to one where the user is choosing two mesh points that
         // the element should be oriented along
         void TransitionToOrientingElementAlongTwoMeshPoints(SceneEl& el, int axis)
@@ -5822,6 +5838,11 @@ namespace
                 {
                     TryTranslateElementToAnotherElement(m_Shared->UpdCommittableModelGraph(), el.GetID(), el.GetCrossReferenceConnecteeID(i));
                 }
+            }
+
+            if (ImGui::MenuItem("To (select something)"))
+            {
+                TransitionToChoosingWhichElementToTranslateTo(el);
             }
 
             if (el.GetNumCrossReferences() == 2)
