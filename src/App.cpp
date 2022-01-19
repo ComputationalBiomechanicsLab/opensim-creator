@@ -470,8 +470,8 @@ static void ImGuiApplyDarkTheme()
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
     ImGui::GetStyle().FrameRounding = 4.0f;
-    ImGui::GetStyle().GrabRounding = 0.0f;
-    ImGui::GetStyle().GrabMinSize = 3.0f;
+    ImGui::GetStyle().GrabRounding = 20.0f;
+    ImGui::GetStyle().GrabMinSize = 10.0f;
 
     ImVec4* colors = ImGui::GetStyle().Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
