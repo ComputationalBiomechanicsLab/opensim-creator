@@ -6,6 +6,13 @@
 #include <array>
 #include <cstddef>
 #include <stdexcept>
+#include <vector>
+#include <string_view>
+
+namespace OpenSim
+{
+    class AbstractSocket;
+}
 
 namespace osc {
     class ComponentPathPtrs {
@@ -48,4 +55,21 @@ namespace osc {
     inline ComponentPathPtrs path_to(OpenSim::Component const& c) {
         return ComponentPathPtrs{c};
     }
+
+    std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
+    std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);
+    std::vector<OpenSim::AbstractSocket const*> GetPhysicalFrameSockets(OpenSim::Component& c);
+
+    // returns non-nullptr if the given path resolves a component relative to root
+    OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // return non-nullptr if the given path resolves a component of type T relative to root
+    template<typename T>
+    T const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
+    {
+        return dynamic_cast<T const*>(FindComponent(root, cp));
+    }
+
+    // returns true if the path resolves to a component within root
+    bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
 }

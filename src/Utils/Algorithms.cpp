@@ -68,25 +68,34 @@ bool osc::IsSubpath(std::filesystem::path const& dir, std::filesystem::path cons
     return std::equal(dir.begin(), dir.end(), pth.begin());
 }
 
-bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr) {
-    if (substr.empty()) {
+bool osc::ContainsSubstring(std::string const& str, std::string const& substr)
+{
+    return str.find(substr) != std::string::npos;
+}
+
+std::string osc::ToLower(std::string const& s)
+{
+    std::string cpy = s;
+    std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](unsigned char c) { return std::tolower(c); });
+    return cpy;
+}
+
+bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr)
+{
+    if (substr.empty())
+    {
         return true;
     }
 
-    if (substr.size() > str.size()) {
+    if (substr.size() > str.size())
+    {
         return false;
     }
 
-    std::string s = str;
-    for (char& c : s) {
-        c = std::tolower(c);
-    }
-    std::string ss = substr;
-    for (char& c : ss) {
-        c = std::tolower(c);
-    }
+    std::string s = ToLower(str);
+    std::string ss = ToLower(substr);
 
-    return std::strstr(s.c_str(), ss.c_str()) != nullptr;
+    return ContainsSubstring(s, ss);
 }
 
 bool osc::CStrEndsWith(char const* s, std::string_view suffix) noexcept {

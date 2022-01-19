@@ -197,3 +197,21 @@ void osc::DrawHelpMarker(char const* desc)
     ImGui::TextDisabled("(?)");
     DrawTooltipIfItemHovered(desc);
 }
+
+bool osc::InputString(const char* label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags)
+{
+    static std::string g_Buf;
+
+    g_Buf = s;
+    g_Buf.resize(std::max(maxLen, s.size()));
+    g_Buf[s.size()] = '\0';
+
+    bool rv = ImGui::InputText(label, g_Buf.data(), maxLen, flags);
+
+    if (rv)
+    {
+        s = g_Buf.data();
+    }
+
+    return rv;
+}

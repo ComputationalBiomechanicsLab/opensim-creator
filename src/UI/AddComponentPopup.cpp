@@ -1,12 +1,16 @@
 #include "AddComponentPopup.hpp"
 
 #include "src/Assertions.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/UI/PropertyEditors.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/Station.h>
 #include <imgui.h>
 
 #include <memory>
@@ -15,281 +19,424 @@
 
 using namespace osc;
 
-[[nodiscard]] static bool all_sockets_assigned(AddComponentPopup const& st) noexcept {
-    return std::all_of(st.pfConnectees.begin(), st.pfConnectees.end(), [](auto* ptr) {
-        return ptr != nullptr;
-    });
-}
+static OpenSim::ComponentPath const g_EmptyPath = {};
 
-// public API
+struct PathPoint final {
+    // what the user chose when the clicked in the UI
+    OpenSim::ComponentPath userChoice;
 
-std::vector<OpenSim::AbstractSocket const*> osc::getPhysframeSockets(OpenSim::Component& c) {
-
-    std::vector<OpenSim::AbstractSocket const*> rv;
-    for (std::string const& name : c.getSocketNames()) {
-        OpenSim::AbstractSocket const& sock = c.getSocket(name);
-        if (sock.getConnecteeTypeName() == "PhysicalFrame") {
-            rv.push_back(&sock);
-        }
-    }
-
-    return rv;
-}
-
-osc::AddComponentPopup::AddComponentPopup(std::unique_ptr<OpenSim::Component> _prototype) :
-    prototype{std::move(_prototype)},
-    name{prototype->getConcreteClassName()},
-    propEditor{},
-    pfSockets{getPhysframeSockets(*prototype)},
-    pfConnectees(pfSockets.size()),
-    pps{} {
-
-    OSC_ASSERT(pfSockets.size() == pfConnectees.size());
-}
-
-std::unique_ptr<OpenSim::Component> osc::AddComponentPopup::draw(
-        char const* modal_name,
-        OpenSim::Model const& model) {
-
-    AddComponentPopup& st = *this;
-
-    // center the modal
-    {
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(512, 0));
-    }
-
-    // try to show modal
-    if (!ImGui::BeginPopupModal(modal_name, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        // modal not showing
-        return nullptr;
-    }
-    // else: draw modal content
-
-    // draw name editor
-    {
-        ImGui::Columns(2);
-
-        ImGui::TextUnformatted("name");
-        ImGui::SameLine();
-        DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
-        ImGui::NextColumn();
-
-        char buf[128]{};
-        std::strncpy(buf, st.name.c_str(), sizeof(buf) - 1);
-        if (ImGui::InputText("##componentname", buf, sizeof(buf))) {
-            st.name = buf;
-        }
-        ImGui::NextColumn();
-
-        ImGui::Columns();
-    }
-
-
-    // draw property editor
+    // what the actual frame is that will be attached to
     //
-    // this lets the user edit the prototype's properties before adding it into the model
+    // (can be different from user choice because the user can click a station)
+    OpenSim::ComponentPath actualFrame;
+
+    // location of the point within the frame
+    SimTK::Vec3 locationInFrame;
+
+    PathPoint(OpenSim::ComponentPath userChoice_,
+              OpenSim::ComponentPath actualFrame_,
+              SimTK::Vec3 locationInFrame_) :
+        userChoice{std::move(userChoice_)},
+        actualFrame{std::move(actualFrame_)},
+        locationInFrame{std::move(locationInFrame_)}
     {
-        ImGui::TextUnformatted("Properties");
-        ImGui::SameLine();
-        DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
-        ImGui::Separator();
+    }
+};
 
-        ImGui::Dummy(ImVec2(0.0f, 1.0f));
+struct osc::AddComponentPopup::Impl final {
 
-        auto maybeUpdater = st.propEditor.draw(*st.prototype);
-        if (maybeUpdater) {
-            maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
-        }
+    // a prototypical version of the component being added
+    std::unique_ptr<OpenSim::Component> m_Proto;
+
+    // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
+    std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets;
+
+    // user-assigned name for the to-be-added component
+    std::string m_Name;
+
+    // a property editor for the prototype's properties
+    ObjectPropertiesEditor m_PropEditor;
+
+    // absolute paths to user-selected connectees of the prototype's sockets
+    std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths;
+
+    // absolute paths to user-selected physical frames that should be used as path points
+    std::vector<PathPoint> m_PathPoints;
+
+    // search string that user edits to search through possible path point locations
+    std::string m_PathSearchString;
+
+    Impl(std::unique_ptr<OpenSim::Component> prototype) :
+        m_Proto{std::move(prototype)},
+        m_ProtoSockets{GetAllSockets(*m_Proto)},
+        m_Name{m_Proto->getConcreteClassName()},
+        m_PropEditor{},
+        m_SocketConnecteePaths{m_ProtoSockets.size()},
+        m_PathPoints{}
+    {
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+    std::unique_ptr<OpenSim::Component> draw(char const* modalName, OpenSim::Model const& model)
+    {
+        // center+size the modal
+        {
+            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(512, 0));
+        }
 
-    // draw socket editor (if it has sockets)
-    //
-    // this lets the user assign connectees to each of the prototype's sockets
-    //
-    // *required*: many OpenSim components are considered invalid if they have
-    //             disconnected sockets. Therefore, this popup requires assigning
-    //             all sockets before it will let the user have the prototype
-    if (!st.pfSockets.empty()) {
-        ImGui::TextUnformatted("Socket assignments (required)");
-        ImGui::SameLine();
-        DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
-        ImGui::Separator();
+        if (!ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            return nullptr;  // modal is not showing
+        }
 
-        ImGui::Dummy(ImVec2(0.0f, 1.0f));
 
-        // lhs: socket name, rhs: connectee choices
-        ImGui::Columns(2);
+        // draw name editor
+        {
+            ImGui::Columns(2);
 
-        // for each socket in the prototype (cached), check if the user has chosen a
-        // connectee for it yet and provide a UI for selecting them
-        for (size_t i = 0; i < st.pfSockets.size(); ++i) {
-            OpenSim::AbstractSocket const& sock = *st.pfSockets[i];
-            OpenSim::PhysicalFrame const*& connectee = st.pfConnectees[i];
-
-            // lhs: socket name
-            ImGui::TextUnformatted(sock.getName().c_str());
+            ImGui::TextUnformatted("name");
+            ImGui::SameLine();
+            DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
             ImGui::NextColumn();
 
-            // rhs: connectee choices
-            ImGui::PushID(static_cast<int>(i));
-            ImGui::BeginChild("##pfselector", ImVec2{ImGui::GetContentRegionAvail().x, 128.0f});
+            osc::InputString("##componentname", m_Name, 128);
 
-            // edge-case: also ensure that `connectee` is *somewhere* in the
-            // model arugment. If it isn't, we might have a stale pointer that
-            // should be nulled out
-            bool found = false;
+            ImGui::NextColumn();
 
-            // iterate through PFs in model and print them out
-            for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
-                bool isSelected = &b == connectee;
+            ImGui::Columns();
+        }
 
-                if (isSelected) {
-                    found = true;
-                }
+        // draw property editor
+        {
+            ImGui::TextUnformatted("Properties");
+            ImGui::SameLine();
+            DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
+            ImGui::Separator();
 
-                if (ImGui::Selectable(b.getName().c_str(), isSelected)) {
-                    connectee = &b;
-                    found = true;
-                }
+            ImGui::Dummy({0.0f, 3.0f});
+
+            auto maybeUpdater = m_PropEditor.draw(*m_Proto);
+            if (maybeUpdater)
+            {
+                maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
             }
+        }
 
-            if (!found) {
-                connectee = nullptr;
+        ImGui::Dummy({0.0f, 3.0f});
+
+        // draw socket connectee selector
+        if (!m_ProtoSockets.empty())
+        {
+            ImGui::TextUnformatted("Socket assignments (required)");
+            ImGui::SameLine();
+            DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
+            ImGui::Separator();
+
+            ImGui::Dummy({0.0f, 1.0f});
+
+            // lhs: socket name, rhs: connectee choices
+            ImGui::Columns(2);
+
+            // for each socket in the prototype (cached), check if the user has chosen a
+            // connectee for it yet and provide a UI for selecting them
+            for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
+            {
+                OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
+                OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
+
+                ImGui::TextUnformatted(socket.getName().c_str());
+                ImGui::NextColumn();
+
+                // rhs: connectee choices
+                ImGui::PushID(static_cast<int>(i));
+                ImGui::BeginChild("##pfselector", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
+
+                // iterate through PFs in model and print them out
+                for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+                {
+                    bool selected = pf.getAbsolutePath() == connectee;
+
+                    if (ImGui::Selectable(pf.getName().c_str(), selected))
+                    {
+                        connectee = pf.getAbsolutePath();
+                    }
+                }
+
+                ImGui::EndChild();
+                ImGui::PopID();
+                ImGui::NextColumn();
+            }
+        }
+
+        ImGui::Dummy({0.0f, 1.0f});
+
+        // draw path point selector (if it's an OpenSim::PathActuator)
+        OpenSim::PathActuator* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
+
+        if (protoAsPA)
+        {
+            // header
+            ImGui::TextUnformatted("Path Points (at least 2 required)");
+            ImGui::SameLine();
+            DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
+            ImGui::Separator();
+
+            osc::InputString(ICON_FA_SEARCH " search", m_PathSearchString, 128);
+
+            ImGui::Columns(2);
+
+            int imguiID = 0;
+
+            // show list of choices
+            ImGui::BeginChild("##pf_ppchoices", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
+
+            // choices
+            for (OpenSim::Component const& c : model.getComponentList())
+            {
+                if (ContainsIf(m_PathPoints, [&c](auto const& p) { return p.userChoice == c.getAbsolutePath(); }))
+                {
+                    continue;  // already selected
+                }
+
+                OpenSim::Component const* userChoice = nullptr;
+                OpenSim::PhysicalFrame const* actualFrame = nullptr;
+                SimTK::Vec3 locationInFrame = {0.0, 0.0, 0.0};
+
+                // careful here: the order matters
+                //
+                // various OpenSim classes compose some of these. E.g. subclasses of
+                // AbstractPathPoint *also* contain a station object, but named with a
+                // plain name
+                if (auto const* pof = dynamic_cast<OpenSim::PhysicalFrame const*>(&c))
+                {
+                    userChoice = pof;
+                    actualFrame = pof;
+                }
+                else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&c))
+                {
+                    userChoice = pp;
+                    actualFrame = &pp->getParentFrame();
+                    locationInFrame = pp->get_location();
+                }
+                else if (auto const* app = dynamic_cast<OpenSim::AbstractPathPoint const*>(&c))
+                {
+                    userChoice = app;
+                    actualFrame = &app->getParentFrame();
+                }
+                else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
+                {
+                    // check name because it might be a child of one of the above and we
+                    // don't want to double-count it
+                    if (station->getName() != "station")
+                    {
+                        userChoice = station;
+                        actualFrame = &station->getParentFrame();
+                        locationInFrame = station->get_location();
+                    }
+                }
+
+                if (!userChoice || !actualFrame)
+                {
+                    continue;  // can't attach a point to it
+                }
+
+                if (!ContainsSubstringCaseInsensitive(c.getName(), m_PathSearchString))
+                {
+                    continue;  // search failed
+                }
+
+                ImGui::PushID(imguiID++);
+                if (ImGui::Selectable(c.getName().c_str()))
+                {
+                    m_PathPoints.emplace_back(
+                        userChoice->getAbsolutePath(),
+                        actualFrame->getAbsolutePath(),
+                        locationInFrame
+                    );
+                }
+                DrawTooltipIfItemHovered(c.getName().c_str(), (c.getAbsolutePathString() + " " + c.getConcreteClassName()).c_str());
+                ImGui::PopID();
             }
 
             ImGui::EndChild();
-            ImGui::PopID();
             ImGui::NextColumn();
-        }
-    }
 
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
+            ImGui::BeginChild("##pf_pathpoints", ImVec2{ImGui::GetContentRegionAvailWidth(), 128.0f});
 
-    // draw path point selector (if it's an OpenSim::PathActuator)
-    OpenSim::PathActuator* prototypeAsPathActuator =
-            dynamic_cast<OpenSim::PathActuator*>(st.prototype.get());
+            // selections
+            for (size_t i = 0; i < m_PathPoints.size(); ++i)
+            {
+                ImGui::PushID(imguiID++);
 
-    if (prototypeAsPathActuator) {
-        ImGui::TextUnformatted("Path Points (at least 2 required)");
-        ImGui::SameLine();
-        DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
-        ImGui::Separator();
-
-        // show list of choices
-        ImGui::BeginChild("##pf_ppchoices", ImVec2{ImGui::GetContentRegionAvail().x, 128.0f});
-
-        // edge-case set all entries as missing
-        //
-        // we are going to iterate through all PFs in the model anyway, so we can use that
-        // iteration to set them as not missing. Doing this lets us know whether we have a
-        // stale pointer that should be deleted
-        for (AddComponentPopup::PathPoint& pp : st.pps) {
-            pp.missing = true;
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4{66.0f/255.0f, 150.0f/255.0f, 250.0f/255.0f, 92.0f/255.0f});
-        for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
-            auto it = std::find_if(st.pps.begin(), st.pps.end(), [&](auto const& pp) {
-                return pp.ptr == &b;
-            });
-
-            bool isSelected = it != st.pps.end();
-
-            if (isSelected) {
-                it->missing = false;
-            }
-
-            if (ImGui::Selectable(b.getName().c_str(), isSelected)) {
-                // toggle, or add
-                if (isSelected) {
-                    it->ptr = nullptr;
-                } else {
-                    AddComponentPopup::PathPoint pp;
-                    pp.ptr = &b;
-                    pp.missing = false;
-                    st.pps.push_back(pp);
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+                if (ImGui::Button(ICON_FA_TRASH))
+                {
+                    m_PathPoints.erase(m_PathPoints.begin() + i);
+                    ImGui::PopStyleVar();
+                    ImGui::PopID();
+                    break;
                 }
-            }
-        }
-        ImGui::PopStyleColor();
+                ImGui::SameLine();
+                if (ImGui::Button(ICON_FA_ARROW_UP) && i > 0)
+                {
+                    std::swap(m_PathPoints[i], m_PathPoints[i-1]);
+                    ImGui::PopStyleVar();
+                    ImGui::PopID();
+                    break;
+                }
+                ImGui::SameLine();
+                ImGui::PopStyleVar();
+                if (ImGui::Button(ICON_FA_ARROW_DOWN) && i+1 < m_PathPoints.size())
+                {
+                    std::swap(m_PathPoints[i], m_PathPoints[i+1]);
+                    ImGui::PopID();
+                    break;
+                }
+                ImGui::SameLine();
+                ImGui::Text("%s", m_PathPoints[i].userChoice.getComponentName().c_str());
 
-        // edge-case (again): remove missing/null entries, so that the user
-        // choice list is valid
+                if (ImGui::IsItemHovered())
+                {
+                    OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice);
+                    DrawTooltip(c->getName().c_str(), c->getAbsolutePathString().c_str());
+                }
+
+                ImGui::PopID();
+            }
+
+            ImGui::EndChild();
+
+            ImGui::NextColumn();
+
+            ImGui::Columns();
+        }
+
+        ImGui::Dummy(ImVec2(0.0f, 1.0f));
+
+        if (ImGui::Button("cancel"))
         {
-            auto it = std::remove_if(st.pps.begin(), st.pps.end(), [](AddComponentPopup::PathPoint const& pp) {
-                return pp.ptr == nullptr || pp.missing;
-            });
-            st.pps.erase(it, st.pps.end());
-        }
-
-        ImGui::EndChild();
-    }
-
-    ImGui::Dummy(ImVec2(0.0f, 1.0f));
-
-    // != nullptr if user clicks "OK"
-    std::unique_ptr<OpenSim::Component> rv = nullptr;
-
-    // draw "cancel" button
-    if (ImGui::Button("cancel")) {
-        ImGui::CloseCurrentPopup();
-    }
-
-    // figure out if the user can add the new Component yet
-
-    bool hasName = !st.name.empty();
-    bool allSocksAssigned = all_sockets_assigned(st);
-    bool hasEnoughPathpoints = !prototypeAsPathActuator || st.pps.size() >= 2;
-
-    // draw "add" button (if the user has performed all necessary steps)
-    if (hasName && allSocksAssigned && hasEnoughPathpoints) {
-
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_PLUS " add")) {
-            // clone the prototype into the return value
-            rv.reset(st.prototype->clone());
-
-            // assign name
-            rv->setName(st.name);
-
-            // assign sockets to connectees
-            for (size_t i = 0; i < st.pfConnectees.size(); ++i) {
-                OpenSim::AbstractSocket const& socket = *st.pfSockets[i];
-                OpenSim::PhysicalFrame const& connectee = *st.pfConnectees[i];
-
-                rv->updSocket(socket.getName()).connect(connectee);
-            }
-
-            // assign path points, if it's an OpenSim::PathActuator
-            if (prototypeAsPathActuator) {
-                OpenSim::PathActuator* rvAsPathActuator = dynamic_cast<OpenSim::PathActuator*>(rv.get());
-                OSC_ASSERT(st.pps.size() >= 2 && "incorrect number of path points: this should be checked by the UI before allowing the user to click 'ok'");
-
-                for (size_t i = 0; i < st.pps.size(); ++i) {
-                    AddComponentPopup::PathPoint const& pp = st.pps[i];
-                    OSC_ASSERT(pp.ptr != nullptr && "cannot assign a nullptr to a path actuator, the UI should have checked this");
-
-                    // naming convention in previous OpenSim models is (e.g.): TRIlong-P1
-                    std::stringstream nameStr;
-                    nameStr << rvAsPathActuator->getName() << "-P" << i+1;
-
-                    // user should just edit the locations in the main UI: doing it through
-                    // this modal would get messy very quickly
-                    SimTK::Vec3 pos{0.0, 0.0, 0.0};
-
-                    rvAsPathActuator->addNewPathPoint(std::move(nameStr).str(), *pp.ptr, pos);
-                }
-            }
-
             ImGui::CloseCurrentPopup();
         }
+
+        // handle possible completion
+
+        std::unique_ptr<OpenSim::Component> rv = nullptr;
+
+        bool hasName = !m_Name.empty();
+        bool allSocketsAssigned = AllOf(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
+        {
+            return ContainsComponent(model, cp);
+        });
+        bool hasEnoughPathPoints = !protoAsPA || m_PathPoints.size() >= 2;
+
+        bool canAddComponent = hasName && allSocketsAssigned && hasEnoughPathPoints;
+
+        if (canAddComponent)
+        {
+            ImGui::SameLine();
+
+            if (ImGui::Button(ICON_FA_PLUS " add"))
+            {
+                rv = tryCreateComponentFromState(model);
+                if (rv)
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+        }
+
+        ImGui::EndPopup();
+
+        return rv;
     }
 
-    ImGui::EndPopup();
+    std::unique_ptr<OpenSim::Component> tryCreateComponentFromState(OpenSim::Model const& model)
+    {
+        if (m_Name.empty())
+        {
+            return nullptr;
+        }
 
-    return rv;
+        if (m_ProtoSockets.size() != m_SocketConnecteePaths.size())
+        {
+            return nullptr;
+        }
+
+        // clone prototype
+        std::unique_ptr<OpenSim::Component> rv{m_Proto->clone()};
+
+        // set name
+        rv->setName(m_Name);
+
+        // assign sockets
+        for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
+        {
+            OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
+            OpenSim::ComponentPath const& connecteePath = m_SocketConnecteePaths[i];
+
+            OpenSim::Component const* connectee = FindComponent(model, connecteePath);
+
+            if (!connectee)
+            {
+                return nullptr;  // invalid connectee slipped through
+            }
+
+            rv->updSocket(socket.getName()).connect(*connectee);
+        }
+
+        // assign path points (if applicable)
+        OpenSim::PathActuator* pa = dynamic_cast<OpenSim::PathActuator*>(rv.get());
+        if (pa)
+        {
+            if (m_PathPoints.size() < 2)
+            {
+                return nullptr;
+            }
+
+            for (size_t i = 0; i < m_PathPoints.size(); ++i)
+            {
+                auto const& pp = m_PathPoints[i];
+
+                if (pp.actualFrame == g_EmptyPath)
+                {
+                    return nullptr;  // invalid path slipped through
+                }
+
+                OpenSim::PhysicalFrame const* pof = FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
+
+                if (!pof)
+                {
+                    return nullptr;  // invalid path slipped through
+                }
+
+                std::stringstream ppName;
+                ppName << pa->getName() << "-P" << (i+1);
+
+                pa->addNewPathPoint(ppName.str(), *pof, pp.locationInFrame);
+            }
+        }
+
+        return rv;
+    }
+};
+
+// public API
+
+osc::AddComponentPopup::AddComponentPopup(std::unique_ptr<OpenSim::Component> prototype) :
+    m_Impl{std::make_unique<Impl>(std::move(prototype))}
+{
 }
+
+osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
+
+osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
+
+std::unique_ptr<OpenSim::Component> osc::AddComponentPopup::draw(
+        char const* modelName,
+        OpenSim::Model const& model)
+{
+    return m_Impl->draw(modelName, model);
+}
+
+AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;

@@ -57,4 +57,7 @@ namespace osc {
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(char const* desc);
+
+    // draw an ImGui::InputText that manipulates a std::string
+    bool InputString(const char* label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags = 0);
 }

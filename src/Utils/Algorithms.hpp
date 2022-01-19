@@ -28,6 +28,15 @@ namespace osc {
     }
 
     template<typename Container, typename UnaryPredicate>
+    bool AllOf(Container const& c, UnaryPredicate p)
+    {
+        using std::begin;
+        using std::end;
+
+        return std::all_of(begin(c), end(c), p);
+    }
+
+    template<typename Container, typename UnaryPredicate>
     auto FindIf(Container const& c, UnaryPredicate p) {
         using std::begin;
         using std::end;
@@ -45,6 +54,12 @@ namespace osc {
     bool Contains(std::vector<T> const& vec, T const& val)
     {
         return std::find(vec.begin(), vec.end(), val) != vec.end();
+    }
+
+    template<typename T, typename UnaryPredicate>
+    bool ContainsIf(std::vector<T> const& vec, UnaryPredicate p)
+    {
+        return FindIf(vec, p) != vec.end();
     }
 
     template<typename K, typename V, typename K2>
@@ -84,6 +99,12 @@ namespace osc {
 
     // returns true if `path` is within `dir` (non-recursive)
     bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
+
+    // returns true if `str` contains the supplied substring
+    bool ContainsSubstring(std::string const& str, std::string const& substr);
+
+    // returns a lower-cased version of a string
+    std::string ToLower(std::string const&);
 
     // returns true if `s` constains the supplied substring (case-insensitive)
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);

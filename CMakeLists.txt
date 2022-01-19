@@ -185,6 +185,7 @@ add_executable(osc
     src/OpenSimBindings/FileChangePoller.cpp
     src/OpenSimBindings/FileChangePoller.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
+    src/OpenSimBindings/OpenSimHelpers.cpp
     src/OpenSimBindings/PlottableOutputSubfield.cpp
     src/OpenSimBindings/PlottableOutputSubfield.hpp
     src/OpenSimBindings/RenderableScene.cpp
