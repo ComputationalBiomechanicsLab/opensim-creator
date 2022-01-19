@@ -158,10 +158,12 @@ void osc::SplashScreen::draw()
     {
         GouraudShader& s = impl.gouraud;
         gl::UseProgram(s.program);
+
         gl::Uniform(s.uProjMat, impl.camera.getProjMtx(app.aspectRatio()));
         gl::Uniform(s.uViewMat, impl.camera.getViewMtx());
         gl::Uniform(s.uModelMat, impl.floorMat);
         gl::Uniform(s.uNormalMat, impl.floorNormalMat);
+        gl::Uniform(s.uDiffuseColor, {1.0f, 1.0f, 1.0f, 1.0f});
         gl::Uniform(s.uLightDir, impl.lightDir);
         gl::Uniform(s.uLightColor, impl.lightCol);
         gl::Uniform(s.uViewPos, impl.camera.getPos());
