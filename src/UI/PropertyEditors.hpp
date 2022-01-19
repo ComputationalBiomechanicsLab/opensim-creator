@@ -3,28 +3,19 @@
 #include <span-lite/nonstd/span.hpp>
 
 #include <functional>
+#include <memory>
 #include <optional>
-#include <vector>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Object;
     class AbstractProperty;
 }
 
-namespace osc {
-    struct AbstractPropertyEditor final {
-        bool isLocked = true;
-
-        struct Response final {
-            std::function<void(OpenSim::AbstractProperty&)> updater;
-        };
-
-        // if the user tries to edit the property, returns a function that performs
-        // the equivalent mutation to the property
-        std::optional<Response> draw(OpenSim::AbstractProperty const& prop);
-    };
-
-    struct ObjectPropertiesEditor final {
+namespace osc
+{
+    class ObjectPropertiesEditor final {
+    public:
         struct Response final {
             OpenSim::AbstractProperty const& prop;
             std::function<void(OpenSim::AbstractProperty&)> updater;
@@ -32,11 +23,17 @@ namespace osc {
             Response(OpenSim::AbstractProperty const& _prop,
                      std::function<void(OpenSim::AbstractProperty&)> _updater) :
                 prop{std::move(_prop)},
-                updater{std::move(_updater)} {
+                updater{std::move(_updater)}
+            {
             }
         };
 
-        std::vector<AbstractPropertyEditor> propertyEditors;
+        ObjectPropertiesEditor();
+        ObjectPropertiesEditor(ObjectPropertiesEditor const&) = delete;
+        ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept;
+        ~ObjectPropertiesEditor() noexcept;
+        ObjectPropertiesEditor& operator=(ObjectPropertiesEditor const&) = delete;
+        ObjectPropertiesEditor& operator=(ObjectPropertiesEditor&&) noexcept;
 
         // if the user tries to edit one of the Object's properties, returns a
         // response that indicates which property was edited and a function that
@@ -45,5 +42,9 @@ namespace osc {
 
         // as above, but only edit properties with the specified indices
         std::optional<Response> draw(OpenSim::Object const&, nonstd::span<int const> indices);
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

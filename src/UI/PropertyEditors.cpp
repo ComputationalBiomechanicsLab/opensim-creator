@@ -19,6 +19,21 @@
 
 using namespace osc;
 
+namespace osc
+{
+    struct AbstractPropertyEditor final {
+        bool isLocked = true;
+
+        struct Response final {
+            std::function<void(OpenSim::AbstractProperty&)> updater;
+        };
+
+        // if the user tries to edit the property, returns a function that performs
+        // the equivalent mutation to the property
+        std::optional<Response> draw(OpenSim::AbstractProperty const& prop);
+    };
+}
+
 
 // returns the first value that changed between the first `n` elements of `old` and `newer`
 template<typename Coll1, typename Coll2>
@@ -440,57 +455,77 @@ std::optional<AbstractPropertyEditor::Response> osc::AbstractPropertyEditor::dra
     return rv;
 }
 
-std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
-        OpenSim::Object const& obj) {
+struct osc::ObjectPropertiesEditor::Impl final {
+    std::vector<AbstractPropertyEditor> m_PropertyEditors;
+};
 
+// public API
+
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
+    m_Impl{std::make_unique<Impl>()}
+{
+}
+
+osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept = default;
+
+osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
+
+osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
+
+std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
+{
     int num_props = obj.getNumProperties();
     OSC_ASSERT(num_props >= 0);
 
-    propertyEditors.resize(static_cast<size_t>(num_props));
+    m_Impl->m_PropertyEditors.resize(static_cast<size_t>(num_props));
 
     std::optional<Response> rv = std::nullopt;
 
     ImGui::Columns(2);
-    for (int i = 0; i < num_props; ++i) {
+    for (int i = 0; i < num_props; ++i)
+    {
         ImGui::PushID(i);
         OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(i);
-        AbstractPropertyEditor& substate = propertyEditors[static_cast<size_t>(i)];
+        AbstractPropertyEditor& substate = m_Impl->m_PropertyEditors[static_cast<size_t>(i)];
         auto maybe_rv = substate.draw(p);
-        if (!rv && maybe_rv) {
+        if (!rv && maybe_rv)
+        {
             rv.emplace(p, std::move(maybe_rv->updater));
         }
         ImGui::PopID();
     }
-    ImGui::Columns(1);
+    ImGui::Columns();
 
     return rv;
 }
 
 std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
         OpenSim::Object const& obj,
-        nonstd::span<int const> indices) {
-
+        nonstd::span<int const> indices)
+{
     int highest = *std::max_element(indices.begin(), indices.end());
     int nprops = obj.getNumProperties();
     OSC_ASSERT(highest >= 0);
     OSC_ASSERT(highest < nprops);
 
-    propertyEditors.resize(static_cast<size_t>(highest));
+    m_Impl->m_PropertyEditors.resize(static_cast<size_t>(highest));
 
     std::optional<Response> rv;
 
     ImGui::Columns(2);
-    for (int propidx : indices) {
+    for (int propidx : indices)
+    {
         ImGui::PushID(propidx);
         OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(propidx);
-        AbstractPropertyEditor& substate = propertyEditors[static_cast<size_t>(propidx)];
+        AbstractPropertyEditor& substate = m_Impl->m_PropertyEditors[static_cast<size_t>(propidx)];
         auto maybe_rv = substate.draw(p);
-        if (!rv && maybe_rv) {
+        if (!rv && maybe_rv)
+        {
             rv.emplace(p, std::move(maybe_rv->updater));
         }
         ImGui::PopID();
     }
-    ImGui::Columns(1);
+    ImGui::Columns();
 
     return rv;
 }
