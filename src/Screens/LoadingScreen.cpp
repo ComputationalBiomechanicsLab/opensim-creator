@@ -146,12 +146,26 @@ void osc::LoadingScreen::tick(float dt) {
             // recycle it so that users can keep their running sims, local edits, etc.
             impl.mes->editedModel = std::move(*result);
             App::cur().requestTransition<ModelEditorScreen>(impl.mes);
+            for (auto& viewer : impl.mes->viewers)
+            {
+                if (viewer)
+                {
+                    viewer->requestAutoFocus();
+                }
+            }
         } else {
             // there is no existing editor state
             //
             // transitiong into "fresh" editor
             auto mes = std::make_shared<MainEditorState>(std::move(*result));
             App::cur().requestTransition<ModelEditorScreen>(mes);
+            for (auto& viewer : mes->viewers)
+            {
+                if (viewer)
+                {
+                    viewer->requestAutoFocus();
+                }
+            }
         }
     }
 }
