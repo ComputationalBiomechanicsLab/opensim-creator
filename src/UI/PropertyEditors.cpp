@@ -400,25 +400,27 @@ using draw_editor_type_erased_fn = std::optional<AbstractPropertyEditor::Respons
 template<typename TProperty>
 static std::optional<AbstractPropertyEditor::Response> draw_editor_type_erased(
         AbstractPropertyEditor& st,
-        OpenSim::AbstractProperty const& prop) {
-
+        OpenSim::AbstractProperty const& prop)
+{
     // call into the not-type-erased version
     return draw_editor(st, dynamic_cast<TProperty const&>(prop));
 }
 
 // returns an entry suitable for insertion into the lookup
 template<typename TProperty>
-static constexpr std::pair<size_t, draw_editor_type_erased_fn*> entry() {
+static constexpr std::pair<size_t, draw_editor_type_erased_fn*> entry()
+{
     size_t k = typeid(TProperty).hash_code();
     draw_editor_type_erased_fn* f = draw_editor_type_erased<TProperty>;
     return {k, f};
 }
 
 std::optional<AbstractPropertyEditor::Response> osc::AbstractPropertyEditor::draw(
-        OpenSim::AbstractProperty const& prop) {
-
+        OpenSim::AbstractProperty const& prop)
+{
     // global property editor lookup table
-    static std::unordered_map<size_t, draw_editor_type_erased_fn*> const g_PropertyEditors = {{
+    static std::unordered_map<size_t, draw_editor_type_erased_fn*> const g_PropertyEditors =
+    {{
         entry<OpenSim::SimpleProperty<std::string>>(),
         entry<OpenSim::SimpleProperty<double>>(),
         entry<OpenSim::SimpleProperty<bool>>(),
@@ -431,7 +433,8 @@ std::optional<AbstractPropertyEditor::Response> osc::AbstractPropertyEditor::dra
     ImGui::Text("%s", prop.getName().c_str());
     {
         std::string const& comment = prop.getComment();
-        if (!comment.empty()) {
+        if (!comment.empty())
+        {
             ImGui::SameLine();
             DrawHelpMarker(prop.getComment().c_str());
         }
@@ -443,9 +446,13 @@ std::optional<AbstractPropertyEditor::Response> osc::AbstractPropertyEditor::dra
     // right column: editor
     ImGui::PushID(std::addressof(prop));
     auto it = g_PropertyEditors.find(typeid(prop).hash_code());
-    if (it != g_PropertyEditors.end()) {
+
+    if (it != g_PropertyEditors.end())
+    {
         rv = it->second(*this, prop);
-    } else {
+    }
+    else
+    {
         // no editor available for this type
         ImGui::Text("%s", prop.toString().c_str());
     }
