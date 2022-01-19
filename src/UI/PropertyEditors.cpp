@@ -92,7 +92,7 @@ std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(T value)
 
 static bool ItemValueShouldBeSaved()
 {
-    return IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}) || ImGui::IsItemDeactivatedAfterEdit();
+    return ImGui::IsItemDeactivatedAfterEdit() || IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB});
 }
 
 static void DrawIthStringEditor(
@@ -149,7 +149,7 @@ static std::optional<AbstractPropertyEditor::Response> draw_editor(
 
 // draw property editor for a single `double` value
 static void Draw1DoubleValueEditor(
-        AbstractPropertyEditor& st,
+        AbstractPropertyEditor&,
         OpenSim::SimpleProperty<double> const& prop,
         std::optional<AbstractPropertyEditor::Response>& rv)
 {
@@ -158,12 +158,14 @@ static void Draw1DoubleValueEditor(
         return;
     }
 
-    float v = static_cast<float>(prop.getValue());
+    float fv = static_cast<float>(prop.getValue());
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    if (ImGui::InputFloat("##doubleditor", &v, 0.0f, 0.0f, "%.3f") && ItemValueShouldBeSaved())
+
+    if (ImGui::InputFloat("##doubleditor", &fv, 0.0f, 0.0f, "%.3f") && ItemValueShouldBeSaved())
     {
-        rv = AbstractPropertyEditor::Response{MakePropValueSetter<double>(static_cast<double>(v))};
+        double dv = static_cast<double>(fv);
+        rv = AbstractPropertyEditor::Response{MakePropValueSetter<double>(dv)};
     }
 }
 
@@ -184,7 +186,7 @@ static void Draw2DoubleValueEditor(
         static_cast<float>(prop.getValue(1))
     };
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     if (ImGui::InputFloat2("##vec2editor", vs.data(), "%.3f") && ItemValueShouldBeSaved())
     {
         rv = AbstractPropertyEditor::Response{[vs](OpenSim::AbstractProperty& p)
@@ -450,12 +452,14 @@ std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::dra
 
     ImGui::Columns(2);
     for (int i = 0; i < num_props; ++i) {
+        ImGui::PushID(i);
         OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(i);
         AbstractPropertyEditor& substate = propertyEditors[static_cast<size_t>(i)];
         auto maybe_rv = substate.draw(p);
         if (!rv && maybe_rv) {
             rv.emplace(p, std::move(maybe_rv->updater));
         }
+        ImGui::PopID();
     }
     ImGui::Columns(1);
 
@@ -477,12 +481,14 @@ std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::dra
 
     ImGui::Columns(2);
     for (int propidx : indices) {
+        ImGui::PushID(propidx);
         OpenSim::AbstractProperty const& p = obj.getPropertyByIndex(propidx);
         AbstractPropertyEditor& substate = propertyEditors[static_cast<size_t>(propidx)];
         auto maybe_rv = substate.draw(p);
         if (!rv && maybe_rv) {
             rv.emplace(p, std::move(maybe_rv->updater));
         }
+        ImGui::PopID();
     }
     ImGui::Columns(1);
 
