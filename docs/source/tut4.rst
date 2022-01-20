@@ -174,18 +174,39 @@ Step 4: Mark Points of Interest on the Meshes
 
 Now that we've added bodies, meshes, and joints, the next step is to think about where we will ultimately be placing muscles.
 
-Although the mesh importer doesn't directly support defining muscles, it does support placing **stations** in the scene. A **station** is some location in the scene that is attached to something else (typically, a body in the scene). When the scene is converted into an ``osim``, the station will be attached to the appropriate exported object and expressed in OpenSim's **relative** coordinate system.
+Although the mesh importer doesn't directly support defining muscles, it does support placing **stations** in the scene. A **station** is some location in the scene that is attached to something else (typically, a body). When the scene is converted into an ``osim``, the station will be attached to the appropriate exported object and expressed in OpenSim's **relative** coordinate system.
 
 The utility of adding stations is that they're relatively easy to (re)attach, and move around while working in the mesh importer. Once exported, the exported (``OpenSim``) stations can later be used to easily define a **muscle path**. Usually, defining a muscle path is challening because it requires figuring out the relative coordinates of each muscle-path-point within each frame. However, stations already cover the point-within-a-frame part of that definition, leaving you to focus on connecting them to create paths.
 
 To add stations into the model:
 
-* Instruct to right-click meshes in the 3D viewer or hierarchy viewer. Use ``Add > Station`` add a station at the click locaiton. Make it clear that they can also be freely moved around in 3D space afterwards.
-* Instruct to assign stations along the same finger-to-elbow path as before
-* Screenshot of assignment up to the elbow
-* This tutorial skips assigning the rest (have it as an extra exercise)
-* Include naming conventions for the muscles
-* Screenshot of the assigned model
+* Right-click a mesh, navigate to ``Add > Station`` and click ``At Click Position``. This will add a station wherever you right-clicked on the mesh. The station will be attached to whatever the mesh was attached to (e.g. right-clicking ``arm_r_2distph`` and adding the station will attach it to ``arm_r_2distph_b``).
+* If the station isn't attached to the correct body, fix it by right-clicking the station and ``Reassign Connection``.
+* The station can be freely moved around in the scene. It only has a position (no rotation).
+
+Use the above points to assign muscle origin ``${name}_orig`` and insertion ``${name}_ins`` points into the scene:
+
+* Add an insertion point at the end of the finger (``arm_r_2distph``), call it ``arm_r_2distph_ins``
+* Add the corresponding origin point to the next bone up (``arm_r_2midph``), call it ``arm_r_2midph_orig``
+* Repeat the process for each bone in the finger (``arm_r_2midph``, ``arm_r_2proxph``, ``arm_r_2mc``), finishing with an origin point on the wrist (``arm_r_trapezoid``)
+
+This should result in **eight** stations with the following names (see figure below):
+
+* ``arm_r_2distph_insertion``
+* ``arm_r_2midph_origin``
+* ``arm_r_2midph_insertion``
+* ``arm_r_2proxph_origin``
+* ``arm_r_2proxph_insertion``
+* ``arm_r_2mc_origin``
+* ``arm_r_2mc_insertion``
+* ``arm_r_wrist_origin``
+
+The stations should be placed in similar position to the figure below. These stations will be what we used when definining **muscle paths** later.
+
+.. figure:: _static/tut4_after-marking-stations.png
+   :width: 60%
+
+   The scene after defining eight stations along the index finger. These stations are "points of interest" that can be used later to define muscles. The utility of adding them now is that the mesh importer makes it easy to place, reattach, and move them around in the scene.
 
 
 Step 5: Convert to an OpenSim Model
