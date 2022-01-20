@@ -92,7 +92,7 @@ static std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(T val
 
 static bool ItemValueShouldBeSaved()
 {
-    return ImGui::IsItemDeactivatedAfterEdit() || IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB});
+    return ImGui::IsItemDeactivatedAfterEdit() || (ImGui::IsItemEdited() && IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
 }
 
 using UpdateFn = std::function<void(OpenSim::AbstractProperty&)>;
@@ -320,16 +320,22 @@ namespace
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-            if (ImGui::InputFloat3("##vec3editor", fv.data(), "%.3f") && ItemValueShouldBeSaved())
+            if (ImGui::InputFloat3("##vec3editor", fv.data(), "%.3f"))
             {
-                v[0] = static_cast<double>(fv[0]);
-                v[1] = static_cast<double>(fv[1]);
-                v[2] = static_cast<double>(fv[2]);
-                rv = MakePropValueSetter<SimTK::Vec3>(v);
+                m_RetainedValue[0] = static_cast<double>(fv[0]);
+                m_RetainedValue[1] = static_cast<double>(fv[1]);
+                m_RetainedValue[2] = static_cast<double>(fv[2]);
+            }
+
+            if (ItemValueShouldBeSaved())
+            {
+                rv = MakePropValueSetter<SimTK::Vec3>(m_RetainedValue);
             }
 
             return rv;
         }
+
+        SimTK::Vec3 m_RetainedValue{};
     };
 
     class Vec6PropertyEditor final : public PropertyEditorT<OpenSim::SimpleProperty<SimTK::Vec6>> {
@@ -351,29 +357,31 @@ namespace
                 fv[i] = static_cast<float>(v[static_cast<int>(i)]);
             }
 
-            bool edited = false;
             bool shouldSave = false;
 
             for (int i = 0; i < 2; ++i)
             {
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-                if (ImGui::InputFloat3("##vec6editor_a", fv.data() + 3*i, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::IsItemDeactivatedAfterEdit())
+                ImGui::PushID(i);
+                if (ImGui::InputFloat3("##vec6editor_a", fv.data() + 3*i, "%.3f"))
                 {
-                    v[i+0] = static_cast<double>(fv[i+0]);
-                    v[i+1] = static_cast<double>(fv[i+1]);
-                    v[i+2] = static_cast<double>(fv[i+2]);
-                    edited = true;
+                    m_RetainedValue[3*i + 0] = static_cast<double>(fv[3*i + 0]);
+                    m_RetainedValue[3*i + 1] = static_cast<double>(fv[3*i + 1]);
+                    m_RetainedValue[3*i + 2] = static_cast<double>(fv[3*i + 2]);
                 }
                 shouldSave = shouldSave || ItemValueShouldBeSaved();
+                ImGui::PopID();
             }
 
-            if (edited && shouldSave)
+            if (shouldSave)
             {
-                rv = MakePropValueSetter<SimTK::Vec6>(v);
+                rv = MakePropValueSetter<SimTK::Vec6>(m_RetainedValue);
             }
 
             return rv;
         }
+
+        SimTK::Vec6 m_RetainedValue{};
     };
 
     class AppearancePropertyEditor final : public PropertyEditorT<OpenSim::ObjectProperty<OpenSim::Appearance>> {
@@ -395,6 +403,7 @@ namespace
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
+            ImGui::PushID(1);
             if (ImGui::ColorEdit4("##coloreditor", rgb))
             {
                 SimTK::Vec3 newColor;
@@ -408,8 +417,10 @@ namespace
 
                 rv = MakePropValueSetter<OpenSim::Appearance>(newAppearance);
             }
+            ImGui::PopID();
 
             bool is_visible = app.get_visible();
+            ImGui::PushID(2);
             if (ImGui::Checkbox("is visible", &is_visible))
             {
                 OpenSim::Appearance newAppearance{app};
@@ -417,6 +428,7 @@ namespace
 
                 rv = MakePropValueSetter<OpenSim::Appearance>(newAppearance);
             }
+            ImGui::PopID();
 
             return rv;
         }
