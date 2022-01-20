@@ -212,17 +212,37 @@ The stations should be placed in similar position to the figure below. These sta
 Step 5: Convert to an OpenSim Model
 -----------------------------------
 
-TODO guide for converting to an opensim model
+Now that we have added meshes, bodies, joints, and points of interest into the mesh importer, we are now (finally 🎉) ready to import the scene into an ``osim``, check for any basic issues, and perform any ``osim``-specific steps.
 
-* Instruct to click the button
-* Advise running some basic simulations on the model
-* Advise playing around with the joint coordinates a little bit
-* Advise saving as an osim and opening in the official OpenSim GUI
-* Screenshot of some basic simulation running with the muscle-less model
+To convert and check the model:
+
+* Press the ``Convert to OpenSim model`` button:
+
+  * This imports the mesh importer scene into the ``osim`` editor
+  * Your progress in the mesh importer is not lost, if you reopen the mesh importer you should still be able to see your scene as it was before converting it
+
+* Experiment with changing model coordinates:
+
+  * This should move parts of the finger
+
+* Run a basic forward-dynamic simulation of the model
+
+  * Press ``Ctrl+R`` to start simulating the model, or click the ``Simulate`` button
+  * The arm should flop around in the scene. **Unassigned** (:red:`red`) meshes will be anchored to ground.
+  * This is a basic check to ensure the model at least simulates (even if it's not a particularly interesting simulation)
+
+
+You should be able to see the meshes, see that the joints are rotating (somewhat) correctly, and see the stations. If there are any problems, then return to the mesh importer and fix things.
+
+.. figure:: _static/tut4_after-importing-marked-hand.png
+   :width: 60%
+
+   The ``osim`` model created from the mesh importer. Editing joint coordinates and simulating the model is a quick way to check if joint centers are correctly oriented. Here, you can see that the finger-to-wrist joint is off. This was fixed by returning to the mesh importer and reorienting that joint center.
 
 
 Step 6: Add Muscle Paths
 ------------------------
+
 
 TODO guide for adding muscle paths into the model
 
