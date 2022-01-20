@@ -243,29 +243,57 @@ You should be able to see the meshes, see that the joints are rotating (somewhat
 Step 6: Add Muscle Paths
 ------------------------
 
+Now that we have an actual ``OpenSim`` model (``osim``), we can add any OpenSim components we want into it. In this step, we will focus on adding muscles.
 
-TODO guide for adding muscle paths into the model
+To add muscles between the **stations** we added in previous steps:
 
-* Instruct to click ``Add Muscle > Thelen`` or something
-* Instruct to add points to the muscle path (TODO: needs to be added into UI). Instruct to use the stations as places the points can be added
-* Instruct to add all muscles for the stations that were marked up (entire finger and up to the elbow)
-* Instruct to play around with muscle parameters, try simulating with different params, etc.
-* Screenshot of the model with a muscle assigned
+* In the ``osim`` editor, click ``add force/muscle`` and add a ``Millard2012EquilibriumMuscle``
+
+* In the ``Add Force`` dialog that pops up, choose path points between the stations we previously defined, e.g.:
+
+  * Add ``arm_r_2midph_origin`` as the first path point and ``arm_r_2distph_insertion`` as the second path point to create a muscle between the two
+  * Click ``Add`` to add the muscle into the model
+
+* Repeat the above for all the ``_origin`` ``_insertion`` pairs created in Step 4
+
+
+For example, this is how I added the first muscle:
+
+.. figure:: _static/tut4_adding-muscle.png
+   :width: 60%
+
+   Example of adding a muscle between the ``arm_r_2midph_origin`` and ``arm_r_2distph_insertion`` stations.
+
+
+Once all the (admittedly, basic) muscles have been added, you should now have the final model containing muscles 💪! Congratulations! It should look something like this:
+
+.. figure:: _static/tut4_final-result.png
+   :width: 60%
+
+   The final hand model after adding meshes, bodies, joints, stations, and muscles. This tutorial only covers modelling one finger, but the same techniques can be applied to create the whole hand.
 
 
 Summary
 -------
 
-* In this guide, we covered etc. etc. etc.
+In this tutorial, we covered a more complex modelling scenario. One where the model had to be created from a collection of mesh files. To keep the tutorial short, it only went through modelling one finger of the arm. However, the techniques covered here can be used to model the remaining fingers and to add more bodies into the wrist. The approach is largely the same.
+
+This tutorial also covered using **stations** to mark out locations on the model. We then used the stations to add muscle paths between various parts of the model. The muscle paths added in this tutorial are extremely basic--they are just direct lines between the meshes--but more path points can be used to create a more realistic muscle path. To keep this tutorial short, we skipped doing that, but you can effectively just add more stations and chain them together when defining the path in the ``Add Force`` dialog. OpenSim also supports adding **wrap geometry** to muscle paths, enabling them to curve over things. OpenSim Creator doesn't natively support this (yet), so you will need to figure out how to add those into the ``osim`` file manually.
+
+Overall, the techniques demonstrated in this tutorial are useful if you want to get *something* into OpenSim fairly quickly. Once you have an OpenSim model (``osim``), you can then use the entire ecosystem to add many more features. The world (of OpenSim) will be your oyster 🦪!
 
 
 (Optional) Extra Exercises
 --------------------------
 
-* Assign the rest of the muscles
-* Try different muscles
-* Try adding contact surfaces? (maybe this should be a separate tutorial - advanced model compositing or whatever)
+* **Model the whole hand**. This tutorial kept things short by only modelling one finger. However, the mesh files provided at the start contain the meshes for all bones in the lower right-arm. You should be able to use the techniques described here to assign bodies + joints to all relevant parts of the lower-arm, which will produce a much more convincing model.
+
+* **Add other OpenSim components to your imported model**. This tutorial only focuses on adding muscles, but OpenSim Creator also supports adding things like contact geometry, springs, and constraints. Try experimenting with OpenSim by adding some of these things - what's the worst that could happen 😉
+
+* **Edit the osim file directly in a text editor**. OpenSim Creator only supports a subset of OpenSim because it takes time (and effort 😓) to add things into the UI. However, OpenSim Creator is able to *load* and *view* almost any OpenSim component - even if it can't *add* the component itself. OpenSim Creator also supports **hot reloading** in the osim editor, which means edits to the underlying ``osim`` file should automatically reload in OpenSim Creator. This can be useful if you're adding custom components via a text editor.
 
 
 Next Steps
 ----------
+
+TODO
