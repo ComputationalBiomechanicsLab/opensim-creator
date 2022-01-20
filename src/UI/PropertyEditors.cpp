@@ -439,7 +439,12 @@ namespace
         // edit this to add more property editors
         static std::unordered_map<size_t, PropEditorCtor> g_PropertyEditors =
         {
-            MakeLookupEntry<StringPropertyEditor>()
+            MakeLookupEntry<StringPropertyEditor>(),
+            MakeLookupEntry<DoublePropertyEditor>(),
+            MakeLookupEntry<BoolPropertyEditor>(),
+            MakeLookupEntry<Vec3PropertyEditor>(),
+            MakeLookupEntry<Vec6PropertyEditor>(),
+            MakeLookupEntry<AppearancePropertyEditor>()
         };
 
         return g_PropertyEditors;
