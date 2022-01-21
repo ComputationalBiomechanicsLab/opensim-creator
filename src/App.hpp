@@ -2,7 +2,6 @@
 
 #include "src/3D/ShaderCache.hpp"
 #include "src/Assertions.hpp"
-#include "src/MeshCache.hpp"
 #include "src/RecentFile.hpp"
 #include "src/Screen.hpp"
 
@@ -12,6 +11,7 @@
 #include <filesystem>
 #include <memory>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -19,35 +19,52 @@ namespace osc
 {
     struct Config;
     class ShaderCache;
+    class MeshCache;
 }
 
 namespace osc
 {
+    // top-level applicaiton class
+    //
+    // the top-level osc process holds one copy of this class, which maintains all global
+    // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App final {
     public:
 
+        // returns the currently-active application global
         static App& cur() noexcept
         {
             OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
             return *g_Current;
         }
+
+        // returns the currently-active configuration global
         static Config const& config() noexcept;
+
+        // returns the global shader cache
         static ShaderCache& shaders() noexcept;
+
+        // returns the global meshes cache
         static MeshCache& meshes() noexcept;
+
+        // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view s);
 
+        // returns a particular shader type from the shader cache
         template<typename TShader>
         static TShader& shader()
         {
             return shaders().getShader<TShader>();
         }
 
-        // init app by loading config from default location
+        // constructs an app by initializing it from a config at the default app config location
+        //
+        // this also sets the `cur` application global
         App();
+
         App(App const&) = delete;
         App(App&&) noexcept;
         ~App() noexcept;
-
         App& operator=(App const&) = delete;
         App& operator=(App&&) noexcept;
 
@@ -58,15 +75,22 @@ namespace osc
         template<typename TScreen, typename... Args>
         void show(Args&&... args)
         {
+            static_assert(std::is_base_of_v<Screen, TScreen>);
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
-        // request the app transitions to a new sreen
+        // Request the app transitions to a new sreen
         //
-        // this is a *request* that `App` will fulfill at a later time. App will
-        // first unmount the current screen, fully destroy the current
-        // screen, then mount the new screen and make the new screen
-        // the current screen
+        // this is merely a *request* that the `App` will fulfill at a later
+        // time (usually, after it's done handling some part of the top-level application
+        // loop).
+        //
+        // When the App decides it's ready to transition to the new screen, it will:
+        //
+        // - unmount the current screen
+        // - destroy the current screen
+        // - mount the new screen
+        // - make the new screen the current screen
         void requestTransition(std::unique_ptr<Screen>);
 
         // construct `TScreen` with `Args` then request the app transitions to it
@@ -76,57 +100,69 @@ namespace osc
             requestTransition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
-        // request the app quits as soon as it can (usually after it's finished with a
-        // screen method)
+        // request that the app quits
+        //
+        // this is merely a *request* tha the `App` will fulfill at a later time (usually,
+        // after it's done handling some part of the top-level application loop)
         void requestQuit() noexcept;
 
-        // returns current window dimensions (integer)
+        // returns main window's dimensions (integer)
         glm::ivec2 idims() const noexcept;
 
-        // returns current window dimensions (float)
+        // returns main window's dimensions (float)
         glm::vec2 dims() const noexcept;
 
-        // returns current window aspect ratio
+        // returns main window's aspect ratio
         float aspectRatio() const noexcept;
 
-        // sets whether the application should show/hide the cursor
+        // sets whether the user's mouse cursor should be shown/hidden
         void showCursor(bool) noexcept;
 
-        // makes the application window fullscreen
+        // makes the main window fullscreen
         void makeFullscreen();
 
-        // makes the application window windowed (as opposed to fullscreen)
+        // makes the main window windowed (as opposed to fullscreen)
         void makeWindowed();
 
-        // returns number of MSXAA samples multisampled rendererers should use
-        int getSamples() const noexcept;
+        // returns the recommended number of MSXAA samples that rendererers should use
+        int getRecommendedMSXAASamples() const noexcept;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
         // throws if arg > max_samples()
-        void setSamples(int);
+        void setRecommendedMSXAASamples(int);
 
         // returns the maximum number of MSXAA samples the backend supports
-        int maxSamples() const noexcept;
+        int getMaxMSXAASamples() const noexcept;
 
         // returns true if the application is rendering in debug mode
         //
-        // screen/tab/widget implementations should use this to decide whether
-        // to draw extra debug elements
+        // other parts of the application can use this to decide whether to render
+        // extra debug elements, etc.
         bool isInDebugMode() const noexcept;
+
+        // enables debug mode (incl. OpenGL debugging)
         void enableDebugMode();
+
+        // disables debug mode (incl. OpenGL debugging)
         void disableDebugMode();
 
+        // returns true if VSYNC has been enabled in the graphics layer
         bool isVsyncEnabled() const noexcept;
+
+        // requests that VSYNC is enabled in the graphics layer
         void enableVsync();
+
+        // requests that VSYNC is disabled in the graphics layer
         void disableVsync();
 
+        // returns the current application configuration
         Config const& getConfig() const noexcept;
 
-        // get full path to runtime resource in `resources/` dir
+        // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path getResource(std::string_view) const noexcept;
 
-        // returns the contents of a resource in a string
+        // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(std::string_view) const;
 
         // returns all files that were recently opened by the user in the app
@@ -139,9 +175,10 @@ namespace osc
         // this addition is persisted between app boots
         void addRecentFile(std::filesystem::path const&);
 
-        // returns true if the main app window is focused
+        // returns true if the main window is focused
         bool isWindowFocused() const noexcept;
 
+        // data structure representing the current mouse state
         struct MouseState final {
             glm::ivec2 pos;
             bool LeftDown;
@@ -151,51 +188,72 @@ namespace osc
             bool X2Down;
         };
 
-        // get current mouse state
+        // get the user's current mouse state
         //
-        // note: this tries to be as precise as possible by fetching from the
-        //       OS if possible, so it can be expensive
+        // note: this method tries to be as precise as possible by fetching from the
+        //       OS, so it can be expensive. Use something like an IoPoller or ImGui
+        //       to record this information once-per-frame, if possible.
         MouseState getMouseState() const noexcept;
 
-        // returns the number of "ticks" that the application has counted
+        // returns the number of "ticks" recorded on the application's high-resolution
+        // monotonically-increasing clock
         uint64_t getTicks() const noexcept;
 
-        // returns the number of "ticks" the application accumulates per second
+        // returns the number of "ticks" that pass in the application's high-resolution
+        // clock per second.
+        //
+        // usage e.g.: dt = (getTicks()-previousTicks)/getTickFrequency()
         uint64_t getTickFrequency() const noexcept;
 
         // returns true if the user is pressing the SHIFT key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
         bool isShiftPressed() const noexcept;
 
         // returns true if the user is pressing the CTRL key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
         bool isCtrlPressed() const noexcept;
 
         // returns true if the user is pressing the ALT key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
         bool isAltPressed() const noexcept;
 
         // move the mouse to a location within the window
         void warpMouseInWindow(glm::vec2) const noexcept;
 
-        // returns the application-wide shader cache
+        // returns the application-wide (global) shader cache
         ShaderCache& getShaderCache() noexcept;
 
-        // returns the application-wide mesh cache
+        // returns the application-wide (global) mesh cache
         MeshCache& getMeshCache() noexcept;
 
         // makes main application event loop wait, rather than poll, for events
         //
-        // this transforms the application from being a game-like loop (continuously
-        // re-render) into something closer to an application. Downstream screens will
-        // have to call `requestRedraw` to force the application to redraw when there isn't
-        // and OS event
+        // By default, `App` is a *polling* event loop that renders as often as possible. This
+        // method makes the main application a *waiting* event loop that only moves forward when
+        // an event occurs.
+        //
+        // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
+        // like laptops), but downstream screens *must* ensure the application keeps moving forward by
+        // calling methods like `requestRedraw` or by pumping other events into the loop.
         void makeMainEventLoopWaiting();
 
-        // makes the main application event loop poll, rather than waiting, for events
+        // makes the main application event loop poll, rather than wait, for events
         //
-        // this makes the application game-like, and doesn't require that downstream screens
-        // call `requestRedraw` whenever they want to force a redraw
+        // This is the default behavior of the application event loop. Although power-inefficient (because
+        // it's always redrawing), it makes downstream code *a lot* simpler because all downstream code can
+        // rely on the fact that `App` will redraw frequently. Game engines typically use this type of loop.
         void makeMainEventLoopPolling();
 
         // threadsafe: pumps a redraw event into the application's event loop
+        //
+        // This is mostly only useful if also running a *waiting* event loop, because it will cause the
+        // application to pump the event and redraw.
         void requestRedraw();
 
         struct Impl;

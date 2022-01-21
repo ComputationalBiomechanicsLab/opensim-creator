@@ -261,12 +261,12 @@ void osc::MainMenuAboutTab::draw() {
         ImGui::NextColumn();
         {
             static constexpr std::array<char const*, 8> antialiasingLevels = {"x1", "x2", "x4", "x8", "x16", "x32", "x64", "x128"};
-            int samplesIdx = LeastSignificantBitIndex(App::cur().getSamples());
-            int maxSamplesIdx = LeastSignificantBitIndex(App::cur().maxSamples());
+            int samplesIdx = LeastSignificantBitIndex(App::cur().getRecommendedMSXAASamples());
+            int maxSamplesIdx = LeastSignificantBitIndex(App::cur().getMaxMSXAASamples());
             OSC_ASSERT(static_cast<size_t>(maxSamplesIdx) < antialiasingLevels.size());
 
             if (ImGui::Combo("##msxaa", &samplesIdx, antialiasingLevels.data(), maxSamplesIdx + 1)) {
-                App::cur().setSamples(1 << samplesIdx);
+                App::cur().setRecommendedMSXAASamples(1 << samplesIdx);
             }
         }
         ImGui::NextColumn();

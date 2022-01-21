@@ -7,7 +7,9 @@
 #include <cstdint>
 
 namespace osc {
+
     struct IoPoller final {
+
         // drawable size of display
         glm::vec2 DisplaySize;
 
@@ -31,8 +33,8 @@ namespace osc {
 
         // indicates that the backend should set the OS mouse pos
         //
-        // the backend will warp to the MousePosWarpTo location, but will
-        // ensure that MousePosDelta behaves "as if" the user moved their
+        // next frame, the backend will warp to the MousePosWarpTo location, but
+        // will ensure that MousePosDelta behaves "as if" the user moved their
         // mouse from MousePosPrevious to MousePosWarpTo
         //
         // the backend will reset WantMousePosWarpTo to `false` after

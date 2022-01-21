@@ -1,7 +1,8 @@
 #include "MathExperimentsScreen.hpp"
 
-#include "src/App.hpp"
 #include "src/3D/Gl.hpp"
+#include "src/3D/Model.hpp"
+#include "src/App.hpp"
 
 #include <imgui.h>
 #include <glm/vec2.hpp>

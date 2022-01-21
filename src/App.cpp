@@ -872,19 +872,19 @@ void osc::App::makeWindowed()
     SDL_SetWindowFullscreen(m_Impl->window, 0);
 }
 
-int osc::App::getSamples() const noexcept
+int osc::App::getRecommendedMSXAASamples() const noexcept
 {
     return m_Impl->curMSXAASamples;
 }
 
-void osc::App::setSamples(int s)
+void osc::App::setRecommendedMSXAASamples(int s)
 {
     if (s <= 0)
     {
         throw std::runtime_error{"tried to set number of samples to <= 0"};
     }
 
-    if (s > maxSamples())
+    if (s > getMaxMSXAASamples())
     {
         throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
     }
@@ -897,7 +897,7 @@ void osc::App::setSamples(int s)
     m_Impl->curMSXAASamples = s;
 }
 
-int osc::App::maxSamples() const noexcept
+int osc::App::getMaxMSXAASamples() const noexcept
 {
     return m_Impl->maxMSXAASamples;
 }

@@ -460,7 +460,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f) {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
             renderTarg.setDims(dims);
-            renderTarg.setSamples(App::cur().getSamples());
+            renderTarg.setSamples(App::cur().getRecommendedMSXAASamples());
         }
     }
 

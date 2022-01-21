@@ -193,7 +193,7 @@ void osc::InstancedRendererScreen::draw() {
 
     // ensure renderer output matches window
     renderer.setDims(App::cur().idims());
-    renderer.setMsxaaSamples(App::cur().getSamples());
+    renderer.setMsxaaSamples(App::cur().getRecommendedMSXAASamples());
 
     gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
