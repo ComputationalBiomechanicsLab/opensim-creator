@@ -23,7 +23,8 @@
 using namespace osc;
 
 // the function that loads the OpenSim model
-static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path) {
+static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
+{
     auto model = std::make_unique<OpenSim::Model>(path);
     return std::make_unique<osc::UndoableUiModel>(std::move(model));
 }
@@ -82,31 +83,38 @@ osc::LoadingScreen::LoadingScreen(
         std::shared_ptr<MainEditorState> _st,
         std::filesystem::path _path) :
 
-    m_Impl{new Impl{std::move(_path), std::move(_st)}} {
+    m_Impl{new Impl{std::move(_path), std::move(_st)}}
+{
 }
 
 osc::LoadingScreen::~LoadingScreen() noexcept = default;
 
-void osc::LoadingScreen::onMount() {
+void osc::LoadingScreen::onMount()
+{
     osc::ImGuiInit();
 }
 
-void osc::LoadingScreen::onUnmount() {
+void osc::LoadingScreen::onUnmount()
+{
     osc::ImGuiShutdown();
 }
 
-void osc::LoadingScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+void osc::LoadingScreen::onEvent(SDL_Event const& e)
+{
+    if (osc::ImGuiOnEvent(e))
+    {
         return;
     }
 
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    {
         App::cur().requestTransition<SplashScreen>();
         return;
     }
 }
 
-void osc::LoadingScreen::tick(float dt) {
+void osc::LoadingScreen::tick(float dt)
+{
     Impl& impl = *m_Impl;
 
     // tick the progress bar up a little bit
@@ -115,32 +123,40 @@ void osc::LoadingScreen::tick(float dt) {
     // if there's an error, then the result came through (it's an error)
     // and this screen should just continuously show the error until the
     // user decides to transition back
-    if (!impl.error.empty()) {
+    if (!impl.error.empty())
+    {
         return;
     }
 
     // otherwise, poll for the result and catch any exceptions that bubble
     // up from the background thread
     std::unique_ptr<UndoableUiModel> result = nullptr;
-    try {
-        if (impl.result.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+    try
+    {
+        if (impl.result.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+        {
             result = impl.result.get();
         }
-    } catch (std::exception const& ex) {
+    }
+    catch (std::exception const& ex)
+    {
         impl.error = ex.what();
         return;
-    } catch (...) {
+    }
+    catch (...)
+    {
         impl.error = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
         return;
     }
 
     // if there was a result (a newly-loaded model), handle it
-    if (result) {
-
+    if (result)
+    {
         // add newly-loaded model to the "Recent Files" list
         App::cur().addRecentFile(impl.path);
 
-        if (impl.mes) {
+        if (impl.mes)
+        {
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
@@ -153,7 +169,9 @@ void osc::LoadingScreen::tick(float dt) {
                     viewer->requestAutoFocus();
                 }
             }
-        } else {
+        }
+        else
+        {
             // there is no existing editor state
             //
             // transitiong into "fresh" editor
@@ -170,7 +188,8 @@ void osc::LoadingScreen::tick(float dt) {
     }
 }
 
-void osc::LoadingScreen::draw() {
+void osc::LoadingScreen::draw()
+{
     osc::ImGuiNewFrame();
 
     Impl& impl = *m_Impl;
@@ -188,24 +207,31 @@ void osc::LoadingScreen::draw() {
         ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
     }
 
-    if (impl.error.empty()) {
-        if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+    if (impl.error.empty())
+    {
+        if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+        {
             ImGui::Text("loading: %s", impl.path.string().c_str());
             ImGui::ProgressBar(impl.progress);
         }
         ImGui::End();
-    } else {
-        if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+    }
+    else
+    {
+        if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+        {
             ImGui::TextWrapped("An error occurred while loading the file:");
             ImGui::Dummy(ImVec2{0.0f, 5.0f});
             ImGui::TextWrapped("%s", impl.error.c_str());
             ImGui::Dummy(ImVec2{0.0f, 5.0f});
 
-            if (ImGui::Button("back to splash screen (ESC)")) {
+            if (ImGui::Button("back to splash screen (ESC)"))
+            {
                 App::cur().requestTransition<SplashScreen>();
             }
             ImGui::SameLine();
-            if (ImGui::Button("try again")) {
+            if (ImGui::Button("try again"))
+            {
                 App::cur().requestTransition<LoadingScreen>(impl.mes, impl.path);
             }
         }

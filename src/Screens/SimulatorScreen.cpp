@@ -29,8 +29,8 @@ namespace {
     void drawSimulationScrubber(
             osc::MainEditorState& st,
             UiSimulation& focusedSim,
-            Report& focusedReport) {
-
+            Report& focusedReport)
+    {
         double t0 = 0.0f;
         double tf = focusedSim.simulation->simFinalTime().count();
         double treport = focusedReport.state.getTime();
@@ -38,12 +38,14 @@ namespace {
         // draw the scrubber (slider)
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         float v = static_cast<float>(treport);
-        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.3f", ImGuiSliderFlags_AlwaysClamp)) {
+        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.3f", ImGuiSliderFlags_AlwaysClamp))
+        {
             st.focusedSimulationScrubbingTime = v;
         }
 
         // draw hover-over tooltip for scrubber
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
@@ -56,31 +58,36 @@ namespace {
     // select a simulation report based on scubbing time
     [[nodiscard]] Report& selectReportBasedOnScrubbing(
             UiSimulation const& focused,
-            float scrubTime) {
+            float scrubTime)
+    {
 
         auto& rr = focused.regularReports;
 
         // if there are no regular reports, use the spot report
-        if (rr.empty()) {
+        if (rr.empty())
+        {
             return *focused.spotReport;
         }
 
         // if the scrub time is negative (a senteniel), use the
         // spot report
-        if (scrubTime < 0.0) {
+        if (scrubTime < 0.0)
+        {
             return *focused.spotReport;
         }
 
         // search through the regular reports for the first report that
         // finishes equal-to or after the scrub time
-        auto startsAfterOrEqualToScrubTime = [&](std::unique_ptr<Report> const& report) {
+        auto startsAfterOrEqualToScrubTime = [&](std::unique_ptr<Report> const& report)
+        {
             return report->state.getTime() >= scrubTime;
         };
 
         auto it = std::find_if(rr.begin(), rr.end(), startsAfterOrEqualToScrubTime);
 
         // if no such report is found, use the spot report
-        if (it == rr.end()) {
+        if (it == rr.end())
+        {
             return *focused.spotReport;
         }
 
@@ -103,10 +110,11 @@ struct osc::SimulatorScreen::Impl final {
     MainMenuWindowTab mmWindowTab;
     MainMenuAboutTab mmAboutTab;
 
-    Impl(std::shared_ptr<MainEditorState> _mes) : mes{std::move(_mes)} {
-
+    Impl(std::shared_ptr<MainEditorState> _mes) : mes{std::move(_mes)}
+    {
         // lazily init at least one viewer
-        if (!mes->viewers.front()) {
+        if (!mes->viewers.front())
+        {
             mes->viewers.front() = std::make_unique<UiModelViewer>();
         }
     }
@@ -116,26 +124,31 @@ struct osc::SimulatorScreen::Impl final {
 namespace {
 
     // start a new simulation from whatever the user's currently editing
-    void actionStartSimulationFromEditedModel(osc::MainEditorState& impl) {
+    void actionStartSimulationFromEditedModel(osc::MainEditorState& impl)
+    {
         impl.startSimulatingEditedModel();
     }
 
     // pop all updates from all active simulations
-    void popAllSimulatorUpdates(osc::MainEditorState& impl) {
-        for (auto& simulation : impl.simulations) {
+    void popAllSimulatorUpdates(osc::MainEditorState& impl)
+    {
+        for (auto& simulation : impl.simulations)
+        {
             // pop regular reports
             {
                 auto& rr = simulation->regularReports;
                 int popped = simulation->simulation->popRegularReports(rr);
 
-                for (size_t i = rr.size() - static_cast<size_t>(popped); i < rr.size(); ++i) {
+                for (size_t i = rr.size() - static_cast<size_t>(popped); i < rr.size(); ++i)
+                {
                     simulation->model->realizeReport(rr[i]->state);
                 }
             }
 
             // pop latest spot report
             std::unique_ptr<Report> newSpotReport = simulation->simulation->tryPopLatestReport();
-            if (newSpotReport) {
+            if (newSpotReport)
+            {
                 simulation->spotReport = std::move(newSpotReport);
                 simulation->model->realizeReport(simulation->spotReport->state);
             }
@@ -143,10 +156,12 @@ namespace {
     }
 
     // draw details of one simulation
-    void drawSimulationProgressBarEtc(SimulatorScreen::Impl& impl, int i) {
+    void drawSimulationProgressBarEtc(SimulatorScreen::Impl& impl, int i)
+    {
         MainEditorState& st = *impl.mes;
 
-        if (!(0 <= i && i < static_cast<int>(st.simulations.size()))) {
+        if (!(0 <= i && i < static_cast<int>(st.simulations.size())))
+        {
             ImGui::TextUnformatted("(invalid simulation index)");
             return;
         }
@@ -156,13 +171,15 @@ namespace {
 
         float progress = simulation.simulation->progress();
         ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
-        if (static_cast<int>(i) == st.focusedSimulation) {
+        if (static_cast<int>(i) == st.focusedSimulation)
+        {
             baseColor.w = 1.0f;
         }
 
         bool shouldErase = false;
 
-        if (ImGui::Button("x")) {
+        if (ImGui::Button("x"))
+        {
             shouldErase = true;
         }
 
@@ -171,8 +188,10 @@ namespace {
         ImGui::ProgressBar(progress);
         ImGui::PopStyleColor();
 
-        if (ImGui::IsItemHovered()) {
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE)) {
+        if (ImGui::IsItemHovered())
+        {
+            if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE))
+            {
                 shouldErase = true;
             }
 
@@ -192,19 +211,24 @@ namespace {
             ImGui::EndTooltip();
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
             st.focusedSimulation = static_cast<int>(i);
         }
 
-        if (ImGui::BeginPopupContextItem("simcontextmenu")) {
+        if (ImGui::BeginPopupContextItem("simcontextmenu"))
+        {
             st.focusedSimulation = static_cast<int>(i);
 
-            if (ImGui::MenuItem("edit model")) {
+            if (ImGui::MenuItem("edit model"))
+            {
                 auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
                 st.setModel(std::move(copy));
                 App::cur().requestTransition<ModelEditorScreen>(impl.mes);
             }
-            if (ImGui::IsItemHovered()) {
+
+            if (ImGui::IsItemHovered())
+            {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
                 ImGui::TextUnformatted("Make the model initially used in this simulation into the model being edited in the editor");
@@ -215,9 +239,11 @@ namespace {
             ImGui::EndPopup();
         }
 
-        if (shouldErase) {
+        if (shouldErase)
+        {
             st.simulations.erase(st.simulations.begin() + i);
-            if (static_cast<int>(i) <= st.focusedSimulation) {
+            if (static_cast<int>(i) <= st.focusedSimulation)
+            {
                 --st.focusedSimulation;
             }
         }
@@ -226,7 +252,8 @@ namespace {
     }
 
     // draw top-level "Simulation" tab that lists all simulations
-    void drawSimulationTab(SimulatorScreen::Impl& impl) {
+    void drawSimulationTab(SimulatorScreen::Impl& impl)
+    {
          osc::MainEditorState& st = *impl.mes;
 
         // draw scrubber for currently-selected sim
@@ -234,10 +261,13 @@ namespace {
         ImGui::Separator();
         ImGui::Dummy(ImVec2{0.0f, 0.3f});
         UiSimulation* sim = st.getFocusedSim();
-        if (sim) {
+        if (sim)
+        {
             Report& report = selectReportBasedOnScrubbing(*sim, st.focusedSimulationScrubbingTime);
             drawSimulationScrubber(st, *sim, report);
-        } else {
+        }
+        else
+        {
             ImGui::TextDisabled("(no simulation selected)");
         }
 
@@ -246,7 +276,8 @@ namespace {
         ImGui::TextUnformatted("Simulations:");
         ImGui::Separator();
         ImGui::Dummy(ImVec2{0.0f, 0.3f});
-        for (size_t i = 0; i < st.simulations.size(); ++i) {
+        for (size_t i = 0; i < st.simulations.size(); ++i)
+        {
             drawSimulationProgressBarEtc(impl, static_cast<int>(i));
         }
     }
@@ -272,10 +303,12 @@ namespace {
 
     // draw top-level "simulation stats" tab that shows integrator stats etc. for
     // the focused simulation
-    void drawSimulationStatsTab(osc::SimulatorScreen::Impl& impl) {
+    void drawSimulationStatsTab(osc::SimulatorScreen::Impl& impl)
+    {
         UiSimulation const* maybeFocused = impl.mes->getFocusedSim();
 
-        if (!maybeFocused) {
+        if (!maybeFocused)
+        {
             ImGui::TextDisabled("(no simulation selected)");
             return;
         }
@@ -394,10 +427,11 @@ namespace {
     }
 
     // action to take when user presses a key
-    bool simscreenOnKeydown(osc::SimulatorScreen::Impl& impl, SDL_KeyboardEvent const& e) {
-        if (e.keysym.mod & KMOD_CTRL) {
+    bool simscreenOnKeydown(osc::SimulatorScreen::Impl& impl, SDL_KeyboardEvent const& e)
+    {
+        if (e.keysym.mod & KMOD_CTRL)
+        {
             // Ctrl
-
             switch (e.keysym.sym) {
             case SDLK_e:
                 // Ctrl + e
@@ -409,9 +443,12 @@ namespace {
     }
 
     // action to take when a generic event occurs
-    bool simscreenOnEvent(osc::SimulatorScreen::Impl& impl, SDL_Event const& e) {
-        if (e.type == SDL_KEYDOWN) {
-            if (simscreenOnKeydown(impl, e.key)) {
+    bool simscreenOnEvent(osc::SimulatorScreen::Impl& impl, SDL_Event const& e)
+    {
+        if (e.type == SDL_KEYDOWN)
+        {
+            if (simscreenOnKeydown(impl, e.key))
+            {
                 return true;
             }
         }
@@ -423,12 +460,13 @@ namespace {
             osc::SimulatorScreen::Impl& impl,
             UiSimulation const& focusedSim,
             Report const& focusedReport,
-            OpenSim::Component const& selected) {
-
+            OpenSim::Component const& selected)
+    {
         int imguiID = 0;
 
         ImGui::Columns(2);
-        for (auto const& ptr : selected.getOutputs()) {
+        for (auto const& ptr : selected.getOutputs())
+        {
             OpenSim::AbstractOutput const& ao = *ptr.second;
 
             ImGui::TextUnformatted(ao.getName().c_str());
@@ -437,7 +475,8 @@ namespace {
             OpenSim::Output<double> const* odPtr =
                 dynamic_cast<OpenSim::Output<double> const*>(&ao);
 
-            if (!odPtr) {
+            if (!odPtr)
+            {
                 ImGui::TextUnformatted(ao.getValueAsString(focusedReport.state).c_str());
                 ImGui::NextColumn();
                 continue;  // unplottable
@@ -448,7 +487,8 @@ namespace {
             size_t npoints = focusedSim.regularReports.size();
             impl.plotscratch.resize(npoints);
             size_t i = 0;
-            for (auto const& report : focusedSim.regularReports) {
+            for (auto const& report : focusedSim.regularReports)
+            {
                 double v = od.getValue(report->state);
                 impl.plotscratch[i++] = static_cast<float>(v);
             }
@@ -457,8 +497,10 @@ namespace {
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
             ImGui::PlotLines("##nolabel", impl.plotscratch.data(), static_cast<int>(impl.plotscratch.size()), 0, nullptr, FLT_MAX, FLT_MAX, ImVec2{0.0f, 20.0f});
 
-            if (ImGui::BeginPopupContextItem(od.getName().c_str())) {
-                if (ImGui::MenuItem("Add to outputs watch")) {
+            if (ImGui::BeginPopupContextItem(od.getName().c_str()))
+            {
+                if (ImGui::MenuItem("Add to outputs watch"))
+                {
                     impl.mes->desiredOutputs.emplace_back(selected, od);
                 }
                 ImGui::EndPopup();
@@ -471,17 +513,19 @@ namespace {
     }
 
     // draw "selection" tab, which shows details of current selection
-    void drawSelectionTab(osc::SimulatorScreen::Impl& impl) {
-
+    void drawSelectionTab(osc::SimulatorScreen::Impl& impl)
+    {
         UiSimulation const* maybeSim = impl.mes->getFocusedSim();
 
-        if (!maybeSim) {
+        if (!maybeSim)
+        {
             ImGui::TextDisabled("(no simulation selected)");
             return;
         }
         UiSimulation const& sim = *maybeSim;
 
-        if (!sim.selected) {
+        if (!sim.selected)
+        {
             ImGui::TextDisabled("(no component selected)");
             return;
         }
@@ -490,7 +534,8 @@ namespace {
 
         ComponentDetails{}.draw(report.state, sim.selected);
 
-        if (ImGui::CollapsingHeader("outputs")) {
+        if (ImGui::CollapsingHeader("outputs"))
+        {
             drawOutputPlots(impl, sim, report, *sim.selected);
         }
     }
@@ -500,30 +545,34 @@ namespace {
             float const* ts,    // times
             float const* vs,    // values @ each time in times
             size_t n,           // number of datapoints
-            char const* vname   // name of values (header)
-            ) {
+            char const* vname)  // name of values (header)
+    {
 
         nfdchar_t* outpath = nullptr;
         nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
-        if (result != NFD_OKAY) {
+        if (result != NFD_OKAY)
+        {
             return "";  // user cancelled out
         }
 
         std::ofstream fout{outpath};
 
-        if (!fout) {
+        if (!fout)
+        {
             log::error("%s: error opening file for writing", outpath);
             return "";  // error opening output file for writing
         }
 
         fout << "t," << vname << '\n';
-        for (size_t i = 0; i < n; ++i) {
+        for (size_t i = 0; i < n; ++i)
+        {
             fout << ts[i] << ',' << vs[i] << '\n';
         }
 
-        if (!fout) {
+        if (!fout)
+        {
             log::error("%s: error encountered while writing CSV data to file", outpath);
             return "";  // error writing
         }
@@ -536,20 +585,22 @@ namespace {
     // export all plotted outputs to a single CSV file and return the filepath
     std::string exportAllPlottedOutputsToCSV(
             SimulatorScreen::Impl const& impl,
-            UiSimulation const& sim) {
-
+            UiSimulation const& sim)
+    {
         // try prompt user for save location
         nfdchar_t* outpath = nullptr;
         nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
         OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
 
-        if (result != NFD_OKAY) {
+        if (result != NFD_OKAY)
+        {
             return "";  // user cancelled out
         }
 
         // try to open the output file
         std::ofstream fout{outpath};
-        if (!fout) {
+        if (!fout)
+        {
             log::error("%s: error opening file for writing", outpath);
             return "";  // error opening output file for writing
         }
@@ -566,21 +617,27 @@ namespace {
 
                 component{_component},
                 output{_output},
-                desiredOutput{_desiredOutput} {
+                desiredOutput{_desiredOutput}
+            {
             }
         };
 
         // collect plottable outputs
         std::vector<PlottableOutput> plottableOutputs;
-        for (DesiredOutput const& de : impl.mes->desiredOutputs) {
-            if (!de.extractorFunc) {
+        for (DesiredOutput const& de : impl.mes->desiredOutputs)
+        {
+            if (!de.extractorFunc)
+            {
                 continue;  // no extractor function
             }
 
             OpenSim::Component const* cp = nullptr;
-            try {
+            try
+            {
                 cp = &sim.model->getComponent(de.absoluteComponentPath);
-            } catch (...) {
+            }
+            catch (...)
+            {
                 // OpenSim, innit
                 //
                 // avoid OpenSim::Component::findComponent like the plague
@@ -588,26 +645,32 @@ namespace {
                 // allergic to performance
             }
 
-            if (!cp) {
+            if (!cp)
+            {
                 continue;  // the component doesn't exist
             }
 
             OpenSim::Component const& c = *cp;
 
             OpenSim::AbstractOutput const* aop = nullptr;
-            try {
+            try
+            {
                 aop = &c.getOutput(de.outputName);
-            } catch (...) {
+            }
+            catch (...)
+            {
                 // OpenSim, innit
             }
 
-            if (!aop) {
+            if (!aop)
+            {
                 continue;  // the output doesn't exist on the component
             }
 
             size_t typehash = typeid(*aop).hash_code();
 
-            if (typehash != de.outputTypeHashcode) {
+            if (typehash != de.outputTypeHashcode)
+            {
                 continue;  // the output is there, but now has a different type
             }
 
@@ -616,18 +679,21 @@ namespace {
 
         // write header line
         fout << "time";
-        for (PlottableOutput const& po : plottableOutputs) {
+        for (PlottableOutput const& po : plottableOutputs)
+        {
             fout << ',' << po.desiredOutput.label;
         }
         fout << '\n';
 
         // write data lines
-        for (auto const& report : sim.regularReports) {
+        for (auto const& report : sim.regularReports)
+        {
             SimTK::State const& stkst = report->state;
 
             // write time
             fout << stkst.getTime();
-            for (PlottableOutput const& po : plottableOutputs) {
+            for (PlottableOutput const& po : plottableOutputs)
+            {
                 fout << ',' << po.desiredOutput.extractorFunc(po.output, stkst);
             }
             fout << '\n';
@@ -636,7 +702,8 @@ namespace {
         // check writing was successful
         //
         // this is just a sanity check: it will be written regardless
-        if (!fout) {
+        if (!fout)
+        {
             log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", outpath);
         }
 
@@ -644,10 +711,11 @@ namespace {
     }
 
     // draw "outputs" tab, which shows user-selected simulation outputs
-    void drawOutputsTab(osc::SimulatorScreen::Impl& impl) {
-
+    void drawOutputsTab(osc::SimulatorScreen::Impl& impl)
+    {
         UiSimulation const* maybeSim = impl.mes->getFocusedSim();
-        if (!maybeSim) {
+        if (!maybeSim)
+        {
             ImGui::TextDisabled("(no simulation selected)");
             return;
         }
@@ -658,20 +726,24 @@ namespace {
         int imguiID = 0;
         MainEditorState& st = *impl.mes;
 
-        if (st.desiredOutputs.empty()) {
+        if (st.desiredOutputs.empty())
+        {
             ImGui::TextUnformatted("No outputs being plotted: right-click them in the model editor");
             return;
         }
 
-        if (ImGui::Button("Save all to CSV")) {
+        if (ImGui::Button("Save all to CSV"))
+        {
             exportAllPlottedOutputsToCSV(impl, sim);
         }
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Save all to CSV & Open")) {
+        if (ImGui::Button("Save all to CSV & Open"))
+        {
             std::string path = exportAllPlottedOutputsToCSV(impl, sim);
-            if (!path.empty()) {
+            if (!path.empty())
+            {
                 OpenPathInOSDefaultApplication(path);
             }
         }
@@ -682,16 +754,20 @@ namespace {
         ImU32 hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
 
         int markedForDeletionDe = -1;
-        for (size_t deIdx = 0; deIdx < st.desiredOutputs.size(); ++deIdx) {
+        for (size_t deIdx = 0; deIdx < st.desiredOutputs.size(); ++deIdx)
+        {
             ImGui::PushID(imguiID++);
 
             DesiredOutput const& de = st.desiredOutputs[deIdx];
 
             // check the desired component is in the current model
             OpenSim::Component const* cp = nullptr;
-            try {
+            try
+            {
                 cp = &sim.model->getComponent(de.absoluteComponentPath);
-            } catch (...) {
+            }
+            catch (...)
+            {
                 // OpenSim, innit
                 //
                 // avoid OpenSim::Component::findComponent like the plague
@@ -699,7 +775,8 @@ namespace {
                 // allergic to performance
             }
 
-            if (!cp) {
+            if (!cp)
+            {
                 ImGui::Text("%s: component not found", de.label.c_str());
                 continue;
             }
@@ -708,13 +785,17 @@ namespace {
 
             // check the desired output is in in the desired component
             OpenSim::AbstractOutput const* aop = nullptr;
-            try {
+            try
+            {
                 aop = &c.getOutput(de.outputName);
-            } catch (...) {
+            }
+            catch (...)
+            {
                 // OpenSim, innit
             }
 
-            if (!aop) {
+            if (!aop)
+            {
                 ImGui::Text("%s: component output not found", de.label.c_str());
                 continue;
             }
@@ -722,20 +803,23 @@ namespace {
             // check the desired output's type is the same as when it was initially plotted
             OpenSim::AbstractOutput const& ao = *aop;
             size_t typehash = typeid(ao).hash_code();
-            if (typehash != de.outputTypeHashcode) {
+            if (typehash != de.outputTypeHashcode)
+            {
                 ImGui::Text("%s: output type changed", de.label.c_str());
                 continue;
             }
 
             // check if the output is plottable, if it isn't, just print the current value
-            if (!de.extractorFunc) {
+            if (!de.extractorFunc)
+            {
                 ImGui::Text("%s: %s", de.label.c_str(), ao.getValueAsString(report.state).c_str());
                 continue;
             }
 
             // check if there's any datapoints yet
             auto const& reports = sim.regularReports;
-            if (reports.empty()) {
+            if (reports.empty())
+            {
                 ImGui::Text("%s: no data (yet)", de.label.c_str());
                 continue;
             }
@@ -745,7 +829,8 @@ namespace {
             yValues.resize(reports.size());
             float ySmallest = std::numeric_limits<float>::max();
             float yLargest = std::numeric_limits<float>::lowest();
-            for (size_t i = 0; i < reports.size(); ++i) {
+            for (size_t i = 0; i < reports.size(); ++i)
+            {
                 double dVal = de.extractorFunc(ao, reports[i]->state);
                 float fVal = static_cast<float>(dVal);
                 yValues[i] = fVal;
@@ -777,7 +862,8 @@ namespace {
 
             // coerce the scrubbing time, if necessary
             float simScrubTime = impl.mes->focusedSimulationScrubbingTime;
-            if (!(simStartTime < simScrubTime && simScrubTime <= simEndTime)) {
+            if (!(simStartTime < simScrubTime && simScrubTime <= simEndTime))
+            {
                 simScrubTime = simEndTime;
             }
 
@@ -788,7 +874,8 @@ namespace {
             ImDrawList* drawlist = ImGui::GetForegroundDrawList();
 
             // if data crosses X=0, draw a horizontal X line showing X = 0
-            if (ySmallest < 0.0f && yLargest > 0.0f) {
+            if (ySmallest < 0.0f && yLargest > 0.0f)
+            {
                 float crossingPct = yLargest / (yLargest - ySmallest);
                 float crossingY = plotTopLeft.y + crossingPct * (plotBottomRight.y - plotTopLeft.y);
                 glm::vec2 p1 = {plotTopLeft.x, crossingY};
@@ -804,7 +891,8 @@ namespace {
                 drawlist->AddLine(p1, p2, currentTimeLineColor);
             }
 
-            if (ImGui::IsItemHovered()) {
+            if (ImGui::IsItemHovered())
+            {
                 glm::vec2 mp = ImGui::GetMousePos();
                 glm::vec2 plotLoc = mp - plotTopLeft;
                 float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
@@ -820,7 +908,8 @@ namespace {
                 // show a tooltip of X and Y
                 {
                     int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
-                    if (0 <= step && static_cast<size_t>(step) < yValues.size()) {
+                    if (0 <= step && static_cast<size_t>(step) < yValues.size())
+                    {
                         float y = yValues[static_cast<size_t>(step)];
                         ImGui::SetTooltip("(%.2fs, %.2f)", timeLoc, y);
                     }
@@ -828,37 +917,45 @@ namespace {
 
                 // if the user presses their left mouse while hovering over the plot,
                 // change the current sim scrub time to match their press location
-                if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
                     impl.mes->focusedSimulationScrubbingTime = timeLoc;
                 }
             }
 
-            if (ImGui::BeginPopupContextItem("outputplotscontextmenu")) {
-                if (ImGui::MenuItem("Save as CSV")) {
+            if (ImGui::BeginPopupContextItem("outputplotscontextmenu"))
+            {
+                if (ImGui::MenuItem("Save as CSV"))
+                {
                     std::vector<float> ts;
                     ts.reserve(sim.regularReports.size());
-                    for (auto const& r : sim.regularReports) {
+                    for (auto const& r : sim.regularReports)
+                    {
                         ts.push_back(static_cast<float>(r->state.getTime()));
                     }
                     OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
                     exportTimeseriesToCSV(ts.data(), impl.plotscratch.data(), ts.size(), de.label.c_str());
                 }
 
-                if (ImGui::MenuItem("Save as CSV & Open")) {
+                if (ImGui::MenuItem("Save as CSV & Open"))
+                {
                     std::vector<float> ts;
                     ts.reserve(sim.regularReports.size());
-                    for (auto const& r : sim.regularReports) {
+                    for (auto const& r : sim.regularReports)
+                    {
                         ts.push_back(static_cast<float>(r->state.getTime()));
                     }
                     OSC_ASSERT_ALWAYS(ts.size() == impl.plotscratch.size());
                     std::string outpath = exportTimeseriesToCSV(ts.data(), impl.plotscratch.data(), ts.size(), ao.getName().c_str());
 
-                    if (!outpath.empty()) {
+                    if (!outpath.empty())
+                    {
                         OpenPathInOSDefaultApplication(outpath);
                     }
                 }
 
-                if (ImGui::MenuItem("Remove")) {
+                if (ImGui::MenuItem("Remove"))
+                {
                     markedForDeletionDe = static_cast<int>(deIdx);
                 }
 
@@ -867,17 +964,20 @@ namespace {
             ImGui::PopID();
         }
 
-        if (0 <= markedForDeletionDe && markedForDeletionDe < st.desiredOutputs.size()) {
+        if (0 <= markedForDeletionDe && markedForDeletionDe < st.desiredOutputs.size())
+        {
             st.desiredOutputs.erase(st.desiredOutputs.begin() + static_cast<size_t>(markedForDeletionDe));
         }
     }
 
     // draw "hierarchy" tab, which shows the tree hierarchy structure for
     // the currently-focused sim
-    void drawHierarchyTab(SimulatorScreen::Impl& impl) {
+    void drawHierarchyTab(SimulatorScreen::Impl& impl)
+    {
         UiSimulation* maybeSim = impl.mes->getFocusedSim();
 
-        if (!maybeSim) {
+        if (!maybeSim)
+        {
             ImGui::TextDisabled("(no simulation selected)");
             return;
         }
@@ -885,9 +985,12 @@ namespace {
 
         auto resp = ComponentHierarchy{}.draw(sim.model.get(), sim.selected, sim.hovered);
 
-        if (resp.type == ComponentHierarchy::SelectionChanged) {
+        if (resp.type == ComponentHierarchy::SelectionChanged)
+        {
             sim.selected = const_cast<OpenSim::Component*>(resp.ptr);
-        } else if (resp.type == ComponentHierarchy::HoverChanged) {
+        }
+        else if (resp.type == ComponentHierarchy::HoverChanged)
+        {
             sim.hovered = const_cast<OpenSim::Component*>(resp.ptr);
         }
     }
@@ -913,27 +1016,33 @@ namespace {
 
         ~RenderableSim() noexcept override = default;
 
-        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override {
+        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override
+        {
             return m_Decorations;
         }
 
-        BVH const& getSceneBVH() const override {
+        BVH const& getSceneBVH() const override
+        {
             return m_SceneBVH;
         }
 
-        float getFixupScaleFactor() const override {
+        float getFixupScaleFactor() const override
+        {
             return m_FixupScaleFactor;
         }
 
-        OpenSim::Component const* getSelected() const override {
+        OpenSim::Component const* getSelected() const override
+        {
             return m_Sim.selected;
         }
 
-        OpenSim::Component const* getHovered() const override {
+        OpenSim::Component const* getHovered() const override
+        {
             return m_Sim.hovered;
         }
 
-        OpenSim::Component const* getIsolated() const override {
+        OpenSim::Component const* getIsolated() const override
+        {
             return nullptr;
         }
     };
@@ -943,20 +1052,22 @@ namespace {
             UiSimulation& sim,
             Report const& report,
             UiModelViewer& viewer,
-            char const* name) {
-
+            char const* name)
+    {
         bool isOpen = true;
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
         ImGui::PopStyleVar();
 
-        if (!isOpen) {
+        if (!isOpen)
+        {
             ImGui::End();
             return false;  // closed by the user
         }
 
-        if (!shown) {
+        if (!shown)
+        {
             ImGui::End();
             return true;  // it's open, but not shown
         }
@@ -965,10 +1076,12 @@ namespace {
         auto resp = viewer.draw(rs);
         ImGui::End();
 
-        if (resp.isLeftClicked && resp.hovertestResult) {
+        if (resp.isLeftClicked && resp.hovertestResult)
+        {
             sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
         }
-        if (resp.isMousedOver && resp.hovertestResult != sim.hovered) {
+        if (resp.isMousedOver && resp.hovertestResult != sim.hovered)
+        {
             sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
         }
 
@@ -978,11 +1091,14 @@ namespace {
     // draw all active 3D viewers
     //
     // the user can (de)activate 3D viewers in the "Window" tab
-    void drawAll3DViewers(SimulatorScreen::Impl& impl) {
+    void drawAll3DViewers(SimulatorScreen::Impl& impl)
+    {
         UiSimulation* maybeSim = impl.mes->getFocusedSim();
 
-        if (!maybeSim) {
-            if (ImGui::Begin("render")) {
+        if (!maybeSim)
+        {
+            if (ImGui::Begin("render"))
+            {
                 ImGui::TextDisabled("(no simulation selected)");
             }
             ImGui::End();
@@ -993,10 +1109,12 @@ namespace {
         Report const& report = selectReportBasedOnScrubbing(sim, impl.mes->focusedSimulationScrubbingTime);
         MainEditorState& st = *impl.mes;
 
-        for (size_t i = 0; i < st.viewers.size(); ++i) {
+        for (size_t i = 0; i < st.viewers.size(); ++i)
+        {
             auto& maybeViewer = st.viewers[i];
 
-            if (!maybeViewer) {
+            if (!maybeViewer)
+            {
                 continue;
             }
 
@@ -1007,25 +1125,27 @@ namespace {
 
             bool isOpen = draw3DViewer(sim, report, viewer, buf);
 
-            if (!isOpen) {
+            if (!isOpen)
+            {
                 maybeViewer.reset();
             }
         }
     }
 
     // draw the simulator screen
-    void simscreenDraw(osc::SimulatorScreen::Impl& impl) {
-
+    void simscreenDraw(osc::SimulatorScreen::Impl& impl)
+    {
         // draw main menu
-        if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMainMenuBar())
+        {
             impl.mmFileTab.draw(impl.mes);
             impl.mmWindowTab.draw(*impl.mes);
             impl.mmAboutTab.draw();
 
-            ImGui::Dummy(ImVec2{5.0f, 0.0f});
+            ImGui::Dummy({5.0f, 0.0f});
 
-            if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)")) {
-
+            if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)"))
+            {
                 // request the transition then exit this drawcall ASAP
                 App::cur().requestTransition<ModelEditorScreen>(std::move(impl.mes));
                 ImGui::EndMainMenuBar();
@@ -1039,10 +1159,13 @@ namespace {
 
         // edge-case: there are no simulations available, so
         // show a "you need to run something, fool" dialog
-        if (!st.hasSimulations()) {
-            if (ImGui::Begin("Warning")) {
+        if (!st.hasSimulations())
+        {
+            if (ImGui::Begin("Warning"))
+            {
                 ImGui::TextUnformatted("No simulations are currently running");
-                if (ImGui::Button("Run new simulation")) {
+                if (ImGui::Button("Run new simulation"))
+                {
                     actionStartSimulationFromEditedModel(st);
                 }
             }
@@ -1051,8 +1174,10 @@ namespace {
         }
 
         // draw simulations tab
-        if (st.showing.simulations) {
-            if (ImGui::Begin("Simulations", &st.showing.simulations)) {
+        if (st.showing.simulations)
+        {
+            if (ImGui::Begin("Simulations", &st.showing.simulations))
+            {
                 drawSimulationTab(impl);
             }
             ImGui::End();
@@ -1064,40 +1189,50 @@ namespace {
         }
 
         // draw hierarchy tab
-        if (st.showing.hierarchy) {
-            if (ImGui::Begin("Hierarchy", &st.showing.hierarchy)) {
+        if (st.showing.hierarchy)
+        {
+            if (ImGui::Begin("Hierarchy", &st.showing.hierarchy))
+            {
                 drawHierarchyTab(impl);
             }
             ImGui::End();
         }
 
         // draw selection tab
-        if (st.showing.selectionDetails) {
-            if (ImGui::Begin("Selection", &st.showing.selectionDetails)) {
+        if (st.showing.selectionDetails)
+        {
+            if (ImGui::Begin("Selection", &st.showing.selectionDetails))
+            {
                 drawSelectionTab(impl);
             }
             ImGui::End();
         }
 
         // draw outputs tab
-        if (st.showing.outputs) {
-            if (ImGui::Begin("Outputs", &st.showing.outputs)) {
+        if (st.showing.outputs)
+        {
+            if (ImGui::Begin("Outputs", &st.showing.outputs))
+            {
                 drawOutputsTab(impl);
             }
             ImGui::End();
         }
 
         // draw simulation stats tab
-        if (st.showing.simulationStats) {
-            if (ImGui::Begin("Simulation Details", &st.showing.simulationStats)) {
+        if (st.showing.simulationStats)
+        {
+            if (ImGui::Begin("Simulation Details", &st.showing.simulationStats))
+            {
                 drawSimulationStatsTab(impl);
             }
             ImGui::End();
         }
 
         // draw log tab
-        if (st.showing.log) {
-            if (ImGui::Begin("Log", &st.showing.log, ImGuiWindowFlags_MenuBar)) {
+        if (st.showing.log)
+        {
+            if (ImGui::Begin("Log", &st.showing.log, ImGuiWindowFlags_MenuBar))
+            {
                 impl.logViewerState.draw();
             }
             ImGui::End();

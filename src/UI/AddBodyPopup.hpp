@@ -6,7 +6,8 @@
 #include <memory>
 #include <optional>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class PhysicalFrame;
     class Model;
     class Mesh;
@@ -14,7 +15,8 @@ namespace OpenSim {
     class Joint;
 }
 
-namespace osc {
+namespace osc
+{
     struct NewBody final {
         std::unique_ptr<OpenSim::Body> body;
         std::unique_ptr<OpenSim::Joint> joint;
@@ -22,8 +24,8 @@ namespace osc {
         NewBody(std::unique_ptr<OpenSim::Body> b,
                  std::unique_ptr<OpenSim::Joint> j) :
             body{std::move(b)},
-            joint{std::move(j)} {
-
+            joint{std::move(j)}
+        {
             OSC_ASSERT(body != nullptr);
             OSC_ASSERT(joint != nullptr);
         }

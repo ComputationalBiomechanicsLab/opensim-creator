@@ -19,36 +19,45 @@ struct ErrorScreen::Impl final {
     std::string msg;
     LogViewer log;
 
-    Impl(std::string _msg) : msg{std::move(_msg)} {
+    Impl(std::string _msg) : msg{std::move(_msg)}
+    {
     }
 };
 
 // public API
 
-osc::ErrorScreen::ErrorScreen(std::exception const& ex) : m_Impl{new Impl{ex.what()}} {
+osc::ErrorScreen::ErrorScreen(std::exception const& ex) :
+    m_Impl{new Impl{ex.what()}}
+{
 }
 
 osc::ErrorScreen::~ErrorScreen() noexcept = default;
 
-void osc::ErrorScreen::onMount() {
+void osc::ErrorScreen::onMount()
+{
     osc::ImGuiInit();
 }
 
-void osc::ErrorScreen::onUnmount() {
+void osc::ErrorScreen::onUnmount()
+{
     osc::ImGuiShutdown();
 }
 
-void osc::ErrorScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+void osc::ErrorScreen::onEvent(SDL_Event const& e)
+{
+    if (osc::ImGuiOnEvent(e))
+    {
         return;
     }
 
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    {
         App::cur().requestTransition<SplashScreen>();
     }
 }
 
-void osc::ErrorScreen::draw() {
+void osc::ErrorScreen::draw()
+{
     gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();
@@ -62,14 +71,16 @@ void osc::ErrorScreen::draw() {
         ImGui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 0.0f});
         ImGui::SetNextWindowSize({width, 0.0f});
 
-        if (ImGui::Begin("fatal error")) {
+        if (ImGui::Begin("fatal error"))
+        {
             ImGui::TextWrapped("The application threw an exception with the following message:");
             ImGui::Dummy(ImVec2{2.0f, 10.0f});
             ImGui::SameLine();
             ImGui::TextWrapped("%s", m_Impl->msg.c_str());
             ImGui::Dummy(ImVec2{0.0f, 10.0f});
 
-            if (ImGui::Button("Return to splash screen (Escape)")) {
+            if (ImGui::Button("Return to splash screen (Escape)"))
+            {
                 App::cur().requestTransition<SplashScreen>();
             }
         }
@@ -83,7 +94,8 @@ void osc::ErrorScreen::draw() {
         ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 1.0f));
         ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 
-        if (ImGui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+        if (ImGui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
+        {
             m_Impl->log.draw();
         }
         ImGui::End();
