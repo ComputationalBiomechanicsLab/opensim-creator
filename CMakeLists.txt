@@ -217,6 +217,8 @@ add_executable(osc
     src/Screens/Experimental/ImGuizmoDemoScreen.hpp
     src/Screens/Experimental/InstancedRendererScreen.cpp
     src/Screens/Experimental/InstancedRendererScreen.hpp
+    src/Screens/Experimental/LayeredInterfaceScreen.cpp
+    src/Screens/Experimental/LayeredInterfaceScreen.hpp
     src/Screens/Experimental/MathExperimentsScreen.cpp
     src/Screens/Experimental/MathExperimentsScreen.hpp
     src/Screens/Experimental/MeshHittestScreen.cpp
