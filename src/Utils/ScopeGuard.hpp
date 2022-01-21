@@ -5,18 +5,21 @@
 namespace osc {
     template<typename Dtor>
     class ScopeGuard final {
-        Dtor m_OnScopeExit;
-
     public:
-        ScopeGuard(Dtor&& _dtor) noexcept : m_OnScopeExit{std::move(_dtor)} {
+        ScopeGuard(Dtor&& _dtor) noexcept : m_OnScopeExit{std::move(_dtor)}
+        {
         }
         ScopeGuard(ScopeGuard const&) = delete;
         ScopeGuard(ScopeGuard&&) = delete;
         ScopeGuard& operator=(ScopeGuard const&) = delete;
         ScopeGuard& operator=(ScopeGuard&&) = delete;
-        ~ScopeGuard() noexcept {
+        ~ScopeGuard() noexcept
+        {
             m_OnScopeExit();
         }
+
+    private:
+        Dtor m_OnScopeExit;
     };
 
 #define OSC_TOKENPASTE(x, y) x##y

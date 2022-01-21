@@ -300,6 +300,7 @@ add_executable(osc
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
     src/Utils/Spsc.hpp
+    src/Utils/UID.cpp
     src/Utils/UID.hpp
 
     src/App.cpp

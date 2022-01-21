@@ -310,10 +310,15 @@ struct osc::UiModelViewer::Impl final {
 };
 
 osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
-    m_Impl{new Impl{flags}} {
+    m_Impl{new Impl{flags}}
+{
 }
 
+osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
+
 osc::UiModelViewer::~UiModelViewer() noexcept = default;
+
+osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
 
 bool osc::UiModelViewer::isMousedOver() const noexcept {
     return m_Impl->renderHovered;

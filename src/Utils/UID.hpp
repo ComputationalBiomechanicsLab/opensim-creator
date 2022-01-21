@@ -3,16 +3,20 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <iostream>
+#include <functional>
+#include <iosfwd>
 
-namespace osc {
-
+namespace osc
+{
     class UID {
         friend UID GenerateID() noexcept;
         friend constexpr int64_t UnwrapID(UID const&) noexcept;
 
     protected:
-        explicit constexpr UID(int64_t value) noexcept : m_Value{value} {}
+        explicit constexpr UID(int64_t value) noexcept :
+            m_Value{value}
+        {
+        }
 
     private:
         int64_t m_Value;
@@ -30,13 +34,17 @@ namespace osc {
         friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
 
     private:
-        explicit constexpr UIDT(UID id) : UID{id} {}
+        explicit constexpr UIDT(UID id) :
+            UID{id}
+        {
+        }
     };
 
-    UID GenerateID() noexcept
+    extern std::atomic<int64_t> g_NextGlobalUID;
+
+    inline UID GenerateID() noexcept
     {
-        static std::atomic<int64_t> g_NextID = 1;
-        return UID{g_NextID++};
+        return UID{g_NextGlobalUID.fetch_add(1, std::memory_order_relaxed)};
     }
 
     template<typename T>
@@ -50,10 +58,22 @@ namespace osc {
         return id.m_Value;
     }
 
-    std::ostream& operator<<(std::ostream& o, UID const& id) { return o << UnwrapID(id); }
-    constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept { return UnwrapID(lhs) == UnwrapID(rhs); }
-    constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept { return UnwrapID(lhs) != UnwrapID(rhs); }
-    constexpr bool operator<(UID const& lhs, UID const& rhs) noexcept { return UnwrapID(lhs) < UnwrapID(rhs); }
+    std::ostream& operator<<(std::ostream& o, UID const& id);
+
+    constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept
+    {
+        return UnwrapID(lhs) == UnwrapID(rhs);
+    }
+
+    constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept
+    {
+        return UnwrapID(lhs) != UnwrapID(rhs);
+    }
+
+    constexpr bool operator<(UID const& lhs, UID const& rhs) noexcept
+    {
+        return UnwrapID(lhs) < UnwrapID(rhs);
+    }
 
     template<typename T>
     constexpr UIDT<T> DowncastID(UID const& id) noexcept
@@ -65,8 +85,8 @@ namespace osc {
 // hashing support for LogicalIDs
 //
 // lets them be used as associative lookup keys, etc.
-namespace std {
-
+namespace std
+{
     template<>
     struct hash<osc::UID> {
         size_t operator()(osc::UID const& id) const

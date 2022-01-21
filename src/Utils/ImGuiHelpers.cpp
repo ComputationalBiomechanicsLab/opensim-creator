@@ -7,7 +7,8 @@
 #include <SDL_events.h>
 #include <iostream>
 
-void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera) {
+void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
+{
     using osc::operator<<;
 
     // handle mousewheel scrolling
@@ -35,19 +36,30 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 
     glm::vec2 delta = ImGui::GetIO().MouseDelta;
 
-    if (leftDragging || middleDragging) {
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT)) {
+    if (leftDragging || middleDragging)
+    {
+        if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT))
+        {
             camera.pan(aspectRatio, delta/viewportDims);
-        } else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL)) {
+        }
+        else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL))
+        {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
-        } else {
+        }
+        else
+        {
             camera.drag(delta/viewportDims);
         }
 
-    } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LALT) || ImGui::IsKeyDown(SDL_SCANCODE_RALT)) {
+    }
+    else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+    {
+        if (ImGui::IsKeyDown(SDL_SCANCODE_LALT) || ImGui::IsKeyDown(SDL_SCANCODE_RALT))
+        {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
-        } else {
+        }
+        else
+        {
             camera.pan(aspectRatio, delta/viewportDims);
         }
     }
@@ -72,8 +84,10 @@ void osc::DrawTextureAsImGuiImage(gl::Texture2D& t, glm::vec2 dims)
 
 bool osc::IsAnyKeyDown(nonstd::span<int const> keys)
 {
-    for (auto key : keys) {
-        if (ImGui::IsKeyDown(key)) {
+    for (auto key : keys)
+    {
+        if (ImGui::IsKeyDown(key))
+        {
             return true;
         }
     }
@@ -121,7 +135,8 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
 {
     using osc::operator<<;
 
-    if (!ImGui::IsMouseReleased(btn)) {
+    if (!ImGui::IsMouseReleased(btn))
+    {
         return false;
     }
 
@@ -129,12 +144,14 @@ bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
     return glm::length(dragDelta) < threshold;
 }
 
-void osc::DrawTooltip(char const* header, char const* description) {
+void osc::DrawTooltip(char const* header, char const* description)
+{
     ImGui::BeginTooltip();
     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
     ImGui::TextUnformatted(header);
 
-    if (description) {
+    if (description)
+    {
         ImGui::Dummy(ImVec2{0.0f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.7f, 0.7f, 0.7f, 1.0f});
         ImGui::TextUnformatted(description);
@@ -145,8 +162,10 @@ void osc::DrawTooltip(char const* header, char const* description) {
     ImGui::EndTooltip();
 }
 
-void osc::DrawTooltipIfItemHovered(char const* header, char const* description) {
-    if (ImGui::IsItemHovered()) {
+void osc::DrawTooltipIfItemHovered(char const* header, char const* description)
+{
+    if (ImGui::IsItemHovered())
+    {
         DrawTooltip(header, description);
     }
 }
@@ -165,7 +184,8 @@ void osc::DrawAlignmentAxesOverlayInBottomRightOf(glm::mat4 const& viewMtx, Rect
 
     char const* labels[] = {"X", "Y", "Z"};
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         glm::vec4 world = {0.0f, 0.0f, 0.0f, 0.0f};
         world[i] = 1.0f;
         glm::vec2 view = glm::vec2{viewMtx * world};

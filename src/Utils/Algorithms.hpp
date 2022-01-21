@@ -10,7 +10,8 @@ namespace osc {
 
     // remove all elements `e` in `Container` `c` for which `p(e)` returns `true`
     template<typename Container, typename UnaryPredicate>
-    void RemoveErase(Container& c, UnaryPredicate p) {
+    void RemoveErase(Container& c, UnaryPredicate p)
+    {
         using std::begin;
         using std::end;
 
@@ -20,7 +21,8 @@ namespace osc {
     }
 
     template<typename Container, typename UnaryPredicate>
-    bool AnyOf(Container const& c, UnaryPredicate p) {
+    bool AnyOf(Container const& c, UnaryPredicate p)
+    {
         using std::begin;
         using std::end;
 
@@ -37,7 +39,8 @@ namespace osc {
     }
 
     template<typename Container, typename UnaryPredicate>
-    auto FindIf(Container const& c, UnaryPredicate p) {
+    auto FindIf(Container const& c, UnaryPredicate p)
+    {
         using std::begin;
         using std::end;
 

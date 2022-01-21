@@ -52,7 +52,8 @@ namespace osc::spsc {
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Sender(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)} {
+        Sender(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)}
+        {
             ++m_Impl->m_NumSenders;
         }
     public:
@@ -61,8 +62,10 @@ namespace osc::spsc {
         Sender& operator=(Sender const&) = delete;
         Sender& operator=(Sender&&) = default;
 
-        ~Sender() noexcept {
-            if (m_Impl) {
+        ~Sender() noexcept
+        {
+            if (m_Impl)
+            {
                 --m_Impl->m_NumSenders;
                 m_Impl->m_Condvar.notify_all();  // so receivers can know the hangup happened
             }
@@ -77,7 +80,8 @@ namespace osc::spsc {
             m_Impl->m_Condvar.notify_one();
         }
 
-        [[nodiscard]] bool isReceiverHungUp() noexcept {
+        [[nodiscard]] bool isReceiverHungUp() noexcept
+        {
             return m_Impl->m_NumReceivers <= 0;
         }
     };
@@ -90,7 +94,8 @@ namespace osc::spsc {
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Receiver(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)} {
+        Receiver(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)}
+        {
             ++m_Impl->m_NumReceivers;
         }
     public:
@@ -98,17 +103,21 @@ namespace osc::spsc {
         Receiver(Receiver&&) = default;
         Receiver& operator=(Receiver const&) = delete;
         Receiver& operator=(Receiver&&) = default;
-        ~Receiver() noexcept {
-            if (m_Impl) {
+        ~Receiver() noexcept
+        {
+            if (m_Impl)
+            {
                 --m_Impl->m_NumReceivers;
             }
         }
 
         // non-blocking: empty if nothing is sent, or the sender has hung up
-        std::optional<T> tryReceive() {
+        std::optional<T> tryReceive()
+        {
             std::lock_guard l{m_Impl->m_Mutex};
 
-            if (m_Impl->m_MessageQueue.empty()) {
+            if (m_Impl->m_MessageQueue.empty())
+            {
                 return std::nullopt;
             }
 
@@ -118,11 +127,13 @@ namespace osc::spsc {
         }
 
         // blocking: only empty if the sender hung up
-        std::optional<T> recv() {
+        std::optional<T> recv()
+        {
             std::unique_lock l{m_Impl->m_Mutex};
 
             // easy case: queue is not empty
-            if (!m_Impl->m_MessageQueue.empty()) {
+            if (!m_Impl->m_MessageQueue.empty())
+            {
                 std::optional<T> rv{std::move(m_Impl->m_MessageQueue.back())};
                 m_Impl->m_MessageQueue.pop_back();
                 return rv;
@@ -130,7 +141,8 @@ namespace osc::spsc {
 
             // harder case: sleep until the queue is not empty, *or* until
             // the sender hangs up
-            m_Impl->m_Condvar.wait(l, [&]() {
+            m_Impl->m_Condvar.wait(l, [&]()
+            {
                 return !m_Impl->m_MessageQueue.empty() || m_Impl->m_NumSenders <= 0;
             });
 
@@ -139,23 +151,28 @@ namespace osc::spsc {
             // - there's something in the queue (return it)
             // - the sender hung up (return nullopt)
 
-            if (!m_Impl->m_MessageQueue.empty()) {
+            if (!m_Impl->m_MessageQueue.empty())
+            {
                 std::optional<T> rv{std::move(m_Impl->m_MessageQueue.back())};
                 m_Impl->m_MessageQueue.pop_back();
                 return rv;
-            } else {
+            }
+            else
+            {
                 return std::nullopt;
             }
         }
 
-        [[nodiscard]] bool isSenderHungUp() noexcept {
+        [[nodiscard]] bool isSenderHungUp() noexcept
+        {
             return m_Impl->m_NumSenders <= 0;
         }
     };
 
     // create a new threadsafe spsc channel (sender + receiver)
     template<typename T>
-    std::pair<Sender<T>, Receiver<T>> channel() {
+    std::pair<Sender<T>, Receiver<T>> channel()
+    {
         auto impl = std::make_shared<Impl<T>>();
         return {Sender<T>{impl}, Receiver<T>{impl}};
     }
@@ -180,14 +197,16 @@ namespace osc::spsc {
         static int main(osc::stop_token,
                         spsc::Receiver<Input> rx,
                         spsc::Sender<Output> tx,
-                        Func input2output) {
-
+                        Func input2output)
+        {
             // continously try to receive input messages and
             // respond to them one-by-one
-            while (!tx.isReceiverHungUp()) {
+            while (!tx.isReceiverHungUp())
+            {
                 std::optional<Input> msg = rx.recv();
 
-                if (!msg) {
+                if (!msg)
+                {
                     return 0;  // sender hung up
                 }
 
@@ -198,24 +217,30 @@ namespace osc::spsc {
         }
 
         Worker(osc::jthread&& worker, spsc::Sender<Input>&& tx, spsc::Receiver<Output>&& rx) :
-            m_WorkerThread{std::move(worker)}, m_Tx{std::move(tx)}, m_Rx{std::move(rx)} {
+            m_WorkerThread{std::move(worker)},
+            m_Tx{std::move(tx)},
+            m_Rx{std::move(rx)}
+        {
         }
 
     public:
 
         // create a new worker
-        static Worker create(Func f) {
+        static Worker create(Func f)
+        {
             auto [reqTransmit, reqReceive] = spsc::channel<Input>();
             auto [respTransmit, respReceive] = spsc::channel<Output>();
             osc::jthread worker{Worker::main, std::move(reqReceive), std::move(respTransmit), std::move(f)};
             return Worker{std::move(worker), std::move(reqTransmit), std::move(respReceive)};
         }
 
-        void send(Input req) {
+        void send(Input req)
+        {
             m_Tx.send(std::move(req));
         }
 
-        std::optional<Output> poll() {
+        std::optional<Output> poll()
+        {
             return m_Rx.tryReceive();
         }
     };

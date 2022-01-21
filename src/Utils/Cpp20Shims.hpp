@@ -9,67 +9,80 @@ namespace osc {
 
     // C++20: std::stop_token
     class stop_token final {
-        std::shared_ptr<std::atomic<bool>> shared_state;
-
     public:
-        stop_token(std::shared_ptr<std::atomic<bool>> st) : shared_state{std::move(st)} {
+        stop_token(std::shared_ptr<std::atomic<bool>> st) : m_SharedState{std::move(st)}
+        {
         }
         stop_token(stop_token const&) = delete;
-        stop_token(stop_token&& tmp) : shared_state{tmp.shared_state} {
+        stop_token(stop_token&& tmp) : m_SharedState{tmp.m_SharedState}
+        {
         }
         stop_token& operator=(stop_token const&) = delete;
         stop_token& operator=(stop_token&&) = delete;
         ~stop_token() noexcept = default;
 
-        bool stop_requested() const noexcept {
-            return *shared_state;
+        bool stop_requested() const noexcept
+        {
+            return *m_SharedState;
         }
+
+    private:
+        std::shared_ptr<std::atomic<bool>> m_SharedState;
     };
 
     // C++20: std::stop_source
     class stop_source final {
-        std::shared_ptr<std::atomic<bool>> shared_state;
-
     public:
-        stop_source() : shared_state{new std::atomic<bool>{false}} {
+        stop_source() : m_SharedState{new std::atomic<bool>{false}}
+        {
         }
         stop_source(stop_source const&) = delete;
-        stop_source(stop_source&& tmp) : shared_state{std::move(tmp.shared_state)} {
+        stop_source(stop_source&& tmp) : m_SharedState{std::move(tmp.m_SharedState)}
+        {
         }
         stop_source& operator=(stop_source const&) = delete;
-        stop_source& operator=(stop_source&& tmp) {
-            shared_state = std::move(tmp.shared_state);
+        stop_source& operator=(stop_source&& tmp)
+        {
+            m_SharedState = std::move(tmp.m_SharedState);
             return *this;
         }
         ~stop_source() = default;
 
-        bool request_stop() noexcept {
+        bool request_stop() noexcept
+        {
             // as-per the C++20 spec, but always true for this impl.
-            bool has_stop_state = shared_state != nullptr;
-            bool already_stopped = shared_state->exchange(true);
+            bool has_stop_state = m_SharedState != nullptr;
+            bool already_stopped = m_SharedState->exchange(true);
 
             return has_stop_state && !already_stopped;
         }
 
-        stop_token get_token() const noexcept {
-            return stop_token{shared_state};
+        stop_token get_token() const noexcept
+        {
+            return stop_token{m_SharedState};
         }
+
+    private:
+        std::shared_ptr<std::atomic<bool>> m_SharedState;
     };
 
     // C++20: std::jthread
     class jthread final {
-        stop_source s;
-        std::thread t;
-
     public:
         // Creates new thread object which does not represent a thread
-        jthread() : s{}, t{} {
+        jthread() :
+            m_StopSource{},
+            m_Thread{}
+        {
         }
 
         // Creates new thread object and associates it with a thread of execution.
         // The new thread of execution immediately starts executing
         template<class Function, class... Args>
-        jthread(Function&& f, Args&&... args) : s{}, t{f, s.get_token(), std::forward<Args>(args)...} {
+        jthread(Function&& f, Args&&... args) :
+            m_StopSource{},
+            m_Thread{f, m_StopSource.get_token(), std::forward<Args>(args)...}
+        {
         }
 
         // threads are non-copyable
@@ -82,24 +95,33 @@ namespace osc {
         jthread& operator=(jthread&&) = default;
 
         // jthreads (or "joining threads") cancel + join on destruction
-        ~jthread() noexcept {
-            if (joinable()) {
-                s.request_stop();
-                t.join();
+        ~jthread() noexcept
+        {
+            if (joinable())
+            {
+                m_StopSource.request_stop();
+                m_Thread.join();
             }
         }
 
-        bool joinable() const noexcept {
-            return t.joinable();
+        bool joinable() const noexcept
+        {
+            return m_Thread.joinable();
         }
 
-        bool request_stop() noexcept {
-            return s.request_stop();
+        bool request_stop() noexcept
+        {
+            return m_StopSource.request_stop();
         }
 
-        void join() {
-            return t.join();
+        void join()
+        {
+            return m_Thread.join();
         }
+
+    private:
+        stop_source m_StopSource;
+        std::thread m_Thread;
     };
 
     // C++20: <numbers>

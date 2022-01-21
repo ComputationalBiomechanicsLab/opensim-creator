@@ -274,9 +274,18 @@ namespace osc
     // automatically integrated into App/Screen is because some screens might want very tight
     // control over ImGui (e.g. recycling contexts, aggro-resetting contexts)
 
-    void ImGuiInit();  // init ImGui context (/w osc settings)
-    void ImGuiShutdown();  // shutdown ImGui context
-    bool ImGuiOnEvent(SDL_Event const&);  // returns true if ImGui has handled the event
-    void ImGuiNewFrame();  // should be called at the start of `draw()`
-    void ImGuiRender();  // should be called at the end of `draw()`
+    // init ImGui context (/w osc settings)
+    void ImGuiInit();
+
+    // shutdown ImGui context
+    void ImGuiShutdown();
+
+    // returns true if ImGui has handled the event
+    bool ImGuiOnEvent(SDL_Event const&);
+
+    // should be called at the start of `draw()`
+    void ImGuiNewFrame();
+
+    // should be called at the end of `draw()`
+    void ImGuiRender();
 }

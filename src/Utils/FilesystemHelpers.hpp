@@ -27,8 +27,8 @@ namespace osc {
     template<typename... Exensions>
     inline std::vector<std::filesystem::path> FindAllFilesWithExtensionsRecursively(
         std::filesystem::path const& root,
-        Exensions&&... exts) {
-
+        Exensions&&... exts)
+    {
         std::string_view extensions[] = {std::forward<Exensions>(exts)...};
         std::vector<std::filesystem::path> rv;
         FindAllFilesWithExtensionsRecursively(root, static_cast<std::string_view const*>(extensions), sizeof...(exts), rv);

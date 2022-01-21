@@ -11,19 +11,24 @@ void osc::FindAllFilesWithExtensionsRecursively(
         std::filesystem::path const& root,
         std::string_view const* extensions,
         size_t n,
-        std::vector<std::filesystem::path>& appendOut) {
-
-    if (!std::filesystem::exists(root)) {
+        std::vector<std::filesystem::path>& appendOut)
+{
+    if (!std::filesystem::exists(root))
+    {
         return;
     }
 
-    if (!std::filesystem::is_directory(root)) {
+    if (!std::filesystem::is_directory(root))
+    {
         return;
     }
 
-    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root}) {
-        for (size_t i = 0; i < n; ++i) {
-            if (e.path().extension() == extensions[i]) {
+    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root})
+    {
+        for (size_t i = 0; i < n; ++i)
+        {
+            if (e.path().extension() == extensions[i])
+            {
                 appendOut.push_back(e.path());
             }
         }
@@ -33,26 +38,31 @@ void osc::FindAllFilesWithExtensionsRecursively(
 std::vector<std::filesystem::path> osc::FindAllFilesWithExtensionsRecursively(
         std::filesystem::path const& root,
         std::string_view const* extensions,
-        size_t n) {
-
+        size_t n)
+{
     std::vector<std::filesystem::path> rv;
     FindAllFilesWithExtensionsRecursively(root, extensions, n, rv);
     return rv;
 }
 
-std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesystem::path const& root) {
+std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesystem::path const& root)
+{
     std::vector<std::filesystem::path> rv;
 
-    if (!std::filesystem::exists(root)) {
+    if (!std::filesystem::exists(root))
+    {
         return rv;
     }
 
-    if (!std::filesystem::is_directory(root)) {
+    if (!std::filesystem::is_directory(root))
+    {
         return rv;
     }
 
-    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root}) {
-        if (e.is_directory() || e.is_other() || e.is_socket()) {
+    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{root})
+    {
+        if (e.is_directory() || e.is_other() || e.is_socket())
+        {
             continue;
         }
 
@@ -62,7 +72,8 @@ std::vector<std::filesystem::path> osc::GetAllFilesInDirRecursively(std::filesys
     return rv;
 }
 
-std::string osc::SlurpFileIntoString(std::filesystem::path const& p) {
+std::string osc::SlurpFileIntoString(std::filesystem::path const& p)
+{
     std::ifstream f;
     f.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     f.open(p, std::ios::binary | std::ios::in);
@@ -73,6 +84,7 @@ std::string osc::SlurpFileIntoString(std::filesystem::path const& p) {
     return std::move(ss).str();
 }
 
-std::string osc::FileNameWithoutExtension(std::filesystem::path const& p) {
+std::string osc::FileNameWithoutExtension(std::filesystem::path const& p)
+{
     return p.filename().replace_extension("").string();
 }

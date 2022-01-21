@@ -130,20 +130,23 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
 #include <sys/types.h>
 #include <sys/wait.h>
 
-void osc::WriteTracebackToLog(log::level::LevelEnum lvl) {
+void osc::WriteTracebackToLog(log::level::LevelEnum lvl)
+{
     void* array[50];
     int size = backtrace(array, 50);
     char** messages = backtrace_symbols(array, size);
 
-    if (messages == nullptr) {
+    if (messages == nullptr)
+    {
         return;
     }
 
-    for (int i = 0; i < size; ++i) {
+    OSC_SCOPE_GUARD({ free(messages); });
+
+    for (int i = 0; i < size; ++i)
+    {
         osc::log::log(lvl, "%s", messages[i]);
     }
-
-    free(messages);
 }
 
 /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
@@ -155,7 +158,8 @@ typedef struct _sig_ucontext {
     sigset_t uc_sigmask;
 } sig_ucontext_t;
 
-[[noreturn]] static void onOSCriticalSignalReceived(int sig_num, siginfo_t* info, void* ucontext) {
+static void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
+{
     sig_ucontext_t* uc = static_cast<sig_ucontext_t*>(ucontext);
 
     /* Get the address at the time the signal was raised */
@@ -181,28 +185,32 @@ typedef struct _sig_ucontext {
 
     char** messages = backtrace_symbols(array, size);
 
-    if (messages == nullptr) {
+    if (messages == nullptr)
+    {
         exit(EXIT_FAILURE);
     }
 
+    OSC_SCOPE_GUARD({ free(messages); });
+
     /* skip first stack frame (points here) */
-    for (int i = 1; i < size; ++i) {
+    for (int i = 1; i < size; ++i)
+    {
         fprintf(stderr, "    #%-2d %s\n", i, messages[i]);
     }
-
-    free(messages);
 
     exit(EXIT_FAILURE);
 }
 
-void osc::InstallBacktraceHandler() {
+void osc::InstallBacktraceHandler()
+{
     struct sigaction sigact;
 
-    sigact.sa_sigaction = onOSCriticalSignalReceived;
+    sigact.sa_sigaction = OnCriticalSignalRecv;
     sigact.sa_flags = SA_RESTART | SA_SIGINFO;
 
     // install segfault handler
-    if (sigaction(SIGSEGV, &sigact, nullptr) != 0) {
+    if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
+    {
         fprintf(
             stderr,
             "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
@@ -211,7 +219,8 @@ void osc::InstallBacktraceHandler() {
     }
 
     // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
-    if (sigaction(SIGABRT, &sigact, nullptr) != 0) {
+    if (sigaction(SIGABRT, &sigact, nullptr) != 0)
+    {
         fprintf(
             stderr,
             "osc: warning: could not set signal handler for %d (%s): error reporting may not work as intended\n",
@@ -220,15 +229,19 @@ void osc::InstallBacktraceHandler() {
     }
 }
 
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
+void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
+{
     // fork a subprocess
     pid_t pid = fork();
 
-    if (pid == -1) {
+    if (pid == -1)
+    {
         // failed to fork a process
         log::error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
         return;
-    } else if (pid != 0) {
+    }
+    else if (pid != 0)
+    {
         // fork successful and this thread is inside the parent
         //
         // have the parent thread `wait` for the child thread to finish
@@ -238,12 +251,15 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
         int rv;
         waitpid(pid, &rv, 0);
 
-        if (rv) {
+        if (rv)
+        {
             log::error("fork()ed subprocess returned an error code of %i", rv);
         }
 
         return;
-    } else {
+    }
+    else
+    {
         // fork successful and we're inside the child
         //
         // immediately `exec` into `xdg-open`, which will aggro-replace this process
@@ -259,7 +275,8 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp) {
     }
 }
 
-void osc::OpenURLInDefaultBrowser(std::string_view vw) {
+void osc::OpenURLInDefaultBrowser(std::string_view vw)
+{
     // HACK: we know that xdg-open handles this automatically
     OpenPathInOSDefaultApplication(vw);
 }

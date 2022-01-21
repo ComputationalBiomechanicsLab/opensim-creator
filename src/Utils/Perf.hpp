@@ -16,14 +16,17 @@ namespace osc {
         {
         }
 
-        void stop() {
-            if (!stopped) {
+        void stop()
+        {
+            if (!stopped)
+            {
                 out = std::chrono::high_resolution_clock::now() - p;
                 stopped = true;
             }
         }
 
-        ~TimerGuard() noexcept {
+        ~TimerGuard() noexcept
+        {
             stop();
         }
     };
@@ -31,20 +34,24 @@ namespace osc {
     struct BasicPerfTimer final {
         std::chrono::high_resolution_clock::duration val{0};
 
-        TimerGuard measure() {
+        TimerGuard measure()
+        {
             return TimerGuard{val};
         }
 
-        float micros() {
+        float micros()
+        {
             auto us = std::chrono::duration_cast<std::chrono::microseconds>(val);
             return static_cast<float>(us.count());
         }
 
-        float millis() {
+        float millis()
+        {
             return micros()/1000.0f;
         }
 
-        float secs() {
+        float secs()
+        {
             return micros()/1000000.0f;
         }
     };

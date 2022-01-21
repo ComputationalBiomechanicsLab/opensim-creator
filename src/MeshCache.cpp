@@ -16,7 +16,8 @@ struct osc::MeshCache::Impl final {
     std::shared_ptr<Mesh> cylinder = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
     std::shared_ptr<Mesh> cube = std::make_shared<Mesh>(GenCube());
     std::shared_ptr<Mesh> cone = std::make_shared<Mesh>(GenUntexturedSimbodyCone(12));
-    std::shared_ptr<Mesh> floor = []() {
+    std::shared_ptr<Mesh> floor = []()
+    {
         std::shared_ptr<Mesh> rv = std::make_shared<Mesh>(GenTexturedQuad());
         rv->scaleTexCoords(200.0f);
         return rv;
@@ -34,7 +35,11 @@ osc::MeshCache::MeshCache() :
 {
 }
 
+osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
+
 osc::MeshCache::~MeshCache() noexcept = default;
+
+osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
 
 std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p)
 {

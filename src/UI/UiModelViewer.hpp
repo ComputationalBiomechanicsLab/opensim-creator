@@ -2,11 +2,13 @@
 
 #include "src/OpenSimBindings/RenderableScene.hpp"
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Component;
 }
 
-namespace osc {
+namespace osc
+{
     // flags that toggle the viewer's behavior
     using UiModelViewerFlags = int;
     enum UiModelViewerFlags_ {
@@ -62,18 +64,22 @@ namespace osc {
     // callers only have to handle `OpenSim::Model`s, `OpenSim::Component`s, etc.
     class UiModelViewer final {
     public:
-        struct Impl;
-    private:
-        std::unique_ptr<Impl> m_Impl;
-
-    public:
         UiModelViewer(UiModelViewerFlags = UiModelViewerFlags_Default);
+        UiModelViewer(UiModelViewer const&) = delete;
+        UiModelViewer(UiModelViewer&&) noexcept;
         ~UiModelViewer() noexcept;
+
+        UiModelViewer& operator=(UiModelViewer const&) = delete;
+        UiModelViewer& operator=(UiModelViewer&&) noexcept;
 
         bool isMousedOver() const noexcept;
 
         void requestAutoFocus();
 
         UiModelViewerResponse draw(RenderableScene const&);
+
+        struct Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }
