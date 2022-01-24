@@ -2896,6 +2896,35 @@ namespace
 
         return true;
     }
+
+
+    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg, glm::vec3 const& pos, UID andTryAttach)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        BodyEl& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos, {}});
+        mg.DeSelectAll();
+        mg.Select(b.ID);
+
+        MeshEl* el = mg.TryUpdElByID<MeshEl>(andTryAttach);
+        if (el)
+        {
+            if (el->Attachment == g_GroundID || el->Attachment == g_EmptyID)
+            {
+                el->Attachment = b.ID;
+                mg.Select(*el);
+            }
+        }
+
+        cmg.Commit(std::string{"added "} + b.GetLabel());
+
+        return b.ID;
+    }
+
+    UIDT<BodyEl> AddBody(CommittableModelGraph& cmg)
+    {
+        return AddBody(cmg, {}, g_EmptyID);
+    }
 }
 
 // OpenSim::Model generation support
@@ -4268,24 +4297,6 @@ namespace
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
-        UIDT<BodyEl> AddBody(std::string const& name, glm::vec3 const& shift, glm::vec3 const& rot)
-        {
-            ModelGraph& mg = UpdModelGraph();
-
-            BodyEl& b = mg.AddEl<BodyEl>(name, Transform{shift, rot});
-            mg.DeSelectAll();
-            mg.Select(b.ID);
-
-            CommitCurrentModelGraph(std::string{"added "} + b.GetLabel());
-
-            return b.ID;
-        }
-
-        UIDT<BodyEl> AddBody(glm::vec3 const& pos)
-        {
-            return AddBody(GenerateName(BodyEl::Class()), pos, {});
-        }
-
         void UnassignMesh(MeshEl const& me)
         {
             UpdModelGraph().UpdElByID<MeshEl>(me.ID).Attachment = g_GroundID;
@@ -5281,7 +5292,7 @@ namespace
                 return;
             }
 
-            m_Shared->AddBody(m_MaybeHover.Pos);
+            AddBody(m_Shared->UpdCommittableModelGraph(), m_MaybeHover.Pos, {m_MaybeHover.ID});
         }
 
         // try transitioning the shown UI layer to one where the user is assigning a mesh
@@ -5867,13 +5878,13 @@ namespace
                 {
                     if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                     {
-                        m_Shared->AddBody(el.GetPos());
+                        AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
                     }
                     DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
-                        m_Shared->AddBody(clickPos);
+                        AddBody(m_Shared->UpdCommittableModelGraph(), clickPos, el.GetID());
                     }
                     DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
@@ -5881,7 +5892,7 @@ namespace
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            m_Shared->AddBody(AABBCenter(el.CalcBounds()));
+                            AddBody(m_Shared->UpdCommittableModelGraph(), AABBCenter(el.CalcBounds()), el.GetID());
                         }
                         DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
                     }
@@ -5893,7 +5904,7 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
                 {
-                    m_Shared->AddBody(el.GetPos());
+                    AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
                 }
                 DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
             }
@@ -6494,7 +6505,7 @@ namespace
 
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
-                m_Shared->AddBody({0.0f, 0.0f, 0.0f});
+                AddBody(m_Shared->UpdCommittableModelGraph());
             }
             DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
