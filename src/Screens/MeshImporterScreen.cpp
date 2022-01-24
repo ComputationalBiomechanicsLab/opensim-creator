@@ -2696,12 +2696,12 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        size_t freejointIdx = *JointRegistry::indexOf(OpenSim::FreeJoint{});
+        size_t jointTypeIdx = *JointRegistry::indexOf(OpenSim::WeldJoint{});
         glm::vec3 parentPos = GetPosition(mg, parentID);
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = VecMidpoint(parentPos, childPos);
 
-        JointEl& jointEl = mg.AddEl<JointEl>(freejointIdx, "", parentID, DowncastID<BodyEl>(childID), Transform::atPosition(midPoint));
+        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, DowncastID<BodyEl>(childID), Transform::atPosition(midPoint));
         SelectOnly(mg, jointEl);
 
         cmg.Commit("added " + jointEl.GetLabel());
@@ -3181,40 +3181,41 @@ namespace
         }
     }
 
-    // attaches `BodyEl` into `model` by directly attaching it to ground with a FreeJoint
+    // attaches `BodyEl` into `model` by directly attaching it to ground with a WeldJoint
     void AttachBodyDirectlyToGround(ModelGraph const& mg,
                                     OpenSim::Model& model,
                                     BodyEl const& bodyEl,
                                     std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
-        auto addedBody = CreateDetatchedBody(mg, bodyEl);
-        auto freeJoint = std::make_unique<OpenSim::FreeJoint>();
+        std::unique_ptr<OpenSim::Body> addedBody = CreateDetatchedBody(mg, bodyEl);
+        auto weldJoint = std::make_unique<OpenSim::WeldJoint>();
+        auto parentFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        auto childFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
 
-        // set joint name
-        freeJoint->setName(bodyEl.Name + "_to_ground");
+        // set names
+        weldJoint->setName(bodyEl.Name + "_to_ground");
+        parentFrame->setName("ground_offset");
+        childFrame->setName(bodyEl.Name + "_offset");
 
-        // set joint coordinate names
-        SetJointCoordinateNames(*freeJoint, bodyEl.Name);
+        // make the parent have the same position + rotation as the placed body
+        SimTK::Transform parentXform = SimTKTransformFromMat4x3(toMat4(bodyEl.Xform));
+        parentFrame->setOffsetTransform(parentXform);
 
-        // set joint's default location of the body's xform in ground
-        glm::vec3 eulers = eulerAnglesXYZ(bodyEl.Xform);
-        freeJoint->upd_coordinates(0).setDefaultValue(static_cast<double>(eulers[0]));
-        freeJoint->upd_coordinates(1).setDefaultValue(static_cast<double>(eulers[1]));
-        freeJoint->upd_coordinates(2).setDefaultValue(static_cast<double>(eulers[2]));
-        freeJoint->upd_coordinates(3).setDefaultValue(static_cast<double>(bodyEl.Xform.position[0]));
-        freeJoint->upd_coordinates(4).setDefaultValue(static_cast<double>(bodyEl.Xform.position[1]));
-        freeJoint->upd_coordinates(5).setDefaultValue(static_cast<double>(bodyEl.Xform.position[2]));
+        // attach the parent directly to ground and the child directly to the body
+        // and make them the two attachments of the joint
+        parentFrame->setParentFrame(model.getGround());
+        childFrame->setParentFrame(*addedBody);
+        weldJoint->connectSocket_parent_frame(*parentFrame);
+        weldJoint->connectSocket_child_frame(*childFrame);
 
-        // connect joint from ground to the body
-        freeJoint->connectSocket_parent_frame(model.getGround());
-        freeJoint->connectSocket_child_frame(*addedBody);
-
-        // populate it in the "already visited bodies" cache
+        // populate the "already visited bodies" cache
         visitedBodies[bodyEl.ID] = addedBody.get();
 
-        // add the body + joint to the output model
+        // add the components into the OpenSim::Model
+        weldJoint->addFrame(parentFrame.release());
+        weldJoint->addFrame(childFrame.release());
         model.addBody(addedBody.release());
-        model.addJoint(freeJoint.release());
+        model.addJoint(weldJoint.release());
     }
 
     void AddStationToModel(ModelGraph const& mg,
@@ -3270,7 +3271,7 @@ namespace
         std::unordered_map<UID, OpenSim::Body*> visitedBodies;
         std::unordered_set<UID> visitedJoints;
 
-        // directly connect any bodies that participate in no joints into the model with a freejoint
+        // directly connect any bodies that participate in no joints into the model with a default joint
         for (BodyEl const& bodyEl : mg.iter<BodyEl>())
         {
             if (!IsAChildAttachmentInAnyJoint(mg, bodyEl))
@@ -5905,7 +5906,7 @@ namespace
                 {
                     TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
                 }
-                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
+                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
             }
             ImGui::PopID();
 
@@ -6003,7 +6004,7 @@ namespace
                 {
                     TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
                 }
-                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a freejoint between the body and ground.");
+                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
             }
 
             if (CanDelete(el))
