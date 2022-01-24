@@ -160,7 +160,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
             uim.setSelected(c);
         }
 

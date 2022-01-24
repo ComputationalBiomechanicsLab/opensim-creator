@@ -296,7 +296,7 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             ImGui::EndTooltip();
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left))) {
             response.type = SelectionChanged;
             response.ptr = cur;
         }
