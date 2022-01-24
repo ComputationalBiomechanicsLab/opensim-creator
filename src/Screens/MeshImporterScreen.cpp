@@ -5902,9 +5902,13 @@ namespace
         // draw content of "Add" menu for some scene element
         void DrawAddOtherToSceneElActions(SceneEl& el, glm::vec3 const& clickPos)
         {
-            int imguiID = 0;
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
+            int imguiID = 0;
             ImGui::PushID(imguiID++);
+            OSC_SCOPE_GUARD({ ImGui::PopID(); });
+
             if (CanAttachMeshTo(el))
             {
                 if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
@@ -6020,7 +6024,6 @@ namespace
                 }
 
             }
-            ImGui::PopID();
         }
 
         void DrawNothingActions()
@@ -6087,6 +6090,9 @@ namespace
                 return;  // top-level menu isn't open
             }
 
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
                 std::string label = "To " + el.GetCrossReferenceLabel(i);
@@ -6139,6 +6145,9 @@ namespace
             }
             DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
 
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+
             {
                 auto DrawMenuContent = [&](int axis)
                 {
@@ -6187,7 +6196,7 @@ namespace
                 }
             }
 
-            if (ImGui::MenuItem("copy (select something)"))
+            if (ImGui::MenuItem("copy"))
             {
                 TransitionToCopyingSomethingElsesOrientation(el);
             }
@@ -6240,6 +6249,9 @@ namespace
             {
                 return;
             }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
 
             if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
             {
@@ -6541,6 +6553,8 @@ namespace
 
         void DrawAddOtherMenuItems()
         {
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+
             if (ImGui::MenuItem(ICON_FA_CUBE " Meshes"))
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
@@ -6560,6 +6574,8 @@ namespace
                 SelectOnly(mg, e);
             }
             DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
+
+            ImGui::PopStyleVar();
         }
 
         void Draw3DViewerOverlayTopBar()
