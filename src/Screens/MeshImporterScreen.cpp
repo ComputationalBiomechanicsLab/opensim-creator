@@ -4536,7 +4536,7 @@ namespace
             glm::vec4 FloorTint{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
         } m_Colors;
         static constexpr std::array<char const*, 9> g_ColorNames = {
-            "mesh",
+            "assigned mesh",
             "unassigned mesh",
             "ground",
             "station",
