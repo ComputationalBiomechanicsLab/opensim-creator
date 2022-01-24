@@ -434,7 +434,7 @@ namespace
             {
                 gl::Uniform(shader.uModelMat, d.modelMatrix);
                 gl::Uniform(shader.uNormalMat, d.normalMatrix);
-                gl::Uniform(shader.uDiffuseColor, d.color);
+                gl::Uniform(shader.uDiffuseColor, d.color + (d.rimColor > 0.05f ? 0.1f : 0.0f));  // HACK: also brigten the element a little bit if it's rim highlighted
                 if (d.maybeDiffuseTex)
                 {
                     gl::ActiveTexture(GL_TEXTURE0);
