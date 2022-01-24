@@ -1122,19 +1122,25 @@ void osc::ImGuiInit()
         ImGui::LoadIniSettingsFromDisk(defaultIni.c_str());
         static std::string userIni = (osc::GetUserDataDir() / "imgui.ini").string();
         ImGui::LoadIniSettingsFromDisk(userIni.c_str());
-        io.IniFilename = userIni.c_str();
+        io.IniFilename = userIni.c_str();  // care: string has to outlive ImGui context
     }
+
+    ImFontConfig baseConfig;
+    baseConfig.SizePixels = 16.0f;
+    baseConfig.PixelSnapH = true;
+    baseConfig.OversampleH = 2;
+    baseConfig.OversampleV = 1;
+    std::string baseFontFile = App::resource("DroidSans.ttf").string();
+    io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
 
     // add FontAwesome icon support
     {
-        io.Fonts->AddFontDefault();
-        ImFontConfig config;
+        ImFontConfig config = baseConfig;
         config.MergeMode = true;
-        config.PixelSnapH = true;
         static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
         char const* file = "fa-solid-900.ttf";
         std::string fontFile = App::resource(file).string();
-        ImGui::GetIO().Fonts->AddFontFromFileTTF(fontFile.c_str(), 12.0f, &config, icon_ranges);
+        io.Fonts->AddFontFromFileTTF(fontFile.c_str(), config.SizePixels, &config, icon_ranges);
     }
 
 
