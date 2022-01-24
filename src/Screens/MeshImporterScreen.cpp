@@ -5285,7 +5285,7 @@ namespace
         }
 
         // add a body element to whatever's currently hovered at the hover (raycast) position
-        void AddBodyToHoveredElement()
+        void TryAddBodyToHoveredElement()
         {
             if (!m_MaybeHover)
             {
@@ -5293,6 +5293,39 @@ namespace
             }
 
             AddBody(m_Shared->UpdCommittableModelGraph(), m_MaybeHover.Pos, {m_MaybeHover.ID});
+        }
+
+        void TryCreatingJointFromHoveredElement()
+        {
+            if (!m_MaybeHover)
+            {
+                return;  // nothing hovered
+            }
+
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            SceneEl const* hoveredSceneEl = mg.TryGetElByID(m_MaybeHover.ID);
+
+            if (!hoveredSceneEl)
+            {
+                return;  // current hover isn't in the current model graph
+            }
+
+            UIDT<BodyEl> maybeID = GetStationAttachmentParent(mg, *hoveredSceneEl);
+
+            if (maybeID == g_GroundID || maybeID == g_EmptyID)
+            {
+                return;  // can't attach to it as-if it were a body
+            }
+
+            BodyEl const* bodyEl = mg.TryGetElByID<BodyEl>(maybeID);
+
+            if (!bodyEl)
+            {
+                return;  // suggested attachment parent isn't in the current model graph?
+            }
+
+            TransitionToChoosingJointParent(*bodyEl);
         }
 
         // try transitioning the shown UI layer to one where the user is assigning a mesh
@@ -5626,13 +5659,19 @@ namespace
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_B))
             {
                 // B: add body to hovered element
-                AddBodyToHoveredElement();
+                TryAddBodyToHoveredElement();
                 return true;
             }
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_A))
             {
                 // A: assign a parent for the hovered element
                 TryTransitionToAssigningHoveredMeshNextFrame();
+                return true;
+            }
+            else if (ImGui::IsKeyPressed(SDL_SCANCODE_J))
+            {
+                // J: try to create a joint
+                TryCreatingJointFromHoveredElement();
                 return true;
             }
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_R))
