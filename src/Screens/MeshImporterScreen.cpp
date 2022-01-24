@@ -208,11 +208,13 @@ namespace
 // - picking another body in the scene mode
 namespace
 {
+    class Layer;
+
     // the "parent" thing that is hosting the layer
     class LayerHost {
     public:
         virtual ~LayerHost() noexcept = default;
-        virtual void pop() = 0;
+        virtual void requestPop(Layer*) = 0;
     };
 
     // a layer that is hosted by the parent
@@ -226,6 +228,9 @@ namespace
         virtual void draw() = 0;
 
     protected:
+        void requestPop() { m_Parent.requestPop(this); }
+
+    private:
         LayerHost& m_Parent;
     };
 }
@@ -4689,7 +4694,7 @@ namespace
 
             if (pointsAccepted)
             {
-                m_Parent.pop();
+                requestPop();
             }
             else
             {
@@ -4805,7 +4810,7 @@ namespace
             if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
             {
                 // ESC: user cancelled out
-                m_Parent.pop();
+                requestPop();
             }
 
             bool isRenderHovered = m_Shared->IsRenderHovered();
@@ -5059,7 +5064,7 @@ namespace
 
             if (m_Options.OnUserChoice(m_SelectedEls))
             {
-                m_Parent.pop();
+                requestPop();
             }
             else
             {
@@ -5183,7 +5188,7 @@ namespace
             if (ImGui::IsKeyPressed(SDL_SCANCODE_ESCAPE))
             {
                 // ESC: user cancelled out
-                m_Parent.pop();
+                requestPop();
             }
 
             bool isRenderHovered = m_Shared->IsRenderHovered();
@@ -5254,7 +5259,7 @@ namespace
         //
 
         // pop the current UI layer
-        void pop() override
+        void requestPop(Layer*) override
         {
             m_Maybe3DViewerModal.reset();
         }
