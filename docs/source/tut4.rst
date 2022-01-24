@@ -126,7 +126,7 @@ Now that we have roughly positioned our bodies in the scene, the next step is to
 To add pin joints between each body:
 
 * Right-click the "child" body (e.g. ``arm_r_2distph_b``) and click ``Join To``.
-* Select the body it should attach to (e.g. ``arm_r_2midph_b``), this will create a ``FreeJoint`` joint center between the two bodies.
+* Select the body it should attach to (e.g. ``arm_r_2midph_b``), this will create a ``WeldJoint`` joint center between the two bodies.
 * Right-click the joint center and change its joint type to a ``PinJoint`` and its name to something that describes the connection (e.g. ``arm_r_2distph_to_2midph``)
 * Move the joint center to where it should be (i.e. between the bones)
 * Rotate the joint center such that :red:`X` is oriented toward the parent (here: ``arm_r_2midph_b``) and :blue:`Z` is where the "pin" should be.
