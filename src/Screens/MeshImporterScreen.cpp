@@ -6412,16 +6412,22 @@ namespace
             if (!m_MaybeOpenedContextMenu)
             {
                 // context menu not open, but just draw the "nothing" menu
+                ImGui::PushID(UnwrapID(g_EmptyID));
+                OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawNothingContextMenuContent();
             }
             else if (m_MaybeOpenedContextMenu.ID == g_RightClickedNothingID)
             {
                 // context menu was opened on "nothing" specifically
+                ImGui::PushID(UnwrapID(g_EmptyID));
+                OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawNothingContextMenuContent();
             }
             else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
             {
                 // context menu was opened on a scene element that exists in the modelgraph
+                ImGui::PushID(UnwrapID(el->GetID()));
+                OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
             }
 
