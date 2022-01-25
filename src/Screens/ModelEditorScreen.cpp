@@ -614,16 +614,53 @@ namespace {
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint
-    void drawJointContextualActions(UndoableUiModel& uim) {
+    void drawJointContextualActions(UndoableUiModel& uim)
+    {
         OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
 
-        if (!selection) {
+        if (!selection)
+        {
             return;
         }
 
         ImGui::Columns(2);
 
         drawSelectionJointTypeSwitcher(uim);
+
+        // if the joint uses offset frames for both its parent and child frames then
+        // it is possible to reorient those frames such that the joint's new zero
+        // point is whatever the current arrangement is (effectively, by pre-transforming
+        // the parent into the child and assuming a "zeroed" joint is an identity op)
+        {
+            OpenSim::PhysicalOffsetFrame const* parentPOF = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selection->getParentFrame());
+            OpenSim::PhysicalFrame const& childFrame = selection->getChildFrame();
+
+            if (parentPOF)
+            {
+                ImGui::Text("rezero joint");
+                ImGui::NextColumn();
+                if (ImGui::Button("rezero"))
+                {
+                    SimTK::Transform parentXform = parentPOF->getTransformInGround(uim.getState());
+                    SimTK::Transform childXform = childFrame.getTransformInGround(uim.getState());
+                    SimTK::Transform child2parent = parentXform.invert() * childXform;
+                    SimTK::Transform newXform = parentPOF->getOffsetTransform() * child2parent;
+
+                    OpenSim::PhysicalOffsetFrame* mutableParent = const_cast<OpenSim::PhysicalOffsetFrame*>(parentPOF);
+                    mutableParent->setOffsetTransform(newXform);
+
+                    for (int i = 0, len = selection->numCoordinates(); i < len; ++i)
+                    {
+                        OpenSim::Coordinate const& c = selection->get_coordinates(i);
+                        uim.updUiModel().removeCoordinateEdit(c);
+                    }
+
+                    uim.setDirty(true);
+                }
+                DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+                ImGui::NextColumn();
+            }
+        }
 
         // BEWARE: broke
         {

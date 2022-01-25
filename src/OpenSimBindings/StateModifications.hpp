@@ -28,6 +28,7 @@ namespace osc {
     class StateModifications final {
     public:
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
+        bool removeCoordinateEdit(OpenSim::Coordinate const&);
         bool applyToState(OpenSim::Model const&, SimTK::State&) const;
 
     private:

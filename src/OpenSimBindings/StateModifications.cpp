@@ -7,6 +7,11 @@ void osc::StateModifications::pushCoordinateEdit(const OpenSim::Coordinate& c, c
     m_CoordEdits[c.getAbsolutePathString()] = ce;
 }
 
+bool osc::StateModifications::removeCoordinateEdit(OpenSim::Coordinate const& c)
+{
+    return m_CoordEdits.erase(c.getAbsolutePathString()) > 0;
+}
+
 bool osc::CoordinateEdit::applyToState(OpenSim::Coordinate const& c, SimTK::State& st) const {
     bool applied = false;
 

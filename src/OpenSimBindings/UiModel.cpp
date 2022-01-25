@@ -419,11 +419,17 @@ void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim) {
     }
 }
 
-void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce) {
+void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
+{
     m_Impl->m_StateModifications.pushCoordinateEdit(c, ce);
 
     setStateDirtyADVANCED(true);
     setDecorationsDirtyADVANCED(true);
+}
+
+bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
+{
+    return m_Impl->m_StateModifications.removeCoordinateEdit(c);
 }
 
 AABB osc::UiModel::getSceneAABB() const {

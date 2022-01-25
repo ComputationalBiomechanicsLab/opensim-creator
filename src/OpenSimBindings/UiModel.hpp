@@ -15,6 +15,7 @@ namespace OpenSim {
     class Component;
     class Coordinate;
     class Model;
+    class Joint;
 }
 
 namespace SimTK {
@@ -149,6 +150,7 @@ namespace osc {
         void setSelectedHoveredAndIsolatedFrom(UiModel const&);
 
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
+        bool removeCoordinateEdit(OpenSim::Coordinate const&);
 
         AABB getSceneAABB() const;
         glm::vec3 getSceneDimensions() const;
