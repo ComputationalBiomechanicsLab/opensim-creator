@@ -6253,11 +6253,11 @@ namespace
                 return;
             }
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
-            OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
-
             if (ImGui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
             {
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+                OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
+
                 for (int i = 0; i < nRefs; ++i)
                 {
                     std::string const& label = el.GetCrossReferenceLabel(i);
