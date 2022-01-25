@@ -102,7 +102,31 @@ struct osc::UiModel::Impl final {
     }
 
     Impl(std::string const& osim) : Impl{std::make_unique<OpenSim::Model>(osim)} {
+    }
 
+    Impl(Impl const& old, std::unique_ptr<OpenSim::Model> model) :
+        m_StateModifications{old.m_StateModifications},
+        m_Model{[&model]()
+        {
+            model->finalizeFromProperties();
+            model->finalizeConnections();
+            model->buildSystem();
+            return std::unique_ptr<OpenSim::Model>{std::move(model)};
+        }()},
+        m_State{initializeState(*m_Model, m_StateModifications)},
+        m_Decorations{},
+        m_SceneBVH{},
+        m_FixupScaleFactor{old.m_FixupScaleFactor},
+        m_CurrentSelection{relocateComponentPointerToAnotherModel(*m_Model, old.m_CurrentSelection)},
+        m_Hovered{relocateComponentPointerToAnotherModel(*m_Model, old.m_Hovered)},
+        m_Isolated{relocateComponentPointerToAnotherModel(*m_Model, old.m_Isolated)},
+        m_LastModified{old.m_LastModified},
+        m_ModelIsDirty{false},
+        m_StateIsDirty{false},
+        m_DecorationsAreDirty{false}
+    {
+        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        updateBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
@@ -224,12 +248,9 @@ OpenSim::Model& osc::UiModel::updModel() {
     return *m_Impl->m_Model;
 }
 
-void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m) {
-    auto newImpl = std::make_unique<Impl>(std::move(m));
-    newImpl->m_CurrentSelection = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_CurrentSelection);
-    newImpl->m_Hovered = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_Hovered);
-    newImpl->m_Isolated = relocateComponentPointerToAnotherModel(*newImpl->m_Model, m_Impl->m_Isolated);
-    m_Impl = std::move(newImpl);
+void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m)
+{
+    m_Impl = std::make_unique<Impl>(*m_Impl, std::move(m));
 }
 
 SimTK::State const& osc::UiModel::getState() const {
