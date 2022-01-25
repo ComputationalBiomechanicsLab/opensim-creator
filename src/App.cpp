@@ -1137,6 +1137,8 @@ void osc::ImGuiInit()
     {
         ImFontConfig config = baseConfig;
         config.MergeMode = true;
+        config.GlyphMinAdvanceX = std::floorf(1.5f * config.SizePixels);
+        config.GlyphMaxAdvanceX = std::floorf(1.5f * config.SizePixels);
         static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
         char const* file = "fa-solid-900.ttf";
         std::string fontFile = App::resource(file).string();
