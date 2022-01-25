@@ -3740,9 +3740,35 @@ namespace
             }
         }
 
-        void DrawConnectionLines() const
+        void DrawConnectionLines(Hover const& currentHover) const
         {
-            DrawConnectionLines(m_Colors.ConnectionLines);
+            ModelGraph const& mg = GetModelGraph();
+            ImU32 color = ImGui::ColorConvertFloat4ToU32(m_Colors.ConnectionLines);
+
+            for (SceneEl const& el : mg.iter())
+            {
+                UID id = el.GetID();
+
+                if (id != currentHover.ID && !IsCrossReferencing(el, currentHover.ID))
+                {
+                    continue;
+                }
+
+                if (!ShouldShowConnectionLines(el))
+                {
+                    continue;
+                }
+
+                if (el.GetNumCrossReferences() > 0)
+                {
+                    DrawConnectionLines(el, color);
+                }
+                else if (!IsAChildAttachmentInAnyJoint(mg, el))
+                {
+                    DrawConnectionLineToGround(el, color);
+                }
+            }
+            //DrawConnectionLines(m_Colors.ConnectionLines);
         }
 
 
@@ -7091,7 +7117,7 @@ namespace
 
             // draw overlays/gizmos
             DrawSelection3DManipulatorGizmos();
-            m_Shared->DrawConnectionLines();
+            m_Shared->DrawConnectionLines(m_MaybeHover);
         }
 
         void DrawMainMenuFileMenu()
