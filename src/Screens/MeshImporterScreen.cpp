@@ -3587,7 +3587,7 @@ namespace
 
         static constexpr float connectionLineWidth = 1.0f;
 
-        void DrawConnectionLineTriangle(ImU32 color, glm::vec3 parent, glm::vec3 child) const
+        void DrawConnectionLineTriangleAtMidpoint(ImU32 color, glm::vec3 parent, glm::vec3 child) const
         {
             constexpr float triangleWidth = 6.0f * connectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
@@ -3619,7 +3619,7 @@ namespace
             ImGui::GetWindowDrawList()->AddLine(WorldPosToScreenPos(parent), WorldPosToScreenPos(child), color, connectionLineWidth);
 
             // the triangle
-            DrawConnectionLineTriangle(color, parent, child);
+            DrawConnectionLineTriangleAtMidpoint(color, parent, child);
         }
 
         void DrawConnectionLines(SceneEl const& el, ImU32 color, UID excludeID = g_EmptyID) const
@@ -3717,6 +3717,11 @@ namespace
                 UID id = el.GetID();
 
                 if (id == excludeID)
+                {
+                    continue;
+                }
+
+                if (!ShouldShowConnectionLines(el))
                 {
                     continue;
                 }
