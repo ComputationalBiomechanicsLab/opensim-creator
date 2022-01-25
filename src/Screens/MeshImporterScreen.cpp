@@ -195,6 +195,19 @@ namespace
         ImGui::Dummy({0.0f, 5.0f});
     }
 
+    glm::vec4 FaintifyColor(glm::vec4 const& srcColor)
+    {
+        glm::vec4 color = srcColor;
+        color.a *= 0.2f;
+        return color;
+    }
+
+    glm::vec4 RedifyColor(glm::vec4 const& srcColor)
+    {
+        constexpr float factor = 0.8f;
+        return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
+    }
+
     // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
     template <auto A, typename...> auto dependent_value = A;
 }
@@ -3739,7 +3752,7 @@ namespace
 
         void DrawConnectionLines() const
         {
-            DrawConnectionLines(m_Colors.FaintConnection);
+            DrawConnectionLines(m_Colors.ConnectionLine);
         }
 
 
@@ -3850,16 +3863,6 @@ namespace
             m_Colors.Mesh = newColor;
         }
 
-        glm::vec4 const& SetColorUnassignedMesh() const
-        {
-            return m_Colors.UnassignedMesh;
-        }
-
-        void SetColorUnassignedMesh(glm::vec4 const& newColor)
-        {
-            m_Colors.UnassignedMesh = newColor;
-        }
-
         glm::vec4 const& GetColorGround() const
         {
             return m_Colors.Ground;
@@ -3870,24 +3873,14 @@ namespace
             return m_Colors.Station;
         }
 
-        glm::vec4 const& GetColorSolidConnectionLine() const
+        glm::vec4 const& GetColorConnectionLine() const
         {
-            return m_Colors.SolidConnection;
+            return m_Colors.ConnectionLine;
         }
 
-        void SetColorSolidConnectionLine(glm::vec4 const& newColor)
+        void SetColorConnectionLine(glm::vec4 const& newColor)
         {
-            m_Colors.SolidConnection = newColor;
-        }
-
-        glm::vec4 const& GetColorTransparentFaintConnectionLine() const
-        {
-            return m_Colors.TransparentFaintConnection;
-        }
-
-        void SetColorTransparentFaintConnectionLine(glm::vec4 const& newColor)
-        {
-            m_Colors.TransparentFaintConnection = newColor;
+            m_Colors.ConnectionLine = newColor;
         }
 
         nonstd::span<bool const> GetVisibilityFlags() const
@@ -4324,7 +4317,7 @@ namespace
             rv.mesh = meshEl.MeshData;
             rv.modelMatrix = toMat4(meshEl.Xform);
             rv.normalMatrix = toNormalMatrix(meshEl.Xform);
-            rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? SetColorUnassignedMesh() : GetColorMesh();
+            rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
             return rv;
@@ -4531,23 +4524,17 @@ namespace
         // these are runtime-editable color values for things in the scene
         struct{
             glm::vec4 Mesh{1.0f, 1.0f, 1.0f, 1.0f};
-            glm::vec4 UnassignedMesh{1.0f, 0.95f, 0.95, 1.0f};
             glm::vec4 Ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
             glm::vec4 Station{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
-            glm::vec4 FaintConnection{0.6f, 0.6f, 0.6f, 1.0f};
-            glm::vec4 SolidConnection{0.9f, 0.9f, 0.9f, 1.0f};
-            glm::vec4 TransparentFaintConnection{0.6f, 0.6f, 0.6f, 0.2f};
+            glm::vec4 ConnectionLine{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
             glm::vec4 FloorTint{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
         } m_Colors;
-        static constexpr std::array<char const*, 9> g_ColorNames = {
-            "assigned mesh",
-            "unassigned mesh",
+        static constexpr std::array<char const*, 6> g_ColorNames = {
+            "meshes",
             "ground",
-            "station",
-            "faint connection line",
-            "solid connection line",
-            "transparent faint connection line",
+            "stations",
+            "connection lines",
             "scene background",
             "floor tint",
         };
@@ -5123,14 +5110,14 @@ namespace
             {
                 // user isn't hovering anything, so just draw all existing connection
                 // lines, but faintly
-                m_Shared->DrawConnectionLines(m_Shared->GetColorTransparentFaintConnectionLine());
+                m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()));
                 return;
             }
 
             // else: user is hovering *something*
 
             // draw all other connection lines but exclude the thing being assigned (if any)
-            m_Shared->DrawConnectionLines(m_Shared->GetColorTransparentFaintConnectionLine(), m_Options.MaybeElBeingReplacedByChoice);
+            m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()), m_Options.MaybeElBeingReplacedByChoice);
 
             if (m_Options.MaybeElAttachingTo == g_EmptyID)
             {
@@ -5146,7 +5133,7 @@ namespace
                 std::swap(parentPos, childPos);
             }
 
-            ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorSolidConnectionLine());
+            ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorConnectionLine());
 
             m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
         }
