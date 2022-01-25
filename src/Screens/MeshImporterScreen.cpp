@@ -74,7 +74,7 @@ namespace
     #define OSC_FLOAT_INPUT_FORMAT "%.4f"
 
     std::string const g_GroundLabel = "Ground";
-    std::string const g_GroundLabelPluralized = "Grounds";
+    std::string const g_GroundLabelPluralized = "Ground";
     std::string const g_GroundLabelOptionallyPluralized = "Ground(s)";
     std::string const g_GroundDescription = OSC_GROUND_DESC;
 
@@ -3464,16 +3464,6 @@ namespace
             UpdModelGraph().DeSelectAll();
         }
 
-        void Select(UID id)
-        {
-            UpdModelGraph().Select(id);
-        }
-
-        void DeSelect(UID id)
-        {
-            UpdModelGraph().DeSelect(id);
-        }
-
         bool HasSelection() const
         {
             return ::HasSelection(GetModelGraph());
@@ -3752,7 +3742,7 @@ namespace
 
         void DrawConnectionLines() const
         {
-            DrawConnectionLines(m_Colors.ConnectionLine);
+            DrawConnectionLines(m_Colors.ConnectionLines);
         }
 
 
@@ -3855,12 +3845,12 @@ namespace
 
         glm::vec4 const& GetColorMesh() const
         {
-            return m_Colors.Mesh;
+            return m_Colors.Meshes;
         }
 
         void SetColorMesh(glm::vec4 const& newColor)
         {
-            m_Colors.Mesh = newColor;
+            m_Colors.Meshes = newColor;
         }
 
         glm::vec4 const& GetColorGround() const
@@ -3870,17 +3860,17 @@ namespace
 
         glm::vec4 const& GetColorStation() const
         {
-            return m_Colors.Station;
+            return m_Colors.Stations;
         }
 
         glm::vec4 const& GetColorConnectionLine() const
         {
-            return m_Colors.ConnectionLine;
+            return m_Colors.ConnectionLines;
         }
 
         void SetColorConnectionLine(glm::vec4 const& newColor)
         {
-            m_Colors.ConnectionLine = newColor;
+            m_Colors.ConnectionLines = newColor;
         }
 
         nonstd::span<bool const> GetVisibilityFlags() const
@@ -3923,12 +3913,12 @@ namespace
 
         bool IsShowingJointCenters() const
         {
-            return m_VisibilityFlags.JointCenters;
+            return m_VisibilityFlags.Joints;
         }
 
         void SetIsShowingJointCenters(bool newIsShowing)
         {
-            m_VisibilityFlags.JointCenters = newIsShowing;
+            m_VisibilityFlags.Joints = newIsShowing;
         }
 
         bool IsShowingGround() const
@@ -4019,7 +4009,7 @@ namespace
             dt.mesh = App::meshes().get100x100GridMesh();
             dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
             dt.normalMatrix = NormalMatrix(dt.modelMatrix);
-            dt.color = m_Colors.FloorTint;
+            dt.color = m_Colors.GridLines;
             dt.rimColor = 0.0f;
             dt.maybeDiffuseTex = nullptr;
             return dt;
@@ -4190,12 +4180,12 @@ namespace
 
         bool IsJointCentersInteractable() const
         {
-            return m_InteractivityFlags.JointCenters;
+            return m_InteractivityFlags.Joints;
         }
 
         void SetIsJointCentersInteractable(bool newIsInteractable)
         {
-            m_InteractivityFlags.JointCenters = newIsInteractable;
+            m_InteractivityFlags.Joints = newIsInteractable;
         }
 
         bool IsGroundInteractable() const
@@ -4503,9 +4493,6 @@ namespace
         // quad mesh used for chequered floor
         std::shared_ptr<Mesh> m_FloorMesh = std::make_shared<Mesh>(generateFloorMesh());
 
-        // chequered floor texture
-        std::shared_ptr<gl::Texture2D> m_FloorChequerTex = std::make_shared<gl::Texture2D>(genChequeredFloorTexture());
-
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
 
@@ -4518,55 +4505,53 @@ namespace
         //          alive during rendering
         gl::Texture2D m_3DSceneTex;
 
-
         // COLORS
         //
         // these are runtime-editable color values for things in the scene
         struct{
-            glm::vec4 Mesh{1.0f, 1.0f, 1.0f, 1.0f};
             glm::vec4 Ground{196.0f/255.0f, 196.0f/255.0f, 196.0/255.0f, 1.0f};
-            glm::vec4 Station{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
-            glm::vec4 ConnectionLine{0.6f, 0.6f, 0.6f, 1.0f};
+            glm::vec4 Meshes{1.0f, 1.0f, 1.0f, 1.0f};
+            glm::vec4 Stations{196.0f/255.0f, 0.0f, 0.0f, 1.0f};
+            glm::vec4 ConnectionLines{0.6f, 0.6f, 0.6f, 1.0f};
             glm::vec4 SceneBackground{96.0f/255.0f, 96.0f/255.0f, 96.0f/255.0f, 1.0f};
-            glm::vec4 FloorTint{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
+            glm::vec4 GridLines{156.0f/255.0f, 156.0f/255.0f, 156.0f/255.0f, 1.0f};
         } m_Colors;
         static constexpr std::array<char const*, 6> g_ColorNames = {
-            "meshes",
             "ground",
+            "meshes",
             "stations",
             "connection lines",
             "scene background",
-            "floor tint",
+            "grid lines",
         };
         static_assert(sizeof(decltype(m_Colors))/sizeof(glm::vec4) == g_ColorNames.size());
-
 
         // VISIBILITY
         //
         // these are runtime-editable visibility flags for things in the scene
         struct {
-            bool Floor = true;
-            bool Meshes = true;
             bool Ground = true;
+            bool Meshes = true;
             bool Bodies = true;
-            bool JointCenters = true;
+            bool Joints = true;
             bool Stations = true;
             bool JointConnectionLines = true;
             bool MeshConnectionLines = true;
             bool BodyToGroundConnectionLines = true;
             bool StationConnectionLines = true;
+            bool Floor = true;
         } m_VisibilityFlags;
         static constexpr std::array<char const*, 10> g_VisibilityFlagNames = {
-            "floor",
-            "meshes",
             "ground",
+            "meshes",
             "bodies",
-            "joint centers",
+            "joints",
             "stations",
             "joint connection lines",
             "mesh connection lines",
             "body-to-ground connection lines",
-            "station connection lines"
+            "station connection lines",
+            "grid lines",
         };
         static_assert(sizeof(decltype(m_VisibilityFlags))/sizeof(bool) == g_VisibilityFlagNames.size());
 
@@ -4574,17 +4559,17 @@ namespace
         //
         // these are runtime-editable flags that dictate what gets hit-tested
         struct {
+            bool Ground = true;
             bool Meshes = true;
             bool Bodies = true;
-            bool JointCenters = true;
-            bool Ground = true;
+            bool Joints = true;
             bool Stations = true;
         } m_InteractivityFlags;
         static constexpr std::array<char const*, 5> g_InteractivityFlagNames = {
+            "ground",
             "meshes",
             "bodies",
-            "joint centers",
-            "ground",
+            "joints",
             "stations",
         };
         static_assert(sizeof(decltype(m_InteractivityFlags))/sizeof(bool) == g_InteractivityFlagNames.size());
@@ -6468,9 +6453,9 @@ namespace
         {
             ModelGraph& mg = m_Shared->UpdModelGraph();
 
-            ImGui::Text("%s %s", c.GetIconCStr(), c.GetNameCStr());
+            ImGui::Text("%s %s", c.GetIconCStr(), c.GetNamePluralizedCStr());
             ImGui::SameLine();
-            DrawHelpMarker(c.GetNameCStr(), c.GetDescriptionCStr());
+            DrawHelpMarker(c.GetNamePluralizedCStr(), c.GetDescriptionCStr());
             SpacerDummy();
             ImGui::Indent();
 
