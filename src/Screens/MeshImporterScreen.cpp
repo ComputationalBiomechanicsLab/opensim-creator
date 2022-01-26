@@ -180,6 +180,20 @@ namespace
         return t.withRotation(glm::angleAxis(angRadians, ax) * t.rotation);
     }
 
+    Transform ToOsimTransform(SimTK::Transform const& t)
+    {
+        // extract the SimTK transform into a 4x3 matrix
+        glm::mat4x3 m = SimTKMat4x3FromXForm(t);
+
+        // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
+        glm::quat rotation = glm::quat_cast(glm::mat3{m});
+
+        // take the right-hand column (translation) and assign it as the position
+        glm::vec3 position = m[3];
+
+        return Transform{position, rotation};
+    }
+
     // returns a camera that is in the initial position the camera should be in for this screen
     PolarPerspectiveCamera CreateDefaultCamera()
     {
@@ -1562,6 +1576,7 @@ namespace
             // default ctor for prototype allocation
         }
 
+
         StationEl(UIDT<StationEl> id,
                   UIDT<BodyEl> attachment,  // can be g_GroundID
                   glm::vec3 const& position,
@@ -1572,6 +1587,18 @@ namespace
             Name{std::move(name)}
         {
         }
+
+        StationEl(UIDT<BodyEl> attachment,  // can be g_GroundID
+                  glm::vec3 const& position,
+                  std::string name) :
+            ID{GenerateIDT<StationEl>()},
+            Attachment{std::move(attachment)},
+            Position{std::move(position)},
+            Name{std::move(name)}
+        {
+        }
+
+
 
         SceneElClass const& GetClass() const override
         {
@@ -2519,13 +2546,23 @@ namespace
     // undoable model graph storage
     class CommittableModelGraph final {
     public:
-        CommittableModelGraph() :
-            m_Scratch{new ModelGraph{}},
+        CommittableModelGraph(std::unique_ptr<ModelGraph> mg) :
+            m_Scratch{std::move(mg)},
             m_Current{g_EmptyID},
             m_BranchHead{g_EmptyID},
             m_Commits{}
         {
             Commit("created model graph");
+        }
+
+        CommittableModelGraph(ModelGraph const& mg) :
+            CommittableModelGraph{std::make_unique<ModelGraph>(mg)}
+        {
+        }
+
+        CommittableModelGraph() :
+            CommittableModelGraph{std::make_unique<ModelGraph>()}
+        {
         }
 
         void Commit(std::string_view commitMsg)
@@ -3345,6 +3382,288 @@ namespace
         }
 
         return model;
+    }
+
+    // tries to find the first body connected to the given PhysicalFrame by assuming
+    // that the frame is either already a body or is an offset to a body
+    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(OpenSim::Frame const& f, std::unordered_set<OpenSim::Frame const*> visitedFrames)
+    {
+        if (!visitedFrames.emplace(&f).second)
+        {
+            return nullptr;
+        }
+
+        if (auto const* body = dynamic_cast<OpenSim::Body const*>(&f))
+        {
+            return body;
+        }
+        else if (auto const* ground = dynamic_cast<OpenSim::Ground const*>(&f))
+        {
+            return ground;
+        }
+        else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&f))
+        {
+            return TryInclusiveRecurseToBodyOrGround(pof->getParentFrame(), visitedFrames);
+        }
+        else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&f))
+        {
+            return TryInclusiveRecurseToBodyOrGround(station->getParentFrame(), visitedFrames);
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    // tries to find the first body connected to the given PhysicalFrame by assuming
+    // that the frame is either already a body or is an offset to a body
+    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(OpenSim::Frame const& f)
+    {
+        return TryInclusiveRecurseToBodyOrGround(f, {});
+    }
+
+    ModelGraph CreateModelGraphFromInMemoryModel(OpenSim::Model m)
+    {
+        // init model
+        m.finalizeFromProperties();
+        m.finalizeConnections();
+        m.buildSystem();
+
+        SimTK::State st = m.initializeState();
+        m.equilibrateMuscles(st);
+        m.realizePosition(st);
+
+        // this is what this method populates
+        ModelGraph rv;
+
+        // used to figure out how a body in the OpenSim::Model maps into the ModelGraph
+        std::unordered_map<OpenSim::Body const*, UIDT<BodyEl>> bodyLookup;
+
+        // used to figure out how a joint in the OpenSim::Model maps into the ModelGraph
+        std::unordered_map<OpenSim::Joint const*, UIDT<JointEl>> jointLookup;
+
+        // import all the bodies from the model file
+        for (OpenSim::Body const& b : m.getComponentList<OpenSim::Body>())
+        {
+            std::string name = b.getName();
+            Transform xform = ToOsimTransform(b.getTransformInGround(st));
+
+            BodyEl& el = rv.AddEl<BodyEl>(name, xform);
+            el.Mass = static_cast<float>(b.getMass());
+
+            bodyLookup.emplace(&b, el.ID);
+        }
+
+        // then try and import all the joints (by looking at their connectivity)
+        for (OpenSim::Joint const& j : m.getComponentList<OpenSim::Joint>())
+        {
+            OpenSim::PhysicalFrame const& parentFrame = j.getParentFrame();
+            OpenSim::PhysicalFrame const& childFrame = j.getChildFrame();
+
+            OpenSim::PhysicalFrame const* parentBodyOrGround = TryInclusiveRecurseToBodyOrGround(parentFrame);
+            OpenSim::PhysicalFrame const* childBodyOrGround = TryInclusiveRecurseToBodyOrGround(childFrame);
+
+            if (!parentBodyOrGround || !childBodyOrGround)
+            {
+                // can't find what they're connected to
+                continue;
+            }
+
+            auto maybeType = JointRegistry::indexOf(j);
+
+            if (!maybeType)
+            {
+                // joint has a type the mesh importer doesn't support
+                continue;
+            }
+
+            size_t type = maybeType.value();
+            std::string name = j.getName();
+
+            UID parent = g_EmptyID;
+
+            if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
+            {
+                parent = g_GroundID;
+            }
+            else
+            {
+                auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(parentBodyOrGround));
+                if (it == bodyLookup.end())
+                {
+                    // joint is attached to a body that isn't ground or cached?
+                    continue;
+                }
+                else
+                {
+                    parent = it->second;
+                }
+            }
+
+            UIDT<BodyEl> child = DowncastID<BodyEl>(g_EmptyID);
+
+            if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
+            {
+                // ground can't be a child in a joint
+                continue;
+            }
+            else
+            {
+                auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(childBodyOrGround));
+                if (it == bodyLookup.end())
+                {
+                    // joint is attached to a body that isn't ground or cached?
+                    continue;
+                }
+                else
+                {
+                    child = it->second;
+                }
+            }
+
+            if (parent == g_EmptyID || child == g_EmptyID)
+            {
+                // something horrible happened above
+                continue;
+            }
+
+            Transform xform = ToOsimTransform(parentFrame.getTransformInGround(st));
+
+            JointEl& jointEl = rv.AddEl<JointEl>(type, name, parent, child, xform);
+            jointLookup.emplace(&j, jointEl.ID);
+        }
+
+
+        // then try to import all the meshes
+        for (OpenSim::Mesh const& mesh : m.getComponentList<OpenSim::Mesh>())
+        {
+            std::string file = mesh.getGeometryFilename();
+            std::filesystem::path filePath = std::filesystem::path{file};
+
+            bool isAbsolute = filePath.is_absolute();
+            SimTK::Array_<std::string> attempts;
+            bool found = OpenSim::ModelVisualizer::findGeometryFile(m, file, isAbsolute, attempts);
+
+            if (!found)
+            {
+                continue;
+            }
+
+            std::filesystem::path realLocation{attempts.back()};
+
+            std::shared_ptr<Mesh> meshData;
+            try
+            {
+                 meshData = std::make_shared<Mesh>(SimTKLoadMesh(realLocation.string()));
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("error loading mesh: %s", ex.what());
+                continue;
+            }
+
+            if (!meshData)
+            {
+                continue;
+            }
+
+            OpenSim::Frame const& frame = mesh.getFrame();
+            OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+
+            if (!frameBodyOrGround)
+            {
+                // can't find what it's connected to?
+                continue;
+            }
+
+            UID attachment = g_EmptyID;
+            if (dynamic_cast<OpenSim::Ground const*>(&frame))
+            {
+                attachment = g_GroundID;
+            }
+            else
+            {
+                // TODO: this also has to handle joint attachments... :<
+
+                if (auto bodyIt = bodyLookup.find(static_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
+                {
+                    attachment = bodyIt->second;
+                }
+                else
+                {
+                    // mesh is attached to something that isn't a ground or a body?
+                    continue;
+                }
+            }
+
+            if (attachment == g_EmptyID)
+            {
+                // couldn't figure out what to attach to
+                continue;
+            }
+
+            std::string name = mesh.getName();
+
+            MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
+            el.Xform = ToOsimTransform(frame.getTransformInGround(st));
+            el.Name = name;
+        }
+
+        // then try to import all the stations
+        for (OpenSim::Station const& station : m.getComponentList<OpenSim::Station>())
+        {
+            // edge-case: it's a path point: ignore it because it will spam the converter
+            if (dynamic_cast<OpenSim::AbstractPathPoint const*>(&station))
+            {
+                continue;
+            }
+
+            if (dynamic_cast<OpenSim::AbstractPathPoint const*>(&station.getOwner()))
+            {
+                continue;
+            }
+
+            OpenSim::PhysicalFrame const& frame = station.getParentFrame();
+            OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+
+            log::info("trying %s", station.getName().c_str());
+
+            UID attachment = g_EmptyID;
+            if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
+            {
+                attachment = g_GroundID;
+            }
+            else
+            {
+                if (auto it = bodyLookup.find(static_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
+                {
+                    attachment = it->second;
+                }
+                else
+                {
+                    // station is attached to something that isn't ground or a cached body
+                    continue;
+                }
+            }
+
+            if (attachment == g_EmptyID)
+            {
+                // can't figure out what to attach to
+                continue;
+            }
+
+            glm::vec3 pos = SimTKVec3FromVec3(station.findLocationInFrame(st, m.getGround()));
+            std::string name = station.getName();
+
+            rv.AddEl<StationEl>(DowncastID<BodyEl>(attachment), pos, name);
+        }
+
+        return rv;
+    }
+
+    ModelGraph CreateModelFromOsimFile(std::filesystem::path const& p)
+    {
+        return CreateModelGraphFromInMemoryModel(OpenSim::Model{p.string()});
     }
 }
 
