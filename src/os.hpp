@@ -42,6 +42,16 @@ namespace osc
     // set an environment variable's value (process-wide)
     void SetEnv(char const* name, char const* value, bool overwrite);
 
+    // synchronously prompt a user to select a single file that ends with the supplied extension(s) (e.g. "obj,osim,stl")
+    //
+    // - `extensions` can be nullptr, meaning "don't filter by extension"
+    // - `extensions` can be a single extension (e.g. "blend")
+    // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
+    // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
+    //
+    // returns empty path if user does not select a file
+    std::filesystem::path PromptUserForFile(char const* extensions, char const* defaultPath = nullptr);
+
     // synchronously prompt a user to select files ending with the supplied extensions (e.g. "obj,vtp,stl")
     //
     // - `extensions` can be nullptr, meaning "don't filter by extension"
@@ -49,4 +59,18 @@ namespace osc
     // - `extensions` can be a comma-delimited list of multiple extensions (e.g. "vtp,obj")
     // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
     std::vector<std::filesystem::path> PromptUserForFiles(char const* extensions, char const* defaultPath = nullptr);
+
+    // synchronously prompt a user to select a file location for where to save a file
+    //
+    // - `extension` can be nullptr, meaning "just ignore the extension"
+    // - `extension` can *only* be a single extension (e.g. "osim") - assertions may fail if commas are detected
+    // - `defaultPath` indicates which dir to initially open, can be nullptr, which will open a system-defined default
+    //
+    // - if the user manually types a filename without an extension (e.g. "model"), the implementation will add `extension`
+    //   (if not nullptr) to the end of the user's string. It detects a lack of extension by searching the end of the user
+    //   -supplied string for the given extension (if supplied)
+    //
+    // returns an empty path if the user cancels out, or the user-selected save location--including the extension--if the user
+    // selects a location
+    std::filesystem::path PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath = nullptr);
 }

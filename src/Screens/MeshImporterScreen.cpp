@@ -3381,6 +3381,10 @@ namespace
             AddStationToModel(mg, *model, el, visitedBodies);
         }
 
+        // ensure returned model is initialized from latest graph
+        model->finalizeFromProperties();
+        model->finalizeConnections();
+
         return model;
     }
 
@@ -3577,7 +3581,7 @@ namespace
             }
 
             UID attachment = g_EmptyID;
-            if (dynamic_cast<OpenSim::Ground const*>(&frame))
+            if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
                 attachment = g_GroundID;
             }
@@ -3703,10 +3707,48 @@ namespace
             PushMeshLoadRequests(meshFiles);
         }
 
+        //
+        // MODEL IMPORT STUFF
+        //
+
+        void PromptUserToImportOsimFile()
+        {
+            std::filesystem::path osimPath = PromptUserForFile("osim");
+            if (!osimPath.empty())
+            {
+                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(osimPath)};
+            }
+        }
 
         //
         // MODEL EXPORT STUFF
         //
+
+        void PromptUserToSaveCurrentModelGraph()
+        {
+            std::filesystem::path savePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+
+            if (savePath.empty())
+            {
+                // user probably cancelled out
+                return;
+            }
+
+            std::vector<std::string> issues;
+            std::unique_ptr<OpenSim::Model> m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
+
+            if (m)
+            {
+                m->print(savePath.string());
+            }
+            else
+            {
+                for (std::string const& issue : issues)
+                {
+                    log::error("%s", issue.c_str());
+                }
+            }
+        }
 
         bool HasOutputModel() const
         {
@@ -5947,6 +5989,16 @@ namespace
                 ResetModelGraph(m_Shared->UpdCommittableModelGraph());
                 return true;
             }
+            else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
+            {
+                m_Shared->PromptUserToImportOsimFile();
+                return true;
+            }
+            else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+            {
+                m_Shared->PromptUserToSaveCurrentModelGraph();
+                return true;
+            }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_W))
             {
                 // Ctrl+W: close
@@ -7446,6 +7498,16 @@ namespace
                 if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
                 {
                     ResetModelGraph(m_Shared->UpdCommittableModelGraph());
+                }
+
+                if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
+                {
+                    m_Shared->PromptUserToImportOsimFile();
+                }
+
+                if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S"))
+                {
+                    m_Shared->PromptUserToSaveCurrentModelGraph();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))

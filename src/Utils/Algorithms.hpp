@@ -114,4 +114,7 @@ namespace osc {
 
     // returns true if `s` ends with `suffix`
     bool CStrEndsWith(char const* s, std::string_view suffix) noexcept;
+
+    // returns true if `str` contains `c`
+    bool Contains(char const* str, char e) noexcept;
 }

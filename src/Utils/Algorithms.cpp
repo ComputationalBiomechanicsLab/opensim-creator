@@ -125,3 +125,8 @@ bool osc::CStrEndsWith(char const* s, std::string_view suffix) noexcept
 
     return std::equal(sEnd - suffix.length(), sEnd, suffix.begin(), suffix.end());
 }
+
+bool osc::Contains(char const* s, char c) noexcept
+{
+    return std::strchr(s, c) != nullptr;
+}

@@ -1,6 +1,8 @@
 #include "os.hpp"
 
+#include "src/Assertions.hpp"
 #include "src/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
 #include <nfd.h>
@@ -82,6 +84,15 @@ void osc::SetEnv(char const* name, char const* value, bool overwrite)
     SDL_setenv(name, value, overwrite ? 1 : 0);
 }
 
+std::filesystem::path osc::PromptUserForFile(char const* extensions, char const* defaultPath)
+{
+    nfdchar_t* path = nullptr;
+    nfdresult_t result = NFD_OpenDialog(extensions, defaultPath, &path);
+    OSC_SCOPE_GUARD_IF(path, { free(path); });
+
+    return (path && result == NFD_OKAY) ? std::filesystem::path{path} : std::filesystem::path{};
+}
+
 std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extensions, char const* defaultPath)
 {
     nfdpathset_t s{};
@@ -109,6 +120,33 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(char const* extension
     }
 
     return rv;
+}
+
+std::filesystem::path osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(char const* extension, char const* defaultPath)
+{
+    if (extension)
+    {
+        OSC_ASSERT(!Contains(extension, ',') && "can only provide one extension to this implementation!");
+    }
+
+    nfdchar_t* path = nullptr;
+    nfdresult_t result = NFD_SaveDialog(extension, defaultPath, &path);
+    OSC_SCOPE_GUARD_IF(path, { free(path); });
+
+    if (result != NFD_OKAY)
+    {
+        return std::filesystem::path{};
+    }
+
+    std::filesystem::path p{path};
+
+    if (extension && !CStrEndsWith(path, extension))
+    {
+        p += '.';
+        p += extension;
+    }
+
+    return p;
 }
 
 #ifdef __LINUX__
