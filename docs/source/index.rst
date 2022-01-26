@@ -4,10 +4,12 @@ OpenSim Creator Documentation
 OpenSim Creator is a UI for building OpenSim models. It is a standalone UI that
 is designed as a proof-of-concept, with the intent that some of its features may
 be merged into the official `OpenSim GUI`_. These pages are the official documentation
-for OpenSim creator.
+for OpenSim Creator.
 
 .. figure:: _static/screenshot.png
     :width: 60%
+
+    Screenshot of OpenSim Creator's ``osim`` editor screen.
 
 .. warning::
     These documentation pages are work-in-progress 🚧. If they aren't helpful
@@ -23,13 +25,13 @@ Getting Started
 
 * **Boot OpenSim Creator**:
 
-  * **On Windows**: Search for "osc" in the start menu and open that. Alternatively, browse to your install location (default: ``C:\Program Files\osc\bin\osc.exe``)
-  * **On Mac**: Search for "osc" in the finder (Super+Space, search, enter). Alternatively, browse to your install location (default: ``/Applications/osc (VERSION)``)
-  * **On Linux**: Search for "osc" in your desktop. Alternatively, browse to your install location (default: ``/opt/osc (VERSION)/bin/osc``)
+  * **On Windows**: Search for "osc" in the start menu and open that. Alternatively, browse to your install location (default: ``C:\Program Files\osc\bin\osc.exe``).
+  * **On Mac**: Search for "osc" in the finder (Super+Space, search, enter). Alternatively, browse to your install location (default: ``/Applications/osc (VERSION)``).
+  * **On Linux**: Search for "osc" in your desktop. Alternatively, browse to your install location (default: ``/opt/osc (VERSION)/bin/osc``).
 
-* **Explore the UI**. You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. I'd recommend ``double_pendulum.osim``  for a basic model and ``ToyDropLanding.osim`` for something "meatier"
+* **Explore the UI**. You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. I'd recommend ``double_pendulum.osim`` if you want something basic, or ``ToyDropLanding.osim`` if you want something "meatier".
 
-* **Work through the tutorials**. Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start 📖 :ref:`tut1`
+* **Work through the tutorials**. Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start 📖 :ref:`tut1`.
 
 
 Table of Contents

@@ -1,0 +1,1585 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<Model name="model">
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--List of components that this component owns and serializes.-->
+			<components>
+				<PhysicalOffsetFrame name="arm_r_3mc_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_3mc">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3mc.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_3midph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_3midph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3midph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_3proxph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_3proxph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3proxph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_4distph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_4distph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4distph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_4mc_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_4mc">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4mc.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_4midph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_4midph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4midph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_4proxph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_4proxph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4proxph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_5distph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_5distph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5distph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_5mc_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_5mc">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5mc.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_5midph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_5midph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5midph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_5proxph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_5proxph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5proxph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_thumbdist_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_thumbdist">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_thumbdist.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_thumbprox_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_thumbprox">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_thumbprox.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_1mc_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_1mc">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_1mc.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+				<PhysicalOffsetFrame name="arm_r_3distph_offset">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="arm_r_3distph">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame>..</socket_frame>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1 1 1</scale_factors>
+							<!--Name of geometry file.-->
+							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3distph.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+					<socket_parent>..</socket_parent>
+					<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+					<translation>0 0.45887088775634766 0</translation>
+					<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+					<orientation>-0 0 -0</orientation>
+				</PhysicalOffsetFrame>
+			</components>
+			<!--The geometry used to display the axes of this Frame.-->
+			<FrameGeometry name="frame_geometry">
+				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+				<socket_frame>..</socket_frame>
+				<!--Scale factors in X, Y, Z directions respectively.-->
+				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+			</FrameGeometry>
+		</Ground>
+		<!--List of bodies that make up this model.-->
+		<BodySet name="bodyset">
+			<objects>
+				<Body name="arm_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_radius_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_radius">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_radius.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.0044380007311701775 0.14010149240493774 -0.038418866693973541</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_ulna_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_ulna">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_ulna.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.0044380007311701775 0.14010149240493774 -0.038418866693973541</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="ulna_wrist_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0013485373929142952 -0.076713547110557556 0.0025834105908870697</location>
+						</Station>
+						<Station name="radius_wrist_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0042007537558674812 -0.075976625084877014 0.028349138796329498</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>5</mass>
+				</Body>
+				<Body name="wrist_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_capitate_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_capitate">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_capitate.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_hamate_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_hamate">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_hamate.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_lunate_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_lunate">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_lunate.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_pisiform_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_pisiform">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_pisiform.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_scaphoid_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_scaphoid">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_scaphoid.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_trapezium_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_trapezium">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_trapezium.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_trapezoid_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_trapezoid">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_trapezoid.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_triquetrum_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_triquetrum">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_triquetrum.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.27330729365348816 -0.012645223177969456 0.022894814610481262</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.34942935906402467 -0.31451346919304268 -1.6778229797775464</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="wrist_mid_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0015538334846496582 -0.0049886628985404968 0.0051301866769790649</location>
+						</Station>
+						<Station name="wrist_ulna_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.011641994118690491 -0.010010628961026669 -0.0073431432247161865</location>
+						</Station>
+						<Station name="wrist_radius_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0093753039836883545 -0.0042561115697026253 0.013219654560089111</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+				</Body>
+				<Body name="arm_r_2mc_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_2mc_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_2mc">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2mc.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.31511431932449341 0.025484256446361542 -0.018194019794464111</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.2276388303120116 -0.2439847183539337 -1.5008614826461228</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="arm_r_2mc_bot_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>-0.023171097040176392 -0.0072571747004985809 0.00064066052436828613</location>
+						</Station>
+						<Station name="arm_r_2mc_top_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.02414780855178833 -0.0065016299486160278 0.00026452541351318359</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+				</Body>
+				<Body name="arm_r_2proxph_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_2proxph_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_2proxph">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2proxph.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.36819091439247131 0.01133638434112072 -0.021453738212585449</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.21866792714442879 -0.22323882832210568 -1.5499406362923438</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="arm_r_2proxph_bot_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>-0.013952799141407013 -0.00038734637200832367 0.0010711997747421265</location>
+						</Station>
+						<Station name="arm_r_2proxph_top_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.011851273477077484 -0.0024841539561748505 0.00069276243448257446</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+				</Body>
+				<Body name="arm_r_2midph_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_2midph_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_2midph">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2midph.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.40073969960212708 0.00080297701060771942 -0.021481603384017944</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.22245956422607749 -0.22076550290485816 -1.5785034676723677</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="arm_r_2midph_bot_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>-0.0065440796315670013 -0.002168554812669754 0.00080420076847076416</location>
+						</Station>
+						<Station name="arm_r_2midph_top_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0073635876178741455 -0.0027407510206103325 0.00082735717296600342</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+				</Body>
+				<Body name="arm_r_2distph_b">
+					<!--List of components that this component owns and serializes.-->
+					<components>
+						<PhysicalOffsetFrame name="arm_r_2distph_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+							<attached_geometry>
+								<Mesh name="arm_r_2distph">
+									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+									<socket_frame>..</socket_frame>
+									<!--Scale factors in X, Y, Z directions respectively.-->
+									<scale_factors>1 1 1</scale_factors>
+									<!--Name of geometry file.-->
+									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2distph.vtp</mesh_file>
+								</Mesh>
+							</attached_geometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>..</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.41507881879806519 -0.039966553449630737 -0.057797700166702271</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.13457814601237378 -0.12137063796938333 -1.6741899144754735</orientation>
+						</PhysicalOffsetFrame>
+						<Station name="arm_r_distph_att">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.0038311518728733063 -0.0028275437653064728 -0.00032707303762435913</location>
+						</Station>
+					</components>
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame>..</socket_frame>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--The mass of the body (kg)-->
+					<mass>1</mass>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet name="jointset">
+			<objects>
+				<WeldJoint name="arm_r_arm_to_ground">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>ground_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>arm_b_offset</socket_child_frame>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="ground_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/ground</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.0044380007311701775 0.31876939535140991 0.038418866693973541</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0 0 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0 0 -0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</WeldJoint>
+				<PinJoint name="arm_r_wrist_to_arm">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>arm_b_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>wrist_b_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="arm_r_wrist_to_arm_rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="arm_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.0021432493813335896 -0.10575461387634277 0.023263681679964066</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.10871826112270355 0.085783056914806366 1.5932260751724243</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="wrist_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/wrist_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.021098673343658447 -4.6566128730773926e-09 1.4901161193847656e-08</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.25026172399520874 -0.21452759206295013 -0.063288107514381409</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="arm_r_2_mc_to_wrist">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>wrist_b_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>arm_r_2mc_b_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="arm_r_2_mc_to_wrist_rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="wrist_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/wrist_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.011327624320983887 0.0028063813224434853 0.0084218680858612061</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.057319097220897675 -0.10572481900453568 -0.080134876072406769</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_2mc_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2mc_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.031415849924087524 -3.7252902984619141e-09 -7.4505805969238281e-09</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0.022673681378364563 0.0078177051618695259 0.065024420619010925</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="arm_r_2_proxph_to_mc">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>arm_r_2mc_b_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>arm_r_2proxph_b_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="arm_r_2_proxph_to_mc_rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="arm_r_2mc_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2mc_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.032096751034259796 -0.0032329447567462921 0.00030772387981414795</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.083419829607009888 0.050564933568239212 0.047792062163352966</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_2proxph_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2proxph_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.020148195326328278 -1.862645149230957e-09 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.060201141983270645 0.063873708248138428 -0.0026180616114288568</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="arm_r_2_midph_to_proxph">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>arm_r_2proxph_b_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>arm_r_2midph_b_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="arm_r_2_midph_to_proxph_rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="arm_r_2proxph_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2proxph_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.019895937293767929 -0.00017619505524635315 0.0014728903770446777</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0.031728539615869522 -0.024593433365225792 0.032247260212898254</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_2midph_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2midph_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.012400347739458084 0 -7.4505805969238281e-09</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0.033484268933534622 -0.029178094118833542 0.0046441499143838882</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+				<PinJoint name="arm_r_2_distph_to_midph">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame>arm_r_2midph_b_offset</socket_parent_frame>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame>arm_r_2distph_b_offset</socket_child_frame>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="arm_r_2_distph_to_midph_rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="arm_r_2midph_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2midph_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.012122984975576401 -0.00048587284982204437 0.00098305940628051758</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>-0.0184952262789011 0.02326236292719841 0.053053658455610275</orientation>
+						</PhysicalOffsetFrame>
+						<PhysicalOffsetFrame name="arm_r_2distph_b_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent>/bodyset/arm_r_2distph_b</socket_parent>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.007618345320224762 9.3132257461547852e-10 0</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0.092726320028305054 0.10018002241849899 -0.060528747737407684</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</PinJoint>
+			</objects>
+			<groups />
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet name="controllerset">
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet name="forceset">
+			<objects>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2distph_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0038311518728733063 -0.0028275437653064728 -0.00032707303762435913</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2midph_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.0065440796315670013 -0.002168554812669754 0.00080420076847076416</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle_0">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2midph_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0073635876178741455 -0.0027407510206103325 0.00082735717296600342</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2proxph_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.013952799141407013 -0.00038734637200832367 0.0010711997747421265</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_0_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_0_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_0_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_0_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle_1">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2proxph_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.011851273477077484 -0.0024841539561748505 0.00069276243448257446</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2mc_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.023171097040176392 -0.0072571747004985809 0.00064066052436828613</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Assumed initial activation level if none is assigned.-->
+					<default_activation>1</default_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_1_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_1_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_1_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_1_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle_2">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_r_2mc_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.02414780855178833 -0.0065016299486160278 0.00026452541351318359</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/wrist_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0015538334846496582 -0.0049886628985404968 0.0051301866769790649</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_2_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_2_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_2_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_2_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle_3">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/wrist_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0093753039836883545 -0.0042561115697026253 0.013219654560089111</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0042007537558674812 -0.075976625084877014 0.028349138796329498</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_3_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_3_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_3_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_3_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="Millard2012EquilibriumMuscle_4">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The set of points defining the path of the actuator.-->
+					<GeometryPath name="geometrypath">
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="Millard2012EquilibriumMuscle-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/wrist_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.011641994118690491 -0.010010628961026669 -0.0073431432247161865</location>
+								</PathPoint>
+								<PathPoint name="Millard2012EquilibriumMuscle-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/arm_b</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0013485373929142952 -0.076713547110557556 0.0025834105908870697</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+					</GeometryPath>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="Millard2012EquilibriumMuscle_4_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="Millard2012EquilibriumMuscle_4_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="Millard2012EquilibriumMuscle_4_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="Millard2012EquilibriumMuscle_4_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+			</objects>
+			<groups />
+		</ForceSet>
+		<!--Visual preferences for this model.-->
+		<ModelVisualPreferences name="modelvisualpreferences">
+			<!--Model display preferences-->
+			<ModelDisplayHints>
+				<!--Flag to indicate whether or not to show frames, default to false.-->
+				<show_frames>true</show_frames>
+			</ModelDisplayHints>
+		</ModelVisualPreferences>
+	</Model>
+</OpenSimDocument>

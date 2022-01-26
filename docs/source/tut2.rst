@@ -129,12 +129,12 @@ To add the ``head`` to the model:
 * Change the ``knee_offset`` of the ``knee_to_head`` joint from ``(0, 0, 0)`` to ``(0, 0.5, 0)``, so that the ``knee`` is offset from the origin of ``knee_to_head`` and ``head`` is co-located with it (i.e. it swings at the head).
 * Make the cube geometry red
 
-These steps should create all the necessary bodies in the sytem, but it will look a little bit unusual (the "links" are missing):
+These steps should create all the necessary bodies in the system, but it will look a little bit unusual (the "links" are missing):
 
 .. figure:: _static/tut2_bodies-added.png
     :width: 60%
 
-    The model after adding the ``knee`` and ``head`` bodies. The bodies are joined to eachover with ``PinJoint`` s that pivot on the knee and head respectively. The model looks unusual because there are no visual "links" between the bodies and because the model isn't angled yet (:download:`📥 download model <_static/tut2_bodies-added.osim>`).
+    The model after adding the ``knee`` and ``head`` bodies. The bodies are joined to each other with ``PinJoint`` s that pivot on the knee and head respectively. The model looks unusual because there are no visual "links" between the bodies and because the model isn't angled yet (:download:`📥 download model <_static/tut2_bodies-added.osim>`).
 
 
 Much like at the end of :ref:`tut1`, we can make the model look better by adding extra geometry between the bodies. This can be achieved by attaching decorative geometry to offset frames placed between the blocks.

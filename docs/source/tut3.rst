@@ -8,7 +8,7 @@ In this tutorial, we will be using the mesh importer feature of OpenSim Creator 
 .. figure:: _static/tut3_result.png
     :width: 60%
 
-    The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pinjoints, with decorative meshes used for the heads + struts. (:download:`📥 download model <_static/tut3_final-model.osim>`)
+    The final model made in this tutorial, as-seen in the mesh importer screen. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`📥 download model <_static/tut3_final-model.osim>`)
 
 The mesh importer is "looser" than the main ``osim`` editor. This can make placing and orienting bodies/joints easier. However, its disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc. See :ref:`doc_meshimporterwizard` for an overview of the mesh importer's main features.
 
@@ -93,7 +93,7 @@ The above steps set up all the bodies + joints in the model. You should have som
 You can also try converting the scene to an OpenSim model (``osim``). This is a one-way process, but your progress in the mesh importer will be **not** be lost when you convert it to an ``osim``. Re-opening the mesh importer will "remember" your scene. So, if you want to test whether you have actually created a pendulum, you can:
 
 * *(optional)* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
-* *(optional)* **Simulate the model**. Adjust the pinjoint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
+* *(optional)* **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
 * *(optional)* **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 .. warning::
@@ -118,7 +118,7 @@ To decorate the model:
 
 * **Attach a cube mesh to ground (the ceiling)**:
 
-  * Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to attach ``block.vtp`` to ground. TODO need to explain where ``block.vtp`` is until there's in-UI support for analytic geometry
+  * Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to attach ``block.vtp`` to ground.
   * Rename it to ``ceiling_decoration``
   * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``)
   * Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
@@ -144,7 +144,7 @@ To decorate the model:
     * Combine approaches by changing the color of the meshes to be semi-transparent (see ``Colors`` menu) and disable their interactivity.
     * Initially import the mesh by attaching it to ground, move it into place, ``Reassign Connection`` to the ``pendulum_head`` body.
     * The "best" approach depends on what kind of model you are working on.
-  * Once the mesh is attached, move it between the ``pendulum_head`` and the pinjoint that's acting as the base (``pendulum_head_to_ground``)
+  * Once the mesh is attached, move it between the ``pendulum_head`` and the pin joint that's acting as the base (``pendulum_head_to_ground``)
   * Rename it to ``pendulum_head_strut_decoration``
   * Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.0, 0.2``)).
 
