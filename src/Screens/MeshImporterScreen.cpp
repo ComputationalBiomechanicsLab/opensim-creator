@@ -3630,8 +3630,6 @@ namespace
             OpenSim::PhysicalFrame const& frame = station.getParentFrame();
             OpenSim::PhysicalFrame const* frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
-            log::info("trying %s", station.getName().c_str());
-
             UID attachment = g_EmptyID;
             if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
             {
