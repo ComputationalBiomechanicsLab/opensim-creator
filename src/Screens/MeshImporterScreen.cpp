@@ -2980,6 +2980,35 @@ namespace
     {
         return AddBody(cmg, {}, g_EmptyID);
     }
+
+    bool AddStationAtLocation(CommittableModelGraph& cmg, SceneEl const& el, glm::vec3 const& loc)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        if (!CanAttachStationTo(el))
+        {
+            return false;
+        }
+
+        StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
+        SelectOnly(mg, station);
+        cmg.Commit("added station " + station.GetLabel());
+        return true;
+    };
+
+    bool AddStationAtLocation(CommittableModelGraph& cmg, UID elID, glm::vec3 const& loc)
+    {
+        ModelGraph& mg = cmg.UpdScratch();
+
+        SceneEl const* el = mg.TryGetElByID(elID);
+
+        if (!el)
+        {
+            return false;
+        }
+
+        return AddStationAtLocation(cmg, *el, loc);
+    };
 }
 
 // OpenSim::Model generation support
@@ -5713,6 +5742,16 @@ namespace
             TransitionToAssigningMeshNextFrame(*maybeMesh);
         }
 
+        void TryAddingStationAtMousePosToHoveredElement()
+        {
+            if (!m_MaybeHover)
+            {
+                return;
+            }
+
+            AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), m_MaybeHover.ID, m_MaybeHover.Pos);
+        }
+
         //
         // TRANSITIONS
         //
@@ -5989,11 +6028,13 @@ namespace
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
             {
+                // Ctrl+O: open osim
                 m_Shared->PromptUserToImportOsimFile();
                 return true;
             }
             else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
             {
+                // Ctrl+Shift+S: save scene to osim
                 m_Shared->PromptUserToSaveCurrentModelGraph();
                 return true;
             }
@@ -6049,6 +6090,12 @@ namespace
             {
                 // J: try to create a joint
                 TryCreatingJointFromHoveredElement();
+                return true;
+            }
+            else if (ImGui::IsKeyPressed(SDL_SCANCODE_T))
+            {
+                // T: try to add a station to the current hover
+                TryAddingStationAtMousePosToHoveredElement();
                 return true;
             }
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_R))
@@ -6344,33 +6391,25 @@ namespace
             ImGui::PushID(imguiID++);
             if (CanAttachStationTo(el))
             {
-                auto addStationAtLocation = [&](glm::vec3 const& loc)
-                {
-                    ModelGraph& mg = m_Shared->UpdModelGraph();
-                    StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), GetStationAttachmentParent(m_Shared->GetModelGraph(), el), loc, GenerateName(StationEl::Class()));
-                    SelectOnly(mg, station);
-                    m_Shared->CommitCurrentModelGraph("added station " + station.GetLabel());
-                };
-
                 if (HasPhysicalSize(el))
                 {
                     if (ImGui::BeginMenu(ICON_FA_MAP_PIN " Station"))
                     {
                         if (ImGui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                         {
-                            addStationAtLocation(el.GetPos());
+                            AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                         }
                         DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
                         if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                         {
-                            addStationAtLocation(clickPos);
+                            AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, clickPos);
                         }
                         DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
                         if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                         {
-                            addStationAtLocation(glm::vec3{});
+                            AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, glm::vec3{});
                         }
                         DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
@@ -6378,7 +6417,7 @@ namespace
                         {
                             if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                             {
-                                addStationAtLocation(AABBCenter(el.CalcBounds()));
+                                AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, AABBCenter(el.CalcBounds()));
                             }
                             DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                         }
@@ -6390,7 +6429,7 @@ namespace
                 {
                     if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
                     {
-                        addStationAtLocation(el.GetPos());
+                        AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                     }
                     DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                 }
