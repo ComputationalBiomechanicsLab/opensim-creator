@@ -2994,7 +2994,7 @@ namespace
         SelectOnly(mg, station);
         cmg.Commit("added station " + station.GetLabel());
         return true;
-    };
+    }
 
     bool AddStationAtLocation(CommittableModelGraph& cmg, UID elID, glm::vec3 const& loc)
     {
