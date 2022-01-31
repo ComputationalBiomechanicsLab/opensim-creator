@@ -21,7 +21,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_1mc.vtp</mesh_file>
+							<mesh_file>arm_r_1mc.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -47,7 +47,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3distph.vtp</mesh_file>
+							<mesh_file>arm_r_3distph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -73,7 +73,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3mc.vtp</mesh_file>
+							<mesh_file>arm_r_3mc.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -99,7 +99,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3midph.vtp</mesh_file>
+							<mesh_file>arm_r_3midph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -125,7 +125,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_3proxph.vtp</mesh_file>
+							<mesh_file>arm_r_3proxph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -151,7 +151,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4distph.vtp</mesh_file>
+							<mesh_file>arm_r_4distph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -177,7 +177,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4mc.vtp</mesh_file>
+							<mesh_file>arm_r_4mc.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -203,7 +203,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4midph.vtp</mesh_file>
+							<mesh_file>arm_r_4midph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -229,7 +229,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_4proxph.vtp</mesh_file>
+							<mesh_file>arm_r_4proxph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -255,7 +255,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5distph.vtp</mesh_file>
+							<mesh_file>arm_r_5distph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -281,7 +281,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5mc.vtp</mesh_file>
+							<mesh_file>arm_r_5mc.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -307,7 +307,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5midph.vtp</mesh_file>
+							<mesh_file>arm_r_5midph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -333,7 +333,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_5proxph.vtp</mesh_file>
+							<mesh_file>arm_r_5proxph.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -359,7 +359,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_hamate.vtp</mesh_file>
+							<mesh_file>arm_r_hamate.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -385,7 +385,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_lunate.vtp</mesh_file>
+							<mesh_file>arm_r_lunate.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -411,7 +411,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_pisiform.vtp</mesh_file>
+							<mesh_file>arm_r_pisiform.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -437,7 +437,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_scaphoid.vtp</mesh_file>
+							<mesh_file>arm_r_scaphoid.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -463,7 +463,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_thumbdist.vtp</mesh_file>
+							<mesh_file>arm_r_thumbdist.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -489,7 +489,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_thumbprox.vtp</mesh_file>
+							<mesh_file>arm_r_thumbprox.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -515,7 +515,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_trapezium.vtp</mesh_file>
+							<mesh_file>arm_r_trapezium.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -541,7 +541,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_trapezoid.vtp</mesh_file>
+							<mesh_file>arm_r_trapezoid.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -567,7 +567,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_triquetrum.vtp</mesh_file>
+							<mesh_file>arm_r_triquetrum.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -593,7 +593,7 @@
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1 1 1</scale_factors>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_ulna.vtp</mesh_file>
+							<mesh_file>arm_r_ulna.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -634,7 +634,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2distph.vtp</mesh_file>
+									<mesh_file>arm_r_2distph.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -674,7 +674,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2midph.vtp</mesh_file>
+									<mesh_file>arm_r_2midph.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -714,7 +714,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2proxph.vtp</mesh_file>
+									<mesh_file>arm_r_2proxph.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -754,7 +754,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_2mc.vtp</mesh_file>
+									<mesh_file>arm_r_2mc.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -794,7 +794,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_capitate.vtp</mesh_file>
+									<mesh_file>arm_r_capitate.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
@@ -834,7 +834,7 @@
 									<!--Scale factors in X, Y, Z directions respectively.-->
 									<scale_factors>1 1 1</scale_factors>
 									<!--Name of geometry file.-->
-									<mesh_file>C:\Users\adamk\OneDrive\Desktop\tutorial4_arm-meshes\arm_r_radius.vtp</mesh_file>
+									<mesh_file>arm_r_radius.vtp</mesh_file>
 								</Mesh>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
