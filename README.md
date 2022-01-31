@@ -91,6 +91,6 @@ a C/C++ compiler, CMake, etc. installed):
 
 | OS | ⚙️ Build Script | Usage Example |
 | :-: | :-: | :-: |
-| Windows | [.bat](scripts/build_windows.bat) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts\build_windows.bat` |
-| Mac | [.sh](scripts/build_mac-catalina.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/build_mac-catalina.sh` |
-| Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/adamkewley/osmv && cd osmv && scripts/build_debian-buster.sh` |
+| Windows | [.bat](scripts/build_windows.bat) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd osmv && scripts\build_windows.bat` |
+| Mac | [.sh](scripts/build_mac-catalina.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd osmv && scripts/build_mac-catalina.sh` |
+| Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd osmv && scripts/build_debian-buster.sh` |
