@@ -5563,19 +5563,25 @@ namespace
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.Header.c_str());
         }
 
-        // draws 3D scene into an ImGui::Image and performs any hittesting etc.
-        void Draw3DViewer()
+        // draw a user-clickable button for cancelling out of this choosing state
+        void DrawCancelButton()
         {
-            m_Shared->SetContentRegionAvailAsSceneRect();
+            char const* const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
 
-            std::vector<DrawableThing>& drawables = GenerateDrawables();
+            glm::vec2 framePad = {10.0f, 10.0f};
+            glm::vec2 margin = {25.0f, 35.0f};
+            Rect sceneRect = m_Shared->Get3DSceneRect();
+            glm::vec2 textDims = ImGui::CalcTextSize(text);
 
-            m_MaybeHover = m_Shared->Hovertest(drawables);
-            HandleHovertestSideEffects();
-
-            m_Shared->DrawScene(drawables);
-            DrawConnectionLines();
-            DrawHeaderText();
+            ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
+            ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
+            if (ImGui::Button(text))
+            {
+                requestPop();
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
         }
 
     public:
@@ -5620,8 +5626,8 @@ namespace
             m_Shared->DrawScene(drawables);
             DrawConnectionLines();
             DrawHeaderText();
+            DrawCancelButton();
         }
-
 
     private:
         // data that's shared between other UI states
@@ -5665,6 +5671,7 @@ namespace
         void requestPop(Layer*) override
         {
             m_Maybe3DViewerModal.reset();
+            App::cur().requestRedraw();
         }
 
         // try to select *only* what is currently hovered
