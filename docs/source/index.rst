@@ -26,7 +26,7 @@ Getting Started
 * **Boot OpenSim Creator**:
 
   * **On Windows**: Search for "osc" in the start menu and open that. Alternatively, browse to your install location (default: ``C:\Program Files\osc\bin\osc.exe``).
-  * **On Mac**: Search for "osc" in the finder (Super+Space, search, enter). Alternatively, browse to your install location (default: ``/Applications/osc (VERSION)``).
+  * **On Mac**: Search for "osc" in the finder (Super+Space, search, enter). Alternatively, browse to your install location (default: ``/Applications/osc.app``).
   * **On Linux**: Search for "osc" in your desktop. Alternatively, browse to your install location (default: ``/opt/osc (VERSION)/bin/osc``).
 
 * **Explore the UI**. You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. I'd recommend ``double_pendulum.osim`` if you want something basic, or ``ToyDropLanding.osim`` if you want something "meatier".
@@ -40,6 +40,7 @@ Table of Contents
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
+   :numbered:
 
    tut1
    tut2
