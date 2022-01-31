@@ -80,7 +80,7 @@ To add the various bodies + joints into the model, you will need to:
 
   * Right-click the top pendulum, click ``Join to``, followed by clicking ground to create a new joint between the top pendulum and ground.
   * Name it ``pendulum_head_to_ground``
-  * Translate it to the location of the ``pendulum_base`` (i.e. "the ceiling" in this model, recommended: ``(0.0, 0.75, 0.0)``)
+  * Translate it to the location of the "ceiling" in this model, recommended: ``(0.0, 0.75, 0.0)``)
   * Change its joint type to ``PinJoint`` through the right-click menu.
 
 The above steps set up all the bodies + joints in the model. You should have something that looks like this:
