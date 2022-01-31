@@ -90,11 +90,13 @@ The above steps set up all the bodies + joints in the model. You should have som
 
     The pendulum model after its two bodies and two pin joints. (:download:`📥 download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
 
-You can also try converting the scene to an OpenSim model (``osim``). This is a one-way process, but your progress in the mesh importer will be **not** be lost when you convert it to an ``osim``. Re-opening the mesh importer will "remember" your scene. So, if you want to test whether you have actually created a pendulum, you can:
+Next, we will (temporarily) convert the mesh importer scene into an OpenSim model (``osim``) so that we can test whether what we've done has created a correct-enough osim model. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost. Re-opening the mesh importer will "remember" your scene.
 
-* *(optional)* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
-* *(optional)* **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
-* *(optional)* **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
+To convert the mesh importer scene into an ``osim`` (for testing):
+
+* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
+* **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
+* **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 .. warning::
 
