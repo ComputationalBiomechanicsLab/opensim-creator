@@ -98,10 +98,6 @@ To convert the mesh importer scene into an ``osim`` (for testing):
 * **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
-.. warning::
-
-    These optional steps above are just to test the model in OpenSim. Switch back to the mesh importer for the next step.
-
 
 .. figure:: _static/tut3_simulating-meshless-model.png
     :width: 60%
@@ -111,6 +107,10 @@ To convert the mesh importer scene into an ``osim`` (for testing):
 
 Step 3: Add Decorative Geometry
 -------------------------------
+
+.. note::
+
+    These next steps return to editing your scene in the mesh importer. To return to the mesh importer, browse to ``File > Import Meshes`` in the main menu.
 
 Although the previous steps create a *functionally* complete model, the model doesn't look like a particularly convincing pendulum. These steps add decorative geometry to fix that.
 
