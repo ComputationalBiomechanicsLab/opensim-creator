@@ -3048,8 +3048,20 @@ namespace
     std::unique_ptr<OpenSim::Body> CreateDetatchedBody(ModelGraph const& mg, BodyEl const& bodyEl)
     {
         auto addedBody = std::make_unique<OpenSim::Body>();
-        addedBody->setMass(bodyEl.Mass);
+
         addedBody->setName(bodyEl.Name);
+        addedBody->setMass(bodyEl.Mass);
+
+        // HACK: set the inertia of the emitted body to be nonzero
+        //
+        // the reason we do this is because having a zero inertia on a body can cause
+        // the simulator to freak out in some scenarios.
+        {
+            double moment = 0.01 * bodyEl.Mass;
+            SimTK::Vec3 moments{moment, moment, moment};
+            SimTK::Vec3 products{0.0, 0.0, 0.0};
+            addedBody->setInertia(SimTK::Inertia{moments, products});
+        }
 
         for (MeshEl const& mesh : mg.iter<MeshEl>())
         {
