@@ -5200,6 +5200,27 @@ namespace
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.Header.c_str());
         }
 
+        // draw a user-clickable button for cancelling out of this choosing state
+        void DrawCancelButton()
+        {
+            char const* const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+
+            glm::vec2 framePad = {10.0f, 10.0f};
+            glm::vec2 margin = {25.0f, 35.0f};
+            Rect sceneRect = m_Shared->Get3DSceneRect();
+            glm::vec2 textDims = ImGui::CalcTextSize(text);
+
+            ImGui::SetCursorScreenPos(sceneRect.p2 - textDims - framePad - margin);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePad);
+            ImGui::PushStyleColor(ImGuiCol_Button, OSC_GREYED_RGBA);
+            if (ImGui::Button(text))
+            {
+                requestPop();
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
+        }
+
     public:
         bool onEvent(SDL_Event const& e) override
         {
@@ -5235,6 +5256,7 @@ namespace
             DrawOverlay();
             DrawHoverTooltip();
             DrawHeaderText();
+            DrawCancelButton();
         }
 
     private:
