@@ -10,61 +10,102 @@
 
 #include <imgui.h>
 
-static bool do_sort_by_name(OpenSim::Coordinate const* c1, OpenSim::Coordinate const* c2) {
+// returns `true` if the name of `c1` is lexographically less than `c2`
+static bool IsNameLexographicallyLessThan(OpenSim::Coordinate const* c1,
+                                          OpenSim::Coordinate const* c2)
+{
     return c1->getName() < c2->getName();
 }
 
-static bool should_filter_out(osc::CoordinateEditor const& st, OpenSim::Coordinate const* c) {
-    if (!osc::ContainsSubstringCaseInsensitive(c->getName(), st.filter)) {
+void osc::get_coordinates(OpenSim::Model const& m,
+                          std::vector<OpenSim::Coordinate const*>& out)
+{
+    OpenSim::CoordinateSet const& s = m.getCoordinateSet();
+    int len = s.getSize();
+    out.reserve(out.size() + static_cast<size_t>(len));
+    for (int i = 0; i < len; ++i)
+    {
+        out.push_back(&s[i]);
+    }
+}
+
+
+static bool ShouldFilterOut(osc::CoordinateEditor const& st, OpenSim::Coordinate const& c)
+{
+    if (!osc::ContainsSubstringCaseInsensitive(c.getName(), st.filter))
+    {
         return true;
     }
 
-    OpenSim::Coordinate::MotionType mt = c->getMotionType();
-    if (st.show_rotational && mt == OpenSim::Coordinate::MotionType::Rotational) {
+    OpenSim::Coordinate::MotionType mt = c.getMotionType();
+    if (st.show_rotational && mt == OpenSim::Coordinate::MotionType::Rotational)
+    {
         return false;
     }
 
-    if (st.show_translational && mt == OpenSim::Coordinate::MotionType::Translational) {
+    if (st.show_translational && mt == OpenSim::Coordinate::MotionType::Translational)
+    {
         return false;
     }
 
-    if (st.show_coupled && mt == OpenSim::Coordinate::MotionType::Coupled) {
+    if (st.show_coupled && mt == OpenSim::Coordinate::MotionType::Coupled)
+    {
         return false;
     }
 
     return true;
 }
 
-void osc::get_coordinates(OpenSim::Model const& m, std::vector<OpenSim::Coordinate const*>& out) {
-    OpenSim::CoordinateSet const& s = m.getCoordinateSet();
-    int len = s.getSize();
-    out.reserve(out.size() + static_cast<size_t>(len));
-    for (int i = 0; i < len; ++i) {
-        out.push_back(&s[i]);
+static float ConvertToDisplayFormat(OpenSim::Coordinate const& c, double v)
+{
+    float rv = static_cast<float>(v);
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::degrees(rv);
     }
+    return rv;
 }
 
-bool osc::CoordinateEditor::draw(UiModel& uim) {
+static double ConvertToStorageFormat(OpenSim::Coordinate const& c, float v)
+{
+    double rv = static_cast<double>(v);
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::radians(rv);
+    }
+    return rv;
+}
+
+bool osc::CoordinateEditor::draw(UiModel& uim)
+{
     ImGui::Dummy({0.0f, 3.0f});
     ImGui::TextUnformatted(ICON_FA_EYE);
-    if (ImGui::BeginPopupContextItem("##coordinateditorfilterpopup")) {
+
+    if (ImGui::BeginPopupContextItem("##coordinateditorfilterpopup"))
+    {
         ImGui::Checkbox("sort alphabetically", &sort_by_name);
         ImGui::Checkbox("show rotational coords", &show_rotational);
         ImGui::Checkbox("show translational coords", &show_translational);
         ImGui::Checkbox("show coupled coords", &show_coupled);
         ImGui::EndPopup();
     }
+
     ImGui::SameLine();
-    if (filter[0] != '\0') {
-        if (ImGui::Button("X")) {
+    if (filter[0] != '\0')
+    {
+        if (ImGui::Button("X"))
+        {
             filter[0] = '\0';
         }
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::Text("Clear the search string");
             ImGui::EndTooltip();
         }
-    } else {
+    }
+    else
+    {
         ImGui::TextUnformatted(ICON_FA_SEARCH);
     }
     ImGui::SameLine();
@@ -79,15 +120,15 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
     get_coordinates(uim.getModel(), coord_scratch);
 
     // sort coords
+    RemoveErase(coord_scratch, [this](auto const* c)
     {
-        auto pred = [this](auto const* c) { return should_filter_out(*this, c); };
-        auto it = std::remove_if(coord_scratch.begin(), coord_scratch.end(), pred);
-        coord_scratch.erase(it, coord_scratch.end());
-    }
+        return ShouldFilterOut(*this, *c);
+    });
 
     // sort coords
-    if (sort_by_name) {
-        std::sort(coord_scratch.begin(), coord_scratch.end(), do_sort_by_name);
+    if (sort_by_name)
+    {
+        Sort(coord_scratch, IsNameLexographicallyLessThan);
     }
 
     ImGui::BeginChild("##coordinatesliderschildheaders");
@@ -112,7 +153,8 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
     ImGui::BeginChild("##coordinatesliders");
 
-    if (coord_scratch.empty()) {
+    if (coord_scratch.empty())
+    {
         ImGui::NewLine();
         ImGui::TextDisabled("    (no coordinates in this model)");
     }
@@ -120,15 +162,19 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
     int i = 0;
     bool state_modified = false;
     ImGui::Columns(3);
-    for (OpenSim::Coordinate const* c : coord_scratch) {
+
+    for (OpenSim::Coordinate const* c : coord_scratch)
+    {
         ImGui::PushID(i++);
 
         int styles_pushed = 0;
-        if (c == uim.getHovered()) {
+        if (c == uim.getHovered())
+        {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
             ++styles_pushed;
         }
-        if (c == uim.getSelected()) {
+        if (c == uim.getSelected())
+        {
             ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
             ++styles_pushed;
         }
@@ -136,7 +182,8 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
         ImGui::PopStyleColor(styles_pushed);
         styles_pushed = 0;
 
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             uim.setHovered(c);
 
             ImGui::BeginTooltip();
@@ -160,23 +207,27 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
             uim.setSelected(c);
         }
 
         ImGui::NextColumn();
 
-        if (c->getLocked(uim.getState())) {
+        if (c->getLocked(uim.getState()))
+        {
             ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.6f, 0.0f, 0.0f, 1.0f});
             ++styles_pushed;
         }
 
-        if (ImGui::Button(c->getLocked(uim.getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
+        if (ImGui::Button(c->getLocked(uim.getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
+        {
             uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), c->getSpeedValue(uim.getState()), !c->getLocked(uim.getState())});
             state_modified = true;
         }
 
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
             ImGui::Text("Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
@@ -186,10 +237,15 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SameLine();
 
-        float v = static_cast<float>(c->getValue(uim.getState()));
+        float v = ConvertToDisplayFormat(*c, c->getValue(uim.getState()));
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        if (ImGui::SliderFloat("##coordinatevalueeditor", &v, static_cast<float>(c->getRangeMin()), static_cast<float>(c->getRangeMax()))) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{static_cast<double>(v), c->getSpeedValue(uim.getState()), c->getLocked(uim.getState())});
+        if (ImGui::SliderFloat("##coordinatevalueeditor", &v, ConvertToDisplayFormat(*c, c->getRangeMin()), ConvertToDisplayFormat(*c, c->getRangeMax())))
+        {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{
+                ConvertToStorageFormat(*c, v),
+                c->getSpeedValue(uim.getState()),
+                c->getLocked(uim.getState())
+            });
             state_modified = true;
         }
 
@@ -200,9 +256,14 @@ bool osc::CoordinateEditor::draw(UiModel& uim) {
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-        float speed = static_cast<float>(c->getSpeedValue(uim.getState()));
-        if (ImGui::InputFloat("##coordinatespeededitor", &speed)) {
-            uim.pushCoordinateEdit(*c, CoordinateEdit{c->getValue(uim.getState()), speed, c->getLocked(uim.getState())});
+        float speed = ConvertToDisplayFormat(*c, c->getSpeedValue(uim.getState()));
+        if (ImGui::InputFloat("##coordinatespeededitor", &speed))
+        {
+            uim.pushCoordinateEdit(*c, CoordinateEdit{
+                c->getValue(uim.getState()),
+                ConvertToStorageFormat(*c, speed),
+                c->getLocked(uim.getState())
+            });
             state_modified = true;
         }
         ImGui::NextColumn();
