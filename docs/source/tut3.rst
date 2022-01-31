@@ -57,13 +57,13 @@ Step 2: Add Bodies & PinJoints
 
 To add the various bodies + joints into the model, you will need to:
 
-- **Create the top pendulum body**:
+- **Create the body of the top pendulum**:
 
   * Add a body into the scene. 
   * Name it ``pendulum_head``.
   * Translate it to where the top pendulum head should be (recommended: ``(0.0, 0.5, 0.0)``).
 
-- **Create the bottom pendulum body**:
+- **Create the body of the bottom pendulum**:
 
   * Add another body into the scene.
   * Name it ``pendulum_head_2``.
@@ -90,7 +90,7 @@ The above steps set up all the bodies + joints in the model. You should have som
 
     The pendulum model after its two bodies and two pin joints. (:download:`📥 download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
 
-Next, we will (temporarily) convert the mesh importer scene into an OpenSim model (``osim``) so that we can test whether what we've done has created a correct-enough osim model. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost. Re-opening the mesh importer will "remember" your scene.
+Next, you will (temporarily) convert the mesh importer scene into an OpenSim model (``osim``) so that you can test whether your model is correct. Conversion is a one-way process, but your progress in the mesh importer will be **not** be lost. Re-opening the mesh importer will "remember" your scene.
 
 To convert the mesh importer scene into an ``osim`` (for testing):
 
@@ -127,7 +127,7 @@ To decorate the model:
 
 * **Attach a cube mesh to the top pendulum**:
 
-  * Right-click the top pendulum body (``pendulum_head``) and use the ``Add Other > Meshes`` to attach ``block.vtp`` to it.
+  * Right-click the body of the top pendulum (``pendulum_head``) and use the ``Add Other > Meshes`` to attach ``block.vtp`` to it.
   * Rename it to ``pendulum_head_decoration``
   * Move (``G``), Rotate (``R``), or Scale (``S``) the mesh however you like (recommended: leave it as-is) by either using the in-UI draggable gizmos or typing values into the context menu.
 
