@@ -3774,7 +3774,16 @@ namespace
             }
 
             std::vector<std::string> issues;
-            std::unique_ptr<OpenSim::Model> m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
+            std::unique_ptr<OpenSim::Model> m;
+
+            try
+            {
+                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+            }
 
             if (m)
             {
@@ -3801,7 +3810,14 @@ namespace
 
         void TryCreateOutputModel()
         {
-            m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_IssuesBuffer);
+            try
+            {
+                m_MaybeOutputModel = CreateOpenSimModelFromModelGraph(GetModelGraph(), m_IssuesBuffer);
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+            }
         }
 
 

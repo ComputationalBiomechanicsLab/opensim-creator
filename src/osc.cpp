@@ -69,6 +69,10 @@ int main(int argc, char** argv)
             auto mes = std::make_shared<MainEditorState>();
             app.show<LoadingScreen>(mes, argv[0]);
         }
+
+        log::info("exited main application event loop: shutting down application");
+
+        return EXIT_SUCCESS;
     }
     catch (std::exception const& ex)
     {
@@ -76,8 +80,4 @@ int main(int argc, char** argv)
         log::error("osc: terminating due to fatal exception");
         throw;
     }
-
-    log::info("exited main application event loop: shutting down application");
-
-    return EXIT_SUCCESS;
 }
