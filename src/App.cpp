@@ -1115,6 +1115,9 @@ void osc::ImGuiInit()
         }
     }
 
+    // make it so that windows can only ever be moved from the title bar
+    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+
     // load application-level ImGui config, then the user one,
     // so that the user config takes precedence
     {
