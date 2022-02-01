@@ -37,7 +37,7 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
       <a href="https://chanzuckerberg.com/">
         <img src="resources/chanzuckerberg_logo.png" alt="CZI logo" width="128" height="128" />
         <br />
-        Biomechanical Engineering at TU Delft
+        Chan Zuckerberg Initiative
       </a>
     </td>
   </tr>
@@ -62,8 +62,8 @@ requires being logged into GitHub; otherwise, you won't see download links).
 The release process builds installers that work slightly differently on each platform:
 
 - **Windows Installation**: Download a release, unzip it (if necessary), run the `.exe`
-  self installer, follow the usual `next`, `next`, `finish` wizard. Run `osc` by typing
-  `osc` in your start menu, or browse to `C:\Program Files\osc $VERSION\`
+  self installer, follow the usual `next`, `next`, `finish` wizard. Run `OpenSimCreator` by typing
+  `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`
 
 - **Mac Installation**: Download a release, unzip it (if necessary). Double click the `dmg`
   file to mount it, drag `osc` into your `Applications` directory. Browse to the `Applications`
