@@ -4872,7 +4872,7 @@ namespace
             // and start loading it
             if (e.type == SDL_DROPFILE && e.drop.file != nullptr)
             {
-                PushMeshLoadRequest(std::filesystem::path{e.drop.file});
+                m_DroppedFiles.emplace_back(e.drop.file);
                 return true;
             }
 
@@ -4881,6 +4881,14 @@ namespace
 
         void tick(float)
         {
+            // push any user-drag-dropped files as one batch
+            if (!m_DroppedFiles.empty())
+            {
+                std::vector<std::filesystem::path> buf;
+                std::swap(buf, m_DroppedFiles);
+                PushMeshLoadRequests(std::move(buf));
+            }
+
             // pop any background-loaded meshes
             PopMeshLoader();
 
@@ -4906,6 +4914,9 @@ namespace
     private:
         // model graph (snapshots) the user is working on
         CommittableModelGraph m_ModelGraphSnapshots;
+
+        // batch of files the user drag+dropped into the UI
+        std::vector<std::filesystem::path> m_DroppedFiles;
 
         // loads meshes in a background thread
         MeshLoader m_MeshLoader;
