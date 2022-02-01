@@ -3008,7 +3008,7 @@ namespace
         }
 
         return AddStationAtLocation(cmg, *el, loc);
-    };
+    }
 }
 
 // OpenSim::Model generation support
