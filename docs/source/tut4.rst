@@ -1,8 +1,8 @@
 .. _tut4:
 
 
-Tutorial 4: Make an Arm
-=======================
+Make an Arm
+===========
 
 In this tutorial, we will be using OpenSim Creator to create a basic human hand from some mesh files:
 
@@ -11,7 +11,7 @@ In this tutorial, we will be using OpenSim Creator to create a basic human hand 
 
     The model created from these :download:`📥 meshes <_static/tutorial4_arm-meshes.zip>`. Final version of the model available here :download:`📥 download model <_static/tut4_after-adding-basic-muscles.osim>`
 
-This tutorial will use the **mesh importer** to import mesh files that represent an arm, followed by using the mesh importer to assign the meshes to custom-placed **bodies** and **joints**. Once they are placed, the tutorial then introduces using **stations** to mark "points of interest" that can be used in the ``osim`` editor to define **muscle paths**.
+This tutorial will use the **mesh importer** to import mesh files that represent an arm, followed by using the mesh importer to assign the meshes to custom-placed **bodies** and **joints**. Once those are placed, the tutorial then introduces using **stations** to mark "points of interest" that can be used in the ``osim`` editor to define **muscle paths**.
 
 This is a harder tutorial that builds on top of several techniques that were demonstrated in previous tutorials:
 
@@ -19,7 +19,7 @@ This is a harder tutorial that builds on top of several techniques that were dem
 * :ref:`tut2`: Adding forces into a model, making refinements/simplifications based on preliminary simulation results
 * :ref:`tut3`: Importing meshes and placing bodies/joints with the mesh importer
 
-Those techniques are used *ad nauseam* here. Therefore, it is strongly recommended that you consult those tutorials if you aren't sure what's going on here.
+Those techniques are used *ad nauseam* in this tutorial. Therefore, it is strongly recommended that you consult those tutorials if you aren't sure what's going on here.
 
 
 Topics Covered by this Tutorial
@@ -31,8 +31,8 @@ Topics Covered by this Tutorial
 - Using the ``osim`` editor to add **muscle paths** to the model
 
 
-Step 1: Import Meshes
----------------------
+Import Meshes
+-------------
 
 The first step is to get these  :download:`📥 meshes <_static/tutorial4_arm-meshes.zip>` into OpenSim Creator. The easiest way to do this is with the **mesh importer screen**, which was described in :ref:`tut3`. You need to:
 
@@ -52,8 +52,8 @@ This will give you a scene with the meshes in roughly the right place:
 
 
 
-Step 2: Add Bodies to the Meshes
---------------------------------
+Add Bodies to the Meshes
+------------------------
 
 The next step is to place bodies in the model. As described previous tutorials, bodies are (effectively) points in space with a mass. In this step, we are going to add bodies where we think the main mass centers in the model should be (based on the meshes) and attach the meshes to the bodies. Attaching the meshes ensures that the mesh moves along with the body, rather than being immobilized in ground.
 
@@ -65,7 +65,7 @@ To keep things short, we will initially only assign bodies to the model's index 
 
 * For each of the four bone meshes in the index finger (``arm_r_2distph``, ``arm_r_2midph``, ``arm_r_2proxph``, and ``arm_r_2mc``):
   
-  * Right-click the mesh then navigate to ``Add > Body`` and click ``At Bounds Center`` to add a mesh at the center of the mesh's bounds
+  * Right-click the mesh then navigate to ``Add > Body`` and click ``At Bounds Center`` to add a mesh at the center of the mesh's bounds. Alternatively, hover the mesh and press the ``B`` (add body) hotkey, which does the same thing.
   * Right-click the added body, rename it to the mesh name followed by ``_b`` (to indicate body). E.g. ``arm_r_2distph_b``
 
 * As a simplification, only add one body to the mesh in the middle of the wrist. For example, add one to ``arm_r_capitate`` and call it ``arm_r_wrist_b`` (because it will act as a body for all wrist bones).
@@ -87,6 +87,10 @@ The model should look something like this:
 
     The scene after assigning the first six bodies for the index finger up to the arm. When hovering something, grey lines in the UI indicate the connectivity between the bodies. :download:`📥 download model <_static/tut4_after-adding-first-6-bodies.osim>`
 
+
+Assign Unassigned Meshes to Appropriate Bodies
+----------------------------------------------
+
 We also need to assign the appropriate meshes to each body. When we imported the meshes, they were imported as **unassigned** (i.e. attached to ground). Unassigned meshes are slightly red-tinted compared to assigned meshes.
 
 .. note::
@@ -100,10 +104,10 @@ For this model, we will assign the finger, wrist, and arm meshes to the appropri
 To assign assign a mesh, right-click the mesh, click ``reassign connection > parent``, then click the body the mesh should be attached to. Alternatively, you can hover over the mesh and press ``A`` (assign). You need to assign the following meshes:
 
 * Attach all wrist bone meshes to the wrist body (``arm_r_wrist_b``)
-* Attach the arm bone meshes to the arm body (``arm_r_b``)
+* Attach the unassigned ulna arm bone mesh (``arm_r_ulna``) to the arm body (``arm_r_b``)
 
 
-Which should result in most of the model being assigned. I have skipped assigning the other fingers, but you can do it if you want (assign each of the unassigned finger bone meshes to ``arm_r_wrist_b``):
+This should result in most of the model being assigned. I have skipped assigning the other fingers, but you can do it if you want (assign each of the unassigned finger bone meshes to ``arm_r_wrist_b``):
 
 .. figure:: _static/tut4_after-assigning-meshes-to-bodies.png
    :width: 60%
@@ -111,10 +115,10 @@ Which should result in most of the model being assigned. I have skipped assignin
    The scene after assigning the bone meshes to the corresponding bodies. Here, I have left the other finger meshes unassigned, but you can (optionally) assign them to the wrist body (``arm_r_wrist_b``) if you'd like them to track along with the wrist. :download:`📥 download model <_static/tut4_after-assigning-meshes-to-bodies.osim>`
 
 
-Step 3: Add Joints Between the Bodies
--------------------------------------
+Add Joints Between the Bodies
+-----------------------------
 
-Now that we have roughly positioned our bodies in the scene, the next step is to place joints between those bodies. Joints express how the bodies can move relative to each other. In this (simplified) model, we will assume all parts of the finger and wrist can be attached to each other with pin joints. This isn't technically true, but is close enough quickly build a model that can be simulated. The joint type can be changed to a more suitable joint (e.g. a custom joint) later.
+Now that we have roughly positioned our bodies in the scene, the next step is to place joints between those bodies. Joints express how the bodies can move relative to each other. In this (simplified) model, we will assume all parts of the finger and wrist can be attached to each other with pin joints. This isn't technically true, but it is close enough quickly build a model that can be simulated. The joint type can be changed to a more suitable joint (e.g. a custom joint) later.
 
 To add pin joints between each body:
 
@@ -163,8 +167,8 @@ And the scene looked as follows:
    (*optional*) Now that bodies, meshes, and joints have been added via the importer, you can test your progress by importing the scene into the ``osim`` editor and changing a few joint coordinates. The unassigned meshes might look unusual (they will stay where they are, in ground, when the wrist moves), but the rest of the finger should move roughly as expected.
 
 
-Step 4: Mark Points of Interest on the Meshes
----------------------------------------------
+Mark Points of Interest on the Meshes
+-------------------------------------
 
 Now that we've added bodies, meshes, and joints, the next step is to think about where we will ultimately be placing muscles.
 
@@ -203,8 +207,8 @@ The stations should be placed in similar position to the figure below. These sta
    The scene after defining eight stations along the index finger. These stations are "points of interest" that can be used later to define muscles. The utility of adding them now is that the mesh importer makes it easy to place, reattach, and move them around in the scene. :download:`📥 download model <_static/tut4_after-marking-stations.osim>`
 
 
-Step 5: Convert to an OpenSim Model
------------------------------------
+Convert to an OpenSim Model
+---------------------------
 
 Now that we have added meshes, bodies, joints, and points of interest into the mesh importer, we are now (finally 🎉) ready to import the scene into an ``osim``, check for any basic issues, and perform any ``osim``-specific steps.
 
@@ -234,8 +238,8 @@ You should be able to see the meshes, see that the joints are rotating (somewhat
    The ``osim`` model created from the mesh importer. Editing joint coordinates and simulating the model is a quick way to check if joint centers are correctly oriented. Here, you can see that the finger-to-wrist joint is off. This was fixed by returning to the mesh importer and reorienting that joint center. (:download:`📥 download model <_static/tut4_after-marking-stations.osim>`)
 
 
-Step 6: Add Muscle Paths
-------------------------
+Add Muscle Paths
+----------------
 
 Now that we have an actual ``OpenSim`` model (``osim``), we can add any OpenSim components we want into it. In this step, we will focus on adding muscles.
 

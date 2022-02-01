@@ -26,8 +26,8 @@ Topics Covered by this Tutorial
 * Why constraints are sometimes necessary in OpenSim models.
 
 
-Step: Create the Foot
----------------------
+Create the Foot
+---------------
 
 Because of how OpenSim computes a model's spatial layout, the most straightforward way to develop a new OpenSim model is to start at whichever body will be directly attached to ground (e.g. ``foot``) followed by adding bodies that are, in turn, attached to that (e.g. ``knee``). Starting from the "middle" (e.g. ``knee``), or a "leaf", of a model's topology graph is more challenging because the position and orientation of those entities may change when they are attached to bodies that are (topographically) closer to ground.
 
@@ -66,8 +66,8 @@ This should produce a model with a red sphere (``foot``) that is raised above th
     Both of these approaches for moving bodies around in the model have equivalent side-effects. However, coordinates have the added benefit of being user-editable. The official `OpenSim GUI`_ contains a ``coordinates`` panel that lets users easily change coordinates. This enables users to (e.g.) later change ``ty`` to make the model start higher off the ground.
 
 
-Step: Add Contact Surfaces & Forces
------------------------------------
+Add Contact Surfaces & Forces
+-----------------------------
 
 If you simulate the model at this point, the ``foot`` will just fall through the floor. The reason this happens is because the chequered floor and red sphere are decorative and the ``foot`` body is effectively a 0D point in space.
 
@@ -112,8 +112,8 @@ With the contact force added, a simulation of this model should show ``foot`` hi
     The model after adding ``floor_contact``, ``foot_contact`` and a ``HuntCrossleyForce``. Simulating (``Ctrl+R``) the model should show the ``foot`` sphere fall through the scene until it collides with the surface. It should then bounce a little and stop (:download:`📥 download model <_static/tut2_added-contact-stuff.osim>`).
 
 
-Step: Attach the Knee & Head to the Foot
-----------------------------------------
+Attach the Knee & Head to the Foot
+----------------------------------
 
 The next step is to add a "knee" and "head" to our ``foot``. This mostly involves the body-addition steps that were previously explained in :ref:`tut1`.
 
@@ -178,8 +178,8 @@ These steps should put the model into a more interesting arrangement:
     The model after altering the ``ground_to_foot``'s and ``foot_to_knee``'s ``rz`` values. Altering those values puts the model into a more interesting arrangement (:download:`📥 download model <_static/tut2_angles-added.osim>`).
 
 
-Step: Add a Spring between ``foot`` and ``head``
-------------------------------------------------
+Add a Spring between ``foot`` and ``head``
+------------------------------------------
 
 We have now added all of the the bodies and joints that make up the model. However, the only forces acting on the model are gravity and the foot collision. Consequently, a simulation of the model won't be very impressive. The model will fall a little, then ``foot`` will collide with ``floor``, then the rest of the (non-colliding) model will roll around and clip through the floor.
 
@@ -207,8 +207,8 @@ If you simulate the model after adding the spring, you should see that the model
     The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis (:download:`📥 download model <_static/tut2_spring-added.osim>`).
 
 
-Step: Constrain ``foot`` and ``head`` to stay along Y
------------------------------------------------------
+Constrain ``foot`` and ``head`` to stay along Y
+-----------------------------------------------
 
 The model is now *logically* complete--in the sense that it contains all of the mechanical components we want--but it isn't particularly *stable*. If you simulate the model, you will find that it bounces a little bit and then starts to roll around on its foot, rather than continuing to bounce up and down. 
 

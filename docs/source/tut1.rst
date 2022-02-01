@@ -22,8 +22,8 @@ Topics Covered by this Tutorial
 * (optional) Decorating the model to resemble what it's modelling
 
 
-Step: Create a New Model
-------------------------
+Create a New Model
+------------------
 
 In OpenSim Creator, create a new model. It should create a blank scene that looks like this:
 
@@ -43,8 +43,8 @@ You should see a blank 3D scene with a chequered floor and a set of axes in the 
     The only component that doesn't use relative coordinates is the **ground**. The ground is always the "root" of the model's connectivity graph and is always defined to be at ``(0, 0, 0)`` with no rotation. All other components in the model attach to the ground directly or indirectly (i.e. via other components, such as joints).
 
 
-Step: Add a Body with a WeldJoint
----------------------------------
+Add a Body with a WeldJoint
+---------------------------
 
 In the UI, click the ``add body`` button. A dialog should pop up that prompts you to fill in the body's details. Create a body with the following details:
 
@@ -98,8 +98,8 @@ This will move the ``ground_offset`` frame +1 in ground's Y, which is the same a
     Try to get familiar with these basics. You will encounter them frequently. Experiment by changing the translation of the other offset frame (``base_offset``), use negative translations, attach different geometry, or change the geometry's appearance (for a ``Brick``, half widths can be changed to make it smaller/bigger).
 
 
-Step: Add the pendulum head
----------------------------
+Add the Pendulum Head
+---------------------
 
 In the previous step, we created ``pendulum_base``, which is a body that is "welded" into the scene at some vertical (Y) offset. The next step is to create a ``pendulum_head`` that is attached to ``pendulum_base`` with a ``PinJoint``. A ``PinJoint`` has one rotational degree of freedom along Z, which is what will enable the ``pendulum_head`` to swing relative to ``pendulum_base``.
 
@@ -176,8 +176,8 @@ If you simulate the model now, you should see that ``pendulum_head`` swings like
     Although a pendulum may not be all that impressive, the principles shown here scale more easily to complex systems. Maybe the pendulum equation is simple, but what about a double pendulum, or a triple pendulum? What if we attach the weights to each other with muscles? What about a human leg containing many bodies, muscles, and joints that are attached to each other?
 
 
-Step: (optional) Make the Pendulum Look Nicer
----------------------------------------------
+(optional) Make the Pendulum Look Nicer
+---------------------------------------
 
 Although we *logically* have a pendulum that meets our requirements (a mass joined at some distance to a pivot point), our model certainly doesn't *look* like a pendulum. Lets fix that.
 

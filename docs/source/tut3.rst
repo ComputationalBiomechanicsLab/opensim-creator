@@ -25,8 +25,8 @@ Topics Covered by this Tutorial
 * Exporting + simulating the model created by the mesh importer
 
 
-Step: Open the Mesh Importer
-----------------------------
+Open the Mesh Importer
+----------------------
 
 The mesh importer is a separate screen from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer either from the main menu (``File > Import Meshes``) or through the splash screen:
 
@@ -44,8 +44,8 @@ One opened, you will be greeted with a new mesh importer scene, which will be us
     The mesh importer screen, which initially loads with a blank scene that's ready for your masterpiece 🎨. The majority of this tutorial is carried out through this screen.
 
 
-Step: Add Bodies & PinJoints
-----------------------------
+Add Bodies & PinJoints
+----------------------
 
 .. note::
 
@@ -113,8 +113,8 @@ To convert the mesh importer scene into an ``osim`` (for testing), you will need
     Although the model hasn't been decorated yet, it can still be simulated and measured. The pendulum body frames should swing around like a pendulum (:download:`📥 download model <_static/tut3_after-adding-bodies-and-joints.osim>`)
 
 
-Step: Add Decorative Geometry
------------------------------
+Add Decorative Geometry
+-----------------------
 
 .. note::
 
@@ -178,8 +178,8 @@ This should result in a fully-decorated pendulum model:
     The model after decorating it with some cube meshes. Functionally, this model is the same as the undecorated one; however, it now looks *a lot* more like a pendulum 😎. (:download:`📥 download model <_static/tut3_final-model.osim>`)
 
 
-Step: Export and Simulate
--------------------------
+Export and Simulate
+-------------------
 
 Now that we have created a fully modelled and decorated pendulum, we can export it to an ``osim`` and simulate it. To do that:
 
