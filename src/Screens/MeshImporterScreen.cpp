@@ -50,6 +50,7 @@
 #include <SimTKcommon.h>
 
 #include <cstddef>
+#include <cctype>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -220,6 +221,42 @@ namespace
     {
         constexpr float factor = 0.8f;
         return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
+    }
+
+    // returns true if `c` is a character that can appear within the name of
+    // an OpenSim::Component
+    bool IsValidOpenSimComponentNameCharacter(char c)
+    {
+        if (std::isalpha(static_cast<unsigned char>(c)))
+        {
+            return true;
+        }
+        else if ('0' <= c && c <= '9')
+        {
+            return true;
+        }
+        else if (c == '-' || c == '_')
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    // returns a sanitized form of the `s` that OpenSim should accept
+    std::string SanitizeToOpenSimComponentName(std::string_view sv)
+    {
+        std::string rv;
+        for (char c : sv)
+        {
+            if (IsValidOpenSimComponentNameCharacter(c))
+            {
+                rv += c;
+            }
+        }
+        return rv;
     }
 
     // see: https://stackoverflow.com/questions/56466282/stop-compilation-if-if-constexpr-does-not-match
@@ -1188,7 +1225,7 @@ namespace
 
         void SetLabel(std::string_view sv) override
         {
-            Name = std::move(sv);
+            Name = SanitizeToOpenSimComponentName(sv);
         }
 
         Transform GetXform() const override
@@ -1211,7 +1248,7 @@ namespace
         Transform Xform;
         std::shared_ptr<Mesh> MeshData;
         std::filesystem::path Path;
-        std::string Name{FileNameWithoutExtension(Path)};
+        std::string Name{SanitizeToOpenSimComponentName(FileNameWithoutExtension(Path))};
     };
 
     // a body scene element
@@ -1244,7 +1281,7 @@ namespace
 
         BodyEl(UIDT<BodyEl> id, std::string const& name, Transform const& xform) :
             ID{id},
-            Name{name},
+            Name{SanitizeToOpenSimComponentName(name)},
             Xform{xform}
         {
         }
@@ -1309,7 +1346,7 @@ namespace
 
         void SetLabel(std::string_view sv) override
         {
-            Name = std::move(sv);
+            Name = SanitizeToOpenSimComponentName(sv);
         }
 
         Transform GetXform() const override
@@ -1379,7 +1416,7 @@ namespace
 
             ID{std::move(id)},
             JointTypeIndex{std::move(jointTypeIdx)},
-            UserAssignedName{std::move(userAssignedName)},
+            UserAssignedName{SanitizeToOpenSimComponentName(userAssignedName)},
             Parent{std::move(parent)},
             Child{std::move(child)},
             Xform{std::move(xform)}
@@ -1513,7 +1550,7 @@ namespace
 
         void SetLabel(std::string_view sv) override
         {
-            UserAssignedName = std::move(sv);
+            UserAssignedName = SanitizeToOpenSimComponentName(sv);
         }
 
         Transform GetXform() const override
@@ -1584,7 +1621,7 @@ namespace
             ID{std::move(id)},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
-            Name{std::move(name)}
+            Name{SanitizeToOpenSimComponentName(name)}
         {
         }
 
@@ -1594,7 +1631,7 @@ namespace
             ID{GenerateIDT<StationEl>()},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
-            Name{std::move(name)}
+            Name{SanitizeToOpenSimComponentName(name)}
         {
         }
 
@@ -1688,7 +1725,7 @@ namespace
 
         void SetLabel(std::string_view sv) override
         {
-            Name = std::move(sv);
+            Name = SanitizeToOpenSimComponentName(sv);
         }
 
         Transform GetXform() const override
