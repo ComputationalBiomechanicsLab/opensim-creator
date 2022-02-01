@@ -16,7 +16,7 @@ namespace
         void log(LogMessage const& msg) override
         {
             std::lock_guard g{mutex};
-            std::cout << '[' << msg.loggerName << "] [" << toStringView(msg.level) << "] " << msg.payload << std::endl;
+            std::cerr << '[' << msg.loggerName << "] [" << toStringView(msg.level) << "] " << msg.payload << std::endl;
         }
     };
 
