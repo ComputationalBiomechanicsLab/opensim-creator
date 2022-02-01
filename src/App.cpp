@@ -9,6 +9,7 @@
 #include "src/Styling.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/ShaderCache.hpp"
+#include "src/Screens/ErrorScreen.hpp"
 #include "src/MeshCache.hpp"
 
 #include "src/Utils/Algorithms.hpp"
@@ -642,7 +643,17 @@ static void TransitionToNextScreen(App::Impl& impl)
         return;
     }
 
-    impl.currentScreen->onUnmount();
+    try
+    {
+        impl.currentScreen->onUnmount();
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("error unmounting screen %s: %s", impl.currentScreen->name(), ex.what());
+        impl.currentScreen.reset();
+        throw;
+    }
+
     impl.currentScreen.reset();
     impl.currentScreen = std::move(impl.nextScreen);
     impl.numFramesToPoll = 2;
@@ -805,7 +816,7 @@ osc::App& osc::App::operator=(App&&) noexcept = default;
 
 void osc::App::show(std::unique_ptr<Screen> s)
 {
-    log::info("starting application main render loop with screen %s", s->name());
+    log::info("showing screen %s", s->name());
 
     if (m_Impl->currentScreen)
     {
@@ -815,17 +826,38 @@ void osc::App::show(std::unique_ptr<Screen> s)
     m_Impl->currentScreen = std::move(s);
     m_Impl->nextScreen.reset();
 
-    // ensure screens are cleaned up - regardless of how `show` is exited from
-    OSC_SCOPE_GUARD({ m_Impl->currentScreen.reset(); m_Impl->nextScreen.reset(); });
+    // ensure retained screens are destroyed when exiting this guarded path
+    //
+    // this means callers can call .show multiple times on the same app
+    OSC_SCOPE_GUARD({ m_Impl->currentScreen.reset(); });
+    OSC_SCOPE_GUARD({ m_Impl->nextScreen.reset(); });
 
-    try
+    // keep looping until `break` is hit, because the implementation may swap in
+    // an error screen
+    while (m_Impl->currentScreen)
     {
-        AppMainLoopUnguarded(*m_Impl);
-    }
-    catch (std::exception const& ex)
-    {
-        log::error("unhandled exception thrown in main render loop: %s", ex.what());
-        throw;
+        try
+        {
+            AppMainLoopUnguarded(*m_Impl);
+            break;
+        }
+        catch (std::exception const& ex)
+        {
+            // if a screen was open when the exception was thrown, and that screen was not
+            // an error screen, then transition to an error screen so that the user has a
+            // chance to see the error
+            if (m_Impl->currentScreen && !dynamic_cast<ErrorScreen*>(m_Impl->currentScreen.get()))
+            {
+                m_Impl->currentScreen = std::make_unique<ErrorScreen>(ex);
+                m_Impl->nextScreen.reset();
+                // go to top of loop
+            }
+            else
+            {
+                log::error("unhandled exception thrown in main render loop: %s", ex.what());
+                throw;
+            }
+        }
     }
 }
 
