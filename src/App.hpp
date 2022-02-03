@@ -156,6 +156,12 @@ namespace osc
         // requests that VSYNC is disabled in the graphics layer
         void disableVsync();
 
+        // sets the main window's subtitle (e.g. document name)
+        void setMainWindowSubTitle(std::string_view);
+
+        // unsets the main window's subtitle
+        void unsetMainWindowSubTitle();
+
         // returns the current application configuration
         Config const& getConfig() const noexcept;
 

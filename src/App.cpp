@@ -180,6 +180,8 @@ static bool EnsureOpenSimInitialized(Config const& config)
         }                                                                                                              \
     }
 
+static char const* g_BaseWindowTitle = "OpenSim Creator v" OSC_VERSION_STRING;
+
 // initialize the main application window
 static sdl::Window CreateMainAppWindow()
 {
@@ -193,15 +195,14 @@ static sdl::Window CreateMainAppWindow()
     // careful about setting resolution, position, etc. - some people have *very* shitty
     // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
     // be <700 px high)
-    static constexpr char const* title = "OpenSim Creator v" OSC_VERSION_STRING;
-    static constexpr int x = SDL_WINDOWPOS_CENTERED;
-    static constexpr int y = SDL_WINDOWPOS_CENTERED;
-    static constexpr int width = 800;
-    static constexpr int height = 600;
-    static constexpr Uint32 flags =
+    constexpr int x = SDL_WINDOWPOS_CENTERED;
+    constexpr int y = SDL_WINDOWPOS_CENTERED;
+    constexpr int width = 800;
+    constexpr int height = 600;
+    constexpr Uint32 flags =
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
-    return sdl::CreateWindoww(title, x, y, width, height, flags);
+    return sdl::CreateWindoww(g_BaseWindowTitle, x, y, width, height, flags);
 }
 
 // create an OpenGL context for an application window
@@ -989,6 +990,30 @@ void osc::App::enableVsync()
 void osc::App::disableVsync()
 {
     SDL_GL_SetSwapInterval(0);
+}
+
+void osc::App::setMainWindowSubTitle(std::string_view sv)
+{
+    // use global + mutex to prevent hopping into the OS too much
+    static std::string g_CurSubtitle = "";
+    static std::mutex g_SubtitleMutex;
+
+    std::lock_guard lock{g_SubtitleMutex};
+
+    if (sv == g_CurSubtitle)
+    {
+        return;
+    }
+
+    g_CurSubtitle = sv;
+
+    std::string newTitle = sv.empty() ? g_BaseWindowTitle : (std::string{sv} + " - " + g_BaseWindowTitle);
+    SDL_SetWindowTitle(m_Impl->window, newTitle.c_str());
+}
+
+void osc::App::unsetMainWindowSubTitle()
+{
+    setMainWindowSubTitle("");
 }
 
 Config const& osc::App::getConfig() const noexcept
