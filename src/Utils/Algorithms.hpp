@@ -20,6 +20,25 @@ namespace osc {
         c.erase(it, endIt);
     }
 
+    // remove all elements in the given unordered set for which `p(*el)` returns `true`
+    template<typename Key, typename Hash, typename KeyEqual, typename Alloc, typename UnaryPredicate>
+    void RemoveErase(std::unordered_set<Key, Hash, KeyEqual, Alloc>& c, UnaryPredicate p)
+    {
+        // see: https://en.cppreference.com/w/cpp/container/unordered_set/erase_if
+
+        for (auto it = c.begin(), end = c.end(); it != end;)
+        {
+            if (p(*it))
+            {
+                it = c.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
     template<typename Container, typename UnaryPredicate>
     bool AnyOf(Container const& c, UnaryPredicate p)
     {

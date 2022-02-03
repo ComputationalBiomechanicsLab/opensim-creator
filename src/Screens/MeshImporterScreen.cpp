@@ -2756,33 +2756,37 @@ namespace
         return true;
     }
 
-    bool TryAssignMeshAttachment(CommittableModelGraph& cmg, UID meshID, UID newAttachment)
+    bool TryAssignMeshAttachments(CommittableModelGraph& cmg, std::unordered_set<UID> meshIDs, UID newAttachment)
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        MeshEl* el = mg.TryUpdElByID<MeshEl>(meshID);
-
-        if (!el)
+        if (newAttachment != g_GroundID && !mg.ContainsEl<BodyEl>(newAttachment))
         {
-            return false;
+            return false;  // bogus ID passed
         }
 
-        // can only attach to itself (ground), ground, or a body that exists in the model graph
-        if (!(newAttachment == meshID || newAttachment == g_GroundID || mg.TryUpdElByID<BodyEl>(newAttachment)))
+        for (UID id : meshIDs)
         {
-            return false;
+            MeshEl* ptr = mg.TryUpdElByID<MeshEl>(id);
+
+            if (!ptr)
+            {
+                continue;  // hardening: ignore invalid assignments
+            }
+
+            ptr->Attachment = DowncastID<BodyEl>(newAttachment);
         }
 
-        if (newAttachment == meshID || newAttachment == g_GroundID)
+        std::stringstream commitMsg;
+        commitMsg << "assigned mesh";
+        if (meshIDs.size() > 1)
         {
-            el->Attachment = g_GroundID;
-            cmg.Commit("assigned mesh to ground");
+            commitMsg << "es";
         }
-        else
-        {
-            el->Attachment = DowncastID<BodyEl>(newAttachment);
-            cmg.Commit("assigned mesh to body");
-        }
+        commitMsg << " to " << mg.GetElByID(newAttachment).GetLabel();
+
+
+        cmg.Commit(std::move(commitMsg).str());
 
         return true;
     }
@@ -4208,13 +4212,13 @@ namespace
             DrawConnectionLineTriangleAtMidpoint(color, parent, child);
         }
 
-        void DrawConnectionLines(SceneEl const& el, ImU32 color, UID excludeID = g_EmptyID) const
+        void DrawConnectionLines(SceneEl const& el, ImU32 color, std::unordered_set<UID> const& excludedIDs) const
         {
             for (int i = 0, len = el.GetNumCrossReferences(); i < len; ++i)
             {
                 UID refID = el.GetCrossReferenceConnecteeID(i);
 
-                if (refID == excludeID)
+                if (Contains(excludedIDs, refID))
                 {
                     continue;
                 }
@@ -4235,6 +4239,11 @@ namespace
 
                 DrawConnectionLine(color, parent, child);
             }
+        }
+
+        void DrawConnectionLines(SceneEl const& el, ImU32 color) const
+        {
+            DrawConnectionLines(el, color, std::unordered_set<UID>{});
         }
 
         void DrawConnectionLineToGround(SceneEl const& el, ImU32 color) const
@@ -4293,7 +4302,7 @@ namespace
             return v.result();
         }
 
-        void DrawConnectionLines(ImVec4 colorVec, UID excludeID = g_EmptyID) const
+        void DrawConnectionLines(ImVec4 colorVec, std::unordered_set<UID> const& excludedIDs) const
         {
             ModelGraph const& mg = GetModelGraph();
             ImU32 color = ImGui::ColorConvertFloat4ToU32(colorVec);
@@ -4302,7 +4311,7 @@ namespace
             {
                 UID id = el.GetID();
 
-                if (id == excludeID)
+                if (Contains(excludedIDs, id))
                 {
                     continue;
                 }
@@ -4314,13 +4323,18 @@ namespace
 
                 if (el.GetNumCrossReferences() > 0)
                 {
-                    DrawConnectionLines(el, color, excludeID);
+                    DrawConnectionLines(el, color, excludedIDs);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
                     DrawConnectionLineToGround(el, color);
                 }
             }
+        }
+
+        void DrawConnectionLines(ImVec4 colorVec) const
+        {
+            DrawConnectionLines(colorVec, {});
         }
 
         void DrawConnectionLines(Hover const& currentHover) const
@@ -5586,18 +5600,32 @@ namespace
 {
     // options for when the UI transitions into "choose something" mode
     struct ChooseElLayerOptions final {
+
+        // types of elements the user can choose in this screen
         bool CanChooseBodies = true;
         bool CanChooseGround = true;
         bool CanChooseMeshes = true;
         bool CanChooseJoints = true;
-        UID MaybeElAttachingTo = g_EmptyID;
-        bool IsAttachingTowardEl = true;  // false implies "away from"
-        UID MaybeElBeingReplacedByChoice = g_EmptyID;
+
+        // (maybe) elements the assignment is ultimately assigning
+        std::unordered_set<UID> MaybeElsAttachingTo = {};
+
+        // false implies the user is attaching "away from" what they select (used for drawing arrows)
+        bool IsAttachingTowardEl = true;
+
+        // (maybe) elements that are being replaced by the user's choice
+        std::unordered_set<UID> MaybeElsBeingReplacedByChoice = {};
+
+        // the number of elements the user must click before OnUserChoice is called
         int NumElementsUserMustChoose = 1;
+
+        // function that returns true if the "caller" is happy with the user's choice
         std::function<bool(nonstd::span<UID>)> OnUserChoice = [](nonstd::span<UID>)
         {
             return true;
         };
+
+        // user-facing header text
         std::string Header = "choose something";
     };
 
@@ -5631,7 +5659,7 @@ namespace
         // returns true if the user can (de)select the given element
         bool IsSelectable(SceneEl const& el) const
         {
-            if (el.GetID() == m_Options.MaybeElAttachingTo)
+            if (Contains(m_Options.MaybeElsAttachingTo, el.GetID()))
             {
                 return false;
             }
@@ -5851,25 +5879,23 @@ namespace
             // else: user is hovering *something*
 
             // draw all other connection lines but exclude the thing being assigned (if any)
-            m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()), m_Options.MaybeElBeingReplacedByChoice);
+            m_Shared->DrawConnectionLines(FaintifyColor(m_Shared->GetColorConnectionLine()), m_Options.MaybeElsBeingReplacedByChoice);
 
-            if (m_Options.MaybeElAttachingTo == g_EmptyID)
+            // draw strong connection line between the things being attached to and the hover
+            for (UID elAttachingTo : m_Options.MaybeElsAttachingTo)
             {
-                return;  // we don't know what the user's choice is ultimately attaching to
+                glm::vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), elAttachingTo);
+                glm::vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
+
+                if (!m_Options.IsAttachingTowardEl)
+                {
+                    std::swap(parentPos, childPos);
+                }
+
+                ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorConnectionLine());
+
+                m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
             }
-
-            // draw strong connection line between the thing being attached to and the hover
-            glm::vec3 parentPos = GetPosition(m_Shared->GetModelGraph(), m_Options.MaybeElAttachingTo);
-            glm::vec3 childPos = GetPosition(m_Shared->GetModelGraph(), m_MaybeHover.ID);
-
-            if (!m_Options.IsAttachingTowardEl)
-            {
-                std::swap(parentPos, childPos);
-            }
-
-            ImU32 strongColorU2 = ImGui::ColorConvertFloat4ToU32(m_Shared->GetColorConnectionLine());
-
-            m_Shared->DrawConnectionLine(strongColorU2, parentPos, childPos);
         }
 
         // draw 2D header text in top-left corner of the screen
@@ -6067,21 +6093,31 @@ namespace
         }
 
         // try transitioning the shown UI layer to one where the user is assigning a mesh
-        void TryTransitionToAssigningHoveredMeshNextFrame()
+        void TryTransitionToAssigningHoverAndSelectionNextFrame()
         {
-            if (!m_MaybeHover)
+            ModelGraph const& mg = m_Shared->GetModelGraph();
+
+            std::unordered_set<UID> meshes;
+            meshes.insert(mg.GetSelected().begin(), mg.GetSelected().end());
+            if (m_MaybeHover)
             {
-                return;
+                meshes.insert(m_MaybeHover.ID);
             }
 
-            MeshEl* maybeMesh = m_Shared->UpdModelGraph().TryUpdElByID<MeshEl>(m_MaybeHover.ID);
+            RemoveErase(meshes, [&mg](UID meshID) { return !mg.ContainsEl<MeshEl>(meshID); });
 
-            if (!maybeMesh)
+            if (meshes.empty())
             {
-                return;  // not hovering a mesh
+                return;  // nothing to assign
             }
 
-            TransitionToAssigningMeshNextFrame(*maybeMesh);
+            std::unordered_set<UID> attachments;
+            for (UID meshID : meshes)
+            {
+                attachments.insert(mg.GetElByID<MeshEl>(meshID).Attachment);
+            }
+
+            TransitionToAssigningMeshesNextFrame(meshes, attachments);
         }
 
         void TryAddingStationAtMousePosToHoveredElement()
@@ -6101,25 +6137,25 @@ namespace
         //
 
         // transition the shown UI layer to one where the user is assigning a mesh
-        void TransitionToAssigningMeshNextFrame(MeshEl& meshEl)
+        void TransitionToAssigningMeshesNextFrame(std::unordered_set<UID> const& meshes, std::unordered_set<UID> const& existingAttachments)
         {
             ChooseElLayerOptions opts;
             opts.CanChooseBodies = true;
             opts.CanChooseGround = true;
             opts.CanChooseJoints = false;
             opts.CanChooseMeshes = false;
-            opts.MaybeElAttachingTo = meshEl.ID;
+            opts.MaybeElsAttachingTo = meshes;
             opts.IsAttachingTowardEl = false;
-            opts.MaybeElBeingReplacedByChoice = meshEl.Attachment;
-            opts.Header = "choose mesh attachment point (ESC to cancel)";
-            opts.OnUserChoice = [shared = m_Shared, meshID = meshEl.ID](nonstd::span<UID> choices)
+            opts.MaybeElsBeingReplacedByChoice = existingAttachments;
+            opts.Header = "choose mesh attachment (ESC to cancel)";
+            opts.OnUserChoice = [shared = m_Shared, meshes](nonstd::span<UID> choices)
             {
                 if (choices.empty())
                 {
                     return false;
                 }
 
-                return TryAssignMeshAttachment(shared->UpdCommittableModelGraph(), meshID, choices.front());
+                return TryAssignMeshAttachments(shared->UpdCommittableModelGraph(), meshes, choices.front());
             };
 
             // request a state transition
@@ -6135,7 +6171,7 @@ namespace
             opts.CanChooseJoints = false;
             opts.CanChooseMeshes = false;
             opts.Header = "choose joint parent (ESC to cancel)";
-            opts.MaybeElAttachingTo = child.GetID();
+            opts.MaybeElsAttachingTo = {child.GetID()};
             opts.IsAttachingTowardEl = false;  // away from the body
             opts.OnUserChoice = [shared = m_Shared, childID = child.ID](nonstd::span<UID> choices)
             {
@@ -6158,7 +6194,7 @@ namespace
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose what to point towards (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), axis](nonstd::span<UID> choices)
             {
@@ -6179,7 +6215,7 @@ namespace
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose what to translate to (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
             {
@@ -6200,7 +6236,7 @@ namespace
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = false;
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose two elements to translate between (ESC to cancel)";
             opts.NumElementsUserMustChoose = 2;
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
@@ -6226,7 +6262,7 @@ namespace
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = true;
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose which orientation to copy (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
             {
@@ -6273,7 +6309,7 @@ namespace
             opts.CanChooseGround = true;
             opts.CanChooseJoints = true;
             opts.CanChooseMeshes = true;
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose where to place it (ESC to cancel)";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID()](nonstd::span<UID> choices)
             {
@@ -6308,7 +6344,7 @@ namespace
             opts.CanChooseGround = Is<BodyEl>(*old) || Is<GroundEl>(*old);
             opts.CanChooseJoints = Is<JointEl>(*old);
             opts.CanChooseMeshes = Is<MeshEl>(*old);
-            opts.MaybeElAttachingTo = el.GetID();
+            opts.MaybeElsAttachingTo = {el.GetID()};
             opts.Header = "choose what to attach to";
             opts.OnUserChoice = [shared = m_Shared, id = el.GetID(), crossrefIdx](nonstd::span<UID> choices)
             {
@@ -6431,7 +6467,7 @@ namespace
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_A))
             {
                 // A: assign a parent for the hovered element
-                TryTransitionToAssigningHoveredMeshNextFrame();
+                TryTransitionToAssigningHoverAndSelectionNextFrame();
                 return true;
             }
             else if (ImGui::IsKeyPressed(SDL_SCANCODE_J))
