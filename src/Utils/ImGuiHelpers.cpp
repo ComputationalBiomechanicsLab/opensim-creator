@@ -38,11 +38,11 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
 
     if (leftDragging || middleDragging)
     {
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LSHIFT) || ImGui::IsKeyDown(SDL_SCANCODE_RSHIFT))
+        if (IsCtrlDown())
         {
             camera.pan(aspectRatio, delta/viewportDims);
         }
-        else if (ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL))
+        else if (IsCtrlOrSuperDown())
         {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
         }
@@ -54,7 +54,7 @@ void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::Polar
     }
     else if (ImGui::IsMouseDragging(ImGuiMouseButton_Right))
     {
-        if (ImGui::IsKeyDown(SDL_SCANCODE_LALT) || ImGui::IsKeyDown(SDL_SCANCODE_RALT))
+        if (IsAltDown())
         {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
         }
@@ -116,19 +116,24 @@ bool osc::IsAnyKeyPressed(std::initializer_list<int const> keys)
     return IsAnyKeyPressed(nonstd::span<int const>{keys.begin(), keys.end()});
 }
 
+bool osc::IsCtrlDown()
+{
+    return ImGui::GetIO().KeyCtrl;
+}
+
 bool osc::IsCtrlOrSuperDown()
 {
-    return IsAnyKeyDown({ SDL_SCANCODE_LCTRL, SDL_SCANCODE_RCTRL, SDL_SCANCODE_LGUI, SDL_SCANCODE_RGUI });
+    return ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeySuper;
 }
 
 bool osc::IsShiftDown()
 {
-    return IsAnyKeyDown({SDL_SCANCODE_LSHIFT, SDL_SCANCODE_RSHIFT});
+    return ImGui::GetIO().KeyShift;
 }
 
 bool osc::IsAltDown()
 {
-    return IsAnyKeyDown({SDL_SCANCODE_LALT, SDL_SCANCODE_RALT});
+    return ImGui::GetIO().KeyAlt;
 }
 
 bool osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)

@@ -26,6 +26,9 @@ namespace osc {
     bool IsAnyKeyPressed(nonstd::span<int const>);
     bool IsAnyKeyPressed(std::initializer_list<int const>);
 
+    // return true if the user is pressing either left- or right-Ctrl
+    bool IsCtrlDown();
+
     // returns `true` if the user is pressing either:
     //
     // - left Ctrl
