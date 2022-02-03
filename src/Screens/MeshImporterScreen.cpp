@@ -2602,13 +2602,16 @@ namespace
         {
         }
 
-        void Commit(std::string_view commitMsg)
+        UID Commit(std::string_view commitMsg)
         {
             auto snapshot = std::make_unique<ModelGraphCommit>(m_Current, ClonePtr<ModelGraph>{*m_Scratch}, commitMsg);
             UID id = snapshot->GetID();
+
             m_Commits.try_emplace(id, std::move(snapshot));
             m_Current = id;
             m_BranchHead = id;
+
+            return id;
         }
 
         ModelGraphCommit const* TryGetCommitByID(UID id) const
@@ -2951,12 +2954,6 @@ namespace
 
         cmg.Commit("deleted " + label);
         return true;
-    }
-
-    void ResetModelGraph(CommittableModelGraph& cmg)
-    {
-        cmg.UpdScratch() = ModelGraph{};
-        cmg.Commit("created new scene");
     }
 
     void RotateAxis180Degrees(CommittableModelGraph& cmg, SceneEl& el, int axis)
@@ -3774,7 +3771,33 @@ namespace
         glm::vec3 Pos;
     };
 
-    class SharedData final {
+    class SharedData;
+
+    // a class that holds state associated with a popup that the user needs to handle
+    class Popup {
+    protected:
+        Popup(std::shared_ptr<SharedData> sharedData) : m_SharedData{sharedData} {}
+        SharedData const& getSharedData() const { return *m_SharedData; }
+        SharedData& updSharedData() { return *m_SharedData; }
+    public:
+        virtual ~Popup() noexcept = default;
+        virtual void open() = 0;
+        virtual void close() = 0;
+        virtual void draw() = 0;
+    private:
+        std::shared_ptr<SharedData> m_SharedData;
+    };
+
+    // action to take after user decides whether or not to save changes
+    enum class ActionAfter {
+        New,
+        Close,
+        Quit,
+    };
+
+    std::unique_ptr<Popup> CreateSaveChangesPopup(std::shared_ptr<SharedData>, ActionAfter);
+
+    class SharedData final : public std::enable_shared_from_this<SharedData> {
     public:
         SharedData() = default;
 
@@ -3783,57 +3806,10 @@ namespace
             PushMeshLoadRequests(meshFiles);
         }
 
-        //
-        // MODEL IMPORT STUFF
-        //
-
-        void PromptUserToImportOsimFile()
-        {
-            std::filesystem::path osimPath = PromptUserForFile("osim");
-            if (!osimPath.empty())
-            {
-                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(osimPath)};
-            }
-        }
 
         //
-        // MODEL EXPORT STUFF
+        // OpenSim OUTPUT MODEL STUFF
         //
-
-        void PromptUserToSaveCurrentModelGraph()
-        {
-            std::filesystem::path savePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
-
-            if (savePath.empty())
-            {
-                // user probably cancelled out
-                return;
-            }
-
-            std::vector<std::string> issues;
-            std::unique_ptr<OpenSim::Model> m;
-
-            try
-            {
-                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
-            }
-            catch (std::exception const& ex)
-            {
-                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
-            }
-
-            if (m)
-            {
-                m->print(savePath.string());
-            }
-            else
-            {
-                for (std::string const& issue : issues)
-                {
-                    log::error("%s", issue.c_str());
-                }
-            }
-        }
 
         bool HasOutputModel() const
         {
@@ -3861,6 +3837,160 @@ namespace
         //
         // MODEL GRAPH STUFF
         //
+
+        void NewModelGraphForced()
+        {
+            m_ModelGraphSnapshots = CommittableModelGraph{};
+            m_MaybeModelGraphSaveLocation.clear();
+            m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+        }
+
+        void NewModelGraph()
+        {
+            if (IsModelGraphUpToDateWithDisk())
+            {
+                NewModelGraphForced();
+            }
+            else
+            {
+                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::New);
+                m_MaybePopup->open();
+            }
+        }
+
+        bool OpenOsimFileAsModelGraph()
+        {
+            std::filesystem::path osimPath = PromptUserForFile("osim");
+
+            if (!osimPath.empty())
+            {
+                m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(osimPath)};
+                m_MaybeModelGraphSaveLocation = osimPath;
+                m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool SaveModelGraphTo(std::filesystem::path savePath)
+        {
+            std::vector<std::string> issues;
+            std::unique_ptr<OpenSim::Model> m;
+
+            try
+            {
+                m = CreateOpenSimModelFromModelGraph(GetModelGraph(), issues);
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+            }
+
+            if (m)
+            {
+                m->print(savePath.string());
+                m_MaybeModelGraphSaveLocation = savePath;
+                m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                return true;
+            }
+            else
+            {
+                for (std::string const& issue : issues)
+                {
+                    log::error("%s", issue.c_str());
+                }
+                return false;
+            }
+        }
+
+        bool SaveAsModelGraphAsOsimFile()
+        {
+            std::filesystem::path savePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+
+            if (savePath.empty())
+            {
+                // user probably cancelled out
+                return false;
+            }
+
+            return SaveModelGraphTo(savePath);
+        }
+
+        bool SaveModelGraphAsOsimFile()
+        {
+            if (m_MaybeModelGraphSaveLocation.empty())
+            {
+                return SaveAsModelGraphAsOsimFile();
+            }
+
+            return SaveModelGraphTo(m_MaybeModelGraphSaveLocation);
+        }
+
+        bool IsModelGraphUpToDateWithDisk() const
+        {
+            return m_MaybeModelGraphSavedUID == m_ModelGraphSnapshots.GetCheckoutID();
+        }
+
+        void CloseEditorForced()
+        {
+            App::cur().requestTransition<SplashScreen>();
+        }
+
+        void CloseEditor()
+        {
+            if (IsModelGraphUpToDateWithDisk())
+            {
+                CloseEditorForced();
+            }
+            else
+            {
+                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::Close);
+                m_MaybePopup->open();
+            }
+        }
+
+        void QuitEditorForced()
+        {
+            App::cur().requestQuit();
+        }
+
+        void QuitEditor()
+        {
+            if (IsModelGraphUpToDateWithDisk())
+            {
+                QuitEditorForced();
+            }
+            else
+            {
+                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::Quit);
+                m_MaybePopup->open();
+            }
+        }
+
+        std::string GetDocumentName() const
+        {
+            if (m_MaybeModelGraphSaveLocation.empty())
+            {
+                return "untitled.osim";
+            }
+            else
+            {
+                return m_MaybeModelGraphSaveLocation.filename().string();
+            }
+        }
+
+        std::string GetRecommendedTitle() const
+        {
+            std::string base = GetDocumentName();
+            if (!IsModelGraphUpToDateWithDisk())
+            {
+                base += '*';
+            }
+            return base;
+        }
 
         ModelGraph const& GetModelGraph() const
         {
@@ -4965,10 +5095,16 @@ namespace
         }
 
     private:
-        // model graph (snapshots) the user is working on
+        // in-memory model graph (snapshots) that the user is manipulating
         CommittableModelGraph m_ModelGraphSnapshots;
 
-        // batch of files the user drag+dropped into the UI
+        // (maybe) the filesystem location where the model graph should be saved
+        std::filesystem::path m_MaybeModelGraphSaveLocation;
+
+        // (maybe) the UID of the model graph when it was last successfully saved to disk (used for dirty checking)
+        UID m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+
+        // a batch of files that the user drag-dropped into the UI in the last frame
         std::vector<std::filesystem::path> m_DroppedFiles;
 
         // loads meshes in a background thread
@@ -4979,9 +5115,6 @@ namespace
 
         // cylinder mesh used by various scene elements
         std::shared_ptr<Mesh> m_CylinderMesh = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
-
-        // quad mesh used for chequered floor
-        std::shared_ptr<Mesh> m_FloorMesh = std::make_shared<Mesh>(generateFloorMesh());
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
@@ -5081,6 +5214,9 @@ namespace
             PanelIndex_COUNT,
         };
         LogViewer m_Logviewer;
+
+        // (maybe) the currently-shown modal popup that's covering the screen
+        std::unique_ptr<Popup> m_MaybePopup;
     private:
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
@@ -5103,6 +5239,107 @@ namespace
         // set to true after drawing the ImGui::Image
         bool m_IsRenderHovered = false;
     };
+
+    class SaveChangesPopup final : public Popup {
+    public:
+        SaveChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action) :
+            Popup{std::move(sharedData)},
+            m_Action{std::move(action)}
+        {
+        }
+
+        void open() override
+        {
+            m_ShouldOpen = true;
+        }
+
+        void close() override
+        {
+            m_ShouldClose = true;
+        }
+
+        void draw() override
+        {
+            if (m_ShouldOpen)
+            {
+                ImGui::OpenPopup(m_PopupName.c_str());
+                m_ShouldOpen = false;
+            }
+
+            // center the modal
+            {
+                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+                ImGui::SetNextWindowSize(ImVec2(512, 0));
+            }
+
+            if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                return;
+            }
+
+            if (m_ShouldClose)
+            {
+                ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+                m_ShouldClose = false;
+                m_ShouldOpen = false;
+                updSharedData().m_MaybePopup.reset();
+                return;
+            }
+
+            if (ImGui::Button("Yes"))
+            {
+                if (updSharedData().SaveModelGraphAsOsimFile())
+                {
+                    doAction();
+                    close();
+                }
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("No"))
+            {
+                doAction();
+                close();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                close();
+            }
+
+            ImGui::EndPopup();
+        }
+    private:
+        void doAction()
+        {
+            switch (m_Action) {
+            case ActionAfter::New:
+                updSharedData().NewModelGraphForced();
+                break;
+            case ActionAfter::Close:
+                updSharedData().CloseEditorForced();
+                break;
+            case ActionAfter::Quit:
+                updSharedData().QuitEditorForced();
+                break;
+            }
+        }
+
+        std::string m_PopupName = std::string{"Save Changes to "} + getSharedData().GetDocumentName() + '?';
+        ActionAfter m_Action;
+        bool m_ShouldOpen = false;
+        bool m_ShouldClose = false;
+    };
+
+    std::unique_ptr<Popup> CreateSaveChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action)
+    {
+        return std::make_unique<SaveChangesPopup>(std::move(sharedData), std::move(action));
+    }
 }
 
 // select 2 mesh points layer
@@ -6128,31 +6365,37 @@ namespace
             if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_N))
             {
                 // Ctrl+N: new scene
-                ResetModelGraph(m_Shared->UpdCommittableModelGraph());
+                m_Shared->NewModelGraph();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_O))
             {
                 // Ctrl+O: open osim
-                m_Shared->PromptUserToImportOsimFile();
+                m_Shared->OpenOsimFileAsModelGraph();
                 return true;
             }
             else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
             {
-                // Ctrl+Shift+S: save scene to osim
-                m_Shared->PromptUserToSaveCurrentModelGraph();
+                // Ctrl+Shift+S: save as: save scene as osim to user-specified location
+                m_Shared->SaveAsModelGraphAsOsimFile();
+                return true;
+            }
+            else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
+            {
+                // Ctrl+S: save: save scene as osim according to typical save heuristic
+                m_Shared->SaveModelGraphAsOsimFile();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_W))
             {
                 // Ctrl+W: close
-                App::cur().requestTransition<SplashScreen>();
+                m_Shared->CloseEditor();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_Q))
             {
                 // Ctrl+Q: quit application
-                App::cur().requestQuit();
+                m_Shared->QuitEditor();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_A))
@@ -6173,7 +6416,7 @@ namespace
                 m_Shared->UndoCurrentModelGraph();
                 return true;
             }
-            else if (osc::IsAnyKeyDown({ SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE}))
+            else if (osc::IsAnyKeyDown({SDL_SCANCODE_DELETE, SDL_SCANCODE_BACKSPACE}))
             {
                 // Delete/Backspace: delete any selected elements
                 DeleteSelected();
@@ -7639,27 +7882,32 @@ namespace
             {
                 if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
                 {
-                    ResetModelGraph(m_Shared->UpdCommittableModelGraph());
+                    m_Shared->NewModelGraph();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
                 {
-                    m_Shared->PromptUserToImportOsimFile();
+                    m_Shared->OpenOsimFileAsModelGraph();
+                }
+
+                if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S"))
+                {
+                    m_Shared->SaveModelGraphAsOsimFile();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S"))
                 {
-                    m_Shared->PromptUserToSaveCurrentModelGraph();
+                    m_Shared->SaveAsModelGraphAsOsimFile();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
                 {
-                    App::cur().requestTransition<SplashScreen>();
+                    m_Shared->CloseEditor();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
                 {
-                    App::cur().requestQuit();
+                    m_Shared->QuitEditor();
                 }
 
                 ImGui::EndMenu();
@@ -7782,17 +8030,18 @@ namespace
                 }
             }
 
-            if (UpdateFromImGuiKeyboardState())
-            {
-                return true;
-            }
-
             return false;
         }
 
         void tick(float dt)
         {
             m_Shared->tick(dt);
+
+            // handle keyboards using ImGui's input poller
+            if (!m_Maybe3DViewerModal)
+            {
+                UpdateFromImGuiKeyboardState();
+            }
 
             if (!m_Maybe3DViewerModal && m_Shared->IsRenderHovered() && !ImGuizmo::IsUsing())
             {
@@ -7845,6 +8094,12 @@ namespace
 
             // draw contextual 3D modal (if there is one), else: draw standard 3D viewer
             DrawMainViewerPanelOrModal();
+
+            // (maybe) draw popup modal
+            if (m_Shared->m_MaybePopup)
+            {
+                m_Shared->m_MaybePopup->draw();
+            }
         }
 
     private:
@@ -7880,25 +8135,29 @@ namespace
 struct osc::MeshImporterScreen::Impl final {
 public:
     Impl() :
-        m_MainState{std::make_shared<SharedData>()}
+        m_SharedData{std::make_shared<SharedData>()},
+        m_MainState{m_SharedData}
     {
     }
 
     Impl(std::vector<std::filesystem::path> meshPaths) :
-        m_MainState{std::make_shared<SharedData>(meshPaths)}
+        m_SharedData{std::make_shared<SharedData>(meshPaths)},
+        m_MainState{m_SharedData}
     {
     }
 
     void onMount()
     {
         osc::ImGuiInit();
+        App::cur().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
         App::cur().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
-        osc::ImGuiShutdown();
         App::cur().makeMainEventLoopPolling();
+        App::cur().unsetMainWindowSubTitle();
+        osc::ImGuiShutdown();
     }
 
     void onEvent(SDL_Event const& e)
@@ -7914,6 +8173,7 @@ public:
     void tick(float dt)
     {
         m_MainState.tick(dt);
+        App::cur().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
     }
 
     void draw()
@@ -7943,6 +8203,7 @@ public:
     }
 
 private:
+    std::shared_ptr<SharedData> m_SharedData;
     MainUIState m_MainState;
     bool m_ShouldRequestRedraw = false;
 };
