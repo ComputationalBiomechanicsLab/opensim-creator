@@ -258,13 +258,6 @@ SimTK::State const& osc::UiModel::getState() const {
     return *m_Impl->m_State;
 }
 
-SimTK::State& osc::UiModel::updState() {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
-    setStateDirtyADVANCED(true);
-    setDecorationsDirtyADVANCED(true);
-    return *m_Impl->m_State;
-}
-
 bool osc::UiModel::isDirty() const {
     return m_Impl->m_ModelIsDirty || m_Impl->m_StateIsDirty || m_Impl->m_DecorationsAreDirty;
 }

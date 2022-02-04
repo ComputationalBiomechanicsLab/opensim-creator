@@ -148,10 +148,6 @@ SimTK::State const& osc::UndoableUiModel::getState() const noexcept {
     return m_Impl->m_Current.getState();
 }
 
-SimTK::State& osc::UndoableUiModel::updState() noexcept {
-    return m_Impl->m_Current.updState();
-}
-
 float osc::UndoableUiModel::getFixupScaleFactor() const {
     return m_Impl->m_Current.getFixupScaleFactor();
 }

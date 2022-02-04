@@ -95,11 +95,6 @@ namespace osc
             return editedModel.getState();
         }
 
-        SimTK::State& updState() noexcept
-        {
-            return editedModel.updState();
-        }
-
         [[nodiscard]] bool canUndo() const noexcept
         {
             return editedModel.canUndo();

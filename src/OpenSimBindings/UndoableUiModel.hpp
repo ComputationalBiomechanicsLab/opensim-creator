@@ -50,7 +50,6 @@ namespace osc {
         void setModel(std::unique_ptr<OpenSim::Model>);
 
         SimTK::State const& getState() const noexcept;
-        SimTK::State& updState() noexcept;
 
         float getFixupScaleFactor() const;
         void setFixupScaleFactor(float);

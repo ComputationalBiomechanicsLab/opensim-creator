@@ -65,7 +65,6 @@ namespace osc {
         void setModel(std::unique_ptr<OpenSim::Model>);
 
         SimTK::State const& getState() const;
-        SimTK::State& updState();
 
         // read dirty flag
         //
