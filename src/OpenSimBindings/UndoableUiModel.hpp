@@ -16,6 +16,7 @@ namespace osc {
 }
 
 namespace osc {
+
     // A "UI ready" model with undo/redo support
     class UndoableUiModel final {
     public:
@@ -25,70 +26,98 @@ namespace osc {
         // construct a new UndoableUiModel from an existing in-memory OpenSim model
         explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
 
-        UndoableUiModel(UndoableUiModel const&) = delete;
+        // copy-construct a new UndoableUiModel
+        UndoableUiModel(UndoableUiModel const&);
 
         // move an UndoableUiModel in memory
         UndoableUiModel(UndoableUiModel&&) noexcept;
 
         ~UndoableUiModel() noexcept;
 
-        UndoableUiModel& operator=(UndoableUiModel const&) = delete;
+        // copy-assign some other UndoableUiModel over this one
+        UndoableUiModel& operator=(UndoableUiModel const&);
 
-        // mover another UndoableUiModel over this one
+        // move-assign some other UndoableUiModel over this one
         UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
 
+        // get/update current UiModel
+        //
+        // note: mutating anything may trigger an undo/redo save if `isDirty` returns `true`
         UiModel const& getUiModel() const;
         UiModel& updUiModel();
 
+        // manipulate undo/redo state
         bool canUndo() const noexcept;
         void doUndo();
         bool canRedo() const noexcept;
         void doRedo();
 
+        // read/manipulate underlying OpenSim::Model
+        //
+        // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
         OpenSim::Model const& getModel() const noexcept;
         OpenSim::Model& updModel() noexcept;
         void setModel(std::unique_ptr<OpenSim::Model>);
 
+        // gets the `SimTK::State` that's valid against the current model
         SimTK::State const& getState() const noexcept;
 
+        // read/manipulate fixup scale factor
+        //
+        // this is the scale factor used to scale visual things in the UI
         float getFixupScaleFactor() const;
         void setFixupScaleFactor(float);
         float getReccommendedScaleFactor() const;
 
+        // update any underlying derived data (SimTK::State, UI decorations, etc.)
+        //
+        // ideally, called after a mutation is made. Otherwise, derived items (e.g. state) may
+        // be out-of-date with the model
         void updateIfDirty();
 
+        // read/manipulate dirty flags
+        //
+        // these flags are used to decide which parts of the model/state/decorations need to be
+        // updated
         void setModelDirtyADVANCED(bool);
         void setStateDirtyADVANCED(bool);
         void setDecorationsDirtyADVANCED(bool);
         void setDirty(bool);
 
+        // read/manipulate current selection (if any)
         bool hasSelected() const;
         OpenSim::Component const* getSelected() const;
+        template<typename T>
+        T const* getSelectedAs() const
+        {
+            return dynamic_cast<T const*>(getSelected());
+        }
         OpenSim::Component* updSelected();
+        template<typename T>
+        T* updSelectedAs()
+        {
+            return dynamic_cast<T*>(updSelected());
+        }
         void setSelected(OpenSim::Component const* c);
         bool selectionHasTypeHashCode(size_t v) const;
         template<typename T>
-        bool selectionIsType() const {
+        bool selectionIsType() const
+        {
             return selectionHasTypeHashCode(typeid(T).hash_code());
         }
         template<typename T>
-        bool selectionDerivesFrom() const {
+        bool selectionDerivesFrom() const
+        {
             return getSelectedAs<T>() != nullptr;
         }
-        template<typename T>
-        T const* getSelectedAs() const {
-            return dynamic_cast<T const*>(getSelected());
-        }
-        template<typename T>
-        T* updSelectedAs() {
-            return dynamic_cast<T*>(updSelected());
-        }
 
+        // read/manipulate current hover (if any)
         bool hasHovered() const;
         OpenSim::Component const* getHovered() const noexcept;
         OpenSim::Component* updHovered();
         void setHovered(OpenSim::Component const* c);
 
+        // read/manipulate current isolation (the thing that's only being drawn - if any)
         OpenSim::Component const* getIsolated() const noexcept;
         OpenSim::Component* updIsolated();
         void setIsolated(OpenSim::Component const* c);
