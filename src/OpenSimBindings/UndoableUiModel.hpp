@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Utils/UID.hpp"
+
 #include <memory>
 
 namespace OpenSim {
@@ -39,6 +41,9 @@ namespace osc {
 
         // move-assign some other UndoableUiModel over this one
         UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
+
+        // returns a unique identifier for the current version of the model
+        UID getCurrentModelUID() const noexcept;
 
         // get/update current UiModel
         //
@@ -130,7 +135,7 @@ namespace osc {
         void declareDeathOf(OpenSim::Component const* c) noexcept;
 
     public:
-        struct Impl;
+        class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
     };

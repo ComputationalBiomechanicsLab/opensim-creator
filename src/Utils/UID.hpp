@@ -41,6 +41,8 @@ namespace osc
     };
 
     extern std::atomic<int64_t> g_NextGlobalUID;
+    extern UID g_EmptyID;  // senteniel
+    extern UID g_InvalidID;  // senteniel
 
     inline UID GenerateID() noexcept
     {
@@ -56,6 +58,16 @@ namespace osc
     constexpr int64_t UnwrapID(UID const& id) noexcept
     {
         return id.m_Value;
+    }
+
+    inline UID EmptyID() noexcept
+    {
+        return g_EmptyID;
+    }
+
+    inline UID InvalidID() noexcept
+    {
+        return g_InvalidID;
     }
 
     std::ostream& operator<<(std::ostream& o, UID const& id);

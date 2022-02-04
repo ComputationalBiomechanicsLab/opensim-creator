@@ -2616,13 +2616,7 @@ namespace
 
         ModelGraphCommit const* TryGetCommitByID(UID id) const
         {
-            auto hasSameID = [id](auto const& p)
-            {
-                return p.second->GetID() == id;
-            };
-
-            auto it = FindIf(m_Commits, hasSameID);
-
+            auto it = m_Commits.find(id);
             return it != m_Commits.end() ? it->second.get() : nullptr;
         }
 

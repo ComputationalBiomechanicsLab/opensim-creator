@@ -48,11 +48,6 @@ static std::unique_ptr<OpenSim::Model> makeNewModel() {
     return rv;
 }
 
-static void announceDirtyingEvent() {
-    log::info("model dirtied");
-    //WriteTracebackToLog(log::level::info);
-}
-
 struct osc::UiModel::Impl final {
     // user-enacted state modifications (e.g. coordinate edits)
     StateModifications m_StateModifications;
@@ -97,6 +92,7 @@ struct osc::UiModel::Impl final {
     bool m_ModelIsDirty;
     bool m_StateIsDirty;
     bool m_DecorationsAreDirty;
+    bool m_FakeDirty;  // "pretends" the model was dirty - used by calling code to detect dirtiness
 
     Impl() : Impl{makeNewModel()} {
     }
@@ -123,7 +119,8 @@ struct osc::UiModel::Impl final {
         m_LastModified{old.m_LastModified},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
-        m_DecorationsAreDirty{false}
+        m_DecorationsAreDirty{false},
+        m_FakeDirty{false}
     {
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
@@ -147,7 +144,8 @@ struct osc::UiModel::Impl final {
         m_LastModified{std::chrono::system_clock::now()},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
-        m_DecorationsAreDirty{false}
+        m_DecorationsAreDirty{false},
+        m_FakeDirty{false}
     {
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
@@ -172,7 +170,8 @@ struct osc::UiModel::Impl final {
         m_LastModified{other.m_LastModified},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
-        m_DecorationsAreDirty{false}
+        m_DecorationsAreDirty{false},
+        m_FakeDirty{false}
     {
         generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
         updateBVH(m_Decorations, m_SceneBVH);
@@ -227,9 +226,13 @@ osc::UiModel::~UiModel() noexcept = default;
 
 osc::UiModel& osc::UiModel::operator=(UiModel&&) = default;
 
-osc::UiModel& osc::UiModel::operator=(UiModel const& other) {
-    UiModel copy{other};
-    *this = std::move(copy);
+osc::UiModel& osc::UiModel::operator=(UiModel const& other)
+{
+    if (&other != this)
+    {
+        std::unique_ptr<Impl> copy = std::make_unique<Impl>(*other.m_Impl);
+        std::swap(this->m_Impl, copy);
+    }
     return *this;
 }
 
@@ -238,12 +241,23 @@ StateModifications const& osc::UiModel::getStateModifications() const {
 }
 
 OpenSim::Model const& osc::UiModel::getModel() const {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
+    // HACK: ensure the user can't get access to a dirty model/system/state
+    {
+        bool wasDirty = isDirty();
+        const_cast<osc::UiModel&>(*this).updateIfDirty();
+        m_Impl->m_FakeDirty = wasDirty;
+    }
+
     return *m_Impl->m_Model;
 }
 
 OpenSim::Model& osc::UiModel::updModel() {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
+    // HACK: ensure the user can't get access to a dirty model/system/state
+    {
+        bool wasDirty = isDirty();
+        const_cast<osc::UiModel&>(*this).updateIfDirty();
+        m_Impl->m_FakeDirty = wasDirty;
+    }
     setDirty(true);
     return *m_Impl->m_Model;
 }
@@ -254,12 +268,17 @@ void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m)
 }
 
 SimTK::State const& osc::UiModel::getState() const {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
+    // HACK: ensure the user can't get access to a dirty model/system/state
+    {
+        bool wasDirty = isDirty();
+        const_cast<osc::UiModel&>(*this).updateIfDirty();
+        m_Impl->m_FakeDirty = wasDirty;
+    }
     return *m_Impl->m_State;
 }
 
 bool osc::UiModel::isDirty() const {
-    return m_Impl->m_ModelIsDirty || m_Impl->m_StateIsDirty || m_Impl->m_DecorationsAreDirty;
+    return m_Impl->m_ModelIsDirty || m_Impl->m_StateIsDirty || m_Impl->m_DecorationsAreDirty || m_Impl->m_FakeDirty;
 }
 
 void osc::UiModel::updateIfDirty() {
@@ -293,6 +312,8 @@ void osc::UiModel::updateIfDirty() {
         m_Impl->m_DecorationsAreDirty = false;
     }
 
+    m_Impl->m_FakeDirty = false;
+
     overallTimerGuard.stop();
 
     if (log::getTracebackLevel() == log::level::debug) {
@@ -324,12 +345,22 @@ void osc::UiModel::setDirty(bool v) {
 }
 
 nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
+    // HACK: ensure the user can't get access to a dirty model/system/state
+    {
+        bool wasDirty = isDirty();
+        const_cast<osc::UiModel&>(*this).updateIfDirty();
+        m_Impl->m_FakeDirty = wasDirty;
+    }
     return m_Impl->m_Decorations;
 }
 
 osc::BVH const& osc::UiModel::getSceneBVH() const {
-    const_cast<osc::UiModel&>(*this).updateIfDirty();  // HACK: ensure the user can't get access to a dirty model/system/state
+    // HACK: ensure the user can't get access to a dirty model/system/state
+    {
+        bool wasDirty = isDirty();
+        const_cast<osc::UiModel&>(*this).updateIfDirty();
+        m_Impl->m_FakeDirty = wasDirty;
+    }
     return m_Impl->m_SceneBVH;
 }
 

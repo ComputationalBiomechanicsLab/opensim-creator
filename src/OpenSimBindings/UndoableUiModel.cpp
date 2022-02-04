@@ -1,5 +1,7 @@
 #include "UndoableUiModel.hpp"
 
+#include "src/Assertions.hpp"
+
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Utils/CircularBuffer.hpp"
 #include "src/Log.hpp"
@@ -14,43 +16,347 @@
 using namespace osc;
 using std::chrono_literals::operator""s;
 
+// commit support
+//
+// a datastructure that holds commit-level information about a UiModel
 namespace {
-    struct DebounceRv final {
-        std::chrono::system_clock::time_point validAt;
-        bool shouldUndo;
+
+    // a single "commit" of the model graph for undo/redo storage
+    class UiModelCommit final {
+    public:
+        explicit UiModelCommit(UiModel model) :
+            m_Model{std::move(model)}
+        {
+        }
+
+        UiModelCommit(UiModel model, UID parent) :
+            m_MaybeParentID{std::move(parent)},
+            m_Model{std::move(model)}
+        {
+        }
+
+        UID getID() const { return m_ID; }
+        bool hasParent() const { return m_MaybeParentID != EmptyID(); }
+        UID getParentID() const { return m_MaybeParentID; }
+        UiModel const& getUiModel() const { return m_Model; }
+
+    private:
+        // unique ID for this commit
+        UID m_ID = GenerateID();
+
+        // (maybe) unique ID of the parent commit
+        UID m_MaybeParentID = EmptyID();
+
+        // the model saved in this snapshot
+        UiModel m_Model;
     };
 }
 
-struct osc::UndoableUiModel::Impl final {
-    // currently-active model that the user can mutate
-    UiModel m_Current;
+class osc::UndoableUiModel::Impl final {
+public:
 
-    // backup of the currently-active model - a version *just before* the
-    // user's edit - used for error recovery
-    UiModel m_Backup;
-
-    // sequences of undo/redo states
-    CircularBuffer<UiModel, 32> m_UndoBuffer;
-    CircularBuffer<UiModel, 32> m_RedoBuffer;
-
-    // dirty flag used to check whether updates are necessary
-    bool m_Dirty = false;
-
-    Impl() :
-        m_Current{},
-        m_Backup{m_Current},
-        m_UndoBuffer{},
-        m_RedoBuffer{}
+    Impl()
     {
+        commit();  // make initial commit
     }
 
-    Impl(std::unique_ptr<OpenSim::Model> m) :
-        m_Current{std::move(m)},
-        m_Backup{m_Current},
-        m_UndoBuffer{},
-        m_RedoBuffer{}
+    // crete a new commit graph that contains a backup of the given model
+    explicit Impl(std::unique_ptr<OpenSim::Model> m) :
+        m_Scratch{std::move(m)}
     {
+        commit();  // make initial commit
     }
+
+    // commit scratch to storage
+    UID commit()
+    {
+        auto commit = UiModelCommit{m_Scratch, m_CurrentHead};
+        UID commitID = commit.getID();
+
+        m_Commits.try_emplace(commitID, std::move(commit));
+        m_CurrentHead = commitID;
+        m_BranchHead = commitID;
+
+        return commitID;
+    }
+
+    // try to lookup a commit by its ID
+    UiModelCommit const* tryGetCommitByID(UID id) const
+    {
+        auto it = m_Commits.find(id);
+        return it != m_Commits.end() ? &it->second : nullptr;
+    }
+
+    UiModelCommit const& getHeadCommit() const
+    {
+        OSC_ASSERT(m_CurrentHead != EmptyID());
+        OSC_ASSERT(hasCommit(m_CurrentHead));
+
+        return *tryGetCommitByID(m_CurrentHead);
+    }
+
+    // try to lookup the *parent* of a given commit, or return an empty (senteniel) ID
+    UID tryGetParentIDOrEmpty(UID id) const
+    {
+        UiModelCommit const* commit = tryGetCommitByID(id);
+        return commit ? commit->getParentID() : EmptyID();
+    }
+
+    // returns `true` if a commit with the given ID has been stored
+    bool hasCommit(UID id) const
+    {
+        return tryGetCommitByID(id);
+    }
+
+    // returns the number of hops between commit `a` and commit `b`
+    //
+    // returns -1 if commit `b` cannot be reached from commit `a`
+    int distance(UID a, UID b) const
+    {
+        if (a == b)
+        {
+            return 0;
+        }
+
+        int n = 1;
+        UID parent = tryGetParentIDOrEmpty(a);
+
+        while (parent != b && parent != EmptyID())
+        {
+            parent = tryGetParentIDOrEmpty(parent);
+            n++;
+        }
+
+        return parent == b ? n : -1;
+    }
+
+    // returns a pointer to a commit that is the nth ancestor from `a`
+    //
+    // (e.g. n==0 returns `a`, n==1 returns `a`'s parent, n==2 returns `a`'s grandparent)
+    //
+    // returns `nullptr` if there are insufficient ancestors. `n` must be >= 0
+    UiModelCommit const* nthAncestor(UID a, int n) const
+    {
+        if (n < 0)
+        {
+            return nullptr;
+        }
+
+        UiModelCommit const* c = tryGetCommitByID(a);
+
+        if (!c || n == 0)
+        {
+            return c;
+        }
+
+        int i = 1;
+        c = tryGetCommitByID(c->getParentID());
+
+        while (c && i < n)
+        {
+            c = tryGetCommitByID(c->getParentID());
+            i++;
+        }
+
+        return c;
+    }
+
+    // returns the UID that is the nth ancestor from `a`, or empty if there are insufficient ancestors
+    UID nthAncestorID(UID a, int n) const
+    {
+        UiModelCommit const* c = nthAncestor(a, n);
+        return c ? c->getID() : EmptyID();
+    }
+
+    // returns `true` if `maybeAncestor` is an ancestor of `id`
+    bool isAncestor(UID maybeAncestor, UID id)
+    {
+        UiModelCommit const* c = tryGetCommitByID(id);
+
+        while (c && c->getID() != maybeAncestor)
+        {
+            c = tryGetCommitByID(c->getParentID());
+        }
+
+        return c;
+    }
+
+    // remove a range of commits from `start` (inclusive) to `end` (exclusive)
+    void eraseCommitRange(UID start, UID end)
+    {
+        auto it = m_Commits.find(start);
+
+        while (it != m_Commits.end() && it->second.getID() != end)
+        {
+            UID parent = it->second.getParentID();
+            m_Commits.erase(it);
+
+            it = m_Commits.find(parent);
+        }
+    }
+
+    // garbage collect (erase) commits that fall outside the maximum undo depth
+    void garbageCollectMaxUndo()
+    {
+        static_assert(m_MaxUndo >= 0);
+
+        UID firstBadCommitIDOrEmpty = nthAncestorID(m_CurrentHead, m_MaxUndo + 1);
+        eraseCommitRange(firstBadCommitIDOrEmpty, EmptyID());
+    }
+
+    // garbage collect (erase) commits that fall outside the maximum redo depth
+    void garbageCollectMaxRedo()
+    {
+        static_assert(m_MaxRedo >= 0);
+
+        int numRedos = distance(m_BranchHead, m_CurrentHead);
+        int numDeletions = numRedos - m_MaxRedo;
+
+        if (numDeletions <= 0)
+        {
+            return;
+        }
+
+        UID newBranchHead = nthAncestorID(m_BranchHead, numDeletions);
+        eraseCommitRange(m_BranchHead, newBranchHead);
+        m_BranchHead = newBranchHead;
+    }
+
+    void garbageCollectUnreachable()
+    {
+        for (auto it = m_Commits.begin(); it != m_Commits.end();)
+        {
+            if (it->first == m_BranchHead || isAncestor(it->first, m_BranchHead))
+            {
+                ++it;
+            }
+            else
+            {
+                it = m_Commits.erase(it);
+            }
+        }
+    }
+
+    // remove out-of-bounds, deleted, out-of-date, etc. commits
+    void garbageCollect()
+    {
+        garbageCollectMaxUndo();
+        garbageCollectMaxRedo();
+        garbageCollectUnreachable();
+    }
+
+    // returns commit ID of the currently active checkout
+    UID getCheckoutID() const
+    {
+        return m_CurrentHead;
+    }
+
+    // checks out a commit, making it active
+    void checkout(UID id)
+    {
+        UiModelCommit const* c = tryGetCommitByID(id);
+
+        if (c)
+        {
+            m_Scratch = c->getUiModel();
+            m_CurrentHead = c->getID();
+            m_BranchHead = c->getID();
+        }
+    }
+
+    // checks out the current checkout to be active (scratch)
+    //
+    // effectively, reset the scratch space
+    void checkout()
+    {
+        checkout(m_CurrentHead);
+    }
+
+    // returns true if the an undo is possible
+    bool canUndo() const
+    {
+        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+        return c ? hasCommit(c->getParentID()) : false;
+    }
+
+    // performs an undo, if possible
+    //
+    // effectively, checks out HEAD~1
+    void undo()
+    {
+        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+
+        if (!c)
+        {
+            return;
+        }
+
+        UiModelCommit const* parent = tryGetCommitByID(c->getParentID());
+
+        if (!parent)
+        {
+            return;
+        }
+
+        m_Scratch = parent->getUiModel();
+        m_CurrentHead = parent->getID();
+    }
+
+    // returns true if a redo is possible
+    bool canRedo() const
+    {
+        return distance(m_BranchHead, m_CurrentHead) > 0;
+    }
+
+    // performs a redo, if possible
+    void redo()
+    {
+        int dist = distance(m_BranchHead, m_CurrentHead);
+
+        if (dist < 1)
+        {
+            return;
+        }
+
+        UiModelCommit const* c = nthAncestor(m_BranchHead, dist - 1);
+
+        if (!c)
+        {
+            return;
+        }
+
+        m_Scratch = c->getUiModel();
+        m_CurrentHead = c->getID();
+    }
+
+    UiModel& updScratch()
+    {
+        return m_Scratch;
+    }
+
+    UiModel const& getScratch()
+    {
+        return m_Scratch;
+    }
+
+private:
+    // mutable staging area that calling code can mutate
+    UiModel m_Scratch;
+
+    // where scratch will commit to (i.e. the parent of the scratch area)
+    UID m_CurrentHead = EmptyID();
+
+    // head of the current branch (i.e. "master") - may be ahead of current branch (undo/redo)
+    UID m_BranchHead = EmptyID();
+
+    // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
+    static constexpr int m_MaxUndo = 32;
+
+    // maximum distance between the branch head and the current commit (i.e. how big the redo buffer can be)
+    static constexpr int m_MaxRedo = 32;
+
+    // underlying storage for immutable commits
+    std::unordered_map<UID, UiModelCommit> m_Commits;
 };
 
 // public API
@@ -87,47 +393,39 @@ UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
 
 UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
 
+UID osc::UndoableUiModel::getCurrentModelUID() const noexcept
+{
+    return m_Impl->getCheckoutID();
+}
+
 UiModel const& osc::UndoableUiModel::getUiModel() const
 {
-    return m_Impl->m_Current;
+    return m_Impl->getScratch();
 }
 
 UiModel& osc::UndoableUiModel::updUiModel()
 {
-    return m_Impl->m_Current;
+    return m_Impl->updScratch();
 }
 
 bool osc::UndoableUiModel::canUndo() const noexcept
 {
-    return !m_Impl->m_UndoBuffer.empty();
+    return m_Impl->canUndo();
 }
 
 void osc::UndoableUiModel::doUndo()
 {
-    if (!canUndo())
+    if (!m_Impl->canUndo())
     {
         return;
     }
 
-    // ensure the backup has equivalent pointers to the current
-    m_Impl->m_Backup.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Current);
-
-    // push backup onto the redo buffer (it's guaranteed to be non-dirty)
-    m_Impl->m_RedoBuffer.push_back(std::move(m_Impl->m_Backup));
-
-    // pop undo onto current
-    m_Impl->m_Current = m_Impl->m_UndoBuffer.pop_back();
-
-    // migrate pointers from backup to current, to update the undo's selection-state
-    m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_RedoBuffer.back());
-
-    // copy new current, which should be fine at this point
-    m_Impl->m_Backup = m_Impl->m_Current;
+    m_Impl->undo();
 }
 
 bool osc::UndoableUiModel::canRedo() const noexcept
 {
-    return !m_Impl->m_RedoBuffer.empty();
+    return m_Impl->canRedo();
 }
 
 void osc::UndoableUiModel::doRedo()
@@ -137,203 +435,170 @@ void osc::UndoableUiModel::doRedo()
         return;
     }
 
-    // ensure the backup has equivalent pointers to current
-    m_Impl->m_Backup.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Current);
-
-    // push backup onto undo buffer (it's guaranteed to be non-dirty)
-    m_Impl->m_UndoBuffer.push_back(std::move(m_Impl->m_Backup));
-
-    // pop redo onto current
-    m_Impl->m_Current = m_Impl->m_RedoBuffer.pop_back();
-
-    // migrate pointers from backup to current, to update the selection state
-    m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_UndoBuffer.back());
-
-    // copy new current
-    m_Impl->m_Backup = m_Impl->m_Current;
+    m_Impl->redo();
 }
 
 OpenSim::Model const& osc::UndoableUiModel::getModel() const noexcept
 {
-    return m_Impl->m_Current.getModel();
+    return m_Impl->getScratch().getModel();
 }
 
 OpenSim::Model& osc::UndoableUiModel::updModel() noexcept
 {
-    return m_Impl->m_Current.updModel();
+    return m_Impl->updScratch().updModel();
 }
 
 void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel)
 {
-    // ensure any current changes are applied + backed up before trying
-    // to initialize from the incoming model
+    updUiModel().setModel(std::move(newModel));
     updateIfDirty();
-
-    // initialize from the incoming model, rolling back if there's an issue
-    try
-    {
-        m_Impl->m_Current.setModel(std::move(newModel));
-        m_Impl->m_Current.setSelectedHoveredAndIsolatedFrom(m_Impl->m_Backup);
-        m_Impl->m_Current.updateIfDirty();
-        m_Impl->m_Backup = m_Impl->m_Current;
-    }
-    catch (std::exception const& ex)
-    {
-        log::error("exception thrown while updating the current model from an external (probably, file-loaded) model");
-        log::error("%s", ex.what());
-        log::error("attempting to rollback to an earlier version of the model");
-        m_Impl->m_Current = m_Impl->m_Backup;
-    }
 }
 
 SimTK::State const& osc::UndoableUiModel::getState() const noexcept
 {
-    return m_Impl->m_Current.getState();
+    return getUiModel().getState();
 }
 
 float osc::UndoableUiModel::getFixupScaleFactor() const
 {
-    return m_Impl->m_Current.getFixupScaleFactor();
+    return getUiModel().getFixupScaleFactor();
 }
 
 void osc::UndoableUiModel::setFixupScaleFactor(float v)
 {
-    m_Impl->m_Current.setFixupScaleFactor(v);
+    updUiModel().setFixupScaleFactor(v);
 }
 
 float osc::UndoableUiModel::getReccommendedScaleFactor() const
 {
-    return m_Impl->m_Current.getRecommendedScaleFactor();
+    return getUiModel().getRecommendedScaleFactor();
 }
 
 void osc::UndoableUiModel::updateIfDirty()
 {
-    if (!m_Impl->m_Dirty && !m_Impl->m_Current.isDirty())
+    // skip updating if state is clean
+    if (!getUiModel().isDirty())
     {
         return;
     }
 
+    // ensure the scratch space is clean
     try
     {
-        m_Impl->m_Current.updateIfDirty();
-        m_Impl->m_Dirty = false;
+        m_Impl->updScratch().updateIfDirty();
     }
     catch (std::exception const& ex)
     {
         log::error("exception occurred after applying changes to a model:");
         log::error("%s", ex.what());
         log::error("attempting to rollback to an earlier version of the model");
-        m_Impl->m_Current = m_Impl->m_Backup;
+        m_Impl->checkout();
     }
 
-    // copy backup into undo buffer if the latest entry in the undo buffer is >5s old
-    if (m_Impl->m_UndoBuffer.empty() || (m_Impl->m_UndoBuffer.back().getLastModifiedTime() < std::chrono::system_clock::now() - 5s))
+    // HACK: auto-perform commit (if necessary)
+    UiModelCommit const& curHead = m_Impl->getHeadCommit();
+    bool shouldCommit = curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
+
+    if (shouldCommit)
     {
-        m_Impl->m_UndoBuffer.push_back(m_Impl->m_Backup);
-        m_Impl->m_Backup = m_Impl->m_Current;
+        m_Impl->commit();
     }
-
-    m_Impl->m_RedoBuffer.clear();
 }
 
 void osc::UndoableUiModel::setModelDirtyADVANCED(bool v)
 {
-    m_Impl->m_Dirty = true;
-    m_Impl->m_Current.setModelDirtyADVANCED(v);
+    updUiModel().setModelDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setStateDirtyADVANCED(bool v)
 {
-    m_Impl->m_Dirty = true;
-    m_Impl->m_Current.setStateDirtyADVANCED(v);
+    updUiModel().setStateDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setDecorationsDirtyADVANCED(bool v)
 {
-    m_Impl->m_Dirty = true;
-    m_Impl->m_Current.setDecorationsDirtyADVANCED(v);
+    updUiModel().setDecorationsDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setDirty(bool v)
 {
-    m_Impl->m_Dirty = true;
-    m_Impl->m_Current.setDirty(v);
+    updUiModel().setDirty(v);
 }
 
 bool osc::UndoableUiModel::hasSelected() const
 {
-    return m_Impl->m_Current.hasSelected();
+    return getUiModel().hasSelected();
 }
 
 OpenSim::Component const* osc::UndoableUiModel::getSelected() const
 {
-    return m_Impl->m_Current.getSelected();
+    return getUiModel().getSelected();
 }
 
 OpenSim::Component* osc::UndoableUiModel::updSelected()
 {
-    return m_Impl->m_Current.updSelected();
+    return updUiModel().updSelected();
 }
 
 void osc::UndoableUiModel::setSelected(OpenSim::Component const* c)
 {
-    m_Impl->m_Current.setSelected(c);
+    updUiModel().setSelected(c);
 }
 
 bool osc::UndoableUiModel::selectionHasTypeHashCode(size_t v) const
 {
-    return m_Impl->m_Current.selectionHasTypeHashCode(v);
+    return getUiModel().selectionHasTypeHashCode(v);
 }
 
 bool osc::UndoableUiModel::hasHovered() const
 {
-    return m_Impl->m_Current.hasHovered();
+    return getUiModel().hasHovered();
 }
 
 OpenSim::Component const* osc::UndoableUiModel::getHovered() const noexcept
 {
-    return m_Impl->m_Current.getHovered();
+    return getUiModel().getHovered();
 }
 
 OpenSim::Component* osc::UndoableUiModel::updHovered()
 {
-    return m_Impl->m_Current.updHovered();
+    return updUiModel().updHovered();
 }
 
 void osc::UndoableUiModel::setHovered(OpenSim::Component const* c)
 {
-    m_Impl->m_Current.setHovered(c);
+    updUiModel().setHovered(c);
 }
 
 OpenSim::Component const* osc::UndoableUiModel::getIsolated() const noexcept
 {
-    return m_Impl->m_Current.getIsolated();
+    return getUiModel().getIsolated();
 }
 
 OpenSim::Component* osc::UndoableUiModel::updIsolated()
 {
-    return m_Impl->m_Current.updIsolated();
+    return updUiModel().updIsolated();
 }
 
 void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c)
 {
-    m_Impl->m_Current.setIsolated(c);
+    updUiModel().setIsolated(c);
 }
 
 void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c) noexcept
 {
-    if (m_Impl->m_Current.getSelected() == c)
+    if (updUiModel().getSelected() == c)
     {
-        m_Impl->m_Current.setSelected(nullptr);
+        updUiModel().setSelected(nullptr);
     }
 
-    if (m_Impl->m_Current.getHovered() == c)
+    if (updUiModel().getHovered() == c)
     {
-        m_Impl->m_Current.setHovered(nullptr);
+        updUiModel().setHovered(nullptr);
     }
 
-    if (m_Impl->m_Current.getIsolated() == c)
+    if (updUiModel().getIsolated() == c)
     {
-        m_Impl->m_Current.setIsolated(nullptr);
+        updUiModel().setIsolated(nullptr);
     }
 }
