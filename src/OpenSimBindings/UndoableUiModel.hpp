@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 namespace OpenSim {
@@ -13,10 +14,6 @@ namespace SimTK {
 
 namespace osc {
     class UiModel;
-}
-
-namespace std::filesystem {
-    class path;
 }
 
 namespace osc {
