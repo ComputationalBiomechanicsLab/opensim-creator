@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Utils/UID.hpp"
-
 #include <memory>
 
 namespace OpenSim {
@@ -17,11 +15,16 @@ namespace osc {
     class UiModel;
 }
 
+namespace std::filesystem {
+    class path;
+}
+
 namespace osc {
 
     // A "UI ready" model with undo/redo support
     class UndoableUiModel final {
     public:
+
         // construct a new, blank, UndoableUiModel
         UndoableUiModel();
 
@@ -34,6 +37,7 @@ namespace osc {
         // move an UndoableUiModel in memory
         UndoableUiModel(UndoableUiModel&&) noexcept;
 
+        // destruct an UndoableUiModel
         ~UndoableUiModel() noexcept;
 
         // copy-assign some other UndoableUiModel over this one
@@ -42,8 +46,26 @@ namespace osc {
         // move-assign some other UndoableUiModel over this one
         UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
 
-        // returns a unique identifier for the current version of the model
-        UID getCurrentModelUID() const noexcept;
+        // returns `true` if the model has a known on-disk location
+        bool hasFilesystemLocation() const;
+
+        // returns the full filesystem path of the model's on-disk location, if applicable
+        //
+        // returns an empty path if the model has not been saved to disk
+        std::filesystem::path const& getFilesystemPath() const;
+
+        // sets the full filesystem path of the model's on-disk location
+        //
+        // setting this to an empty path is interpreted as "no on-disk location"
+        void setFilesystemPath(std::filesystem::path const&);
+
+        // returns `true` if the current model commit is up to date with its on-disk representation
+        //
+        // returns `false` if the model has no on-disk location
+        bool isUpToDateWithFilesystem() const;
+
+        // manually sets if the current commit as being up to date with disk
+        void setUpToDateWithFilesystem();
 
         // get/update current UiModel
         //

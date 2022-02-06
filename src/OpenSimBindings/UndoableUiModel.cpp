@@ -2,13 +2,16 @@
 
 #include "src/Assertions.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Utils/CircularBuffer.hpp"
+#include "src/Utils/UID.hpp"
 #include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -62,7 +65,8 @@ public:
 
     // crete a new commit graph that contains a backup of the given model
     explicit Impl(std::unique_ptr<OpenSim::Model> m) :
-        m_Scratch{std::move(m)}
+        m_Scratch{std::move(m)},
+        m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
     {
         commit();  // make initial commit
     }
@@ -339,6 +343,26 @@ public:
         return m_Scratch;
     }
 
+    std::filesystem::path const& getFilesystemLocation() const
+    {
+        return m_MaybeFilesystemLocation;
+    }
+
+    void setFilesystemLocation(std::filesystem::path const& p)
+    {
+        m_MaybeFilesystemLocation = p;
+    }
+
+    UID getFilesystemVersion() const
+    {
+        return m_MaybeCommitSavedToDisk;
+    }
+
+    void setFilesystemVersionToCurrent()
+    {
+        m_MaybeCommitSavedToDisk = m_CurrentHead;
+    }
+
 private:
     // mutable staging area that calling code can mutate
     UiModel m_Scratch;
@@ -357,7 +381,14 @@ private:
 
     // underlying storage for immutable commits
     std::unordered_map<UID, UiModelCommit> m_Commits;
+
+    // (maybe) the location of the model on-disk
+    std::filesystem::path m_MaybeFilesystemLocation;
+
+    // (maybe) the version of the model that was last saved to disk
+    UID m_MaybeCommitSavedToDisk = EmptyID();
 };
+
 
 // public API
 
@@ -393,9 +424,29 @@ UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
 
 UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
 
-UID osc::UndoableUiModel::getCurrentModelUID() const noexcept
+bool osc::UndoableUiModel::hasFilesystemLocation() const
 {
-    return m_Impl->getCheckoutID();
+    return !m_Impl->getFilesystemLocation().empty();
+}
+
+std::filesystem::path const& osc::UndoableUiModel::getFilesystemPath() const
+{
+    return m_Impl->getFilesystemLocation();
+}
+
+void osc::UndoableUiModel::setFilesystemPath(std::filesystem::path const& p)
+{
+    m_Impl->setFilesystemLocation(p);
+}
+
+bool osc::UndoableUiModel::isUpToDateWithFilesystem() const
+{
+    return m_Impl->getCheckoutID() == m_Impl->getFilesystemVersion();
+}
+
+void osc::UndoableUiModel::setUpToDateWithFilesystem()
+{
+    m_Impl->setFilesystemVersionToCurrent();
 }
 
 UiModel const& osc::UndoableUiModel::getUiModel() const

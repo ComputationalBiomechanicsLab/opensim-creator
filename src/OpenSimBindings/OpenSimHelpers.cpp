@@ -1,5 +1,7 @@
 #include "OpenSimHelpers.hpp"
 
+#include <OpenSim/Simulation/Model/Model.h>
+
 std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component& c)
 {
     std::vector<OpenSim::AbstractSocket const*> rv;
@@ -51,4 +53,27 @@ OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSi
 bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
 {
     return FindComponent(root, cp);
+}
+
+bool osc::HasInputFileName(OpenSim::Model const& m)
+{
+    std::string const& name = m.getInputFileName();
+    return !name.empty() && name != "Unassigned";
+}
+
+std::filesystem::path osc::TryFindInputFile(OpenSim::Model const& m)
+{
+    if (!HasInputFileName(m))
+    {
+        return {};
+    }
+
+    std::filesystem::path p{m.getInputFileName()};
+
+    if (!std::filesystem::exists(p))
+    {
+        return {};
+    }
+
+    return p;
 }

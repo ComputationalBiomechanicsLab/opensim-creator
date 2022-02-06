@@ -554,6 +554,7 @@ namespace {
             auto p = std::make_unique<OpenSim::Model>(impl.st->getModel().getInputFileName());
             log::info("loaded updated file");
             impl.st->setModel(std::move(p));
+            impl.st->editedModel.setUpToDateWithFilesystem();
         } catch (std::exception const& ex) {
             log::error("error occurred while trying to automatically load a model file:");
             log::error(ex.what());
@@ -1476,6 +1477,28 @@ namespace {
     }
 }
 
+static std::string GetDocumentName(UndoableUiModel const& uim)
+{
+    if (uim.hasFilesystemLocation())
+    {
+        return uim.getFilesystemPath().filename().string();
+    }
+    else
+    {
+        return "untitled.osim";
+    }
+}
+
+static std::string GetRecommendedTitle(UndoableUiModel const& uim)
+{
+    std::string s = GetDocumentName(uim);
+    if (!uim.isUpToDateWithFilesystem())
+    {
+        s += '*';
+    }
+    return s;
+}
+
 
 // public API
 
@@ -1485,14 +1508,18 @@ osc::ModelEditorScreen::ModelEditorScreen(std::shared_ptr<MainEditorState> st) :
 
 osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
 
-void osc::ModelEditorScreen::onMount() {
+void osc::ModelEditorScreen::onMount()
+{
     App::cur().makeMainEventLoopWaiting();
+    App::cur().setMainWindowSubTitle(GetRecommendedTitle(m_Impl->st->editedModel));
     osc::ImGuiInit();
 }
 
-void osc::ModelEditorScreen::onUnmount() {
-    App::cur().makeMainEventLoopPolling();
+void osc::ModelEditorScreen::onUnmount()
+{
     osc::ImGuiShutdown();
+    App::cur().unsetMainWindowSubTitle();
+    App::cur().makeMainEventLoopPolling();
 }
 
 void ModelEditorScreen::onEvent(SDL_Event const& e) {
@@ -1508,9 +1535,12 @@ void ModelEditorScreen::onEvent(SDL_Event const& e) {
 }
 
 void osc::ModelEditorScreen::tick(float) {
-    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->getModel().getInputFileName())) {
+    if (m_Impl->filePoller.changeWasDetected(m_Impl->st->getModel().getInputFileName()))
+    {
         modelEditorOnBackingFileChanged(*m_Impl);
     }
+
+    App::cur().setMainWindowSubTitle(GetRecommendedTitle(m_Impl->st->editedModel));
 }
 
 void osc::ModelEditorScreen::draw() {

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <stdexcept>
 #include <vector>
 #include <string_view>
@@ -12,6 +13,7 @@
 namespace OpenSim
 {
     class AbstractSocket;
+    class Model;
 }
 
 namespace osc {
@@ -23,14 +25,16 @@ namespace osc {
         size_t n;
 
     public:
-        explicit ComponentPathPtrs(OpenSim::Component const& c) : n{0} {
+        explicit ComponentPathPtrs(OpenSim::Component const& c) : n{0}
+        {
             OpenSim::Component const* cp = &c;
 
             els[n++] = cp;
-            while (cp->hasOwner()) {
-                if (n >= max_component_depth) {
-                    throw std::runtime_error{
-                        "cannot traverse hierarchy to a component: it is deeper than 32 levels in the component tree, which isn't currently supported by osc"};
+            while (cp->hasOwner())
+            {
+                if (n >= max_component_depth)
+                {
+                    throw std::runtime_error{"cannot traverse hierarchy to a component: it is deeper than 32 levels in the component tree, which isn't currently supported by osc"};
                 }
 
                 cp = &cp->getOwner();
@@ -39,20 +43,24 @@ namespace osc {
             std::reverse(els.begin(), els.begin() + n);
         }
 
-        [[nodiscard]] constexpr container::const_iterator begin() const noexcept {
+        [[nodiscard]] constexpr container::const_iterator begin() const noexcept
+        {
             return els.begin();
         }
 
-        [[nodiscard]] constexpr container::const_iterator end() const noexcept {
+        [[nodiscard]] constexpr container::const_iterator end() const noexcept
+        {
             return els.begin() + n;
         }
 
-        [[nodiscard]] constexpr bool empty() const noexcept {
+        [[nodiscard]] constexpr bool empty() const noexcept
+        {
             return n == 0;
         }
     };
 
-    inline ComponentPathPtrs path_to(OpenSim::Component const& c) {
+    inline ComponentPathPtrs path_to(OpenSim::Component const& c)
+    {
         return ComponentPathPtrs{c};
     }
 
@@ -72,4 +80,12 @@ namespace osc {
 
     // returns true if the path resolves to a component within root
     bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // returns true if the given model has an input file name (not empty, or "Unassigned")
+    bool HasInputFileName(OpenSim::Model const&);
+
+    // returns a non-empty path if the given model has an input file name that exists on the user's filesystem
+    //
+    // otherwise, returns an empty path
+    std::filesystem::path TryFindInputFile(OpenSim::Model const&);
 }

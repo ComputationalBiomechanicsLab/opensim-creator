@@ -119,19 +119,23 @@ namespace osc {
         void setSelected(OpenSim::Component const* c);
         bool selectionHasTypeHashCode(size_t v) const;
         template<typename T>
-        bool selectionIsType() const {
+        bool selectionIsType() const
+        {
             return selectionHasTypeHashCode(typeid(T).hash_code());
         }
         template<typename T>
-        bool selectionDerivesFrom() const {
+        bool selectionDerivesFrom() const
+        {
             return dynamic_cast<T const*>(getSelected()) != nullptr;
         }
         template<typename T>
-        T const* getSelectedAs() const {
+        T const* getSelectedAs() const
+        {
             return dynamic_cast<T const*>(getSelected());
         }
         template<typename T>
-        T* updSelectedAs() {
+        T* updSelectedAs()
+        {
             return dynamic_cast<T*>(updSelected());
         }
 

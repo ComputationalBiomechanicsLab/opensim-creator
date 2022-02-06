@@ -6,15 +6,18 @@
 #include <vector>
 #include <memory>
 
-namespace osc {
+namespace osc
+{
     struct MainEditorState;
 }
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Model;
 }
 
-namespace osc {
+namespace osc
+{
     void actionNewModel(std::shared_ptr<MainEditorState>);
     void actionOpenModel(std::shared_ptr<MainEditorState>);
 

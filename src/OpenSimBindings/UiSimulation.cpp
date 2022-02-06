@@ -12,7 +12,9 @@
 
 using namespace osc;
 
-static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateModifications const& stateModifications) {
+static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m,
+                                                     StateModifications const& stateModifications)
+{
     std::unique_ptr<SimTK::State> rv = std::make_unique<SimTK::State>(m.initializeState());
     stateModifications.applyToState(m, *rv);
     m.equilibrateMuscles(*rv);
@@ -20,8 +22,9 @@ static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m, StateMod
     return rv;
 }
 
-
-static std::unique_ptr<FdSimulation> createForwardDynamicSim(UiModel const& uim, FdParams const& p) {
+static std::unique_ptr<FdSimulation> createForwardDynamicSim(UiModel const& uim,
+                                                             FdParams const& p)
+{
     auto modelCopy = std::make_unique<OpenSim::Model>(uim.getModel());
 
     modelCopy->buildSystem();
@@ -33,7 +36,8 @@ static std::unique_ptr<FdSimulation> createForwardDynamicSim(UiModel const& uim,
     return std::make_unique<FdSimulation>(std::move(simInput));
 }
 
-static std::unique_ptr<OpenSim::Model> createInitializedModel(OpenSim::Model const& m) {
+static std::unique_ptr<OpenSim::Model> createInitializedModel(OpenSim::Model const& m)
+{
     auto rv = std::make_unique<OpenSim::Model>(m);
     rv->finalizeFromProperties();
     rv->finalizeConnections();
@@ -41,7 +45,9 @@ static std::unique_ptr<OpenSim::Model> createInitializedModel(OpenSim::Model con
     return rv;
 }
 
-static std::unique_ptr<Report> createDummySimulationReport(OpenSim::Model& m, StateModifications const& stateModifications) {
+static std::unique_ptr<Report> createDummySimulationReport(OpenSim::Model& m,
+                                                           StateModifications const& stateModifications)
+{
     auto rv = std::make_unique<Report>();
 
     rv->state = m.initializeState();
@@ -61,7 +67,8 @@ osc::UiSimulation::UiSimulation(UiModel const& uim, FdParams const& p) :
     model{createInitializedModel(uim.getModel())},
     spotReport{createDummySimulationReport(*model, uim.getStateModifications())},
     regularReports{},
-    fixupScaleFactor{uim.getFixupScaleFactor()} {
+    fixupScaleFactor{uim.getFixupScaleFactor()}
+{
 }
 
 osc::UiSimulation::UiSimulation(UiSimulation&&) noexcept = default;
