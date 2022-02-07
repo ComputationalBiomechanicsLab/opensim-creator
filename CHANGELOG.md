@@ -5,6 +5,10 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- The coordinate editor now has a "reset" button that appears when right-clicking the coordinate (#69)
+- The coordinate editor now shows a "Ctrl-click to edit value" popup when hovering over a slider (#98)
+- Stations no longer render if they are part of a geometry path (#103)
+
 ## [0.0.8] - 2022/02/07
 
 - A variety (>50) of little UX improvements have been made in the mesh importer. Examples: 
