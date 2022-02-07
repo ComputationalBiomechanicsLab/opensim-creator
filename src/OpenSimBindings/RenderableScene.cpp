@@ -62,11 +62,24 @@ static void HandlePointToPointSpring(float fixupScaleFactor,
     out.emplace_back(std::move(se), &p2p);
 }
 
+// returns `true` if the station is part of a path (i.e. probably part of a GeometryPath)
+static bool IsPartOfAPath(OpenSim::Station const& s)
+{
+    return dynamic_cast<OpenSim::PathPoint const*>(&s.getOwner());
+}
+
 static void HandleStation(float fixupScaleFactor,
                           SimTK::State const& st,
                           OpenSim::Station const& s,
                           std::vector<LabelledSceneElement>& out)
 {
+    // only draw stations that aren't part of a geometry path (they will be indirectly
+    // rendered when rendering the geometry path)
+    if (IsPartOfAPath(s))
+    {
+        return;
+    }
+
     glm::vec3 loc = SimTKVec3FromVec3(s.getLocationInGround(st));
     float r = fixupScaleFactor * 0.005f;
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
