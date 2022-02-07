@@ -16,7 +16,8 @@ namespace OpenSim
     class Model;
 }
 
-namespace osc {
+namespace osc
+{
     class ComponentPathPtrs {
         static constexpr size_t max_component_depth = 16;
         using container = std::array<OpenSim::Component const*, max_component_depth>;

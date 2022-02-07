@@ -7,21 +7,27 @@
 
 #include <vector>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Component;
     class Model;
 }
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace osc {
+namespace osc
+{
     struct LabelledSceneElement : public SceneElement {
         OpenSim::Component const* component;
 
-        LabelledSceneElement(SceneElement const& se, OpenSim::Component const* c) :
-            SceneElement{se}, component{c} {
+        LabelledSceneElement(SceneElement const& se,
+                             OpenSim::Component const* c) :
+            SceneElement{se},
+            component{c}
+        {
         }
     };
 

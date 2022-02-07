@@ -1,5 +1,6 @@
 #include "FileChangePoller.hpp"
 
+
 static constexpr char const* g_ModelNoBackingFileSenteniel = "Unassigned";
 
 std::filesystem::file_time_type GetLastModificationTime(std::string const& path)

@@ -4,16 +4,19 @@
 #include <string>
 #include <vector>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Component;
     class AbstractOutput;
 }
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace osc {
+namespace osc
+{
     // typedef for a function that can extract a double from some output
     using extrator_fn_t = double(*)(OpenSim::AbstractOutput const&, SimTK::State const&);
 

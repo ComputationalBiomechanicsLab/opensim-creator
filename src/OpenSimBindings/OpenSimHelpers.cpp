@@ -2,6 +2,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 
+
 std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component& c)
 {
     std::vector<OpenSim::AbstractSocket const*> rv;
