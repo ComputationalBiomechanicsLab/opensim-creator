@@ -17,18 +17,18 @@ static bool IsNameLexographicallyLessThan(OpenSim::Coordinate const* c1,
     return c1->getName() < c2->getName();
 }
 
-void osc::get_coordinates(OpenSim::Model const& m,
-                          std::vector<OpenSim::Coordinate const*>& out)
+void osc::GetCoordinatesInModel(OpenSim::Model const& m,
+                                std::vector<OpenSim::Coordinate const*>& out)
 {
     OpenSim::CoordinateSet const& s = m.getCoordinateSet();
     int len = s.getSize();
     out.reserve(out.size() + static_cast<size_t>(len));
+
     for (int i = 0; i < len; ++i)
     {
         out.push_back(&s[i]);
     }
 }
-
 
 static bool ShouldFilterOut(osc::CoordinateEditor const& st, OpenSim::Coordinate const& c)
 {
@@ -59,20 +59,24 @@ static bool ShouldFilterOut(osc::CoordinateEditor const& st, OpenSim::Coordinate
 static float ConvertToDisplayFormat(OpenSim::Coordinate const& c, double v)
 {
     float rv = static_cast<float>(v);
+
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
         rv = glm::degrees(rv);
     }
+
     return rv;
 }
 
 static double ConvertToStorageFormat(OpenSim::Coordinate const& c, float v)
 {
     double rv = static_cast<double>(v);
+
     if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
     {
         rv = glm::radians(rv);
     }
+
     return rv;
 }
 
@@ -81,6 +85,14 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
     ImGui::Dummy({0.0f, 3.0f});
     ImGui::TextUnformatted(ICON_FA_EYE);
 
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::Text("Right-click for filtering options");
+        ImGui::EndTooltip();
+    }
+
+    // draw filter popup (checkboxes for editing filters/sort etc)
     if (ImGui::BeginPopupContextItem("##coordinateditorfilterpopup"))
     {
         ImGui::Checkbox("sort alphabetically", &sort_by_name);
@@ -90,6 +102,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
         ImGui::EndPopup();
     }
 
+    // draw "clear search" button
     ImGui::SameLine();
     if (filter[0] != '\0')
     {
@@ -108,6 +121,8 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
     {
         ImGui::TextUnformatted(ICON_FA_SEARCH);
     }
+
+    // draw search bar
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     ImGui::InputText("##coords search filter", filter, sizeof(filter));
@@ -117,7 +132,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
 
     // load coords
     coord_scratch.clear();
-    get_coordinates(uim.getModel(), coord_scratch);
+    GetCoordinatesInModel(uim.getModel(), coord_scratch);
 
     // sort coords
     RemoveErase(coord_scratch, [this](auto const* c)
@@ -131,10 +146,7 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
         Sort(coord_scratch, IsNameLexographicallyLessThan);
     }
 
-    ImGui::BeginChild("##coordinatesliderschildheaders");
-
-
-    // header
+    // draw header
     ImGui::Columns(3);
     ImGui::Text("Coordinate");
     ImGui::SameLine();
@@ -148,11 +160,13 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
     ImGui::SameLine();
     DrawHelpMarker("Initial speed of the coordinate.\n\nThis sets the 'velocity' of the coordinate in the first state of the simulation. It enables you to (e.g.) start a simulation with something moving in the model.");
     ImGui::NextColumn();
-    ImGui::Columns(1);
+
+    // draw separator between header and coordinates
+    ImGui::Columns();
     ImGui::Separator();
+    ImGui::Columns(3);
 
-    ImGui::BeginChild("##coordinatesliders");
-
+    // draw (lack of) coordinates
     if (coord_scratch.empty())
     {
         ImGui::NewLine();
@@ -161,7 +175,6 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
 
     int i = 0;
     bool state_modified = false;
-    ImGui::Columns(3);
 
     for (OpenSim::Coordinate const* c : coord_scratch)
     {
@@ -249,6 +262,22 @@ bool osc::CoordinateEditor::draw(UiModel& uim)
             state_modified = true;
         }
 
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("Ctrl-click the slider to edit");
+            ImGui::EndTooltip();
+        }
+
+        // draw filter popup (checkboxes for editing filters/sort etc)
+        if (ImGui::BeginPopupContextItem("##coordinatecontextmenu"))
+        {
+            if (ImGui::MenuItem("reset"))
+            {
+                uim.removeCoordinateEdit(*c);
+            }
+            ImGui::EndPopup();
+        }
 
         ImGui::PopStyleColor(styles_pushed);
         styles_pushed = 0;

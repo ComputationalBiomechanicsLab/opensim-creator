@@ -526,7 +526,16 @@ void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEd
 
 bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
 {
-    return m_Impl->m_StateModifications.removeCoordinateEdit(c);
+    if (m_Impl->m_StateModifications.removeCoordinateEdit(c))
+    {
+        setStateDirtyADVANCED(true);
+        setDecorationsDirtyADVANCED(true);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 AABB osc::UiModel::getSceneAABB() const
