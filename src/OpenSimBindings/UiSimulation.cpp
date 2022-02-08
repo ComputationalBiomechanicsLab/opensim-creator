@@ -26,7 +26,8 @@ static std::unique_ptr<FdSimulation> createForwardDynamicSim(UiModel const& uim,
                                                              FdParams const& p)
 {
     auto modelCopy = std::make_unique<OpenSim::Model>(uim.getModel());
-
+    modelCopy->finalizeFromProperties();
+    modelCopy->finalizeConnections();
     modelCopy->buildSystem();
     auto stateCopy = initializeState(*modelCopy, uim.getStateModifications());
 
