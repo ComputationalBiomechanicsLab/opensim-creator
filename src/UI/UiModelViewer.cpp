@@ -783,11 +783,12 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
     }
 }
 
-static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
+static void drawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
+{
     auto& shader = App::shader<SolidColorShader>();
 
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
+    gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
@@ -797,32 +798,19 @@ static void drawXZGrid(osc::UiModelViewer::Impl& impl) {
     gl::BindVertexArray();
 }
 
-static void drawXYGrid(osc::UiModelViewer::Impl& impl) {
-    auto& shader = App::shader<SolidColorShader>();
-
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uModel, glm::scale(glm::mat4{1.0f}, {5.0f, 5.0f, 1.0f}));
-    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    auto grid = App::meshes().get100x100GridMesh();
-    gl::BindVertexArray(grid->GetVertexArray());
-    grid->Draw();
-    gl::BindVertexArray();
+static void drawXZGrid(osc::UiModelViewer::Impl& impl)
+{
+    drawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
 }
 
-static void drawYZGrid(osc::UiModelViewer::Impl& impl) {
-    auto& shader = App::shader<SolidColorShader>();
+static void drawXYGrid(osc::UiModelViewer::Impl& impl)
+{
+    drawGrid(impl, glm::mat4{1.0f});
+}
 
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uModel, glm::scale(glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}), {5.0f, 5.0f, 1.0f}));
-    gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    auto grid = App::meshes().get100x100GridMesh();
-    gl::BindVertexArray(grid->GetVertexArray());
-    grid->Draw();
-    gl::BindVertexArray();
+static void drawYZGrid(osc::UiModelViewer::Impl& impl)
+{
+    drawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}));
 }
 
 static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
