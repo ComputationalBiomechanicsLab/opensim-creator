@@ -18,7 +18,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <imgui.h>
-#include <nfd.h>
 
 #include <limits>
 
@@ -547,21 +546,21 @@ namespace {
             size_t n,           // number of datapoints
             char const* vname)  // name of values (header)
     {
+        // try prompt user for save location
+        std::filesystem::path p =
+                PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        nfdchar_t* outpath = nullptr;
-        nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
-        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-        if (result != NFD_OKAY)
+        if (p.empty())
         {
-            return "";  // user cancelled out
+            // user probably cancelled out
+            return "";
         }
 
-        std::ofstream fout{outpath};
+        std::ofstream fout{p};
 
         if (!fout)
         {
-            log::error("%s: error opening file for writing", outpath);
+            log::error("%s: error opening file for writing", p.string().c_str());
             return "";  // error opening output file for writing
         }
 
@@ -573,13 +572,13 @@ namespace {
 
         if (!fout)
         {
-            log::error("%s: error encountered while writing CSV data to file", outpath);
+            log::error("%s: error encountered while writing CSV data to file", p.string().c_str());
             return "";  // error writing
         }
 
-        log::info("%: successfully wrote CSV data to output file", outpath);
+        log::info("%: successfully wrote CSV data to output file", p.string().c_str());
 
-        return std::string{outpath};
+        return p.string();
     }
 
     // export all plotted outputs to a single CSV file and return the filepath
@@ -588,20 +587,20 @@ namespace {
             UiSimulation const& sim)
     {
         // try prompt user for save location
-        nfdchar_t* outpath = nullptr;
-        nfdresult_t result = NFD_SaveDialog("csv", nullptr, &outpath);
-        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
+        std::filesystem::path p =
+                PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (result != NFD_OKAY)
+        if (p.empty())
         {
-            return "";  // user cancelled out
+            // user probably cancelled out
+            return "";
         }
 
         // try to open the output file
-        std::ofstream fout{outpath};
+        std::ofstream fout{p};
         if (!fout)
         {
-            log::error("%s: error opening file for writing", outpath);
+            log::error("%s: error opening file for writing", p.string().c_str());
             return "";  // error opening output file for writing
         }
 
@@ -704,10 +703,10 @@ namespace {
         // this is just a sanity check: it will be written regardless
         if (!fout)
         {
-            log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", outpath);
+            log::warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", p.string().c_str());
         }
 
-        return std::string{outpath};
+        return p.string();
     }
 
     // draw "outputs" tab, which shows user-selected simulation outputs

@@ -11,7 +11,6 @@
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
-#include "src/Utils/ScopeGuard.hpp"
 #include "src/MainEditorState.hpp"
 #include "src/App.hpp"
 #include "src/Config.hpp"
@@ -21,7 +20,6 @@
 #include "osc_config.hpp"
 
 #include <imgui.h>
-#include <nfd.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <algorithm>
@@ -36,24 +34,17 @@ using namespace osc;
 
 static void doOpenFileViaDialog(std::shared_ptr<MainEditorState> st)
 {
-    nfdchar_t* outpath = nullptr;
-
-    nfdresult_t result = NFD_OpenDialog("osim", nullptr, &outpath);
-    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    if (result == NFD_OKAY)
+    std::filesystem::path p = PromptUserForFile("osim");
+    if (!p.empty())
     {
-        App::cur().requestTransition<LoadingScreen>(st, outpath);
+        App::cur().requestTransition<LoadingScreen>(st, p);
     }
 }
 
 static std::optional<std::filesystem::path> promptSaveOneFile()
 {
-    nfdchar_t* outpath = nullptr;
-    nfdresult_t result = NFD_SaveDialog("osim", nullptr, &outpath);
-    OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-    return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+    std::filesystem::path p = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+    return !p.empty() ? std::optional{p} : std::nullopt;
 }
 
 static bool isAnExampleFile(std::filesystem::path const& path)

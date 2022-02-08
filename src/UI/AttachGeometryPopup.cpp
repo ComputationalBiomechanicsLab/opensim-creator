@@ -1,14 +1,15 @@
 #include "AttachGeometryPopup.hpp"
 
+#include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Utils/FilesystemHelpers.hpp"
+
 #include "src/App.hpp"
+#include "src/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <imgui.h>
-#include <nfd.h>
 
 #include <cstddef>
 #include <memory>
@@ -78,11 +79,8 @@ namespace {
     }
 
     std::optional<std::filesystem::path> promptOpenVTP() {
-        nfdchar_t* outpath = nullptr;
-        nfdresult_t result = NFD_OpenDialog("vtp,stl", nullptr, &outpath);
-        OSC_SCOPE_GUARD_IF(outpath != nullptr, { free(outpath); });
-
-        return result == NFD_OKAY ? std::optional{std::string{outpath}} : std::nullopt;
+        std::filesystem::path p = PromptUserForFile("vtp,stl");
+        return !p.empty() ? std::optional{p.string()} : std::nullopt;
     }
 }
 
