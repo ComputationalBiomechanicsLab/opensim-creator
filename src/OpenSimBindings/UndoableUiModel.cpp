@@ -302,7 +302,15 @@ public:
             return;
         }
 
-        m_Scratch = parent->getUiModel();
+        // perform hacky fixups to ensure the user experience is best:
+        //
+        // - user's selection state should be "sticky" between undo/redo
+        // - user's scene scale factor should be "sticky" between undo/redo
+        UiModel newModel = parent->getUiModel();
+        newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+        newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+
+        m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
     }
 
@@ -329,7 +337,15 @@ public:
             return;
         }
 
-        m_Scratch = c->getUiModel();
+        // perform hacky fixups to ensure the user experience is best:
+        //
+        // - user's selection state should be "sticky" between undo/redo
+        // - user's scene scale factor should be "sticky" between undo/redo
+        UiModel newModel = c->getUiModel();
+        newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+        newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+
+        m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
     }
 

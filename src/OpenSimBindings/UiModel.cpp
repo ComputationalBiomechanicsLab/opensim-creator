@@ -262,17 +262,17 @@ osc::UiModel::UiModel(UiModel&&) noexcept = default;
 
 osc::UiModel::~UiModel() noexcept = default;
 
-osc::UiModel& osc::UiModel::operator=(UiModel&&) = default;
-
-osc::UiModel& osc::UiModel::operator=(UiModel const& other)
+UiModel& osc::UiModel::operator=(UiModel const& other)
 {
     if (&other != this)
     {
-        std::unique_ptr<Impl> copy = std::make_unique<Impl>(*other.m_Impl);
+        auto copy = std::make_unique<Impl>(*other.m_Impl);
         std::swap(this->m_Impl, copy);
     }
     return *this;
 }
+
+osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
 
 StateModifications const& osc::UiModel::getStateModifications() const
 {

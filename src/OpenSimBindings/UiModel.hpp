@@ -56,7 +56,7 @@ namespace osc {
         UiModel& operator=(UiModel const&);
 
         // move another UiModel over this one
-        UiModel& operator=(UiModel&&);
+        UiModel& operator=(UiModel&&) noexcept;
 
         StateModifications const& getStateModifications() const;
 
