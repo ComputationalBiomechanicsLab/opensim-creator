@@ -122,7 +122,7 @@ Now that we have roughly positioned our bodies in the scene, the next step is to
 
 To add pin joints between each body:
 
-* Right-click the "child" body (e.g. ``arm_r_2distph_b``) and click ``Join To``. Alternatively, hover over the body/mesh and press ``J`` (join to).
+* Right-click the body at the end of the finger (e.g. ``arm_r_2distph_b``) and click ``Join To``. Alternatively, hover over the body/mesh and press ``J`` (join to).
 * Select the body it should attach to (e.g. ``arm_r_2midph_b``), this will create a ``WeldJoint`` joint center between the two bodies.
 * Right-click the joint center and change its joint type to a ``PinJoint``.
 * Right-click the joint center and change its name to something that describes the connection (e.g. ``arm_r_2distph_to_2midph``)
@@ -143,7 +143,7 @@ You should **also** add a weld joint between the arm body (``arm_r_b``) and grou
 
     The editor also supports switching between ``local`` and ``global`` coordinate spaces for the drag/rotation handles. This lets you rotate *along* an axis, which is particularly handy if you use something like ``reorient > X > towards parent`` followed by rotating along ``X`` to position the other two axes.
 
-Following these steps, you should end up adding **six** pin joints into the scene. In my case, the names of the pin joints were:
+Following these steps, you should end up adding **six** joints (five pin joints, one weld joint) into the scene. In my case, the names of the joints were:
 
 * ``arm_r_2distph_to_2midph``
 * ``arm_r_2midph_to_2proxph``

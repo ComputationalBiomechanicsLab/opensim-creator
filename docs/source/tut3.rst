@@ -102,7 +102,7 @@ Next, you will (temporarily) convert the mesh importer scene into an OpenSim mod
 
 To convert the mesh importer scene into an ``osim`` (for testing), you will need to:
 
-* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model`` button to do this. It will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
+* **Convert your scene into an OpenSim model**. Click the ``Convert to OpenSim Model``. This will convert your scene to an ``osim`` and open it in the ``osim`` editor that we used in previous tutorials. You can then see how the free-form scene was converted into an OpenSim model.
 * **Simulate the model**. Adjust the pin joint coordinates slightly to start the pendulum off at an angle. Confirm that both bodies swing like a double pendulum. If they don't, reopen the mesh importer and start fixing things 🔧.
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
@@ -137,7 +137,7 @@ Attach a cube mesh to ground (the ceiling)
 Attach a cube mesh to the top pendulum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click the body of the top pendulum (``pendulum_head``) and use the ``Add Other > Meshes`` to attach ``block.vtp`` to it.
+* Right-click the body of the top pendulum (``pendulum_head``) and use the ``Add > Meshes`` to attach ``block.vtp`` to it.
 * Rename it to ``pendulum_head_decoration``
 * Move (``G``), Rotate (``R``), or Scale (``S``) the mesh however you like (recommended: leave it as-is) by either using the in-UI draggable gizmos or typing values into the context menu.
 
@@ -160,7 +160,7 @@ Attach a cube mesh between the top pendulum and the ceiling (a strut)
   * The "best" approach depends on what kind of model you are working on.
 * Once the mesh is attached, move it between the ``pendulum_head`` and the pin joint that's acting as the base (``pendulum_head_to_ground``)
 * Rename it to ``pendulum_head_strut_decoration``
-* Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.0, 0.2``)).
+* Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.5, 0.2``)).
 
 Attach a cube mesh between the bottom and top pendulums
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

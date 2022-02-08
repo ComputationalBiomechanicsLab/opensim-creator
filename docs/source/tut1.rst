@@ -38,7 +38,7 @@ You should see a blank 3D scene with a chequered floor and a set of axes in the 
 
     OpenSim models are described using a **relative coordinate system**. This means that the position and orientation of each component (e.g. a body) in an OpenSim model is described relative to some other component in the scene.
 
-    This has practical implications. Doing something like setting a component's ``translation`` to +1 in X does not mean that the component will be positioned at ``(1, 0, 0)`` in the scene. The component may be positioned at ``parent.position + parent.orientation*(1, 0, 0)``, or some other location, depending on what (and how) the component is attached to the other components in the model (the model's **topology**). This relative, topology-sensitive, approach is in contrast to artistic modelling software (e.g. `Blender <//blender.org>`__), where scene elements are typically transformed independently and relative to the scene.
+    This has practical implications. Doing something like setting a component's ``translation`` to +1 in X does not mean that the component will be positioned at ``(1, 0, 0)`` in the scene. The component may be positioned at ``parent.position + parent.orientation*(1, 0, 0)``, or some other location, depending on what (and how) the component is attached to the other components in the model (the model's **topology**). This relative, topology-sensitive, approach is in contrast to artistic modelling software (e.g. `Blender <https://www.blender.org>`__), where scene elements are typically transformed independently and relative to the scene.
 
     The only component that doesn't use relative coordinates is the **ground**. The ground is always the "root" of the model's connectivity graph and is always defined to be at ``(0, 0, 0)`` with no rotation. All other components in the model attach to the ground directly or indirectly (i.e. via other components, such as joints).
 
@@ -205,7 +205,7 @@ Once you've done that, you should end up with a more convincing-looking pendulum
 .. figure:: _static/tut1_appearanceformatted.png
     :width: 60%
 
-    Final pendulum model after updating the appearance. You can download the final model :download:`📥 download model <_static/tut1_final-model.osim>`
+    Final pendulum model after updating the appearance. :download:`📥 download model <_static/tut1_final-model.osim>`
 
 
 
