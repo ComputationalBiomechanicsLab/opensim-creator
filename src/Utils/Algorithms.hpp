@@ -99,6 +99,20 @@ namespace osc {
         std::sort(begin(c), end(c), comp);
     }
 
+    template<typename T>
+    std::unordered_set<T> Intersect(std::unordered_set<T> const& a, std::unordered_set<T> const& b)
+    {
+        std::unordered_set<T> rv;
+        for (T const& v : a)
+        {
+            if (Contains(b, v))
+            {
+                rv.insert(v);
+            }
+        }
+        return rv;
+    }
+
     // returns the number of bits set in the input integer
     //
     // e.g. 0x1 --> 1, 0x2 --> 1, 0x3 --> 2, 0xf --> 4
