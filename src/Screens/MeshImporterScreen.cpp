@@ -72,7 +72,7 @@ namespace
     #define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
 
     #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
-    #define OSC_FLOAT_INPUT_FORMAT "%.4f"
+    #define OSC_FLOAT_INPUT_FORMAT "%.6f"
 
     std::string const g_GroundLabel = "Ground";
     std::string const g_GroundLabelPluralized = "Ground";
