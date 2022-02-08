@@ -234,7 +234,7 @@ namespace {
                     // label the line's length
                     {
                         char buf[1024];
-                        std::snprintf(buf, sizeof(buf), "%.2f", lineWorldLen);
+                        std::snprintf(buf, sizeof(buf), "%.5f", lineWorldLen);
                         drawTooltipWithBg(lineMidpoint + offsetVec, buf);
                     }
 
