@@ -283,7 +283,7 @@ struct osc::UiModelViewer::Impl final {
     // by default, lower the floor slightly, so that it doesn't conflict
     // with OpenSim ContactHalfSpace planes that coincidently happen to
     // lie at Z==0
-    glm::vec3 floorLocation = {0.0f, -0.0001f, 0.0f};
+    glm::vec3 floorLocation = {0.0f, -0.001f, 0.0f};
 
     gl::Texture2D chequerTex = genChequeredFloorTexture();
 
@@ -333,7 +333,7 @@ static glm::mat4x3 generateFloorModelMatrix(osc::UiModelViewer::Impl const& impl
     // make floor extend far in all directions
     rv = glm::scale(glm::mat4{1.0f}, {fixupScaleFactor * 100.0f, 1.0f, fixupScaleFactor * 100.0f}) * rv;
 
-    rv = glm::translate(glm::mat4{1.0f}, impl.floorLocation) * rv;
+    rv = glm::translate(glm::mat4{1.0f}, fixupScaleFactor * impl.floorLocation) * rv;
 
     return glm::mat4x3{rv};
 }
