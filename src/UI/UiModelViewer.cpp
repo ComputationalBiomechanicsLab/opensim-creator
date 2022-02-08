@@ -181,7 +181,7 @@ namespace {
             }
 
             glm::vec2 mouseLoc = ImGui::GetMousePos();
-            ImDrawList* dl = ImGui::GetForegroundDrawList();
+            ImDrawList* dl = ImGui::GetWindowDrawList();
             ImU32 circleMousedOverNothingColor = ImGui::ColorConvertFloat4ToU32({1.0f, 0.0f, 0.0f, 0.6f});
             ImU32 circleColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.8f});
             ImU32 lineColor = circleColor;
@@ -904,39 +904,51 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     gl::BindVertexArray();
 }
 
-static void drawOverlays(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+// draws overlays that are "in scene" - i.e. they are part of the rendered texture
+static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    if (impl.flags & UiModelViewerFlags_DrawXZGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawXZGrid)
+    {
         drawXZGrid(impl);
     }
 
-    if (impl.flags & UiModelViewerFlags_DrawXYGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawXYGrid)
+    {
         drawXYGrid(impl);
     }
 
-    if (impl.flags & UiModelViewerFlags_DrawYZGrid) {
+    if (impl.flags & UiModelViewerFlags_DrawYZGrid)
+    {
         drawYZGrid(impl);
     }
 
-    if (impl.flags & UiModelViewerFlags_DrawAlignmentAxes) {
-        DrawAlignmentAxesOverlayInBottomRightOf(impl.camera.getViewMtx(), impl.renderRect);
-    }
-
-    if (impl.flags & UiModelViewerFlags_DrawAxisLines) {
+    if (impl.flags & UiModelViewerFlags_DrawAxisLines)
+    {
         drawFloorAxesLines(impl);
     }
 
-    if (impl.flags & UiModelViewerFlags_DrawAABBs) {
+    if (impl.flags & UiModelViewerFlags_DrawAABBs)
+    {
         drawAABBs(impl, rs);
     }
 
-    if (impl.flags & UiModelViewerFlags_DrawBVH) {
+    if (impl.flags & UiModelViewerFlags_DrawBVH)
+    {
         drawBVH(impl, rs);
     }
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+}
+
+// draw 2D overlays that are emitted via imgui (rather than inside the rendered texture)
+static void DrawImGuiOverlays(osc::UiModelViewer::Impl& impl)
+{
+    if (impl.flags & UiModelViewerFlags_DrawAlignmentAxes)
+    {
+        DrawAlignmentAxesOverlayInBottomRightOf(impl.camera.getViewMtx(), impl.renderRect);
+    }
 }
 
 static void drawOptionsMenu(osc::UiModelViewer::Impl& impl) {
@@ -1190,11 +1202,12 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
 
         populateSceneDrawlist(impl, rs);
         drawSceneTexture(impl, rs);
-        drawOverlays(impl, rs);
+        DrawInSceneOverlays(impl, rs);
+        blitSceneTexture(impl);
+        DrawImGuiOverlays(impl);
         if (impl.ruler.IsMeasuring()) {
             impl.ruler.draw(htResult, impl.camera, impl.renderRect);
         }
-        blitSceneTexture(impl);
         ImGui::EndChild();
 
         if (impl.ruler.IsMeasuring()) {
