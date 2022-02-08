@@ -3683,6 +3683,7 @@ namespace
 
             MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
             el.Xform = ToOsimTransform(frame.getTransformInGround(st));
+            el.Xform.scale = SimTKVec3FromVec3(mesh.get_scale_factors());
             el.Name = name;
         }
 
