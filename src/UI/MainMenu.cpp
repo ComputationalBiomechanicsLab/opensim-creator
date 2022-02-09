@@ -317,11 +317,16 @@ void osc::MainMenuAboutTab::draw() {
         ImGui::TextUnformatted("window");
         ImGui::NextColumn();
 
-        if (ImGui::Button(ICON_FA_EXPAND " fullscreen")) {
+        if (ImGui::Button(ICON_FA_EXPAND " fullscreen"))
+        {
             App::cur().makeFullscreen();
         }
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_WINDOW_RESTORE " windowed")) {
+        if (ImGui::Button(ICON_FA_EXPAND " windowed fullscreen"))
+        {
+            App::cur().makeWindowedFullscreen();
+        }
+        if (ImGui::Button(ICON_FA_WINDOW_RESTORE " windowed"))
+        {
             App::cur().makeWindowed();
         }
         ImGui::NextColumn();

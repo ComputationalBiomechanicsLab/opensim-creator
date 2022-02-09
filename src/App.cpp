@@ -900,6 +900,11 @@ void osc::App::makeFullscreen()
     SDL_SetWindowFullscreen(m_Impl->window, SDL_WINDOW_FULLSCREEN);
 }
 
+void osc::App::makeWindowedFullscreen()
+{
+    SDL_SetWindowFullscreen(m_Impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+}
+
 void osc::App::makeWindowed()
 {
     SDL_SetWindowFullscreen(m_Impl->window, 0);

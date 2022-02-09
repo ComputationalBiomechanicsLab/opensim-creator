@@ -121,6 +121,9 @@ namespace osc
         // makes the main window fullscreen
         void makeFullscreen();
 
+        // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
+        void makeWindowedFullscreen();
+
         // makes the main window windowed (as opposed to fullscreen)
         void makeWindowed();
 
