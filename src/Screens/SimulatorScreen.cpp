@@ -55,11 +55,13 @@ namespace {
     }
 
     // select a simulation report based on scubbing time
-    [[nodiscard]] Report& selectReportBasedOnScrubbing(
+    //
+    // CLEAN because the wrapped version of this function has to perform a HACKy
+    // workaround
+    Report& selectReportBasedOnScrubbingCLEAN(
             UiSimulation const& focused,
             float scrubTime)
     {
-
         auto& rr = focused.regularReports;
 
         // if there are no regular reports, use the spot report
@@ -91,6 +93,22 @@ namespace {
         }
 
         return **it;
+    }
+
+    Report& selectReportBasedOnScrubbing(
+            UiSimulation const& focused,
+            float scrubTime)
+    {
+        // HACK: re-realize the state if the model has had some other state realized
+        // against it
+        Report& r = selectReportBasedOnScrubbingCLEAN(focused, scrubTime);
+        if (&r != focused.HACK_lastReportModelWasRealizedAgainst)
+        {
+            r.state.invalidateAll(SimTK::Stage::Time);
+            focused.model->realizeReport(r.state);
+            focused.HACK_lastReportModelWasRealizedAgainst = &r;
+        }
+        return r;
     }
 }
 
@@ -141,6 +159,7 @@ namespace {
                 for (size_t i = rr.size() - static_cast<size_t>(popped); i < rr.size(); ++i)
                 {
                     simulation->model->realizeReport(rr[i]->state);
+                    simulation->HACK_lastReportModelWasRealizedAgainst = rr[i].get();
                 }
             }
 
@@ -150,6 +169,7 @@ namespace {
             {
                 simulation->spotReport = std::move(newSpotReport);
                 simulation->model->realizeReport(simulation->spotReport->state);
+                simulation->HACK_lastReportModelWasRealizedAgainst = simulation->spotReport.get();
             }
         }
     }

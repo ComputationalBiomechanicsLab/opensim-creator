@@ -49,6 +49,16 @@ namespace osc {
         // undersized models (e.g. fly leg)
         float fixupScaleFactor;
 
+        // HACK: a pointer to the last report that the model was realized against
+        //
+        // This shouldn't be necessary--the model shouldn't "remember" anything about
+        // what state it was realized against--but it is necessary beause there's a bug
+        // in OpenSim that causes a state mutation (during realizeReport) to also mutate
+        // the model slightly
+        //
+        // see: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
+        mutable Report* HACK_lastReportModelWasRealizedAgainst = nullptr;
+
         // start a new simulation by *copying* the provided Ui_model
         UiSimulation(UiModel const&, FdParams const&);
         UiSimulation(UiSimulation const&) = delete;
