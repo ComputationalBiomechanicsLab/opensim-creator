@@ -195,19 +195,19 @@ namespace osc {
         // yet (i.e. if an integration/reporting step hasn't happened since the
         // last call)
         [[nodiscard]] std::unique_ptr<Report> tryPopLatestReport();
-        [[nodiscard]] int numLatestReportsPopped() const noexcept;
+        [[nodiscard]] int numLatestReportsPopped() const;
 
         // these values are accurate to within one report, or integration step
         // (because the backend can only update them that often)
 
-        [[nodiscard]] bool isRunning() const noexcept;
-        [[nodiscard]] std::chrono::duration<double> wallDuration() const noexcept;
-        [[nodiscard]] std::chrono::duration<double> simCurrentTime() const noexcept;
-        [[nodiscard]] std::chrono::duration<double> simFinalTime() const noexcept;
-        [[nodiscard]] char const* statusDescription() const noexcept;
+        [[nodiscard]] bool isRunning() const;
+        [[nodiscard]] std::chrono::duration<double> wallDuration() const;
+        [[nodiscard]] std::chrono::duration<double> simCurrentTime() const;
+        [[nodiscard]] std::chrono::duration<double> simFinalTime() const;
+        [[nodiscard]] char const* statusDescription() const;
 
         // progress of simulation, which falls in the range [0.0, 1.0]
-        [[nodiscard]] float progress() const noexcept;
+        [[nodiscard]] float progress() const;
 
         // pushes regular reports onto the end of the outparam and returns the number
         // of reports popped
@@ -235,14 +235,14 @@ namespace osc {
         //
         // this is only a request: the simulation may still be running some time after
         // this method returns
-        void requestStop() noexcept;
+        void requestStop();
 
         // synchronously stop the simulation
         //
         // this method blocks until the simulation thread stops completely
-        void stop() noexcept;
+        void stop();
 
         // get the params used to run this simulation
-        [[nodiscard]] FdParams const& params() const noexcept;
+        [[nodiscard]] FdParams const& params() const;
     };
 }

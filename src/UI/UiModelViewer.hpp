@@ -72,7 +72,7 @@ namespace osc
         UiModelViewer& operator=(UiModelViewer const&) = delete;
         UiModelViewer& operator=(UiModelViewer&&) noexcept;
 
-        bool isMousedOver() const noexcept;
+        bool isMousedOver() const;
 
         void requestAutoFocus();
 

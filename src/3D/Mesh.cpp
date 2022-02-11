@@ -54,7 +54,7 @@ struct osc::Mesh::Impl final {
     }
 };
 
-static bool isGreaterThanU16Max(uint32_t v) noexcept {
+static bool isGreaterThanU16Max(uint32_t v) {
     return v > std::numeric_limits<uint16_t>::max();
 }
 

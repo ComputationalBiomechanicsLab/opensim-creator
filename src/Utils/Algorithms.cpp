@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-int osc::NumBitsSetIn(int v) noexcept
+int osc::NumBitsSetIn(int v)
 {
     unsigned uv = static_cast<unsigned>(v);
     unsigned i = 0;
@@ -17,7 +17,7 @@ int osc::NumBitsSetIn(int v) noexcept
     return static_cast<int>(i);
 }
 
-int osc::LeastSignificantBitIndex(int v) noexcept
+int osc::LeastSignificantBitIndex(int v)
 {
     unsigned uv = static_cast<unsigned>(v);
     unsigned i = 0;
@@ -29,7 +29,7 @@ int osc::LeastSignificantBitIndex(int v) noexcept
     return static_cast<int>(i);
 }
 
-bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b) noexcept
+bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b)
 {
     // this is a more verbose implementation of:
     //
@@ -64,7 +64,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string c
 // returns true if `b` is lexographically greater than `a`, ignoring case
 //
 // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
-bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2) noexcept
+bool osc::IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2)
 {
     return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
 }
@@ -112,7 +112,7 @@ bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string c
     return ContainsSubstring(s, ss);
 }
 
-bool osc::CStrEndsWith(char const* s, std::string_view suffix) noexcept
+bool osc::CStrEndsWith(char const* s, std::string_view suffix)
 {
     size_t sLen = std::strlen(s);
 
@@ -126,7 +126,7 @@ bool osc::CStrEndsWith(char const* s, std::string_view suffix) noexcept
     return std::equal(sEnd - suffix.length(), sEnd, suffix.begin(), suffix.end());
 }
 
-bool osc::Contains(char const* s, char c) noexcept
+bool osc::Contains(char const* s, char c)
 {
     return std::strchr(s, c) != nullptr;
 }

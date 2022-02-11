@@ -113,25 +113,43 @@ namespace osc {
         return rv;
     }
 
+    // returns `true` if the values of `a` and `b` are effectively equal
+    //
+    // this algorithm is designed to be correct, rather than fast
+    inline bool AreEffectivelyEqual(double a, double b) noexcept
+    {
+        // why:
+        //
+        //     http://realtimecollisiondetection.net/blog/?p=89
+        //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
+        //
+        // machine epsilon is only relevant for numbers < 1.0, so the epsilon
+        // value must be scaled up to the magnitude of the operands if you need
+        // a more-correct equality comparison
+
+        double scaledEpsilon = std::max({1.0, a, b}) * std::numeric_limits<double>::epsilon();
+        return std::abs(a - b) < scaledEpsilon;
+    }
+
     // returns the number of bits set in the input integer
     //
     // e.g. 0x1 --> 1, 0x2 --> 1, 0x3 --> 2, 0xf --> 4
-    int NumBitsSetIn(int v) noexcept;
+    int NumBitsSetIn(int v);
 
     // returns the bit-index of the least significant bit that it set
     //
     // e.g. 0x1 --> 0, 0x2 --> 1, 0x3 --> 0, 0x4 --> 2
-    int LeastSignificantBitIndex(int v) noexcept;
+    int LeastSignificantBitIndex(int v);
 
     // returns true if `b` is lexographically greater than `a`, ignoring case
     //
     // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
-    bool IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b) noexcept;
+    bool IsStringCaseInsensitiveGreaterThan(std::string const& a, std::string const& b);
 
     // returns true if `b` is lexographically greater than `a`, ignoring case
     //
     // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
-    bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2) noexcept;
+    bool IsFilenameLexographicallyGreaterThan(std::filesystem::path const& p1, std::filesystem::path const& p2);
 
     // returns true if `path` is within `dir` (non-recursive)
     bool IsSubpath(std::filesystem::path const& dir, std::filesystem::path const& path);
@@ -146,8 +164,8 @@ namespace osc {
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
 
     // returns true if `s` ends with `suffix`
-    bool CStrEndsWith(char const* s, std::string_view suffix) noexcept;
+    bool CStrEndsWith(char const* s, std::string_view suffix);
 
     // returns true if `str` contains `c`
-    bool Contains(char const* str, char e) noexcept;
+    bool Contains(char const* str, char e);
 }

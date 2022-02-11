@@ -1557,13 +1557,8 @@ void osc::ModelEditorScreen::draw() {
         log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
         try {
-            if (m_Impl->st->canUndo()) {
-                log::error("the editor has an `undo` history for this model, so it will try to rollback to that");
-                m_Impl->st->doUndo();
-                log::error("rollback succeeded");
-            } else {
-                throw;
-            }
+            m_Impl->st->editedModel.rollback();
+            log::error("rollback succeeded");
         } catch (std::exception const& ex2) {
             App::cur().requestTransition<ErrorScreen>(ex2);
         }

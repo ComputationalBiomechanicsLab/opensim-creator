@@ -71,20 +71,23 @@ namespace osc {
         UiModel& updUiModel();
 
         // manipulate undo/redo state
-        bool canUndo() const noexcept;
+        bool canUndo() const;
         void doUndo();
-        bool canRedo() const noexcept;
+        bool canRedo() const;
         void doRedo();
+
+        // try to rollback the model to an early-as-possible state
+        void rollback();
 
         // read/manipulate underlying OpenSim::Model
         //
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
-        OpenSim::Model const& getModel() const noexcept;
-        OpenSim::Model& updModel() noexcept;
+        OpenSim::Model const& getModel() const;
+        OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
 
         // gets the `SimTK::State` that's valid against the current model
-        SimTK::State const& getState() const noexcept;
+        SimTK::State const& getState() const;
 
         // read/manipulate fixup scale factor
         //
@@ -137,12 +140,12 @@ namespace osc {
 
         // read/manipulate current hover (if any)
         bool hasHovered() const;
-        OpenSim::Component const* getHovered() const noexcept;
+        OpenSim::Component const* getHovered() const;
         OpenSim::Component* updHovered();
         void setHovered(OpenSim::Component const* c);
 
         // read/manipulate current isolation (the thing that's only being drawn - if any)
-        OpenSim::Component const* getIsolated() const noexcept;
+        OpenSim::Component const* getIsolated() const;
         OpenSim::Component* updIsolated();
         void setIsolated(OpenSim::Component const* c);
 
@@ -151,7 +154,7 @@ namespace osc {
         // this happens when we know that OpenSim has destructed a component in
         // the model indirectly (e.g. it was destructed by an OpenSim container)
         // and that we want to ensure the pointer isn't still held by this state
-        void declareDeathOf(OpenSim::Component const* c) noexcept;
+        void declareDeathOf(OpenSim::Component const* c);
 
     public:
         class Impl;

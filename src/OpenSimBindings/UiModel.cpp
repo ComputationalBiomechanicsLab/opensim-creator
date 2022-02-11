@@ -602,7 +602,7 @@ std::chrono::system_clock::time_point osc::UiModel::getLastModifiedTime() const
 // this happens when we know that OpenSim has destructed a component in
 // the model indirectly (e.g. it was destructed by an OpenSim container)
 // and that we want to ensure the pointer isn't still held by this state
-void osc::UiModel::declareDeathOf(OpenSim::Component const* c) noexcept
+void osc::UiModel::declareDeathOf(OpenSim::Component const* c)
 {
     if (getSelected() == c)
     {

@@ -32,20 +32,20 @@ namespace osc
     public:
 
         // returns the currently-active application global
-        static App& cur() noexcept
+        static App& cur()
         {
             OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
             return *g_Current;
         }
 
         // returns the currently-active configuration global
-        static Config const& config() noexcept;
+        static Config const& config();
 
         // returns the global shader cache
-        static ShaderCache& shaders() noexcept;
+        static ShaderCache& shaders();
 
         // returns the global meshes cache
-        static MeshCache& meshes() noexcept;
+        static MeshCache& meshes();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource(std::string_view s);
@@ -104,19 +104,19 @@ namespace osc
         //
         // this is merely a *request* tha the `App` will fulfill at a later time (usually,
         // after it's done handling some part of the top-level application loop)
-        void requestQuit() noexcept;
+        void requestQuit();
 
         // returns main window's dimensions (integer)
-        glm::ivec2 idims() const noexcept;
+        glm::ivec2 idims() const;
 
         // returns main window's dimensions (float)
-        glm::vec2 dims() const noexcept;
+        glm::vec2 dims() const;
 
         // returns main window's aspect ratio
-        float aspectRatio() const noexcept;
+        float aspectRatio() const;
 
         // sets whether the user's mouse cursor should be shown/hidden
-        void showCursor(bool) noexcept;
+        void showCursor(bool);
 
         // makes the main window fullscreen
         void makeFullscreen();
@@ -128,7 +128,7 @@ namespace osc
         void makeWindowed();
 
         // returns the recommended number of MSXAA samples that rendererers should use
-        int getRecommendedMSXAASamples() const noexcept;
+        int getRecommendedMSXAASamples() const;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
@@ -136,13 +136,13 @@ namespace osc
         void setRecommendedMSXAASamples(int);
 
         // returns the maximum number of MSXAA samples the backend supports
-        int getMaxMSXAASamples() const noexcept;
+        int getMaxMSXAASamples() const;
 
         // returns true if the application is rendering in debug mode
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
-        bool isInDebugMode() const noexcept;
+        bool isInDebugMode() const;
 
         // enables debug mode (incl. OpenGL debugging)
         void enableDebugMode();
@@ -151,7 +151,7 @@ namespace osc
         void disableDebugMode();
 
         // returns true if VSYNC has been enabled in the graphics layer
-        bool isVsyncEnabled() const noexcept;
+        bool isVsyncEnabled() const;
 
         // requests that VSYNC is enabled in the graphics layer
         void enableVsync();
@@ -166,10 +166,10 @@ namespace osc
         void unsetMainWindowSubTitle();
 
         // returns the current application configuration
-        Config const& getConfig() const noexcept;
+        Config const& getConfig() const;
 
         // returns a full filesystem path to runtime resource in `resources/` dir
-        std::filesystem::path getResource(std::string_view) const noexcept;
+        std::filesystem::path getResource(std::string_view) const;
 
         // returns the contents of a runtime resource in the `resources/` dir as a string
         std::string slurpResource(std::string_view) const;
@@ -185,7 +185,7 @@ namespace osc
         void addRecentFile(std::filesystem::path const&);
 
         // returns true if the main window is focused
-        bool isWindowFocused() const noexcept;
+        bool isWindowFocused() const;
 
         // data structure representing the current mouse state
         struct MouseState final {
@@ -202,44 +202,44 @@ namespace osc
         // note: this method tries to be as precise as possible by fetching from the
         //       OS, so it can be expensive. Use something like an IoPoller or ImGui
         //       to record this information once-per-frame, if possible.
-        MouseState getMouseState() const noexcept;
+        MouseState getMouseState() const;
 
         // returns the number of "ticks" recorded on the application's high-resolution
         // monotonically-increasing clock
-        uint64_t getTicks() const noexcept;
+        uint64_t getTicks() const;
 
         // returns the number of "ticks" that pass in the application's high-resolution
         // clock per second.
         //
         // usage e.g.: dt = (getTicks()-previousTicks)/getTickFrequency()
-        uint64_t getTickFrequency() const noexcept;
+        uint64_t getTickFrequency() const;
 
         // returns true if the user is pressing the SHIFT key
         //
         // note: this might fetch the information from the OS, so it's better to store
         //       it once-per-frame in something like an IoPoller
-        bool isShiftPressed() const noexcept;
+        bool isShiftPressed() const;
 
         // returns true if the user is pressing the CTRL key
         //
         // note: this might fetch the information from the OS, so it's better to store
         //       it once-per-frame in something like an IoPoller
-        bool isCtrlPressed() const noexcept;
+        bool isCtrlPressed() const;
 
         // returns true if the user is pressing the ALT key
         //
         // note: this might fetch the information from the OS, so it's better to store
         //       it once-per-frame in something like an IoPoller
-        bool isAltPressed() const noexcept;
+        bool isAltPressed() const;
 
         // move the mouse to a location within the window
-        void warpMouseInWindow(glm::vec2) const noexcept;
+        void warpMouseInWindow(glm::vec2) const;
 
         // returns the application-wide (global) shader cache
-        ShaderCache& getShaderCache() noexcept;
+        ShaderCache& getShaderCache();
 
         // returns the application-wide (global) mesh cache
-        MeshCache& getMeshCache() noexcept;
+        MeshCache& getMeshCache();
 
         // makes main application event loop wait, rather than poll, for events
         //

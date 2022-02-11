@@ -320,7 +320,7 @@ osc::UiModelViewer::~UiModelViewer() noexcept = default;
 
 osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
 
-bool osc::UiModelViewer::isMousedOver() const noexcept {
+bool osc::UiModelViewer::isMousedOver() const {
     return m_Impl->renderHovered;
 }
 

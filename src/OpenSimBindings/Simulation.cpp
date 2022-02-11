@@ -1,6 +1,7 @@
 #include "Simulation.hpp"
 
 #include "src/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ConcurrencyHelpers.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Assertions.hpp"
@@ -127,20 +128,6 @@ static std::unique_ptr<Report> makeSimulationReport(OpenSim::Model const& model,
     return out;
 }
 
-// returns true if `a` and `b` are effectively equal
-static bool eq(double a, double b) noexcept {
-    // why:
-    //
-    //     http://realtimecollisiondetection.net/blog/?p=89
-    //     https://stackoverflow.com/questions/17333/what-is-the-most-effective-way-for-float-and-double-comparison
-    //
-    // effectively, epsilon is "machine epsilon", and is only relevant for
-    // numbers < 1.0. It has to be scaled up to the magnitude of the operands
-
-    double scaledEpsilon = std::max(1.0, std::max(std::abs(a), std::abs(b))) * std::numeric_limits<double>::epsilon();
-    return std::abs(a - b) < scaledEpsilon;
-}
-
 // MAIN function for the simulator thread
 //
 // unguarded from exceptions
@@ -239,7 +226,7 @@ static FdsimStatus FdSimulationMainUnguarded(
             std::unique_ptr<Report> spotReport = nullptr;
 
             // create regular report (if necessary)
-            if (eq(nextTimepoint, integ->getTime())) {
+            if (AreEffectivelyEqual(nextTimepoint, integ->getTime())) {
                 regulaReport = makeSimulationReport(model, *integ);
                 tNextRegularReport = integ->getTime() + params.ReportingInterval.count();
             }
@@ -351,31 +338,31 @@ std::unique_ptr<Report> osc::FdSimulation::tryPopLatestReport() {
     return rv;
 }
 
-int osc::FdSimulation::numLatestReportsPopped() const noexcept {
+int osc::FdSimulation::numLatestReportsPopped() const {
     return m_Impl->numStatesPopped;
 }
 
-bool osc::FdSimulation::isRunning() const noexcept {
+bool osc::FdSimulation::isRunning() const {
     auto guard = m_Impl->shared->lock();
     return guard->status == FdsimStatus::Running;
 }
 
-std::chrono::duration<double> osc::FdSimulation::wallDuration() const noexcept {
+std::chrono::duration<double> osc::FdSimulation::wallDuration() const {
     auto guard = m_Impl->shared->lock();
     auto end = guard->status == FdsimStatus::Running ? std::chrono::steady_clock::now() : guard->wallEnd;
     return end - guard->wallEnd;
 }
 
-std::chrono::duration<double> osc::FdSimulation::simCurrentTime() const noexcept {
+std::chrono::duration<double> osc::FdSimulation::simCurrentTime() const {
     auto guard = m_Impl->shared->lock();
     return guard->latestSimTime;
 }
 
-std::chrono::duration<double> osc::FdSimulation::simFinalTime() const noexcept {
+std::chrono::duration<double> osc::FdSimulation::simFinalTime() const {
     return m_Impl->params.FinalTime;
 }
 
-char const* osc::FdSimulation::statusDescription() const noexcept {
+char const* osc::FdSimulation::statusDescription() const {
     switch (m_Impl->shared->lock()->status) {
     case FdsimStatus::Running:
         return "running";
@@ -390,7 +377,7 @@ char const* osc::FdSimulation::statusDescription() const noexcept {
     }
 }
 
-float osc::FdSimulation::progress() const noexcept {
+float osc::FdSimulation::progress() const {
     double cur = simCurrentTime().count();
     double end = m_Impl->params.FinalTime.count();
     return static_cast<float>(cur) / static_cast<float>(end);
@@ -411,15 +398,15 @@ int osc::FdSimulation::popRegularReports(std::vector<std::unique_ptr<Report>>& a
     return popped;
 }
 
-void osc::FdSimulation::requestStop() noexcept {
+void osc::FdSimulation::requestStop() {
     m_Impl->simulatorThread.request_stop();
 }
 
-void osc::FdSimulation::stop() noexcept {
+void osc::FdSimulation::stop() {
     m_Impl->simulatorThread.request_stop();
     m_Impl->simulatorThread.join();
 }
 
-FdParams const& osc::FdSimulation::params() const noexcept {
+FdParams const& osc::FdSimulation::params() const {
     return m_Impl->params;
 }

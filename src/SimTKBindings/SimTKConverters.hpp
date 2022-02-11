@@ -9,7 +9,7 @@
 namespace osc {
 
     // convert 3 packed floats to a SimTK::Vec3
-    [[nodiscard]] inline SimTK::Vec3 SimTKVec3FromV3(float v[3]) noexcept {
+    [[nodiscard]] inline SimTK::Vec3 SimTKVec3FromV3(float v[3]) {
         return {
             static_cast<double>(v[0]),
             static_cast<double>(v[1]),
@@ -18,7 +18,7 @@ namespace osc {
     }
 
     // convert a glm::vec3 to a SimTK::Vec3
-    [[nodiscard]] inline SimTK::Vec3 SimTKVec3FromV3(glm::vec3 const& v) noexcept {
+    [[nodiscard]] inline SimTK::Vec3 SimTKVec3FromV3(glm::vec3 const& v) {
         return {
             static_cast<double>(v.x),
             static_cast<double>(v.y),
@@ -27,7 +27,7 @@ namespace osc {
     }
 
     // convert 3 packed floats to a SimTK::Inertia
-    [[nodiscard]] inline SimTK::Inertia SimTKInertiaFromV3(float v[3]) noexcept {
+    [[nodiscard]] inline SimTK::Inertia SimTKInertiaFromV3(float v[3]) {
         return {
             static_cast<double>(v[0]),
             static_cast<double>(v[1]),
@@ -35,16 +35,16 @@ namespace osc {
         };
     }
 
-    [[nodiscard]] inline glm::vec3 SimTKVec3FromVec3(SimTK::Vec3 const& v) noexcept {
+    [[nodiscard]] inline glm::vec3 SimTKVec3FromVec3(SimTK::Vec3 const& v) {
         return glm::vec3(v[0], v[1], v[2]);
     }
 
-    [[nodiscard]] inline glm::vec4 SimTKVec4FromVec3(SimTK::Vec3 const& v, float w = 1.0f) noexcept {
+    [[nodiscard]] inline glm::vec4 SimTKVec4FromVec3(SimTK::Vec3 const& v, float w = 1.0f) {
         return glm::vec4{v[0], v[1], v[2], w};
     }
 
     // convert a SimTK::Transform to a glm::mat4x3
-    [[nodiscard]] inline glm::mat4x3 SimTKMat4x3FromXForm(SimTK::Transform const& t) noexcept {
+    [[nodiscard]] inline glm::mat4x3 SimTKMat4x3FromXForm(SimTK::Transform const& t) {
         // glm::mat4x3 is column major:
         //     see: https://glm.g-truc.net/0.9.2/api/a00001.html
         //     (and just Google "glm column major?")
@@ -85,11 +85,11 @@ namespace osc {
         return m;
     }
 
-    [[nodiscard]] inline glm::mat4x3 SimTKMat4x4FromTransform(SimTK::Transform const& t) noexcept {
+    [[nodiscard]] inline glm::mat4x3 SimTKMat4x4FromTransform(SimTK::Transform const& t) {
         return glm::mat4{SimTKMat4x3FromXForm(t)};
     }
 
-    [[nodiscard]] inline SimTK::Transform SimTKTransformFromMat4x3(glm::mat4x3 const& m) noexcept {
+    [[nodiscard]] inline SimTK::Transform SimTKTransformFromMat4x3(glm::mat4x3 const& m) {
         // glm::mat4 is column-major, SimTK::Transform is effectively
         // row-major
 

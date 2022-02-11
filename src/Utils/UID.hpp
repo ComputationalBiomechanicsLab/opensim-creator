@@ -9,7 +9,7 @@
 namespace osc
 {
     class UID {
-        friend UID GenerateID() noexcept;
+        friend UID GenerateID();
         friend constexpr int64_t UnwrapID(UID const&) noexcept;
 
     protected:
@@ -28,10 +28,10 @@ namespace osc
     template<typename T>
     class UIDT : public UID {
         template<typename U>
-        friend UIDT<U> GenerateIDT() noexcept;
+        friend UIDT<U> GenerateIDT();
 
         template<typename U>
-        friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
+        friend constexpr UIDT<U> DowncastID(UID const&);
 
     private:
         explicit constexpr UIDT(UID id) :
@@ -44,13 +44,13 @@ namespace osc
     extern UID g_EmptyID;  // senteniel
     extern UID g_InvalidID;  // senteniel
 
-    inline UID GenerateID() noexcept
+    inline UID GenerateID()
     {
         return UID{g_NextGlobalUID.fetch_add(1, std::memory_order_relaxed)};
     }
 
     template<typename T>
-    UIDT<T> GenerateIDT() noexcept
+    UIDT<T> GenerateIDT()
     {
         return UIDT<T>{GenerateID()};
     }
@@ -88,7 +88,7 @@ namespace osc
     }
 
     template<typename T>
-    constexpr UIDT<T> DowncastID(UID const& id) noexcept
+    constexpr UIDT<T> DowncastID(UID const& id)
     {
         return UIDT<T>{id};
     }

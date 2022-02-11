@@ -55,7 +55,7 @@ static bool EnsureBacktraceHandlerEnabled()
 }
 
 // returns a resource from the config-provided `resources/` dir
-static std::filesystem::path GetResource(Config const& c, std::string_view p) noexcept
+static std::filesystem::path GetResource(Config const& c, std::string_view p)
 {
     return c.resourceDir / p;
 }
@@ -781,17 +781,17 @@ static void AppMainLoopUnguarded(App::Impl& impl)
 
 osc::App* osc::App::g_Current = nullptr;
 
-osc::Config const& osc::App::config() noexcept
+osc::Config const& osc::App::config()
 {
     return cur().getConfig();
 }
 
-osc::ShaderCache& osc::App::shaders() noexcept
+osc::ShaderCache& osc::App::shaders()
 {
     return cur().getShaderCache();
 }
 
-osc::MeshCache& osc::App::meshes() noexcept
+osc::MeshCache& osc::App::meshes()
 {
     return cur().getMeshCache();
 }
@@ -867,30 +867,30 @@ void osc::App::requestTransition(std::unique_ptr<Screen> s)
     m_Impl->nextScreen = std::move(s);
 }
 
-void osc::App::requestQuit() noexcept
+void osc::App::requestQuit()
 {
     m_Impl->shouldQuit = true;
 }
 
-glm::ivec2 osc::App::idims() const noexcept
+glm::ivec2 osc::App::idims() const
 {
     auto [w, h] = sdl::GetWindowSize(m_Impl->window);
     return glm::ivec2{w, h};
 }
 
-glm::vec2 osc::App::dims() const noexcept
+glm::vec2 osc::App::dims() const
 {
     auto [w, h] = sdl::GetWindowSize(m_Impl->window);
     return glm::vec2{static_cast<float>(w), static_cast<float>(h)};
 }
 
-float osc::App::aspectRatio() const noexcept
+float osc::App::aspectRatio() const
 {
     glm::vec2 v = dims();
     return v.x / v.y;
 }
 
-void osc::App::showCursor(bool v) noexcept
+void osc::App::showCursor(bool v)
 {
     SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
 }
@@ -910,7 +910,7 @@ void osc::App::makeWindowed()
     SDL_SetWindowFullscreen(m_Impl->window, 0);
 }
 
-int osc::App::getRecommendedMSXAASamples() const noexcept
+int osc::App::getRecommendedMSXAASamples() const
 {
     return m_Impl->curMSXAASamples;
 }
@@ -935,12 +935,12 @@ void osc::App::setRecommendedMSXAASamples(int s)
     m_Impl->curMSXAASamples = s;
 }
 
-int osc::App::getMaxMSXAASamples() const noexcept
+int osc::App::getMaxMSXAASamples() const
 {
     return m_Impl->maxMSXAASamples;
 }
 
-bool osc::App::isInDebugMode() const noexcept
+bool osc::App::isInDebugMode() const
 {
     return m_Impl->isDebugModeEnabled;
 }
@@ -969,7 +969,7 @@ void osc::App::disableDebugMode()
     m_Impl->isDebugModeEnabled = false;
 }
 
-bool osc::App::isVsyncEnabled() const noexcept
+bool osc::App::isVsyncEnabled() const
 {
     // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
     return SDL_GL_GetSwapInterval() != 0;
@@ -1021,12 +1021,12 @@ void osc::App::unsetMainWindowSubTitle()
     setMainWindowSubTitle("");
 }
 
-Config const& osc::App::getConfig() const noexcept
+Config const& osc::App::getConfig() const
 {
     return *m_Impl->config;
 }
 
-std::filesystem::path osc::App::getResource(std::string_view p) const noexcept
+std::filesystem::path osc::App::getResource(std::string_view p) const
 {
     return ::GetResource(*m_Impl->config, p);
 }
@@ -1082,12 +1082,12 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
     fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
 }
 
-bool osc::App::isWindowFocused() const noexcept
+bool osc::App::isWindowFocused() const
 {
     return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
 }
 
-App::MouseState osc::App::getMouseState() const noexcept
+App::MouseState osc::App::getMouseState() const
 {
     MouseState rv;
 
@@ -1121,42 +1121,42 @@ App::MouseState osc::App::getMouseState() const noexcept
     return rv;
 }
 
-uint64_t osc::App::getTicks() const noexcept
+uint64_t osc::App::getTicks() const
 {
     return SDL_GetPerformanceCounter();
 }
 
-uint64_t osc::App::getTickFrequency() const noexcept
+uint64_t osc::App::getTickFrequency() const
 {
     return SDL_GetPerformanceFrequency();
 }
 
-bool osc::App::isShiftPressed() const noexcept
+bool osc::App::isShiftPressed() const
 {
     return SDL_GetModState() & KMOD_SHIFT;
 }
 
-bool osc::App::isCtrlPressed() const noexcept
+bool osc::App::isCtrlPressed() const
 {
     return SDL_GetModState() & KMOD_CTRL;
 }
 
-bool osc::App::isAltPressed() const noexcept
+bool osc::App::isAltPressed() const
 {
     return SDL_GetModState() & KMOD_ALT;
 }
 
-void osc::App::warpMouseInWindow(glm::vec2 v) const noexcept
+void osc::App::warpMouseInWindow(glm::vec2 v) const
 {
     SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
 }
 
-ShaderCache& osc::App::getShaderCache() noexcept
+ShaderCache& osc::App::getShaderCache()
 {
     return m_Impl->shaderCache;
 }
 
-MeshCache& osc::App::getMeshCache() noexcept
+MeshCache& osc::App::getMeshCache()
 {
     return m_Impl->meshCache;
 }

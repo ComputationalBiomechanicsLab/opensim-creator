@@ -36,7 +36,7 @@ namespace osc
     [[noreturn]] void onAssertionFailure(char const* failingCode,
                                          char const* func,
                                          char const* file,
-                                         unsigned int line) noexcept;
+                                         unsigned int line);
 }
 
 // macro that produces just the filename (rather than the full filepath)

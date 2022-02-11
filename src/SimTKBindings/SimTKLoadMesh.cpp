@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-static glm::vec3 getFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert) noexcept {
+static glm::vec3 getFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert) {
     int vertidx = mesh.getFaceVertex(face, vert);
     SimTK::Vec3 const& data = mesh.getVertexPosition(vertidx);
     return SimTKVec3FromVec3(data);

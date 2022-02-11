@@ -475,7 +475,7 @@ UiModel& osc::UndoableUiModel::updUiModel()
     return m_Impl->updScratch();
 }
 
-bool osc::UndoableUiModel::canUndo() const noexcept
+bool osc::UndoableUiModel::canUndo() const
 {
     return m_Impl->canUndo();
 }
@@ -490,7 +490,12 @@ void osc::UndoableUiModel::doUndo()
     m_Impl->undo();
 }
 
-bool osc::UndoableUiModel::canRedo() const noexcept
+void osc::UndoableUiModel::rollback()
+{
+    m_Impl->checkout();
+}
+
+bool osc::UndoableUiModel::canRedo() const
 {
     return m_Impl->canRedo();
 }
@@ -505,12 +510,12 @@ void osc::UndoableUiModel::doRedo()
     m_Impl->redo();
 }
 
-OpenSim::Model const& osc::UndoableUiModel::getModel() const noexcept
+OpenSim::Model const& osc::UndoableUiModel::getModel() const
 {
     return m_Impl->getScratch().getModel();
 }
 
-OpenSim::Model& osc::UndoableUiModel::updModel() noexcept
+OpenSim::Model& osc::UndoableUiModel::updModel()
 {
     return m_Impl->updScratch().updModel();
 }
@@ -521,7 +526,7 @@ void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel)
     updateIfDirty();
 }
 
-SimTK::State const& osc::UndoableUiModel::getState() const noexcept
+SimTK::State const& osc::UndoableUiModel::getState() const
 {
     return getUiModel().getState();
 }
@@ -622,7 +627,7 @@ bool osc::UndoableUiModel::hasHovered() const
     return getUiModel().hasHovered();
 }
 
-OpenSim::Component const* osc::UndoableUiModel::getHovered() const noexcept
+OpenSim::Component const* osc::UndoableUiModel::getHovered() const
 {
     return getUiModel().getHovered();
 }
@@ -637,7 +642,7 @@ void osc::UndoableUiModel::setHovered(OpenSim::Component const* c)
     updUiModel().setHovered(c);
 }
 
-OpenSim::Component const* osc::UndoableUiModel::getIsolated() const noexcept
+OpenSim::Component const* osc::UndoableUiModel::getIsolated() const
 {
     return getUiModel().getIsolated();
 }
@@ -652,7 +657,7 @@ void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c)
     updUiModel().setIsolated(c);
 }
 
-void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c) noexcept
+void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c)
 {
     if (updUiModel().getSelected() == c)
     {

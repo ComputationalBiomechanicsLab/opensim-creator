@@ -8,7 +8,7 @@
 #include <sstream>
 
 namespace {
-    [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl) noexcept {
+    [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl) {
         using namespace osc::log::level;
 
         switch (lvl) {

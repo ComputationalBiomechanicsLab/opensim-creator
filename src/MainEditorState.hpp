@@ -80,22 +80,22 @@ namespace osc
         MainEditorState& operator=(MainEditorState const&) = delete;
         MainEditorState& operator=(MainEditorState&&) = delete;
 
-        OpenSim::Model& updModel() noexcept
+        OpenSim::Model& updModel()
         {
             return editedModel.updModel();
         }
 
-        OpenSim::Model const& getModel() const noexcept
+        OpenSim::Model const& getModel() const
         {
             return editedModel.getModel();
         }
 
-        SimTK::State const& getState() const noexcept
+        SimTK::State const& getState() const
         {
             return editedModel.getState();
         }
 
-        [[nodiscard]] bool canUndo() const noexcept
+        [[nodiscard]] bool canUndo() const
         {
             return editedModel.canUndo();
         }
@@ -105,7 +105,7 @@ namespace osc
             editedModel.doUndo();
         }
 
-        [[nodiscard]] bool canRedo() const noexcept
+        [[nodiscard]] bool canRedo() const
         {
             return editedModel.canRedo();
         }
@@ -118,12 +118,12 @@ namespace osc
         void setModel(std::unique_ptr<OpenSim::Model> new_model);
 
 
-        OpenSim::Component const* getSelected() const noexcept
+        OpenSim::Component const* getSelected() const
         {
             return editedModel.getSelected();
         }
 
-        OpenSim::Component* updSelected() noexcept
+        OpenSim::Component* updSelected()
         {
             return editedModel.updSelected();
         }
@@ -134,7 +134,7 @@ namespace osc
         }
 
 
-        OpenSim::Component const* getHovered() const noexcept
+        OpenSim::Component const* getHovered() const
         {
             return editedModel.getHovered();
         }
@@ -150,7 +150,7 @@ namespace osc
         }
 
 
-        OpenSim::Component const* getIsolated() const noexcept
+        OpenSim::Component const* getIsolated() const
         {
             return editedModel.getIsolated();
         }
@@ -173,7 +173,7 @@ namespace osc
             focusedSimulationScrubbingTime = -1.0f;
         }
 
-        [[nodiscard]] UiSimulation* getFocusedSim() noexcept
+        [[nodiscard]] UiSimulation* getFocusedSim()
         {
             if (!(0 <= focusedSimulation && focusedSimulation < static_cast<int>(simulations.size())))
             {
@@ -185,12 +185,12 @@ namespace osc
             }
         }
 
-        [[nodiscard]] UiSimulation const* getFocusedSim() const noexcept
+        [[nodiscard]] UiSimulation const* getFocusedSim() const
         {
             return const_cast<MainEditorState*>(this)->getFocusedSim();
         }
 
-        [[nodiscard]] bool hasSimulations() const noexcept
+        [[nodiscard]] bool hasSimulations() const
         {
             return !simulations.empty();
         }
