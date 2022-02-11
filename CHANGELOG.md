@@ -5,9 +5,31 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- The coordinate editor now has a "reset" button that appears when right-clicking the coordinate (#69)
-- The coordinate editor now shows a "Ctrl-click to edit value" popup when hovering over a slider (#98)
-- Stations no longer render if they are part of a geometry path (#103)
+- Fixed exception-throwing code sometimes crashing the UI completely instead of showing an errr message (#132)
+- Made automatic error recovery pop the UI slightly less
+- Fixed the name editor in the property editor not updating when the user selects something else (#133)
+
+
+## [0.1.0] - 2022/02/09
+
+- Added this CHANGELOG (#104)
+- Fixed a bug where stations within a geometry path were double-rendered with the path points (#103)
+- Added a tooltip and reset context menu to the coordinate editor (#98 #69)
+- Fixed a variety of little typos/errors in the documentation
+- Fixed importing an osim into the mesh importer was ignoring mesh scaling (#110)
+- Fixed log panel in mesh importer not having a menu bar (#109)
+- Fixed tutorial documentation specifying FreeJoint instead of PinJoint (#113)
+- Fixed osim editor grid to be in 10cm increments (#117)
+- Fixed osim editor chequered floor height offset to be scale-dependent to prevent depth fighting (#114)
+- Made the ruler tool show distances with higher precision (#121)
+- Made float inputs accurate to 6 d.p. for small model builders (#120)
+- Fixed alignment axes overlay not showing in editor/simulator screens (#118)
+- Fixed ImGuizmo turning off when the camera is very (millimeter-scale) zoomed in (#119)
+- Made all file dialogs automatically add a file extension if the user doesn't add one (#111)
+- Made undo/redo remember the user's selection state (#108 #112)
+- Fixed (hackily) muscle wrapping being broken in the visualizer (#123)
+- Added "windowed fullscreen" mode for nicer screen recording
+
 
 ## [0.0.8] - 2022/02/07
 
