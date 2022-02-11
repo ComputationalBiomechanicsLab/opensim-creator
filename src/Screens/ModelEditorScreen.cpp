@@ -321,11 +321,13 @@ namespace {
     void drawTopLevelMembersEditor(UndoableUiModel& st) {
         OpenSim::Component const* selection = st.getSelected();
 
-        if (!selection) {
+        if (!selection)
+        {
             ImGui::Text("cannot draw top level editor: nothing selected?");
             return;
         }
 
+        ImGui::PushID(selection);
         ImGui::Columns(2);
 
         ImGui::TextUnformatted("name");
@@ -344,6 +346,7 @@ namespace {
         ImGui::NextColumn();
 
         ImGui::Columns();
+        ImGui::PopID();
     }
 
     // draw UI element that lets user change a model joint's type
@@ -1002,10 +1005,13 @@ namespace {
 
     // draw editor for current selection
     void drawSelectionEditor(ModelEditorScreen::Impl& impl, UndoableUiModel& uim) {
-        if (!uim.hasSelected()) {
+        if (!uim.hasSelected())
+        {
             ImGui::TextUnformatted("(nothing selected)");
             return;
         }
+
+        ImGui::PushID(uim.getSelected());
 
         ImGui::Dummy(ImVec2(0.0f, 1.0f));
         ImGui::TextUnformatted("hierarchy:");
@@ -1055,6 +1061,8 @@ namespace {
         DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ImGui::Separator();
         drawSocketEditor(impl.ui.reassignSocketPopup, uim);
+
+        ImGui::PopID();
     }
 
     // draw the "Actions" tab of the main (top) menu
@@ -1368,8 +1376,10 @@ namespace {
     // draw model editor screen
     //
     // can throw if the model is in an invalid state
-    void modelEditorDrawUnguarded(ModelEditorScreen::Impl& impl) {
-        if (impl.resetPerFrame.shouldRequestRedraw) {
+    void modelEditorDrawUnguarded(ModelEditorScreen::Impl& impl)
+    {
+        if (impl.resetPerFrame.shouldRequestRedraw)
+        {
             App::cur().requestRedraw();
         }
 
@@ -1383,7 +1393,8 @@ namespace {
         // check for early exit request
         //
         // (the main menu may have requested a screen transition)
-        if (impl.resetPerFrame.subpanelRequestedEarlyExit) {
+        if (impl.resetPerFrame.subpanelRequestedEarlyExit)
+        {
             return;
         }
 
@@ -1398,8 +1409,10 @@ namespace {
         // draw editor actions panel
         //
         // contains top-level actions (e.g. "add body")
-        if (impl.st->showing.actions) {
-            if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar)) {
+        if (impl.st->showing.actions)
+        {
+            if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar))
+            {
                 impl.ui.modelActions.draw(impl.st->editedModel.updUiModel());
             }
             ImGui::End();
@@ -1409,16 +1422,21 @@ namespace {
         impl.st->editedModel.updateIfDirty();
 
         // draw hierarchy viewer
-        if (impl.st->showing.hierarchy) {
-            if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy)) {
+        if (impl.st->showing.hierarchy)
+        {
+            if (ImGui::Begin("Hierarchy", &impl.st->showing.hierarchy))
+            {
                 auto resp = impl.ui.componentHierarchy.draw(
                     &impl.st->editedModel.getModel().getRoot(),
                     impl.st->getSelected(),
                     impl.st->getHovered());
 
-                if (resp.type == ComponentHierarchy::SelectionChanged) {
+                if (resp.type == ComponentHierarchy::SelectionChanged)
+                {
                     impl.st->setSelected(resp.ptr);
-                } else if (resp.type == ComponentHierarchy::HoverChanged) {
+                }
+                else if (resp.type == ComponentHierarchy::HoverChanged)
+                {
                     impl.st->setHovered(resp.ptr);
                 }
             }
@@ -1429,8 +1447,10 @@ namespace {
         impl.st->editedModel.updateIfDirty();
 
         // draw property editor
-        if (impl.st->showing.propertyEditor) {
-            if (ImGui::Begin("Edit Props", &impl.st->showing.propertyEditor)) {
+        if (impl.st->showing.propertyEditor)
+        {
+            if (ImGui::Begin("Edit Props", &impl.st->showing.propertyEditor))
+            {
                 drawSelectionEditor(impl, impl.st->editedModel);
             }
             ImGui::End();
@@ -1440,8 +1460,10 @@ namespace {
         impl.st->editedModel.updateIfDirty();
 
         // draw application log
-        if (impl.st->showing.log) {
-            if (ImGui::Begin("Log", &impl.st->showing.log, ImGuiWindowFlags_MenuBar)) {
+        if (impl.st->showing.log)
+        {
+            if (ImGui::Begin("Log", &impl.st->showing.log, ImGuiWindowFlags_MenuBar))
+            {
                 impl.ui.logViewer.draw();
             }
             ImGui::End();
@@ -1450,8 +1472,10 @@ namespace {
         // apply any updates made during this frame (can throw)
         impl.st->editedModel.updateIfDirty();
 
-        if (impl.st->showing.coordinateEditor) {
-            if (ImGui::Begin("Coordinate Editor")) {
+        if (impl.st->showing.coordinateEditor)
+        {
+            if (ImGui::Begin("Coordinate Editor"))
+            {
                 impl.ui.coordEditor.draw(impl.st->editedModel.updUiModel());
             }
         }
@@ -1461,14 +1485,16 @@ namespace {
 
         // draw sim params editor popup (if applicable)
         {
-            if (impl.resetPerFrame.editSimParamsRequested) {
+            if (impl.resetPerFrame.editSimParamsRequested)
+            {
                 ImGui::OpenPopup("simulation parameters");
             }
 
             FdParamsEditorPopup{}.draw("simulation parameters", impl.st->simParams);
         }
 
-        if (impl.resetPerFrame.subpanelRequestedEarlyExit) {
+        if (impl.resetPerFrame.subpanelRequestedEarlyExit)
+        {
             return;
         }
 
@@ -1503,7 +1529,8 @@ static std::string GetRecommendedTitle(UndoableUiModel const& uim)
 // public API
 
 osc::ModelEditorScreen::ModelEditorScreen(std::shared_ptr<MainEditorState> st) :
-    m_Impl{new Impl {std::move(st)}} {
+    m_Impl{new Impl {std::move(st)}}
+{
 }
 
 osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
@@ -1523,12 +1550,14 @@ void osc::ModelEditorScreen::onUnmount()
 }
 
 void ModelEditorScreen::onEvent(SDL_Event const& e) {
-    if (osc::ImGuiOnEvent(e)) {
+    if (osc::ImGuiOnEvent(e))
+    {
         m_Impl->resetPerFrame.shouldRequestRedraw = true;
         return;
     }
 
-    if (e.type == SDL_KEYDOWN) {
+    if (e.type == SDL_KEYDOWN)
+    {
         modelEditorOnKeydown(*m_Impl, e.key);
         return;
     }
