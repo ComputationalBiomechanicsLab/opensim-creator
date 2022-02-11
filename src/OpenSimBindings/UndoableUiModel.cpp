@@ -255,25 +255,25 @@ public:
         return m_CurrentHead;
     }
 
-    // checks out a commit, making it active
-    void checkout(UID id)
-    {
-        UiModelCommit const* c = tryGetCommitByID(id);
-
-        if (c)
-        {
-            m_Scratch = c->getUiModel();
-            m_CurrentHead = c->getID();
-            m_BranchHead = c->getID();
-        }
-    }
-
     // checks out the current checkout to be active (scratch)
     //
     // effectively, reset the scratch space
     void checkout()
     {
-        checkout(m_CurrentHead);
+        // because this is a "reset", try to maintain useful state from the
+        // scratch space - things like reset and scaling state, which the
+        // user might expect to be maintained even if a crash happened
+
+        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+
+        if (c)
+        {
+            UiModel newScratch = c->getUiModel();
+            newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+            newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+
+            m_Scratch = std::move(newScratch);
+        }
     }
 
     // returns true if the an undo is possible

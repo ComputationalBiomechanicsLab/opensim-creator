@@ -1289,5 +1289,6 @@ void osc::App::requestRedraw()
 {
     SDL_Event e{};
     e.type = SDL_USEREVENT;
+    m_Impl->numFramesToPoll += 2;  // HACK: some parts of ImGui require rendering 2 frames before it shows something
     SDL_PushEvent(&e);
 }

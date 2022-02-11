@@ -1549,17 +1549,23 @@ void osc::ModelEditorScreen::draw() {
     osc::ImGuiNewFrame();
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    try {
+    try
+    {
         ::modelEditorDrawUnguarded(*m_Impl);
-    } catch (std::exception const& ex) {
+    }
+    catch (std::exception const& ex)
+    {
         log::error("an OpenSim::Exception was thrown while drawing the editor");
         log::error("    message = %s", ex.what());
         log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
-        try {
+        try
+        {
             m_Impl->st->editedModel.rollback();
-            log::error("rollback succeeded");
-        } catch (std::exception const& ex2) {
+            log::error("model rollback succeeded");
+        }
+        catch (std::exception const& ex2)
+        {
             App::cur().requestTransition<ErrorScreen>(ex2);
         }
 
