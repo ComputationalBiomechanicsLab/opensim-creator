@@ -6698,7 +6698,7 @@ namespace
             if (CanChangeScale(e))
             {
                 glm::vec3 scaleFactors = e.GetScale();
-                if (ImGui::InputFloat3("scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT))
                 {
                     mg.UpdElByID(e.GetID()).SetScale(scaleFactors);
                 }
