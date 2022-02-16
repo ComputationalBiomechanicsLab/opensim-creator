@@ -3049,6 +3049,20 @@ namespace
 // into a standard OpenSim model. This code does that.
 namespace
 {
+    // stand-in method that should be replaced by actual support for scale-less transforms
+    // (dare i call them.... frames ;))
+    Transform IgnoreScale(Transform const& t)
+    {
+        Transform copy{t};
+        copy.scale = {1.0f, 1.0f, 1.0f};
+        return copy;
+    }
+
+    SimTK::Transform ToSimTKTransform(Transform const& t)
+    {
+        return SimTKTransformFromMat4x3(toMat4(IgnoreScale(t)));
+    }
+
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
                              Transform const& parentXform,
@@ -3059,18 +3073,19 @@ namespace
         meshPhysOffsetFrame->setParentFrame(parentPhysFrame);
         meshPhysOffsetFrame->setName(meshEl.Name + "_offset");
 
-        // re-express the transform matrix in the parent's frame
-        glm::mat4 mesh2parent = toInverseMat4(parentXform) * toMat4(meshEl.Xform);
+        // set the POFs transform to be equivalent to the mesh's (in-ground) transform,
+        // but in the parent frame
+        SimTK::Transform mesh2ground = ToSimTKTransform(meshEl.Xform);
+        SimTK::Transform parent2ground = ToSimTKTransform(parentXform);
+        meshPhysOffsetFrame->setOffsetTransform(parent2ground.invert() * mesh2ground);
 
-        // set it as the transform
-        meshPhysOffsetFrame->setOffsetTransform(SimTKTransformFromMat4x3(mesh2parent));
-
-        // attach mesh to the POF
+        // attach the mesh data to the transformed POF
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.Path.string());
         mesh->setName(meshEl.Name);
         mesh->set_scale_factors(SimTKVec3FromV3(meshEl.Xform.scale));
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
+        // make it a child of the parent's physical frame
         parentPhysFrame.addComponent(meshPhysOffsetFrame.release());
     }
 
@@ -3095,6 +3110,10 @@ namespace
             addedBody->setInertia(SimTK::Inertia{moments, products});
         }
 
+        // connect meshes to the body, if necessary
+        //
+        // the body's orientation is going to be handled when the joints are added (by adding
+        // relevant offset frames etc.)
         for (MeshEl const& mesh : mg.iter<MeshEl>())
         {
             if (mesh.Attachment == bodyEl.ID)
@@ -3277,7 +3296,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        glm::mat4 toParentPofInParent = toInverseMat4(GetTransform(mg, joint.Parent)) * toMat4(joint.Xform);
+        glm::mat4 toParentPofInParent =  toInverseMat4(IgnoreScale(GetTransform(mg, joint.Parent))) * toMat4(IgnoreScale(joint.Xform));
         parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent[3]));
         parentPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toParentPofInParent)));
 
@@ -3285,7 +3304,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        glm::mat4 toChildPofInChild = toInverseMat4(GetTransform(mg, joint.Child)) * toMat4(joint.Xform);
+        glm::mat4 toChildPofInChild = toInverseMat4(IgnoreScale(GetTransform(mg, joint.Child))) * toMat4(IgnoreScale(joint.Xform));
         childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild[3]));
         childPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toChildPofInChild)));
 
@@ -3355,8 +3374,7 @@ namespace
         childFrame->setName(bodyEl.Name + "_offset");
 
         // make the parent have the same position + rotation as the placed body
-        SimTK::Transform parentXform = SimTKTransformFromMat4x3(toMat4(bodyEl.Xform));
-        parentFrame->setOffsetTransform(parentXform);
+        parentFrame->setOffsetTransform(ToSimTKTransform(bodyEl.Xform));
 
         // attach the parent directly to ground and the child directly to the body
         // and make them the two attachments of the joint
@@ -3382,15 +3400,13 @@ namespace
     {
 
         JointAttachmentCachedLookupResult res = LookupPhysFrame(mg, model, visitedBodies, stationEl.Attachment);
-        OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr);
+        OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        Transform parentXform = mg.GetElByID(stationEl.Attachment).GetXform();
-        Transform stationXform = stationEl.GetXform();
-        glm::vec3 pos = (toInverseMat4(parentXform) * toMat4(stationXform))[3];
+        SimTK::Transform parentXform = ToSimTKTransform(mg.GetElByID(stationEl.Attachment).GetXform());
+        SimTK::Transform stationXform = ToSimTKTransform(stationEl.GetXform());
+        SimTK::Vec3 locationInParent = (parentXform.invert() * stationXform).p();
 
-        SimTK::Vec3 locationInFrame = SimTKVec3FromV3(pos);
-
-        auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInFrame);
+        auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
         station->setName(stationEl.GetLabel());
         res.physicalFrame->addComponent(station.release());
     }
