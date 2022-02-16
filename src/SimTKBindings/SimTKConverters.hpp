@@ -93,11 +93,11 @@ namespace osc {
         // glm::mat4 is column-major, SimTK::Transform is effectively
         // row-major
 
-        SimTK::Mat33 mtx{
-            m[0][0], m[1][0], m[2][0],
-            m[0][1], m[1][1], m[2][1],
-            m[0][2], m[1][2], m[2][2],
-        };
+        SimTK::Mat33 mtx(
+            static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
+            static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
+            static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2])
+        );
         SimTK::Vec3 translation{m[3][0], m[3][1], m[3][2]};
 
         SimTK::Rotation rot{mtx};
