@@ -69,7 +69,8 @@ void osc::SceneGeneratorNew::implementLineGeometry(SimTK::DecorativeLine const& 
     Segment emittedLine{p1, p2};
 
     glm::mat4 cylinderXform = SegmentToSegmentXform(meshLine, emittedLine);
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {g_LineThickness * m_FixupScaleFactor, 1.0f, g_LineThickness * m_FixupScaleFactor});
+    glm::mat4 scaler =
+        glm::scale(glm::mat4{1.0f}, glm::vec3{g_LineThickness * m_FixupScaleFactor, 1.0f, g_LineThickness * m_FixupScaleFactor} * scaleFactors(dl));
 
     SceneElement se;
     se.mesh = m_MeshCache.getCylinderMesh();
@@ -86,7 +87,7 @@ void osc::SceneGeneratorNew::implementBrickGeometry(SimTK::DecorativeBrick const
 
     SceneElement se;
     se.mesh = m_MeshCache.getBrickMesh();
-    se.modelMtx = glm::scale(geomXform(m_Matter, m_St, db), halfdims);
+    se.modelMtx = glm::scale(geomXform(m_Matter, m_St, db), halfdims * scaleFactors(db));
     se.normalMtx = NormalMatrix(se.modelMtx);
     se.color = extractRGBA(db);
     se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
@@ -128,10 +129,11 @@ void osc::SceneGeneratorNew::implementSphereGeometry(SimTK::DecorativeSphere con
     // - it's much cheaper to compute things like normal matrices and AABBs when
     //   you know it's a sphere
     float scaledR = m_FixupScaleFactor * static_cast<float>(ds.getRadius());
+    glm::vec3 sfs = scaleFactors(ds);
     glm::mat4 xform;
-    xform[0] = {scaledR, 0.0f, 0.0f, 0.0f};
-    xform[1] = {0.0f, scaledR, 0.0f, 0.0f};
-    xform[2] = {0.0f, 0.0f, scaledR, 0.0f};
+    xform[0] = {scaledR * sfs[0], 0.0f, 0.0f, 0.0f};
+    xform[1] = {0.0f, scaledR * sfs[1], 0.0f, 0.0f};
+    xform[2] = {0.0f, 0.0f, scaledR * sfs[2], 0.0f};
     xform[3] = glm::vec4{pos, 1.0f};
     glm::mat4 normalXform = glm::transpose(xform);
     AABB aabb = SphereToAABB(Sphere{pos, scaledR});
