@@ -644,6 +644,8 @@ static void TransitionToNextScreen(App::Impl& impl)
         return;
     }
 
+    log::info("unmounting screen %s", impl.currentScreen->name());
+
     try
     {
         impl.currentScreen->onUnmount();
