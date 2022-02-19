@@ -1,6 +1,7 @@
 #include "src/3D/Model.hpp"
 
 #include "src/3D/Constants.hpp"
+#include "src/Assertions.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -1191,6 +1192,9 @@ MeshData osc::GenTexturedQuad() {
         rv.indices.push_back(index++);
     }
 
+    OSC_ASSERT(rv.verts.size() % 3 == 0);
+    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1266,6 +1270,9 @@ MeshData osc::GenUntexturedUVSphere(size_t sectors, size_t stacks) {
             }
         }
     }
+
+    OSC_ASSERT(rv.verts.size() % 3 == 0);
+    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
 
     return rv;
 }
@@ -1346,6 +1353,9 @@ MeshData osc::GenUntexturedSimbodyCylinder(size_t nsides) {
         push(top2, normal);
     }
 
+    OSC_ASSERT(rv.verts.size() % 3 == 0);
+    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1402,6 +1412,9 @@ MeshData osc::GenUntexturedSimbodyCone(size_t nsides) {
         }
     }
 
+    OSC_ASSERT(rv.verts.size() % 3 == 0);
+    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1441,6 +1454,10 @@ MeshData osc::GenNbyNGrid(size_t n) {
         push({x, +1.0f, z});
     }
 
+    OSC_ASSERT(rv.verts.size() % 2 == 0);  // lines, not triangles
+    OSC_ASSERT(rv.normals.empty());  // lines have no normals
+    OSC_ASSERT(rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1449,6 +1466,11 @@ MeshData osc::GenYLine() {
     rv.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
     rv.indices = {0, 1};
     rv.topography = MeshTopography::Lines;
+
+    OSC_ASSERT(rv.verts.size() % 2 == 0);
+    OSC_ASSERT(rv.normals.empty());
+    OSC_ASSERT(rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1464,6 +1486,9 @@ MeshData osc::GenCube() {
         rv.indices.push_back(index++);
     }
 
+    OSC_ASSERT(rv.verts.size() % 3 == 0);
+    OSC_ASSERT(rv.verts.size() == rv.normals.size() && rv.verts.size() == rv.indices.size());
+
     return rv;
 }
 
@@ -1478,6 +1503,10 @@ MeshData osc::GenCubeLines() {
         rv.verts.push_back(v.pos);
         rv.indices.push_back(index++);
     }
+
+    OSC_ASSERT(rv.verts.size() % 2 == 0);  // lines, not triangles
+    OSC_ASSERT(rv.normals.empty());
+    OSC_ASSERT(rv.verts.size() == rv.indices.size());
 
     return rv;
 }

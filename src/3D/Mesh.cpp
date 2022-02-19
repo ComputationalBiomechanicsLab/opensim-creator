@@ -145,7 +145,12 @@ osc::Mesh::Mesh(MeshData cpuMesh) : m_Impl{new Impl{}} {
 
     m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
     m_Impl->boundingSphere = BoundingSphereFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
+
+    if (m_Impl->topography == MeshTopography::Triangles)
+    {
+        BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
+    }
+
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
@@ -384,7 +389,16 @@ void osc::Mesh::clear() {
 void osc::Mesh::recalculateBounds() {
     m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
     m_Impl->boundingSphere = BoundingSphereFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
+
+    if (m_Impl->topography == MeshTopography::Triangles)
+    {
+        BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
+    }
+    else
+    {
+        m_Impl->triangleBVH.clear();
+    }
+
 }
 
 void osc::Mesh::uploadToGPU() {

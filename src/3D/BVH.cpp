@@ -226,7 +226,9 @@ void osc::BVH_BuildFromTriangles(BVH& bvh, glm::vec3 const* vs, size_t n) {
     bvh.clear();
 
     // build up the prim list for each triangle
-    for (size_t i = 0; i < n; i += 3) {
+    OSC_ASSERT(n % 3 == 0);
+    for (size_t i = 0; i < n; i += 3)
+    {
         BVHPrim& prim = bvh.prims.emplace_back();
         prim.bounds = AABBFromVerts(vs + i, 3);
         prim.id = static_cast<int>(i);
