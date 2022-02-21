@@ -58,53 +58,8 @@ static std::unique_ptr<OpenSim::Model> makeNewModel()
     return rv;
 }
 
-struct osc::UiModel::Impl final {
-
-    // user-enacted state modifications (e.g. coordinate edits)
-    StateModifications m_StateModifications;
-
-    // the model, finalized from its properties
-    std::unique_ptr<OpenSim::Model> m_Model;
-
-    // SimTK::State, in a renderable state (e.g. realized up to a relevant stage)
-    std::unique_ptr<SimTK::State> m_State;
-
-    // decorations, generated from model's display properties etc.
-    std::vector<LabelledSceneElement> m_Decorations;
-
-    // scene-level BVH of decoration AABBs
-    BVH m_SceneBVH;
-
-    // fixup scale factor of the model
-    //
-    // this scales up/down the decorations of the model - used for extremely
-    // undersized models (e.g. fly leg)
-    float m_FixupScaleFactor;
-
-    // current selection, if any
-    OpenSim::Component* m_CurrentSelection;
-
-    // current hover, if any
-    OpenSim::Component* m_Hovered;
-
-    // current isolation, if any
-    //
-    // "isolation" here means that the user is only interested in this
-    // particular subcomponent in the model, so visualizers etc. should
-    // try to only show that component
-    OpenSim::Component* m_Isolated;
-
-    // generic timestamp
-    //
-    // can indicate creation or latest modification, it's here to roughly
-    // track how old/new the instance is
-    std::chrono::system_clock::time_point m_LastModified;
-
-    bool m_ModelIsDirty;
-    bool m_StateIsDirty;
-    bool m_DecorationsAreDirty;
-    bool m_FakeDirty;  // "pretends" the model was dirty - used by calling code to detect dirtiness
-
+class osc::UiModel::Impl final {
+public:
     Impl() :
         Impl{makeNewModel()}
     {
@@ -192,7 +147,179 @@ struct osc::UiModel::Impl final {
         updateBVH(m_Decorations, m_SceneBVH);
     }
 
-    void setModelDirty(bool v)
+    Impl(Impl&&) noexcept = default;
+
+    ~Impl() noexcept = default;
+
+    Impl& operator=(Impl const&) = delete;
+    Impl& operator=(Impl&&) noexcept = default;
+
+    std::unique_ptr<Impl> clone()
+    {
+        return std::make_unique<Impl>(*this);
+    }
+
+    OpenSim::Model const& getModel() const
+    {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
+        }
+
+        return *m_Model;
+    }
+
+    OpenSim::Model& updModel()
+    {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            m_FakeDirty = wasDirty;
+        }
+        setDirty(true);
+        return *m_Model;
+    }
+
+    void setModel(std::unique_ptr<OpenSim::Model> m)
+    {
+        *this = Impl{*this, std::move(m)};
+    }
+
+    SimTK::State const& getState() const
+    {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
+        }
+        return *m_State;
+    }
+
+    StateModifications const& getStateModifications() const
+    {
+        return m_StateModifications;
+    }
+
+    void pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
+    {
+        m_StateModifications.pushCoordinateEdit(c, ce);
+
+        setStateDirtyADVANCED(true);
+        setDecorationsDirtyADVANCED(true);
+    }
+
+    bool removeCoordinateEdit(OpenSim::Coordinate const& c)
+    {
+        if (m_StateModifications.removeCoordinateEdit(c))
+        {
+            setStateDirtyADVANCED(true);
+            setDecorationsDirtyADVANCED(true);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    nonstd::span<LabelledSceneElement const> getSceneDecorations() const
+    {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
+        }
+        return m_Decorations;
+    }
+
+    BVH const& getSceneBVH() const
+    {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
+        }
+        return m_SceneBVH;
+    }
+
+    float getFixupScaleFactor() const
+    {
+        return m_FixupScaleFactor;
+    }
+
+    void setFixupScaleFactor(float sf)
+    {
+        m_FixupScaleFactor = sf;
+        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        updateBVH(m_Decorations, m_SceneBVH);
+    }
+
+    AABB getSceneAABB() const
+    {
+        auto const& bvh = getSceneBVH();
+        if (!bvh.nodes.empty())
+        {
+            return bvh.nodes[0].bounds;
+        }
+        else
+        {
+            return AABB{};
+        }
+    }
+
+    glm::vec3 getSceneDimensions() const
+    {
+        return AABBDims(getSceneAABB());
+    }
+
+    float getSceneLongestDimension() const
+    {
+        return AABBLongestDim(getSceneAABB());
+    }
+
+    float getRecommendedScaleFactor() const
+    {
+        // generate decorations as if they were empty-sized and union their
+        // AABBs to get an idea of what the "true" scale of the model probably
+        // is (without the model containing oversized frames, etc.)
+        std::vector<LabelledSceneElement> ses;
+        generateDecorations(*m_Model, *m_State, 0.0f, ses);
+
+        if (ses.empty())
+        {
+            return 1.0f;
+        }
+
+        AABB aabb = ses[0].worldspaceAABB;
+        for (size_t i = 1; i < ses.size(); ++i)
+        {
+            aabb = AABBUnion(aabb, ses[i].worldspaceAABB);
+        }
+
+        float longest = AABBLongestDim(aabb);
+        float rv = 1.0f;
+
+        while (longest < 0.1)
+        {
+            longest *= 10.0f;
+            rv /= 10.0f;
+        }
+
+        return rv;
+    }
+
+    bool isDirty() const
+    {
+        return m_ModelIsDirty || m_StateIsDirty || m_DecorationsAreDirty || m_FakeDirty;
+    }
+
+    void setModelDirtyADVANCED(bool v)
     {
         if (!m_ModelIsDirty && v)
         {
@@ -207,7 +334,7 @@ struct osc::UiModel::Impl final {
         }
     }
 
-    void setStateDirty(bool v)
+    void setStateDirtyADVANCED(bool v)
     {
         if (!m_StateIsDirty && v)
         {
@@ -222,7 +349,7 @@ struct osc::UiModel::Impl final {
         }
     }
 
-    void setDecorationsDirty(bool v)
+    void setDecorationsDirtyADVANCED(bool v)
     {
         if (!m_DecorationsAreDirty && v)
         {
@@ -236,6 +363,217 @@ struct osc::UiModel::Impl final {
             m_LastModified = std::chrono::system_clock::now();
         }
     }
+
+    void setDirty(bool v)
+    {
+        setModelDirtyADVANCED(v);
+        setStateDirtyADVANCED(v);
+        setDecorationsDirtyADVANCED(v);
+    }
+
+    void updateIfDirty()
+    {
+        // measurements are taken here because updating a UiModel is done fairly frequently
+        // during editing and it can block the main UI thread very easily
+        BasicPerfTimer overallTimer;
+        BasicPerfTimer modelUpdateTimer;
+        BasicPerfTimer stateUpdateTimer;
+        BasicPerfTimer decorationUpdateTimer;
+
+        auto overallTimerGuard = overallTimer.measure();
+
+        if (m_ModelIsDirty)
+        {
+            auto modelUpdateTimerGuard = modelUpdateTimer.measure();
+            m_Model->finalizeFromProperties();
+            m_Model->finalizeConnections();
+            m_Model->buildSystem();
+            m_ModelIsDirty = false;
+        }
+
+        if (m_StateIsDirty)
+        {
+            auto stateUpdateTimerGuard = stateUpdateTimer.measure();
+            m_State = initializeState(*m_Model, m_StateModifications);
+            m_StateIsDirty = false;
+        }
+
+        if (m_DecorationsAreDirty)
+        {
+            auto decorationUpdateTimerGuard = decorationUpdateTimer.measure();
+            generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+            updateBVH(m_Decorations, m_SceneBVH);
+            m_DecorationsAreDirty = false;
+        }
+
+        m_FakeDirty = false;
+
+        overallTimerGuard.stop();
+
+        if (log::getTracebackLevel() == log::level::debug)
+        {
+            log::debug(R"(update perf:
+        model update = %.0f us
+        state update = %.0f us
+        decoration update = %.0f us
+        overall = %.0f us
+    )", modelUpdateTimer.micros(), stateUpdateTimer.micros(), decorationUpdateTimer.micros(), overallTimer.micros());
+        }
+    }
+
+    bool hasSelected() const
+    {
+        return m_CurrentSelection;
+    }
+
+    OpenSim::Component const* getSelected() const
+    {
+        return m_CurrentSelection;
+    }
+
+    OpenSim::Component* updSelected()
+    {
+        setDirty(true);
+        return m_CurrentSelection;
+    }
+
+    void setSelected(OpenSim::Component const* c)
+    {
+        m_CurrentSelection = const_cast<OpenSim::Component*>(c);
+    }
+
+    bool selectionHasTypeHashCode(size_t v) const
+    {
+        OpenSim::Component& currentSelection =  *m_CurrentSelection;
+        return m_CurrentSelection && typeid(currentSelection).hash_code() == v;
+    }
+
+    bool hasHovered() const
+    {
+        return m_Hovered != nullptr;
+    }
+
+    OpenSim::Component const* getHovered() const
+    {
+        return m_Hovered;
+    }
+
+    OpenSim::Component* updHovered()
+    {
+        setDirty(true);
+        return m_Hovered;
+    }
+
+    void setHovered(OpenSim::Component const* c)
+    {
+        m_Hovered = const_cast<OpenSim::Component*>(c);
+    }
+
+    OpenSim::Component const* getIsolated() const
+    {
+        return m_Isolated;
+    }
+
+    OpenSim::Component* updIsolated()
+    {
+        setDirty(true);
+        return m_Isolated;
+    }
+
+    void setIsolated(OpenSim::Component const* c)
+    {
+        m_Isolated = const_cast<OpenSim::Component*>(c);
+    }
+
+    void setSelectedHoveredAndIsolatedFrom(Impl const& other)
+    {
+        OpenSim::Component const* newSelection = relocateComponentPointerToAnotherModel(*m_Model, other.getSelected());
+        if (newSelection)
+        {
+            setSelected(newSelection);
+        }
+
+        OpenSim::Component const* newHover = relocateComponentPointerToAnotherModel(*m_Model, other.getHovered());
+        if (newHover)
+        {
+            setHovered(newHover);
+        }
+
+        OpenSim::Component const* newIsolated = relocateComponentPointerToAnotherModel(*m_Model, other.getIsolated());
+        if (newIsolated)
+        {
+            setIsolated(newIsolated);
+        }
+    }
+
+    void declareDeathOf(OpenSim::Component const* c)
+    {
+        if (getSelected() == c)
+        {
+            setSelected(nullptr);
+        }
+
+        if (getHovered() == c)
+        {
+            setHovered(nullptr);
+        }
+
+        if (getIsolated() == c)
+        {
+            setIsolated(nullptr);
+        }
+    }
+
+    std::chrono::system_clock::time_point getLastModifiedTime() const
+    {
+        return m_LastModified;
+    }
+
+private:
+    // user-enacted state modifications (e.g. coordinate edits)
+    StateModifications m_StateModifications;
+
+    // the model, finalized from its properties
+    std::unique_ptr<OpenSim::Model> m_Model;
+
+    // SimTK::State, in a renderable state (e.g. realized up to a relevant stage)
+    std::unique_ptr<SimTK::State> m_State;
+
+    // decorations, generated from model's display properties etc.
+    std::vector<LabelledSceneElement> m_Decorations;
+
+    // scene-level BVH of decoration AABBs
+    BVH m_SceneBVH;
+
+    // fixup scale factor of the model
+    //
+    // this scales up/down the decorations of the model - used for extremely
+    // undersized models (e.g. fly leg)
+    float m_FixupScaleFactor;
+
+    // current selection, if any
+    OpenSim::Component* m_CurrentSelection;
+
+    // current hover, if any
+    OpenSim::Component* m_Hovered;
+
+    // current isolation, if any
+    //
+    // "isolation" here means that the user is only interested in this
+    // particular subcomponent in the model, so visualizers etc. should
+    // try to only show that component
+    OpenSim::Component* m_Isolated;
+
+    // generic timestamp
+    //
+    // can indicate creation or latest modification, it's here to roughly
+    // track how old/new the instance is
+    std::chrono::system_clock::time_point m_LastModified;
+
+    bool m_ModelIsDirty;
+    bool m_StateIsDirty;
+    bool m_DecorationsAreDirty;
+    bool m_FakeDirty;  // "pretends" the model was dirty - used by calling code to detect dirtiness
 };
 
 osc::UiModel::UiModel() :
@@ -262,360 +600,189 @@ osc::UiModel::UiModel(UiModel&&) noexcept = default;
 
 osc::UiModel::~UiModel() noexcept = default;
 
-UiModel& osc::UiModel::operator=(UiModel const& other)
-{
-    if (&other != this)
-    {
-        auto copy = std::make_unique<Impl>(*other.m_Impl);
-        std::swap(this->m_Impl, copy);
-    }
-    return *this;
-}
+UiModel& osc::UiModel::operator=(UiModel const& other) = default;
 
 osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
 
-StateModifications const& osc::UiModel::getStateModifications() const
-{
-    return m_Impl->m_StateModifications;
-}
 
 OpenSim::Model const& osc::UiModel::getModel() const
 {
-    // HACK: ensure the user can't get access to a dirty model/system/state
-    {
-        bool wasDirty = isDirty();
-        const_cast<osc::UiModel&>(*this).updateIfDirty();
-        m_Impl->m_FakeDirty = wasDirty;
-    }
-
-    return *m_Impl->m_Model;
+    return m_Impl->getModel();
 }
 
 OpenSim::Model& osc::UiModel::updModel()
 {
-    // HACK: ensure the user can't get access to a dirty model/system/state
-    {
-        bool wasDirty = isDirty();
-        const_cast<osc::UiModel&>(*this).updateIfDirty();
-        m_Impl->m_FakeDirty = wasDirty;
-    }
-    setDirty(true);
-    return *m_Impl->m_Model;
+    return m_Impl->updModel();
 }
 
 void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m)
 {
-    m_Impl = std::make_unique<Impl>(*m_Impl, std::move(m));
+    m_Impl->setModel(std::move(m));
 }
+
 
 SimTK::State const& osc::UiModel::getState() const
 {
-    // HACK: ensure the user can't get access to a dirty model/system/state
-    {
-        bool wasDirty = isDirty();
-        const_cast<osc::UiModel&>(*this).updateIfDirty();
-        m_Impl->m_FakeDirty = wasDirty;
-    }
-    return *m_Impl->m_State;
+    return m_Impl->getState();
 }
 
-bool osc::UiModel::isDirty() const
+StateModifications const& osc::UiModel::getStateModifications() const
 {
-    return m_Impl->m_ModelIsDirty ||
-            m_Impl->m_StateIsDirty ||
-            m_Impl->m_DecorationsAreDirty ||
-            m_Impl->m_FakeDirty;
-}
-
-void osc::UiModel::updateIfDirty()
-{
-    // measurements are taken here because updating a UiModel is done fairly frequently
-    // during editing and it can block the main UI thread very easily
-    BasicPerfTimer overallTimer;
-    BasicPerfTimer modelUpdateTimer;
-    BasicPerfTimer stateUpdateTimer;
-    BasicPerfTimer decorationUpdateTimer;
-
-    auto overallTimerGuard = overallTimer.measure();
-
-    if (m_Impl->m_ModelIsDirty)
-    {
-        auto modelUpdateTimerGuard = modelUpdateTimer.measure();
-        m_Impl->m_Model->finalizeFromProperties();
-        m_Impl->m_Model->finalizeConnections();
-        m_Impl->m_Model->buildSystem();
-        m_Impl->m_ModelIsDirty = false;
-    }
-
-    if (m_Impl->m_StateIsDirty)
-    {
-        auto stateUpdateTimerGuard = stateUpdateTimer.measure();
-        m_Impl->m_State = initializeState(*m_Impl->m_Model, m_Impl->m_StateModifications);
-        m_Impl->m_StateIsDirty = false;
-    }
-
-    if (m_Impl->m_DecorationsAreDirty)
-    {
-        auto decorationUpdateTimerGuard = decorationUpdateTimer.measure();
-        generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
-        updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
-        m_Impl->m_DecorationsAreDirty = false;
-    }
-
-    m_Impl->m_FakeDirty = false;
-
-    overallTimerGuard.stop();
-
-    if (log::getTracebackLevel() == log::level::debug)
-    {
-        log::debug(R"(update perf:
-    model update = %.0f us
-    state update = %.0f us
-    decoration update = %.0f us
-    overall = %.0f us
-)", modelUpdateTimer.micros(), stateUpdateTimer.micros(), decorationUpdateTimer.micros(), overallTimer.micros());
-    }
-}
-
-void osc::UiModel::setModelDirtyADVANCED(bool v)
-{
-    m_Impl->setModelDirty(v);
-}
-
-void osc::UiModel::setStateDirtyADVANCED(bool v)
-{
-    m_Impl->setStateDirty(v);
-}
-
-void osc::UiModel::setDecorationsDirtyADVANCED(bool v) {
-    m_Impl->setDecorationsDirty(v);
-}
-
-void osc::UiModel::setDirty(bool v)
-{
-    setModelDirtyADVANCED(v);
-    setStateDirtyADVANCED(v);
-    setDecorationsDirtyADVANCED(v);
-}
-
-nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const
-{
-    // HACK: ensure the user can't get access to a dirty model/system/state
-    {
-        bool wasDirty = isDirty();
-        const_cast<osc::UiModel&>(*this).updateIfDirty();
-        m_Impl->m_FakeDirty = wasDirty;
-    }
-    return m_Impl->m_Decorations;
-}
-
-osc::BVH const& osc::UiModel::getSceneBVH() const
-{
-    // HACK: ensure the user can't get access to a dirty model/system/state
-    {
-        bool wasDirty = isDirty();
-        const_cast<osc::UiModel&>(*this).updateIfDirty();
-        m_Impl->m_FakeDirty = wasDirty;
-    }
-    return m_Impl->m_SceneBVH;
-}
-
-float osc::UiModel::getFixupScaleFactor() const
-{
-    return m_Impl->m_FixupScaleFactor;
-}
-
-void osc::UiModel::setFixupScaleFactor(float sf)
-{
-    m_Impl->m_FixupScaleFactor = sf;
-    generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, m_Impl->m_FixupScaleFactor, m_Impl->m_Decorations);
-    updateBVH(m_Impl->m_Decorations, m_Impl->m_SceneBVH);
-}
-
-bool osc::UiModel::hasSelected() const
-{
-    return m_Impl->m_CurrentSelection != nullptr;
-}
-
-OpenSim::Component const* osc::UiModel::getSelected() const
-{
-    return m_Impl->m_CurrentSelection;
-}
-
-OpenSim::Component* osc::UiModel::updSelected() {
-    setDirty(true);
-    return m_Impl->m_CurrentSelection;
-}
-
-void osc::UiModel::setSelected(OpenSim::Component const* c)
-{
-    m_Impl->m_CurrentSelection = const_cast<OpenSim::Component*>(c);
-}
-
-bool osc::UiModel::selectionHasTypeHashCode(size_t v) const
-{
-    OpenSim::Component& currentSelection =  *m_Impl->m_CurrentSelection;
-    return m_Impl->m_CurrentSelection && typeid(currentSelection).hash_code() == v;
-}
-
-bool osc::UiModel::hasHovered() const
-{
-    return m_Impl->m_Hovered != nullptr;
-}
-
-OpenSim::Component const* osc::UiModel::getHovered() const
-{
-    return m_Impl->m_Hovered;
-}
-
-OpenSim::Component* osc::UiModel::updHovered()
-{
-    setDirty(true);
-    return m_Impl->m_Hovered;
-}
-
-void osc::UiModel::setHovered(OpenSim::Component const* c)
-{
-    m_Impl->m_Hovered = const_cast<OpenSim::Component*>(c);
-}
-
-OpenSim::Component const* osc::UiModel::getIsolated() const
-{
-    return m_Impl->m_Isolated;
-}
-
-OpenSim::Component* osc::UiModel::updIsolated()
-{
-    setDirty(true);
-    return m_Impl->m_Isolated;
-}
-
-void osc::UiModel::setIsolated(OpenSim::Component const* c)
-{
-    m_Impl->m_Isolated = const_cast<OpenSim::Component*>(c);
-}
-
-void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
-{
-    OpenSim::Component const* newSelection = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getSelected());
-    if (newSelection)
-    {
-        setSelected(newSelection);
-    }
-
-    OpenSim::Component const* newHover = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getHovered());
-    if (newHover)
-    {
-        setHovered(newHover);
-    }
-
-    OpenSim::Component const* newIsolated = relocateComponentPointerToAnotherModel(*m_Impl->m_Model, uim.getIsolated());
-    if (newIsolated)
-    {
-        setIsolated(newIsolated);
-    }
+    return m_Impl->getStateModifications();
 }
 
 void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
 {
-    m_Impl->m_StateModifications.pushCoordinateEdit(c, ce);
-
-    setStateDirtyADVANCED(true);
-    setDecorationsDirtyADVANCED(true);
+    m_Impl->pushCoordinateEdit(c, ce);
 }
 
 bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
 {
-    if (m_Impl->m_StateModifications.removeCoordinateEdit(c))
-    {
-        setStateDirtyADVANCED(true);
-        setDecorationsDirtyADVANCED(true);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return m_Impl->removeCoordinateEdit(c);
+}
+
+nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const
+{
+    return m_Impl->getSceneDecorations();
+}
+
+osc::BVH const& osc::UiModel::getSceneBVH() const
+{
+    return m_Impl->getSceneBVH();
+}
+
+float osc::UiModel::getFixupScaleFactor() const
+{
+    return m_Impl->getFixupScaleFactor();
+}
+
+void osc::UiModel::setFixupScaleFactor(float sf)
+{
+    m_Impl->setFixupScaleFactor(std::move(sf));
 }
 
 AABB osc::UiModel::getSceneAABB() const
 {
-    auto const& bvh = getSceneBVH();
-    if (!bvh.nodes.empty())
-    {
-        return bvh.nodes[0].bounds;
-    }
-    else
-    {
-        return AABB{};
-    }
+    return m_Impl->getSceneAABB();
 }
 
 glm::vec3 osc::UiModel::getSceneDimensions() const
 {
-    return AABBDims(getSceneAABB());
+    return m_Impl->getSceneDimensions();
 }
 
 float osc::UiModel::getSceneLongestDimension() const
 {
-    return AABBLongestDim(getSceneAABB());
+    return m_Impl->getSceneLongestDimension();
 }
 
 float osc::UiModel::getRecommendedScaleFactor() const
 {
-    // generate decorations as if they were empty-sized and union their
-    // AABBs to get an idea of what the "true" scale of the model probably
-    // is (without the model containing oversized frames, etc.)
-    std::vector<LabelledSceneElement> ses;
-    generateDecorations(*m_Impl->m_Model, *m_Impl->m_State, 0.0f, ses);
-
-    if (ses.empty())
-    {
-        return 1.0f;
-    }
-
-    AABB aabb = ses[0].worldspaceAABB;
-    for (size_t i = 1; i < ses.size(); ++i)
-    {
-        aabb = AABBUnion(aabb, ses[i].worldspaceAABB);
-    }
-
-    float longest = AABBLongestDim(aabb);
-    float rv = 1.0f;
-
-    while (longest < 0.1)
-    {
-        longest *= 10.0f;
-        rv /= 10.0f;
-    }
-
-    return rv;
+    return m_Impl->getRecommendedScaleFactor();
 }
+
+bool osc::UiModel::isDirty() const
+{
+    return m_Impl->isDirty();
+}
+
+void osc::UiModel::setModelDirtyADVANCED(bool v)
+{
+    m_Impl->setModelDirtyADVANCED(std::move(v));
+}
+
+void osc::UiModel::setStateDirtyADVANCED(bool v)
+{
+    m_Impl->setStateDirtyADVANCED(std::move(v));
+}
+
+void osc::UiModel::setDecorationsDirtyADVANCED(bool v)
+{
+    m_Impl->setDecorationsDirtyADVANCED(std::move(v));
+}
+
+void osc::UiModel::setDirty(bool v)
+{
+    m_Impl->setDirty(std::move(v));
+}
+
+void osc::UiModel::updateIfDirty()
+{
+    m_Impl->updateIfDirty();
+}
+
+bool osc::UiModel::hasSelected() const
+{
+    return m_Impl->hasSelected();
+}
+
+OpenSim::Component const* osc::UiModel::getSelected() const
+{
+    return m_Impl->getSelected();
+}
+
+OpenSim::Component* osc::UiModel::updSelected()
+{
+    return m_Impl->updSelected();
+}
+
+void osc::UiModel::setSelected(OpenSim::Component const* c)
+{
+    m_Impl->setSelected(std::move(c));
+}
+
+bool osc::UiModel::selectionHasTypeHashCode(size_t v) const
+{
+    return m_Impl->selectionHasTypeHashCode(std::move(v));
+}
+
+bool osc::UiModel::hasHovered() const
+{
+    return m_Impl->hasHovered();
+}
+
+OpenSim::Component const* osc::UiModel::getHovered() const
+{
+    return m_Impl->getHovered();
+}
+
+OpenSim::Component* osc::UiModel::updHovered()
+{
+    return m_Impl->updHovered();
+}
+
+void osc::UiModel::setHovered(OpenSim::Component const* c)
+{
+    m_Impl->setHovered(std::move(c));
+}
+
+OpenSim::Component const* osc::UiModel::getIsolated() const
+{
+    return m_Impl->getIsolated();
+}
+
+OpenSim::Component* osc::UiModel::updIsolated()
+{
+    return m_Impl->updIsolated();
+}
+
+void osc::UiModel::setIsolated(OpenSim::Component const* c)
+{
+    m_Impl->setIsolated(std::move(c));
+}
+
+void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
+{
+    m_Impl->setSelectedHoveredAndIsolatedFrom(*uim.m_Impl);
+}
+
+void osc::UiModel::declareDeathOf(OpenSim::Component const* c)
+{
+    m_Impl->declareDeathOf(std::move(c));
+}
+
 
 std::chrono::system_clock::time_point osc::UiModel::getLastModifiedTime() const
 {
-    return m_Impl->m_LastModified;
-}
-
-// declare the death of a component pointer
-//
-// this happens when we know that OpenSim has destructed a component in
-// the model indirectly (e.g. it was destructed by an OpenSim container)
-// and that we want to ensure the pointer isn't still held by this state
-void osc::UiModel::declareDeathOf(OpenSim::Component const* c)
-{
-    if (getSelected() == c)
-    {
-        setSelected(nullptr);
-    }
-
-    if (getHovered() == c)
-    {
-        setHovered(nullptr);
-    }
-
-    if (getIsolated() == c)
-    {
-        setIsolated(nullptr);
-    }
+    return m_Impl->getLastModifiedTime();
 }

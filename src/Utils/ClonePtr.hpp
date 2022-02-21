@@ -6,20 +6,11 @@
 #include <iosfwd>
 
 namespace osc {
-    template<typename T, typename Deleter>
-    struct IsCloneable final {
-        static constexpr bool value = std::is_same_v<decltype(std::declval<T>().clone()), std::unique_ptr<T, Deleter>>;
-    };
-
-    template<typename T, typename Deleter>
-    inline constexpr bool IsCloneableV = IsCloneable<T, Deleter>::value;
 
     // this is similar to SimTK's, but uses a `unique_ptr` to automate most of the methods
     // and enables unique_ptr inputs
     template<typename T, typename Deleter = std::default_delete<T>>
     class ClonePtr {
-        static_assert(IsCloneableV<T, Deleter>, "T must have a .clone() method that returns std::unique_ptr<T, Deleter>");
-
     public:
         typedef T* pointer;
         typedef T element_type;

@@ -2,6 +2,7 @@
 
 #include "src/3D/Model.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/Utils/ClonePtr.hpp"
 
 #include <nonstd/span.hpp>
 #include <glm/vec3.hpp>
@@ -58,15 +59,52 @@ namespace osc {
         // move another UiModel over this one
         UiModel& operator=(UiModel&&) noexcept;
 
-        StateModifications const& getStateModifications() const;
 
+        // get underlying `OpenSim::Model` that the UiModel wraps
         OpenSim::Model const& getModel() const;
         OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
 
+
+        // get associated (default + state modifications) model state
         SimTK::State const& getState() const;
 
-        // read dirty flag
+        // get user-enacted state modifications (e.g. coordinate edits)
+        StateModifications const& getStateModifications() const;
+
+        // push a coordinate state modification to the model (dirties state)
+        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
+
+        // remove a state modification from the model (dirties state)
+        bool removeCoordinateEdit(OpenSim::Coordinate const&);
+
+
+        // get a list of renderable scene elements that represent the model in its state
+        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override;
+
+        // get a bounding-volume-hierarchy (BVH) for the model's scene decorations
+        BVH const& getSceneBVH() const override;
+
+        // get the fixup scale factor used to generate scene decorations
+        float getFixupScaleFactor() const override;
+
+        // set the fixup scale factor used to generate scene decorations (dirties decorations)
+        void setFixupScaleFactor(float);
+
+        // returns the axis-aligned bounding box (AABB) of the model decorations
+        AABB getSceneAABB() const;
+
+        // returns the 3D worldspace dimensions of the model decorations
+        glm::vec3 getSceneDimensions() const;
+
+        // returns the longest worldspace dimension of the model decorations
+        float getSceneLongestDimension() const;
+
+        // returns what the implementation thinks is a suitable scale factor, given the decoration's dimensions
+        float getRecommendedScaleFactor() const;
+
+
+        // read the model's dirty flag
         //
         // this is set by the various mutating methods and indicate
         // that part of the UiModel *may* be modified in some way
@@ -105,62 +143,68 @@ namespace osc {
         // appropriately (e.g. by reversing the change)
         void updateIfDirty();
 
-        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override;
 
-        BVH const& getSceneBVH() const override;
-
-        float getFixupScaleFactor() const override;
-
-        void setFixupScaleFactor(float);
-
+        // returns `true` if something is selected within the model
         bool hasSelected() const;
+
+        // returns a pointer to the currently-selected component, or `nullptr`
         OpenSim::Component const* getSelected() const override;
+
+        // returns a mutable pointer to the currently-selected component, or `nullptr` (dirties model)
         OpenSim::Component* updSelected();
+
+        // sets the current selection
         void setSelected(OpenSim::Component const* c);
+
+        // returns `true` if the given
         bool selectionHasTypeHashCode(size_t v) const;
+
+        // returns `true` if the model has a selection that is of type `T`
         template<typename T>
         bool selectionIsType() const
         {
             return selectionHasTypeHashCode(typeid(T).hash_code());
         }
+
+        // returns `true` if the model has a selection that is, or derives from, `T`
         template<typename T>
         bool selectionDerivesFrom() const
         {
             return dynamic_cast<T const*>(getSelected()) != nullptr;
         }
+
+        // returns a pointer to the current selection, if any, downcasted as `T` (if possible - otherwise nullptr)
         template<typename T>
         T const* getSelectedAs() const
         {
             return dynamic_cast<T const*>(getSelected());
         }
+
+        // returns a pointer to the current selection, if any, downcasted as `T` (if possible - otherwise nullptr)
+        //
+        // dirties model
         template<typename T>
         T* updSelectedAs()
         {
             return dynamic_cast<T*>(updSelected());
         }
 
+
+        // returns `true` if something is hovered within the model (e.g. by a mouse)
         bool hasHovered() const;
         OpenSim::Component const* getHovered() const override;
         OpenSim::Component* updHovered();
         void setHovered(OpenSim::Component const* c);
 
+
         OpenSim::Component const* getIsolated() const override;
         OpenSim::Component* updIsolated();
         void setIsolated(OpenSim::Component const* c);
 
+
         // sets selected, hovered, and isolated state from some other model
         // (i.e. to transfer those pointers accross)
         void setSelectedHoveredAndIsolatedFrom(UiModel const&);
-
-        void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
-        bool removeCoordinateEdit(OpenSim::Coordinate const&);
-
-        AABB getSceneAABB() const;
-        glm::vec3 getSceneDimensions() const;
-        float getSceneLongestDimension() const;
-        float getRecommendedScaleFactor() const;
-
-        std::chrono::system_clock::time_point getLastModifiedTime() const;
 
         // declare the death of a component pointer
         //
@@ -169,9 +213,12 @@ namespace osc {
         // and that we want to ensure the pointer isn't still held by this state
         void declareDeathOf(OpenSim::Component const* c);
 
-    public:
-        struct Impl;
+
+        // returns the last time that the implementation believes the model was modified
+        std::chrono::system_clock::time_point getLastModifiedTime() const;
+
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        ClonePtr<Impl> m_Impl;
     };
 }
