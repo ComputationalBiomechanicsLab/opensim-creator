@@ -69,8 +69,11 @@ namespace osc
     std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);
     std::vector<OpenSim::AbstractSocket const*> GetPhysicalFrameSockets(OpenSim::Component& c);
 
-    // returns non-nullptr if the given path resolves a component relative to root
+    // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // returns a mutable pointer if the given path resolves a component relative to root
+    OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>

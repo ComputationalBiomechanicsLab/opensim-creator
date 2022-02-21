@@ -39,16 +39,26 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetPhysicalFrameSockets(OpenSim
 
 OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSim::ComponentPath const& cp)
 {
-    OpenSim::Component const* rv = nullptr;
+    static OpenSim::ComponentPath const g_EmptyPath;
+
+    if (cp == g_EmptyPath)
+    {
+        return nullptr;
+    }
+
     try
     {
-        rv = &c.getComponent(cp);
+        return &c.getComponent(cp);
     }
     catch (OpenSim::Exception const&)
     {
+        return nullptr;
     }
+}
 
-    return rv;
+OpenSim::Component* osc::FindComponentMut(OpenSim::Component& c, OpenSim::ComponentPath const& cp)
+{
+    return const_cast<OpenSim::Component*>(FindComponent(c, cp));
 }
 
 bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)

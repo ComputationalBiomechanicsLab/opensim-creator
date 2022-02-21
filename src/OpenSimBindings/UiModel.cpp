@@ -1,6 +1,7 @@
 #include "UiModel.hpp"
 
 #include "src/3D/Model.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Utils/Perf.hpp"
@@ -8,38 +9,13 @@
 #include "src/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>
 #include <vector>
 
 using namespace osc;
-
-// translate a pointer to a component in model A to a pointer to a component in model B
-//
-// returns nullptr if the pointer cannot be cleanly translated
-static OpenSim::Component const* findComponent(OpenSim::Model const& model,
-                                               OpenSim::ComponentPath const& absPath)
-{
-    for (OpenSim::Component const& c : model.getComponentList())
-    {
-        if (c.getAbsolutePath() == absPath)
-        {
-            return &c;
-        }
-    }
-    return nullptr;
-}
-
-static OpenSim::Component* relocateComponentPointerToAnotherModel(OpenSim::Model const& model,
-                                                                  OpenSim::Component const* ptr)
-{
-    if (!ptr)
-    {
-        return nullptr;
-    }
-
-    return const_cast<OpenSim::Component*>(findComponent(model, ptr->getAbsolutePath()));
-}
 
 static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m,
                                                      StateModifications& modifications)
@@ -60,6 +36,7 @@ static std::unique_ptr<OpenSim::Model> makeNewModel()
 
 class osc::UiModel::Impl final {
 public:
+
     Impl() :
         Impl{makeNewModel()}
     {
@@ -83,9 +60,9 @@ public:
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{old.m_FixupScaleFactor},
-        m_CurrentSelection{relocateComponentPointerToAnotherModel(*m_Model, old.m_CurrentSelection)},
-        m_Hovered{relocateComponentPointerToAnotherModel(*m_Model, old.m_Hovered)},
-        m_Isolated{relocateComponentPointerToAnotherModel(*m_Model, old.m_Isolated)},
+        m_MaybeSelected{old.m_MaybeSelected},
+        m_MaybeHovered{old.m_MaybeHovered},
+        m_MaybeIsolated{old.m_MaybeIsolated},
         m_LastModified{old.m_LastModified},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
@@ -108,9 +85,9 @@ public:
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{1.0f},
-        m_CurrentSelection{nullptr},
-        m_Hovered{nullptr},
-        m_Isolated{nullptr},
+        m_MaybeSelected{},
+        m_MaybeHovered{},
+        m_MaybeIsolated{},
         m_LastModified{std::chrono::system_clock::now()},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
@@ -134,9 +111,9 @@ public:
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{other.m_FixupScaleFactor},
-        m_CurrentSelection{relocateComponentPointerToAnotherModel(*m_Model, other.m_CurrentSelection)},
-        m_Hovered{relocateComponentPointerToAnotherModel(*m_Model, other.m_Hovered)},
-        m_Isolated{relocateComponentPointerToAnotherModel(*m_Model, other.m_Isolated)},
+        m_MaybeSelected{other.m_MaybeSelected},
+        m_MaybeHovered{other.m_MaybeHovered},
+        m_MaybeIsolated{other.m_MaybeIsolated},
         m_LastModified{other.m_LastModified},
         m_ModelIsDirty{false},
         m_StateIsDirty{false},
@@ -423,87 +400,94 @@ public:
 
     bool hasSelected() const
     {
-        return m_CurrentSelection;
+        return FindComponent(*m_Model, m_MaybeSelected);
     }
 
     OpenSim::Component const* getSelected() const
     {
-        return m_CurrentSelection;
+        return FindComponent(*m_Model, m_MaybeSelected);
     }
 
     OpenSim::Component* updSelected()
     {
         setDirty(true);
-        return m_CurrentSelection;
+        return FindComponentMut(*m_Model, m_MaybeSelected);
     }
 
     void setSelected(OpenSim::Component const* c)
     {
-        m_CurrentSelection = const_cast<OpenSim::Component*>(c);
+        if (c)
+        {
+            m_MaybeSelected = c->getAbsolutePath();
+        }
+        else
+        {
+            m_MaybeSelected = {};
+        }
     }
 
     bool selectionHasTypeHashCode(size_t v) const
     {
-        OpenSim::Component& currentSelection =  *m_CurrentSelection;
-        return m_CurrentSelection && typeid(currentSelection).hash_code() == v;
+        OpenSim::Component const* selected = getSelected();
+        return selected && typeid(*selected).hash_code() == v;
     }
 
     bool hasHovered() const
     {
-        return m_Hovered != nullptr;
+        return FindComponent(*m_Model, m_MaybeHovered);
     }
 
     OpenSim::Component const* getHovered() const
     {
-        return m_Hovered;
+        return FindComponent(*m_Model, m_MaybeHovered);
     }
 
     OpenSim::Component* updHovered()
     {
         setDirty(true);
-        return m_Hovered;
+        return FindComponentMut(*m_Model, m_MaybeHovered);
     }
 
     void setHovered(OpenSim::Component const* c)
     {
-        m_Hovered = const_cast<OpenSim::Component*>(c);
+        if (c)
+        {
+            m_MaybeHovered = c->getAbsolutePath();
+        }
+        else
+        {
+            m_MaybeHovered = {};
+        }
     }
 
     OpenSim::Component const* getIsolated() const
     {
-        return m_Isolated;
+        return FindComponent(*m_Model, m_MaybeIsolated);
     }
 
     OpenSim::Component* updIsolated()
     {
         setDirty(true);
-        return m_Isolated;
+        return FindComponentMut(*m_Model, m_MaybeIsolated);
     }
 
     void setIsolated(OpenSim::Component const* c)
     {
-        m_Isolated = const_cast<OpenSim::Component*>(c);
+        if (c)
+        {
+            m_MaybeIsolated = c->getAbsolutePath();
+        }
+        else
+        {
+            m_MaybeIsolated = {};
+        }
     }
 
     void setSelectedHoveredAndIsolatedFrom(Impl const& other)
     {
-        OpenSim::Component const* newSelection = relocateComponentPointerToAnotherModel(*m_Model, other.getSelected());
-        if (newSelection)
-        {
-            setSelected(newSelection);
-        }
-
-        OpenSim::Component const* newHover = relocateComponentPointerToAnotherModel(*m_Model, other.getHovered());
-        if (newHover)
-        {
-            setHovered(newHover);
-        }
-
-        OpenSim::Component const* newIsolated = relocateComponentPointerToAnotherModel(*m_Model, other.getIsolated());
-        if (newIsolated)
-        {
-            setIsolated(newIsolated);
-        }
+        m_MaybeSelected = other.m_MaybeSelected;
+        m_MaybeHovered = other.m_MaybeHovered;
+        m_MaybeIsolated = other.m_MaybeIsolated;
     }
 
     void declareDeathOf(OpenSim::Component const* c)
@@ -551,18 +535,14 @@ private:
     // undersized models (e.g. fly leg)
     float m_FixupScaleFactor;
 
-    // current selection, if any
-    OpenSim::Component* m_CurrentSelection;
+    // (maybe) absolute path to the current selection (empty otherwise)
+    OpenSim::ComponentPath m_MaybeSelected;
 
-    // current hover, if any
-    OpenSim::Component* m_Hovered;
+    // (maybe) absolute path to the current hover (empty otherwise)
+    OpenSim::ComponentPath m_MaybeHovered;
 
-    // current isolation, if any
-    //
-    // "isolation" here means that the user is only interested in this
-    // particular subcomponent in the model, so visualizers etc. should
-    // try to only show that component
-    OpenSim::Component* m_Isolated;
+    // (maybe) absolute path to the current isolation (empty otherwise)
+    OpenSim::ComponentPath m_MaybeIsolated;
 
     // generic timestamp
     //
