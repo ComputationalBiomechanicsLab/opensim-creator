@@ -5,6 +5,19 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- Fixed out-of-bounds data access in application initialization that was detected by libASAN (be5d15)
+- Fixed scale factors property being ignored for some types of OpenSim geometry in the osim editor (#141)
+- Fixed an edge-case segfault that happened when editing the properties of a body that was synthesized
+  by OpenSim to break a graph cycle (#156)
+
+## [0.1.2] - 2022/02/16
+
+- Fixed a bug in the mesh importer where scaling a mesh element would cause its rotation to be
+  broken in the imported OpenSim model (#153)
+- Fixed minor typo: renamed 'scale' to 'Scale' in mesh importer right-click context menu (#129)
+
+## [0.1.1] - 2022/02/11
+
 - Fixed exception-throwing code sometimes crashing the UI completely instead of showing an errr message (#132)
 - Made automatic error recovery pop the UI slightly less
 - Fixed the name editor in the property editor not updating when the user selects something else (#133)
