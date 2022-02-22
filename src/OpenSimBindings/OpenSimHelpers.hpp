@@ -1,5 +1,7 @@
 #pragma once
 
+#include <src/OpenSimBindings/ComponentDecoration.hpp>
+
 #include <OpenSim/Common/Component.h>
 
 #include <algorithm>
@@ -14,6 +16,11 @@ namespace OpenSim
 {
     class AbstractSocket;
     class Model;
+}
+
+namespace SimTK
+{
+    class State;
 }
 
 namespace osc
@@ -98,4 +105,12 @@ namespace osc
     // this uses heuristics to determine whether the component is something the UI should be
     // "revealed" to the user
     bool ShouldShowInUI(OpenSim::Component const&);
+
+    // generates decorations for a model + state
+    void GenerateModelDecorations(OpenSim::Model const&,
+                                  SimTK::State const&,
+                                  float fixupScaleFactor,
+                                  std::vector<osc::ComponentDecoration>&);
+
+    void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
 }

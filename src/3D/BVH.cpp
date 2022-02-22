@@ -11,15 +11,18 @@
 using namespace osc;
 
 // recursively build the BVH
-static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
-    if (n == 0) {
+static void BVH_RecursiveBuild(BVH& bvh, int begin, int n)
+{
+    if (n == 0)
+    {
         return;
     }
 
     int end = begin + n;
 
     // if recursion bottoms out, create leaf node
-    if (n == 1) {
+    if (n == 1)
+    {
         BVHNode& leaf = bvh.nodes.emplace_back();
         leaf.bounds = bvh.prims[begin].bounds;
         leaf.nlhs = -1;
@@ -35,7 +38,8 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     AABB aabb = AABBUnion(bvh.prims.data() + begin, end-begin, sizeof(BVHPrim), offsetof(BVHPrim, bounds));
 
     // edge-case: if it's empty, return a leaf node
-    if (AABBIsEmpty(aabb)) {
+    if (AABBIsEmpty(aabb))
+    {
         BVHNode& leaf = bvh.nodes.emplace_back();
         leaf.bounds = aabb;
         leaf.nlhs = -1;
@@ -49,7 +53,8 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     float midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
 
     // returns true if a given primitive is below the midpoint along the dim
-    auto isBelowMidpoint = [longestDimIdx, midpointX2](BVHPrim const& p) {
+    auto isBelowMidpoint = [longestDimIdx, midpointX2](BVHPrim const& p)
+    {
         float primMidpointX2 = p.bounds.min[longestDimIdx] + p.bounds.max[longestDimIdx];
         return primMidpointX2 <= midpointX2;
     };
@@ -59,7 +64,8 @@ static void BVH_RecursiveBuild(BVH& bvh, int begin, int n) {
     int mid = static_cast<int>(std::distance(bvh.prims.begin(), it));
 
     // edge-case: failed to spacially partition: just naievely partition
-    if (!(begin < mid && mid < end)) {
+    if (!(begin < mid && mid < end))
+    {
         mid = begin + n/2;
     }
 
@@ -98,32 +104,38 @@ static bool BVH_GetRayTriangleCollisionsRecursive(
         size_t n,
         Line const& ray,
         int nodeidx,
-        std::vector<BVHCollision>& out) {
-
+        std::vector<BVHCollision>& out)
+{
     BVHNode const& node = bvh.nodes[nodeidx];
 
     // check ray-AABB intersection with the BVH node
     RayCollision res = GetRayCollisionAABB(ray, node.bounds);
 
-    if (!res.hit) {
+    if (!res.hit)
+    {
         return false;  // no intersection with this node at all
     }
 
-    if (node.nlhs == -1) {
+    if (node.nlhs == -1)
+    {
         // leaf node: check ray-triangle intersection
 
         bool hit = false;
-        for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i) {
+        for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i)
+        {
             BVHPrim const& p = bvh.prims[i];
 
             RayCollision rayrtri = GetRayCollisionTriangle(ray, vs + p.id);
-            if (rayrtri.hit) {
+            if (rayrtri.hit)
+            {
                 out.push_back(BVHCollision{p.id, rayrtri.distance});
                 hit = true;
             }
         }
         return hit;
-    } else {
+    }
+    else
+    {
         // else: internal node: check intersection with direct children
 
         bool lhs = BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, nodeidx+1, out);
@@ -139,18 +151,20 @@ static bool BVH_GetRayAABBCollisionsRecursive(
         BVH const& bvh,
         Line const& ray,
         int nodeidx,
-        std::vector<BVHCollision>& out) {
-
+        std::vector<BVHCollision>& out)
+{
     BVHNode const& node = bvh.nodes[nodeidx];
 
     // check ray-AABB intersection with the BVH node
     RayCollision res = GetRayCollisionAABB(ray, node.bounds);
 
-    if (!res.hit) {
+    if (!res.hit)
+    {
         return false;  // no intersection with this node at all
     }
 
-    if (node.nlhs == -1) {
+    if (node.nlhs == -1)
+    {
         // it's a leaf node, so we've sucessfully found the AABB that intersected
 
         out.push_back(BVHCollision{bvh.prims[node.firstPrimOffset].id, res.distance});
@@ -171,29 +185,34 @@ static bool BVH_GetClosestRayTriangleCollisionRecursive(
         Line const& ray,
         float& closest,
         int nodeidx,
-        BVHCollision* out) {
-
+        BVHCollision* out)
+{
     BVHNode const& node = bvh.nodes[nodeidx];
     RayCollision res = GetRayCollisionAABB(ray, node.bounds);
 
-    if (!res.hit) {
+    if (!res.hit)
+    {
         return false;  // didn't hit this node at all
     }
 
-    if (res.distance > closest) {
+    if (res.distance > closest)
+    {
         return false;  // this AABB can't contain something closer
     }
 
-    if (node.nlhs == -1) {
+    if (node.nlhs == -1)
+    {
         // leaf node: check ray-triangle intersection
 
         bool hit = false;
-        for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i) {
+        for (int i = node.firstPrimOffset, end = node.firstPrimOffset + node.nPrims; i < end; ++i)
+        {
             BVHPrim const& p = bvh.prims[i];
 
             RayCollision rayrtri = GetRayCollisionTriangle(ray, verts + p.id);
 
-            if (rayrtri.hit && rayrtri.distance < closest) {
+            if (rayrtri.hit && rayrtri.distance < closest)
+            {
                 closest = rayrtri.distance;
                 out->primId = p.id;
                 out->distance = rayrtri.distance;
@@ -210,18 +229,21 @@ static bool BVH_GetClosestRayTriangleCollisionRecursive(
     return lhs || rhs;
 }
 
-void osc::BVH::clear() {
+void osc::BVH::clear()
+{
     nodes.clear();
     prims.clear();
 }
 
-BVH osc::BVH_CreateFromTriangles(glm::vec3 const* vs, size_t n) {
+BVH osc::BVH_CreateFromTriangles(glm::vec3 const* vs, size_t n)
+{
     BVH rv;
     BVH_BuildFromTriangles(rv, vs, n);
     return rv;
 }
 
-void osc::BVH_BuildFromTriangles(BVH& bvh, glm::vec3 const* vs, size_t n) {
+void osc::BVH_BuildFromTriangles(BVH& bvh, glm::vec3 const* vs, size_t n)
+{
     // clear out any old data
     bvh.clear();
 
@@ -238,13 +260,15 @@ void osc::BVH_BuildFromTriangles(BVH& bvh, glm::vec3 const* vs, size_t n) {
     BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
 }
 
-void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n) {
+void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
+{
     // clear out any old data
     bvh.nodes.clear();
     bvh.prims.clear();
 
     // build up prim list for each AABB (just copy the AABB)
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i)
+    {
         BVHPrim& prim = bvh.prims.emplace_back();
         prim.bounds = aabbs[i];
         prim.id = static_cast<int>(i);
@@ -259,20 +283,23 @@ bool osc::BVH_GetRayTriangleCollisions(
         glm::vec3 const* vs,
         size_t n,
         Line const& ray,
-        std::vector<BVHCollision>* appendTo) {
-
+        std::vector<BVHCollision>* appendTo)
+{
     OSC_ASSERT(appendTo != nullptr);
     OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
 
-    if (bvh.nodes.empty()) {
+    if (bvh.nodes.empty())
+    {
         return false;
     }
 
-    if (bvh.prims.empty()) {
+    if (bvh.prims.empty())
+    {
         return false;
     }
 
-    if (n == 0) {
+    if (n == 0)
+    {
         return false;
     }
 
@@ -282,15 +309,18 @@ bool osc::BVH_GetRayTriangleCollisions(
 bool osc::BVH_GetRayAABBCollisions(
         BVH const& bvh,
         Line const& ray,
-        std::vector<BVHCollision>* appendTo) {
+        std::vector<BVHCollision>* appendTo)
+{
 
     OSC_ASSERT(appendTo != nullptr);
 
-    if (bvh.nodes.empty()) {
+    if (bvh.nodes.empty())
+    {
         return false;
     }
 
-    if (bvh.prims.empty()) {
+    if (bvh.prims.empty())
+    {
         return false;
     }
 
@@ -302,20 +332,23 @@ bool osc::BVH_GetClosestRayTriangleCollision(
         glm::vec3 const* verts,
         size_t nverts,
         Line const& ray,
-        BVHCollision* out) {
-
+        BVHCollision* out)
+{
     OSC_ASSERT(out != nullptr);
     OSC_ASSERT(nverts/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
 
-    if (bvh.nodes.empty()) {
+    if (bvh.nodes.empty())
+    {
         return false;
     }
 
-    if (bvh.prims.empty()) {
+    if (bvh.prims.empty())
+    {
         return false;
     }
 
-    if (nverts == 0) {
+    if (nverts == 0)
+    {
         return false;
     }
 

@@ -3,21 +3,24 @@
 #include <filesystem>
 #include <memory>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Model;
     class Component;
 }
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace osc {
+namespace osc
+{
     class UiModel;
 }
 
-namespace osc {
-
+namespace osc
+{
     // A "UI ready" model with undo/redo support
     class UndoableUiModel final {
     public:

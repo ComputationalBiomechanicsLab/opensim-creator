@@ -4,6 +4,7 @@
 #include "src/3D/BVH.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
+#include "src/3D/Mesh.hpp"
 #include "src/3D/Model.hpp"
 #include "src/3D/Shaders/SolidColorShader.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
@@ -51,11 +52,7 @@ static void drawBVHRecursive(BVH const& bvh, SolidColorShader& shader, int pos) 
 struct osc::MeshHittestWithBVHScreen::Impl final {
     SolidColorShader shader;
 
-    MeshData mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
-    gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
-    gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
-    gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
-    BVH meshBVH = BVH_CreateFromTriangles(mesh.verts.data(), mesh.verts.size());
+    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
 
     // triangle (debug)
     glm::vec3 tris[3];
@@ -120,9 +117,10 @@ void osc::MeshHittestWithBVHScreen::tick(float) {
         impl.isMousedOver = false;
 
         if (impl.useBVH) {
+
             BVHCollision res;
-            if (BVH_GetClosestRayTriangleCollision(impl.meshBVH, impl.mesh.verts.data(), impl.mesh.verts.size(), cameraRayWorldspace, &res)) {
-                glm::vec3 const* v = impl.mesh.verts.data() + res.primId;
+            if (BVH_GetClosestRayTriangleCollision(impl.mesh.getTriangleBVH(), impl.mesh.getVerts().data(), impl.mesh.getVerts().size(), cameraRayWorldspace, &res)) {
+                glm::vec3 const* v = impl.mesh.getVerts().data() + res.primId;
                 impl.isMousedOver = true;
                 impl.tris[0] = v[0];
                 impl.tris[1] = v[1];
@@ -131,7 +129,7 @@ void osc::MeshHittestWithBVHScreen::tick(float) {
             }
 
         } else {
-            auto const& verts = impl.mesh.verts;
+            nonstd::span<glm::vec3 const> verts = impl.mesh.getVerts();
             for (size_t i = 0; i < verts.size(); i += 3) {
                 glm::vec3 tri[3] = {verts[i], verts[i+1], verts[i+2]};
                 RayCollision res = GetRayCollisionTriangle(cameraRayWorldspace, tri);
@@ -182,8 +180,8 @@ void osc::MeshHittestWithBVHScreen::draw() {
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(App::cur().aspectRatio()));
     gl::Uniform(shader.uColor, impl.isMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
     if (true) {  // draw scene
-        gl::BindVertexArray(impl.meshVAO);
-        gl::DrawElements(GL_TRIANGLES, impl.meshEBO.sizei(), gl::indexType(impl.meshEBO), nullptr);
+        gl::BindVertexArray(impl.mesh.GetVertexArray());
+        impl.mesh.Draw();
         gl::BindVertexArray();
     }
 
@@ -202,12 +200,12 @@ void osc::MeshHittestWithBVHScreen::draw() {
     }
 
     // draw BVH
-    if (impl.useBVH && !impl.meshBVH.nodes.empty()) {
+    if (impl.useBVH && !impl.mesh.getTriangleBVH().nodes.empty()) {
         // uModel is set by the recursive call
 
         gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
         gl::BindVertexArray(impl.cubeVAO);
-        drawBVHRecursive(impl.meshBVH, impl.shader, 0);
+        drawBVHRecursive(impl.mesh.getTriangleBVH(), impl.shader, 0);
         gl::BindVertexArray();
     }
 

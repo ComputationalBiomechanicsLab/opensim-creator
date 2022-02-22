@@ -69,8 +69,8 @@ public:
         m_DecorationsAreDirty{false},
         m_FakeDirty{false}
     {
-        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        updateBVH(m_Decorations, m_SceneBVH);
+        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
@@ -94,8 +94,8 @@ public:
         m_DecorationsAreDirty{false},
         m_FakeDirty{false}
     {
-        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        updateBVH(m_Decorations, m_SceneBVH);
+        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(Impl const& other) :
@@ -120,8 +120,8 @@ public:
         m_DecorationsAreDirty{false},
         m_FakeDirty{false}
     {
-        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        updateBVH(m_Decorations, m_SceneBVH);
+        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(Impl&&) noexcept = default;
@@ -203,7 +203,7 @@ public:
         }
     }
 
-    nonstd::span<LabelledSceneElement const> getSceneDecorations() const
+    nonstd::span<ComponentDecoration const> getSceneDecorations() const
     {
         // HACK: ensure the user can't get access to a dirty model/system/state
         {
@@ -233,8 +233,8 @@ public:
     void setFixupScaleFactor(float sf)
     {
         m_FixupScaleFactor = sf;
-        generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        updateBVH(m_Decorations, m_SceneBVH);
+        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     AABB getSceneAABB() const
@@ -265,8 +265,8 @@ public:
         // generate decorations as if they were empty-sized and union their
         // AABBs to get an idea of what the "true" scale of the model probably
         // is (without the model containing oversized frames, etc.)
-        std::vector<LabelledSceneElement> ses;
-        generateDecorations(*m_Model, *m_State, 0.0f, ses);
+        std::vector<ComponentDecoration> ses;
+        GenerateModelDecorations(*m_Model, *m_State, 0.0f, ses);
 
         if (ses.empty())
         {
@@ -378,8 +378,8 @@ public:
         if (m_DecorationsAreDirty)
         {
             auto decorationUpdateTimerGuard = decorationUpdateTimer.measure();
-            generateDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-            updateBVH(m_Decorations, m_SceneBVH);
+            GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
+            UpdateSceneBVH(m_Decorations, m_SceneBVH);
             m_DecorationsAreDirty = false;
         }
 
@@ -524,7 +524,7 @@ private:
     std::unique_ptr<SimTK::State> m_State;
 
     // decorations, generated from model's display properties etc.
-    std::vector<LabelledSceneElement> m_Decorations;
+    std::vector<ComponentDecoration> m_Decorations;
 
     // scene-level BVH of decoration AABBs
     BVH m_SceneBVH;
@@ -621,7 +621,7 @@ bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
     return m_Impl->removeCoordinateEdit(c);
 }
 
-nonstd::span<LabelledSceneElement const> osc::UiModel::getSceneDecorations() const
+nonstd::span<ComponentDecoration const> osc::UiModel::getSceneDecorations() const
 {
     return m_Impl->getSceneDecorations();
 }

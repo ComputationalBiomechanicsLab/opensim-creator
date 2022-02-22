@@ -5,7 +5,7 @@
 #include "src/3D/GlGlm.hpp"
 #include "src/3D/Mesh.hpp"
 #include "src/3D/Texturing.hpp"
-#include "src/SimTKBindings/SimTKLoadMesh.hpp"
+#include "src/Utils/SimTKHelpers.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/App.hpp"

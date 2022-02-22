@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/Model.hpp"
+#include "src/3D/Model.hpp"  // AABB
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
@@ -12,18 +12,21 @@
 #include <memory>
 #include <string>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Component;
     class Coordinate;
     class Model;
     class Joint;
 }
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace osc {
+namespace osc
+{
     struct BVH;
     class StateModifications;
     struct CoordinateEdit;
@@ -31,8 +34,8 @@ namespace osc {
     struct UiSimulation;
 }
 
-namespace osc {
-
+namespace osc
+{
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
     class UiModel final : public RenderableScene {
     public:
@@ -80,7 +83,7 @@ namespace osc {
 
 
         // get a list of renderable scene elements that represent the model in its state
-        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override;
+        nonstd::span<ComponentDecoration const> getSceneDecorations() const override;
 
         // get a bounding-volume-hierarchy (BVH) for the model's scene decorations
         BVH const& getSceneBVH() const override;

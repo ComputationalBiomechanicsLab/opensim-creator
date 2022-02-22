@@ -1,10 +1,18 @@
 #pragma once
 
-#include "src/OpenSimBindings/RenderableScene.hpp"
+#include <glm/vec3.hpp>
+
+#include <memory>
+
 
 namespace OpenSim
 {
     class Component;
+}
+
+namespace osc
+{
+    class RenderableScene;
 }
 
 namespace osc

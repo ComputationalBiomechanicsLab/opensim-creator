@@ -1,13 +1,17 @@
 #include "SimulatorScreen.hpp"
 
+#include "src/3D/BVH.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
+#include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/Screens/ModelEditorScreen.hpp"
 #include "src/UI/LogViewer.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"
 #include "src/Assertions.hpp"
@@ -1017,7 +1021,7 @@ namespace {
     class RenderableSim final : public RenderableScene {
         UiSimulation& m_Sim;
         Report const& m_Report;
-        std::vector<LabelledSceneElement> m_Decorations;
+        std::vector<ComponentDecoration> m_Decorations;
         BVH m_SceneBVH;
         float m_FixupScaleFactor;
 
@@ -1029,13 +1033,13 @@ namespace {
             m_SceneBVH{},
             m_FixupScaleFactor{sim.fixupScaleFactor}
         {
-            generateDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations);
-            updateBVH(m_Decorations, m_SceneBVH);
+            GenerateModelDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations);
+            UpdateSceneBVH(m_Decorations, m_SceneBVH);
         }
 
         ~RenderableSim() noexcept override = default;
 
-        nonstd::span<LabelledSceneElement const> getSceneDecorations() const override
+        nonstd::span<ComponentDecoration const> getSceneDecorations() const override
         {
             return m_Decorations;
         }

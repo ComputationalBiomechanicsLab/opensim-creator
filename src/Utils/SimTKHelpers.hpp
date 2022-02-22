@@ -1,23 +1,45 @@
 #pragma once
 
+#include "src/3D/Model.hpp"
 #include "src/3D/Mesh.hpp"
 #include "src/MeshCache.hpp"
 
-#include <glm/mat4x3.hpp>
 #include <glm/mat3x3.hpp>
+#include <glm/mat4x3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <SimTKcommon/internal/DecorativeGeometry.h>
+#include <SimTKcommon.h>
 
+#include <filesystem>
 #include <memory>
-#include <string>
 
-namespace SimTK {
+namespace SimTK
+{
     class SimbodyMatterSubsystem;
     class State;
 }
 
-namespace osc {
-    struct SceneElement {
+namespace osc
+{
+    // converters
+    SimTK::Vec3 SimTKVec3FromV3(float v[3]);
+    SimTK::Vec3 SimTKVec3FromV3(glm::vec3 const&);
+    SimTK::Inertia SimTKInertiaFromV3(float v[3]);
+    glm::vec3 SimTKVec3FromVec3(SimTK::Vec3 const&);
+    glm::vec4 SimTKVec4FromVec3(SimTK::Vec3 const&, float = 1.0f);
+    glm::mat4x3 SimTKMat4x3FromXForm(SimTK::Transform const&);
+    glm::mat4x4 SimTKMat4x4FromTransform(SimTK::Transform const&);
+    SimTK::Transform SimTKTransformFromMat4x3(glm::mat4x3 const&);
+
+
+    // mesh loading
+    Mesh SimTKLoadMesh(std::filesystem::path const&);
+
+
+    // rendering
+
+    struct SystemDecoration {
         std::shared_ptr<Mesh> mesh;
         glm::mat4x3 modelMtx;
         glm::mat3 normalMtx;
@@ -38,7 +60,7 @@ namespace osc {
                           float fixupScaleFactor);
 
     private:
-        virtual void onSceneElementEmission(SceneElement const&) = 0;
+        virtual void onSceneElementEmission(SystemDecoration const&) = 0;
 
         void implementPointGeometry(SimTK::DecorativePoint const&) override final;
         void implementLineGeometry(SimTK::DecorativeLine const&) override final;
@@ -58,7 +80,6 @@ namespace osc {
 
     template<typename Callback>
     class SceneGeneratorLambda final : public SceneGeneratorNew {
-        Callback m_Callback;
     public:
         SceneGeneratorLambda(MeshCache& meshCache,
                              SimTK::SimbodyMatterSubsystem const& matter,
@@ -66,11 +87,16 @@ namespace osc {
                              float fixupScaleFactor,
                              Callback callback) :
             SceneGeneratorNew{meshCache, matter, st, fixupScaleFactor},
-            m_Callback{std::move(callback)} {
+            m_Callback{std::move(callback)}
+        {
         }
 
-        void onSceneElementEmission(SceneElement const& se) override {
+        void onSceneElementEmission(SystemDecoration const& se) override
+        {
             m_Callback(se);
         }
+
+    private:
+        Callback m_Callback;
     };
 }

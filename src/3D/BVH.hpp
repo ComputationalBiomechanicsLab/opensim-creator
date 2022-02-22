@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/Model.hpp"
+#include "src/3D/Model.hpp"  // AABB
 
 #include <glm/vec3.hpp>
 

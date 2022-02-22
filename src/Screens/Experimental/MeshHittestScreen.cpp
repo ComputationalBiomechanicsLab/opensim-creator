@@ -3,10 +3,11 @@
 #include "src/App.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
+#include "src/3D/Mesh.hpp"
 #include "src/3D/Model.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
-#include "src/SimTKBindings/SimTKLoadMesh.hpp"
+#include "src/Utils/SimTKHelpers.hpp"
 
 #include <glm/vec3.hpp>
 #include <imgui.h>
@@ -70,10 +71,7 @@ static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& 
 struct osc::MeshHittestScreen::Impl final {
     BasicShader shader;
 
-    MeshData mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
-    gl::ArrayBuffer<glm::vec3> meshVBO{mesh.verts};
-    gl::ElementArrayBuffer<uint32_t> meshEBO{mesh.indices};
-    gl::VertexArray meshVAO = makeVAO(shader, meshVBO, meshEBO);
+    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
 
     // sphere (debug)
     MeshData sphere = GenUntexturedUVSphere(12, 12);
@@ -141,7 +139,7 @@ void osc::MeshHittestScreen::tick(float) {
         impl.ray = impl.camera.unprojectTopLeftPosToWorldRay(ImGui::GetIO().MousePos, App::cur().dims());
 
         impl.isMousedOver = false;
-        std::vector<glm::vec3> const& tris = impl.mesh.verts;
+        nonstd::span<glm::vec3 const> tris = impl.mesh.getVerts();
         for (size_t i = 0; i < tris.size(); i += 3) {
             RayCollision res = GetRayCollisionTriangle(impl.ray, tris.data() + i);
             if (res.hit) {
@@ -196,8 +194,8 @@ void osc::MeshHittestScreen::draw() {
     gl::Uniform(shader.uProjection, impl.camera.getProjMtx(App::cur().aspectRatio()));
     gl::Uniform(shader.uColor, impl.isMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
     if (true) {
-        gl::BindVertexArray(impl.meshVAO);
-        gl::DrawElements(GL_TRIANGLES, impl.meshEBO.sizei(), gl::indexType(impl.meshEBO), nullptr);
+        gl::BindVertexArray(impl.mesh.GetVertexArray());
+        impl.mesh.Draw();
         gl::BindVertexArray();
     }
 

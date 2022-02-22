@@ -9,12 +9,16 @@
 #include "src/3D/Constants.hpp"
 #include "src/3D/Gl.hpp"
 #include "src/3D/GlGlm.hpp"
+#include "src/3D/Mesh.hpp"
 #include "src/3D/ShaderCache.hpp"
 #include "src/3D/Texturing.hpp"
+#include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"
 #include "src/Log.hpp"
+#include "src/MeshCache.hpp"
 #include "src/Styling.hpp"
 
 #include <glm/vec2.hpp>
@@ -339,7 +343,7 @@ static glm::mat4x3 generateFloorModelMatrix(osc::UiModelViewer::Impl const& impl
 }
 
 static AABB computeWorldspaceRimAABB(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
     std::vector<SceneGPUInstanceData> const& dl = impl.drawlistBuffer;
 
     if (dl.empty()) {
@@ -408,7 +412,7 @@ static bool isInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Compon
 
 static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
     std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
-    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
     OpenSim::Component const* const selected = rs.getSelected();
     OpenSim::Component const* const hovered = rs.getHovered();
     OpenSim::Component const* const isolated = rs.getIsolated();
@@ -419,7 +423,7 @@ static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScen
 
     // populate the list with the scene
     for (size_t i = 0; i < decs.size(); ++i) {
-        LabelledSceneElement const& se = decs[i];
+        ComponentDecoration const& se = decs[i];
 
         if (isolated && !isInclusiveChildOf(isolated, se.component)) {
             continue;  // skip rendering this (it's not in the isolated component)
@@ -503,13 +507,13 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::Uniform(instancedShader.uViewPos, viewerPos);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+        nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
 
         size_t pos = 0;
         size_t ninstances = instances.size();
 
         while (pos < ninstances) {
-            LabelledSceneElement const& se = decs[instances[pos].decorationIdx];
+            ComponentDecoration const& se = decs[instances[pos].decorationIdx];
 
             // batch
             size_t end = pos + 1;
@@ -572,10 +576,10 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::Uniform(normalShader.uViewMat, viewMtx);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+        nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
 
         for (SceneGPUInstanceData const& inst : instances) {
-            LabelledSceneElement const& se = decs[inst.decorationIdx];
+            ComponentDecoration const& se = decs[inst.decorationIdx];
 
             gl::Uniform(normalShader.uModelMat, inst.modelMtx);
             gl::Uniform(normalShader.uNormalMat, inst.normalMtx);
@@ -605,7 +609,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::Uniform(iscs.uVP, projMtx * viewMtx);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+        nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
 
         size_t pos = 0;
         size_t ninstances = instances.size();
@@ -617,7 +621,7 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         bool hasRims = false;
         while (pos < ninstances) {
             SceneGPUInstanceData const& inst = instances[pos];
-            LabelledSceneElement const& se = decs[inst.decorationIdx];
+            ComponentDecoration const& se = decs[inst.decorationIdx];
 
             // batch
             size_t end = pos + 1;
@@ -753,7 +757,7 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
     glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
     // iterate through each scene-level hit and perform a triangle-level hittest
-    nonstd::span<LabelledSceneElement const> decs = rs.getSceneDecorations();
+    nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
     OpenSim::Component const* const isolated = rs.getIsolated();
 
     for (BVHCollision const& c : impl.sceneHittestResults) {

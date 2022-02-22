@@ -17,6 +17,7 @@
 #include "src/App.hpp"
 #include "src/Config.hpp"
 #include "src/Log.hpp"
+#include "src/MeshCache.hpp"
 #include "src/os.hpp"
 #include "src/Styling.hpp"
 

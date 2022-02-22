@@ -182,13 +182,13 @@ add_executable(osc
     src/3D/Texturing.cpp
     src/3D/Texturing.hpp
 
+    src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/FileChangePoller.cpp
     src/OpenSimBindings/FileChangePoller.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
     src/OpenSimBindings/PlottableOutputSubfield.cpp
     src/OpenSimBindings/PlottableOutputSubfield.hpp
-    src/OpenSimBindings/RenderableScene.cpp
     src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.cpp
     src/OpenSimBindings/Simulation.hpp
@@ -243,12 +243,6 @@ add_executable(osc
     src/Screens/SplashScreen.cpp
     src/Screens/SplashScreen.hpp
 
-    src/SimTKBindings/SceneGeneratorNew.cpp
-    src/SimTKBindings/SceneGeneratorNew.hpp
-    src/SimTKBindings/SimTKConverters.hpp
-    src/SimTKBindings/SimTKLoadMesh.cpp
-    src/SimTKBindings/SimTKLoadMesh.hpp
-
     src/UI/AddBodyPopup.cpp
     src/UI/AddBodyPopup.hpp
     src/UI/AddComponentPopup.cpp
@@ -301,6 +295,8 @@ add_executable(osc
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp
+    src/Utils/SimTKHelpers.hpp
+    src/Utils/SimTKHelpers.cpp
     src/Utils/Spsc.hpp
     src/Utils/UID.cpp
     src/Utils/UID.hpp

@@ -3,19 +3,22 @@
 #include <memory>
 #include <vector>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Model;
     class Component;
 }
 
-namespace osc {
+namespace osc
+{
     class FdSimulation;
     struct Report;
     struct FdParams;
     class UiModel;
 }
 
-namespace osc {
+namespace osc
+{
     // a forward-dynamic simulation
     //
     // the simulation's computation runs on a background thread, but
