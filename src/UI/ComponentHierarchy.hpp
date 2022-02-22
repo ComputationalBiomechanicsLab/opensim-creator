@@ -8,7 +8,6 @@ namespace osc {
     class ComponentHierarchy final {
         char search[256]{};
         bool showFrames = false;
-        bool showWrapObjectSets = false;
 
     public:
         enum ResponseType { NothingHappened, SelectionChanged, HoverChanged };

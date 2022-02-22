@@ -1,5 +1,6 @@
 #include "ComponentHierarchy.hpp"
 
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Assertions.hpp"
 #include "src/Log.hpp"
@@ -17,7 +18,6 @@
 
 namespace {
     size_t const g_FrameGeometryHash = typeid(OpenSim::FrameGeometry).hash_code();
-    size_t const g_WrapObjectSetHash = typeid(OpenSim::WrapObjectSet).hash_code();
 
     // poor-man's abstraction for a constant-sized array
     template<typename T, size_t N>
@@ -141,7 +141,6 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     ImGui::TextUnformatted(ICON_FA_EYE);
     if (ImGui::BeginPopupContextItem("##filterpopup")) {
         ImGui::Checkbox("frames", &showFrames);
-        ImGui::Checkbox("wrapobjectsets", &showWrapObjectSets);
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -222,15 +221,22 @@ osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
             bool shouldRender = true;
 
             auto hc = typeid(c).hash_code();
-            if (!showFrames && hc == g_FrameGeometryHash) {
+            if (!showFrames && hc == g_FrameGeometryHash)
+            {
+                shouldRender = false;
+            }
+            else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
+            {
+                shouldRender = wos->getSize() > 0;
+            }
+            else if (!ShouldShowInUI(c))
+            {
                 shouldRender = false;
             }
 
-            if (!showWrapObjectSets && hc == g_WrapObjectSetHash) {
-                shouldRender = false;
-            }
 
-            if (shouldRender) {
+            if (shouldRender)
+            {
                 lookahead = &c;
                 computeComponentPath(root, &c, lookaheadPath);
                 break;

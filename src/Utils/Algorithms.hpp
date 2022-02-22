@@ -131,6 +131,18 @@ namespace osc {
         return std::abs(a - b) < scaledEpsilon;
     }
 
+    template<typename T, typename U>
+    inline bool Is(U const& v)
+    {
+        return typeid(v) == typeid(T);
+    }
+
+    template<typename T, typename U>
+    inline bool DerivesFrom(U const& v)
+    {
+        return dynamic_cast<T const*>(&v);
+    }
+
     // returns the number of bits set in the input integer
     //
     // e.g. 0x1 --> 1, 0x2 --> 1, 0x3 --> 2, 0xf --> 4

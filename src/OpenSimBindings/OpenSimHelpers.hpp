@@ -92,4 +92,10 @@ namespace osc
     //
     // otherwise, returns an empty path
     std::filesystem::path TryFindInputFile(OpenSim::Model const&);
+
+    // returns `true` if the component should be shown in the UI
+    //
+    // this uses heuristics to determine whether the component is something the UI should be
+    // "revealed" to the user
+    bool ShouldShowInUI(OpenSim::Component const&);
 }

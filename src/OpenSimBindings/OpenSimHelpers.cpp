@@ -1,7 +1,8 @@
 #include "OpenSimHelpers.hpp"
 
-#include <OpenSim/Simulation/Model/Model.h>
+#include "src/Utils/Algorithms.hpp"
 
+#include <OpenSim/Simulation/Model/Model.h>
 
 std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component& c)
 {
@@ -87,4 +88,20 @@ std::filesystem::path osc::TryFindInputFile(OpenSim::Model const& m)
     }
 
     return p;
+}
+
+bool osc::ShouldShowInUI(OpenSim::Component const& c)
+{
+    if (Is<OpenSim::PathWrapPoint>(c))
+    {
+        return false;
+    }
+    else if (Is<OpenSim::Station>(c) && c.hasOwner() && DerivesFrom<OpenSim::PathPoint>(c.getOwner()))
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
