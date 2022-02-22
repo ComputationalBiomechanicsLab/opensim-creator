@@ -73,24 +73,23 @@ static void HandleStation(float fixupScaleFactor,
     out.emplace_back(std::move(se), &s);
 }
 
-template<typename Callback>
 static void HandleGenericOpenSimElement(OpenSim::Component const& c,
                                         SimTK::State const& st,
                                         OpenSim::ModelDisplayHints const& mdh,
                                         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                                        osc::SceneGeneratorLambda<Callback>& visitor)
+                                        osc::DecorativeGeometryHandler& handler)
 {
     c.generateDecorations(true, mdh, st, geomList);
     for (SimTK::DecorativeGeometry const& dg : geomList)
     {
-        dg.implementGeometry(visitor);
+        handler(dg);
     }
     geomList.clear();
 
     c.generateDecorations(false, mdh, st, geomList);
     for (SimTK::DecorativeGeometry const& dg : geomList)
     {
-        dg.implementGeometry(visitor);
+        handler(dg);
     }
     geomList.clear();
 }
@@ -103,12 +102,13 @@ static void getSceneElements(OpenSim::Model const& m,
     out.clear();
 
     OpenSim::Component const* currentComponent = nullptr;
-    auto onEmit = [&](osc::SystemDecoration const& se)
-    {
-        out.emplace_back(se, currentComponent);
-    };
 
-    osc::SceneGeneratorLambda visitor{
+    std::function<void(osc::SystemDecoration const&)> onEmit{[&currentComponent, &out](osc::SystemDecoration const& sd)
+    {
+        out.emplace_back(sd, currentComponent);
+    }};
+
+    osc::DecorativeGeometryHandler handler{
         osc::App::meshes(),
         m.getSystem().getMatterSubsystem(),
         st,
@@ -153,11 +153,11 @@ static void getSceneElements(OpenSim::Model const& m,
                 }
             }
 
-            HandleGenericOpenSimElement(c, st, mdh, geomList, visitor);
+            HandleGenericOpenSimElement(c, st, mdh, geomList, handler);
         }
         else
         {
-            HandleGenericOpenSimElement(c, st, mdh, geomList, visitor);
+            HandleGenericOpenSimElement(c, st, mdh, geomList, handler);
         }
     }
 }
