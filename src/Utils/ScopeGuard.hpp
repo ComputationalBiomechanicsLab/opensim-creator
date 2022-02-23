@@ -2,7 +2,8 @@
 
 #include <utility>
 
-namespace osc {
+namespace osc
+{
     template<typename Dtor>
     class ScopeGuard final {
     public:
@@ -21,14 +22,8 @@ namespace osc {
     private:
         Dtor m_OnScopeExit;
     };
-
-#define OSC_TOKENPASTE(x, y) x##y
-#define OSC_TOKENPASTE2(x, y) OSC_TOKENPASTE(x, y)
-#define OSC_SCOPE_GUARD(action) osc::ScopeGuard OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
-#define OSC_SCOPE_GUARD_IF(cond, action)                                                                              \
-    OSC_SCOPE_GUARD({                                                                                                 \
-        if (cond) {                                                                                                    \
-            action                                                                                                     \
-        }                                                                                                              \
-    })
 }
+
+#define OSC_SCOPE_GUARD(action) osc::ScopeGuard OSC_TOKENPASTE2(guard_, __LINE__){[&]() action};
+
+#define OSC_SCOPE_GUARD_IF(cond, action) OSC_SCOPE_GUARD({ if (cond) { action } })

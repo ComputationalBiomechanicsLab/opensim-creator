@@ -16,7 +16,6 @@ using namespace osc;
 static inline constexpr float g_LineThickness = 0.005f;
 static inline constexpr float g_FrameAxisLengthRescale = 0.25f;
 static inline constexpr float g_FrameAxisThickness = 0.0025f;
-static inline constexpr float g_ConeHeadLength = 0.2f;
 
 // extracts scale factors from geometry
 static glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
@@ -33,8 +32,7 @@ static glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
 static glm::quat RotationAsQuat(SimTK::Rotation const& r)
 {
     SimTK::Quaternion q = r.convertRotationToQuaternion();
-    glm::quat rv = {static_cast<float>(q[0]), static_cast<float>(q[1]), static_cast<float>(q[2]), static_cast<float>(q[3])};
-    return glm::normalize(rv);  // just to be sure
+    return glm::quat{static_cast<float>(q[0]), static_cast<float>(q[1]), static_cast<float>(q[2]), static_cast<float>(q[3])};
 }
 
 // returns the rotational part of the transform as a quaternion
@@ -59,9 +57,9 @@ static Transform ToOscTransform(SimTK::Transform const& t)
 static glm::vec4 GetColor(SimTK::DecorativeGeometry const& geom)
 {
     SimTK::Vec3 const& rgb = geom.getColor();
-    SimTK::Real ar = geom.getOpacity();
-    ar = ar < 0.0 ? 1.0 : ar;
-    return glm::vec4(rgb[0], rgb[1], rgb[2], ar);
+    float ar = static_cast<float>(geom.getOpacity());
+    ar = ar < 0.0f ? 1.0f : ar;
+    return SimTKVec4FromVec3(rgb, ar);
 }
 
 // creates a geometry-to-ground transform for the given geometry
@@ -70,11 +68,10 @@ static Transform ToOscTransform(SimTK::SimbodyMatterSubsystem const& matter,
                                 SimTK::DecorativeGeometry const& g)
 {
     SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-    SimTK::Transform body2ground = mobod.getBodyTransform(state);
-    SimTK::Transform decoration2body = g.getTransform();
-    SimTK::Transform decoration2ground = body2ground * decoration2body;
+    SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
+    SimTK::Transform const& decoration2body = g.getTransform();
 
-    Transform rv = ToOscTransform(decoration2ground);
+    Transform rv = ToOscTransform(body2ground * decoration2body);
     rv.scale = GetScaleFactors(g);
 
     return rv;
@@ -97,7 +94,7 @@ static Transform SegmentToSegmentTransform(Segment const& a, Segment const& b)
     // for scale: LERP [0,1] onto [1,l] along original direction
     Transform t;
     t.rotation = glm::rotation(aDir, bDir);
-    t.scale = glm::vec3{1.0f, 1.0f, 1.0f} + (bLen/aLen-1.0f)*aDir;
+    t.scale = glm::vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
     t.position = bMid - aMid;
     return t;
 }
@@ -158,9 +155,11 @@ private:
         glm::vec3 p1 = transformPoint(t, SimTKVec4FromVec3(d.getPoint1()));
         glm::vec3 p2 = transformPoint(t, SimTKVec4FromVec3(d.getPoint2()));
 
+        float thickness = g_LineThickness * m_FixupScaleFactor;
+
         Transform cylinderXform = CylinderToLineTransform(p1, p2);
-        cylinderXform.scale.x *= g_LineThickness * m_FixupScaleFactor;
-        cylinderXform.scale.z *= g_LineThickness * m_FixupScaleFactor;
+        cylinderXform.scale.x *= thickness;
+        cylinderXform.scale.z *= thickness;
         cylinderXform.scale *= t.scale;
 
         m_Callback({m_MeshCache.getCylinderMesh(), cylinderXform, GetColor(d)});
@@ -227,14 +226,15 @@ private:
 
         // emit leg cylinders
         glm::vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+        float legLenAndThickness = g_FrameAxisLengthRescale * m_FixupScaleFactor;
         for (int axis = 0; axis < 3; ++axis)
         {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-            dir[axis] = g_FrameAxisLengthRescale * m_FixupScaleFactor * axisLengths[axis];
+            dir[axis] = legLenAndThickness * axisLengths[axis];
 
             Transform legXform = CylinderToLineTransform(t.position, t.position + transformDirection(t, dir));
-            legXform.scale.x *= g_FrameAxisThickness * m_FixupScaleFactor;
-            legXform.scale.z *= g_FrameAxisThickness * m_FixupScaleFactor;
+            legXform.scale.x *= legLenAndThickness;
+            legXform.scale.z *= legLenAndThickness;
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
             color[axis] = 1.0f;
@@ -380,12 +380,21 @@ SimTK::Inertia osc::SimTKInertiaFromV3(float v[3])
 
 glm::vec3 osc::SimTKVec3FromVec3(SimTK::Vec3 const& v)
 {
-    return glm::vec3(v[0], v[1], v[2]);
+    return glm::vec3{
+        static_cast<float>(v[0]),
+        static_cast<float>(v[1]),
+        static_cast<float>(v[2])
+    };
 }
 
 glm::vec4 osc::SimTKVec4FromVec3(SimTK::Vec3 const& v, float w)
 {
-    return glm::vec4{v[0], v[1], v[2], w};
+    return glm::vec4{
+        static_cast<float>(v[0]),
+        static_cast<float>(v[1]),
+        static_cast<float>(v[2]),
+        static_cast<float>(w),
+    };
 }
 
 glm::mat4x3 osc::SimTKMat4x3FromXForm(SimTK::Transform const& t)

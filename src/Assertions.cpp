@@ -6,7 +6,7 @@
 #include <cstring>
 #include <stdexcept>
 
-void osc::onAssertionFailure(char const* failing_code,
+void osc::OnAssertionFailure(char const* failing_code,
                              char const* func,
                              char const* file,
                              unsigned int line)

@@ -60,6 +60,7 @@ public:
 
     Impl()
     {
+        m_Scratch.updateIfDirty();
         commit();  // make initial commit
     }
 
@@ -68,6 +69,7 @@ public:
         m_Scratch{std::move(m)},
         m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
     {
+        m_Scratch.updateIfDirty();
         commit();  // make initial commit
     }
 
@@ -271,6 +273,7 @@ public:
             UiModel newScratch = c->getUiModel();
             newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+            newScratch.updateIfDirty();
 
             m_Scratch = std::move(newScratch);
         }
@@ -309,6 +312,7 @@ public:
         UiModel newModel = parent->getUiModel();
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.updateIfDirty();
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
@@ -344,6 +348,7 @@ public:
         UiModel newModel = c->getUiModel();
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        newModel.updateIfDirty();
 
         m_Scratch = std::move(newModel);
         m_CurrentHead = c->getID();
@@ -569,7 +574,7 @@ void osc::UndoableUiModel::updateIfDirty()
 
     // HACK: auto-perform commit (if necessary)
     UiModelCommit const& curHead = m_Impl->getHeadCommit();
-    bool shouldCommit = curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
+    bool shouldCommit = curHead.getParentID() == g_EmptyID || curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
 
     if (shouldCommit)
     {
@@ -659,18 +664,5 @@ void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c)
 
 void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c)
 {
-    if (updUiModel().getSelected() == c)
-    {
-        updUiModel().setSelected(nullptr);
-    }
-
-    if (updUiModel().getHovered() == c)
-    {
-        updUiModel().setHovered(nullptr);
-    }
-
-    if (updUiModel().getIsolated() == c)
-    {
-        updUiModel().setIsolated(nullptr);
-    }
+    updUiModel().declareDeathOf(c);
 }

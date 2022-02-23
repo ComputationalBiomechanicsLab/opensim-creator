@@ -16,6 +16,7 @@
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "src/Utils/Sdl2Bindings.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/Perf.hpp"
 
 #include <GL/glew.h>
 #include <OpenSim/Common/Logger.h>
@@ -708,6 +709,11 @@ static void AppMainLoopUnguarded(App::Impl& impl)
                 // to ensure any datastructures in the screens (namely: imgui) are
                 // updated
                 impl.numFramesToPoll = 2;
+            }
+
+            if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F8)
+            {
+                osc::PrintMeasurementsToLog();
             }
 
             // let screen handle the event

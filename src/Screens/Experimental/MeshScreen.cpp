@@ -96,15 +96,12 @@ void osc::MeshScreen::draw() {
 
     ImGui::Begin("cookiecutter panel");
 
-    BasicPerfTimer t;
     {
-        auto g = t.measure();
         Line const& ray = st.camera.unprojectTopLeftPosToWorldRay(App::cur().getMouseState().pos, App::cur().dims());
         if (st.m.getClosestRayTriangleCollisionModelspace(ray)) {
             ImGui::Text("hit");
         }
     }
-    ImGui::Text("%.2f", t.micros());
 
     auto tcs = st.m.getTexCoords();
     std::vector<glm::vec2> texCoords;

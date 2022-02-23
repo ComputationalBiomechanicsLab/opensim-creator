@@ -49,14 +49,8 @@ public:
 
     Impl(Impl const& old, std::unique_ptr<OpenSim::Model> model) :
         m_StateModifications{old.m_StateModifications},
-        m_Model{[&model]()
-        {
-            model->finalizeFromProperties();
-            model->finalizeConnections();
-            model->buildSystem();
-            return std::unique_ptr<OpenSim::Model>{std::move(model)};
-        }()},
-        m_State{initializeState(*m_Model, m_StateModifications)},
+        m_Model{std::move(model)},
+        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{old.m_FixupScaleFactor},
@@ -64,24 +58,17 @@ public:
         m_MaybeHovered{old.m_MaybeHovered},
         m_MaybeIsolated{old.m_MaybeIsolated},
         m_LastModified{old.m_LastModified},
-        m_ModelIsDirty{false},
-        m_StateIsDirty{false},
-        m_DecorationsAreDirty{false},
-        m_FakeDirty{false}
+        m_ModelIsDirty{true},
+        m_StateIsDirty{true},
+        m_DecorationsAreDirty{true},
+        m_FakeDirty{true}
     {
-        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         m_StateModifications{},
-        m_Model{[&_model]() {
-            _model->finalizeFromProperties();
-            _model->finalizeConnections();
-            _model->buildSystem();
-            return std::unique_ptr<OpenSim::Model>{std::move(_model)};
-        }()},
-        m_State{initializeState(*m_Model, m_StateModifications)},
+        m_Model{std::move(_model)},
+        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{1.0f},
@@ -89,25 +76,17 @@ public:
         m_MaybeHovered{},
         m_MaybeIsolated{},
         m_LastModified{std::chrono::system_clock::now()},
-        m_ModelIsDirty{false},
-        m_StateIsDirty{false},
-        m_DecorationsAreDirty{false},
-        m_FakeDirty{false}
+        m_ModelIsDirty{true},
+        m_StateIsDirty{true},
+        m_DecorationsAreDirty{true},
+        m_FakeDirty{true}
     {
-        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(Impl const& other) :
         m_StateModifications{other.m_StateModifications},
-        m_Model{[&other]() {
-            auto copy = std::make_unique<OpenSim::Model>(*other.m_Model);
-            copy->finalizeFromProperties();
-            copy->finalizeConnections();
-            copy->buildSystem();
-            return copy;
-        }()},
-        m_State{initializeState(*m_Model, m_StateModifications)},
+        m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
+        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{other.m_FixupScaleFactor},
@@ -115,13 +94,11 @@ public:
         m_MaybeHovered{other.m_MaybeHovered},
         m_MaybeIsolated{other.m_MaybeIsolated},
         m_LastModified{other.m_LastModified},
-        m_ModelIsDirty{false},
-        m_StateIsDirty{false},
-        m_DecorationsAreDirty{false},
-        m_FakeDirty{false}
+        m_ModelIsDirty{true},
+        m_StateIsDirty{true},
+        m_DecorationsAreDirty{true},
+        m_FakeDirty{true}
     {
-        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        UpdateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     Impl(Impl&&) noexcept = default;
@@ -233,8 +210,7 @@ public:
     void setFixupScaleFactor(float sf)
     {
         m_FixupScaleFactor = sf;
-        GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-        UpdateSceneBVH(m_Decorations, m_SceneBVH);
+        setDecorationsDirtyADVANCED(true);
     }
 
     AABB getSceneAABB() const
@@ -262,11 +238,18 @@ public:
 
     float getRecommendedScaleFactor() const
     {
+        // HACK: ensure the user can't get access to a dirty model/system/state
+        {
+            bool wasDirty = isDirty();
+            const_cast<Impl&>(*this).updateIfDirty();
+            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
+        }
+
         // generate decorations as if they were empty-sized and union their
         // AABBs to get an idea of what the "true" scale of the model probably
         // is (without the model containing oversized frames, etc.)
         std::vector<ComponentDecoration> ses;
-        GenerateModelDecorations(*m_Model, *m_State, 0.0f, ses);
+        GenerateModelDecorations(*m_Model, *m_State, 0.0f, ses, getSelected(), getHovered());
 
         if (ses.empty())
         {
@@ -350,18 +333,10 @@ public:
 
     void updateIfDirty()
     {
-        // measurements are taken here because updating a UiModel is done fairly frequently
-        // during editing and it can block the main UI thread very easily
-        BasicPerfTimer overallTimer;
-        BasicPerfTimer modelUpdateTimer;
-        BasicPerfTimer stateUpdateTimer;
-        BasicPerfTimer decorationUpdateTimer;
-
-        auto overallTimerGuard = overallTimer.measure();
-
         if (m_ModelIsDirty)
         {
-            auto modelUpdateTimerGuard = modelUpdateTimer.measure();
+            OSC_PERF("model update");
+
             m_Model->finalizeFromProperties();
             m_Model->finalizeConnections();
             m_Model->buildSystem();
@@ -370,32 +345,27 @@ public:
 
         if (m_StateIsDirty)
         {
-            auto stateUpdateTimerGuard = stateUpdateTimer.measure();
+            OSC_PERF("state update");
+
             m_State = initializeState(*m_Model, m_StateModifications);
             m_StateIsDirty = false;
         }
 
         if (m_DecorationsAreDirty)
         {
-            auto decorationUpdateTimerGuard = decorationUpdateTimer.measure();
-            GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations);
-            UpdateSceneBVH(m_Decorations, m_SceneBVH);
+            {
+                OSC_PERF("generate decorations");
+                GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations, getSelected(), getHovered());
+            }
+
+            {
+                OSC_PERF("generate BVH");
+                UpdateSceneBVH(m_Decorations, m_SceneBVH);
+            }
             m_DecorationsAreDirty = false;
         }
 
         m_FakeDirty = false;
-
-        overallTimerGuard.stop();
-
-        if (log::getTracebackLevel() == log::level::debug)
-        {
-            log::debug(R"(update perf:
-        model update = %.0f us
-        state update = %.0f us
-        decoration update = %.0f us
-        overall = %.0f us
-    )", modelUpdateTimer.micros(), stateUpdateTimer.micros(), decorationUpdateTimer.micros(), overallTimer.micros());
-        }
     }
 
     bool hasSelected() const

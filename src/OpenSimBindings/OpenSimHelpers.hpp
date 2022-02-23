@@ -110,7 +110,9 @@ namespace osc
     void GenerateModelDecorations(OpenSim::Model const&,
                                   SimTK::State const&,
                                   float fixupScaleFactor,
-                                  std::vector<osc::ComponentDecoration>&);
+                                  std::vector<osc::ComponentDecoration>&,
+                                  OpenSim::Component const* selected,
+                                  OpenSim::Component const* hovered);
 
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
 }

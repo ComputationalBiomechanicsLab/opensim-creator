@@ -1,9 +1,9 @@
 #include "AddBodyPopup.hpp"
 
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/SimTKBindings/SimTKConverters.hpp"
 #include "src/UI/F3Editor.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
+#include "src/Utils/SimTKHelpers.hpp"
 #include "src/Styling.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>

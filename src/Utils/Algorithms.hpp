@@ -180,4 +180,24 @@ namespace osc {
 
     // returns true if `str` contains `c`
     bool Contains(char const* str, char e);
+
+    // combines hash of `T` into the seed value
+    template <class T>
+    inline size_t DoHashCombine(size_t seed, T const& v)
+    {
+        std::hash<T> hasher;
+        return seed ^ hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    }
+
+    template<typename T>
+    inline size_t HashOf(T const& v)
+    {
+        return std::hash<T>{}(v);
+    }
+
+    template<typename T, typename... Ts>
+    inline size_t HashOf(T const& v, Ts const&... vs)
+    {
+        return DoHashCombine(HashOf(v), HashOf(vs...));
+    }
 }

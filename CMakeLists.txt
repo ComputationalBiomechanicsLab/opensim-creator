@@ -291,7 +291,9 @@ add_executable(osc
     src/Utils/ImGuiHelpers.hpp
     src/Utils/IoPoller.cpp
     src/Utils/IoPoller.hpp
+    src/Utils/Macros.hpp
     src/Utils/MethodTestMacro.hpp
+    src/Utils/Perf.cpp
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
     src/Utils/Sdl2Bindings.hpp

@@ -1033,7 +1033,7 @@ namespace {
             m_SceneBVH{},
             m_FixupScaleFactor{sim.fixupScaleFactor}
         {
-            GenerateModelDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations);
+            GenerateModelDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations, m_Sim.selected, m_Sim.hovered);
             UpdateSceneBVH(m_Decorations, m_SceneBVH);
         }
 

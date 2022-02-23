@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/SimTKHelpers.hpp"
 #include "src/App.hpp"
 
@@ -270,11 +271,21 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
 void osc::GenerateModelDecorations(OpenSim::Model const& model,
                               SimTK::State const& state,
                               float fixupScaleFactor,
-                              std::vector<ComponentDecoration>& out)
+                              std::vector<ComponentDecoration>& out,
+                              OpenSim::Component const*,
+                              OpenSim::Component const*)
 {
     out.clear();
-    getSceneElements(model, state, fixupScaleFactor, out);
-    Sort(out, HasGreaterAlphaOrLowerMeshID);
+
+    {
+        OSC_PERF("scene generation");
+        getSceneElements(model, state, fixupScaleFactor, out);
+    }
+
+    {
+        OSC_PERF("scene sorting");
+        Sort(out, HasGreaterAlphaOrLowerMeshID);
+    }
 }
 
 void osc::UpdateSceneBVH(nonstd::span<ComponentDecoration const> sceneEls, BVH& bvh)
