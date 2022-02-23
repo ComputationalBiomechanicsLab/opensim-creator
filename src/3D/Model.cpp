@@ -640,7 +640,7 @@ glm::mat4 osc::toInverseMat4(Transform const& t) noexcept
 
 glm::mat3x3 osc::toNormalMatrix(Transform const& t) noexcept
 {
-    return NormalMatrix(toMat4(t));
+    return glm::toMat3(t.rotation);
 }
 
 glm::vec3 osc::transformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
