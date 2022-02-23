@@ -9,6 +9,7 @@ All notable changes to this project will be documented here. The format is based
 - Fixed scale factors property being ignored for some types of OpenSim geometry in the osim editor (#141)
 - Fixed an edge-case segfault that happened when editing the properties of a body that was synthesized
   by OpenSim to break a graph cycle (#156)
+- Refactored decoration generation backend to use osc::Transform instead of raw matrices (internal change)
 
 ## [0.1.2] - 2022/02/16
 

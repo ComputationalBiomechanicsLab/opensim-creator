@@ -591,6 +591,13 @@ Transform osc::Transform::withScale(glm::vec3 const& s) const noexcept
     return t;
 }
 
+Transform osc::Transform::withScale(float s) const noexcept
+{
+    Transform t{*this};
+    t.scale = {s, s, s};
+    return t;
+}
+
 std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 {
     using osc::operator<<;

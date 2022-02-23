@@ -8,8 +8,8 @@
 #include "src/3D/Model.hpp"
 #include "src/3D/Shaders/SolidColorShader.hpp"
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
-#include "src/SimTKBindings/SimTKLoadMesh.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
+#include "src/Utils/SimTKHelpers.hpp"
 
 #include <imgui.h>
 

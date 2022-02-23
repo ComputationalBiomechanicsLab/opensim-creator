@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/Model.hpp"
+#include "src/3D/Model.hpp"  // Transform, AABB
 #include "src/3D/Mesh.hpp"
 #include "src/MeshCache.hpp"
 
@@ -48,28 +48,33 @@ namespace osc
         AABB worldspaceAABB;
     };
 
+    // temporary hack while implementing the new handler interface
+    struct SystemDecorationNew {
+        std::shared_ptr<Mesh> mesh;
+        Transform transform;
+        glm::vec4 color;
+
+        operator SystemDecoration() const;
+    };
+
     class DecorativeGeometryHandler final {
     public:
         DecorativeGeometryHandler(MeshCache& meshCache,
                                   SimTK::SimbodyMatterSubsystem const& matter,
                                   SimTK::State const& state,
                                   float fixupScaleFactor,
-                                  std::function<void(SystemDecoration const&)>& callback) :
-            m_MeshCache{meshCache},
-            m_Matter{matter},
-            m_State{state},
-            m_FixupScaleFactor{fixupScaleFactor},
-            m_Callback{callback}
-        {
-        }
+                                  std::function<void(SystemDecorationNew const&)>& callback);
+        DecorativeGeometryHandler(DecorativeGeometryHandler const&) = delete;
+        DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept;
+        ~DecorativeGeometryHandler() noexcept;
+
+        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler const&) = delete;
+        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler&&) noexcept;
 
         void operator()(SimTK::DecorativeGeometry const&);
 
+        class Impl;
     private:
-        MeshCache& m_MeshCache;
-        SimTK::SimbodyMatterSubsystem const& m_Matter;
-        SimTK::State const& m_State;
-        float m_FixupScaleFactor;
-        std::function<void(SystemDecoration const&)>& m_Callback;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

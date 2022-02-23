@@ -103,7 +103,7 @@ static void getSceneElements(OpenSim::Model const& m,
 
     OpenSim::Component const* currentComponent = nullptr;
 
-    std::function<void(osc::SystemDecoration const&)> onEmit{[&currentComponent, &out](osc::SystemDecoration const& sd)
+    std::function<void(osc::SystemDecorationNew const&)> onEmit{[&currentComponent, &out](osc::SystemDecorationNew const& sd)
     {
         out.emplace_back(sd, currentComponent);
     }};

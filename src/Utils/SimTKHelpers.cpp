@@ -18,326 +18,299 @@ static inline constexpr float g_FrameAxisLengthRescale = 0.25f;
 static inline constexpr float g_FrameAxisThickness = 0.0025f;
 static inline constexpr float g_ConeHeadLength = 0.2f;
 
-// extract scale factors from geometry
-static glm::vec3 scaleFactors(SimTK::DecorativeGeometry const& geom) {
+// extracts scale factors from geometry
+static glm::vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
+{
     SimTK::Vec3 sf = geom.getScaleFactors();
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         sf[i] = sf[i] <= 0 ? 1.0 : sf[i];
     }
     return glm::vec3{sf[0], sf[1], sf[2]};
 }
-// extract RGBA from geometry
-static glm::vec4 extractRGBA(SimTK::DecorativeGeometry const& geom) {
+
+// returns a SimTK::Rotation re-expressed as a quaternion
+static glm::quat RotationAsQuat(SimTK::Rotation const& r)
+{
+    SimTK::Quaternion q = r.convertRotationToQuaternion();
+    glm::quat rv = {static_cast<float>(q[0]), static_cast<float>(q[1]), static_cast<float>(q[2]), static_cast<float>(q[3])};
+    return glm::normalize(rv);  // just to be sure
+}
+
+// returns the rotational part of the transform as a quaternion
+static glm::quat RotationAsQuat(SimTK::Transform const& t)
+{
+    return RotationAsQuat(t.R());
+}
+
+// returns the positional part of the transform as a vec3
+static glm::vec3 PositionAsVec3(SimTK::Transform const& t)
+{
+    return SimTKVec3FromVec3(t.p());
+}
+
+// returns an osc::Transform equivalent of a SimTK::Transform
+static Transform ToOscTransform(SimTK::Transform const& t)
+{
+    return Transform{PositionAsVec3(t), RotationAsQuat(t)};
+}
+
+// extracts RGBA from geometry
+static glm::vec4 GetColor(SimTK::DecorativeGeometry const& geom)
+{
     SimTK::Vec3 const& rgb = geom.getColor();
     SimTK::Real ar = geom.getOpacity();
     ar = ar < 0.0 ? 1.0 : ar;
     return glm::vec4(rgb[0], rgb[1], rgb[2], ar);
 }
 
-// get modelspace to worldspace xform for a given decorative element
-static glm::mat4 geomXform(SimTK::SimbodyMatterSubsystem const& matter, SimTK::State const& state, SimTK::DecorativeGeometry const& g) {
+// creates a geometry-to-ground transform for the given geometry
+static Transform ToOscTransform(SimTK::SimbodyMatterSubsystem const& matter,
+                                SimTK::State const& state,
+                                SimTK::DecorativeGeometry const& g)
+{
     SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-    glm::mat4 ground2body = SimTKMat4x4FromTransform(mobod.getBodyTransform(state));
-    glm::mat4 body2decoration = SimTKMat4x4FromTransform(g.getTransform());
-    return ground2body * body2decoration;
+    SimTK::Transform body2ground = mobod.getBodyTransform(state);
+    SimTK::Transform decoration2body = g.getTransform();
+    SimTK::Transform decoration2ground = body2ground * decoration2body;
+
+    Transform rv = ToOscTransform(decoration2ground);
+    rv.scale = GetScaleFactors(g);
+
+    return rv;
 }
 
-static glm::vec3 getFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
+static Transform SegmentToSegmentTransform(Segment const& a, Segment const& b)
+{
+    glm::vec3 aLine = a.p2 - a.p1;
+    glm::vec3 bLine = b.p2 - b.p1;
+
+    float aLen = glm::length(aLine);
+    float bLen = glm::length(bLine);
+
+    glm::vec3 aDir = aLine/aLen;
+    glm::vec3 bDir = bLine/bLen;
+
+    glm::vec3 aMid = (a.p1 + a.p2)/2.0f;
+    glm::vec3 bMid = (b.p1 + b.p2)/2.0f;
+
+    // for scale: LERP [0,1] onto [1,l] along original direction
+    Transform t;
+    t.rotation = glm::rotation(aDir, bDir);
+    t.scale = glm::vec3{1.0f, 1.0f, 1.0f} + (bLen/aLen-1.0f)*aDir;
+    t.position = bMid - aMid;
+    return t;
+}
+
+static Transform CylinderToLineTransform(glm::vec3 const& a, glm::vec3 const& b)
+{
+    Segment meshLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    Segment outputLine{a, b};
+    return SegmentToSegmentTransform(meshLine, outputLine);
+}
+
+// get the `vert`th vertex of the `face`th face
+static glm::vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int vert)
 {
     int vertidx = mesh.getFaceVertex(face, vert);
     SimTK::Vec3 const& data = mesh.getVertexPosition(vertidx);
     return SimTKVec3FromVec3(data);
 }
 
+// an implementation of SimTK::DecorativeGeometryImplementation that emits generic
+// triangle-mesh-based SystemDecorations that can be consumed by the rest of the UI
+class osc::DecorativeGeometryHandler::Impl final : public SimTK::DecorativeGeometryImplementation {
+public:
+    Impl(MeshCache& meshCache,
+         SimTK::SimbodyMatterSubsystem const& matter,
+         SimTK::State const& st,
+         float fixupScaleFactor,
+         std::function<void(SystemDecorationNew const&)>& callback) :
 
-namespace osc
-{
-    class SceneGeneratorNew : public SimTK::DecorativeGeometryImplementation {
-        MeshCache& m_MeshCache;
-        SimTK::SimbodyMatterSubsystem const& m_Matter;
-        SimTK::State const& m_St;
-        float m_FixupScaleFactor;
+        m_MeshCache{meshCache},
+        m_Matter{matter},
+        m_St{st},
+        m_FixupScaleFactor{fixupScaleFactor},
+        m_Callback{callback}
+    {
+    }
 
-    public:
-        SceneGeneratorNew(MeshCache&,
-                          SimTK::SimbodyMatterSubsystem const&,
-                          SimTK::State const&,
-                          float fixupScaleFactor);
+private:
+    Transform ToOscTransform(SimTK::DecorativeGeometry const& d) const
+    {
+        return ::ToOscTransform(m_Matter, m_St, d);
+    }
 
-    private:
-        virtual void onSceneElementEmission(SystemDecoration const&) = 0;
-
-        void implementPointGeometry(SimTK::DecorativePoint const&) override final;
-        void implementLineGeometry(SimTK::DecorativeLine const&) override final;
-        void implementBrickGeometry(SimTK::DecorativeBrick const&) override final;
-        void implementCylinderGeometry(SimTK::DecorativeCylinder const&) override final;
-        void implementCircleGeometry(SimTK::DecorativeCircle const&) override final;
-        void implementSphereGeometry(SimTK::DecorativeSphere const&) override final;
-        void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const&) override final;
-        void implementFrameGeometry(SimTK::DecorativeFrame const&) override final;
-        void implementTextGeometry(SimTK::DecorativeText const&) override final;
-        void implementMeshGeometry(SimTK::DecorativeMesh const&) override final;
-        void implementMeshFileGeometry(SimTK::DecorativeMeshFile const&) override final;
-        void implementArrowGeometry(SimTK::DecorativeArrow const&) override final;
-        void implementTorusGeometry(SimTK::DecorativeTorus const&) override final;
-        void implementConeGeometry(SimTK::DecorativeCone const&) override final;
-    };
-
-    template<typename Callback>
-    class SceneGeneratorLambda final : public SceneGeneratorNew {
-    public:
-        SceneGeneratorLambda(MeshCache& meshCache,
-                             SimTK::SimbodyMatterSubsystem const& matter,
-                             SimTK::State const& st,
-                             float fixupScaleFactor,
-                             Callback callback) :
-            SceneGeneratorNew{meshCache, matter, st, fixupScaleFactor},
-            m_Callback{std::move(callback)}
+    void implementPointGeometry(SimTK::DecorativePoint const&) override
+    {
+        static bool shown_once = []()
         {
-        }
-
-        void onSceneElementEmission(SystemDecoration const& se) override
-        {
-            m_Callback(se);
-        }
-
-    private:
-        Callback m_Callback;
-    };
-
-    void osc::SceneGeneratorNew::implementPointGeometry(SimTK::DecorativePoint const&) {
-        static bool shown_once = []() {
             log::warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
             return true;
         }();
         (void)shown_once;
     }
 
-    void osc::SceneGeneratorNew::implementLineGeometry(SimTK::DecorativeLine const& dl) {
-        glm::mat4 m = geomXform(m_Matter, m_St, dl);
+    void implementLineGeometry(SimTK::DecorativeLine const& d) override
+    {
+        Transform t = ToOscTransform(d);
 
-        glm::vec4 p1 = m * SimTKVec4FromVec3(dl.getPoint1());
-        glm::vec4 p2 = m * SimTKVec4FromVec3(dl.getPoint2());
+        glm::vec3 p1 = transformPoint(t, SimTKVec4FromVec3(d.getPoint1()));
+        glm::vec3 p2 = transformPoint(t, SimTKVec4FromVec3(d.getPoint2()));
 
-        Segment meshLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-        Segment emittedLine{p1, p2};
+        Transform cylinderXform = CylinderToLineTransform(p1, p2);
+        cylinderXform.scale.x *= g_LineThickness * m_FixupScaleFactor;
+        cylinderXform.scale.z *= g_LineThickness * m_FixupScaleFactor;
+        cylinderXform.scale *= t.scale;
 
-        glm::mat4 cylinderXform = SegmentToSegmentXform(meshLine, emittedLine);
-        glm::mat4 scaler =
-            glm::scale(glm::mat4{1.0f}, glm::vec3{g_LineThickness * m_FixupScaleFactor, 1.0f, g_LineThickness * m_FixupScaleFactor} * scaleFactors(dl));
-
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getCylinderMesh();
-        se.modelMtx = glm::mat4x3{cylinderXform * scaler};
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(dl);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getCylinderMesh(), cylinderXform, GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementBrickGeometry(SimTK::DecorativeBrick const& db) {
-        glm::vec3 halfdims = SimTKVec3FromVec3(db.getHalfLengths());
+    void implementBrickGeometry(SimTK::DecorativeBrick const& d) override
+    {
+        Transform t = ToOscTransform(d);
+        t.scale *= SimTKVec3FromVec3(d.getHalfLengths());
 
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getBrickMesh();
-        se.modelMtx = glm::scale(geomXform(m_Matter, m_St, db), halfdims * scaleFactors(db));
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(db);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getBrickMesh(), t, GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementCylinderGeometry(SimTK::DecorativeCylinder const& dc) {
-        glm::vec3 s = scaleFactors(dc);
-        s.x *= static_cast<float>(dc.getRadius());
-        s.y *= static_cast<float>(dc.getHalfHeight());
-        s.z *= static_cast<float>(dc.getRadius());
+    void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) override
+    {
+        float radius = static_cast<float>(d.getRadius());
 
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getCylinderMesh();
-        se.modelMtx = glm::scale(geomXform(m_Matter, m_St, dc), s);
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(dc);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
+        Transform t = ToOscTransform(d);
+        t.scale.x *= radius;
+        t.scale.y *= static_cast<float>(d.getHalfHeight());
+        t.scale.z *= radius;
 
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getCylinderMesh(), t, GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementCircleGeometry(SimTK::DecorativeCircle const&) {
-        static bool shownWarning = []() {
+    void implementCircleGeometry(SimTK::DecorativeCircle const&) override
+    {
+        static bool shownWarning = []()
+        {
             log::warn("this model uses implementCircleGeometry, which is not yet implemented in OSC");
             return true;
         }();
         (void)shownWarning;
     }
 
-    void osc::SceneGeneratorNew::implementSphereGeometry(SimTK::DecorativeSphere const& ds) {
-        glm::mat4 baseXform = geomXform(m_Matter, m_St, ds);
-        glm::vec3 pos{baseXform[3][0], baseXform[3][1], baseXform[3][2]};  // scale factors are ignored, sorry not sorry, etc.
+    void implementSphereGeometry(SimTK::DecorativeSphere const& d) override
+    {
+        Transform t = ToOscTransform(d);
+        t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
-        // this code is fairly custom to make it faster
-        //
-        // - OpenSim scenes typically contain *a lot* of spheres
-        // - it's much cheaper to compute things like normal matrices and AABBs when
-        //   you know it's a sphere
-        float scaledR = m_FixupScaleFactor * static_cast<float>(ds.getRadius());
-        glm::vec3 sfs = scaleFactors(ds);
-        glm::mat4 xform;
-        xform[0] = {scaledR * sfs[0], 0.0f, 0.0f, 0.0f};
-        xform[1] = {0.0f, scaledR * sfs[1], 0.0f, 0.0f};
-        xform[2] = {0.0f, 0.0f, scaledR * sfs[2], 0.0f};
-        xform[3] = glm::vec4{pos, 1.0f};
-        glm::mat4 normalXform = glm::transpose(xform);
-        AABB aabb = SphereToAABB(Sphere{pos, scaledR});
-
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getSphereMesh();
-        se.modelMtx = xform;
-        se.normalMtx = normalXform;
-        se.color = extractRGBA(ds);
-        se.worldspaceAABB = aabb;
-
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getSphereMesh(), t, GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& de) {
-        glm::mat4 xform = geomXform(m_Matter, m_St, de);
-        glm::vec3 sfs = scaleFactors(de);
-        glm::vec3 radii = SimTKVec3FromVec3(de.getRadii());
+    void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) override
+    {
+        Transform t = ToOscTransform(d);
+        t.scale *= SimTKVec3FromVec3(d.getRadii());
 
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getSphereMesh();
-        se.modelMtx = glm::scale(xform, sfs * radii);
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(de);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), xform);
-
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getSphereMesh(), t, GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementFrameGeometry(SimTK::DecorativeFrame const& df) {
-        glm::mat4 rawXform = geomXform(m_Matter, m_St, df);
-
-        glm::vec3 pos{rawXform[3]};
-        glm::mat3 rotation_mtx{rawXform};
-
-        glm::vec3 axisLengths = scaleFactors(df) * static_cast<float>(df.getAxisLength());
+    void implementFrameGeometry(SimTK::DecorativeFrame const& d) override
+    {
+        Transform t = ToOscTransform(d);
 
         // emit origin sphere
         {
-            Sphere meshSphere{{0.0f, 0.0f, 0.0f}, 1.0f};
-            Sphere outputSphere{pos, 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor};
+            float r = 0.05f * g_FrameAxisLengthRescale * m_FixupScaleFactor;
+            Transform sphereXform = t.withScale(r);
+            glm::vec4 white = {1.0f, 1.0f, 1.0f, 1.0f};
 
-            SystemDecoration se;
-            se.mesh = m_MeshCache.getSphereMesh();
-            se.modelMtx = SphereToSphereXform(meshSphere, outputSphere);
-            se.normalMtx = NormalMatrix(se.modelMtx);
-            se.color = {1.0f, 1.0f, 1.0f, 1.0f};
-            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-            onSceneElementEmission(se);
+            m_Callback({m_MeshCache.getSphereMesh(), sphereXform, white});
         }
 
-        // emit axis cylinders
-        Segment cylinderline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-        for (int i = 0; i < 3; ++i) {
+        // emit leg cylinders
+        glm::vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+        for (int axis = 0; axis < 3; ++axis)
+        {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-            dir[i] = g_FrameAxisLengthRescale * m_FixupScaleFactor * axisLengths[i];
-            Segment axisline{pos, pos + rotation_mtx*dir};
+            dir[axis] = g_FrameAxisLengthRescale * m_FixupScaleFactor * axisLengths[axis];
 
-            glm::vec3 prescale = {g_FrameAxisThickness * m_FixupScaleFactor, 1.0f, g_FrameAxisThickness * m_FixupScaleFactor};
-            glm::mat4 prescaleMtx = glm::scale(glm::mat4{1.0f}, prescale);
-            glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
-            color[i] = 1.0f;
+            Transform legXform = CylinderToLineTransform(t.position, t.position + transformDirection(t, dir));
+            legXform.scale.x *= g_FrameAxisThickness * m_FixupScaleFactor;
+            legXform.scale.z *= g_FrameAxisThickness * m_FixupScaleFactor;
 
-            SystemDecoration se;
-            se.mesh = m_MeshCache.getCylinderMesh();
-            se.modelMtx = SegmentToSegmentXform(cylinderline, axisline) * prescaleMtx;
-            se.normalMtx = NormalMatrix(se.modelMtx);
-            se.color = color;
-            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
+            glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
+            color[axis] = 1.0f;
 
-            onSceneElementEmission(se);
+            m_Callback({m_MeshCache.getCylinderMesh(), legXform, color});
         }
     }
 
-    void osc::SceneGeneratorNew::implementTextGeometry(SimTK::DecorativeText const&) {
-        static bool shownWarning = []() {
+    void implementTextGeometry(SimTK::DecorativeText const&) override
+    {
+        static bool shownWarning = []()
+        {
             log::warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
             return true;
         }();
         (void)shownWarning;
     }
 
-    void osc::SceneGeneratorNew::implementMeshGeometry(SimTK::DecorativeMesh const&) {
-        static bool shownWarning = []() {
+    void implementMeshGeometry(SimTK::DecorativeMesh const&) override
+    {
+        static bool shownWarning = []()
+        {
             log::warn("this model uses implementMeshGeometry, which is not yet implemented in OSC");
             return true;
         }();
         (void)shownWarning;
     }
 
-    void osc::SceneGeneratorNew::implementMeshFileGeometry(SimTK::DecorativeMeshFile const& dmf) {
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getMeshFile(dmf.getMeshFile());
-        se.modelMtx = glm::scale(geomXform(m_Matter, m_St, dmf), scaleFactors(dmf));
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(dmf);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-        onSceneElementEmission(se);
+    void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) override
+    {
+        m_Callback({m_MeshCache.getMeshFile(d.getMeshFile()), ToOscTransform(d), GetColor(d)});
     }
 
-    void osc::SceneGeneratorNew::implementArrowGeometry(SimTK::DecorativeArrow const& da) {
-        glm::mat4 xform = glm::scale(geomXform(m_Matter, m_St, da), scaleFactors(da));
+    void implementArrowGeometry(SimTK::DecorativeArrow const& d) override
+    {
+        Transform t = ToOscTransform(d);
 
-        glm::vec3 baseStartpoint = SimTKVec3FromVec3(da.getStartPoint());
-        glm::vec3 baseEndpoint = SimTKVec3FromVec3(da.getEndPoint());
+        glm::vec3 startBase = SimTKVec3FromVec3(d.getStartPoint());
+        glm::vec3 endBase = SimTKVec3FromVec3(d.getEndPoint());
 
-        glm::vec3 p1 = glm::vec3{xform * glm::vec4{baseStartpoint, 1.0f}};
-        glm::vec3 p2 = glm::vec3{xform * glm::vec4{baseEndpoint, 1.0f}};
-        glm::vec3 p1_to_p2 = p2 - p1;
+        glm::vec3 start = transformPoint(t, startBase);
+        glm::vec3 end = transformPoint(t, endBase);
 
-        float len = glm::length(p1_to_p2);
-        glm::vec3 dir = p1_to_p2/len;
+        glm::vec3 dir = glm::normalize(end - start);
 
-        Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-        glm::vec3 cylinder_start = p1;
-        glm::vec3 cone_start = p2 - (g_ConeHeadLength * len * dir);
-        glm::vec3 cone_end = p2;
+        glm::vec3 neckStart = start;
+        glm::vec3 neckEnd = end - (static_cast<float>(d.getTipLength()) * dir);
+        glm::vec3 const& headStart = neckEnd;
+        glm::vec3 const& headEnd = end;
 
-        // emit arrow head (a cone)
+        constexpr float neckThickness = 0.005f;
+        constexpr float headThickness = 0.02f;
+
+        glm::vec4 color = GetColor(d);
+
+        // emit neck cylinder
         {
-            glm::mat4 cone_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.02f, 1.0f, 0.02f});
+            Transform neckXform = CylinderToLineTransform(neckStart, neckEnd);
+            neckXform.scale.x *= neckThickness;
+            neckXform.scale.z *= neckThickness;
 
-            SystemDecoration se;
-            se.mesh = m_MeshCache.getConeMesh();
-            se.modelMtx = SegmentToSegmentXform(meshline, Segment{cone_start, cone_end}) * cone_radius_rescaler;
-            se.normalMtx = NormalMatrix(se.modelMtx);
-            se.color = extractRGBA(da);
-            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-            onSceneElementEmission(se);
+            m_Callback({m_MeshCache.getCylinderMesh(), neckXform, color});
         }
 
-        // emit arrow tail (a cylinder)
+        // emit head cone
         {
-            glm::mat4 cylinder_radius_rescaler = glm::scale(glm::mat4{1.0f}, {0.005f, 1.0f, 0.005f});
+            Transform headXform = CylinderToLineTransform(headStart, headEnd);
+            headXform.scale.x *= headThickness;
+            headXform.scale.z *= headThickness;
 
-            SystemDecoration se;
-            se.mesh = m_MeshCache.getCylinderMesh();
-            se.modelMtx = SegmentToSegmentXform(meshline, Segment{cylinder_start, cone_start}) * cylinder_radius_rescaler;
-            se.normalMtx = NormalMatrix(se.modelMtx);
-            se.color = extractRGBA(da);
-            se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-            onSceneElementEmission(se);
+            m_Callback({m_MeshCache.getConeMesh(), headXform, color});
         }
     }
 
-    void osc::SceneGeneratorNew::implementTorusGeometry(SimTK::DecorativeTorus const&) {
+    void implementTorusGeometry(SimTK::DecorativeTorus const&) override
+    {
         static bool shownWarning = []() {
             log::warn("this model uses implementTorusGeometry, which is not yet implemented in OSC");
             return true;
@@ -345,34 +318,32 @@ namespace osc
         (void)shownWarning;
     }
 
-    void osc::SceneGeneratorNew::implementConeGeometry(SimTK::DecorativeCone const& dc)
+    void implementConeGeometry(SimTK::DecorativeCone const& d) override
     {
-        glm::mat4 xform = glm::scale(geomXform(m_Matter, m_St, dc), scaleFactors(dc));
+        Transform t = ToOscTransform(d);
 
-        glm::vec3 basePos = SimTKVec3FromVec3(dc.getOrigin());
-        glm::vec3 baseDir = SimTKVec3FromVec3(dc.getDirection());
+        glm::vec3 posBase = SimTKVec3FromVec3(d.getOrigin());
+        glm::vec3 posDir = SimTKVec3FromVec3(d.getDirection());
 
-        glm::vec3 worldPos = glm::vec3{xform * glm::vec4{basePos, 1.0f}};
-        glm::vec3 worldDir = glm::normalize(glm::vec3{xform * glm::vec4{baseDir, 0.0f}});
+        glm::vec3 pos = transformPoint(t, posBase);
+        glm::vec3 dir = transformDirection(t, posDir);
 
-        float baseRadius = static_cast<float>(dc.getBaseRadius());
-        float height = static_cast<float>(dc.getHeight());
+        float radius = static_cast<float>(d.getBaseRadius());
+        float height = static_cast<float>(d.getHeight());
 
-        Segment meshline{{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-        Segment coneline{worldPos, worldPos + worldDir*height};
-        glm::mat4 lineXform = SegmentToSegmentXform(meshline, coneline);
-        glm::mat4 radiusRescale = glm::scale(glm::mat4{1.0f}, {baseRadius, 1.0f, baseRadius});
+        Transform coneXform = CylinderToLineTransform(pos, pos + height*dir);
+        coneXform.scale.x *= radius * t.scale.x;
+        coneXform.scale.z *= radius * t.scale.z;
 
-        SystemDecoration se;
-        se.mesh = m_MeshCache.getConeMesh();
-        se.modelMtx = lineXform * radiusRescale;
-        se.normalMtx = NormalMatrix(se.modelMtx);
-        se.color = extractRGBA(dc);
-        se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-        onSceneElementEmission(se);
+        m_Callback({m_MeshCache.getConeMesh(), coneXform, GetColor(d)});
     }
-}
+
+    MeshCache& m_MeshCache;
+    SimTK::SimbodyMatterSubsystem const& m_Matter;
+    SimTK::State const& m_St;
+    float m_FixupScaleFactor;
+    std::function<void(SystemDecorationNew const&)>& m_Callback;
+};
 
 
 // public API
@@ -490,27 +461,33 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
     rv.reserve(static_cast<size_t>(mesh.getNumVertices()));
 
     uint32_t index = 0;
-    auto push = [&rv, &index](glm::vec3 const& pos, glm::vec3 const& normal) {
+    auto push = [&rv, &index](glm::vec3 const& pos, glm::vec3 const& normal)
+    {
         rv.verts.push_back(pos);
         rv.normals.push_back(normal);
         rv.indices.push_back(index++);
     };
 
-    for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face) {
+    for (int face = 0, nfaces = mesh.getNumFaces(); face < nfaces; ++face)
+    {
         int verts = mesh.getNumVerticesForFace(face);
 
-        if (verts < 3) {
+        if (verts < 3)
+        {
             // line/point
 
             // ignore
 
-        } else if (verts == 3) {
+        }
+        else if (verts == 3)
+        {
             // triangle
 
-            glm::vec3 vs[] = {
-                getFaceVertex(mesh, face, 0),
-                getFaceVertex(mesh, face, 1),
-                getFaceVertex(mesh, face, 2),
+            glm::vec3 vs[] =
+            {
+                GetFaceVertex(mesh, face, 0),
+                GetFaceVertex(mesh, face, 1),
+                GetFaceVertex(mesh, face, 2),
             };
             glm::vec3 normal = TriangleNormal(vs);
 
@@ -518,17 +495,21 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
             push(vs[1], normal);
             push(vs[2], normal);
 
-        } else if (verts == 4) {
+        }
+        else if (verts == 4)
+        {
             // quad: render as two triangles
 
-            glm::vec3 vs[] = {
-                getFaceVertex(mesh, face, 0),
-                getFaceVertex(mesh, face, 1),
-                getFaceVertex(mesh, face, 2),
-                getFaceVertex(mesh, face, 3),
+            glm::vec3 vs[] =
+            {
+                GetFaceVertex(mesh, face, 0),
+                GetFaceVertex(mesh, face, 1),
+                GetFaceVertex(mesh, face, 2),
+                GetFaceVertex(mesh, face, 3),
             };
 
-            glm::vec3 norms[] = {
+            glm::vec3 norms[] =
+            {
                 TriangleNormal(vs[0], vs[1], vs[2]),
                 TriangleNormal(vs[2], vs[3], vs[0]),
             };
@@ -540,23 +521,28 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
             push(vs[3], norms[1]);
             push(vs[0], norms[1]);
 
-        } else {
+        }
+        else
+        {
             // polygon (>3 edges):
             //
             // create a vertex at the average center point and attach
             // every two verices to the center as triangles.
 
             glm::vec3 center = {0.0f, 0.0f, 0.0f};
-            for (int vert = 0; vert < verts; ++vert) {
-                center += getFaceVertex(mesh, face, vert);
+            for (int vert = 0; vert < verts; ++vert)
+            {
+                center += GetFaceVertex(mesh, face, vert);
             }
             center /= verts;
 
-            for (int vert = 0; vert < verts - 1; ++vert) {
+            for (int vert = 0; vert < verts - 1; ++vert)
+            {
 
-                glm::vec3 vs[] = {
-                    getFaceVertex(mesh, face, vert),
-                    getFaceVertex(mesh, face, vert + 1),
+                glm::vec3 vs[] =
+                {
+                    GetFaceVertex(mesh, face, vert),
+                    GetFaceVertex(mesh, face, vert + 1),
                     center,
                 };
                 glm::vec3 normal = TriangleNormal(vs);
@@ -567,9 +553,10 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
             }
 
             // complete the polygon loop
-            glm::vec3 vs[] = {
-                getFaceVertex(mesh, face, verts - 1),
-                getFaceVertex(mesh, face, 0),
+            glm::vec3 vs[] =
+            {
+                GetFaceVertex(mesh, face, verts - 1),
+                GetFaceVertex(mesh, face, 0),
                 center,
             };
             glm::vec3 normal = TriangleNormal(vs);
@@ -583,20 +570,37 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
     return Mesh{std::move(rv)};
 }
 
+osc::SystemDecorationNew::operator SystemDecoration() const
+{
+    glm::mat4 m = toMat4(transform);
+    return SystemDecoration{
+        mesh,
+        m,
+        toNormalMatrix(transform),
+        color,
+        AABBApplyXform(mesh->getAABB(), m)
+    };
+}
+
+
+// osc::DecorativeGeometryHandler
+
+osc::DecorativeGeometryHandler::DecorativeGeometryHandler(MeshCache& meshCache,
+                                                          SimTK::SimbodyMatterSubsystem const& matter,
+                                                          SimTK::State const& state,
+                                                          float fixupScaleFactor,
+                                                          std::function<void(SystemDecorationNew const&)>& callback) :
+    m_Impl{std::make_unique<Impl>(meshCache, matter, state, std::move(fixupScaleFactor), callback)}
+{
+}
+
+osc::DecorativeGeometryHandler::DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept = default;
+
+osc::DecorativeGeometryHandler::~DecorativeGeometryHandler() noexcept = default;
+
+osc::DecorativeGeometryHandler& osc::DecorativeGeometryHandler::operator=(DecorativeGeometryHandler&&) noexcept = default;
+
 void osc::DecorativeGeometryHandler::operator()(SimTK::DecorativeGeometry const& dg)
 {
-    SceneGeneratorLambda sg{m_MeshCache, m_Matter, m_State, m_FixupScaleFactor, m_Callback};
-    dg.implementGeometry(sg);
+    dg.implementGeometry(*m_Impl);
 }
-
-osc::SceneGeneratorNew::SceneGeneratorNew(MeshCache& meshCache,
-                                          SimTK::SimbodyMatterSubsystem const& matter,
-                                          SimTK::State const& st,
-                                          float fixupScaleFactor) :
-    m_MeshCache{meshCache},
-    m_Matter{matter},
-    m_St{st},
-    m_FixupScaleFactor{fixupScaleFactor}
-{
-}
-

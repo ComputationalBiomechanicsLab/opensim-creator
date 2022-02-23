@@ -139,6 +139,10 @@ namespace osc {
         // returns a new transform which is the same as the existing one, but with
         // the provided scale
         Transform withScale(glm::vec3 const&) const noexcept;
+
+        // returns a new transform which is the same as the existing one, but with
+        // the provided scale (same for all axes)
+        Transform withScale(float) const noexcept;
     };
 
     // pretty-prints a `Transform` for readability
