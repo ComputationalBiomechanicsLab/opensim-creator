@@ -17,16 +17,6 @@
 
 using namespace osc;
 
-static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m,
-                                                     StateModifications& modifications)
-{
-    std::unique_ptr<SimTK::State> rv = std::make_unique<SimTK::State>(m.initializeState());
-    modifications.applyToState(m, *rv);
-    m.equilibrateMuscles(*rv);
-    m.realizePosition(*rv);
-    return rv;
-}
-
 static std::unique_ptr<OpenSim::Model> makeNewModel()
 {
     auto rv = std::make_unique<OpenSim::Model>();
@@ -50,7 +40,6 @@ public:
     Impl(Impl const& old, std::unique_ptr<OpenSim::Model> model) :
         m_StateModifications{old.m_StateModifications},
         m_Model{std::move(model)},
-        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{old.m_FixupScaleFactor},
@@ -68,7 +57,6 @@ public:
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         m_StateModifications{},
         m_Model{std::move(_model)},
-        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{1.0f},
@@ -86,7 +74,6 @@ public:
     Impl(Impl const& other) :
         m_StateModifications{other.m_StateModifications},
         m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
-        m_State{nullptr},
         m_Decorations{},
         m_SceneBVH{},
         m_FixupScaleFactor{other.m_FixupScaleFactor},
@@ -150,7 +137,7 @@ public:
             const_cast<Impl&>(*this).updateIfDirty();
             const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
         }
-        return *m_State;
+        return m_Model->getWorkingState();
     }
 
     StateModifications const& getStateModifications() const
@@ -238,18 +225,11 @@ public:
 
     float getRecommendedScaleFactor() const
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
-        }
-
         // generate decorations as if they were empty-sized and union their
         // AABBs to get an idea of what the "true" scale of the model probably
         // is (without the model containing oversized frames, etc.)
         std::vector<ComponentDecoration> ses;
-        GenerateModelDecorations(*m_Model, *m_State, 0.0f, ses, getSelected(), getHovered());
+        GenerateModelDecorations(getModel(), getState(), 0.0f, ses, getSelected(), getHovered());
 
         if (ses.empty())
         {
@@ -340,6 +320,7 @@ public:
             m_Model->finalizeFromProperties();
             m_Model->finalizeConnections();
             m_Model->buildSystem();
+            m_Model->initializeState();
             m_ModelIsDirty = false;
         }
 
@@ -347,15 +328,30 @@ public:
         {
             OSC_PERF("state update");
 
-            m_State = initializeState(*m_Model, m_StateModifications);
+            {
+                OSC_PERF("apply state modifications");
+                m_StateModifications.applyToState(*m_Model, m_Model->updWorkingState());
+            }
+
+            {
+                OSC_PERF("equilibriate muscles");
+                m_Model->equilibrateMuscles(m_Model->updWorkingState());
+            }
+
+            {
+                OSC_PERF("realize velocity");
+                m_Model->realizeVelocity(m_Model->updWorkingState());
+            }
             m_StateIsDirty = false;
         }
 
         if (m_DecorationsAreDirty)
         {
+            OSC_PERF("decoration update");
+
             {
                 OSC_PERF("generate decorations");
-                GenerateModelDecorations(*m_Model, *m_State, m_FixupScaleFactor, m_Decorations, getSelected(), getHovered());
+                GenerateModelDecorations(*m_Model, m_Model->updWorkingState(), m_FixupScaleFactor, m_Decorations, getSelected(), getHovered());
             }
 
             {
@@ -489,9 +485,6 @@ private:
 
     // the model, finalized from its properties
     std::unique_ptr<OpenSim::Model> m_Model;
-
-    // SimTK::State, in a renderable state (e.g. realized up to a relevant stage)
-    std::unique_ptr<SimTK::State> m_State;
 
     // decorations, generated from model's display properties etc.
     std::vector<ComponentDecoration> m_Decorations;

@@ -1,18 +1,20 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include <memory>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Coordinate;
     class Model;
 }
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace osc {
+namespace osc
+{
     // user-enacted coordinate edit
     //
     // used to modify the default state whenever a new state is generated
@@ -21,17 +23,27 @@ namespace osc {
         double speed;
         bool locked;
 
-        bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;  // returns `true` if it modified the state
+        // returns `true` if it modified the state
+        bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;
     };
 
     // user-enacted state modifications
     class StateModifications final {
     public:
+        StateModifications();
+        StateModifications(StateModifications const&);
+        StateModifications(StateModifications&&) noexcept;
+        ~StateModifications() noexcept;
+
+        StateModifications& operator=(StateModifications const&);
+        StateModifications& operator=(StateModifications&&) noexcept;
+
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
         bool removeCoordinateEdit(OpenSim::Coordinate const&);
-        bool applyToState(OpenSim::Model const&, SimTK::State&) const;
+        bool applyToState(OpenSim::Model const&, SimTK::State&);
 
+        class Impl;
     private:
-        std::unordered_map<std::string, CoordinateEdit> m_CoordEdits;
+        std::unique_ptr<Impl> m_Impl;
     };
 }

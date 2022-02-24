@@ -1,75 +1,87 @@
 #pragma once
 
-#include "src/3D/Model.hpp"  // Transform, AABB
+#include "src/3D/Model.hpp"
 #include "src/3D/Mesh.hpp"
-#include "src/MeshCache.hpp"
 
+#include <glm/gtx/quaternion.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+
 #include <SimTKcommon.h>
 
 #include <filesystem>
-#include <functional>
 #include <memory>
 
 namespace SimTK
 {
+    class DecorativeGeometry;
     class SimbodyMatterSubsystem;
     class State;
 }
 
 namespace osc
 {
-    // converters
-    SimTK::Vec3 SimTKVec3FromV3(float v[3]);
-    SimTK::Vec3 SimTKVec3FromV3(glm::vec3 const&);
-    SimTK::Inertia SimTKInertiaFromV3(float v[3]);
-    glm::vec3 SimTKVec3FromVec3(SimTK::Vec3 const&);
-    glm::vec4 SimTKVec4FromVec3(SimTK::Vec3 const&, float = 1.0f);
-    glm::mat4x3 SimTKMat4x3FromXForm(SimTK::Transform const&);
-    glm::mat4x4 SimTKMat4x4FromTransform(SimTK::Transform const&);
-    SimTK::Transform SimTKTransformFromMat4x3(glm::mat4x3 const&);
+    class MeshCache;
+}
+
+namespace osc
+{
+    // converters: from osc types to SimTK
+    SimTK::Vec3 ToSimTKVec3(float v[3]);
+    SimTK::Vec3 ToSimTKVec3(glm::vec3 const&);
+    SimTK::Mat33 ToSimTKMat3(glm::mat3 const&);
+    SimTK::Inertia ToSimTKInertia(float v[3]);
+    SimTK::Transform ToSimTKTransform(glm::mat4x3 const&);
+    SimTK::Transform ToSimTKTransform(Transform const&);
+    SimTK::Rotation ToSimTKRotation(glm::quat const&);
+
+    // converters: from SimTK types to osc
+    glm::vec3 ToVec3(SimTK::Vec3 const&);
+    glm::vec4 ToVec4(SimTK::Vec3 const&, float = 1.0f);
+    glm::mat4x3 ToMat4x3(SimTK::Transform const&);
+    glm::mat4x4 ToMat4x4(SimTK::Transform const&);
+    glm::quat ToQuat(SimTK::Rotation const&);
+    Transform ToTransform(SimTK::Transform const&);
 
 
     // mesh loading
-    Mesh SimTKLoadMesh(std::filesystem::path const&);
+    Mesh LoadMeshViaSimTK(std::filesystem::path const&);
 
 
     // rendering
 
-    struct SystemDecoration {
-        std::shared_ptr<Mesh> mesh;
-        glm::mat4x3 modelMtx;
-        glm::mat3 normalMtx;
-        glm::vec4 color;
-        AABB worldspaceAABB;
-    };
-
-    // temporary hack while implementing the new handler interface
-    struct SystemDecorationNew {
-        std::shared_ptr<Mesh> mesh;
-        Transform transform;
-        glm::vec4 color;
-
-        operator SystemDecoration() const;
-    };
-
-    class DecorativeGeometryHandler final {
+    // called with an appropriate (output) decoration whenever the
+    // DecorativeGeometryHandler wants to emit geometry
+    class DecorationConsumer {
     public:
-        DecorativeGeometryHandler(MeshCache& meshCache,
-                                  SimTK::SimbodyMatterSubsystem const& matter,
-                                  SimTK::State const& state,
-                                  float fixupScaleFactor,
-                                  std::function<void(SystemDecorationNew const&)>& callback);
-        DecorativeGeometryHandler(DecorativeGeometryHandler const&) = delete;
-        DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept;
-        ~DecorativeGeometryHandler() noexcept;
+        DecorationConsumer() = default;
+        DecorationConsumer(DecorationConsumer const&) = delete;
+        DecorationConsumer(DecorationConsumer&&) noexcept = delete;
+        DecorationConsumer& operator=(DecorationConsumer const&) = delete;
+        DecorationConsumer& operator=(DecorationConsumer&&) noexcept = delete;
 
-        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler const&) = delete;
-        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler&&) noexcept;
+        virtual ~DecorationConsumer() noexcept = default;
+        virtual void operator()(std::shared_ptr<Mesh> const&, Transform const&, glm::vec4 const& color) = 0;
+    };
+
+    // consumes SimTK::DecorativeGeometry and emits appropriate decorations back to
+    // the `DecorationConsumer`
+    class DecorationProducer final {
+    public:
+        DecorationProducer(MeshCache& meshCache,
+                           SimTK::SimbodyMatterSubsystem const& matter,
+                           SimTK::State const& state,
+                           float fixupScaleFactor,
+                           DecorationConsumer&);
+        DecorationProducer(DecorationProducer const&) = delete;
+        DecorationProducer(DecorationProducer&&) noexcept;
+        ~DecorationProducer() noexcept;
+
+        DecorationProducer& operator=(DecorationProducer const&) = delete;
+        DecorationProducer& operator=(DecorationProducer&&) noexcept;
 
         void operator()(SimTK::DecorativeGeometry const&);
 

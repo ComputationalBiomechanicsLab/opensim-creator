@@ -185,7 +185,7 @@ namespace
     Transform ToOsimTransform(SimTK::Transform const& t)
     {
         // extract the SimTK transform into a 4x3 matrix
-        glm::mat4x3 m = SimTKMat4x3FromXForm(t);
+        glm::mat4x3 m = ToMat4x3(t);
 
         // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
         glm::quat rotation = glm::quat_cast(glm::mat3{m});
@@ -311,7 +311,7 @@ namespace
     glm::mat4 SphereMeshToSceneSphereXform(Sphere const& sceneSphere)
     {
         Sphere sphereMesh{{0.0f, 0.0f, 0.0f}, 1.0f};
-        return SphereToSphereXform(sphereMesh, sceneSphere);
+        return SphereToSphereMat4(sphereMesh, sceneSphere);
     }
 
 
@@ -634,7 +634,7 @@ namespace
         {
             try
             {
-                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(SimTKLoadMesh(path));
+                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(LoadMeshViaSimTK(path));
                 loadedMeshes.push_back(LoadedMesh{path, std::move(mesh)});
             }
             catch (std::exception const& ex)
@@ -3059,11 +3059,6 @@ namespace
         return copy;
     }
 
-    SimTK::Transform ToSimTKTransform(Transform const& t)
-    {
-        return SimTKTransformFromMat4x3(toMat4(IgnoreScale(t)));
-    }
-
     // attaches a mesh to a parent `OpenSim::PhysicalFrame` that is part of an `OpenSim::Model`
     void AttachMeshElToFrame(MeshEl const& meshEl,
                              Transform const& parentXform,
@@ -3083,7 +3078,7 @@ namespace
         // attach the mesh data to the transformed POF
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.Path.string());
         mesh->setName(meshEl.Name);
-        mesh->set_scale_factors(SimTKVec3FromV3(meshEl.Xform.scale));
+        mesh->set_scale_factors(ToSimTKVec3(meshEl.Xform.scale));
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
         // make it a child of the parent's physical frame
@@ -3298,16 +3293,16 @@ namespace
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
         glm::mat4 toParentPofInParent =  toInverseMat4(IgnoreScale(GetTransform(mg, joint.Parent))) * toMat4(IgnoreScale(joint.Xform));
-        parentPOF->set_translation(SimTKVec3FromV3(toParentPofInParent[3]));
-        parentPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toParentPofInParent)));
+        parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
+        parentPOF->set_orientation(ToSimTKVec3(extractEulerAngleXYZ(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
         glm::mat4 toChildPofInChild = toInverseMat4(IgnoreScale(GetTransform(mg, joint.Child))) * toMat4(IgnoreScale(joint.Xform));
-        childPOF->set_translation(SimTKVec3FromV3(toChildPofInChild[3]));
-        childPOF->set_orientation(SimTKVec3FromV3(extractEulerAngleXYZ(toChildPofInChild)));
+        childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
+        childPOF->set_orientation(ToSimTKVec3(extractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
         auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[joint.JointTypeIndex]->clone());
@@ -3648,7 +3643,7 @@ namespace
             std::shared_ptr<Mesh> meshData;
             try
             {
-                 meshData = std::make_shared<Mesh>(SimTKLoadMesh(realLocation.string()));
+                 meshData = std::make_shared<Mesh>(LoadMeshViaSimTK(realLocation.string()));
             }
             catch (std::exception const& ex)
             {
@@ -3700,7 +3695,7 @@ namespace
 
             MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
             el.Xform = ToOsimTransform(frame.getTransformInGround(st));
-            el.Xform.scale = SimTKVec3FromVec3(mesh.get_scale_factors());
+            el.Xform.scale = ToVec3(mesh.get_scale_factors());
             el.Name = name;
         }
 
@@ -3745,7 +3740,7 @@ namespace
                 continue;
             }
 
-            glm::vec3 pos = SimTKVec3FromVec3(station.findLocationInFrame(st, m.getGround()));
+            glm::vec3 pos = ToVec3(station.findLocationInFrame(st, m.getGround()));
             std::string name = station.getName();
 
             rv.AddEl<StationEl>(DowncastID<BodyEl>(attachment), pos, name);
@@ -4707,7 +4702,7 @@ namespace
                 se.id = logicalID;
                 se.groupId = groupID;
                 se.mesh = m_CylinderMesh;
-                se.modelMatrix = SegmentToSegmentXform(cylinderline, axisline) * prescaleMtx;
+                se.modelMatrix = SegmentToSegmentMat4(cylinderline, axisline) * prescaleMtx;
                 se.normalMatrix = NormalMatrix(se.modelMatrix);
                 se.color = color;
                 se.rimColor = rimAlpha;
@@ -4752,7 +4747,7 @@ namespace
                 outputLine.p1[i] = halfWidths;
                 outputLine.p2[i] = 1.75f * halfWidths * legLen[i];
 
-                glm::mat4 segXform = SegmentToSegmentXform(coneLine, outputLine);
+                glm::mat4 segXform = SegmentToSegmentMat4(coneLine, outputLine);
                 segXform = baseMmtx * segXform * glm::scale(glm::mat4{1.0f}, glm::vec3{halfWidths/2.0f, 1.0f, halfWidths/2.0f});
 
                 glm::vec4 color = {0.0f, 0.0f, 0.0f, alpha};

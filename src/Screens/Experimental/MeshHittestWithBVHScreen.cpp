@@ -52,7 +52,7 @@ static void drawBVHRecursive(BVH const& bvh, SolidColorShader& shader, int pos) 
 struct osc::MeshHittestWithBVHScreen::Impl final {
     SolidColorShader shader;
 
-    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    Mesh mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
 
     // triangle (debug)
     glm::vec3 tris[3];

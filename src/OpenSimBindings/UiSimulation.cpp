@@ -13,7 +13,7 @@
 using namespace osc;
 
 static std::unique_ptr<SimTK::State> initializeState(OpenSim::Model& m,
-                                                     StateModifications const& stateModifications)
+                                                     StateModifications stateModifications)
 {
     std::unique_ptr<SimTK::State> rv = std::make_unique<SimTK::State>(m.initializeState());
     stateModifications.applyToState(m, *rv);
@@ -47,7 +47,7 @@ static std::unique_ptr<OpenSim::Model> createInitializedModel(OpenSim::Model con
 }
 
 static std::unique_ptr<Report> createDummySimulationReport(OpenSim::Model& m,
-                                                           StateModifications const& stateModifications)
+                                                           StateModifications stateModifications)
 {
     auto rv = std::make_unique<Report>();
 

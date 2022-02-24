@@ -51,7 +51,7 @@ std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p)
     {
         try
         {
-            it->second = std::make_shared<Mesh>(SimTKLoadMesh(p));
+            it->second = std::make_shared<Mesh>(LoadMeshViaSimTK(p));
         }
         catch (...)
         {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <src/OpenSimBindings/ComponentDecoration.hpp>
+#include "src/OpenSimBindings/ComponentDecoration.hpp"
 
 #include <OpenSim/Common/Component.h>
 

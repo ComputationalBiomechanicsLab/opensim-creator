@@ -12,7 +12,8 @@ All notable changes to this project will be documented here. The format is based
 - Refactored decoration generation backend to use osc::Transform instead of raw matrices (internal)
 - Refactored Perf to record measurements to a global storage space that prints to the log when the user
   presses F8 (internal)
-- Fixed a perf issue where the model decorations were being generated twice during undo/redo storage (internal)
+- Improved performance where the model decorations were being generated twice during undo/redo storage (internal)
+- Improved general state/model editing performance (internal)
 
 ## [0.1.2] - 2022/02/16
 

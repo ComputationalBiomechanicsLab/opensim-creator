@@ -705,7 +705,7 @@ float osc::RectAspectRatio(Rect const& r) noexcept {
     return dims.x/dims.y;
 }
 
-glm::mat4 osc::GroundToSphereXform(Sphere const& s) noexcept {
+glm::mat4 osc::GroundToSphereMat4(Sphere const& s) noexcept {
     return glm::translate(glm::mat4{1.0f}, s.origin) * glm::scale(glm::mat4{1.0f}, {s.radius, s.radius, s.radius});
 }
 
@@ -887,7 +887,7 @@ Line osc::LineApplyXform(Line const& l, glm::mat4 const& m) noexcept {
     return rv;
 }
 
-glm::mat4 osc::DiscToDiscXform(Disc const& a, Disc const& b) noexcept {
+glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
 
@@ -920,14 +920,14 @@ glm::mat4 osc::DiscToDiscXform(Disc const& a, Disc const& b) noexcept {
     return translator * rotator * scaler;
 }
 
-glm::mat4 osc::SphereToSphereXform(Sphere const& a, Sphere const& b) noexcept {
+glm::mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b) noexcept {
     float scale = b.radius/a.radius;
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, glm::vec3{scale, scale, scale});
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, b.origin - a.origin);
     return mover * scaler;
 }
 
-glm::mat4 osc::SegmentToSegmentXform(Segment const& a, Segment const& b) noexcept {
+glm::mat4 osc::SegmentToSegmentMat4(Segment const& a, Segment const& b) noexcept {
     glm::vec3 a1ToA2 = a.p2 - a.p1;
     glm::vec3 b1ToB2 = b.p2 - b.p1;
 
@@ -952,6 +952,28 @@ glm::mat4 osc::SegmentToSegmentXform(Segment const& a, Segment const& b) noexcep
     return move * rotate * scale;
 }
 
+osc::Transform osc::SegmentToSegmentTransform(Segment const& a, Segment const& b) noexcept
+{
+    glm::vec3 aLine = a.p2 - a.p1;
+    glm::vec3 bLine = b.p2 - b.p1;
+
+    float aLen = glm::length(aLine);
+    float bLen = glm::length(bLine);
+
+    glm::vec3 aDir = aLine/aLen;
+    glm::vec3 bDir = bLine/bLen;
+
+    glm::vec3 aMid = (a.p1 + a.p2)/2.0f;
+    glm::vec3 bMid = (b.p1 + b.p2)/2.0f;
+
+    // for scale: LERP [0,1] onto [1,l] along original direction
+    Transform t;
+    t.rotation = glm::rotation(aDir, bDir);
+    t.scale = glm::vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
+    t.position = bMid - aMid;
+
+    return t;
+}
 
 RayCollision osc::GetRayCollisionSphere(Line const& l, Sphere const& s) noexcept {
     return GetRayCollisionSphereAnalytic(s, l);
@@ -1545,6 +1567,20 @@ MeshData osc::GenCircle(size_t nsides) {
     }
 
     return rv;
+}
+
+Transform osc::SimbodyCylinderToSegmentTransform(Segment const& s, float radius) noexcept
+{
+    Segment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    Transform t = SegmentToSegmentTransform(cylinderLine, s);
+    t.scale.x = radius;
+    t.scale.z = radius;
+    return t;
+}
+
+Transform osc::SimbodyConeToSegmentTransform(Segment const& s, float radius) noexcept
+{
+    return SimbodyCylinderToSegmentTransform(s, radius);
 }
 
 glm::vec2 osc::TopleftRelPosToNDCPoint(glm::vec2 relpos) {

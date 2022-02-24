@@ -1,6 +1,11 @@
 #pragma once
 
-#include "src/Utils/SimTKHelpers.hpp"
+#include "src/3D/Mesh.hpp"
+#include "src/3D/Model.hpp"
+
+#include <glm/mat4x3.hpp>
+#include <glm/mat3x3.hpp>
+#include <glm/vec4.hpp>
 
 namespace OpenSim
 {
@@ -9,14 +14,17 @@ namespace OpenSim
 
 namespace osc
 {
-    struct ComponentDecoration : public SystemDecoration {
+    struct ComponentDecoration {
+        std::shared_ptr<Mesh> mesh;
+        glm::mat4x3 modelMtx;
+        glm::mat3 normalMtx;
+        glm::vec4 color;
+        AABB worldspaceAABB;
         OpenSim::Component const* component;
 
-        ComponentDecoration(SystemDecoration const& se,
-                             OpenSim::Component const* c) :
-            SystemDecoration{se},
-            component{c}
-        {
-        }
+        ComponentDecoration(std::shared_ptr<Mesh>,
+                            Transform const&,
+                            glm::vec4 const&,
+                            OpenSim::Component const*);
     };
 }

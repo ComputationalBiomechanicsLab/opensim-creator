@@ -1,6 +1,8 @@
 #include "OpenSimHelpers.hpp"
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/3D/Model.hpp"
+#include "src/MeshCache.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/SimTKHelpers.hpp"
@@ -9,8 +11,16 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <Simbody.h>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
-static bool HasGreaterAlphaOrLowerMeshID(osc::SystemDecoration const& a, osc::SystemDecoration const& b)
+#include <vector>
+
+using namespace osc;
+
+
+static bool HasGreaterAlphaOrLowerMeshID(ComponentDecoration const& a,
+                                         ComponentDecoration const& b)
 {
     if (a.color.a != b.color.a)
     {
@@ -23,35 +33,28 @@ static bool HasGreaterAlphaOrLowerMeshID(osc::SystemDecoration const& a, osc::Sy
     }
 }
 
+static Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK::State const& st)
+{
+    return ToTransform(pf.getTransformInGround(st));
+}
+
 static void HandlePointToPointSpring(float fixupScaleFactor,
                                      SimTK::State const& st,
                                      OpenSim::PointToPointSpring const& p2p,
                                      std::vector<osc::ComponentDecoration>& out)
 {
-    glm::mat4 b1LocalToGround = osc::SimTKMat4x4FromTransform(p2p.getBody1().getTransformInGround(st));
-    glm::mat4 b2LocalToGround =  osc::SimTKMat4x4FromTransform(p2p.getBody2().getTransformInGround(st));
-    glm::vec3 p1Local = osc::SimTKVec3FromVec3(p2p.getPoint1());
-    glm::vec3 p2Local = osc::SimTKVec3FromVec3(p2p.getPoint2());
+    glm::vec3 p1 = transformPoint(TransformInGround(p2p.getBody1(), st), ToVec3(p2p.getPoint1()));
+    glm::vec3 p2 = transformPoint(TransformInGround(p2p.getBody2(), st), ToVec3(p2p.getPoint2()));
 
-    // two points of the connecting cylinder
-    glm::vec3 p1Ground = b1LocalToGround * glm::vec4{p1Local, 1.0f};
-    glm::vec3 p2Ground = b2LocalToGround * glm::vec4{p2Local, 1.0f};
-    glm::vec3 p1Cylinder = {0.0f, -1.0f, 0.0f};
-    glm::vec3 p2Cylinder = {0.0f, +1.0f, 0.0f};
-    osc::Segment springLine{p1Ground, p2Ground};
-    osc::Segment cylinderLine{p1Cylinder, p2Cylinder};
+    float radius = 0.005f * fixupScaleFactor;
+    Transform cylinderXform = SimbodyCylinderToSegmentTransform({p1, p2}, radius);
 
-    glm::mat4 cylinderXform = SegmentToSegmentXform(cylinderLine, springLine);
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {0.005f * fixupScaleFactor, 1.0f, 0.005f * fixupScaleFactor});
-
-    osc::SystemDecoration se;
-    se.mesh = osc::App::cur().getMeshCache().getCylinderMesh();
-    se.modelMtx = cylinderXform * scaler;
-    se.normalMtx = osc::NormalMatrix(se.modelMtx);
-    se.color = {0.7f, 0.7f, 0.7f, 1.0f};
-    se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
-
-    out.emplace_back(std::move(se), &p2p);
+    out.emplace_back(
+        App::meshes().getCylinderMesh(),
+        cylinderXform,
+        glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
+        &p2p
+    );
 }
 
 static void HandleStation(float fixupScaleFactor,
@@ -59,26 +62,25 @@ static void HandleStation(float fixupScaleFactor,
                           OpenSim::Station const& s,
                           std::vector<osc::ComponentDecoration>& out)
 {
-    glm::vec3 loc = osc::SimTKVec3FromVec3(s.getLocationInGround(st));
-    float r = fixupScaleFactor * 0.005f;
-    glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, {r, r, r});
-    glm::mat4 translater = glm::translate(glm::mat4{1.0f}, loc);
+    float radius = fixupScaleFactor * 0.005f;
 
-    osc::SystemDecoration se;
-    se.mesh = osc::App::cur().getMeshCache().getSphereMesh();
-    se.modelMtx = translater * scaler;
-    se.normalMtx = osc::NormalMatrix(se.modelMtx);
-    se.color = {1.0f, 0.0f, 0.0f, 1.0f};
-    se.worldspaceAABB = AABBApplyXform(se.mesh->getAABB(), se.modelMtx);
+    Transform xform;
+    xform.position = ToVec3(s.getLocationInGround(st));
+    xform.scale = {radius, radius, radius};
 
-    out.emplace_back(std::move(se), &s);
+    out.emplace_back(
+        App::meshes().getSphereMesh(),
+        xform,
+        glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
+        &s
+    );
 }
 
 static void HandleGenericOpenSimElement(OpenSim::Component const& c,
                                         SimTK::State const& st,
                                         OpenSim::ModelDisplayHints const& mdh,
                                         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                                        osc::DecorativeGeometryHandler& handler)
+                                        osc::DecorationProducer& handler)
 {
     {
         OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
@@ -106,30 +108,53 @@ static void HandleGenericOpenSimElement(OpenSim::Component const& c,
             handler(dg);
         }
     }
-
     geomList.clear();
 }
 
-static void getSceneElements(OpenSim::Model const& m,
-                             SimTK::State const& st,
-                             float fixupScaleFactor,
-                             std::vector<osc::ComponentDecoration>& out)
+namespace
+{
+    // used whenever the SimTK backend emits something
+    class OpenSimDecorationConsumer final : public DecorationConsumer {
+    public:
+        OpenSimDecorationConsumer(std::vector<ComponentDecoration>* out,
+                                  OpenSim::Component const** currentComponent) :
+            m_Out{std::move(out)},
+            m_CurrentComponent{std::move(currentComponent)}
+        {
+        }
+
+        void operator()(std::shared_ptr<Mesh> const& mesh, Transform const& t, glm::vec4 const& color) override
+        {
+            m_Out->emplace_back(mesh, t, color, *m_CurrentComponent);
+        }
+
+    private:
+        std::vector<ComponentDecoration>* m_Out;
+        OpenSim::Component const** m_CurrentComponent;
+    };
+}
+
+static void GenerateDecorationEls(OpenSim::Model const& m,
+                                  SimTK::State const& st,
+                                  float fixupScaleFactor,
+                                  std::vector<osc::ComponentDecoration>& out,
+                                  OpenSim::Component const*,
+                                  OpenSim::Component const*)
 {
     out.clear();
 
     OpenSim::Component const* currentComponent = nullptr;
 
-    std::function<void(osc::SystemDecorationNew const&)> onEmit{[&currentComponent, &out](osc::SystemDecorationNew const& sd)
-    {
-        out.emplace_back(sd, currentComponent);
-    }};
+    OpenSimDecorationConsumer consumer{&out, &currentComponent};
 
-    osc::DecorativeGeometryHandler handler{
-        osc::App::meshes(),
+    MeshCache& meshCache = App::meshes();
+
+    DecorationProducer producer{
+        meshCache,
         m.getSystem().getMatterSubsystem(),
         st,
         fixupScaleFactor,
-        onEmit
+        consumer
     };
 
     OpenSim::ModelDisplayHints const& mdh = m.getDisplayHints();
@@ -169,11 +194,11 @@ static void getSceneElements(OpenSim::Model const& m,
                 }
             }
 
-            HandleGenericOpenSimElement(c, st, mdh, geomList, handler);
+            HandleGenericOpenSimElement(c, st, mdh, geomList, producer);
         }
         else
         {
-            HandleGenericOpenSimElement(c, st, mdh, geomList, handler);
+            HandleGenericOpenSimElement(c, st, mdh, geomList, producer);
         }
     }
 }
@@ -287,14 +312,14 @@ void osc::GenerateModelDecorations(OpenSim::Model const& model,
                               SimTK::State const& state,
                               float fixupScaleFactor,
                               std::vector<ComponentDecoration>& out,
-                              OpenSim::Component const*,
-                              OpenSim::Component const*)
+                              OpenSim::Component const* hovered,
+                              OpenSim::Component const* selected)
 {
     out.clear();
 
     {
         OSC_PERF("scene generation");
-        getSceneElements(model, state, fixupScaleFactor, out);
+        GenerateDecorationEls(model, state, fixupScaleFactor, out, hovered, selected);
     }
 
     {

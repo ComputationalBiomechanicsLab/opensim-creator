@@ -182,6 +182,7 @@ add_executable(osc
     src/3D/Texturing.cpp
     src/3D/Texturing.hpp
 
+    src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/FileChangePoller.cpp
     src/OpenSimBindings/FileChangePoller.hpp

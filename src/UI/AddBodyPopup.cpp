@@ -230,8 +230,8 @@ std::optional<NewBody> osc::AddBodyPopup::draw(char const* modalName, OpenSim::M
     // show add button
     if (ImGui::Button(ICON_FA_PLUS " add body")) {
         // create user-requested body
-        auto comStk = SimTKVec3FromV3(st.com);
-        auto inertiaStk = SimTKInertiaFromV3(st.inertia);
+        auto comStk = ToSimTKVec3(st.com);
+        auto inertiaStk = ToSimTKInertia(st.inertia);
         auto body = std::make_unique<OpenSim::Body>(st.bodyName, static_cast<double>(st.mass), comStk, inertiaStk);
         auto joint = makeJoint(st, *body, *osc::JointRegistry::prototypes()[static_cast<size_t>(st.jointIdx)]);
 

@@ -71,7 +71,7 @@ static gl::VertexArray makeVAO(BasicShader& shader, gl::ArrayBuffer<glm::vec3>& 
 struct osc::MeshHittestScreen::Impl final {
     BasicShader shader;
 
-    Mesh mesh = SimTKLoadMesh(App::resource("geometry/hat_ribs.vtp"));
+    Mesh mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
 
     // sphere (debug)
     MeshData sphere = GenUntexturedUVSphere(12, 12);

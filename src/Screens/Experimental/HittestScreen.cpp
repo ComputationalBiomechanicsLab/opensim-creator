@@ -321,7 +321,7 @@ void osc::HittestScreen::draw() {
 
         Disc meshDisc{{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, 1.0f};
 
-        gl::Uniform(shader.uModel, DiscToDiscXform(meshDisc, d));
+        gl::Uniform(shader.uModel, DiscToDiscMat4(meshDisc, d));
         gl::Uniform(shader.uColor, color);
         gl::BindVertexArray(impl.circleVAO);
         gl::DrawArrays(GL_TRIANGLES, 0, impl.circleVBO.sizei());

@@ -306,17 +306,19 @@ namespace osc {
     Line LineApplyXform(Line const&, glm::mat4 const&) noexcept;
 
     // returns an xform that maps an origin centered r=1 sphere into an in-scene sphere
-    glm::mat4 GroundToSphereXform(Sphere const&) noexcept;
+    glm::mat4 GroundToSphereMat4(Sphere const&) noexcept;
 
     // returns an xform that maps a disc to another disc
-    glm::mat4 DiscToDiscXform(Disc const&, Disc const&) noexcept;
+    glm::mat4 DiscToDiscMat4(Disc const&, Disc const&) noexcept;
 
     // returns an xform that maps a sphere to another sphere
-    glm::mat4 SphereToSphereXform(Sphere const&, Sphere const&) noexcept;
+    glm::mat4 SphereToSphereMat4(Sphere const&, Sphere const&) noexcept;
 
     // returns an xform that maps a path segment to another path segment
-    glm::mat4 SegmentToSegmentXform(Segment const&, Segment const&) noexcept;
+    glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;
 
+    // returns a transform that maps a path segment to another path segment
+    Transform SegmentToSegmentTransform(Segment const&, Segment const&) noexcept;
 
     struct RayCollision final {
         bool hit;
@@ -410,6 +412,12 @@ namespace osc {
 
     // generates a circle at Z == 0, X/Y == [-1, +1] (r = 1)
     MeshData GenCircle(size_t nsides);
+
+    // returns a transform that maps a simbody standard cylinder to a segment with the given radius
+    Transform SimbodyCylinderToSegmentTransform(Segment const&, float radius) noexcept;
+
+    // returns a transform that maps a simbody standard cone to a segment with the given radius
+    Transform SimbodyConeToSegmentTransform(Segment const&, float radius) noexcept;
 
 
     // converts a topleft-origin RELATIVE `pos` (0 to 1 in XY starting topleft) into an
