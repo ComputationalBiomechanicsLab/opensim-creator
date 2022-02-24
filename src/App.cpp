@@ -696,24 +696,25 @@ static void AppMainLoopUnguarded(App::Impl& impl)
                 // user closed window (e.g. pressed X or Alt+F4)
                 return;
             }
-
-            if (e.type == SDL_USEREVENT)
+            else if (e.type == SDL_USEREVENT)
             {
                 // it's a redraw event that lower layers can't handle anyway
                 continue;
             }
-
-            if (e.type == SDL_WINDOWEVENT)
+            else if (e.type == SDL_WINDOWEVENT)
             {
                 // window was resized and should be drawn a couple of times quickly
                 // to ensure any datastructures in the screens (namely: imgui) are
                 // updated
                 impl.numFramesToPoll = 2;
             }
-
-            if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F8)
+            else if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F8)
             {
                 osc::PrintMeasurementsToLog();
+            }
+            else if (e.type == SDL_KEYUP && e.key.keysym.scancode == SDL_SCANCODE_F10)
+            {
+                osc::ClearPerfMeasurements();
             }
 
             // let screen handle the event

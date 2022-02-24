@@ -261,6 +261,7 @@ namespace osc {
     //
     // note: don't do this repeatably, because it can keep growing the AABB
     AABB AABBApplyXform(AABB const&, glm::mat4 const&) noexcept;
+    AABB AABBApplyXform(AABB const&, Transform const&) noexcept;
 
     // computes an AABB from points in space
     AABB AABBFromVerts(glm::vec3 const*, size_t n) noexcept;

@@ -80,18 +80,33 @@ static void HandleGenericOpenSimElement(OpenSim::Component const& c,
                                         SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
                                         osc::DecorativeGeometryHandler& handler)
 {
-    c.generateDecorations(true, mdh, st, geomList);
-    for (SimTK::DecorativeGeometry const& dg : geomList)
     {
-        handler(dg);
+        OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
+        c.generateDecorations(true, mdh, st, geomList);
+    }
+
+    {
+        OSC_PERF("(pump fixed decorations into OSC)");
+        for (SimTK::DecorativeGeometry const& dg : geomList)
+        {
+            handler(dg);
+        }
     }
     geomList.clear();
 
-    c.generateDecorations(false, mdh, st, geomList);
-    for (SimTK::DecorativeGeometry const& dg : geomList)
     {
-        handler(dg);
+        OSC_PERF("OpenSim::Component::generateDecorations(false, ...)");
+        c.generateDecorations(false, mdh, st, geomList);
     }
+
+    {
+        OSC_PERF("(pump dynamic decorations into OSC)");
+        for (SimTK::DecorativeGeometry const& dg : geomList)
+        {
+            handler(dg);
+        }
+    }
+
     geomList.clear();
 }
 

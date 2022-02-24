@@ -226,15 +226,16 @@ private:
 
         // emit leg cylinders
         glm::vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
-        float legLenAndThickness = g_FrameAxisLengthRescale * m_FixupScaleFactor;
+        float legLen = g_FrameAxisLengthRescale * m_FixupScaleFactor;
+        float legThickness = g_FrameAxisThickness * m_FixupScaleFactor;
         for (int axis = 0; axis < 3; ++axis)
         {
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
-            dir[axis] = legLenAndThickness * axisLengths[axis];
+            dir[axis] = legLen * axisLengths[axis];
 
             Transform legXform = CylinderToLineTransform(t.position, t.position + transformDirection(t, dir));
-            legXform.scale.x *= legLenAndThickness;
-            legXform.scale.z *= legLenAndThickness;
+            legXform.scale.x *= legThickness;
+            legXform.scale.z *= legThickness;
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
             color[axis] = 1.0f;
@@ -581,13 +582,12 @@ Mesh osc::SimTKLoadMesh(std::filesystem::path const& p)
 
 osc::SystemDecorationNew::operator SystemDecoration() const
 {
-    glm::mat4 m = toMat4(transform);
     return SystemDecoration{
         mesh,
-        m,
+        toMat4(transform),
         toNormalMatrix(transform),
         color,
-        AABBApplyXform(mesh->getAABB(), m)
+        AABBApplyXform(mesh->getAABB(), transform)
     };
 }
 
@@ -599,7 +599,11 @@ osc::DecorativeGeometryHandler::DecorativeGeometryHandler(MeshCache& meshCache,
                                                           SimTK::State const& state,
                                                           float fixupScaleFactor,
                                                           std::function<void(SystemDecorationNew const&)>& callback) :
-    m_Impl{std::make_unique<Impl>(meshCache, matter, state, std::move(fixupScaleFactor), callback)}
+    m_Impl{std::make_unique<Impl>(meshCache,
+                                  matter,
+                                  state,
+                                  std::move(fixupScaleFactor),
+                                  callback)}
 {
 }
 

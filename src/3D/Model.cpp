@@ -800,6 +800,11 @@ AABB osc::AABBApplyXform(AABB const& aabb, glm::mat4 const& m) noexcept {
     return AABBFromVerts(verts.data(), verts.size());
 }
 
+AABB osc::AABBApplyXform(AABB const& aabb, Transform const& t) noexcept
+{
+    return AABBApplyXform(aabb, toMat4(t));
+}
+
 AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept {
     AABB rv{};
 

@@ -24,7 +24,6 @@ namespace
             m_Filename{filename},
             m_Line{line}
         {
-
         }
 
         std::string const& getLabel() const
@@ -54,14 +53,21 @@ namespace
 
         osc::PerfClock::duration getAvgDuration() const
         {
-            return m_AvgDuration;
+            return m_CallCount > 0 ? m_TotalDuration/m_CallCount : osc::PerfClock::duration{0};
         }
 
         void submit(osc::PerfClock::time_point start, osc::PerfClock::time_point end)
         {
             m_LastDuration = end - start;
-            m_AvgDuration = (m_CallCount*m_AvgDuration + m_LastDuration)/(m_CallCount+1);
+            m_TotalDuration += m_LastDuration;
             m_CallCount++;
+        }
+
+        void clear()
+        {
+            m_CallCount = 0;
+            m_TotalDuration = osc::PerfClock::duration{0};
+            m_LastDuration = osc::PerfClock::duration{0};
         }
 
     private:
@@ -70,7 +76,7 @@ namespace
         unsigned int m_Line = 0;
 
         int64_t m_CallCount = 0;
-        osc::PerfClock::duration m_AvgDuration{0};
+        osc::PerfClock::duration m_TotalDuration{0};
         osc::PerfClock::duration m_LastDuration{0};
     };
 
@@ -115,5 +121,15 @@ void osc::PrintMeasurementsToLog()
         std::stringstream ss;
         ss << data;
         log::trace("%s", std::move(ss).str().c_str());
+    }
+}
+
+void osc::ClearPerfMeasurements()
+{
+    auto guard = GetMeasurementStorage().lock();
+
+    for (auto& [id, data] : *guard)
+    {
+        data.clear();
     }
 }

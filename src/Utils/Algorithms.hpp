@@ -186,7 +186,7 @@ namespace osc {
     inline size_t DoHashCombine(size_t seed, T const& v)
     {
         std::hash<T> hasher;
-        return seed ^ hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+        return seed ^ (hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2));
     }
 
     template<typename T>
