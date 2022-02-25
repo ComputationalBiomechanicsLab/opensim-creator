@@ -313,12 +313,11 @@ public:
 
     void updateIfDirty()
     {
+
         if (m_ModelIsDirty)
         {
             OSC_PERF("model update");
 
-            m_Model->finalizeFromProperties();
-            m_Model->finalizeConnections();
             m_Model->buildSystem();
             m_Model->initializeState();
             m_ModelIsDirty = false;
