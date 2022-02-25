@@ -3806,7 +3806,7 @@ namespace
         Quit,
     };
 
-    std::unique_ptr<Popup> CreateSaveChangesPopup(std::shared_ptr<SharedData>, ActionAfter);
+    std::unique_ptr<Popup> CreateExportChangesPopup(std::shared_ptr<SharedData>, ActionAfter);
 
     class SharedData final : public std::enable_shared_from_this<SharedData> {
     public:
@@ -3852,8 +3852,8 @@ namespace
         void NewModelGraphForced()
         {
             m_ModelGraphSnapshots = CommittableModelGraph{};
-            m_MaybeModelGraphSaveLocation.clear();
-            m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+            m_MaybeModelGraphExportLocation.clear();
+            m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
         }
 
         void NewModelGraph()
@@ -3864,7 +3864,7 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::New);
+                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::New);
                 m_MaybePopup->open();
             }
         }
@@ -3876,8 +3876,8 @@ namespace
             if (!osimPath.empty())
             {
                 m_ModelGraphSnapshots = CommittableModelGraph{CreateModelFromOsimFile(osimPath)};
-                m_MaybeModelGraphSaveLocation = osimPath;
-                m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                m_MaybeModelGraphExportLocation = osimPath;
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
                 return true;
             }
             else
@@ -3886,7 +3886,7 @@ namespace
             }
         }
 
-        bool SaveModelGraphTo(std::filesystem::path savePath)
+        bool ExportModelGraphTo(std::filesystem::path exportPath)
         {
             std::vector<std::string> issues;
             std::unique_ptr<OpenSim::Model> m;
@@ -3902,9 +3902,9 @@ namespace
 
             if (m)
             {
-                m->print(savePath.string());
-                m_MaybeModelGraphSaveLocation = savePath;
-                m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+                m->print(exportPath.string());
+                m_MaybeModelGraphExportLocation = exportPath;
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
                 return true;
             }
             else
@@ -3917,32 +3917,32 @@ namespace
             }
         }
 
-        bool SaveAsModelGraphAsOsimFile()
+        bool ExportAsModelGraphAsOsimFile()
         {
-            std::filesystem::path savePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+            std::filesystem::path exportPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
 
-            if (savePath.empty())
+            if (exportPath.empty())
             {
                 // user probably cancelled out
                 return false;
             }
 
-            return SaveModelGraphTo(savePath);
+            return ExportModelGraphTo(exportPath);
         }
 
-        bool SaveModelGraphAsOsimFile()
+        bool ExportModelGraphAsOsimFile()
         {
-            if (m_MaybeModelGraphSaveLocation.empty())
+            if (m_MaybeModelGraphExportLocation.empty())
             {
-                return SaveAsModelGraphAsOsimFile();
+                return ExportAsModelGraphAsOsimFile();
             }
 
-            return SaveModelGraphTo(m_MaybeModelGraphSaveLocation);
+            return ExportModelGraphTo(m_MaybeModelGraphExportLocation);
         }
 
         bool IsModelGraphUpToDateWithDisk() const
         {
-            return m_MaybeModelGraphSavedUID == m_ModelGraphSnapshots.GetCheckoutID();
+            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.GetCheckoutID();
         }
 
         void CloseEditorForced()
@@ -3958,7 +3958,7 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::Close);
+                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::Close);
                 m_MaybePopup->open();
             }
         }
@@ -3976,20 +3976,20 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateSaveChangesPopup(shared_from_this(), ActionAfter::Quit);
+                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::Quit);
                 m_MaybePopup->open();
             }
         }
 
         std::string GetDocumentName() const
         {
-            if (m_MaybeModelGraphSaveLocation.empty())
+            if (m_MaybeModelGraphExportLocation.empty())
             {
                 return "untitled.osim";
             }
             else
             {
-                return m_MaybeModelGraphSaveLocation.filename().string();
+                return m_MaybeModelGraphExportLocation.filename().string();
             }
         }
 
@@ -5120,10 +5120,10 @@ namespace
         CommittableModelGraph m_ModelGraphSnapshots;
 
         // (maybe) the filesystem location where the model graph should be saved
-        std::filesystem::path m_MaybeModelGraphSaveLocation;
+        std::filesystem::path m_MaybeModelGraphExportLocation;
 
         // (maybe) the UID of the model graph when it was last successfully saved to disk (used for dirty checking)
-        UID m_MaybeModelGraphSavedUID = m_ModelGraphSnapshots.GetCheckoutID();
+        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.GetCheckoutID();
 
         // a batch of files that the user drag-dropped into the UI in the last frame
         std::vector<std::filesystem::path> m_DroppedFiles;
@@ -5261,9 +5261,9 @@ namespace
         bool m_IsRenderHovered = false;
     };
 
-    class SaveChangesPopup final : public Popup {
+    class ExportChangesPopup final : public Popup {
     public:
-        SaveChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action) :
+        ExportChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action) :
             Popup{std::move(sharedData)},
             m_Action{std::move(action)}
         {
@@ -5311,7 +5311,7 @@ namespace
 
             if (ImGui::Button("Yes"))
             {
-                if (updSharedData().SaveModelGraphAsOsimFile())
+                if (updSharedData().ExportModelGraphAsOsimFile())
                 {
                     doAction();
                     close();
@@ -5351,15 +5351,15 @@ namespace
             }
         }
 
-        std::string m_PopupName = std::string{"Save Changes to "} + getSharedData().GetDocumentName() + '?';
+        std::string m_PopupName = std::string{"Export Changes to "} + getSharedData().GetDocumentName() + '?';
         ActionAfter m_Action;
         bool m_ShouldOpen = false;
         bool m_ShouldClose = false;
     };
 
-    std::unique_ptr<Popup> CreateSaveChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action)
+    std::unique_ptr<Popup> CreateExportChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action)
     {
-        return std::make_unique<SaveChangesPopup>(std::move(sharedData), std::move(action));
+        return std::make_unique<ExportChangesPopup>(std::move(sharedData), std::move(action));
     }
 }
 
@@ -6419,14 +6419,14 @@ namespace
             }
             else if (ctrlOrSuperDown && shiftDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
             {
-                // Ctrl+Shift+S: save as: save scene as osim to user-specified location
-                m_Shared->SaveAsModelGraphAsOsimFile();
+                // Ctrl+Shift+S: export as: export scene as osim to user-specified location
+                m_Shared->ExportAsModelGraphAsOsimFile();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_S))
             {
-                // Ctrl+S: save: save scene as osim according to typical save heuristic
-                m_Shared->SaveModelGraphAsOsimFile();
+                // Ctrl+S: export: export scene as osim according to typical export heuristic
+                m_Shared->ExportModelGraphAsOsimFile();
                 return true;
             }
             else if (ctrlOrSuperDown && ImGui::IsKeyPressed(SDL_SCANCODE_W))
@@ -7928,19 +7928,19 @@ namespace
                     m_Shared->NewModelGraph();
                 }
 
-                if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
+                if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
                 {
                     m_Shared->OpenOsimFileAsModelGraph();
                 }
 
-                if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S"))
+                if (ImGui::MenuItem(ICON_FA_SAVE " Export", "Ctrl+S"))
                 {
-                    m_Shared->SaveModelGraphAsOsimFile();
+                    m_Shared->ExportModelGraphAsOsimFile();
                 }
 
-                if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S"))
+                if (ImGui::MenuItem(ICON_FA_SAVE " Export As", "Shift+Ctrl+S"))
                 {
-                    m_Shared->SaveAsModelGraphAsOsimFile();
+                    m_Shared->ExportAsModelGraphAsOsimFile();
                 }
 
                 if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
