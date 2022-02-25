@@ -15,6 +15,7 @@ All notable changes to this project will be documented here. The format is based
 - Improved performance where the model decorations were being generated twice during undo/redo storage (internal)
 - Improved general state/model editing performance (internal)
 - Hovering over a body in the UI now shows where the center of mass is as a black sphere (#60)
+- Coordinates in the coordinate editor panel now show in OpenSim storage, rather than alphabetical, order (#155)
 
 ## [0.1.2] - 2022/02/16
 
