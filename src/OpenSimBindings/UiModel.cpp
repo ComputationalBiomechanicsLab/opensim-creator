@@ -381,6 +381,8 @@ public:
 
     void setSelected(OpenSim::Component const* c)
     {
+        auto oldSelection = m_MaybeSelected;
+
         if (c)
         {
             m_MaybeSelected = c->getAbsolutePath();
@@ -388,6 +390,11 @@ public:
         else
         {
             m_MaybeSelected = {};
+        }
+
+        if (m_MaybeSelected != oldSelection)
+        {
+            setDecorationsDirtyADVANCED(true);
         }
     }
 
@@ -415,6 +422,8 @@ public:
 
     void setHovered(OpenSim::Component const* c)
     {
+        auto oldHovered = m_MaybeHovered;
+
         if (c)
         {
             m_MaybeHovered = c->getAbsolutePath();
@@ -422,6 +431,11 @@ public:
         else
         {
             m_MaybeHovered = {};
+        }
+
+        if (m_MaybeHovered != oldHovered)
+        {
+            setDecorationsDirtyADVANCED(true);
         }
     }
 
@@ -438,6 +452,8 @@ public:
 
     void setIsolated(OpenSim::Component const* c)
     {
+        auto oldIsolated = m_MaybeIsolated;
+
         if (c)
         {
             m_MaybeIsolated = c->getAbsolutePath();
@@ -445,6 +461,11 @@ public:
         else
         {
             m_MaybeIsolated = {};
+        }
+
+        if (m_MaybeIsolated != oldIsolated)
+        {
+            setDecorationsDirtyADVANCED(true);
         }
     }
 
