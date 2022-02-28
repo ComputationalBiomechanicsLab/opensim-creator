@@ -175,6 +175,8 @@ add_executable(osc
     src/3D/Mesh.hpp
     src/3D/Model.cpp
     src/3D/Model.hpp
+    src/3D/Renderer.cpp
+    src/3D/Renderer.hpp
     src/3D/Shader.hpp
     src/3D/ShaderCache.cpp
     src/3D/ShaderCache.hpp
