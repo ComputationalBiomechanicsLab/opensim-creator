@@ -283,6 +283,7 @@ add_executable(osc
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/DefaultConstructOnCopy.hpp
+    src/Utils/Events.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
     src/Utils/ImGuiHelpers.cpp
