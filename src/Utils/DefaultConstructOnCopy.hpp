@@ -3,8 +3,8 @@
 #include <utility>
 #include <type_traits>
 
-namespace osc {
-
+namespace osc
+{
     template<typename T>
     class DefaultConstructOnCopy final {
     public:
@@ -23,8 +23,6 @@ namespace osc {
 
         DefaultConstructOnCopy(DefaultConstructOnCopy&&) noexcept = default;
 
-        ~DefaultConstructOnCopy() noexcept = default;
-
         DefaultConstructOnCopy& operator=(DefaultConstructOnCopy const&)
         {
             m_Value = T{};  // exception safety: construct it then move-assign it
@@ -32,6 +30,8 @@ namespace osc {
         }
 
         DefaultConstructOnCopy& operator=(DefaultConstructOnCopy&&) noexcept = default;
+
+        ~DefaultConstructOnCopy() noexcept = default;
 
         T* operator->() { return &m_Value; }
         T const* operator->() const { return &m_Value; }

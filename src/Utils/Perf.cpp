@@ -1,7 +1,7 @@
 #include "Perf.hpp"
 
 #include "src/Utils/Algorithms.hpp"
-#include "src/Utils/ConcurrencyHelpers.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Log.hpp"
 
 #include <unordered_map>
@@ -85,9 +85,9 @@ namespace
         return o << md.getLabel() << " (" << md.getFilename() << ':' << md.getLine() << ") " << md.getCallCount() << " calls, avg. duration = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getAvgDuration()).count() << " us, last = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getLastDuration()).count() << " us";
     }
 
-    osc::Mutex_guarded<std::unordered_map<int64_t, MeasurementData>>& GetMeasurementStorage()
+    osc::SynchronizedValue<std::unordered_map<int64_t, MeasurementData>>& GetMeasurementStorage()
     {
-        static osc::Mutex_guarded<std::unordered_map<int64_t, MeasurementData>> g_Measurements;
+        static osc::SynchronizedValue<std::unordered_map<int64_t, MeasurementData>> g_Measurements;
         return g_Measurements;
     }
 }

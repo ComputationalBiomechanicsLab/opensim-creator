@@ -256,8 +256,6 @@ add_executable(osc
     src/UI/ComponentHierarchy.hpp
     src/UI/CoordinateEditor.cpp
     src/UI/CoordinateEditor.hpp
-    src/UI/F3Editor.cpp
-    src/UI/F3Editor.hpp
     src/UI/FdParamsEditorPopup.cpp
     src/UI/FdParamsEditorPopup.hpp
     src/UI/LogViewer.cpp
@@ -283,7 +281,6 @@ add_executable(osc
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
-    src/Utils/ConcurrencyHelpers.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/DefaultConstructOnCopy.hpp
     src/Utils/FilesystemHelpers.cpp
@@ -301,6 +298,7 @@ add_executable(osc
     src/Utils/SimTKHelpers.hpp
     src/Utils/SimTKHelpers.cpp
     src/Utils/Spsc.hpp
+    src/Utils/SynchronizedValue.hpp
     src/Utils/UID.cpp
     src/Utils/UID.hpp
 

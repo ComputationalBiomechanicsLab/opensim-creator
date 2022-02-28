@@ -2,13 +2,14 @@
 
 #include <nonstd/span.hpp>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class PhysicalFrame;
     class Model;
 }
 
-namespace osc {
-
+namespace osc
+{
     struct Select1PFPopup final {
         // - assumes caller has handled calling ImGui::OpenPopup(char const*)
         // - returns non-nullptr if user selects a PF

@@ -1,18 +1,31 @@
 #pragma once
 
-namespace SimTK {
+namespace SimTK
+{
     class State;
 }
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Component;
 }
 
-namespace osc {
-
+namespace osc
+{
     class ComponentDetails final {
     public:
-        enum ResponseType { NothingHappened, SelectionChanged };
+        ComponentDetails() = default;
+        ComponentDetails(ComponentDetails const&) = delete;
+        ComponentDetails(ComponentDetails&&) noexcept = default;
+        ComponentDetails& operator=(ComponentDetails const&) = delete;
+        ComponentDetails& operator=(ComponentDetails&&) noexcept = default;
+        ~ComponentDetails() noexcept = default;
+
+        enum ResponseType {
+            NothingHappened,
+            SelectionChanged,
+        };
+
         struct Response final {
             ResponseType type = NothingHappened;
             OpenSim::Component const* ptr = nullptr;

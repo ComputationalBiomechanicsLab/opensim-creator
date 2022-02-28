@@ -39,16 +39,16 @@ namespace {
         }
 
         UID getID() const { return m_ID; }
-        bool hasParent() const { return m_MaybeParentID != EmptyID(); }
+        bool hasParent() const { return m_MaybeParentID != UID::empty(); }
         UID getParentID() const { return m_MaybeParentID; }
         UiModel const& getUiModel() const { return m_Model; }
 
     private:
         // unique ID for this commit
-        UID m_ID = GenerateID();
+        UID m_ID;
 
         // (maybe) unique ID of the parent commit
-        UID m_MaybeParentID = EmptyID();
+        UID m_MaybeParentID = UID::empty();
 
         // the model saved in this snapshot
         UiModel m_Model;
@@ -95,7 +95,7 @@ public:
 
     UiModelCommit const& getHeadCommit() const
     {
-        OSC_ASSERT(m_CurrentHead != EmptyID());
+        OSC_ASSERT(m_CurrentHead != UID::empty());
         OSC_ASSERT(hasCommit(m_CurrentHead));
 
         return *tryGetCommitByID(m_CurrentHead);
@@ -105,7 +105,7 @@ public:
     UID tryGetParentIDOrEmpty(UID id) const
     {
         UiModelCommit const* commit = tryGetCommitByID(id);
-        return commit ? commit->getParentID() : EmptyID();
+        return commit ? commit->getParentID() : UID::empty();
     }
 
     // returns `true` if a commit with the given ID has been stored
@@ -127,7 +127,7 @@ public:
         int n = 1;
         UID parent = tryGetParentIDOrEmpty(a);
 
-        while (parent != b && parent != EmptyID())
+        while (parent != b && parent != UID::empty())
         {
             parent = tryGetParentIDOrEmpty(parent);
             n++;
@@ -171,7 +171,7 @@ public:
     UID nthAncestorID(UID a, int n) const
     {
         UiModelCommit const* c = nthAncestor(a, n);
-        return c ? c->getID() : EmptyID();
+        return c ? c->getID() : UID::empty();
     }
 
     // returns `true` if `maybeAncestor` is an ancestor of `id`
@@ -207,7 +207,7 @@ public:
         static_assert(m_MaxUndo >= 0);
 
         UID firstBadCommitIDOrEmpty = nthAncestorID(m_CurrentHead, m_MaxUndo + 1);
-        eraseCommitRange(firstBadCommitIDOrEmpty, EmptyID());
+        eraseCommitRange(firstBadCommitIDOrEmpty, UID::empty());
     }
 
     // garbage collect (erase) commits that fall outside the maximum redo depth
@@ -389,10 +389,10 @@ private:
     UiModel m_Scratch;
 
     // where scratch will commit to (i.e. the parent of the scratch area)
-    UID m_CurrentHead = EmptyID();
+    UID m_CurrentHead = UID::empty();
 
     // head of the current branch (i.e. "master") - may be ahead of current branch (undo/redo)
-    UID m_BranchHead = EmptyID();
+    UID m_BranchHead = UID::empty();
 
     // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
     static constexpr int m_MaxUndo = 32;
@@ -407,7 +407,7 @@ private:
     std::filesystem::path m_MaybeFilesystemLocation;
 
     // (maybe) the version of the model that was last saved to disk
-    UID m_MaybeCommitSavedToDisk = EmptyID();
+    UID m_MaybeCommitSavedToDisk = UID::empty();
 };
 
 
@@ -574,7 +574,7 @@ void osc::UndoableUiModel::updateIfDirty()
 
     // HACK: auto-perform commit (if necessary)
     UiModelCommit const& curHead = m_Impl->getHeadCommit();
-    bool shouldCommit = curHead.getParentID() == g_EmptyID || curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
+    bool shouldCommit = curHead.getParentID() == UID::empty()|| curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
 
     if (shouldCommit)
     {

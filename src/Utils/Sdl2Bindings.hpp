@@ -34,7 +34,7 @@ namespace sdl {
             }
         }
         Context(Context const&) = delete;
-        Context(Context &&) = delete;
+        Context(Context&&) = delete;
         Context& operator=(Context const&) = delete;
         Context& operator=(Context&&) = delete;
         ~Context() noexcept

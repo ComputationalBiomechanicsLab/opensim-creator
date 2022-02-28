@@ -76,7 +76,6 @@ namespace osc
         MainEditorState(UndoableUiModel);
         MainEditorState(MainEditorState const&) = delete;
         MainEditorState(MainEditorState&&) = delete;
-
         MainEditorState& operator=(MainEditorState const&) = delete;
         MainEditorState& operator=(MainEditorState&&) = delete;
 

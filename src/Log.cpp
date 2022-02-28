@@ -21,7 +21,7 @@ namespace
     };
 
     struct CircularLogSink final : public log::Sink {
-        Mutex_guarded<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>> storage;
+        SynchronizedValue<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>> storage;
 
         void log(log::LogMessage const& msg) override
         {
@@ -72,7 +72,7 @@ void osc::log::setTracebackLevel(level::LevelEnum lvl)
     g_TracebackSink->set_level(lvl);
 }
 
-Mutex_guarded<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
+SynchronizedValue<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>>& osc::log::getTracebackLog()
 {
     return g_TracebackSink->storage;
 }

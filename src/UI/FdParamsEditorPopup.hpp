@@ -1,11 +1,12 @@
 #pragma once
 
-namespace osc {
+namespace osc
+{
     struct FdParams;
 }
 
-namespace osc {
-
+namespace osc
+{
     class FdParamsEditorPopup final {
     public:
         // - assumes caller handles ImGui::OpenPopup(char const*)

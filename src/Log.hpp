@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Utils/CircularBuffer.hpp"
-#include "src/Utils/ConcurrencyHelpers.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <chrono>
 #include <cstdarg>
@@ -101,7 +101,13 @@ namespace osc::log
         level::LevelEnum m_SinkLevel{level::info};
 
     public:
+        Sink() = default;
+        Sink(Sink const&) = delete;
+        Sink(Sink&&) noexcept = delete;
+        Sink& operator=(Sink const&) = delete;
+        Sink& operator=(Sink&&) noexcept = delete;
         virtual ~Sink() noexcept = default;
+
         virtual void log(LogMessage const&) = 0;
 
         void set_level(level::LevelEnum level) noexcept
@@ -270,5 +276,5 @@ namespace osc::log
 
     [[nodiscard]] level::LevelEnum getTracebackLevel();
     void setTracebackLevel(level::LevelEnum);
-    [[nodiscard]] Mutex_guarded<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>>& getTracebackLog();
+    [[nodiscard]] SynchronizedValue<CircularBuffer<OwnedLogMessage, g_MaxLogTracebackMessages>>& getTracebackLog();
 }

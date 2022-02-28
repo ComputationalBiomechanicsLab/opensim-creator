@@ -7,8 +7,13 @@
 #include <nonstd/span.hpp>
 #include <imgui.h>
 
-namespace osc {
+namespace osc
+{
+    class UID;
+}
 
+namespace osc
+{
     // updates a polar comera's rotation, position, etc. based on ImGui input
     void UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera&);
 
@@ -63,4 +68,23 @@ namespace osc {
 
     // draw an ImGui::InputText that manipulates a std::string
     bool InputString(const char* label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags = 0);
+
+#define OSC_DEFAULT_FLOAT_INPUT_FORMAT "%.6f"
+
+    bool DrawF3Editor(char const* lock_id, char const* editor_id, float* v, bool* is_locked);
+
+    // draw an ImGui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
+    bool InputMetersFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags flags = 0);
+
+    // draw an ImGui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
+    bool InputMetersFloat3(const char* label, float v[3], ImGuiInputTextFlags flags = 0);
+
+    // draw an ImGui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
+    bool SliderMetersFloat(const char* label, float* v, float v_min, float v_max, ImGuiSliderFlags flags = 0);
+
+    // draw an ImGui::InputFloat for masses (note: some users work with very very small masses)
+    bool InputKilogramFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, ImGuiInputTextFlags flags = 0);
+
+    // push an osc::UID as if it were an ImGui ID (via ImGui::PushID)
+    void PushID(UID const&);
 }

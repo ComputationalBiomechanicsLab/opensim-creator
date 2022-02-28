@@ -1,34 +1,28 @@
 #pragma once
 
-#include "src/OpenSimBindings/UiModel.hpp"
+#include <memory>
 
-#include <vector>
-
-namespace OpenSim
+namespace osc
 {
-    class Coordinate;
-    class Model;
+    class UiModel;
 }
 
-namespace SimTK
+namespace osc
 {
-    class State;
-}
-
-namespace osc {
-    void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
-}
-
-namespace osc {
     struct CoordinateEditor final {
-        char filter[64]{};
-        bool sort_by_name = false;
-        bool show_rotational = true;
-        bool show_translational = true;
-        bool show_coupled = true;
-        std::vector<OpenSim::Coordinate const*> coord_scratch;
+    public:
+        CoordinateEditor();
+        CoordinateEditor(CoordinateEditor const&) = delete;
+        CoordinateEditor(CoordinateEditor&&) noexcept;
+        CoordinateEditor& operator=(CoordinateEditor const&) = delete;
+        CoordinateEditor& operator=(CoordinateEditor&&) noexcept;
+        ~CoordinateEditor() noexcept;
 
         // returns `true` if `State` was edited by the coordinate editor
         bool draw(UiModel&);
+
+        class Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

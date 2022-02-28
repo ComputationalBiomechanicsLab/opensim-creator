@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace osc {
-
+namespace osc
+{
     // remove all elements `e` in `Container` `c` for which `p(e)` returns `true`
     template<typename Container, typename UnaryPredicate>
     void RemoveErase(Container& c, UnaryPredicate p)
@@ -24,7 +24,7 @@ namespace osc {
     template<typename Key, typename Hash, typename KeyEqual, typename Alloc, typename UnaryPredicate>
     void RemoveErase(std::unordered_set<Key, Hash, KeyEqual, Alloc>& c, UnaryPredicate p)
     {
-        // see: https://en.cppreference.com/w/cpp/container/unordered_set/erase_if
+        // see C++20: https://en.cppreference.com/w/cpp/container/unordered_set/erase_if
 
         for (auto it = c.begin(), end = c.end(); it != end;)
         {
@@ -116,7 +116,7 @@ namespace osc {
     // returns `true` if the values of `a` and `b` are effectively equal
     //
     // this algorithm is designed to be correct, rather than fast
-    inline bool AreEffectivelyEqual(double a, double b) noexcept
+    inline bool IsEffectivelyEqual(double a, double b) noexcept
     {
         // why:
         //
@@ -183,7 +183,7 @@ namespace osc {
 
     // combines hash of `T` into the seed value
     template <class T>
-    inline size_t DoHashCombine(size_t seed, T const& v)
+    inline size_t HashCombine(size_t seed, T const& v)
     {
         std::hash<T> hasher;
         return seed ^ (hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2));
@@ -198,6 +198,6 @@ namespace osc {
     template<typename T, typename... Ts>
     inline size_t HashOf(T const& v, Ts const&... vs)
     {
-        return DoHashCombine(HashOf(v), HashOf(vs...));
+        return HashCombine(HashOf(v), HashOf(vs...));
     }
 }

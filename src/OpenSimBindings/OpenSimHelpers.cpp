@@ -46,7 +46,7 @@ namespace
                          SimTK::State const& st,
                          OpenSim::ModelDisplayHints const& mdh,
                          SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                         osc::DecorationProducer& handler)
+                         osc::DecorativeGeometryHandler& handler)
     {
         {
             OSC_PERF("OpenSim::Component::generateDecorations(true, ...)");
@@ -126,7 +126,7 @@ namespace
                     std::vector<osc::ComponentDecoration>& out,
                     OpenSim::ModelDisplayHints const& mdh,
                     SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                    DecorationProducer& producer)
+                    DecorativeGeometryHandler& producer)
     {
         // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
         // currently hovered
@@ -154,7 +154,7 @@ namespace
                             OpenSim::Component const** currentComponent,
                             OpenSim::ModelDisplayHints const& mdh,
                             SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                            DecorationProducer& producer)
+                            DecorativeGeometryHandler& producer)
     {
         // GeometryPath requires custom *selection* logic
         //
@@ -205,7 +205,7 @@ namespace
 
         MeshCache& meshCache = App::meshes();
 
-        DecorationProducer producer{
+        DecorativeGeometryHandler producer{
             meshCache,
             m.getSystem().getMatterSubsystem(),
             st,
@@ -253,6 +253,19 @@ namespace
 
 
 // public API
+
+void osc::GetCoordinatesInModel(OpenSim::Model const& m,
+                                std::vector<OpenSim::Coordinate const*>& out)
+{
+    OpenSim::CoordinateSet const& s = m.getCoordinateSet();
+    int len = s.getSize();
+    out.reserve(out.size() + static_cast<size_t>(len));
+
+    for (int i = 0; i < len; ++i)
+    {
+        out.push_back(&s[i]);
+    }
+}
 
 std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Component& c)
 {

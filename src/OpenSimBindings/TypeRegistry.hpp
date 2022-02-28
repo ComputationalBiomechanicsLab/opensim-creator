@@ -6,7 +6,8 @@
 #include <optional>
 #include <cstddef>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Joint;
     class Constraint;
     class ContactGeometry;

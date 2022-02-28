@@ -1,6 +1,5 @@
 #pragma once
 
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -8,17 +7,52 @@
 
 namespace osc
 {
-    class UID {
-        friend UID GenerateID();
-        friend constexpr int64_t UnwrapID(UID const&) noexcept;
+    template<typename T>
+    class UIDT;
 
-    protected:
-        explicit constexpr UID(int64_t value) noexcept :
-            m_Value{value}
+    class UID {
+    public:
+        static constexpr UID invalid() noexcept
         {
+            return UID{-1};
+        }
+
+        static constexpr UID empty() noexcept
+        {
+            return UID{0};
+        }
+
+        UID() noexcept : m_Value{GetNextID()}
+        {
+        }
+        constexpr UID(UID const&) = default;
+        constexpr UID(UID&&) noexcept = default;
+        constexpr UID& operator=(UID const&) = default;
+        constexpr UID& operator=(UID&&) noexcept = default;
+        ~UID() noexcept = default;
+
+        void reset() noexcept
+        {
+            m_Value = GetNextID();
+        }
+
+        constexpr int64_t get() const noexcept
+        {
+            return m_Value;
+        }
+
+        constexpr operator bool() const noexcept
+        {
+            return m_Value > 0;
         }
 
     private:
+        static int64_t GetNextID() noexcept;
+
+        constexpr UID(int64_t value) noexcept : m_Value{std::move(value)}
+        {
+        }
+
         int64_t m_Value;
     };
 
@@ -27,70 +61,76 @@ namespace osc
     // adds compile-time type checking to IDs
     template<typename T>
     class UIDT : public UID {
-        template<typename U>
-        friend UIDT<U> GenerateIDT();
+    public:
 
-        template<typename U>
-        friend constexpr UIDT<U> DowncastID(UID const&);
+        UIDT() : UID{}
+        {
+        }
+
+        // upcasting is automatic
+        template<typename U, typename = std::enable_if_t<std::is_base_of_v<U, T>>>
+        constexpr operator UIDT<U> () const noexcept
+        {
+            return UIDT<U>{*this};
+        }
 
     private:
-        explicit constexpr UIDT(UID id) :
-            UID{id}
+        // unchecked downcast of untyped ID to typed one
+        template<typename U>
+        friend constexpr UIDT<U> DowncastID(UID const&) noexcept;
+
+        // compile-time (in terms of types) checked downcast
+        template<typename U, typename V>
+        friend constexpr UIDT<V> DowncastID(UIDT<U> const&) noexcept;
+
+        constexpr UIDT(UID id) noexcept : UID{std::move(id)}
         {
         }
     };
 
-    extern std::atomic<int64_t> g_NextGlobalUID;
-    extern UID g_EmptyID;  // senteniel
-    extern UID g_InvalidID;  // senteniel
-
-    inline UID GenerateID()
+    template<typename U>
+    constexpr UIDT<U> DowncastID(UID const& id) noexcept
     {
-        return UID{g_NextGlobalUID.fetch_add(1, std::memory_order_relaxed)};
+        return UIDT<U>{id};
     }
 
-    template<typename T>
-    UIDT<T> GenerateIDT()
+    template<typename U, typename V>
+    constexpr UIDT<V> DowncastIDT(UIDT<U> const& id) noexcept
     {
-        return UIDT<T>{GenerateID()};
-    }
-
-    constexpr int64_t UnwrapID(UID const& id) noexcept
-    {
-        return id.m_Value;
-    }
-
-    inline UID EmptyID() noexcept
-    {
-        return g_EmptyID;
-    }
-
-    inline UID InvalidID() noexcept
-    {
-        return g_InvalidID;
+        static_assert(std::is_base_of_v<V, U>);
+        return UIDT<V>{id};
     }
 
     std::ostream& operator<<(std::ostream& o, UID const& id);
 
     constexpr bool operator==(UID const& lhs, UID const& rhs) noexcept
     {
-        return UnwrapID(lhs) == UnwrapID(rhs);
+        return lhs.get() == rhs.get();
     }
 
     constexpr bool operator!=(UID const& lhs, UID const& rhs) noexcept
     {
-        return UnwrapID(lhs) != UnwrapID(rhs);
+        return lhs.get() != rhs.get();
     }
 
     constexpr bool operator<(UID const& lhs, UID const& rhs) noexcept
     {
-        return UnwrapID(lhs) < UnwrapID(rhs);
+        return lhs.get() < rhs.get();
     }
 
-    template<typename T>
-    constexpr UIDT<T> DowncastID(UID const& id)
+    constexpr bool operator<=(UID const& lhs, UID const& rhs) noexcept
     {
-        return UIDT<T>{id};
+        return lhs.get() <= rhs.get();
+    }
+
+    constexpr bool operator>(UID const& lhs, UID const& rhs) noexcept
+    {
+        return lhs.get() > rhs.get();
+    }
+
+    constexpr bool operator>=(UID const& lhs, UID const& rhs) noexcept
+    {
+        return lhs.get() >= rhs.get();
     }
 }
 
@@ -103,7 +143,7 @@ namespace std
     struct hash<osc::UID> {
         size_t operator()(osc::UID const& id) const
         {
-            return static_cast<size_t>(osc::UnwrapID(id));
+            return static_cast<size_t>(id.get());
         }
     };
 
@@ -111,7 +151,7 @@ namespace std
     struct hash<osc::UIDT<T>> {
         size_t operator()(osc::UID const& id) const
         {
-            return static_cast<size_t>(osc::UnwrapID(id));
+            return static_cast<size_t>(id.get());
         }
     };
 }

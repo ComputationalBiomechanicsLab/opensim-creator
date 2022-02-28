@@ -46,10 +46,8 @@ namespace osc
     glm::quat ToQuat(SimTK::Rotation const&);
     Transform ToTransform(SimTK::Transform const&);
 
-
     // mesh loading
     Mesh LoadMeshViaSimTK(std::filesystem::path const&);
-
 
     // rendering
 
@@ -62,26 +60,25 @@ namespace osc
         DecorationConsumer(DecorationConsumer&&) noexcept = delete;
         DecorationConsumer& operator=(DecorationConsumer const&) = delete;
         DecorationConsumer& operator=(DecorationConsumer&&) noexcept = delete;
-
         virtual ~DecorationConsumer() noexcept = default;
+
         virtual void operator()(std::shared_ptr<Mesh> const&, Transform const&, glm::vec4 const& color) = 0;
     };
 
     // consumes SimTK::DecorativeGeometry and emits appropriate decorations back to
     // the `DecorationConsumer`
-    class DecorationProducer final {
+    class DecorativeGeometryHandler final {
     public:
-        DecorationProducer(MeshCache& meshCache,
-                           SimTK::SimbodyMatterSubsystem const& matter,
-                           SimTK::State const& state,
-                           float fixupScaleFactor,
-                           DecorationConsumer&);
-        DecorationProducer(DecorationProducer const&) = delete;
-        DecorationProducer(DecorationProducer&&) noexcept;
-        ~DecorationProducer() noexcept;
-
-        DecorationProducer& operator=(DecorationProducer const&) = delete;
-        DecorationProducer& operator=(DecorationProducer&&) noexcept;
+        DecorativeGeometryHandler(MeshCache& meshCache,
+                                  SimTK::SimbodyMatterSubsystem const& matter,
+                                  SimTK::State const& state,
+                                  float fixupScaleFactor,
+                                  DecorationConsumer&);
+        DecorativeGeometryHandler(DecorativeGeometryHandler const&) = delete;
+        DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept;
+        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler const&) = delete;
+        DecorativeGeometryHandler& operator=(DecorativeGeometryHandler&&) noexcept;
+        ~DecorativeGeometryHandler() noexcept;
 
         void operator()(SimTK::DecorativeGeometry const&);
 

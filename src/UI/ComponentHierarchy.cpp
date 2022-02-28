@@ -129,192 +129,212 @@ static bool isSearchHit(std::string searchStr, ComponentPath const& cp) {
     return false;
 }
 
+class osc::ComponentHierarchy::Impl final {
+public:
+    osc::ComponentHierarchy::Response draw(
+        OpenSim::Component const* root,
+        OpenSim::Component const* selection,
+        OpenSim::Component const* hover)
+    {
+        ImGui::Dummy({0.0f, 3.0f});
+        ImGui::TextUnformatted(ICON_FA_EYE);
+        if (ImGui::BeginPopupContextItem("##filterpopup")) {
+            ImGui::Checkbox("frames", &showFrames);
+            ImGui::EndPopup();
+        }
+        ImGui::SameLine();
+        if (search[0] != '\0') {
+            if (ImGui::Button("X")) {
+                search[0] = '\0';
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Clear the search string");
+                ImGui::EndTooltip();
+            }
+        } else {
+            ImGui::TextUnformatted(ICON_FA_SEARCH);
+        }
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::InputText("##hirarchtsearchbar", search, sizeof(search));
+        ImGui::Dummy({0.0f, 3.0f});
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 3.0f});
+
+        ImGui::BeginChild("##componenthierarchyvieweritems");
+
+        Response response;
+
+        if (!root) {
+            return response;
+        }
+
+        ComponentPath selectionPath;
+        if (selection) {
+            computeComponentPath(root, selection, selectionPath);
+        }
+
+        ComponentPath hoverPath;
+        if (hover) {
+            computeComponentPath(root, hover, hoverPath);
+        }
+
+        // init iterators: this alg. is single-pass with a 1-token lookahead
+        auto const lst = root->getComponentList();
+        auto it = lst.begin();
+        auto const end = lst.end();
+
+        // initially populate lookahead (+ path)
+        OpenSim::Component const* lookahead = root;
+        ComponentPath lookaheadPath;
+        computeComponentPath(root, root, lookaheadPath);
+
+        // set cur path empty (first step copies lookahead into this)
+        OpenSim::Component const* cur = nullptr;
+        ComponentPath currentPath;
+
+        int imguiTreeDepth = 0;
+        int imguiId = 0;
+        bool hasSearch = std::strlen(search) > 0;
+
+        float unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
+
+        while (lookahead) {
+            // important: ensure all nodes have a unique ID: regardess of filtering
+            ++imguiId;
+
+            // populate current (+ path) from lookahead
+            cur = lookahead;
+            currentPath = lookaheadPath;
+
+            OSC_ASSERT(cur && "cur ptr should *definitely* be populated at this point");
+            OSC_ASSERT(!currentPath.empty() && "current path cannot be empty (even a root element has a path)");
+
+            // update lookahead (+ path) by stepping to the next component in the component tree
+            lookahead = nullptr;
+            lookaheadPath.clear();
+            while (it != end) {
+                OpenSim::Component const& c = *it++;
+
+                bool shouldRender = true;
+
+                auto hc = typeid(c).hash_code();
+                if (!showFrames && hc == g_FrameGeometryHash)
+                {
+                    shouldRender = false;
+                }
+                else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
+                {
+                    shouldRender = wos->getSize() > 0;
+                }
+                else if (!ShouldShowInUI(c))
+                {
+                    shouldRender = false;
+                }
+
+
+                if (shouldRender)
+                {
+                    lookahead = &c;
+                    computeComponentPath(root, &c, lookaheadPath);
+                    break;
+                }
+            }
+            OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
+
+            bool searchHit = hasSearch && isSearchHit(search, currentPath);
+
+            // skip rendering if a parent node is collapsed
+            if (imguiTreeDepth < currentPath.sizei() - 1) {
+                continue;
+            }
+
+            // pop tree nodes down to the current depth
+            while (imguiTreeDepth >= currentPath.sizei()) {
+                ImGui::Indent(unindentPerLevel);
+                ImGui::TreePop();
+                --imguiTreeDepth;
+            }
+            OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
+
+            // handle display mode (node vs leaf)
+            bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
+            ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_None : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+
+            // handle coloring
+            int styles = 0;
+            if (cur == selection) {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
+                ++styles;
+            } else if (cur == hover) {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
+                ++styles;
+            } else if (!hasSearch || searchHit) {
+                // display as normal
+            } else {
+                ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
+                ++styles;
+            }
+
+            // auto-open in these cases
+            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
+                ImGui::SetNextItemOpen(true);
+            }
+
+            ImGui::PushID(imguiId);
+            if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags)) {
+                ImGui::Unindent(unindentPerLevel);
+                ++imguiTreeDepth;
+            }
+            ImGui::PopID();
+            ImGui::PopStyleColor(styles);
+
+            if (ImGui::IsItemHovered()) {
+                response.type = HoverChanged;
+                response.ptr = cur;
+
+                ImGui::BeginTooltip();
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+                ImGui::TextUnformatted(cur->getConcreteClassName().c_str());
+                ImGui::PopTextWrapPos();
+                ImGui::EndTooltip();
+            }
+
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left))) {
+                response.type = SelectionChanged;
+                response.ptr = cur;
+            }
+        }
+
+        // pop remaining dangling tree elements
+        while (imguiTreeDepth-- > 0) {
+            ImGui::Indent(unindentPerLevel);
+            ImGui::TreePop();
+        }
+
+        ImGui::EndChild();
+
+        return response;
+    }
+
+private:
+    char search[256]{};
+    bool showFrames = false;
+};
+
 
 // public API
+
+osc::ComponentHierarchy::ComponentHierarchy() : m_Impl{std::make_unique<Impl>()} {}
+osc::ComponentHierarchy::ComponentHierarchy(ComponentHierarchy&&) noexcept = default;
+osc::ComponentHierarchy& osc::ComponentHierarchy::operator=(ComponentHierarchy&&) noexcept = default;
+osc::ComponentHierarchy::~ComponentHierarchy() noexcept = default;
 
 osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
     OpenSim::Component const* root,
     OpenSim::Component const* selection,
-    OpenSim::Component const* hover) {
-
-    ImGui::Dummy({0.0f, 3.0f});
-    ImGui::TextUnformatted(ICON_FA_EYE);
-    if (ImGui::BeginPopupContextItem("##filterpopup")) {
-        ImGui::Checkbox("frames", &showFrames);
-        ImGui::EndPopup();
-    }
-    ImGui::SameLine();
-    if (search[0] != '\0') {
-        if (ImGui::Button("X")) {
-            search[0] = '\0';
-        }
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::Text("Clear the search string");
-            ImGui::EndTooltip();
-        }
-    } else {
-        ImGui::TextUnformatted(ICON_FA_SEARCH);
-    }
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    ImGui::InputText("##hirarchtsearchbar", search, sizeof(search));
-    ImGui::Dummy({0.0f, 3.0f});
-    ImGui::Separator();
-    ImGui::Dummy({0.0f, 3.0f});
-
-    ImGui::BeginChild("##componenthierarchyvieweritems");
-
-    Response response;
-
-    if (!root) {
-        return response;
-    }
-
-    ComponentPath selectionPath;
-    if (selection) {
-        computeComponentPath(root, selection, selectionPath);
-    }
-
-    ComponentPath hoverPath;
-    if (hover) {
-        computeComponentPath(root, hover, hoverPath);
-    }
-
-    // init iterators: this alg. is single-pass with a 1-token lookahead
-    auto const lst = root->getComponentList();
-    auto it = lst.begin();
-    auto const end = lst.end();
-
-    // initially populate lookahead (+ path)
-    OpenSim::Component const* lookahead = root;
-    ComponentPath lookaheadPath;
-    computeComponentPath(root, root, lookaheadPath);
-
-    // set cur path empty (first step copies lookahead into this)
-    OpenSim::Component const* cur = nullptr;
-    ComponentPath currentPath;
-
-    int imguiTreeDepth = 0;
-    int imguiId = 0;
-    bool hasSearch = std::strlen(search) > 0;
-
-    float unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
-
-    while (lookahead) {
-        // important: ensure all nodes have a unique ID: regardess of filtering
-        ++imguiId;
-
-        // populate current (+ path) from lookahead
-        cur = lookahead;
-        currentPath = lookaheadPath;
-
-        OSC_ASSERT(cur && "cur ptr should *definitely* be populated at this point");
-        OSC_ASSERT(!currentPath.empty() && "current path cannot be empty (even a root element has a path)");
-
-        // update lookahead (+ path) by stepping to the next component in the component tree
-        lookahead = nullptr;
-        lookaheadPath.clear();
-        while (it != end) {
-            OpenSim::Component const& c = *it++;
-
-            bool shouldRender = true;
-
-            auto hc = typeid(c).hash_code();
-            if (!showFrames && hc == g_FrameGeometryHash)
-            {
-                shouldRender = false;
-            }
-            else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
-            {
-                shouldRender = wos->getSize() > 0;
-            }
-            else if (!ShouldShowInUI(c))
-            {
-                shouldRender = false;
-            }
-
-
-            if (shouldRender)
-            {
-                lookahead = &c;
-                computeComponentPath(root, &c, lookaheadPath);
-                break;
-            }
-        }
-        OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
-
-        bool searchHit = hasSearch && isSearchHit(search, currentPath);
-
-        // skip rendering if a parent node is collapsed
-        if (imguiTreeDepth < currentPath.sizei() - 1) {
-            continue;
-        }
-
-        // pop tree nodes down to the current depth
-        while (imguiTreeDepth >= currentPath.sizei()) {
-            ImGui::Indent(unindentPerLevel);
-            ImGui::TreePop();
-            --imguiTreeDepth;
-        }
-        OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
-
-        // handle display mode (node vs leaf)
-        bool isInternalNode = currentPath.size() < 3 || lookaheadPath.size() > currentPath.size();
-        ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_None : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
-
-        // handle coloring
-        int styles = 0;
-        if (cur == selection) {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
-            ++styles;
-        } else if (cur == hover) {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
-            ++styles;
-        } else if (!hasSearch || searchHit) {
-            // display as normal
-        } else {
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
-            ++styles;
-        }
-
-        // auto-open in these cases
-        if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
-            ImGui::SetNextItemOpen(true);
-        }
-
-        ImGui::PushID(imguiId);
-        if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags)) {
-            ImGui::Unindent(unindentPerLevel);
-            ++imguiTreeDepth;
-        }
-        ImGui::PopID();
-        ImGui::PopStyleColor(styles);
-
-        if (ImGui::IsItemHovered()) {
-            response.type = HoverChanged;
-            response.ptr = cur;
-
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-            ImGui::TextUnformatted(cur->getConcreteClassName().c_str());
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
-
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left))) {
-            response.type = SelectionChanged;
-            response.ptr = cur;
-        }
-    }
-
-    // pop remaining dangling tree elements
-    while (imguiTreeDepth-- > 0) {
-        ImGui::Indent(unindentPerLevel);
-        ImGui::TreePop();
-    }
-
-    ImGui::EndChild();
-
-    return response;
+    OpenSim::Component const* hover)
+{
+    return m_Impl->draw(root, selection, hover);
 }

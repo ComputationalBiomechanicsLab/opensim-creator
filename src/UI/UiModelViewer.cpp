@@ -30,22 +30,24 @@
 using namespace osc;
 
 // helper method for making a render buffer (used in Render_target)
-static gl::RenderBuffer makeMultisampledRenderBuffer(int samples, GLenum format, int w, int h) {
+static gl::RenderBuffer makeMultisampledRenderBuffer(int samples, GLenum format, int w, int h)
+{
     gl::RenderBuffer rv;
     gl::BindRenderBuffer(rv);
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, w, h);
     return rv;
 }
 
-static gl::RenderBuffer makeRenderBuffer(GLenum format, int w, int h) {
+static gl::RenderBuffer makeRenderBuffer(GLenum format, int w, int h)
+{
     gl::RenderBuffer rv;
     gl::BindRenderBuffer(rv);
     glRenderbufferStorage(GL_RENDERBUFFER, format, w, h);
     return rv;
 }
 
-namespace {
-
+namespace
+{
     // buffers used to render the scene
     struct RenderBuffers final {
         glm::ivec2 dims;
@@ -81,7 +83,8 @@ namespace {
                 return rv;
             }()},
 
-            rims2DTex{[this]() {
+            rims2DTex{[this]()
+            {
                 gl::Texture2D rv;
                 gl::BindTexture(rv);
                 gl::TexImage2D(rv.type, 0, GL_RED, dims.x, dims.y, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
@@ -93,7 +96,8 @@ namespace {
                 return rv;
             }()},
             rims2DDepth24Stencil8RBO{makeRenderBuffer(GL_DEPTH24_STENCIL8, dims.x, dims.y)},
-            rimsFBO{[this]() {
+            rimsFBO{[this]()
+            {
                 gl::FrameBuffer rv;
                 gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                 gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rims2DTex, 0);
@@ -102,7 +106,8 @@ namespace {
                 return rv;
             }()},
 
-            outputTex{[this]() {
+            outputTex{[this]()
+            {
                gl::Texture2D rv;
                gl::BindTexture(rv);
                gl::TexImage2D(rv.type, 0, GL_RGBA, dims.x, dims.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -110,14 +115,16 @@ namespace {
                gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // no mipmaps
                return rv;
            }()},
-           outputDepth24Stencil8Tex{[this]() {
+           outputDepth24Stencil8Tex{[this]()
+            {
                gl::Texture2D rv;
                gl::BindTexture(rv);
                // https://stackoverflow.com/questions/27535727/opengl-create-a-depth-stencil-texture-for-reading
                gl::TexImage2D(rv.type, 0, GL_DEPTH24_STENCIL8, dims.x, dims.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
                return rv;
            }()},
-           outputFbo{[this]() {
+           outputFbo{[this]()
+           {
                gl::FrameBuffer rv;
                gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
                gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, outputTex, 0);
@@ -129,14 +136,18 @@ namespace {
             // ctor
         }
 
-        void setDims(glm::ivec2 newDims) {
-            if (newDims != dims) {
+        void setDims(glm::ivec2 newDims)
+        {
+            if (newDims != dims)
+            {
                 *this = RenderBuffers{newDims, samples};
             }
         }
 
-        void setSamples(int newSamples) {
-            if (samples != newSamples) {
+        void setSamples(int newSamples)
+        {
+            if (samples != newSamples)
+            {
                 *this = RenderBuffers{dims, newSamples};
             }
         }
@@ -150,12 +161,6 @@ namespace {
         int decorationIdx;
     };
 
-    static Mesh generateFloorMesh() {
-        Mesh m{GenTexturedQuad()};
-        m.scaleTexCoords(200.0f);
-        return m;
-    }
-
     // state associated with a 3D ruler that users can use to measure things
     // in the scene
     class GuiRuler final {
@@ -166,20 +171,23 @@ namespace {
     public:
         void draw(std::pair<OpenSim::Component const*, glm::vec3> const& htResult,
                   PolarPerspectiveCamera const& sceneCamera,
-                  Rect renderRect) {
-
-            if (m_State == State::Inactive) {
+                  Rect renderRect)
+        {
+            if (m_State == State::Inactive)
+            {
                 return;
             }
 
             // users can exit measuring through these actions
-            if (ImGui::IsKeyDown(SDL_SCANCODE_ESCAPE) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+            if (ImGui::IsKeyDown(SDL_SCANCODE_ESCAPE) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+            {
                 StopMeasuring();
                 return;
             }
 
             // users can "finish" the measurement through these actions
-            if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
                 StopMeasuring();
                 return;
             }
@@ -195,7 +203,8 @@ namespace {
             float lineThickness = 3.0f;
             glm::vec2 labelOffsetWhenNoLine = {10.0f, -10.0f};
 
-            auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, char const* text) {
+            auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](glm::vec2 const& pos, char const* text)
+            {
                 glm::vec2 sz = ImGui::CalcTextSize(text);
                 float bgPad = 5.0f;
                 float edgeRounding = bgPad - 2.0f;
@@ -204,26 +213,36 @@ namespace {
                 dl->AddText(pos, textColor, text);
             };
 
-            if (m_State == State::WaitingForFirstPoint) {
-                if (!htResult.first) {  // not mousing over anything
+            if (m_State == State::WaitingForFirstPoint)
+            {
+                if (!htResult.first)
+                {
+                    // not mousing over anything
                     dl->AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
                     return;
-                } else {  // mousing over something
+                }
+                else
+                {
+                    // mousing over something
                     dl->AddCircleFilled(mouseLoc, circleRadius, circleColor);
                     char buf[1024];
                     std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
                     drawTooltipWithBg(mouseLoc + labelOffsetWhenNoLine, buf);
 
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
                         m_State = State::WaitingForSecondPoint;
                         m_StartWorldPos = htResult.second;
                     }
                     return;
                 }
-            } else if (m_State == State::WaitingForSecondPoint) {
+            }
+            else if (m_State == State::WaitingForSecondPoint)
+            {
                 glm::vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
 
-                if (htResult.first) {
+                if (htResult.first)
+                {
                     // user is moused over something, so draw a line + circle between the two hitlocs
                     glm::vec2 endScreenPos = mouseLoc;
                     glm::vec2 lineScreenDir = glm::normalize(startScreenPos - endScreenPos);
@@ -248,21 +267,26 @@ namespace {
                         std::snprintf(buf, sizeof(buf), "%s @ (%.2f, %.2f, %.2f)", htResult.first->getName().c_str(), htResult.second.x, htResult.second.y, htResult.second.z);
                         drawTooltipWithBg(mouseLoc + offsetVec, buf);
                     }
-                } else {
+                }
+                else
+                {
                     dl->AddCircleFilled(startScreenPos, circleRadius, circleColor);
                 }
             }
         }
 
-        void StartMeasuring() {
+        void StartMeasuring()
+        {
             m_State = State::WaitingForFirstPoint;
         }
 
-        void StopMeasuring() {
+        void StopMeasuring()
+        {
             m_State = State::Inactive;
         }
 
-        bool IsMeasuring() const {
+        bool IsMeasuring() const
+        {
             return m_State != State::Inactive;
         }
     };
@@ -307,7 +331,8 @@ struct osc::UiModelViewer::Impl final {
 
     GuiRuler ruler;
 
-    Impl(UiModelViewerFlags flags_) : flags{flags_} {
+    Impl(UiModelViewerFlags flags_) : flags{flags_}
+    {
         camera.theta = fpi4;
         camera.phi = fpi4;
     }
@@ -320,15 +345,17 @@ osc::UiModelViewer::UiModelViewer(UiModelViewerFlags flags) :
 
 osc::UiModelViewer::UiModelViewer(UiModelViewer&&) noexcept = default;
 
-osc::UiModelViewer::~UiModelViewer() noexcept = default;
-
 osc::UiModelViewer& osc::UiModelViewer::operator=(UiModelViewer&&) noexcept = default;
 
-bool osc::UiModelViewer::isMousedOver() const {
+osc::UiModelViewer::~UiModelViewer() noexcept = default;
+
+bool osc::UiModelViewer::isMousedOver() const
+{
     return m_Impl->renderHovered;
 }
 
-static glm::mat4x3 generateFloorModelMatrix(osc::UiModelViewer::Impl const& impl, RenderableScene const& rs) {
+static glm::mat4x3 GenerateFloorModelMatrix(osc::UiModelViewer::Impl const& impl, RenderableScene const& rs)
+{
     float fixupScaleFactor = rs.getFixupScaleFactor();
 
     // rotate from XY (+Z dir) to ZY (+Y dir)
@@ -342,44 +369,22 @@ static glm::mat4x3 generateFloorModelMatrix(osc::UiModelViewer::Impl const& impl
     return glm::mat4x3{rv};
 }
 
-static AABB computeWorldspaceRimAABB(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
-    nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
-    std::vector<SceneGPUInstanceData> const& dl = impl.drawlistBuffer;
-
-    if (dl.empty()) {
-        return {};
-    }
-
-    AABB rv;
-    rv.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
-    rv.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
-
-    int n = 0;
-    for (SceneGPUInstanceData const& inst : dl) {
-        if (inst.rimIntensity > 0.0f) {
-            rv = AABBUnion(decs[inst.decorationIdx].worldspaceAABB, rv);
-            ++n;
-        }
-    }
-
-    if (n == 0) {
-        return {};
-    }
-
-    return rv;
-}
-
-static float computeRimColor(OpenSim::Component const* selected,
+static float ComputeRimColor(OpenSim::Component const* selected,
                              OpenSim::Component const* hovered,
-                             OpenSim::Component const* c) {
-    while (c) {
-        if (c == selected) {
+                             OpenSim::Component const* c)
+{
+    while (c)
+    {
+        if (c == selected)
+        {
             return 0.9f;
         }
-        if (c == hovered) {
+        if (c == hovered)
+        {
             return 0.4f;
         }
-        if (!c->hasOwner()) {
+        if (!c->hasOwner())
+        {
             return 0.0f;
         }
         c = &c->getOwner();
@@ -388,21 +393,27 @@ static float computeRimColor(OpenSim::Component const* selected,
     return 0.0f;
 }
 
-static bool isInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c) {
-    if (!c) {
+static bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Component const* c)
+{
+    if (!c)
+    {
         return false;
     }
 
-    if (!parent) {
+    if (!parent)
+    {
         return false;
     }
 
-    for (;;) {
-        if (c == parent) {
+    for (;;)
+    {
+        if (c == parent)
+        {
             return true;
         }
 
-        if (!c->hasOwner()) {
+        if (!c->hasOwner())
+        {
             return false;
         }
 
@@ -410,7 +421,8 @@ static bool isInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Compon
     }
 }
 
-static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
     nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
     OpenSim::Component const* const selected = rs.getSelected();
@@ -422,10 +434,12 @@ static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScen
     buf.reserve(decs.size());
 
     // populate the list with the scene
-    for (size_t i = 0; i < decs.size(); ++i) {
+    for (size_t i = 0; i < decs.size(); ++i)
+    {
         ComponentDecoration const& se = decs[i];
 
-        if (isolated && !isInclusiveChildOf(isolated, se.component)) {
+        if (isolated && !IsInclusiveChildOf(isolated, se.component))
+        {
             continue;  // skip rendering this (it's not in the isolated component)
         }
 
@@ -433,12 +447,13 @@ static void populateSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScen
         ins.modelMtx = se.modelMtx;
         ins.normalMtx = se.normalMtx;
         ins.rgba = se.color;
-        ins.rimIntensity = computeRimColor(selected, hovered, se.component);
+        ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
         ins.decorationIdx = static_cast<int>(i);
     }
 }
 
-static void bindInstanceAttrs(size_t offset) {
+static void BindToInstanceAttributes(size_t offset)
+{
     gl::AttributeMat4x3 mmtxAttr{SHADER_LOC_MATRIX_MODEL};
     gl::VertexAttribPointer(mmtxAttr, false, sizeof(SceneGPUInstanceData), sizeof(SceneGPUInstanceData)*offset + offsetof(SceneGPUInstanceData, modelMtx));
     gl::VertexAttribDivisor(mmtxAttr, 1);
@@ -460,13 +475,15 @@ static void bindInstanceAttrs(size_t offset) {
     gl::EnableVertexAttribArray(rimAttr);
 }
 
-static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     auto& renderTarg = impl.renderTarg;
 
     // ensure buffer sizes match ImGui panel size
     {
         ImVec2 contentRegion = ImGui::GetContentRegionAvail();
-        if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f) {
+        if (contentRegion.x >= 1.0f && contentRegion.y >= 1.0f)
+        {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
             renderTarg.setDims(dims);
             renderTarg.setSamples(App::cur().getRecommendedMSXAASamples());
@@ -494,7 +511,8 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         gl::ClearColor(impl.backgroundCol);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (impl.wireframeMode) {
+        if (impl.wireframeMode)
+        {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
 
@@ -512,39 +530,46 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         size_t pos = 0;
         size_t ninstances = instances.size();
 
-        while (pos < ninstances) {
+        while (pos < ninstances)
+        {
             ComponentDecoration const& se = decs[instances[pos].decorationIdx];
 
             // batch
             size_t end = pos + 1;
-            while (end < ninstances && decs[instances[end].decorationIdx].mesh.get() == se.mesh.get()) {
+            while (end < ninstances &&
+                   decs[instances[end].decorationIdx].mesh.get() == se.mesh.get())
+            {
                 ++end;
             }
 
             // if the last element in a batch is opaque, then all the preceding ones should be
             // also and we can skip blend-testing the entire batch
-            if (instances[end-1].rgba.a >= 0.99f) {
+            if (instances[end-1].rgba.a >= 0.99f)
+            {
                 gl::Disable(GL_BLEND);
-            } else {
+            }
+            else
+            {
                 gl::Enable(GL_BLEND);
             }
 
             gl::BindVertexArray(se.mesh->GetVertexArray());
             gl::BindBuffer(instanceBuf);
-            bindInstanceAttrs(pos);
+            BindToInstanceAttributes(pos);
             se.mesh->DrawInstanced(end-pos);
             gl::BindVertexArray();
 
             pos = end;
         }
 
-        if (impl.flags & UiModelViewerFlags_DrawFloor) {
+        if (impl.flags & UiModelViewerFlags_DrawFloor)
+        {
             auto& basicShader = App::shader<GouraudShader>();
 
             gl::UseProgram(basicShader.program);
             gl::Uniform(basicShader.uProjMat, projMtx);
             gl::Uniform(basicShader.uViewMat, viewMtx);
-            glm::mat4 mtx = generateFloorModelMatrix(impl, rs);
+            glm::mat4 mtx = GenerateFloorModelMatrix(impl, rs);
             gl::Uniform(basicShader.uModelMat, mtx);
             gl::Uniform(basicShader.uNormalMat, NormalMatrix(mtx));
             gl::Uniform(basicShader.uLightDir, impl.lightDir);
@@ -561,14 +586,15 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             gl::BindVertexArray();
         }
 
-        if (impl.wireframeMode) {
+        if (impl.wireframeMode)
+        {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
 
     // draw mesh normals, if requested
-    if (impl.drawMeshNormals) {
-
+    if (impl.drawMeshNormals)
+    {
         auto& normalShader = App::shader<NormalsShader>();
         gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
         gl::UseProgram(normalShader.program);
@@ -578,7 +604,8 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
         nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
 
-        for (SceneGPUInstanceData const& inst : instances) {
+        for (SceneGPUInstanceData const& inst : instances)
+        {
             ComponentDecoration const& se = decs[inst.decorationIdx];
 
             gl::Uniform(normalShader.uModelMat, inst.modelMtx);
@@ -599,7 +626,8 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
                         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
     // draw rims
-    if (impl.drawRims) {
+    if (impl.drawRims)
+    {
         gl::BindFramebuffer(GL_FRAMEBUFFER, renderTarg.rimsFBO);
         gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -619,17 +647,23 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         rimAABB.min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         rimAABB.max = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
         bool hasRims = false;
-        while (pos < ninstances) {
+
+        while (pos < ninstances)
+        {
             SceneGPUInstanceData const& inst = instances[pos];
             ComponentDecoration const& se = decs[inst.decorationIdx];
 
             // batch
             size_t end = pos + 1;
-            while (end < ninstances && decs[instances[end].decorationIdx].mesh.get() == se.mesh.get() && instances[end].rimIntensity == inst.rimIntensity) {
+            while (end < ninstances &&
+                   decs[instances[end].decorationIdx].mesh.get() == se.mesh.get() &&
+                   instances[end].rimIntensity == inst.rimIntensity)
+            {
                 ++end;
             }
 
-            if (inst.rimIntensity < 0.001f) {
+            if (inst.rimIntensity < 0.001f)
+            {
                 pos = end;
                 continue;  // skip rendering rimless elements
             }
@@ -637,29 +671,34 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
             hasRims = true;
 
             // union the rims for scissor testing later
-            for (size_t i = pos; i < end; ++i) {
+            for (size_t i = pos; i < end; ++i)
+            {
                 rimAABB = AABBUnion(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
             }
 
             gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
             gl::BindVertexArray(se.mesh->GetVertexArray());
             gl::BindBuffer(instanceBuf);
-            bindInstanceAttrs(pos);
+            BindToInstanceAttributes(pos);
             se.mesh->DrawInstanced(end-pos);
             gl::BindVertexArray();
 
             pos = end;
         }
 
-        if (hasRims) {
+        if (hasRims)
+        {
             float rimThickness = 1.0f / std::min(renderTarg.dims.x, renderTarg.dims.y);
 
+            // care: edge-detection kernels are expensive
+            //
             // calculate a screenspace bounding box that surrounds the rims so that the
             // edge detection shader only had to run on a smaller subset of the screen
             AABB screenspaceRimBounds = AABBApplyXform(rimAABB, projMtx * viewMtx);
             auto verts = AABBVerts(screenspaceRimBounds);
             glm::vec2 bounds[2] = {{verts[0].x, verts[0].y}, {verts[0].x, verts[0].y}};
-            for (size_t i = 1; i < verts.size(); ++i) {
+            for (size_t i = 1; i < verts.size(); ++i)
+            {
                 glm::vec2 p{verts[i].x, verts[i].y};
                 bounds[0] = VecMin(p, bounds[0]);
                 bounds[1] = VecMax(p, bounds[1]);
@@ -711,15 +750,10 @@ static void drawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 }
 
-static void blitSceneTexture(osc::UiModelViewer::Impl& impl) {
-    GLint texGLHandle = impl.renderTarg.outputTex.get();
-    void* texImGuiHandle = reinterpret_cast<void*>(static_cast<uintptr_t>(texGLHandle));
-
+static void BlitSceneTexture(osc::UiModelViewer::Impl& impl)
+{
     ImVec2 imgDims = ImGui::GetContentRegionAvail();
-    ImVec2 texcoordUV0 = {0.0f, 1.0f};
-    ImVec2 texcoordUV1 = {1.0f, 0.0f};
-
-    ImGui::Image(texImGuiHandle, imgDims, texcoordUV0, texcoordUV1);
+    DrawTextureAsImGuiImage(impl.renderTarg.outputTex, imgDims);
 
     impl.renderRect.p1 = ImGui::GetItemRectMin();
     impl.renderRect.p2 = ImGui::GetItemRectMax();
@@ -728,11 +762,12 @@ static void blitSceneTexture(osc::UiModelViewer::Impl& impl) {
     impl.renderRightClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
 }
 
-static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
+static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
         osc::UiModelViewer::Impl& impl,
-        RenderableScene const& rs) {
-
-    if (!impl.renderHovered) {
+        RenderableScene const& rs)
+{
+    if (!impl.renderHovered)
+    {
         return {nullptr, {0.0f, 0.0f, 0.0f}};
     }
 
@@ -760,10 +795,12 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
     nonstd::span<ComponentDecoration const> decs = rs.getSceneDecorations();
     OpenSim::Component const* const isolated = rs.getIsolated();
 
-    for (BVHCollision const& c : impl.sceneHittestResults) {
+    for (BVHCollision const& c : impl.sceneHittestResults)
+    {
         int instanceIdx = c.primId;
 
-        if (isolated && !isInclusiveChildOf(isolated, decs[instanceIdx].component)) {
+        if (isolated && !IsInclusiveChildOf(isolated, decs[instanceIdx].component))
+        {
             continue;  // it's not in the current isolation
         }
 
@@ -772,7 +809,8 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
 
         auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
 
-        if (maybeCollision && maybeCollision.distance < closestDistance) {
+        if (maybeCollision && maybeCollision.distance < closestDistance)
+        {
             closestIdx = instanceIdx;
             closestDistance = maybeCollision.distance;
             glm::vec3 closestLocModelspace = cameraRayModelspace.origin + closestDistance*cameraRayModelspace.dir;
@@ -780,14 +818,17 @@ static std::pair<OpenSim::Component const*, glm::vec3> hittestSceneDecorations(
         }
     }
 
-    if (closestIdx >= 0) {
+    if (closestIdx >= 0)
+    {
         return {decs[closestIdx].component,  closestWorldLoc};
-    } else {
+    }
+    else
+    {
         return {nullptr, {0.0f, 0.0f, 0.0f}};
     }
 }
 
-static void drawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
+static void DrawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
 {
     auto& shader = App::shader<SolidColorShader>();
 
@@ -802,22 +843,23 @@ static void drawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
     gl::BindVertexArray();
 }
 
-static void drawXZGrid(osc::UiModelViewer::Impl& impl)
+static void DrawXZGrid(osc::UiModelViewer::Impl& impl)
 {
-    drawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
+    DrawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {1.0f, 0.0f, 0.0f}));
 }
 
-static void drawXYGrid(osc::UiModelViewer::Impl& impl)
+static void DrawXYGrid(osc::UiModelViewer::Impl& impl)
 {
-    drawGrid(impl, glm::mat4{1.0f});
+    DrawGrid(impl, glm::mat4{1.0f});
 }
 
-static void drawYZGrid(osc::UiModelViewer::Impl& impl)
+static void DrawYZGrid(osc::UiModelViewer::Impl& impl)
 {
-    drawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}));
+    DrawGrid(impl, glm::rotate(glm::mat4{1.0f}, fpi2, {0.0f, 1.0f, 0.0f}));
 }
 
-static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
+static void DrawXZFloorLines(osc::UiModelViewer::Impl& impl)
+{
     auto& shader = App::shader<SolidColorShader>();
 
     // common stuff
@@ -841,7 +883,8 @@ static void drawFloorAxesLines(osc::UiModelViewer::Impl& impl) {
     gl::BindVertexArray();
 }
 
-static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void DrawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     auto& shader = App::shader<SolidColorShader>();
 
     // common stuff
@@ -853,7 +896,8 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
     auto cube = App::meshes().getCubeWireMesh();
     gl::BindVertexArray(cube->GetVertexArray());
 
-    for (auto const& se : rs.getSceneDecorations()) {
+    for (auto const& se : rs.getSceneDecorations())
+    {
         glm::vec3 halfWidths = AABBDims(se.worldspaceAABB) / 2.0f;
         glm::vec3 center = AABBCenter(se.worldspaceAABB);
 
@@ -869,7 +913,8 @@ static void drawAABBs(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
 }
 
 // assumes `pos` is in-bounds
-static void drawBVHRecursive(Mesh& cube, gl::UniformMat4& mtxUniform, BVH const& bvh, int pos) {
+static void DrawBVHRecursive(Mesh& cube, gl::UniformMat4& mtxUniform, BVH const& bvh, int pos)
+{
     BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = AABBDims(n.bounds) / 2.0f;
@@ -881,16 +926,20 @@ static void drawBVHRecursive(Mesh& cube, gl::UniformMat4& mtxUniform, BVH const&
     gl::Uniform(mtxUniform, mmtx);
     cube.Draw();
 
-    if (n.nlhs >= 0) {  // if it's an internal node
-        drawBVHRecursive(cube, mtxUniform, bvh, pos+1);
-        drawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
+    if (n.nlhs >= 0)
+    {
+        // it's an internal node
+        DrawBVHRecursive(cube, mtxUniform, bvh, pos+1);
+        DrawBVHRecursive(cube, mtxUniform, bvh, pos+n.nlhs+1);
     }
 }
 
-static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void DrawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     BVH const& bvh = rs.getSceneBVH();
 
-    if (bvh.nodes.empty()) {
+    if (bvh.nodes.empty())
+    {
         return;
     }
 
@@ -904,43 +953,44 @@ static void drawBVH(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
 
     auto cube = App::meshes().getCubeWireMesh();
     gl::BindVertexArray(cube->GetVertexArray());
-    drawBVHRecursive(*cube, shader.uModel, bvh, 0);
+    DrawBVHRecursive(*cube, shader.uModel, bvh, 0);
     gl::BindVertexArray();
 }
 
 // draws overlays that are "in scene" - i.e. they are part of the rendered texture
-static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
 
     if (impl.flags & UiModelViewerFlags_DrawXZGrid)
     {
-        drawXZGrid(impl);
+        DrawXZGrid(impl);
     }
 
     if (impl.flags & UiModelViewerFlags_DrawXYGrid)
     {
-        drawXYGrid(impl);
+        DrawXYGrid(impl);
     }
 
     if (impl.flags & UiModelViewerFlags_DrawYZGrid)
     {
-        drawYZGrid(impl);
+        DrawYZGrid(impl);
     }
 
     if (impl.flags & UiModelViewerFlags_DrawAxisLines)
     {
-        drawFloorAxesLines(impl);
+        DrawXZFloorLines(impl);
     }
 
     if (impl.flags & UiModelViewerFlags_DrawAABBs)
     {
-        drawAABBs(impl, rs);
+        DrawAABBs(impl, rs);
     }
 
     if (impl.flags & UiModelViewerFlags_DrawBVH)
     {
-        drawBVH(impl, rs);
+        DrawBVH(impl, rs);
     }
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
@@ -955,7 +1005,8 @@ static void DrawImGuiOverlays(osc::UiModelViewer::Impl& impl)
     }
 }
 
-static void drawOptionsMenu(osc::UiModelViewer::Impl& impl) {
+static void DrawOptionsMenuContent(osc::UiModelViewer::Impl& impl)
+{
     ImGui::Checkbox("wireframe mode", &impl.wireframeMode);
     ImGui::Checkbox("show normals", &impl.drawMeshNormals);
     ImGui::Checkbox("draw rims", &impl.drawRims);
@@ -969,45 +1020,54 @@ static void drawOptionsMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::CheckboxFlags("show floor", &impl.flags, UiModelViewerFlags_DrawFloor);
 }
 
-static void actionFocusCameraAlongX(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongX(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = fpi2;
     impl.camera.phi = 0.0f;
 }
 
-static void actionFocusCameraAlongMinusX(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongMinusX(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = -fpi2;
     impl.camera.phi = 0.0f;
 }
 
-static void actionFocusCameraAlongY(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongY(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = 0.0f;
     impl.camera.phi = fpi2;
 }
 
-static void actionFocusCameraAlongMinusY(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongMinusY(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = 0.0f;
     impl.camera.phi = -fpi2;
 }
 
-static void actionFocusCameraAlongZ(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongZ(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = 0.0f;
     impl.camera.phi = 0.0f;
 }
 
-static void actionFocusCameraAlongMinusZ(osc::UiModelViewer::Impl& impl) {
+static void DoFocusCameraAlongMinusZ(osc::UiModelViewer::Impl& impl)
+{
     impl.camera.theta = fpi;
     impl.camera.phi = 0.0f;
 }
 
-static void actionResetCamera(osc::UiModelViewer::Impl& impl) {
+static void DoResetCamera(osc::UiModelViewer::Impl& impl)
+{
     impl.camera = {};
     impl.camera.theta = fpi4;
     impl.camera.phi = fpi4;
 }
 
-static void actionAutoFocusCamera(osc::UiModelViewer::Impl& impl, RenderableScene const& rs) {
+static void DoAutoFocusCamera(osc::UiModelViewer::Impl& impl, RenderableScene const& rs)
+{
     auto const& bvh = rs.getSceneBVH();
-    if (!bvh.nodes.empty()) {
+    if (!bvh.nodes.empty())
+    {
         auto const& bvhRoot = bvh.nodes[0].bounds;
         impl.camera.focusPoint = -AABBCenter(bvhRoot);
         impl.camera.radius = 2.0f * AABBLongestDim(bvhRoot);
@@ -1016,12 +1076,15 @@ static void actionAutoFocusCamera(osc::UiModelViewer::Impl& impl, RenderableScen
     }
 }
 
-static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
+static void DrawSceneMenu(osc::UiModelViewer::Impl& impl)
+{
     ImGui::Text("reposition camera:");
     ImGui::Separator();
 
-    auto makeHoverTooltip = [](char const* msg) {
-        if (ImGui::IsItemHovered()) {
+    auto makeHoverTooltip = [](char const* msg)
+    {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted(msg);
@@ -1030,51 +1093,63 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
         }
     };
 
-    if (ImGui::Button("+X")) {
-        actionFocusCameraAlongX(impl);
+    if (ImGui::Button("+X"))
+    {
+        DoFocusCameraAlongX(impl);
     }
     makeHoverTooltip("Position camera along +X, pointing towards the center. Hotkey: X");
     ImGui::SameLine();
-    if (ImGui::Button("-X")) {
-        actionFocusCameraAlongMinusX(impl);
+    if (ImGui::Button("-X"))
+    {
+        DoFocusCameraAlongMinusX(impl);
     }
     makeHoverTooltip("Position camera along -X, pointing towards the center. Hotkey: Ctrl+X");
+
     ImGui::SameLine();
-    if (ImGui::Button("+Y")) {
-        actionFocusCameraAlongY(impl);
+    if (ImGui::Button("+Y"))
+    {
+        DoFocusCameraAlongY(impl);
     }
     makeHoverTooltip("Position camera along +Y, pointing towards the center. Hotkey: Y");
     ImGui::SameLine();
-    if (ImGui::Button("-Y")) {
-        actionFocusCameraAlongMinusY(impl);
+    if (ImGui::Button("-Y"))
+    {
+        DoFocusCameraAlongMinusY(impl);
     }
     makeHoverTooltip("Position camera along -Y, pointing towards the center. (no hotkey, because Ctrl+Y is taken by 'Redo'");
+
     ImGui::SameLine();
-    if (ImGui::Button("+Z")) {
-        actionFocusCameraAlongZ(impl);
+    if (ImGui::Button("+Z"))
+    {
+        DoFocusCameraAlongZ(impl);
     }
     makeHoverTooltip("Position camera along +Z, pointing towards the center. Hotkey: Z");
     ImGui::SameLine();
-    if (ImGui::Button("-Z")) {
-        actionFocusCameraAlongMinusZ(impl);
+    if (ImGui::Button("-Z"))
+    {
+        DoFocusCameraAlongMinusZ(impl);
     }
     makeHoverTooltip("Position camera along -Z, pointing towards the center. (no hotkey, because Ctrl+Z is taken by 'Undo')");
 
-    if (ImGui::Button("Zoom in")) {
+    if (ImGui::Button("Zoom in"))
+    {
         impl.camera.radius *= 0.8f;
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Zoom out")) {
+    if (ImGui::Button("Zoom out"))
+    {
         impl.camera.radius *= 1.2f;
     }
 
-    if (ImGui::Button("reset camera")) {
-        actionResetCamera(impl);
+    if (ImGui::Button("reset camera"))
+    {
+        DoResetCamera(impl);
     }
     makeHoverTooltip("Reset the camera to its initial (default) location. Hotkey: F");
 
-    if (ImGui::Button("Auto-focus camera")) {
+    if (ImGui::Button("Auto-focus camera"))
+    {
         impl.autoFocusCameraNextFrame = true;
     }
     makeHoverTooltip("Try to automatically adjust the camera's zoom etc. to suit the model's dimensions. Hotkey: Ctrl+F");
@@ -1082,47 +1157,56 @@ static void drawSceneMenu(osc::UiModelViewer::Impl& impl) {
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced camera properties:");
     ImGui::Separator();
-    ImGui::SliderFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
+    SliderMetersFloat("radius", &impl.camera.radius, 0.0f, 10.0f);
     ImGui::SliderFloat("theta", &impl.camera.theta, 0.0f, 2.0f * fpi);
     ImGui::SliderFloat("phi", &impl.camera.phi, 0.0f, 2.0f * fpi);
     ImGui::InputFloat("fov", &impl.camera.fov);
-    ImGui::InputFloat("znear", &impl.camera.znear);
-    ImGui::InputFloat("zfar", &impl.camera.zfar);
+    InputMetersFloat("znear", &impl.camera.znear);
+    InputMetersFloat("zfar", &impl.camera.zfar);
     ImGui::NewLine();
-    ImGui::SliderFloat("pan_x", &impl.camera.focusPoint.x, -100.0f, 100.0f);
-    ImGui::SliderFloat("pan_y", &impl.camera.focusPoint.y, -100.0f, 100.0f);
-    ImGui::SliderFloat("pan_z", &impl.camera.focusPoint.z, -100.0f, 100.0f);
+    SliderMetersFloat("pan_x", &impl.camera.focusPoint.x, -100.0f, 100.0f);
+    SliderMetersFloat("pan_y", &impl.camera.focusPoint.y, -100.0f, 100.0f);
+    SliderMetersFloat("pan_z", &impl.camera.focusPoint.z, -100.0f, 100.0f);
 
     ImGui::Dummy({0.0f, 10.0f});
     ImGui::Text("advanced scene properties:");
     ImGui::Separator();
     ImGui::ColorEdit3("light_color", reinterpret_cast<float*>(&impl.lightCol));
     ImGui::ColorEdit3("background color", reinterpret_cast<float*>(&impl.backgroundCol));
-    ImGui::InputFloat3("floor location", &impl.floorLocation.x, "%.6f");
+    InputMetersFloat3("floor location", &impl.floorLocation.x);
     makeHoverTooltip("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 }
 
 
-static void drawMainMenuContents(osc::UiModelViewer::Impl& impl) {
-    if (ImGui::BeginMenu("Options")) {
-        drawOptionsMenu(impl);
+static void DrawMainMenuContent(osc::UiModelViewer::Impl& impl)
+{
+    if (ImGui::BeginMenu("Options"))
+    {
+        DrawOptionsMenuContent(impl);
         ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Scene")) {
-        drawSceneMenu(impl);
+    if (ImGui::BeginMenu("Scene"))
+    {
+        DrawSceneMenu(impl);
         ImGui::EndMenu();
     }
 
-    if (impl.ruler.IsMeasuring()) {
-        if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false)) {
+    if (impl.ruler.IsMeasuring())
+    {
+        if (ImGui::MenuItem(ICON_FA_RULER " measuring", nullptr, false, false))
+        {
             impl.ruler.StopMeasuring();
         }
-    } else {
-        if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true)) {
+    }
+    else
+    {
+        if (ImGui::MenuItem(ICON_FA_RULER " measure", nullptr, false, true))
+        {
             impl.ruler.StartMeasuring();
         }
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted("EXPERIMENTAL: take a *rough* measurement of something in the scene - the UI for this needs to be improved, a lot ;)");
@@ -1137,52 +1221,69 @@ void osc::UiModelViewer::requestAutoFocus()
     m_Impl->autoFocusCameraNextFrame = true;
 }
 
-UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
+UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs)
+{
     Impl& impl = *m_Impl;
 
     // auto-focus the camera, if the user requested it last frame
-    if (impl.autoFocusCameraNextFrame) {
-        actionAutoFocusCamera(impl, rs);
+    if (impl.autoFocusCameraNextFrame)
+    {
+        DoAutoFocusCamera(impl, rs);
         impl.autoFocusCameraNextFrame = false;
     }
 
     // update camera if necessary
-    if (impl.renderHovered) {
+    if (impl.renderHovered)
+    {
         bool ctrlDown = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
 
-        if (ImGui::IsKeyReleased(SDL_SCANCODE_X)) {
-            if (ctrlDown) {
-                actionFocusCameraAlongMinusX(impl);
-            } else {
-                actionFocusCameraAlongX(impl);
+        if (ImGui::IsKeyReleased(SDL_SCANCODE_X))
+        {
+            if (ctrlDown)
+            {
+                DoFocusCameraAlongMinusX(impl);
+            } else
+            {
+                DoFocusCameraAlongX(impl);
             }
         }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_Y)) {
-            if (!ctrlDown) {
-                actionFocusCameraAlongY(impl);
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_Y))
+        {
+            if (!ctrlDown)
+            {
+                DoFocusCameraAlongY(impl);
             }
         }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_Z)) {
-            if (!ctrlDown) {
-                actionFocusCameraAlongZ(impl);
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_Z))
+        {
+            if (!ctrlDown)
+            {
+                DoFocusCameraAlongZ(impl);
             }
         }
-        if (ImGui::IsKeyPressed(SDL_SCANCODE_F)) {
-            if (ctrlDown) {
-                actionAutoFocusCamera(impl, rs);
-            } else {
-                actionResetCamera(impl);
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_F))
+        {
+            if (ctrlDown)
+            {
+                DoAutoFocusCamera(impl, rs);
+            }
+            else
+            {
+                DoResetCamera(impl);
             }
         }
-        if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8))) {  // solidworks keybind
+        if (ctrlDown && (ImGui::IsKeyPressed(SDL_SCANCODE_8)))
+        {
+            // solidworks keybind
             impl.autoFocusCameraNextFrame = true;
         }
         UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
     }
 
     // draw main menu
-    if (ImGui::BeginMenuBar()) {
-        drawMainMenuContents(impl);
+    if (ImGui::BeginMenuBar())
+    {
+        DrawMainMenuContent(impl);
         ImGui::EndMenuBar();
     }
 
@@ -1196,27 +1297,36 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
 
     // put 3D scene in an undraggable child panel, to prevent accidental panel
     // dragging when the user drags their mouse over the scene
-    if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove)) {
-
+    if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove))
+    {
         // only do the hit test if the user isn't currently dragging their mouse around
         std::pair<OpenSim::Component const*, glm::vec3> htResult{nullptr, {0.0f, 0.0f, 0.0f}};
-        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) && !ImGui::IsMouseDragging(ImGuiMouseButton_Middle) && !ImGui::IsMouseDragging(ImGuiMouseButton_Right)) {
-            htResult = hittestSceneDecorations(impl, rs);
+        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
+            !ImGui::IsMouseDragging(ImGuiMouseButton_Middle) &&
+            !ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+        {
+            htResult = HittestDecorations(impl, rs);
         }
 
-        populateSceneDrawlist(impl, rs);
-        drawSceneTexture(impl, rs);
+        PopulareSceneDrawlist(impl, rs);
+        DrawSceneTexture(impl, rs);
         DrawInSceneOverlays(impl, rs);
-        blitSceneTexture(impl);
+        BlitSceneTexture(impl);
         DrawImGuiOverlays(impl);
-        if (impl.ruler.IsMeasuring()) {
+
+        if (impl.ruler.IsMeasuring())
+        {
             impl.ruler.draw(htResult, impl.camera, impl.renderRect);
         }
+
         ImGui::EndChild();
 
-        if (impl.ruler.IsMeasuring()) {
+        if (impl.ruler.IsMeasuring())
+        {
             return {};  // don't give the caller the hittest result while measuring
-        } else {
+        }
+        else
+        {
             UiModelViewerResponse resp;
             resp.hovertestResult = htResult.first;
             resp.isMousedOver = impl.renderHovered;
@@ -1227,7 +1337,9 @@ UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs) {
             resp.isRightClicked = impl.renderRightClicked;
             return resp;
         }
-    } else {
+    }
+    else
+    {
         return {};  // child not visible
     }
 }

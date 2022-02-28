@@ -2,7 +2,7 @@
 
 #include "src/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Utils/ConcurrencyHelpers.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Assertions.hpp"
 #include "src/App.hpp"
@@ -134,7 +134,7 @@ static std::unique_ptr<Report> makeSimulationReport(OpenSim::Model const& model,
 static FdsimStatus FdSimulationMainUnguarded(
         stop_token stopToken,
         std::unique_ptr<Input> input,
-        std::shared_ptr<Mutex_guarded<SharedState>> shared) {
+        std::shared_ptr<SynchronizedValue<SharedState>> shared) {
 
     OpenSim::Model& model = *input->model;
     SimTK::State& state = *input->state;
@@ -226,7 +226,7 @@ static FdsimStatus FdSimulationMainUnguarded(
             std::unique_ptr<Report> spotReport = nullptr;
 
             // create regular report (if necessary)
-            if (AreEffectivelyEqual(nextTimepoint, integ->getTime())) {
+            if (IsEffectivelyEqual(nextTimepoint, integ->getTime())) {
                 regulaReport = makeSimulationReport(model, *integ);
                 tNextRegularReport = integ->getTime() + params.ReportingInterval.count();
             }
@@ -259,7 +259,7 @@ static FdsimStatus FdSimulationMainUnguarded(
 static int FdSimulationMain(
     stop_token stopToken,
     std::unique_ptr<Input> input,
-    std::shared_ptr<Mutex_guarded<SharedState>> shared) {
+    std::shared_ptr<SynchronizedValue<SharedState>> shared) {
 
     FdsimStatus status = FdsimStatus::Error;
 
@@ -287,7 +287,7 @@ struct osc::FdSimulation::Impl final {
     FdParams params;
 
     // mutex-guarded state shared between the caller and sim thread
-    std::shared_ptr<Mutex_guarded<SharedState>> shared;
+    std::shared_ptr<SynchronizedValue<SharedState>> shared;
 
     // the sim thread
     jthread simulatorThread;
@@ -298,7 +298,7 @@ struct osc::FdSimulation::Impl final {
     Impl(std::unique_ptr<Input> input) :
         params{input->params},
 
-        shared{new Mutex_guarded<SharedState>{}},
+        shared{new SynchronizedValue<SharedState>{}},
 
         // starts the simulation
         simulatorThread{FdSimulationMain, std::move(input), shared},

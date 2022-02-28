@@ -9,8 +9,8 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
     char const* popupName,
     OpenSim::Model const& model,
     char const* firstLabel,
-    char const* secondLabel) {
-
+    char const* secondLabel)
+{
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -19,7 +19,8 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
     }
 
     // try to show modal
-    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
         // modal not showing
         return std::nullopt;
     }
@@ -28,17 +29,21 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
 
     ImGui::Text("%s", firstLabel);
     ImGui::BeginChild("first", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
-        if (&b == second) {
+    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>())
+    {
+        if (&b == second)
+        {
             continue;  // don't allow circular connections
         }
 
         int numStylesPushed = 0;
-        if (&b == first) {
+        if (&b == first)
+        {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.3f, 1.0f, 0.3f, 1.0f});
             ++numStylesPushed;
         }
-        if (ImGui::Selectable(b.getName().c_str())) {
+        if (ImGui::Selectable(b.getName().c_str()))
+        {
             first = &b;
         }
         ImGui::PopStyleColor(numStylesPushed);
@@ -48,17 +53,21 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
 
     ImGui::Text("%s", secondLabel);
     ImGui::BeginChild("second", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>()) {
-        if (&b == first) {
+    for (auto const& b : model.getComponentList<OpenSim::PhysicalFrame>())
+    {
+        if (&b == first)
+        {
             continue;  // don't allow circular connections
         }
 
         int numStylesPushed = 0;
-        if (&b == second) {
+        if (&b == second)
+        {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{0.3f, 1.0f, 0.3f, 1.0f});
             ++numStylesPushed;
         }
-        if (ImGui::Selectable(b.getName().c_str())) {
+        if (ImGui::Selectable(b.getName().c_str()))
+        {
             second = &b;
         }
         ImGui::PopStyleColor(numStylesPushed);
@@ -70,8 +79,10 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
 
     std::optional<Response> rv = std::nullopt;
 
-    if (first && second) {
-        if (ImGui::Button("OK")) {
+    if (first && second)
+    {
+        if (ImGui::Button("OK"))
+        {
             rv.emplace(*first, *second);
             *this = {};  // reset user inputs
             ImGui::CloseCurrentPopup();
@@ -80,7 +91,8 @@ std::optional<osc::Select2PFsPopup::Response> osc::Select2PFsPopup::draw(
         ImGui::SameLine();
     }
 
-    if (ImGui::Button("cancel")) {
+    if (ImGui::Button("cancel"))
+    {
         *this = {};  // reset user inputs
         ImGui::CloseCurrentPopup();
     }

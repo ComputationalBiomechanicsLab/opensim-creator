@@ -75,10 +75,9 @@ namespace osc
         UiModelViewer(UiModelViewerFlags = UiModelViewerFlags_Default);
         UiModelViewer(UiModelViewer const&) = delete;
         UiModelViewer(UiModelViewer&&) noexcept;
-        ~UiModelViewer() noexcept;
-
         UiModelViewer& operator=(UiModelViewer const&) = delete;
         UiModelViewer& operator=(UiModelViewer&&) noexcept;
+        ~UiModelViewer() noexcept;
 
         bool isMousedOver() const;
 

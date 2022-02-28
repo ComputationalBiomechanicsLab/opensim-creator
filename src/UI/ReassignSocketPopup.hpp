@@ -1,18 +1,19 @@
 ﻿#pragma once
 
 #include <string>
+#include <string_view>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class Model;
     class AbstractSocket;
     class Object;
 }
 
-namespace osc {
-
+namespace osc
+{
     struct ReassignSocketPopup final {
-        std::string error;
-        char search[128]{};
+    public:
 
         // assumes caller handles ImGui::OpenPopup(modal_name);
         //
@@ -22,5 +23,12 @@ namespace osc {
                 char const* popupName,
                 OpenSim::Model const&,
                 OpenSim::AbstractSocket const&);
+
+        void clear();
+        void setError(std::string_view);
+
+    private:
+        std::string error;
+        char search[128]{};
     };
 }

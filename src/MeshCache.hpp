@@ -13,10 +13,9 @@ namespace osc
         MeshCache();
         MeshCache(MeshCache const&) = delete;
         MeshCache(MeshCache&&) noexcept;
-        ~MeshCache() noexcept;
-
         MeshCache& operator=(MeshCache const&) = delete;
         MeshCache& operator=(MeshCache&&) noexcept;
+        ~MeshCache() noexcept;
 
         // prints error to log and returns dummy mesh if load error happens
         std::shared_ptr<Mesh> getMeshFile(std::string const&);

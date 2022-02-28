@@ -817,12 +817,12 @@ osc::App::App() : m_Impl{new Impl{}}
 
 osc::App::App(App&&) noexcept = default;
 
+osc::App& osc::App::operator=(App&&) noexcept = default;
+
 osc::App::~App() noexcept
 {
     g_Current = nullptr;
 }
-
-osc::App& osc::App::operator=(App&&) noexcept = default;
 
 void osc::App::show(std::unique_ptr<Screen> s)
 {

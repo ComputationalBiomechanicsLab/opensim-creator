@@ -7,7 +7,8 @@
 
 #include <sstream>
 
-namespace {
+namespace
+{
     [[nodiscard]] ImVec4 color(osc::log::level::LevelEnum lvl) {
         using namespace osc::log::level;
 
@@ -48,59 +49,73 @@ namespace {
     }
 }
 
+class osc::LogViewer::Impl final {
+public:
+    void draw()
+    {
+        // draw top menu bar
+        if (ImGui::BeginMenuBar()) {
+
+            // draw level selector
+            {
+                int lvl = static_cast<int>(log::getTracebackLevel());
+                ImGui::SetNextItemWidth(200.0f);
+                if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS)) {
+                    log::setTracebackLevel(static_cast<log::level::LevelEnum>(lvl));
+                }
+            }
+
+            ImGui::SameLine();
+            ImGui::Checkbox("autoscroll", &autoscroll);
+
+            ImGui::SameLine();
+            if (ImGui::Button("clear")) {
+                log::getTracebackLog().lock()->clear();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("turn off")) {
+                log::setTracebackLevel(log::level::off);
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("copy to clipboard")) {
+                copyTracebackLogToClipboard();
+            }
+
+            ImGui::Dummy(ImVec2{0.0f, 10.0f});
+
+            ImGui::EndMenuBar();
+        }
+
+        // draw log content lines
+        auto& guardedContent = log::getTracebackLog();
+        auto const& contentGuard = guardedContent.lock();
+        for (log::OwnedLogMessage const& msg : *contentGuard) {
+            ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
+            ImGui::Text("[%s]", log::toCStr(msg.level));
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::TextWrapped("%s", msg.payload.c_str());
+
+            if (autoscroll) {
+                ImGui::SetScrollHereY();
+            }
+        }
+    }
+private:
+    bool autoscroll = true;
+};
+
 
 // public API
 
-void osc::LogViewer::draw() {
-    auto& st = *this;
+osc::LogViewer::LogViewer() : m_Impl{std::make_unique<Impl>()} {}
+osc::LogViewer::LogViewer(LogViewer&&) noexcept = default;
+osc::LogViewer& osc::LogViewer::operator=(LogViewer&&) = default;
+osc::LogViewer::~LogViewer() noexcept = default;
 
-    // draw top menu bar
-    if (ImGui::BeginMenuBar()) {
-
-        // draw level selector
-        {
-            int lvl = static_cast<int>(log::getTracebackLevel());
-            ImGui::SetNextItemWidth(200.0f);
-            if (ImGui::Combo("level", &lvl, log::level::g_LogLevelCStrings, log::level::NUM_LEVELS)) {
-                log::setTracebackLevel(static_cast<log::level::LevelEnum>(lvl));
-            }
-        }
-
-        ImGui::SameLine();
-        ImGui::Checkbox("autoscroll", &st.autoscroll);
-
-        ImGui::SameLine();
-        if (ImGui::Button("clear")) {
-            log::getTracebackLog().lock()->clear();
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("turn off")) {
-            log::setTracebackLevel(log::level::off);
-        }
-
-        ImGui::SameLine();
-        if (ImGui::Button("copy to clipboard")) {
-            copyTracebackLogToClipboard();
-        }
-
-        ImGui::Dummy(ImVec2{0.0f, 10.0f});
-
-        ImGui::EndMenuBar();
-    }
-
-    // draw log content lines
-    auto& guardedContent = log::getTracebackLog();
-    auto const& contentGuard = guardedContent.lock();
-    for (log::OwnedLogMessage const& msg : *contentGuard) {
-        ImGui::PushStyleColor(ImGuiCol_Text, color(msg.level));
-        ImGui::Text("[%s]", log::toCStr(msg.level));
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-        ImGui::TextWrapped("%s", msg.payload.c_str());
-
-        if (st.autoscroll) {
-            ImGui::SetScrollHereY();
-        }
-    }
+void osc::LogViewer::draw()
+{
+    m_Impl->draw();
 }

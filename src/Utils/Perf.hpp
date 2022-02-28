@@ -1,7 +1,6 @@
 #pragma once
 
-#include "src/Assertions.hpp"
-#include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/Macros.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -20,12 +19,12 @@ namespace osc
         explicit PerfTimer(int64_t id) : m_ID{id} {}
         PerfTimer(PerfTimer const&) = delete;
         PerfTimer(PerfTimer&&) noexcept = delete;
+        PerfTimer& operator=(PerfTimer const&) = delete;
+        PerfTimer& operator=(PerfTimer&&) noexcept = delete;
         ~PerfTimer() noexcept
         {
             SubmitMeasurement(m_ID, m_Start, PerfClock::now());
         }
-        PerfTimer& operator=(PerfTimer const&) = delete;
-        PerfTimer& operator=(PerfTimer&&) noexcept = delete;
     private:
         int64_t m_ID;
         PerfClock::time_point m_Start = PerfClock::now();

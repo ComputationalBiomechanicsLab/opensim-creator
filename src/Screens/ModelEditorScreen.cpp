@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/FileChangePoller.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/UI/AddBodyPopup.hpp"
@@ -945,11 +946,10 @@ namespace {
                 OpenSim::Object const& existing = socket.getConnecteeAsObject();
                 try {
                     uim.updSelected()->updSocket(sn).connect(*connectee);
-                    reassignSocketPopup.search[0] = '\0';
-                    reassignSocketPopup.error.clear();
+                    reassignSocketPopup.clear();
                     ImGui::CloseCurrentPopup();
                 } catch (std::exception const& ex) {
-                    reassignSocketPopup.error = ex.what();
+                    reassignSocketPopup.setError(ex.what());
                     uim.updSelected()->updSocket(sn).connect(existing);
                 }
             }

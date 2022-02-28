@@ -61,12 +61,11 @@ namespace osc
         //
         // this also sets the `cur` application global
         App();
-
         App(App const&) = delete;
         App(App&&) noexcept;
-        ~App() noexcept;
         App& operator=(App const&) = delete;
         App& operator=(App&&) noexcept;
+        ~App() noexcept;
 
         // start showing the supplied screen
         void show(std::unique_ptr<Screen>);

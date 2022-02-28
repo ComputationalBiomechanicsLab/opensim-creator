@@ -7,8 +7,8 @@
 OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
     char const* popupName,
     OpenSim::Model const& model,
-    nonstd::span<OpenSim::PhysicalFrame const*> exclusions) {
-
+    nonstd::span<OpenSim::PhysicalFrame const*> exclusions)
+{
     // center the modal
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -17,7 +17,8 @@ OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
     }
 
     // try to show modal
-    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
         // modal not showing
         return nullptr;
     }
@@ -26,20 +27,24 @@ OpenSim::PhysicalFrame const* osc::Select1PFPopup::draw(
     OpenSim::PhysicalFrame const* selected = nullptr;
 
     ImGui::BeginChild("pflist", ImVec2(256, 256), true, ImGuiWindowFlags_HorizontalScrollbar);
-    for (auto const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
+    for (auto const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+    {
         bool excluded = std::find(exclusions.begin(), exclusions.end(), &pf) != exclusions.end();
 
-        if (excluded) {
+        if (excluded)
+        {
             continue;
         }
 
-        if (ImGui::Selectable(pf.getName().c_str())) {
+        if (ImGui::Selectable(pf.getName().c_str()))
+        {
             selected = &pf;
         }
     }
     ImGui::EndChild();
 
-    if (selected) {
+    if (selected)
+    {
         ImGui::CloseCurrentPopup();
     }
 

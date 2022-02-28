@@ -1,11 +1,26 @@
 #include "ImGuiHelpers.hpp"
 
 #include "src/3D/Model.hpp"
+#include "src/Utils/UID.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
+#include "src/Styling.hpp"
 
 #include <glm/vec2.hpp>
 #include <imgui.h>
 #include <SDL_events.h>
 #include <iostream>
+
+namespace {
+    template<typename Coll1, typename Coll2>
+    float diff(Coll1 const& older, Coll2 const& newer, size_t n) {
+        for (int i = 0; i < static_cast<int>(n); ++i) {
+            if (static_cast<float>(older[i]) != static_cast<float>(newer[i])) {
+                return newer[i];
+            }
+        }
+        return static_cast<float>(older[0]);
+    }
+}
 
 void osc::UpdatePolarCameraFromImGuiUserInput(glm::vec2 viewportDims, osc::PolarPerspectiveCamera& camera)
 {
@@ -225,18 +240,83 @@ void osc::DrawHelpMarker(char const* desc)
 
 bool osc::InputString(const char* label, std::string& s, size_t maxLen, ImGuiInputTextFlags flags)
 {
-    static std::string g_Buf;
+    static SynchronizedValue<std::string> g_Buf;
 
-    g_Buf = s;
-    g_Buf.resize(std::max(maxLen, s.size()));
-    g_Buf[s.size()] = '\0';
+    auto buf = g_Buf.lock();
 
-    bool rv = ImGui::InputText(label, g_Buf.data(), maxLen, flags);
+    *buf = s;
+    buf->resize(std::max(maxLen, s.size()));
+    (*buf)[s.size()] = '\0';
+
+    bool rv = ImGui::InputText(label, buf->data(), maxLen, flags);
 
     if (rv)
     {
-        s = g_Buf.data();
+        s = buf->data();
     }
 
     return rv;
+}
+
+// public API
+
+bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool* isLocked) {
+    bool changed = false;
+
+    ImGui::PushID(*lockID);
+    if (ImGui::Button(*isLocked ? ICON_FA_LOCK : ICON_FA_UNLOCK)) {
+        *isLocked = !*isLocked;
+        changed = true;
+    }
+    ImGui::PopID();
+
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+    float copy[3];
+    copy[0] = v[0];
+    copy[1] = v[1];
+    copy[2] = v[2];
+
+    if (ImGui::InputFloat3(editorID, copy, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (*isLocked) {
+            float val = diff(v, copy, 3);
+            v[0] = val;
+            v[1] = val;
+            v[2] = val;
+        } else {
+            v[0] = copy[0];
+            v[1] = copy[1];
+            v[2] = copy[2];
+        }
+        changed = true;
+    }
+
+    return changed;
+}
+
+bool osc::InputMetersFloat(const char* label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputFloat(label, v, step, step_fast, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+}
+
+bool osc::InputMetersFloat3(const char* label, float v[3], ImGuiInputTextFlags flags)
+{
+    return ImGui::InputFloat3(label, v, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+}
+
+bool osc::SliderMetersFloat(const char* label, float* v, float v_min, float v_max, ImGuiSliderFlags flags)
+{
+    return ImGui::SliderFloat(label, v, v_min, v_max, OSC_DEFAULT_FLOAT_INPUT_FORMAT, flags);
+}
+
+bool osc::InputKilogramFloat(const char* label, float* v, float step, float step_fast, ImGuiInputTextFlags flags)
+{
+    return InputMetersFloat(label, v, step, step_fast, flags);
+}
+
+void osc::PushID(UID const& id)
+{
+    ImGui::PushID(static_cast<int>(id.get()));
 }

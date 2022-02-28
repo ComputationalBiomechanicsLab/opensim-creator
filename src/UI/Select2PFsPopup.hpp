@@ -2,13 +2,14 @@
 
 #include <optional>
 
-namespace OpenSim {
+namespace OpenSim
+{
     class PhysicalFrame;
     class Model;
 }
 
-namespace osc {
-
+namespace osc
+{
     struct Select2PFsPopup final {
         OpenSim::PhysicalFrame const* first = nullptr;
         OpenSim::PhysicalFrame const* second = nullptr;
@@ -19,7 +20,8 @@ namespace osc {
 
             Response(OpenSim::PhysicalFrame const& _first, OpenSim::PhysicalFrame const& _second) :
                 first{_first},
-                second{_second} {
+                second{_second}
+            {
             }
         };
 

@@ -1,30 +1,27 @@
 #pragma once
 
-#include "src/UI/AddBodyPopup.hpp"
-#include "src/UI/AddComponentPopup.hpp"
-#include "src/UI/Select2PFsPopup.hpp"
+#include <memory>
 
-#include <optional>
-
-namespace OpenSim {
-    class Model;
-    class Component;
-}
-
-namespace osc {
+namespace osc
+{
     class UiModel;
 }
 
-namespace osc {
-    struct ModelActionsMenuBar final {
-        AddBodyPopup abm;
-        Select2PFsPopup select2PFsPopup;
-        int jointIndexForPFsPopup;
-        char const* addComponentPopupName;
-        std::optional<AddComponentPopup> addComponentPopup;
-
+namespace osc
+{
+    class ModelActionsMenuBar final {
+    public:
         ModelActionsMenuBar();
+        ModelActionsMenuBar(ModelActionsMenuBar const&) = delete;
+        ModelActionsMenuBar(ModelActionsMenuBar&&) noexcept;
+        ModelActionsMenuBar& operator=(ModelActionsMenuBar const&) = delete;
+        ModelActionsMenuBar& operator=(ModelActionsMenuBar&&) noexcept;
+        ~ModelActionsMenuBar() noexcept;
 
         bool draw(UiModel&);
+
+        class Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

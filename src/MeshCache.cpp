@@ -37,9 +37,9 @@ osc::MeshCache::MeshCache() :
 
 osc::MeshCache::MeshCache(MeshCache&&) noexcept = default;
 
-osc::MeshCache::~MeshCache() noexcept = default;
-
 osc::MeshCache& osc::MeshCache::operator=(MeshCache&&) noexcept = default;
+
+osc::MeshCache::~MeshCache() noexcept = default;
 
 std::shared_ptr<Mesh> osc::MeshCache::getMeshFile(std::string const& p)
 {

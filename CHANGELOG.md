@@ -17,6 +17,8 @@ All notable changes to this project will be documented here. The format is based
 - Hovering over a body in the UI now shows where the center of mass is as a black sphere (#60)
 - Coordinates in the coordinate editor panel now show in OpenSim storage, rather than alphabetical, order (#155)
 - Renamed "Open" and "Save" in the mesh importer to "Import" and "Export" (#143)
+- Refactored a variety of internal APIs (internal)
+
 
 ## [0.1.2] - 2022/02/16
 

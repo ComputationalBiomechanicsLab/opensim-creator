@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/UI/AddBodyPopup.hpp"
+#include "src/UI/AddComponentPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
 #include "src/Log.hpp"
 #include "src/Styling.hpp"
@@ -15,11 +16,12 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <imgui.h>
 
+#include <optional>
+
 using namespace osc;
 
-
-
-static void drawTooltip(char const* header, char const* description) {
+static void drawTooltip(char const* header, char const* description)
+{
     ImGui::BeginTooltip();
     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
     ImGui::TextUnformatted(header);
@@ -31,7 +33,25 @@ static void drawTooltip(char const* header, char const* description) {
     ImGui::EndTooltip();
 }
 
-static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim) {
+class osc::ModelActionsMenuBar::Impl final {
+public:
+    Impl() :
+        abm{},
+        select2PFsPopup{},
+        jointIndexForPFsPopup{-1},
+        addComponentPopupName{nullptr},
+        addComponentPopup{std::nullopt}
+    {
+    }
+
+    AddBodyPopup abm;
+    Select2PFsPopup select2PFsPopup;
+    int jointIndexForPFsPopup;
+    char const* addComponentPopupName;
+    std::optional<AddComponentPopup> addComponentPopup;
+};
+
+static bool renderModelActionsPanelContent(osc::ModelActionsMenuBar::Impl& st, UiModel& uim) {
 
     bool editMade = false;
 
@@ -238,19 +258,20 @@ static bool renderModelActionsPanelContent(ModelActionsMenuBar& st, UiModel& uim
     return editMade;
 }
 
-osc::ModelActionsMenuBar::ModelActionsMenuBar() :
-    abm{},
-    select2PFsPopup{},
-    jointIndexForPFsPopup{-1},
-    addComponentPopupName{nullptr},
-    addComponentPopup{std::nullopt} {
-}
+osc::ModelActionsMenuBar::ModelActionsMenuBar() : m_Impl{std::make_unique<Impl>()} {}
+osc::ModelActionsMenuBar::ModelActionsMenuBar(ModelActionsMenuBar&&) noexcept = default;
+osc::ModelActionsMenuBar& osc::ModelActionsMenuBar::operator=(ModelActionsMenuBar&&) noexcept = default;
+osc::ModelActionsMenuBar::~ModelActionsMenuBar() noexcept = default;
 
-bool osc::ModelActionsMenuBar::draw(UiModel& uim) {
-    if (ImGui::BeginMenuBar()) {
-        return renderModelActionsPanelContent(*this, uim);
+bool osc::ModelActionsMenuBar::draw(UiModel& uim)
+{
+    if (ImGui::BeginMenuBar())
+    {
+        return renderModelActionsPanelContent(*m_Impl, uim);
         ImGui::EndMenuBar();
-    } else {
+    }
+    else
+    {
         return false;
     }
 }

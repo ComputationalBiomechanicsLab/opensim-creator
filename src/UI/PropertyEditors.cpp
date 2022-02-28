@@ -3,7 +3,6 @@
 #include "src/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
-#include "src/UI/F3Editor.hpp"
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
@@ -92,7 +91,8 @@ static std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(T val
 
 static bool ItemValueShouldBeSaved()
 {
-    return ImGui::IsItemDeactivatedAfterEdit() || (ImGui::IsItemEdited() && IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
+    return ImGui::IsItemDeactivatedAfterEdit() ||
+            (ImGui::IsItemEdited() && IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
 }
 
 using UpdateFn = std::function<void(OpenSim::AbstractProperty&)>;
@@ -111,14 +111,10 @@ static void DrawIthStringEditor(
         ImGui::SameLine();
     }
 
-    // copy string into on-stack, editable, buffer
-    char buf[64]{};
-    buf[sizeof(buf) - 1] = '\0';
-    std::strncpy(buf, prop.getValue(idx).c_str(), sizeof(buf) - 1);
-
+    std::string curValue = prop.getValue(idx);
     bool edited = false;
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    if (ImGui::InputText("##stringeditor", buf, sizeof(buf)))
+    if (InputString("##stringeditor", curValue, 128))
     {
         edited = true;
     }
@@ -126,7 +122,7 @@ static void DrawIthStringEditor(
     bool shouldUpdate = edited && !rv && ItemValueShouldBeSaved();
     if (shouldUpdate)
     {
-        rv = MakePropValueSetter<std::string>(idx, buf);
+        rv = MakePropValueSetter<std::string>(idx, curValue);
     }
 }
 
@@ -144,7 +140,7 @@ static void Draw1DoubleValueEditor(
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-    if (ImGui::InputFloat("##doubleditor", &fv, 0.0f, 0.0f, "%.3f") && ItemValueShouldBeSaved())
+    if (ImGui::InputFloat("##doubleditor", &fv, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT) && ItemValueShouldBeSaved())
     {
         double dv = static_cast<double>(fv);
         rv = MakePropValueSetter<double>(dv);
@@ -168,7 +164,7 @@ static void Draw2DoubleValueEditor(
     };
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    if (ImGui::InputFloat2("##vec2editor", vs.data(), "%.3f") && ItemValueShouldBeSaved())
+    if (ImGui::InputFloat2("##vec2editor", vs.data(), OSC_DEFAULT_FLOAT_INPUT_FORMAT) && ItemValueShouldBeSaved())
     {
         rv = [vs](OpenSim::AbstractProperty& p)
         {
@@ -320,7 +316,7 @@ namespace
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-            if (ImGui::InputFloat3("##vec3editor", fv.data(), "%.3f"))
+            if (ImGui::InputFloat3("##vec3editor", fv.data(), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
             {
                 m_RetainedValue[0] = static_cast<double>(fv[0]);
                 m_RetainedValue[1] = static_cast<double>(fv[1]);
@@ -363,7 +359,7 @@ namespace
             {
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
                 ImGui::PushID(i);
-                if (ImGui::InputFloat3("##vec6editor_a", fv.data() + 3*i, "%.3f"))
+                if (ImGui::InputFloat3("##vec6editor_a", fv.data() + 3*i, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     m_RetainedValue[3*i + 0] = static_cast<double>(fv[3*i + 0]);
                     m_RetainedValue[3*i + 1] = static_cast<double>(fv[3*i + 1]);
@@ -648,9 +644,9 @@ osc::ObjectPropertiesEditor::ObjectPropertiesEditor() :
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept = default;
 
-osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
-
 osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
+
+osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
 std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
 {

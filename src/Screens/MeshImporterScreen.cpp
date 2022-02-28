@@ -109,14 +109,14 @@ namespace
 namespace
 {
     class BodyEl;
-    UIDT<BodyEl> const g_GroundID = GenerateIDT<BodyEl>();
-    UID const g_EmptyID = GenerateID();
-    UID const g_RightClickedNothingID = GenerateID();
-    UID const g_GroundGroupID = GenerateID();
-    UID const g_MeshGroupID = GenerateID();
-    UID const g_BodyGroupID = GenerateID();
-    UID const g_JointGroupID = GenerateID();
-    UID const g_StationGroupID = GenerateID();
+    UIDT<BodyEl> const g_GroundID;
+    UID const g_EmptyID;
+    UID const g_RightClickedNothingID;
+    UID const g_GroundGroupID;
+    UID const g_MeshGroupID;
+    UID const g_BodyGroupID;
+    UID const g_JointGroupID;
+    UID const g_StationGroupID;
 }
 
 // generic helper functions
@@ -693,7 +693,7 @@ namespace
                      std::string icon,
                      std::string description,
                      std::unique_ptr<SceneEl> defaultObject) :
-            m_ID{GenerateID()},
+            m_ID{},
             m_Name{std::move(name)},
             m_NamePluralized{std::move(namePluralized)},
             m_NameOptionallyPluralized{std::move(nameOptionallyPluralized)},
@@ -1104,8 +1104,8 @@ namespace
         }
 
         MeshEl() :
-            ID{GenerateIDT<MeshEl>()},
-            Attachment{GenerateIDT<BodyEl>()},
+            ID{},
+            Attachment{},
             MeshData{nullptr},
             Path{"invalid"}
         {
@@ -1128,7 +1128,7 @@ namespace
                std::shared_ptr<Mesh> meshData,
                std::filesystem::path const& path) :
 
-            MeshEl{GenerateIDT<MeshEl>(),
+            MeshEl{UIDT<MeshEl>{},
                    std::move(attachment),
                    std::move(meshData),
                    path}
@@ -1273,7 +1273,7 @@ namespace
         }
 
         BodyEl() :
-            ID{GenerateIDT<BodyEl>()},
+            ID{},
             Name{"prototype"},
             Xform{}
         {
@@ -1288,12 +1288,12 @@ namespace
         }
 
         BodyEl(std::string const& name, Transform const& xform) :
-            BodyEl{GenerateIDT<BodyEl>(), name, xform}
+            BodyEl{UIDT<BodyEl>{}, name, xform}
         {
         }
 
         explicit BodyEl(Transform const& xform) :
-            BodyEl{GenerateIDT<BodyEl>(), GenerateName(Class()), xform}
+            BodyEl{UIDT<BodyEl>{}, GenerateName(Class()), xform}
         {
         }
 
@@ -1398,11 +1398,11 @@ namespace
         }
 
         JointEl() :
-            ID{GenerateIDT<JointEl>()},
+            ID{},
             JointTypeIndex{0},
             UserAssignedName{"prototype"},
-            Parent{GenerateID()},
-            Child{GenerateIDT<BodyEl>()},
+            Parent{},
+            Child{},
             Xform{}
         {
             // default ctor for prototype allocation
@@ -1430,7 +1430,7 @@ namespace
                 UIDT<BodyEl> child,
                 Transform const& xform) :
             JointEl{
-                GenerateIDT<JointEl>(),
+                UIDT<JointEl>{},
                 std::move(jointTypeIdx),
                 std::move(userAssignedName),
                 std::move(parent),
@@ -1606,8 +1606,8 @@ namespace
         }
 
         StationEl() :
-            ID{GenerateIDT<StationEl>()},
-            Attachment{GenerateIDT<BodyEl>()},
+            ID{},
+            Attachment{},
             Position{},
             Name{"prototype"}
         {
@@ -1629,7 +1629,7 @@ namespace
         StationEl(UIDT<BodyEl> attachment,  // can be g_GroundID
                   glm::vec3 const& position,
                   std::string name) :
-            ID{GenerateIDT<StationEl>()},
+            ID{},
             Attachment{std::move(attachment)},
             Position{std::move(position)},
             Name{SanitizeToOpenSimComponentName(name)}
@@ -2558,7 +2558,7 @@ namespace
                          ClonePtr<ModelGraph> modelGraph,
                          std::string_view commitMessage) :
 
-            m_ID{GenerateID()},
+            m_ID{},
             m_ParentID{parentID},
             m_ModelGraph{std::move(modelGraph)},
             m_CommitMessage{std::move(commitMessage)},
@@ -3023,7 +3023,7 @@ namespace
             return false;
         }
 
-        StationEl& station = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
+        StationEl& station = mg.AddEl<StationEl>(UIDT<StationEl>{}, GetStationAttachmentParent(mg, el), loc, GenerateName(StationEl::Class()));
         SelectOnly(mg, station);
         cmg.Commit("added station " + station.GetLabel());
         return true;
@@ -7214,21 +7214,21 @@ namespace
             if (!m_MaybeOpenedContextMenu)
             {
                 // context menu not open, but just draw the "nothing" menu
-                ImGui::PushID(static_cast<int>(UnwrapID(g_EmptyID)));
+                PushID(UID::empty());
                 OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawNothingContextMenuContent();
             }
             else if (m_MaybeOpenedContextMenu.ID == g_RightClickedNothingID)
             {
                 // context menu was opened on "nothing" specifically
-                ImGui::PushID(static_cast<int>(UnwrapID(g_EmptyID)));
+                PushID(UID::empty());
                 OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawNothingContextMenuContent();
             }
             else if (SceneEl* el = m_Shared->UpdModelGraph().TryUpdElByID(m_MaybeOpenedContextMenu.ID))
             {
                 // context menu was opened on a scene element that exists in the modelgraph
-                ImGui::PushID(static_cast<int>(UnwrapID(el->GetID())));
+                PushID(el->GetID());
                 OSC_SCOPE_GUARD({ ImGui::PopID(); });
                 DrawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
             }
@@ -7378,7 +7378,7 @@ namespace
             if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
             {
                 ModelGraph& mg = m_Shared->UpdModelGraph();
-                StationEl& e = mg.AddEl<StationEl>(GenerateIDT<StationEl>(), g_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
+                StationEl& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, g_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
                 SelectOnly(mg, e);
             }
             DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());

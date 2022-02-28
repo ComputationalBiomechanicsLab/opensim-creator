@@ -87,13 +87,13 @@ bool osc::CoordinateEdit::applyToState(OpenSim::Coordinate const& c, SimTK::Stat
         c.setLocked(st, false);
     }
 
-    if (!AreEffectivelyEqual(c.getValue(st), value))
+    if (!IsEffectivelyEqual(c.getValue(st), value))
     {
         c.setValue(st, value);  // care: may perform model assembly (expensive)
         applied = true;
     }
 
-    if (!AreEffectivelyEqual(c.getSpeedValue(st), speed))
+    if (!IsEffectivelyEqual(c.getSpeedValue(st), speed))
     {
         c.setSpeedValue(st, speed);
         applied = true;

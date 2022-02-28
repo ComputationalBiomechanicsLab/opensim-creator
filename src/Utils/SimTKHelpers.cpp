@@ -63,7 +63,7 @@ static glm::vec3 GetFaceVertex(SimTK::PolygonalMesh const& mesh, int face, int v
 
 // an implementation of SimTK::DecorativeGeometryImplementation that emits generic
 // triangle-mesh-based SystemDecorations that can be consumed by the rest of the UI
-class osc::DecorationProducer::Impl final : public SimTK::DecorativeGeometryImplementation {
+class osc::DecorativeGeometryHandler::Impl final : public SimTK::DecorativeGeometryImplementation {
 public:
     Impl(MeshCache& meshCache,
          SimTK::SimbodyMatterSubsystem const& matter,
@@ -551,7 +551,7 @@ Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
 // osc::DecorativeGeometryHandler
 
-osc::DecorationProducer::DecorationProducer(MeshCache& meshCache,
+osc::DecorativeGeometryHandler::DecorativeGeometryHandler(MeshCache& meshCache,
                                                           SimTK::SimbodyMatterSubsystem const& matter,
                                                           SimTK::State const& state,
                                                           float fixupScaleFactor,
@@ -564,13 +564,13 @@ osc::DecorationProducer::DecorationProducer(MeshCache& meshCache,
 {
 }
 
-osc::DecorationProducer::DecorationProducer(DecorationProducer&&) noexcept = default;
+osc::DecorativeGeometryHandler::DecorativeGeometryHandler(DecorativeGeometryHandler&&) noexcept = default;
 
-osc::DecorationProducer::~DecorationProducer() noexcept = default;
+osc::DecorativeGeometryHandler& osc::DecorativeGeometryHandler::operator=(DecorativeGeometryHandler&&) noexcept = default;
 
-osc::DecorationProducer& osc::DecorationProducer::operator=(DecorationProducer&&) noexcept = default;
+osc::DecorativeGeometryHandler::~DecorativeGeometryHandler() noexcept = default;
 
-void osc::DecorationProducer::operator()(SimTK::DecorativeGeometry const& dg)
+void osc::DecorativeGeometryHandler::operator()(SimTK::DecorativeGeometry const& dg)
 {
     dg.implementGeometry(*m_Impl);
 }

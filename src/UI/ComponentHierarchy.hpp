@@ -1,24 +1,41 @@
 #pragma once
 
-namespace OpenSim {
+#include <memory>
+
+namespace OpenSim
+{
     class Component;
 }
 
-namespace osc {
+namespace osc
+{
     class ComponentHierarchy final {
-        char search[256]{};
-        bool showFrames = false;
-
     public:
-        enum ResponseType { NothingHappened, SelectionChanged, HoverChanged };
+        enum ResponseType {
+            NothingHappened,
+            SelectionChanged,
+            HoverChanged,
+        };
+
         struct Response final {
             OpenSim::Component const* ptr = nullptr;
             ResponseType type = NothingHappened;
         };
 
+        ComponentHierarchy();
+        ComponentHierarchy(ComponentHierarchy const&) = delete;
+        ComponentHierarchy(ComponentHierarchy&&) noexcept;
+        ComponentHierarchy& operator=(ComponentHierarchy const&) = delete;
+        ComponentHierarchy& operator=(ComponentHierarchy&&) noexcept;
+        ~ComponentHierarchy() noexcept;
+
         Response draw(
             OpenSim::Component const* root,
             OpenSim::Component const* selection,
             OpenSim::Component const* hover);
+
+        class Impl;
+    private:
+        std::unique_ptr<Impl> m_Impl;
     };
 }

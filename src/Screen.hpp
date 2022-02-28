@@ -12,6 +12,11 @@ namespace osc
     // any given time
     class Screen {
     public:
+        Screen() = default;
+        Screen(Screen const&) = delete;
+        Screen(Screen&&) noexcept = delete;
+        Screen& operator=(Screen const&) = delete;
+        Screen& operator=(Screen&&) noexcept = delete;
         virtual ~Screen() noexcept = default;
 
         // called before the app is about to start pump-/tick-/draw-ing the screen

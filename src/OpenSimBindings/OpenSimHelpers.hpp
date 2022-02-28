@@ -16,6 +16,7 @@ namespace OpenSim
 {
     class AbstractSocket;
     class Model;
+    class Coordinate;
 }
 
 namespace SimTK
@@ -72,6 +73,7 @@ namespace osc
         return ComponentPathPtrs{c};
     }
 
+    void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
     std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);
     std::vector<OpenSim::AbstractSocket const*> GetPhysicalFrameSockets(OpenSim::Component& c);

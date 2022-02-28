@@ -31,9 +31,9 @@ namespace osc
         ObjectPropertiesEditor();
         ObjectPropertiesEditor(ObjectPropertiesEditor const&) = delete;
         ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept;
-        ~ObjectPropertiesEditor() noexcept;
         ObjectPropertiesEditor& operator=(ObjectPropertiesEditor const&) = delete;
         ObjectPropertiesEditor& operator=(ObjectPropertiesEditor&&) noexcept;
+        ~ObjectPropertiesEditor() noexcept;
 
         // if the user tries to edit one of the Object's properties, returns a
         // response that indicates which property was edited and a function that
