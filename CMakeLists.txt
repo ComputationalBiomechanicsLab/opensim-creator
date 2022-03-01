@@ -186,8 +186,6 @@ add_executable(osc
 
     src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
-    src/OpenSimBindings/FileChangePoller.cpp
-    src/OpenSimBindings/FileChangePoller.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
     src/OpenSimBindings/PlottableOutputSubfield.cpp
@@ -285,6 +283,8 @@ add_executable(osc
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/DefaultConstructOnCopy.hpp
+    src/Utils/FileChangePoller.cpp
+    src/Utils/FileChangePoller.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
     src/Utils/ImGuiHelpers.cpp

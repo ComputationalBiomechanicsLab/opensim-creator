@@ -1,7 +1,6 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/3D/Gl.hpp"
-#include "src/OpenSimBindings/FileChangePoller.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
@@ -21,6 +20,7 @@
 #include "src/UI/SelectComponentPopup.hpp"
 #include "src/UI/Select1PFPopup.hpp"
 #include "src/UI/Select2PFsPopup.hpp"
+#include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/App.hpp"
