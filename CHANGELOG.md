@@ -18,6 +18,7 @@ All notable changes to this project will be documented here. The format is based
 - Coordinates in the coordinate editor panel now show in OpenSim storage, rather than alphabetical, order (#155)
 - Renamed "Open" and "Save" in the mesh importer to "Import" and "Export" (#143)
 - Refactored a variety of internal APIs (internal)
+- Partially integrated experimental DAG implementation (internal)
 
 
 ## [0.1.2] - 2022/02/16
