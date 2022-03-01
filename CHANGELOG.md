@@ -20,6 +20,7 @@ All notable changes to this project will be documented here. The format is based
 - Refactored a variety of internal APIs (internal)
 - Partially integrated experimental DAG implementation (internal)
 - Refactored undo, redo, and deletion logic to be more reliable (internal)
+- Removed 'declareDeathOf' API: underlying implementation is hardened against this (internal)
 
 
 ## [0.1.2] - 2022/02/16

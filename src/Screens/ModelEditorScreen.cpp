@@ -98,10 +98,9 @@ namespace
     {
         if (OpenSim::Component* selected = uim.updSelected())
         {
-            if (osc::TryDeleteComponentFromModel(uim.updModel(), *selected))
+            if (osc::TryDeleteComponentFromModel(uim.updUiModel().peekModelADVANCED(), *selected))
             {
                 uim.setDirty(true);
-                uim.declareDeathOf(selected);
             }
             else
             {
@@ -207,7 +206,6 @@ namespace
             OpenSim::Joint* ptr = newJoint.get();
             st.setDirty(true);
             const_cast<OpenSim::JointSet&>(js).set(idx, newJoint.release());
-            st.declareDeathOf(selection);
             st.setSelected(ptr);
         }
         ImGui::NextColumn();

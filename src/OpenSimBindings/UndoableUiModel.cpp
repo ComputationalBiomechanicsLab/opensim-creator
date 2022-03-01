@@ -661,8 +661,3 @@ void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c)
 {
     updUiModel().setIsolated(c);
 }
-
-void osc::UndoableUiModel::declareDeathOf(const OpenSim::Component *c)
-{
-    updUiModel().declareDeathOf(c);
-}

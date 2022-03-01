@@ -462,24 +462,6 @@ public:
         m_MaybeIsolated = other.m_MaybeIsolated;
     }
 
-    void declareDeathOf(OpenSim::Component const* c)
-    {
-        if (getSelected() == c)
-        {
-            setSelected(nullptr);
-        }
-
-        if (getHovered() == c)
-        {
-            setHovered(nullptr);
-        }
-
-        if (getIsolated() == c)
-        {
-            setIsolated(nullptr);
-        }
-    }
-
 private:
     // user-enacted state modifications (e.g. coordinate edits)
     StateModifications m_StateModifications;
@@ -716,9 +698,4 @@ void osc::UiModel::setIsolated(OpenSim::Component const* c)
 void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
 {
     m_Impl->setSelectedHoveredAndIsolatedFrom(*uim.m_Impl);
-}
-
-void osc::UiModel::declareDeathOf(OpenSim::Component const* c)
-{
-    m_Impl->declareDeathOf(std::move(c));
 }

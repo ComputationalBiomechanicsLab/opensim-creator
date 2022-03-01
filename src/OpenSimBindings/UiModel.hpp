@@ -197,13 +197,6 @@ namespace osc
         // (i.e. to transfer those pointers accross)
         void setSelectedHoveredAndIsolatedFrom(UiModel const&);
 
-        // declare the death of a component pointer
-        //
-        // this happens when we know that OpenSim has destructed a component in
-        // the model indirectly (e.g. it was destructed by an OpenSim container)
-        // and that we want to ensure the pointer isn't still held by this state
-        void declareDeathOf(OpenSim::Component const* c);
-
         class Impl;
     private:
         ClonePtr<Impl> m_Impl;
