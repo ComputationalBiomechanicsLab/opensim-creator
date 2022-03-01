@@ -70,91 +70,11 @@
 
 using namespace osc;
 
-namespace {
-
-    // returns the first ancestor of `c` that has type `T`
-    template<typename T>
-    [[nodiscard]] T const* findAncestorWithType(OpenSim::Component const* c) {
-        while (c) {
-            T const* p = dynamic_cast<T const*>(c);
-            if (p) {
-                return p;
-            }
-            c = c->hasOwner() ? &c->getOwner() : nullptr;
-        }
-        return nullptr;
-    }
-
-    // returns true if the model has a backing file
-    [[nodiscard]] bool hasBackingFile(OpenSim::Model const& m) {
-        return m.getInputFileName() != "Unassigned";
-    }
-
-    // copy common joint properties from a `src` to `dest`
-    //
-    // e.g. names, coordinate names, etc.
-    void copyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& dest) {
-        dest.setName(src.getName());
-
-        // copy owned frames
-        dest.updProperty_frames().assign(src.getProperty_frames());
-
-        // copy, or reference, the parent based on whether the source owns it
-        {
-            OpenSim::PhysicalFrame const& srcParent = src.getParentFrame();
-            bool parentAssigned = false;
-            for (int i = 0; i < src.getProperty_frames().size(); ++i) {
-                if (&src.get_frames(i) == &srcParent) {
-                    // the source's parent is also owned by the source, so we need to
-                    // ensure the destination refers to its own (cloned, above) copy
-                    dest.connectSocket_parent_frame(dest.get_frames(i));
-                    parentAssigned = true;
-                    break;
-                }
-            }
-            if (!parentAssigned) {
-                // the source's parent is a reference to some frame that the source
-                // doesn't, itself, own, so the destination should just also refer
-                // to the same (not-owned) frame
-                dest.connectSocket_parent_frame(srcParent);
-            }
-        }
-
-        // copy, or reference, the child based on whether the source owns it
-        {
-            OpenSim::PhysicalFrame const& srcChild = src.getChildFrame();
-            bool childAssigned = false;
-            for (int i = 0; i < src.getProperty_frames().size(); ++i) {
-                if (&src.get_frames(i) == &srcChild) {
-                    // the source's child is also owned by the source, so we need to
-                    // ensure the destination refers to its own (cloned, above) copy
-                    dest.connectSocket_child_frame(dest.get_frames(i));
-                    childAssigned = true;
-                    break;
-                }
-            }
-            if (!childAssigned) {
-                // the source's child is a reference to some frame that the source
-                // doesn't, itself, own, so the destination should just also refer
-                // to the same (not-owned) frame
-                dest.connectSocket_child_frame(srcChild);
-            }
-        }
-    }
-
-    // delete an item from an OpenSim::Set
-    template<typename T, typename TSetBase = OpenSim::Object>
-    void deleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T const* item) {
-        for (int i = 0; i < set.getSize(); ++i) {
-            if (&set.get(i) == item) {
-                set.remove(i);
-                return;
-            }
-        }
-    }
-
+namespace
+{
     // draw component information as a hover tooltip
-    void drawComponentHoverTooltip(OpenSim::Component const& hovered, glm::vec3 const& pos) {
+    void drawComponentHoverTooltip(OpenSim::Component const& hovered, glm::vec3 const& pos)
+    {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
 
@@ -174,152 +94,25 @@ namespace {
     // try to delete an undoable-model's current selection
     //
     // "try", because some things are difficult to delete from OpenSim models
-    void actionTryDeleteSelectionFromEditedModel(UndoableUiModel& uim) {
-        OpenSim::Component* selected = uim.updSelected();
-
-        if (!selected) {
-            return;  // nothing selected, so nothing can be deleted
-        }
-
-        if (!selected->hasOwner()) {
-            // the selected item isn't owned by anything, so it can't be deleted from its
-            // owner's hierarchy
-            return;
-        }
-
-        OpenSim::Component* owner = const_cast<OpenSim::Component*>(&selected->getOwner());
-
-        // else: an OpenSim::Component is selected and we need to figure out how to remove it
-        // from its parent
-        //
-        // this is uglier than it should be because OpenSim doesn't have a uniform approach for
-        // storing Components in the model hierarchy. Some Components might be in specialized sets,
-        // some Components might be in std::vectors, some might be solo children, etc.
-        //
-        // the challenge is knowing what component is selected, what kind of parent it's contained
-        // within, and how that particular component type can be safely deleted from that particular
-        // parent type without leaving the overall Model in an invalid state
-
-        if (auto* js = dynamic_cast<OpenSim::JointSet*>(owner); js) {
-            // delete an OpenSim::Joint from its owning OpenSim::JointSet
-
-            deleteItemFromSet(*js, static_cast<OpenSim::Joint*>(selected));
-            uim.setDirty(true);
-            uim.declareDeathOf(selected);
-        } else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(owner); bs) {
-            // delete an OpenSim::Body from its owning OpenSim::BodySet
-
-            log::error(
-                "cannot delete %s: deleting OpenSim::Body is not supported: it segfaults in the OpenSim API",
-                selected->getName().c_str());
-
-            // segfaults:
-            // uim.before_modifying_model();
-            // delete_item_from_set_in_model(*bs, static_cast<OpenSim::Body*>(selected));
-            // uim.model().clearConnections();
-            // uim.declare_death_of(selected);
-            // uim.after_modifying_model();
-        } else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(owner); wos) {
-            // delete an OpenSim::WrapObject from its owning OpenSim::WrapObjectSet
-
-            log::error(
-                "cannot delete %s: deleting an OpenSim::WrapObject is not supported: faults in the OpenSim API until after AK's connection checking addition",
-                selected->getName().c_str());
-
-            // also, this implementation needs to iterate over all pathwraps in the model
-            // and disconnect them from the GeometryPath that uses them; otherwise, the model
-            // will explode
-        } else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(owner); cs) {
-            // delete an OpenSim::Controller from its owning OpenSim::ControllerSet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*cs, static_cast<OpenSim::Controller*>(selected));            
-            uim.declareDeathOf(selected);
-        } else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(owner); cs) {
-            // delete an OpenSim::Constraint from its owning OpenSim::ConstraintSet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*conss, static_cast<OpenSim::Constraint*>(selected));
-            uim.declareDeathOf(selected);
-        } else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(owner); fs) {
-            // delete an OpenSim::Force from its owning OpenSim::ForceSet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*fs, static_cast<OpenSim::Force*>(selected));
-            uim.declareDeathOf(selected);
-        } else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(owner); ms) {
-            // delete an OpenSim::Marker from its owning OpenSim::MarkerSet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*ms, static_cast<OpenSim::Marker*>(selected));
-            uim.declareDeathOf(selected);
-        } else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(owner); cgs) {
-            // delete an OpenSim::ContactGeometry from its owning OpenSim::ContactGeometrySet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*cgs, static_cast<OpenSim::ContactGeometry*>(selected));
-            uim.declareDeathOf(selected);
-        } else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(owner); ps) {
-            // delete an OpenSim::Probe from its owning OpenSim::ProbeSet
-
-            uim.setDirty(true);
-            deleteItemFromSet(*ps, static_cast<OpenSim::Probe*>(selected));
-            uim.declareDeathOf(selected);
-        } else if (auto const* geom = findAncestorWithType<OpenSim::Geometry>(selected); geom) {
-            // delete an OpenSim::Geometry from its owning OpenSim::Frame
-
-            if (auto const* frame = findAncestorWithType<OpenSim::Frame>(geom); frame) {
-                // its owner is a frame, which holds the geometry in a list property
-
-                // make a copy of the property containing the geometry and
-                // only copy over the not-deleted geometry into the copy
-                //
-                // this is necessary because OpenSim::Property doesn't seem
-                // to support list element deletion, but does support full
-                // assignment
-
+    void actionTryDeleteSelectionFromEditedModel(UndoableUiModel& uim)
+    {
+        if (OpenSim::Component* selected = uim.updSelected())
+        {
+            if (osc::TryDeleteComponentFromModel(uim.updModel(), *selected))
+            {
                 uim.setDirty(true);
-
-                auto& mframe = const_cast<OpenSim::Frame&>(*frame);
-                OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
-                    static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(mframe.updProperty_attached_geometry());
-
-                std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
-                copy->clear();
-                for (int i = 0; i < prop.size(); ++i) {
-                    OpenSim::Geometry& g = prop[i];
-                    if (&g != geom) {
-                        copy->adoptAndAppendValue(g.clone());
-                    }
-                }
-
-                prop.assign(*copy);
                 uim.declareDeathOf(selected);
             }
-        } else if (auto* pp = dynamic_cast<OpenSim::PathPoint*>(selected); pp) {
-            if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(owner); gp) {
-
-                OpenSim::PathPointSet const& pps = gp->getPathPointSet();
-                int idx = -1;
-                for (int i = 0; i < pps.getSize(); ++i) {
-                    if (&pps.get(i) == pp) {
-                        idx = i;
-                    }
-                }
-
-                if (idx != -1) {
-                    uim.setDirty(true);
-                    gp->deletePathPoint(uim.getState(), idx);
-                    uim.declareDeathOf(selected);
-                }
+            else
+            {
+                uim.setDirty(false);
             }
         }
-
-        uim.updateIfDirty();
     }
 
     // draw an editor for top-level selected Component members (e.g. name)
-    void drawTopLevelMembersEditor(UndoableUiModel& st) {
+    void drawTopLevelMembersEditor(UndoableUiModel& st)
+    {
         OpenSim::Component const* selection = st.getSelected();
 
         if (!selection)
@@ -351,17 +144,20 @@ namespace {
     }
 
     // draw UI element that lets user change a model joint's type
-    void drawSelectionJointTypeSwitcher(UndoableUiModel& st) {
+    void drawSelectionJointTypeSwitcher(UndoableUiModel& st)
+    {
         OpenSim::Joint const* selection = st.getSelectedAs<OpenSim::Joint>();
 
-        if (!selection) {
+        if (!selection)
+        {
             return;
         }
 
         auto const* parentJointset =
             selection->hasOwner() ? dynamic_cast<OpenSim::JointSet const*>(&selection->getOwner()) : nullptr;
 
-        if (!parentJointset) {
+        if (!parentJointset)
+        {
             // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
             // the joint type
             return;
@@ -402,7 +198,7 @@ namespace {
 
             // copy + fixup  a prototype of the user's selection
             std::unique_ptr<OpenSim::Joint> newJoint{JointRegistry::prototypes()[static_cast<size_t>(typeIndex)]->clone()};
-            copyCommonJointProperties(*selection, *newJoint);
+            CopyCommonJointProperties(*selection, *newJoint);
 
             // overwrite old joint in model
             //
@@ -419,53 +215,45 @@ namespace {
 
 
     // try to undo currently edited model to earlier state
-    void actionUndoCurrentlyEditedModel(MainEditorState& mes) {
-        if (mes.editedModel.canUndo()) {
+    void actionUndoCurrentlyEditedModel(MainEditorState& mes)
+    {
+        if (mes.editedModel.canUndo())
+        {
             mes.editedModel.doUndo();
         }
     }
 
     // try to redo currently edited model to later state
-    void actionRedoCurrentlyEditedModel(MainEditorState& mes) {
-        if (mes.editedModel.canRedo()) {
+    void actionRedoCurrentlyEditedModel(MainEditorState& mes)
+    {
+        if (mes.editedModel.canRedo())
+        {
             mes.editedModel.doRedo();
         }
     }
 
     // disable all wrapping surfaces in the current model
-    void actionDisableAllWrappingSurfaces(MainEditorState& mes) {
+    void actionDisableAllWrappingSurfaces(MainEditorState& mes)
+    {
         UndoableUiModel& uim = mes.editedModel;
-
-        OpenSim::Model& m = uim.updModel();
-        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-            for (int i = 0; i < wos.getSize(); ++i) {
-                OpenSim::WrapObject& wo = wos[i];
-                wo.set_active(false);
-                wo.upd_Appearance().set_visible(false);
-            }
-        }
+        DeactivateAllWrapObjectsIn(uim.updModel());
     }
 
     // enable all wrapping surfaces in the current model
-    void actionEnableAllWrappingSurfaces(MainEditorState& mes) {
+    void actionEnableAllWrappingSurfaces(MainEditorState& mes)
+    {
         UndoableUiModel& uim = mes.editedModel;
-
-        OpenSim::Model& m = uim.updModel();
-        for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-            for (int i = 0; i < wos.getSize(); ++i) {
-                OpenSim::WrapObject& wo = wos[i];
-                wo.set_active(true);
-                wo.upd_Appearance().set_visible(true);
-            }
-        }
+        ActivateAllWrapObjectsIn(uim.updModel());
     }
 
     // try to start a new simulation from the currently-edited model
-    void actionStartSimulationFromEditedModel(MainEditorState& mes) {
+    void actionStartSimulationFromEditedModel(MainEditorState& mes)
+    {
         mes.startSimulatingEditedModel();
     }
 
-    void actionClearSelectionFromEditedModel(MainEditorState& mes) {
+    void actionClearSelectionFromEditedModel(MainEditorState& mes)
+    {
         mes.editedModel.setSelected(nullptr);
     }
 }
@@ -1126,7 +914,7 @@ namespace {
                 ImGui::EndTooltip();
             }
 
-            bool modelHasBackingFile = hasBackingFile(impl.st->editedModel.getModel());
+            bool modelHasBackingFile = HasInputFileName(impl.st->editedModel.getModel());
             if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile)) {
                 std::filesystem::path p{uim.getModel().getInputFileName()};
                 OpenPathInOSDefaultApplication(p.parent_path());
@@ -1139,7 +927,7 @@ namespace {
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
                 ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-                if (!hasBackingFile(uim.getModel())) {
+                if (!HasInputFileName(uim.getModel())) {
                     ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
                 }
                 ImGui::PopTextWrapPos();
@@ -1177,6 +965,7 @@ namespace {
     // draws the screen's main menu
     void drawMainMenu(ModelEditorScreen::Impl& impl) {
         if (ImGui::BeginMainMenuBar()) {
+
             impl.ui.mmFileTab.draw(impl.st);
             drawMainMenuEditTab(impl);
             drawMainMenuSimulateTab(impl);

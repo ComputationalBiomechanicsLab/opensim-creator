@@ -17,6 +17,7 @@ namespace OpenSim
     class AbstractSocket;
     class Model;
     class Coordinate;
+    class Joint;
 }
 
 namespace SimTK
@@ -73,10 +74,30 @@ namespace osc
         return ComponentPathPtrs{c};
     }
 
+    // returns the first ancestor of `c` that has type `T`
+    template<typename T>
+    T const* FindAncestorWithType(OpenSim::Component const* c)
+    {
+        while (c)
+        {
+            T const* p = dynamic_cast<T const*>(c);
+            if (p)
+            {
+                return p;
+            }
+            c = c->hasOwner() ? &c->getOwner() : nullptr;
+        }
+        return nullptr;
+    }
+
     void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
+
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
     std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);
     std::vector<OpenSim::AbstractSocket const*> GetPhysicalFrameSockets(OpenSim::Component& c);
+    bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other);
+    bool IsAnyComponentConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other);
+    std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other);
 
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
@@ -108,6 +129,11 @@ namespace osc
     // "revealed" to the user
     bool ShouldShowInUI(OpenSim::Component const&);
 
+    // *tries* to delete the supplied component from the model
+    //
+    // returns `true` if the implementation was able to delete the component; otherwise, `false`
+    bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
+
     // generates decorations for a model + state
     void GenerateModelDecorations(OpenSim::Model const&,
                                   SimTK::State const&,
@@ -117,4 +143,19 @@ namespace osc
                                   OpenSim::Component const* hovered);
 
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
+
+    // copy common joint properties from a `src` to `dest`
+    //
+    // e.g. names, coordinate names, etc.
+    void CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& dest);
+
+    // de-activates all wrap objects in the given model
+    //
+    // returns `true` if any modification was made to the model
+    bool DeactivateAllWrapObjectsIn(OpenSim::Model&);
+
+    // activates all wrap objects in the given model
+    //
+    // returns `true` if any modification was made to the model
+    bool ActivateAllWrapObjectsIn(OpenSim::Model&);
 }

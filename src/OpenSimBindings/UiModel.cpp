@@ -37,23 +37,6 @@ public:
     {
     }
 
-    Impl(Impl const& old, std::unique_ptr<OpenSim::Model> model) :
-        m_StateModifications{old.m_StateModifications},
-        m_Model{std::move(model)},
-        m_Decorations{},
-        m_SceneBVH{},
-        m_FixupScaleFactor{old.m_FixupScaleFactor},
-        m_MaybeSelected{old.m_MaybeSelected},
-        m_MaybeHovered{old.m_MaybeHovered},
-        m_MaybeIsolated{old.m_MaybeIsolated},
-        m_LastModified{old.m_LastModified},
-        m_ModelIsDirty{true},
-        m_StateIsDirty{true},
-        m_DecorationsAreDirty{true},
-        m_FakeDirty{true}
-    {
-    }
-
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         m_StateModifications{},
         m_Model{std::move(_model)},
@@ -63,11 +46,12 @@ public:
         m_MaybeSelected{},
         m_MaybeHovered{},
         m_MaybeIsolated{},
-        m_LastModified{std::chrono::system_clock::now()},
-        m_ModelIsDirty{true},
-        m_StateIsDirty{true},
-        m_DecorationsAreDirty{true},
-        m_FakeDirty{true}
+        m_UpdatedModelVersion{},
+        m_CurrentModelVersion{},
+        m_UpdatedStateVersion{},
+        m_CurrentStateVersion{},
+        m_UpdatedDecorationsVersion{},
+        m_CurrentDecorationsVersion{}
     {
     }
 
@@ -80,20 +64,19 @@ public:
         m_MaybeSelected{other.m_MaybeSelected},
         m_MaybeHovered{other.m_MaybeHovered},
         m_MaybeIsolated{other.m_MaybeIsolated},
-        m_LastModified{other.m_LastModified},
-        m_ModelIsDirty{true},
-        m_StateIsDirty{true},
-        m_DecorationsAreDirty{true},
-        m_FakeDirty{true}
+        m_UpdatedModelVersion{},
+        m_CurrentModelVersion{other.m_CurrentModelVersion},
+        m_UpdatedStateVersion{},
+        m_CurrentStateVersion{other.m_CurrentStateVersion},
+        m_UpdatedDecorationsVersion{},
+        m_CurrentDecorationsVersion{other.m_CurrentDecorationsVersion}
     {
     }
 
     Impl(Impl&&) noexcept = default;
-
-    ~Impl() noexcept = default;
-
     Impl& operator=(Impl const&) = delete;
     Impl& operator=(Impl&&) noexcept = default;
+    ~Impl() noexcept = default;
 
     std::unique_ptr<Impl> clone()
     {
@@ -102,42 +85,48 @@ public:
 
     OpenSim::Model const& getModel() const
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
-        }
-
+        const_cast<Impl&>(*this).updateIfDirty();
         return *m_Model;
     }
 
     OpenSim::Model& updModel()
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            m_FakeDirty = wasDirty;
-        }
-        setDirty(true);
+        const_cast<Impl&>(*this).updateIfDirty();
+        m_CurrentModelVersion = UID{};
         return *m_Model;
+    }
+
+    OpenSim::Model& peekModelADVANCED()
+    {
+        const_cast<Impl&>(*this).updateIfDirty();
+        return *m_Model;
+    }
+
+    void markModelAsModified()
+    {
+        m_CurrentModelVersion = UID{};
     }
 
     void setModel(std::unique_ptr<OpenSim::Model> m)
     {
-        *this = Impl{*this, std::move(m)};
+        m_Model = std::move(m);
+        m_CurrentModelVersion = UID{};
+    }
+
+    UID getModelVersion() const
+    {
+        return m_CurrentModelVersion;
     }
 
     SimTK::State const& getState() const
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
-        }
+        const_cast<Impl&>(*this).updateIfDirty();
         return m_Model->getWorkingState();
+    }
+
+    UID getStateVersion() const
+    {
+        return m_CurrentStateVersion;
     }
 
     StateModifications const& getStateModifications() const
@@ -148,17 +137,14 @@ public:
     void pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
     {
         m_StateModifications.pushCoordinateEdit(c, ce);
-
-        setStateDirtyADVANCED(true);
-        setDecorationsDirtyADVANCED(true);
+        m_CurrentStateVersion = UID{};
     }
 
     bool removeCoordinateEdit(OpenSim::Coordinate const& c)
     {
         if (m_StateModifications.removeCoordinateEdit(c))
         {
-            setStateDirtyADVANCED(true);
-            setDecorationsDirtyADVANCED(true);
+            m_CurrentStateVersion = UID{};
             return true;
         }
         else
@@ -169,23 +155,13 @@ public:
 
     nonstd::span<ComponentDecoration const> getSceneDecorations() const
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
-        }
+        const_cast<Impl&>(*this).updateIfDirty();
         return m_Decorations;
     }
 
     BVH const& getSceneBVH() const
     {
-        // HACK: ensure the user can't get access to a dirty model/system/state
-        {
-            bool wasDirty = isDirty();
-            const_cast<Impl&>(*this).updateIfDirty();
-            const_cast<Impl&>(*this).m_FakeDirty = wasDirty;
-        }
+        const_cast<Impl&>(*this).updateIfDirty();
         return m_SceneBVH;
     }
 
@@ -197,7 +173,7 @@ public:
     void setFixupScaleFactor(float sf)
     {
         m_FixupScaleFactor = sf;
-        setDecorationsDirtyADVANCED(true);
+        m_CurrentDecorationsVersion = UID{};
     }
 
     AABB getSceneAABB() const
@@ -256,74 +232,61 @@ public:
 
     bool isDirty() const
     {
-        return m_ModelIsDirty || m_StateIsDirty || m_DecorationsAreDirty || m_FakeDirty;
-    }
-
-    void setModelDirtyADVANCED(bool v)
-    {
-        if (!m_ModelIsDirty && v)
-        {
-            log::debug("model dirtying event happened");
-        }
-
-        m_ModelIsDirty = v;
-
-        if (v)
-        {
-            m_LastModified = std::chrono::system_clock::now();
-        }
-    }
-
-    void setStateDirtyADVANCED(bool v)
-    {
-        if (!m_StateIsDirty && v)
-        {
-            log::debug("state dirtying event happened");
-        }
-
-        m_StateIsDirty = v;
-
-        if (v)
-        {
-            m_LastModified = std::chrono::system_clock::now();
-        }
-    }
-
-    void setDecorationsDirtyADVANCED(bool v)
-    {
-        if (!m_DecorationsAreDirty && v)
-        {
-            log::debug("decoration dirtying event happened");
-        }
-
-        m_DecorationsAreDirty = v;
-
-        if (v)
-        {
-            m_LastModified = std::chrono::system_clock::now();
-        }
+        return m_CurrentModelVersion != m_UpdatedModelVersion ||
+               m_CurrentStateVersion != m_UpdatedStateVersion ||
+               m_CurrentDecorationsVersion != m_UpdatedDecorationsVersion;
     }
 
     void setDirty(bool v)
     {
-        setModelDirtyADVANCED(v);
-        setStateDirtyADVANCED(v);
-        setDecorationsDirtyADVANCED(v);
+        if (v)
+        {
+            m_CurrentModelVersion = UID{};
+            m_CurrentStateVersion = UID{};
+            m_CurrentDecorationsVersion = UID{};
+        }
+        else
+        {
+            m_UpdatedModelVersion = m_CurrentModelVersion;
+            m_UpdatedStateVersion = m_CurrentStateVersion;
+            m_UpdatedDecorationsVersion = m_CurrentDecorationsVersion;
+        }
     }
 
     void updateIfDirty()
     {
+        if (m_CurrentModelVersion != m_UpdatedModelVersion)
+        {
+            // a model update always induces a state + decorations update also
+            if (m_CurrentStateVersion == m_UpdatedStateVersion)
+            {
+                m_CurrentStateVersion = UID{};
+            }
+            if (m_CurrentDecorationsVersion == m_UpdatedDecorationsVersion)
+            {
+                m_CurrentDecorationsVersion = UID{};
+            }
+        }
+        else if (m_CurrentStateVersion != m_UpdatedStateVersion)
+        {
+            // a state update always induces a decorations update also
+            if (m_CurrentDecorationsVersion == m_UpdatedDecorationsVersion)
+            {
+                m_CurrentDecorationsVersion = UID{};
+            }
+        }
 
-        if (m_ModelIsDirty)
+        if (m_CurrentModelVersion != m_UpdatedModelVersion)
         {
             OSC_PERF("model update");
 
             m_Model->buildSystem();
             m_Model->initializeState();
-            m_ModelIsDirty = false;
+
+            m_UpdatedModelVersion = m_CurrentModelVersion;  // reset flag
         }
 
-        if (m_StateIsDirty)
+        if (m_CurrentStateVersion != m_UpdatedStateVersion)
         {
             OSC_PERF("state update");
 
@@ -341,26 +304,31 @@ public:
                 OSC_PERF("realize velocity");
                 m_Model->realizeVelocity(m_Model->updWorkingState());
             }
-            m_StateIsDirty = false;
+
+            m_UpdatedStateVersion = m_CurrentStateVersion;  // reset flag
         }
 
-        if (m_DecorationsAreDirty)
+        if (m_CurrentDecorationsVersion != m_UpdatedDecorationsVersion)
         {
             OSC_PERF("decoration update");
 
             {
                 OSC_PERF("generate decorations");
-                GenerateModelDecorations(*m_Model, m_Model->updWorkingState(), m_FixupScaleFactor, m_Decorations, getSelected(), getHovered());
+                GenerateModelDecorations(*m_Model,
+                                         m_Model->updWorkingState(),
+                                         m_FixupScaleFactor,
+                                         m_Decorations,
+                                         FindComponent(*m_Model, m_MaybeSelected),
+                                         FindComponent(*m_Model, m_MaybeHovered));
             }
 
             {
                 OSC_PERF("generate BVH");
                 UpdateSceneBVH(m_Decorations, m_SceneBVH);
             }
-            m_DecorationsAreDirty = false;
-        }
 
-        m_FakeDirty = false;
+            m_UpdatedDecorationsVersion = m_CurrentDecorationsVersion;
+        }
     }
 
     bool hasSelected() const
@@ -370,13 +338,19 @@ public:
 
     OpenSim::Component const* getSelected() const
     {
+        const_cast<Impl&>(*this).updateIfDirty();
         return FindComponent(*m_Model, m_MaybeSelected);
     }
 
     OpenSim::Component* updSelected()
     {
-        setDirty(true);
-        return FindComponentMut(*m_Model, m_MaybeSelected);
+        const_cast<Impl&>(*this).updateIfDirty();
+        OpenSim::Component* c = FindComponentMut(*m_Model, m_MaybeSelected);
+        if (c)
+        {
+            m_CurrentModelVersion = {};
+        }
+        return c;
     }
 
     void setSelected(OpenSim::Component const* c)
@@ -394,7 +368,7 @@ public:
 
         if (m_MaybeSelected != oldSelection)
         {
-            setDecorationsDirtyADVANCED(true);
+            m_CurrentDecorationsVersion = UID{};
         }
     }
 
@@ -411,13 +385,19 @@ public:
 
     OpenSim::Component const* getHovered() const
     {
+        const_cast<Impl&>(*this).updateIfDirty();
         return FindComponent(*m_Model, m_MaybeHovered);
     }
 
     OpenSim::Component* updHovered()
     {
-        setDirty(true);
-        return FindComponentMut(*m_Model, m_MaybeHovered);
+        const_cast<Impl&>(*this).updateIfDirty();
+        OpenSim::Component* c = FindComponentMut(*m_Model, m_MaybeHovered);
+        if (c)
+        {
+            m_CurrentModelVersion = UID{};
+        }
+        return c;
     }
 
     void setHovered(OpenSim::Component const* c)
@@ -435,19 +415,25 @@ public:
 
         if (m_MaybeHovered != oldHovered)
         {
-            setDecorationsDirtyADVANCED(true);
+            m_CurrentDecorationsVersion = UID{};
         }
     }
 
     OpenSim::Component const* getIsolated() const
     {
+        const_cast<Impl&>(*this).updateIfDirty();
         return FindComponent(*m_Model, m_MaybeIsolated);
     }
 
     OpenSim::Component* updIsolated()
     {
-        setDirty(true);
-        return FindComponentMut(*m_Model, m_MaybeIsolated);
+        const_cast<Impl&>(*this).updateIfDirty();
+        OpenSim::Component* c = FindComponentMut(*m_Model, m_MaybeIsolated);
+        if (c)
+        {
+            m_CurrentModelVersion = UID{};
+        }
+        return c;
     }
 
     void setIsolated(OpenSim::Component const* c)
@@ -465,7 +451,7 @@ public:
 
         if (m_MaybeIsolated != oldIsolated)
         {
-            setDecorationsDirtyADVANCED(true);
+            m_CurrentDecorationsVersion = UID{};
         }
     }
 
@@ -492,11 +478,6 @@ public:
         {
             setIsolated(nullptr);
         }
-    }
-
-    std::chrono::system_clock::time_point getLastModifiedTime() const
-    {
-        return m_LastModified;
     }
 
 private:
@@ -527,16 +508,14 @@ private:
     // (maybe) absolute path to the current isolation (empty otherwise)
     OpenSim::ComponentPath m_MaybeIsolated;
 
-    // generic timestamp
-    //
-    // can indicate creation or latest modification, it's here to roughly
-    // track how old/new the instance is
-    std::chrono::system_clock::time_point m_LastModified;
-
-    bool m_ModelIsDirty;
-    bool m_StateIsDirty;
-    bool m_DecorationsAreDirty;
-    bool m_FakeDirty;  // "pretends" the model was dirty - used by calling code to detect dirtiness
+    // these version IDs are used to figure out if/when the model/state/decorations
+    // need to be updated
+    UID m_UpdatedModelVersion;
+    UID m_CurrentModelVersion;
+    UID m_UpdatedStateVersion;
+    UID m_CurrentStateVersion;
+    UID m_UpdatedDecorationsVersion;
+    UID m_CurrentDecorationsVersion;
 };
 
 osc::UiModel::UiModel() :
@@ -560,13 +539,9 @@ osc::UiModel::UiModel(UiModel const& other) :
 }
 
 osc::UiModel::UiModel(UiModel&&) noexcept = default;
-
-osc::UiModel::~UiModel() noexcept = default;
-
 UiModel& osc::UiModel::operator=(UiModel const& other) = default;
-
 osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
-
+osc::UiModel::~UiModel() noexcept = default;
 
 OpenSim::Model const& osc::UiModel::getModel() const
 {
@@ -578,15 +553,34 @@ OpenSim::Model& osc::UiModel::updModel()
     return m_Impl->updModel();
 }
 
+OpenSim::Model& osc::UiModel::peekModelADVANCED()
+{
+    return m_Impl->peekModelADVANCED();
+}
+
+void osc::UiModel::markModelAsModified()
+{
+    m_Impl->markModelAsModified();
+}
+
+osc::UID osc::UiModel::getModelVersion() const
+{
+    return m_Impl->getModelVersion();
+}
+
 void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m)
 {
     m_Impl->setModel(std::move(m));
 }
 
-
 SimTK::State const& osc::UiModel::getState() const
 {
     return m_Impl->getState();
+}
+
+UID osc::UiModel::getStateVersion() const
+{
+    return m_Impl->getStateVersion();
 }
 
 StateModifications const& osc::UiModel::getStateModifications() const
@@ -647,21 +641,6 @@ float osc::UiModel::getRecommendedScaleFactor() const
 bool osc::UiModel::isDirty() const
 {
     return m_Impl->isDirty();
-}
-
-void osc::UiModel::setModelDirtyADVANCED(bool v)
-{
-    m_Impl->setModelDirtyADVANCED(std::move(v));
-}
-
-void osc::UiModel::setStateDirtyADVANCED(bool v)
-{
-    m_Impl->setStateDirtyADVANCED(std::move(v));
-}
-
-void osc::UiModel::setDecorationsDirtyADVANCED(bool v)
-{
-    m_Impl->setDecorationsDirtyADVANCED(std::move(v));
 }
 
 void osc::UiModel::setDirty(bool v)
@@ -742,10 +721,4 @@ void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
 void osc::UiModel::declareDeathOf(OpenSim::Component const* c)
 {
     m_Impl->declareDeathOf(std::move(c));
-}
-
-
-std::chrono::system_clock::time_point osc::UiModel::getLastModifiedTime() const
-{
-    return m_Impl->getLastModifiedTime();
 }

@@ -19,6 +19,7 @@ All notable changes to this project will be documented here. The format is based
 - Renamed "Open" and "Save" in the mesh importer to "Import" and "Export" (#143)
 - Refactored a variety of internal APIs (internal)
 - Partially integrated experimental DAG implementation (internal)
+- Refactored undo, redo, and deletion logic to be more reliable (internal)
 
 
 ## [0.1.2] - 2022/02/16

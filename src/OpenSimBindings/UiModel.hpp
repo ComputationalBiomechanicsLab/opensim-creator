@@ -3,11 +3,11 @@
 #include "src/3D/Model.hpp"  // AABB
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/Utils/ClonePtr.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
 #include <glm/vec3.hpp>
 
-#include <chrono>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -37,6 +37,9 @@ namespace osc
 namespace osc
 {
     // a "UI-ready" OpenSim::Model with an associated (rendered) state
+    //
+    // this class guarantees that the returned model/state/decorations are up-to-date
+    // by internally checking dirty flags
     class UiModel final : public RenderableScene {
     public:
         // construct a blank (new) UiModel
@@ -48,29 +51,23 @@ namespace osc
         // construct a UiModel from an in-memory OpenSim::Model
         explicit UiModel(std::unique_ptr<OpenSim::Model>);
 
-        // construct an independent copy of a UiModel
         UiModel(UiModel const&);
-
-        // move the UiModel somewhere else in memory
         UiModel(UiModel&&) noexcept;
-
-        ~UiModel() noexcept override;
-
-        // copy another UiModel over this one
         UiModel& operator=(UiModel const&);
-
-        // move another UiModel over this one
         UiModel& operator=(UiModel&&) noexcept;
-
+        ~UiModel() noexcept override;
 
         // get underlying `OpenSim::Model` that the UiModel wraps
         OpenSim::Model const& getModel() const;
         OpenSim::Model& updModel();
+        OpenSim::Model& peekModelADVANCED();  // doesn't modify the version IDs
+        void markModelAsModified();  // manually modify the version IDs
         void setModel(std::unique_ptr<OpenSim::Model>);
-
+        UID getModelVersion() const;  // changes when the model may have been modified
 
         // get associated (default + state modifications) model state
         SimTK::State const& getState() const;
+        UID getStateVersion() const;
 
         // get user-enacted state modifications (e.g. coordinate edits)
         StateModifications const& getStateModifications() const;
@@ -80,7 +77,6 @@ namespace osc
 
         // remove a state modification from the model (dirties state)
         bool removeCoordinateEdit(OpenSim::Coordinate const&);
-
 
         // get a list of renderable scene elements that represent the model in its state
         nonstd::span<ComponentDecoration const> getSceneDecorations() const override;
@@ -106,11 +102,6 @@ namespace osc
         // returns what the implementation thinks is a suitable scale factor, given the decoration's dimensions
         float getRecommendedScaleFactor() const;
 
-
-        // read the model's dirty flag
-        //
-        // this is set by the various mutating methods and indicate
-        // that part of the UiModel *may* be modified in some way
         bool isDirty() const;
 
         // sets dirty flags (advanced)
@@ -127,9 +118,6 @@ namespace osc
         //   necessary to call finalizeFromProperties or rebuild the system for
         //   the model, so it un-dirties the model + state and leaves the
         //   decorations marked as dirty
-        void setModelDirtyADVANCED(bool);
-        void setStateDirtyADVANCED(bool);
-        void setDecorationsDirtyADVANCED(bool);
         void setDirty(bool);
 
         // updates all members in this class to reflect the latest model
@@ -215,10 +203,6 @@ namespace osc
         // the model indirectly (e.g. it was destructed by an OpenSim container)
         // and that we want to ensure the pointer isn't still held by this state
         void declareDeathOf(OpenSim::Component const* c);
-
-
-        // returns the last time that the implementation believes the model was modified
-        std::chrono::system_clock::time_point getLastModifiedTime() const;
 
         class Impl;
     private:

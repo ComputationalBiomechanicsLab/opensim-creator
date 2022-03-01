@@ -109,9 +109,6 @@ namespace osc
         //
         // these flags are used to decide which parts of the model/state/decorations need to be
         // updated
-        void setModelDirtyADVANCED(bool);
-        void setStateDirtyADVANCED(bool);
-        void setDecorationsDirtyADVANCED(bool);
         void setDirty(bool);
 
         // read/manipulate current selection (if any)

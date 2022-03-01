@@ -22,11 +22,13 @@ using std::chrono_literals::operator""s;
 // commit support
 //
 // a datastructure that holds commit-level information about a UiModel
-namespace {
-
+namespace
+{
     // a single "commit" of the model graph for undo/redo storage
     class UiModelCommit final {
     public:
+        using Clock = std::chrono::system_clock;
+
         explicit UiModelCommit(UiModel model) :
             m_Model{std::move(model)}
         {
@@ -41,6 +43,7 @@ namespace {
         UID getID() const { return m_ID; }
         bool hasParent() const { return m_MaybeParentID != UID::empty(); }
         UID getParentID() const { return m_MaybeParentID; }
+        Clock::time_point getCommitTime() const { return m_CommitTime; }
         UiModel const& getUiModel() const { return m_Model; }
 
     private:
@@ -49,6 +52,9 @@ namespace {
 
         // (maybe) unique ID of the parent commit
         UID m_MaybeParentID = UID::empty();
+
+        // when the commit was created
+        Clock::time_point m_CommitTime = Clock::now();
 
         // the model saved in this snapshot
         UiModel m_Model;
@@ -314,8 +320,14 @@ public:
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();
 
+        OSC_ASSERT(newModel.getModelVersion() == parent->getUiModel().getModelVersion());
+        OSC_ASSERT(newModel.getStateVersion() == parent->getUiModel().getStateVersion());
+
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
+
+        OSC_ASSERT(m_Scratch.getModelVersion() == getHeadCommit().getUiModel().getModelVersion());
+        OSC_ASSERT(m_Scratch.getStateVersion() == getHeadCommit().getUiModel().getStateVersion());
     }
 
     // returns true if a redo is possible
@@ -553,16 +565,12 @@ float osc::UndoableUiModel::getReccommendedScaleFactor() const
 
 void osc::UndoableUiModel::updateIfDirty()
 {
-    // skip updating if state is clean
-    if (!getUiModel().isDirty())
-    {
-        return;
-    }
+    UiModel& scratch = m_Impl->updScratch();
 
     // ensure the scratch space is clean
     try
     {
-        m_Impl->updScratch().updateIfDirty();
+        scratch.updateIfDirty();
     }
     catch (std::exception const& ex)
     {
@@ -573,28 +581,20 @@ void osc::UndoableUiModel::updateIfDirty()
     }
 
     // HACK: auto-perform commit (if necessary)
-    UiModelCommit const& curHead = m_Impl->getHeadCommit();
-    bool shouldCommit = curHead.getParentID() == UID::empty()|| curHead.getUiModel().getLastModifiedTime() < std::chrono::system_clock::now() - 5s;
-
-    if (shouldCommit)
     {
-        m_Impl->commit();
+        UiModelCommit const& head = m_Impl->getHeadCommit();
+        auto debounceTime = 2s;
+
+        bool scratchContainsModelChanges = scratch.getModelVersion() != head.getUiModel().getModelVersion();
+        bool scratchContainsStateChanges = scratch.getStateVersion() != head.getUiModel().getStateVersion();
+        bool lastCommitWasAWhileAgo = head.getCommitTime() < (UiModelCommit::Clock::now() - debounceTime);
+
+        if ((scratchContainsModelChanges || scratchContainsStateChanges) && lastCommitWasAWhileAgo)
+        {
+            log::debug("commit model to undo/redo storage");
+            m_Impl->commit();
+        }
     }
-}
-
-void osc::UndoableUiModel::setModelDirtyADVANCED(bool v)
-{
-    updUiModel().setModelDirtyADVANCED(v);
-}
-
-void osc::UndoableUiModel::setStateDirtyADVANCED(bool v)
-{
-    updUiModel().setStateDirtyADVANCED(v);
-}
-
-void osc::UndoableUiModel::setDecorationsDirtyADVANCED(bool v)
-{
-    updUiModel().setDecorationsDirtyADVANCED(v);
 }
 
 void osc::UndoableUiModel::setDirty(bool v)

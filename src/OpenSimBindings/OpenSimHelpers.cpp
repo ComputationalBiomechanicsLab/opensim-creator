@@ -7,6 +7,7 @@
 #include "src/Utils/Perf.hpp"
 #include "src/Utils/SimTKHelpers.hpp"
 #include "src/App.hpp"
+#include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
@@ -249,6 +250,23 @@ namespace
             }
         }
     }
+
+    // try to delete an item from an OpenSim::Set
+    //
+    // returns `true` if the item was found and deleted; otherwise, returns `false`
+    template<typename T, typename TSetBase = OpenSim::Object>
+    bool TryDeleteItemFromSet(OpenSim::Set<T, TSetBase>& set, T const* item)
+    {
+        for (int i = 0; i < set.getSize(); ++i)
+        {
+            if (&set.get(i) == item)
+            {
+                set.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 
@@ -299,6 +317,57 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetSocketsWithTypeName(OpenSim:
 std::vector<OpenSim::AbstractSocket const*> osc::GetPhysicalFrameSockets(OpenSim::Component& c)
 {
     return GetSocketsWithTypeName(c, "PhysicalFrame");
+}
+
+bool osc::IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
+{
+    for (std::string const& socketName : c.getSocketNames())
+    {
+        OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
+        if (sock.isConnected() && &sock.getConnecteeAsObject() == &other)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool osc::IsAnyComponentConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
+{
+    if (IsConnectedViaSocketTo(root, other))
+    {
+        return true;
+    }
+
+    for (OpenSim::Component& c : root.updComponentList())
+    {
+        if (IsConnectedViaSocketTo(c, other))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::vector<OpenSim::Component*> osc::GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
+{
+    std::vector<OpenSim::Component*> rv;
+
+    if (IsConnectedViaSocketTo(root, other))
+    {
+        rv.push_back(&root);
+    }
+
+    for (OpenSim::Component& c : root.updComponentList())
+    {
+        if (IsConnectedViaSocketTo(c, other))
+        {
+            rv.push_back(&c);
+        }
+    }
+
+    return rv;
 }
 
 OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSim::ComponentPath const& cp)
@@ -369,6 +438,136 @@ bool osc::ShouldShowInUI(OpenSim::Component const& c)
     }
 }
 
+bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
+{
+    if (!c.hasOwner())
+    {
+        log::error("cannot delete %s: it has no owner", c.getName().c_str());
+        return false;
+    }
+
+    if (&c.getRoot() != &m)
+    {
+        log::error("cannot delete %s: it is not owned by the provided model");
+        return false;
+    }
+
+    OpenSim::Component& owner = const_cast<OpenSim::Component&>(c.getOwner());
+
+    // check if anything connects to the component via a socket
+    if (auto connectees = GetAnyComponentsConnectedViaSocketTo(m, c); !connectees.empty())
+    {
+        std::stringstream ss;
+        char const* delim = "";
+        for (OpenSim::Component const* c : connectees)
+        {
+            ss << delim << c->getName();
+            delim = ", ";
+        }
+        log::error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
+        return false;
+    }
+
+    // BUG/HACK: check if any path wraps connect to the component
+    //
+    // this is because the wrapping code isn't using sockets :< - this should be
+    // fixed in OpenSim itself
+    for (OpenSim::PathWrap const& pw : m.getComponentList<OpenSim::PathWrap>())
+    {
+        if (pw.getWrapObject() == &c)
+        {
+            log::error("cannot delete %s: it is used in a path wrap (%s)", c.getName().c_str(), pw.getAbsolutePathString().c_str());
+            return false;
+        }
+    }
+
+    // at this point we know that it's *technically* feasible to delete the component
+    // from the model without breaking sockets etc., so now we use heuristics to figure
+    // out how to do that
+
+    if (auto* js = dynamic_cast<OpenSim::JointSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*js, dynamic_cast<OpenSim::Joint*>(&c));
+    }
+    else if (auto* bs = dynamic_cast<OpenSim::BodySet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*bs, dynamic_cast<OpenSim::Body*>(&c));
+    }
+    else if (auto* wos = dynamic_cast<OpenSim::WrapObjectSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*wos, dynamic_cast<OpenSim::WrapObject*>(&c));
+    }
+    else if (auto* cs = dynamic_cast<OpenSim::ControllerSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*cs, dynamic_cast<OpenSim::Controller*>(&c));
+    }
+    else if (auto* conss = dynamic_cast<OpenSim::ConstraintSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*conss, dynamic_cast<OpenSim::Constraint*>(&c));
+    }
+    else if (auto* fs = dynamic_cast<OpenSim::ForceSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*fs, dynamic_cast<OpenSim::Force*>(&c));
+    }
+    else if (auto* ms = dynamic_cast<OpenSim::MarkerSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*ms, dynamic_cast<OpenSim::Marker*>(&c));
+    }
+    else if (auto* cgs = dynamic_cast<OpenSim::ContactGeometrySet*>(&owner); cgs)
+    {
+        return TryDeleteItemFromSet(*cgs, dynamic_cast<OpenSim::ContactGeometry*>(&c));
+    }
+    else if (auto* ps = dynamic_cast<OpenSim::ProbeSet*>(&owner))
+    {
+        return TryDeleteItemFromSet(*ps, dynamic_cast<OpenSim::Probe*>(&c));
+    }
+    else if (auto* gp = dynamic_cast<OpenSim::GeometryPath*>(&owner))
+    {
+        if (auto* app = dynamic_cast<OpenSim::AbstractPathPoint*>(&c))
+        {
+            return TryDeleteItemFromSet(gp->updPathPointSet(), app);
+        }
+        else if (auto* pw = dynamic_cast<OpenSim::PathWrap*>(&c))
+        {
+            return TryDeleteItemFromSet(gp->updWrapSet(), pw);
+        }
+    }
+    else if (auto const* geom = FindAncestorWithType<OpenSim::Geometry>(&c))
+    {
+        // delete an OpenSim::Geometry from its owning OpenSim::Frame
+
+        if (auto const* frame = FindAncestorWithType<OpenSim::Frame>(geom))
+        {
+            // its owner is a frame, which holds the geometry in a list property
+
+            // make a copy of the property containing the geometry and
+            // only copy over the not-deleted geometry into the copy
+            //
+            // this is necessary because OpenSim::Property doesn't seem
+            // to support list element deletion, but does support full
+            // assignment
+
+            auto& mframe = const_cast<OpenSim::Frame&>(*frame);
+            OpenSim::ObjectProperty<OpenSim::Geometry>& prop =
+                static_cast<OpenSim::ObjectProperty<OpenSim::Geometry>&>(mframe.updProperty_attached_geometry());
+
+            std::unique_ptr<OpenSim::ObjectProperty<OpenSim::Geometry>> copy{prop.clone()};
+            copy->clear();
+            for (int i = 0; i < prop.size(); ++i) {
+                OpenSim::Geometry& g = prop[i];
+                if (&g != geom) {
+                    copy->adoptAndAppendValue(g.clone());
+                }
+            }
+
+            prop.assign(*copy);
+
+            return true;
+        }
+    }
+    return false;
+}
+
 void osc::GenerateModelDecorations(OpenSim::Model const& model,
                                    SimTK::State const& state,
                                    float fixupScaleFactor,
@@ -400,4 +599,82 @@ void osc::UpdateSceneBVH(nonstd::span<ComponentDecoration const> sceneEls, BVH& 
     }
 
     BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
+}
+
+void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& dest)
+{
+    dest.setName(src.getName());
+
+    // copy owned frames
+    dest.updProperty_frames().assign(src.getProperty_frames());
+
+    // copy, or reference, the parent based on whether the source owns it
+    {
+        OpenSim::PhysicalFrame const& srcParent = src.getParentFrame();
+        bool parentAssigned = false;
+        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
+            if (&src.get_frames(i) == &srcParent) {
+                // the source's parent is also owned by the source, so we need to
+                // ensure the destination refers to its own (cloned, above) copy
+                dest.connectSocket_parent_frame(dest.get_frames(i));
+                parentAssigned = true;
+                break;
+            }
+        }
+        if (!parentAssigned) {
+            // the source's parent is a reference to some frame that the source
+            // doesn't, itself, own, so the destination should just also refer
+            // to the same (not-owned) frame
+            dest.connectSocket_parent_frame(srcParent);
+        }
+    }
+
+    // copy, or reference, the child based on whether the source owns it
+    {
+        OpenSim::PhysicalFrame const& srcChild = src.getChildFrame();
+        bool childAssigned = false;
+        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
+            if (&src.get_frames(i) == &srcChild) {
+                // the source's child is also owned by the source, so we need to
+                // ensure the destination refers to its own (cloned, above) copy
+                dest.connectSocket_child_frame(dest.get_frames(i));
+                childAssigned = true;
+                break;
+            }
+        }
+        if (!childAssigned) {
+            // the source's child is a reference to some frame that the source
+            // doesn't, itself, own, so the destination should just also refer
+            // to the same (not-owned) frame
+            dest.connectSocket_child_frame(srcChild);
+        }
+    }
+}
+
+bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
+{
+    bool rv = false;
+    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+        for (int i = 0; i < wos.getSize(); ++i) {
+            OpenSim::WrapObject& wo = wos[i];
+            wo.set_active(false);
+            wo.upd_Appearance().set_visible(false);
+            rv = rv || true;
+        }
+    }
+    return rv;
+}
+
+bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
+{
+    bool rv = false;
+    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
+        for (int i = 0; i < wos.getSize(); ++i) {
+            OpenSim::WrapObject& wo = wos[i];
+            wo.set_active(true);
+            wo.upd_Appearance().set_visible(true);
+            rv = rv || true;
+        }
+    }
+    return rv;
 }
