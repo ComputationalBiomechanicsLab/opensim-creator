@@ -129,11 +129,6 @@ public:
         return m_CurrentStateVersion;
     }
 
-    StateModifications const& getStateModifications() const
-    {
-        return m_StateModifications;
-    }
-
     void pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
     {
         m_StateModifications.pushCoordinateEdit(c, ce);
@@ -563,11 +558,6 @@ SimTK::State const& osc::UiModel::getState() const
 UID osc::UiModel::getStateVersion() const
 {
     return m_Impl->getStateVersion();
-}
-
-StateModifications const& osc::UiModel::getStateModifications() const
-{
-    return m_Impl->getStateModifications();
 }
 
 void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)

@@ -12,8 +12,7 @@ osc::ComponentDecoration::ComponentDecoration(std::shared_ptr<Mesh> mesh_,
                                               glm::vec4 const& color_,
                                               OpenSim::Component const* component_) :
     mesh{std::move(mesh_)},
-    modelMtx{toMat4(transform_)},
-    normalMtx{toNormalMatrix(transform_)},
+    transform{transform_},
     color{color_},
     worldspaceAABB{AABBApplyXform(mesh->getAABB(), transform_)},
     component{std::move(component_)}

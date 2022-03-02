@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/OpenSimBindings/BasicModelStatePair.hpp"
+
 #include <SimTKcommon.h>
 
 #include <chrono>
@@ -27,6 +29,8 @@ namespace osc {
     };
     extern IntegratorMethod const g_IntegratorMethods[IntegratorMethod_NumIntegratorMethods];
     extern char const* const g_IntegratorMethodNames[IntegratorMethod_NumIntegratorMethods];
+
+
 
     // simulation parameters
     struct FdParams final {
@@ -93,15 +97,6 @@ namespace osc {
         bool UpdateLatestStateOnEveryStep = true;
         static constexpr char const* g_UpdateLatestStateOnEveryStepTitle = "update latest state on every step";
         static constexpr char const* g_UpdateLatestStateOnEveryStepDesc = "Whether the simulator should try to update the latest integration state on each integration step. Internally, the UI will frequently ask the simulator for the latest state *and* regular reports (defined above). The latest state is only really used to provide a smooth simulation playback. Disabling this may improve simulation performance (because the simulator will only have to post updates at the regular reporting interval).";
-    };
-
-    // simulation input
-    struct Input final {
-        std::unique_ptr<OpenSim::Model> model;
-        std::unique_ptr<SimTK::State> state;
-        FdParams params;
-
-        Input(std::unique_ptr<OpenSim::Model>, std::unique_ptr<SimTK::State>);
     };
 
     // stats collected whenever the simulation updates/reports
@@ -176,8 +171,7 @@ namespace osc {
 
     public:
         // starts the simulation on construction
-        FdSimulation(std::unique_ptr<Input>);
-
+        FdSimulation(BasicModelStatePair, FdParams const& params);
         FdSimulation(FdSimulation const&) = delete;
         FdSimulation(FdSimulation&&) noexcept;
 

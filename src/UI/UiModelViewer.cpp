@@ -444,8 +444,8 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl, RenderableScen
         }
 
         SceneGPUInstanceData& ins = buf.emplace_back();
-        ins.modelMtx = se.modelMtx;
-        ins.normalMtx = se.normalMtx;
+        ins.modelMtx = osc::toMat4(se.transform);
+        ins.normalMtx = osc::toNormalMatrix(se.transform);
         ins.rgba = se.color;
         ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
         ins.decorationIdx = static_cast<int>(i);
@@ -804,8 +804,8 @@ static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
             continue;  // it's not in the current isolation
         }
 
-        glm::mat4 instanceMmtx = decs[instanceIdx].modelMtx;
-        Line cameraRayModelspace = LineApplyXform(cameraRay, glm::inverse(instanceMmtx));
+        glm::mat4 instanceMmtx = toMat4(decs[instanceIdx].transform);
+        Line cameraRayModelspace = LineApplyXform(cameraRay, toInverseMat4(decs[instanceIdx].transform));
 
         auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
 

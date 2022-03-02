@@ -22,7 +22,27 @@
 
 using namespace osc;
 
-// data
+namespace
+{
+    class Input final {
+    public:
+        Input(BasicModelStatePair ms_, FdParams const& params_) :
+            ms{std::move(ms_)},
+            params{std::move(params_)}
+        {
+        }
+
+        OpenSim::Model const& getModel() const { return ms.getModel(); }
+        OpenSim::Model& updModel() { return ms.updModel(); }
+        SimTK::State const& getState() const { return ms.getState(); }
+        SimTK::State& updState() { return ms.updState(); }
+        FdParams const& getParams() const { return params; }
+
+    private:
+        BasicModelStatePair ms;
+        FdParams params;
+    };
+}
 
 IntegratorMethod const osc::g_IntegratorMethods[IntegratorMethod_NumIntegratorMethods] = {
     IntegratorMethod_OpenSimManagerDefault,
@@ -136,13 +156,13 @@ static FdsimStatus FdSimulationMainUnguarded(
         std::unique_ptr<Input> input,
         std::shared_ptr<SynchronizedValue<SharedState>> shared) {
 
-    OpenSim::Model& model = *input->model;
-    SimTK::State& state = *input->state;
-    FdParams const& params = input->params;
+    OpenSim::Model& model = input->updModel();
+    SimTK::State& state = input->updState();
+    FdParams const& params = input->getParams();
 
     // create + init an integrator
     std::unique_ptr<SimTK::Integrator> integ =
-        fdsimMakeIntegrator(input->model->getMultibodySystem(), input->params.IntegratorMethodUsed);
+        fdsimMakeIntegrator(input->getModel().getMultibodySystem(), input->getParams().IntegratorMethodUsed);
     integ->setInternalStepLimit(params.IntegratorStepLimit);
     integ->setMinimumStepSize(params.IntegratorMinimumStepSize.count());
     integ->setMaximumStepSize(params.IntegratorMaximumStepSize.count());
@@ -296,9 +316,9 @@ struct osc::FdSimulation::Impl final {
     int numStatesPopped;
 
     Impl(std::unique_ptr<Input> input) :
-        params{input->params},
+        params{input->getParams()},
 
-        shared{new SynchronizedValue<SharedState>{}},
+        shared{std::make_shared<SynchronizedValue<SharedState>>()},
 
         // starts the simulation
         simulatorThread{FdSimulationMain, std::move(input), shared},
@@ -309,12 +329,9 @@ struct osc::FdSimulation::Impl final {
 
 // public API
 
-osc::Input::Input(std::unique_ptr<OpenSim::Model> _model, std::unique_ptr<SimTK::State> _state) :
-    model{std::move(_model)}, state{std::move(_state)} {
-}
-
-osc::FdSimulation::FdSimulation(std::unique_ptr<Input> input) :
-    m_Impl{new Impl{std::move(input)}} {
+osc::FdSimulation::FdSimulation(BasicModelStatePair p, FdParams const& params) :
+    m_Impl{new Impl{std::make_unique<Input>(std::move(p), params)}}
+{
 }
 
 osc::FdSimulation::FdSimulation(FdSimulation&&) noexcept = default;

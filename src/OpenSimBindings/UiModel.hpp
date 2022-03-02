@@ -69,9 +69,6 @@ namespace osc
         SimTK::State const& getState() const;
         UID getStateVersion() const;
 
-        // get user-enacted state modifications (e.g. coordinate edits)
-        StateModifications const& getStateModifications() const;
-
         // push a coordinate state modification to the model (dirties state)
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
 

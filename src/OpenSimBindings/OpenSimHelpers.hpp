@@ -2,18 +2,14 @@
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 
-#include <OpenSim/Common/Component.h>
-
-#include <algorithm>
-#include <array>
-#include <cstddef>
 #include <filesystem>
-#include <stdexcept>
 #include <vector>
 #include <string_view>
 
 namespace OpenSim
 {
+    class Component;
+    class ComponentPath;
     class AbstractSocket;
     class Model;
     class Coordinate;
@@ -27,67 +23,22 @@ namespace SimTK
 
 namespace osc
 {
-    class ComponentPathPtrs {
-        static constexpr size_t max_component_depth = 16;
-        using container = std::array<OpenSim::Component const*, max_component_depth>;
+    int DistanceFromRoot(OpenSim::Component const&);
 
-        container els{};
-        size_t n;
+    std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
-    public:
-        explicit ComponentPathPtrs(OpenSim::Component const& c) : n{0}
-        {
-            OpenSim::Component const* cp = &c;
-
-            els[n++] = cp;
-            while (cp->hasOwner())
-            {
-                if (n >= max_component_depth)
-                {
-                    throw std::runtime_error{"cannot traverse hierarchy to a component: it is deeper than 32 levels in the component tree, which isn't currently supported by osc"};
-                }
-
-                cp = &cp->getOwner();
-                els[n++] = cp;
-            }
-            std::reverse(els.begin(), els.begin() + n);
-        }
-
-        [[nodiscard]] constexpr container::const_iterator begin() const noexcept
-        {
-            return els.begin();
-        }
-
-        [[nodiscard]] constexpr container::const_iterator end() const noexcept
-        {
-            return els.begin() + n;
-        }
-
-        [[nodiscard]] constexpr bool empty() const noexcept
-        {
-            return n == 0;
-        }
-    };
-
-    inline ComponentPathPtrs path_to(OpenSim::Component const& c)
-    {
-        return ComponentPathPtrs{c};
-    }
+    OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
 
     // returns the first ancestor of `c` that has type `T`
     template<typename T>
     T const* FindAncestorWithType(OpenSim::Component const* c)
     {
-        while (c)
+        OpenSim::Component const* rv = FindFirstAncestorInclusive(c, [](OpenSim::Component const* el)
         {
-            T const* p = dynamic_cast<T const*>(c);
-            if (p)
-            {
-                return p;
-            }
-            c = c->hasOwner() ? &c->getOwner() : nullptr;
-        }
-        return nullptr;
+                return static_cast<bool>(dynamic_cast<T const*>(el));
+        });
+
+        return static_cast<T const*>(rv);
     }
 
     void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
@@ -102,14 +53,20 @@ namespace osc
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
 
-    // returns a mutable pointer if the given path resolves a component relative to root
-    OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
-
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>
     T const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
     {
         return dynamic_cast<T const*>(FindComponent(root, cp));
+    }
+
+    // returns a mutable pointer if the given path resolves a component relative to root
+    OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
+
+    template<typename T>
+    T* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const& cp)
+    {
+        return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
 
     // returns true if the path resolves to a component within root
@@ -158,4 +115,10 @@ namespace osc
     //
     // returns `true` if any modification was made to the model
     bool ActivateAllWrapObjectsIn(OpenSim::Model&);
+
+    // initialize a model (finalized from properties, connected, system built, etc.)
+    void InitalizeModel(OpenSim::Model&);
+
+    // returns a model copy that is finalized from properties, connected, system built, etc.
+    std::unique_ptr<OpenSim::Model> CreateInitializedModelCopy(OpenSim::Model const&);
 }

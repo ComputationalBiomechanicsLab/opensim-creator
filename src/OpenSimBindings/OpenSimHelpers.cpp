@@ -272,6 +272,52 @@ namespace
 
 // public API
 
+int osc::DistanceFromRoot(OpenSim::Component const& c)
+{
+    OpenSim::Component const* p = &c;
+    int dist = 0;
+
+    while (p->hasOwner())
+    {
+        ++dist;
+        p = &p->getOwner();
+    }
+
+    return dist;
+}
+
+std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component const& c)
+{
+    std::vector<OpenSim::Component const*> rv;
+    rv.reserve(DistanceFromRoot(c));
+
+    OpenSim::Component const* p = &c;
+    rv.push_back(p);
+
+    while (p->hasOwner())
+    {
+        p = &p->getOwner();
+        rv.push_back(p);
+    }
+
+    std::reverse(rv.begin(), rv.end());
+
+    return rv;
+}
+
+OpenSim::Component const* osc::FindFirstAncestorInclusive(OpenSim::Component const* c, bool(*pred)(OpenSim::Component const*))
+{
+    while (c)
+    {
+        if (pred(c))
+        {
+            return c;
+        }
+        c = c->hasOwner() ? &c->getOwner() : nullptr;
+    }
+    return nullptr;
+}
+
 void osc::GetCoordinatesInModel(OpenSim::Model const& m,
                                 std::vector<OpenSim::Coordinate const*>& out)
 {
@@ -676,5 +722,19 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
             rv = rv || true;
         }
     }
+    return rv;
+}
+
+void osc::InitalizeModel(OpenSim::Model& m)
+{
+    m.buildSystem();
+    m.initializeState();
+}
+
+std::unique_ptr<OpenSim::Model> osc::CreateInitializedModelCopy(OpenSim::Model const& m)
+{
+    auto rv = std::make_unique<OpenSim::Model>(m);
+    rv->buildSystem();
+    rv->initializeState();
     return rv;
 }

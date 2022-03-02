@@ -755,7 +755,7 @@ namespace {
             return;
         }
 
-        auto lst = osc::path_to(*selection);
+        auto lst = osc::GetPathElements(*selection);
 
         if (lst.empty()) {
             return;  // this shouldn't happen, but you never know...

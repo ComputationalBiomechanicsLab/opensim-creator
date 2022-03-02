@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/OpenSimBindings/BasicModelStatePair.hpp"
+
 #include <memory>
 #include <vector>
 
