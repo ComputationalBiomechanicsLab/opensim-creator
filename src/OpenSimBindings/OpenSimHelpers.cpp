@@ -440,6 +440,28 @@ OpenSim::Component* osc::FindComponentMut(OpenSim::Component& c, OpenSim::Compon
     return const_cast<OpenSim::Component*>(FindComponent(c, cp));
 }
 
+OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std::string const& outputName)
+{
+    OpenSim::AbstractOutput const* rv = nullptr;
+    try
+    {
+        rv = &c.getOutput(outputName);
+    }
+    catch (...)
+    {
+        // OpenSim, innit
+    }
+    return rv;
+}
+
+OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& root,
+                                               OpenSim::ComponentPath const& path,
+                                               std::string const& outputName)
+{
+    OpenSim::Component const* c = FindComponent(root, path);
+    return c ? FindOutput(*c, outputName) : nullptr;
+}
+
 bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
 {
     return FindComponent(root, cp);

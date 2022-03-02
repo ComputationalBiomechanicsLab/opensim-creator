@@ -11,6 +11,7 @@
 namespace OpenSim
 {
     class AbstractOutput;
+    class Component;
     class ComponentPath;
     class Model;
 }
@@ -27,15 +28,29 @@ namespace osc
 
 namespace osc
 {
-    class ModelOutput final : public VirtualOutput {
-    public:
-        using ExtractorFn = float (*)(OpenSim::AbstractOutput const&, SimTK::State const&);
+    enum class OutputSubfield {
+        None = 0,
+        X = 1<<0,
+        Y = 1<<1,
+        Z = 1<<2,
+        Magnitude = 1<<3,
+        Default = None,
+    };
 
-        ModelOutput(OpenSim::ComponentPath const& absPath,
-                    std::string_view outputName);
-        ModelOutput(OpenSim::ComponentPath const& absPath,
-                    std::string_view outputName,
-                    ExtractorFn subfieldExtractor);
+    char const* GetOutputSubfieldLabel(OutputSubfield);
+    // returns applicable OutputSubfield ORed together
+    int GetSupportedSubfields(OpenSim::AbstractOutput const&);
+
+    // a virtual output that extracts values from an OpenSim::AbstractOutput
+    class ComponentOutput final : public VirtualOutput {
+    public:
+        ComponentOutput(OpenSim::AbstractOutput const&,
+                    OutputSubfield = OutputSubfield::None);
+        ComponentOutput(ComponentOutput const&);
+        ComponentOutput(ComponentOutput&&) noexcept;
+        ComponentOutput& operator=(ComponentOutput const&);
+        ComponentOutput& operator=(ComponentOutput&&) noexcept;
+        ~ComponentOutput() noexcept;
 
         UID getID() const override;
         OutputType getOutputType() const override;

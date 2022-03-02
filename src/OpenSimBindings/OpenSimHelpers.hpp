@@ -8,6 +8,7 @@
 
 namespace OpenSim
 {
+    class AbstractOutput;
     class Component;
     class ComponentPath;
     class AbstractSocket;
@@ -68,6 +69,9 @@ namespace osc
     {
         return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
+
+    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const&, std::string const& outputName);
+    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const& root, OpenSim::ComponentPath const&, std::string const& outputName);
 
     // returns true if the path resolves to a component within root
     bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);

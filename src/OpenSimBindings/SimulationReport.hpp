@@ -18,7 +18,7 @@ namespace osc
     // reference-counted, immutable, simulation report
     class SimulationReport {
     public:
-        explicit SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const&);
+        SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const&);
         SimulationReport(SimulationReport const&);
         SimulationReport(SimulationReport&&) noexcept;
         SimulationReport& operator=(SimulationReport const&);
