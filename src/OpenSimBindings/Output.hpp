@@ -3,15 +3,23 @@
 #include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
+
 
 namespace OpenSim
 {
-    class Model;
+    class Component;
+}
+
+namespace osc
+{
+    class SimulationReport;
 }
 
 namespace SimTK
@@ -20,10 +28,6 @@ namespace SimTK
     class Integrator;
 }
 
-namespace osc
-{
-    class SimulationReport;
-}
 
 namespace osc
 {
@@ -42,8 +46,8 @@ namespace osc
         std::string const& getName() const;
         std::string const& getDescription() const;
         bool producesNumericValues() const;
-        std::optional<float> getNumericValue(OpenSim::Model const&, SimulationReport const&) const;
-        std::optional<std::string> getStringValue(OpenSim::Model const&, SimulationReport const&) const;
+        std::optional<float> getNumericValue(OpenSim::Component const&, SimulationReport const&) const;
+        std::optional<std::string> getStringValue(OpenSim::Component const&, SimulationReport const&) const;
         VirtualOutput const& getInner() const;
 
     private:

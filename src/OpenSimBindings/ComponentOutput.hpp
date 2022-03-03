@@ -8,6 +8,7 @@
 #include <string_view>
 #include <string>
 
+
 namespace OpenSim
 {
     class AbstractOutput;
@@ -16,15 +17,16 @@ namespace OpenSim
     class Model;
 }
 
+namespace osc
+{
+    class SimulationReport;
+}
+
 namespace SimTK
 {
     class State;
 }
 
-namespace osc
-{
-    class SimulationReport;
-}
 
 namespace osc
 {
@@ -38,6 +40,7 @@ namespace osc
     };
 
     char const* GetOutputSubfieldLabel(OutputSubfield);
+
     // returns applicable OutputSubfield ORed together
     int GetSupportedSubfields(OpenSim::AbstractOutput const&);
 
@@ -45,7 +48,7 @@ namespace osc
     class ComponentOutput final : public VirtualOutput {
     public:
         ComponentOutput(OpenSim::AbstractOutput const&,
-                    OutputSubfield = OutputSubfield::None);
+                        OutputSubfield = OutputSubfield::None);
         ComponentOutput(ComponentOutput const&);
         ComponentOutput(ComponentOutput&&) noexcept;
         ComponentOutput& operator=(ComponentOutput const&);
@@ -57,8 +60,8 @@ namespace osc
         std::string const& getName() const override;
         std::string const& getDescription() const override;
         bool producesNumericValues() const override;
-        std::optional<float> getNumericValue(OpenSim::Model const&, SimulationReport const&) const override;
-        std::optional<std::string> getStringValue(OpenSim::Model const&, SimulationReport const&) const override;
+        std::optional<float> getNumericValue(OpenSim::Component const&, SimulationReport const&) const override;
+        std::optional<std::string> getStringValue(OpenSim::Component const&, SimulationReport const&) const override;
 
         class Impl;
     private:

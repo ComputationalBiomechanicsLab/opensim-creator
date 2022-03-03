@@ -33,14 +33,14 @@ bool osc::Output::producesNumericValues() const
     return m_Output->producesNumericValues();
 }
 
-std::optional<float> osc::Output::getNumericValue(OpenSim::Model const& model, SimulationReport const& report) const
+std::optional<float> osc::Output::getNumericValue(OpenSim::Component const& c, SimulationReport const& report) const
 {
-    return m_Output->getNumericValue(model, report);
+    return m_Output->getNumericValue(c, report);
 }
 
-std::optional<std::string> osc::Output::getStringValue(OpenSim::Model const& model, SimulationReport const& report) const
+std::optional<std::string> osc::Output::getStringValue(OpenSim::Component const& c, SimulationReport const& report) const
 {
-    return m_Output->getStringValue(model, report);
+    return m_Output->getStringValue(c, report);
 }
 
 osc::VirtualOutput const& osc::Output::getInner() const

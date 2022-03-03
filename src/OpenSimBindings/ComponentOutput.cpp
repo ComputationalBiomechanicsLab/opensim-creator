@@ -165,9 +165,9 @@ public:
         return m_ExtractorFunc != nullptr;
     }
 
-    std::optional<float> getNumericValue(OpenSim::Model const& model, SimulationReport const& report) const
+    std::optional<float> getNumericValue(OpenSim::Component const& c, SimulationReport const& report) const
     {
-        OpenSim::AbstractOutput const* ao = FindOutput(model, m_ComponentAbsPath, m_OutputName);
+        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
 
         if (!ao)
         {
@@ -187,9 +187,9 @@ public:
         return static_cast<float>(m_ExtractorFunc(*ao, report.getState()));
     }
 
-    std::optional<std::string> getStringValue(OpenSim::Model const& model, SimulationReport const& report) const
+    std::optional<std::string> getStringValue(OpenSim::Component const& c, SimulationReport const& report) const
     {
-        OpenSim::AbstractOutput const* ao = FindOutput(model, m_ComponentAbsPath, m_OutputName);
+        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
 
         if (!ao)
         {
@@ -280,14 +280,14 @@ bool osc::ComponentOutput::producesNumericValues() const
     return m_Impl->producesNumericValues();
 }
 
-std::optional<float> osc::ComponentOutput::getNumericValue(OpenSim::Model const& model,
-                                                       SimulationReport const& report) const
+std::optional<float> osc::ComponentOutput::getNumericValue(OpenSim::Component const& c,
+                                                           SimulationReport const& report) const
 {
-    return m_Impl->getNumericValue(model, report);
+    return m_Impl->getNumericValue(c, report);
 }
 
-std::optional<std::string> osc::ComponentOutput::getStringValue(OpenSim::Model const& model,
-                                                            SimulationReport const& report) const
+std::optional<std::string> osc::ComponentOutput::getStringValue(OpenSim::Component const& c,
+                                                                SimulationReport const& report) const
 {
-    return m_Impl->getStringValue(model, report);
+    return m_Impl->getStringValue(c, report);
 }

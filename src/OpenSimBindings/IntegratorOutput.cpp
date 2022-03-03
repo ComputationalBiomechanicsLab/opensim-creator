@@ -138,12 +138,12 @@ bool osc::IntegratorOutput::producesNumericValues() const
     return true;
 }
 
-std::optional<float> osc::IntegratorOutput::getNumericValue(OpenSim::Model const&, SimulationReport const& report) const
+std::optional<float> osc::IntegratorOutput::getNumericValue(OpenSim::Component const&, SimulationReport const& report) const
 {
     return report.getAuxiliaryValue(m_ID);
 }
 
-std::optional<std::string> osc::IntegratorOutput::getStringValue(OpenSim::Model const&, SimulationReport const& report) const
+std::optional<std::string> osc::IntegratorOutput::getStringValue(OpenSim::Component const&, SimulationReport const& report) const
 {
     auto maybeValue = report.getAuxiliaryValue(m_ID);
     if (maybeValue)

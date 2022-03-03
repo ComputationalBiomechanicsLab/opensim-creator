@@ -184,15 +184,27 @@ add_executable(osc
     src/3D/Texturing.cpp
     src/3D/Texturing.hpp
 
+    src/OpenSimBindings/BasicModelStatePair.cpp
+    src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
+    src/OpenSimBindings/ComponentOutput.cpp
+    src/OpenSimBindings/ComponentOutput.hpp
+    src/OpenSimBindings/IntegratorOutput.cpp
+    src/OpenSimBindings/IntegratorOutput.hpp
+    src/OpenSimBindings/MultiBodySystemOutput.cpp
+    src/OpenSimBindings/MultiBodySystemOutput.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
+    src/OpenSimBindings/Output.cpp
+    src/OpenSimBindings/Output.hpp
     src/OpenSimBindings/PlottableOutputSubfield.cpp
     src/OpenSimBindings/PlottableOutputSubfield.hpp
     src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.cpp
     src/OpenSimBindings/Simulation.hpp
+    src/OpenSimBindings/SimulationReport.cpp
+    src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/StateModifications.cpp
     src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/TypeRegistry.cpp
@@ -203,6 +215,7 @@ add_executable(osc
     src/OpenSimBindings/UiSimulation.hpp
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
+    src/OpenSimBindings/VirtualOutput.hpp
 
     src/Screens/Experimental/CookiecutterScreen.cpp
     src/Screens/Experimental/CookiecutterScreen.hpp

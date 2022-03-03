@@ -7,7 +7,7 @@
 
 namespace OpenSim
 {
-    class Model;
+    class Component;
 }
 
 namespace osc
@@ -33,7 +33,7 @@ namespace osc
         virtual std::string const& getName() const = 0;
         virtual std::string const& getDescription() const = 0;
         virtual bool producesNumericValues() const = 0;
-        virtual std::optional<float> getNumericValue(OpenSim::Model const&, SimulationReport const&) const = 0;
-        virtual std::optional<std::string> getStringValue(OpenSim::Model const&, SimulationReport const&) const = 0;
+        virtual std::optional<float> getNumericValue(OpenSim::Component const&, SimulationReport const&) const = 0;
+        virtual std::optional<std::string> getStringValue(OpenSim::Component const&, SimulationReport const&) const = 0;
     };
 }

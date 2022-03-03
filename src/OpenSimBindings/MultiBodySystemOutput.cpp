@@ -55,14 +55,14 @@ bool osc::MultiBodySystemOutput::producesNumericValues() const
     return true;
 }
 
-std::optional<float> osc::MultiBodySystemOutput::getNumericValue(OpenSim::Model const&, SimulationReport const& report) const
+std::optional<float> osc::MultiBodySystemOutput::getNumericValue(OpenSim::Component const&, SimulationReport const& report) const
 {
     return report.getAuxiliaryValue(m_ID);
 }
 
-std::optional<std::string> osc::MultiBodySystemOutput::getStringValue(OpenSim::Model const& model, SimulationReport const& report) const
+std::optional<std::string> osc::MultiBodySystemOutput::getStringValue(OpenSim::Component const& c, SimulationReport const& report) const
 {
-    auto maybeValue = getNumericValue(model, report);
+    auto maybeValue = getNumericValue(c, report);
     if (maybeValue)
     {
         return std::to_string(*maybeValue);

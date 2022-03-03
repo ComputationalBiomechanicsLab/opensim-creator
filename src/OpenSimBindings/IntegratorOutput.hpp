@@ -8,10 +8,22 @@
 #include <string>
 #include <string_view>
 
+
+namespace OpenSim
+{
+    class Component;
+}
+
+namespace osc
+{
+    class SimulationReport;
+}
+
 namespace SimTK
 {
     class Integrator;
 }
+
 
 namespace osc
 {
@@ -28,8 +40,8 @@ namespace osc
         std::string const& getName() const override;
         std::string const& getDescription() const override;
         bool producesNumericValues() const override;
-        std::optional<float> getNumericValue(OpenSim::Model const&, SimulationReport const&) const override;
-        std::optional<std::string> getStringValue(OpenSim::Model const&, SimulationReport const&) const override;
+        std::optional<float> getNumericValue(OpenSim::Component const&, SimulationReport const&) const override;
+        std::optional<std::string> getStringValue(OpenSim::Component const&, SimulationReport const&) const override;
         ExtractorFn getExtractorFunction() const;
 
     private:

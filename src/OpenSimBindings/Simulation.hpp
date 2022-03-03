@@ -30,8 +30,6 @@ namespace osc {
     extern IntegratorMethod const g_IntegratorMethods[IntegratorMethod_NumIntegratorMethods];
     extern char const* const g_IntegratorMethodNames[IntegratorMethod_NumIntegratorMethods];
 
-
-
     // simulation parameters
     struct FdParams final {
 
