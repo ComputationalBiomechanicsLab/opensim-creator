@@ -4,6 +4,8 @@
 #include "src/Log.hpp"
 #include "src/MainEditorState.hpp"
 
+#include <iostream>
+
 using namespace osc;
 
 static const char g_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim

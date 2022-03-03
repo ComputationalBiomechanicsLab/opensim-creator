@@ -145,9 +145,9 @@ public:
         return m_ID;
     }
 
-    OutputType getOutputType() const
+    OutputSource getOutputType() const
     {
-        return OutputType::UserEnacted;
+        return OutputSource::UserEnacted;
     }
 
     std::string const& getName() const
@@ -260,7 +260,7 @@ osc::UID osc::ComponentOutput::getID() const
     return m_Impl->getID();
 }
 
-osc::OutputType osc::ComponentOutput::getOutputType() const
+osc::OutputSource osc::ComponentOutput::getOutputSource() const
 {
     return m_Impl->getOutputType();
 }

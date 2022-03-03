@@ -149,7 +149,6 @@ namespace osc
         OpenSim::Component* updIsolated();
         void setIsolated(OpenSim::Component const* c);
 
-    public:
         class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;

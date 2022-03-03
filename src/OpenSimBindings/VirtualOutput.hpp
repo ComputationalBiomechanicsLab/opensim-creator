@@ -18,10 +18,11 @@ namespace osc
 namespace osc
 {
     // tag that indicates what type the output has (handy for UI grouping etc)
-    enum class OutputType {
+    enum class OutputSource {
         Integrator = 0,
         UserEnacted,
         System,
+        Simulator,
     };
 
     // type-erased virtual interface to some underlying (concrete) output implementation
@@ -29,7 +30,7 @@ namespace osc
     public:
         virtual ~VirtualOutput() noexcept = default;
         virtual UID getID() const = 0;
-        virtual OutputType getOutputType() const = 0;
+        virtual OutputSource getOutputSource() const = 0;
         virtual std::string const& getName() const = 0;
         virtual std::string const& getDescription() const = 0;
         virtual bool producesNumericValues() const = 0;

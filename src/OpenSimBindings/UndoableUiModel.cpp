@@ -4,7 +4,6 @@
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
-#include "src/Utils/CircularBuffer.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Log.hpp"
 

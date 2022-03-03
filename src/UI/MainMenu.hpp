@@ -8,7 +8,7 @@
 
 namespace osc
 {
-    struct MainEditorState;
+    class MainEditorState;
 }
 
 namespace OpenSim

@@ -42,7 +42,7 @@ namespace osc
         }
 
         UID getID() const;
-        OutputType getOutputType() const;
+        OutputSource getOutputType() const;
         std::string const& getName() const;
         std::string const& getDescription() const;
         bool producesNumericValues() const;

@@ -2,7 +2,7 @@
 
 #include "src/3D/BVH.hpp"
 #include "src/3D/Gl.hpp"
-#include "src/OpenSimBindings/Simulation.hpp"
+#include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"

@@ -118,9 +118,9 @@ osc::UID osc::IntegratorOutput::getID() const
     return m_ID;
 }
 
-osc::OutputType osc::IntegratorOutput::getOutputType() const
+osc::OutputSource osc::IntegratorOutput::getOutputSource() const
 {
-    return OutputType::Integrator;
+    return OutputSource::Integrator;
 }
 
 std::string const& osc::IntegratorOutput::getName() const

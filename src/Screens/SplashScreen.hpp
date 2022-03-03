@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    struct MainEditorState;
+    class MainEditorState;
 }
 
 namespace osc

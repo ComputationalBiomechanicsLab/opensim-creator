@@ -35,9 +35,9 @@ osc::UID osc::MultiBodySystemOutput::getID() const
     return m_ID;
 }
 
-osc::OutputType osc::MultiBodySystemOutput::getOutputType() const
+osc::OutputSource osc::MultiBodySystemOutput::getOutputSource() const
 {
-    return OutputType::System;
+    return OutputSource::System;
 }
 
 std::string const& osc::MultiBodySystemOutput::getName() const

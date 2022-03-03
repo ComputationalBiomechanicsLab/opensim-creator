@@ -13,9 +13,9 @@ osc::UID osc::Output::getID() const
     return m_Output->getID();
 }
 
-osc::OutputType osc::Output::getOutputType() const
+osc::OutputSource osc::Output::getOutputType() const
 {
-    return m_Output->getOutputType();
+    return m_Output->getOutputSource();
 }
 
 std::string const& osc::Output::getName() const

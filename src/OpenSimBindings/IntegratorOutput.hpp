@@ -36,7 +36,7 @@ namespace osc
                          ExtractorFn extractor);
 
         UID getID() const override;
-        OutputType getOutputType() const override;
+        OutputSource getOutputSource() const override;
         std::string const& getName() const override;
         std::string const& getDescription() const override;
         bool producesNumericValues() const override;
