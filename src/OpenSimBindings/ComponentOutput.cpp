@@ -122,6 +122,17 @@ static ExtractorFunc GetExtractorFuncOrNull(OpenSim::AbstractOutput const& ao, o
     }
 }
 
+static std::vector<osc::OutputSubfield> CreateOutputSubfieldsLut()
+{
+    return std::vector<osc::OutputSubfield>
+    {
+        osc::OutputSubfield::X,
+        osc::OutputSubfield::Y,
+        osc::OutputSubfield::Z,
+        osc::OutputSubfield::Magnitude,
+    };
+}
+
 class osc::ComponentOutput::Impl final {
 public:
     Impl(OpenSim::AbstractOutput const& ao,
@@ -226,6 +237,12 @@ char const* osc::GetOutputSubfieldLabel(OutputSubfield subfield)
     default:
         return "Unknown";
     }
+}
+
+nonstd::span<osc::OutputSubfield const> osc::GetAllSupportedOutputSubfields()
+{
+    static auto const g_AllSubfields = CreateOutputSubfieldsLut();
+    return g_AllSubfields;
 }
 
 int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)

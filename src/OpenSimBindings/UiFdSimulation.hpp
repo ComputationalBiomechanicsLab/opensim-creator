@@ -44,20 +44,18 @@ namespace osc
         ~UiFdSimulation() noexcept;
 
         OpenSim::Model const& getModel() const override;
-        UID getModelVersion() const override;
 
-        int getNumReports() const override;
-        SimulationReport const& getSimulationReport(int reportIndex) override;
-        SimTK::State const& getReportState(int reportIndex) override;
-        int tryGetAllReportNumericValues(Output const&, std::vector<float>& appendOut) const override;
-        std::optional<std::string> tryGetOutputString(Output const&, int reportIndex) const override;
+        int getNumReports() override;
+        SimulationReport getSimulationReport(int reportIndex) override;
+        int tryGetAllReportNumericValues(Output const&, std::vector<float>& appendOut) override;
+        std::optional<std::string> tryGetOutputString(Output const&, int reportIndex) override;
 
-        // simulator state
         SimulationStatus getSimulationStatus() const override;
         void requestStop() override;
         void stop() override;
+        std::chrono::duration<double> getSimulationCurTime() override;
         std::chrono::duration<double> getSimulationEndTime() const override;
-        float getSimulationProgress() const override;
+        float getSimulationProgress() override;
         ParamBlock const& getSimulationParams() const override;
         nonstd::span<Output const> getOutputs() const override;
 

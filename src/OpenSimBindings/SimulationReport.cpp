@@ -1,7 +1,9 @@
 #include "SimulationReport.hpp"
 
 #include "src/OpenSimBindings/IntegratorOutput.hpp"
+#include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
 
+#include <SimTKsimbody.h>
 #include <SimTKcommon.h>
 #include <simmath/Integrator.h>
 
@@ -10,15 +12,31 @@
 class osc::SimulationReport::Impl final {
 public:
 
-    Impl(SimTK::Integrator const& integrator) :
+    Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
         m_State{integrator.getState()}
     {
-        int numOutputs = GetNumIntegratorOutputs();
-        m_AuxiliaryValues.reserve(numOutputs);
-        for (int i = 0; i < numOutputs; ++i)
+        sys.realize(m_State, SimTK::Stage::Report);
+
+        // populate integrator outputs
         {
-            IntegratorOutput const& o = GetIntegratorOutput(i);
-            m_AuxiliaryValues.emplace(o.getID(), o.getExtractorFunction()(integrator));
+            int numOutputs = GetNumIntegratorOutputs();
+            m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
+            for (int i = 0; i < numOutputs; ++i)
+            {
+                IntegratorOutput const& o = GetIntegratorOutput(i);
+                m_AuxiliaryValues.emplace(o.getID(), o.getExtractorFunction()(integrator));
+            }
+        }
+
+        // populate mbs outputs
+        {
+            int numOutputs = GetNumMultiBodySystemOutputs();
+            m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
+            for (int i = 0; i < numOutputs; ++i)
+            {
+                MultiBodySystemOutput const& o = GetMultiBodySystemOutput(i);
+                m_AuxiliaryValues.emplace(o.getID(), o.getExtractorFunction()(sys));
+            }
         }
     }
 
@@ -46,8 +64,8 @@ private:
 
 // public API
 
-osc::SimulationReport::SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const& integrator) :
-    m_Impl{std::make_shared<Impl>(integrator)}
+osc::SimulationReport::SimulationReport(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
+    m_Impl{std::make_shared<Impl>(sys, integrator)}
 {
 }
 osc::SimulationReport::SimulationReport(SimulationReport const&) = default;

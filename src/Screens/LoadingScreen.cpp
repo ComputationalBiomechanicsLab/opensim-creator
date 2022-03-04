@@ -160,16 +160,10 @@ void osc::LoadingScreen::tick(float dt)
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            impl.mes->editedModel = std::move(*result);
-            impl.mes->editedModel.setUpToDateWithFilesystem();
+            impl.mes->updEditedModel() = std::move(*result);
+            impl.mes->updEditedModel().setUpToDateWithFilesystem();
             App::cur().requestTransition<ModelEditorScreen>(impl.mes);
-            for (auto& viewer : impl.mes->viewers)
-            {
-                if (viewer)
-                {
-                    viewer->requestAutoFocus();
-                }
-            }
+            AutoFocusAllViewers(*impl.mes);
         }
         else
         {
@@ -177,15 +171,9 @@ void osc::LoadingScreen::tick(float dt)
             //
             // transitiong into "fresh" editor
             auto mes = std::make_shared<MainEditorState>(std::move(*result));
-            mes->editedModel.setUpToDateWithFilesystem();
+            mes->updEditedModel().setUpToDateWithFilesystem();
             App::cur().requestTransition<ModelEditorScreen>(mes);
-            for (auto& viewer : mes->viewers)
-            {
-                if (viewer)
-                {
-                    viewer->requestAutoFocus();
-                }
-            }
+            AutoFocusAllViewers(*mes);
         }
     }
 }

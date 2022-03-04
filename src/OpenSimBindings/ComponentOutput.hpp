@@ -4,6 +4,8 @@
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <optional>
 #include <string_view>
 #include <string>
@@ -40,6 +42,7 @@ namespace osc
     };
 
     char const* GetOutputSubfieldLabel(OutputSubfield);
+    nonstd::span<OutputSubfield const> GetAllSupportedOutputSubfields();
 
     // returns applicable OutputSubfield ORed together
     int GetSupportedSubfields(OpenSim::AbstractOutput const&);

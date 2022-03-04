@@ -86,13 +86,18 @@ namespace osc
             return SynchronizedValueGuard<T>{m_Mutex, m_Value};
         }
 
+        SynchronizedValueGuard<T const> lock() const
+        {
+            return SynchronizedValueGuard<T const>{m_Mutex, m_Value};
+        }
+
         SynchronizedValueGuard<T, std::unique_lock<std::mutex>> unique_lock()
         {
             return SynchronizedValueGuard<T, std::unique_lock<std::mutex>>{m_Mutex, m_Value};
         }
 
     private:
-        std::mutex m_Mutex;
+        mutable std::mutex m_Mutex;
         T m_Value;
     };
 }

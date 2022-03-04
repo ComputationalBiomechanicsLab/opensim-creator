@@ -23,6 +23,10 @@ bool osc::FdParamsEditorPopup::draw(char const* popupName, FdParams& p)
 
     bool edited = false;
 
+    ImGui::Text("TODO");
+
+    /*
+
     // edit sim final time
     {
         float t = static_cast<float>(p.FinalTime.count());
@@ -109,6 +113,7 @@ bool osc::FdParamsEditorPopup::draw(char const* popupName, FdParams& p)
         ImGui::SameLine();
         DrawHelpMarker(p.g_IntegratorAccuracyDesc);
     }
+    */
 
     ImGui::Dummy(ImVec2{0.0f, 1.0f});
 

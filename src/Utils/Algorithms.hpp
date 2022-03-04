@@ -39,6 +39,16 @@ namespace osc
         }
     }
 
+    template<typename Container>
+    void TransferToEnd(Container& src, Container& dest)
+    {
+        dest.reserve(dest.size() + src.size());
+        std::move(std::make_move_iterator(src.begin()),
+                  std::make_move_iterator(src.end()),
+                  std::back_insert_iterator(dest));
+        src.clear();
+    }
+
     template<typename Container, typename UnaryPredicate>
     bool AnyOf(Container const& c, UnaryPredicate p)
     {

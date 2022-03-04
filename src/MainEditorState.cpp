@@ -3,12 +3,19 @@
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/Output.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/FdSimulation.hpp"
+#include "src/OpenSimBindings/UiFdSimulation.hpp"
+#include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
+#include "src/UI/UiModelViewer.hpp"
+#include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>
 #include <optional>
+#include <vector>
+#include <utility>
 
 class osc::MainEditorState::Impl final {
 public:
@@ -16,110 +23,174 @@ public:
     {
     }
 
-    Impl(std::unique_ptr<OpenSim::Model>)
+    Impl(std::unique_ptr<OpenSim::Model> model) :
+        m_EditedModel{std::move(model)}
     {
     }
 
-    Impl(UndoableUiModel um)
+    Impl(UndoableUiModel um) :
+        m_EditedModel{std::move(um)}
     {
     }
 
     UndoableUiModel const& getEditedModel() const
     {
+        return m_EditedModel;
     }
 
     UndoableUiModel& updEditedModel()
     {
+        return m_EditedModel;
     }
 
     bool hasSimulations() const
     {
+        return !m_Simulations.empty();
     }
 
     int getNumSimulations() const
     {
+        return static_cast<int>(m_Simulations.size());
     }
 
-    Simulation const& getSimulation(int) const
+    Simulation const& getSimulation(int idx) const
     {
+        return m_Simulations.at(idx);
     }
 
-    Simulation& updSimulation(int)
+    Simulation& updSimulation(int idx)
     {
+        return m_Simulations.at(idx);
     }
 
-    void addSimulation(Simulation)
+    void addSimulation(Simulation s)
     {
+        m_Simulations.push_back(std::move(s));
     }
 
-    void removeSimulation(int)
+    void removeSimulation(int idx)
     {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_Simulations.size()));
+        m_Simulations.erase(m_Simulations.begin() + idx);
+    }
+
+    Simulation const* getFocusedSimulation() const
+    {
+        return const_cast<Impl&>(*this).updFocusedSimulation();
     }
 
     Simulation* updFocusedSimulation()
     {
+        if (!(0 <= m_FocusedSimulation && m_FocusedSimulation < static_cast<int>(m_Simulations.size())))
+        {
+            // out of bounds: default to something sane
+            if (m_Simulations.empty())
+            {
+                return nullptr;
+            }
+            else
+            {
+                return &m_Simulations.back();
+            }
+        }
+        else
+        {
+            // in bounds
+            return &m_Simulations.at(m_FocusedSimulation);
+        }
     }
 
-    Simulation const* getFocusedSim() const
+    void setFocusedSimulation(int idx)
     {
-    }
-
-    int getNumUserDesiredOutputs() const
-    {
-    }
-
-    Output const& getUserDesiredOutput(int)
-    {
-    }
-
-    void addUserDesiredOutput(Output)
-    {
+        m_FocusedSimulation = std::move(idx);
     }
 
     ParamBlock const& getSimulationParams() const
     {
+        return m_SimulationParams;
     }
 
     ParamBlock& updSimulationParams()
     {
+        return m_SimulationParams;
+    }
+
+    int getNumUserDesiredOutputs() const
+    {
+        return static_cast<int>(m_UserDesiredOutputs.size());
+    }
+
+    Output const& getUserDesiredOutput(int idx)
+    {
+        return m_UserDesiredOutputs.at(idx);
+    }
+
+    void addUserDesiredOutput(Output output)
+    {
+        m_UserDesiredOutputs.push_back(std::move(output));
+    }
+
+    void removeUserDesiredOutput(int idx)
+    {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserDesiredOutputs.size()));
+        m_UserDesiredOutputs.erase(m_UserDesiredOutputs.begin() + idx);
     }
 
     UserPanelPreferences const& getUserPanelPrefs() const
     {
+        return m_PanelPreferences;
     }
 
     UserPanelPreferences& updUserPanelPrefs()
     {
+        return m_PanelPreferences;
     }
 
     std::optional<float> getUserSimulationScrubbingTime() const
     {
+        return m_FocusedSimulationScrubbingTime;
     }
 
-    void setUserSimulationScrubbingTime(float)
+    void setUserSimulationScrubbingTime(float t)
     {
+        m_FocusedSimulationScrubbingTime = std::move(t);
     }
 
     void clearUserSimulationScrubbingTime()
     {
+        m_FocusedSimulationScrubbingTime.reset();
     }
 
     int getNumViewers() const
     {
+        return static_cast<int>(m_ModelViewers.size());
     }
 
-    UiModelViewer& updViewer(int)
+    UiModelViewer& updViewer(int idx)
     {
+        return m_ModelViewers.at(idx);
     }
 
     UiModelViewer& addViewer()
     {
+        return m_ModelViewers.emplace_back();
     }
 
-    void startSimulatingEditedModel()
+    void removeViewer(int idx)
     {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelViewers.size()));
+        m_ModelViewers.erase(m_ModelViewers.begin() + idx);
     }
+
 private:
+    UndoableUiModel m_EditedModel;
+    std::vector<Simulation> m_Simulations;
+    int m_FocusedSimulation = -1;
+    std::optional<float> m_FocusedSimulationScrubbingTime = std::nullopt;
+    std::vector<Output> m_UserDesiredOutputs;
+    ParamBlock m_SimulationParams;
+    std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
+    UserPanelPreferences m_PanelPreferences;
 };
 
 osc::MainEditorState::MainEditorState() :
@@ -181,14 +252,29 @@ void osc::MainEditorState::removeSimulation(int idx)
     m_Impl->removeSimulation(std::move(idx));
 }
 
+osc::Simulation const* osc::MainEditorState::getFocusedSimulation() const
+{
+    return m_Impl->getFocusedSimulation();
+}
+
 osc::Simulation* osc::MainEditorState::updFocusedSimulation()
 {
     return m_Impl->updFocusedSimulation();
 }
 
-osc::Simulation const* osc::MainEditorState::getFocusedSim() const
+void osc::MainEditorState::setFocusedSimulation(int idx)
 {
-    return m_Impl->getFocusedSim();
+    m_Impl->setFocusedSimulation(std::move(idx));
+}
+
+osc::ParamBlock const& osc::MainEditorState::getSimulationParams() const
+{
+    return m_Impl->getSimulationParams();
+}
+
+osc::ParamBlock& osc::MainEditorState::updSimulationParams()
+{
+    return m_Impl->updSimulationParams();
 }
 
 int osc::MainEditorState::getNumUserDesiredOutputs() const
@@ -206,14 +292,9 @@ void osc::MainEditorState::addUserDesiredOutput(Output output)
     m_Impl->addUserDesiredOutput(std::move(output));
 }
 
-osc::ParamBlock const& osc::MainEditorState::getSimulationParams() const
+void osc::MainEditorState::removeUserDesiredOutput(int idx)
 {
-    return m_Impl->getSimulationParams();
-}
-
-osc::ParamBlock& osc::MainEditorState::updSimulationParams()
-{
-    return m_Impl->updSimulationParams();
+    m_Impl->removeUserDesiredOutput(std::move(idx));
 }
 
 osc::UserPanelPreferences const& osc::MainEditorState::getUserPanelPrefs() const
@@ -256,116 +337,57 @@ osc::UiModelViewer& osc::MainEditorState::addViewer()
     return m_Impl->addViewer();
 }
 
-void osc::MainEditorState::startSimulatingEditedModel()
+void osc::MainEditorState::removeViewer(int idx)
 {
-    m_Impl->startSimulatingEditedModel();
+    m_Impl->removeViewer(std::move(idx));
 }
 
-/*
-osc::MainEditorState::MainEditorState() :
-    MainEditorState{UndoableUiModel{}}
+void osc::AutoFocusAllViewers(MainEditorState& st)
 {
-}
-
-osc::MainEditorState::MainEditorState(std::unique_ptr<OpenSim::Model> model) :
-    MainEditorState{UndoableUiModel{std::move(model)}}
-{
-}
-
-osc::MainEditorState::MainEditorState(UndoableUiModel uim) :
-    editedModel{std::move(uim)},
-    simulations{},
-    focusedSimulation{-1},
-    focusedSimulationScrubbingTime{-1.0f},
-    desiredOutputs{},
-    simParams{},
-    viewers{std::make_unique<UiModelViewer>(), nullptr, nullptr, nullptr}
-{
-}
-
-void osc::MainEditorState::setModel(std::unique_ptr<OpenSim::Model> newModel)
-{
-    editedModel.setModel(std::move(newModel));
-}
-
-
-// todo
-
-
-
-
-
-// the model that the user is currently editing
-UndoableUiModel editedModel;
-
-// running/finished simulations
-//
-// the models being simulated are separate from the model being edited
-std::vector<std::unique_ptr<UiSimulation>> simulations;
-
-// currently-focused simulation
-int focusedSimulation = -1;
-
-// simulation time the user is scrubbed to - if they have scrubbed to
-// a specific time
-//
-// if the scrubbing time doesn't fall within the currently-available
-// simulation states ("frames") then the implementation will just use
-// the latest available time
-float focusedSimulationScrubbingTime = -1.0f;
-
-std::shared_ptr<SynchronizedValue<std::vector<Output>>> userDesiredOutputs;
-
-// parameters used when launching a new simulation
-//
-// these are the params that are used whenever a user hits "simulate"
-FdParams simParams;
-
-// available 3D viewers
-//
-// the user can open a limited number of 3D viewers. They are kept on
-// this top-level state so that they, and their settings, can be
-// cached between screens
-//
-// the viewers can be null, which should be interpreted as "not yet initialized"
-std::array<std::unique_ptr<UiModelViewer>, 4> viewers;
-
-// which panels should be shown
-//
-// the user can enable/disable these in the "window" entry in the main menu
-struct {
-
-} showing;
-
-
-void startSimulatingEditedModel()
-{
-    int newFocus = static_cast<int>(simulations.size());
-    simulations.emplace_back(new UiSimulation{editedModel.getUiModel(), simParams});
-    focusedSimulation = newFocus;
-    focusedSimulationScrubbingTime = -1.0f;
-}
-
-
-[[nodiscard]] UiSimulation* getFocusedSim()
-{
-    if (!(0 <= focusedSimulation && focusedSimulation < static_cast<int>(simulations.size())))
+    for (int i = 0, len = st.getNumViewers(); i < len; ++i)
     {
-        return nullptr;
-    }
-    else
-    {
-        return simulations[static_cast<size_t>(focusedSimulation)].get();
+        st.updViewer(i).requestAutoFocus();
     }
 }
 
-[[nodiscard]] UiSimulation const* getFocusedSim() const
+void osc::StartSimulatingEditedModel(MainEditorState& st)
 {
-    return const_cast<MainEditorState*>(this)->getFocusedSim();
+    UndoableUiModel const& uim = st.getEditedModel();
+    BasicModelStatePair modelState{uim.getModel(), uim.getState()};
+    FdParams params = FromParamBlock(st.getSimulationParams());
+
+    st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});
+    st.setFocusedSimulation(st.getNumSimulations()-1);
+    st.clearUserSimulationScrubbingTime();
 }
 
-[[nodiscard]] bool hasSimulations() const
+std::optional<osc::SimulationReport> osc::TrySelectReportBasedOnScrubbing(MainEditorState const& st,
+                                                                          osc::Simulation& sim)
 {
-    return !simulations.empty();
+    int nReports = sim.getNumReports();
+
+    if (nReports <= 0)
+    {
+        return std::nullopt;
+    }
+
+    std::optional<float> maybeScrub = st.getUserSimulationScrubbingTime();
+
+    if (!maybeScrub)
+    {
+        return sim.getSimulationReport(nReports-1);
+    }
+
+    float scrub = *maybeScrub;
+
+    for (int i = 0; i < nReports; ++i)
+    {
+        SimulationReport r = sim.getSimulationReport(i);
+        if (r.getState().getTime() >= scrub)
+        {
+            return r;
+        }
+    }
+
+    return std::nullopt;
 }
-*/

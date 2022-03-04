@@ -48,40 +48,46 @@ namespace osc
         MainEditorState& operator=(MainEditorState&&);
         ~MainEditorState() noexcept;
 
+        // edited model
         UndoableUiModel const& getEditedModel() const;
         UndoableUiModel& updEditedModel();
 
+        // simulations
         bool hasSimulations() const;
         int getNumSimulations() const;
         Simulation const& getSimulation(int) const;
         Simulation& updSimulation(int);
         void addSimulation(Simulation);
         void removeSimulation(int);
+        Simulation const* getFocusedSimulation() const;
         Simulation* updFocusedSimulation();
-        Simulation const* getFocusedSim() const;
-
-        int getNumUserDesiredOutputs() const;
-        Output const& getUserDesiredOutput(int);
-        void addUserDesiredOutput(Output);
-
+        void setFocusedSimulation(int);
         ParamBlock const& getSimulationParams() const;
         ParamBlock& updSimulationParams();
 
+        // user-enacted output plotting
+        int getNumUserDesiredOutputs() const;
+        Output const& getUserDesiredOutput(int);
+        void addUserDesiredOutput(Output);
+        void removeUserDesiredOutput(int);
+
+        // UI state
         UserPanelPreferences const& getUserPanelPrefs() const;
         UserPanelPreferences& updUserPanelPrefs();
-
         std::optional<float> getUserSimulationScrubbingTime() const;
         void setUserSimulationScrubbingTime(float);
         void clearUserSimulationScrubbingTime();
-
         int getNumViewers() const;
         UiModelViewer& updViewer(int);
         UiModelViewer& addViewer();
-
-        void startSimulatingEditedModel();
+        void removeViewer(int);
 
         class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
     };
+
+    void AutoFocusAllViewers(MainEditorState&);
+    void StartSimulatingEditedModel(MainEditorState&);
+    std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(MainEditorState const&, osc::Simulation&);
 }

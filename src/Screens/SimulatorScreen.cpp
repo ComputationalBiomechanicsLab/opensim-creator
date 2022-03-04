@@ -2,6 +2,7 @@
 
 #include "src/3D/BVH.hpp"
 #include "src/3D/Gl.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -11,6 +12,7 @@
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
+#include "src/UI/UiModelViewer.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/App.hpp"
@@ -25,94 +27,32 @@
 
 #include <limits>
 
-using namespace osc;
+// draw timescrubber slider
+static void DrawSimulationScrubber(osc::MainEditorState& st,
+                                   osc::Simulation& focusedSim)
+{
+    double t0 = 0.0f;
+    double tf = focusedSim.getSimulationEndTime().count();
+    double treport = focusedSim.getSimulationCurTime().count();
 
-namespace {
-    // draw timescrubber slider
-    void drawSimulationScrubber(
-            osc::MainEditorState& st,
-            UiSimulation& focusedSim,
-            Report& focusedReport)
+    // draw the scrubber (slider)
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+    float v = static_cast<float>(treport);
+
+    if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.3f", ImGuiSliderFlags_AlwaysClamp))
     {
-        double t0 = 0.0f;
-        double tf = focusedSim.simulation->simFinalTime().count();
-        double treport = focusedReport.state.getTime();
-
-        // draw the scrubber (slider)
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        float v = static_cast<float>(treport);
-        if (ImGui::SliderFloat("scrub", &v, static_cast<float>(t0), static_cast<float>(tf), "%.3f", ImGuiSliderFlags_AlwaysClamp))
-        {
-            st.focusedSimulationScrubbingTime = v;
-        }
-
-        // draw hover-over tooltip for scrubber
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::BeginTooltip();
-            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-            ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
-            ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            ImGui::PopTextWrapPos();
-            ImGui::EndTooltip();
-        }
+        st.setUserSimulationScrubbingTime(v);
     }
 
-    // select a simulation report based on scubbing time
-    //
-    // CLEAN because the wrapped version of this function has to perform a HACKy
-    // workaround
-    Report& selectReportBasedOnScrubbingCLEAN(
-            UiSimulation const& focused,
-            float scrubTime)
+    // draw hover-over tooltip for scrubber
+    if (ImGui::IsItemHovered())
     {
-        auto& rr = focused.regularReports;
-
-        // if there are no regular reports, use the spot report
-        if (rr.empty())
-        {
-            return *focused.spotReport;
-        }
-
-        // if the scrub time is negative (a senteniel), use the
-        // spot report
-        if (scrubTime < 0.0)
-        {
-            return *focused.spotReport;
-        }
-
-        // search through the regular reports for the first report that
-        // finishes equal-to or after the scrub time
-        auto startsAfterOrEqualToScrubTime = [&](std::unique_ptr<Report> const& report)
-        {
-            return report->state.getTime() >= scrubTime;
-        };
-
-        auto it = std::find_if(rr.begin(), rr.end(), startsAfterOrEqualToScrubTime);
-
-        // if no such report is found, use the spot report
-        if (it == rr.end())
-        {
-            return *focused.spotReport;
-        }
-
-        return **it;
-    }
-
-    Report& selectReportBasedOnScrubbing(
-            UiSimulation const& focused,
-            float scrubTime)
-    {
-        // HACK: re-realize the state if the model has had some other state realized
-        // against it
-        Report& r = selectReportBasedOnScrubbingCLEAN(focused, scrubTime);
-        if (&r != focused.HACK_lastReportModelWasRealizedAgainst)
-        {
-            r.state.invalidateAll(SimTK::Stage::Time);
-            focused.model->realizeReport(r.state);
-            focused.HACK_lastReportModelWasRealizedAgainst = &r;
-        }
-        return r;
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted("Left-Click: Change simulation time being shown");
+        ImGui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
     }
 }
 
@@ -131,352 +71,340 @@ struct osc::SimulatorScreen::Impl final {
     MainMenuWindowTab mmWindowTab;
     MainMenuAboutTab mmAboutTab;
 
+    std::optional<SimulationReport> HACK_lastReportModelWasRealizedAgainst;
+
+    OpenSim::ComponentPath selected;
+    OpenSim::ComponentPath hovered;
+    OpenSim::ComponentPath isolated;
+
     Impl(std::shared_ptr<MainEditorState> _mes) : mes{std::move(_mes)}
     {
         // lazily init at least one viewer
-        if (!mes->viewers.front())
+        if (mes->getNumViewers() == 0)
         {
-            mes->viewers.front() = std::make_unique<UiModelViewer>();
+            mes->addViewer();
         }
     }
 };
 
-// private Impl-related functions
-namespace {
+static std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(osc::SimulatorScreen::Impl const& impl,
+                                                                     osc::Simulation& sim)
+{
+    return TrySelectReportBasedOnScrubbing(*impl.mes, sim);
 
-    // start a new simulation from whatever the user's currently editing
-    void actionStartSimulationFromEditedModel(osc::MainEditorState& impl)
+
+    /*
+
+    if (!maybeReport)
     {
-        impl.startSimulatingEditedModel();
+        return std::nullopt;
     }
 
-    // pop all updates from all active simulations
-    void popAllSimulatorUpdates(osc::MainEditorState& impl)
+    osc::SimulationReport const& report = *maybeReport;
+
+    //const_cast<SimTK::State&>(report.getState()).invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
+    //sim.getModel().realizeReport(report.getState());
+
+    return maybeReport;
+
+
+    if (impl.HACK_lastReportModelWasRealizedAgainst && *impl.HACK_lastReportModelWasRealizedAgainst == report)
     {
-        for (auto& simulation : impl.simulations)
-        {
-            // pop regular reports
-            {
-                auto& rr = simulation->regularReports;
-                int popped = simulation->simulation->popRegularReports(rr);
-
-                for (size_t i = rr.size() - static_cast<size_t>(popped); i < rr.size(); ++i)
-                {
-                    simulation->model->realizeReport(rr[i]->state);
-                    simulation->HACK_lastReportModelWasRealizedAgainst = rr[i].get();
-                }
-            }
-
-            // pop latest spot report
-            std::unique_ptr<Report> newSpotReport = simulation->simulation->tryPopLatestReport();
-            if (newSpotReport)
-            {
-                simulation->spotReport = std::move(newSpotReport);
-                simulation->model->realizeReport(simulation->spotReport->state);
-                simulation->HACK_lastReportModelWasRealizedAgainst = simulation->spotReport.get();
-            }
-        }
+        return maybeReport;  // don't need to do the realization hack
     }
 
-    // draw details of one simulation
-    void drawSimulationProgressBarEtc(SimulatorScreen::Impl& impl, int i)
+    // TODO: the hack
+    return maybeReport;
+
+     *     // HACK: re-realize the state if the model has had some other state realized
+    // against it
+    Report& r = selectReportBasedOnScrubbingCLEAN(focused, scrubTime);
+    if (&r != focused.HACK_lastReportModelWasRealizedAgainst)
     {
-        MainEditorState& st = *impl.mes;
+        r.state.invalidateAll(SimTK::Stage::Time);
+        focused.model->realizeReport(r.state);
+        focused.HACK_lastReportModelWasRealizedAgainst = &r;
+    }
+    return r;
+    */
+}
 
-        if (!(0 <= i && i < static_cast<int>(st.simulations.size())))
-        {
-            ImGui::TextUnformatted("(invalid simulation index)");
-            return;
-        }
-        UiSimulation& simulation = *st.simulations[i];
+/*
+// draw details of one simulation
+static void DrawSimulationProgressBarEtc(SimulatorScreen::Impl& impl, int i)
+{
+    MainEditorState& st = *impl.mes;
 
-        ImGui::PushID(static_cast<int>(i));
+    if (!(0 <= i && i < static_cast<int>(st.simulations.size())))
+    {
+        ImGui::TextUnformatted("(invalid simulation index)");
+        return;
+    }
+    UiSimulation& simulation = *st.simulations[i];
 
-        float progress = simulation.simulation->progress();
-        ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
-        if (static_cast<int>(i) == st.focusedSimulation)
-        {
-            baseColor.w = 1.0f;
-        }
+    ImGui::PushID(static_cast<int>(i));
 
-        bool shouldErase = false;
+    float progress = simulation.simulation->progress();
+    ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
+    if (static_cast<int>(i) == st.focusedSimulation)
+    {
+        baseColor.w = 1.0f;
+    }
 
-        if (ImGui::Button("x"))
+    bool shouldErase = false;
+
+    if (ImGui::Button("x"))
+    {
+        shouldErase = true;
+    }
+
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, baseColor);
+    ImGui::ProgressBar(progress);
+    ImGui::PopStyleColor();
+
+    if (ImGui::IsItemHovered())
+    {
+        if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE))
         {
             shouldErase = true;
         }
 
-        ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram, baseColor);
-        ImGui::ProgressBar(progress);
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
+        ImGui::TextUnformatted(simulation.model->getName().c_str());
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
+        ImGui::Text("Wall time (sec): %.1f", simulation.simulation->wallDuration().count());
+        ImGui::Text("Sim time (sec): %.1f", simulation.simulation->simCurrentTime().count());
+        ImGui::Text("Sim final time (sec): %.1f", simulation.simulation->simFinalTime().count());
+        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::TextUnformatted("Left-click: Select this simulation");
+        ImGui::TextUnformatted("Delete: cancel this simulation");
         ImGui::PopStyleColor();
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+
+    if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+    {
+        st.focusedSimulation = static_cast<int>(i);
+    }
+
+    if (ImGui::BeginPopupContextItem("simcontextmenu"))
+    {
+        st.focusedSimulation = static_cast<int>(i);
+
+        if (ImGui::MenuItem("edit model"))
+        {
+            auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
+            st.setModel(std::move(copy));
+            App::cur().requestTransition<ModelEditorScreen>(impl.mes);
+        }
 
         if (ImGui::IsItemHovered())
         {
-            if (ImGui::IsKeyPressed(SDL_SCANCODE_DELETE))
-            {
-                shouldErase = true;
-            }
-
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-            ImGui::TextUnformatted(simulation.model->getName().c_str());
-            ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
-            ImGui::Text("Wall time (sec): %.1f", simulation.simulation->wallDuration().count());
-            ImGui::Text("Sim time (sec): %.1f", simulation.simulation->simCurrentTime().count());
-            ImGui::Text("Sim final time (sec): %.1f", simulation.simulation->simFinalTime().count());
-            ImGui::Dummy(ImVec2{0.0f, 1.0f});
-            ImGui::TextUnformatted("Left-click: Select this simulation");
-            ImGui::TextUnformatted("Delete: cancel this simulation");
-            ImGui::PopStyleColor();
+            ImGui::TextUnformatted("Make the model initially used in this simulation into the model being edited in the editor");
             ImGui::PopTextWrapPos();
             ImGui::EndTooltip();
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-        {
-            st.focusedSimulation = static_cast<int>(i);
-        }
-
-        if (ImGui::BeginPopupContextItem("simcontextmenu"))
-        {
-            st.focusedSimulation = static_cast<int>(i);
-
-            if (ImGui::MenuItem("edit model"))
-            {
-                auto copy = std::make_unique<OpenSim::Model>(*simulation.model);
-                st.setModel(std::move(copy));
-                App::cur().requestTransition<ModelEditorScreen>(impl.mes);
-            }
-
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-                ImGui::TextUnformatted("Make the model initially used in this simulation into the model being edited in the editor");
-                ImGui::PopTextWrapPos();
-                ImGui::EndTooltip();
-            }
-
-            ImGui::EndPopup();
-        }
-
-        if (shouldErase)
-        {
-            st.simulations.erase(st.simulations.begin() + i);
-            if (static_cast<int>(i) <= st.focusedSimulation)
-            {
-                --st.focusedSimulation;
-            }
-        }
-
-        ImGui::PopID();
+        ImGui::EndPopup();
     }
 
-    // draw top-level "Simulation" tab that lists all simulations
-    void drawSimulationTab(SimulatorScreen::Impl& impl)
+    if (shouldErase)
     {
-         osc::MainEditorState& st = *impl.mes;
-
-        // draw scrubber for currently-selected sim
-        ImGui::TextUnformatted("Scrubber:");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2{0.0f, 0.3f});
-        UiSimulation* sim = st.getFocusedSim();
-        if (sim)
+        st.simulations.erase(st.simulations.begin() + i);
+        if (static_cast<int>(i) <= st.focusedSimulation)
         {
-            Report& report = selectReportBasedOnScrubbing(*sim, st.focusedSimulationScrubbingTime);
-            drawSimulationScrubber(st, *sim, report);
-        }
-        else
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-        }
-
-        // draw simulations list
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
-        ImGui::TextUnformatted("Simulations:");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2{0.0f, 0.3f});
-        for (size_t i = 0; i < st.simulations.size(); ++i)
-        {
-            drawSimulationProgressBarEtc(impl, static_cast<int>(i));
+            --st.focusedSimulation;
         }
     }
+
+    ImGui::PopID();
+}
+
+// draw top-level "Simulation" tab that lists all simulations
+static void DrawSimulationTab(SimulatorScreen::Impl& impl)
+{
+     osc::MainEditorState& st = *impl.mes;
+
+    // draw scrubber for currently-selected sim
+    ImGui::TextUnformatted("Scrubber:");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 0.3f});
+    UiSimulation* sim = st.getFocusedSim();
+    if (sim)
+    {
+        Report& report = selectReportBasedOnScrubbing(*sim, st.focusedSimulationScrubbingTime);
+        drawSimulationScrubber(st, *sim, report);
+    }
+    else
+    {
+        ImGui::TextDisabled("(no simulation selected)");
+    }
+
+    // draw simulations list
+    ImGui::Dummy(ImVec2{0.0f, 1.0f});
+    ImGui::TextUnformatted("Simulations:");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 0.3f});
+    for (size_t i = 0; i < st.simulations.size(); ++i)
+    {
+        drawSimulationProgressBarEtc(impl, static_cast<int>(i));
+    }
+}
 
 // draw a plot for an integrator stat
 #define OSC_DRAW_SIMSTAT_PLOT(statname) \
-    {                                                                                                                  \
-        scratch.clear();                                                                                               \
-        for (auto const& report : focused.regularReports) {                                                            \
-            auto const& stats = report->stats;                                                                         \
-            scratch.push_back(static_cast<float>(stats.statname));                                                     \
-        }                                                                                                              \
-        ImGui::TextUnformatted(#statname); \
-        ImGui::SameLine();  \
-        DrawHelpMarker(SimStats::g_##statname##Desc);  \
-        ImGui::NextColumn();  \
-        ImGui::PushID(imgui_id++);  \
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());  \
-        ImGui::PlotLines("##"#statname, scratch.data(), static_cast<int>(scratch.size()), 0, nullptr, std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), ImVec2(0.0f, .0f));                                 \
-        ImGui::PopID(); \
-        ImGui::NextColumn(); \
-    }
+{                                                                                                                  \
+    scratch.clear();                                                                                               \
+    for (auto const& report : focused.regularReports) {                                                            \
+        auto const& stats = report->stats;                                                                         \
+        scratch.push_back(static_cast<float>(stats.statname));                                                     \
+    }                                                                                                              \
+    ImGui::TextUnformatted(#statname); \
+    ImGui::SameLine();  \
+    DrawHelpMarker(SimStats::g_##statname##Desc);  \
+    ImGui::NextColumn();  \
+    ImGui::PushID(imgui_id++);  \
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());  \
+    ImGui::PlotLines("##"#statname, scratch.data(), static_cast<int>(scratch.size()), 0, nullptr, std::numeric_limits<float>::min(), std::numeric_limits<float>::max(), ImVec2(0.0f, .0f));                                 \
+    ImGui::PopID(); \
+    ImGui::NextColumn(); \
+}
 
-    // draw top-level "simulation stats" tab that shows integrator stats etc. for
-    // the focused simulation
-    void drawSimulationStatsTab(osc::SimulatorScreen::Impl& impl)
+// draw top-level "simulation stats" tab that shows integrator stats etc. for
+// the focused simulation
+static void DrawSimulationStatsTab(osc::SimulatorScreen::Impl& impl)
+{
+    UiSimulation const* maybeFocused = impl.mes->getFocusedSim();
+
+    if (!maybeFocused)
     {
-        UiSimulation const* maybeFocused = impl.mes->getFocusedSim();
+        ImGui::TextDisabled("(no simulation selected)");
+        return;
+    }
+    UiSimulation const& focused = *maybeFocused;
 
-        if (!maybeFocused)
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-            return;
-        }
-        UiSimulation const& focused = *maybeFocused;
+    ImGui::Dummy(ImVec2{0.0f, 1.0f});
+    ImGui::TextUnformatted("parameters:");
+    ImGui::SameLine();
+    DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 2.0f});
 
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
-        ImGui::TextUnformatted("parameters:");
+    // draw simulation parameters
+    {
+        FdParams const& p = focused.simulation->params();
+
+        ImGui::Columns(2);
+
+        ImGui::TextUnformatted(p.g_FinalTimeTitle);
         ImGui::SameLine();
-        DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2{0.0f, 2.0f});
+        DrawHelpMarker(p.g_FinalTimeDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.FinalTime.count());
+        ImGui::NextColumn();
 
-        // draw simulation parameters
-        {
-            FdParams const& p = focused.simulation->params();
-
-            ImGui::Columns(2);
-
-            ImGui::TextUnformatted(p.g_FinalTimeTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_FinalTimeDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%f", p.FinalTime.count());
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_ThrottleToWallTimeTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_ThrottleToWallTimeDesc);
-            ImGui::NextColumn();
-            ImGui::TextUnformatted(p.ThrottleToWallTime ? "true" : "false");
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_IntegratorMethodUsedTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_IntegratorMethodUsedDesc);
-            ImGui::NextColumn();
-            ImGui::TextUnformatted(g_IntegratorMethodNames[p.IntegratorMethodUsed]);
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_ReportingIntervalTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_ReportingIntervalDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%f", p.ReportingInterval.count());
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_IntegratorStepLimitTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_IntegratorStepLimitDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%i", p.IntegratorStepLimit);
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_IntegratorMinimumStepSizeTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_IntegratorMinimumStepSizeDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%f", p.IntegratorMinimumStepSize.count());
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_IntegratorMaximumStepSizeTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_IntegratorMaximumStepSizeDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%f", p.IntegratorMaximumStepSize.count());
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_IntegratorAccuracyTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_IntegratorAccuracyDesc);
-            ImGui::NextColumn();
-            ImGui::Text("%f", p.IntegratorAccuracy);
-            ImGui::NextColumn();
-
-            ImGui::TextUnformatted(p.g_UpdateLatestStateOnEveryStepTitle);
-            ImGui::SameLine();
-            DrawHelpMarker(p.g_UpdateLatestStateOnEveryStepDesc);
-            ImGui::NextColumn();
-            ImGui::TextUnformatted(p.UpdateLatestStateOnEveryStep ? "true" : "false");
-            ImGui::NextColumn();
-
-            ImGui::Columns();
-        }
-
-        ImGui::Dummy(ImVec2{0.0f, 10.0f});
-        ImGui::TextUnformatted("plots:");
+        ImGui::TextUnformatted(p.g_ThrottleToWallTimeTitle);
         ImGui::SameLine();
-        DrawHelpMarker("These plots are collected from the underlying simulation engine as the simulation runs. The data is heavily affected by the model's structure, choice of integrator, and simulation settings");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2{0.0f, 2.0f});
+        DrawHelpMarker(p.g_ThrottleToWallTimeDesc);
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(p.ThrottleToWallTime ? "true" : "false");
+        ImGui::NextColumn();
 
-        // draw simulation stat plots
-        {
-            std::vector<float>& scratch = impl.plotscratch;
-            int imgui_id = 0;
+        ImGui::TextUnformatted(p.g_IntegratorMethodUsedTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_IntegratorMethodUsedDesc);
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(g_IntegratorMethodNames[p.IntegratorMethodUsed]);
+        ImGui::NextColumn();
 
-            ImGui::Columns(2);
-            OSC_DRAW_SIMSTAT_PLOT(AccuracyInUse);
-            OSC_DRAW_SIMSTAT_PLOT(NumConvergenceTestFailures);
-            OSC_DRAW_SIMSTAT_PLOT(NumConvergentIterations);
-            OSC_DRAW_SIMSTAT_PLOT(NumDivergentIterations);
-            OSC_DRAW_SIMSTAT_PLOT(NumErrorTestFailures);
-            OSC_DRAW_SIMSTAT_PLOT(NumIterations);
-            OSC_DRAW_SIMSTAT_PLOT(NumProjectionFailures);
-            OSC_DRAW_SIMSTAT_PLOT(NumQProjections);
-            OSC_DRAW_SIMSTAT_PLOT(NumQProjectionFailures);
-            OSC_DRAW_SIMSTAT_PLOT(NumRealizations);
-            OSC_DRAW_SIMSTAT_PLOT(NumRealizationFailures);
-            OSC_DRAW_SIMSTAT_PLOT(NumStepsAttempted);
-            OSC_DRAW_SIMSTAT_PLOT(NumStepsTaken);
-            OSC_DRAW_SIMSTAT_PLOT(NumUProjections);
-            OSC_DRAW_SIMSTAT_PLOT(NumUProjectionFailures);
-            OSC_DRAW_SIMSTAT_PLOT(PredictedNextStepSize);
-            ImGui::Columns();
-        }
+        ImGui::TextUnformatted(p.g_ReportingIntervalTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_ReportingIntervalDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.ReportingInterval.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted(p.g_IntegratorStepLimitTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_IntegratorStepLimitDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%i", p.IntegratorStepLimit);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted(p.g_IntegratorMinimumStepSizeTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_IntegratorMinimumStepSizeDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.IntegratorMinimumStepSize.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted(p.g_IntegratorMaximumStepSizeTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_IntegratorMaximumStepSizeDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.IntegratorMaximumStepSize.count());
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted(p.g_IntegratorAccuracyTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_IntegratorAccuracyDesc);
+        ImGui::NextColumn();
+        ImGui::Text("%f", p.IntegratorAccuracy);
+        ImGui::NextColumn();
+
+        ImGui::TextUnformatted(p.g_UpdateLatestStateOnEveryStepTitle);
+        ImGui::SameLine();
+        DrawHelpMarker(p.g_UpdateLatestStateOnEveryStepDesc);
+        ImGui::NextColumn();
+        ImGui::TextUnformatted(p.UpdateLatestStateOnEveryStep ? "true" : "false");
+        ImGui::NextColumn();
+
+        ImGui::Columns();
     }
 
-    // action to take when user presses a key
-    bool simscreenOnKeydown(osc::SimulatorScreen::Impl& impl, SDL_KeyboardEvent const& e)
+    ImGui::Dummy(ImVec2{0.0f, 10.0f});
+    ImGui::TextUnformatted("plots:");
+    ImGui::SameLine();
+    DrawHelpMarker("These plots are collected from the underlying simulation engine as the simulation runs. The data is heavily affected by the model's structure, choice of integrator, and simulation settings");
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2{0.0f, 2.0f});
+
+    // draw simulation stat plots
     {
-        if (e.keysym.mod & KMOD_CTRL)
-        {
-            // Ctrl
-            switch (e.keysym.sym) {
-            case SDLK_e:
-                // Ctrl + e
-                App::cur().requestTransition<ModelEditorScreen>(std::move(impl.mes));
-                return true;
-            }
-        }
-        return false;
-    }
+        std::vector<float>& scratch = impl.plotscratch;
+        int imgui_id = 0;
 
-    // action to take when a generic event occurs
-    bool simscreenOnEvent(osc::SimulatorScreen::Impl& impl, SDL_Event const& e)
-    {
-        if (e.type == SDL_KEYDOWN)
-        {
-            if (simscreenOnKeydown(impl, e.key))
-            {
-                return true;
-            }
-        }
-        return false;
+        ImGui::Columns(2);
+        OSC_DRAW_SIMSTAT_PLOT(AccuracyInUse);
+        OSC_DRAW_SIMSTAT_PLOT(NumConvergenceTestFailures);
+        OSC_DRAW_SIMSTAT_PLOT(NumConvergentIterations);
+        OSC_DRAW_SIMSTAT_PLOT(NumDivergentIterations);
+        OSC_DRAW_SIMSTAT_PLOT(NumErrorTestFailures);
+        OSC_DRAW_SIMSTAT_PLOT(NumIterations);
+        OSC_DRAW_SIMSTAT_PLOT(NumProjectionFailures);
+        OSC_DRAW_SIMSTAT_PLOT(NumQProjections);
+        OSC_DRAW_SIMSTAT_PLOT(NumQProjectionFailures);
+        OSC_DRAW_SIMSTAT_PLOT(NumRealizations);
+        OSC_DRAW_SIMSTAT_PLOT(NumRealizationFailures);
+        OSC_DRAW_SIMSTAT_PLOT(NumStepsAttempted);
+        OSC_DRAW_SIMSTAT_PLOT(NumStepsTaken);
+        OSC_DRAW_SIMSTAT_PLOT(NumUProjections);
+        OSC_DRAW_SIMSTAT_PLOT(NumUProjectionFailures);
+        OSC_DRAW_SIMSTAT_PLOT(PredictedNextStepSize);
+        ImGui::Columns();
     }
+}
+
+// private Impl-related functions
+namespace {
+
+
 
     // draw output plots for the currently-focused sim
     void drawOutputPlots(
@@ -1018,143 +946,6 @@ namespace {
         }
     }
 
-    class RenderableSim final : public RenderableScene {
-        UiSimulation& m_Sim;
-        Report const& m_Report;
-        std::vector<ComponentDecoration> m_Decorations;
-        BVH m_SceneBVH;
-        float m_FixupScaleFactor;
-
-    public:
-        RenderableSim(UiSimulation& sim, Report const& report) :
-            m_Sim{sim},
-            m_Report{report},
-            m_Decorations{},
-            m_SceneBVH{},
-            m_FixupScaleFactor{sim.fixupScaleFactor}
-        {
-            GenerateModelDecorations(*m_Sim.model, m_Report.state, m_FixupScaleFactor, m_Decorations, m_Sim.selected, m_Sim.hovered);
-            UpdateSceneBVH(m_Decorations, m_SceneBVH);
-        }
-
-        ~RenderableSim() noexcept override = default;
-
-        nonstd::span<ComponentDecoration const> getSceneDecorations() const override
-        {
-            return m_Decorations;
-        }
-
-        BVH const& getSceneBVH() const override
-        {
-            return m_SceneBVH;
-        }
-
-        float getFixupScaleFactor() const override
-        {
-            return m_FixupScaleFactor;
-        }
-
-        OpenSim::Component const* getSelected() const override
-        {
-            return m_Sim.selected;
-        }
-
-        OpenSim::Component const* getHovered() const override
-        {
-            return m_Sim.hovered;
-        }
-
-        OpenSim::Component const* getIsolated() const override
-        {
-            return nullptr;
-        }
-    };
-
-    // draw a 3D model viewer
-    bool draw3DViewer(
-            UiSimulation& sim,
-            Report const& report,
-            UiModelViewer& viewer,
-            char const* name)
-    {
-        bool isOpen = true;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
-        ImGui::PopStyleVar();
-
-        if (!isOpen)
-        {
-            ImGui::End();
-            return false;  // closed by the user
-        }
-
-        if (!shown)
-        {
-            ImGui::End();
-            return true;  // it's open, but not shown
-        }
-
-        RenderableSim rs{sim, report};
-        auto resp = viewer.draw(rs);
-        ImGui::End();
-
-        if (resp.isLeftClicked && resp.hovertestResult)
-        {
-            sim.selected = const_cast<OpenSim::Component*>(resp.hovertestResult);
-        }
-        if (resp.isMousedOver && resp.hovertestResult != sim.hovered)
-        {
-            sim.hovered = const_cast<OpenSim::Component*>(resp.hovertestResult);
-        }
-
-        return true;
-    }
-
-    // draw all active 3D viewers
-    //
-    // the user can (de)activate 3D viewers in the "Window" tab
-    void drawAll3DViewers(SimulatorScreen::Impl& impl)
-    {
-        UiSimulation* maybeSim = impl.mes->getFocusedSim();
-
-        if (!maybeSim)
-        {
-            if (ImGui::Begin("render"))
-            {
-                ImGui::TextDisabled("(no simulation selected)");
-            }
-            ImGui::End();
-            return;
-        }
-
-        UiSimulation& sim = *maybeSim;
-        Report const& report = selectReportBasedOnScrubbing(sim, impl.mes->focusedSimulationScrubbingTime);
-        MainEditorState& st = *impl.mes;
-
-        for (size_t i = 0; i < st.viewers.size(); ++i)
-        {
-            auto& maybeViewer = st.viewers[i];
-
-            if (!maybeViewer)
-            {
-                continue;
-            }
-
-            UiModelViewer& viewer = *maybeViewer;
-
-            char buf[64];
-            std::snprintf(buf, sizeof(buf), "viewer%zu", i);
-
-            bool isOpen = draw3DViewer(sim, report, viewer, buf);
-
-            if (!isOpen)
-            {
-                maybeViewer.reset();
-            }
-        }
-    }
-
     // draw the simulator screen
     void simscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
@@ -1262,6 +1053,340 @@ namespace {
         }
     }
 }
+*/
+
+namespace
+{
+    class RenderableSim final : public osc::RenderableScene {
+    public:
+        RenderableSim(osc::Simulation& sim,
+                      osc::SimulationReport const& report,
+                      float fixupScaleFactor,
+                      OpenSim::Component const* selected,
+                      OpenSim::Component const* hovered,
+                      OpenSim::Component const* isolated) :
+            m_Decorations{},
+            m_SceneBVH{},
+            m_FixupScaleFactor{std::move(fixupScaleFactor)},
+            m_Selected{std::move(selected)},
+            m_Hovered{std::move(hovered)},
+            m_Isolated{std::move(isolated)}
+        {
+            GenerateModelDecorations(sim.getModel(),
+                                     report.getState(),
+                                     m_FixupScaleFactor,
+                                     m_Decorations,
+                                     m_Selected,
+                                     m_Hovered);
+            UpdateSceneBVH(m_Decorations, m_SceneBVH);
+        }
+
+        nonstd::span<osc::ComponentDecoration const> getSceneDecorations() const override
+        {
+            return m_Decorations;
+        }
+
+        osc::BVH const& getSceneBVH() const override
+        {
+            return m_SceneBVH;
+        }
+
+        float getFixupScaleFactor() const override
+        {
+            return m_FixupScaleFactor;
+        }
+
+        OpenSim::Component const* getSelected() const override
+        {
+            return m_Selected;
+        }
+
+        OpenSim::Component const* getHovered() const override
+        {
+            return m_Hovered;
+        }
+
+        OpenSim::Component const* getIsolated() const override
+        {
+            return m_Isolated;
+        }
+    private:
+        std::vector<osc::ComponentDecoration> m_Decorations;
+        osc::BVH m_SceneBVH;
+        float m_FixupScaleFactor;
+        OpenSim::Component const* m_Selected;
+        OpenSim::Component const* m_Hovered;
+        OpenSim::Component const* m_Isolated;
+    };
+}
+
+// draw a 3D model viewer
+static bool SimscreenDraw3DViewer(osc::SimulatorScreen::Impl& impl,
+                                  osc::Simulation& sim,
+                                  osc::SimulationReport const& report,
+                                  osc::UiModelViewer& viewer,
+                                  char const* name)
+{
+    bool isOpen = true;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+    bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+    ImGui::PopStyleVar();
+
+    if (!isOpen)
+    {
+        ImGui::End();
+        return false;  // closed by the user
+    }
+
+    if (!shown)
+    {
+        ImGui::End();
+        return true;  // it's open, but not shown
+    }
+
+    RenderableSim rs
+    {
+        sim,
+        report,
+        1.0f,
+        osc::FindComponent(sim.getModel(), impl.selected),
+        osc::FindComponent(sim.getModel(), impl.hovered),
+        osc::FindComponent(sim.getModel(), impl.isolated)
+    };
+    auto resp = viewer.draw(rs);
+    ImGui::End();
+
+    if (resp.hovertestResult)
+    {
+        OpenSim::ComponentPath p = resp.hovertestResult->getAbsolutePath();
+
+        if (resp.isLeftClicked && p != impl.selected)
+        {
+            impl.selected = p;
+            osc::App::cur().requestRedraw();
+        }
+
+        if (resp.isMousedOver && p != impl.hovered)
+        {
+            impl.hovered = p;
+            osc::App::cur().requestRedraw();
+        }
+    }
+    else
+    {
+        if (resp.isLeftClicked)
+        {
+            impl.selected = {};
+        }
+
+        impl.hovered = {};
+    }
+
+    return true;
+}
+
+// draw all active 3D viewers
+//
+// the user can (de)activate 3D viewers in the "Window" tab
+static void SimscreenDrawAll3DViewers(osc::SimulatorScreen::Impl& impl)
+{
+    osc::MainEditorState& st = *impl.mes;
+    osc::Simulation* maybeSim = st.updFocusedSimulation();
+
+    if (!maybeSim)
+    {
+        if (ImGui::Begin("render"))
+        {
+            ImGui::TextDisabled("(no simulation selected)");
+        }
+        ImGui::End();
+        return;
+    }
+
+    osc::Simulation& sim = *maybeSim;
+
+    std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(impl, sim);
+
+    if (!maybeReport)
+    {
+        if (ImGui::Begin("render"))
+        {
+            ImGui::TextDisabled("(the simulator has not produced any reports yet)");
+        }
+        ImGui::End();
+        return;
+    }
+
+    osc::SimulationReport const& report = *maybeReport;
+
+    for (int i = 0; i < st.getNumViewers(); ++i)
+    {
+        osc::UiModelViewer& viewer = st.updViewer(i);
+
+        char buf[64];
+        std::snprintf(buf, sizeof(buf), "viewer%i", i);
+
+        bool isOpen = SimscreenDraw3DViewer(impl, sim, report, viewer, buf);
+        if (!isOpen)
+        {
+            st.removeViewer(i);
+            --i;
+        }
+    }
+}
+
+static void SimscreenDrawSimulatorTab(osc::SimulatorScreen::Impl& impl)
+{
+    ImGui::Text("todo");
+}
+
+static bool SimscreenDrawMainMenu(osc::SimulatorScreen::Impl& impl)
+{
+    // draw main menu
+    if (ImGui::BeginMainMenuBar())
+    {
+        impl.mmFileTab.draw(impl.mes);
+        impl.mmWindowTab.draw(*impl.mes);
+        impl.mmAboutTab.draw();
+
+        ImGui::Dummy({5.0f, 0.0f});
+
+        if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)"))
+        {
+            // request the transition then exit this drawcall ASAP
+            osc::App::cur().requestTransition<osc::ModelEditorScreen>(std::move(impl.mes));
+            ImGui::EndMainMenuBar();
+            return true;
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
+    return false;
+}
+
+static void SimscreenDrawHierarchyTab(osc::SimulatorScreen::Impl& impl)
+{
+    osc::MainEditorState& st = *impl.mes;
+    osc::Simulation* maybeSim = st.updFocusedSimulation();
+
+    if (!maybeSim)
+    {
+        ImGui::TextDisabled("(no simulation selected)");
+        return;
+    }
+
+    osc::Simulation& sim = *maybeSim;
+
+    auto resp = osc::ComponentHierarchy{}.draw(&sim.getModel(),
+                                               osc::FindComponent(sim.getModel(), impl.selected),
+                                               osc::FindComponent(sim.getModel(), impl.hovered));
+
+    if (resp.type == osc::ComponentHierarchy::SelectionChanged)
+    {
+        impl.selected = resp.ptr->getAbsolutePath();
+    }
+    else if (resp.type == osc::ComponentHierarchy::HoverChanged)
+    {
+        impl.hovered = resp.ptr->getAbsolutePath();
+    }
+}
+
+static void SimscreenDrawSelectionTab(osc::SimulatorScreen::Impl& impl)
+{
+    ImGui::Text("todo");
+}
+
+// draw the simulator screen
+static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
+{
+    if (SimscreenDrawMainMenu(impl))
+    {
+        return;
+    }
+
+    osc::MainEditorState& st = *impl.mes;
+
+    // edge-case: there are no simulations available, so
+    // show a "you need to run something, fool" dialog
+    if (!st.hasSimulations())
+    {
+        if (ImGui::Begin("Warning"))
+        {
+            ImGui::TextUnformatted("No simulations are currently running");
+            if (ImGui::Button("Run new simulation"))
+            {
+                StartSimulatingEditedModel(st);
+            }
+        }
+        ImGui::End();
+        return;
+    }
+
+    // draw simulations tab
+    if (st.getUserPanelPrefs().simulations)
+    {
+        if (ImGui::Begin("Simulations", &st.updUserPanelPrefs().simulations))
+        {
+            SimscreenDrawSimulatorTab(impl);
+        }
+        ImGui::End();
+    }
+
+    // draw selection tab
+    if (st.getUserPanelPrefs().selectionDetails)
+    {
+        if (ImGui::Begin("Selection", &st.updUserPanelPrefs().selectionDetails))
+        {
+            SimscreenDrawSelectionTab(impl);
+        }
+        ImGui::End();
+    }
+
+    // draw hierarchy tab
+    if (st.getUserPanelPrefs().hierarchy)
+    {
+        if (ImGui::Begin("Hierarchy", &st.updUserPanelPrefs().hierarchy))
+        {
+            SimscreenDrawHierarchyTab(impl);
+        }
+        ImGui::End();
+    }
+
+    SimscreenDrawAll3DViewers(impl);
+}
+
+// action to take when user presses a key
+static bool SimscreenOnKeydown(osc::SimulatorScreen::Impl& impl,
+                               SDL_KeyboardEvent const& e)
+{
+    if (e.keysym.mod & KMOD_CTRL)
+    {
+        // Ctrl
+        switch (e.keysym.sym) {
+        case SDLK_e:
+            // Ctrl + e
+            osc::App::cur().requestTransition<osc::ModelEditorScreen>(std::move(impl.mes));
+            return true;
+        }
+    }
+    return false;
+}
+
+// action to take when a generic event occurs
+static bool SimscreenOnEvent(osc::SimulatorScreen::Impl& impl,
+                             SDL_Event const& e)
+{
+    if (e.type == SDL_KEYDOWN)
+    {
+        if (SimscreenOnKeydown(impl, e.key))
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 // Simulator_screen: public impl.
 
@@ -1291,12 +1416,11 @@ void osc::SimulatorScreen::onEvent(SDL_Event const& e)
         return;
     }
 
-    ::simscreenOnEvent(*m_Impl, e);
+    SimscreenOnEvent(*m_Impl, e);
 }
 
 void osc::SimulatorScreen::tick(float)
 {
-    popAllSimulatorUpdates(*m_Impl->mes);
 }
 
 void osc::SimulatorScreen::draw()
@@ -1305,6 +1429,6 @@ void osc::SimulatorScreen::draw()
     gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     osc::ImGuiNewFrame();
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-    ::simscreenDraw(*m_Impl);
+    SimscreenDraw(*m_Impl);
     osc::ImGuiRender();
 }

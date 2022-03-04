@@ -17,6 +17,7 @@
 #include "src/Screens/Experimental/ExperimentsScreen.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/LogViewer.hpp"
+#include "src/UI/UiModelViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
@@ -314,30 +315,12 @@ namespace
         return SphereToSphereMat4(sphereMesh, sceneSphere);
     }
 
-
-    // returns a quad used for rendering the chequered floor
-    Mesh generateFloorMesh()
-    {
-        Mesh m{GenTexturedQuad()};
-        m.scaleTexCoords(200.0f);
-        return m;
-    }
-
     // returns a multiampled render buffer with the given format + dimensions
     gl::RenderBuffer MultisampledRenderBuffer(int samples, GLenum format, glm::ivec2 dims)
     {
         gl::RenderBuffer rv;
         gl::BindRenderBuffer(rv);
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, format, dims.x, dims.y);
-        return rv;
-    }
-
-    // returns a non-multisampled render buffer with the given format + dimensions
-    gl::RenderBuffer RenderBuffer(GLenum format, glm::ivec2 dims)
-    {
-        gl::RenderBuffer rv;
-        gl::BindRenderBuffer(rv);
-        glRenderbufferStorage(GL_RENDERBUFFER, format, dims.x, dims.y);
         return rv;
     }
 
@@ -352,14 +335,6 @@ namespace
         gl::TexParameteri(out.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         gl::TexParameteri(out.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         gl::BindTexture();
-    }
-
-    // returns a texture as a scene texture (specific params, etc.) with the given format, dims, etc.
-    gl::Texture2D SceneTex(GLint level, GLint internalFormat, glm::ivec2 dims, GLenum format, GLenum type)
-    {
-        gl::Texture2D rv;
-        SetTextureAsSceneTextureTex(rv, level, internalFormat, dims, format, type);
-        return rv;
     }
 
     // declares a type that can bind an OpenGL buffer type to an FBO in the current OpenGL context
@@ -2181,18 +2156,6 @@ namespace
         DefaultConstructOnCopy<std::vector<ClonePtr<SceneEl>>> m_DeletedEls;
     };
 
-    // returns true if the mesh el has been assigned to a body that exists in the model graph
-    bool IsAssignedToBody(ModelGraph const& mg, MeshEl const& mesh)
-    {
-        return mg.ContainsEl<BodyEl>(mesh.Attachment);
-    }
-
-    void SelectOnly(ModelGraph& mg, UID id)
-    {
-        mg.DeSelectAll();
-        mg.Select(id);
-    }
-
     void SelectOnly(ModelGraph& mg, SceneEl const& e)
     {
         mg.DeSelectAll();
@@ -2230,11 +2193,6 @@ namespace
     glm::vec3 GetPosition(ModelGraph const& mg, UID id)
     {
         return mg.GetElByID(id).GetPos();
-    }
-
-    glm::quat GetRotation(ModelGraph const& mg, UID id)
-    {
-        return mg.GetElByID(id).GetRotation();
     }
 
     // returns `true` if `body` participates in any joint in the model graph
@@ -2494,20 +2452,6 @@ namespace
         return v.result();
     }
 
-    // adds a body to a mesh at a given position
-    BodyEl& AddBodyToMeshAtPosition(ModelGraph& mg, MeshEl const& mesh, glm::vec3 const& pos)
-    {
-        BodyEl& b = mg.AddEl<BodyEl>(Transform::atPosition(pos));
-        SelectOnly(mg, b.ID);
-
-        if (!IsAssignedToBody(mg, mesh))
-        {
-            mg.UpdElByID<MeshEl>(mesh.ID).Attachment = b.ID;
-        }
-
-        return b;
-    }
-
     // points an axis of a given element towards some other element in the model graph
     void PointAxisTowards(ModelGraph& mg, UID id, int axis, UID other)
     {
@@ -2741,13 +2685,6 @@ namespace
     {
         PointAxisTowards(cmg.UpdScratch(), id, axis, other);
         cmg.Commit("reoriented " + GetLabel(cmg.GetScratch(), id));
-        return true;
-    }
-
-    bool AddBodyToMeshAtPosition(CommittableModelGraph& cmg, MeshEl const& mesh, glm::vec3 const& pos)
-    {
-        BodyEl& b = AddBodyToMeshAtPosition(cmg.UpdScratch(), mesh, pos);
-        cmg.Commit("added " + b.GetLabel());
         return true;
     }
 
@@ -5100,15 +5037,8 @@ namespace
             if (HasOutputModel())
             {
                 auto mainEditorState = std::make_shared<MainEditorState>(std::move(UpdOutputModel()));
-                mainEditorState->editedModel.setFixupScaleFactor(m_SceneScaleFactor);
-                for (auto& viewerPtr : mainEditorState->viewers)
-                {
-                    if (viewerPtr)
-                    {
-                        viewerPtr->requestAutoFocus();
-                    }
-                }
-
+                mainEditorState->updEditedModel().setFixupScaleFactor(m_SceneScaleFactor);
+                AutoFocusAllViewers(*mainEditorState);
                 App::cur().requestTransition<ModelEditorScreen>(mainEditorState);
             }
 
