@@ -1,6 +1,7 @@
 #include "UiFdSimulation.hpp"
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
+#include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
@@ -13,7 +14,6 @@
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <chrono>
 #include <mutex>
 #include <optional>
 #include <memory>
@@ -72,32 +72,6 @@ public:
         return m_Reports.at(reportIndex);
     }
 
-    int tryGetAllReportNumericValues(Output const& o, std::vector<float>& appendOut)
-    {
-        popReports();
-
-        if (!o.producesNumericValues())
-        {
-            return 0;
-        }
-
-        OpenSim::Model const& model = getModel();
-
-        int numEls = 0;
-        for (SimulationReport const& report : m_Reports)
-        {
-            appendOut.push_back(o.getNumericValue(model, report).value_or(-1337.0f));
-            ++numEls;
-        }
-        return numEls;
-    }
-
-    std::optional<std::string> tryGetOutputString(Output const& o, int reportIndex)
-    {
-        popReports();
-        return o.getStringValue(getModel(), getSimulationReport(reportIndex));
-    }
-
     SimulationStatus getSimulationStatus() const
     {
         return m_Simulation.getStatus();
@@ -113,29 +87,28 @@ public:
         m_Simulation.stop();
     }
 
-    std::chrono::duration<double> getSimulationCurTime()
+    SimulationClock::time_point getSimulationCurTime()
     {
         popReports();
 
         if (!m_Reports.empty())
         {
-            return std::chrono::duration<double>{m_Reports.back().getState().getTime()};
+            return SimulationClock::start() + SimulationClock::duration{m_Reports.back().getState().getTime()};
         }
         else
         {
-            return std::chrono::duration<double>{0.0};
+            return getSimulationStartTime();
         }
     }
 
-    std::chrono::duration<double> getSimulationEndTime() const
+    SimulationClock::time_point getSimulationStartTime() const
     {
-        return m_Simulation.params().FinalTime;
+        return SimulationClock::start() + SimulationClock::duration{m_ModelState.getState().getTime()};
     }
 
-    float getSimulationProgress()
+    SimulationClock::time_point getSimulationEndTime() const
     {
-        double ratio = getSimulationCurTime().count()/getSimulationEndTime().count();
-        return static_cast<float>(ratio);
+        return m_Simulation.params().FinalTime;
     }
 
     ParamBlock const& getSimulationParams() const
@@ -192,16 +165,6 @@ osc::SimulationReport osc::UiFdSimulation::getSimulationReport(int reportIndex)
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }
 
-int osc::UiFdSimulation::tryGetAllReportNumericValues(Output const& output, std::vector<float>& appendOut)
-{
-    return m_Impl->tryGetAllReportNumericValues(output, appendOut);
-}
-
-std::optional<std::string> osc::UiFdSimulation::tryGetOutputString(Output const& output, int reportIndex)
-{
-    return m_Impl->tryGetOutputString(output, std::move(reportIndex));
-}
-
 osc::SimulationStatus osc::UiFdSimulation::getSimulationStatus() const
 {
     return m_Impl->getSimulationStatus();
@@ -217,19 +180,19 @@ void osc::UiFdSimulation::stop()
     return m_Impl->stop();
 }
 
-std::chrono::duration<double> osc::UiFdSimulation::getSimulationCurTime()
+osc::SimulationClock::time_point osc::UiFdSimulation::getSimulationCurTime()
 {
     return m_Impl->getSimulationCurTime();
 }
 
-std::chrono::duration<double> osc::UiFdSimulation::getSimulationEndTime() const
+osc::SimulationClock::time_point osc::UiFdSimulation::getSimulationStartTime() const
 {
-    return m_Impl->getSimulationEndTime();
+    return m_Impl->getSimulationStartTime();
 }
 
-float osc::UiFdSimulation::getSimulationProgress()
+osc::SimulationClock::time_point osc::UiFdSimulation::getSimulationEndTime() const
 {
-    return m_Impl->getSimulationProgress();
+    return m_Impl->getSimulationEndTime();
 }
 
 osc::ParamBlock const& osc::UiFdSimulation::getSimulationParams() const

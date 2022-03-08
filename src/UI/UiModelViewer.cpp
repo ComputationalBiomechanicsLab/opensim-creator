@@ -758,8 +758,8 @@ static void BlitSceneTexture(osc::UiModelViewer::Impl& impl)
     impl.renderRect.p1 = ImGui::GetItemRectMin();
     impl.renderRect.p2 = ImGui::GetItemRectMax();
     impl.renderHovered = ImGui::IsItemHovered();
-    impl.renderLeftClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-    impl.renderRightClicked = osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+    impl.renderLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+    impl.renderRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
 }
 
 static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(

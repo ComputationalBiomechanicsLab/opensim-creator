@@ -2,16 +2,13 @@
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
-#include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/Output.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
+#include "src/OpenSimBindings/SimulationClock.hpp"
+#include "src/OpenSimBindings/SimulationStatus.hpp"
 
-#include <nonstd/span.hpp>
-
-#include <chrono>
 #include <functional>
 #include <memory>
-#include <vector>
 
 namespace OpenSim
 {
@@ -33,13 +30,13 @@ namespace osc
     struct FdParams final {
 
         // final time for the simulation
-        std::chrono::duration<double> FinalTime{10.0};
+        SimulationClock::time_point FinalTime = SimulationClock::start() + SimulationClock::duration{10.0};
 
         // which integration method to use for the simulation
         IntegratorMethod IntegratorMethodUsed = IntegratorMethod::OpenSimManagerDefault;
 
         // the time interval, in simulation time, between report updates
-        std::chrono::duration<double> ReportingInterval{1.0/120.0};
+        SimulationClock::duration ReportingInterval{1.0/120.0};
 
         // max number of *internal* steps that may be taken within a single call
         // to the integrator's stepTo or stepBy function
@@ -52,14 +49,14 @@ namespace osc
         // minimum step, in time, that the integrator should attempt
         //
         // some integrators just ignore this
-        std::chrono::duration<double> IntegratorMinimumStepSize{1.0e-8};
+        SimulationClock::duration IntegratorMinimumStepSize{1.0e-8};
 
         // maximum step, in time, that an integrator can attempt
         //
         // e.g. even if the integrator *thinks* it can skip 10s of simulation time
         // it still *must* integrate to this size and return to the caller (i.e. the
         // simulator) to report the state at this maximum time
-        std::chrono::duration<double> IntegratorMaximumStepSize{1.0};
+        SimulationClock::duration IntegratorMaximumStepSize{1.0};
 
         // accuracy of the integrator
         //
@@ -78,7 +75,7 @@ namespace osc
         // immediately starts the simulation upon construction
         FdSimulation(BasicModelStatePair,
                      FdParams const& params,
-                     std::function<void(SimulationReport)> reportCallback);
+                     std::function<void(SimulationReport)> onReportFromBgThread);
 
         FdSimulation(FdSimulation const&) = delete;
         FdSimulation(FdSimulation&&) noexcept;

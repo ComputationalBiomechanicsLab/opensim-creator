@@ -74,6 +74,11 @@ public:
         m_Simulations.erase(m_Simulations.begin() + idx);
     }
 
+    int getFocusedSimulationIndex() const
+    {
+        return m_FocusedSimulation;
+    }
+
     Simulation const* getFocusedSimulation() const
     {
         return const_cast<Impl&>(*this).updFocusedSimulation();
@@ -120,7 +125,7 @@ public:
         return static_cast<int>(m_UserDesiredOutputs.size());
     }
 
-    Output const& getUserDesiredOutput(int idx)
+    Output const& getUserDesiredOutput(int idx) const
     {
         return m_UserDesiredOutputs.at(idx);
     }
@@ -144,21 +149,6 @@ public:
     UserPanelPreferences& updUserPanelPrefs()
     {
         return m_PanelPreferences;
-    }
-
-    std::optional<float> getUserSimulationScrubbingTime() const
-    {
-        return m_FocusedSimulationScrubbingTime;
-    }
-
-    void setUserSimulationScrubbingTime(float t)
-    {
-        m_FocusedSimulationScrubbingTime = std::move(t);
-    }
-
-    void clearUserSimulationScrubbingTime()
-    {
-        m_FocusedSimulationScrubbingTime.reset();
     }
 
     int getNumViewers() const
@@ -186,7 +176,6 @@ private:
     UndoableUiModel m_EditedModel;
     std::vector<Simulation> m_Simulations;
     int m_FocusedSimulation = -1;
-    std::optional<float> m_FocusedSimulationScrubbingTime = std::nullopt;
     std::vector<Output> m_UserDesiredOutputs;
     ParamBlock m_SimulationParams;
     std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
@@ -252,6 +241,11 @@ void osc::MainEditorState::removeSimulation(int idx)
     m_Impl->removeSimulation(std::move(idx));
 }
 
+int osc::MainEditorState::getFocusedSimulationIndex() const
+{
+    return m_Impl->getFocusedSimulationIndex();
+}
+
 osc::Simulation const* osc::MainEditorState::getFocusedSimulation() const
 {
     return m_Impl->getFocusedSimulation();
@@ -282,7 +276,7 @@ int osc::MainEditorState::getNumUserDesiredOutputs() const
     return m_Impl->getNumUserDesiredOutputs();
 }
 
-osc::Output const& osc::MainEditorState::getUserDesiredOutput(int idx)
+osc::Output const& osc::MainEditorState::getUserDesiredOutput(int idx) const
 {
     return m_Impl->getUserDesiredOutput(std::move(idx));
 }
@@ -305,21 +299,6 @@ osc::UserPanelPreferences const& osc::MainEditorState::getUserPanelPrefs() const
 osc::UserPanelPreferences& osc::MainEditorState::updUserPanelPrefs()
 {
     return m_Impl->updUserPanelPrefs();
-}
-
-std::optional<float> osc::MainEditorState::getUserSimulationScrubbingTime() const
-{
-    return m_Impl->getUserSimulationScrubbingTime();
-}
-
-void osc::MainEditorState::setUserSimulationScrubbingTime(float t)
-{
-    m_Impl->setUserSimulationScrubbingTime(std::move(t));
-}
-
-void osc::MainEditorState::clearUserSimulationScrubbingTime()
-{
-    m_Impl->clearUserSimulationScrubbingTime();
 }
 
 int osc::MainEditorState::getNumViewers() const
@@ -358,36 +337,17 @@ void osc::StartSimulatingEditedModel(MainEditorState& st)
 
     st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});
     st.setFocusedSimulation(st.getNumSimulations()-1);
-    st.clearUserSimulationScrubbingTime();
 }
 
-std::optional<osc::SimulationReport> osc::TrySelectReportBasedOnScrubbing(MainEditorState const& st,
-                                                                          osc::Simulation& sim)
+std::vector<osc::Output> osc::GetAllUserDesiredOutputs(MainEditorState const& st)
 {
-    int nReports = sim.getNumReports();
+    int nOutputs = st.getNumUserDesiredOutputs();
 
-    if (nReports <= 0)
+    std::vector<Output> rv;
+    rv.reserve(nOutputs);
+    for (int i = 0; i < nOutputs; ++i)
     {
-        return std::nullopt;
+        rv.push_back(st.getUserDesiredOutput(i));
     }
-
-    std::optional<float> maybeScrub = st.getUserSimulationScrubbingTime();
-
-    if (!maybeScrub)
-    {
-        return sim.getSimulationReport(nReports-1);
-    }
-
-    float scrub = *maybeScrub;
-
-    for (int i = 0; i < nReports; ++i)
-    {
-        SimulationReport r = sim.getSimulationReport(i);
-        if (r.getState().getTime() >= scrub)
-        {
-            return r;
-        }
-    }
-
-    return std::nullopt;
+    return rv;
 }

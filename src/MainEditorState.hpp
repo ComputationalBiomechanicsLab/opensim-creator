@@ -52,31 +52,32 @@ namespace osc
         UndoableUiModel const& getEditedModel() const;
         UndoableUiModel& updEditedModel();
 
-        // simulations
+        // active simulations
         bool hasSimulations() const;
         int getNumSimulations() const;
         Simulation const& getSimulation(int) const;
         Simulation& updSimulation(int);
         void addSimulation(Simulation);
         void removeSimulation(int);
+        int getFocusedSimulationIndex() const;
         Simulation const* getFocusedSimulation() const;
         Simulation* updFocusedSimulation();
         void setFocusedSimulation(int);
+
+        // simulation params (for making new sims)
         ParamBlock const& getSimulationParams() const;
         ParamBlock& updSimulationParams();
 
-        // user-enacted output plotting
+        // output plots (user-enacted)
         int getNumUserDesiredOutputs() const;
-        Output const& getUserDesiredOutput(int);
+        Output const& getUserDesiredOutput(int) const;
         void addUserDesiredOutput(Output);
         void removeUserDesiredOutput(int);
 
-        // UI state
+        // active ImGui panels
         UserPanelPreferences const& getUserPanelPrefs() const;
         UserPanelPreferences& updUserPanelPrefs();
-        std::optional<float> getUserSimulationScrubbingTime() const;
-        void setUserSimulationScrubbingTime(float);
-        void clearUserSimulationScrubbingTime();
+
         int getNumViewers() const;
         UiModelViewer& updViewer(int);
         UiModelViewer& addViewer();
@@ -89,5 +90,5 @@ namespace osc
 
     void AutoFocusAllViewers(MainEditorState&);
     void StartSimulatingEditedModel(MainEditorState&);
-    std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(MainEditorState const&, osc::Simulation&);
+    std::vector<osc::Output> GetAllUserDesiredOutputs(MainEditorState const&);
 }

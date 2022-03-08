@@ -1,13 +1,13 @@
 #pragma once
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
+#include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
 
-#include <chrono>
 #include <optional>
 #include <memory>
 #include <vector>
@@ -47,15 +47,13 @@ namespace osc
 
         int getNumReports() override;
         SimulationReport getSimulationReport(int reportIndex) override;
-        int tryGetAllReportNumericValues(Output const&, std::vector<float>& appendOut) override;
-        std::optional<std::string> tryGetOutputString(Output const&, int reportIndex) override;
 
         SimulationStatus getSimulationStatus() const override;
         void requestStop() override;
         void stop() override;
-        std::chrono::duration<double> getSimulationCurTime() override;
-        std::chrono::duration<double> getSimulationEndTime() const override;
-        float getSimulationProgress() override;
+        SimulationClock::time_point getSimulationCurTime() override;
+        SimulationClock::time_point getSimulationStartTime() const override;
+        SimulationClock::time_point getSimulationEndTime() const override;
         ParamBlock const& getSimulationParams() const override;
         nonstd::span<Output const> getOutputs() const override;
 

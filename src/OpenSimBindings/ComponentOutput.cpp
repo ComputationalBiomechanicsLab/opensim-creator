@@ -76,7 +76,7 @@ using ExtractorFunc = double(*)(OpenSim::AbstractOutput const&, SimTK::State con
 
 static std::string const& GetNoDescriptionString()
 {
-    static std::string const g_NoDescriptionStr = "(no description)";
+    static std::string const g_NoDescriptionStr = "";
     return g_NoDescriptionStr;
 }
 

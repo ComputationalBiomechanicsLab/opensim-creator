@@ -283,6 +283,8 @@ add_executable(osc
     src/UI/MainMenu.hpp
     src/UI/ModelActionsMenuBar.cpp
     src/UI/ModelActionsMenuBar.hpp
+    src/UI/PerfPanel.cpp
+    src/UI/PerfPanel.hpp
     src/UI/PropertyEditors.cpp
     src/UI/PropertyEditors.hpp
     src/UI/ReassignSocketPopup.hpp

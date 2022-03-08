@@ -7,6 +7,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
+
 static std::unique_ptr<OpenSim::Model> makeNewModel()
 {
     auto rv = std::make_unique<OpenSim::Model>();

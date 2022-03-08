@@ -1,26 +1,42 @@
 #include "FdSimulation.hpp"
 
-#include "src/Log.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Utils/SynchronizedValue.hpp"
-#include "src/Utils/Cpp20Shims.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/IntegratorOutput.hpp"
 #include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
+#include "src/Log.hpp"
 
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKsimbody.h>
 #include <simmath/Integrator.h>
 
-#include <array>
+#include <atomic>
 #include <functional>
-#include <ratio>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <utility>
+#include <variant>
+#include <vector>
+
+static constexpr char const* g_FinalTimeTitle = "Final Time (sec)";
+static constexpr char const* g_FinalTimeDesc = "The final time, in seconds, that the forward dynamic simulation should integrate up to";
+static constexpr char const* g_IntegratorMethodUsedTitle = "Integrator Method";
+static constexpr char const* g_IntegratorMethodUsedDesc = "The integrator that the forward dynamic simulator should use. OpenSim's default integrator is a good choice if you aren't familiar with the other integrators. Changing the integrator can have a large impact on the performance and accuracy of the simulation.";
+static constexpr char const* g_ReportingIntervalTitle = "Reporting Interval (sec)";
+static constexpr char const* g_ReportingIntervalDesc = "How often the simulator should emit a simulation report. This affects how many datapoints are collected for the animation, output values, etc.";
+static constexpr char const* g_IntegratorStepLimitTitle = "Integrator Step Limit";
+static constexpr char const* g_IntegratorStepLimitDesc = "The maximum number of *internal* steps that can be taken within a single call to the integrator's stepTo/stepBy function. This is mostly an internal engine concern, but can occasionally affect how often reports are emitted";
+static constexpr char const* g_IntegratorMinimumStepSizeTitle = "Minimum Step Size (sec)";
+static constexpr char const* g_IntegratorMinimumStepSizeDesc = "The minimum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-corrected integrators that change their step size dynamically as the simulation runs.";
+static constexpr char const* g_IntegratorMaximumStepSizeTitle = "Maximum step size (sec)";
+static constexpr char const* g_IntegratorMaximumStepSizeDesc = "The maximum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-correct integrators that change their step size dynamically as the simulation runs";
+static constexpr char const* g_IntegratorAccuracyTitle = "Accuracy";
+static constexpr char const* g_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
 
 namespace
 {
@@ -99,9 +115,14 @@ static std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorT
     integ->setMinimumStepSize(params.IntegratorMinimumStepSize.count());
     integ->setMaximumStepSize(params.IntegratorMaximumStepSize.count());
     integ->setAccuracy(params.IntegratorAccuracy);
-    integ->setFinalTime(params.FinalTime.count());
+    integ->setFinalTime(params.FinalTime.time_since_epoch().count());
     integ->initialize(input.getState());
     return integ;
+}
+
+static osc::SimulationClock::time_point GetSimulationTime(SimTK::Integrator const& integ)
+{
+    return osc::SimulationClock::time_point(osc::SimulationClock::duration(integ.getTime()));
 }
 
 // this is the main function that the simulator thread works through (unguarded against exceptions)
@@ -119,9 +140,9 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     ts.initialize(integ->getState());
 
     // figure out timesteps the sim should use
-    double t0 = integ->getTime();
-    double tFinalSimTime = params.FinalTime.count();
-    double tNextRegularReport = t0 + params.ReportingInterval.count();
+    osc::SimulationClock::time_point t0 = GetSimulationTime(*integ);
+    osc::SimulationClock::time_point tFinal = params.FinalTime;
+    osc::SimulationClock::time_point tNextReport = t0 + params.ReportingInterval;
 
     // tell the UI thread that everything has been initialized and it's now running
     shared.setStatus(osc::SimulationStatus::Running);
@@ -130,7 +151,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
 
     // integrate (t0..tfinal]
-    for (double t = t0; t < tFinalSimTime; t = integ->getTime())
+    for (osc::SimulationClock::time_point t = t0; t < tFinal; t = GetSimulationTime(*integ))
     {
         // check for cancellation requests
         if (stopToken.stop_requested())
@@ -139,8 +160,8 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         }
 
         // simulate an integration step (expensive)
-        auto nextTimepoint = std::min(tNextRegularReport, tFinalSimTime);
-        auto timestepRv = ts.stepTo(nextTimepoint);
+        auto nextTimepoint = std::min(tNextReport, tFinal);
+        auto timestepRv = ts.stepTo(nextTimepoint.time_since_epoch().count());
 
         // handle integration errors
         if (integ->isSimulationOver() &&
@@ -161,10 +182,11 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         }
 
         // emit report (if necessary)
-        if (osc::IsEffectivelyEqual(nextTimepoint, integ->getTime()))
+        osc::SimulationClock::time_point tInteg = GetSimulationTime(*integ);
+        if (osc::IsEffectivelyEqual(nextTimepoint.time_since_epoch().count(), tInteg.time_since_epoch().count()))
         {
             input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
-            tNextRegularReport = integ->getTime() + params.ReportingInterval.count();
+            tNextReport = tInteg + params.ReportingInterval;
         }
     }
 
@@ -201,25 +223,11 @@ static int FdSimulationMain(osc::stop_token stopToken,
 
     return 0;
 }
-static constexpr char const* g_FinalTimeTitle = "final time (sec)";
-static constexpr char const* g_FinalTimeDesc = "The final time, in seconds, that the forward dynamic simulation should integrate up to";
-static constexpr char const* g_IntegratorMethodUsedTitle = "integrator method";
-static constexpr char const* g_IntegratorMethodUsedDesc = "The integrator that the forward dynamic simulator should use. OpenSim's default integrator is a good choice if you aren't familiar with the other integrators. Changing the integrator can have a large impact on the performance and accuracy of the simulation.";
-static constexpr char const* g_ReportingIntervalTitle = "reporting interval";
-static constexpr char const* g_ReportingIntervalDesc = "How often the simulator should emit a simulation report. This affects how many datapoints are collected for the animation, output values, etc.";
-static constexpr char const* g_IntegratorStepLimitTitle = "integrator step limit";
-static constexpr char const* g_IntegratorStepLimitDesc = "The maximum number of *internal* steps that can be taken within a single call to the integrator's stepTo/stepBy function. This is mostly an internal engine concern, but can occasionally affect how often reports are emitted";
-static constexpr char const* g_IntegratorMinimumStepSizeTitle = "integrator minimum step size (sec)";
-static constexpr char const* g_IntegratorMinimumStepSizeDesc = "The minimum step size, in time, that the integrator must take during the simulation. Note: this is mostly only relevant for error-corrected integrators that change their step size dynamically as the simulation runs.";
-static constexpr char const* g_IntegratorMaximumStepSizeTitle = "integrator maximum step size (sec)";
-static constexpr char const* g_IntegratorMaximumStepSizeDesc = "The maximum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-correct integrators that change their step size dynamically as the simulation runs";
-static constexpr char const* g_IntegratorAccuracyTitle = "integrator accuracy";
-static constexpr char const* g_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
 
 osc::ParamBlock osc::ToParamBlock(FdParams const& p)
 {
     ParamBlock rv;
-    rv.pushParam(g_FinalTimeTitle, g_FinalTimeDesc, p.FinalTime.count());
+    rv.pushParam(g_FinalTimeTitle, g_FinalTimeDesc, (p.FinalTime - SimulationClock::start()).count());
     rv.pushParam(g_IntegratorMethodUsedTitle, g_IntegratorMethodUsedDesc, p.IntegratorMethodUsed);
     rv.pushParam(g_ReportingIntervalTitle, g_ReportingIntervalDesc, p.ReportingInterval.count());
     rv.pushParam(g_IntegratorStepLimitTitle, g_IntegratorStepLimitDesc, p.IntegratorStepLimit);
@@ -234,7 +242,7 @@ osc::FdParams osc::FromParamBlock(ParamBlock const& b)
     FdParams rv;
     if (auto finalTime = b.findValue(g_FinalTimeTitle); finalTime && std::holds_alternative<double>(*finalTime))
     {
-        rv.FinalTime = std::chrono::duration<double>{std::get<double>(*finalTime)};
+        rv.FinalTime = SimulationClock::start() + SimulationClock::duration{std::get<double>(*finalTime)};
     }
     if (auto integMethod = b.findValue(g_IntegratorMethodUsedTitle); integMethod && std::holds_alternative<IntegratorMethod>(*integMethod))
     {
@@ -242,7 +250,7 @@ osc::FdParams osc::FromParamBlock(ParamBlock const& b)
     }
     if (auto repInterv = b.findValue(g_ReportingIntervalTitle); repInterv && std::holds_alternative<double>(*repInterv))
     {
-        rv.ReportingInterval = std::chrono::duration<double>{std::get<double>(*repInterv)};
+        rv.ReportingInterval = SimulationClock::duration{std::get<double>(*repInterv)};
     }
     if (auto stepLim = b.findValue(g_IntegratorStepLimitTitle); stepLim && std::holds_alternative<int>(*stepLim))
     {
@@ -250,11 +258,11 @@ osc::FdParams osc::FromParamBlock(ParamBlock const& b)
     }
     if (auto minStep = b.findValue(g_IntegratorMinimumStepSizeTitle); minStep && std::holds_alternative<double>(*minStep))
     {
-        rv.IntegratorMinimumStepSize = std::chrono::duration<double>{std::get<double>(*minStep)};
+        rv.IntegratorMinimumStepSize = SimulationClock::duration{std::get<double>(*minStep)};
     }
     if (auto maxStep = b.findValue(g_IntegratorMaximumStepSizeTitle); maxStep && std::holds_alternative<double>(*maxStep))
     {
-        rv.IntegratorMaximumStepSize = std::chrono::duration<double>{std::get<double>(*maxStep)};
+        rv.IntegratorMaximumStepSize = SimulationClock::duration{std::get<double>(*maxStep)};
     }
     if (auto acc = b.findValue(g_IntegratorAccuracyTitle); acc && std::holds_alternative<double>(*acc))
     {

@@ -25,6 +25,7 @@ namespace osc
     };
     nonstd::span<IntegratorMethod const> GetAllIntegratorMethods();
     nonstd::span<char const* const> GetAllIntegratorMethodStrings();
+    char const* GetIntegratorMethodString(IntegratorMethod);
     std::unique_ptr<SimTK::Integrator> CreateIntegrator(SimTK::System const&, IntegratorMethod);
 }
 

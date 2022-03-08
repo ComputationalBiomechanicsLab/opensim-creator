@@ -48,6 +48,11 @@ nonstd::span<char const* const> osc::GetAllIntegratorMethodStrings()
     return g_IntegratorMethodStrings;
 }
 
+char const* osc::GetIntegratorMethodString(IntegratorMethod im)
+{
+    return GetAllIntegratorMethodStrings()[static_cast<size_t>(im)];
+}
+
 std::unique_ptr<SimTK::Integrator> osc::CreateIntegrator(SimTK::System const& system, osc::IntegratorMethod method)
 {
     switch (method) {

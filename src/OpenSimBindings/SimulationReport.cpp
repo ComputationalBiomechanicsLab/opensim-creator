@@ -45,7 +45,17 @@ public:
         return std::make_unique<Impl>(*this);
     }
 
+    SimulationClock::time_point getTime() const
+    {
+        return SimulationClock::start() + SimulationClock::duration{getState().getTime()};
+    }
+
     SimTK::State const& getState() const
+    {
+        return m_State;
+    }
+
+    SimTK::State& updStateHACK()
     {
         return m_State;
     }
@@ -74,9 +84,19 @@ osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport const&)
 osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport&&) noexcept = default;
 osc::SimulationReport::~SimulationReport() noexcept = default;
 
+osc::SimulationClock::time_point osc::SimulationReport::getTime() const
+{
+    return m_Impl->getTime();
+}
+
 SimTK::State const& osc::SimulationReport::getState() const
 {
     return m_Impl->getState();
+}
+
+SimTK::State& osc::SimulationReport::updStateHACK()
+{
+    return m_Impl->updStateHACK();
 }
 
 std::optional<float> osc::SimulationReport::getAuxiliaryValue(UID id) const

@@ -24,6 +24,7 @@ namespace osc
     class RenderableScene {
     public:
         virtual ~RenderableScene() noexcept = default;
+
         virtual nonstd::span<ComponentDecoration const> getSceneDecorations() const = 0;
         virtual BVH const& getSceneBVH() const = 0;
         virtual float getFixupScaleFactor() const = 0;

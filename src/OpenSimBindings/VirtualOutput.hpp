@@ -29,6 +29,7 @@ namespace osc
     class VirtualOutput {
     public:
         virtual ~VirtualOutput() noexcept = default;
+
         virtual UID getID() const = 0;
         virtual OutputSource getOutputSource() const = 0;
         virtual std::string const& getName() const = 0;

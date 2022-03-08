@@ -7,10 +7,27 @@
 static std::vector<osc::Output> ConstructMultiBodySystemOutputs()
 {
     std::vector<osc::Output> rv;
+
+    // SimTK::System (base class)
     rv.emplace_back(osc::MultiBodySystemOutput{
         "NumPrescribeQcalls",
         "Get the number of prescribe Q calls made against the system",
         [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
+    });
+    rv.emplace_back(osc::MultiBodySystemOutput{
+        "NumHandleEventCalls",
+        "The total number of calls to handleEvents() regardless of the outcome",
+        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
+    });
+    rv.emplace_back(osc::MultiBodySystemOutput{
+        "NumReportEventCalls",
+        "The total number of calls to reportEvents() regardless of the outcome",
+        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
+    });
+    rv.emplace_back(osc::MultiBodySystemOutput{
+        "NumRealizeCalls",
+        "The total number of calls to realizeTopology(), realizeModel(), or realize(), regardless of whether these routines actually did anything when called",
+        [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
     });
     return rv;
 }
