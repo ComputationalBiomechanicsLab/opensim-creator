@@ -14,9 +14,11 @@
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
+#include "src/UI/PerfPanel.hpp"
 #include "src/UI/UiModelViewer.hpp"
 #include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/App.hpp"
 #include "src/Assertions.hpp"
 #include "src/MainEditorState.hpp"
@@ -53,6 +55,7 @@ struct osc::SimulatorScreen::Impl final {
     MainMenuWindowTab mainMenuWindowTab;
     MainMenuAboutTab mainMenuAboutTab;
     ComponentDetails componentDetailsWidget;
+    PerfPanel perfPanel{"Perf"};
 
     // scrubber/playback state
     bool m_IsPlayingBack = true;
@@ -68,15 +71,6 @@ struct osc::SimulatorScreen::Impl final {
         }
     }
 };
-
-static float GetSimulationProgress(osc::VirtualSimulation& sim)
-{
-    auto start = sim.getSimulationStartTime();
-    auto end = sim.getSimulationEndTime();
-    auto cur = sim.getSimulationCurTime();
-
-    return static_cast<float>((cur-start)/(end-start));
-}
 
 // returns the playback position, which changes based on the wall clock (it's a playback)
 // onto the time within a simulation
@@ -182,8 +176,8 @@ static void DrawSimulationScrubber(osc::SimulatorScreen::Impl& impl, osc::Simula
         }
     }
 
-    osc::SimulationClock::time_point tStart = sim.getSimulationStartTime();
-    osc::SimulationClock::time_point tEnd = sim.getSimulationEndTime();
+    osc::SimulationClock::time_point tStart = sim.getStartTime();
+    osc::SimulationClock::time_point tEnd = sim.getEndTime();
     osc::SimulationClock::time_point tCur = GetPlaybackPositionInSimTime(impl, sim);
 
     ImGui::SameLine();
@@ -536,31 +530,23 @@ static std::string ExportTimeseriesToCSV(
     return p.string();
 }
 
-static std::vector<float> PopulateFirstNNumericOutputValues(osc::Simulation& sim,
-                                                            osc::VirtualOutput const& output,
-                                                            int nReports)
+static std::vector<float> PopulateFirstNNumericOutputValues(OpenSim::Model const& model,
+                                                            nonstd::span<osc::SimulationReport const> reports,
+                                                            osc::VirtualOutput const& output)
 {
-    OpenSim::Model const& model = sim.getModel();
-
     std::vector<float> rv;
-    rv.reserve(nReports);
-    for (int i = 0; i < nReports; ++i)
-    {
-        float v = output.getNumericValue(model, sim.getSimulationReport(i)).value_or(0.0f);
-        rv.push_back(v);
-    }
+    rv.resize(reports.size());
+    output.getValuesFloat(model, reports, rv);
     return rv;
 }
 
-static std::vector<float> PopulateFirstNTimeValues(osc::Simulation& sim,
-                                                   int nReports)
+static std::vector<float> PopulateFirstNTimeValues(nonstd::span<osc::SimulationReport const> reports)
 {
     std::vector<float> times;
-    times.reserve(nReports);
-    for (int i = 0; i < nReports; ++i)
+    times.reserve(reports.size());
+    for (osc::SimulationReport const& r : reports)
     {
-        double t = sim.getSimulationReport(i).getState().getTime();
-        times.push_back(static_cast<float>(t));
+        times.push_back(static_cast<float>(r.getState().getTime()));
     }
     return times;
 }
@@ -568,11 +554,11 @@ static std::vector<float> PopulateFirstNTimeValues(osc::Simulation& sim,
 static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
                                                osc::VirtualOutput const& output)
 {
-    OSC_ASSERT(output.producesNumericValues());
+    OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
-    int nReports = sim.getNumReports();
-    std::vector<float> values = PopulateFirstNNumericOutputValues(sim, output, nReports);
-    std::vector<float> times = PopulateFirstNTimeValues(sim, nReports);
+    std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+    std::vector<float> values = PopulateFirstNNumericOutputValues(sim.getModel(), reports, output);
+    std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     return ExportTimeseriesToCSV(times.data(),
                                  values.data(),
@@ -583,9 +569,8 @@ static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
 static std::string TryExportOutputsToCSV(osc::Simulation& sim,
                                          std::vector<osc::Output> outputs)
 {
-    int nReports = sim.getNumReports();
-
-    std::vector<float> times = PopulateFirstNTimeValues(sim, nReports);
+    std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+    std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     // try prompt user for save location
     std::filesystem::path p =
@@ -616,14 +601,14 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 
     // data lines
     OpenSim::Model const& m = sim.getModel();
-    for (int i = 0; i < nReports; ++i)
+    for (size_t i = 0; i < reports.size(); ++i)
     {
         fout << times.at(i);  // time column
 
-        osc::SimulationReport r = sim.getSimulationReport(i);
+        osc::SimulationReport r = reports[i];
         for (osc::Output const& o : outputs)
         {
-            fout << ',' << o.getNumericValue(m, r).value_or(NAN);
+            fout << ',' << o.getValueFloat(m, r);
         }
 
         fout << '\n';
@@ -640,7 +625,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
                                                      osc::VirtualOutput const& output)
 {
-    OSC_ASSERT(output.producesNumericValues());
+    OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
     if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV"))
     {
@@ -661,7 +646,7 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
                                   osc::VirtualOutput const& output,
                                   float plotHeight)
 {
-    OSC_ASSERT(output.producesNumericValues());
+    OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
     OpenSim::Model const& model = sim.getModel();
 
@@ -677,26 +662,36 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
     }
 
     std::vector<float> buf;
-    buf.reserve(nReports);
     float ySmallest = std::numeric_limits<float>::max();
     float yLargest = std::numeric_limits<float>::lowest();
-    for (int i = 0; i < nReports; ++i)
     {
-        buf.push_back(output.getNumericValue(model, sim.getSimulationReport(i)).value_or(0.0f));
-        ySmallest = std::min(ySmallest, buf[i]);
-        yLargest = std::max(yLargest, buf[i]);
+        OSC_PERF("collect output data");
+        std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
+        buf.resize(reports.size());
+        output.getValuesFloat(model, reports, buf);
+        for (float v : buf)
+        {
+            ySmallest = std::min(ySmallest, v);
+            yLargest = std::max(yLargest, v);
+        }
     }
 
     // draw plot
     float const plotWidth = ImGui::GetContentRegionAvailWidth();
-    ImGui::PlotLines("##",
-                     buf.data(),
-                     static_cast<int>(buf.size()),
-                     0,
-                     nullptr,
-                     std::numeric_limits<float>::min(),
-                     std::numeric_limits<float>::max(),
-                     ImVec2(plotWidth, plotHeight));
+
+    {
+        OSC_PERF("draw output plot");
+
+        ImGui::PlotLines("##",
+                         buf.data(),
+                         static_cast<int>(buf.size()),
+                         0,
+                         nullptr,
+                         std::numeric_limits<float>::min(),
+                         std::numeric_limits<float>::max(),
+                         ImVec2(plotWidth, plotHeight));
+    }
+
 
     // draw context menu (if user right clicks)
     if (ImGui::BeginPopupContextItem("plotcontextmenu"))
@@ -706,6 +701,7 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
     }
 
     // (the rest): handle scrubber overlay
+    OSC_PERF("draw output plot overlay");
 
     // figure out mapping between screen space and plot space
     glm::vec2 plotTopLeft = ImGui::GetItemRectMin();
@@ -772,7 +768,6 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
     }
 }
 
-
 static void TextCentered(std::string const& s)
 {
     auto windowWidth = ImGui::GetWindowSize().x;
@@ -790,7 +785,7 @@ static void DrawOutputNameColumn(osc::VirtualOutput const& output, bool centered
     }
     else
     {
-        ImGui::Text(output.getName().c_str());
+        ImGui::TextUnformatted(output.getName().c_str());
     }
 
     if (!output.getDescription().empty())
@@ -807,20 +802,21 @@ static void DrawOutputDataColumn(osc::SimulatorScreen::Impl& impl,
 {
     OpenSim::Model const& model = sim.getModel();
     int nReports = sim.getNumReports();
+    osc::OutputType outputType = output.getOutputType();
 
     if (nReports <= 0)
     {
         ImGui::Text("no data (yet)");
     }
-    else if (output.producesNumericValues())
+    else if (outputType == osc::OutputType::Float)
     {
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         DrawNumericOutputPlot(impl, sim, output, plotHeight);
     }
-    else
+    else if (outputType == osc::OutputType::String)
     {
         osc::SimulationReport r = TrySelectReportBasedOnScrubbing(impl, sim).value_or(sim.getSimulationReport(nReports-1));
-        ImGui::Text("%s", output.getStringValue(model, r).value_or("(missing)").c_str());
+        ImGui::TextUnformatted(output.getValueString(model, r).c_str());
     }
 }
 
@@ -892,11 +888,17 @@ static void SimscreenDrawSimulationStats(osc::SimulatorScreen::Impl& impl)
 
     osc::Simulation& sim = *maybeSim;
 
-    DrawSimulationParams(sim.getSimulationParams());
+    {
+        OSC_PERF("draw simulation params");
+        DrawSimulationParams(sim.getParams());
+    }
 
     ImGui::Dummy({0.0f, 10.0f});
 
-    DrawSimulationStatPlots(impl, sim);
+    {
+        OSC_PERF("draw simulation stats");
+        DrawSimulationStatPlots(impl, sim);
+    }
 }
 
 static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int simulationIdx)
@@ -905,7 +907,7 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
     osc::Simulation& sim = st.updSimulation(simulationIdx);
 
     bool isFocused = simulationIdx == st.getFocusedSimulationIndex();
-    float progress = GetSimulationProgress(sim);
+    float progress = sim.getProgress();
     ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
 
     if (isFocused)
@@ -936,8 +938,8 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
         ImGui::TextUnformatted(sim.getModel().getName().c_str());
         ImGui::Dummy(ImVec2{0.0f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
-        ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim.getSimulationCurTime() - sim.getSimulationStartTime()).count()));
-        ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim.getSimulationEndTime().time_since_epoch().count()));
+        ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim.getCurTime() - sim.getStartTime()).count()));
+        ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim.getEndTime().time_since_epoch().count()));
         ImGui::Dummy(ImVec2{0.0f, 1.0f});
         ImGui::TextUnformatted("Left-click: Select this simulation");
         ImGui::TextUnformatted("Delete: cancel this simulation");
@@ -1125,6 +1127,8 @@ static void SimscreenDrawOutputsTab(osc::SimulatorScreen::Impl& impl)
 // draw the simulator screen
 static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
 {
+    OSC_PERF("draw simulation screen");
+
     if (SimscreenDrawMainMenu(impl))
     {
         return;
@@ -1157,19 +1161,25 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
         if (ImGui::Begin("Simulations", &st.updUserPanelPrefs().simulations))
         {
+            OSC_PERF("draw simulations panel");
             SimscreenDrawSimulatorTab(impl);
         }
         ImGui::End();
     }
 
     // draw 3D viewers
-    SimscreenDrawAll3DViewers(impl);
+    {
+        OSC_PERF("draw simulator panels");
+        SimscreenDrawAll3DViewers(impl);
+    }
+
 
     // draw hierarchy tab
     if (st.getUserPanelPrefs().hierarchy)
     {
         if (ImGui::Begin("Hierarchy", &st.updUserPanelPrefs().hierarchy))
         {
+            OSC_PERF("draw hierarchy panel");
             SimscreenDrawHierarchyTab(impl);
         }
         ImGui::End();
@@ -1180,6 +1190,7 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
         if (ImGui::Begin("Selection", &st.updUserPanelPrefs().selectionDetails))
         {
+            OSC_PERF("draw selection panel");
             SimscreenDrawSelectionTab(impl);
         }
         ImGui::End();
@@ -1190,6 +1201,7 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
         if (ImGui::Begin("Outputs", &st.updUserPanelPrefs().outputs))
         {
+            OSC_PERF("draw outputs panel");
             SimscreenDrawOutputsTab(impl);
         }
         ImGui::End();
@@ -1200,6 +1212,7 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
         if (ImGui::Begin("Simulation Details", &st.updUserPanelPrefs().simulationStats))
         {
+            OSC_PERF("draw simulation details panel");
             SimscreenDrawSimulationStats(impl);
         }
         ImGui::End();
@@ -1209,9 +1222,15 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
     {
         if (ImGui::Begin("Log", &st.updUserPanelPrefs().log, ImGuiWindowFlags_MenuBar))
         {
+            OSC_PERF("draw log panel");
             impl.logViewerWidget.draw();
         }
         ImGui::End();
+    }
+
+    {
+        OSC_PERF("draw perf panel");
+        impl.perfPanel.draw();
     }
 }
 
@@ -1288,7 +1307,7 @@ void osc::SimulatorScreen::tick(float)
         {
             osc::Simulation& sim = *maybeSim;
             auto playbackPos = GetPlaybackPositionInSimTime(*m_Impl, sim);
-            if (playbackPos < sim.getSimulationEndTime())
+            if (playbackPos < sim.getEndTime())
             {
                 osc::App::cur().requestRedraw();
             }

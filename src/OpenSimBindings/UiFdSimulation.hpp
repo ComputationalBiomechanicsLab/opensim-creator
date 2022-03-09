@@ -45,17 +45,20 @@ namespace osc
 
         OpenSim::Model const& getModel() const override;
 
-        int getNumReports() override;
-        SimulationReport getSimulationReport(int reportIndex) override;
+        int getNumReports() const override;
+        SimulationReport getSimulationReport(int reportIndex) const override;
+        std::vector<SimulationReport> getAllSimulationReports() const override;
 
-        SimulationStatus getSimulationStatus() const override;
+        SimulationStatus getStatus() const override;
+        SimulationClock::time_point getCurTime() const override;
+        SimulationClock::time_point getStartTime() const override;
+        SimulationClock::time_point getEndTime() const override;
+        float getProgress() const override;
+        ParamBlock const& getParams() const override;
+        nonstd::span<Output const> getOutputs() const override;
+
         void requestStop() override;
         void stop() override;
-        SimulationClock::time_point getSimulationCurTime() override;
-        SimulationClock::time_point getSimulationStartTime() const override;
-        SimulationClock::time_point getSimulationEndTime() const override;
-        ParamBlock const& getSimulationParams() const override;
-        nonstd::span<Output const> getOutputs() const override;
 
         class Impl;
     private:

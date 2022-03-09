@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
+#include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
@@ -45,16 +46,19 @@ namespace osc
 
         virtual OpenSim::Model const& getModel() const = 0;
 
-        virtual int getNumReports() = 0;
-        virtual SimulationReport getSimulationReport(int reportIndex) = 0;
+        virtual int getNumReports() const = 0;
+        virtual SimulationReport getSimulationReport(int reportIndex) const = 0;
+        virtual std::vector<SimulationReport> getAllSimulationReports() const = 0;
 
-        virtual SimulationStatus getSimulationStatus() const = 0;
+        virtual SimulationStatus getStatus() const = 0;
+        virtual SimulationClock::time_point getCurTime() const = 0;
+        virtual SimulationClock::time_point getStartTime() const = 0;
+        virtual SimulationClock::time_point getEndTime() const = 0;
+        virtual float getProgress() const = 0;
+        virtual ParamBlock const& getParams() const = 0;
+        virtual nonstd::span<Output const> getOutputs() const = 0;
+
         virtual void requestStop() = 0;
         virtual void stop() = 0;
-        virtual SimulationClock::time_point getSimulationCurTime() = 0;
-        virtual SimulationClock::time_point getSimulationStartTime() const = 0;
-        virtual SimulationClock::time_point getSimulationEndTime() const = 0;
-        virtual ParamBlock const& getSimulationParams() const = 0;
-        virtual nonstd::span<Output const> getOutputs() const = 0;
     };
 }

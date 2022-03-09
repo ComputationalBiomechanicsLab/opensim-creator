@@ -151,11 +151,8 @@ namespace osc
 
         // returns true if VSYNC has been enabled in the graphics layer
         bool isVsyncEnabled() const;
-
-        // requests that VSYNC is enabled in the graphics layer
+        void setVsync(bool);
         void enableVsync();
-
-        // requests that VSYNC is disabled in the graphics layer
         void disableVsync();
 
         // sets the main window's subtitle (e.g. document name)
@@ -249,20 +246,11 @@ namespace osc
         // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
         // like laptops), but downstream screens *must* ensure the application keeps moving forward by
         // calling methods like `requestRedraw` or by pumping other events into the loop.
+        bool isMainLoopWaiting() const;
+        void setMainLoopWaiting(bool);
         void makeMainEventLoopWaiting();
-
-        // makes the main application event loop poll, rather than wait, for events
-        //
-        // This is the default behavior of the application event loop. Although power-inefficient (because
-        // it's always redrawing), it makes downstream code *a lot* simpler because all downstream code can
-        // rely on the fact that `App` will redraw frequently. Game engines typically use this type of loop.
         void makeMainEventLoopPolling();
-
-        // threadsafe: pumps a redraw event into the application's event loop
-        //
-        // This is mostly only useful if also running a *waiting* event loop, because it will cause the
-        // application to pump the event and redraw.
-        void requestRedraw();
+        void requestRedraw();  // threadsafe: used to make a waiting loop redraw
 
         struct Impl;
     private:

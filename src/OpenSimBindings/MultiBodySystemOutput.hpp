@@ -37,9 +37,12 @@ namespace osc
         OutputSource getOutputSource() const override;
         std::string const& getName() const override;
         std::string const& getDescription() const override;
-        bool producesNumericValues() const override;
-        std::optional<float> getNumericValue(OpenSim::Component const&, SimulationReport const&) const override;
-        std::optional<std::string> getStringValue(OpenSim::Component const&, SimulationReport const&) const override;
+
+        OutputType getOutputType() const override;
+        float getValueFloat(OpenSim::Component const&, SimulationReport const&) const override;
+        void getValuesFloat(OpenSim::Component const&, nonstd::span<SimulationReport const>, nonstd::span<float> overwriteOut) const override;
+        std::string getValueString(OpenSim::Component const&, SimulationReport const&) const override;
+
         ExtractorFn getExtractorFunction() const;
 
     private:

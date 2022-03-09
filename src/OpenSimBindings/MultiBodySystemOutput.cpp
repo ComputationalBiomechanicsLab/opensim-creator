@@ -1,6 +1,7 @@
 #include "MultiBodySystemOutput.hpp"
 
 #include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/Assertions.hpp"
 
 #include <simbody/internal/MultibodySystem.h>
 
@@ -67,27 +68,30 @@ std::string const& osc::MultiBodySystemOutput::getDescription() const
     return m_Description;
 }
 
-bool osc::MultiBodySystemOutput::producesNumericValues() const
+osc::OutputType osc::MultiBodySystemOutput::getOutputType() const
 {
-    return true;
+    return OutputType::Float;
 }
 
-std::optional<float> osc::MultiBodySystemOutput::getNumericValue(OpenSim::Component const&, SimulationReport const& report) const
+float osc::MultiBodySystemOutput::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_ID);
+    return report.getAuxiliaryValue(m_ID).value_or(NAN);
 }
 
-std::optional<std::string> osc::MultiBodySystemOutput::getStringValue(OpenSim::Component const& c, SimulationReport const& report) const
+void osc::MultiBodySystemOutput::getValuesFloat(OpenSim::Component const&,
+                                                nonstd::span<SimulationReport const> reports,
+                                                nonstd::span<float> out) const
 {
-    auto maybeValue = getNumericValue(c, report);
-    if (maybeValue)
+    OSC_ASSERT_ALWAYS(reports.size() == out.size());
+    for (size_t i = 0; i < reports.size(); ++i)
     {
-        return std::to_string(*maybeValue);
+        out[i] = reports[i].getAuxiliaryValue(m_ID).value_or(NAN);
     }
-    else
-    {
-        return std::nullopt;
-    }
+}
+
+std::string osc::MultiBodySystemOutput::getValueString(OpenSim::Component const& c, SimulationReport const& report) const
+{
+    return std::to_string(getValueFloat(c, report));
 }
 
 osc::MultiBodySystemOutput::ExtractorFn osc::MultiBodySystemOutput::getExtractorFunction() const

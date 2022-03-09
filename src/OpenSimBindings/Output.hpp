@@ -3,11 +3,12 @@
 #include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <nonstd/span.hpp>
+
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 
@@ -41,13 +42,41 @@ namespace osc
         {
         }
 
-        UID getID() const { return m_Output->getID(); }
-        OutputSource getOutputSource() const { return m_Output->getOutputSource(); }
-        std::string const& getName() const { return m_Output->getName(); }
-        std::string const& getDescription() const { return m_Output->getDescription(); }
-        bool producesNumericValues() const { return m_Output->producesNumericValues(); }
-        std::optional<float> getNumericValue(OpenSim::Component const& c, SimulationReport const& sr) const { return m_Output->getNumericValue(c, sr); }
-        std::optional<std::string> getStringValue(OpenSim::Component const& c, SimulationReport const& sr) const { return m_Output->getStringValue(c, sr); }
+        UID getID() const
+        {
+            return m_Output->getID();
+        }
+        OutputSource getOutputSource() const
+        {
+            return m_Output->getOutputSource();
+        }
+        std::string const& getName() const
+        {
+            return m_Output->getName();
+        }
+        std::string const& getDescription() const
+        {
+            return m_Output->getDescription();
+        }
+
+        OutputType getOutputType() const
+        {
+            return m_Output->getOutputType();
+        }
+        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
+        {
+            return m_Output->getValueFloat(c, r);
+        }
+        void getValuesFloat(OpenSim::Component const& c,
+                            nonstd::span<SimulationReport const> reports,
+                            nonstd::span<float> overwriteOut)
+        {
+            m_Output->getValuesFloat(c, reports, overwriteOut);
+        }
+        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+        {
+            return m_Output->getValueString(c, r);
+        }
 
         VirtualOutput const& getInner() const { return *m_Output; }
         operator VirtualOutput const& () const { return *m_Output; }

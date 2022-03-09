@@ -9,95 +9,34 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
-namespace
+
+static int64_t GenerateID(char const* label, char const* filename, unsigned int line)
 {
-    int64_t GenerateID(char const* label, char const* filename, unsigned int line)
-    {
-        return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
-    }
-
-    class MeasurementData final {
-    public:
-        MeasurementData(char const* label, char const* filename, unsigned int line) :
-            m_Label{label},
-            m_Filename{filename},
-            m_Line{line}
-        {
-        }
-
-        std::string const& getLabel() const
-        {
-            return m_Label;
-        }
-
-        std::string const& getFilename() const
-        {
-            return m_Filename;
-        }
-
-        unsigned int getLine() const
-        {
-            return m_Line;
-        }
-
-        int64_t getCallCount() const
-        {
-            return m_CallCount;
-        }
-
-        osc::PerfClock::duration getLastDuration() const
-        {
-            return m_LastDuration;
-        }
-
-        osc::PerfClock::duration getAvgDuration() const
-        {
-            return m_CallCount > 0 ? m_TotalDuration/m_CallCount : osc::PerfClock::duration{0};
-        }
-
-        void submit(osc::PerfClock::time_point start, osc::PerfClock::time_point end)
-        {
-            m_LastDuration = end - start;
-            m_TotalDuration += m_LastDuration;
-            m_CallCount++;
-        }
-
-        void clear()
-        {
-            m_CallCount = 0;
-            m_TotalDuration = osc::PerfClock::duration{0};
-            m_LastDuration = osc::PerfClock::duration{0};
-        }
-
-    private:
-        std::string m_Label;
-        std::string m_Filename;
-        unsigned int m_Line = 0;
-
-        int64_t m_CallCount = 0;
-        osc::PerfClock::duration m_TotalDuration{0};
-        osc::PerfClock::duration m_LastDuration{0};
-    };
-
-    std::ostream& operator<<(std::ostream& o, MeasurementData const& md)
-    {
-        return o << md.getLabel() << " (" << md.getFilename() << ':' << md.getLine() << ") " << md.getCallCount() << " calls, avg. duration = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getAvgDuration()).count() << " us, last = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getLastDuration()).count() << " us";
-    }
-
-    osc::SynchronizedValue<std::unordered_map<int64_t, MeasurementData>>& GetMeasurementStorage()
-    {
-        static osc::SynchronizedValue<std::unordered_map<int64_t, MeasurementData>> g_Measurements;
-        return g_Measurements;
-    }
+    return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
 }
+
+static std::ostream& operator<<(std::ostream& o, osc::PerfMeasurement const& md)
+{
+    return o << md.getLabel() << " (" << md.getFilename() << ':' << md.getLine() << ") " << md.getCallCount() << " calls, avg. duration = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getAvgDuration()).count() << " us, last = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getLastDuration()).count() << " us";
+}
+
+static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
+{
+    static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>> g_Measurements;
+    return g_Measurements;
+}
+
+
+// public API
 
 int64_t osc::AllocateMeasurementID(char const* label, char const* filename, unsigned int line)
 {
     int64_t id = GenerateID(label, filename, line);
 
     auto guard = GetMeasurementStorage().lock();
-    guard->emplace(std::piecewise_construct, std::tie(id), std::tie(label, filename, line));
+    guard->emplace(std::piecewise_construct, std::tie(id), std::tie(id, label, filename, line));
     return id;
 }
 
@@ -133,3 +72,19 @@ void osc::ClearPerfMeasurements()
         data.clear();
     }
 }
+
+int osc::GetAllMeasurements(std::vector<PerfMeasurement>& appendOut)
+{
+    auto guard = GetMeasurementStorage().lock();
+    int i = 0;
+    for (auto const& [id, measurement] : *guard)
+    {
+        appendOut.push_back(measurement);
+        ++i;
+    }
+    return i;
+}
+
+
+
+

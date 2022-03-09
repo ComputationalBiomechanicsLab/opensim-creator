@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Component.h>
@@ -156,7 +157,7 @@ public:
         return m_ID;
     }
 
-    OutputSource getOutputType() const
+    OutputSource getOutputSource() const
     {
         return OutputSource::UserEnacted;
     }
@@ -176,38 +177,53 @@ public:
         return m_ExtractorFunc != nullptr;
     }
 
-    std::optional<float> getNumericValue(OpenSim::Component const& c, SimulationReport const& report) const
+    OutputType getOutputType() const
     {
-        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
-
-        if (!ao)
-        {
-            return std::nullopt;  // cannot find output
-        }
-
-        if (typeid(*ao) != *m_OutputType)
-        {
-            return std::nullopt;  // the type of the output changed
-        }
-
-        if (!m_ExtractorFunc)
-        {
-            return std::nullopt;  // don't know how to extract a value from the output
-        }
-
-        return static_cast<float>(m_ExtractorFunc(*ao, report.getState()));
+        return m_ExtractorFunc ? OutputType::Float : OutputType::String;
     }
 
-    std::optional<std::string> getStringValue(OpenSim::Component const& c, SimulationReport const& report) const
+    float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
     {
+        float v[1];
+        nonstd::span<SimulationReport const> reports(&r, 1);
+        getValuesFloat(c, reports, v);
+        return v[0];
+    }
+
+    void getValuesFloat(OpenSim::Component const& c,
+                        nonstd::span<SimulationReport const> reports,
+                        nonstd::span<float> out) const
+    {
+        OSC_ASSERT_ALWAYS(reports.size() == out.size());
+
         OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
 
-        if (!ao)
+        if (!ao || typeid(*ao) != *m_OutputType || !m_ExtractorFunc)
         {
-            return std::nullopt;  // cannot find output
+            // cannot find output
+            // or the type of the output changed
+            // or don't know how to extract a value from the output
+            std::fill(out.begin(), out.end(), NAN);
+            return;
         }
 
-        return ao->getValueAsString(report.getState());
+        for (size_t i = 0; i < reports.size(); ++i)
+        {
+            out[i] = static_cast<float>(m_ExtractorFunc(*ao, reports[i].getState()));
+        }
+    }
+
+    std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+    {
+        OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
+        if (ao)
+        {
+            return ao->getValueAsString(r.getState());
+        }
+        else
+        {
+            return std::string{};
+        }
     }
 
 private:
@@ -279,7 +295,7 @@ osc::UID osc::ComponentOutput::getID() const
 
 osc::OutputSource osc::ComponentOutput::getOutputSource() const
 {
-    return m_Impl->getOutputType();
+    return m_Impl->getOutputSource();
 }
 
 std::string const& osc::ComponentOutput::getName() const
@@ -292,19 +308,22 @@ std::string const& osc::ComponentOutput::getDescription() const
     return m_Impl->getDescription();
 }
 
-bool osc::ComponentOutput::producesNumericValues() const
+osc::OutputType osc::ComponentOutput::getOutputType() const
 {
-    return m_Impl->producesNumericValues();
+    return m_Impl->getOutputType();
 }
 
-std::optional<float> osc::ComponentOutput::getNumericValue(OpenSim::Component const& c,
-                                                           SimulationReport const& report) const
+float osc::ComponentOutput::getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
 {
-    return m_Impl->getNumericValue(c, report);
+    return m_Impl->getValueFloat(c, r);
 }
 
-std::optional<std::string> osc::ComponentOutput::getStringValue(OpenSim::Component const& c,
-                                                                SimulationReport const& report) const
+void osc::ComponentOutput::getValuesFloat(OpenSim::Component const& c, nonstd::span<osc::SimulationReport const> reports, nonstd::span<float> out) const
 {
-    return m_Impl->getStringValue(c, report);
+    m_Impl->getValuesFloat(c, std::move(reports), std::move(out));
+}
+
+std::string osc::ComponentOutput::getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+{
+    return m_Impl->getValueString(c, r);
 }

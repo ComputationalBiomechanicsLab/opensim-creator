@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/Assertions.hpp"
 
 #include <simmath/Integrator.h>
 
@@ -133,27 +134,30 @@ std::string const& osc::IntegratorOutput::getDescription() const
     return m_Description;
 }
 
-bool osc::IntegratorOutput::producesNumericValues() const
+osc::OutputType osc::IntegratorOutput::getOutputType() const
 {
-    return true;
+    return OutputType::Float;
 }
 
-std::optional<float> osc::IntegratorOutput::getNumericValue(OpenSim::Component const&, SimulationReport const& report) const
+float osc::IntegratorOutput::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_ID);
+    return report.getAuxiliaryValue(m_ID).value_or(NAN);
 }
 
-std::optional<std::string> osc::IntegratorOutput::getStringValue(OpenSim::Component const&, SimulationReport const& report) const
+void osc::IntegratorOutput::getValuesFloat(OpenSim::Component const&,
+                                           nonstd::span<SimulationReport const> reports,
+                                           nonstd::span<float> out) const
 {
-    auto maybeValue = report.getAuxiliaryValue(m_ID);
-    if (maybeValue)
+    OSC_ASSERT_ALWAYS(reports.size() == out.size());
+    for (size_t i = 0; i < reports.size(); ++i)
     {
-        return std::to_string(*maybeValue);
+        out[i] = reports[i].getAuxiliaryValue(m_ID).value_or(NAN);
     }
-    else
-    {
-        return std::nullopt;
-    }
+}
+
+std::string osc::IntegratorOutput::getValueString(OpenSim::Component const&, SimulationReport const& report) const
+{
+    return std::to_string(report.getAuxiliaryValue(m_ID).value_or(NAN));
 }
 
 osc::IntegratorOutput::ExtractorFn osc::IntegratorOutput::getExtractorFunction() const

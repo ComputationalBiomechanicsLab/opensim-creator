@@ -984,6 +984,18 @@ bool osc::App::isVsyncEnabled() const
     return SDL_GL_GetSwapInterval() != 0;
 }
 
+void osc::App::setVsync(bool v)
+{
+    if (v)
+    {
+        enableVsync();
+    }
+    else
+    {
+        disableVsync();
+    }
+}
+
 void osc::App::enableVsync()
 {
     // try using adaptive vsync
@@ -1282,16 +1294,25 @@ void osc::ImGuiRender()
     }
 }
 
+bool osc::App::isMainLoopWaiting() const
+{
+    return m_Impl->isInWaitMode;
+}
+
+void osc::App::setMainLoopWaiting(bool v)
+{
+    m_Impl->isInWaitMode = v;
+    requestRedraw();
+}
+
 void osc::App::makeMainEventLoopWaiting()
 {
-    m_Impl->isInWaitMode = true;
-    requestRedraw();  // ensure it immediately draws *something*
+    setMainLoopWaiting(true);
 }
 
 void osc::App::makeMainEventLoopPolling()
 {
-    m_Impl->isInWaitMode = false;
-    requestRedraw();  // edge-case is that the main thread is waiting on something
+    setMainLoopWaiting(false);
 }
 
 void osc::App::requestRedraw()
