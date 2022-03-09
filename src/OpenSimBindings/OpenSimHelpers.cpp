@@ -459,9 +459,9 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     {
         std::stringstream ss;
         char const* delim = "";
-        for (OpenSim::Component const* c : connectees)
+        for (OpenSim::Component const* connectee : connectees)
         {
-            ss << delim << c->getName();
+            ss << delim << connectee->getName();
             delim = ", ";
         }
         log::error("cannot delete %s: the following components connect to it via sockets: %s", c.getName().c_str(), std::move(ss).str().c_str());
