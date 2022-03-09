@@ -687,8 +687,8 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
                          static_cast<int>(buf.size()),
                          0,
                          nullptr,
-                         std::numeric_limits<float>::min(),
-                         std::numeric_limits<float>::max(),
+                         ySmallest,
+                         yLargest,
                          ImVec2(plotWidth, plotHeight));
     }
 
