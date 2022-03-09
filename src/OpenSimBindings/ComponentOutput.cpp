@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -194,6 +195,7 @@ public:
                         nonstd::span<SimulationReport const> reports,
                         nonstd::span<float> out) const
     {
+        OSC_PERF("osc::ComponentOutput::getValuesFloat");
         OSC_ASSERT_ALWAYS(reports.size() == out.size());
 
         OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
@@ -206,6 +208,8 @@ public:
             std::fill(out.begin(), out.end(), NAN);
             return;
         }
+
+        OSC_PERF("osc::ComponentOutput::getValuesFloat");
 
         for (size_t i = 0; i < reports.size(); ++i)
         {
