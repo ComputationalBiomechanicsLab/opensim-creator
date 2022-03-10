@@ -614,7 +614,7 @@ struct osc::App::Impl final {
     // number of frames the application has drawn
     uint64_t frameCount = 0;
 
-    // when the application started up (around now)
+    // when the application started up (set now)
     FClock::time_point appStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), appCounterFrequency);
 
     // when the current frame started (set each frame)
