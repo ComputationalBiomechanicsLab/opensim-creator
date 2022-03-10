@@ -52,7 +52,7 @@ public:
         m_Simulation{MakeSimulation(p, params, m_Reports)},
         m_ModelState{std::move(p)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
-        m_SimulatorOutputs{GetFdSimulatorOutputsAsVector()}
+        m_SimulatorOutputs(GetFdSimulatorOutputsAsVector())
     {
     }
 

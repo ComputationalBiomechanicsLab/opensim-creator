@@ -275,8 +275,6 @@ add_executable(osc
     src/UI/ComponentHierarchy.hpp
     src/UI/CoordinateEditor.cpp
     src/UI/CoordinateEditor.hpp
-    src/UI/FdParamsEditorPopup.cpp
-    src/UI/FdParamsEditorPopup.hpp
     src/UI/LogViewer.cpp
     src/UI/LogViewer.hpp
     src/UI/MainMenu.cpp

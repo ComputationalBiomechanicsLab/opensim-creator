@@ -366,7 +366,7 @@ public:
     }
 
     constexpr iterator erase(iterator first, iterator last) {
-        assert(last == end() && "TODO: can currently only erase elements from end of circular buffer");
+        assert(last == end() && "can currently only erase elements from end of circular buffer");
 
         for (auto it = first; it < last; ++it) {
             it->~T();

@@ -13,7 +13,6 @@
 #include "src/UI/CoordinateEditor.hpp"
 #include "src/UI/ComponentDetails.hpp"
 #include "src/UI/ComponentHierarchy.hpp"
-#include "src/UI/FdParamsEditorPopup.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ModelActionsMenuBar.hpp"
 #include "src/UI/ParamBlockEditorPopup.hpp"
