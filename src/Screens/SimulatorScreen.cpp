@@ -840,25 +840,29 @@ static void DrawSimulationStatPlots(osc::SimulatorScreen::Impl& impl,
     ImGui::SameLine();
     osc::DrawHelpMarker("Various statistics collected when the simulation was ran");
     ImGui::NextColumn();
-    ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-    if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
+    if (std::any_of(outputs.begin(), outputs.end(), [](osc::Output const& o) { return o.getOutputType() == osc::OutputType::Float; }))
     {
-        if (ImGui::MenuItem("as CSV"))
+        ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+        if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
         {
-            TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
-        }
-
-        if (ImGui::MenuItem("as CSV (and open)"))
-        {
-            std::string path = TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
-            if (!path.empty())
+            if (ImGui::MenuItem("as CSV"))
             {
-                osc::OpenPathInOSDefaultApplication(path);
+                TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
             }
-        }
 
-        ImGui::EndPopup();
+            if (ImGui::MenuItem("as CSV (and open)"))
+            {
+                std::string path = TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
+                if (!path.empty())
+                {
+                    osc::OpenPathInOSDefaultApplication(path);
+                }
+            }
+
+            ImGui::EndPopup();
+        }
     }
+
     ImGui::NextColumn();
     ImGui::Columns();
     ImGui::Separator();
