@@ -22,6 +22,9 @@ All notable changes to this project will be documented here. The format is based
 - Refactored undo, redo, and deletion logic to be more reliable (internal)
 - Removed 'declareDeathOf' API: underlying implementation is hardened against this (internal)
 - Moved FileChangePoller from OpenSimBindings/ to Utils/ (internal)
+- Added a 'perf' panel to the simulator screen for in-prod perf measurements (internal)
+- Added ability to pause/resume simulation playback (#16)
+- The "Save All" button does not show if there are no simulation plots (partially fixes #125)
 
 
 ## [0.1.2] - 2022/02/16
