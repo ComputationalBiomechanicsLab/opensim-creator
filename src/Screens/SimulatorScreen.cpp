@@ -1231,9 +1231,11 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
         ImGui::End();
     }
 
+    if (st.getUserPanelPrefs().perfPanel)
     {
         OSC_PERF("draw perf panel");
-        impl.perfPanel.draw();
+        impl.perfPanel.open();
+        st.updUserPanelPrefs().perfPanel = impl.perfPanel.draw();
     }
 }
 

@@ -29,8 +29,9 @@ namespace osc
         bool propertyEditor = true;
         bool selectionDetails = true;
         bool simulations = true;
-        bool simulationStats = true;
+        bool simulationStats = false;
         bool coordinateEditor = true;
+        bool perfPanel = false;
     };
 
     // top-level UI state

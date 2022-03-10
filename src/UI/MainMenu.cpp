@@ -571,6 +571,7 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st)
             ImGui::Text("note: this only shows when editing a model");
             ImGui::EndTooltip();
         }
+        ImGui::MenuItem("Perf (development)", nullptr, &panels.perfPanel);
 
         // active viewers (can be disabled)
         for (int i = 0; i < st.getNumViewers(); ++i)
