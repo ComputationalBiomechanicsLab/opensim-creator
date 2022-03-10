@@ -575,6 +575,19 @@ static std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
     return std::chrono::seconds(std::time(nullptr));
 }
 
+static osc::FClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
+{
+    double dticks = static_cast<double>(ticks);
+    double fq = static_cast<double>(frequency);
+    float dur = static_cast<float>(dticks/fq);
+    return osc::FClock::duration{dur};
+}
+
+static osc::FClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
+{
+    return osc::FClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+}
+
 // main application state
 //
 // this is what "booting the application" actually initializes
@@ -597,6 +610,18 @@ struct osc::App::Impl final {
 
     // current performance counter value (recorded once per frame)
     Uint64 appCounter = 0;
+
+    // number of frames the application has drawn
+    uint64_t frameCount = 0;
+
+    // when the application started up (around now)
+    FClock::time_point appStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), appCounterFrequency);
+
+    // when the current frame started (set each frame)
+    FClock::time_point frameStartTime = appStartupTime;
+
+    // time since the frame before the current frame (set each frame)
+    FClock::duration frameDeltaTime = {};
 
     // init OpenGL (globally)
     sdl::GLContext gl = CreateOpenGLContext(window);
@@ -679,7 +704,10 @@ static void AppMainLoopUnguarded(App::Impl& impl)
     OSC_SCOPE_GUARD_IF(impl.currentScreen, { impl.currentScreen->onUnmount(); });
 
     // reset counters
-    impl.appCounter = 0;
+    impl.appCounter = SDL_GetPerformanceCounter();
+    impl.frameCount = 0;
+    impl.frameStartTime = ConvertPerfCounterToFClock(impl.appCounter, impl.appCounterFrequency);
+    impl.frameDeltaTime = FClock::duration{1.0f/60.0f};  // hack, for first frame
 
     while (true)  // gameloop
     {
@@ -733,24 +761,20 @@ static void AppMainLoopUnguarded(App::Impl& impl)
             }
         }
 
-
-        // figure out frame delta
-        Uint64 counter = SDL_GetPerformanceCounter();
-        float dt;
-        if (impl.appCounter > 0)
+        // update clocks
         {
-            Uint64 ticks = counter - impl.appCounter;
-            dt = static_cast<float>(static_cast<double>(ticks) / impl.appCounterFrequency);
-        }
-        else
-        {
-            dt = 1.0f/60.0f;  // first iteration
-        }
-        impl.appCounter = counter;
+            auto counter = SDL_GetPerformanceCounter();
 
+            Uint64 deltaTicks = counter - impl.appCounter;
+
+            impl.appCounter = counter;
+            impl.frameStartTime = ConvertPerfCounterToFClock(counter, impl.appCounterFrequency);
+            impl.frameDeltaTime = ConvertPerfTicksToFClockDuration(deltaTicks, impl.appCounterFrequency);
+        }
 
         // "tick" the screen
-        impl.currentScreen->tick(dt);
+        impl.currentScreen->tick(impl.frameDeltaTime.count());
+        ++impl.frameCount;
 
         if (impl.shouldQuit)
         {
@@ -899,9 +923,15 @@ float osc::App::aspectRatio() const
     return v.x / v.y;
 }
 
-void osc::App::showCursor(bool v)
+void osc::App::setShowCursor(bool v)
 {
     SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
+}
+
+
+bool osc::App::isWindowFocused() const
+{
+    return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
 }
 
 void osc::App::makeFullscreen()
@@ -919,19 +949,19 @@ void osc::App::makeWindowed()
     SDL_SetWindowFullscreen(m_Impl->window, 0);
 }
 
-int osc::App::getRecommendedMSXAASamples() const
+int osc::App::getMSXAASamplesRecommended() const
 {
     return m_Impl->curMSXAASamples;
 }
 
-void osc::App::setRecommendedMSXAASamples(int s)
+void osc::App::setMSXAASamplesRecommended(int s)
 {
     if (s <= 0)
     {
         throw std::runtime_error{"tried to set number of samples to <= 0"};
     }
 
-    if (s > getMaxMSXAASamples())
+    if (s > getMSXAASamplesMax())
     {
         throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
     }
@@ -944,7 +974,7 @@ void osc::App::setRecommendedMSXAASamples(int s)
     m_Impl->curMSXAASamples = s;
 }
 
-int osc::App::getMaxMSXAASamples() const
+int osc::App::getMSXAASamplesMax() const
 {
     return m_Impl->maxMSXAASamples;
 }
@@ -1016,6 +1046,124 @@ void osc::App::enableVsync()
 void osc::App::disableVsync()
 {
     SDL_GL_SetSwapInterval(0);
+}
+
+uint64_t osc::App::getFrameCount() const
+{
+    return m_Impl->frameCount;
+}
+
+uint64_t osc::App::getTicks() const
+{
+    return SDL_GetPerformanceCounter();
+}
+
+uint64_t osc::App::getTickFrequency() const
+{
+    return SDL_GetPerformanceFrequency();
+}
+
+osc::FClock::time_point osc::App::getCurrentTime() const
+{
+    return ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_Impl->appCounterFrequency);
+}
+
+osc::FClock::time_point osc::App::getAppStartupTime() const
+{
+    return m_Impl->appStartupTime;
+}
+
+osc::FClock::time_point osc::App::getFrameStartTime() const
+{
+    return m_Impl->frameStartTime;
+}
+
+osc::FClock::duration osc::App::getDeltaSinceLastFrame() const
+{
+    return m_Impl->frameDeltaTime;
+}
+
+bool osc::App::isMainLoopWaiting() const
+{
+    return m_Impl->isInWaitMode;
+}
+
+void osc::App::setMainLoopWaiting(bool v)
+{
+    m_Impl->isInWaitMode = v;
+    requestRedraw();
+}
+
+void osc::App::makeMainEventLoopWaiting()
+{
+    setMainLoopWaiting(true);
+}
+
+void osc::App::makeMainEventLoopPolling()
+{
+    setMainLoopWaiting(false);
+}
+
+void osc::App::requestRedraw()
+{
+    SDL_Event e{};
+    e.type = SDL_USEREVENT;
+    m_Impl->numFramesToPoll += 2;  // HACK: some parts of ImGui require rendering 2 frames before it shows something
+    SDL_PushEvent(&e);
+}
+
+App::MouseState osc::App::getMouseState() const
+{
+    MouseState rv;
+
+    glm::ivec2 mouseLocal;
+    Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
+    rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
+    rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
+    rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+    rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
+    rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
+
+    if (isWindowFocused())
+    {
+        static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+
+        if (canUseGlobalMouseState)
+        {
+            glm::ivec2 mouseGlobal;
+            SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
+            glm::ivec2 mouseWindow;
+            SDL_GetWindowPosition(m_Impl->window, &mouseWindow.x, &mouseWindow.y);
+
+            rv.pos = mouseGlobal - mouseWindow;
+        }
+        else
+        {
+            rv.pos = mouseLocal;
+        }
+    }
+
+    return rv;
+}
+
+void osc::App::warpMouseInWindow(glm::vec2 v) const
+{
+    SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
+}
+
+bool osc::App::isShiftPressed() const
+{
+    return SDL_GetModState() & KMOD_SHIFT;
+}
+
+bool osc::App::isCtrlPressed() const
+{
+    return SDL_GetModState() & KMOD_CTRL;
+}
+
+bool osc::App::isAltPressed() const
+{
+    return SDL_GetModState() & KMOD_ALT;
 }
 
 void osc::App::setMainWindowSubTitle(std::string_view sv)
@@ -1101,75 +1249,6 @@ void osc::App::addRecentFile(std::filesystem::path const& p)
 
     // append the new entry
     fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
-}
-
-bool osc::App::isWindowFocused() const
-{
-    return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
-}
-
-App::MouseState osc::App::getMouseState() const
-{
-    MouseState rv;
-
-    glm::ivec2 mouseLocal;
-    Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
-    rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
-    rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
-    rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-    rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
-    rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
-
-    if (isWindowFocused())
-    {
-        static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
-
-        if (canUseGlobalMouseState)
-        {
-            glm::ivec2 mouseGlobal;
-            SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
-            glm::ivec2 mouseWindow;
-            SDL_GetWindowPosition(m_Impl->window, &mouseWindow.x, &mouseWindow.y);
-
-            rv.pos = mouseGlobal - mouseWindow;
-        }
-        else
-        {
-            rv.pos = mouseLocal;
-        }
-    }
-
-    return rv;
-}
-
-uint64_t osc::App::getTicks() const
-{
-    return SDL_GetPerformanceCounter();
-}
-
-uint64_t osc::App::getTickFrequency() const
-{
-    return SDL_GetPerformanceFrequency();
-}
-
-bool osc::App::isShiftPressed() const
-{
-    return SDL_GetModState() & KMOD_SHIFT;
-}
-
-bool osc::App::isCtrlPressed() const
-{
-    return SDL_GetModState() & KMOD_CTRL;
-}
-
-bool osc::App::isAltPressed() const
-{
-    return SDL_GetModState() & KMOD_ALT;
-}
-
-void osc::App::warpMouseInWindow(glm::vec2 v) const
-{
-    SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
 }
 
 ShaderCache& osc::App::getShaderCache()
@@ -1292,33 +1371,4 @@ void osc::ImGuiRender()
         ImGui::RenderPlatformWindowsDefault();
         SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
     }
-}
-
-bool osc::App::isMainLoopWaiting() const
-{
-    return m_Impl->isInWaitMode;
-}
-
-void osc::App::setMainLoopWaiting(bool v)
-{
-    m_Impl->isInWaitMode = v;
-    requestRedraw();
-}
-
-void osc::App::makeMainEventLoopWaiting()
-{
-    setMainLoopWaiting(true);
-}
-
-void osc::App::makeMainEventLoopPolling()
-{
-    setMainLoopWaiting(false);
-}
-
-void osc::App::requestRedraw()
-{
-    SDL_Event e{};
-    e.type = SDL_USEREVENT;
-    m_Impl->numFramesToPoll += 2;  // HACK: some parts of ImGui require rendering 2 frames before it shows something
-    SDL_PushEvent(&e);
 }

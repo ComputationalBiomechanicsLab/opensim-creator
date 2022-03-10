@@ -444,7 +444,7 @@ namespace
         glm::mat4 viewMat = camera.getViewMtx();
         glm::vec3 viewPos = camera.getPos();
 
-        auto samples = App::cur().getRecommendedMSXAASamples();
+        auto samples = App::cur().getMSXAASamplesRecommended();
 
         gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
         gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);

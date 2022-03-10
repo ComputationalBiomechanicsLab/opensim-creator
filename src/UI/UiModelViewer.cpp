@@ -486,7 +486,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, RenderableScene con
         {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
             renderTarg.setDims(dims);
-            renderTarg.setSamples(App::cur().getRecommendedMSXAASamples());
+            renderTarg.setSamples(App::cur().getMSXAASamplesRecommended());
         }
     }
 

@@ -4,12 +4,15 @@
 #include "src/Assertions.hpp"
 #include "src/RecentFile.hpp"
 #include "src/Screen.hpp"
+#include "src/Utils/FClock.hpp"
 
 #include <SDL_events.h>
 #include <glm/vec2.hpp>
 
+#include <chrono>
 #include <filesystem>
 #include <memory>
+#include <ratio>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -67,7 +70,7 @@ namespace osc
         App& operator=(App&&) noexcept;
         ~App() noexcept;
 
-        // start showing the supplied screen
+        // start showing the supplied screen, only returns once a screen requests to quit or an exception is thrown
         void show(std::unique_ptr<Screen>);
 
         // construct `TScreen` with `Args` and start showing it
@@ -115,7 +118,10 @@ namespace osc
         float aspectRatio() const;
 
         // sets whether the user's mouse cursor should be shown/hidden
-        void showCursor(bool);
+        void setShowCursor(bool);
+
+        // returns true if the main window is focused
+        bool isWindowFocused() const;
 
         // makes the main window fullscreen
         void makeFullscreen();
@@ -126,27 +132,23 @@ namespace osc
         // makes the main window windowed (as opposed to fullscreen)
         void makeWindowed();
 
-        // returns the recommended number of MSXAA samples that rendererers should use
-        int getRecommendedMSXAASamples() const;
+        // returns the recommended number of MSXAA samples that rendererers should use (based on config etc.)
+        int getMSXAASamplesRecommended() const;
 
         // sets the number of MSXAA samples multisampled renderered should use
         //
         // throws if arg > max_samples()
-        void setRecommendedMSXAASamples(int);
+        void setMSXAASamplesRecommended(int);
 
         // returns the maximum number of MSXAA samples the backend supports
-        int getMaxMSXAASamples() const;
+        int getMSXAASamplesMax() const;
 
         // returns true if the application is rendering in debug mode
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
         bool isInDebugMode() const;
-
-        // enables debug mode (incl. OpenGL debugging)
-        void enableDebugMode();
-
-        // disables debug mode (incl. OpenGL debugging)
+        void enableDebugMode();  // (incl. OpenGL debugging)
         void disableDebugMode();
 
         // returns true if VSYNC has been enabled in the graphics layer
@@ -154,6 +156,83 @@ namespace osc
         void setVsync(bool);
         void enableVsync();
         void disableVsync();
+
+        // returns the number of times the application has drawn a frame to the screen
+        uint64_t getFrameCount() const;
+
+        // returns the number of "ticks" recorded on the application's high-resolution
+        // monotonically-increasing clock
+        //
+        // care: this always fetches from the underlying platform API, so should only really
+        //       be used infrequently: animations etc. should use the frame-based clocks|
+        uint64_t getTicks() const;
+
+        // returns the number of "ticks" that pass in the application's high-resolution
+        // clock per second.
+        //
+        // usage e.g.: dt = (getTicks()-previousTicks)/getTickFrequency()
+        //
+        // care: this always fetches from the underlying platform API, so should only really
+        //       be used infrequently: animations etc. should use the frame-based clocks|
+        uint64_t getTickFrequency() const;
+
+        FClock::time_point getCurrentTime() const;  // care: always fetches the time *right now*
+        FClock::time_point getAppStartupTime() const;
+        FClock::time_point getFrameStartTime() const;
+        FClock::duration getDeltaSinceLastFrame() const;
+
+        // makes main application event loop wait, rather than poll, for events
+        //
+        // By default, `App` is a *polling* event loop that renders as often as possible. This
+        // method makes the main application a *waiting* event loop that only moves forward when
+        // an event occurs.
+        //
+        // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
+        // like laptops), but downstream screens *must* ensure the application keeps moving forward by
+        // calling methods like `requestRedraw` or by pumping other events into the loop.
+        bool isMainLoopWaiting() const;
+        void setMainLoopWaiting(bool);
+        void makeMainEventLoopWaiting();
+        void makeMainEventLoopPolling();
+        void requestRedraw();  // threadsafe: used to make a waiting loop redraw
+
+        // data structure representing the current mouse state
+        struct MouseState final {
+            glm::ivec2 pos;
+            bool LeftDown;
+            bool RightDown;
+            bool MiddleDown;
+            bool X1Down;
+            bool X2Down;
+        };
+
+        // get the user's current mouse state
+        //
+        // note: this method tries to be as precise as possible by fetching from the
+        //       OS, so it can be expensive. Use something like an IoPoller or ImGui
+        //       to record this information once-per-frame, if possible.
+        MouseState getMouseState() const;
+
+        // move the mouse to a location within the window
+        void warpMouseInWindow(glm::vec2) const;
+
+        // returns true if the user is pressing the SHIFT key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
+        bool isShiftPressed() const;
+
+        // returns true if the user is pressing the CTRL key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
+        bool isCtrlPressed() const;
+
+        // returns true if the user is pressing the ALT key
+        //
+        // note: this might fetch the information from the OS, so it's better to store
+        //       it once-per-frame in something like an IoPoller
+        bool isAltPressed() const;
 
         // sets the main window's subtitle (e.g. document name)
         void setMainWindowSubTitle(std::string_view);
@@ -180,77 +259,11 @@ namespace osc
         // this addition is persisted between app boots
         void addRecentFile(std::filesystem::path const&);
 
-        // returns true if the main window is focused
-        bool isWindowFocused() const;
-
-        // data structure representing the current mouse state
-        struct MouseState final {
-            glm::ivec2 pos;
-            bool LeftDown;
-            bool RightDown;
-            bool MiddleDown;
-            bool X1Down;
-            bool X2Down;
-        };
-
-        // get the user's current mouse state
-        //
-        // note: this method tries to be as precise as possible by fetching from the
-        //       OS, so it can be expensive. Use something like an IoPoller or ImGui
-        //       to record this information once-per-frame, if possible.
-        MouseState getMouseState() const;
-
-        // returns the number of "ticks" recorded on the application's high-resolution
-        // monotonically-increasing clock
-        uint64_t getTicks() const;
-
-        // returns the number of "ticks" that pass in the application's high-resolution
-        // clock per second.
-        //
-        // usage e.g.: dt = (getTicks()-previousTicks)/getTickFrequency()
-        uint64_t getTickFrequency() const;
-
-        // returns true if the user is pressing the SHIFT key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isShiftPressed() const;
-
-        // returns true if the user is pressing the CTRL key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isCtrlPressed() const;
-
-        // returns true if the user is pressing the ALT key
-        //
-        // note: this might fetch the information from the OS, so it's better to store
-        //       it once-per-frame in something like an IoPoller
-        bool isAltPressed() const;
-
-        // move the mouse to a location within the window
-        void warpMouseInWindow(glm::vec2) const;
-
         // returns the application-wide (global) shader cache
         ShaderCache& getShaderCache();
 
         // returns the application-wide (global) mesh cache
         MeshCache& getMeshCache();
-
-        // makes main application event loop wait, rather than poll, for events
-        //
-        // By default, `App` is a *polling* event loop that renders as often as possible. This
-        // method makes the main application a *waiting* event loop that only moves forward when
-        // an event occurs.
-        //
-        // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
-        // like laptops), but downstream screens *must* ensure the application keeps moving forward by
-        // calling methods like `requestRedraw` or by pumping other events into the loop.
-        bool isMainLoopWaiting() const;
-        void setMainLoopWaiting(bool);
-        void makeMainEventLoopWaiting();
-        void makeMainEventLoopPolling();
-        void requestRedraw();  // threadsafe: used to make a waiting loop redraw
 
         struct Impl;
     private:

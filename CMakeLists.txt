@@ -283,6 +283,8 @@ add_executable(osc
     src/UI/MainMenu.hpp
     src/UI/ModelActionsMenuBar.cpp
     src/UI/ModelActionsMenuBar.hpp
+    src/UI/ParamBlockEditorPopup.cpp
+    src/UI/ParamBlockEditorPopup.hpp
     src/UI/PerfPanel.cpp
     src/UI/PerfPanel.hpp
     src/UI/PropertyEditors.cpp
@@ -308,6 +310,7 @@ add_executable(osc
     src/Utils/FileChangePoller.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
+    src/Utils/FClock.hpp
     src/Utils/ImGuiHelpers.cpp
     src/Utils/ImGuiHelpers.hpp
     src/Utils/IoPoller.cpp

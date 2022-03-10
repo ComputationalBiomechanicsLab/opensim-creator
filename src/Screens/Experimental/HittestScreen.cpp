@@ -160,12 +160,12 @@ osc::HittestScreen::HittestScreen() :
 osc::HittestScreen::~HittestScreen() noexcept = default;
 
 void osc::HittestScreen::onMount() {
-    App::cur().showCursor(false);
+    App::cur().setShowCursor(false);
     gl::Disable(GL_CULL_FACE);
 }
 
 void osc::HittestScreen::onUnmount() {
-    App::cur().showCursor(true);
+    App::cur().setShowCursor(true);
     gl::Enable(GL_CULL_FACE);
 }
 

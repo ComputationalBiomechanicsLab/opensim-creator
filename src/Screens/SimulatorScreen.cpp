@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <imgui.h>
+#include <implot/implot.h>
 
 #include <chrono>
 #include <limits>
@@ -35,8 +36,10 @@
 // simulator screeen (private) state
 struct osc::SimulatorScreen::Impl final {
 
+    // top-level state, shared between screens
     std::shared_ptr<MainEditorState> mes;
 
+    // selection etc. state
     OpenSim::ComponentPath selected;
     OpenSim::ComponentPath hovered;
     OpenSim::ComponentPath isolated;
@@ -50,6 +53,7 @@ struct osc::SimulatorScreen::Impl final {
     // see: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
     std::optional<SimulationReport> HACK_lastReportModelWasRealizedAgainst;
 
+    // UI widgets
     LogViewer logViewerWidget;
     MainMenuFileTab mainMenuFileTab;
     MainMenuWindowTab mainMenuWindowTab;
@@ -662,34 +666,44 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
     }
 
     std::vector<float> buf;
-    float ySmallest = std::numeric_limits<float>::max();
-    float yLargest = std::numeric_limits<float>::lowest();
     {
         OSC_PERF("collect output data");
         std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
         buf.resize(reports.size());
         output.getValuesFloat(model, reports, buf);
-        for (float v : buf)
-        {
-            ySmallest = std::min(ySmallest, v);
-            yLargest = std::max(yLargest, v);
-        }
     }
 
     // draw plot
     float const plotWidth = ImGui::GetContentRegionAvailWidth();
+    glm::vec2 plotTopLeft{};
+    glm::vec2 plotBottomRight{};
 
     {
         OSC_PERF("draw output plot");
+;
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0,0));
+        ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
+        ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2(0,1));
 
-        ImGui::PlotLines("##",
-                         buf.data(),
-                         static_cast<int>(buf.size()),
-                         0,
-                         nullptr,
-                         ySmallest,
-                         yLargest,
-                         ImVec2(plotWidth, plotHeight));
+        if (ImPlot::BeginPlot("##", ImVec2(plotWidth, plotHeight), ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
+        {
+            ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
+            ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
+            ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4{1.0f, 1.0f, 1.0f, 0.7f});
+            ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4{0.0f, 0.0f, 0.0f, 0.0f});
+            ImPlot::PlotLine("##",
+                             buf.data(),
+                             static_cast<int>(buf.size()));
+            ImPlot::PopStyleColor();
+            ImPlot::PopStyleColor();
+            plotTopLeft = ImPlot::GetPlotPos();
+            plotBottomRight = plotTopLeft + glm::vec2{ImPlot::GetPlotSize()};
+
+            ImPlot::EndPlot();
+        }
+        ImPlot::PopStyleVar();
+        ImPlot::PopStyleVar();
+        ImPlot::PopStyleVar();
     }
 
 
@@ -704,8 +718,6 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
     OSC_PERF("draw output plot overlay");
 
     // figure out mapping between screen space and plot space
-    glm::vec2 plotTopLeft = ImGui::GetItemRectMin();
-    glm::vec2 plotBottomRight = ImGui::GetItemRectMax();
 
     osc::SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
     osc::SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
@@ -716,15 +728,6 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
 
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
-    // if data crosses X=0, draw a horizontal X line showing X = 0
-    if (ySmallest < 0.0f && yLargest > 0.0f)
-    {
-        float crossingPct = yLargest / (yLargest - ySmallest);
-        float crossingY = plotTopLeft.y + crossingPct * (plotBottomRight.y - plotTopLeft.y);
-        glm::vec2 p1 = {plotTopLeft.x, crossingY};
-        glm::vec2 p2 = {plotBottomRight.x, crossingY};
-        drawlist->AddLine(p1, p2, ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 1.0f, 0.3f}));
-    }
 
     // draw a vertical Y line showing the current scrub time over the plots
     {
@@ -1277,12 +1280,14 @@ osc::SimulatorScreen::~SimulatorScreen() noexcept = default;
 void osc::SimulatorScreen::onMount()
 {
     osc::ImGuiInit();
+    ImPlot::CreateContext();
     App::cur().makeMainEventLoopWaiting();
 }
 
 void osc::SimulatorScreen::onUnmount()
 {
     osc::ImGuiShutdown();
+    ImPlot::DestroyContext();
     App::cur().makeMainEventLoopPolling();
 }
 

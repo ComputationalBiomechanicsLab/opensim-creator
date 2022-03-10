@@ -46,9 +46,9 @@ namespace osc
         std::vector<SimulationReport> getAllSimulationReports() const { return m_Simulation->getAllSimulationReports(); }
 
         SimulationStatus getStatus() const { return m_Simulation->getStatus(); }
-        osc::SimulationClock::time_point getCurTime() { return m_Simulation->getCurTime(); }
-        osc::SimulationClock::time_point getStartTime() const { return m_Simulation->getStartTime(); }
-        osc::SimulationClock::time_point getEndTime() const { return m_Simulation->getEndTime(); }
+        SimulationClock::time_point getCurTime() { return m_Simulation->getCurTime(); }
+        SimulationClock::time_point getStartTime() const { return m_Simulation->getStartTime(); }
+        SimulationClock::time_point getEndTime() const { return m_Simulation->getEndTime(); }
         float getProgress() const { return m_Simulation->getProgress(); }
         ParamBlock const& getParams() const { return m_Simulation->getParams(); }
         nonstd::span<Output const> getOutputs() const { return m_Simulation->getOutputs(); }

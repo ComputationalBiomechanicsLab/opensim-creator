@@ -1,6 +1,7 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/3D/Gl.hpp"
+#include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
@@ -15,6 +16,7 @@
 #include "src/UI/FdParamsEditorPopup.hpp"
 #include "src/UI/MainMenu.hpp"
 #include "src/UI/ModelActionsMenuBar.hpp"
+#include "src/UI/ParamBlockEditorPopup.hpp"
 #include "src/UI/LogViewer.hpp"
 #include "src/UI/PropertyEditors.hpp"
 #include "src/UI/ReassignSocketPopup.hpp"
@@ -1437,7 +1439,7 @@ static void ModelEditorDrawUNGUARDED(ModelEditorScreen::Impl& impl)
             ImGui::OpenPopup("simulation parameters");
         }
 
-        // TODO FdParamsEditorPopup{}.draw("simulation parameters", impl.st->simParams);
+        ParamBlockEditorPopup{}.draw("simulation parameters", impl.st->updSimulationParams());
     }
 
     impl.st->updEditedModel().updateIfDirty();

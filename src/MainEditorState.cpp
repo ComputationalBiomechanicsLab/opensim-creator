@@ -177,7 +177,7 @@ private:
     std::vector<Simulation> m_Simulations;
     int m_FocusedSimulation = -1;
     std::vector<Output> m_UserDesiredOutputs;
-    ParamBlock m_SimulationParams;
+    ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
     std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
     UserPanelPreferences m_PanelPreferences;
 };

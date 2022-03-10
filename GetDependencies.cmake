@@ -277,6 +277,22 @@ if(TRUE)
     target_compile_features(imguizmo PUBLIC cxx_std_11)
 endif()
 
+# DEPENDENCY: ImPlot
+#     small standalone library for rendering basic plots
+#
+#     - built from source
+if(TRUE)
+    add_library(implot STATIC
+        third_party/implot/implot.cpp
+        third_party/implot/implot.h
+        third_party/implot/implot_demo.cpp
+        third_party/implot/implot_internal.h
+        third_party/implot/implot_items.cpp)
+    target_link_libraries(implot PUBLIC imgui)
+    target_include_directories(implot PUBLIC third_party/ third_party/implot)
+    target_compile_features(implot PUBLIC cxx_std_11)
+endif()
+
 # DEPENDENCY: stb
 #     header-only library, used to read/write asset files (images, sounds)
 if(TRUE)
@@ -425,6 +441,9 @@ target_link_libraries(osc-all-deps INTERFACE
 
     # GUI support for gizmos
     imguizmo
+
+    # GUI support for plotting
+    implot
 
     # GUI asset parsing (image files, sound files, etc.)
     stb
