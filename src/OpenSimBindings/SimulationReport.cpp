@@ -15,7 +15,7 @@ public:
     Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
         m_State{integrator.getState()}
     {
-        sys.realize(m_State, SimTK::Stage::Report);
+        // care: state needs to be realized on the simulator thread
 
         // populate integrator outputs
         {

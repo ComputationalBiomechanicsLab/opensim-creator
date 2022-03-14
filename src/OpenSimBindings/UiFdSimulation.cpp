@@ -22,11 +22,13 @@
 // helper function for creating a simulator that's hooked up to the reports vector
 static osc::FdSimulation MakeSimulation(
         osc::BasicModelStatePair p,
+        osc::SynchronizedValue<osc::BasicModelStatePair>& uiModelState,
         osc::FdParams const& params,
         osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reports)
 {
     auto callback = [&](osc::SimulationReport r)
     {
+        uiModelState.lock()->getModel().realizeReport(r.updStateHACK());
         reports.lock()->push_back(std::move(r));
         osc::App::cur().requestRedraw();
     };
@@ -49,8 +51,8 @@ class osc::UiFdSimulation::Impl final {
 public:
 
     Impl(BasicModelStatePair p, FdParams const& params) :
-        m_Simulation{MakeSimulation(p, params, m_Reports)},
         m_ModelState{std::move(p)},
+        m_Simulation{MakeSimulation(*m_ModelState.lock(), m_ModelState, params, m_Reports)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
         m_SimulatorOutputs(GetFdSimulatorOutputsAsVector())
     {
@@ -58,7 +60,7 @@ public:
 
     OpenSim::Model const& getModel() const
     {
-        return m_ModelState.getModel();
+        return m_ModelState.lock()->getModel();
     }
 
     int getNumReports() const
@@ -97,7 +99,7 @@ public:
 
     SimulationClock::time_point getStartTime() const
     {
-        return SimulationClock::start() + SimulationClock::duration{m_ModelState.getState().getTime()};
+        return SimulationClock::start() + SimulationClock::duration{m_ModelState.lock()->getState().getTime()};
     }
 
     SimulationClock::time_point getEndTime() const
@@ -134,9 +136,9 @@ public:
     }
 
 private:
+    SynchronizedValue<BasicModelStatePair> m_ModelState;  // HACK: state has to be re-realized by UI thread
     SynchronizedValue<std::vector<SimulationReport>> m_Reports;
     FdSimulation m_Simulation;
-    BasicModelStatePair m_ModelState;
     ParamBlock m_ParamsAsParamBlock;
     std::vector<Output> m_SimulatorOutputs;
 };

@@ -10,7 +10,9 @@
 #include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
 #include <Simbody.h>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
