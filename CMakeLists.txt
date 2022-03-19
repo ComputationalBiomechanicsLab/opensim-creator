@@ -247,6 +247,8 @@ add_executable(osc
     src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
     src/Screens/Experimental/MeshScreen.cpp
     src/Screens/Experimental/MeshScreen.hpp
+    src/Screens/Experimental/RendererHelloTriangleScreen.cpp
+    src/Screens/Experimental/RendererHelloTriangleScreen.hpp
     src/Screens/Experimental/UiModelViewerScreen.cpp
     src/Screens/Experimental/UiModelViewerScreen.hpp
 

@@ -9,6 +9,7 @@
 #include <glm/mat4x4.hpp>
 #include <nonstd/span.hpp>
 
+#include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
@@ -39,6 +40,8 @@ namespace osc::experimental
         Mesh& operator=(Mesh&&) noexcept;
         ~Mesh() noexcept;
 
+        std::int64_t getVersion() const;  // TODO: increment on each mutation
+
         MeshTopography getTopography() const;
         void setTopography(MeshTopography);
 
@@ -50,7 +53,6 @@ namespace osc::experimental
 
         nonstd::span<glm::vec2 const> getTexCoords() const;
         void setTexCoords(nonstd::span<glm::vec2 const>);
-        void scaleTexCoords(float);
 
         int getNumIndices() const;
         std::vector<std::uint32_t> getIndices() const;
@@ -58,8 +60,6 @@ namespace osc::experimental
         void setIndices(nonstd::span<std::uint32_t const>);
 
         AABB const& getBounds() const;  // local-space
-        RayCollision getClosestRayTriangleCollisionModelspace(Line const& modelspaceLine) const;
-        RayCollision getClosestRayTriangleCollisionWorldspace(Line const& worldspaceLine, glm::mat4 const& model2world) const;
 
         void clear();
 
@@ -130,6 +130,8 @@ namespace osc::experimental
         Texture2D& operator=(Texture2D const&);
         Texture2D& operator=(Texture2D&&) noexcept;
         ~Texture2D() noexcept;
+
+        std::int64_t getVersion() const;  // TODO: increment on each mutation
 
         int getWidth() const;
         int getHeight() const;
@@ -206,14 +208,12 @@ namespace osc::experimental
     // a handle to a shader
     class Shader final {
     public:
-        explicit Shader(char const* src);  // throws on compile error
+        explicit Shader(std::string_view);  // throws on compile error
         Shader(Shader const&);
         Shader(Shader&&) noexcept;
         Shader& operator=(Shader const&);
         Shader& operator=(Shader&&) noexcept;
         ~Shader() noexcept;
-
-        std::string const& getName() const;
 
         std::optional<int> findPropertyIndex(std::string_view propertyName) const;
         std::optional<int> findPropertyIndex(UID propertyNameID) const;
@@ -268,6 +268,8 @@ namespace osc::experimental
         Material& operator=(Material const&);
         Material& operator=(Material&&) noexcept;
         ~Material() noexcept;
+
+        std::int64_t getVersion() const;  // TODO: increment on each mutation
 
         Shader const& getShader() const;
 
@@ -351,6 +353,8 @@ namespace osc::experimental
         MaterialPropertyBlock& operator=(MaterialPropertyBlock const&);
         MaterialPropertyBlock& operator=(MaterialPropertyBlock&&) noexcept;
         ~MaterialPropertyBlock() noexcept;
+
+        std::int64_t getVersion() const;  // TODO: increment on each mutation
 
         void clear();
         bool isEmpty() const;
@@ -440,6 +444,8 @@ namespace osc::experimental
         Camera& operator=(Camera&&) noexcept;
         ~Camera() noexcept;
 
+        std::int64_t getVersion() const;  // TODO: increment on each mutation
+
         glm::vec4 const& getBackgroundColor() const;
         void setBackgroundColor(glm::vec4 const&);
 
@@ -528,14 +534,11 @@ namespace std
     };
 }
 
-namespace osc::experimental
+namespace osc::experimental::Graphics
 {
-    class Graphics final {
-    public:
-        static void DrawMesh(Mesh,
-                             glm::vec3 const& pos,
-                             Material,
-                             Camera&,
-                             std::optional<MaterialPropertyBlock> = std::nullopt);
-    };
+    void DrawMesh(Mesh,
+                  glm::vec3 const& pos,
+                  Material,
+                  Camera&,
+                  std::optional<MaterialPropertyBlock> = std::nullopt);
 }

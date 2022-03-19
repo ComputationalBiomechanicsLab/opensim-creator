@@ -1112,6 +1112,12 @@ void osc::App::requestRedraw()
     SDL_PushEvent(&e);
 }
 
+void osc::App::clearScreen(glm::vec4 const& color)
+{
+    gl::ClearColor(color.r, color.g, color.b, color.a);
+    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 App::MouseState osc::App::getMouseState() const
 {
     MouseState rv;

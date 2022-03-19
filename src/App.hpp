@@ -8,6 +8,7 @@
 
 #include <SDL_events.h>
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 #include <chrono>
 #include <filesystem>
@@ -195,6 +196,9 @@ namespace osc
         void makeMainEventLoopWaiting();
         void makeMainEventLoopPolling();
         void requestRedraw();  // threadsafe: used to make a waiting loop redraw
+
+        // fill all pixels in the screen with the given color
+        void clearScreen(glm::vec4 const& color);
 
         // data structure representing the current mouse state
         struct MouseState final {

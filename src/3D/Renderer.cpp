@@ -1,6 +1,6 @@
 #include "Renderer.hpp"
 
-#include "src/3D/BVH.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Assertions.hpp"
@@ -93,15 +93,10 @@ namespace
     {
         if (p.use_count() == 1)
         {
-            return;  // sole owner
+            return;  // sole owner: no need to copy
         }
 
         p = std::make_shared<T>(*p);
-    }
-
-    std::size_t CombineHashes(std::size_t a, std::size_t b)
-    {
-        return a ^ (b + 0x9e3779b9 + (a<<6) + (a>>2));
     }
 
     template<typename T>
@@ -305,6 +300,11 @@ public:
         recalculateBounds();
     }
 
+    int64_t getVersion() const
+    {
+        return *m_Version;
+    }
+
     MeshTopography getTopography() const
     {
         return m_Topography;
@@ -313,7 +313,7 @@ public:
     void setTopography(MeshTopography mt)
     {
         m_Topography = mt;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     nonstd::span<glm::vec3 const> getVerts() const
@@ -332,7 +332,7 @@ public:
         }
 
         m_GpuBuffersUpToDate = false;
-        m_VersionCounter++;
+        (*m_Version)++;
         recalculateBounds();
     }
 
@@ -352,7 +352,7 @@ public:
         }
 
         m_GpuBuffersUpToDate = false;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     nonstd::span<glm::vec2 const> getTexCoords() const
@@ -371,18 +371,7 @@ public:
         }
 
         m_GpuBuffersUpToDate = false;
-        m_VersionCounter++;
-    }
-
-    void scaleTexCoords(float factor)
-    {
-        for (glm::vec2& tc : m_TexCoords)
-        {
-            tc *= factor;
-        }
-
-        m_GpuBuffersUpToDate = false;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     int getNumIndices() const
@@ -420,7 +409,7 @@ public:
 
         m_NumIndices = static_cast<int>(vs.size());
         m_GpuBuffersUpToDate = false;
-        m_VersionCounter++;
+        (*m_Version)++;
         recalculateBounds();
     }
 
@@ -431,82 +420,29 @@ public:
 
     void clear()
     {
+        // m_Version : leave as-is (over-hashing is fine, under-hashing is not)
         m_Verts.clear();
         m_Normals.clear();
         m_TexCoords.clear();
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = AABB{};
-        m_TriangleBVH.clear();
-        // don't reset version counter (over-hashing is fine, under-hashing is not)
         m_GpuBuffersUpToDate = false;
     }
 
     void recalculateBounds()
     {
         m_AABB = AABBFromVerts(m_Verts.data(), m_Verts.size());
-
-        if (m_Topography == MeshTopography::Triangles)
-        {
-            BVH_BuildFromTriangles(m_TriangleBVH, m_Verts.data(), m_Verts.size());
-        }
-        else
-        {
-            m_TriangleBVH.clear();
-        }
     }
 
     std::size_t getHash() const
     {
-        std::size_t idHash = std::hash<UID>{}(*m_ID);
-        std::size_t versionHash = std::hash<int>{}(m_VersionCounter);
-        return CombineHashes(idHash, versionHash);
-    }
-
-    RayCollision getClosestRayTriangleCollisionModelspace(Line const& modelspaceLine) const
-    {
-        if (m_Topography != MeshTopography::Triangles)
-        {
-            return RayCollision{false, 0.0f};
-        }
-
-        BVHCollision coll;
-        bool collided = BVH_GetClosestRayTriangleCollision(m_TriangleBVH, m_Verts.data(), m_Verts.size(), modelspaceLine, &coll);
-
-        if (collided)
-        {
-            return RayCollision{true, coll.distance};
-        }
-        else
-        {
-            return RayCollision{false, 0.0f};
-        }
-    }
-
-    RayCollision getClosestRayTriangleCollisionWorldspace(Line const& worldspaceLine, glm::mat4 const& model2world) const
-    {
-        // do a fast ray-to-AABB collision test
-        AABB modelspaceAABB = getBounds();
-        AABB worldspaceAABB = AABBApplyXform(modelspaceAABB, model2world);
-
-        RayCollision rayAABBCollision = GetRayCollisionAABB(worldspaceLine, worldspaceAABB);
-
-        if (!rayAABBCollision.hit)
-        {
-            return rayAABBCollision;  // missed the AABB, so *definitely* missed the mesh
-        }
-
-        // it hit the AABB, so it *may* have hit a triangle in the mesh
-        //
-        // refine the hittest by doing a slower ray-to-triangle test
-        glm::mat4 world2model = glm::inverse(model2world);
-        Line modelspaceLine = LineApplyXform(worldspaceLine, world2model);
-
-        return getClosestRayTriangleCollisionModelspace(modelspaceLine);
+        return HashOf(*m_ID, *m_Version);
     }
 
 private:
     DefaultConstructOnCopy<UID> m_ID;
+    DefaultConstructOnCopy<int64_t> m_Version;
     MeshTopography m_Topography = MeshTopography::Triangles;
     std::vector<glm::vec3> m_Verts;
     std::vector<glm::vec3> m_Normals;
@@ -515,8 +451,6 @@ private:
     int m_NumIndices = 0;
     std::vector<PackedIndex> m_IndicesData;
     AABB m_AABB = {};
-    BVH m_TriangleBVH;
-    int m_VersionCounter = 0;
     DefaultConstructOnCopy<bool> m_GpuBuffersUpToDate = false;
 
     // TODO: GPU data
@@ -537,6 +471,11 @@ public:
         m_PixelData{PackAsRGBA32(pixels)}
     {
         OSC_ASSERT(static_cast<int>(m_PixelData.size()) == width*height);
+    }
+
+    std::int64_t getVersion() const
+    {
+        return *m_Version;
     }
 
     int getWidth() const
@@ -562,6 +501,7 @@ public:
     void setWrapMode(TextureWrapMode wm)
     {
         setWrapModeU(wm);
+        (*m_Version)++;
     }
 
     TextureWrapMode getWrapModeU() const
@@ -572,7 +512,7 @@ public:
     void setWrapModeU(TextureWrapMode wm)
     {
         m_WrapModeU = wm;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     TextureWrapMode getWrapModeV() const
@@ -583,7 +523,7 @@ public:
     void setWrapModeV(TextureWrapMode wm)
     {
         m_WrapModeV = wm;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     TextureWrapMode getWrapModeW() const
@@ -594,7 +534,7 @@ public:
     void setWrapModeW(TextureWrapMode wm)
     {
         m_WrapModeW = wm;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     TextureFilterMode getFilterMode() const
@@ -605,25 +545,23 @@ public:
     void setFilterMode(TextureFilterMode fm)
     {
         m_FilterMode = fm;
-        m_VersionCounter++;
+        (*m_Version)++;
     }
 
     std::size_t getHash() const
     {
-        std::size_t idHash = std::hash<UID>{}(*m_ID);
-        std::size_t versionHash = std::hash<int>{}(m_VersionCounter);
-        return CombineHashes(idHash, versionHash);
+        return HashOf(*m_ID, *m_Version);
     }
 
 private:
     DefaultConstructOnCopy<UID> m_ID;
+    DefaultConstructOnCopy<int64_t> m_Version;
     glm::ivec2 m_Dims;
     std::vector<osc::Rgba32> m_PixelData;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     TextureFilterMode m_FilterMode = TextureFilterMode::Linear;
-    int m_VersionCounter = 0;
     DefaultConstructOnCopy<bool> m_GpuBuffersUpToDate = false;
 
     // TODO: GPU data
@@ -632,12 +570,7 @@ private:
 
 class osc::experimental::Shader::Impl final {
 public:
-    explicit Impl(char const*)
-    {
-        OSC_ASSERT(false && "not yet implemented");
-    }
-
-    std::string const& getName() const
+    explicit Impl(std::string_view)
     {
         OSC_THROW_NYI();
     }
@@ -687,6 +620,11 @@ class osc::experimental::Material::Impl final {
 public:
     Impl(Shader shader) : m_Shader{std::move(shader)}
     {
+    }
+
+    std::int64_t getVersion() const
+    {
+        OSC_THROW_NYI();
     }
 
     Shader const& getShader() const
@@ -826,6 +764,11 @@ private:
 
 class osc::experimental::MaterialPropertyBlock::Impl final {
 public:
+    std::int64_t getVersion() const
+    {
+        OSC_THROW_NYI();
+    }
+
     void clear()
     {
         OSC_THROW_NYI();
@@ -967,7 +910,17 @@ private:
 
 class osc::experimental::Camera::Impl final {
 public:
+    Impl()
+    {
+        OSC_THROW_NYI();
+    }
+
     explicit Impl(Texture2D)
+    {
+        OSC_THROW_NYI();
+    }
+
+    std::int64_t getVersion() const
     {
         OSC_THROW_NYI();
     }
@@ -1129,7 +1082,7 @@ private:
 
 // PUBLIC API
 
-// osc::MeshTopography2
+// MeshTopography
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography t)
 {
@@ -1142,7 +1095,7 @@ std::string osc::experimental::to_string(MeshTopography t)
 }
 
 
-// osc::Mesh
+// Mesh
 
 osc::experimental::Mesh::Mesh() :
     m_Impl{std::make_shared<Impl>()}
@@ -1159,6 +1112,11 @@ osc::experimental::Mesh::Mesh(Mesh&&) noexcept = default;
 osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh const&) = default;
 osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh&&) noexcept = default;
 osc::experimental::Mesh::~Mesh() noexcept = default;
+
+std::int64_t osc::experimental::Mesh::getVersion() const
+{
+    return m_Impl->getVersion();
+}
 
 osc::experimental::MeshTopography osc::experimental::Mesh::getTopography() const
 {
@@ -1204,12 +1162,6 @@ void osc::experimental::Mesh::setTexCoords(nonstd::span<const glm::vec2> tc)
     m_Impl->setTexCoords(std::move(tc));
 }
 
-void osc::experimental::Mesh::scaleTexCoords(float factor)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->scaleTexCoords(std::move(factor));
-}
-
 int osc::experimental::Mesh::getNumIndices() const
 {
     return m_Impl->getNumIndices();
@@ -1235,16 +1187,6 @@ void osc::experimental::Mesh::setIndices(nonstd::span<const uint32_t> vs)
 osc::AABB const& osc::experimental::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
-}
-
-osc::RayCollision osc::experimental::Mesh::getClosestRayTriangleCollisionModelspace(Line const& modelspaceLine) const
-{
-    return m_Impl->getClosestRayTriangleCollisionModelspace(modelspaceLine);
-}
-
-osc::RayCollision osc::experimental::Mesh::getClosestRayTriangleCollisionWorldspace(Line const& worldspaceLine, glm::mat4 const& model2world) const
-{
-    return m_Impl->getClosestRayTriangleCollisionWorldspace(worldspaceLine, model2world);
 }
 
 void osc::experimental::Mesh::clear()
@@ -1299,7 +1241,7 @@ std::size_t std::hash<osc::experimental::Mesh>::operator()(osc::experimental::Me
 }
 
 
-// osc::TextureWrapMode
+// TextureWrapMode
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode wm)
 {
@@ -1312,7 +1254,7 @@ std::string osc::experimental::to_string(TextureWrapMode wm)
 }
 
 
-// osc::TextureFilterMode
+// TextureFilterMode
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode fm)
 {
@@ -1325,7 +1267,7 @@ std::string osc::experimental::to_string(TextureFilterMode fm)
 }
 
 
-// osc::Texture2D
+// Texture2D
 
 osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixels) :
     m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixels))}
@@ -1459,7 +1401,7 @@ std::size_t std::hash<osc::experimental::Texture2D>::operator()(osc::experimenta
 }
 
 
-// osc::ShaderType
+// ShaderType
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType st)
 {
@@ -1472,23 +1414,23 @@ std::string osc::experimental::to_string(ShaderType st)
 }
 
 
-// shader IDs
+// Shader IDs
 
 osc::UID osc::experimental::StorePropertyNameToUID(std::string_view)
 {
-    throw std::runtime_error{"todo"};
+    OSC_THROW_NYI();
 }
 
 std::optional<std::string_view> osc::experimental::TryLoadPropertyNameFromUID(UID)
 {
-    throw std::runtime_error{"todo"};
+    OSC_THROW_NYI();
 }
 
 
-// osc::Shader
+// Shader
 
-osc::experimental::Shader::Shader(char const* src) :
-    m_Impl{std::make_shared<Impl>(src)}
+osc::experimental::Shader::Shader(std::string_view src) :
+    m_Impl{std::make_shared<Impl>(std::move(src))}
 {
 }
 
@@ -1497,11 +1439,6 @@ osc::experimental::Shader::Shader(Shader&&) noexcept = default;
 osc::experimental::Shader& osc::experimental::Shader::operator=(Shader const&) = default;
 osc::experimental::Shader& osc::experimental::Shader::operator=(Shader&&) noexcept = default;
 osc::experimental::Shader::~Shader() noexcept = default;
-
-std::string const& osc::experimental::Shader::getName() const
-{
-    return m_Impl->getName();
-}
 
 std::optional<int> osc::experimental::Shader::findPropertyIndex(std::string_view propertyName) const
 {
@@ -1565,7 +1502,7 @@ bool osc::experimental::operator>=(Shader const& a, Shader const& b)
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& s)
 {
-    return o << "Shader(name = " << s.getName() << ')';
+    return o << "Shader(name)";
 }
 
 std::string osc::experimental::to_string(Shader const& s)
@@ -1579,7 +1516,7 @@ std::size_t std::hash<osc::experimental::Shader>::operator()(osc::experimental::
 }
 
 
-// osc::Material
+// Material
 
 osc::experimental::Material::Material(Shader shader) :
     m_Impl{std::make_shared<Impl>(std::move(shader))}
@@ -1591,6 +1528,11 @@ osc::experimental::Material::Material(Material&&) noexcept = default;
 osc::experimental::Material& osc::experimental::Material::operator=(Material const&) = default;
 osc::experimental::Material& osc::experimental::Material::operator=(Material&&) noexcept = default;
 osc::experimental::Material::~Material() noexcept = default;
+
+std::int64_t osc::experimental::Material::getVersion() const
+{
+    return m_Impl->getVersion();
+}
 
 osc::experimental::Shader const& osc::experimental::Material::getShader() const
 {
@@ -1786,6 +1728,11 @@ osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlo
 osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlock::operator=(MaterialPropertyBlock&&) noexcept = default;
 osc::experimental::MaterialPropertyBlock::~MaterialPropertyBlock() noexcept = default;
 
+std::int64_t osc::experimental::MaterialPropertyBlock::getVersion() const
+{
+    return m_Impl->getVersion();
+}
+
 void osc::experimental::MaterialPropertyBlock::clear()
 {
     DoCopyOnWrite(m_Impl);
@@ -1974,7 +1921,7 @@ std::size_t std::hash<osc::experimental::MaterialPropertyBlock>::operator()(osc:
 }
 
 
-// osc::CameraProjection
+// CameraProjection
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection p)
 {
@@ -1987,7 +1934,12 @@ std::string osc::experimental::to_string(CameraProjection p)
 }
 
 
-// osc::CameraNew
+// Camera
+
+osc::experimental::Camera::Camera() :
+    m_Impl{std::make_shared<Impl>()}
+{
+}
 
 osc::experimental::Camera::Camera(Texture2D t) :
     m_Impl{std::make_shared<Impl>(std::move(t))}
@@ -1999,6 +1951,11 @@ osc::experimental::Camera::Camera(Camera&&) noexcept = default;
 osc::experimental::Camera& osc::experimental::Camera::operator=(Camera const&) = default;
 osc::experimental::Camera& osc::experimental::Camera::operator=(Camera&&) noexcept = default;
 osc::experimental::Camera::~Camera() noexcept = default;
+
+std::int64_t osc::experimental::Camera::getVersion() const
+{
+    return m_Impl->getVersion();
+}
 
 glm::vec4 const& osc::experimental::Camera::getBackgroundColor() const
 {
@@ -2081,6 +2038,17 @@ void osc::experimental::Camera::setTexture()
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setTexture();
+}
+
+osc::Rect const& osc::experimental::Camera::getPixelRect() const
+{
+    return m_Impl->getPixelRect();
+}
+
+void osc::experimental::Camera::setPixelRect(Rect const& r)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setPixelRect(r);
 }
 
 int osc::experimental::Camera::getPixelWidth() const
@@ -2180,7 +2148,7 @@ bool osc::experimental::operator>=(Camera const& a, Camera const& b)
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, Camera const&)
 {
-    return o << "CameraNew()";
+    return o << "Camera()";
 }
 
 std::string osc::experimental::to_string(Camera const& c)
@@ -2194,7 +2162,7 @@ size_t std::hash<osc::experimental::Camera>::operator()(osc::experimental::Camer
 }
 
 
-// osc::GraphicsBackend
+// Graphics
 
 void osc::experimental::Graphics::DrawMesh(Mesh,
                                            glm::vec3 const&,
