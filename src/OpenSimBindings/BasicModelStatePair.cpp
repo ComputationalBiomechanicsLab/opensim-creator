@@ -1,8 +1,8 @@
 #include "BasicModelStatePair.hpp"
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>

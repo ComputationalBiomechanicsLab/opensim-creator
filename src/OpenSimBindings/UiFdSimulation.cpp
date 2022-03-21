@@ -6,10 +6,10 @@
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
-#include "src/App.hpp"
 
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>

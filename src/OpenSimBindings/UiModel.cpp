@@ -1,12 +1,13 @@
 #include "UiModel.hpp"
 
-#include "src/3D/Model.hpp"
+#include "src/Maths/AABB.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Log.hpp"
-#include "src/os.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Component.h>

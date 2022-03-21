@@ -1,9 +1,12 @@
 #pragma once
 
-#include "src/3D/Mesh.hpp"
-#include "src/3D/Model.hpp"  // AABB, Transform
+#include "src/Graphics/Mesh.hpp"
+#include "src/Maths/AABB.hpp"
+#include "src/Maths/Transform.hpp"
 
 #include <glm/vec4.hpp>
+
+#include <memory>
 
 namespace OpenSim
 {

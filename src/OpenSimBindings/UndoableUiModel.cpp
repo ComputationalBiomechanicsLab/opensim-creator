@@ -1,11 +1,10 @@
 #include "UndoableUiModel.hpp"
 
-#include "src/Assertions.hpp"
-
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 

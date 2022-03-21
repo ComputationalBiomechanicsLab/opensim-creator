@@ -54,3 +54,8 @@
 // to the repo so that users can just click and go, rather than having to separately
 // browse to the repo
 #define OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
+
+// char[]
+//
+// printf-style formatting string for ImGui float inputs
+#define OSC_DEFAULT_FLOAT_INPUT_FORMAT "%.6f"

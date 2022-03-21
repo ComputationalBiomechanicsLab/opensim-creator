@@ -1,12 +1,10 @@
+#include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
-#include "src/App.hpp"
-#include "src/Log.hpp"
-#include "src/MainEditorState.hpp"
 
 #include <iostream>
-
-using namespace osc;
 
 static const char g_Usage[] = R"(usage: osc [--help] [fd] MODEL.osim
 )";
@@ -60,26 +58,26 @@ int main(int argc, char** argv)
     try
     {
         // init main app (window, OpenGL, etc.)
-        App app;
+        osc::App app;
 
         if (argc <= 0)
         {
-            app.show<SplashScreen>();
+            app.show<osc::SplashScreen>();
         }
         else
         {
-            auto mes = std::make_shared<MainEditorState>();
-            app.show<LoadingScreen>(mes, argv[0]);
+            auto mes = std::make_shared<osc::MainEditorState>();
+            app.show<osc::LoadingScreen>(mes, argv[0]);
         }
 
-        log::info("exited main application event loop: shutting down application");
+        osc::log::info("exited main application event loop: shutting down application");
 
         return EXIT_SUCCESS;
     }
     catch (std::exception const& ex)
     {
-        log::error("osc: encountered fatal exception: %s", ex.what());
-        log::error("osc: terminating due to fatal exception");
+        osc::log::error("osc: encountered fatal exception: %s", ex.what());
+        osc::log::error("osc: terminating due to fatal exception");
         throw;
     }
 }

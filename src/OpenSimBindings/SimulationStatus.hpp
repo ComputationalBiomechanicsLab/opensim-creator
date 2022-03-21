@@ -4,7 +4,8 @@
 
 namespace osc
 {
-    enum class SimulationStatus {
+    enum class SimulationStatus
+    {
         Initializing = 0,
         Running,
         Completed,

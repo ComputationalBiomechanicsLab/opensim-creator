@@ -2,7 +2,6 @@
 
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
-#include "src/Log.hpp"
 
 #include <unordered_map>
 #include <mutex>
@@ -15,11 +14,6 @@
 static int64_t GenerateID(char const* label, char const* filename, unsigned int line)
 {
     return static_cast<int64_t>(osc::HashOf(std::string{label}, std::string{filename}, line));
-}
-
-static std::ostream& operator<<(std::ostream& o, osc::PerfMeasurement const& md)
-{
-    return o << md.getLabel() << " (" << md.getFilename() << ':' << md.getLine() << ") " << md.getCallCount() << " calls, avg. duration = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getAvgDuration()).count() << " us, last = " << std::chrono::duration_cast<std::chrono::microseconds>(md.getLastDuration()).count() << " us";
 }
 
 static osc::SynchronizedValue<std::unordered_map<int64_t, osc::PerfMeasurement>>& GetMeasurementStorage()
@@ -48,18 +42,6 @@ void osc::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::
     if (it != guard->end())
     {
         it->second.submit(start, end);
-    }
-}
-
-void osc::PrintMeasurementsToLog()
-{
-    auto guard = GetMeasurementStorage().lock();
-
-    for (auto const& [id, data] : *guard)
-    {
-        std::stringstream ss;
-        ss << data;
-        log::trace("%s", std::move(ss).str().c_str());
     }
 }
 

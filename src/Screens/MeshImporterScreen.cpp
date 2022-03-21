@@ -1,38 +1,43 @@
 #include "MeshImporterScreen.hpp"
 
-#include "src/3D/Shaders/EdgeDetectionShader.hpp"
-#include "src/3D/Shaders/GouraudShader.hpp"
-#include "src/3D/Shaders/SolidColorShader.hpp"
-#include "src/3D/Constants.hpp"
-#include "src/3D/Gl.hpp"
-#include "src/3D/GlGlm.hpp"
-#include "src/3D/Mesh.hpp"
-#include "src/MeshCache.hpp"
-#include "src/3D/Model.hpp"
-#include "src/3D/Texturing.hpp"
+#include "src/Bindings/GlmHelpers.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Bindings/SimTKHelpers.hpp"
+#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
+#include "src/Graphics/Shaders/EdgeDetectionShader.hpp"
+#include "src/Graphics/Shaders/GouraudShader.hpp"
+#include "src/Graphics/Shaders/SolidColorShader.hpp"
+#include "src/Graphics/Gl.hpp"
+#include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/MeshGen.hpp"
+#include "src/Graphics/Texturing.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Maths/Geometry.hpp"
+#include "src/Maths/Segment.hpp"
+#include "src/Maths/Transform.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
+#include "src/Platform/Styling.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
-#include "src/Screens/Experimental/ExperimentsScreen.hpp"
-#include "src/UI/MainMenu.hpp"
-#include "src/UI/LogViewer.hpp"
-#include "src/UI/UiModelViewer.hpp"
+#include "src/Screens/ExperimentsScreen.hpp"
+#include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/UiModelViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
-#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Utils/SimTKHelpers.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/App.hpp"
-#include "src/Log.hpp"
-#include "src/MainEditorState.hpp"
-#include "src/Styling.hpp"
-#include "src/os.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
@@ -1706,7 +1711,7 @@ namespace
 
         Transform GetXform() const override
         {
-            return Transform::atPosition(Position);
+            return Transform{Position};
         }
 
         void SetXform(Transform const& t) override
@@ -2456,7 +2461,7 @@ namespace
     void PointAxisTowards(ModelGraph& mg, UID id, int axis, UID other)
     {
         glm::vec3 choicePos = GetPosition(mg, other);
-        Transform sourceXform = GetPosition(mg, id);
+        Transform sourceXform = Transform{GetPosition(mg, id)};
 
         mg.UpdElByID(id).SetXform(PointAxisTowards(sourceXform, axis, choicePos));
     }
@@ -2732,7 +2737,7 @@ namespace
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = VecMidpoint(parentPos, childPos);
 
-        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, DowncastID<BodyEl>(childID), Transform::atPosition(midPoint));
+        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
 
         cmg.Commit("added " + jointEl.GetLabel());
@@ -6935,7 +6940,7 @@ namespace
 
             if (ImGui::MenuItem("reset"))
             {
-                el.SetXform(Transform::atPosition(el.GetPos()));
+                el.SetXform(Transform{el.GetPos()});
                 m_Shared->CommitCurrentModelGraph("reset " + el.GetLabel() + " orientation");
             }
 

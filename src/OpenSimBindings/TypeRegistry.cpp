@@ -1,6 +1,6 @@
 #include "TypeRegistry.hpp"
 
-#include "src/Assertions.hpp"
+#include "src/Utils/Assertions.hpp"
 
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
@@ -9,6 +9,7 @@
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/TorqueActuator.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/BushingForce.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -212,7 +213,7 @@ std::array<std::unique_ptr<OpenSim::Force const>, 11> const g_ForcePrototypes = 
     }(),
     std::make_unique<OpenSim::RigidTendonMuscle>(),
     std::make_unique<OpenSim::SmoothSphereHalfSpaceForce>(),
-    std::make_unique<OpenSim::Thelen2003Muscle>(),
+    std::make_unique<OpenSim::Thelen2003Muscle>()
 };
 
 static auto const g_ForceNames = ExtractNames(g_ForcePrototypes);

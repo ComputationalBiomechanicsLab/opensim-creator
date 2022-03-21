@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/3D/Model.hpp"  // AABB
+#include "src/Maths/AABB.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"

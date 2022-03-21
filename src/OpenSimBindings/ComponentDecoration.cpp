@@ -1,10 +1,13 @@
 #include "ComponentDecoration.hpp"
 
-#include "src/3D/Mesh.hpp"
-#include "src/3D/Model.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Maths/AABB.hpp"
+#include "src/Maths/Geometry.hpp"
+#include "src/Maths/Transform.hpp"
 
 #include <glm/vec4.hpp>
 
+#include <memory>
 #include <utility>
 
 osc::ComponentDecoration::ComponentDecoration(std::shared_ptr<Mesh> mesh_,

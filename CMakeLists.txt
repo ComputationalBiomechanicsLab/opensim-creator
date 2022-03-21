@@ -142,47 +142,86 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.h
 add_executable(osc
     ${CMAKE_BINARY_DIR}/osc_config.hpp
 
-    src/3D/Shaders/ColormappedPlainTextureShader.cpp
-    src/3D/Shaders/ColormappedPlainTextureShader.hpp
-    src/3D/Shaders/EdgeDetectionShader.cpp
-    src/3D/Shaders/EdgeDetectionShader.hpp
-    src/3D/Shaders/GouraudMrtShader.cpp
-    src/3D/Shaders/GouraudMrtShader.hpp
-    src/3D/Shaders/GouraudShader.cpp
-    src/3D/Shaders/GouraudShader.hpp
-    src/3D/Shaders/InstancedGouraudColorShader.cpp
-    src/3D/Shaders/InstancedGouraudColorShader.hpp
-    src/3D/Shaders/InstancedSolidColorShader.cpp
-    src/3D/Shaders/InstancedSolidColorShader.hpp
-    src/3D/Shaders/NormalsShader.cpp
-    src/3D/Shaders/NormalsShader.hpp
-    src/3D/Shaders/PlainTextureShader.cpp
-    src/3D/Shaders/PlainTextureShader.hpp
-    src/3D/Shaders/SkipMSXAABlitterShader.cpp
-    src/3D/Shaders/SkipMSXAABlitterShader.hpp
-    src/3D/Shaders/SolidColorShader.cpp
-    src/3D/Shaders/SolidColorShader.hpp
+    src/Bindings/GlmHelpers.cpp
+    src/Bindings/GlmHelpers.hpp
+    src/Bindings/ImGuiHelpers.cpp
+    src/Bindings/ImGuiHelpers.hpp
+    src/Bindings/SDL2Helpers.hpp
+    src/Bindings/SimTKHelpers.cpp
+    src/Bindings/SimTKHelpers.hpp
 
-    src/3D/BVH.cpp
-    src/3D/BVH.hpp
-    src/3D/Constants.hpp
-    src/3D/Gl.cpp
-    src/3D/Gl.hpp
-    src/3D/GlGlm.hpp
-    src/3D/InstancedRenderer.cpp
-    src/3D/InstancedRenderer.hpp
-    src/3D/Mesh.cpp
-    src/3D/Mesh.hpp
-    src/3D/Model.cpp
-    src/3D/Model.hpp
-    src/3D/Renderer.cpp
-    src/3D/Renderer.hpp
-    src/3D/Shader.hpp
-    src/3D/ShaderCache.cpp
-    src/3D/ShaderCache.hpp
-    src/3D/ShaderLocationIndex.hpp
-    src/3D/Texturing.cpp
-    src/3D/Texturing.hpp
+    src/Graphics/Shaders/ColormappedPlainTextureShader.cpp
+    src/Graphics/Shaders/ColormappedPlainTextureShader.hpp
+    src/Graphics/Shaders/EdgeDetectionShader.cpp
+    src/Graphics/Shaders/EdgeDetectionShader.hpp
+    src/Graphics/Shaders/GouraudMrtShader.cpp
+    src/Graphics/Shaders/GouraudMrtShader.hpp
+    src/Graphics/Shaders/GouraudShader.cpp
+    src/Graphics/Shaders/GouraudShader.hpp
+    src/Graphics/Shaders/InstancedGouraudColorShader.cpp
+    src/Graphics/Shaders/InstancedGouraudColorShader.hpp
+    src/Graphics/Shaders/InstancedSolidColorShader.cpp
+    src/Graphics/Shaders/InstancedSolidColorShader.hpp
+    src/Graphics/Shaders/NormalsShader.cpp
+    src/Graphics/Shaders/NormalsShader.hpp
+    src/Graphics/Shaders/PlainTextureShader.cpp
+    src/Graphics/Shaders/PlainTextureShader.hpp
+    src/Graphics/Shaders/SkipMSXAABlitterShader.cpp
+    src/Graphics/Shaders/SkipMSXAABlitterShader.hpp
+    src/Graphics/Shaders/SolidColorShader.cpp
+    src/Graphics/Shaders/SolidColorShader.hpp
+
+    src/Graphics/Color.cpp
+    src/Graphics/Color.hpp
+    src/Graphics/Gl.cpp
+    src/Graphics/Gl.hpp
+    src/Graphics/GlGlm.hpp
+    src/Graphics/InstancedRenderer.cpp
+    src/Graphics/InstancedRenderer.hpp
+    src/Graphics/Mesh.cpp
+    src/Graphics/Mesh.hpp
+    src/Graphics/MeshCache.cpp
+    src/Graphics/MeshCache.hpp
+    src/Graphics/MeshData.cpp
+    src/Graphics/MeshData.hpp
+    src/Graphics/MeshGen.cpp
+    src/Graphics/MeshGen.hpp
+    src/Graphics/MeshTopography.hpp
+    src/Graphics/Renderer.cpp
+    src/Graphics/Renderer.hpp
+    src/Graphics/Shader.hpp
+    src/Graphics/ShaderCache.cpp
+    src/Graphics/ShaderCache.hpp
+    src/Graphics/ShaderLocationIndex.hpp
+    src/Graphics/Texturing.cpp
+    src/Graphics/Texturing.hpp
+
+    src/Maths/AABB.cpp
+    src/Maths/AABB.hpp
+    src/Maths/BVH.cpp
+    src/Maths/BVH.hpp
+    src/Maths/Constants.hpp
+    src/Maths/Disc.cpp
+    src/Maths/Disc.hpp
+    src/Maths/EulerPerspectiveCamera.cpp
+    src/Maths/EulerPerspectiveCamera.hpp
+    src/Maths/Geometry.cpp
+    src/Maths/Geometry.hpp
+    src/Maths/Line.cpp
+    src/Maths/Line.hpp
+    src/Maths/Plane.cpp
+    src/Maths/Plane.hpp
+    src/Maths/PolarPerspectiveCamera.cpp
+    src/Maths/PolarPerspectiveCamera.hpp
+    src/Maths/RayCollision.hpp
+    src/Maths/Rect.cpp
+    src/Maths/Rect.hpp
+    src/Maths/Segment.cpp
+    src/Maths/Segment.hpp
+    src/Maths/Sphere.cpp
+    src/Maths/Sphere.hpp
+    src/Maths/Transform.cpp
+    src/Maths/Transform.hpp
 
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
@@ -192,6 +231,8 @@ add_executable(osc
     src/OpenSimBindings/ComponentOutput.hpp
     src/OpenSimBindings/IntegratorOutput.cpp
     src/OpenSimBindings/IntegratorOutput.hpp
+    src/OpenSimBindings/MainEditorState.cpp
+    src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/MultiBodySystemOutput.cpp
     src/OpenSimBindings/MultiBodySystemOutput.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
@@ -223,84 +264,65 @@ add_executable(osc
     src/OpenSimBindings/VirtualOutput.hpp
     src/OpenSimBindings/VirtualSimulation.hpp
 
-    src/Screens/Experimental/CookiecutterScreen.cpp
-    src/Screens/Experimental/CookiecutterScreen.hpp
-    src/Screens/Experimental/ExperimentsScreen.cpp
-    src/Screens/Experimental/ExperimentsScreen.hpp
-    src/Screens/Experimental/HelloTriangleScreen.cpp
-    src/Screens/Experimental/HelloTriangleScreen.hpp
-    src/Screens/Experimental/HittestScreen.cpp
-    src/Screens/Experimental/HittestScreen.hpp
-    src/Screens/Experimental/ImGuiDemoScreen.cpp
-    src/Screens/Experimental/ImGuiDemoScreen.hpp
-    src/Screens/Experimental/ImGuizmoDemoScreen.cpp
-    src/Screens/Experimental/ImGuizmoDemoScreen.hpp
-    src/Screens/Experimental/InstancedRendererScreen.cpp
-    src/Screens/Experimental/InstancedRendererScreen.hpp
-    src/Screens/Experimental/LayeredInterfaceScreen.cpp
-    src/Screens/Experimental/LayeredInterfaceScreen.hpp
-    src/Screens/Experimental/MathExperimentsScreen.cpp
-    src/Screens/Experimental/MathExperimentsScreen.hpp
-    src/Screens/Experimental/MeshHittestScreen.cpp
-    src/Screens/Experimental/MeshHittestScreen.hpp
-    src/Screens/Experimental/MeshHittestWithBVHScreen.cpp
-    src/Screens/Experimental/MeshHittestWithBVHScreen.hpp
-    src/Screens/Experimental/MeshScreen.cpp
-    src/Screens/Experimental/MeshScreen.hpp
-    src/Screens/Experimental/RendererHelloTriangleScreen.cpp
-    src/Screens/Experimental/RendererHelloTriangleScreen.hpp
-    src/Screens/Experimental/UiModelViewerScreen.cpp
-    src/Screens/Experimental/UiModelViewerScreen.hpp
+    src/Platform/App.cpp
+    src/Platform/App.hpp
+    src/Platform/Config.cpp
+    src/Platform/Config.hpp
+    src/Platform/IoPoller.cpp
+    src/Platform/IoPoller.hpp
+    src/Platform/Log.cpp
+    src/Platform/Log.hpp
+    src/Platform/os.cpp
+    src/Platform/os.hpp
+    src/Platform/RecentFile.hpp
+    src/Platform/Screen.hpp
+    src/Platform/Styling.hpp
 
+    src/Screens/CookiecutterScreen.cpp
+    src/Screens/CookiecutterScreen.hpp
     src/Screens/ErrorScreen.cpp
     src/Screens/ErrorScreen.hpp
+    src/Screens/ExperimentsScreen.cpp
+    src/Screens/ExperimentsScreen.hpp
+    src/Screens/HelloTriangleScreen.cpp
+    src/Screens/HelloTriangleScreen.hpp
+    src/Screens/HittestScreen.cpp
+    src/Screens/HittestScreen.hpp
+    src/Screens/ImGuiDemoScreen.cpp
+    src/Screens/ImGuiDemoScreen.hpp
+    src/Screens/ImGuizmoDemoScreen.cpp
+    src/Screens/ImGuizmoDemoScreen.hpp
+    src/Screens/InstancedRendererScreen.cpp
+    src/Screens/InstancedRendererScreen.hpp
+    src/Screens/LayeredInterfaceScreen.cpp
+    src/Screens/LayeredInterfaceScreen.hpp
     src/Screens/LoadingScreen.cpp
     src/Screens/LoadingScreen.hpp
+    src/Screens/MathExperimentsScreen.cpp
+    src/Screens/MathExperimentsScreen.hpp
+    src/Screens/MeshHittestScreen.cpp
+    src/Screens/MeshHittestScreen.hpp
+    src/Screens/MeshHittestWithBVHScreen.cpp
+    src/Screens/MeshHittestWithBVHScreen.hpp
     src/Screens/MeshImporterScreen.cpp
     src/Screens/MeshImporterScreen.hpp
+    src/Screens/MeshScreen.cpp
+    src/Screens/MeshScreen.hpp
     src/Screens/ModelEditorScreen.cpp
     src/Screens/ModelEditorScreen.hpp
+    src/Screens/RendererHelloTriangleScreen.cpp
+    src/Screens/RendererHelloTriangleScreen.hpp
     src/Screens/SimulatorScreen.cpp
     src/Screens/SimulatorScreen.hpp
     src/Screens/SplashScreen.cpp
     src/Screens/SplashScreen.hpp
-
-    src/UI/AddBodyPopup.cpp
-    src/UI/AddBodyPopup.hpp
-    src/UI/AddComponentPopup.cpp
-    src/UI/AddComponentPopup.hpp
-    src/UI/AttachGeometryPopup.cpp
-    src/UI/AttachGeometryPopup.hpp
-    src/UI/ComponentDetails.cpp
-    src/UI/ComponentDetails.hpp
-    src/UI/ComponentHierarchy.cpp
-    src/UI/ComponentHierarchy.hpp
-    src/UI/CoordinateEditor.cpp
-    src/UI/CoordinateEditor.hpp
-    src/UI/LogViewer.cpp
-    src/UI/LogViewer.hpp
-    src/UI/MainMenu.cpp
-    src/UI/MainMenu.hpp
-    src/UI/ModelActionsMenuBar.cpp
-    src/UI/ModelActionsMenuBar.hpp
-    src/UI/ParamBlockEditorPopup.cpp
-    src/UI/ParamBlockEditorPopup.hpp
-    src/UI/PerfPanel.cpp
-    src/UI/PerfPanel.hpp
-    src/UI/PropertyEditors.cpp
-    src/UI/PropertyEditors.hpp
-    src/UI/ReassignSocketPopup.hpp
-    src/UI/ReassignSocketPopup.cpp
-    src/UI/Select1PFPopup.cpp
-    src/UI/Select1PFPopup.hpp
-    src/UI/Select2PFsPopup.cpp
-    src/UI/Select2PFsPopup.hpp
-    src/UI/SelectComponentPopup.hpp
-    src/UI/UiModelViewer.cpp
-    src/UI/UiModelViewer.hpp
+    src/Screens/UiModelViewerScreen.cpp
+    src/Screens/UiModelViewerScreen.hpp
 
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
+    src/Utils/Assertions.cpp
+    src/Utils/Assertions.hpp
     src/Utils/CheckedIndex.hpp
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
@@ -310,41 +332,50 @@ add_executable(osc
     src/Utils/FileChangePoller.hpp
     src/Utils/FilesystemHelpers.cpp
     src/Utils/FilesystemHelpers.hpp
-    src/Utils/FClock.hpp
-    src/Utils/ImGuiHelpers.cpp
-    src/Utils/ImGuiHelpers.hpp
-    src/Utils/IoPoller.cpp
-    src/Utils/IoPoller.hpp
     src/Utils/Macros.hpp
     src/Utils/MethodTestMacro.hpp
     src/Utils/Perf.cpp
     src/Utils/Perf.hpp
     src/Utils/ScopeGuard.hpp
-    src/Utils/Sdl2Bindings.hpp
-    src/Utils/SimTKHelpers.hpp
-    src/Utils/SimTKHelpers.cpp
     src/Utils/Spsc.hpp
     src/Utils/SynchronizedValue.hpp
     src/Utils/UID.cpp
     src/Utils/UID.hpp
 
-    src/App.cpp
-    src/App.hpp
-    src/Assertions.cpp
-    src/Assertions.hpp
-    src/Config.cpp
-    src/Config.hpp
-    src/Log.cpp
-    src/Log.hpp
-    src/MeshCache.cpp
-    src/MeshCache.hpp
-    src/MainEditorState.cpp
-    src/MainEditorState.hpp
-    src/RecentFile.hpp
-    src/Screen.hpp
-    src/Styling.hpp
-    src/os.cpp
-    src/os.hpp
+    src/Widgets/AddBodyPopup.cpp
+    src/Widgets/AddBodyPopup.hpp
+    src/Widgets/AddComponentPopup.cpp
+    src/Widgets/AddComponentPopup.hpp
+    src/Widgets/AttachGeometryPopup.cpp
+    src/Widgets/AttachGeometryPopup.hpp
+    src/Widgets/ComponentDetails.cpp
+    src/Widgets/ComponentDetails.hpp
+    src/Widgets/ComponentHierarchy.cpp
+    src/Widgets/ComponentHierarchy.hpp
+    src/Widgets/CoordinateEditor.cpp
+    src/Widgets/CoordinateEditor.hpp
+    src/Widgets/LogViewer.cpp
+    src/Widgets/LogViewer.hpp
+    src/Widgets/MainMenu.cpp
+    src/Widgets/MainMenu.hpp
+    src/Widgets/ModelActionsMenuBar.cpp
+    src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ParamBlockEditorPopup.cpp
+    src/Widgets/ParamBlockEditorPopup.hpp
+    src/Widgets/PerfPanel.cpp
+    src/Widgets/PerfPanel.hpp
+    src/Widgets/PropertyEditors.cpp
+    src/Widgets/PropertyEditors.hpp
+    src/Widgets/ReassignSocketPopup.hpp
+    src/Widgets/ReassignSocketPopup.cpp
+    src/Widgets/Select1PFPopup.cpp
+    src/Widgets/Select1PFPopup.hpp
+    src/Widgets/Select2PFsPopup.cpp
+    src/Widgets/Select2PFsPopup.hpp
+    src/Widgets/SelectComponentPopup.hpp
+    src/Widgets/UiModelViewer.cpp
+    src/Widgets/UiModelViewer.hpp
+
     src/osc.cpp
 
     # Windows: also link a resources file (rc)

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/Screen.hpp"
-#include "src/MainEditorState.hpp"
+#include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/Platform/Screen.hpp"
 
 #include <SDL_events.h>
 

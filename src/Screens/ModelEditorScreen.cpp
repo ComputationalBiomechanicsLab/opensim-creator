@@ -1,36 +1,35 @@
 #include "ModelEditorScreen.hpp"
 
-#include "src/3D/Gl.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/OpenSimBindings/ComponentOutput.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
-#include "src/UI/AddBodyPopup.hpp"
-#include "src/UI/AttachGeometryPopup.hpp"
-#include "src/UI/CoordinateEditor.hpp"
-#include "src/UI/ComponentDetails.hpp"
-#include "src/UI/ComponentHierarchy.hpp"
-#include "src/UI/MainMenu.hpp"
-#include "src/UI/ModelActionsMenuBar.hpp"
-#include "src/UI/ParamBlockEditorPopup.hpp"
-#include "src/UI/LogViewer.hpp"
-#include "src/UI/PropertyEditors.hpp"
-#include "src/UI/ReassignSocketPopup.hpp"
-#include "src/UI/SelectComponentPopup.hpp"
-#include "src/UI/Select1PFPopup.hpp"
-#include "src/UI/Select2PFsPopup.hpp"
-#include "src/UI/UiModelViewer.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Platform/os.hpp"
+#include "src/Platform/Styling.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Utils/ImGuiHelpers.hpp"
-#include "src/App.hpp"
-#include "src/Log.hpp"
-#include "src/MainEditorState.hpp"
-#include "src/os.hpp"
-#include "src/Styling.hpp"
+#include "src/Widgets/AddBodyPopup.hpp"
+#include "src/Widgets/AttachGeometryPopup.hpp"
+#include "src/Widgets/CoordinateEditor.hpp"
+#include "src/Widgets/ComponentDetails.hpp"
+#include "src/Widgets/ComponentHierarchy.hpp"
+#include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ParamBlockEditorPopup.hpp"
+#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/PropertyEditors.hpp"
+#include "src/Widgets/ReassignSocketPopup.hpp"
+#include "src/Widgets/SelectComponentPopup.hpp"
+#include "src/Widgets/Select1PFPopup.hpp"
+#include "src/Widgets/Select2PFsPopup.hpp"
+#include "src/Widgets/UiModelViewer.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Common/Component.h>
@@ -71,8 +70,6 @@
 #include <utility>
 #include <vector>
 
-using namespace osc;
-
 // draw component information as a hover tooltip
 static void DrawComponentHoverTooltip(OpenSim::Component const& hovered, glm::vec3 const& pos)
 {
@@ -95,7 +92,7 @@ static void DrawComponentHoverTooltip(OpenSim::Component const& hovered, glm::ve
 // try to delete an undoable-model's current selection
 //
 // "try", because some things are difficult to delete from OpenSim models
-static void ActionTryDeleteSelectionFromEditedModel(UndoableUiModel& uim)
+static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
 {
     if (OpenSim::Component* selected = uim.updSelected())
     {
@@ -111,7 +108,7 @@ static void ActionTryDeleteSelectionFromEditedModel(UndoableUiModel& uim)
 }
 
 // draw an editor for top-level selected Component members (e.g. name)
-static void DrawTopLevelMembersEditor(UndoableUiModel& st)
+static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
 {
     OpenSim::Component const* selection = st.getSelected();
 
@@ -145,7 +142,7 @@ static void DrawTopLevelMembersEditor(UndoableUiModel& st)
 }
 
 // draw UI element that lets user change a model joint's type
-static void DrawSelectionJointTypeSwitcher(UndoableUiModel& st)
+static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
 {
     OpenSim::Joint const* selection = st.getSelectedAs<OpenSim::Joint>();
 
@@ -184,10 +181,10 @@ static void DrawSelectionJointTypeSwitcher(UndoableUiModel& st)
     ImGui::NextColumn();
 
     // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
-    std::optional<size_t> maybeTypeIndex = JointRegistry::indexOf(*selection);
+    std::optional<size_t> maybeTypeIndex = osc::JointRegistry::indexOf(*selection);
     int typeIndex = maybeTypeIndex ? static_cast<int>(*maybeTypeIndex) : -1;
 
-    auto jointNames = JointRegistry::nameCStrings();
+    auto jointNames = osc::JointRegistry::nameCStrings();
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
     if (ImGui::Combo(
@@ -195,11 +192,11 @@ static void DrawSelectionJointTypeSwitcher(UndoableUiModel& st)
             &typeIndex,
             jointNames.data(),
             static_cast<int>(jointNames.size())) &&
-        typeIndex >= 0) {
-
+        typeIndex >= 0)
+    {
         // copy + fixup  a prototype of the user's selection
-        std::unique_ptr<OpenSim::Joint> newJoint{JointRegistry::prototypes()[static_cast<size_t>(typeIndex)]->clone()};
-        CopyCommonJointProperties(*selection, *newJoint);
+        std::unique_ptr<OpenSim::Joint> newJoint{osc::JointRegistry::prototypes()[static_cast<size_t>(typeIndex)]->clone()};
+        osc::CopyCommonJointProperties(*selection, *newJoint);
 
         // overwrite old joint in model
         //
@@ -214,7 +211,7 @@ static void DrawSelectionJointTypeSwitcher(UndoableUiModel& st)
 }
 
 // try to undo currently edited model to earlier state
-static void ActionUndoCurrentlyEditedModel(MainEditorState& mes)
+static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
     if (mes.getEditedModel().canUndo())
     {
@@ -223,7 +220,7 @@ static void ActionUndoCurrentlyEditedModel(MainEditorState& mes)
 }
 
 // try to redo currently edited model to later state
-static void ActionRedoCurrentlyEditedModel(MainEditorState& mes)
+static void ActionRedoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
     if (mes.getEditedModel().canRedo())
     {
@@ -232,30 +229,31 @@ static void ActionRedoCurrentlyEditedModel(MainEditorState& mes)
 }
 
 // disable all wrapping surfaces in the current model
-static void ActionDisableAllWrappingSurfaces(MainEditorState& mes)
+static void ActionDisableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
-    DeactivateAllWrapObjectsIn(mes.updEditedModel().updModel());
+    osc::DeactivateAllWrapObjectsIn(mes.updEditedModel().updModel());
 }
 
 // enable all wrapping surfaces in the current model
-static void ActionEnableAllWrappingSurfaces(MainEditorState& mes)
+static void ActionEnableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
-    ActivateAllWrapObjectsIn(mes.updEditedModel().updModel());
+    osc::ActivateAllWrapObjectsIn(mes.updEditedModel().updModel());
 }
 
 // try to start a new simulation from the currently-edited model
-static void ActionStartSimulationFromEditedModel(MainEditorState& mes)
+static void ActionStartSimulationFromEditedModel(osc::MainEditorState& mes)
 {
     StartSimulatingEditedModel(mes);
 }
 
-static void ActionClearSelectionFromEditedModel(MainEditorState& mes)
+static void ActionClearSelectionFromEditedModel(osc::MainEditorState& mes)
 {
     mes.updEditedModel().setSelected(nullptr);
 }
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
-static void DrawPhysicalFrameContextualActions(AttachGeometryPopup& attachGeomPopup, UndoableUiModel& uim)
+static void DrawPhysicalFrameContextualActions(osc::AttachGeometryPopup& attachGeomPopup,
+                                               osc::UndoableUiModel& uim)
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
@@ -263,7 +261,7 @@ static void DrawPhysicalFrameContextualActions(AttachGeometryPopup& attachGeomPo
 
     ImGui::TextUnformatted("geometry");
     ImGui::SameLine();
-    DrawHelpMarker("Geometry that is attached to this physical frame. Multiple pieces of geometry can be attached to the frame");
+    osc::DrawHelpMarker("Geometry that is attached to this physical frame. Multiple pieces of geometry can be attached to the frame");
     ImGui::NextColumn();
 
     static constexpr char const* modalName = "select geometry to add";
@@ -314,7 +312,7 @@ static void DrawPhysicalFrameContextualActions(AttachGeometryPopup& attachGeomPo
 
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawJointContextualActions(UndoableUiModel& uim)
+static void DrawJointContextualActions(osc::UndoableUiModel& uim)
 {
     OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
 
@@ -357,7 +355,7 @@ static void DrawJointContextualActions(UndoableUiModel& uim)
 
                 uim.setDirty(true);
             }
-            DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+            osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
             ImGui::NextColumn();
         }
     }
@@ -387,7 +385,7 @@ static void DrawJointContextualActions(UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawHCFContextualActions(UndoableUiModel& uim)
+static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
 {
     OpenSim::HuntCrossleyForce const* hcf = uim.getSelectedAs<OpenSim::HuntCrossleyForce>();
 
@@ -416,7 +414,7 @@ static void DrawHCFContextualActions(UndoableUiModel& uim)
     ImGui::Columns(2);
     ImGui::TextUnformatted("add contact geometry");
     ImGui::SameLine();
-    DrawHelpMarker("Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
+    osc::DrawHelpMarker("Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
     ImGui::NextColumn();
 
     // allow user to add geom
@@ -427,7 +425,7 @@ static void DrawHCFContextualActions(UndoableUiModel& uim)
         }
 
         OpenSim::ContactGeometry const* added =
-            SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.getModel());
+            osc::SelectComponentPopup<OpenSim::ContactGeometry>{}.draw("select contact geometry", uim.getModel());
 
         if (added)
         {
@@ -440,7 +438,8 @@ static void DrawHCFContextualActions(UndoableUiModel& uim)
 
     // render standard, easy to render, props of the contact params
     {
-        auto easyToHandleProps = std::array<int, 6>{
+        auto easyToHandleProps = std::array<int, 6>
+        {
             params.PropertyIndex_geometry,
             params.PropertyIndex_stiffness,
             params.PropertyIndex_dissipation,
@@ -449,7 +448,7 @@ static void DrawHCFContextualActions(UndoableUiModel& uim)
             params.PropertyIndex_viscous_friction,
         };
 
-        ObjectPropertiesEditor st;
+        osc::ObjectPropertiesEditor st;
         auto maybe_updater = st.draw(params, easyToHandleProps);
 
         if (maybe_updater)
@@ -461,7 +460,7 @@ static void DrawHCFContextualActions(UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected path actuator
-static void DrawPathActuatorContextualParams(UndoableUiModel& uim)
+static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
 {
     OpenSim::PathActuator const* pa = uim.getSelectedAs<OpenSim::PathActuator>();
 
@@ -493,7 +492,7 @@ static void DrawPathActuatorContextualParams(UndoableUiModel& uim)
 
     // handle popup
     {
-        OpenSim::PhysicalFrame const* pf = Select1PFPopup{}.draw(modalName, uim.getModel());
+        OpenSim::PhysicalFrame const* pf = osc::Select1PFPopup{}.draw(modalName, uim.getModel());
         if (pf) {
             int n = pa->getGeometryPath().getPathPointSet().getSize();
             char buf[128];
@@ -509,7 +508,7 @@ static void DrawPathActuatorContextualParams(UndoableUiModel& uim)
     ImGui::Columns();
 }
 
-static void DrawModelContextualActions(UndoableUiModel& uum)
+static void DrawModelContextualActions(osc::UndoableUiModel& uum)
 {
     OpenSim::Model const* m = uum.getSelectedAs<OpenSim::Model>();
 
@@ -532,8 +531,8 @@ static void DrawModelContextualActions(UndoableUiModel& uum)
 }
 
 // draw socket editor for current selection
-static void DrawSocketEditor(ReassignSocketPopup& reassignSocketPopup,
-                             UndoableUiModel& uim)
+static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
+                             osc::UndoableUiModel& uim)
 {
     OpenSim::Component const* selected = uim.getSelected();
 
@@ -617,7 +616,7 @@ static void DrawSocketEditor(ReassignSocketPopup& reassignSocketPopup,
 // draw breadcrumbs for current selection
 //
 // eg: Model > Joint > PhysicalFrame
-void DrawSelectionBreadcrumbs(UndoableUiModel& uim)
+static void DrawSelectionBreadcrumbs(osc::UndoableUiModel& uim)
 {
     OpenSim::Component const* selection = uim.getSelected();
 
@@ -667,9 +666,9 @@ void DrawSelectionBreadcrumbs(UndoableUiModel& uim)
 }
 
 
-static void DrawSelectOwnerMenu(MainEditorState& st, OpenSim::Component const& selected)
+static void DrawSelectOwnerMenu(osc::MainEditorState& st,
+                                OpenSim::Component const& selected)
 {
-
     if (ImGui::BeginMenu("Select Owner"))
     {
         OpenSim::Component const* c = &selected;
@@ -701,21 +700,21 @@ static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
     ImGui::EndTooltip();
 }
 
-static void DrawOutputWithSubfieldsMenu(MainEditorState& st,
+static void DrawOutputWithSubfieldsMenu(osc::MainEditorState& st,
                                         OpenSim::AbstractOutput const& o)
 {
-    int supportedSubfields = GetSupportedSubfields(o);
+    int supportedSubfields = osc::GetSupportedSubfields(o);
 
     // can plot suboutputs
     if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
     {
-        for (OutputSubfield f : GetAllSupportedOutputSubfields())
+        for (osc::OutputSubfield f : osc::GetAllSupportedOutputSubfields())
         {
             if (static_cast<int>(f) & supportedSubfields)
             {
                 if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
                 {
-                    st.addUserDesiredOutput(ComponentOutput{o, f});
+                    st.addUserDesiredOutput(osc::Output{osc::ComponentOutput{o, f}});
                 }
             }
         }
@@ -728,14 +727,14 @@ static void DrawOutputWithSubfieldsMenu(MainEditorState& st,
     }
 }
 
-static void DrawOutputWithNoSubfieldsMenuItem(MainEditorState& st,
+static void DrawOutputWithNoSubfieldsMenuItem(osc::MainEditorState& st,
                                               OpenSim::AbstractOutput const& o)
 {
     // can only plot top-level of output
 
     if (ImGui::MenuItem(("  " + o.getName()).c_str()))
     {
-       st.addUserDesiredOutput(ComponentOutput{o});
+       st.addUserDesiredOutput(osc::Output{osc::ComponentOutput{o}});
     }
 
     if (ImGui::IsItemHovered())
@@ -744,10 +743,10 @@ static void DrawOutputWithNoSubfieldsMenuItem(MainEditorState& st,
     }
 }
 
-static void DrawRequestOutputMenuOrMenuItem(MainEditorState& st,
+static void DrawRequestOutputMenuOrMenuItem(osc::MainEditorState& st,
                                             OpenSim::AbstractOutput const& o)
 {
-    if (GetSupportedSubfields(o) == static_cast<int>(OutputSubfield::None))
+    if (osc::GetSupportedSubfields(o) == static_cast<int>(osc::OutputSubfield::None))
     {
         DrawOutputWithNoSubfieldsMenuItem(st, o);
     }
@@ -757,12 +756,12 @@ static void DrawRequestOutputMenuOrMenuItem(MainEditorState& st,
     }
 }
 
-static void DrawRequestOutputsMenu(MainEditorState& st,
+static void DrawRequestOutputsMenu(osc::MainEditorState& st,
                                    OpenSim::Component const& c)
 {
     if (ImGui::BeginMenu("Request Outputs"))
     {
-        DrawHelpMarker("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
+        osc::DrawHelpMarker("Request that these outputs are plotted whenever a simulation is ran. The outputs will appear in the 'outputs' tab on the simulator screen");
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
@@ -797,7 +796,7 @@ static void DrawRequestOutputsMenu(MainEditorState& st,
 }
 
 // draw right-click context menu for the 3D viewer
-static void Draw3DViewerContextMenu(MainEditorState& st,
+static void Draw3DViewerContextMenu(osc::MainEditorState& st,
                                     OpenSim::Component const& selected)
 {
     ImGui::TextDisabled("%s (%s)", selected.getName().c_str(), selected.getConcreteClassName().c_str());
@@ -809,8 +808,8 @@ static void Draw3DViewerContextMenu(MainEditorState& st,
 }
 
 // draw a single 3D model viewer
-static bool Draw3DViewer(MainEditorState& st,
-                         UiModelViewer& viewer,
+static bool Draw3DViewer(osc::MainEditorState& st,
+                         osc::UiModelViewer& viewer,
                          char const* name)
 {
     bool isOpen = true;
@@ -876,11 +875,11 @@ static bool Draw3DViewer(MainEditorState& st,
 }
 
 // draw all user-enabled 3D model viewers
-static void Draw3DViewers(MainEditorState& st)
+static void Draw3DViewers(osc::MainEditorState& st)
 {
     for (int i = 0; i < st.getNumViewers(); ++i)
     {
-        UiModelViewer& viewer = st.updViewer(i);
+        osc::UiModelViewer& viewer = st.updViewer(i);
 
         char buf[64];
         std::snprintf(buf, sizeof(buf), "viewer%i", i);
@@ -895,7 +894,7 @@ static void Draw3DViewers(MainEditorState& st)
     }
 }
 
-static std::string GetDocumentName(UndoableUiModel const& uim)
+static std::string GetDocumentName(osc::UndoableUiModel const& uim)
 {
     if (uim.hasFilesystemLocation())
     {
@@ -907,7 +906,7 @@ static std::string GetDocumentName(UndoableUiModel const& uim)
     }
 }
 
-static std::string GetRecommendedTitle(UndoableUiModel const& uim)
+static std::string GetRecommendedTitle(osc::UndoableUiModel const& uim)
 {
     std::string s = GetDocumentName(uim);
     if (!uim.isUpToDateWithFilesystem())
@@ -918,7 +917,7 @@ static std::string GetRecommendedTitle(UndoableUiModel const& uim)
 }
 
 // editor (internal) screen state
-struct ModelEditorScreen::Impl final {
+struct osc::ModelEditorScreen::Impl final {
 
     // top-level state this screen can handle
     std::shared_ptr<MainEditorState> st;
@@ -957,7 +956,8 @@ struct ModelEditorScreen::Impl final {
 };
 
 // handle what happens when a user presses a key
-static bool ModelEditorOnKeydown(ModelEditorScreen::Impl& impl, SDL_KeyboardEvent const& e)
+static bool ModelEditorOnKeydown(osc::ModelEditorScreen::Impl& impl,
+                                 SDL_KeyboardEvent const& e)
 {
     if (e.keysym.mod & KMOD_CTRL)
     {
@@ -977,13 +977,13 @@ static bool ModelEditorOnKeydown(ModelEditorScreen::Impl& impl, SDL_KeyboardEven
             return true;
         case SDLK_r:  // Ctrl+R: start a new simulation from focused model
             ActionStartSimulationFromEditedModel(*impl.st);
-            App::cur().requestTransition<SimulatorScreen>(impl.st);
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(impl.st);
             return true;
         case SDLK_a:  // Ctrl+A: clear selection
             ActionClearSelectionFromEditedModel(*impl.st);
             return true;
         case SDLK_e:  // Ctrl+E: show simulation screen
-            App::cur().requestTransition<SimulatorScreen>(std::move(impl.st));
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(impl.st));
             return true;
         }
 
@@ -1000,26 +1000,27 @@ static bool ModelEditorOnKeydown(ModelEditorScreen::Impl& impl, SDL_KeyboardEven
 }
 
 // handle what happens when the underlying model file changes
-static void ModelEditorOnBackingFileChanged(ModelEditorScreen::Impl& impl)
+static void ModelEditorOnBackingFileChanged(osc::ModelEditorScreen::Impl& impl)
 {
     try
     {
-        log::info("file change detected: loading updated file");
+        osc::log::info("file change detected: loading updated file");
         auto p = std::make_unique<OpenSim::Model>(impl.st->getEditedModel().getModel().getInputFileName());
-        log::info("loaded updated file");
+        osc::log::info("loaded updated file");
         impl.st->updEditedModel().setModel(std::move(p));
         impl.st->updEditedModel().setUpToDateWithFilesystem();
     }
     catch (std::exception const& ex)
     {
-        log::error("error occurred while trying to automatically load a model file:");
-        log::error(ex.what());
-        log::error("the file will not be loaded into osc (you won't see the change in the UI)");
+        osc::log::error("error occurred while trying to automatically load a model file:");
+        osc::log::error(ex.what());
+        osc::log::error("the file will not be loaded into osc (you won't see the change in the UI)");
     }
 }
 
 // draw contextual actions for selection
-static void ModelEditorDrawContextualActions(ModelEditorScreen::Impl& impl, UndoableUiModel& uim)
+static void ModelEditorDrawContextualActions(osc::ModelEditorScreen::Impl& impl,
+                                             osc::UndoableUiModel& uim)
 {
     if (!uim.hasSelected())
     {
@@ -1062,7 +1063,7 @@ static void ModelEditorDrawContextualActions(ModelEditorScreen::Impl& impl, Undo
     ImGui::NextColumn();
     if (ImGui::Button("copy"))
     {
-        SetClipboardText(uim.getSelected()->getAbsolutePathString().c_str());
+        osc::SetClipboardText(uim.getSelected()->getAbsolutePathString().c_str());
     }
     if (ImGui::IsItemHovered())
     {
@@ -1100,7 +1101,8 @@ static void ModelEditorDrawContextualActions(ModelEditorScreen::Impl& impl, Undo
 }
 
 // draw editor for current selection
-static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, UndoableUiModel& uim)
+static void ModelEditorDrawSelectionEditor(osc::ModelEditorScreen::Impl& impl,
+                                           osc::UndoableUiModel& uim)
 {
     if (!uim.hasSelected())
     {
@@ -1113,7 +1115,7 @@ static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, Undoab
     ImGui::Dummy(ImVec2(0.0f, 1.0f));
     ImGui::TextUnformatted("hierarchy:");
     ImGui::SameLine();
-    DrawHelpMarker("Where the selected component is in the model's component hierarchy");
+    osc::DrawHelpMarker("Where the selected component is in the model's component hierarchy");
     ImGui::Separator();
     DrawSelectionBreadcrumbs(uim);
 
@@ -1121,7 +1123,7 @@ static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, Undoab
     ImGui::Dummy(ImVec2(0.0f, 5.0f));
     ImGui::TextUnformatted("contextual actions:");
     ImGui::SameLine();
-    DrawHelpMarker("Actions that are specific to the type of OpenSim::Component that is currently selected");
+    osc::DrawHelpMarker("Actions that are specific to the type of OpenSim::Component that is currently selected");
     ImGui::Separator();
     ModelEditorDrawContextualActions(impl, uim);
 
@@ -1135,7 +1137,7 @@ static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, Undoab
     ImGui::Dummy({0.0f, 5.0f});
     ImGui::TextUnformatted("properties:");
     ImGui::SameLine();
-    DrawHelpMarker("Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
+    osc::DrawHelpMarker("Properties of the selected OpenSim::Component. These are declared in the Component's implementation.");
     ImGui::Separator();
 
     // top-level property editors
@@ -1157,7 +1159,7 @@ static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, Undoab
     ImGui::Dummy({0.0f, 5.0f});
     ImGui::TextUnformatted("sockets:");
     ImGui::SameLine();
-    DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
+    osc::DrawHelpMarker("What components this component is connected to.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
     ImGui::Separator();
     DrawSocketEditor(impl.ui.reassignSocketPopup, uim);
 
@@ -1165,9 +1167,9 @@ static void ModelEditorDrawSelectionEditor(ModelEditorScreen::Impl& impl, Undoab
 }
 
 // draw the "Actions" tab of the main (top) menu
-void ModelEditorDrawMainMenuEditTab(ModelEditorScreen::Impl& impl)
+static void ModelEditorDrawMainMenuEditTab(osc::ModelEditorScreen::Impl& impl)
 {
-    UndoableUiModel& uim = impl.st->updEditedModel();
+    osc::UndoableUiModel& uim = impl.st->updEditedModel();
 
     if (ImGui::BeginMenu("Edit"))
     {
@@ -1236,17 +1238,17 @@ void ModelEditorDrawMainMenuEditTab(ModelEditorScreen::Impl& impl)
             ImGui::EndTooltip();
         }
 
-        bool modelHasBackingFile = HasInputFileName(impl.st->getEditedModel().getModel());
+        bool modelHasBackingFile = osc::HasInputFileName(impl.st->getEditedModel().getModel());
 
         if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile))
         {
             std::filesystem::path p{uim.getModel().getInputFileName()};
-            OpenPathInOSDefaultApplication(p.parent_path());
+            osc::OpenPathInOSDefaultApplication(p.parent_path());
         }
 
         if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile))
         {
-            OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
+            osc::OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
         }
 
         if (ImGui::IsItemHovered())
@@ -1254,7 +1256,7 @@ void ModelEditorDrawMainMenuEditTab(ModelEditorScreen::Impl& impl)
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted("Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
-            if (!HasInputFileName(uim.getModel()))
+            if (!osc::HasInputFileName(uim.getModel()))
             {
                 ImGui::TextDisabled("\n(disabled because the currently-edited model has no backing file)");
             }
@@ -1266,14 +1268,14 @@ void ModelEditorDrawMainMenuEditTab(ModelEditorScreen::Impl& impl)
     }
 }
 
-static void ModelEditorDrawMainMenuSimulateTab(ModelEditorScreen::Impl& impl)
+static void ModelEditorDrawMainMenuSimulateTab(osc::ModelEditorScreen::Impl& impl)
 {
     if (ImGui::BeginMenu("Tools"))
     {
         if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
         {
             StartSimulatingEditedModel(*impl.st);
-            App::cur().requestTransition<SimulatorScreen>(impl.st);
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(impl.st);
             impl.resetPerFrame.subpanelRequestedEarlyExit = true;
         }
 
@@ -1297,7 +1299,7 @@ static void ModelEditorDrawMainMenuSimulateTab(ModelEditorScreen::Impl& impl)
 }
 
 // draws the screen's main menu
-static void ModelEditorDrawMainMenu(ModelEditorScreen::Impl& impl)
+static void ModelEditorDrawMainMenu(osc::ModelEditorScreen::Impl& impl)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -1310,7 +1312,7 @@ static void ModelEditorDrawMainMenu(ModelEditorScreen::Impl& impl)
         ImGui::Dummy({2.0f, 0.0f});
         if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
         {
-            App::cur().requestTransition<SimulatorScreen>(std::move(impl.st));
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(impl.st));
             ImGui::EndMainMenuBar();
             impl.resetPerFrame.subpanelRequestedEarlyExit = true;
             return;
@@ -1321,7 +1323,7 @@ static void ModelEditorDrawMainMenu(ModelEditorScreen::Impl& impl)
         if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
         {
             StartSimulatingEditedModel(*impl.st);
-            App::cur().requestTransition<SimulatorScreen>(std::move(impl.st));
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(impl.st));
             ImGui::PopStyleColor();
             ImGui::EndMainMenuBar();
             impl.resetPerFrame.subpanelRequestedEarlyExit = true;
@@ -1341,11 +1343,11 @@ static void ModelEditorDrawMainMenu(ModelEditorScreen::Impl& impl)
 // draw model editor screen
 //
 // can throw if the model is in an invalid state
-static void ModelEditorDrawUNGUARDED(ModelEditorScreen::Impl& impl)
+static void ModelEditorDrawUNGUARDED(osc::ModelEditorScreen::Impl& impl)
 {
     if (impl.resetPerFrame.shouldRequestRedraw)
     {
-        App::cur().requestRedraw();
+        osc::App::cur().requestRedraw();
     }
 
     impl.resetPerFrame = {};
@@ -1390,11 +1392,11 @@ static void ModelEditorDrawUNGUARDED(ModelEditorScreen::Impl& impl)
                 impl.st->getEditedModel().getSelected(),
                 impl.st->getEditedModel().getHovered());
 
-            if (resp.type == ComponentHierarchy::SelectionChanged)
+            if (resp.type == osc::ComponentHierarchy::SelectionChanged)
             {
                 impl.st->updEditedModel().setSelected(resp.ptr);
             }
-            else if (resp.type == ComponentHierarchy::HoverChanged)
+            else if (resp.type == osc::ComponentHierarchy::HoverChanged)
             {
                 impl.st->updEditedModel().setHovered(resp.ptr);
             }
@@ -1438,7 +1440,7 @@ static void ModelEditorDrawUNGUARDED(ModelEditorScreen::Impl& impl)
             ImGui::OpenPopup("simulation parameters");
         }
 
-        ParamBlockEditorPopup{}.draw("simulation parameters", impl.st->updSimulationParams());
+        osc::ParamBlockEditorPopup{}.draw("simulation parameters", impl.st->updSimulationParams());
     }
 
     impl.st->updEditedModel().updateIfDirty();
@@ -1468,7 +1470,7 @@ void osc::ModelEditorScreen::onUnmount()
     App::cur().makeMainEventLoopPolling();
 }
 
-void ModelEditorScreen::onEvent(SDL_Event const& e)
+void osc::ModelEditorScreen::onEvent(SDL_Event const& e)
 {
     if (osc::ImGuiOnEvent(e))
     {
@@ -1495,8 +1497,7 @@ void osc::ModelEditorScreen::tick(float)
 
 void osc::ModelEditorScreen::draw()
 {
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
     osc::ImGuiNewFrame();
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 

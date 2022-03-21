@@ -1,10 +1,9 @@
 #include "ErrorScreen.hpp"
 
-#include "src/App.hpp"
-#include "src/UI/LogViewer.hpp"
-#include "src/3D/Gl.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Screens/SplashScreen.hpp"
-#include "src/Log.hpp"
+#include "src/Widgets/LogViewer.hpp"
 
 #include <SDL_keyboard.h>
 #include <SDL_keycode.h>
@@ -13,9 +12,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace osc;
-
-struct ErrorScreen::Impl final {
+struct osc::ErrorScreen::Impl final {
     std::string msg;
     LogViewer log;
 
@@ -58,8 +55,7 @@ void osc::ErrorScreen::onEvent(SDL_Event const& e)
 
 void osc::ErrorScreen::draw()
 {
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
     osc::ImGuiNewFrame();
 
     constexpr float width = 800.0f;
@@ -74,10 +70,10 @@ void osc::ErrorScreen::draw()
         if (ImGui::Begin("fatal error"))
         {
             ImGui::TextWrapped("The application threw an exception with the following message:");
-            ImGui::Dummy(ImVec2{2.0f, 10.0f});
+            ImGui::Dummy({2.0f, 10.0f});
             ImGui::SameLine();
             ImGui::TextWrapped("%s", m_Impl->msg.c_str());
-            ImGui::Dummy(ImVec2{0.0f, 10.0f});
+            ImGui::Dummy({0.0f, 10.0f});
 
             if (ImGui::Button("Return to splash screen (Escape)"))
             {

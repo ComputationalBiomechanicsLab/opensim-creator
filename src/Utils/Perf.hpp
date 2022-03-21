@@ -91,7 +91,6 @@ namespace osc
 
     int64_t AllocateMeasurementID(char const* label, char const* filename, unsigned int line);
     void SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end);
-    void PrintMeasurementsToLog();
     void ClearPerfMeasurements();
     int GetAllMeasurements(std::vector<PerfMeasurement>& appendOut);
 

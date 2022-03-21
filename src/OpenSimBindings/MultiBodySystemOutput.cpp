@@ -1,7 +1,7 @@
 #include "MultiBodySystemOutput.hpp"
 
 #include "src/OpenSimBindings/SimulationReport.hpp"
-#include "src/Assertions.hpp"
+#include "src/Utils/Assertions.hpp"
 
 #include <simbody/internal/MultibodySystem.h>
 

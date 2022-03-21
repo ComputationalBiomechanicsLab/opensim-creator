@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 
 #include <filesystem>
+#include <memory>
 #include <vector>
 #include <string_view>
 

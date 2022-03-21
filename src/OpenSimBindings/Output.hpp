@@ -37,7 +37,7 @@ namespace osc
     class Output {
     public:
         template<class SpecificOutput>
-        Output(SpecificOutput&& output) :
+        explicit Output(SpecificOutput&& output) :
             m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
         {
         }

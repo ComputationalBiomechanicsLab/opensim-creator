@@ -1,37 +1,49 @@
 #include "SimulatorScreen.hpp"
 
-#include "src/3D/BVH.hpp"
-#include "src/3D/Gl.hpp"
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ComponentOutput.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
+#include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/OpenSimBindings/VirtualOutput.hpp"
+#include "src/OpenSimBindings/VirtualSimulation.hpp"
+#include "src/Maths/BVH.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/os.hpp"
+#include "src/Platform/Styling.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
-#include "src/UI/LogViewer.hpp"
-#include "src/UI/MainMenu.hpp"
-#include "src/UI/ComponentDetails.hpp"
-#include "src/UI/ComponentHierarchy.hpp"
-#include "src/UI/PerfPanel.hpp"
-#include "src/UI/UiModelViewer.hpp"
-#include "src/Utils/ImGuiHelpers.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/App.hpp"
-#include "src/Assertions.hpp"
-#include "src/MainEditorState.hpp"
-#include "src/Styling.hpp"
-#include "src/os.hpp"
+#include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/MainMenu.hpp"
+#include "src/Widgets/ComponentDetails.hpp"
+#include "src/Widgets/ComponentHierarchy.hpp"
+#include "src/Widgets/PerfPanel.hpp"
+#include "src/Widgets/UiModelViewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <imgui.h>
 #include <implot/implot.h>
+#include <IconsFontAwesome5.h>
+#include <nonstd/span.hpp>
 
 #include <chrono>
+#include <fstream>
+#include <filesystem>
 #include <limits>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <variant>
+#include <vector>
 
 // simulator screeen (private) state
 struct osc::SimulatorScreen::Impl final {
@@ -728,7 +740,6 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
 
     ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
-
     // draw a vertical Y line showing the current scrub time over the plots
     {
         float plotScrubLineX = plotTopLeft.x + simScrubPct*(plotBottomRight.x - plotTopLeft.x);
@@ -943,11 +954,11 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
         ImGui::TextUnformatted(sim.getModel().getName().c_str());
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::Dummy({0.0f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
         ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim.getCurTime() - sim.getStartTime()).count()));
         ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim.getEndTime().time_since_epoch().count()));
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
+        ImGui::Dummy({0.0f, 1.0f});
         ImGui::TextUnformatted("Left-click: Select this simulation");
         ImGui::TextUnformatted("Delete: cancel this simulation");
         ImGui::PopStyleColor();
@@ -1333,8 +1344,7 @@ void osc::SimulatorScreen::tick(float)
 
 void osc::SimulatorScreen::draw()
 {
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
     osc::ImGuiNewFrame();
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
     SimscreenDraw(*m_Impl);

@@ -1,12 +1,11 @@
 #include "LoadingScreen.hpp"
 
-#include "src/3D/Gl.hpp"
+#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
-#include "src/App.hpp"
-#include "src/Assertions.hpp"
-#include "src/Log.hpp"
+#include "src/Utils/Assertions.hpp"
 
 #include <imgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -185,8 +184,7 @@ void osc::LoadingScreen::draw()
     Impl& impl = *m_Impl;
     constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
 
-    gl::ClearColor(0.99f, 0.98f, 0.96f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    App::cur().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
 
     glm::vec2 window_dims = App::cur().dims();
 

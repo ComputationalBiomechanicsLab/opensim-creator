@@ -12,7 +12,8 @@ namespace SimTK
 
 namespace osc
 {
-    enum class IntegratorMethod {
+    enum class IntegratorMethod
+    {
         OpenSimManagerDefault = 0,
         ExplicitEuler,
         RungeKutta2,

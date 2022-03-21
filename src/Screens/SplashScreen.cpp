@@ -2,24 +2,23 @@
 
 #include "osc_config.hpp"
 
-#include "src/3D/Shaders/GouraudShader.hpp"
-#include "src/3D/Constants.hpp"
-#include "src/3D/Gl.hpp"
-#include "src/3D/GlGlm.hpp"
-#include "src/3D/InstancedRenderer.hpp"
-#include "src/3D/Mesh.hpp"
-#include "src/3D/Model.hpp"
-#include "src/3D/Texturing.hpp"
+#include "src/Graphics/Shaders/GouraudShader.hpp"
+#include "src/Graphics/Gl.hpp"
+#include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/Mesh.hpp"
+#include "src/Graphics/MeshCache.hpp"
+#include "src/Graphics/Texturing.hpp"
+#include "src/Maths/Constants.hpp"
+#include "src/Maths/Geometry.hpp"
+#include "src/Maths/PolarPerspectiveCamera.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Config.hpp"
+#include "src/Platform/os.hpp"
+#include "src/Platform/Styling.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/MeshImporterScreen.hpp"
-#include "src/UI/MainMenu.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/App.hpp"
-#include "src/Config.hpp"
-#include "src/Log.hpp"
-#include "src/MeshCache.hpp"
-#include "src/os.hpp"
-#include "src/Styling.hpp"
+#include "src/Widgets/MainMenu.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -29,19 +28,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
 
+#include <filesystem>
 #include <memory>
-
-using namespace osc;
 
 static gl::Texture2D LoadImageResourceIntoTexture(char const* res_pth)
 {
-    return loadImageAsTexture(App::resource(res_pth).string().c_str()).texture;
+    return osc::loadImageAsTexture(osc::App::resource(res_pth).string().c_str()).texture;
 }
 
 static glm::mat4x3 GenerateFloorModelMatrix()
 {
     // rotate from XY (+Z dir) to ZY (+Y dir)
-    glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -fpi2, {1.0f, 0.0f, 0.0f});
+    glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
 
     // make floor extend far in all directions
     rv = glm::scale(glm::mat4{1.0f}, {100.0f, 1.0f, 100.0f}) * rv;
@@ -53,10 +51,10 @@ static glm::mat4x3 GenerateFloorModelMatrix()
     return glm::mat4x3{rv};
 }
 
-struct SplashScreen::Impl final {
+struct osc::SplashScreen::Impl final {
 
     // used to render floor
-    GouraudShader& gouraud = App::shader<GouraudShader>();
+    osc::GouraudShader& gouraud = App::shader<GouraudShader>();
 
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};

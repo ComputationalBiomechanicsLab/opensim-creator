@@ -5,9 +5,9 @@
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/IntegratorOutput.hpp"
 #include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
-#include "src/Log.hpp"
 
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>

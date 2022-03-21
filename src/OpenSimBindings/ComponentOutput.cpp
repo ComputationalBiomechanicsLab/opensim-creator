@@ -2,15 +2,16 @@
 
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Assertions.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Component.h>
 #include <SimTKcommon.h>
 
 #include <typeinfo>
+#include <sstream>
 
 // named namespace is due to an MSVC internal linkage compiler bug
 namespace output_magic

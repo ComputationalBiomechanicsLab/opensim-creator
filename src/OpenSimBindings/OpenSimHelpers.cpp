@@ -1,13 +1,13 @@
 #include "OpenSimHelpers.hpp"
 
+#include "src/Bindings/SimTKHelpers.hpp"
+#include "src/Graphics/MeshCache.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
-#include "src/3D/Model.hpp"
-#include "src/MeshCache.hpp"
+#include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Perf.hpp"
-#include "src/Utils/SimTKHelpers.hpp"
-#include "src/App.hpp"
-#include "src/Log.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>

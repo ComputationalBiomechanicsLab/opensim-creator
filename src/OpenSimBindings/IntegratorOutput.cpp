@@ -2,8 +2,8 @@
 
 #include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Assertions.hpp"
 
 #include <simmath/Integrator.h>
 
