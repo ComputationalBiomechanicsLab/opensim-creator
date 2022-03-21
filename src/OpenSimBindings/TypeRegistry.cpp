@@ -188,7 +188,7 @@ static_assert(g_ContactGeomHashes.size() == g_ContactGeomPrototypes.size());
 
 // Force LUTs
 
-std::array<std::unique_ptr<OpenSim::Force const>, 11> const g_ForcePrototypes = {
+std::array<std::unique_ptr<OpenSim::Force const>, 12> const g_ForcePrototypes = {
     std::make_unique<OpenSim::BushingForce>(),
     std::make_unique<OpenSim::CoordinateLimitForce>(),
     std::make_unique<OpenSim::DeGrooteFregly2016Muscle>(),
@@ -213,7 +213,8 @@ std::array<std::unique_ptr<OpenSim::Force const>, 11> const g_ForcePrototypes = 
     }(),
     std::make_unique<OpenSim::RigidTendonMuscle>(),
     std::make_unique<OpenSim::SmoothSphereHalfSpaceForce>(),
-    std::make_unique<OpenSim::Thelen2003Muscle>()
+    std::make_unique<OpenSim::Thelen2003Muscle>(),
+    std::make_unique<OpenSim::TorqueActuator>(),
 };
 
 static auto const g_ForceNames = ExtractNames(g_ForcePrototypes);
@@ -228,7 +229,8 @@ static constexpr std::array<char const*, g_ForcePrototypes.size()> g_ForceDescri
     "A spring that follows a one-dimensional path. A PathSpring is a massless force element which applies tension along a path connected to bodies. A path spring can also wrap over wrap surfaces.\n\nThe tension is proportional to its stretch beyond its resting length and the amount of dissipation scales with the amount of stretch.",
     "A class implementing a RigidTendonMuscle actuator with no states. The path information for a RigidTendonMuscle is contained in the base class, and the force-generating behavior should is defined in this class. The force (muscle tension) assumes rigid tendon so that fiber-length and velocity are kinematics dependent and the force-length force-velocity relationships are evaluated directly. The control of this model is its activation. Force production is instantaneous with no excitation-to-activation dynamics and excitation=activation.",
     "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
-    "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors."
+    "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
+    "A TorqueActuator applies equal and opposite torques on the two bodies (bodyA and B) that it connects. The torque is applied about an axis specified in ground (global) by default, otherwise it is in bodyA's frame. The magnitude of the torque is equal to the product of the optimal_force of the actuator and its control signal."
 };
 static auto const g_ForceHashes = ExtractTypeHashes(g_ForcePrototypes);
 
