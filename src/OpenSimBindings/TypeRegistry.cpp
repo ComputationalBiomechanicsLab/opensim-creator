@@ -2,6 +2,7 @@
 
 #include "src/Utils/Assertions.hpp"
 
+#include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
@@ -188,7 +189,8 @@ static_assert(g_ContactGeomHashes.size() == g_ContactGeomPrototypes.size());
 
 // Force LUTs
 
-std::array<std::unique_ptr<OpenSim::Force const>, 12> const g_ForcePrototypes = {
+std::array<std::unique_ptr<OpenSim::Force const>, 13> const g_ForcePrototypes = {
+    std::make_unique<OpenSim::BodyActuator>(),
     std::make_unique<OpenSim::BushingForce>(),
     std::make_unique<OpenSim::CoordinateLimitForce>(),
     std::make_unique<OpenSim::DeGrooteFregly2016Muscle>(),
@@ -219,6 +221,7 @@ std::array<std::unique_ptr<OpenSim::Force const>, 12> const g_ForcePrototypes = 
 
 static auto const g_ForceNames = ExtractNames(g_ForcePrototypes);
 static constexpr std::array<char const*, g_ForcePrototypes.size()> g_ForceDescriptions = {
+    "Apply a spatial force (that is, [torque, force]) on a given point of the given body. That is, the force is applied at the given point; torques don't have associated points. This actuator has no states; the control signal should provide a 6D vector including [torque(3D), force(3D)] that is supposed to be applied to the body. The associated controller can generate the spatial force [torque, force] both in the body and global (ground) frame. The default is assumed to be global frame. The point of application can be specified both in the body and global (ground) frame. The default is assumed to be the body frame.",
     "A Bushing Force is the force proportional to the deviation of two frames. One can think of the Bushing as being composed of 3 linear and 3 torsional spring-dampers, which act along or about the bushing frames. Orientations are measured as x-y-z body-fixed Euler rotations, which are treated as though they were uncoupled. Damping is proportional to the deflection rate of change (e.g. Euler angle derivatives) which is NOT the angular velocity between the two frames. That makes this bushing model suitable only for relatively small relative orientation deviations between the frames.",
     "Generate a force that acts to limit the range of motion of a coordinate. Force is experienced at upper and lower limits of the coordinate value according to a constant stiffnesses K_upper and K_lower, with a C2 continuous transition from 0 to K. The transition parameter defines how far beyond the limit the stiffness becomes constant. The integrator will like smoother (i.e. larger transition regions).",
     "This muscle model was published in De Groote et al. 2016.",
