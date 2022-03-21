@@ -709,8 +709,9 @@ if (WIN32)
     set(CPACK_NSIS_CONTACT "contact@adamkewley.com")
     # do not prompt the user to modify the PATH
     set(CPACK_NSIS_MODIFY_PATH OFF)
-    set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
-    #set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\OpenSimCreator\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
+    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
+    # set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)  # DISALLOWED: boots app with admin privs: see #95 (or inkscape's CMake file)
+    # set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\OpenSimCreator\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
 endif()
 
 # Linux install/packaging:
