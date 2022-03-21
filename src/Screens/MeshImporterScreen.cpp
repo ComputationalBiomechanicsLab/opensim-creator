@@ -179,13 +179,15 @@ namespace
     }
 
     // perform an intrinsic rotation about a transform's axis
-    Transform RotateAxis(Transform const& t, int axis, float angRadians)
+    Transform RotateAlongAxis(Transform const& t, int axis, float angRadians)
     {
         glm::vec3 ax{};
         ax[axis] = 1.0f;
         ax = t.rotation * ax;
 
-        return t.withRotation(glm::angleAxis(angRadians, ax) * t.rotation);
+        glm::quat q = glm::angleAxis(angRadians, ax);
+
+        return t.withRotation(glm::normalize(q * t.rotation));
     }
 
     Transform ToOsimTransform(SimTK::Transform const& t)
@@ -2897,9 +2899,9 @@ namespace
         return true;
     }
 
-    void RotateAxis180Degrees(CommittableModelGraph& cmg, SceneEl& el, int axis)
+    void RotateAxisXRadians(CommittableModelGraph& cmg, SceneEl& el, int axis, float radians)
     {
-        el.SetXform(RotateAxis(el.GetXform(), axis, fpi));
+        el.SetXform(RotateAlongAxis(el.GetXform(), axis, radians));
         cmg.Commit("reoriented " + el.GetLabel());
     }
 
@@ -2932,7 +2934,7 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        BodyEl& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos, {}});
+        BodyEl& b = mg.AddEl<BodyEl>(GenerateName(BodyEl::Class()), Transform{pos});
         mg.DeSelectAll();
         mg.Select(b.ID);
 
@@ -6903,9 +6905,14 @@ namespace
                         TransitionToChoosingWhichElementToPointAxisTowards(el, axis);
                     }
 
+                    if (ImGui::MenuItem("90 degress"))
+                    {
+                        RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, fpi/2.0f);
+                    }
+
                     if (ImGui::MenuItem("180 degrees"))
                     {
-                        RotateAxis180Degrees(m_Shared->UpdCommittableModelGraph(), el, axis);
+                        RotateAxisXRadians(m_Shared->UpdCommittableModelGraph(), el, axis, fpi);
                     }
 
                     if (ImGui::MenuItem("Along two mesh points"))
