@@ -2,9 +2,10 @@
 
 #include <nonstd/span.hpp>
 
-#include <memory>
-#include <optional>
 #include <cstddef>
+#include <optional>
+#include <memory>
+#include <string>
 
 namespace OpenSim
 {
