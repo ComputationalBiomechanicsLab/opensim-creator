@@ -16,6 +16,7 @@ public:
         m_State{integrator.getState()}
     {
         // care: state needs to be realized on the simulator thread
+        m_State.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
 
         // populate integrator outputs
         {
