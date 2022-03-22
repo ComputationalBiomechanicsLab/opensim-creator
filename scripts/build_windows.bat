@@ -38,7 +38,7 @@ REM if in-built HTML/sphinx documentation should be built
 IF NOT DEFINED OSC_BUILD_DOCS (set OSC_BUILD_DOCS=OFF)
 
 REM change this if you want to try a different generator+arch combo
-set OSC_CMAKE_GENFLAGS=-G"Visual Studio 16 2019" -A x64 -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% -DOSC_BUILD_DOCS=%OSC_BUILD_DOCS%
+set OSC_CMAKE_GENFLAGS=-G"Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% -DOSC_BUILD_DOCS=%OSC_BUILD_DOCS%
 
 echo "----- starting build -----"
 echo ""
