@@ -14,7 +14,7 @@ namespace osc
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
     
         // default-construct as an identity transform
-        constexpr Transform() noexcept = default;
+        constexpr Transform() = default;
     
         // construct at a given position with an identity rotation and scale
         constexpr explicit Transform(glm::vec3 const& position_) noexcept :
