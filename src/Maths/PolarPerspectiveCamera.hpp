@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/Maths/Line.hpp"
-#include "src/Maths/Rect.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
@@ -9,6 +8,8 @@
 
 namespace osc
 {
+    struct Rect;
+
     // a camera that focuses on and swivels around a focal point (e.g. for 3D model viewers)
     class PolarPerspectiveCamera final {
     public:

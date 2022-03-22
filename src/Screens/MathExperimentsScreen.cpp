@@ -118,9 +118,9 @@ void osc::MathExperimentsScreen::draw() {
     ImGui::Begin("cookiecutter panel");
     ImGui::Text("screen center = %.2f, %.2f", screenCenter.x, screenCenter.y);
     ImGui::Text("mainvec = %.2f, %.2f", mainVec.x, mainVec.y);
-    glm::vec2 relVec = toMat4(m_Impl->boxTransform) * glm::vec4{mousePos, 0.0f, 1.0f};
+    glm::vec2 relVec = ToMat4(m_Impl->boxTransform) * glm::vec4{mousePos, 0.0f, 1.0f};
     ImGui::Text("relvec (mtx) = %.2f, %.2f", relVec.x, relVec.y);
-    glm::vec2 relVecF = transformPoint(m_Impl->boxTransform, glm::vec3{mousePos, 0.0f});
+    glm::vec2 relVecF = TransformPoint(m_Impl->boxTransform, glm::vec3{mousePos, 0.0f});
     ImGui::Text("relvec (func) = %.2f, %.2f", relVecF.x, relVecF.y);
 
     osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();

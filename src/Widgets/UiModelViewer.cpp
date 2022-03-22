@@ -456,8 +456,8 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
         }
 
         SceneGPUInstanceData& ins = buf.emplace_back();
-        ins.modelMtx = osc::toMat4(se.transform);
-        ins.normalMtx = osc::toNormalMatrix(se.transform);
+        ins.modelMtx = osc::ToMat4(se.transform);
+        ins.normalMtx = osc::ToNormalMatrix(se.transform);
         ins.rgba = se.color;
         ins.rimIntensity = ComputeRimColor(selected, hovered, se.component);
         ins.decorationIdx = static_cast<int>(i);
@@ -583,7 +583,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
             gl::Uniform(basicShader.uViewMat, viewMtx);
             glm::mat4 mtx = GenerateFloorModelMatrix(impl, rs);
             gl::Uniform(basicShader.uModelMat, mtx);
-            gl::Uniform(basicShader.uNormalMat, osc::NormalMatrix(mtx));
+            gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
             gl::Uniform(basicShader.uLightDir, impl.lightDir);
             gl::Uniform(basicShader.uLightColor, impl.lightCol);
             gl::Uniform(basicShader.uViewPos, viewerPos);
@@ -685,7 +685,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
             // union the rims for scissor testing later
             for (size_t i = pos; i < end; ++i)
             {
-                rimAABB = AABBUnion(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
+                rimAABB = Union(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
             }
 
             gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
@@ -706,14 +706,14 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
             //
             // calculate a screenspace bounding box that surrounds the rims so that the
             // edge detection shader only had to run on a smaller subset of the screen
-            osc::AABB screenspaceRimBounds = AABBApplyXform(rimAABB, projMtx * viewMtx);
-            auto verts = AABBVerts(screenspaceRimBounds);
+            osc::AABB screenspaceRimBounds = TransformAABB(rimAABB, projMtx * viewMtx);
+            auto verts = ToCubeVerts(screenspaceRimBounds);
             glm::vec2 bounds[2] = {{verts[0].x, verts[0].y}, {verts[0].x, verts[0].y}};
             for (size_t i = 1; i < verts.size(); ++i)
             {
                 glm::vec2 p{verts[i].x, verts[i].y};
-                bounds[0] = osc::VecMin(p, bounds[0]);
-                bounds[1] = osc::VecMax(p, bounds[1]);
+                bounds[0] = osc::Min(p, bounds[0]);
+                bounds[1] = osc::Max(p, bounds[1]);
             }
             bounds[0] -= rimThickness;
             bounds[1] += rimThickness;
@@ -816,8 +816,8 @@ static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
             continue;  // it's not in the current isolation
         }
 
-        glm::mat4 instanceMmtx = toMat4(decs[instanceIdx].transform);
-        osc::Line cameraRayModelspace = LineApplyXform(cameraRay, toInverseMat4(decs[instanceIdx].transform));
+        glm::mat4 instanceMmtx = ToMat4(decs[instanceIdx].transform);
+        osc::Line cameraRayModelspace = TransformLine(cameraRay, ToInverseMat4(decs[instanceIdx].transform));
 
         auto maybeCollision = decs[instanceIdx].mesh->getClosestRayTriangleCollisionModelspace(cameraRayModelspace);
 
@@ -847,7 +847,7 @@ static void DrawGrid(osc::UiModelViewer::Impl& impl, glm::mat4 rotationMatrix)
     gl::UseProgram(shader.program);
     gl::Uniform(shader.uModel, glm::scale(rotationMatrix, {50.0f, 50.0f, 1.0f}));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
     gl::Uniform(shader.uColor, {0.7f, 0.7f, 0.7f, 0.15f});
     auto grid = osc::App::meshes().get100x100GridMesh();
     gl::BindVertexArray(grid->GetVertexArray());
@@ -876,7 +876,7 @@ static void DrawXZFloorLines(osc::UiModelViewer::Impl& impl)
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
 
     auto yline = osc::App::meshes().getYLineMesh();
@@ -901,7 +901,7 @@ static void DrawAABBs(osc::UiModelViewer::Impl& impl, osc::RenderableScene const
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -910,8 +910,8 @@ static void DrawAABBs(osc::UiModelViewer::Impl& impl, osc::RenderableScene const
 
     for (auto const& se : rs.getSceneDecorations())
     {
-        glm::vec3 halfWidths = AABBDims(se.worldspaceAABB) / 2.0f;
-        glm::vec3 center = AABBCenter(se.worldspaceAABB);
+        glm::vec3 halfWidths = Dimensions(se.worldspaceAABB) / 2.0f;
+        glm::vec3 center = Dimensions(se.worldspaceAABB);
 
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
         glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -931,8 +931,8 @@ static void DrawBVHRecursive(osc::Mesh& cube,
 {
     osc::BVHNode const& n = bvh.nodes[pos];
 
-    glm::vec3 halfWidths = AABBDims(n.bounds) / 2.0f;
-    glm::vec3 center = AABBCenter(n.bounds);
+    glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
+    glm::vec3 center = Dimensions(n.bounds);
 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -961,7 +961,7 @@ static void DrawBVH(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& 
 
     // common stuff
     gl::UseProgram(shader.program);
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(RectAspectRatio(impl.renderRect)));
+    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(AspectRatio(impl.renderRect)));
     gl::Uniform(shader.uView, impl.camera.getViewMtx());
     gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
@@ -1084,8 +1084,8 @@ static void DoAutoFocusCamera(osc::UiModelViewer::Impl& impl,
     if (!bvh.nodes.empty())
     {
         auto const& bvhRoot = bvh.nodes[0].bounds;
-        impl.camera.focusPoint = -AABBCenter(bvhRoot);
-        impl.camera.radius = 2.0f * AABBLongestDim(bvhRoot);
+        impl.camera.focusPoint = -Midpoint(bvhRoot);
+        impl.camera.radius = 2.0f * LongestDim(bvhRoot);
         impl.camera.theta = osc::fpi4;
         impl.camera.phi = osc::fpi4;
     }

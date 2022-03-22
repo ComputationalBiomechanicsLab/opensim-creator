@@ -187,12 +187,12 @@ public:
 
     glm::vec3 getSceneDimensions() const
     {
-        return AABBDims(getSceneAABB());
+        return Dimensions(getSceneAABB());
     }
 
     float getSceneLongestDimension() const
     {
-        return AABBLongestDim(getSceneAABB());
+        return LongestDim(getSceneAABB());
     }
 
     float getRecommendedScaleFactor() const
@@ -211,10 +211,10 @@ public:
         AABB aabb = ses[0].worldspaceAABB;
         for (size_t i = 1; i < ses.size(); ++i)
         {
-            aabb = AABBUnion(aabb, ses[i].worldspaceAABB);
+            aabb = Union(aabb, ses[i].worldspaceAABB);
         }
 
-        float longest = AABBLongestDim(aabb);
+        float longest = LongestDim(aabb);
         float rv = 1.0f;
 
         while (longest < 0.1)

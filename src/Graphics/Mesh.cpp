@@ -175,7 +175,7 @@ osc::Mesh::Mesh(MeshData cpuMesh) :
     }
 
     m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    m_Impl->boundingSphere = BoundingSphereFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
+    m_Impl->boundingSphere = BoundingSphereOf(m_Impl->verts.data(), m_Impl->verts.size());
 
     if (m_Impl->topography == MeshTopography::Triangles)
     {
@@ -387,12 +387,12 @@ osc::AABB const& osc::Mesh::getAABB() const
 
 osc::AABB osc::Mesh::getWorldspaceAABB(Transform const& localToWorldXform) const
 {
-    return AABBApplyXform(m_Impl->aabb, toMat4(localToWorldXform));
+    return TransformAABB(m_Impl->aabb, ToMat4(localToWorldXform));
 }
 
 osc::AABB osc::Mesh::getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const
 {
-    return AABBApplyXform(m_Impl->aabb, modelMatrix);
+    return TransformAABB(m_Impl->aabb, modelMatrix);
 }
 
 osc::Sphere const& osc::Mesh::getBoundingSphere() const
@@ -433,7 +433,7 @@ osc::RayCollision osc::Mesh::getRayMeshCollisionInWorldspace(glm::mat4 const& mo
 
     // do a fast ray-to-AABB collision test
     AABB modelspaceAABB = getAABB();
-    AABB worldspaceAABB = AABBApplyXform(modelspaceAABB, model2world);
+    AABB worldspaceAABB = TransformAABB(modelspaceAABB, model2world);
 
     RayCollision rayAABBCollision = GetRayCollisionAABB(worldspaceLine, worldspaceAABB);
 
@@ -446,7 +446,7 @@ osc::RayCollision osc::Mesh::getRayMeshCollisionInWorldspace(glm::mat4 const& mo
     //
     // refine the hittest by doing a slower ray-to-triangle test
     glm::mat4 world2model = glm::inverse(model2world);
-    Line modelspaceLine = LineApplyXform(worldspaceLine, world2model);
+    Line modelspaceLine = TransformLine(worldspaceLine, world2model);
 
     return getClosestRayTriangleCollisionModelspace(modelspaceLine);
 }
@@ -469,7 +469,7 @@ void osc::Mesh::clear()
 void osc::Mesh::recalculateBounds()
 {
     m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    m_Impl->boundingSphere = BoundingSphereFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
+    m_Impl->boundingSphere = BoundingSphereOf(m_Impl->verts.data(), m_Impl->verts.size());
 
     if (m_Impl->topography == MeshTopography::Triangles)
     {

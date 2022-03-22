@@ -53,7 +53,7 @@ static InstancedDrawlist makeDrawlist(int rows, int cols)
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, {x, y, 0.0f});
             glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{w, h, d});
             glm::mat4 xform = translate * scale;
-            glm::mat4 normalMtx = NormalMatrix(xform);
+            glm::mat4 normalMtx = ToNormalMatrix(xform);
 
             modelMtxs.push_back(xform);
             normalMtxs.push_back(normalMtx);

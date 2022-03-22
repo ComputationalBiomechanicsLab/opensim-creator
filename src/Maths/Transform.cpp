@@ -12,7 +12,7 @@ std::ostream& osc::operator<<(std::ostream& o, Transform const& t)
 
 glm::vec3 osc::operator*(Transform const& t, glm::vec3 const& p)
 {
-    return transformPoint(t, p);
+    return TransformPoint(t, p);
 }
 
 osc::Transform& osc::operator+=(Transform& t, Transform const& o) noexcept

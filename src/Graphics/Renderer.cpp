@@ -491,7 +491,7 @@ public:
 
     float getAspectRatio() const
     {
-        return VecAspectRatio(m_Dims);
+        return AspectRatio(m_Dims);
     }
 
     TextureWrapMode getWrapMode() const

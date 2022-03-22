@@ -1,12 +1,16 @@
 #pragma once
 
 #include "src/Maths/AABB.hpp"
-#include "src/Maths/Line.hpp"
 
 #include <glm/vec3.hpp>
 
 #include <vector>
 #include <cstddef>
+
+namespace osc
+{
+    struct Line;
+}
 
 namespace osc
 {

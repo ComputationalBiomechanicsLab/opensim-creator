@@ -101,7 +101,7 @@ glm::vec3 osc::PolarPerspectiveCamera::getPos() const noexcept
 
 glm::vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(glm::vec3 const& worldspaceLoc, Rect const& screenRect) const noexcept
 {
-    glm::vec2 dims = RectDims(screenRect);
+    glm::vec2 dims = Dimensions(screenRect);
     glm::mat4 MV = getProjMtx(dims.x/dims.y) * getViewMtx();
 
     glm::vec4 ndc = MV * glm::vec4{worldspaceLoc, 1.0f};

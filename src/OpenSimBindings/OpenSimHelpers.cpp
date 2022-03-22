@@ -86,8 +86,8 @@ namespace
                                   float fixupScaleFactor,
                                   std::vector<osc::ComponentDecoration>& out)
     {
-        glm::vec3 p1 = transformPoint(TransformInGround(p2p.getBody1(), st), ToVec3(p2p.getPoint1()));
-        glm::vec3 p2 = transformPoint(TransformInGround(p2p.getBody2(), st), ToVec3(p2p.getPoint2()));
+        glm::vec3 p1 = TransformPoint(TransformInGround(p2p.getBody1(), st), ToVec3(p2p.getPoint1()));
+        glm::vec3 p2 = TransformPoint(TransformInGround(p2p.getBody2(), st), ToVec3(p2p.getPoint2()));
 
         float radius = 0.005f * fixupScaleFactor;
         Transform cylinderXform = SimbodyCylinderToSegmentTransform({p1, p2}, radius);
@@ -137,7 +137,7 @@ namespace
         {
             float radius = fixupScaleFactor * 0.005f;
             Transform t = TransformInGround(b, st);
-            t.position = transformPoint(t, ToVec3(b.getMassCenter()));
+            t.position = TransformPoint(t, ToVec3(b.getMassCenter()));
             t.scale = {radius, radius, radius};
 
             out.emplace_back(

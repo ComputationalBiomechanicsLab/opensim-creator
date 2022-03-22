@@ -447,7 +447,7 @@ namespace
 
         glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
 
-        glm::mat4 projMat = camera.getProjMtx(VecAspectRatio(dims));
+        glm::mat4 projMat = camera.getProjMtx(AspectRatio(dims));
         glm::mat4 viewMat = camera.getViewMtx();
         glm::vec3 viewPos = camera.getPos();
 
@@ -552,7 +552,7 @@ namespace
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
             gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, 1.75f / VecLongestDimVal(dims));
+            gl::Uniform(eds.uRimThickness, 1.75f / LongestDim(dims));
             auto quadMesh = App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_BLEND);
@@ -922,7 +922,7 @@ namespace
     void ApplyRotation(SceneEl& el, glm::vec3 const& eulerAngles, glm::vec3 const& rotationCenter)
     {
         Transform t = el.GetXform();
-        applyWorldspaceRotation(t, eulerAngles, rotationCenter);
+        ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
         el.SetXform(t);
     }
 
@@ -2737,7 +2737,7 @@ namespace
         size_t jointTypeIdx = *JointRegistry::indexOf(OpenSim::WeldJoint{});
         glm::vec3 parentPos = GetPosition(mg, parentID);
         glm::vec3 childPos = GetPosition(mg, childID);
-        glm::vec3 midPoint = VecMidpoint(parentPos, childPos);
+        glm::vec3 midPoint = Midpoint(parentPos, childPos);
 
         JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
@@ -2776,7 +2776,7 @@ namespace
             return false;
         }
 
-        el->SetPos(VecMidpoint(a, b));
+        el->SetPos(Midpoint(a, b));
         cmg.Commit("translated " + el->GetLabel());
 
         return true;
@@ -2807,7 +2807,7 @@ namespace
             return false;
         }
 
-        el->SetPos(VecMidpoint(aEl->GetPos(), bEl->GetPos()));
+        el->SetPos(Midpoint(aEl->GetPos(), bEl->GetPos()));
         cmg.Commit("translated " + el->GetLabel());
 
         return true;
@@ -3236,17 +3236,17 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        glm::mat4 toParentPofInParent =  toInverseMat4(IgnoreScale(GetTransform(mg, joint.Parent))) * toMat4(IgnoreScale(joint.Xform));
+        glm::mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.Parent))) * ToMat4(IgnoreScale(joint.Xform));
         parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
-        parentPOF->set_orientation(ToSimTKVec3(extractEulerAngleXYZ(toParentPofInParent)));
+        parentPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        glm::mat4 toChildPofInChild = toInverseMat4(IgnoreScale(GetTransform(mg, joint.Child))) * toMat4(IgnoreScale(joint.Xform));
+        glm::mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.Child))) * ToMat4(IgnoreScale(joint.Xform));
         childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
-        childPOF->set_orientation(ToSimTKVec3(extractEulerAngleXYZ(toChildPofInChild)));
+        childPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
         auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[joint.JointTypeIndex]->clone());
@@ -4142,7 +4142,7 @@ namespace
                 return;
             }
 
-            glm::vec3 midpoint = VecMidpoint(parent, child);
+            glm::vec3 midpoint = Midpoint(parent, child);
             glm::vec2 midpointScr = WorldPosToScreenPos(midpoint);
             glm::vec2 directionScr = glm::normalize(child2ParentScr);
             glm::vec2 directionNormalScr = {-directionScr.y, directionScr.x};
@@ -4336,14 +4336,14 @@ namespace
 
             // draw 3D scene to texture
             ::DrawScene(
-                RectDims(Get3DSceneRect()),
+                Dimensions(Get3DSceneRect()),
                 GetCamera(),
                 GetColorSceneBackground(),
                 drawables,
                 UpdSceneTex());
 
             // send texture to ImGui
-            DrawTextureAsImGuiImage(UpdSceneTex(), RectDims(Get3DSceneRect()));
+            DrawTextureAsImGuiImage(UpdSceneTex(), Dimensions(Get3DSceneRect()));
 
             // handle hittesting, etc.
             SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -4371,7 +4371,7 @@ namespace
 
         glm::vec2 Get3DSceneDims() const
         {
-            return RectDims(m_3DSceneRect);
+            return Dimensions(m_3DSceneRect);
         }
 
         PolarPerspectiveCamera const& GetCamera() const
@@ -4582,7 +4582,7 @@ namespace
             dt.groupId = g_EmptyID;
             dt.mesh = App::meshes().get100x100GridMesh();
             dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
-            dt.normalMatrix = NormalMatrix(dt.modelMatrix);
+            dt.normalMatrix = ToNormalMatrix(dt.modelMatrix);
             dt.color = m_Colors.GridLines;
             dt.rimColor = 0.0f;
             dt.maybeDiffuseTex = nullptr;
@@ -4622,7 +4622,7 @@ namespace
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.modelMatrix = SphereMeshToSceneSphereXform(centerSphere);
-                sphere.normalMatrix = NormalMatrix(sphere.modelMatrix);
+                sphere.normalMatrix = ToNormalMatrix(sphere.modelMatrix);
                 sphere.color = {coreColor.r, coreColor.g, coreColor.b, alpha};
                 sphere.rimColor = rimAlpha;
                 sphere.maybeDiffuseTex = nullptr;
@@ -4647,7 +4647,7 @@ namespace
                 se.groupId = groupID;
                 se.mesh = m_CylinderMesh;
                 se.modelMatrix = SegmentToSegmentMat4(cylinderline, axisline) * prescaleMtx;
-                se.normalMatrix = NormalMatrix(se.modelMatrix);
+                se.normalMatrix = ToNormalMatrix(se.modelMatrix);
                 se.color = color;
                 se.rimColor = rimAlpha;
                 se.maybeDiffuseTex = nullptr;
@@ -4664,7 +4664,7 @@ namespace
                                glm::vec3 coreColor = {1.0f, 1.0f, 1.0f},
                                glm::vec3 sfs = {1.0f, 1.0f, 1.0f}) const
         {
-            glm::mat4 baseMmtx = toMat4(xform);
+            glm::mat4 baseMmtx = ToMat4(xform);
 
             float halfWidths = 1.5f * GetSphereRadius();
             glm::vec3 scaleFactors = halfWidths * sfs;
@@ -4677,7 +4677,7 @@ namespace
                 originCube.groupId = groupID;
                 originCube.mesh = App::cur().meshes().getBrickMesh();
                 originCube.modelMatrix = mmtx;
-                originCube.normalMatrix = NormalMatrix(mmtx);
+                originCube.normalMatrix = ToNormalMatrix(mmtx);
                 originCube.color = glm::vec4{coreColor, alpha};
                 originCube.rimColor = rimAlpha;
                 originCube.maybeDiffuseTex = nullptr;
@@ -4702,7 +4702,7 @@ namespace
                 legCube.groupId = groupID;
                 legCube.mesh = App::cur().meshes().getConeMesh();
                 legCube.modelMatrix = segXform;
-                legCube.normalMatrix = NormalMatrix(segXform);
+                legCube.normalMatrix = ToNormalMatrix(segXform);
                 legCube.color = color;
                 legCube.rimColor = rimAlpha;
                 legCube.maybeDiffuseTex = nullptr;
@@ -4797,12 +4797,12 @@ namespace
             Rect sceneRect = Get3DSceneRect();
             glm::vec2 mousePos = ImGui::GetMousePos();
 
-            if (!PointIsInRect(sceneRect, mousePos))
+            if (!IsPointInRect(sceneRect, mousePos))
             {
                 return Hover{};
             }
 
-            glm::vec2 sceneDims = RectDims(sceneRect);
+            glm::vec2 sceneDims = Dimensions(sceneRect);
             glm::vec2 relMousePos = mousePos - sceneRect.p1;
 
             Line ray = GetCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
@@ -4879,8 +4879,8 @@ namespace
             rv.id = meshEl.ID;
             rv.groupId = g_MeshGroupID;
             rv.mesh = meshEl.MeshData;
-            rv.modelMatrix = toMat4(meshEl.Xform);
-            rv.normalMatrix = toNormalMatrix(meshEl.Xform);
+            rv.modelMatrix = ToMat4(meshEl.Xform);
+            rv.normalMatrix = ToNormalMatrix(meshEl.Xform);
             rv.color = meshEl.Attachment == g_GroundID || meshEl.Attachment == g_EmptyID ? RedifyColor(GetColorMesh()) : GetColorMesh();
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -4894,7 +4894,7 @@ namespace
             rv.groupId = g_BodyGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -4908,7 +4908,7 @@ namespace
             rv.groupId = g_GroundGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -4922,7 +4922,7 @@ namespace
             rv.groupId = g_StationGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(el.GetPos()));
-            rv.normalMatrix = NormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -6461,7 +6461,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
+                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6480,7 +6480,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
+                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6499,7 +6499,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
@@ -6518,7 +6518,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(VecAspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
@@ -6687,7 +6687,7 @@ namespace
                     {
                         if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddBody(m_Shared->UpdCommittableModelGraph(), AABBCenter(el.CalcBounds()), el.GetID());
+                            AddBody(m_Shared->UpdCommittableModelGraph(), Midpoint(el.CalcBounds()), el.GetID());
                         }
                         DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
                     }
@@ -6745,7 +6745,7 @@ namespace
                         {
                             if (ImGui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                             {
-                                AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, AABBCenter(el.CalcBounds()));
+                                AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Midpoint(el.CalcBounds()));
                             }
                             DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                         }
@@ -6785,7 +6785,7 @@ namespace
         {
             if (ImGui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
             {
-                m_Shared->FocusCameraOn(AABBCenter(el.CalcBounds()));
+                m_Shared->FocusCameraOn(Midpoint(el.CalcBounds()));
             }
             DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
@@ -7521,12 +7521,12 @@ namespace
                     {
                         if (it->id != g_EmptyID)
                         {
-                            aabb = AABBUnion(aabb, CalcBounds(*it));
+                            aabb = Union(aabb, CalcBounds(*it));
                         }
                         ++it;
                     }
-                    m_Shared->UpdCamera().focusPoint = -AABBCenter(aabb);
-                    m_Shared->UpdCamera().radius = 2.0f * AABBLongestDim(aabb);
+                    m_Shared->UpdCamera().focusPoint = -Midpoint(aabb);
+                    m_Shared->UpdCamera().radius = 2.0f * LongestDim(aabb);
                 }
             }
             DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -7673,7 +7673,7 @@ namespace
                 ras /= static_cast<float>(n);
                 ras.rotation = glm::normalize(ras.rotation);
 
-                m_ImGuizmoState.mtx = toMat4(ras);
+                m_ImGuizmoState.mtx = ToMat4(ras);
             }
 
             // else: is using OR nselected > 0 (so draw it)
@@ -7683,15 +7683,15 @@ namespace
             ImGuizmo::SetRect(
                 sceneRect.p1.x,
                 sceneRect.p1.y,
-                RectDims(sceneRect).x,
-                RectDims(sceneRect).y);
+                Dimensions(sceneRect).x,
+                Dimensions(sceneRect).y);
             ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
             ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
             glm::mat4 delta;
             bool manipulated = ImGuizmo::Manipulate(
                 glm::value_ptr(m_Shared->GetCamera().getViewMtx()),
-                glm::value_ptr(m_Shared->GetCamera().getProjMtx(RectAspectRatio(sceneRect))),
+                glm::value_ptr(m_Shared->GetCamera().getProjMtx(AspectRatio(sceneRect))),
                 m_ImGuizmoState.op,
                 m_ImGuizmoState.mode,
                 glm::value_ptr(m_ImGuizmoState.mtx),

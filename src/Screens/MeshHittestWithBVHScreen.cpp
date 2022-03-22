@@ -41,8 +41,8 @@ static void drawBVHRecursive(osc::BVH const& bvh, osc::SolidColorShader& shader,
 {
     osc::BVHNode const& n = bvh.nodes[pos];
 
-    glm::vec3 halfWidths = AABBDims(n.bounds) / 2.0f;
-    glm::vec3 center = AABBCenter(n.bounds);
+    glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
+    glm::vec3 center = Dimensions(n.bounds);
 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);

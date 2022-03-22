@@ -125,7 +125,7 @@ struct osc::HittestScreen::Impl final {
     // sphere datas
     std::vector<glm::vec3> sphereVerts = GenUntexturedUVSphere(12, 12).verts;
     AABB sphereAABBs = AABBFromVerts(sphereVerts.data(), sphereVerts.size());
-    Sphere sphereBoundingSphere = BoundingSphereFromVerts(sphereVerts.data(), sphereVerts.size());
+    Sphere sphereBoundingSphere = BoundingSphereOf(sphereVerts.data(), sphereVerts.size());
     gl::ArrayBuffer<glm::vec3> sphereVBO{sphereVerts};
     gl::VertexArray sphereVAO = makeVAO(shader, sphereVBO);
 
@@ -301,7 +301,7 @@ void osc::HittestScreen::draw() {
     if (impl.showAABBs) {
         gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
-        glm::vec3 halfWidths = AABBDims(impl.sphereAABBs) / 2.0f;
+        glm::vec3 halfWidths = Dimensions(impl.sphereAABBs) / 2.0f;
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
 
         gl::BindVertexArray(impl.cubeWireframeVAO);

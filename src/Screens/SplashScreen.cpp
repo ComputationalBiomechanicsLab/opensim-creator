@@ -63,7 +63,7 @@ struct osc::SplashScreen::Impl final {
     std::shared_ptr<Mesh> floorMesh = App::meshes().getFloorMesh();
 
     glm::mat4 floorMat = GenerateFloorModelMatrix();
-    glm::mat4 floorNormalMat = NormalMatrix(floorMat);
+    glm::mat4 floorNormalMat = ToNormalMatrix(floorMat);
 
     // floor chequer texture
     gl::Texture2D chequer = genChequeredFloorTexture();

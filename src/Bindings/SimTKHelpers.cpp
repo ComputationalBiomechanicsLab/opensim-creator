@@ -110,8 +110,8 @@ private:
     {
         Transform t = ToOscTransform(d);
 
-        glm::vec3 p1 = transformPoint(t, ToVec4(d.getPoint1()));
-        glm::vec3 p2 = transformPoint(t, ToVec4(d.getPoint2()));
+        glm::vec3 p1 = TransformPoint(t, ToVec4(d.getPoint1()));
+        glm::vec3 p2 = TransformPoint(t, ToVec4(d.getPoint2()));
 
         float thickness = g_LineThickness * m_FixupScaleFactor;
 
@@ -189,7 +189,7 @@ private:
             glm::vec3 dir = {0.0f, 0.0f, 0.0f};
             dir[axis] = legLen * axisLengths[axis];
 
-            Segment line{t.position, t.position + transformDirection(t, dir)};
+            Segment line{t.position, t.position + TransformDirection(t, dir)};
             Transform legXform = SimbodyCylinderToSegmentTransform(line, legThickness);
 
             glm::vec4 color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -231,8 +231,8 @@ private:
         glm::vec3 startBase = ToVec3(d.getStartPoint());
         glm::vec3 endBase = ToVec3(d.getEndPoint());
 
-        glm::vec3 start = transformPoint(t, startBase);
-        glm::vec3 end = transformPoint(t, endBase);
+        glm::vec3 start = TransformPoint(t, startBase);
+        glm::vec3 end = TransformPoint(t, endBase);
 
         glm::vec3 dir = glm::normalize(end - start);
 
@@ -271,8 +271,8 @@ private:
         glm::vec3 posBase = ToVec3(d.getOrigin());
         glm::vec3 posDir = ToVec3(d.getDirection());
 
-        glm::vec3 pos = transformPoint(t, posBase);
-        glm::vec3 dir = transformDirection(t, posDir);
+        glm::vec3 pos = TransformPoint(t, posBase);
+        glm::vec3 dir = TransformDirection(t, posDir);
 
         float radius = static_cast<float>(d.getBaseRadius());
         float height = static_cast<float>(d.getHeight());

@@ -2,6 +2,7 @@
 
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
+#include "src/Maths/Line.hpp"
 #include "src/Maths/RayCollision.hpp"
 #include "src/Utils/Assertions.hpp"
 
@@ -36,13 +37,13 @@ static void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
     OSC_ASSERT(n > 1 && "trying to treat a lone node as if it were an internal node - this shouldn't be possible (the implementation should have already handled the leaf case)");
 
     // compute bounding box of remaining prims
-    osc::AABB aabb = AABBUnion(bvh.prims.data() + begin,
-                               end-begin,
-                               sizeof(osc::BVHPrim),
-                               offsetof(osc::BVHPrim, bounds));
+    osc::AABB aabb = Union(bvh.prims.data() + begin,
+                           end-begin,
+                           sizeof(osc::BVHPrim),
+                           offsetof(osc::BVHPrim, bounds));
 
     // edge-case: if it's empty, return a leaf node
-    if (AABBIsEmpty(aabb))
+    if (IsEffectivelyEmpty(aabb))
     {
         osc::BVHNode& leaf = bvh.nodes.emplace_back();
         leaf.bounds = aabb;
@@ -53,7 +54,7 @@ static void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
     }
 
     // compute slicing position along the longest dimension
-    auto longestDimIdx = AABBLongestDimIdx(aabb);
+    auto longestDimIdx = LongestDimIndex(aabb);
     float midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
 
     // returns true if a given primitive is below the midpoint along the dim
@@ -96,7 +97,7 @@ static void BVH_RecursiveBuild(osc::BVH& bvh, int begin, int n)
     // compute internal node's bounds from the left+right side
     osc::AABB const& lhsAABB = bvh.nodes[internalNodeLoc+1].bounds;
     osc::AABB const& rhsAABB = bvh.nodes[internalNodeLoc+1+numLhsNodes].bounds;
-    bvh.nodes[internalNodeLoc].bounds = AABBUnion(lhsAABB, rhsAABB);
+    bvh.nodes[internalNodeLoc].bounds = Union(lhsAABB, rhsAABB);
 }
 
 // returns true if something hit (the return value is only used in recursion)

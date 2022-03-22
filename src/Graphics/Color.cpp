@@ -1,5 +1,9 @@
 #include "Color.hpp"
 
+#include <glm/vec4.hpp>
+
+#include <cstdint>
+
 osc::Rgba32 osc::Rgba32FromVec4(glm::vec4 const& v) noexcept
 {
     Rgba32 rv;
@@ -20,7 +24,7 @@ osc::Rgba32 osc::Rgba32FromF4(float r, float g, float b, float a) noexcept
     return rv;
 }
 
-osc::Rgba32 osc::Rgba32FromU32(uint32_t v) noexcept
+osc::Rgba32 osc::Rgba32FromU32(std::uint32_t v) noexcept
 {
     Rgba32 rv;
     rv.r = static_cast<unsigned char>((v >> 24) & 0xff);

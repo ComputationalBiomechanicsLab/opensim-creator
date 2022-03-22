@@ -205,7 +205,7 @@ bool osc::AreAtSameLocation(glm::vec3 const& a, glm::vec3 const& b) noexcept
     return len2 > eps2;
 }
 
-glm::vec3 osc::VecMin(glm::vec3 const& a, glm::vec3 const& b) noexcept
+glm::vec3 osc::Min(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     return glm::vec3
     {
@@ -215,7 +215,7 @@ glm::vec3 osc::VecMin(glm::vec3 const& a, glm::vec3 const& b) noexcept
     };
 }
 
-glm::vec2 osc::VecMin(glm::vec2 const& a, glm::vec2 const& b) noexcept
+glm::vec2 osc::Min(glm::vec2 const& a, glm::vec2 const& b) noexcept
 {
     return glm::vec2
     {
@@ -224,7 +224,7 @@ glm::vec2 osc::VecMin(glm::vec2 const& a, glm::vec2 const& b) noexcept
     };
 }
 
-glm::vec3 osc::VecMax(glm::vec3 const& a, glm::vec3 const& b) noexcept
+glm::vec3 osc::Max(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     return glm::vec3
     {
@@ -234,7 +234,7 @@ glm::vec3 osc::VecMax(glm::vec3 const& a, glm::vec3 const& b) noexcept
     };
 }
 
-glm::vec2 osc::VecMax(glm::vec2 const& a, glm::vec2 const& b) noexcept
+glm::vec2 osc::Max(glm::vec2 const& a, glm::vec2 const& b) noexcept
 {
     return glm::vec2
     {
@@ -243,7 +243,7 @@ glm::vec2 osc::VecMax(glm::vec2 const& a, glm::vec2 const& b) noexcept
     };
 }
 
-glm::vec3::length_type osc::VecLongestDimIdx(glm::vec3 const& v) noexcept
+glm::vec3::length_type osc::LongestDimIndex(glm::vec3 const& v) noexcept
 {
     if (v.x > v.y && v.x > v.z)
     {
@@ -259,7 +259,7 @@ glm::vec3::length_type osc::VecLongestDimIdx(glm::vec3 const& v) noexcept
     }
 }
 
-glm::vec2::length_type osc::VecLongestDimIdx(glm::vec2 v) noexcept
+glm::vec2::length_type osc::LongestDimIndex(glm::vec2 v) noexcept
 {
     if (v.x > v.y)
     {
@@ -271,7 +271,7 @@ glm::vec2::length_type osc::VecLongestDimIdx(glm::vec2 v) noexcept
     }
 }
 
-glm::ivec2::length_type osc::VecLongestDimIdx(glm::ivec2 v) noexcept
+glm::ivec2::length_type osc::LongestDimIndex(glm::ivec2 v) noexcept
 {
     if (v.x > v.y)
     {
@@ -283,37 +283,37 @@ glm::ivec2::length_type osc::VecLongestDimIdx(glm::ivec2 v) noexcept
     }
 }
 
-float osc::VecLongestDimVal(glm::vec3 const& v) noexcept
+float osc::LongestDim(glm::vec3 const& v) noexcept
 {
-    return v[VecLongestDimIdx(v)];
+    return v[LongestDimIndex(v)];
 }
 
-float osc::VecLongestDimVal(glm::vec2 v) noexcept
+float osc::LongestDim(glm::vec2 v) noexcept
 {
-    return v[VecLongestDimIdx(v)];
+    return v[LongestDimIndex(v)];
 }
 
-int osc::VecLongestDimVal(glm::ivec2 v) noexcept
+int osc::LongestDim(glm::ivec2 v) noexcept
 {
-    return v[VecLongestDimIdx(v)];
+    return v[LongestDimIndex(v)];
 }
 
-float osc::VecAspectRatio(glm::ivec2 v) noexcept
+float osc::AspectRatio(glm::ivec2 v) noexcept
 {
     return static_cast<float>(v.x) / static_cast<float>(v.y);
 }
 
-float osc::VecAspectRatio(glm::vec2 v) noexcept
+float osc::AspectRatio(glm::vec2 v) noexcept
 {
     return v.x/v.y;
 }
 
-glm::vec3 osc::VecMidpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
+glm::vec3 osc::Midpoint(glm::vec3 const& a, glm::vec3 const& b) noexcept
 {
     return (a+b)/2.0f;
 }
 
-glm::vec3 osc::VecKahanSum(glm::vec3 const* vs, size_t n) noexcept
+glm::vec3 osc::KahanSum(glm::vec3 const* vs, size_t n) noexcept
 {
     glm::vec3 sum{};  // accumulator
     glm::vec3 c{};    // running compensation of low-order bits
@@ -329,9 +329,9 @@ glm::vec3 osc::VecKahanSum(glm::vec3 const* vs, size_t n) noexcept
     return sum;
 }
 
-glm::vec3 osc::VecNumericallyStableAverage(glm::vec3 const* vs, size_t n) noexcept
+glm::vec3 osc::NumericallyStableAverage(glm::vec3 const* vs, size_t n) noexcept
 {
-    glm::vec3 sum = VecKahanSum(vs, n);
+    glm::vec3 sum = KahanSum(vs, n);
     return sum / static_cast<float>(n);
 }
 
@@ -351,13 +351,13 @@ glm::vec3 osc::TriangleNormal(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 
     return glm::normalize(perpendiular);
 }
 
-glm::mat3 osc::NormalMatrix(glm::mat4 const& m) noexcept
+glm::mat3 osc::ToNormalMatrix(glm::mat4 const& m) noexcept
 {
     glm::mat3 topLeft{m};
     return glm::inverse(glm::transpose(topLeft));
 }
 
-glm::mat3 osc::NormalMatrix(glm::mat4x3 const& m) noexcept
+glm::mat3 osc::ToNormalMatrix(glm::mat4x3 const& m) noexcept
 {
     glm::mat3 topLeft{m};
     return glm::inverse(glm::transpose(topLeft));
@@ -382,33 +382,33 @@ glm::mat4 osc::Dir1ToDir2Xform(glm::vec3 const& a, glm::vec3 const& b) noexcept
     return glm::rotate(glm::mat4{1.0f}, angle, rotAxis);
 }
 
-glm::vec3 osc::extractEulerAngleXYZ(glm::mat4 const& m) noexcept
+glm::vec3 osc::ExtractEulerAngleXYZ(glm::mat4 const& m) noexcept
 {
     glm::vec3 v;
     glm::extractEulerAngleXYZ(m, v.x, v.y, v.z);
     return v;
 }
 
-glm::vec2 osc::RectDims(Rect const& r) noexcept
+glm::vec2 osc::Dimensions(Rect const& r) noexcept
 {
     return glm::abs(r.p2 - r.p1);
 }
 
-float osc::RectAspectRatio(Rect const& r) noexcept
+float osc::AspectRatio(Rect const& r) noexcept
 {
-    glm::vec2 dims = RectDims(r);
+    glm::vec2 dims = Dimensions(r);
     return dims.x/dims.y;
 }
 
 
-bool osc::PointIsInRect(Rect const& r, glm::vec2 const& p) noexcept
+bool osc::IsPointInRect(Rect const& r, glm::vec2 const& p) noexcept
 {
     glm::vec2 relPos = p - r.p1;
-    glm::vec2 dims = RectDims(r);
+    glm::vec2 dims = Dimensions(r);
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
-osc::Sphere osc::BoundingSphereFromVerts(glm::vec3 const* vs, size_t n) noexcept
+osc::Sphere osc::BoundingSphereOf(glm::vec3 const* vs, size_t n) noexcept
 {
     AABB aabb = AABBFromVerts(vs, n);
 
@@ -436,7 +436,7 @@ osc::Sphere osc::BoundingSphereFromVerts(glm::vec3 const* vs, size_t n) noexcept
     return rv;
 }
 
-glm::mat4 osc::GroundToSphereMat4(Sphere const& s) noexcept
+glm::mat4 osc::FromUnitSphereMat4(Sphere const& s) noexcept
 {
     return glm::translate(glm::mat4{1.0f}, s.origin) * glm::scale(glm::mat4{1.0f}, {s.radius, s.radius, s.radius});
 }
@@ -449,7 +449,7 @@ glm::mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b) noexcept
     return mover * scaler;
 }
 
-osc::AABB osc::SphereToAABB(Sphere const& s) noexcept
+osc::AABB osc::ToAABB(Sphere const& s) noexcept
 {
     AABB rv;
     rv.min = s.origin - s.radius;
@@ -457,7 +457,7 @@ osc::AABB osc::SphereToAABB(Sphere const& s) noexcept
     return rv;
 }
 
-osc::Line osc::LineApplyXform(Line const& l, glm::mat4 const& m) noexcept
+osc::Line osc::TransformLine(Line const& l, glm::mat4 const& m) noexcept
 {
     Line rv;
     rv.dir = m * glm::vec4{l.dir, 0.0f};
@@ -502,26 +502,26 @@ glm::mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b) noexcept
     return translator * rotator * scaler;
 }
 
-glm::vec3 osc::AABBCenter(AABB const& a) noexcept
+glm::vec3 osc::Midpoint(AABB const& a) noexcept
 {
     return (a.min + a.max)/2.0f;
 }
 
-glm::vec3 osc::AABBDims(AABB const& a) noexcept
+glm::vec3 osc::Dimensions(AABB const& a) noexcept
 {
     return a.max - a.min;
 }
 
-osc::AABB osc::AABBUnion(AABB const& a, AABB const& b) noexcept
+osc::AABB osc::Union(AABB const& a, AABB const& b) noexcept
 {
     return AABB
     {
-        VecMin(a.min, b.min),
-        VecMax(a.max, b.max)
+        Min(a.min, b.min),
+        Max(a.max, b.max)
     };
 }
 
-osc::AABB osc::AABBUnion(void const* data, size_t n, size_t stride, size_t offset)
+osc::AABB osc::Union(void const* data, size_t n, size_t stride, size_t offset)
 {
     if (n == 0)
     {
@@ -538,13 +538,13 @@ osc::AABB osc::AABBUnion(void const* data, size_t n, size_t stride, size_t offse
     {
         unsigned char const* elPtr = firstPtr + (i*stride) + offset;
         AABB const& aabb = *reinterpret_cast<AABB const*>(elPtr);
-        rv = AABBUnion(rv, aabb);
+        rv = Union(rv, aabb);
     }
 
     return rv;
 }
 
-bool osc::AABBIsEmpty(AABB const& a) noexcept
+bool osc::IsEffectivelyEmpty(AABB const& a) noexcept
 {
     for (int i = 0; i < 3; ++i)
     {
@@ -556,23 +556,23 @@ bool osc::AABBIsEmpty(AABB const& a) noexcept
     return false;
 }
 
-glm::vec3::length_type osc::AABBLongestDimIdx(AABB const& a) noexcept
+glm::vec3::length_type osc::LongestDimIndex(AABB const& a) noexcept
 {
-    return VecLongestDimIdx(AABBDims(a));
+    return LongestDimIndex(Dimensions(a));
 }
 
-float osc::AABBLongestDim(AABB const& a) noexcept
+float osc::LongestDim(AABB const& a) noexcept
 {
-    glm::vec3 dims = AABBDims(a);
+    glm::vec3 dims = Dimensions(a);
     float rv = dims[0];
     rv = std::max(rv, dims[1]);
     rv = std::max(rv, dims[2]);
     return rv;
 }
 
-std::array<glm::vec3, 8> osc::AABBVerts(AABB const& aabb) noexcept
+std::array<glm::vec3, 8> osc::ToCubeVerts(AABB const& aabb) noexcept
 {
-    glm::vec3 d = AABBDims(aabb);
+    glm::vec3 d = Dimensions(aabb);
 
     std::array<glm::vec3, 8> rv;
     rv[0] = aabb.min;
@@ -590,9 +590,9 @@ std::array<glm::vec3, 8> osc::AABBVerts(AABB const& aabb) noexcept
     return rv;
 }
 
-osc::AABB osc::AABBApplyXform(AABB const& aabb, glm::mat4 const& m) noexcept
+osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
 {
-    auto verts = AABBVerts(aabb);
+    auto verts = ToCubeVerts(aabb);
 
     for (auto& vert : verts)
     {
@@ -603,9 +603,9 @@ osc::AABB osc::AABBApplyXform(AABB const& aabb, glm::mat4 const& m) noexcept
     return AABBFromVerts(verts.data(), verts.size());
 }
 
-osc::AABB osc::AABBApplyXform(AABB const& aabb, Transform const& t) noexcept
+osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
 {
-    return AABBApplyXform(aabb, toMat4(t));
+    return TransformAABB(aabb, ToMat4(t));
 }
 
 osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
@@ -638,8 +638,8 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     for (size_t i = 0; i < n; ++i)
     {
         glm::vec3 const& pos = vs[i];
-        rv.min = VecMin(rv.min, pos);
-        rv.max = VecMax(rv.max, pos);
+        rv.min = Min(rv.min, pos);
+        rv.max = Max(rv.max, pos);
     }
 
     return rv;
@@ -934,7 +934,7 @@ glm::vec4 osc::TopleftRelPosToNDCCube(glm::vec2 relpos)
     return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
 }
 
-glm::mat4 osc::toMat4(Transform const& t) noexcept
+glm::mat4 osc::ToMat4(Transform const& t) noexcept
 {
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, t.scale);
     glm::mat4 rotater = glm::toMat4(t.rotation);
@@ -943,7 +943,7 @@ glm::mat4 osc::toMat4(Transform const& t) noexcept
     return translater * rotater * scaler;
 }
 
-glm::mat4 osc::toInverseMat4(Transform const& t) noexcept
+glm::mat4 osc::ToInverseMat4(Transform const& t) noexcept
 {
     glm::mat4 translater = glm::translate(glm::mat4{1.0f}, -t.position);
     glm::mat4 rotater = glm::toMat4(glm::conjugate(t.rotation));
@@ -952,12 +952,12 @@ glm::mat4 osc::toInverseMat4(Transform const& t) noexcept
     return scaler * rotater * translater;
 }
 
-glm::mat3x3 osc::toNormalMatrix(Transform const& t) noexcept
+glm::mat3x3 osc::ToNormalMatrix(Transform const& t) noexcept
 {
     return glm::toMat3(t.rotation);
 }
 
-osc::Transform osc::toTransform(glm::mat4 const& mtx)
+osc::Transform osc::ToTransform(glm::mat4 const& mtx)
 {
     Transform rv;
     glm::vec3 skew;
@@ -969,17 +969,17 @@ osc::Transform osc::toTransform(glm::mat4 const& mtx)
     return rv;
 }
 
-glm::vec3 osc::transformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
+glm::vec3 osc::TransformDirection(Transform const& t, glm::vec3 const& localDir) noexcept
 {
     return t.rotation * localDir;
 }
 
-glm::vec3 osc::inverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
+glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& worldDir) noexcept
 {
     return glm::conjugate(t.rotation) * worldDir;
 }
 
-glm::vec3 osc::transformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
+glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
 {
     glm::vec3 rv = localPoint;
     rv *= t.scale;
@@ -988,7 +988,7 @@ glm::vec3 osc::transformPoint(Transform const& t, glm::vec3 const& localPoint) n
     return rv;
 }
 
-glm::vec3 osc::inverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
+glm::vec3 osc::InverseTransformPoint(Transform const& t, glm::vec3 const& worldPoint) noexcept
 {
     glm::vec3 rv = worldPoint;
     rv -= t.position;
@@ -997,7 +997,7 @@ glm::vec3 osc::inverseTransformPoint(Transform const& t, glm::vec3 const& worldP
     return rv;
 }
 
-void osc::applyWorldspaceRotation(Transform& t,
+void osc::ApplyWorldspaceRotation(Transform& t,
                                   glm::vec3 const& eulerAngles,
                                   glm::vec3 const& rotationCenter) noexcept
 {
@@ -1006,14 +1006,14 @@ void osc::applyWorldspaceRotation(Transform& t,
     t.rotation = glm::normalize(q*t.rotation);
 }
 
-glm::vec3 osc::eulerAnglesXYZ(Transform const& t) noexcept
+glm::vec3 osc::ExtractEulerAngleXYZ(Transform const& t) noexcept
 {
     glm::vec3 rv;
     glm::extractEulerAngleXYZ(glm::toMat4(t.rotation), rv.x, rv.y, rv.z);
     return rv;
 }
 
-glm::vec3 osc::eulerAnglesExtrinsic(Transform const& t) noexcept
+glm::vec3 osc::ExtractExtrinsicEulerAnglesXYZ(Transform const& t) noexcept
 {
     return glm::eulerAngles(t.rotation);
 }

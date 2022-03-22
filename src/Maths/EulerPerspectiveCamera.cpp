@@ -6,6 +6,8 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <cmath>
+
 
 osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
     pos{0.0f, 0.0f, 0.0f},
@@ -19,16 +21,17 @@ osc::EulerPerspectiveCamera::EulerPerspectiveCamera() :
 
 glm::vec3 osc::EulerPerspectiveCamera::getFront() const noexcept
 {
-    return glm::normalize(glm::vec3{
-        cosf(yaw) * cosf(pitch),
-        sinf(pitch),
-        sinf(yaw) * cosf(pitch),
+    return glm::normalize(glm::vec3
+    {
+        std::cos(yaw) * std::cos(pitch),
+        std::sin(pitch),
+        std::sin(yaw) * std::cos(pitch),
     });
 }
 
 glm::vec3 osc::EulerPerspectiveCamera::getUp() const noexcept
 {
-    return glm::vec3(0.0f, 1.0f, 0.0f);
+    return glm::vec3{0.0f, 1.0f, 0.0f};
 }
 
 glm::vec3 osc::EulerPerspectiveCamera::getRight() const noexcept
