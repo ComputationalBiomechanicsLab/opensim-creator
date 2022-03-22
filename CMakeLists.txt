@@ -703,12 +703,23 @@ if (WIN32)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
     set(CPACK_GENERATOR NSIS)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
-    set(CPACK_NSIS_UNINSTALL_NAME "UninstallOpenSimCreator")
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+    #set(CPACK_NSIS_UNINSTALL_NAME "UninstallOpenSimCreator")
+
+    # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+    #
+    # the reason it's broke is because CMake has changed something in more-recent
+    # versions that breaks it. There's a PR about it here:
+    #
+    # - https://gitlab.kitware.com/cmake/cmake/-/issues/23001
+    #
+    # We disable it in OpenSim Creator also because it hits our users and these
+    # early versions of OpenSim Creator can just overwrite-install. See issue:
+    #
+    # - https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/131
+
     set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
     set(CPACK_NSIS_CONTACT "contact@adamkewley.com")
-    # do not prompt the user to modify the PATH
-    set(CPACK_NSIS_MODIFY_PATH OFF)
+    set(CPACK_NSIS_MODIFY_PATH OFF)  # do not prompt the user to modify the PATH
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
     # set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)  # DISALLOWED: boots app with admin privs: see #95 (or inkscape's CMake file)
     # set(CPACK_NSIS_CREATE_ICONS "CreateShortCut '\$SMPROGRAMS\\\\OpenSimCreator\\\\osc.lnk' '\$INSTDIR\\\\bin\\\\osc.exe'")
