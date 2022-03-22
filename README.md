@@ -94,3 +94,13 @@ a C/C++ compiler, CMake, etc. installed):
 | Windows | [.bat](scripts/build_windows.bat) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts\build_windows.bat` |
 | Mac | [.sh](scripts/build_mac-catalina.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts/build_mac-catalina.sh` |
 | Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts/build_debian-buster.sh` |
+
+
+## Building Hints for Visual Studio 2022 (/w integrated CMake support)
+
+Run the buildscript above to get a complete build. Open the `opensim-creator` folder in
+Visual Studio which, if it has in-built CMake support (later versions should), will create
+a CMake project. Right-click the `CMakeLists.txt` file to edit settings or build the project,
+select `osc.exe` as the startup item (this might require a bit of faffing around because
+Visual Studio tries to list every. bloody. project. in the tree, which can number in the
+hundreds), boot the application.
