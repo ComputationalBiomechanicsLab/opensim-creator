@@ -3,6 +3,8 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Widgets/AttachGeometryPopup.hpp"
 
@@ -17,42 +19,77 @@
 #include <optional>
 #include <utility>
 
+
 class osc::AddBodyPopup::Impl final {
 public:
-
-    std::optional<NewBody> draw(char const* modalName,
-                                OpenSim::Model const& model)
+    Impl(std::shared_ptr<UndoableUiModel> uum, std::string_view popupName) :
+        m_Uum{std::move(uum)},
+        m_PopupName{std::move(popupName)}
     {
-        auto& st = *this;
+    }
+
+    void open()
+    {
+        m_ShouldOpen = true;
+    }
+
+    void close()
+    {
+        m_ShouldClose = true;
+    }
+
+    bool draw()
+    {
+        if (m_ShouldOpen)
+        {
+            ImGui::OpenPopup(m_PopupName.c_str());
+            m_ShouldOpen = false;
+            m_FirstTimePopupDrawn = true;
+        }
 
         // center the modal
         {
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-            ImGui::SetNextWindowSize(ImVec2(512, 0));
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
+            ImGui::SetNextWindowSize({m_PopupWidth, m_PopupHeight});
         }
 
         // try to show modal
-        if (!ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
         {
             // modal not showing
-            return std::nullopt;
+            return false;
         }
 
-        // coerce selected joint pf to ground if user hasn't selected anything
-        if (st.selectedPF == nullptr)
+        if (m_ShouldClose)
         {
-            st.selectedPF = &model.getGround();
+            resetInputs();
+            ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+            m_ShouldClose = false;
+            m_ShouldOpen = false;
+            return false;
+        }
+
+        OpenSim::Model const& model = m_Uum->getModel();
+
+        OpenSim::PhysicalFrame const* selectedPf =
+            osc::FindComponent<OpenSim::PhysicalFrame>(model, m_SelectedPhysicalFrameAbspath);
+
+        if (!selectedPf)
+        {
+            // if nothing selected (or not found), coerce the initial selection to ground
+            selectedPf = &model.getGround();
+            m_SelectedPhysicalFrameAbspath = selectedPf->getAbsolutePath();
         }
 
         ImGui::Columns(2);
 
         // prompt name
         {
-            if (firstOpen)
+            if (m_FirstTimePopupDrawn)
             {
                 ImGui::SetKeyboardFocusHere();
-                firstOpen = false;
             }
 
             ImGui::Text("body name");
@@ -60,7 +97,7 @@ public:
             DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputText("##bodyname", st.bodyName, sizeof(st.bodyName));
+            osc::InputString("##bodyname", m_BodyName, m_MaxBodyNameLength);
             ImGui::NextColumn();
         }
 
@@ -71,7 +108,7 @@ public:
             DrawHelpMarker("The mass of the body in kilograms");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            InputKilogramFloat("##mass", &st.mass);
+            InputKilogramFloat("##mass", &m_BodyMass);
             ImGui::NextColumn();
         }
 
@@ -81,7 +118,7 @@ public:
             ImGui::SameLine();
             DrawHelpMarker("The location of the mass center in the body frame.");
             ImGui::NextColumn();
-            DrawF3Editor("##comlockbtn", "##comeditor", st.com, &st.comLocked);
+            DrawF3Editor("##comlockbtn", "##comeditor", m_BodyCenterOfMass, &m_CenterOfMassLocked);
             ImGui::NextColumn();
         }
 
@@ -91,7 +128,7 @@ public:
             ImGui::SameLine();
             DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ImGui::NextColumn();
-            DrawF3Editor("##inertialockbtn", "##intertiaeditor", st.inertia, &st.inertiaLocked);
+            DrawF3Editor("##inertialockbtn", "##intertiaeditor", m_BodyInertia, &m_InertiaLocked);
             ImGui::NextColumn();
         }
 
@@ -103,9 +140,12 @@ public:
             ImGui::NextColumn();
 
             ImGui::BeginChild("join targets", ImVec2(0, 128.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
-            for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
-                if (ImGui::Selectable(pf.getName().c_str(), &pf == st.selectedPF)) {
-                    st.selectedPF = &pf;
+            for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+            {
+                if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf)) 
+                {
+                    selectedPf = &pf;
+                    m_SelectedPhysicalFrameAbspath = selectedPf->getAbsolutePath();
                 }
             }
             ImGui::EndChild();
@@ -120,7 +160,7 @@ public:
             ImGui::NextColumn();
             {
                 auto names = osc::JointRegistry::nameCStrings();
-                ImGui::Combo("##jointtype", &st.jointIdx, names.data(), static_cast<int>(names.size()));
+                ImGui::Combo("##jointtype", &m_JointRegistryIndex, names.data(), static_cast<int>(names.size()));
             }
             ImGui::NextColumn();
         }
@@ -132,7 +172,7 @@ public:
             DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ImGui::NextColumn();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputText("##jointnameinput", st.jointName, sizeof(st.jointName));
+            osc::InputString("##jointnameinput", m_JointName, m_MaxJointNameLength);
             ImGui::NextColumn();
         }
 
@@ -142,9 +182,8 @@ public:
             ImGui::SameLine();
             DrawHelpMarker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ImGui::NextColumn();
-            ImGui::Checkbox("##addoffsetframescheckbox", &st.addOffsetFramesToTheJoint);
+            ImGui::Checkbox("##addoffsetframescheckbox", &m_AddOffsetFramesToTheJoint);
             ImGui::NextColumn();
-
         }
 
         // prompt geometry
@@ -157,21 +196,27 @@ public:
                 static constexpr char const* attach_modal_name = "addbody_attachgeometry";
 
                 char const* label = "attach";
-                if (st.attach_geom.selected) {
-                    OpenSim::Geometry const& attached = *st.attach_geom.selected;
-                    if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&attached); mesh) {
+                if (m_AttachGeometryPopupSelection)
+                {
+                    OpenSim::Geometry const& attached = *m_AttachGeometryPopupSelection;
+                    if (OpenSim::Mesh const* mesh = dynamic_cast<OpenSim::Mesh const*>(&attached); mesh)
+                    {
                         label = mesh->getGeometryFilename().c_str();
-                    } else {
+                    }
+                    else
+                    {
                         label = attached.getConcreteClassName().c_str();
                     }
                 }
 
-                if (ImGui::Button(label)) {
+                if (ImGui::Button(label))
+                {
                     ImGui::OpenPopup(attach_modal_name);
                 }
 
-                if (auto attached = st.attach_geom.state.draw(attach_modal_name); attached) {
-                    st.attach_geom.selected = std::move(attached);
+                if (auto attached = m_AttachGeometryPopup.draw(attach_modal_name); attached)
+                {
+                    m_AttachGeometryPopupSelection = std::move(attached);
                 }
             }
             ImGui::NextColumn();
@@ -181,62 +226,87 @@ public:
 
         // end of input prompting
 
-        ImGui::Dummy(ImVec2{0.0f, 1.0f});
-
-        std::optional<NewBody> rv = std::nullopt;
+        ImGui::Dummy({0.0f, 1.0f});
 
         // show cancel button
-        if (ImGui::Button("cancel")) {
-
-            st = {};  // reset user inputs
-            ImGui::CloseCurrentPopup();
+        if (ImGui::Button("cancel"))
+        {
+            m_ShouldClose = true;
         }
 
         ImGui::SameLine();
 
+        bool bodyAdded = false;
+
         // show add button
-        if (ImGui::Button(ICON_FA_PLUS " add body")) {
-            // create user-requested body
-            auto comStk = ToSimTKVec3(st.com);
-            auto inertiaStk = ToSimTKInertia(st.inertia);
-            auto body = std::make_unique<OpenSim::Body>(st.bodyName, static_cast<double>(st.mass), comStk, inertiaStk);
-            auto joint = makeJoint(*body, *osc::JointRegistry::prototypes()[static_cast<size_t>(st.jointIdx)]);
-
-            if (st.attach_geom.selected) {
-                body->attachGeometry(st.attach_geom.selected.release());
-            }
-
-            rv = NewBody{std::move(body), std::move(joint)};
-
-            st = {};  // reset user inputs
-            ImGui::CloseCurrentPopup();
+        if (ImGui::Button(ICON_FA_PLUS " add body"))
+        {
+            doAddBody(*selectedPf);
+            bodyAdded = true;
+            m_ShouldClose = true;
         }
 
         ImGui::EndPopup();
 
-        return rv;
+        m_FirstTimePopupDrawn = false;
+
+        return bodyAdded;
     }
 
 private:
+    void resetInputs()
+    {
+        // TODO
+    }
+
+    void doAddBody(OpenSim::PhysicalFrame const& selectedPf)
+    {
+        // create user-requested body
+        SimTK::Vec3 com = ToSimTKVec3(m_BodyCenterOfMass);
+        SimTK::Inertia inertia = ToSimTKInertia(m_BodyInertia);
+        double mass = static_cast<double>(m_BodyMass);
+        auto body = std::make_unique<OpenSim::Body>(m_BodyName, m_BodyMass, com, inertia);
+
+        // create joint between body and whatever the frame is
+        OpenSim::Joint const& jointProto =
+            *osc::JointRegistry::prototypes()[static_cast<size_t>(m_JointRegistryIndex)];
+        auto joint = makeJoint(*body, jointProto, selectedPf);
+
+        // attach decorative geom
+        if (m_AttachGeometryPopupSelection)
+        {
+            body->attachGeometry(m_AttachGeometryPopupSelection.release());
+        }
+
+        // mutate the model and perform the edit
+        OpenSim::Model& m = m_Uum->updModel();
+        m.addJoint(joint.release());
+        OpenSim::Body* ptr = body.get();
+        m.addBody(body.release());
+        m_Uum->setSelected(ptr);
+    }
+
     // create a "standard" OpenSim::Joint
     std::unique_ptr<OpenSim::Joint> makeJoint(
-            OpenSim::Body const& b,
-            OpenSim::Joint const& jointPrototype) {
-
-        auto& st = *this;
-
+        OpenSim::Body const& b,
+        OpenSim::Joint const& jointPrototype,
+        OpenSim::PhysicalFrame const& selectedPf)
+    {
         std::unique_ptr<OpenSim::Joint> copy{jointPrototype.clone()};
-        copy->setName(st.jointName);
+        copy->setName(m_JointName);
 
-        if (!st.addOffsetFramesToTheJoint) {
-            copy->connectSocket_parent_frame(*st.selectedPF);
+        if (!m_AddOffsetFramesToTheJoint)
+        {
+            copy->connectSocket_parent_frame(selectedPf);
             copy->connectSocket_child_frame(b);
-        } else {
+        }
+        else
+        {
             // add first offset frame as joint's parent
             {
                 auto pof1 = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-                pof1->setParentFrame(*st.selectedPF);
-                pof1->setName(st.selectedPF->getName() + "_offset");
+                pof1->setParentFrame(selectedPf);
+                pof1->setName(selectedPf.getName() + "_offset");
                 copy->addFrame(pof1.get());
                 copy->connectSocket_parent_frame(*pof1.release());
             }
@@ -254,44 +324,80 @@ private:
         return copy;
     }
 
-    // sub-modal for attaching geometry to the body
-    struct {
-        AttachGeometryPopup state;
-        std::unique_ptr<OpenSim::Geometry> selected = nullptr;
-    } attach_geom;
+    // the model that the body will be added to
+    std::shared_ptr<UndoableUiModel> m_Uum;
 
-    OpenSim::PhysicalFrame const* selectedPF = nullptr;
+    // name of the ImGui popup that will contain UI content
+    std::string m_PopupName;
 
-    char bodyName[64] = "new_body";
-    int jointIdx = 0;
-    char jointName[64]{};
-    float mass = 1.0f;
-    float com[3]{};
-    float inertia[3] = {1.0f, 1.0f, 1.0f};
-    bool addOffsetFramesToTheJoint = true;
-    bool inertiaLocked = true;
-    bool comLocked = true;
-    bool firstOpen = true;
+    static inline constexpr float m_PopupWidth = 512.0f;
+    static inline constexpr float m_PopupHeight = 0.0f;
+    static inline constexpr ImGuiWindowFlags m_PopupFlags = ImGuiWindowFlags_AlwaysAutoResize;
+
+    // popup state flags
+    bool m_ShouldOpen = false;
+    bool m_ShouldClose = false;
+    bool m_FirstTimePopupDrawn = false;
+
+    // state for the "attach geometry" popup
+    AttachGeometryPopup m_AttachGeometryPopup;
+    std::unique_ptr<OpenSim::Geometry> m_AttachGeometryPopupSelection = nullptr;
+
+    // abspath to the currently-selected physical frame in the model
+    OpenSim::ComponentPath m_SelectedPhysicalFrameAbspath;
+
+    // desired name of the body
+    std::string m_BodyName{"new_body"};
+    static inline constexpr int m_MaxBodyNameLength = 128;
+
+    // index of the desired joint *type* within the type registry
+    int m_JointRegistryIndex = 0;
+
+    // desired name of the joint
+    std::string m_JointName;
+    static inline constexpr int m_MaxJointNameLength = 128;
+
+    // desired mass of the to-be-added body
+    float m_BodyMass = 1.0f;
+
+    // desired center of mass of the body
+    float m_BodyCenterOfMass[3]{};
+
+    // `true` if center of mass inputs should be locked together
+    bool m_CenterOfMassLocked = true;
+
+    // desired intertia of the body
+    float m_BodyInertia[3] = {1.0f, 1.0f, 1.0f};
+
+    // `true` if the inertia inputs should be locked together
+    bool m_InertiaLocked = true;
+
+    // `true` if offset frames should be attached to the joint
+    bool m_AddOffsetFramesToTheJoint = true;
 };
 
 // public API
 
-osc::NewBody::NewBody(std::unique_ptr<OpenSim::Body> b,
-                      std::unique_ptr<OpenSim::Joint> j) :
-    body{std::move(b)},
-    joint{std::move(j)}
+osc::AddBodyPopup::AddBodyPopup(std::shared_ptr<UndoableUiModel> uum,
+                                std::string_view popupName) :
+    m_Impl{std::make_unique<Impl>(std::move(uum), std::move(popupName))}
 {
-    OSC_ASSERT(body != nullptr);
-    OSC_ASSERT(joint != nullptr);
 }
-
-osc::AddBodyPopup::AddBodyPopup() : m_Impl{std::make_unique<Impl>()} {}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup::~AddBodyPopup() noexcept = default;
 
-std::optional<osc::NewBody> osc::AddBodyPopup::draw(char const* modalName,
-                                               OpenSim::Model const& model)
+void osc::AddBodyPopup::open()
 {
-    return m_Impl->draw(modalName, model);
+    m_Impl->open();
+}
+
+void osc::AddBodyPopup::close()
+{
+    m_Impl->close();
+}
+
+bool osc::AddBodyPopup::draw()
+{
+    return m_Impl->draw();
 }

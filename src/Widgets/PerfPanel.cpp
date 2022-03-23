@@ -25,10 +25,12 @@ public:
 
     void open()
     {
+        m_IsOpen = true;
     }
 
     void close()
     {
+        m_IsOpen = false;
     }
 
     bool draw()

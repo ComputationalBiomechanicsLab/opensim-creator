@@ -15,7 +15,6 @@
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Widgets/AddBodyPopup.hpp"
 #include "src/Widgets/AttachGeometryPopup.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
@@ -925,17 +924,17 @@ struct osc::ModelEditorScreen::Impl final {
     // polls changes to a file
     FileChangePoller filePoller;
 
+    ModelActionsMenuBar modelActionsMenuBar{st->updEditedModelPtr()};
+
     // internal state of any sub-panels the editor screen draws
     struct {
         MainMenuFileTab mmFileTab;
         MainMenuWindowTab mmWindowTab;
         MainMenuAboutTab mmAboutTab;
-        AddBodyPopup addBodyPopup;
         ObjectPropertiesEditor propertiesEditor;
         ReassignSocketPopup reassignSocketPopup;
         AttachGeometryPopup attachGeometryPopup;
         Select2PFsPopup select2PFsPopup;
-        ModelActionsMenuBar modelActions;
         LogViewer logViewer;
         CoordinateEditor coordEditor;
         ComponentHierarchy componentHierarchy;
@@ -1377,7 +1376,7 @@ static void ModelEditorDrawUNGUARDED(osc::ModelEditorScreen::Impl& impl)
     {
         if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar))
         {
-            impl.ui.modelActions.draw(impl.st->updEditedModel().updUiModel());
+            impl.modelActionsMenuBar.draw();
         }
         ImGui::End();
     }

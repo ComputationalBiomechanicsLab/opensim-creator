@@ -1,38 +1,27 @@
 #pragma once
 
 #include <memory>
-#include <optional>
+#include <string_view>
 
-namespace OpenSim
+namespace osc
 {
-    class PhysicalFrame;
-    class Model;
-    class Mesh;
-    class Body;
-    class Joint;
+    class UndoableUiModel;
 }
 
 namespace osc
 {
-    struct NewBody final {
-        std::unique_ptr<OpenSim::Body> body;
-        std::unique_ptr<OpenSim::Joint> joint;
-
-        NewBody(std::unique_ptr<OpenSim::Body>,
-                std::unique_ptr<OpenSim::Joint>);
-    };
-
     class AddBodyPopup final {
     public:
-        AddBodyPopup();
+        AddBodyPopup(std::shared_ptr<UndoableUiModel>, std::string_view popupName);
         AddBodyPopup(AddBodyPopup const&) = delete;
         AddBodyPopup(AddBodyPopup&&) noexcept;
         AddBodyPopup& operator=(AddBodyPopup const&) = delete;
         AddBodyPopup& operator=(AddBodyPopup&&) noexcept;
         ~AddBodyPopup() noexcept;
 
-        // assumes caller has handled calling ImGui::OpenPopup(modal_name)
-        std::optional<NewBody> draw(char const* modalName, OpenSim::Model const&);
+        void open();
+        void close();
+        bool draw();  // returns `true` if a body was just added
 
         class Impl;
     private:

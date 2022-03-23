@@ -19,26 +19,29 @@
 
 class osc::MainEditorState::Impl final {
 public:
-    Impl()
-    {
-    }
+    Impl() = default;
 
     Impl(std::unique_ptr<OpenSim::Model> model) :
-        m_EditedModel{std::move(model)}
+        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(model))}
     {
     }
 
     Impl(UndoableUiModel um) :
-        m_EditedModel{std::move(um)}
+        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(um))}
     {
     }
 
     UndoableUiModel const& getEditedModel() const
     {
-        return m_EditedModel;
+        return *m_EditedModel;
     }
 
     UndoableUiModel& updEditedModel()
+    {
+        return *m_EditedModel;
+    }
+
+    std::shared_ptr<UndoableUiModel> updEditedModelPtr()
     {
         return m_EditedModel;
     }
@@ -173,7 +176,7 @@ public:
     }
 
 private:
-    UndoableUiModel m_EditedModel;
+    std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
     std::vector<Simulation> m_Simulations;
     int m_FocusedSimulation = -1;
     std::vector<Output> m_UserDesiredOutputs;
@@ -209,6 +212,11 @@ osc::UndoableUiModel const& osc::MainEditorState::getEditedModel() const
 osc::UndoableUiModel& osc::MainEditorState::updEditedModel()
 {
     return m_Impl->updEditedModel();
+}
+
+std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::updEditedModelPtr()
+{
+    return m_Impl->updEditedModelPtr();
 }
 
 bool osc::MainEditorState::hasSimulations() const

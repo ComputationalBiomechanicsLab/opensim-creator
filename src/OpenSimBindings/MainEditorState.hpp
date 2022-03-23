@@ -52,6 +52,7 @@ namespace osc
         // edited model
         UndoableUiModel const& getEditedModel() const;
         UndoableUiModel& updEditedModel();
+        std::shared_ptr<UndoableUiModel> updEditedModelPtr();
 
         // active simulations
         bool hasSimulations() const;

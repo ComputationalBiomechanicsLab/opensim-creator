@@ -4,21 +4,21 @@
 
 namespace osc
 {
-    class UiModel;
+    class UndoableUiModel;
 }
 
 namespace osc
 {
     class ModelActionsMenuBar final {
     public:
-        ModelActionsMenuBar();
+        ModelActionsMenuBar(std::shared_ptr<UndoableUiModel>);
         ModelActionsMenuBar(ModelActionsMenuBar const&) = delete;
         ModelActionsMenuBar(ModelActionsMenuBar&&) noexcept;
         ModelActionsMenuBar& operator=(ModelActionsMenuBar const&) = delete;
         ModelActionsMenuBar& operator=(ModelActionsMenuBar&&) noexcept;
         ~ModelActionsMenuBar() noexcept;
 
-        bool draw(UiModel&);
+        bool draw();
 
         class Impl;
     private:
