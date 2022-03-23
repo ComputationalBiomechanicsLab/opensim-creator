@@ -978,6 +978,7 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
         if (ImGui::MenuItem("edit model"))
         {
             st.updEditedModel().setModel(std::make_unique<OpenSim::Model>(sim.getModel()));
+            st.updEditedModel().commit("loaded model from simulator window");
             osc::App::cur().requestTransition<osc::ModelEditorScreen>(impl.mes);
         }
 

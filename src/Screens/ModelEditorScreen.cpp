@@ -98,6 +98,7 @@ static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
         if (osc::TryDeleteComponentFromModel(uim.updUiModel().peekModelADVANCED(), *selected))
         {
             uim.setDirty(true);
+            uim.commit("deleted compopnent");
         }
         else
         {
@@ -132,6 +133,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
         if (std::strlen(nambuf) > 0)
         {
             st.updSelected()->setName(nambuf);
+            st.commit("changed component name");
         }
     }
     ImGui::NextColumn();
@@ -205,6 +207,7 @@ static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
         st.setDirty(true);
         const_cast<OpenSim::JointSet&>(js).set(idx, newJoint.release());
         st.setSelected(ptr);
+        st.commit("changed joint type");
     }
     ImGui::NextColumn();
 }
@@ -231,12 +234,14 @@ static void ActionRedoCurrentlyEditedModel(osc::MainEditorState& mes)
 static void ActionDisableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
     osc::DeactivateAllWrapObjectsIn(mes.updEditedModel().updModel());
+    mes.updEditedModel().commit("disabled all wrapping surfaces");
 }
 
 // enable all wrapping surfaces in the current model
 static void ActionEnableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
     osc::ActivateAllWrapObjectsIn(mes.updEditedModel().updModel());
+    mes.updEditedModel().commit("enabled all wrapping surfaces");
 }
 
 // try to start a new simulation from the currently-edited model
@@ -279,6 +284,7 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
     if (auto attached = attachGeomPopup.draw(); attached)
     {
         uim.updSelectedAs<OpenSim::PhysicalFrame>()->attachGeometry(attached.release());
+        uim.commit("attached geometry");
     }
     ImGui::NextColumn();
 
@@ -293,6 +299,7 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
         auto pofptr = pof.get();
         uim.updSelectedAs<OpenSim::PhysicalFrame>()->addComponent(pof.release());
         uim.setSelected(pofptr);
+        uim.commit("added offset frame");
     }
     if (ImGui::IsItemHovered())
     {
@@ -351,6 +358,7 @@ static void DrawJointContextualActions(osc::UndoableUiModel& uim)
                 }
 
                 uim.setDirty(true);
+                uim.commit("rezeroed joint");
             }
             osc::DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinate editor, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
             ImGui::NextColumn();
@@ -367,6 +375,7 @@ static void DrawJointContextualActions(osc::UndoableUiModel& uim)
             auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
             pf->setParentFrame(selection->getParentFrame());
             uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
+            uim.commit("added parent offset frame");
         }
         ImGui::SameLine();
         if (ImGui::Button("child"))
@@ -374,6 +383,7 @@ static void DrawJointContextualActions(osc::UndoableUiModel& uim)
             auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
             pf->setParentFrame(selection->getChildFrame());
             uim.updSelectedAs<OpenSim::Joint>()->addFrame(pf.release());
+            uim.commit("added child offset frame");
         }
         ImGui::NextColumn();
     }
@@ -404,6 +414,7 @@ static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
     if (hcf->get_contact_parameters().getSize() == 0)
     {
         uim.updSelectedAs<OpenSim::HuntCrossleyForce>()->updContactParametersSet().adoptAndAppend(new OpenSim::HuntCrossleyForce::ContactParameters());
+        // no commit msg: it's a hack
     }
 
     OpenSim::HuntCrossleyForce::ContactParameters const& params = hcf->get_contact_parameters()[0];
@@ -427,6 +438,7 @@ static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
         if (added)
         {
             uim.updSelectedAs<OpenSim::HuntCrossleyForce>()->updContactParametersSet()[0].updGeometry().appendValue(added->getName());
+            uim.commit("added contact geometry");
         }
     }
 
@@ -452,6 +464,7 @@ static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
         {
             uim.setDirty(true);
             maybe_updater->updater(const_cast<OpenSim::AbstractProperty&>(maybe_updater->prop));
+            uim.commit("edited property");
         }
     }
 }
@@ -498,6 +511,7 @@ static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
             SimTK::Vec3 pos{0.0f, 0.0f, 0.0f};
 
             uim.updSelectedAs<OpenSim::PathActuator>()->addNewPathPoint(name, *pf, pos);
+            uim.commit("added path point to path actuator");
         }
     }
 
@@ -522,6 +536,7 @@ static void DrawModelContextualActions(osc::UndoableUiModel& uum)
     if (ImGui::Button(showingFrames ? "hide" : "show"))
     {
         uum.updSelectedAs<OpenSim::Model>()->upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+        uum.commit("toggled frame visibility");
     }
     ImGui::NextColumn();
     ImGui::Columns();
@@ -597,6 +612,7 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
                 uim.updSelected()->updSocket(sn).connect(*connectee);
                 reassignSocketPopup.clear();
                 ImGui::CloseCurrentPopup();
+                uim.commit("reassigned socket");
             }
             catch (std::exception const& ex)
             {
@@ -1006,6 +1022,7 @@ static void ModelEditorOnBackingFileChanged(osc::ModelEditorScreen::Impl& impl)
         osc::log::info("loaded updated file");
         impl.st->updEditedModel().setModel(std::move(p));
         impl.st->updEditedModel().setUpToDateWithFilesystem();
+        impl.st->updEditedModel().commit("reloaded model from filesystem");
     }
     catch (std::exception const& ex)
     {
@@ -1149,6 +1166,7 @@ static void ModelEditorDrawSelectionEditor(osc::ModelEditorScreen::Impl& impl,
         {
             uim.setDirty(true);
             maybeUpdater->updater(const_cast<OpenSim::AbstractProperty&>(maybeUpdater->prop));
+            uim.commit("edited component property");
         }
     }
 
@@ -1224,6 +1242,7 @@ static void ModelEditorDrawMainMenuEditTab(osc::ModelEditorScreen::Impl& impl)
         if (ImGui::MenuItem(showingFrames ? "hide frames" : "show frames"))
         {
             impl.st->updEditedModel().updModel().upd_ModelVisualPreferences().upd_ModelDisplayHints().set_show_frames(!showingFrames);
+            impl.st->updEditedModel().commit("edited frame visibility");
         }
 
         if (ImGui::IsItemHovered())
@@ -1439,8 +1458,6 @@ static void ModelEditorDrawUNGUARDED(osc::ModelEditorScreen::Impl& impl)
 
         osc::ParamBlockEditorPopup{}.draw("simulation parameters", impl.st->updSimulationParams());
     }
-
-    impl.st->updEditedModel().updateIfDirty();
 }
 
 

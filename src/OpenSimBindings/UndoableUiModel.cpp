@@ -4,6 +4,7 @@
 #include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -27,14 +28,16 @@ namespace
     public:
         using Clock = std::chrono::system_clock;
 
-        explicit UiModelCommit(UiModel model) :
-            m_Model{std::move(model)}
+        explicit UiModelCommit(UiModel model, std::string_view message) :
+            m_Model{std::move(model)},
+            m_Message{std::move(message)}
         {
         }
 
-        UiModelCommit(UiModel model, UID parent) :
+        UiModelCommit(UiModel model, UID parent, std::string_view message) :
             m_MaybeParentID{std::move(parent)},
-            m_Model{std::move(model)}
+            m_Model{std::move(model)},
+            m_Message{std::move(message)}
         {
         }
 
@@ -56,6 +59,9 @@ namespace
 
         // the model saved in this snapshot
         UiModel m_Model;
+
+        // commit message
+        std::string m_Message;
     };
 }
 
@@ -65,7 +71,7 @@ public:
     Impl()
     {
         m_Scratch.updateIfDirty();
-        commit();  // make initial commit
+        commit("initial commit");  // make initial commit
     }
 
     // crete a new commit graph that contains a backup of the given model
@@ -74,13 +80,13 @@ public:
         m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
     {
         m_Scratch.updateIfDirty();
-        commit();  // make initial commit
+        commit("initial commit");  // make initial commit
     }
 
     // commit scratch to storage
-    UID commit()
+    UID commit(std::string_view message)
     {
-        auto commit = UiModelCommit{m_Scratch, m_CurrentHead};
+        auto commit = UiModelCommit{m_Scratch, m_CurrentHead, std::move(message)};
         UID commitID = commit.getID();
 
         m_Commits.try_emplace(commitID, std::move(commit));
@@ -440,8 +446,6 @@ osc::UndoableUiModel::UndoableUiModel(UndoableUiModel const& src) :
 
 osc::UndoableUiModel::UndoableUiModel(UndoableUiModel&&) noexcept = default;
 
-osc::UndoableUiModel::~UndoableUiModel() noexcept = default;
-
 UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
 {
     if (&src != this)
@@ -454,6 +458,8 @@ UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
 }
 
 UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
+
+osc::UndoableUiModel::~UndoableUiModel() noexcept = default;
 
 bool osc::UndoableUiModel::hasFilesystemLocation() const
 {
@@ -505,11 +511,6 @@ void osc::UndoableUiModel::doUndo()
     m_Impl->undo();
 }
 
-void osc::UndoableUiModel::rollback()
-{
-    m_Impl->checkout();
-}
-
 bool osc::UndoableUiModel::canRedo() const
 {
     return m_Impl->canRedo();
@@ -525,6 +526,31 @@ void osc::UndoableUiModel::doRedo()
     m_Impl->redo();
 }
 
+void osc::UndoableUiModel::commit(std::string_view message)
+{
+    UiModel& scratch = m_Impl->updScratch();
+
+    // ensure the scratch space is clean
+    try
+    {
+        OSC_PERF("commit model");
+        scratch.updateIfDirty();
+        m_Impl->commit(std::move(message));
+    }
+    catch (std::exception const& ex)
+    {
+        log::error("exception occurred after applying changes to a model:");
+        log::error("    %s", ex.what());
+        log::error("attempting to rollback to an earlier version of the model");
+        m_Impl->checkout();
+    }
+}
+
+void osc::UndoableUiModel::rollback()
+{
+    m_Impl->checkout();
+}
+
 OpenSim::Model const& osc::UndoableUiModel::getModel() const
 {
     return m_Impl->getScratch().getModel();
@@ -538,7 +564,6 @@ OpenSim::Model& osc::UndoableUiModel::updModel()
 void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel)
 {
     updUiModel().setModel(std::move(newModel));
-    updateIfDirty();
 }
 
 SimTK::State const& osc::UndoableUiModel::getState() const
@@ -559,40 +584,6 @@ void osc::UndoableUiModel::setFixupScaleFactor(float v)
 float osc::UndoableUiModel::getReccommendedScaleFactor() const
 {
     return getUiModel().getRecommendedScaleFactor();
-}
-
-void osc::UndoableUiModel::updateIfDirty()
-{
-    UiModel& scratch = m_Impl->updScratch();
-
-    // ensure the scratch space is clean
-    try
-    {
-        scratch.updateIfDirty();
-    }
-    catch (std::exception const& ex)
-    {
-        log::error("exception occurred after applying changes to a model:");
-        log::error("%s", ex.what());
-        log::error("attempting to rollback to an earlier version of the model");
-        m_Impl->checkout();
-    }
-
-    // HACK: auto-perform commit (if necessary)
-    {
-        UiModelCommit const& head = m_Impl->getHeadCommit();
-        auto debounceTime = 2s;
-
-        bool scratchContainsModelChanges = scratch.getModelVersion() != head.getUiModel().getModelVersion();
-        bool scratchContainsStateChanges = scratch.getStateVersion() != head.getUiModel().getStateVersion();
-        bool lastCommitWasAWhileAgo = head.getCommitTime() < (UiModelCommit::Clock::now() - debounceTime);
-
-        if ((scratchContainsModelChanges || scratchContainsStateChanges) && lastCommitWasAWhileAgo)
-        {
-            log::debug("commit model to undo/redo storage");
-            m_Impl->commit();
-        }
-    }
 }
 
 void osc::UndoableUiModel::setDirty(bool v)

@@ -402,6 +402,7 @@ private:
                 auto* ptr = rv.get();
                 osc::AddComponentToModel(m_Uum->updModel(), std::move(rv));
                 m_Uum->setSelected(ptr);
+                m_Uum->commit("added component");
                 m_ComponentAddedLastDrawcall = true;
                 requestClose();
             }

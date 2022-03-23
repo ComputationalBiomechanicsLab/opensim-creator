@@ -213,6 +213,7 @@ public:
             if (ImGui::Button(c->getLocked(m_Uum->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
             {
                 m_Uum->updUiModel().pushCoordinateEdit(*c, CoordinateEdit{c->getValue(m_Uum->getState()), c->getSpeedValue(m_Uum->getState()), !c->getLocked(m_Uum->getState())});
+                m_Uum->commit("(un)locked coordinate");
                 stateWasModified = true;
             }
 
@@ -252,6 +253,7 @@ public:
                 if (ImGui::MenuItem("reset"))
                 {
                     m_Uum->updUiModel().removeCoordinateEdit(*c);
+                    m_Uum->commit("reset coordinate");
                 }
                 ImGui::EndPopup();
             }

@@ -37,14 +37,14 @@ namespace osc
         // move an UndoableUiModel in memory
         UndoableUiModel(UndoableUiModel&&) noexcept;
 
-        // destruct an UndoableUiModel
-        ~UndoableUiModel() noexcept;
-
         // copy-assign some other UndoableUiModel over this one
         UndoableUiModel& operator=(UndoableUiModel const&);
 
         // move-assign some other UndoableUiModel over this one
         UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
+
+        // destruct an UndoableUiModel
+        ~UndoableUiModel() noexcept;
 
         // returns `true` if the model has a known on-disk location
         bool hasFilesystemLocation() const;
@@ -79,7 +79,10 @@ namespace osc
         bool canRedo() const;
         void doRedo();
 
-        // try to rollback the model to an early-as-possible state
+        // commit current scratch state to storage
+        void commit(std::string_view);
+
+        // try to rollback the model to a recent-as-possible state
         void rollback();
 
         // read/manipulate underlying OpenSim::Model
@@ -98,12 +101,6 @@ namespace osc
         float getFixupScaleFactor() const;
         void setFixupScaleFactor(float);
         float getReccommendedScaleFactor() const;
-
-        // update any underlying derived data (SimTK::State, UI decorations, etc.)
-        //
-        // ideally, called after a mutation is made. Otherwise, derived items (e.g. state) may
-        // be out-of-date with the model
-        void updateIfDirty();
 
         // read/manipulate dirty flags
         //

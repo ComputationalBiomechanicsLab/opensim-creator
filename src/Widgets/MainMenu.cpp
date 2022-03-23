@@ -102,9 +102,14 @@ static void actionSaveCurrentModel(osc::UndoableUiModel& uim)
 
     if (maybeUserSaveLoc && trySaveModel(uim.getModel(), *maybeUserSaveLoc))
     {
+        std::string oldPath = uim.getModel().getInputFileName();
         uim.updModel().setInputFileName(*maybeUserSaveLoc);
         uim.setFilesystemPath(*maybeUserSaveLoc);
         uim.setUpToDateWithFilesystem();
+        if (*maybeUserSaveLoc != oldPath)
+        {
+            uim.commit("set model path");
+        }
         osc::App::cur().addRecentFile(*maybeUserSaveLoc);
     }
 }
@@ -115,9 +120,14 @@ static void actionSaveCurrentModelAs(osc::UndoableUiModel& uim)
 
     if (maybePath && trySaveModel(uim.getModel(), maybePath->string()))
     {
+        std::string oldPath = uim.getModel().getInputFileName();
         uim.updModel().setInputFileName(maybePath->string());
         uim.setFilesystemPath(*maybePath);
         uim.setUpToDateWithFilesystem();
+        if (*maybePath != oldPath)
+        {
+            uim.commit("set model path");
+        }
         osc::App::cur().addRecentFile(*maybePath);
     }
 }

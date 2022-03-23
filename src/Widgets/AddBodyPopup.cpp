@@ -239,6 +239,7 @@ private:
         OpenSim::Body* ptr = body.get();
         m.addBody(body.release());
         m_Uum->setSelected(ptr);
+        m_Uum->commit("added body");
     }
 
     // create a "standard" OpenSim::Joint
