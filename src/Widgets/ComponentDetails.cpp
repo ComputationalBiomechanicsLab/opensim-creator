@@ -11,11 +11,12 @@
 #include <vector>
 
 osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& state,
-                                                            OpenSim::Component const* comp) {
-
+                                                            OpenSim::Component const* comp)
+{
     Response rv;
 
-    if (!comp) {
+    if (!comp)
+    {
         ImGui::Text("(nothing selected)");
         return rv;
     }
@@ -23,7 +24,7 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
     OpenSim::Component const& c = *comp;
 
     ImGui::Text("selection information:");
-    ImGui::Dummy(ImVec2{0.0, 2.5f});
+    ImGui::Dummy({0.0, 2.5f});
     ImGui::Separator();
 
     // top-level info
@@ -84,9 +85,11 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
     }
 
     // properties
-    if (ImGui::CollapsingHeader("properties")) {
+    if (ImGui::CollapsingHeader("properties"))
+    {
         ImGui::Columns(2);
-        for (int i = 0; i < c.getNumProperties(); ++i) {
+        for (int i = 0; i < c.getNumProperties(); ++i)
+        {
             OpenSim::AbstractProperty const& p = c.getPropertyByIndex(i);
             ImGui::Text("%s", p.getName().c_str());
             ImGui::NextColumn();
@@ -97,10 +100,12 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
     }
 
     // state variables
-    if (ImGui::CollapsingHeader("state variables")) {
+    if (ImGui::CollapsingHeader("state variables"))
+    {
         OpenSim::Array<std::string> names = c.getStateVariableNames();
         ImGui::Columns(2);
-        for (int i = 0; i < names.size(); ++i) {
+        for (int i = 0; i < names.size(); ++i)
+        {
             std::string const& name = names[i];
 
             ImGui::Text("%s", name.c_str());
@@ -117,25 +122,30 @@ osc::ComponentDetails::Response osc::ComponentDetails::draw(SimTK::State const& 
     }
 
     // inputs
-    if (ImGui::CollapsingHeader("inputs")) {
+    if (ImGui::CollapsingHeader("inputs"))
+    {
         std::vector<std::string> input_names = c.getInputNames();
-        for (std::string const& inputName : input_names) {
+        for (std::string const& inputName : input_names)
+        {
             ImGui::Text("%s", inputName.c_str());
         }
     }
 
     // sockets
-    if (ImGui::CollapsingHeader("sockets")) {
+    if (ImGui::CollapsingHeader("sockets"))
+    {
         std::vector<std::string> socknames = const_cast<OpenSim::Component&>(c).getSocketNames();
         ImGui::Columns(2);
-        for (std::string const& sn : socknames) {
+        for (std::string const& sn : socknames)
+        {
             ImGui::Text("%s", sn.c_str());
             ImGui::NextColumn();
 
             std::string const& cp = c.getSocket(sn).getConnecteePath();
             ImGui::Text("%s", cp.c_str());
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-                rv.type = SelectionChanged;
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            {
+                rv.type = ResponseType::SelectionChanged;
                 rv.ptr = &c.getComponent(cp);
             }
             ImGui::NextColumn();

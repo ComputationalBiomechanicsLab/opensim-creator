@@ -27,6 +27,8 @@ namespace osc
 {
     int DistanceFromRoot(OpenSim::Component const&);
 
+    OpenSim::ComponentPath const& GetEmptyComponentPath();
+
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
     OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
@@ -126,4 +128,7 @@ namespace osc
 
     // returns a model copy that is finalized from properties, connected, system built, etc.
     std::unique_ptr<OpenSim::Model> CreateInitializedModelCopy(OpenSim::Model const&);
+
+    // adds a component to an appropriate (if possible - e.g. jointset) location in the model
+    void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
 }

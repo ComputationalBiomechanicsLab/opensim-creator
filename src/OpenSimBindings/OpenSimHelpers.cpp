@@ -288,6 +288,12 @@ int osc::DistanceFromRoot(OpenSim::Component const& c)
     return dist;
 }
 
+OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
+{
+    static OpenSim::ComponentPath p;
+    return p;
+}
+
 std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component const& c)
 {
     std::vector<OpenSim::Component const*> rv;
@@ -761,4 +767,32 @@ std::unique_ptr<OpenSim::Model> osc::CreateInitializedModelCopy(OpenSim::Model c
     rv->buildSystem();
     rv->initializeState();
     return rv;
+}
+
+void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Component> c)
+{
+    if (!c)
+    {
+        return;  // paranoia
+    }
+    else if (dynamic_cast<OpenSim::Joint*>(c.get()))
+    {
+        m.addJoint(static_cast<OpenSim::Joint*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Force*>(c.get()))
+    {
+        m.addForce(static_cast<OpenSim::Force*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Constraint*>(c.get()))
+    {
+        m.addConstraint(static_cast<OpenSim::Constraint*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get()))
+    {
+        m.addContactGeometry(static_cast<OpenSim::ContactGeometry*>(c.release()));
+    }
+    else
+    {
+        m.addComponent(c.release());
+    }
 }

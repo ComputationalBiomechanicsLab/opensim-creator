@@ -1,4 +1,4 @@
-#include "PropertyEditors.hpp"
+#include "ObjectPropertiesEditor.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Utils/Assertions.hpp"

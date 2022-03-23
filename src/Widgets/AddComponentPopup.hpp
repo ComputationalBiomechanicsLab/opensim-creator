@@ -1,29 +1,36 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 namespace OpenSim
 {
     class Component;
-    class Model;
+}
+
+namespace osc
+{
+    class UndoableUiModel;
 }
 
 namespace osc
 {
     class AddComponentPopup final {
     public:
-        AddComponentPopup(std::unique_ptr<OpenSim::Component> prototype);
+        AddComponentPopup(std::shared_ptr<UndoableUiModel>,
+                          std::unique_ptr<OpenSim::Component> prototype,
+                          std::string_view popupName);
         AddComponentPopup(AddComponentPopup const&) = delete;
         AddComponentPopup(AddComponentPopup&&) noexcept;
-        ~AddComponentPopup() noexcept;
         AddComponentPopup& operator=(AddComponentPopup const&) = delete;
         AddComponentPopup& operator=(AddComponentPopup&&) noexcept;
+        ~AddComponentPopup() noexcept;
 
-        // - assumes caller handles ImGui::OpenPopup(modal_name)
-        // - returns nullptr until the user fully builds the Component
-        std::unique_ptr<OpenSim::Component> draw(char const* modalName, OpenSim::Model const&);
+        void open();
+        void close();
+        bool draw();  // returns `true` if component was added to model
 
-        struct Impl;
+        class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
     };

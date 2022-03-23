@@ -15,7 +15,6 @@
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
-#include "src/Widgets/AttachGeometryPopup.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/ComponentHierarchy.hpp"
@@ -23,9 +22,10 @@
 #include "src/Widgets/ModelActionsMenuBar.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/LogViewer.hpp"
-#include "src/Widgets/PropertyEditors.hpp"
+#include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/ReassignSocketPopup.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
+#include "src/Widgets/SelectGeometryPopup.hpp"
 #include "src/Widgets/Select1PFPopup.hpp"
 #include "src/Widgets/Select2PFsPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
@@ -251,7 +251,7 @@ static void ActionClearSelectionFromEditedModel(osc::MainEditorState& mes)
 }
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
-static void DrawPhysicalFrameContextualActions(osc::AttachGeometryPopup& attachGeomPopup,
+static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachGeomPopup,
                                                osc::UndoableUiModel& uim)
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
@@ -263,11 +263,9 @@ static void DrawPhysicalFrameContextualActions(osc::AttachGeometryPopup& attachG
     osc::DrawHelpMarker("Geometry that is attached to this physical frame. Multiple pieces of geometry can be attached to the frame");
     ImGui::NextColumn();
 
-    static constexpr char const* modalName = "select geometry to add";
-
     if (ImGui::Button("add geometry"))
     {
-        ImGui::OpenPopup(modalName);
+        attachGeomPopup.open();
     }
     if (ImGui::IsItemHovered())
     {
@@ -278,7 +276,7 @@ static void DrawPhysicalFrameContextualActions(osc::AttachGeometryPopup& attachG
         ImGui::EndTooltip();
     }
 
-    if (auto attached = attachGeomPopup.draw(modalName); attached)
+    if (auto attached = attachGeomPopup.draw(); attached)
     {
         uim.updSelectedAs<OpenSim::PhysicalFrame>()->attachGeometry(attached.release());
     }
@@ -925,6 +923,8 @@ struct osc::ModelEditorScreen::Impl final {
     FileChangePoller filePoller;
 
     ModelActionsMenuBar modelActionsMenuBar{st->updEditedModelPtr()};
+    CoordinateEditor coordEditor{st->updEditedModelPtr()};
+    SelectGeometryPopup attachGeometryPopup{"select geometry to add"};
 
     // internal state of any sub-panels the editor screen draws
     struct {
@@ -933,10 +933,8 @@ struct osc::ModelEditorScreen::Impl final {
         MainMenuAboutTab mmAboutTab;
         ObjectPropertiesEditor propertiesEditor;
         ReassignSocketPopup reassignSocketPopup;
-        AttachGeometryPopup attachGeometryPopup;
         Select2PFsPopup select2PFsPopup;
         LogViewer logViewer;
-        CoordinateEditor coordEditor;
         ComponentHierarchy componentHierarchy;
     } ui;
 
@@ -1083,7 +1081,7 @@ static void ModelEditorDrawContextualActions(osc::ModelEditorScreen::Impl& impl,
     }
     else if (uim.selectionDerivesFrom<OpenSim::PhysicalFrame>())
     {
-        DrawPhysicalFrameContextualActions(impl.ui.attachGeometryPopup, uim);
+        DrawPhysicalFrameContextualActions(impl.attachGeometryPopup, uim);
     }
     else if (uim.selectionDerivesFrom<OpenSim::Joint>())
     {
@@ -1428,7 +1426,7 @@ static void ModelEditorDrawUNGUARDED(osc::ModelEditorScreen::Impl& impl)
     {
         if (ImGui::Begin("Coordinate Editor"))
         {
-            impl.ui.coordEditor.draw(impl.st->updEditedModel().updUiModel());
+            impl.coordEditor.draw();
         }
     }
 

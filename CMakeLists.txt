@@ -346,8 +346,6 @@ add_executable(osc
     src/Widgets/AddBodyPopup.hpp
     src/Widgets/AddComponentPopup.cpp
     src/Widgets/AddComponentPopup.hpp
-    src/Widgets/AttachGeometryPopup.cpp
-    src/Widgets/AttachGeometryPopup.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
     src/Widgets/ComponentHierarchy.cpp
@@ -360,12 +358,12 @@ add_executable(osc
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuBar.cpp
     src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ObjectPropertiesEditor.cpp
+    src/Widgets/ObjectPropertiesEditor.hpp
     src/Widgets/ParamBlockEditorPopup.cpp
     src/Widgets/ParamBlockEditorPopup.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
-    src/Widgets/PropertyEditors.cpp
-    src/Widgets/PropertyEditors.hpp
     src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/ReassignSocketPopup.cpp
     src/Widgets/Select1PFPopup.cpp
@@ -373,6 +371,10 @@ add_executable(osc
     src/Widgets/Select2PFsPopup.cpp
     src/Widgets/Select2PFsPopup.hpp
     src/Widgets/SelectComponentPopup.hpp
+    src/Widgets/SelectGeometryPopup.cpp
+    src/Widgets/SelectGeometryPopup.hpp
+    src/Widgets/StandardPopup.cpp
+    src/Widgets/StandardPopup.hpp
     src/Widgets/UiModelViewer.cpp
     src/Widgets/UiModelViewer.hpp
 

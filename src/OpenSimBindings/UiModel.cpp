@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/Perf.hpp"

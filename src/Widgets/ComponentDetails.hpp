@@ -21,13 +21,13 @@ namespace osc
         ComponentDetails& operator=(ComponentDetails&&) noexcept = default;
         ~ComponentDetails() noexcept = default;
 
-        enum ResponseType {
+        enum class ResponseType {
             NothingHappened,
             SelectionChanged,
         };
 
         struct Response final {
-            ResponseType type = NothingHappened;
+            ResponseType type = ResponseType::NothingHappened;
             OpenSim::Component const* ptr = nullptr;
         };
 

@@ -1,9 +1,10 @@
-#include "AttachGeometryPopup.hpp"
+#include "SelectGeometryPopup.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
+#include "src/Widgets/StandardPopup.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -61,29 +62,21 @@ namespace {
     }
 }
 
-class osc::AttachGeometryPopup::Impl final {
+class osc::SelectGeometryPopup::Impl final : public osc::StandardPopup {
 public:
-    Impl() :
-        vtps{GetAllFilesInDirRecursively(App::resource("geometry"))},
-        recentUserChoices{},
-        search{}
+    Impl(std::string_view popupName) :
+        StandardPopup{std::move(popupName)}
     {
     }
 
-    std::unique_ptr<OpenSim::Geometry> draw(char const* modalName) {
-        auto& st = *this;
+    std::unique_ptr<OpenSim::Geometry> drawCheckResult()
+    {
+        draw();
+        return std::exchange(m_Result, nullptr);
+    }
 
-        std::unique_ptr<OpenSim::Geometry> rv = nullptr;
-
-        // center the modal
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-        // try to show the modal (depends on caller calling ImGui::OpenPopup)
-        if (!ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            return rv;
-        }
-
+    void implDraw() override
+    {
         // premade geometry section
         //
         // let user select from a shorter sequence of analytical geometry that can be
@@ -96,11 +89,12 @@ public:
             ImGui::Dummy({0.0f, 2.0f});
 
             int item = -1;
-            if (ImGui::Combo("##premade", &item, g_GeomNames.data(), static_cast<int>(g_GeomNames.size()))) {
+            if (ImGui::Combo("##premade", &item, g_GeomNames.data(), static_cast<int>(g_GeomNames.size())))
+            {
                 auto const& ctor = g_GeomCtors[static_cast<size_t>(item)];
-                rv = ctor();
-                st.search[0] = '\0';
-                ImGui::CloseCurrentPopup();
+                m_Result = ctor();
+                m_Search.clear();
+                requestClose();
             }
         }
 
@@ -115,41 +109,53 @@ public:
         ImGui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
-        ImGui::InputText("search", st.search.data(), st.search.size());
+        osc::InputString("search", m_Search, m_SearchMaxLen);
         ImGui::Dummy({0.0f, 1.0f});
 
         ImGui::BeginChild(
-            "mesh list", ImVec2(ImGui::GetContentRegionAvail().x, 256), false, ImGuiWindowFlags_HorizontalScrollbar);
+            "mesh list",
+            ImVec2(ImGui::GetContentRegionAvail().x, 256),
+            false,
+            ImGuiWindowFlags_HorizontalScrollbar);
 
-
-        if (!st.recentUserChoices.empty()) {
+        if (!m_RecentUserChoices.empty())
+        {
             ImGui::TextDisabled("  (recent)");
         }
-        for (std::filesystem::path const& p : st.recentUserChoices) {
+
+        for (std::filesystem::path const& p : m_RecentUserChoices)
+        {
             auto resp = tryDrawFileChoice(p);
-            if (resp) {
-                rv = std::move(resp);
+            if (resp)
+            {
+                m_Result = std::move(resp);
             }
         }
 
-        if (!st.recentUserChoices.empty()) {
+        if (!m_RecentUserChoices.empty())
+        {
             ImGui::TextDisabled("  (from Geometry/ dir)");
         }
-        for (std::filesystem::path const& p : st.vtps) {
+        for (std::filesystem::path const& p : m_Vtps)
+        {
             auto resp = tryDrawFileChoice(p);
-            if (resp) {
-                rv = std::move(resp);
+            if (resp)
+            {
+                m_Result = std::move(resp);
             }
         }
 
         ImGui::EndChild();
 
-        if (ImGui::Button("Open Mesh File")) {
-            if (auto maybeVTP = promptOpenVTP(); maybeVTP) {
-                rv = onVTPChoiceMade(std::move(maybeVTP).value());
+        if (ImGui::Button("Open Mesh File"))
+        {
+            if (auto maybeVTP = promptOpenVTP(); maybeVTP)
+            {
+                m_Result = onVTPChoiceMade(std::move(maybeVTP).value());
             }
         }
-        if (ImGui::IsItemHovered()) {
+        if (ImGui::IsItemHovered())
+        {
             ImGui::BeginTooltip();
             ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
             ImGui::TextUnformatted("Open a mesh file on the filesystem");
@@ -159,14 +165,11 @@ public:
 
         ImGui::Dummy({0.0f, 5.0f});
 
-        if (ImGui::Button("Cancel")) {
-            st.search[0] = '\0';
-            ImGui::CloseCurrentPopup();
+        if (ImGui::Button("Cancel"))
+        {
+            m_Search.clear();
+            requestClose();
         }
-
-        ImGui::EndPopup();
-
-        return rv;
     }
 
 private:
@@ -175,19 +178,19 @@ private:
         auto rv = std::make_unique<OpenSim::Mesh>(path.string());
 
         // add to recent list
-        recentUserChoices.push_back(std::move(path));
+        m_RecentUserChoices.push_back(std::move(path));
 
         // reset search (for next popup open)
-        search[0] = '\0';
+        m_Search.clear();
 
-        ImGui::CloseCurrentPopup();
+        requestClose();
 
         return rv;
     }
 
     std::unique_ptr<OpenSim::Mesh> tryDrawFileChoice(std::filesystem::path const& p)
     {
-        if (p.filename().string().find(search.data()) != std::string::npos)
+        if (p.filename().string().find(m_Search) != std::string::npos)
         {
             if (ImGui::Selectable(p.filename().string().c_str()))
             {
@@ -198,26 +201,42 @@ private:
     }
 
     // vtps found in the user's/installation's `Geometry/` dir
-    std::vector<std::filesystem::path> vtps;
+    std::vector<std::filesystem::path> m_Vtps = GetAllFilesInDirRecursively(App::resource("geometry"));
 
     // recent file choices by the user
-    std::vector<std::filesystem::path> recentUserChoices;
+    std::vector<std::filesystem::path> m_RecentUserChoices;
 
-    // C string that stores the user's current search term
-    std::array<char, 128> search;
+    // the user's current search filter
+    std::string m_Search;
+
+    // maximum length of the search string
+    static inline constexpr int m_SearchMaxLen = 128;
+
+    // return value (what the user wants)
+    std::unique_ptr<OpenSim::Geometry> m_Result = nullptr;
 };
 
 // public API
 
-osc::AttachGeometryPopup::AttachGeometryPopup() :
-    m_Impl{std::make_unique<Impl>()}
+osc::SelectGeometryPopup::SelectGeometryPopup(std::string_view popupName) :
+    m_Impl{std::make_unique<Impl>(std::move(popupName))}
 {
 }
-osc::AttachGeometryPopup::AttachGeometryPopup(AttachGeometryPopup&&) noexcept = default;
-osc::AttachGeometryPopup& osc::AttachGeometryPopup::operator=(AttachGeometryPopup&&) noexcept = default;
-osc::AttachGeometryPopup::~AttachGeometryPopup() noexcept = default;
+osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
+osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
+osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;
 
-std::unique_ptr<OpenSim::Geometry> osc::AttachGeometryPopup::draw(char const* modalName)
+void osc::SelectGeometryPopup::open()
 {
-    return m_Impl->draw(modalName);
+    m_Impl->open();
+}
+
+void osc::SelectGeometryPopup::close()
+{
+    m_Impl->close();
+}
+
+std::unique_ptr<OpenSim::Geometry> osc::SelectGeometryPopup::draw()
+{
+    return m_Impl->drawCheckResult();
 }

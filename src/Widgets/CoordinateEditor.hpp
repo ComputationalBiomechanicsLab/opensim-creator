@@ -4,22 +4,21 @@
 
 namespace osc
 {
-    class UiModel;
+    class UndoableUiModel;
 }
 
 namespace osc
 {
     struct CoordinateEditor final {
     public:
-        CoordinateEditor();
+        explicit CoordinateEditor(std::shared_ptr<UndoableUiModel>);
         CoordinateEditor(CoordinateEditor const&) = delete;
         CoordinateEditor(CoordinateEditor&&) noexcept;
         CoordinateEditor& operator=(CoordinateEditor const&) = delete;
         CoordinateEditor& operator=(CoordinateEditor&&) noexcept;
         ~CoordinateEditor() noexcept;
-
-        // returns `true` if `State` was edited by the coordinate editor
-        bool draw(UiModel&);
+        
+        bool draw();  // returns true if an edit was made
 
         class Impl;
     private:

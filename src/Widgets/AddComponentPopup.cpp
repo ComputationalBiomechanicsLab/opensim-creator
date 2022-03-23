@@ -2,8 +2,10 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/Utils/Algorithms.hpp"
-#include "src/Widgets/PropertyEditors.hpp"
+#include "src/Widgets/ObjectPropertiesEditor.hpp"
+#include "src/Widgets/StandardPopup.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -20,11 +22,9 @@
 #include <string>
 #include <utility>
 
-using namespace osc;
-
-static OpenSim::ComponentPath const g_EmptyPath = {};
 
 struct PathPoint final {
+
     // what the user chose when the clicked in the UI
     OpenSim::ComponentPath userChoice;
 
@@ -46,41 +46,30 @@ struct PathPoint final {
     }
 };
 
-struct osc::AddComponentPopup::Impl final {
+class osc::AddComponentPopup::Impl : public osc::StandardPopup {
+public:
+    Impl(std::shared_ptr<UndoableUiModel> uum,
+         std::unique_ptr<OpenSim::Component> prototype,
+         std::string_view popupName) :
 
-    // a prototypical version of the component being added
-    std::unique_ptr<OpenSim::Component> m_Proto;
-
-    // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
-    std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets;
-
-    // user-assigned name for the to-be-added component
-    std::string m_Name;
-
-    // a property editor for the prototype's properties
-    ObjectPropertiesEditor m_PropEditor;
-
-    // absolute paths to user-selected connectees of the prototype's sockets
-    std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths;
-
-    // absolute paths to user-selected physical frames that should be used as path points
-    std::vector<PathPoint> m_PathPoints;
-
-    // search string that user edits to search through possible path point locations
-    std::string m_PathSearchString;
-
-    Impl(std::unique_ptr<OpenSim::Component> prototype) :
-        m_Proto{std::move(prototype)},
-        m_ProtoSockets{GetAllSockets(*m_Proto)},
-        m_Name{m_Proto->getConcreteClassName()},
-        m_PropEditor{},
-        m_SocketConnecteePaths{m_ProtoSockets.size()},
-        m_PathPoints{}
+         StandardPopup{std::move(popupName)},
+         m_Uum{std::move(uum)},
+         m_Proto{std::move(prototype)}
     {
     }
 
-    std::unique_ptr<OpenSim::Component> tryCreateComponentFromState(OpenSim::Model const& model)
+    bool drawAndCheck()
     {
+        draw();
+        return std::exchange(m_ComponentAddedLastDrawcall, false);
+    }
+
+private:
+
+    std::unique_ptr<OpenSim::Component> tryCreateComponentFromState()
+    {
+        OpenSim::Model const& model = m_Uum->getModel();
+
         if (m_Name.empty())
         {
             return nullptr;
@@ -126,7 +115,7 @@ struct osc::AddComponentPopup::Impl final {
             {
                 auto const& pp = m_PathPoints[i];
 
-                if (pp.actualFrame == g_EmptyPath)
+                if (pp.actualFrame == GetEmptyComponentPath())
                 {
                     return nullptr;  // invalid path slipped through
                 }
@@ -148,8 +137,10 @@ struct osc::AddComponentPopup::Impl final {
         return rv;
     }
 
-    bool isAbleToAddComponentFromCurrentState(OpenSim::Model const& model) const
+    bool isAbleToAddComponentFromCurrentState() const
     {
+        OpenSim::Model const& model = m_Uum->getModel();
+
         bool hasName = !m_Name.empty();
         bool allSocketsAssigned = AllOf(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
         {
@@ -192,8 +183,10 @@ struct osc::AddComponentPopup::Impl final {
         }
     }
 
-    void drawSocketEditors(OpenSim::Model const& model)
+    void drawSocketEditors()
     {
+        OpenSim::Model const& model = m_Uum->getModel();
+
         if (m_ProtoSockets.empty())
         {
             return;
@@ -240,8 +233,10 @@ struct osc::AddComponentPopup::Impl final {
         }
     }
 
-    void drawPathPointEditor(OpenSim::Model const& model)
+    void drawPathPointEditor()
     {
+        OpenSim::Model const& model = m_Uum->getModel();
+
         OpenSim::PathActuator* protoAsPA = dynamic_cast<OpenSim::PathActuator*>(m_Proto.get());
 
         if (!protoAsPA)
@@ -385,86 +380,106 @@ struct osc::AddComponentPopup::Impl final {
         ImGui::Columns();
     }
 
-    std::unique_ptr<OpenSim::Component> drawBottomButtons(OpenSim::Model const& model)
+    void drawBottomButtons()
     {
         if (ImGui::Button("cancel"))
         {
-            ImGui::CloseCurrentPopup();
+            requestClose();
         }
 
-        // handle possible completion
-
-        std::unique_ptr<OpenSim::Component> rv = nullptr;
-
-        if (isAbleToAddComponentFromCurrentState(model))
+        if (!isAbleToAddComponentFromCurrentState())
         {
-            ImGui::SameLine();
+            return;  // can't add anything yet
+        }
 
-            if (ImGui::Button(ICON_FA_PLUS " add"))
+        ImGui::SameLine();
+
+        if (ImGui::Button(ICON_FA_PLUS " add"))
+        {
+            std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
+            if (rv)
             {
-                rv = tryCreateComponentFromState(model);
-                if (rv)
-                {
-                    ImGui::CloseCurrentPopup();
-                }
+                auto* ptr = rv.get();
+                osc::AddComponentToModel(m_Uum->updModel(), std::move(rv));
+                m_Uum->setSelected(ptr);
+                m_ComponentAddedLastDrawcall = true;
+                requestClose();
             }
         }
-
-        return rv;
     }
 
-    std::unique_ptr<OpenSim::Component> draw(char const* modalName, OpenSim::Model const& model)
+    void implDraw()
     {
-        // center+size the modal
-        {
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-            ImGui::SetNextWindowSize(ImVec2(512, 0));
-        }
-
-        if (!ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            return nullptr;  // modal is not showing
-        }
 
         drawNameEditor();
-
         drawPropertyEditors();
 
         ImGui::Dummy({0.0f, 3.0f});
 
-        drawSocketEditors(model);
+        drawSocketEditors();
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        drawPathPointEditor(model);
+        drawPathPointEditor();
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        std::unique_ptr<OpenSim::Component> rv = drawBottomButtons(model);
-
-        ImGui::EndPopup();
-
-        return rv;
+        drawBottomButtons();
     }
+
+private:
+    // the model that the component should be added to
+    std::shared_ptr<UndoableUiModel> m_Uum;
+
+    // a prototypical version of the component being added
+    std::unique_ptr<OpenSim::Component> m_Proto;
+
+    // returns true if a component was added last drawcall
+    bool m_ComponentAddedLastDrawcall = false;
+
+    // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
+    std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets{GetAllSockets(*m_Proto)};
+
+    // user-assigned name for the to-be-added component
+    std::string m_Name{m_Proto->getConcreteClassName()};
+
+    // a property editor for the prototype's properties
+    ObjectPropertiesEditor m_PropEditor;
+
+    // absolute paths to user-selected connectees of the prototype's sockets
+    std::vector<OpenSim::ComponentPath> m_SocketConnecteePaths{m_ProtoSockets.size()};
+
+    // absolute paths to user-selected physical frames that should be used as path points
+    std::vector<PathPoint> m_PathPoints;
+
+    // search string that user edits to search through possible path point locations
+    std::string m_PathSearchString;
 };
 
 // public API
 
-osc::AddComponentPopup::AddComponentPopup(std::unique_ptr<OpenSim::Component> prototype) :
-    m_Impl{std::make_unique<Impl>(std::move(prototype))}
+osc::AddComponentPopup::AddComponentPopup(std::shared_ptr<UndoableUiModel> uum,
+    std::unique_ptr<OpenSim::Component> prototype,
+    std::string_view popupName) :
+
+    m_Impl{std::make_unique<Impl>(std::move(uum), std::move(prototype), std::move(popupName))}
 {
 }
-
 osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
-
+osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
 
-std::unique_ptr<OpenSim::Component> osc::AddComponentPopup::draw(
-        char const* modelName,
-        OpenSim::Model const& model)
+void osc::AddComponentPopup::open()
 {
-    return m_Impl->draw(modelName, model);
+    m_Impl->open();
 }
 
-AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
+void osc::AddComponentPopup::close()
+{
+    m_Impl->close();
+}
+
+bool osc::AddComponentPopup::draw()
+{
+    return m_Impl->drawAndCheck();
+}

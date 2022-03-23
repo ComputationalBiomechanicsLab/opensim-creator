@@ -6,7 +6,9 @@
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/Utils/Assertions.hpp"
-#include "src/Widgets/AttachGeometryPopup.hpp"
+#include "src/Widgets/SelectComponentPopup.hpp"
+#include "src/Widgets/SelectGeometryPopup.hpp"
+#include "src/Widgets/StandardPopup.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -20,57 +22,23 @@
 #include <utility>
 
 
-class osc::AddBodyPopup::Impl final {
+class osc::AddBodyPopup::Impl : public osc::StandardPopup {
 public:
     Impl(std::shared_ptr<UndoableUiModel> uum, std::string_view popupName) :
-        m_Uum{std::move(uum)},
-        m_PopupName{std::move(popupName)}
+        StandardPopup{std::move(popupName)},
+        m_Uum{std::move(uum)}
     {
     }
 
-    void open()
+    bool drawAndCheck()
     {
-        m_ShouldOpen = true;
+        draw();
+        return std::exchange(m_BodyAddedLastDrawcall, false);
     }
 
-    void close()
+private:
+    void implDraw() override
     {
-        m_ShouldClose = true;
-    }
-
-    bool draw()
-    {
-        if (m_ShouldOpen)
-        {
-            ImGui::OpenPopup(m_PopupName.c_str());
-            m_ShouldOpen = false;
-            m_FirstTimePopupDrawn = true;
-        }
-
-        // center the modal
-        {
-            ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2{0.5f, 0.5f});
-            ImGui::SetNextWindowSize({m_PopupWidth, m_PopupHeight});
-        }
-
-        // try to show modal
-        if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
-        {
-            // modal not showing
-            return false;
-        }
-
-        if (m_ShouldClose)
-        {
-            resetInputs();
-            ImGui::CloseCurrentPopup();
-            ImGui::EndPopup();
-            m_ShouldClose = false;
-            m_ShouldOpen = false;
-            return false;
-        }
-
         OpenSim::Model const& model = m_Uum->getModel();
 
         OpenSim::PhysicalFrame const* selectedPf =
@@ -87,7 +55,7 @@ public:
 
         // prompt name
         {
-            if (m_FirstTimePopupDrawn)
+            if (isPopupOpenedThisFrame())
             {
                 ImGui::SetKeyboardFocusHere();
             }
@@ -193,8 +161,6 @@ public:
             DrawHelpMarker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ImGui::NextColumn();
             {
-                static constexpr char const* attach_modal_name = "addbody_attachgeometry";
-
                 char const* label = "attach";
                 if (m_AttachGeometryPopupSelection)
                 {
@@ -211,10 +177,10 @@ public:
 
                 if (ImGui::Button(label))
                 {
-                    ImGui::OpenPopup(attach_modal_name);
+                    m_AttachGeometryPopup.open();
                 }
 
-                if (auto attached = m_AttachGeometryPopup.draw(attach_modal_name); attached)
+                if (auto attached = m_AttachGeometryPopup.draw(); attached)
                 {
                     m_AttachGeometryPopupSelection = std::move(attached);
                 }
@@ -224,39 +190,28 @@ public:
 
         ImGui::Columns();
 
-        // end of input prompting
+        // end of input prompting: show user cancel/ok buttons
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        // show cancel button
         if (ImGui::Button("cancel"))
         {
-            m_ShouldClose = true;
+            requestClose();
         }
 
         ImGui::SameLine();
 
-        bool bodyAdded = false;
-
-        // show add button
         if (ImGui::Button(ICON_FA_PLUS " add body"))
         {
             doAddBody(*selectedPf);
-            bodyAdded = true;
-            m_ShouldClose = true;
+            m_BodyAddedLastDrawcall = true;
+            requestClose();
         }
-
-        ImGui::EndPopup();
-
-        m_FirstTimePopupDrawn = false;
-
-        return bodyAdded;
     }
 
-private:
-    void resetInputs()
+    void implOnClose() override
     {
-        // TODO
+        // TODO: reset inputs
     }
 
     void doAddBody(OpenSim::PhysicalFrame const& selectedPf)
@@ -327,20 +282,11 @@ private:
     // the model that the body will be added to
     std::shared_ptr<UndoableUiModel> m_Uum;
 
-    // name of the ImGui popup that will contain UI content
-    std::string m_PopupName;
-
-    static inline constexpr float m_PopupWidth = 512.0f;
-    static inline constexpr float m_PopupHeight = 0.0f;
-    static inline constexpr ImGuiWindowFlags m_PopupFlags = ImGuiWindowFlags_AlwaysAutoResize;
-
-    // popup state flags
-    bool m_ShouldOpen = false;
-    bool m_ShouldClose = false;
-    bool m_FirstTimePopupDrawn = false;
+    // set when the body is added
+    bool m_BodyAddedLastDrawcall = false;
 
     // state for the "attach geometry" popup
-    AttachGeometryPopup m_AttachGeometryPopup;
+    SelectGeometryPopup m_AttachGeometryPopup{"addbody_attachgeometry"};
     std::unique_ptr<OpenSim::Geometry> m_AttachGeometryPopupSelection = nullptr;
 
     // abspath to the currently-selected physical frame in the model
@@ -399,5 +345,5 @@ void osc::AddBodyPopup::close()
 
 bool osc::AddBodyPopup::draw()
 {
-    return m_Impl->draw();
+    return m_Impl->drawAndCheck();
 }
