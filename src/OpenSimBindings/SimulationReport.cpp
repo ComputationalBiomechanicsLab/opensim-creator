@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/IntegratorOutput.hpp"
 #include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
 
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKsimbody.h>
 #include <SimTKcommon.h>
 #include <simmath/Integrator.h>
@@ -11,6 +12,14 @@
 
 class osc::SimulationReport::Impl final {
 public:
+
+    Impl(OpenSim::Model const& model, SimTK::State st) :
+        m_State{std::move(st)}
+    {
+        // care: state needs to be realized on the simulator thread
+        m_State.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+        model.realizeReport(m_State);
+    }
 
     Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
         m_State{integrator.getState()}
@@ -75,6 +84,10 @@ private:
 
 // public API
 
+osc::SimulationReport::SimulationReport(OpenSim::Model const& m, SimTK::State st) :
+    m_Impl{std::make_shared<Impl>(m, std::move(st))}
+{
+}
 osc::SimulationReport::SimulationReport(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
     m_Impl{std::make_shared<Impl>(sys, integrator)}
 {

@@ -253,6 +253,8 @@ add_executable(osc
     src/OpenSimBindings/SimulationStatus.hpp
     src/OpenSimBindings/StateModifications.cpp
     src/OpenSimBindings/StateModifications.hpp
+    src/OpenSimBindings/StoFileSimulation.hpp
+    src/OpenSimBindings/StoFileSimulation.cpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
     src/OpenSimBindings/UiFdSimulation.cpp

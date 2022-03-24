@@ -1,18 +1,20 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/ComponentOutput.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
-#include "src/OpenSimBindings/ComponentOutput.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
+#include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
@@ -1489,13 +1491,27 @@ void osc::ModelEditorScreen::onEvent(SDL_Event const& e)
     if (osc::ImGuiOnEvent(e))
     {
         m_Impl->resetPerFrame.shouldRequestRedraw = true;
-        return;
     }
-
-    if (e.type == SDL_KEYDOWN)
+    else if (e.type == SDL_KEYDOWN)
     {
         ModelEditorOnKeydown(*m_Impl, e.key);
-        return;
+    }
+    else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".sto"))
+    {
+        try
+        {
+            std::filesystem::path p{e.drop.file};
+            std::unique_ptr<OpenSim::Model> cpy =
+                std::make_unique<OpenSim::Model>(m_Impl->st->getEditedModel().getModel());
+            cpy->buildSystem();
+            cpy->initializeState();
+            m_Impl->st->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
+            osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Impl->st);
+        }
+        catch (std::exception const& ex)
+        {
+            log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+        }
     }
 }
 

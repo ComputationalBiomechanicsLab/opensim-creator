@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/Utils/Macros.hpp"
+
 #include <utility>
 
 namespace osc

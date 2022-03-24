@@ -4,7 +4,6 @@
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
-#include "src/Utils/UID.hpp"
 
 #include <nonstd/span.hpp>
 
