@@ -5,6 +5,9 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/ScopeGuard.hpp"
 
 #include <nonstd/span.hpp>
@@ -40,12 +43,74 @@ static void SetCoordDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 	}
 }
 
+static std::vector<int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model, OpenSim::Storage const& storage)
+{
+	std::vector<int> rv;
+
+	if (storage.getColumnLabels().size() <= 1)
+	{
+		return rv;
+	}
+
+	if (osc::ToLower(storage.getColumnLabels()[0]) != "time")
+	{
+		return rv;
+	}
+
+	struct VarMapping {
+		int storageIdx = -1;
+		int modelIdx = -1;
+
+		VarMapping(int storageIdx_) : storageIdx{storageIdx_} {}
+	};
+
+	std::unordered_map<std::string, VarMapping> mappings;
+
+	// populate mappings LUT with storage indices
+	{
+		OpenSim::Array<std::string> const& storageLabels = storage.getColumnLabels();
+
+		mappings.reserve(static_cast<size_t>(storageLabels.size()-1));  // skip time col
+
+		for (int i = 1; i < storageLabels.size(); ++i)
+		{
+			mappings.try_emplace(storageLabels[i], i-1);
+		}
+	}
+
+	// write model indices into mapping table
+	{
+		OpenSim::Array<std::string> svNames = model.getStateVariableNames();
+
+		for (int i = 0; i < svNames.size(); ++i)
+		{
+			auto it = mappings.find(svNames[i]);
+			if (it != mappings.end())
+			{
+				it->second.modelIdx = i;
+			}
+			else
+			{
+				osc::log::info("missing statevar: %s", svNames[i].c_str());
+			}
+		}
+	}
+
+	rv.resize(mappings.size(), -1);
+	for (auto const& [sv, mapping] : mappings)
+	{
+		rv[mapping.storageIdx] = mapping.modelIdx;
+	}
+
+	OSC_ASSERT(std::none_of(rv.begin(), rv.end(), [](int v) { return v == -1; }));
+
+	return rv;
+}
+
 static std::vector<osc::SimulationReport> ExtractReports(
 	OpenSim::Model& model,
 	std::filesystem::path stoFilePath)
 {
-	std::vector<osc::SimulationReport> rv;
-
 	OpenSim::Storage storage{stoFilePath.string()};
 
 	if (storage.isInDegrees())
@@ -53,17 +118,41 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		model.getSimbodyEngine().convertDegreesToRadians(storage);
 	}
 
-	// HACK: temporarily unlock any coordinates
+	storage.resampleLinear(0.008);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
+
+	std::vector<int> lut =
+		CreateStorageIndexToModelSvIndexLUT(model, storage);
+
+	// temporarily unlock coords
 	std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
 	SetCoordDefaultLocked(lockedCoords, false);
 	OSC_SCOPE_GUARD({ SetCoordDefaultLocked(lockedCoords, true); });
 
-	OpenSim::StatesTrajectory trajectories =
-		OpenSim::StatesTrajectory::createFromStatesStorage(model, storage);
+	// swap space for state vals
+	SimTK::Vector stateValsBuf(static_cast<int>(lut.size()), SimTK::NaN);
+	SimTK::State st = model.initSystem();
+	st.updY().setToNaN();
 
-	for (SimTK::State const& s : trajectories)
+	std::vector<osc::SimulationReport> rv;
+	rv.reserve(storage.getSize());
+
+	for (int row = 0; row < storage.getSize(); ++row)
 	{
-		rv.emplace_back(model, s);
+		OpenSim::StateVector* sv = storage.getStateVector(row);
+
+		st.setTime(sv->getTime());
+
+		OpenSim::Array<double> const& cols = sv->getData();
+
+		OSC_ASSERT_ALWAYS(cols.size() <= static_cast<int>(lut.size()));
+
+		for (int col = 0; col < cols.size(); ++col)
+		{
+			stateValsBuf[lut[col]] = cols[col];
+		}
+
+		model.setStateVariableValues(st, stateValsBuf);
+		rv.emplace_back(model, st);
 	}
 
 	return rv;
