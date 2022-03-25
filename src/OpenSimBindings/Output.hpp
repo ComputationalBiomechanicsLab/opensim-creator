@@ -46,10 +46,6 @@ namespace osc
         {
             return m_Output->getID();
         }
-        OutputSource getOutputSource() const
-        {
-            return m_Output->getOutputSource();
-        }
         std::string const& getName() const
         {
             return m_Output->getName();

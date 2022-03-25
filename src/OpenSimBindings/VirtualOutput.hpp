@@ -18,15 +18,6 @@ namespace osc
 
 namespace osc
 {
-    // indicates where the output comes from - handy for UI grouping
-    enum class OutputSource {
-        Integrator = 0,
-        UserEnacted,
-        System,
-        Simulator,
-        TOTAL,
-    };
-
     // indicates the datatype that the output emits - callers should check this
     enum class OutputType {
         Float = 0,
@@ -40,7 +31,6 @@ namespace osc
         virtual ~VirtualOutput() noexcept = default;
 
         virtual UID getID() const = 0;
-        virtual OutputSource getOutputSource() const = 0;
         virtual std::string const& getName() const = 0;
         virtual std::string const& getDescription() const = 0;
 

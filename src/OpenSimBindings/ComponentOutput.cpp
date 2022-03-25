@@ -159,11 +159,6 @@ public:
         return m_ID;
     }
 
-    OutputSource getOutputSource() const
-    {
-        return OutputSource::UserEnacted;
-    }
-
     std::string const& getName() const
     {
         return m_Label;
@@ -296,11 +291,6 @@ osc::ComponentOutput::~ComponentOutput() noexcept = default;
 osc::UID osc::ComponentOutput::getID() const
 {
     return m_Impl->getID();
-}
-
-osc::OutputSource osc::ComponentOutput::getOutputSource() const
-{
-    return m_Impl->getOutputSource();
 }
 
 std::string const& osc::ComponentOutput::getName() const
