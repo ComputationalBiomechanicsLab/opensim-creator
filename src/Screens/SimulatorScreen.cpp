@@ -697,7 +697,7 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
         ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, ImVec2(0,1));
 
-        if (ImPlot::BeginPlot("##", ImVec2(plotWidth, plotHeight), ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
+        if (ImPlot::BeginPlot("##", ImVec2(plotWidth, plotHeight), ImPlotFlags_NoTitle | ImPlotFlags_AntiAliased | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
         {
             ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
             ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
