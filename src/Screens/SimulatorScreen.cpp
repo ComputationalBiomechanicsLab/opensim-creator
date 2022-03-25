@@ -2,7 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/Maths/BVH.hpp"
-#include "src/OpenSimBindings/ComponentOutput.hpp"
+#include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
@@ -12,7 +12,7 @@
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
-#include "src/OpenSimBindings/VirtualOutput.hpp"
+#include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
@@ -548,7 +548,7 @@ static std::string ExportTimeseriesToCSV(
 
 static std::vector<float> PopulateFirstNNumericOutputValues(OpenSim::Model const& model,
                                                             nonstd::span<osc::SimulationReport const> reports,
-                                                            osc::VirtualOutput const& output)
+                                                            osc::VirtualOutputExtractor const& output)
 {
     std::vector<float> rv;
     rv.resize(reports.size());
@@ -568,7 +568,7 @@ static std::vector<float> PopulateFirstNTimeValues(nonstd::span<osc::SimulationR
 }
 
 static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
-                                               osc::VirtualOutput const& output)
+                                               osc::VirtualOutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -583,7 +583,7 @@ static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
 }
 
 static std::string TryExportOutputsToCSV(osc::Simulation& sim,
-                                         std::vector<osc::Output> outputs)
+                                         std::vector<osc::OutputExtractor> outputs)
 {
     std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
     std::vector<float> times = PopulateFirstNTimeValues(reports);
@@ -608,7 +608,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 
     // header line
     fout << "time";
-    for (osc::Output const& o : outputs)
+    for (osc::OutputExtractor const& o : outputs)
     {
         fout << ',' << o.getName();
     }
@@ -622,7 +622,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
         fout << times.at(i);  // time column
 
         osc::SimulationReport r = reports[i];
-        for (osc::Output const& o : outputs)
+        for (osc::OutputExtractor const& o : outputs)
         {
             fout << ',' << o.getValueFloat(m, r);
         }
@@ -639,7 +639,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 }
 
 static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
-                                                     osc::VirtualOutput const& output)
+                                                     osc::VirtualOutputExtractor const& output)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
@@ -659,7 +659,7 @@ static void DrawGenericNumericOutputContextMenuItems(osc::Simulation& sim,
 
 static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
                                   osc::Simulation& sim,
-                                  osc::VirtualOutput const& output,
+                                  osc::VirtualOutputExtractor const& output,
                                   float plotHeight)
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
@@ -791,7 +791,7 @@ static void TextCentered(std::string const& s)
     ImGui::TextUnformatted(s.c_str());
 }
 
-static void DrawOutputNameColumn(osc::VirtualOutput const& output, bool centered = true)
+static void DrawOutputNameColumn(osc::VirtualOutputExtractor const& output, bool centered = true)
 {
     if (centered)
     {
@@ -811,7 +811,7 @@ static void DrawOutputNameColumn(osc::VirtualOutput const& output, bool centered
 
 static void DrawOutputDataColumn(osc::SimulatorScreen::Impl& impl,
                                  osc::Simulation& sim,
-                                 osc::VirtualOutput const& output,
+                                 osc::VirtualOutputExtractor const& output,
                                  float plotHeight)
 {
     OpenSim::Model const& model = sim.getModel();
@@ -851,19 +851,19 @@ static void DrawSimulationStatPlots(osc::SimulatorScreen::Impl& impl,
     ImGui::SameLine();
     osc::DrawHelpMarker("Various statistics collected when the simulation was ran");
     ImGui::NextColumn();
-    if (std::any_of(outputs.begin(), outputs.end(), [](osc::Output const& o) { return o.getOutputType() == osc::OutputType::Float; }))
+    if (std::any_of(outputs.begin(), outputs.end(), [](osc::OutputExtractor const& o) { return o.getOutputType() == osc::OutputType::Float; }))
     {
         ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
         if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
         {
             if (ImGui::MenuItem("as CSV"))
             {
-                TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
+                TryExportOutputsToCSV(sim, std::vector<osc::OutputExtractor>(outputs.begin(), outputs.end()));
             }
 
             if (ImGui::MenuItem("as CSV (and open)"))
             {
-                std::string path = TryExportOutputsToCSV(sim, std::vector<osc::Output>(outputs.begin(), outputs.end()));
+                std::string path = TryExportOutputsToCSV(sim, std::vector<osc::OutputExtractor>(outputs.begin(), outputs.end()));
                 if (!path.empty())
                 {
                     osc::OpenPathInOSDefaultApplication(path);
@@ -881,7 +881,7 @@ static void DrawSimulationStatPlots(osc::SimulatorScreen::Impl& impl,
 
     int imguiID = 0;
     ImGui::Columns(2);
-    for (osc::Output const& output : sim.getOutputs())
+    for (osc::OutputExtractor const& output : sim.getOutputs())
     {
         ImGui::PushID(imguiID++);
         DrawOutputNameColumn(output, false);
@@ -1094,7 +1094,7 @@ static void SimscreenDrawSelectionTab(osc::SimulatorScreen::Impl& impl)
 
             ImGui::Text("%s", outputName.c_str());
             ImGui::NextColumn();
-            osc::ComponentOutput output{*aoPtr};
+            osc::ComponentOutputExtractor output{*aoPtr};
             DrawOutputDataColumn(impl, sim, output, ImGui::GetTextLineHeight());
             ImGui::NextColumn();
 
@@ -1117,7 +1117,7 @@ static void SimscreenDrawOutputsTab(osc::SimulatorScreen::Impl& impl)
 
     osc::Simulation& sim = *maybeSim;
 
-    int numOutputs = st.getNumUserDesiredOutputs();
+    int numOutputs = st.getNumUserOutputExtractors();
 
     if (numOutputs <= 0)
     {
@@ -1150,7 +1150,7 @@ static void SimscreenDrawOutputsTab(osc::SimulatorScreen::Impl& impl)
 
     for (int i = 0; i < numOutputs; ++i)
     {
-        osc::Output const& output = st.getUserDesiredOutput(i);
+        osc::OutputExtractor const& output = st.getUserOutputExtractor(i);
 
         ImGui::PushID(i);
         DrawOutputDataColumn(impl, sim, output, 64.0f);

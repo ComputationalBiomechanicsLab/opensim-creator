@@ -1,7 +1,7 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
-#include "src/OpenSimBindings/ComponentOutput.hpp"
+#include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
@@ -729,7 +729,7 @@ static void DrawOutputWithSubfieldsMenu(osc::MainEditorState& st,
             {
                 if (ImGui::MenuItem(GetOutputSubfieldLabel(f)))
                 {
-                    st.addUserDesiredOutput(osc::Output{osc::ComponentOutput{o, f}});
+                    st.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o, f}});
                 }
             }
         }
@@ -749,7 +749,7 @@ static void DrawOutputWithNoSubfieldsMenuItem(osc::MainEditorState& st,
 
     if (ImGui::MenuItem(("  " + o.getName()).c_str()))
     {
-       st.addUserDesiredOutput(osc::Output{osc::ComponentOutput{o}});
+       st.addUserOutputExtractor(osc::OutputExtractor{osc::ComponentOutputExtractor{o}});
     }
 
     if (ImGui::IsItemHovered())

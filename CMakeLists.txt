@@ -227,18 +227,18 @@ add_executable(osc
     src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
-    src/OpenSimBindings/ComponentOutput.cpp
-    src/OpenSimBindings/ComponentOutput.hpp
-    src/OpenSimBindings/IntegratorOutput.cpp
-    src/OpenSimBindings/IntegratorOutput.hpp
+    src/OpenSimBindings/ComponentOutputExtractor.cpp
+    src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/IntegratorOutputExtractor.cpp
+    src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/MainEditorState.cpp
     src/OpenSimBindings/MainEditorState.hpp
-    src/OpenSimBindings/MultiBodySystemOutput.cpp
-    src/OpenSimBindings/MultiBodySystemOutput.hpp
+    src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
+    src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
-    src/OpenSimBindings/Output.cpp
-    src/OpenSimBindings/Output.hpp
+    src/OpenSimBindings/OutputExtractor.cpp
+    src/OpenSimBindings/OutputExtractor.hpp
     src/OpenSimBindings/ParamBlock.hpp
     src/OpenSimBindings/ParamBlock.cpp
     src/OpenSimBindings/RenderableScene.hpp
@@ -263,7 +263,7 @@ add_executable(osc
     src/OpenSimBindings/UiModel.hpp
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
-    src/OpenSimBindings/VirtualOutput.hpp
+    src/OpenSimBindings/VirtualOutputExtractor.hpp
     src/OpenSimBindings/VirtualSimulation.hpp
 
     src/Platform/App.cpp

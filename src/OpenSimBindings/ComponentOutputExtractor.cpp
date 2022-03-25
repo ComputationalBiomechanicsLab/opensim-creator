@@ -1,4 +1,4 @@
-#include "ComponentOutput.hpp"
+#include "ComponentOutputExtractor.hpp"
 
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -136,10 +136,11 @@ static std::vector<osc::OutputSubfield> CreateOutputSubfieldsLut()
     };
 }
 
-class osc::ComponentOutput::Impl final {
+class osc::ComponentOutputExtractor::Impl final {
 public:
     Impl(OpenSim::AbstractOutput const& ao,
          OutputSubfield subfield) :
+
         m_ComponentAbsPath{ao.getOwner().getAbsolutePath()},
         m_OutputName{ao.getName()},
         m_Label{GenerateLabel(m_ComponentAbsPath, m_OutputName, subfield)},
@@ -185,7 +186,7 @@ public:
                         nonstd::span<SimulationReport const> reports,
                         nonstd::span<float> out) const
     {
-        OSC_PERF("osc::ComponentOutput::getValuesFloat");
+        OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
         OSC_ASSERT_ALWAYS(reports.size() == out.size());
 
         OpenSim::AbstractOutput const* ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
@@ -199,7 +200,7 @@ public:
             return;
         }
 
-        OSC_PERF("osc::ComponentOutput::getValuesFloat");
+        OSC_PERF("osc::ComponentOutputExtractor::getValuesFloat");
 
         for (size_t i = 0; i < reports.size(); ++i)
         {
@@ -270,43 +271,47 @@ int osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
     }
 }
 
-osc::ComponentOutput::ComponentOutput(OpenSim::AbstractOutput const& ao,
-                              OutputSubfield subfield) :
+osc::ComponentOutputExtractor::ComponentOutputExtractor(OpenSim::AbstractOutput const& ao,
+                                                        OutputSubfield subfield) :
     m_Impl{new Impl{ao, std::move(subfield)}}
 {
 }
-osc::ComponentOutput::ComponentOutput(ComponentOutput const&) = default;
-osc::ComponentOutput::ComponentOutput(ComponentOutput&&) noexcept = default;
-osc::ComponentOutput& osc::ComponentOutput::operator=(ComponentOutput const&) = default;
-osc::ComponentOutput& osc::ComponentOutput::operator=(ComponentOutput&&) noexcept = default;
-osc::ComponentOutput::~ComponentOutput() noexcept = default;
+osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor const&) = default;
+osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept = default;
+osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor const&) = default;
+osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor&&) noexcept = default;
+osc::ComponentOutputExtractor::~ComponentOutputExtractor() noexcept = default;
 
-std::string const& osc::ComponentOutput::getName() const
+std::string const& osc::ComponentOutputExtractor::getName() const
 {
     return m_Impl->getName();
 }
 
-std::string const& osc::ComponentOutput::getDescription() const
+std::string const& osc::ComponentOutputExtractor::getDescription() const
 {
     return m_Impl->getDescription();
 }
 
-osc::OutputType osc::ComponentOutput::getOutputType() const
+osc::OutputType osc::ComponentOutputExtractor::getOutputType() const
 {
     return m_Impl->getOutputType();
 }
 
-float osc::ComponentOutput::getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
+float osc::ComponentOutputExtractor::getValueFloat(OpenSim::Component const& c,
+                                                   SimulationReport const& r) const
 {
     return m_Impl->getValueFloat(c, r);
 }
 
-void osc::ComponentOutput::getValuesFloat(OpenSim::Component const& c, nonstd::span<osc::SimulationReport const> reports, nonstd::span<float> out) const
+void osc::ComponentOutputExtractor::getValuesFloat(OpenSim::Component const& c,
+                                                   nonstd::span<osc::SimulationReport const> reports,
+                                                   nonstd::span<float> out) const
 {
     m_Impl->getValuesFloat(c, std::move(reports), std::move(out));
 }
 
-std::string osc::ComponentOutput::getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+std::string osc::ComponentOutputExtractor::getValueString(OpenSim::Component const& c,
+                                                          SimulationReport const& r) const
 {
     return m_Impl->getValueString(c, r);
 }

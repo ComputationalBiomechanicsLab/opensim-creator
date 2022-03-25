@@ -3,8 +3,8 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
-#include "src/OpenSimBindings/IntegratorOutput.hpp"
-#include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
+#include "src/OpenSimBindings/IntegratorOutputExtractor.hpp"
+#include "src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
@@ -81,27 +81,27 @@ namespace
     };
 }
 
-static std::vector<osc::Output> CreateSimulatorOutputs()
+static std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
 {
-    std::vector<osc::Output> rv;
-    rv.reserve(osc::GetNumIntegratorOutputs() + osc::GetNumMultiBodySystemOutputs());
+    std::vector<osc::OutputExtractor> rv;
+    rv.reserve(osc::GetNumIntegratorOutputExtractors() + osc::GetNumMultiBodySystemOutputExtractors());
 
-    for (int i = 0, len = osc::GetNumIntegratorOutputs(); i < len; ++i)
+    for (int i = 0, len = osc::GetNumIntegratorOutputExtractors(); i < len; ++i)
     {
-        rv.push_back(osc::GetIntegratorOutputDynamic(i));
+        rv.push_back(osc::GetIntegratorOutputExtractorDynamic(i));
     }
 
-    for (int i = 0, len = osc::GetNumMultiBodySystemOutputs(); i < len; ++i)
+    for (int i = 0, len = osc::GetNumMultiBodySystemOutputExtractors(); i < len; ++i)
     {
-        rv.push_back(osc::GetMultiBodySystemOutputDynamic(i));
+        rv.push_back(osc::GetMultiBodySystemOutputExtractorDynamic(i));
     }
 
     return rv;
 }
 
-static std::vector<osc::Output> const& GetSimulatorOutputs()
+static std::vector<osc::OutputExtractor> const& GetSimulatorOutputExtractors()
 {
-    static std::vector<osc::Output> const g_Outputs = CreateSimulatorOutputs();
+    static std::vector<osc::OutputExtractor> const g_Outputs = CreateSimulatorOutputExtractors();
     return g_Outputs;
 }
 
@@ -330,14 +330,14 @@ private:
 
 // public API
 
-int osc::GetNumFdSimulatorOutputs()
+int osc::GetNumFdSimulatorOutputExtractors()
 {
-    return static_cast<int>(GetSimulatorOutputs().size());
+    return static_cast<int>(GetSimulatorOutputExtractors().size());
 }
 
-osc::Output osc::GetFdSimulatorOutputDynamic(int idx)
+osc::OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 {
-    return GetSimulatorOutputs().at(static_cast<size_t>(idx));
+    return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }
 
 osc::FdSimulation::FdSimulation(BasicModelStatePair msp,

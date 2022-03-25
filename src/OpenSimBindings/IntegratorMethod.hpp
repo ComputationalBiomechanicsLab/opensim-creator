@@ -24,6 +24,7 @@ namespace osc
         Verlet,
         TOTAL,
     };
+
     nonstd::span<IntegratorMethod const> GetAllIntegratorMethods();
     nonstd::span<char const* const> GetAllIntegratorMethodStrings();
     char const* GetIntegratorMethodString(IntegratorMethod);

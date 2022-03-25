@@ -1,7 +1,7 @@
 #include "SimulationReport.hpp"
 
-#include "src/OpenSimBindings/IntegratorOutput.hpp"
-#include "src/OpenSimBindings/MultiBodySystemOutput.hpp"
+#include "src/OpenSimBindings/IntegratorOutputExtractor.hpp"
+#include "src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <SimTKsimbody.h>
@@ -29,22 +29,22 @@ public:
 
         // populate integrator outputs
         {
-            int numOutputs = GetNumIntegratorOutputs();
+            int numOutputs = GetNumIntegratorOutputExtractors();
             m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                IntegratorOutput const& o = GetIntegratorOutput(i);
+                IntegratorOutputExtractor const& o = GetIntegratorOutputExtractor(i);
                 m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
             }
         }
 
         // populate mbs outputs
         {
-            int numOutputs = GetNumMultiBodySystemOutputs();
+            int numOutputs = GetNumMultiBodySystemOutputExtractors();
             m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                MultiBodySystemOutput const& o = GetMultiBodySystemOutput(i);
+                MultiBodySystemOutputExtractor const& o = GetMultiBodySystemOutputExtractor(i);
                 m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
             }
         }

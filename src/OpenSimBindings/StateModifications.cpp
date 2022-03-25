@@ -7,6 +7,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
+
 class osc::StateModifications::Impl final {
 public:
     Impl() = default;
@@ -125,8 +126,6 @@ osc::StateModifications::StateModifications(StateModifications const& other) :
 
 osc::StateModifications::StateModifications(StateModifications&& tmp) noexcept = default;
 
-osc::StateModifications::~StateModifications() noexcept = default;
-
 osc::StateModifications& osc::StateModifications::operator=(StateModifications const& other)
 {
     *m_Impl = *other.m_Impl;
@@ -134,6 +133,8 @@ osc::StateModifications& osc::StateModifications::operator=(StateModifications c
 }
 
 osc::StateModifications& osc::StateModifications::operator=(StateModifications&&) noexcept = default;
+
+osc::StateModifications::~StateModifications() noexcept = default;
 
 void osc::StateModifications::pushCoordinateEdit(const OpenSim::Coordinate& c, const CoordinateEdit& ce)
 {

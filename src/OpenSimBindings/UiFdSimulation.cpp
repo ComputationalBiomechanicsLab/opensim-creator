@@ -35,14 +35,14 @@ static osc::FdSimulation MakeSimulation(
     return osc::FdSimulation{std::move(p), params, std::move(callback)};
 }
 
-static std::vector<osc::Output> GetFdSimulatorOutputsAsVector()
+static std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
 {
-    std::vector<osc::Output> rv;
-    int nOutputs = osc::GetNumFdSimulatorOutputs();
-    rv.reserve(nOutputs);
-    for (int i = 0; i < nOutputs; ++i)
+    std::vector<osc::OutputExtractor> rv;
+    int nOutputExtractors = osc::GetNumFdSimulatorOutputExtractors();
+    rv.reserve(nOutputExtractors);
+    for (int i = 0; i < nOutputExtractors; ++i)
     {
-        rv.push_back(osc::GetFdSimulatorOutputDynamic(i));
+        rv.push_back(osc::GetFdSimulatorOutputExtractor(i));
     }
     return rv;
 }
@@ -54,7 +54,7 @@ public:
         m_ModelState{std::move(p)},
         m_Simulation{MakeSimulation(*m_ModelState.lock(), m_ModelState, params, m_Reports)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
-        m_SimulatorOutputs(GetFdSimulatorOutputsAsVector())
+        m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
     {
     }
 
@@ -120,9 +120,9 @@ public:
         return m_ParamsAsParamBlock;
     }
 
-    nonstd::span<Output const> getOutputs() const
+    nonstd::span<OutputExtractor const> getOutputExtractors() const
     {
-        return m_SimulatorOutputs;
+        return m_SimulatorOutputExtractors;
     }
 
     void requestStop()
@@ -140,7 +140,7 @@ private:
     SynchronizedValue<std::vector<SimulationReport>> m_Reports;
     FdSimulation m_Simulation;
     ParamBlock m_ParamsAsParamBlock;
-    std::vector<Output> m_SimulatorOutputs;
+    std::vector<OutputExtractor> m_SimulatorOutputExtractors;
 };
 
 
@@ -204,9 +204,9 @@ osc::ParamBlock const& osc::UiFdSimulation::getParams() const
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::Output const> osc::UiFdSimulation::getOutputs() const
+nonstd::span<osc::OutputExtractor const> osc::UiFdSimulation::getOutputExtractors() const
 {
-    return m_Impl->getOutputs();
+    return m_Impl->getOutputExtractors();
 }
 
 void osc::UiFdSimulation::requestStop()

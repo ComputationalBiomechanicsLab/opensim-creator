@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/OpenSimBindings/Simulation.hpp"
-#include "src/OpenSimBindings/Output.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 
@@ -70,11 +70,11 @@ namespace osc
         ParamBlock const& getSimulationParams() const;
         ParamBlock& updSimulationParams();
 
-        // output plots (user-enacted)
-        int getNumUserDesiredOutputs() const;
-        Output const& getUserDesiredOutput(int) const;
-        void addUserDesiredOutput(Output);
-        void removeUserDesiredOutput(int);
+        // output plots (user-enacted: e.g. plotting muscle activation)
+        int getNumUserOutputExtractors() const;
+        OutputExtractor const& getUserOutputExtractor(int) const;
+        void addUserOutputExtractor(OutputExtractor);
+        void removeUserOutputExtractor(int);
 
         // active ImGui panels
         UserPanelPreferences const& getUserPanelPrefs() const;
@@ -92,5 +92,5 @@ namespace osc
 
     void AutoFocusAllViewers(MainEditorState&);
     void StartSimulatingEditedModel(MainEditorState&);
-    std::vector<osc::Output> GetAllUserDesiredOutputs(MainEditorState const&);
+    std::vector<osc::OutputExtractor> GetAllUserDesiredOutputs(MainEditorState const&);
 }

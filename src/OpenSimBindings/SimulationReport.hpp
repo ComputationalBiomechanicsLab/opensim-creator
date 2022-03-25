@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/OpenSimBindings/Output.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/Utils/UID.hpp"
 

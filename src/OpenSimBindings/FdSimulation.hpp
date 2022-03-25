@@ -2,7 +2,7 @@
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
-#include "src/OpenSimBindings/Output.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
@@ -22,9 +22,10 @@ namespace osc
 
 namespace osc
 {
-    // returns outputs an FdSimulator writes into `SimulationReport`s
-    int GetNumFdSimulatorOutputs();
-    Output GetFdSimulatorOutputDynamic(int);
+    // returns outputs (e.g. auxiliary stuff like integration steps) that the
+    // FdSimulator writes into the `SimulationReport`s it emits
+    int GetNumFdSimulatorOutputExtractors();
+    OutputExtractor GetFdSimulatorOutputExtractor(int);
 
     // simulation parameters
     struct FdParams final {
@@ -73,6 +74,9 @@ namespace osc
     class FdSimulation final {
     public:
         // immediately starts the simulation upon construction
+        //
+        // care: the callback is called *on the bg thread* - you should know how
+        //       to handle it (e.g. mutexes) appropriately
         FdSimulation(BasicModelStatePair,
                      FdParams const& params,
                      std::function<void(SimulationReport)> onReportFromBgThread);

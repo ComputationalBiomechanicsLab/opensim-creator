@@ -43,7 +43,8 @@ static void SetCoordDefaultLocked(nonstd::span<OpenSim::Coordinate*> cs, bool v)
 	}
 }
 
-static std::vector<int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model, OpenSim::Storage const& storage)
+static std::vector<int> CreateStorageIndexToModelSvIndexLUT(OpenSim::Model const& model,
+                                                            OpenSim::Storage const& storage)
 {
 	std::vector<int> rv;
 
@@ -216,7 +217,7 @@ public:
 		return m_ParamBlock;
 	}
 
-	nonstd::span<Output const> getOutputs() const
+    nonstd::span<OutputExtractor const> getOutputExtractors() const
 	{
 		return {};
 	}
@@ -239,7 +240,8 @@ private:
 	ParamBlock m_ParamBlock;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path stoFilePath) :
+osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model,
+                                          std::filesystem::path stoFilePath) :
 	m_Impl{std::make_unique<Impl>(std::move(model), std::move(stoFilePath))}
 {
 }
@@ -296,9 +298,9 @@ osc::ParamBlock const& osc::StoFileSimulation::getParams() const
 	return m_Impl->getParams();
 }
 
-nonstd::span<osc::Output const> osc::StoFileSimulation::getOutputs() const
+nonstd::span<osc::OutputExtractor const> osc::StoFileSimulation::getOutputExtractors() const
 {
-	return m_Impl->getOutputs();
+    return m_Impl->getOutputExtractors();
 }
 
 void osc::StoFileSimulation::requestStop()

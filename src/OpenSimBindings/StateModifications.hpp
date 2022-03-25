@@ -33,10 +33,9 @@ namespace osc
         StateModifications();
         StateModifications(StateModifications const&);
         StateModifications(StateModifications&&) noexcept;
-        ~StateModifications() noexcept;
-
         StateModifications& operator=(StateModifications const&);
         StateModifications& operator=(StateModifications&&) noexcept;
+        ~StateModifications() noexcept;
 
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
         bool removeCoordinateEdit(OpenSim::Coordinate const&);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/OpenSimBindings/SimulationClock.hpp"
+#include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 
@@ -8,10 +9,16 @@
 
 #include <filesystem>
 #include <memory>
+#include <vector>
 
 namespace OpenSim
 {
 	class Model;
+}
+
+namespace osc
+{
+    class ParamBlock;
 }
 
 namespace osc
@@ -37,7 +44,7 @@ namespace osc
 		SimulationClock::time_point getEndTime() const override;
 		float getProgress() const override;
 		ParamBlock const& getParams() const override;
-		nonstd::span<Output const> getOutputs() const override;
+		nonstd::span<OutputExtractor const> getOutputExtractors() const override;
 
 		void requestStop() override;
 		void stop() override;

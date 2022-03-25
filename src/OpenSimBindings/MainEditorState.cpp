@@ -1,7 +1,7 @@
 #include "MainEditorState.hpp"
 
 #include "src/OpenSimBindings/Simulation.hpp"
-#include "src/OpenSimBindings/Output.hpp"
+#include "src/OpenSimBindings/OutputExtractor.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/UiFdSimulation.hpp"
@@ -123,25 +123,25 @@ public:
         return m_SimulationParams;
     }
 
-    int getNumUserDesiredOutputs() const
+    int getNumUserOutputExtractors() const
     {
-        return static_cast<int>(m_UserDesiredOutputs.size());
+        return static_cast<int>(m_UserOutputExtractors.size());
     }
 
-    Output const& getUserDesiredOutput(int idx) const
+    OutputExtractor const& getUserOutputExtractor(int idx) const
     {
-        return m_UserDesiredOutputs.at(idx);
+        return m_UserOutputExtractors.at(idx);
     }
 
-    void addUserDesiredOutput(Output output)
+    void addUserOutputExtractor(OutputExtractor output)
     {
-        m_UserDesiredOutputs.push_back(std::move(output));
+        m_UserOutputExtractors.push_back(std::move(output));
     }
 
-    void removeUserDesiredOutput(int idx)
+    void removeUserOutputExtractor(int idx)
     {
-        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserDesiredOutputs.size()));
-        m_UserDesiredOutputs.erase(m_UserDesiredOutputs.begin() + idx);
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserOutputExtractors.size()));
+        m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
     UserPanelPreferences const& getUserPanelPrefs() const
@@ -179,7 +179,7 @@ private:
     std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
     std::vector<Simulation> m_Simulations;
     int m_FocusedSimulation = -1;
-    std::vector<Output> m_UserDesiredOutputs;
+    std::vector<OutputExtractor> m_UserOutputExtractors;
     ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
     std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
     UserPanelPreferences m_PanelPreferences;
@@ -279,24 +279,24 @@ osc::ParamBlock& osc::MainEditorState::updSimulationParams()
     return m_Impl->updSimulationParams();
 }
 
-int osc::MainEditorState::getNumUserDesiredOutputs() const
+int osc::MainEditorState::getNumUserOutputExtractors() const
 {
-    return m_Impl->getNumUserDesiredOutputs();
+    return m_Impl->getNumUserOutputExtractors();
 }
 
-osc::Output const& osc::MainEditorState::getUserDesiredOutput(int idx) const
+osc::OutputExtractor const& osc::MainEditorState::getUserOutputExtractor(int idx) const
 {
-    return m_Impl->getUserDesiredOutput(std::move(idx));
+    return m_Impl->getUserOutputExtractor(std::move(idx));
 }
 
-void osc::MainEditorState::addUserDesiredOutput(Output output)
+void osc::MainEditorState::addUserOutputExtractor(OutputExtractor output)
 {
-    m_Impl->addUserDesiredOutput(std::move(output));
+    m_Impl->addUserOutputExtractor(std::move(output));
 }
 
-void osc::MainEditorState::removeUserDesiredOutput(int idx)
+void osc::MainEditorState::removeUserOutputExtractor(int idx)
 {
-    m_Impl->removeUserDesiredOutput(std::move(idx));
+    m_Impl->removeUserOutputExtractor(std::move(idx));
 }
 
 osc::UserPanelPreferences const& osc::MainEditorState::getUserPanelPrefs() const
@@ -347,15 +347,15 @@ void osc::StartSimulatingEditedModel(MainEditorState& st)
     st.setFocusedSimulation(st.getNumSimulations()-1);
 }
 
-std::vector<osc::Output> osc::GetAllUserDesiredOutputs(MainEditorState const& st)
+std::vector<osc::OutputExtractor> osc::GetAllUserDesiredOutputs(MainEditorState const& st)
 {
-    int nOutputs = st.getNumUserDesiredOutputs();
+    int nOutputs = st.getNumUserOutputExtractors();
 
-    std::vector<Output> rv;
+    std::vector<OutputExtractor> rv;
     rv.reserve(nOutputs);
     for (int i = 0; i < nOutputs; ++i)
     {
-        rv.push_back(st.getUserDesiredOutput(i));
+        rv.push_back(st.getUserOutputExtractor(i));
     }
     return rv;
 }
