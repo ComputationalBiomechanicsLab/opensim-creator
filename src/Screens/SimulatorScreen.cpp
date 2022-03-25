@@ -1,6 +1,7 @@
 #include "SimulatorScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/Maths/BVH.hpp"
 #include "src/OpenSimBindings/ComponentOutput.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
@@ -13,7 +14,6 @@
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/VirtualOutput.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
-#include "src/Maths/BVH.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
@@ -905,6 +905,22 @@ static void SimscreenDrawSimulationStats(osc::SimulatorScreen::Impl& impl)
     }
 
     osc::Simulation& sim = *maybeSim;
+
+    {
+        ImGui::Dummy({0.0f, 1.0f});
+        ImGui::TextUnformatted("info:");
+        ImGui::SameLine();
+        osc::DrawHelpMarker("Top-level info about the simulation");
+        ImGui::Separator();
+        ImGui::Dummy({0.0f, 2.0f});
+
+        ImGui::Columns(2);
+        ImGui::Text("num reports");
+        ImGui::NextColumn();
+        ImGui::Text("%i", sim.getNumReports());
+        ImGui::NextColumn();
+        ImGui::Columns();
+    }
 
     {
         OSC_PERF("draw simulation params");

@@ -118,7 +118,7 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		model.getSimbodyEngine().convertDegreesToRadians(storage);
 	}
 
-	storage.resampleLinear(0.008);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
+    storage.resampleLinear(1.0/50.0);  // TODO: some files can contain thousands of micro-sampled states from OpenSim-GUI
 
 	std::vector<int> lut =
 		CreateStorageIndexToModelSvIndexLUT(model, storage);

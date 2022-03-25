@@ -139,19 +139,18 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     SimTK::TimeStepper ts{input.getMultiBodySystem(), *integ};
     ts.initialize(integ->getState());
 
-    // figure out timesteps the sim should use
-    osc::SimulationClock::time_point t0 = GetSimulationTime(*integ);
-    osc::SimulationClock::time_point tFinal = params.FinalTime;
-    osc::SimulationClock::time_point tNextReport = t0 + params.ReportingInterval;
-
-    // tell the UI thread that everything has been initialized and it's now running
+    // inform observers that everything has been initialized and the sim is now running
     shared.setStatus(osc::SimulationStatus::Running);
 
-    // immediately report t0
+    // immediately report t = start
     input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
 
     // integrate (t0..tfinal]
-    for (osc::SimulationClock::time_point t = t0; t < tFinal; t = GetSimulationTime(*integ))
+    osc::SimulationClock::time_point tStart = GetSimulationTime(*integ);
+    osc::SimulationClock::time_point tLastReport = tStart;
+    osc::SimulationClock::duration stepDur = params.ReportingInterval;
+    int step = 1;
+    while (!integ->isSimulationOver())
     {
         // check for cancellation requests
         if (stopToken.stop_requested())
@@ -159,34 +158,44 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
             return osc::SimulationStatus::Cancelled;
         }
 
-        // simulate an integration step (expensive)
-        auto nextTimepoint = std::min(tNextReport, tFinal);
-        auto timestepRv = ts.stepTo(nextTimepoint.time_since_epoch().count());
+        // calculate next reporting time
+        osc::SimulationClock::time_point tNext = tStart + step*stepDur;
 
-        // handle integration errors
+        // perform an integration step
+        SimTK::Integrator::SuccessfulStepStatus timestepRv = ts.stepTo(tNext.time_since_epoch().count());
+
+        // handle integrator response
         if (integ->isSimulationOver() &&
             integ->getTerminationReason() != SimTK::Integrator::ReachedFinalTime)
         {
+            // simulation ended because of an error: report the error and exit
             std::string reason = integ->getTerminationReasonString(integ->getTerminationReason());
-            osc::log::error("simulation error: integration failed: %s", reason.c_str());
             return osc::SimulationStatus::Error;
         }
-
-        // skip uninteresting integration steps
-        if (timestepRv != SimTK::Integrator::TimeHasAdvanced &&
-            timestepRv != SimTK::Integrator::ReachedScheduledEvent &&
-            timestepRv != SimTK::Integrator::ReachedReportTime &&
-            timestepRv != SimTK::Integrator::ReachedStepLimit)
+        else if (timestepRv == SimTK::Integrator::ReachedReportTime)
         {
+            // report the step and continue
+            input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
+            tLastReport = GetSimulationTime(*integ);
+            ++step;
             continue;
         }
-
-        // emit report (if necessary)
-        osc::SimulationClock::time_point tInteg = GetSimulationTime(*integ);
-        if (osc::IsEffectivelyEqual(nextTimepoint.time_since_epoch().count(), tInteg.time_since_epoch().count()))
+        else if (timestepRv == SimTK::Integrator::EndOfSimulation)
         {
-            input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
-            tNextReport = tInteg + params.ReportingInterval;
+            // if the simulation endpoint is sufficiently ahead of the last report time
+            // (1 % of step size), then *also* report the simulation end time. Otherwise,
+            // assume that there's an adjacent-enough report
+            osc::SimulationClock::time_point t = GetSimulationTime(*integ);
+            if ((tLastReport + 0.01*stepDur) < t)
+            {
+                input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
+                tLastReport = t;
+            }
+            break;
+        }
+        else
+        {
+            // loop back and do the next timestep
         }
     }
 
