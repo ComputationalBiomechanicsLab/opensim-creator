@@ -59,7 +59,6 @@ namespace osc
         ComponentOutput& operator=(ComponentOutput&&) noexcept;
         ~ComponentOutput() noexcept;
 
-        UID getID() const override;
         std::string const& getName() const override;
         std::string const& getDescription() const override;
 

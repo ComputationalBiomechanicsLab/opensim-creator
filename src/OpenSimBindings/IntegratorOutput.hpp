@@ -35,7 +35,6 @@ namespace osc
                          std::string_view description,
                          ExtractorFn extractor);
 
-        UID getID() const override;
         std::string const& getName() const override;
         std::string const& getDescription() const override;
 
@@ -44,10 +43,11 @@ namespace osc
         void getValuesFloat(OpenSim::Component const&, nonstd::span<SimulationReport const>, nonstd::span<float> overwriteOut) const override;
         std::string getValueString(OpenSim::Component const&, SimulationReport const&) const override;
 
+        UID getAuxiliaryDataID() const;
         ExtractorFn getExtractorFunction() const;
 
     private:
-        UID m_ID;
+        UID m_AuxiliaryDataID;
         std::string m_Name;
         std::string m_Description;
         ExtractorFn m_Extractor;

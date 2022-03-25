@@ -140,7 +140,6 @@ class osc::ComponentOutput::Impl final {
 public:
     Impl(OpenSim::AbstractOutput const& ao,
          OutputSubfield subfield) :
-        m_ID{},
         m_ComponentAbsPath{ao.getOwner().getAbsolutePath()},
         m_OutputName{ao.getName()},
         m_Label{GenerateLabel(m_ComponentAbsPath, m_OutputName, subfield)},
@@ -152,11 +151,6 @@ public:
     std::unique_ptr<Impl> clone() const
     {
         return std::make_unique<Impl>(*this);
-    }
-
-    UID getID() const
-    {
-        return m_ID;
     }
 
     std::string const& getName() const
@@ -227,7 +221,6 @@ public:
     }
 
 private:
-    UID m_ID;
     OpenSim::ComponentPath m_ComponentAbsPath;
     std::string m_OutputName;
     std::string m_Label;
@@ -287,11 +280,6 @@ osc::ComponentOutput::ComponentOutput(ComponentOutput&&) noexcept = default;
 osc::ComponentOutput& osc::ComponentOutput::operator=(ComponentOutput const&) = default;
 osc::ComponentOutput& osc::ComponentOutput::operator=(ComponentOutput&&) noexcept = default;
 osc::ComponentOutput::~ComponentOutput() noexcept = default;
-
-osc::UID osc::ComponentOutput::getID() const
-{
-    return m_Impl->getID();
-}
 
 std::string const& osc::ComponentOutput::getName() const
 {

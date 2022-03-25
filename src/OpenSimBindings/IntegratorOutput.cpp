@@ -108,15 +108,11 @@ static std::vector<osc::Output> const& GetAllIntegratorOutputs()
 osc::IntegratorOutput::IntegratorOutput(std::string_view name,
                                         std::string_view description,
                                         ExtractorFn extractor) :
+    m_AuxiliaryDataID{},
     m_Name{std::move(name)},
     m_Description{std::move(description)},
     m_Extractor{std::move(extractor)}
 {
-}
-
-osc::UID osc::IntegratorOutput::getID() const
-{
-    return m_ID;
 }
 
 std::string const& osc::IntegratorOutput::getName() const
@@ -136,7 +132,7 @@ osc::OutputType osc::IntegratorOutput::getOutputType() const
 
 float osc::IntegratorOutput::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_ID).value_or(NAN);
+    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(NAN);
 }
 
 void osc::IntegratorOutput::getValuesFloat(OpenSim::Component const&,
@@ -146,13 +142,18 @@ void osc::IntegratorOutput::getValuesFloat(OpenSim::Component const&,
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
     {
-        out[i] = reports[i].getAuxiliaryValue(m_ID).value_or(NAN);
+        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(NAN);
     }
 }
 
 std::string osc::IntegratorOutput::getValueString(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return std::to_string(report.getAuxiliaryValue(m_ID).value_or(NAN));
+    return std::to_string(report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(NAN));
+}
+
+osc::UID osc::IntegratorOutput::getAuxiliaryDataID() const
+{
+    return m_AuxiliaryDataID;
 }
 
 osc::IntegratorOutput::ExtractorFn osc::IntegratorOutput::getExtractorFunction() const

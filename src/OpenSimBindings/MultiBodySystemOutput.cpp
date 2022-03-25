@@ -48,11 +48,6 @@ osc::MultiBodySystemOutput::MultiBodySystemOutput(std::string_view name,
 {
 }
 
-osc::UID osc::MultiBodySystemOutput::getID() const
-{
-    return m_ID;
-}
-
 std::string const& osc::MultiBodySystemOutput::getName() const
 {
     return m_Name;
@@ -70,7 +65,7 @@ osc::OutputType osc::MultiBodySystemOutput::getOutputType() const
 
 float osc::MultiBodySystemOutput::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
 {
-    return report.getAuxiliaryValue(m_ID).value_or(NAN);
+    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(NAN);
 }
 
 void osc::MultiBodySystemOutput::getValuesFloat(OpenSim::Component const&,
@@ -80,13 +75,18 @@ void osc::MultiBodySystemOutput::getValuesFloat(OpenSim::Component const&,
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
     {
-        out[i] = reports[i].getAuxiliaryValue(m_ID).value_or(NAN);
+        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(NAN);
     }
 }
 
 std::string osc::MultiBodySystemOutput::getValueString(OpenSim::Component const& c, SimulationReport const& report) const
 {
     return std::to_string(getValueFloat(c, report));
+}
+
+osc::UID osc::MultiBodySystemOutput::getAuxiliaryDataID() const
+{
+    return m_AuxiliaryDataID;
 }
 
 osc::MultiBodySystemOutput::ExtractorFn osc::MultiBodySystemOutput::getExtractorFunction() const

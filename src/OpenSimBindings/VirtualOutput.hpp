@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Utils/UID.hpp"
-
 #include <nonstd/span.hpp>
 
 #include <string>
@@ -30,7 +28,6 @@ namespace osc
     public:
         virtual ~VirtualOutput() noexcept = default;
 
-        virtual UID getID() const = 0;
         virtual std::string const& getName() const = 0;
         virtual std::string const& getDescription() const = 0;
 

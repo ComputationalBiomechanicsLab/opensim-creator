@@ -41,11 +41,6 @@ namespace osc
             m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
         {
         }
-
-        UID getID() const
-        {
-            return m_Output->getID();
-        }
         std::string const& getName() const
         {
             return m_Output->getName();

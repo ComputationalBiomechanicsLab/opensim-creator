@@ -6,7 +6,7 @@
 
 std::ostream& osc::operator<<(std::ostream& o, Output const& out)
 {
-    return o << "Output(id = " << out.getID() << ", " << out.getName() << ')';
+    return o << "Output(name = " << out.getName() << ')';
 }
 
 std::string osc::to_string(Output const& out)

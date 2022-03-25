@@ -34,7 +34,7 @@ public:
             for (int i = 0; i < numOutputs; ++i)
             {
                 IntegratorOutput const& o = GetIntegratorOutput(i);
-                m_AuxiliaryValues.emplace(o.getID(), o.getExtractorFunction()(integrator));
+                m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
             }
         }
 
@@ -45,7 +45,7 @@ public:
             for (int i = 0; i < numOutputs; ++i)
             {
                 MultiBodySystemOutput const& o = GetMultiBodySystemOutput(i);
-                m_AuxiliaryValues.emplace(o.getID(), o.getExtractorFunction()(sys));
+                m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
             }
         }
     }
