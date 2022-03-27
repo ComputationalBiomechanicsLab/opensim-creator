@@ -38,6 +38,7 @@
 #include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/Spsc.hpp"
 #include "src/Utils/UID.hpp"
+#include "osc_config.hpp"
 
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
@@ -79,7 +80,6 @@ namespace
     #define OSC_STATION_DESC "Stations are points of interest in the model. They can be used to compute a 3D location in the frame of the thing they are attached to.\n\nThe utility of stations is that you can use them to visually mark points of interest. Those points of interest will then be defined with respect to whatever they are attached to. This is useful because OpenSim typically requires relative coordinates for things in the model (e.g. muscle paths)."
 
     #define OSC_TRANSLATION_DESC  "Translation of the component in ground. OpenSim defines this as 'unitless'; however, OpenSim models typically use meters."
-    #define OSC_FLOAT_INPUT_FORMAT "%.6f"
 
     std::string const g_GroundLabel = "Ground";
     std::string const g_GroundLabelPluralized = "Ground";
@@ -6593,7 +6593,7 @@ namespace
             if (CanChangePosition(e))
             {
                 glm::vec3 translation = e.GetPos();
-                if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Translation", glm::value_ptr(translation), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     mg.UpdElByID(e.GetID()).SetPos(translation);
                 }
@@ -6612,7 +6612,7 @@ namespace
             {
                 glm::vec3 eulerDegs = glm::degrees(glm::eulerAngles(e.GetRotation()));
 
-                if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Rotation (deg)", glm::value_ptr(eulerDegs), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     glm::quat quatRads = glm::quat{glm::radians(eulerDegs)};
                     mg.UpdElByID(e.GetID()).SetRotation(quatRads);
@@ -6631,7 +6631,7 @@ namespace
             if (CanChangeScale(e))
             {
                 glm::vec3 scaleFactors = e.GetScale();
-                if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), OSC_FLOAT_INPUT_FORMAT))
+                if (ImGui::InputFloat3("Scale", glm::value_ptr(scaleFactors), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
                 {
                     mg.UpdElByID(e.GetID()).SetScale(scaleFactors);
                 }
@@ -6958,7 +6958,7 @@ namespace
         void DrawMassEditor(BodyEl const& bodyEl)
         {
             float curMass = static_cast<float>(bodyEl.Mass);
-            if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_FLOAT_INPUT_FORMAT))
+            if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
             {
                 m_Shared->UpdModelGraph().UpdElByID<BodyEl>(bodyEl.ID).Mass = static_cast<double>(curMass);
             }

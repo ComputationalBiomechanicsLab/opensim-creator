@@ -3,6 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
+#include "osc_config.hpp"
 
 #include <imgui.h>
 
@@ -13,7 +14,7 @@ template<class... Ts> Overloaded(Ts...) -> Overloaded<Ts...>;
 static bool DrawEditor(osc::ParamBlock& b, int idx, double v)
 {
     float fv = static_cast<float>(v);
-    if (ImGui::InputFloat("##", &fv))
+    if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, OSC_DEFAULT_FLOAT_INPUT_FORMAT))
     {
         b.setValue(idx, static_cast<double>(fv));
         return true;
