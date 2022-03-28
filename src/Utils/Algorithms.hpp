@@ -182,6 +182,9 @@ namespace osc
     // returns a lower-cased version of a string
     std::string ToLower(std::string const&);
 
+    // returns true if `str` is equivalent to `other` (case-insensitive)
+    bool IsEqualCaseInsensitive(std::string const&, std::string const&);
+
     // returns true if `s` constains the supplied substring (case-insensitive)
     bool ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr);
 

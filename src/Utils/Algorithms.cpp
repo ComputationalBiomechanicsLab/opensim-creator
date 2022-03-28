@@ -94,6 +94,16 @@ std::string osc::ToLower(std::string const& s)
     return cpy;
 }
 
+bool osc::IsEqualCaseInsensitive(std::string const& s1, std::string const& s2)
+{
+    auto compareChars = [](unsigned char c1, unsigned char c2)
+    {
+        return std::tolower(c1) == std::tolower(c2);
+    };
+
+    return std::equal(s1.begin(), s1.end(), s2.begin(), s2.end(), compareChars);
+}
+
 bool osc::ContainsSubstringCaseInsensitive(std::string const& str, std::string const& substr)
 {
     if (substr.empty())

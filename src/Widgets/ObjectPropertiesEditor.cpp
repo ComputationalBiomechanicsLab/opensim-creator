@@ -6,6 +6,7 @@
 #include "src/Platform/Log.hpp"
 #include "osc_config.hpp"
 
+#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
@@ -106,7 +107,7 @@ static void DrawIthStringEditor(
 {
     if (prop.getMaxListSize() > 1)
     {
-        if (ImGui::Button("X") && !rv)
+        if (ImGui::Button(ICON_FA_TRASH) && !rv)
         {
             rv = MakePropElementDeleter<std::string>(idx);
         }
@@ -314,20 +315,48 @@ namespace
             }
 
             SimTK::Vec3 v = prop.getValue();
+
+            double conversionCoefficient = 1.0;
+
+            // HACK: provide auto-converters for angular quantities
+            if (IsEqualCaseInsensitive(prop.getName(), "orientation"))
+            {
+                if (m_OrientationValsAreInRadians)
+                {
+                    if (ImGui::Button("R"))
+                    {
+                        m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
+                    }
+                    DrawTooltipIfItemHovered("Radians", "This quantity is edited in radians (click to switch to degrees)");
+                }
+                else
+                {
+                    if (ImGui::Button("D"))
+                    {
+                        m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
+                    }
+                    DrawTooltipIfItemHovered("Degrees", "This quantity is edited in degrees (click to switch to radians)");
+                }
+                ImGui::SameLine();
+
+                conversionCoefficient = m_OrientationValsAreInRadians ? 1.0 : SimTK_RADIAN_TO_DEGREE;
+            }
+
             std::array<float, 3> fv =
             {
-                static_cast<float>(v[0]),
-                static_cast<float>(v[1]),
-                static_cast<float>(v[2])
+                static_cast<float>(conversionCoefficient * v[0]),
+                static_cast<float>(conversionCoefficient * v[1]),
+                static_cast<float>(conversionCoefficient * v[2])
             };
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
             if (ImGui::InputFloat3("##vec3editor", fv.data(), OSC_DEFAULT_FLOAT_INPUT_FORMAT))
             {
-                m_RetainedValue[0] = static_cast<double>(fv[0]);
-                m_RetainedValue[1] = static_cast<double>(fv[1]);
-                m_RetainedValue[2] = static_cast<double>(fv[2]);
+                double inverseConversionCoefficient = 1.0/conversionCoefficient;
+                m_RetainedValue[0] = inverseConversionCoefficient * static_cast<double>(fv[0]);
+                m_RetainedValue[1] = inverseConversionCoefficient * static_cast<double>(fv[1]);
+                m_RetainedValue[2] = inverseConversionCoefficient * static_cast<double>(fv[2]);
             }
 
             if (ItemValueShouldBeSaved())
@@ -338,6 +367,7 @@ namespace
             return rv;
         }
 
+        bool m_OrientationValsAreInRadians = false;
         SimTK::Vec3 m_RetainedValue{};
     };
 
