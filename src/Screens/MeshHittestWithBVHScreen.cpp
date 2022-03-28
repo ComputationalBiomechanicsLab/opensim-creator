@@ -42,7 +42,7 @@ static void drawBVHRecursive(osc::BVH const& bvh, osc::SolidColorShader& shader,
     osc::BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-    glm::vec3 center = Dimensions(n.bounds);
+    glm::vec3 center = Midpoint(n.bounds);
 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -105,12 +105,16 @@ void osc::MeshHittestWithBVHScreen::onUnmount()
 
 void osc::MeshHittestWithBVHScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;
     }
-
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<ExperimentsScreen>();
         return;

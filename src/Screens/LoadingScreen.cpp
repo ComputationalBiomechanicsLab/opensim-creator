@@ -100,12 +100,16 @@ void osc::LoadingScreen::onUnmount()
 
 void osc::LoadingScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;
     }
-
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<SplashScreen>();
         return;

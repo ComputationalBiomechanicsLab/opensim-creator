@@ -1327,12 +1327,19 @@ void osc::SimulatorScreen::onUnmount()
 
 void osc::SimulatorScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;
     }
-
-    SimscreenOnEvent(*m_Impl, e);
+    else
+    {
+        SimscreenOnEvent(*m_Impl, e);
+    }
 }
 
 void osc::SimulatorScreen::tick(float)

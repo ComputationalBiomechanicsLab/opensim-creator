@@ -963,6 +963,10 @@ struct osc::ModelEditorScreen::Impl final {
         bool shouldRequestRedraw = false;
     } resetPerFrame;
 
+    // flag that's set+reset each frame to prevent continual
+    // throwing
+    bool thrownExceptionLastFrame = false;
+
     explicit Impl(std::shared_ptr<MainEditorState> _st) :
         st{std::move(_st)},
         filePoller{std::chrono::milliseconds{1000}, st->getEditedModel().getModel().getInputFileName()}
@@ -1488,7 +1492,12 @@ void osc::ModelEditorScreen::onUnmount()
 
 void osc::ModelEditorScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         m_Impl->resetPerFrame.shouldRequestRedraw = true;
     }
@@ -1534,6 +1543,7 @@ void osc::ModelEditorScreen::draw()
     try
     {
         ModelEditorDrawUNGUARDED(*m_Impl);
+        m_Impl->thrownExceptionLastFrame = false;
     }
     catch (std::exception const& ex)
     {
@@ -1541,14 +1551,22 @@ void osc::ModelEditorScreen::draw()
         log::error("    message = %s", ex.what());
         log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
 
-        try
+        if (m_Impl->thrownExceptionLastFrame)
         {
-            m_Impl->st->updEditedModel().rollback();
-            log::error("model rollback succeeded");
+            App::cur().requestTransition<ErrorScreen>(ex);
         }
-        catch (std::exception const& ex2)
+        else
         {
-            App::cur().requestTransition<ErrorScreen>(ex2);
+            try
+            {
+                m_Impl->st->updEditedModel().rollback();
+                log::error("model rollback succeeded");
+                m_Impl->thrownExceptionLastFrame = true;
+            }
+            catch (std::exception const& ex2)
+            {
+                App::cur().requestTransition<ErrorScreen>(ex2);
+            }
         }
 
         // try to put ImGui into a clean state

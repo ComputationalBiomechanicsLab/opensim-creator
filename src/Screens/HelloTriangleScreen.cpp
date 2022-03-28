@@ -80,9 +80,15 @@ osc::HelloTriangleScreen::~HelloTriangleScreen() noexcept = default;
 
 void osc::HelloTriangleScreen::onEvent(SDL_Event const& e)
 {
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<ExperimentsScreen>();
+        return;
     }
 }
 

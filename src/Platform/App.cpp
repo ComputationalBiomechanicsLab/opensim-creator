@@ -1082,17 +1082,7 @@ private:
             {
                 shouldWait = false;
 
-                if (e.type == SDL_QUIT)
-                {
-                    // user closed window (e.g. pressed X or Alt+F4)
-                    return;
-                }
-                else if (e.type == SDL_USEREVENT)
-                {
-                    // it's a redraw event that lower layers can't handle anyway
-                    continue;
-                }
-                else if (e.type == SDL_WINDOWEVENT)
+                if (e.type == SDL_WINDOWEVENT)
                 {
                     // window was resized and should be drawn a couple of times quickly
                     // to ensure any datastructures in the screens (namely: imgui) are

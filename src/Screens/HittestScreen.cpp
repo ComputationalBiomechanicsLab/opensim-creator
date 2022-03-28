@@ -161,31 +161,42 @@ struct osc::HittestScreen::Impl final {
 // public API
 
 osc::HittestScreen::HittestScreen() :
-    m_Impl{new Impl{}} {
+    m_Impl{new Impl{}}
+{
 }
 
 osc::HittestScreen::~HittestScreen() noexcept = default;
 
-void osc::HittestScreen::onMount() {
+void osc::HittestScreen::onMount()
+{
     App::cur().setShowCursor(false);
     gl::Disable(GL_CULL_FACE);
 }
 
-void osc::HittestScreen::onUnmount() {
+void osc::HittestScreen::onUnmount()
+{
     App::cur().setShowCursor(true);
     gl::Enable(GL_CULL_FACE);
 }
 
-void osc::HittestScreen::onEvent(SDL_Event const& e) {
-    m_Impl->io.onEvent(e);
+void osc::HittestScreen::onEvent(SDL_Event const& e)
+{
+    m_Impl->io.onEvent(e);  // feed the IoPoller
 
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<ExperimentsScreen>();
+        return;
     }
 }
 
-void osc::HittestScreen::tick(float) {
+void osc::HittestScreen::tick(float)
+{
     auto& camera = m_Impl->camera;
     auto& io = m_Impl->io;
     io.onUpdate();
@@ -265,7 +276,8 @@ void osc::HittestScreen::tick(float) {
     }
 }
 
-void osc::HittestScreen::draw() {
+void osc::HittestScreen::draw()
+{
     App& app = App::cur();
     Impl& impl = *m_Impl;
     auto& shader = impl.shader;
@@ -298,14 +310,16 @@ void osc::HittestScreen::draw() {
     }
 
     // AABBs
-    if (impl.showAABBs) {
+    if (impl.showAABBs)
+    {
         gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
 
         glm::vec3 halfWidths = Dimensions(impl.sphereAABBs) / 2.0f;
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
 
         gl::BindVertexArray(impl.cubeWireframeVAO);
-        for (SceneSphere const& s : impl.spheres) {
+        for (SceneSphere const& s : impl.spheres)
+        {
             glm::mat4 mover = glm::translate(glm::mat4{1.0f}, s.pos);
             gl::Uniform(shader.uModel, mover * scaler);
             gl::DrawArrays(GL_LINES, 0, impl.cubeWireframeVBO.sizei());

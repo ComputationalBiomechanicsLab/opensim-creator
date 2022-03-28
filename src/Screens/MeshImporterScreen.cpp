@@ -8180,7 +8180,12 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
-        if (osc::ImGuiOnEvent(e))
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (osc::ImGuiOnEvent(e))
         {
             m_ShouldRequestRedraw = true;
         }

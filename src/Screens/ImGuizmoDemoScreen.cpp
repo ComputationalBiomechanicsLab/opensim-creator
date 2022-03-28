@@ -37,18 +37,22 @@ void osc::ImGuizmoDemoScreen::onMount()
     osc::ImGuiInit();
 }
 
-void osc::ImGuizmoDemoScreen::onUnmount() {
+void osc::ImGuizmoDemoScreen::onUnmount()
+{
     osc::ImGuiShutdown();
 }
 
 void osc::ImGuizmoDemoScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;
     }
-
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<ExperimentsScreen>();
         return;

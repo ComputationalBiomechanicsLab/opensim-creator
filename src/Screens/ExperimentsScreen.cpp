@@ -6,7 +6,6 @@
 #include "src/Screens/ImGuizmoDemoScreen.hpp"
 #include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/InstancedRendererScreen.hpp"
-#include "src/Screens/LayeredInterfaceScreen.hpp"
 #include "src/Screens/MathExperimentsScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
@@ -38,9 +37,8 @@ struct osc::ExperimentsScreen::Impl final {
         { "Hit testing ray-triangle, but with BVH acceleration", transition<MeshHittestWithBVHScreen> },
         { "OpenSim mesh importer wizard", transition<MeshImporterScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
-        { "Layered Interface", transition<LayeredInterfaceScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
-        { "ImGui", transition<ImGuiDemoScreen> }
+        { "ImGui", transition<ImGuiDemoScreen> },
     };
 };
 
@@ -65,12 +63,16 @@ void osc::ExperimentsScreen::onUnmount()
 
 void osc::ExperimentsScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
     {
+        App::cur().requestQuit();
         return;
     }
-
-    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+    else if (osc::ImGuiOnEvent(e))
+    {
+        return;  // ImGui handled it
+    }
+    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
         App::cur().requestTransition<SplashScreen>();
         return;

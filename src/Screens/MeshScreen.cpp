@@ -52,10 +52,12 @@ void osc::MeshScreen::onUnmount()
 
 void osc::MeshScreen::onEvent(SDL_Event const& e)
 {
-    // called when the app receives an event from the operating system
-
-    // pump event into ImGui, if using it:
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;  // ImGui handled this particular event
     }

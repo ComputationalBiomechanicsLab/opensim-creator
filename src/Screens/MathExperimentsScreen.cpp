@@ -39,10 +39,12 @@ void osc::MathExperimentsScreen::onUnmount()
 
 void osc::MathExperimentsScreen::onEvent(SDL_Event const& e)
 {
-    // called when the app receives an event from the operating system
-
-    // pump event into ImGui, if using it:
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;  // ImGui handled this particular event
     }

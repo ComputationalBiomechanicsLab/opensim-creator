@@ -125,15 +125,19 @@ void osc::SplashScreen::onUnmount()
 
 void osc::SplashScreen::onEvent(SDL_Event const& e)
 {
-    if (osc::ImGuiOnEvent(e))
+    if (e.type == SDL_QUIT)
+    {
+        App::cur().requestQuit();
+        return;
+    }
+    else if (osc::ImGuiOnEvent(e))
     {
         return;
     }
-
-    // if the user drops an osim onto the screen the load it
-    if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
+    else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
     {
         App::cur().requestTransition<LoadingScreen>(m_Impl->maybeMainEditorState, e.drop.file);
+        return;
     }
 }
 

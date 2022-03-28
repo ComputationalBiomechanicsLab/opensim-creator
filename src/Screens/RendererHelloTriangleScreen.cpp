@@ -51,7 +51,15 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
-        ImGuiOnEvent(e);
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (ImGuiOnEvent(e))
+        {
+            return;
+        }
     }
 
     void tick(float)

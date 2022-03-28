@@ -43,6 +43,8 @@ All notable changes to this project will be documented here. The format is based
 - Upgraded Windows build to Visual Studio 2022 (internal)
 - Added icons for switching between grab/rotate/scale in mesh importer (#65)
 - Added option for degrees/radians input for 'orientation' properties (#55)
+- `osc::Screen` implementations must now handle the QUIT event themselves (internal)
+  - This is to support behaviors like "you have unsaved changes, want to save them?"
 
 
 ## [0.1.2] - 2022/02/16
