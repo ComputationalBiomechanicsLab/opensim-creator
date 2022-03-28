@@ -364,8 +364,10 @@ add_executable(osc
     src/Widgets/ParamBlockEditorPopup.hpp
     src/Widgets/PerfPanel.cpp
     src/Widgets/PerfPanel.hpp
-    src/Widgets/ReassignSocketPopup.hpp
     src/Widgets/ReassignSocketPopup.cpp
+    src/Widgets/ReassignSocketPopup.hpp
+    src/Widgets/SaveChangesPopup.cpp
+    src/Widgets/SaveChangesPopup.hpp
     src/Widgets/Select1PFPopup.cpp
     src/Widgets/Select1PFPopup.hpp
     src/Widgets/Select2PFsPopup.cpp

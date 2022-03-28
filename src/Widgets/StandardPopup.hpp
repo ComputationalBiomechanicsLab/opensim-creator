@@ -17,6 +17,7 @@ namespace osc
 		);
 		virtual ~StandardPopup() noexcept = default;
 
+        bool isOpen() const;
 		void open();
 		void close();
 		void draw();
@@ -36,5 +37,6 @@ namespace osc
 		bool m_ShouldOpen;
 		bool m_ShouldClose;
 		bool m_JustOpened;
+        bool m_IsOpen;
 	};
 }

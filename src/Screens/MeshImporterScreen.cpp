@@ -29,6 +29,7 @@
 #include "src/Screens/ExperimentsScreen.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
+#include "src/Widgets/SaveChangesPopup.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/ClonePtr.hpp"
@@ -3726,32 +3727,6 @@ namespace
         glm::vec3 Pos;
     };
 
-    class SharedData;
-
-    // a class that holds state associated with a popup that the user needs to handle
-    class Popup {
-    protected:
-        Popup(std::shared_ptr<SharedData> sharedData) : m_SharedData{sharedData} {}
-        SharedData const& getSharedData() const { return *m_SharedData; }
-        SharedData& updSharedData() { return *m_SharedData; }
-    public:
-        virtual ~Popup() noexcept = default;
-        virtual void open() = 0;
-        virtual void close() = 0;
-        virtual void draw() = 0;
-    private:
-        std::shared_ptr<SharedData> m_SharedData;
-    };
-
-    // action to take after user decides whether or not to save changes
-    enum class ActionAfter {
-        New,
-        Close,
-        Quit,
-    };
-
-    std::unique_ptr<Popup> CreateExportChangesPopup(std::shared_ptr<SharedData>, ActionAfter);
-
     class SharedData final : public std::enable_shared_from_this<SharedData> {
     public:
         SharedData() = default;
@@ -3808,8 +3783,26 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::New);
-                m_MaybePopup->open();
+                SaveChangesPopupConfig cfg;
+                cfg.onUserClickedDontSave = [this]()
+                {
+                    NewModelGraphForced();
+                    return true;
+                };
+                cfg.onUserClickedSave = [this]()
+                {
+                    if (ExportModelGraphAsOsimFile())
+                    {
+                        NewModelGraphForced();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup->open();
             }
         }
 
@@ -3902,8 +3895,26 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::Close);
-                m_MaybePopup->open();
+                SaveChangesPopupConfig cfg;
+                cfg.onUserClickedDontSave = [this]()
+                {
+                    CloseEditorForced();
+                    return true;
+                };
+                cfg.onUserClickedSave = [this]()
+                {
+                    if (ExportModelGraphAsOsimFile())
+                    {
+                        CloseEditorForced();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup->open();
             }
         }
 
@@ -3920,8 +3931,26 @@ namespace
             }
             else
             {
-                m_MaybePopup = CreateExportChangesPopup(shared_from_this(), ActionAfter::Quit);
-                m_MaybePopup->open();
+                SaveChangesPopupConfig cfg;
+                cfg.onUserClickedDontSave = [this]()
+                {
+                    QuitEditorForced();
+                    return true;
+                };
+                cfg.onUserClickedSave = [this]()
+                {
+                    if (ExportModelGraphAsOsimFile())
+                    {
+                        QuitEditorForced();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                };
+                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup->open();
             }
         }
 
@@ -5173,8 +5202,7 @@ namespace
         };
         LogViewer m_Logviewer;
 
-        // (maybe) the currently-shown modal popup that's covering the screen
-        std::unique_ptr<Popup> m_MaybePopup;
+        std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
     private:
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
@@ -5197,107 +5225,6 @@ namespace
         // set to true after drawing the ImGui::Image
         bool m_IsRenderHovered = false;
     };
-
-    class ExportChangesPopup final : public Popup {
-    public:
-        ExportChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action) :
-            Popup{std::move(sharedData)},
-            m_Action{std::move(action)}
-        {
-        }
-
-        void open() override
-        {
-            m_ShouldOpen = true;
-        }
-
-        void close() override
-        {
-            m_ShouldClose = true;
-        }
-
-        void draw() override
-        {
-            if (m_ShouldOpen)
-            {
-                ImGui::OpenPopup(m_PopupName.c_str());
-                m_ShouldOpen = false;
-            }
-
-            // center the modal
-            {
-                ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-                ImGui::SetNextWindowSize(ImVec2(512, 0));
-            }
-
-            if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                return;
-            }
-
-            if (m_ShouldClose)
-            {
-                ImGui::CloseCurrentPopup();
-                ImGui::EndPopup();
-                m_ShouldClose = false;
-                m_ShouldOpen = false;
-                updSharedData().m_MaybePopup.reset();
-                return;
-            }
-
-            if (ImGui::Button("Yes"))
-            {
-                if (updSharedData().ExportModelGraphAsOsimFile())
-                {
-                    doAction();
-                    close();
-                }
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("No"))
-            {
-                doAction();
-                close();
-            }
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("Cancel"))
-            {
-                close();
-            }
-
-            ImGui::EndPopup();
-        }
-    private:
-        void doAction()
-        {
-            switch (m_Action) {
-            case ActionAfter::New:
-                updSharedData().NewModelGraphForced();
-                break;
-            case ActionAfter::Close:
-                updSharedData().CloseEditorForced();
-                break;
-            case ActionAfter::Quit:
-                updSharedData().QuitEditorForced();
-                break;
-            }
-        }
-
-        std::string m_PopupName = std::string{"Export Changes to "} + getSharedData().GetDocumentName() + '?';
-        ActionAfter m_Action;
-        bool m_ShouldOpen = false;
-        bool m_ShouldClose = false;
-    };
-
-    std::unique_ptr<Popup> CreateExportChangesPopup(std::shared_ptr<SharedData> sharedData, ActionAfter action)
-    {
-        return std::make_unique<ExportChangesPopup>(std::move(sharedData), std::move(action));
-    }
 }
 
 // select 2 mesh points layer
@@ -8114,9 +8041,9 @@ namespace
             DrawMainViewerPanelOrModal();
 
             // (maybe) draw popup modal
-            if (m_Shared->m_MaybePopup)
+            if (m_Shared->m_MaybeSaveChangesPopup)
             {
-                m_Shared->m_MaybePopup->draw();
+                m_Shared->m_MaybeSaveChangesPopup->draw();
             }
         }
 
@@ -8182,8 +8109,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
-            return;
+            m_SharedData->QuitEditor();
         }
         else if (osc::ImGuiOnEvent(e))
         {

@@ -45,6 +45,7 @@ All notable changes to this project will be documented here. The format is based
 - Added option for degrees/radians input for 'orientation' properties (#55)
 - `osc::Screen` implementations must now handle the QUIT event themselves (internal)
   - This is to support behaviors like "you have unsaved changes, want to save them?"
+- The mesh importer screen now prompts to save changes when the user tries to quit by any means (part of #72)
 
 
 ## [0.1.2] - 2022/02/16

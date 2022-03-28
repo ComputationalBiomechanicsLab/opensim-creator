@@ -21,8 +21,14 @@ osc::StandardPopup::StandardPopup(
 	m_PopupFlags{std::move(popupFlags)},
 	m_ShouldOpen{false},
 	m_ShouldClose{false},
-	m_JustOpened{false}
+    m_JustOpened{false},
+    m_IsOpen{false}
 {
+}
+
+bool osc::StandardPopup::isOpen() const
+{
+    return m_ShouldOpen || m_IsOpen;
 }
 
 void osc::StandardPopup::open()
@@ -58,8 +64,11 @@ void osc::StandardPopup::draw()
 	if (!ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags))
 	{
 		// modal not showing
+        m_IsOpen = false;
 		return;
 	}
+
+    m_IsOpen = true;
 
 	if (m_ShouldClose)
 	{
