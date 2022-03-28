@@ -9,7 +9,7 @@ namespace osc
     template<typename T, typename TGuard = std::lock_guard<std::mutex>>
     class SynchronizedValueGuard final {
     public:
-        explicit SynchronizedValueGuard(std::mutex& mutex, T& _ref) :
+        SynchronizedValueGuard(std::mutex& mutex, T& _ref) :
             m_Guard{mutex},
             m_Ref{_ref}
         {
@@ -20,12 +20,10 @@ namespace osc
         SynchronizedValueGuard& operator=(SynchronizedValueGuard&&) noexcept = delete;
         ~SynchronizedValueGuard() noexcept = default;
 
-        T& operator*() noexcept { return m_Ref; }
-        T const& operator*() const noexcept { return m_Ref; }
+        T& operator*() & noexcept { return m_Ref; }
+        T const& operator*() const & noexcept { return m_Ref; }
         T* operator->() noexcept { return &m_Ref; }
         T const* operator->() const noexcept { return &m_Ref; }
-        operator T& () noexcept { return m_Ref; }
-        operator T const& () const noexcept { return m_Ref; }
 
     private:
         TGuard m_Guard;
@@ -79,6 +77,11 @@ namespace osc
         T&& value() &&
         {
             return std::move(*lock());
+        }
+
+        std::mutex& mutex() const
+        {
+            return m_Mutex;
         }
 
         SynchronizedValueGuard<T> lock()

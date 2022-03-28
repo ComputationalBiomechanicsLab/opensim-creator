@@ -3,6 +3,7 @@
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -35,7 +36,11 @@ namespace osc
         // the reason some methods are non-const is because (e.g.) getting a report
         // may involve doing some sort of lazy computation with the underlying backend
 
-        virtual OpenSim::Model const& getModel() const = 0;
+        // the reason this is synchronized atm is because background threads may need
+        // to potentially internally mutate a model (e.g. by realizing the state against
+        // the model) - this is due to an aliasing bug in OpenSim's GeometryPath wrapping
+        // impl.
+        virtual SynchronizedValueGuard<OpenSim::Model const> getModel() const = 0;
 
         virtual int getNumReports() const = 0;
         virtual SimulationReport getSimulationReport(int reportIndex) const = 0;

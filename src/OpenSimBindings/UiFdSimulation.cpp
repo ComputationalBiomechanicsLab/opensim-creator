@@ -28,8 +28,14 @@ static osc::FdSimulation MakeSimulation(
 {
     auto callback = [&](osc::SimulationReport r)
     {
-        uiModelState.lock()->getModel().realizeReport(r.updStateHACK());
-        reports.lock()->push_back(std::move(r));
+        {
+            auto modelGuard = uiModelState.lock();
+            modelGuard->getModel().realizeReport(r.updStateHACK());
+        }
+        {
+            auto reportsGuard = reports.lock();
+            reportsGuard->push_back(std::move(r));
+        }
         osc::App::cur().requestRedraw();
     };
     return osc::FdSimulation{std::move(p), params, std::move(callback)};
@@ -58,9 +64,10 @@ public:
     {
     }
 
-    OpenSim::Model const& getModel() const
+    SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
-        return m_ModelState.lock()->getModel();
+        OpenSim::Model const& ref = m_ModelState.lock()->getModel();
+        return {m_ModelState.mutex(), ref};
     }
 
     int getNumReports() const
@@ -154,7 +161,7 @@ osc::UiFdSimulation::UiFdSimulation(UiFdSimulation&&) noexcept = default;
 osc::UiFdSimulation& osc::UiFdSimulation::operator=(UiFdSimulation&&) noexcept = default;
 osc::UiFdSimulation::~UiFdSimulation() noexcept = default;
 
-OpenSim::Model const& osc::UiFdSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::UiFdSimulation::getModel() const
 {
     return m_Impl->getModel();
 }

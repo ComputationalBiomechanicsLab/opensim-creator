@@ -5,6 +5,7 @@
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/Utils/UID.hpp"
+#include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 
@@ -39,7 +40,7 @@ namespace osc
         {
         }
 
-        OpenSim::Model const& getModel() const { return m_Simulation->getModel(); }
+        SynchronizedValueGuard<OpenSim::Model const> getModel() const { return m_Simulation->getModel(); }
 
         int getNumReports() { return m_Simulation->getNumReports(); }
         SimulationReport getSimulationReport(int reportIndex) { return m_Simulation->getSimulationReport(std::move(reportIndex)); }

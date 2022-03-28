@@ -28,7 +28,7 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
         std::unique_ptr<Impl> m_Impl;
     };

@@ -167,9 +167,9 @@ public:
 	{
 	}
 
-	OpenSim::Model const& getModel() const
+    SynchronizedValueGuard<OpenSim::Model const> getModel() const
 	{
-		return *m_Model;
+        return {m_ModelMutex, *m_Model};
 	}
 
 	int getNumReports() const
@@ -233,7 +233,8 @@ public:
 	}
 
 private:
-	std::unique_ptr<OpenSim::Model> m_Model;
+    mutable std::mutex m_ModelMutex;
+    std::unique_ptr<OpenSim::Model> m_Model;
 	std::vector<SimulationReport> m_SimulationReports;
 	SimulationClock::time_point m_Start = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.front().getTime();
 	SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
@@ -249,7 +250,7 @@ osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = defaul
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
-OpenSim::Model const& osc::StoFileSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::getModel() const
 {
 	return m_Impl->getModel();
 }

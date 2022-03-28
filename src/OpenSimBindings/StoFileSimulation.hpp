@@ -32,7 +32,7 @@ namespace osc
 		StoFileSimulation& operator=(StoFileSimulation&&) noexcept;
 		~StoFileSimulation() noexcept;
 
-		OpenSim::Model const& getModel() const override;
+        SynchronizedValueGuard<OpenSim::Model const> getModel() const override;
 
 		int getNumReports() const override;
 		SimulationReport getSimulationReport(int reportIndex) const override;

@@ -163,8 +163,9 @@ static std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(
     {
         // re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
         SimTK::State& st = report.updStateHACK();
-        st.invalidateAll(SimTK::Stage::Time);
-        sim.getModel().realizeReport(st);
+        st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+        auto guard = sim.getModel();
+        guard->realizeReport(st);
         hackedReport = report;
     }
 
@@ -228,7 +229,7 @@ namespace
 {
     class RenderableSim final : public osc::RenderableScene {
     public:
-        RenderableSim(osc::Simulation& sim,
+        RenderableSim(OpenSim::Model const& model,
                       osc::SimulationReport const& report,
                       float fixupScaleFactor,
                       OpenSim::Component const* selected,
@@ -241,7 +242,7 @@ namespace
             m_Hovered{std::move(hovered)},
             m_Isolated{std::move(isolated)}
         {
-            GenerateModelDecorations(sim.getModel(),
+            GenerateModelDecorations(model,
                                      report.getState(),
                                      m_FixupScaleFactor,
                                      m_Decorations,
@@ -314,14 +315,15 @@ static bool SimscreenDraw3DViewer(osc::SimulatorScreen::Impl& impl,
         return true;  // it's open, but not shown
     }
 
+    auto guard = sim.getModel();
     RenderableSim rs
     {
-        sim,
+        *guard,
         report,
         impl.mes->getEditedModel().getFixupScaleFactor(),
-        osc::FindComponent(sim.getModel(), impl.selected),
-        osc::FindComponent(sim.getModel(), impl.hovered),
-        osc::FindComponent(sim.getModel(), impl.isolated)
+        osc::FindComponent(*guard, impl.selected),
+        osc::FindComponent(*guard, impl.hovered),
+        osc::FindComponent(*guard, impl.isolated)
     };
     auto resp = viewer.draw(rs);
     ImGui::End();
@@ -443,9 +445,11 @@ static void SimscreenDrawHierarchyTab(osc::SimulatorScreen::Impl& impl)
 
     osc::Simulation& sim = *maybeSim;
 
-    auto resp = osc::ComponentHierarchy{}.draw(&sim.getModel(),
-                                               osc::FindComponent(sim.getModel(), impl.selected),
-                                               osc::FindComponent(sim.getModel(), impl.hovered));
+    auto model = sim.getModel();
+
+    auto resp = osc::ComponentHierarchy{}.draw(&(*model),
+                                               osc::FindComponent(*model, impl.selected),
+                                               osc::FindComponent(*model, impl.hovered));
 
     if (resp.type == osc::ComponentHierarchy::SelectionChanged)
     {
@@ -573,7 +577,7 @@ static std::string TryExportNumericOutputToCSV(osc::Simulation& sim,
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
     std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
-    std::vector<float> values = PopulateFirstNNumericOutputValues(sim.getModel(), reports, output);
+    std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
     std::vector<float> times = PopulateFirstNTimeValues(reports);
 
     return ExportTimeseriesToCSV(times.data(),
@@ -616,7 +620,8 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 
 
     // data lines
-    OpenSim::Model const& m = sim.getModel();
+    auto guard = sim.getModel();
+    OpenSim::Model const& m = *guard;
     for (size_t i = 0; i < reports.size(); ++i)
     {
         fout << times.at(i);  // time column
@@ -664,7 +669,8 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
-    OpenSim::Model const& model = sim.getModel();
+    auto guard = sim.getModel();
+    OpenSim::Model const& model = *guard;
 
     ImU32 const currentTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.6f});
     ImU32 const hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
@@ -814,7 +820,6 @@ static void DrawOutputDataColumn(osc::SimulatorScreen::Impl& impl,
                                  osc::VirtualOutputExtractor const& output,
                                  float plotHeight)
 {
-    OpenSim::Model const& model = sim.getModel();
     int nReports = sim.getNumReports();
     osc::OutputType outputType = output.getOutputType();
 
@@ -829,6 +834,8 @@ static void DrawOutputDataColumn(osc::SimulatorScreen::Impl& impl,
     }
     else if (outputType == osc::OutputType::String)
     {
+        auto guard = sim.getModel();
+        OpenSim::Model const& model = *guard;
         osc::SimulationReport r = TrySelectReportBasedOnScrubbing(impl, sim).value_or(sim.getSimulationReport(nReports-1));
         ImGui::TextUnformatted(output.getValueString(model, r).c_str());
     }
@@ -969,7 +976,7 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
 
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-        ImGui::TextUnformatted(sim.getModel().getName().c_str());
+        ImGui::TextUnformatted(sim.getModel()->getName().c_str());
         ImGui::Dummy({0.0f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
         ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim.getCurTime() - sim.getStartTime()).count()));
@@ -993,7 +1000,7 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
 
         if (ImGui::MenuItem("edit model"))
         {
-            st.updEditedModel().setModel(std::make_unique<OpenSim::Model>(sim.getModel()));
+            st.updEditedModel().setModel(std::make_unique<OpenSim::Model>(*sim.getModel()));
             st.updEditedModel().commit("loaded model from simulator window");
             osc::App::cur().requestTransition<osc::ModelEditorScreen>(impl.mes);
         }
@@ -1074,7 +1081,7 @@ static void SimscreenDrawSelectionTab(osc::SimulatorScreen::Impl& impl)
 
     osc::SimulationReport& report = *maybeReport;
 
-    OpenSim::Component const* selected = osc::FindComponent(sim.getModel(), impl.selected);
+    OpenSim::Component const* selected = osc::FindComponent(*sim.getModel(), impl.selected);
 
     if (!selected)
     {
