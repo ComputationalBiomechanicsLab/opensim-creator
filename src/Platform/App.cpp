@@ -1124,7 +1124,7 @@ private:
 
                 m_AppCounter = counter;
                 m_FrameStartTime = ConvertPerfCounterToFClock(counter, m_AppCounterFq);
-                m_TimeSinceLastFrame = ConvertPerfTicksToFClockDuration(deltaTicks, m_AppCounter);
+                m_TimeSinceLastFrame = ConvertPerfTicksToFClockDuration(deltaTicks, m_AppCounterFq);
             }
 
             // "tick" the screen
