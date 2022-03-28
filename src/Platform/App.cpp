@@ -587,216 +587,652 @@ static osc::App::Clock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint
 // main application state
 //
 // this is what "booting the application" actually initializes
-struct osc::App::Impl final {
-
-    // init/load the application config first
-    std::unique_ptr<Config> config = Config::load();
-
-    // install the backtrace handler (if necessary - once per process)
-    bool isBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();
-
-    // init SDL context (windowing, etc.)
-    sdl::Context context{SDL_INIT_VIDEO};
-
-    // init main application window
-    sdl::Window window = CreateMainAppWindow();
-
-    // get performance counter frequency (for the delta clocks)
-    Uint64 appCounterFrequency = SDL_GetPerformanceFrequency();
-
-    // current performance counter value (recorded once per frame)
-    Uint64 appCounter = 0;
-
-    // number of frames the application has drawn
-    uint64_t frameCount = 0;
-
-    // when the application started up (set now)
-    App::Clock::time_point appStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), appCounterFrequency);
-
-    // when the current frame started (set each frame)
-    App::Clock::time_point frameStartTime = appStartupTime;
-
-    // time since the frame before the current frame (set each frame)
-    App::Clock::duration frameDeltaTime = {};
-
-    // init OpenGL (globally)
-    sdl::GLContext gl = CreateOpenGLContext(window);
-
-    // init global shader cache
-    ShaderCache shaderCache{};
-
-    // init global mesh cache
-    MeshCache meshCache{};
-
-    // figure out maximum number of samples supported by the OpenGL backend
-    GLint maxMSXAASamples = GetOpenGLMaxMSXAASamples(gl);
-
-    // how many samples the implementation should actually use
-    GLint curMSXAASamples = std::min(maxMSXAASamples, config->numMSXAASamples);
-
-    // ensure OpenSim is initialized (logs, etc.)
-    bool isOpenSimInitialized = EnsureOpenSimInitialized(*config);
-
-    // set to true if the application should quit
-    bool shouldQuit = false;
-
-    // set to true if application is in debug mode
-    bool isDebugModeEnabled = false;
-
-    // set to true if the main loop should pause on events
-    //
-    // CAREFUL: this makes the app event-driven
-    bool isInWaitMode = false;
-
-    // set >0 to force that `n` frames are polling-driven: even in waiting mode
-    int numFramesToPoll = 0;
-
-    // current screen being shown (if any)
-    std::unique_ptr<Screen> currentScreen = nullptr;
-
-    // the *next* screen the application should show
-    std::unique_ptr<Screen> nextScreen = nullptr;
-};
-
-// perform a screen transntion between two top-level `osc::Screen`s
-static void TransitionToNextScreen(osc::App::Impl& impl)
-{
-    if (!impl.nextScreen)
+class osc::App::Impl final {
+public:
+    void show(std::unique_ptr<Screen> s)
     {
-        return;
-    }
+        log::info("showing screen %s", s->name());
 
-    osc::log::info("unmounting screen %s", impl.currentScreen->name());
-
-    try
-    {
-        impl.currentScreen->onUnmount();
-    }
-    catch (std::exception const& ex)
-    {
-        osc::log::error("error unmounting screen %s: %s", impl.currentScreen->name(), ex.what());
-        impl.currentScreen.reset();
-        throw;
-    }
-
-    impl.currentScreen.reset();
-    impl.currentScreen = std::move(impl.nextScreen);
-    impl.numFramesToPoll = 2;
-
-    osc::log::info("mounting screen %s", impl.currentScreen->name());
-    impl.currentScreen->onMount();
-    osc::log::info("transitioned main screen to %s", impl.currentScreen->name());
-}
-
-// the main application loop
-//
-// this is what he application enters when it `show`s the first screen
-static void AppMainLoopUnguarded(osc::App::Impl& impl)
-{
-    // perform initial screen mount
-    impl.currentScreen->onMount();
-
-    // ensure current screen is unmounted when exiting the main loop
-    OSC_SCOPE_GUARD_IF(impl.currentScreen, { impl.currentScreen->onUnmount(); });
-
-    // reset counters
-    impl.appCounter = SDL_GetPerformanceCounter();
-    impl.frameCount = 0;
-    impl.frameStartTime = ConvertPerfCounterToFClock(impl.appCounter, impl.appCounterFrequency);
-    impl.frameDeltaTime = osc::App::Clock::duration{1.0f/60.0f};  // hack, for first frame
-
-    while (true)  // gameloop
-    {
-        // pump events
-        bool shouldWait = impl.isInWaitMode && impl.numFramesToPoll <= 0;
-        impl.numFramesToPoll = std::max(0, impl.numFramesToPoll - 1);
-
-        for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
+        if (m_CurrentScreen)
         {
-            shouldWait = false;
+            throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `requestTransition` instead"};
+        }
 
-            if (e.type == SDL_QUIT)
+        m_CurrentScreen = std::move(s);
+        m_NextScreen.reset();
+
+        // ensure retained screens are destroyed when exiting this guarded path
+        //
+        // this means callers can call .show multiple times on the same app
+        OSC_SCOPE_GUARD({ m_CurrentScreen.reset(); });
+        OSC_SCOPE_GUARD({ m_NextScreen.reset(); });
+
+        // keep looping until `break` is hit, because the implementation may swap in
+        // an error screen
+        while (m_CurrentScreen)
+        {
+            try
             {
-                // user closed window (e.g. pressed X or Alt+F4)
-                return;
+                mainLoopUnguarded();
+                break;
             }
-            else if (e.type == SDL_USEREVENT)
+            catch (std::exception const& ex)
             {
-                // it's a redraw event that lower layers can't handle anyway
-                continue;
+                // if a screen was open when the exception was thrown, and that screen was not
+                // an error screen, then transition to an error screen so that the user has a
+                // chance to see the error
+                if (m_CurrentScreen && !dynamic_cast<ErrorScreen*>(m_CurrentScreen.get()))
+                {
+                    m_CurrentScreen = std::make_unique<ErrorScreen>(ex);
+                    m_NextScreen.reset();
+                    // go to top of loop
+                }
+                else
+                {
+                    log::error("unhandled exception thrown in main render loop: %s", ex.what());
+                    throw;
+                }
             }
-            else if (e.type == SDL_WINDOWEVENT)
+        }
+    }
+
+    void requestTransition(std::unique_ptr<Screen> s)
+    {
+        m_NextScreen = std::move(s);
+    }
+
+    void requestQuit()
+    {
+        m_QuitRequested = true;
+    }
+
+    glm::ivec2 idims() const
+    {
+        auto [w, h] = sdl::GetWindowSize(m_MainWindow);
+        return glm::ivec2{w, h};
+    }
+
+    glm::vec2 dims() const
+    {
+        auto [w, h] = sdl::GetWindowSize(m_MainWindow);
+        return glm::vec2{static_cast<float>(w), static_cast<float>(h)};
+    }
+
+    float aspectRatio() const
+    {
+        glm::vec2 v = dims();
+        return v.x / v.y;
+    }
+
+    void setShowCursor(bool v)
+    {
+        SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
+    }
+
+
+    bool isWindowFocused() const
+    {
+        return SDL_GetWindowFlags(m_MainWindow) & SDL_WINDOW_INPUT_FOCUS;
+    }
+
+    void makeFullscreen()
+    {
+        SDL_SetWindowFullscreen(m_MainWindow, SDL_WINDOW_FULLSCREEN);
+    }
+
+    void makeWindowedFullscreen()
+    {
+        SDL_SetWindowFullscreen(m_MainWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+
+    void makeWindowed()
+    {
+        SDL_SetWindowFullscreen(m_MainWindow, 0);
+    }
+
+    int getMSXAASamplesRecommended() const
+    {
+        return m_CurrentMSXAASamples;
+    }
+
+    void setMSXAASamplesRecommended(int s)
+    {
+        if (s <= 0)
+        {
+            throw std::runtime_error{"tried to set number of samples to <= 0"};
+        }
+
+        if (s > getMSXAASamplesMax())
+        {
+            throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
+        }
+
+        if (NumBitsSetIn(s) != 1)
+        {
+            throw std::runtime_error{"tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
+        }
+
+        m_CurrentMSXAASamples = s;
+    }
+
+    int getMSXAASamplesMax() const
+    {
+        return m_MaxMSXAASamples;
+    }
+
+    bool isInDebugMode() const
+    {
+        return m_DebugModeEnabled;
+    }
+
+    void enableDebugMode()
+    {
+        if (IsOpenGLInDebugMode())
+        {
+            return;  // already in debug mode
+        }
+
+        log::info("enabling debug mode");
+        EnableOpenGLDebugMessages();
+        m_DebugModeEnabled = true;
+    }
+
+    void disableDebugMode()
+    {
+        if (!IsOpenGLInDebugMode())
+        {
+            return;  // already not in debug mode
+        }
+
+        log::info("disabling debug mode");
+        DisableOpenGLDebugMessages();
+        m_DebugModeEnabled = false;
+    }
+
+    bool isVsyncEnabled() const
+    {
+        // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
+        return SDL_GL_GetSwapInterval() != 0;
+    }
+
+    void setVsync(bool v)
+    {
+        if (v)
+        {
+            enableVsync();
+        }
+        else
+        {
+            disableVsync();
+        }
+    }
+
+    void enableVsync()
+    {
+        // try using adaptive vsync
+        if (SDL_GL_SetSwapInterval(-1) == 0)
+        {
+            return;
+        }
+
+        // if adaptive vsync doesn't work, then try normal vsync
+        if (SDL_GL_SetSwapInterval(1) == 0)
+        {
+            return;
+        }
+
+        // otherwise, setting vsync isn't supported by the system
+    }
+
+    void disableVsync()
+    {
+        SDL_GL_SetSwapInterval(0);
+    }
+
+    uint64_t getFrameCount() const
+    {
+        return m_FrameCounter;
+    }
+
+    uint64_t getTicks() const
+    {
+        return SDL_GetPerformanceCounter();
+    }
+
+    uint64_t getTickFrequency() const
+    {
+        return SDL_GetPerformanceFrequency();
+    }
+
+    osc::App::Clock::time_point getCurrentTime() const
+    {
+        return ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
+    }
+
+    osc::App::Clock::time_point getAppStartupTime() const
+    {
+        return m_AppStartupTime;
+    }
+
+    osc::App::Clock::time_point getFrameStartTime() const
+    {
+        return m_FrameStartTime;
+    }
+
+    osc::App::Clock::duration getDeltaSinceLastFrame() const
+    {
+        return m_TimeSinceLastFrame;
+    }
+
+    bool isMainLoopWaiting() const
+    {
+        return m_InWaitMode;
+    }
+
+    void setMainLoopWaiting(bool v)
+    {
+        m_InWaitMode = v;
+        requestRedraw();
+    }
+
+    void makeMainEventLoopWaiting()
+    {
+        setMainLoopWaiting(true);
+    }
+
+    void makeMainEventLoopPolling()
+    {
+        setMainLoopWaiting(false);
+    }
+
+    void requestRedraw()
+    {
+        SDL_Event e{};
+        e.type = SDL_USEREVENT;
+        m_NumFramesToPoll += 2;  // HACK: some parts of ImGui require rendering 2 frames before it shows something
+        SDL_PushEvent(&e);
+    }
+
+    void clearScreen(glm::vec4 const& color)
+    {
+        gl::ClearColor(color.r, color.g, color.b, color.a);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+
+    osc::App::MouseState getMouseState() const
+    {
+        MouseState rv;
+
+        glm::ivec2 mouseLocal;
+        Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
+        rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
+        rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
+        rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
+        rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
+        rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
+
+        if (isWindowFocused())
+        {
+            static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
+
+            if (canUseGlobalMouseState)
             {
-                // window was resized and should be drawn a couple of times quickly
-                // to ensure any datastructures in the screens (namely: imgui) are
-                // updated
-                impl.numFramesToPoll = 2;
+                glm::ivec2 mouseGlobal;
+                SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
+                glm::ivec2 mouseWindow;
+                SDL_GetWindowPosition(m_MainWindow, &mouseWindow.x, &mouseWindow.y);
+
+                rv.pos = mouseGlobal - mouseWindow;
+            }
+            else
+            {
+                rv.pos = mouseLocal;
+            }
+        }
+
+        return rv;
+    }
+
+    void warpMouseInWindow(glm::vec2 v) const
+    {
+        SDL_WarpMouseInWindow(m_MainWindow, static_cast<int>(v.x), static_cast<int>(v.y));
+    }
+
+    bool isShiftPressed() const
+    {
+        return SDL_GetModState() & KMOD_SHIFT;
+    }
+
+    bool isCtrlPressed() const
+    {
+        return SDL_GetModState() & KMOD_CTRL;
+    }
+
+    bool isAltPressed() const
+    {
+        return SDL_GetModState() & KMOD_ALT;
+    }
+
+    void setMainWindowSubTitle(std::string_view sv)
+    {
+        // use global + mutex to prevent hopping into the OS too much
+        static std::string g_CurSubtitle = "";
+        static std::mutex g_SubtitleMutex;
+
+        std::lock_guard lock{g_SubtitleMutex};
+
+        if (sv == g_CurSubtitle)
+        {
+            return;
+        }
+
+        g_CurSubtitle = sv;
+
+        std::string newTitle = sv.empty() ? g_BaseWindowTitle : (std::string{sv} + " - " + g_BaseWindowTitle);
+        SDL_SetWindowTitle(m_MainWindow, newTitle.c_str());
+    }
+
+    void unsetMainWindowSubTitle()
+    {
+        setMainWindowSubTitle("");
+    }
+
+    osc::Config const& getConfig() const
+    {
+        return *m_ApplicationConfig;
+    }
+
+    std::filesystem::path getResource(std::string_view p) const
+    {
+        return ::GetResource(*m_ApplicationConfig, p);
+    }
+
+    std::string slurpResource(std::string_view p) const
+    {
+        std::filesystem::path path = getResource(p);
+        return SlurpFileIntoString(path);
+    }
+
+    std::vector<osc::RecentFile> getRecentFiles() const
+    {
+        std::filesystem::path p = GetRecentFilesFilePath();
+
+        if (!std::filesystem::exists(p))
+        {
+            return {};
+        }
+
+        return LoadRecentFilesFile(p);
+    }
+
+    void addRecentFile(std::filesystem::path const& p)
+    {
+        std::filesystem::path recentFilesPath = GetRecentFilesFilePath();
+
+        // load existing list
+        std::vector<RecentFile> rfs;
+        if (std::filesystem::exists(recentFilesPath))
+        {
+            rfs = LoadRecentFilesFile(recentFilesPath);
+        }
+
+        // clear potentially duplicate entries from existing list
+        osc::RemoveErase(rfs, [&p](RecentFile const& rf) { return rf.path == p; });
+
+        // write by truncating existing list file
+        std::ofstream fd{recentFilesPath, std::ios::trunc};
+
+        if (!fd)
+        {
+            osc::log::error("%s: could not be opened for writing: cannot update recent files list", recentFilesPath.string().c_str());
+        }
+
+        // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
+        auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
+        for (auto it = begin; it != rfs.end(); ++it)
+        {
+            fd << it->lastOpenedUnixTimestamp.count() << ' ' << it->path << std::endl;
+        }
+
+        // append the new entry
+        fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
+    }
+
+    osc::ShaderCache& getShaderCache()
+    {
+        return m_ShaderCache;
+    }
+
+    osc::MeshCache& getMeshCache()
+    {
+        return m_MeshCache;
+    }
+
+    // used by ImGui backends
+
+    sdl::Window& updWindow()
+    {
+        return m_MainWindow;
+    }
+
+    sdl::GLContext& updGLContext()
+    {
+        return m_OpenGLContext;
+    }
+
+private:
+    // perform a screen transntion between two top-level `osc::Screen`s
+    void transitionToNextScreen()
+    {
+        if (!m_NextScreen)
+        {
+            return;
+        }
+
+        log::info("unmounting screen %s", m_CurrentScreen->name());
+
+        try
+        {
+            m_CurrentScreen->onUnmount();
+        }
+        catch (std::exception const& ex)
+        {
+            log::error("error unmounting screen %s: %s", m_CurrentScreen->name(), ex.what());
+            m_CurrentScreen.reset();
+            throw;
+        }
+
+        m_CurrentScreen.reset();
+        m_CurrentScreen = std::move(m_NextScreen);
+
+        // the next screen might need to draw a couple of frames
+        // to "warm up" (e.g. because it's using ImGui)
+        m_NumFramesToPoll = 2;
+
+        log::info("mounting screen %s", m_CurrentScreen->name());
+        m_CurrentScreen->onMount();
+        log::info("transitioned main screen to %s", m_CurrentScreen->name());
+    }
+
+    // the main application loop
+    //
+    // this is what he application enters when it `show`s the first screen
+    void mainLoopUnguarded()
+    {
+        // perform initial screen mount
+        m_CurrentScreen->onMount();
+
+        // ensure current screen is unmounted when exiting the main loop
+        OSC_SCOPE_GUARD_IF(m_CurrentScreen, { m_CurrentScreen->onUnmount(); });
+
+        // reset counters
+        m_AppCounter = SDL_GetPerformanceCounter();
+        m_FrameCounter = 0;
+        m_FrameStartTime = ConvertPerfCounterToFClock(m_AppCounter, m_AppCounterFq);
+        m_TimeSinceLastFrame = osc::App::Clock::duration{1.0f/60.0f};  // hack, for first frame
+
+        while (true)  // gameloop
+        {
+            // pump events
+            bool shouldWait = m_InWaitMode && m_NumFramesToPoll <= 0;
+            m_NumFramesToPoll = std::max(0, m_NumFramesToPoll - 1);
+
+            for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
+            {
+                shouldWait = false;
+
+                if (e.type == SDL_QUIT)
+                {
+                    // user closed window (e.g. pressed X or Alt+F4)
+                    return;
+                }
+                else if (e.type == SDL_USEREVENT)
+                {
+                    // it's a redraw event that lower layers can't handle anyway
+                    continue;
+                }
+                else if (e.type == SDL_WINDOWEVENT)
+                {
+                    // window was resized and should be drawn a couple of times quickly
+                    // to ensure any datastructures in the screens (namely: imgui) are
+                    // updated
+                    m_NumFramesToPoll = 2;
+                }
+
+                // let screen handle the event
+                m_CurrentScreen->onEvent(e);
+
+                if (m_QuitRequested)
+                {
+                    // screen requested application quit, so exit this function
+                    return;
+                }
+
+                if (m_NextScreen)
+                {
+                    // screen requested a new screen, so perform the transition
+                    transitionToNextScreen();
+                }
             }
 
-            // let screen handle the event
-            impl.currentScreen->onEvent(e);
+            // update clocks
+            {
+                auto counter = SDL_GetPerformanceCounter();
 
-            if (impl.shouldQuit)
+                Uint64 deltaTicks = counter - m_AppCounter;
+
+                m_AppCounter = counter;
+                m_FrameStartTime = ConvertPerfCounterToFClock(counter, m_AppCounterFq);
+                m_TimeSinceLastFrame = ConvertPerfTicksToFClockDuration(deltaTicks, m_AppCounter);
+            }
+
+            // "tick" the screen
+            m_CurrentScreen->tick(m_TimeSinceLastFrame.count());
+            ++m_FrameCounter;
+
+            if (m_QuitRequested)
             {
                 // screen requested application quit, so exit this function
                 return;
             }
 
-            if (impl.nextScreen)
+            if (m_NextScreen)
             {
                 // screen requested a new screen, so perform the transition
-                TransitionToNextScreen(impl);
+                transitionToNextScreen();
+                continue;
+            }
+
+            // "draw" the screen into the window framebuffer
+            m_CurrentScreen->draw();
+
+            // "present" the rendered screen to the user (can block on VSYNC)
+            SDL_GL_SwapWindow(m_MainWindow);
+
+            if (m_QuitRequested)
+            {
+                // screen requested application quit, so exit this function
+                return;
+            }
+
+            if (m_NextScreen)
+            {
+                // screen requested a new screen, so perform the transition
+                transitionToNextScreen();
+                continue;
             }
         }
-
-        // update clocks
-        {
-            auto counter = SDL_GetPerformanceCounter();
-
-            Uint64 deltaTicks = counter - impl.appCounter;
-
-            impl.appCounter = counter;
-            impl.frameStartTime = ConvertPerfCounterToFClock(counter, impl.appCounterFrequency);
-            impl.frameDeltaTime = ConvertPerfTicksToFClockDuration(deltaTicks, impl.appCounterFrequency);
-        }
-
-        // "tick" the screen
-        impl.currentScreen->tick(impl.frameDeltaTime.count());
-        ++impl.frameCount;
-
-        if (impl.shouldQuit)
-        {
-            // screen requested application quit, so exit this function
-            return;
-        }
-
-        if (impl.nextScreen)
-        {
-            // screen requested a new screen, so perform the transition
-            TransitionToNextScreen(impl);
-            continue;
-        }
-
-        // "draw" the screen into the window framebuffer
-        impl.currentScreen->draw();
-
-        // "present" the rendered screen to the user (can block on VSYNC)
-        SDL_GL_SwapWindow(impl.window);
-
-        if (impl.shouldQuit)
-        {
-            // screen requested application quit, so exit this function
-            return;
-        }
-
-        if (impl.nextScreen)
-        {
-            // screen requested a new screen, so perform the transition
-            TransitionToNextScreen(impl);
-            continue;
-        }
     }
-}
+
+    // init/load the application config first
+    std::unique_ptr<Config> m_ApplicationConfig = Config::load();
+
+    // install the backtrace handler (if necessary - once per process)
+    bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled();
+
+    // init SDL context (windowing, etc.)
+    sdl::Context m_SDLContext{SDL_INIT_VIDEO};
+
+    // init main application window
+    sdl::Window m_MainWindow = CreateMainAppWindow();
+
+    // get performance counter frequency (for the delta clocks)
+    Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();
+
+    // current performance counter value (recorded once per frame)
+    Uint64 m_AppCounter = 0;
+
+    // number of frames the application has drawn
+    uint64_t m_FrameCounter = 0;
+
+    // when the application started up (set now)
+    App::Clock::time_point m_AppStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
+
+    // when the current frame started (set each frame)
+    App::Clock::time_point m_FrameStartTime = m_AppStartupTime;
+
+    // time since the frame before the current frame (set each frame)
+    App::Clock::duration m_TimeSinceLastFrame = {};
+
+    // init OpenGL (globally)
+    sdl::GLContext m_OpenGLContext = CreateOpenGLContext(m_MainWindow);
+
+    // init global shader cache
+    ShaderCache m_ShaderCache{};
+
+    // init global mesh cache
+    MeshCache m_MeshCache{};
+
+    // figure out maximum number of samples supported by the OpenGL backend
+    GLint m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_OpenGLContext);
+
+    // how many samples the implementation should actually use
+    GLint m_CurrentMSXAASamples = std::min(m_MaxMSXAASamples, m_ApplicationConfig->numMSXAASamples);
+
+    // ensure OpenSim is initialized (logs, etc.)
+    bool m_OpenSimInitialized = EnsureOpenSimInitialized(*m_ApplicationConfig);
+
+    // set to true if the application should quit
+    bool m_QuitRequested = false;
+
+    // set to true if application is in debug mode
+    bool m_DebugModeEnabled = false;
+
+    // set to true if the main loop should pause on events
+    //
+    // CAREFUL: this makes the app event-driven
+    bool m_InWaitMode = false;
+
+    // set >0 to force that `n` frames are polling-driven: even in waiting mode
+    int m_NumFramesToPoll = 0;
+
+    // current screen being shown (if any)
+    std::unique_ptr<Screen> m_CurrentScreen = nullptr;
+
+    // the *next* screen the application should show
+    std::unique_ptr<Screen> m_NextScreen = nullptr;
+};
 
 // public API
 
@@ -838,421 +1274,242 @@ osc::App::~App() noexcept
 
 void osc::App::show(std::unique_ptr<Screen> s)
 {
-    log::info("showing screen %s", s->name());
-
-    if (m_Impl->currentScreen)
-    {
-        throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `requestTransition` instead"};
-    }
-
-    m_Impl->currentScreen = std::move(s);
-    m_Impl->nextScreen.reset();
-
-    // ensure retained screens are destroyed when exiting this guarded path
-    //
-    // this means callers can call .show multiple times on the same app
-    OSC_SCOPE_GUARD({ m_Impl->currentScreen.reset(); });
-    OSC_SCOPE_GUARD({ m_Impl->nextScreen.reset(); });
-
-    // keep looping until `break` is hit, because the implementation may swap in
-    // an error screen
-    while (m_Impl->currentScreen)
-    {
-        try
-        {
-            AppMainLoopUnguarded(*m_Impl);
-            break;
-        }
-        catch (std::exception const& ex)
-        {
-            // if a screen was open when the exception was thrown, and that screen was not
-            // an error screen, then transition to an error screen so that the user has a
-            // chance to see the error
-            if (m_Impl->currentScreen && !dynamic_cast<ErrorScreen*>(m_Impl->currentScreen.get()))
-            {
-                m_Impl->currentScreen = std::make_unique<ErrorScreen>(ex);
-                m_Impl->nextScreen.reset();
-                // go to top of loop
-            }
-            else
-            {
-                log::error("unhandled exception thrown in main render loop: %s", ex.what());
-                throw;
-            }
-        }
-    }
+    m_Impl->show(std::move(s));
 }
 
 void osc::App::requestTransition(std::unique_ptr<Screen> s)
 {
-    m_Impl->nextScreen = std::move(s);
+    m_Impl->requestTransition(std::move(s));
 }
 
 void osc::App::requestQuit()
 {
-    m_Impl->shouldQuit = true;
+    m_Impl->requestQuit();
 }
 
 glm::ivec2 osc::App::idims() const
 {
-    auto [w, h] = sdl::GetWindowSize(m_Impl->window);
-    return glm::ivec2{w, h};
+    return m_Impl->idims();
 }
 
 glm::vec2 osc::App::dims() const
 {
-    auto [w, h] = sdl::GetWindowSize(m_Impl->window);
-    return glm::vec2{static_cast<float>(w), static_cast<float>(h)};
+    return m_Impl->dims();
 }
 
 float osc::App::aspectRatio() const
 {
-    glm::vec2 v = dims();
-    return v.x / v.y;
+    return m_Impl->aspectRatio();
 }
 
 void osc::App::setShowCursor(bool v)
 {
-    SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
+    m_Impl->setShowCursor(std::move(v));
 }
-
 
 bool osc::App::isWindowFocused() const
 {
-    return SDL_GetWindowFlags(m_Impl->window) & SDL_WINDOW_INPUT_FOCUS;
+    return m_Impl->isWindowFocused();
 }
 
 void osc::App::makeFullscreen()
 {
-    SDL_SetWindowFullscreen(m_Impl->window, SDL_WINDOW_FULLSCREEN);
+    m_Impl->makeFullscreen();
 }
 
 void osc::App::makeWindowedFullscreen()
 {
-    SDL_SetWindowFullscreen(m_Impl->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    m_Impl->makeWindowedFullscreen();
 }
 
 void osc::App::makeWindowed()
 {
-    SDL_SetWindowFullscreen(m_Impl->window, 0);
+    m_Impl->makeWindowed();
 }
 
 int osc::App::getMSXAASamplesRecommended() const
 {
-    return m_Impl->curMSXAASamples;
+    return m_Impl->getMSXAASamplesRecommended();
 }
 
 void osc::App::setMSXAASamplesRecommended(int s)
 {
-    if (s <= 0)
-    {
-        throw std::runtime_error{"tried to set number of samples to <= 0"};
-    }
-
-    if (s > getMSXAASamplesMax())
-    {
-        throw std::runtime_error{"tried to set number of multisamples higher than supported by hardware"};
-    }
-
-    if (NumBitsSetIn(s) != 1)
-    {
-        throw std::runtime_error{"tried to set number of multisamples to an invalid value. Must be 1, or a multiple of 2 (1x, 2x, 4x, 8x...)"};
-    }
-
-    m_Impl->curMSXAASamples = s;
+    m_Impl->setMSXAASamplesRecommended(std::move(s));
 }
 
 int osc::App::getMSXAASamplesMax() const
 {
-    return m_Impl->maxMSXAASamples;
+    return m_Impl->getMSXAASamplesMax();
 }
 
 bool osc::App::isInDebugMode() const
 {
-    return m_Impl->isDebugModeEnabled;
+    return m_Impl->isInDebugMode();
 }
 
 void osc::App::enableDebugMode()
 {
-    if (IsOpenGLInDebugMode())
-    {
-        return;  // already in debug mode
-    }
-
-    log::info("enabling debug mode");
-    EnableOpenGLDebugMessages();
-    m_Impl->isDebugModeEnabled = true;
+    m_Impl->enableDebugMode();
 }
 
 void osc::App::disableDebugMode()
 {
-    if (!IsOpenGLInDebugMode())
-    {
-        return;  // already not in debug mode
-    }
-
-    log::info("disabling debug mode");
-    DisableOpenGLDebugMessages();
-    m_Impl->isDebugModeEnabled = false;
+    m_Impl->disableDebugMode();
 }
 
 bool osc::App::isVsyncEnabled() const
 {
-    // adaptive vsync (-1) and vsync (1) are treated as "vsync is enabled"
-    return SDL_GL_GetSwapInterval() != 0;
+    return m_Impl->isVsyncEnabled();
 }
 
 void osc::App::setVsync(bool v)
 {
-    if (v)
-    {
-        enableVsync();
-    }
-    else
-    {
-        disableVsync();
-    }
+    m_Impl->setVsync(std::move(v));
 }
 
 void osc::App::enableVsync()
 {
-    // try using adaptive vsync
-    if (SDL_GL_SetSwapInterval(-1) == 0)
-    {
-        return;
-    }
-
-    // if adaptive vsync doesn't work, then try normal vsync
-    if (SDL_GL_SetSwapInterval(1) == 0)
-    {
-        return;
-    }
-
-    // otherwise, setting vsync isn't supported by the system
+    m_Impl->enableVsync();
 }
 
 void osc::App::disableVsync()
 {
-    SDL_GL_SetSwapInterval(0);
+    m_Impl->disableVsync();
 }
 
 uint64_t osc::App::getFrameCount() const
 {
-    return m_Impl->frameCount;
+    return m_Impl->getFrameCount();
 }
 
 uint64_t osc::App::getTicks() const
 {
-    return SDL_GetPerformanceCounter();
+    return m_Impl->getTicks();
 }
 
 uint64_t osc::App::getTickFrequency() const
 {
-    return SDL_GetPerformanceFrequency();
+    return m_Impl->getTickFrequency();
 }
 
 osc::App::Clock::time_point osc::App::getCurrentTime() const
 {
-    return ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_Impl->appCounterFrequency);
+    return m_Impl->getCurrentTime();
 }
 
 osc::App::Clock::time_point osc::App::getAppStartupTime() const
 {
-    return m_Impl->appStartupTime;
+    return m_Impl->getAppStartupTime();
 }
 
 osc::App::Clock::time_point osc::App::getFrameStartTime() const
 {
-    return m_Impl->frameStartTime;
+    return m_Impl->getFrameStartTime();
 }
 
 osc::App::Clock::duration osc::App::getDeltaSinceLastFrame() const
 {
-    return m_Impl->frameDeltaTime;
+    return m_Impl->getDeltaSinceLastFrame();
 }
 
 bool osc::App::isMainLoopWaiting() const
 {
-    return m_Impl->isInWaitMode;
+    return m_Impl->isMainLoopWaiting();
 }
 
 void osc::App::setMainLoopWaiting(bool v)
 {
-    m_Impl->isInWaitMode = v;
-    requestRedraw();
+    m_Impl->setMainLoopWaiting(std::move(v));
 }
 
 void osc::App::makeMainEventLoopWaiting()
 {
-    setMainLoopWaiting(true);
+    m_Impl->makeMainEventLoopWaiting();
 }
 
 void osc::App::makeMainEventLoopPolling()
 {
-    setMainLoopWaiting(false);
+    m_Impl->makeMainEventLoopPolling();
 }
 
 void osc::App::requestRedraw()
 {
-    SDL_Event e{};
-    e.type = SDL_USEREVENT;
-    m_Impl->numFramesToPoll += 2;  // HACK: some parts of ImGui require rendering 2 frames before it shows something
-    SDL_PushEvent(&e);
+    m_Impl->requestRedraw();
 }
 
 void osc::App::clearScreen(glm::vec4 const& color)
 {
-    gl::ClearColor(color.r, color.g, color.b, color.a);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_Impl->clearScreen(color);
 }
 
 osc::App::MouseState osc::App::getMouseState() const
 {
-    MouseState rv;
-
-    glm::ivec2 mouseLocal;
-    Uint32 ms = SDL_GetMouseState(&mouseLocal.x, &mouseLocal.y);
-    rv.LeftDown = ms & SDL_BUTTON(SDL_BUTTON_LEFT);
-    rv.RightDown = ms & SDL_BUTTON(SDL_BUTTON_RIGHT);
-    rv.MiddleDown = ms & SDL_BUTTON(SDL_BUTTON_MIDDLE);
-    rv.X1Down = ms & SDL_BUTTON(SDL_BUTTON_X1);
-    rv.X2Down = ms & SDL_BUTTON(SDL_BUTTON_X2);
-
-    if (isWindowFocused())
-    {
-        static bool canUseGlobalMouseState = strncmp(SDL_GetCurrentVideoDriver(), "wayland", 7) != 0;
-
-        if (canUseGlobalMouseState)
-        {
-            glm::ivec2 mouseGlobal;
-            SDL_GetGlobalMouseState(&mouseGlobal.x, &mouseGlobal.y);
-            glm::ivec2 mouseWindow;
-            SDL_GetWindowPosition(m_Impl->window, &mouseWindow.x, &mouseWindow.y);
-
-            rv.pos = mouseGlobal - mouseWindow;
-        }
-        else
-        {
-            rv.pos = mouseLocal;
-        }
-    }
-
-    return rv;
+    return m_Impl->getMouseState();
 }
 
 void osc::App::warpMouseInWindow(glm::vec2 v) const
 {
-    SDL_WarpMouseInWindow(m_Impl->window, static_cast<int>(v.x), static_cast<int>(v.y));
+    m_Impl->warpMouseInWindow(std::move(v));
 }
 
 bool osc::App::isShiftPressed() const
 {
-    return SDL_GetModState() & KMOD_SHIFT;
+    return m_Impl->isShiftPressed();
 }
 
 bool osc::App::isCtrlPressed() const
 {
-    return SDL_GetModState() & KMOD_CTRL;
+    return m_Impl->isCtrlPressed();
 }
 
 bool osc::App::isAltPressed() const
 {
-    return SDL_GetModState() & KMOD_ALT;
+    return m_Impl->isAltPressed();
 }
 
 void osc::App::setMainWindowSubTitle(std::string_view sv)
 {
-    // use global + mutex to prevent hopping into the OS too much
-    static std::string g_CurSubtitle = "";
-    static std::mutex g_SubtitleMutex;
-
-    std::lock_guard lock{g_SubtitleMutex};
-
-    if (sv == g_CurSubtitle)
-    {
-        return;
-    }
-
-    g_CurSubtitle = sv;
-
-    std::string newTitle = sv.empty() ? g_BaseWindowTitle : (std::string{sv} + " - " + g_BaseWindowTitle);
-    SDL_SetWindowTitle(m_Impl->window, newTitle.c_str());
+    m_Impl->setMainWindowSubTitle(std::move(sv));
 }
 
 void osc::App::unsetMainWindowSubTitle()
 {
-    setMainWindowSubTitle("");
+    m_Impl->unsetMainWindowSubTitle();
 }
 
 osc::Config const& osc::App::getConfig() const
 {
-    return *m_Impl->config;
+    return m_Impl->getConfig();
 }
 
 std::filesystem::path osc::App::getResource(std::string_view p) const
 {
-    return ::GetResource(*m_Impl->config, p);
+    return m_Impl->getResource(std::move(p));
 }
 
 std::string osc::App::slurpResource(std::string_view p) const
 {
-    std::filesystem::path path = getResource(p);
-    return SlurpFileIntoString(path);
+    return m_Impl->slurpResource(std::move(p));
 }
 
 std::vector<osc::RecentFile> osc::App::getRecentFiles() const
 {
-    std::filesystem::path p = GetRecentFilesFilePath();
-
-    if (!std::filesystem::exists(p))
-    {
-        return {};
-    }
-
-    return LoadRecentFilesFile(p);
+    return m_Impl->getRecentFiles();
 }
 
 void osc::App::addRecentFile(std::filesystem::path const& p)
 {
-    std::filesystem::path recentFilesPath = GetRecentFilesFilePath();
-
-    // load existing list
-    std::vector<RecentFile> rfs;
-    if (std::filesystem::exists(recentFilesPath))
-    {
-        rfs = LoadRecentFilesFile(recentFilesPath);
-    }
-
-    // clear potentially duplicate entries from existing list
-    osc::RemoveErase(rfs, [&p](RecentFile const& rf) { return rf.path == p; });
-
-    // write by truncating existing list file
-    std::ofstream fd{recentFilesPath, std::ios::trunc};
-
-    if (!fd)
-    {
-        osc::log::error("%s: could not be opened for writing: cannot update recent files list", recentFilesPath.string().c_str());
-    }
-
-    // re-serialize the n newest entries (the loaded list is sorted oldest -> newest)
-    auto begin = rfs.end() - (rfs.size() < 10 ? static_cast<int>(rfs.size()) : 10);
-    for (auto it = begin; it != rfs.end(); ++it)
-    {
-        fd << it->lastOpenedUnixTimestamp.count() << ' ' << it->path << std::endl;
-    }
-
-    // append the new entry
-    fd << GetCurrentTimeAsUnixTimestamp().count() << ' ' << std::filesystem::absolute(p) << std::endl;
+    m_Impl->addRecentFile(p);
 }
 
 osc::ShaderCache& osc::App::getShaderCache()
 {
-    return m_Impl->shaderCache;
+    return m_Impl->getShaderCache();
 }
 
 osc::MeshCache& osc::App::getMeshCache()
 {
-    return m_Impl->meshCache;
+    return m_Impl->getMeshCache();
 }
 
 void osc::ImGuiInit()
@@ -1304,9 +1561,9 @@ void osc::ImGuiInit()
         io.Fonts->AddFontFromFileTTF(fontFile.c_str(), config.SizePixels, &config, icon_ranges);
     }
 
-
     // init ImGui for SDL2 /w OpenGL
-    ImGui_ImplSDL2_InitForOpenGL(App::cur().m_Impl->window, App::cur().m_Impl->gl);
+    App::Impl& impl = *App::cur().m_Impl;
+    ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updGLContext());
 
     // init ImGui for OpenGL
     ImGui_ImplOpenGL3_Init(OSC_GLSL_VERSION);
@@ -1345,7 +1602,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 void osc::ImGuiNewFrame()
 {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(App::cur().m_Impl->window);
+    ImGui_ImplSDL2_NewFrame(App::cur().m_Impl->updWindow());
     ImGui::NewFrame();
 }
 

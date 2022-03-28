@@ -282,7 +282,7 @@ namespace osc
         // returns the application-wide (global) mesh cache
         MeshCache& getMeshCache();
 
-        struct Impl;
+        class Impl;
     private:
         friend void ImGuiInit();
         friend void ImGuiNewFrame();
