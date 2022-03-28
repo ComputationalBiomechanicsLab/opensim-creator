@@ -7425,21 +7425,52 @@ namespace
 
             // translate/rotate/scale dropdown
             {
-                char const* modes[] = {"translate", "rotate", "scale"};
-                ImGuizmo::OPERATION ops[] = {ImGuizmo::TRANSLATE, ImGuizmo::ROTATE, ImGuizmo::SCALE};
-                int currentOp = static_cast<int>(std::distance(std::begin(ops), std::find(std::begin(ops), std::end(ops), m_ImGuizmoState.op)));
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-                ImGui::SetNextItemWidth(ImGui::CalcTextSize(modes[0]).x + 40.0f);
-                if (ImGui::Combo("##opselect", &currentOp, modes, IM_ARRAYSIZE(modes)))
+                int colorsPushed = 0;
+                if (m_ImGuizmoState.op == ImGuizmo::TRANSLATE)
                 {
-                    m_ImGuizmoState.op = ops[static_cast<size_t>(currentOp)];
+                    ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+                    ++colorsPushed;
                 }
-                char const* const tooltipTitle = "Manipulation Mode";
-                char const* const tooltipDesc = "This affects which manipulation gizmos are shown over the selected object.\n\nYou can also use keybinds to flip between these:\n    G    translate\n    R    rotate\n    S    scale";
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+                if (ImGui::Button(ICON_FA_ARROWS_ALT))
+                {
+                    m_ImGuizmoState.op = ImGuizmo::TRANSLATE;
+                }
+                osc::DrawTooltipIfItemHovered("Translate", "Make the 3D manipulation gizmos translate things (hotkey: G)");
+                ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+                ImGui::SameLine();
+                if (m_ImGuizmoState.op == ImGuizmo::ROTATE)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+                    ++colorsPushed;
+                }
+                if (ImGui::Button(ICON_FA_REDO_ALT))
+                {
+                    m_ImGuizmoState.op = ImGuizmo::ROTATE;
+                }
+                osc::DrawTooltipIfItemHovered("Rotate", "Make the 3D manipulation gizmos rotate things (hotkey: R)");
+                ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+                ImGui::SameLine();
+                if (m_ImGuizmoState.op == ImGuizmo::SCALE)
+                {
+                    ImGui::PushStyleColor(ImGuiCol_Button, OSC_NEUTRAL_RGBA);
+                    ++colorsPushed;
+                }
+                if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+                {
+                    m_ImGuizmoState.op = ImGuizmo::SCALE;
+                }
+                osc::DrawTooltipIfItemHovered("Scale", "Make the 3D manipulation gizmos scale things (hotkey: S)");
+                ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+                ImGui::PopStyleVar(2);
+                ImGui::SameLine();
             }
 
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
             ImGui::SameLine();
+            ImGui::PopStyleVar();
 
             // local/global dropdown
             {
@@ -7447,11 +7478,13 @@ namespace
                 ImGuizmo::MODE modes[] = {ImGuizmo::LOCAL, ImGuizmo::WORLD};
                 int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), m_ImGuizmoState.mode)));
 
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
                 ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
                 if (ImGui::Combo("##modeselect", &currentMode, modeLabels, IM_ARRAYSIZE(modeLabels)))
                 {
                     m_ImGuizmoState.mode = modes[static_cast<size_t>(currentMode)];
                 }
+                ImGui::PopStyleVar();
                 char const* const tooltipTitle = "Manipulation coordinate system";
                 char const* const tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
                 DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
