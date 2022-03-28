@@ -25,6 +25,24 @@ All notable changes to this project will be documented here. The format is based
 - Added a 'perf' panel to the simulator screen for in-prod perf measurements (internal)
 - Added ability to pause/resume simulation playback (#16)
 - The "Save All" button does not show if there are no simulation plots (partially fixes #125)
+- All output plots in the simulation screen are now scrubbable
+- All output plots in the simulation screen can now be exported as CSVs
+- Output plots should no longer glitch (pop) while running a simulation
+- Output plots now look different (internally, they are now drawn with the ImPlot library)
+- A simulation can now be loaded from an STO file:
+  - E.g. save a simulation/motion in the official OpenSim GUI as an STO file
+  - Open the model in OpenSim Creator
+  - Drag the STO file into the OpenSim Creator model editor UI
+  - Your STO motions should shown in the UI "as if" it were a "real" simulation
+  - (limitation): motions are re-sampled to 50 hz, for perf reasons
+- Added `TorqueActuator` as an available component that can be added in-UI
+- Added `BodyActuator` as an available component that can be added in-UI
+- Added `reorient 90 degrees` option in mesh importer context menu (#160)
+- Removed ability to boot OpenSim Creator from the installer (#95)
+- Removed ability to uninstall OpenSim Creator from the installer (#131)
+- Upgraded Windows build to Visual Studio 2022 (internal)
+- Added icons for switching between grab/rotate/scale in mesh importer (#65)
+- Added option for degrees/radians input for 'orientation' properties (#55)
 
 
 ## [0.1.2] - 2022/02/16
