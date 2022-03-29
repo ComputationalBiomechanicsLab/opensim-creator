@@ -47,6 +47,7 @@ All notable changes to this project will be documented here. The format is based
   - This is to support behaviors like "you have unsaved changes, want to save them?"
 - The mesh importer screen now prompts to save changes when the user tries to quit by any means (part of #72)
 - Fixed edge-case thread race crash on simulation screen
+- Added "Save changes" dialog to editor screen (#72)
 
 
 ## [0.1.2] - 2022/02/16
