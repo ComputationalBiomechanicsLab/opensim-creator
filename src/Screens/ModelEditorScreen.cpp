@@ -957,40 +957,6 @@ public:
         App::cur().makeMainEventLoopPolling();
     }
 
-    void onEvent(SDL_Event const& e)
-    {
-        if (e.type == SDL_QUIT)
-        {
-            App::cur().requestQuit();
-            return;
-        }
-        else if (osc::ImGuiOnEvent(e))
-        {
-            m_ResetPerFrame.shouldRequestRedraw = true;
-        }
-        else if (e.type == SDL_KEYDOWN)
-        {
-            onKeydown(e.key);
-        }
-        else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".sto"))
-        {
-            try
-            {
-                std::filesystem::path p{e.drop.file};
-                std::unique_ptr<OpenSim::Model> cpy =
-                    std::make_unique<OpenSim::Model>(m_Mes->getEditedModel().getModel());
-                cpy->buildSystem();
-                cpy->initializeState();
-                m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
-            }
-            catch (std::exception const& ex)
-            {
-                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
-            }
-        }
-    }
-
     void tick()
     {
         if (m_FileChangePoller.changeWasDetected(m_Mes->getEditedModel().getModel().getInputFileName()))
@@ -1006,47 +972,83 @@ public:
         App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-
-        try
-        {
-            drawUNGUARDED();
-            m_ExceptionThrownLastFrame = false;
-        }
-        catch (std::exception const& ex)
-        {
-            log::error("an OpenSim::Exception was thrown while drawing the editor");
-            log::error("    message = %s", ex.what());
-            log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
-
-            if (m_ExceptionThrownLastFrame)
-            {
-                App::cur().requestTransition<ErrorScreen>(ex);
-            }
-            else
-            {
-                try
-                {
-                    m_Mes->updEditedModel().rollback();
-                    log::error("model rollback succeeded");
-                    m_ExceptionThrownLastFrame = true;
-                }
-                catch (std::exception const& ex2)
-                {
-                    App::cur().requestTransition<ErrorScreen>(ex2);
-                }
-            }
-
-            // try to put ImGui into a clean state
-            osc::ImGuiShutdown();
-            osc::ImGuiInit();
-            osc::ImGuiNewFrame();
-        }
-
+        drawGUARDED();
         osc::ImGuiRender();
     }
 
+    void onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_QUIT)
+        {
+            onQuitEvent(e.quit);
+        }
+        else if (osc::ImGuiOnEvent(e))
+        {
+            m_ResetPerFrame.shouldRequestRedraw = true;
+        }
+        else if (e.type == SDL_KEYDOWN)
+        {
+            onKeydown(e.key);
+        }
+        else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".sto"))
+        {
+            onDropEvent(e.drop);
+        }
+    }
 
 private:
+
+    void onDropEvent(SDL_DropEvent const& e)
+    {
+        if (e.file != nullptr && CStrEndsWith(e.file, ".sto"))
+        {
+            try
+            {
+                std::filesystem::path p{e.file};
+                std::unique_ptr<OpenSim::Model> cpy =
+                    std::make_unique<OpenSim::Model>(m_Mes->getEditedModel().getModel());
+                cpy->buildSystem();
+                cpy->initializeState();
+                m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
+                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+            }
+        }
+    }
+
+    void onQuitEvent(SDL_QuitEvent const&)
+    {
+        if (m_Mes->getEditedModel().isUpToDateWithFilesystem())
+        {
+            App::cur().requestQuit();
+        }
+        else
+        {
+            SaveChangesPopupConfig cfg;
+            cfg.onUserClickedSave = [this]()
+            {
+                if (actionSaveModel(m_Mes))
+                {
+                    App::cur().requestQuit();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            };
+            cfg.onUserClickedDontSave = []()
+            {
+                App::cur().requestQuit();
+                return true;
+            };
+            m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+            m_MaybeSaveChangesPopup->open();
+        }
+    }
 
     bool onKeydown(SDL_KeyboardEvent const& e)
     {
@@ -1532,6 +1534,49 @@ private:
 
             osc::ParamBlockEditorPopup{}.draw("simulation parameters", m_Mes->updSimulationParams());
         }
+
+        if (m_MaybeSaveChangesPopup)
+        {
+            m_MaybeSaveChangesPopup->draw();
+        }
+    }
+
+    void drawGUARDED()
+    {
+        try
+        {
+            drawUNGUARDED();
+            m_ExceptionThrownLastFrame = false;
+        }
+        catch (std::exception const& ex)
+        {
+            log::error("an OpenSim::Exception was thrown while drawing the editor");
+            log::error("    message = %s", ex.what());
+            log::error("OpenSim::Exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+
+            if (m_ExceptionThrownLastFrame)
+            {
+                App::cur().requestTransition<ErrorScreen>(ex);
+            }
+            else
+            {
+                try
+                {
+                    m_Mes->updEditedModel().rollback();
+                    log::error("model rollback succeeded");
+                    m_ExceptionThrownLastFrame = true;
+                }
+                catch (std::exception const& ex2)
+                {
+                    App::cur().requestTransition<ErrorScreen>(ex2);
+                }
+            }
+
+            // try to put ImGui into a clean state
+            osc::ImGuiShutdown();
+            osc::ImGuiInit();
+            osc::ImGuiNewFrame();
+        }
     }
 
     // top-level state this screen can handle
@@ -1552,6 +1597,7 @@ private:
     ModelActionsMenuBar m_ModelActionsMenuBar{m_Mes->updEditedModelPtr()};
     CoordinateEditor m_CoordEditor{m_Mes->updEditedModelPtr()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
+    std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
 
     // state that is reset at the start of each frame
     struct {
