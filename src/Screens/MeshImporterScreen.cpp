@@ -850,7 +850,7 @@ namespace
         {
             throw std::runtime_error{"cannot set cross reference ID: no method implemented"};
         }
-        virtual std::string const& GetCrossReferenceLabel(int) const
+        virtual osc::CStringView GetCrossReferenceLabel(int) const
         {
             throw std::runtime_error{"cannot get cross reference label: no method implemented"};
         }
@@ -864,7 +864,7 @@ namespace
         virtual UID GetID() const = 0;
         virtual std::ostream& operator<<(std::ostream&) const = 0;
 
-        virtual std::string const& GetLabel() const = 0;
+        virtual osc::CStringView GetLabel() const = 0;
         virtual void SetLabel(std::string_view) = 0;
 
         virtual Transform GetXform() const = 0;
@@ -1032,7 +1032,7 @@ namespace
             return o << g_GroundLabel << "()";
         }
 
-        std::string const& GetLabel() const override
+        osc::CStringView GetLabel() const override
         {
             return g_GroundLabel;
         }
@@ -1164,7 +1164,7 @@ namespace
             }
         }
 
-        std::string const& GetCrossReferenceLabel(int i) const override
+        osc::CStringView GetCrossReferenceLabel(int i) const override
         {
             switch (i) {
             case 0:
@@ -1202,7 +1202,7 @@ namespace
                      << ')';
         }
 
-        std::string const& GetLabel() const override
+        osc::CStringView GetLabel() const override
         {
             return Name;
         }
@@ -1323,7 +1323,7 @@ namespace
                      << ')';
         }
 
-        std::string const& GetLabel() const override
+        osc::CStringView GetLabel() const override
         {
             return Name;
         }
@@ -1473,7 +1473,7 @@ namespace
             }
         }
 
-        std::string const& GetCrossReferenceLabel(int i) const override
+        osc::CStringView GetCrossReferenceLabel(int i) const override
         {
             switch (i) {
             case 0:
@@ -1522,12 +1522,12 @@ namespace
                      << ')';
         }
 
-        std::string const& GetSpecificTypeName() const
+        osc::CStringView GetSpecificTypeName() const
         {
              return JointRegistry::nameStrings()[JointTypeIndex];
         }
 
-        std::string const& GetLabel() const override
+        osc::CStringView GetLabel() const override
         {
             return UserAssignedName.empty() ? GetSpecificTypeName() : UserAssignedName;
         }
@@ -1667,7 +1667,7 @@ namespace
             }
         }
 
-        std::string const& GetCrossReferenceLabel(int i) const override
+        osc::CStringView GetCrossReferenceLabel(int i) const override
         {
             switch (i) {
             case 0:
@@ -1702,7 +1702,7 @@ namespace
                      << ')';
         }
 
-        std::string const& GetLabel() const override
+        osc::CStringView GetLabel() const override
         {
             return Name;
         }
@@ -2188,7 +2188,7 @@ namespace
         mg.DeSelectAll();
     }
 
-    std::string const& GetLabel(ModelGraph const& mg, UID id)
+    osc::CStringView GetLabel(ModelGraph const& mg, UID id)
     {
         return mg.GetElByID(id).GetLabel();
     }
@@ -2735,7 +2735,7 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        size_t jointTypeIdx = *JointRegistry::indexOf(OpenSim::WeldJoint{});
+        size_t jointTypeIdx = *JointRegistry::indexOf<OpenSim::WeldJoint>();
         glm::vec3 parentPos = GetPosition(mg, parentID);
         glm::vec3 childPos = GetPosition(mg, childID);
         glm::vec3 midPoint = Midpoint(parentPos, childPos);
@@ -2889,7 +2889,7 @@ namespace
             return false;
         }
 
-        std::string label = el->GetLabel();
+        std::string label = to_string(el->GetLabel());
 
         if (!mg.DeleteEl(*el))
         {
@@ -3348,7 +3348,7 @@ namespace
         SimTK::Vec3 locationInParent = (parentXform.invert() * stationXform).p();
 
         auto station = std::make_unique<OpenSim::Station>(*res.physicalFrame, locationInParent);
-        station->setName(stationEl.GetLabel());
+        station->setName(to_string(stationEl.GetLabel()));
         res.physicalFrame->addComponent(station.release());
     }
 
@@ -6928,7 +6928,7 @@ namespace
 
                 for (int i = 0; i < nRefs; ++i)
                 {
-                    std::string const& label = el.GetCrossReferenceLabel(i);
+                    osc::CStringView label = el.GetCrossReferenceLabel(i);
                     if (ImGui::MenuItem(label.c_str()))
                     {
                         TransitionToReassigningCrossRef(el, i);

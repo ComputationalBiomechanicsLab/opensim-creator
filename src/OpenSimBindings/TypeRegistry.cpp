@@ -1,6 +1,7 @@
 #include "TypeRegistry.hpp"
 
 #include "src/Utils/Assertions.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
@@ -41,318 +42,511 @@
 
 #include <algorithm>
 #include <array>
+#include <memory>
+#include <vector>
 
-using namespace osc;
-
-// helper: make a statically-sized array of type prototypes
-template<typename TBase, typename... TDeriveds>
-static auto MakePrototypeCollection() -> std::array<std::unique_ptr<TBase const>, sizeof...(TDeriveds)> {
-    return std::array<std::unique_ptr<TBase const>, sizeof...(TDeriveds)>{std::make_unique<TDeriveds const>()...};
+// create a lookup for user-facing description strings
+//
+// these are used for in-UI documentation. If a component doesn't have one of these
+// then the UI should show something appropriate (e.g. "no description")
+static std::unordered_map<std::type_info const*, osc::CStringView> CreateDescriptionLut()
+{
+    return
+    {
+        {
+            &typeid(OpenSim::BallJoint),
+            "A Ball joint. The underlying implementation in Simbody is SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z) body-fixed Euler sequence, without translations, for generalized coordinate calculation. Ball joint uses quaternions in calculation and are therefore singularity-free (unlike GimbalJoint)."
+        },
+        {
+            &typeid(OpenSim::EllipsoidJoint),
+            "An Ellipsoid joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius.",
+        },
+        {
+            &typeid(OpenSim::FreeJoint),
+            "A Free joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Free. Free joint allows unrestricted motion with three rotations and three translations. Rotations are modeled similarly to BallJoint -using quaternions with no singularities- while the translational generalized coordinates are XYZ Translations along the parent axis.",
+        },
+        {
+            &typeid(OpenSim::GimbalJoint),
+            "A Gimbal joint. The underlying implementation Simbody is a SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a  X-Y-Z body fixed Euler sequence for generalized coordinates calculation. Gimbal joints have a singularity when Y is near \f$\frac{\\pi}{2}\f$.",
+        },
+        {
+            &typeid(OpenSim::PinJoint),
+            "A Pin joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Pin. Pin provides one DOF about the common Z-axis of the joint (not body) frames in the parent and child body. If you want rotation about a different direction, rotate the joint and body frames such that the z axes are in the desired direction.",
+        },
+        {
+            &typeid(OpenSim::PlanarJoint),
+            "A Planar joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.",
+        },
+        {
+            &typeid(OpenSim::ScapulothoracicJoint),
+            "A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon which the joint frame of scapul rides.",
+        },
+        {
+            &typeid(OpenSim::SliderJoint),
+            "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
+        },
+        {
+            &typeid(OpenSim::UniversalJoint),
+            "A Universal joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Universal. Universal provides two DoF: rotation about the x axis of the joint frames, followed by a rotation about the new y axis. The joint is badly behaved when the second rotation is near 90 degrees.",
+        },
+        {
+            &typeid(OpenSim::WeldJoint),
+            "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner.",
+        },
+        {
+            &typeid(OpenSim::ConstantDistanceConstraint),
+            "Maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
+        },
+        {
+            &typeid(OpenSim::CoordinateCouplerConstraint),
+            "Implements a CoordinateCoupler Constraint. The underlying SimTK Constraint is a Constraint::CoordinateCoupler in Simbody, which relates coordinates to one another at the position level (i.e. holonomic). Relationship between coordinates is specified by a function that equates to zero only when the coordinates satisfy the constraint function.",
+        },
+        {
+            &typeid(OpenSim::PointOnLineConstraint),
+            "Implements a Point On Line Constraint. The underlying Constraint in Simbody is a SimTK::Constraint::PointOnLine.maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
+        },
+        {
+            &typeid(OpenSim::RollingOnSurfaceConstraint),
+            "Implements a collection of rolling-without-slipping and non-penetration constraints on a surface.",
+        },
+        {
+            &typeid(OpenSim::WeldConstraint),
+            "Implements a Weld Constraint. A WeldConstraint eliminates up to 6 dofs of a model by fixing two PhysicalFrames together at their origins aligning their axes.  PhysicalFrames are generally Ground, Body, or PhysicalOffsetFrame attached to a PhysicalFrame. The underlying Constraint in Simbody is a SimTK::Constraint::Weld.",
+        },
+        {
+            &typeid(OpenSim::ContactHalfSpace),
+            "Represents a half space (that is, everything to one side of an infinite plane) for use in contact modeling.  In its local coordinate system, all points for which x>0 are considered to be inside the geometry. Its location and orientation properties can be used to move and rotate it to represent other half spaces.Represents a spherical object for use in contact modeling.",
+        },
+        {
+            &typeid(OpenSim::ContactMesh),
+            "Represents a polygonal mesh for use in contact modeling",
+        },
+        {
+            &typeid(OpenSim::ContactSphere),
+            "Represents a spherical object for use in contact modeling.",
+        },
+        {
+            &typeid(OpenSim::BodyActuator),
+            "Apply a spatial force (that is, [torque, force]) on a given point of the given body. That is, the force is applied at the given point; torques don't have associated points. This actuator has no states; the control signal should provide a 6D vector including [torque(3D), force(3D)] that is supposed to be applied to the body. The associated controller can generate the spatial force [torque, force] both in the body and global (ground) frame. The default is assumed to be global frame. The point of application can be specified both in the body and global (ground) frame. The default is assumed to be the body frame.",
+        },
+        {
+            &typeid(OpenSim::BushingForce),
+            "A Bushing Force is the force proportional to the deviation of two frames. One can think of the Bushing as being composed of 3 linear and 3 torsional spring-dampers, which act along or about the bushing frames. Orientations are measured as x-y-z body-fixed Euler rotations, which are treated as though they were uncoupled. Damping is proportional to the deflection rate of change (e.g. Euler angle derivatives) which is NOT the angular velocity between the two frames. That makes this bushing model suitable only for relatively small relative orientation deviations between the frames.",
+        },
+        {
+            &typeid(OpenSim::CoordinateLimitForce),
+            "Generate a force that acts to limit the range of motion of a coordinate. Force is experienced at upper and lower limits of the coordinate value according to a constant stiffnesses K_upper and K_lower, with a C2 continuous transition from 0 to K. The transition parameter defines how far beyond the limit the stiffness becomes constant. The integrator will like smoother (i.e. larger transition regions).",
+        },
+        {
+            &typeid(OpenSim::DeGrooteFregly2016Muscle),
+            "This muscle model was published in De Groote et al. 2016.",
+        },
+        {
+            &typeid(OpenSim::ElasticFoundationForce),
+            "This Force subclass implements an elastic foundation contact model. It places a spring at the center of each face of each ContactMesh it acts on. Those springs interact with all objects (both meshes and other objects) the mesh comes in contact with.",
+        },
+        {
+            &typeid(OpenSim::HuntCrossleyForce),
+            "This force subclass implements a Hunt-Crossley contact model. It uses Hertz contact theory to model the interactions between a set of ContactSpheres and ContactHalfSpaces.",
+        },
+        {
+            &typeid(OpenSim::Millard2012EquilibriumMuscle),
+            "This class implements a configurable equilibrium muscle model, as described in Millard et al. (2013).",
+        },
+        {
+            &typeid(OpenSim::PointToPointSpring),
+            "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
+        },
+        {
+            &typeid(OpenSim::PathSpring),
+            "A spring that follows a one-dimensional path. A PathSpring is a massless force element which applies tension along a path connected to bodies. A path spring can also wrap over wrap surfaces.\n\nThe tension is proportional to its stretch beyond its resting length and the amount of dissipation scales with the amount of stretch.",
+        },
+        {
+            &typeid(OpenSim::RigidTendonMuscle),
+            "A class implementing a RigidTendonMuscle actuator with no states. The path information for a RigidTendonMuscle is contained in the base class, and the force-generating behavior should is defined in this class. The force (muscle tension) assumes rigid tendon so that fiber-length and velocity are kinematics dependent and the force-length force-velocity relationships are evaluated directly. The control of this model is its activation. Force production is instantaneous with no excitation-to-activation dynamics and excitation=activation.",
+        },
+        {
+            &typeid(OpenSim::SmoothSphereHalfSpaceForce),
+            "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
+        },
+        {
+            &typeid(OpenSim::Thelen2003Muscle),
+            "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
+        },
+        {
+            &typeid(OpenSim::TorqueActuator),
+            "A TorqueActuator applies equal and opposite torques on the two bodies (bodyA and B) that it connects. The torque is applied about an axis specified in ground (global) by default, otherwise it is in bodyA's frame. The magnitude of the torque is equal to the product of the optimal_force of the actuator and its control signal.",
+        },
+    };
 }
 
-// helper: extract the concrete class names of components in a prototype array
-template<typename Component, size_t N>
-static auto ExtractNames(std::array<std::unique_ptr<Component>, N> const& components) -> std::array<char const*, N> {
-    std::array<char const*, N> rv;
-    for (size_t i = 0; i < N; ++i) {
-        rv[i] = components[i]->getConcreteClassName().c_str();
-    }
-    return rv;
-}
-
-template<typename Component, size_t N>
-static auto ExtractTypeHashes(std::array<std::unique_ptr<Component>, N> const& components)
-    -> std::array<size_t const, N> {
-    std::array<size_t const, N> rv{};
-    for (size_t i = 0; i < N; ++i) {
-        const_cast<size_t&>(rv[i]) = typeid(*components[i]).hash_code();
-    }
-    return rv;
-}
-
-// testing helper: statically assert that all elements in a collection are not null
-template<typename Collection>
-[[nodiscard]] static constexpr bool AllElementsNotNull(Collection const& c) noexcept {
-    for (void const* el : c) {
-        if (el == nullptr) {
-            return false;
-        }
-    }
-    return true;
+// fetch cached version of the above lookup
+static std::unordered_map<std::type_info const*, osc::CStringView> const& GetDescriptionLut()
+{
+    static std::unordered_map<std::type_info const*, osc::CStringView> const g_Lut = CreateDescriptionLut();
+    return g_Lut;
 }
 
 // helper: construct a prototype joint and assign its coordinate names
 template<typename TJoint>
-static std::unique_ptr<OpenSim::Joint const> JointWithCoords(std::initializer_list<char const*> names) {
-    std::unique_ptr<OpenSim::Joint> j = std::make_unique<TJoint>();
+static std::shared_ptr<OpenSim::Joint const> JointWithCoords(std::initializer_list<char const*> names)
+{
+    std::shared_ptr<OpenSim::Joint> j = std::make_shared<TJoint>();
     int i = 0;
-    for (char const* name : names) {
+    for (char const* name : names)
+    {
         j->upd_coordinates(i++).setName(name);
     }
     return j;
 }
 
-template<typename Container, typename T>
-static std::optional<size_t> IndexOf(Container const& c, T const& v) {
-    using std::begin;
-    using std::end;
-
-    auto first = begin(c);
-    auto last = end(c);
-
-    auto it = std::find(first, last, v);
-
-    return it != last ? std::optional<size_t>{static_cast<size_t>(std::distance(first, it))} : std::nullopt;
+// create a lookup of pre-initialized prototype components
+static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> CreatePrototypeLut()
+{
+    return
+    {
+        {
+            &typeid(OpenSim::BallJoint),
+            JointWithCoords<OpenSim::BallJoint>({"rx", "ry", "rz"}),
+        },
+        {
+            &typeid(OpenSim::EllipsoidJoint),
+            JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"}),
+        },
+        {
+            &typeid(OpenSim::FreeJoint),
+            JointWithCoords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
+        },
+        {
+            &typeid(OpenSim::GimbalJoint),
+            JointWithCoords<OpenSim::GimbalJoint>({"rx", "ry", "rz"}),
+        },
+        {
+            &typeid(OpenSim::PinJoint),
+            JointWithCoords<OpenSim::PinJoint>({"rz"}),
+        },
+        {
+            &typeid(OpenSim::PlanarJoint),
+            JointWithCoords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
+        },
+        {
+            &typeid(OpenSim::ScapulothoracicJoint),
+            JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
+        },
+        {
+            &typeid(OpenSim::SliderJoint),
+            JointWithCoords<OpenSim::SliderJoint>({"tx"}),
+        },
+        {
+            &typeid(OpenSim::UniversalJoint),
+            JointWithCoords<OpenSim::UniversalJoint>({"rx", "ry"}),
+        },
+        {
+            &typeid(OpenSim::WeldJoint),
+            JointWithCoords<OpenSim::WeldJoint>({}),
+        },
+        {
+            &typeid(OpenSim::HuntCrossleyForce),
+            []() {
+                auto hcf = std::make_shared<OpenSim::HuntCrossleyForce>();
+                hcf->setStiffness(100000000.0);
+                hcf->setDissipation(0.5);
+                hcf->setStaticFriction(0.9);
+                hcf->setDynamicFriction(0.9);
+                hcf->setViscousFriction(0.6);
+                return hcf;
+            }(),
+        },
+        {
+            &typeid(OpenSim::PathSpring),
+            []() {
+                auto ps = std::make_shared<OpenSim::PathSpring>();
+                ps->setRestingLength(1.0);
+                ps->setStiffness(1000.0);
+                ps->setDissipation(0.5);
+                return ps;
+            }(),
+        },
+    };
 }
 
-// Joint LUTs
+static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> const& GetPrototypeLut()
+{
+    static std::unordered_map<std::type_info const*, std::shared_ptr<OpenSim::Component const>> const g_Lut = CreatePrototypeLut();
+    return g_Lut;
+}
 
-static std::array<std::unique_ptr<OpenSim::Joint const>, 10> g_JointPrototypes = {
-    JointWithCoords<OpenSim::BallJoint>({"rx", "ry", "rz"}),
-    JointWithCoords<OpenSim::EllipsoidJoint>({"rx", "ry", "rz"}),
-    JointWithCoords<OpenSim::FreeJoint>({"rx", "ry", "rz", "tx", "ty", "tz"}),
-    JointWithCoords<OpenSim::GimbalJoint>({"rx", "ry", "rz"}),
-    JointWithCoords<OpenSim::PinJoint>({"rz"}),
-    JointWithCoords<OpenSim::PlanarJoint>({"rz", "tx", "ty"}),
-    JointWithCoords<OpenSim::ScapulothoracicJoint>({"rx_abduction", "ry_elevation", "rz_upwardrotation", "ryp_winging"}),
-    JointWithCoords<OpenSim::SliderJoint>({"tx"}),
-    JointWithCoords<OpenSim::UniversalJoint>({"rx", "ry"}),
-    JointWithCoords<OpenSim::WeldJoint>({})
-};
-static auto const g_JointNames = ExtractNames(g_JointPrototypes);
-static constexpr std::array<char const*, g_JointPrototypes.size()> g_JointDescriptions = {
-    "A Ball joint. The underlying implementation in Simbody is SimTK::MobilizedBody::Ball. The Ball joint implements a fixed 1-2-3 (X-Y-Z) body-fixed Euler sequence, without translations, for generalized coordinate calculation. Ball joint uses quaternions in calculation and are therefore singularity-free (unlike GimbalJoint).",
-    "An Ellipsoid joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Ellipsoid. An Ellipsoid joint provides three mobilities – coordinated rotation and translation along the surface of an ellipsoid fixed to the parent body. The ellipsoid surface is determined by an input Vec3 which describes the ellipsoid radius.",
-    "A Free joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Free. Free joint allows unrestricted motion with three rotations and three translations. Rotations are modeled similarly to BallJoint -using quaternions with no singularities- while the translational generalized coordinates are XYZ Translations along the parent axis.",
-    "A Gimbal joint. The underlying implementation Simbody is a SimTK::MobilizedBody::Gimbal. The opensim Gimbal joint implementation uses a  X-Y-Z body fixed Euler sequence for generalized coordinates calculation. Gimbal joints have a singularity when Y is near \f$\frac{\\pi}{2}\f$.",
-    "A Pin joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Pin. Pin provides one DOF about the common Z-axis of the joint (not body) frames in the parent and child body. If you want rotation about a different direction, rotate the joint and body frames such that the z axes are in the desired direction.",
-    "A Planar joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Planar. A Planar joint provides three ordered mobilities; rotation about Z and translation in X then Y.",
-    "A 4-DOF ScapulothoracicJoint. Motion of the scapula is described by an ellipsoid surface fixed to the thorax upon which the joint frame of scapul rides.",
-    "A Slider joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Slider. The Slider provides a single coordinate along the common X-axis of the parent and child joint frames.",
-    "A Universal joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Universal. Universal provides two DoF: rotation about the x axis of the joint frames, followed by a rotation about the new y axis. The joint is badly behaved when the second rotation is near 90 degrees.",
-    "A Weld joint. The underlying implementation in Simbody is a SimTK::MobilizedBody::Weld. There is no relative motion of bodies joined by a weld. Weld joints are often used to create composite bodies from smaller simpler bodies. You can also get the reaction force at the weld in the usual manner."
-};
-static auto const g_JointHashes = ExtractTypeHashes(g_JointPrototypes);
+template<typename T>
+static std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
+{
+    OpenSim::ArrayPtrs<T> ptrs;
+    OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
-static_assert(g_JointNames.size() == g_JointPrototypes.size());
-static_assert(g_JointDescriptions.size() == g_JointPrototypes.size());
-static_assert(AllElementsNotNull(g_JointDescriptions), "description missing?");
-static_assert(g_JointHashes.size() == g_JointPrototypes.size());
+    std::vector<std::shared_ptr<T const>> rv;
+    rv.reserve(ptrs.size());
 
-// Constraint LUTs
+    auto const& protoLut = GetPrototypeLut();
 
-static auto const g_ConstraintPrototypes = MakePrototypeCollection<
-    OpenSim::Constraint,
+    for (int i = 0; i < ptrs.size(); ++i)
+    {
+        T const& v = *ptrs[i];
+        auto it = protoLut.find(&typeid(v));
+        if (it != protoLut.end())
+        {
+            std::shared_ptr<T const> p = std::dynamic_pointer_cast<T const>(it->second);
+            if (p)
+            {
+                rv.push_back(p);
+            }
+            else
+            {
+                rv.emplace_back(v.clone());
+            }
+        }
+        else
+        {
+            rv.emplace_back(v.clone());
+        }
+    }
 
-    OpenSim::ConstantDistanceConstraint,
-    OpenSim::CoordinateCouplerConstraint,
-    OpenSim::PointOnLineConstraint,
-    OpenSim::RollingOnSurfaceConstraint,
-    OpenSim::WeldConstraint
->();
-static auto const g_ConstraintNames = ExtractNames(g_ConstraintPrototypes);
-static constexpr std::array<char const*, g_ConstraintPrototypes.size()> g_ConstraintDescriptions = {
-    "Maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
-    "Implements a CoordinateCoupler Constraint. The underlying SimTK Constraint is a Constraint::CoordinateCoupler in Simbody, which relates coordinates to one another at the position level (i.e. holonomic). Relationship between coordinates is specified by a function that equates to zero only when the coordinates satisfy the constraint function.",
-    "Implements a Point On Line Constraint. The underlying Constraint in Simbody is a SimTK::Constraint::PointOnLine.maintains a constant distance between between two points on separate PhysicalFrames. The underlying SimTK::Constraint in Simbody is a SimTK::Constraint::Rod.",
-    "Implements a collection of rolling-without-slipping and non-penetration constraints on a surface.",
-    "Implements a Weld Constraint. A WeldConstraint eliminates up to 6 dofs of a model by fixing two PhysicalFrames together at their origins aligning their axes.  PhysicalFrames are generally Ground, Body, or PhysicalOffsetFrame attached to a PhysicalFrame. The underlying Constraint in Simbody is a SimTK::Constraint::Weld.",
-};
-static auto const g_ConstraintHashes = ExtractTypeHashes(g_ConstraintPrototypes);
+    auto sortByName = [](std::shared_ptr<T const> a, std::shared_ptr<T const> b)
+    {
+        return a->getConcreteClassName() < b->getConcreteClassName();
+    };
 
-static_assert(g_ConstraintNames.size() == g_ConstraintPrototypes.size());
-static_assert(g_ConstraintDescriptions.size() == g_ConstraintPrototypes.size());
-static_assert(AllElementsNotNull(g_ConstraintDescriptions), "description missing?");
-static_assert(g_ConstraintHashes.size() == g_ConstraintPrototypes.size());
+    std::sort(rv.begin(), rv.end(), sortByName);
 
-// ContactGeometry LUTs
+    return rv;
+}
 
-static auto const g_ContactGeomPrototypes = MakePrototypeCollection<
-    OpenSim::ContactGeometry,
+template<typename T>
+static std::vector<osc::CStringView> CreateNameViews(nonstd::span<std::shared_ptr<T const> const> protos)
+{
+    std::vector<osc::CStringView> rv;
+    rv.reserve(protos.size());
+    for (auto const& proto : protos)
+    {
+        rv.push_back(proto->getConcreteClassName());
+    }
+    return rv;
+}
 
-    OpenSim::ContactHalfSpace,
-    OpenSim::ContactMesh,
-    OpenSim::ContactSphere
->();
-static auto const g_ContactGeomNames = ExtractNames(g_ContactGeomPrototypes);
-static constexpr std::array<char const*, g_ContactGeomPrototypes.size()> g_ContactGeomDescriptions = {
-    "Represents a half space (that is, everything to one side of an infinite plane) for use in contact modeling.  In its local coordinate system, all points for which x>0 are considered to be inside the geometry. Its location and orientation properties can be used to move and rotate it to represent other half spaces.Represents a spherical object for use in contact modeling.",
-    "Represents a polygonal mesh for use in contact modeling",
-    "Represents a spherical object for use in contact modeling.",
-};
-static auto const g_ContactGeomHashes = ExtractTypeHashes(g_ContactGeomPrototypes);
+template<typename T>
+static std::vector<osc::CStringView> CreateDescriptionViews(nonstd::span<std::shared_ptr<T const> const> protos)
+{
+    auto const& lut = GetDescriptionLut();
 
-static_assert(g_ContactGeomNames.size() == g_ContactGeomPrototypes.size());
-static_assert(g_ContactGeomDescriptions.size() == g_ContactGeomPrototypes.size());
-static_assert(AllElementsNotNull(g_ContactGeomDescriptions), "description missing?");
-static_assert(g_ContactGeomHashes.size() == g_ContactGeomPrototypes.size());
+    std::vector<osc::CStringView> rv;
+    rv.reserve(protos.size());
+    for (auto const& proto : protos)
+    {
+        auto it = lut.find(&typeid(*proto));
+        if (it != lut.end())
+        {
+            rv.push_back(it->second);
+        }
+        else
+        {
+            rv.emplace_back();
+        }
+    }
+    return rv;
+}
 
-// Force LUTs
+static std::vector<char const*> CreateCStrings(nonstd::span<osc::CStringView const> views)
+{
+    std::vector<char const*> rv;
+    rv.reserve(views.size());
+    for (auto const& view : views)
+    {
+        rv.push_back(view.c_str());
+    }
+    return rv;
+}
 
-std::array<std::unique_ptr<OpenSim::Force const>, 13> const g_ForcePrototypes = {
-    std::make_unique<OpenSim::BodyActuator>(),
-    std::make_unique<OpenSim::BushingForce>(),
-    std::make_unique<OpenSim::CoordinateLimitForce>(),
-    std::make_unique<OpenSim::DeGrooteFregly2016Muscle>(),
-    std::make_unique<OpenSim::ElasticFoundationForce>(),
-    []() {
-        auto hcf = std::make_unique<OpenSim::HuntCrossleyForce>();
-        hcf->setStiffness(100000000.0);
-        hcf->setDissipation(0.5);
-        hcf->setStaticFriction(0.9);
-        hcf->setDynamicFriction(0.9);
-        hcf->setViscousFriction(0.6);
-        return hcf;
-    }(),
-    std::make_unique<OpenSim::Millard2012EquilibriumMuscle>(),
-    std::make_unique<OpenSim::PointToPointSpring>(),
-    []() {
-        auto ps = std::make_unique<OpenSim::PathSpring>();
-        ps->setRestingLength(1.0);
-        ps->setStiffness(1000.0);
-        ps->setDissipation(0.5);
-        return ps;
-    }(),
-    std::make_unique<OpenSim::RigidTendonMuscle>(),
-    std::make_unique<OpenSim::SmoothSphereHalfSpaceForce>(),
-    std::make_unique<OpenSim::Thelen2003Muscle>(),
-    std::make_unique<OpenSim::TorqueActuator>(),
-};
-
-static auto const g_ForceNames = ExtractNames(g_ForcePrototypes);
-static constexpr std::array<char const*, g_ForcePrototypes.size()> g_ForceDescriptions = {
-    "Apply a spatial force (that is, [torque, force]) on a given point of the given body. That is, the force is applied at the given point; torques don't have associated points. This actuator has no states; the control signal should provide a 6D vector including [torque(3D), force(3D)] that is supposed to be applied to the body. The associated controller can generate the spatial force [torque, force] both in the body and global (ground) frame. The default is assumed to be global frame. The point of application can be specified both in the body and global (ground) frame. The default is assumed to be the body frame.",
-    "A Bushing Force is the force proportional to the deviation of two frames. One can think of the Bushing as being composed of 3 linear and 3 torsional spring-dampers, which act along or about the bushing frames. Orientations are measured as x-y-z body-fixed Euler rotations, which are treated as though they were uncoupled. Damping is proportional to the deflection rate of change (e.g. Euler angle derivatives) which is NOT the angular velocity between the two frames. That makes this bushing model suitable only for relatively small relative orientation deviations between the frames.",
-    "Generate a force that acts to limit the range of motion of a coordinate. Force is experienced at upper and lower limits of the coordinate value according to a constant stiffnesses K_upper and K_lower, with a C2 continuous transition from 0 to K. The transition parameter defines how far beyond the limit the stiffness becomes constant. The integrator will like smoother (i.e. larger transition regions).",
-    "This muscle model was published in De Groote et al. 2016.",
-    "This Force subclass implements an elastic foundation contact model. It places a spring at the center of each face of each ContactMesh it acts on. Those springs interact with all objects (both meshes and other objects) the mesh comes in contact with.",
-    "This force subclass implements a Hunt-Crossley contact model. It uses Hertz contact theory to model the interactions between a set of ContactSpheres and ContactHalfSpaces.",
-    "This class implements a configurable equilibrium muscle model, as described in Millard et al. (2013).",
-    "A simple point to point spring with a resting length and stiffness. Points are connected to bodies and are defined in the body frame.",
-    "A spring that follows a one-dimensional path. A PathSpring is a massless force element which applies tension along a path connected to bodies. A path spring can also wrap over wrap surfaces.\n\nThe tension is proportional to its stretch beyond its resting length and the amount of dissipation scales with the amount of stretch.",
-    "A class implementing a RigidTendonMuscle actuator with no states. The path information for a RigidTendonMuscle is contained in the base class, and the force-generating behavior should is defined in this class. The force (muscle tension) assumes rigid tendon so that fiber-length and velocity are kinematics dependent and the force-length force-velocity relationships are evaluated directly. The control of this model is its activation. Force production is instantaneous with no excitation-to-activation dynamics and excitation=activation.",
-    "This compliant contact force model is similar to HuntCrossleyForce, except that this model applies force even when not in contact. Unlike HuntCrossleyForce, the normal force is differentiable as a function of penetration depth. This component is designed for use in gradient-based optimizations, in which the model is required to be differentiable. This component models contact between a single sphere and a single half space. This force does NOT use ContactGeometry objects; the description of the contact geometries is done through properties of this component.",
-    "Implementation of a two state (activation and fiber-length) Muscle model by Thelen 2003. This a complete rewrite of a previous implementation (present in OpenSim 2.4 and earlier) contained numerous errors.",
-    "A TorqueActuator applies equal and opposite torques on the two bodies (bodyA and B) that it connects. The torque is applied about an axis specified in ground (global) by default, otherwise it is in bodyA's frame. The magnitude of the torque is equal to the product of the optimal_force of the actuator and its control signal."
-};
-static auto const g_ForceHashes = ExtractTypeHashes(g_ForcePrototypes);
-
-static_assert(g_ForceNames.size() == g_ForcePrototypes.size());
-static_assert(g_ForceDescriptions.size() == g_ForcePrototypes.size());
-static_assert(AllElementsNotNull(g_ForceDescriptions), "description missing?");
-static_assert(g_ForceHashes.size() == g_ForcePrototypes.size());
+template<typename T>
+static std::optional<size_t> IndexOf(nonstd::span<std::shared_ptr<T const> const> container, std::type_info const& ti)
+{
+    auto hasTypeID = [&ti](std::shared_ptr<T const> const& p)
+    {
+        return typeid(*p) == ti;
+    };
+    auto it = std::find_if(container.begin(), container.end(), hasTypeID);
+    return it == container.end() ? std::nullopt : std::optional<size_t>{std::distance(container.begin(), it)};
+}
 
 // Type_registry<OpenSim::Joint>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::Joint const> const> osc::TypeRegistry<OpenSim::Joint>::prototypes() noexcept {
-    return g_JointPrototypes;
-}
-
-static std::array<std::string, g_JointNames.size()> GenerateJointNames() {
-    std::array<std::string, g_JointNames.size()> rv;
-    for (size_t i = 0; i < g_JointNames.size(); ++i) {
-        rv[i] = g_JointNames[i];
-    }
-    return rv;
-}
-
-template<typename T, size_t N>
-static std::array<T const*, N> GeneratePointers(std::array<T, N> const& src) {
-    std::array<T const*, N> rv;
-    for (size_t i = 0; i < N; ++i) {
-        rv[i] = std::addressof(src[i]);
-    }
-    return rv;
+nonstd::span<std::shared_ptr<OpenSim::Joint const> const> osc::TypeRegistry<OpenSim::Joint>::prototypes() noexcept
+{
+    static std::vector<std::shared_ptr<OpenSim::Joint const>> g_Protos = CreatePrototypeLutT<OpenSim::Joint>();
+    return g_Protos;
 }
 
 template<>
-nonstd::span<std::string const> osc::TypeRegistry<OpenSim::Joint>::nameStrings() noexcept {
-    static std::array<std::string, g_JointNames.size()> const g_NameStrings = GenerateJointNames();
-    return g_NameStrings;
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Joint>::nameStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Names = CreateNameViews(prototypes());
+    return g_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::nameCStrings() noexcept {
-    return g_JointNames;
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::nameCStrings() noexcept
+{
+    static std::vector<char const*> const g_CStrs = CreateCStrings(nameStrings());
+    return g_CStrs;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::descriptionCStrings() noexcept {
-    return g_JointDescriptions;
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Joint>::descriptionStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Descriptions = CreateDescriptionViews(prototypes());
+    return g_Descriptions;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept {
-    return ::IndexOf(g_JointHashes, typeid(joint).hash_code());
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Joint>::descriptionCStrings() noexcept
+{
+    static std::vector<char const*> const g_DescriptionCStrs = CreateCStrings(descriptionStrings());
+    return g_DescriptionCStrs;
 }
+
+template<>
+std::optional<size_t> osc::TypeRegistry<OpenSim::Joint>::indexOf(OpenSim::Joint const& joint) noexcept
+{
+    return ::IndexOf(prototypes(), typeid(joint));
+}
+
 
 // Type_registry<OpenSim::ContactGeometry>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::ContactGeometry const> const>
-    osc::TypeRegistry<OpenSim::ContactGeometry>::prototypes() noexcept {
-    return g_ContactGeomPrototypes;
+nonstd::span<std::shared_ptr<OpenSim::ContactGeometry const> const> osc::TypeRegistry<OpenSim::ContactGeometry>::prototypes() noexcept
+{
+    static std::vector<std::shared_ptr<OpenSim::ContactGeometry const>> g_Protos =CreatePrototypeLutT<OpenSim::ContactGeometry>();
+    return g_Protos;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameCStrings() noexcept {
-    return g_ContactGeomNames;
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Names = CreateNameViews(prototypes());
+    return g_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionCStrings() noexcept {
-    return g_ContactGeomDescriptions;
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::nameCStrings() noexcept
+{
+    static std::vector<char const*> const g_CStrs = CreateCStrings(nameStrings());
+    return g_CStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept {
-    return ::IndexOf(g_ContactGeomHashes, typeid(cg).hash_code());
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Descriptions = CreateDescriptionViews(prototypes());
+    return g_Descriptions;
 }
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::ContactGeometry>::descriptionCStrings() noexcept
+{
+    static std::vector<char const*> const g_DescriptionCStrs = CreateCStrings(descriptionStrings());
+    return g_DescriptionCStrs;
+}
+
+template<>
+std::optional<size_t> osc::TypeRegistry<OpenSim::ContactGeometry>::indexOf(OpenSim::ContactGeometry const& cg) noexcept
+{
+    return ::IndexOf(prototypes(), typeid(cg));
+}
+
 
 // Type_registry<OpenSim::Constraint>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::Constraint const> const>
-    osc::TypeRegistry<OpenSim::Constraint>::prototypes() noexcept {
-    return g_ConstraintPrototypes;
+nonstd::span<std::shared_ptr<OpenSim::Constraint const> const> osc::TypeRegistry<OpenSim::Constraint>::prototypes() noexcept
+{
+    static std::vector<std::shared_ptr<OpenSim::Constraint const>> g_Protos = CreatePrototypeLutT<OpenSim::Constraint>();
+    return g_Protos;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::nameCStrings() noexcept {
-    return g_ConstraintNames;
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Constraint>::nameStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Names = CreateNameViews(prototypes());
+    return g_Names;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::descriptionCStrings() noexcept {
-    return g_ConstraintDescriptions;
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::nameCStrings() noexcept
+{
+    static std::vector<char const*> const g_CStrs = CreateCStrings(nameStrings());
+    return g_CStrs;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& constraint) noexcept {
-    return ::IndexOf(g_ConstraintHashes, typeid(constraint).hash_code());
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Constraint>::descriptionStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Descriptions = CreateDescriptionViews(prototypes());
+    return g_Descriptions;
 }
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Constraint>::descriptionCStrings() noexcept
+{
+    static std::vector<char const*> const g_DescriptionCStrs = CreateCStrings(descriptionStrings());
+    return g_DescriptionCStrs;
+}
+
+template<>
+std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::Constraint const& cg) noexcept
+{
+    return ::IndexOf(prototypes(), typeid(cg));
+}
+
+
 
 // Type_registry<OpenSim::Force>
 
 template<>
-nonstd::span<std::unique_ptr<OpenSim::Force const> const> osc::TypeRegistry<OpenSim::Force>::prototypes() noexcept {
-    return g_ForcePrototypes;
-}
-
-
-
-template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::nameCStrings() noexcept {
-    return g_ForceNames;
+nonstd::span<std::shared_ptr<OpenSim::Force const> const> osc::TypeRegistry<OpenSim::Force>::prototypes() noexcept
+{
+    static std::vector<std::shared_ptr<OpenSim::Force const>> g_Protos = CreatePrototypeLutT<OpenSim::Force>();
+    return g_Protos;
 }
 
 template<>
-nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptionCStrings() noexcept {
-    return g_ForceDescriptions;
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Force>::nameStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Names = CreateNameViews(prototypes());
+    return g_Names;
 }
 
 template<>
-std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& force) noexcept {
-    return ::IndexOf(g_ForceHashes, typeid(force).hash_code());
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::nameCStrings() noexcept
+{
+    static std::vector<char const*> const g_CStrs = CreateCStrings(nameStrings());
+    return g_CStrs;
+}
+
+template<>
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Force>::descriptionStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Descriptions = CreateDescriptionViews(prototypes());
+    return g_Descriptions;
+}
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptionCStrings() noexcept
+{
+    static std::vector<char const*> const g_DescriptionCStrs = CreateCStrings(descriptionStrings());
+    return g_DescriptionCStrs;
+}
+
+template<>
+std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& cg) noexcept
+{
+    return ::IndexOf(prototypes(), typeid(cg));
 }

@@ -327,6 +327,7 @@ add_executable(osc
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
+    src/Utils/CStringView.hpp
     src/Utils/DefaultConstructOnCopy.hpp
     src/Utils/FileChangePoller.cpp
     src/Utils/FileChangePoller.hpp
