@@ -48,6 +48,8 @@ All notable changes to this project will be documented here. The format is based
 - The mesh importer screen now prompts to save changes when the user tries to quit by any means (part of #72)
 - Fixed edge-case thread race crash on simulation screen
 - Added "Save changes" dialog to editor screen (#72)
+- Added listing all forces (components) that OpenSim supports via Object:: registered types (#154)
+- Added button for adding controllers to the model (#171)
 
 
 ## [0.1.2] - 2022/02/16
