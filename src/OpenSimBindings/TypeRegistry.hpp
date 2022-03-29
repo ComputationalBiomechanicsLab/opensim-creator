@@ -15,6 +15,7 @@ namespace OpenSim
     class Constraint;
     class ContactGeometry;
     class Force;
+    class Controller;
 }
 
 namespace osc
@@ -52,6 +53,5 @@ namespace osc
     struct ContactGeometryRegistry : TypeRegistry<OpenSim::ContactGeometry> {};
     struct ConstraintRegistry : TypeRegistry<OpenSim::Constraint> {};
     struct ForceRegistry : TypeRegistry<OpenSim::Force> {};
-    // TODO: controllers
-    // TODO: probes
+    struct ControllerRegistry : TypeRegistry<OpenSim::Controller> {};
 }

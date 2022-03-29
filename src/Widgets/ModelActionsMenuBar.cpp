@@ -180,6 +180,33 @@ private:
                 "Add a force into the model. During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features.");
         }
 
+        // draw dropdown menu (containing concrete `OpenSim::Force`s)
+        if (ImGui::BeginMenu(ICON_FA_PLUS " add controller"))
+        {
+            auto forceRegistryNames = osc::ControllerRegistry::nameCStrings();
+            for (size_t i = 0; i < forceRegistryNames.size(); ++i)
+            {
+                if (ImGui::MenuItem(forceRegistryNames[i]))
+                {
+                    std::unique_ptr<OpenSim::Controller> copy{osc::ControllerRegistry::prototypes()[i]->clone()};
+                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Controller"};
+                    m_MaybeAddComponentPopup->open();
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    DrawTooltip(forceRegistryNames[i], osc::ControllerRegistry::descriptionCStrings()[i]);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+        if (ImGui::IsItemHovered())
+        {
+            DrawTooltip(
+                "Add an OpenSim::Controller into the model",
+                "Add a controller into the model.");
+        }
+
         if (m_MaybeAddComponentPopup)
         {
             editMade = m_MaybeAddComponentPopup->draw();

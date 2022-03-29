@@ -507,7 +507,6 @@ std::optional<size_t> osc::TypeRegistry<OpenSim::Constraint>::indexOf(OpenSim::C
 }
 
 
-
 // Type_registry<OpenSim::Force>
 
 template<>
@@ -547,6 +546,50 @@ nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Force>::descriptionCS
 
 template<>
 std::optional<size_t> osc::TypeRegistry<OpenSim::Force>::indexOf(OpenSim::Force const& cg) noexcept
+{
+    return ::IndexOf(prototypes(), typeid(cg));
+}
+
+
+// Type_registry<OpenSim::Controller>
+
+template<>
+nonstd::span<std::shared_ptr<OpenSim::Controller const> const> osc::TypeRegistry<OpenSim::Controller>::prototypes() noexcept
+{
+    static std::vector<std::shared_ptr<OpenSim::Controller const>> g_Protos = CreatePrototypeLutT<OpenSim::Controller>();
+    return g_Protos;
+}
+
+template<>
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Controller>::nameStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Names = CreateNameViews(prototypes());
+    return g_Names;
+}
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Controller>::nameCStrings() noexcept
+{
+    static std::vector<char const*> const g_CStrs = CreateCStrings(nameStrings());
+    return g_CStrs;
+}
+
+template<>
+nonstd::span<osc::CStringView const> osc::TypeRegistry<OpenSim::Controller>::descriptionStrings() noexcept
+{
+    static std::vector<osc::CStringView> const g_Descriptions = CreateDescriptionViews(prototypes());
+    return g_Descriptions;
+}
+
+template<>
+nonstd::span<char const* const> osc::TypeRegistry<OpenSim::Controller>::descriptionCStrings() noexcept
+{
+    static std::vector<char const*> const g_DescriptionCStrs = CreateCStrings(descriptionStrings());
+    return g_DescriptionCStrs;
+}
+
+template<>
+std::optional<size_t> osc::TypeRegistry<OpenSim::Controller>::indexOf(OpenSim::Controller const& cg) noexcept
 {
     return ::IndexOf(prototypes(), typeid(cg));
 }
