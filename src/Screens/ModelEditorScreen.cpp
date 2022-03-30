@@ -1052,7 +1052,8 @@ private:
 
     bool onKeydown(SDL_KeyboardEvent const& e)
     {
-        if (e.keysym.mod & KMOD_CTRL)
+        bool superDown = e.keysym.mod & (KMOD_CTRL | KMOD_GUI);
+        if (superDown)
         {
             if (e.keysym.mod & KMOD_SHIFT)
             {
