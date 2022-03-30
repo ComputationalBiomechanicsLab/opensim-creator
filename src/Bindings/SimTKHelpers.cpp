@@ -278,8 +278,7 @@ private:
         float height = static_cast<float>(d.getHeight());
 
         Transform coneXform = SimbodyCylinderToSegmentTransform({pos, pos + height*dir}, radius);
-        coneXform.scale.x *= t.scale.x;
-        coneXform.scale.z *= t.scale.z;
+        coneXform.scale *= t.scale;
 
         m_Consumer(m_MeshCache.getConeMesh(), coneXform, GetColor(d));
     }
