@@ -2,6 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
+#include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/UndoableUiModel.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
@@ -12,6 +13,7 @@
 #include "src/Screens/MeshImporterScreen.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
+#include "src/Screens/SimulatorScreen.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FilesystemHelpers.hpp"
 #include "osc_config.hpp"
@@ -321,6 +323,27 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
         }
 
         ImGui::EndMenu();
+    }
+
+    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, mes != nullptr))
+    {
+        std::filesystem::path p = osc::PromptUserForFile("sto,mot");
+        if (!p.empty())
+        {
+            try
+            {
+                std::unique_ptr<OpenSim::Model> cpy =
+                    std::make_unique<OpenSim::Model>(mes->getEditedModel().getModel());
+                cpy->buildSystem();
+                cpy->initializeState();
+                mes->addSimulation(Simulation{osc::StoFileSimulation{std::move(cpy), p}});
+                osc::App::cur().requestTransition<osc::SimulatorScreen>(mes);
+            }
+            catch (std::exception const& ex)
+            {
+                log::error("encountered error while trying to load an STO file against the model: %s", ex.what());
+            }
+        }
     }
 
     if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, mes != nullptr))

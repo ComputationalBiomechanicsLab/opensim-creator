@@ -52,6 +52,7 @@ All notable changes to this project will be documented here. The format is based
 - Added button for adding controllers to the model (#171)
 - You can now add a much wider range of components in-UI (#154)
 - Fixed Y component of SimTK::DecorativeCone ignoring scale factors (internal)
+- Added "Load Motion" (sto/mot) button to the main menu (#179)
 
 
 

@@ -990,7 +990,7 @@ public:
         {
             onKeydown(e.key);
         }
-        else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".sto"))
+        else if (e.type == SDL_DROPFILE)
         {
             onDropEvent(e.drop);
         }
