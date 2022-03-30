@@ -17,9 +17,6 @@ public:
         m_State{std::move(st)}
     {
         model.realizeReport(m_State);
-
-        // care: state needs to be realized on the simulator thread
-        m_State.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
     }
 
     Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
