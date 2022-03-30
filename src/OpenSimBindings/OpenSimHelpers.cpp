@@ -775,21 +775,37 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
     {
         return;  // paranoia
     }
+    else if (dynamic_cast<OpenSim::Body*>(c.get()))
+    {
+        m.addBody(static_cast<OpenSim::Body*>(c.release()));
+    }
     else if (dynamic_cast<OpenSim::Joint*>(c.get()))
     {
         m.addJoint(static_cast<OpenSim::Joint*>(c.release()));
-    }
-    else if (dynamic_cast<OpenSim::Force*>(c.get()))
-    {
-        m.addForce(static_cast<OpenSim::Force*>(c.release()));
     }
     else if (dynamic_cast<OpenSim::Constraint*>(c.get()))
     {
         m.addConstraint(static_cast<OpenSim::Constraint*>(c.release()));
     }
+    else if (dynamic_cast<OpenSim::Force*>(c.get()))
+    {
+        m.addForce(static_cast<OpenSim::Force*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Probe*>(c.get()))
+    {
+        m.addProbe(static_cast<OpenSim::Probe*>(c.release()));
+    }
     else if (dynamic_cast<OpenSim::ContactGeometry*>(c.get()))
     {
         m.addContactGeometry(static_cast<OpenSim::ContactGeometry*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Marker*>(c.get()))
+    {
+        m.addMarker(static_cast<OpenSim::Marker*>(c.release()));
+    }
+    else if (dynamic_cast<OpenSim::Controller*>(c.get()))
+    {
+        m.addController(static_cast<OpenSim::Controller*>(c.release()));
     }
     else
     {

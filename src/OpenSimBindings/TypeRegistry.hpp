@@ -13,9 +13,11 @@ namespace OpenSim
 {
     class Joint;
     class Constraint;
+    class Component;
     class ContactGeometry;
     class Force;
     class Controller;
+    class Probe;
 }
 
 namespace osc
@@ -27,6 +29,8 @@ namespace osc
     // - return entires in a format that's useful for downstream (e.g. contiguous strings for ImGui)
     template<typename T>
     struct TypeRegistry {
+        static CStringView name() noexcept;
+        static CStringView description() noexcept;
         static nonstd::span<std::shared_ptr<T const> const> prototypes() noexcept;
         static nonstd::span<CStringView const> nameStrings() noexcept;
         static nonstd::span<char const* const> nameCStrings() noexcept;
@@ -54,4 +58,6 @@ namespace osc
     struct ConstraintRegistry : TypeRegistry<OpenSim::Constraint> {};
     struct ForceRegistry : TypeRegistry<OpenSim::Force> {};
     struct ControllerRegistry : TypeRegistry<OpenSim::Controller> {};
+    struct ProbeRegistry : TypeRegistry<OpenSim::Probe> {};
+    struct UngroupedRegistry : TypeRegistry<OpenSim::Component> {};
 }

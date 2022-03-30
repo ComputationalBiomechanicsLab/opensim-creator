@@ -17,6 +17,7 @@
 #include <IconsFontAwesome5.h>
 
 #include <optional>
+#include <sstream>
 #include <utility>
 
 class osc::ModelActionsMenuBar::Impl final {
@@ -43,6 +44,45 @@ public:
     }
 
 private:
+
+    template<typename T>
+    void renderButton()
+    {
+        std::stringstream label;
+        label << ICON_FA_PLUS << " Add " << osc::TypeRegistry<T>::name();
+
+        // action: add joint
+        if (ImGui::BeginMenu(label.str().c_str()))
+        {
+            auto names = osc::TypeRegistry<T>::nameCStrings();
+
+            for (size_t i = 0; i < names.size(); ++i)
+            {
+                if (ImGui::MenuItem(names[i]))
+                {
+                    std::unique_ptr<T> copy{osc::TypeRegistry<T>::prototypes()[i]->clone()};
+                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add " + osc::TypeRegistry<T>::name()};
+                    m_MaybeAddComponentPopup->open();
+                }
+
+                if (ImGui::IsItemHovered())
+                {
+                    DrawTooltip(names[i], osc::TypeRegistry<T>::descriptionCStrings()[i]);
+                }
+            }
+
+            ImGui::EndMenu();
+        }
+        if (ImGui::IsItemHovered())
+        {
+            std::stringstream ttTitle;
+            ttTitle << "Add a " << osc::TypeRegistry<T>::name() << " into the model";
+            DrawTooltip(
+                ttTitle.str().c_str(),
+                osc::TypeRegistry<T>::description().c_str());
+        }
+    }
+
     bool renderMenuBarContent()
     {
         bool editMade = false;
@@ -50,7 +90,7 @@ private:
         // action: add body
         {
             // draw button
-            if (ImGui::MenuItem(ICON_FA_PLUS " add body"))
+            if (ImGui::MenuItem(ICON_FA_PLUS " Add Body"))
             {
                 m_AddBodyPopup.open();
             }
@@ -69,143 +109,13 @@ private:
             }
         }
 
-        // action: add joint
-        if (ImGui::BeginMenu(ICON_FA_PLUS " add joint"))
-        {
-            auto jointNames = osc::JointRegistry::nameCStrings();
-
-            for (size_t i = 0; i < jointNames.size(); ++i)
-            {
-                if (ImGui::MenuItem(jointNames[i]))
-                {
-                    std::unique_ptr<OpenSim::Joint> copy{osc::JointRegistry::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Joint"};
-                    m_MaybeAddComponentPopup->open();
-                }
-
-                if (ImGui::IsItemHovered())
-                {
-                    DrawTooltip(jointNames[i], osc::JointRegistry::descriptionCStrings()[i]);
-                }
-            }
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            DrawTooltip(
-                "Add an OpenSim::Joint into the model",
-                "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates.");
-        }
-
-        // action: add contact geometry
-        if (ImGui::BeginMenu(ICON_FA_PLUS " add contact geometry"))
-        {
-            auto contactGeomNames = osc::ContactGeometryRegistry::nameCStrings();
-
-            for (size_t i = 0; i < contactGeomNames.size(); ++i)
-            {
-                if (ImGui::MenuItem(contactGeomNames[i]))
-                {
-                    std::unique_ptr<OpenSim::ContactGeometry> copy{osc::ContactGeometryRegistry::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Contact Geometry"};
-                    m_MaybeAddComponentPopup->open();
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    DrawTooltip(contactGeomNames[i], osc::ContactGeometryRegistry::descriptionCStrings()[i]);
-                }
-            }
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            DrawTooltip(
-                "Add an OpenSim::ContactGeometry into the model",
-                "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame.");
-        }
-
-        // action: add constraint
-        if (ImGui::BeginMenu(ICON_FA_PLUS " add constraint"))
-        {
-            auto constraintRegistryNames = osc::ConstraintRegistry::nameCStrings();
-            for (size_t i = 0; i < constraintRegistryNames.size(); ++i)
-            {
-                if (ImGui::MenuItem(constraintRegistryNames[i]))
-                {
-                    std::unique_ptr<OpenSim::Constraint> copy{osc::ConstraintRegistry::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Constraint"};
-                    m_MaybeAddComponentPopup->open();
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    DrawTooltip(constraintRegistryNames[i], osc::ConstraintRegistry::descriptionCStrings()[i]);
-                }
-            }
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            DrawTooltip(
-                "Add an OpenSim::Constraint into the model",
-                "Add a constraint into the model. A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover.");
-        }
-
-        // draw dropdown menu (containing concrete `OpenSim::Force`s)
-        if (ImGui::BeginMenu(ICON_FA_PLUS " add force/muscle"))
-        {
-            auto forceRegistryNames = osc::ForceRegistry::nameCStrings();
-            for (size_t i = 0; i < forceRegistryNames.size(); ++i)
-            {
-                if (ImGui::MenuItem(forceRegistryNames[i]))
-                {
-                    std::unique_ptr<OpenSim::Force> copy{osc::ForceRegistry::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Force"};
-                    m_MaybeAddComponentPopup->open();
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    DrawTooltip(forceRegistryNames[i], osc::ForceRegistry::descriptionCStrings()[i]);
-                }
-            }
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            DrawTooltip(
-                "Add an OpenSim::Force into the model",
-                "Add a force into the model. During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features.");
-        }
-
-        // draw dropdown menu (containing concrete `OpenSim::Force`s)
-        if (ImGui::BeginMenu(ICON_FA_PLUS " add controller"))
-        {
-            auto forceRegistryNames = osc::ControllerRegistry::nameCStrings();
-            for (size_t i = 0; i < forceRegistryNames.size(); ++i)
-            {
-                if (ImGui::MenuItem(forceRegistryNames[i]))
-                {
-                    std::unique_ptr<OpenSim::Controller> copy{osc::ControllerRegistry::prototypes()[i]->clone()};
-                    m_MaybeAddComponentPopup = osc::AddComponentPopup{m_Uum, std::move(copy), "Add Controller"};
-                    m_MaybeAddComponentPopup->open();
-                }
-                if (ImGui::IsItemHovered())
-                {
-                    DrawTooltip(forceRegistryNames[i], osc::ControllerRegistry::descriptionCStrings()[i]);
-                }
-            }
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::IsItemHovered())
-        {
-            DrawTooltip(
-                "Add an OpenSim::Controller into the model",
-                "Add a controller into the model.");
-        }
+        renderButton<OpenSim::Joint>();
+        renderButton<OpenSim::ContactGeometry>();
+        renderButton<OpenSim::Constraint>();
+        renderButton<OpenSim::Force>();
+        renderButton<OpenSim::Controller>();
+        renderButton<OpenSim::Probe>();
+        renderButton<OpenSim::Component>();
 
         if (m_MaybeAddComponentPopup)
         {
