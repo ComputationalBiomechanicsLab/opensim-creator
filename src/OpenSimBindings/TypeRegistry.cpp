@@ -47,6 +47,11 @@
 #include <unordered_set>
 #include <vector>
 
+static bool SortedByClassName(std::shared_ptr<OpenSim::Component const> a, std::shared_ptr<OpenSim::Component const> b)
+{
+    return a->getConcreteClassName() < b->getConcreteClassName();
+};
+
 // create a lookup for user-facing description strings
 //
 // these are used for in-UI documentation. If a component doesn't have one of these
@@ -311,12 +316,7 @@ static std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
         }
     }
 
-    auto sortByName = [](std::shared_ptr<T const> a, std::shared_ptr<T const> b)
-    {
-        return a->getConcreteClassName() < b->getConcreteClassName();
-    };
-
-    std::sort(rv.begin(), rv.end(), sortByName);
+    osc::Sort(rv, SortedByClassName);
 
     return rv;
 }
@@ -751,6 +751,9 @@ static std::vector<std::shared_ptr<OpenSim::Component const>> CreateOtherCompone
             rv.emplace_back(c.clone());
         }
     }
+
+    osc::Sort(rv, SortedByClassName);
+
     return rv;
 }
 
