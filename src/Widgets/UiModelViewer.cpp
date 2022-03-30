@@ -1250,7 +1250,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs)
     // update camera if necessary
     if (impl.renderHovered)
     {
-        bool ctrlDown = ImGui::IsKeyDown(SDL_SCANCODE_LCTRL) || ImGui::IsKeyDown(SDL_SCANCODE_RCTRL);
+        bool ctrlDown = osc::IsCtrlOrSuperDown();
 
         if (ImGui::IsKeyReleased(SDL_SCANCODE_X))
         {
