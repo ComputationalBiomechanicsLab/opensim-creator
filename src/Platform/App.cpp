@@ -468,7 +468,7 @@ static void ImGuiApplyDarkTheme()
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
-    ImGui::GetStyle().FrameRounding = 4.0f;
+    ImGui::GetStyle().FrameRounding = 2.0f;
     ImGui::GetStyle().GrabRounding = 20.0f;
     ImGui::GetStyle().GrabMinSize = 10.0f;
 
@@ -1536,7 +1536,7 @@ void osc::ImGuiInit()
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 3;
     baseConfig.OversampleV = 2;
-    std::string baseFontFile = App::resource("DroidSans.ttf").string();
+    std::string baseFontFile = App::resource("Ruda-Bold.ttf").string();
     io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
 
     // add FontAwesome icon support
