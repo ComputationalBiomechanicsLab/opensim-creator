@@ -1085,7 +1085,8 @@ private:
         }
 
         switch (e.keysym.sym) {
-        case SDLK_DELETE:  // DELETE: delete selection
+        case SDLK_BACKSPACE:
+        case SDLK_DELETE:  // BACKSPACE/DELETE: delete selection
             ActionTryDeleteSelectionFromEditedModel(m_Mes->updEditedModel());
             return true;
         }
