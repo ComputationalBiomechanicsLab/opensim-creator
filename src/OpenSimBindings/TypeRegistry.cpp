@@ -50,7 +50,7 @@
 static bool SortedByClassName(std::shared_ptr<OpenSim::Component const> a, std::shared_ptr<OpenSim::Component const> b)
 {
     return a->getConcreteClassName() < b->getConcreteClassName();
-};
+}
 
 // create a lookup for user-facing description strings
 //
