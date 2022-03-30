@@ -1534,8 +1534,8 @@ void osc::ImGuiInit()
     ImFontConfig baseConfig;
     baseConfig.SizePixels = 16.0f;
     baseConfig.PixelSnapH = true;
-    baseConfig.OversampleH = 2;
-    baseConfig.OversampleV = 1;
+    baseConfig.OversampleH = 3;
+    baseConfig.OversampleV = 2;
     std::string baseFontFile = App::resource("DroidSans.ttf").string();
     io.Fonts->AddFontFromFileTTF(baseFontFile.c_str(), baseConfig.SizePixels, &baseConfig);
 
