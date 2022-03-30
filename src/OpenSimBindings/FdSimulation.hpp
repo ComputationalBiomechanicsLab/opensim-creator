@@ -37,7 +37,7 @@ namespace osc
         IntegratorMethod IntegratorMethodUsed = IntegratorMethod::OpenSimManagerDefault;
 
         // the time interval, in simulation time, between report updates
-        SimulationClock::duration ReportingInterval{1.0/50.0};  // 50 Hz
+        SimulationClock::duration ReportingInterval{1.0/100.0};  // 100 Hz
 
         // max number of *internal* steps that may be taken within a single call
         // to the integrator's stepTo or stepBy function
