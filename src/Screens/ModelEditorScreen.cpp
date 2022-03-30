@@ -1467,7 +1467,7 @@ private:
         // contains top-level actions (e.g. "add body")
         if (m_Mes->getUserPanelPrefs().actions)
         {
-            if (ImGui::Begin("Actions", nullptr, ImGuiWindowFlags_MenuBar))
+            if (ImGui::Begin("Actions", &m_Mes->updUserPanelPrefs().actions, ImGuiWindowFlags_MenuBar))
             {
                 m_ModelActionsMenuBar.draw();
             }
@@ -1499,7 +1499,7 @@ private:
         // draw property editor
         if (m_Mes->getUserPanelPrefs().propertyEditor)
         {
-            if (ImGui::Begin("Edit Props", &m_Mes->updUserPanelPrefs().hierarchy))
+            if (ImGui::Begin("Edit Props", &m_Mes->updUserPanelPrefs().propertyEditor))
             {
                 drawSelectionEditor();
             }
@@ -1509,7 +1509,7 @@ private:
         // draw application log
         if (m_Mes->getUserPanelPrefs().log)
         {
-            if (ImGui::Begin("Log", &m_Mes->updUserPanelPrefs().propertyEditor, ImGuiWindowFlags_MenuBar))
+            if (ImGui::Begin("Log", &m_Mes->updUserPanelPrefs().log, ImGuiWindowFlags_MenuBar))
             {
                 m_LogViewer.draw();
             }
@@ -1519,7 +1519,7 @@ private:
         // draw coordinate editor
         if (m_Mes->getUserPanelPrefs().coordinateEditor)
         {
-            if (ImGui::Begin("Coordinate Editor"))
+            if (ImGui::Begin("Coordinate Editor", &m_Mes->updUserPanelPrefs().coordinateEditor))
             {
                 m_CoordEditor.draw();
             }
