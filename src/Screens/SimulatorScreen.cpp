@@ -655,9 +655,6 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
 {
     OSC_ASSERT(output.getOutputType() == osc::OutputType::Float);
 
-    auto guard = sim.getModel();
-    OpenSim::Model const& model = *guard;
-
     ImU32 const currentTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.6f});
     ImU32 const hoverTimeLineColor = ImGui::ColorConvertFloat4ToU32({1.0f, 1.0f, 0.0f, 0.3f});
 
@@ -671,6 +668,8 @@ static void DrawNumericOutputPlot(osc::SimulatorScreen::Impl& impl,
 
     std::vector<float> buf;
     {
+        auto guard = sim.getModel();
+        OpenSim::Model const& model = *guard;
         OSC_PERF("collect output data");
         std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
         buf.resize(reports.size());
