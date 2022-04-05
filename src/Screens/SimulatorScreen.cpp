@@ -820,10 +820,9 @@ static void DrawOutputDataColumn(osc::SimulatorScreen::Impl& impl,
     }
     else if (outputType == osc::OutputType::String)
     {
-        auto guard = sim.getModel();
-        OpenSim::Model const& model = *guard;
         osc::SimulationReport r = TrySelectReportBasedOnScrubbing(impl, sim).value_or(sim.getSimulationReport(nReports-1));
-        ImGui::TextUnformatted(output.getValueString(model, r).c_str());
+        auto guard = sim.getModel();
+        ImGui::TextUnformatted(output.getValueString(*guard, r).c_str());
     }
 }
 
