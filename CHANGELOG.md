@@ -5,55 +5,59 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Fixed out-of-bounds data access in application initialization that was detected by libASAN (be5d15)
+- (entries will be populated here)
+
+## [0.1.3] - 2022/04/05
+
+- A simulation can now be loaded from an STO file:
+
+  - E.g. save a simulation/motion in the official OpenSim GUI as an STO file
+  - Open the model in OpenSim Creator
+  - Drag the STO file into the OpenSim Creator model editor UI
+  - OR use the "load motion" option in the main menu (#179)
+  - Your STO motions should shown in the UI "as if" it were a "real" simulation
+  - **Limitation**: STO files are always resampled to 100 Hz. This is because the official OpenSim
+    GUI can export STO files containing extremely high-frequency samples, which `osc` can't yet
+    handle
+
+- You can now add a much wider range of components in the editor UI (#154):
+
+  - This includes the ability to add controllers (#171)
+  - And lists all force components (#154)
+
+- Added a "Want to save changes?" prompt when closing the editor (#72)
+- Simulation playback can now be paused/resumed (#16)
+- All output plots, including meta plots (e.g. number of integration steps), are now
+  scrubbable and can be saved as a CSV
+- Switching between grab(G)/rotate(R)/scale(S) is now displayed as icons in the mesh
+  importer (#65)
+- Added `reorient 90 degrees` option in the mesh importer context menu (#160)
+- Output plots are now rendered with `ImPlot`, which should make them easier to view
+  and make them pop less while a simulation is running
+- Hovering over a body in the UI now shows where the center of mass is as a black sphere (#60)
+- Added option for switching between degrees/radians input when editing 'orientation' properties (#55)
+- Renamed "Open" and "Save" in the mesh importer to "Import" and "Export" (#143)
 - Fixed scale factors property being ignored for some types of OpenSim geometry in the osim editor (#141)
 - Fixed an edge-case segfault that happened when editing the properties of a body that was synthesized
   by OpenSim to break a graph cycle (#156)
+- The "Save All" button does not show if there are no simulation plots (partially fixes #125)
+- Removed ability to uninstall OpenSim Creator from the installer (#131)
+- Fixed out-of-bounds data access in application initialization that was detected by libASAN (be5d15)
 - Refactored decoration generation backend to use osc::Transform instead of raw matrices (internal)
-- Refactored Perf to record measurements to a global storage space that prints to the log when the user
-  presses F8 (internal)
 - Improved performance where the model decorations were being generated twice during undo/redo storage (internal)
 - Improved general state/model editing performance (internal)
-- Hovering over a body in the UI now shows where the center of mass is as a black sphere (#60)
 - Coordinates in the coordinate editor panel now show in OpenSim storage, rather than alphabetical, order (#155)
-- Renamed "Open" and "Save" in the mesh importer to "Import" and "Export" (#143)
 - Refactored a variety of internal APIs (internal)
 - Partially integrated experimental DAG implementation (internal)
 - Refactored undo, redo, and deletion logic to be more reliable (internal)
 - Removed 'declareDeathOf' API: underlying implementation is hardened against this (internal)
 - Moved FileChangePoller from OpenSimBindings/ to Utils/ (internal)
 - Added a 'perf' panel to the simulator screen for in-prod perf measurements (internal)
-- Added ability to pause/resume simulation playback (#16)
-- The "Save All" button does not show if there are no simulation plots (partially fixes #125)
-- All output plots in the simulation screen are now scrubbable
-- All output plots in the simulation screen can now be exported as CSVs
-- Output plots should no longer glitch (pop) while running a simulation
-- Output plots now look different (internally, they are now drawn with the ImPlot library)
-- A simulation can now be loaded from an STO file:
-  - E.g. save a simulation/motion in the official OpenSim GUI as an STO file
-  - Open the model in OpenSim Creator
-  - Drag the STO file into the OpenSim Creator model editor UI
-  - Your STO motions should shown in the UI "as if" it were a "real" simulation
-  - (limitation): motions are re-sampled to 50 hz, for perf reasons
-- Added `TorqueActuator` as an available component that can be added in-UI
-- Added `BodyActuator` as an available component that can be added in-UI
-- Added `reorient 90 degrees` option in mesh importer context menu (#160)
-- Removed ability to boot OpenSim Creator from the installer (#95)
-- Removed ability to uninstall OpenSim Creator from the installer (#131)
 - Upgraded Windows build to Visual Studio 2022 (internal)
-- Added icons for switching between grab/rotate/scale in mesh importer (#65)
-- Added option for degrees/radians input for 'orientation' properties (#55)
 - `osc::Screen` implementations must now handle the QUIT event themselves (internal)
   - This is to support behaviors like "you have unsaved changes, want to save them?"
-- The mesh importer screen now prompts to save changes when the user tries to quit by any means (part of #72)
-- Fixed edge-case thread race crash on simulation screen
-- Added "Save changes" dialog to editor screen (#72)
-- Added listing all forces (components) that OpenSim supports via Object:: registered types (#154)
-- Added button for adding controllers to the model (#171)
-- You can now add a much wider range of components in-UI (#154)
+- Fixed edge-case thread race crash on simulation screen (internal)
 - Fixed Y component of SimTK::DecorativeCone ignoring scale factors (internal)
-- Added "Load Motion" (sto/mot) button to the main menu (#179)
-
 
 
 ## [0.1.2] - 2022/02/16

@@ -56,15 +56,6 @@ struct osc::SimulatorScreen::Impl final {
     OpenSim::ComponentPath hovered;
     OpenSim::ComponentPath isolated;
 
-    // HACK: keep track of which report the model was last realized against
-    //
-    //
-    // this exists because of a bug in OpenSim, where muscle wraps store
-    // pointers into the model inside a SimTK:: cache variable
-    //
-    // see: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
-    std::optional<SimulationReport> HACK_lastReportModelWasRealizedAgainst;
-
     // UI widgets
     LogViewer logViewerWidget;
     MainMenuFileTab mainMenuFileTab;
@@ -157,17 +148,12 @@ static std::optional<osc::SimulationReport> TrySelectReportBasedOnScrubbing(
     }
 
     osc::SimulationReport& report = *maybeReport;
-    std::optional<osc::SimulationReport>& hackedReport = impl.HACK_lastReportModelWasRealizedAgainst;
 
-    if (!hackedReport || (*hackedReport != report))
-    {
-        // re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
-        SimTK::State& st = report.updStateHACK();
-        st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-        auto guard = sim.getModel();
-        guard->realizeReport(st);
-        hackedReport = report;
-    }
+    // re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
+    SimTK::State& st = report.updStateHACK();
+    st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+    auto guard = sim.getModel();
+    guard->realizeReport(st);
 
     return maybeReport;
 }
