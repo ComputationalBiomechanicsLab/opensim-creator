@@ -142,7 +142,9 @@ static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
     {
         if (std::strlen(nambuf) > 0)
         {
-            st.updSelected()->setName(nambuf);
+            OpenSim::Component* selectedComponent = st.updSelected();
+            selectedComponent->setName(nambuf);
+            st.setSelected(selectedComponent);  // CARE: the selection depends on the name of the component
             st.commit("changed component name");
         }
     }
@@ -1240,6 +1242,12 @@ private:
         // top-level property editors
         {
             DrawTopLevelMembersEditor(uim);
+        }
+
+        // top-level member edits may have changed this
+        if (!uim.getSelected())
+        {
+            return;
         }
 
         // property editors
