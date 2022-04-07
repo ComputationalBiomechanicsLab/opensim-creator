@@ -7,6 +7,10 @@ All notable changes to this project will be documented here. The format is based
 
 - (entries will be populated here)
 
+## [0.1.4] - 2022/04/07
+
+- Fixed crash when renaming components
+
 ## [0.1.3] - 2022/04/05
 
 - A simulation can now be loaded from an STO file:
