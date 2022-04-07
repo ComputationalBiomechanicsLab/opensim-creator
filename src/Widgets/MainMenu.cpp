@@ -685,6 +685,9 @@ void osc::MainMenuWindowTab::draw(MainEditorState& st)
             ImGui::EndTooltip();
         }
         ImGui::MenuItem("Perf (development)", nullptr, &panels.perfPanel);
+        ImGui::MenuItem("Moment Arm Plotter", nullptr, &panels.momentArmPanel);
+
+        ImGui::Separator();
 
         // active viewers (can be disabled)
         for (int i = 0; i < st.getNumViewers(); ++i)

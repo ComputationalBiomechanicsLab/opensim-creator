@@ -22,6 +22,7 @@
 #include "src/Widgets/ComponentHierarchy.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
@@ -1545,6 +1546,16 @@ private:
             osc::ParamBlockEditorPopup{}.draw("simulation parameters", m_Mes->updSimulationParams());
         }
 
+        // draw model muscle plot panel (if applicable)
+        if (m_Mes->getUserPanelPrefs().momentArmPanel)
+        {
+            if (!m_MaybeModelMusclePlot)
+            {
+                m_MaybeModelMusclePlot.emplace(m_Mes->updEditedModelPtr(), "plot");
+            }
+            m_MaybeModelMusclePlot->draw();
+        }
+
         if (m_MaybeSaveChangesPopup)
         {
             m_MaybeSaveChangesPopup->draw();
@@ -1608,6 +1619,7 @@ private:
     CoordinateEditor m_CoordEditor{m_Mes->updEditedModelPtr()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
     std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+    std::optional<ModelMusclePlotPanel> m_MaybeModelMusclePlot;
 
     // state that is reset at the start of each frame
     struct {

@@ -359,6 +359,8 @@ add_executable(osc
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuBar.cpp
     src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelMusclePlotPanel.cpp
+    src/Widgets/ModelMusclePlotPanel.hpp
     src/Widgets/ObjectPropertiesEditor.cpp
     src/Widgets/ObjectPropertiesEditor.hpp
     src/Widgets/ParamBlockEditorPopup.cpp
