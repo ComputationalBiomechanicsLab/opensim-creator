@@ -581,7 +581,17 @@ set_target_properties(osctests PROPERTIES
 )
 
 # osctests: link to `osccore` to exercise it
-target_link_libraries(osctests osc_configuration osccore)
+target_link_libraries(osctests PRIVATE
+
+    # set compile options
+    osc_configuration
+
+    # link to the to-be-tested library
+    osccore
+
+    # link to testing library
+    Catch2::Catch2WithMain
+)
 
 
 # ------------ configure top-level executable target ------------ #

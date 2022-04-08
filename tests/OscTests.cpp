@@ -1,6 +1,6 @@
-#include <cstdlib>
+#include <catch2/catch_test_macros.hpp>
 
-int main(int argc, char** argv)
+TEST_CASE("should pass", "[lol]")
 {
-    return EXIT_SUCCESS;
+    REQUIRE(1 == 1);
 }

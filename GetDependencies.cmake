@@ -424,6 +424,11 @@ if(TRUE)
     )
 endif()
 
+# DEPENDENCY: Catch2
+if(TRUE)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/Catch2")
+endif()
+
 # `osc::all-deps`: all libraries osc should link to
 add_library(osc-all-deps INTERFACE)
 target_link_libraries(osc-all-deps INTERFACE
