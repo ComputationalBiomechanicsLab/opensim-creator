@@ -562,6 +562,28 @@ target_link_options(osccore PUBLIC
 )
 
 
+# ------------ configure test suite target ------------------ #
+
+# osctests: main exe that links to `osccore` and exercises APIs etc.
+add_executable(osctests tests/OscTests.cpp)
+
+# osctests: target properties
+set_target_properties(osctests PROPERTIES
+
+    # disable compiler-specific language extensions
+    CXX_EXTENSIONS OFF
+
+    # strictly require the requested C++ standard (e.g. C++17)
+    CXX_STANDARD_REQUIRED YES
+
+    # export compile commands, so clang-tidy works correctly
+    EXPORT_COMPILE_COMMANDS ON
+)
+
+# osctests: link to `osccore` to exercise it
+target_link_libraries(osctests osc_configuration osccore)
+
+
 # ------------ configure top-level executable target ------------ #
 
 # osc:
