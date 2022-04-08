@@ -114,11 +114,17 @@ if(OSC_USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 endif()
 
-# use an older OpenGL linking strategy
+# handle OSC_FORCE_UNDEFINE_NDEBUG
 #
-# (this seems to be necessary on some systems: need to investigate why)
-cmake_policy(SET CMP0072 OLD)
-set(OpenGL_GL_PREFERENCE "LEGACY")
+# this unsets the relevant flags globally
+if(OSC_FORCE_UNDEFINE_NDEBUG)
+    # MSVC
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    # others
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
 
 
 # ------------------ configure dependencies -------------------- #
@@ -129,17 +135,128 @@ set(OpenGL_GL_PREFERENCE "LEGACY")
 include(GetDependencies.cmake)
 
 
-# --------------- configure `osc` build target ----------------- #
+# ------------- configure configuration header ----------------- #
 
 # osc_config.hpp:
 #
 #     configuration file that contains configuration-time vals (e.g. version, libs)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.hpp")
 
-# osc
+
+# --------------- configure configuration target --------------- #
+
+# osc_configuration:
 #
-# made from the usual ball of hpp and cpp files
-add_executable(osc
+#     an INTERFACE target that sets common options that are used by the real
+#     targets (e.g. use C++17, use these flags, etc.)
+add_library(osc_configuration INTERFACE)
+
+# osc: compile-time includes
+target_include_directories(osc_configuration INTERFACE
+
+    # so `#include "src/<path>.hpp"` works
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# osc_configuration: set general compiler options used by all targets
+target_compile_options(osc_configuration INTERFACE
+
+    # msvc (Windows) flags
+    $<$<CXX_COMPILER_ID:MSVC>:
+        # disable warning 4996: Simbody uses a deprecated iterator class
+        /wd4996
+
+        # disable warning 4455: incorrectly flags std::string::literals::"s"
+        /wd4455
+
+        # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
+        /W3
+
+        # treat all warnings as errors
+        /WX
+
+        # keep frame pointers around
+        /Oy-
+
+        # newer MSVCs may also come with LIBASAN (experimental)
+        $<$<BOOL:${OSC_USE_ASAN}>:/fsanitize=address>
+    >
+
+    # gcc AND clang flags
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        -Wall
+        -Wextra
+        -pedantic
+        -Werror
+        -Wuninitialized
+        -Winit-self
+        -Wshadow
+        -Wcast-align
+        -Wwrite-strings
+        -Wdangling-else
+        -Wdate-time
+        -Wno-multichar
+        -Wredundant-decls
+        -Wvla
+        -Wdisabled-optimization
+        -Wpacked
+        -Wno-sign-compare  # disable: broken by STB headers
+        -Wformat-security
+
+        # regardless of debug/release, pin the frame pointer register
+        # so that stack traces are sane when debugging (even in Release).
+        #
+        # This adds some overhead (pins one register and requires callers
+        # to setup their base pointers etc.) but makes debugging + profiling
+        # the application much easier, even in release mode
+        -fno-omit-frame-pointer
+
+        # if address sanitizer is specified, use it
+        $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
+    >
+
+    # clang flags
+    $<$<CXX_COMPILER_ID:Clang>:
+        -Wno-cast-align
+
+        # required in earlier clangs. Just setting
+        # -fno-omit-frame-pointer (above) is not enough
+        #
+        # see:
+        #   - https://stackoverflow.com/questions/43864881/fno-omit-frame-pointer-equivalent-compiler-option-for-clang
+        #   - fixed here: https://reviews.llvm.org/D64294
+        -mno-omit-leaf-frame-pointer
+    >
+
+    # gcc flags
+    $<$<CXX_COMPILER_ID:GNU>:
+        -Wno-unused  # disable: broken by STB headers
+    >
+)
+
+# osc_configuration: set general compiler features used by all targets
+target_compile_features(osc_configuration INTERFACE cxx_std_17)
+
+# osc_configuration: set libraries used by all targets
+target_link_libraries(osc_configuration INTERFACE
+
+    # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
+)
+
+# osc_configuration: handle OSC_FORCE_ASSERTS_ENABLED
+if(OSC_FORCE_ASSERTS_ENABLED)
+    target_compile_definitions(osc_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
+endif()
+
+
+#------------- configure core library target ------------- #
+
+# [lib]osccore:
+#
+#     shared library where all the runtime code is actually hiding. This is what
+#     the main executable, test code, etc. hooks into
+add_library(osccore STATIC
     ${CMAKE_BINARY_DIR}/osc_config.hpp
 
     src/Bindings/GlmHelpers.cpp
@@ -383,127 +500,44 @@ add_executable(osc
     src/Widgets/StandardPopup.hpp
     src/Widgets/UiModelViewer.cpp
     src/Widgets/UiModelViewer.hpp
-
-    src/osc.cpp
-
-    # Windows: also link a resources file (rc)
-    #
-    # the resources file tells MSVC compiler how to compile non-source resources
-    # into the output exe. Specifically, it's used to embed the application icon
-    # into the `osc` exe
-    $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
 )
 
-# osc: compile-time includes
-target_include_directories(osc PRIVATE
+# osccore: target properties
+set_target_properties(osccore PROPERTIES
+
+    # disable compiler-specific language extensions
+    CXX_EXTENSIONS OFF
+
+    # strictly require the requested C++ standard (e.g. C++17)
+    CXX_STANDARD_REQUIRED YES
+
+    # export compile commands, so clang-tidy works correctly
+    EXPORT_COMPILE_COMMANDS ON
+)
+
+
+# osccore: compile-time includes
+target_include_directories(osccore PUBLIC
 
     # so `#include "osc_config.hpp"` works
     ${PROJECT_BINARY_DIR}
-
-    # so `#include "src/<path>.hpp"` works
-    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# osc: compile options
-target_compile_options(osc PRIVATE
+# osccore: use all the stuff set by `osc_configuration`
+target_link_libraries(osccore PUBLIC
 
-    # msvc (Windows) flags
-    $<$<CXX_COMPILER_ID:MSVC>:
-        # disable warning 4996: Simbody uses a deprecated iterator class
-        /wd4996
-
-        # disable warning 4455: incorrectly flags std::string::literals::"s"
-        /wd4455
-
-        # turn warning level up to "production grade" (note: /W4 explodes because of Simbody)
-        /W3
-
-        # treat all warnings as errors
-        /WX
-
-        # keep frame pointers around
-        /Oy-
-
-        # newer MSVCs may also come with LIBASAN (experimental)
-        $<$<BOOL:${OSC_USE_ASAN}>:/fsanitize=address>
-    >
-
-    # gcc AND clang flags
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        -Wall
-        -Wextra
-        -pedantic
-        -Werror
-        -Wuninitialized
-        -Winit-self
-        -Wshadow
-        -Wcast-align
-        -Wwrite-strings
-        -Wdangling-else
-        -Wdate-time
-        -Wno-multichar
-        -Wredundant-decls
-        -Wvla
-        -Wdisabled-optimization
-        -Wpacked
-        -Wno-sign-compare  # disable: broken by STB headers
-        -Wformat-security
-
-        # regardless of debug/release, pin the frame pointer register
-        # so that stack traces are sane when debugging (even in Release).
-        #
-        # This adds some overhead (pins one register and requires callers
-        # to setup their base pointers etc.) but makes debugging + profiling
-        # the application much easier, even in release mode
-        -fno-omit-frame-pointer
-
-        # if address sanitizer is specified, use it
-        $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
-    >
-
-    # clang flags
-    $<$<CXX_COMPILER_ID:Clang>:
-        -Wno-cast-align
-
-        # required in earlier clangs. Just setting
-        # -fno-omit-frame-pointer (above) is not enough
-        #
-        # see:
-        #   - https://stackoverflow.com/questions/43864881/fno-omit-frame-pointer-equivalent-compiler-option-for-clang
-        #   - fixed here: https://reviews.llvm.org/D64294
-        -mno-omit-leaf-frame-pointer
-    >
-
-    # gcc flags
-    $<$<CXX_COMPILER_ID:GNU>:
-        -Wno-unused  # disable: broken by STB headers
-    >
-)
-
-# osc: compile features
-target_compile_features(osc PUBLIC cxx_std_17)
-
-# osc: link libraries
-target_link_libraries(osc PRIVATE
-
-    # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
+    # so that it uses the standard flags etc.
+    osc_configuration
 
     # see: GetDependencies.cmake
     osc-all-deps
 )
 
-# osc: link options
-target_link_options(osc PUBLIC
+# osccore: link options
+target_link_options(osccore PUBLIC
 
     # MSVC (Windows)
     $<$<CXX_COMPILER_ID:MSVC>:
-
-        # open as a desktop app, not CLI
-        /SUBSYSTEM:windows
-
-        # as above, call into `main`
-        /ENTRY:mainCRTStartup
 
         # ignore error from ImGui, which uses locally-defined symbols
         /ignore:4217
@@ -527,42 +561,24 @@ target_link_options(osc PUBLIC
     >
 )
 
-# osc: handle OSC_FORCE_ASSERTS_ENABLED
-if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(osc PRIVATE -DOSC_FORCE_ASSERTS_ENABLED=1)
-endif()
 
-# osc: handle OSC_FORCE_UNDEFINE_NDEBUG
-if(OSC_FORCE_UNDEFINE_NDEBUG)
-    # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
+# ------------ configure top-level executable target ------------ #
 
-# osc: handle LINUX RPATH
+# osc:
 #
-# - at installation time, Linux install dir is:
-#
-#     bin/
-#     lib/*.so
-if(LINUX)
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
-endif()
+#     executable frontend to the `osccore` library
+add_executable(osc
 
-# osc: handle APPLE @executable_path
-#
-# - at installation time, Apple install dir is something like:
-#
-#    lib/*.dylib
-#    resources/*
-#    osc (exe)
-#    osc.toml
-if(APPLE)
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
-endif()
+    # the CLI frontend
+    src/osc.cpp
+
+    # Windows: also link a resources file (rc)
+    #
+    # the resources file tells MSVC compiler how to compile non-source resources
+    # into the output exe. Specifically, it's used to embed the application icon
+    # into the `osc` exe
+    $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
+)
 
 # osc: target properties
 set_target_properties(osc PROPERTIES
@@ -576,6 +592,45 @@ set_target_properties(osc PROPERTIES
     # export compile commands, so clang-tidy works correctly
     EXPORT_COMPILE_COMMANDS ON
 )
+
+# osc: link to necessary libraries
+target_link_libraries(osc PRIVATE
+
+    # so that it uses the standard flags etc.
+    osc_configuration
+
+    # so that it can boot into the main osc codebase
+    osccore
+)
+
+# osc: link options
+target_link_options(osc PRIVATE
+
+    # MSVC (Windows)
+    $<$<CXX_COMPILER_ID:MSVC>:
+
+        # open as a desktop app, not CLI
+        /SUBSYSTEM:windows
+
+        # as above, call into `main`
+        /ENTRY:mainCRTStartup
+    >
+)
+
+# osc: handle installed library lookup locations
+#
+# - Windows: skip: just copy the DLLs into the same dir as the EXE at install time
+# - Linux: setup RPATH with this presumed install dir layout:
+#     bin/
+#     lib/*.so
+# - Mac: setup @executable_path with this presumed install dir layout:
+#     lib/*.dylib
+#     osc (exe)
+if(LINUX)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+elseif(APPLE)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
+endif()
 
 
 # --------------- configure documentation target ------------------ #
@@ -637,7 +692,7 @@ endif()
 #       resources from the (copied) resource directory
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osc.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
 
-# (on Windows): copy runtime DLLs into the `osc.exe` build dir
+# (on Windows): copy runtime DLLs into the `osccore` build dir
 #
 #     - this is so that devs can run `osc.exe` from an IDE without having to
 #       copy libraries around manually etc.
@@ -649,9 +704,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osc.toml.in" "${
 if (WIN32)
     foreach(LIB_FILE_TO_COPY ${OSC_LIB_FILES_TO_COPY})
         add_custom_command(
-            TARGET osc
+            TARGET osccore
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_FILE_TO_COPY}" "$<TARGET_FILE_DIR:osc>"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_FILE_TO_COPY}" "$<TARGET_FILE_DIR:osccore>"
         )
     endforeach()
 endif()
@@ -711,7 +766,6 @@ if (WIN32)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
     set(CPACK_GENERATOR NSIS)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
-    #set(CPACK_NSIS_UNINSTALL_NAME "UninstallOpenSimCreator")
 
     # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     #

@@ -77,7 +77,14 @@ endif()
 
 # DEPENDENCY: OpenGL
 #     transitively used by GLEW to load the OpenGL API
-find_package(OpenGL REQUIRED)
+if(TRUE)
+    # use an older OpenGL linking strategy
+    #
+    # (this seems to be necessary on some systems: need to investigate why)
+    cmake_policy(SET CMP0072 OLD)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+    find_package(OpenGL REQUIRED)
+endif()
 
 # DEPENDENCY: GLEW
 #     used to bootstrap the OpenGL API, load extensions, etc.
