@@ -328,6 +328,9 @@ add_executable(osc
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
     src/Utils/CStringView.hpp
+    src/Utils/Dag.hpp
+    src/Utils/DedupedString.cpp
+    src/Utils/DedupedString.hpp
     src/Utils/DefaultConstructOnCopy.hpp
     src/Utils/FileChangePoller.cpp
     src/Utils/FileChangePoller.hpp

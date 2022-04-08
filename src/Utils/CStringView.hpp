@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -33,7 +34,7 @@ namespace osc
         constexpr std::size_t length() const noexcept { return m_Size; }
         constexpr bool empty() const noexcept { return m_Size == 0; }
         constexpr char const* c_str() const noexcept { return m_Data; }
-        constexpr std::string_view string_view() const noexcept { return std::string_view{m_Data, m_Size}; }
+        constexpr operator std::string_view () const noexcept { return std::string_view{m_Data, m_Size}; }
 
     private:
         char const* m_Data;
@@ -42,12 +43,12 @@ namespace osc
 
     inline std::string to_string(CStringView const& sv)
     {
-        return std::string{sv.string_view()};
+        return std::string{sv};
     }
 
     inline std::ostream& operator<<(std::ostream& o, CStringView const& sv)
     {
-        return o << sv.string_view();
+        return o << std::string_view{sv};
     }
 
     inline std::string operator+(char const* c, CStringView const& sv)
@@ -59,4 +60,15 @@ namespace osc
     {
         return s + to_string(sv);
     }
+}
+
+namespace std
+{
+    template<>
+    struct hash<osc::CStringView> {
+        std::size_t operator()(osc::CStringView const& sv) const
+        {
+            return std::hash<std::string_view>{}(sv);
+        }
+    };
 }
