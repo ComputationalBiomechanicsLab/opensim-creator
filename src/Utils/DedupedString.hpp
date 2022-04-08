@@ -15,8 +15,8 @@ namespace osc
     class DedupedString final {
     public:
         DedupedString(std::string_view);
-        DedupedString(DedupedString const&);
-        DedupedString(DedupedString&&);
+        DedupedString(DedupedString const&) noexcept;
+        DedupedString(DedupedString&&) noexcept;
         DedupedString& operator=(DedupedString const&);
         DedupedString& operator=(DedupedString&&) noexcept;
         ~DedupedString() noexcept;

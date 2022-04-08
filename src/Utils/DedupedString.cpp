@@ -60,12 +60,12 @@ osc::DedupedString::DedupedString(std::string_view sv) : m_Impl{DoDedupedLookup(
 {
 }
 
-osc::DedupedString::DedupedString(DedupedString const& src) : m_Impl{src.m_Impl}
+osc::DedupedString::DedupedString(DedupedString const& src) noexcept : m_Impl{src.m_Impl}
 {
     m_Impl->OwnerCount++;
 }
 
-osc::DedupedString::DedupedString(DedupedString&& tmp) :
+osc::DedupedString::DedupedString(DedupedString&& tmp) noexcept :
     m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
 }
