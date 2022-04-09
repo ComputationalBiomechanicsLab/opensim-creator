@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(osc VERSION 0.1.4 LANGUAGES C CXX)
+
+enable_testing()
 
 
 # -------------- gather user-facing build config options ---------------- #
@@ -565,10 +567,10 @@ target_link_options(osccore PUBLIC
 # ------------ configure test suite target ------------------ #
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
-add_executable(osctests tests/OscTests.cpp)
+add_executable(testosc tests/TestOsc.cpp)
 
 # osctests: target properties
-set_target_properties(osctests PROPERTIES
+set_target_properties(testosc PROPERTIES
 
     # disable compiler-specific language extensions
     CXX_EXTENSIONS OFF
@@ -581,7 +583,7 @@ set_target_properties(osctests PROPERTIES
 )
 
 # osctests: link to `osccore` to exercise it
-target_link_libraries(osctests PRIVATE
+target_link_libraries(testosc PRIVATE
 
     # set compile options
     osc_configuration
@@ -590,8 +592,16 @@ target_link_libraries(osctests PRIVATE
     osccore
 
     # link to testing library
-    Catch2::Catch2WithMain
+    GTest::gtest
+    GTest::gtest_main
 )
+
+# osctests: tell CMake (+IDEs) to discover each test case
+#
+# this is how IDEs like Visual Studio integrate their test parser with
+# the test framework
+include(GoogleTest)
+gtest_discover_tests(testosc)
 
 
 # ------------ configure top-level executable target ------------ #

@@ -424,9 +424,14 @@ if(TRUE)
     )
 endif()
 
-# DEPENDENCY: Catch2
+# DEPENDENCY: googletest
 if(TRUE)
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/Catch2")
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    #
+    # copied from googletest README
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
 
 # `osc::all-deps`: all libraries osc should link to
