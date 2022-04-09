@@ -354,6 +354,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
+    src/OpenSimBindings/OpenSimApp.cpp
+    src/OpenSimBindings/OpenSimApp.hpp
     src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
     src/OpenSimBindings/OutputExtractor.cpp

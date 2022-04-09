@@ -1,5 +1,5 @@
 #include "src/OpenSimBindings/MainEditorState.hpp"
-#include "src/Platform/App.hpp"
+#include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     try
     {
         // init main app (window, OpenGL, etc.)
-        osc::App app;
+        osc::OpenSimApp app;
 
         if (argc <= 0)
         {
