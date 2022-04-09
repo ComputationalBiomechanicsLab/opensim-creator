@@ -623,6 +623,14 @@ add_executable(osc
     # into the output exe. Specifically, it's used to embed the application icon
     # into the `osc` exe
     $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
+
+    # Windows: also link a manifest file (.manifest)
+    #
+    # the manifest file tells the MSVC compiler how to enable certain flags on the
+    # executable. See:
+    #
+    # https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests
+    $<$<CXX_COMPILER_ID:MSVC>:build_resources/osc.exe.manifest>
 )
 
 # osc: target properties

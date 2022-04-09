@@ -1531,8 +1531,19 @@ void osc::ImGuiInit()
         io.IniFilename = userIni.c_str();  // care: string has to outlive ImGui context
     }
 
+    App::Impl& impl = *App::cur().m_Impl;
+
+    float dpiScaleFactor = [&]()
+    {
+        float dpi;
+        float hdpi;
+        float vdpi;
+        SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(impl.updWindow()), &dpi, &hdpi, &vdpi);
+        return dpi / 96.0f;
+    }();
+
     ImFontConfig baseConfig;
-    baseConfig.SizePixels = 16.0f;
+    baseConfig.SizePixels = dpiScaleFactor * 16.0f;
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 3;
     baseConfig.OversampleV = 2;
@@ -1552,7 +1563,6 @@ void osc::ImGuiInit()
     }
 
     // init ImGui for SDL2 /w OpenGL
-    App::Impl& impl = *App::cur().m_Impl;
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updGLContext());
 
     // init ImGui for OpenGL
