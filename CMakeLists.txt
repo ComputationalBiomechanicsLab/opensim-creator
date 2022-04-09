@@ -570,8 +570,11 @@ target_link_options(osccore PUBLIC
 
 # osctests: main exe that links to `osccore` and exercises APIs etc.
 add_executable(testosc
+
     tests/TestOsc.cpp
     tests/TestDedupedString.cpp
+    tests/TestRenderer.cpp
+    tests/TestRendererHelloTriangleScreen.cpp
 )
 
 # osctests: target properties
