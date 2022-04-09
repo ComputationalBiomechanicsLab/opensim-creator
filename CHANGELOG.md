@@ -7,6 +7,8 @@ All notable changes to this project will be documented here. The format is based
 
 - Fixed thread race that causes visual glitches when running forward-dynamic simulations on models containing
   wrapping surfaces
+- Added googletest unit testing support (internal)
+- Fixed incorrect AABB/BVH visualization in 3D model viewers
 
 ## [0.1.4] - 2022/04/07
 
