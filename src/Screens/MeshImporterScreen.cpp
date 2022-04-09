@@ -69,7 +69,20 @@
 #include <vector>
 #include <variant>
 
-using namespace osc;
+using osc::ClonePtr;
+using osc::UID;
+using osc::UIDT;
+using osc::fpi;
+using osc::fpi2;
+using osc::fpi4;
+using osc::AABB;
+using osc::Sphere;
+using osc::Mesh;
+using osc::Transform;
+using osc::PolarPerspectiveCamera;
+using osc::Segment;
+using osc::Rect;
+using osc::Line;
 
 // user-facing string constants
 namespace
@@ -194,7 +207,7 @@ namespace
     Transform ToOsimTransform(SimTK::Transform const& t)
     {
         // extract the SimTK transform into a 4x3 matrix
-        glm::mat4x3 m = ToMat4x3(t);
+        glm::mat4x3 m = osc::ToMat4x3(t);
 
         // take the 3x3 left-hand side (rotation) and decompose that into a quaternion
         glm::quat rotation = glm::quat_cast(glm::mat3{m});
@@ -448,11 +461,11 @@ namespace
 
         glm::vec3 lightCol = {1.0f, 1.0f, 1.0f};
 
-        glm::mat4 projMat = camera.getProjMtx(AspectRatio(dims));
+        glm::mat4 projMat = camera.getProjMtx(osc::AspectRatio(dims));
         glm::mat4 viewMat = camera.getViewMtx();
         glm::vec3 viewPos = camera.getPos();
 
-        auto samples = App::cur().getMSXAASamplesRecommended();
+        auto samples = osc::App::cur().getMSXAASamplesRecommended();
 
         gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
         gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
@@ -470,7 +483,7 @@ namespace
         // draw the scene to the scene FBO
         if (true)
         {
-            GouraudShader& shader = App::cur().getShaderCache().getShader<GouraudShader>();
+            auto& shader = osc::App::cur().getShaderCache().getShader<osc::GouraudShader>();
 
             gl::UseProgram(shader.program);
             gl::Uniform(shader.uProjMat, projMat);
@@ -523,7 +536,7 @@ namespace
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl::Clear(GL_COLOR_BUFFER_BIT);
 
-            SolidColorShader& scs = App::cur().getShaderCache().getShader<SolidColorShader>();
+            auto& scs = osc::App::cur().getShaderCache().getShader<osc::SolidColorShader>();
             gl::UseProgram(scs.program);
             gl::Uniform(scs.uProjection, projMat);
             gl::Uniform(scs.uView, viewMat);
@@ -546,15 +559,15 @@ namespace
 
 
             gl::BindFramebuffer(GL_FRAMEBUFFER, outputFBO);
-            EdgeDetectionShader& eds = App::cur().getShaderCache().getShader<EdgeDetectionShader>();
+            auto& eds = osc::App::cur().getShaderCache().getShader<osc::EdgeDetectionShader>();
             gl::UseProgram(eds.program);
             gl::Uniform(eds.uMVP, gl::identity);
             gl::ActiveTexture(GL_TEXTURE0);
             gl::BindTexture(rimsTex);
             gl::Uniform(eds.uSampler0, gl::textureIndex<GL_TEXTURE0>());
             gl::Uniform(eds.uRimRgba,  glm::vec4{0.8f, 0.5f, 0.3f, 0.8f});
-            gl::Uniform(eds.uRimThickness, 1.75f / LongestDim(dims));
-            auto quadMesh = App::meshes().getTexturedQuadMesh();
+            gl::Uniform(eds.uRimThickness, 1.75f / osc::LongestDim(dims));
+            auto quadMesh = osc::App::meshes().getTexturedQuadMesh();
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             gl::Enable(GL_BLEND);
             gl::BindVertexArray(quadMesh->GetVertexArray());
@@ -617,7 +630,7 @@ namespace
         {
             try
             {
-                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(LoadMeshViaSimTK(path));
+                std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(path));
                 loadedMeshes.push_back(LoadedMesh{path, std::move(mesh)});
             }
             catch (std::exception const& ex)
@@ -625,7 +638,7 @@ namespace
                 return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, path, ex.what()};
             }
         }
-        App::cur().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
+        osc::App::cur().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
         return MeshLoadOKResponse{msg.PreferredAttachmentPoint, std::move(loadedMeshes)};
     }
 
@@ -633,7 +646,7 @@ namespace
     //
     // the UI thread must `.poll()` this to check for responses
     class MeshLoader final {
-        using Worker = spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
+        using Worker = osc::spsc::Worker<MeshLoadRequest, MeshLoadResponse, decltype(respondToMeshloadRequest)>;
 
     public:
         MeshLoader() : m_Worker{Worker::create(respondToMeshloadRequest)}
@@ -1157,7 +1170,7 @@ namespace
         {
             switch (i) {
             case 0:
-                Attachment = DowncastID<BodyEl>(id);
+                Attachment = osc::DowncastID<BodyEl>(id);
                 break;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
@@ -1232,7 +1245,7 @@ namespace
         Transform Xform;
         std::shared_ptr<Mesh> MeshData;
         std::filesystem::path Path;
-        std::string Name{SanitizeToOpenSimComponentName(FileNameWithoutExtension(Path))};
+        std::string Name{SanitizeToOpenSimComponentName(osc::FileNameWithoutExtension(Path))};
     };
 
     // a body scene element
@@ -1466,7 +1479,7 @@ namespace
                 Parent = id;
                 break;
             case 1:
-                Child = DowncastID<BodyEl>(id);
+                Child = osc::DowncastID<BodyEl>(id);
                 break;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
@@ -1524,7 +1537,7 @@ namespace
 
         osc::CStringView GetSpecificTypeName() const
         {
-             return JointRegistry::nameStrings()[JointTypeIndex];
+             return osc::JointRegistry::nameStrings()[JointTypeIndex];
         }
 
         osc::CStringView GetLabel() const override
@@ -1660,7 +1673,7 @@ namespace
         {
             switch (i) {
             case 0:
-                Attachment = DowncastID<BodyEl>(id);
+                Attachment = osc::DowncastID<BodyEl>(id);
                 break;
             default:
                 throw std::runtime_error{"invalid index accessed for cross reference"};
@@ -2161,7 +2174,7 @@ namespace
 
         std::map<UID, ClonePtr<SceneEl>> m_Els;
         std::unordered_set<UID> m_SelectedEls;
-        DefaultConstructOnCopy<std::vector<ClonePtr<SceneEl>>> m_DeletedEls;
+        osc::DefaultConstructOnCopy<std::vector<ClonePtr<SceneEl>>> m_DeletedEls;
     };
 
     void SelectOnly(ModelGraph& mg, SceneEl const& e)
@@ -2443,7 +2456,7 @@ namespace
             explicit Visitor(ModelGraph const& mg) : m_Mg{mg} {}
 
             void operator()(GroundEl const&) { m_Result = g_GroundID; }
-            void operator()(MeshEl const& el) { m_Mg.ContainsEl<BodyEl>(el.Attachment) ? m_Result = DowncastID<BodyEl>(el.Attachment) : g_GroundID; }
+            void operator()(MeshEl const& el) { m_Mg.ContainsEl<BodyEl>(el.Attachment) ? m_Result = osc::DowncastID<BodyEl>(el.Attachment) : g_GroundID; }
             void operator()(BodyEl const& el) { m_Result = el.ID; }
             void operator()(JointEl const&) { m_Result = g_GroundID; }  // can't be attached
             void operator()(StationEl const&) { m_Result = g_GroundID; }  // can't be attached
@@ -2714,7 +2727,7 @@ namespace
                 continue;  // hardening: ignore invalid assignments
             }
 
-            ptr->Attachment = DowncastID<BodyEl>(newAttachment);
+            ptr->Attachment = osc::DowncastID<BodyEl>(newAttachment);
         }
 
         std::stringstream commitMsg;
@@ -2735,12 +2748,12 @@ namespace
     {
         ModelGraph& mg = cmg.UpdScratch();
 
-        size_t jointTypeIdx = *JointRegistry::indexOf<OpenSim::WeldJoint>();
+        size_t jointTypeIdx = *osc::JointRegistry::indexOf<OpenSim::WeldJoint>();
         glm::vec3 parentPos = GetPosition(mg, parentID);
         glm::vec3 childPos = GetPosition(mg, childID);
-        glm::vec3 midPoint = Midpoint(parentPos, childPos);
+        glm::vec3 midPoint = osc::Midpoint(parentPos, childPos);
 
-        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, DowncastID<BodyEl>(childID), Transform{midPoint});
+        JointEl& jointEl = mg.AddEl<JointEl>(jointTypeIdx, "", parentID, osc::DowncastID<BodyEl>(childID), Transform{midPoint});
         SelectOnly(mg, jointEl);
 
         cmg.Commit("added " + jointEl.GetLabel());
@@ -2777,7 +2790,7 @@ namespace
             return false;
         }
 
-        el->SetPos(Midpoint(a, b));
+        el->SetPos(osc::Midpoint(a, b));
         cmg.Commit("translated " + el->GetLabel());
 
         return true;
@@ -2808,7 +2821,7 @@ namespace
             return false;
         }
 
-        el->SetPos(Midpoint(aEl->GetPos(), bEl->GetPos()));
+        el->SetPos(osc::Midpoint(aEl->GetPos(), bEl->GetPos()));
         cmg.Commit("translated " + el->GetLabel());
 
         return true;
@@ -3023,7 +3036,7 @@ namespace
         // attach the mesh data to the transformed POF
         auto mesh = std::make_unique<OpenSim::Mesh>(meshEl.Path.string());
         mesh->setName(meshEl.Name);
-        mesh->set_scale_factors(ToSimTKVec3(meshEl.Xform.scale));
+        mesh->set_scale_factors(osc::ToSimTKVec3(meshEl.Xform.scale));
         meshPhysOffsetFrame->attachGeometry(mesh.release());
 
         // make it a child of the parent's physical frame
@@ -3151,7 +3164,7 @@ namespace
     // returns the indices of each degree of freedom that the joint supports
     JointDegreesOfFreedom GetDegreesOfFreedom(size_t jointTypeIdx)
     {
-        OpenSim::Joint const* proto = JointRegistry::prototypes()[jointTypeIdx].get();
+        OpenSim::Joint const* proto = osc::JointRegistry::prototypes()[jointTypeIdx].get();
         size_t typeHash = typeid(*proto).hash_code();
 
         if (typeHash == typeid(OpenSim::FreeJoint).hash_code())
@@ -3186,7 +3199,7 @@ namespace
         constexpr std::array<char const*, 3> const translationNames = {"_tx", "_ty", "_tz"};
         constexpr std::array<char const*, 3> const rotationNames = {"_rx", "_ry", "_rz"};
 
-        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*JointRegistry::indexOf(joint));
+        JointDegreesOfFreedom dofs = GetDegreesOfFreedom(*osc::JointRegistry::indexOf(joint));
 
         // translations
         for (int i = 0; i < 3; ++i)
@@ -3238,19 +3251,19 @@ namespace
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
         glm::mat4 toParentPofInParent =  ToInverseMat4(IgnoreScale(GetTransform(mg, joint.Parent))) * ToMat4(IgnoreScale(joint.Xform));
-        parentPOF->set_translation(ToSimTKVec3(toParentPofInParent[3]));
-        parentPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toParentPofInParent)));
+        parentPOF->set_translation(osc::ToSimTKVec3(toParentPofInParent[3]));
+        parentPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
         glm::mat4 toChildPofInChild = ToInverseMat4(IgnoreScale(GetTransform(mg, joint.Child))) * ToMat4(IgnoreScale(joint.Xform));
-        childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
-        childPOF->set_orientation(ToSimTKVec3(ExtractEulerAngleXYZ(toChildPofInChild)));
+        childPOF->set_translation(osc::ToSimTKVec3(toChildPofInChild[3]));
+        childPOF->set_orientation(osc::ToSimTKVec3(osc::ExtractEulerAngleXYZ(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(JointRegistry::prototypes()[joint.JointTypeIndex]->clone());
+        auto jointUniqPtr = std::unique_ptr<OpenSim::Joint>(osc::JointRegistry::prototypes()[joint.JointTypeIndex]->clone());
 
         // set its name
         std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -3360,10 +3373,10 @@ namespace
     {
         if (GetModelGraphIssues(mg, issuesOut))
         {
-            log::error("cannot create an osim model: issues detected");
+            osc::log::error("cannot create an osim model: issues detected");
             for (std::string const& issue : issuesOut)
             {
-                log::error("issue: %s", issue.c_str());
+                osc::log::error("issue: %s", issue.c_str());
             }
             return nullptr;
         }
@@ -3503,7 +3516,7 @@ namespace
                 continue;
             }
 
-            auto maybeType = JointRegistry::indexOf(j);
+            auto maybeType = osc::JointRegistry::indexOf(j);
 
             if (!maybeType)
             {
@@ -3534,7 +3547,7 @@ namespace
                 }
             }
 
-            UIDT<BodyEl> child = DowncastID<BodyEl>(g_EmptyID);
+            UIDT<BodyEl> child = osc::DowncastID<BodyEl>(g_EmptyID);
 
             if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
             {
@@ -3588,11 +3601,11 @@ namespace
             std::shared_ptr<Mesh> meshData;
             try
             {
-                 meshData = std::make_shared<Mesh>(LoadMeshViaSimTK(realLocation.string()));
+                 meshData = std::make_shared<Mesh>(osc::LoadMeshViaSimTK(realLocation.string()));
             }
             catch (std::exception const& ex)
             {
-                log::error("error loading mesh: %s", ex.what());
+                osc::log::error("error loading mesh: %s", ex.what());
                 continue;
             }
 
@@ -3640,7 +3653,7 @@ namespace
 
             MeshEl& el = rv.AddEl<MeshEl>(attachment, meshData, realLocation);
             el.Xform = ToOsimTransform(frame.getTransformInGround(st));
-            el.Xform.scale = ToVec3(mesh.get_scale_factors());
+            el.Xform.scale = osc::ToVec3(mesh.get_scale_factors());
             el.Name = name;
         }
 
@@ -3685,10 +3698,10 @@ namespace
                 continue;
             }
 
-            glm::vec3 pos = ToVec3(station.findLocationInFrame(st, m.getGround()));
+            glm::vec3 pos = osc::ToVec3(station.findLocationInFrame(st, m.getGround()));
             std::string name = station.getName();
 
-            rv.AddEl<StationEl>(DowncastID<BodyEl>(attachment), pos, name);
+            rv.AddEl<StationEl>(osc::DowncastID<BodyEl>(attachment), pos, name);
         }
 
         return rv;
@@ -3759,7 +3772,7 @@ namespace
             }
             catch (std::exception const& ex)
             {
-                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
         }
 
@@ -3783,7 +3796,7 @@ namespace
             }
             else
             {
-                SaveChangesPopupConfig cfg;
+                osc::SaveChangesPopupConfig cfg;
                 cfg.onUserClickedDontSave = [this]()
                 {
                     NewModelGraphForced();
@@ -3801,14 +3814,14 @@ namespace
                         return false;
                     }
                 };
-                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
                 m_MaybeSaveChangesPopup->open();
             }
         }
 
         bool OpenOsimFileAsModelGraph()
         {
-            std::filesystem::path osimPath = PromptUserForFile("osim");
+            std::filesystem::path osimPath = osc::PromptUserForFile("osim");
 
             if (!osimPath.empty())
             {
@@ -3834,7 +3847,7 @@ namespace
             }
             catch (std::exception const& ex)
             {
-                log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
+                osc::log::error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
 
             if (m)
@@ -3848,7 +3861,7 @@ namespace
             {
                 for (std::string const& issue : issues)
                 {
-                    log::error("%s", issue.c_str());
+                    osc::log::error("%s", issue.c_str());
                 }
                 return false;
             }
@@ -3856,7 +3869,7 @@ namespace
 
         bool ExportAsModelGraphAsOsimFile()
         {
-            std::filesystem::path exportPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+            std::filesystem::path exportPath = osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
 
             if (exportPath.empty())
             {
@@ -3884,7 +3897,7 @@ namespace
 
         void CloseEditorForced()
         {
-            App::cur().requestTransition<SplashScreen>();
+            osc::App::cur().requestTransition<osc::SplashScreen>();
         }
 
         void CloseEditor()
@@ -3895,7 +3908,7 @@ namespace
             }
             else
             {
-                SaveChangesPopupConfig cfg;
+                osc::SaveChangesPopupConfig cfg;
                 cfg.onUserClickedDontSave = [this]()
                 {
                     CloseEditorForced();
@@ -3913,14 +3926,14 @@ namespace
                         return false;
                     }
                 };
-                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
                 m_MaybeSaveChangesPopup->open();
             }
         }
 
         void QuitEditorForced()
         {
-            App::cur().requestQuit();
+            osc::App::cur().requestQuit();
         }
 
         void QuitEditor()
@@ -3931,7 +3944,7 @@ namespace
             }
             else
             {
-                SaveChangesPopupConfig cfg;
+                osc::SaveChangesPopupConfig cfg;
                 cfg.onUserClickedDontSave = [this]()
                 {
                     QuitEditorForced();
@@ -3949,7 +3962,7 @@ namespace
                         return false;
                     }
                 };
-                m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
+                m_MaybeSaveChangesPopup = osc::SaveChangesPopup{std::move(cfg)};
                 m_MaybeSaveChangesPopup->open();
             }
         }
@@ -4115,7 +4128,7 @@ namespace
         // called when the mesh loader responds with a mesh loading error
         void PopMeshLoader_OnErrorResponse(MeshLoadErrorResponse& err)
         {
-            log::error("%s: error loading mesh file: %s", err.Path.string().c_str(), err.Error.c_str());
+            osc::log::error("%s: error loading mesh file: %s", err.Path.string().c_str(), err.Error.c_str());
         }
 
         void PopMeshLoader()
@@ -4137,7 +4150,7 @@ namespace
 
         std::vector<std::filesystem::path> PromptUserForMeshFiles() const
         {
-            return PromptUserForFiles("obj,vtp,stl");
+            return osc::PromptUserForFiles("obj,vtp,stl");
         }
 
         void PromptUserForMeshFilesAndPushThemOntoMeshLoader()
@@ -4171,7 +4184,7 @@ namespace
                 return;
             }
 
-            glm::vec3 midpoint = Midpoint(parent, child);
+            glm::vec3 midpoint = osc::Midpoint(parent, child);
             glm::vec2 midpointScr = WorldPosToScreenPos(midpoint);
             glm::vec2 directionScr = glm::normalize(child2ParentScr);
             glm::vec2 directionNormalScr = {-directionScr.y, directionScr.x};
@@ -4355,24 +4368,24 @@ namespace
 
         void SetContentRegionAvailAsSceneRect()
         {
-            Set3DSceneRect(ContentRegionAvailScreenRect());
+            Set3DSceneRect(osc::ContentRegionAvailScreenRect());
         }
 
         void DrawScene(nonstd::span<DrawableThing> drawables)
         {
             // sort for (potentially) instanced rendering
-            Sort(drawables, OptimalDrawOrder);
+            osc::Sort(drawables, OptimalDrawOrder);
 
             // draw 3D scene to texture
             ::DrawScene(
-                Dimensions(Get3DSceneRect()),
+                osc::Dimensions(Get3DSceneRect()),
                 GetCamera(),
                 GetColorSceneBackground(),
                 drawables,
                 UpdSceneTex());
 
             // send texture to ImGui
-            DrawTextureAsImGuiImage(UpdSceneTex(), Dimensions(Get3DSceneRect()));
+            osc::DrawTextureAsImGuiImage(UpdSceneTex(), osc::Dimensions(Get3DSceneRect()));
 
             // handle hittesting, etc.
             SetIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -4609,9 +4622,9 @@ namespace
             DrawableThing dt;
             dt.id = g_EmptyID;
             dt.groupId = g_EmptyID;
-            dt.mesh = App::meshes().get100x100GridMesh();
+            dt.mesh = osc::App::meshes().get100x100GridMesh();
             dt.modelMatrix = GetFloorModelMtx() * glm::scale(glm::mat4{1.0f}, glm::vec3{0.5f, 0.5f, 0.5f});
-            dt.normalMatrix = ToNormalMatrix(dt.modelMatrix);
+            dt.normalMatrix = osc::ToNormalMatrix(dt.modelMatrix);
             dt.color = m_Colors.GridLines;
             dt.rimColor = 0.0f;
             dt.maybeDiffuseTex = nullptr;
@@ -4651,7 +4664,7 @@ namespace
                 sphere.groupId = groupID;
                 sphere.mesh = m_SphereMesh;
                 sphere.modelMatrix = SphereMeshToSceneSphereXform(centerSphere);
-                sphere.normalMatrix = ToNormalMatrix(sphere.modelMatrix);
+                sphere.normalMatrix = osc::ToNormalMatrix(sphere.modelMatrix);
                 sphere.color = {coreColor.r, coreColor.g, coreColor.b, alpha};
                 sphere.rimColor = rimAlpha;
                 sphere.maybeDiffuseTex = nullptr;
@@ -4676,7 +4689,7 @@ namespace
                 se.groupId = groupID;
                 se.mesh = m_CylinderMesh;
                 se.modelMatrix = SegmentToSegmentMat4(cylinderline, axisline) * prescaleMtx;
-                se.normalMatrix = ToNormalMatrix(se.modelMatrix);
+                se.normalMatrix = osc::ToNormalMatrix(se.modelMatrix);
                 se.color = color;
                 se.rimColor = rimAlpha;
                 se.maybeDiffuseTex = nullptr;
@@ -4704,9 +4717,9 @@ namespace
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = App::cur().meshes().getBrickMesh();
+                originCube.mesh = osc::App::cur().meshes().getBrickMesh();
                 originCube.modelMatrix = mmtx;
-                originCube.normalMatrix = ToNormalMatrix(mmtx);
+                originCube.normalMatrix = osc::ToNormalMatrix(mmtx);
                 originCube.color = glm::vec4{coreColor, alpha};
                 originCube.rimColor = rimAlpha;
                 originCube.maybeDiffuseTex = nullptr;
@@ -4729,9 +4742,9 @@ namespace
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = App::cur().meshes().getConeMesh();
+                legCube.mesh = osc::App::cur().meshes().getConeMesh();
                 legCube.modelMatrix = segXform;
-                legCube.normalMatrix = ToNormalMatrix(segXform);
+                legCube.normalMatrix = osc::ToNormalMatrix(segXform);
                 legCube.color = color;
                 legCube.rimColor = rimAlpha;
                 legCube.maybeDiffuseTex = nullptr;
@@ -4876,7 +4889,7 @@ namespace
                     continue;
                 }
 
-                RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.modelMatrix, ray);
+                osc::RayCollision rc = drawable.mesh->getRayMeshCollisionInWorldspace(drawable.modelMatrix, ray);
                 if (rc.hit && rc.distance < closestDist)
                 {
                     closestID = drawable.id;
@@ -4923,7 +4936,7 @@ namespace
             rv.groupId = g_BodyGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(bodyEl.Xform.position));
-            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -4937,7 +4950,7 @@ namespace
             rv.groupId = g_GroundGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -4951,7 +4964,7 @@ namespace
             rv.groupId = g_StationGroupID;
             rv.mesh = m_SphereMesh;
             rv.modelMatrix = SphereMeshToSceneSphereXform(SphereAtTranslation(el.GetPos()));
-            rv.normalMatrix = ToNormalMatrix(rv.modelMatrix);
+            rv.normalMatrix = osc::ToNormalMatrix(rv.modelMatrix);
             rv.color = color;
             rv.rimColor = 0.0f;
             rv.maybeDiffuseTex = nullptr;
@@ -5072,10 +5085,10 @@ namespace
             // if some screen generated an OpenSim::Model, transition to the main editor
             if (HasOutputModel())
             {
-                auto mainEditorState = std::make_shared<MainEditorState>(std::move(UpdOutputModel()));
+                auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(UpdOutputModel()));
                 mainEditorState->updEditedModel().setFixupScaleFactor(m_SceneScaleFactor);
-                AutoFocusAllViewers(*mainEditorState);
-                App::cur().requestTransition<ModelEditorScreen>(mainEditorState);
+                osc::AutoFocusAllViewers(*mainEditorState);
+                osc::App::cur().requestTransition<osc::ModelEditorScreen>(mainEditorState);
             }
 
             m_ModelGraphSnapshots.GarbageCollect();
@@ -5098,16 +5111,16 @@ namespace
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(GenUntexturedUVSphere(12, 12));
+        std::shared_ptr<Mesh> m_SphereMesh = std::make_shared<Mesh>(osc::GenUntexturedUVSphere(12, 12));
 
         // cylinder mesh used by various scene elements
-        std::shared_ptr<Mesh> m_CylinderMesh = std::make_shared<Mesh>(GenUntexturedSimbodyCylinder(16));
+        std::shared_ptr<Mesh> m_CylinderMesh = std::make_shared<Mesh>(osc::GenUntexturedSimbodyCylinder(16));
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
 
         // screenspace rect where the 3D scene is currently being drawn to
-        Rect m_3DSceneRect = {};
+        osc::Rect m_3DSceneRect = {};
 
         // texture the 3D scene is being rendered to
         //
@@ -5200,9 +5213,9 @@ namespace
             PanelIndex_Log,
             PanelIndex_COUNT,
         };
-        LogViewer m_Logviewer;
+        osc::LogViewer m_Logviewer;
 
-        std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+        std::optional<osc::SaveChangesPopup> m_MaybeSaveChangesPopup;
     private:
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
@@ -5830,7 +5843,7 @@ namespace
             if (m_AnimationFraction < 1.0f)
             {
                 m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
-                App::cur().requestRedraw();
+                osc::App::cur().requestRedraw();
             }
         }
 
@@ -5891,7 +5904,7 @@ namespace
         void requestPop(Layer*) override
         {
             m_Maybe3DViewerModal.reset();
-            App::cur().requestRedraw();
+            osc::App::cur().requestRedraw();
         }
 
         // try to select *only* what is currently hovered
@@ -6388,7 +6401,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, 0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6407,7 +6420,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.0f, -0.1f});
                 }
                 else if (shiftDown)
                 {
@@ -6426,7 +6439,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
@@ -6445,7 +6458,7 @@ namespace
                 if (ctrlOrSuperDown)
                 {
                     // pan
-                    m_Shared->UpdCamera().pan(AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
+                    m_Shared->UpdCamera().pan(osc::AspectRatio(m_Shared->Get3DSceneDims()), {-0.1f, 0.0f});
                 }
                 else if (shiftDown)
                 {
@@ -6489,7 +6502,7 @@ namespace
             ImGui::SameLine();
             ImGui::TextDisabled("%s", GetContextMenuSubHeaderText(m_Shared->GetModelGraph(), e).c_str());
             ImGui::SameLine();
-            DrawHelpMarker(e.GetClass().GetNameCStr(), e.GetClass().GetDescriptionCStr());
+            osc::DrawHelpMarker(e.GetClass().GetNameCStr(), e.GetClass().GetDescriptionCStr());
             ImGui::Separator();
         }
 
@@ -6513,7 +6526,7 @@ namespace
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
                 ImGui::SameLine();
-                DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
+                osc::DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
             }
 
             // position editor
@@ -6531,7 +6544,7 @@ namespace
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
                 ImGui::SameLine();
-                DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
+                osc::DrawHelpMarker("Translation", OSC_TRANSLATION_DESC);
             }
 
             // rotation editor
@@ -6551,7 +6564,7 @@ namespace
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
                 ImGui::SameLine();
-                DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
+                osc::DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
             }
 
             // scale factor editor
@@ -6569,7 +6582,7 @@ namespace
                     m_Shared->CommitCurrentModelGraph(std::move(ss).str());
                 }
                 ImGui::SameLine();
-                DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
+                osc::DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
             }
         }
 
@@ -6589,7 +6602,7 @@ namespace
                 {
                     m_Shared->PushMeshLoadRequests(el.GetID(), m_Shared->PromptUserForMeshFiles());
                 }
-                DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
+                osc::DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
             }
             ImGui::PopID();
 
@@ -6602,13 +6615,13 @@ namespace
                     {
                         AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
                     }
-                    DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
                     if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                     {
                         AddBody(m_Shared->UpdCommittableModelGraph(), clickPos, el.GetID());
                     }
-                    DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
                     if (Is<MeshEl>(el))
                     {
@@ -6616,7 +6629,7 @@ namespace
                         {
                             AddBody(m_Shared->UpdCommittableModelGraph(), Midpoint(el.CalcBounds()), el.GetID());
                         }
-                        DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                        osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
                     }
 
                     ImGui::EndMenu();
@@ -6628,7 +6641,7 @@ namespace
                 {
                     AddBody(m_Shared->UpdCommittableModelGraph(), el.GetPos(), el.GetID());
                 }
-                DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+                osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
             }
             ImGui::PopID();
 
@@ -6639,7 +6652,7 @@ namespace
                 {
                     TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
                 }
-                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
+                osc::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
             }
             ImGui::PopID();
 
@@ -6654,19 +6667,19 @@ namespace
                         {
                             AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                         }
-                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                        osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
                         if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                         {
                             AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, clickPos);
                         }
-                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                        osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
                         if (ImGui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                         {
                             AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, glm::vec3{});
                         }
-                        DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                        osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
 
                         if (Is<MeshEl>(el))
                         {
@@ -6674,7 +6687,7 @@ namespace
                             {
                                 AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, Midpoint(el.CalcBounds()));
                             }
-                            DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                            osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                         }
 
                         ImGui::EndMenu();
@@ -6686,7 +6699,7 @@ namespace
                     {
                         AddStationAtLocation(m_Shared->UpdCommittableModelGraph(), el, el.GetPos());
                     }
-                    DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
+                    osc::DrawTooltipIfItemHovered("Add Station", OSC_STATION_DESC);
                 }
 
             }
@@ -6698,7 +6711,7 @@ namespace
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
+            osc::DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
 
             if (ImGui::BeginMenu(ICON_FA_PLUS " Add Other"))
             {
@@ -6714,7 +6727,7 @@ namespace
             {
                 m_Shared->FocusCameraOn(Midpoint(el.CalcBounds()));
             }
-            DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
+            osc::DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
             if (ImGui::BeginMenu(ICON_FA_PLUS " Add"))
             {
@@ -6728,7 +6741,7 @@ namespace
                 {
                     TransitionToChoosingJointParent(dynamic_cast<BodyEl const&>(el));
                 }
-                DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
+                osc::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
             }
 
             if (CanDelete(el))
@@ -6739,7 +6752,7 @@ namespace
                     GarbageCollectStaleRefs();
                     ImGui::CloseCurrentPopup();
                 }
-                DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
+                osc::DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
             }
         }
 
@@ -6809,7 +6822,7 @@ namespace
             {
                 return;  // top-level menu isn't open
             }
-            DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
+            osc::DrawTooltipIfItemHovered("Reorient the scene element", "Rotates the scene element in without changing its position");
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
             OSC_SCOPE_GUARD({ ImGui::PopStyleVar(); });
@@ -6894,21 +6907,21 @@ namespace
                 m_Shared->CommitCurrentModelGraph("changed body mass");
             }
             ImGui::SameLine();
-            DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
+            osc::DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
         }
 
         // draw the "Joint Type" editor for a `JointEl`
         void DrawJointTypeEditor(JointEl const& jointEl)
         {
             int currentIdx = static_cast<int>(jointEl.JointTypeIndex);
-            nonstd::span<char const* const> labels = JointRegistry::nameCStrings();
+            nonstd::span<char const* const> labels = osc::JointRegistry::nameCStrings();
             if (ImGui::Combo("Joint Type", &currentIdx, labels.data(), static_cast<int>(labels.size())))
             {
                 m_Shared->UpdModelGraph().UpdElByID<JointEl>(jointEl.ID).JointTypeIndex = static_cast<size_t>(currentIdx);
                 m_Shared->CommitCurrentModelGraph("changed joint type");
             }
             ImGui::SameLine();
-            DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
+            osc::DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
         }
 
         // draw the "Reassign Connection" menu, which lets users change an element's cross reference
@@ -7104,7 +7117,7 @@ namespace
 
 
             // context menu should be closed under these conditions
-            if (IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
+            if (osc::IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_ESCAPE}))
             {
                 m_MaybeOpenedContextMenu.reset();
                 ImGui::CloseCurrentPopup();
@@ -7127,7 +7140,7 @@ namespace
                 return a->GetCommitTime() < b->GetCommitTime();
             };
 
-            Sort(commits, orderedByTime);
+            osc::Sort(commits, orderedByTime);
 
             int i = 0;
             for (ModelGraphCommit const* c : commits)
@@ -7149,7 +7162,7 @@ namespace
 
             ImGui::Text("%s %s", c.GetIconCStr(), c.GetNamePluralizedCStr());
             ImGui::SameLine();
-            DrawHelpMarker(c.GetNamePluralizedCStr(), c.GetDescriptionCStr());
+            osc::DrawHelpMarker(c.GetNamePluralizedCStr(), c.GetDescriptionCStr());
             SpacerDummy();
             ImGui::Indent();
 
@@ -7188,7 +7201,7 @@ namespace
 
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
                 {
-                    if (!IsShiftDown())
+                    if (!osc::IsShiftDown())
                     {
                         m_Shared->UpdModelGraph().DeSelectAll();
                     }
@@ -7199,7 +7212,7 @@ namespace
                 {
                     m_MaybeOpenedContextMenu = Hover{id, {}};
                     ImGui::OpenPopup("##maincontextmenu");
-                    App::cur().requestRedraw();
+                    osc::App::cur().requestRedraw();
                 }
             }
 
@@ -7236,13 +7249,13 @@ namespace
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
+            osc::DrawTooltipIfItemHovered("Add Meshes", OSC_MESH_DESC);
 
             if (ImGui::MenuItem(ICON_FA_CIRCLE " Body"))
             {
                 AddBody(m_Shared->UpdCommittableModelGraph());
             }
-            DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
+            osc::DrawTooltipIfItemHovered("Add Body", OSC_BODY_DESC);
 
             if (ImGui::MenuItem(ICON_FA_MAP_PIN " Station"))
             {
@@ -7250,7 +7263,7 @@ namespace
                 StationEl& e = mg.AddEl<StationEl>(UIDT<StationEl>{}, g_GroundID, glm::vec3{}, GenerateName(StationEl::Class()));
                 SelectOnly(mg, e);
             }
-            DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
+            osc::DrawTooltipIfItemHovered("Add Station", StationEl::Class().GetDescriptionCStr());
 
             ImGui::PopStyleVar();
         }
@@ -7263,12 +7276,12 @@ namespace
             {
                 m_Shared->PromptUserForMeshFilesAndPushThemOntoMeshLoader();
             }
-            DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
+            osc::DrawTooltipIfItemHovered("Add Meshes to the model", OSC_MESH_DESC);
 
             ImGui::SameLine();
 
             ImGui::Button(ICON_FA_PLUS " Add Other");
-            DrawTooltipIfItemHovered("Add components to the model");
+            osc::DrawTooltipIfItemHovered("Add components to the model");
 
             if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -7279,7 +7292,7 @@ namespace
             ImGui::SameLine();
 
             ImGui::Button(ICON_FA_PAINT_ROLLER " Colors");
-            DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
+            osc::DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
             if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -7303,7 +7316,7 @@ namespace
             ImGui::SameLine();
 
             ImGui::Button(ICON_FA_EYE " Visibility");
-            DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
+            osc::DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
             if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -7327,7 +7340,7 @@ namespace
             ImGui::SameLine();
 
             ImGui::Button(ICON_FA_LOCK " Interactivity");
-            DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
+            osc::DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
             if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -7414,7 +7427,7 @@ namespace
                 ImGui::PopStyleVar();
                 char const* const tooltipTitle = "Manipulation coordinate system";
                 char const* const tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+                osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
             }
 
             ImGui::SameLine();
@@ -7430,7 +7443,7 @@ namespace
                 {
                     m_Shared->SetSceneScaleFactor(sf);
                 }
-                DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+                osc::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
             }
         }
 
@@ -7447,7 +7460,7 @@ namespace
             {
                 m_Shared->UpdCamera().radius *= 1.2f;
             }
-            DrawTooltipIfItemHovered("Zoom Out");
+            osc::DrawTooltipIfItemHovered("Zoom Out");
 
             ImGui::SameLine();
 
@@ -7455,7 +7468,7 @@ namespace
             {
                 m_Shared->UpdCamera().radius *= 0.8f;
             }
-            DrawTooltipIfItemHovered("Zoom In");
+            osc::DrawTooltipIfItemHovered("Zoom In");
 
             ImGui::SameLine();
 
@@ -7489,7 +7502,7 @@ namespace
                     m_Shared->UpdCamera().radius = 2.0f * LongestDim(aabb);
                 }
             }
-            DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+            osc::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
 
             ImGui::SameLine();
 
@@ -7503,7 +7516,7 @@ namespace
                 m_Shared->UpdCamera().theta = -fpi2;
                 m_Shared->UpdCamera().phi = 0.0f;
             }
-            DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
+            osc::DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
             ImGui::SameLine();
 
@@ -7517,7 +7530,7 @@ namespace
                 m_Shared->UpdCamera().theta = 0.0f;
                 m_Shared->UpdCamera().phi = -fpi2;
             }
-            DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
+            osc::DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
             ImGui::SameLine();
 
@@ -7531,7 +7544,7 @@ namespace
                 m_Shared->UpdCamera().theta = fpi;
                 m_Shared->UpdCamera().phi = 0.0f;
             }
-            DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
+            osc::DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 
             ImGui::SameLine();
 
@@ -7539,7 +7552,7 @@ namespace
             {
                 m_Shared->UpdCamera() = CreateDefaultCamera();
             }
-            DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
+            osc::DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
         }
 
         void Draw3DViewerOverlayConvertToOpenSimModelButton()
@@ -7560,7 +7573,7 @@ namespace
             }
             ImGui::PopStyleColor();
             ImGui::PopStyleVar();
-            DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nThe converter will take what you have laid out on this screen and (internally) convert it into an equivalent OpenSim::Model. The conversion process is one-way: you can't edit the OpenSim model and go back to this screen. However, your progress on this screen is saved. You can return to the mesh importer screen, which will 'remember' its last state, if you want to make any additional changes/edits.");
+            osc::DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nThe converter will take what you have laid out on this screen and (internally) convert it into an equivalent OpenSim::Model. The conversion process is one-way: you can't edit the OpenSim model and go back to this screen. However, your progress on this screen is saved. You can return to the mesh importer screen, which will 'remember' its last state, if you want to make any additional changes/edits.");
         }
 
         void Draw3DViewerOverlay()
@@ -7670,7 +7683,7 @@ namespace
             if (wasUsingLastFrame && !isUsingThisFrame)
             {
                 m_Shared->CommitCurrentModelGraph("manipulated selection");
-                App::cur().requestRedraw();
+                osc::App::cur().requestRedraw();
             }
 
             // if no manipulation happened this frame, exit early
@@ -7797,7 +7810,7 @@ namespace
 
             // draw 3D scene (effectively, as an ImGui::Image)
             m_Shared->DrawScene(sceneEls);
-            if (m_Shared->IsRenderHovered() && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
+            if (m_Shared->IsRenderHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
             {
                 m_MaybeOpenedContextMenu = m_MaybeHover;
                 ImGui::OpenPopup("##maincontextmenu");
@@ -7893,7 +7906,7 @@ namespace
 
         void DrawMainMenuAboutMenu()
         {
-            MainMenuAboutTab{}.draw();
+            osc::MainMenuAboutTab{}.draw();
         }
 
         // draws main menu at top of screen

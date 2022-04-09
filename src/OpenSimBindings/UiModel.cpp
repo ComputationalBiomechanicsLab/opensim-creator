@@ -17,8 +17,6 @@
 #include <memory>
 #include <vector>
 
-using namespace osc;
-
 static std::unique_ptr<OpenSim::Model> makeNewModel()
 {
     auto rv = std::make_unique<OpenSim::Model>();
@@ -518,7 +516,7 @@ osc::UiModel::UiModel(UiModel const& other) :
 }
 
 osc::UiModel::UiModel(UiModel&&) noexcept = default;
-UiModel& osc::UiModel::operator=(UiModel const& other) = default;
+osc::UiModel& osc::UiModel::operator=(UiModel const& other) = default;
 osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
 osc::UiModel::~UiModel() noexcept = default;
 
@@ -557,7 +555,7 @@ SimTK::State const& osc::UiModel::getState() const
     return m_Impl->getState();
 }
 
-UID osc::UiModel::getStateVersion() const
+osc::UID osc::UiModel::getStateVersion() const
 {
     return m_Impl->getStateVersion();
 }
@@ -572,7 +570,7 @@ bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
     return m_Impl->removeCoordinateEdit(c);
 }
 
-nonstd::span<ComponentDecoration const> osc::UiModel::getSceneDecorations() const
+nonstd::span<osc::ComponentDecoration const> osc::UiModel::getSceneDecorations() const
 {
     return m_Impl->getSceneDecorations();
 }
@@ -592,7 +590,7 @@ void osc::UiModel::setFixupScaleFactor(float sf)
     m_Impl->setFixupScaleFactor(std::move(sf));
 }
 
-AABB osc::UiModel::getSceneAABB() const
+osc::AABB osc::UiModel::getSceneAABB() const
 {
     return m_Impl->getSceneAABB();
 }

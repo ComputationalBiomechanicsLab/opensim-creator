@@ -19,11 +19,8 @@
 
 #include <vector>
 
-using namespace osc;
-
-
-static bool HasGreaterAlphaOrLowerMeshID(ComponentDecoration const& a,
-                                         ComponentDecoration const& b)
+static bool HasGreaterAlphaOrLowerMeshID(osc::ComponentDecoration const& a,
+                                         osc::ComponentDecoration const& b)
 {
     if (a.color.a != b.color.a)
     {
@@ -36,9 +33,9 @@ static bool HasGreaterAlphaOrLowerMeshID(ComponentDecoration const& a,
     }
 }
 
-static Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK::State const& st)
+static osc::Transform TransformInGround(OpenSim::PhysicalFrame const& pf, SimTK::State const& st)
 {
-    return ToTransform(pf.getTransformInGround(st));
+    return osc::ToTransform(pf.getTransformInGround(st));
 }
 
 // geometry rendering/handling support
@@ -86,14 +83,14 @@ namespace
                                   float fixupScaleFactor,
                                   std::vector<osc::ComponentDecoration>& out)
     {
-        glm::vec3 p1 = TransformPoint(TransformInGround(p2p.getBody1(), st), ToVec3(p2p.getPoint1()));
-        glm::vec3 p2 = TransformPoint(TransformInGround(p2p.getBody2(), st), ToVec3(p2p.getPoint2()));
+        glm::vec3 p1 = TransformPoint(TransformInGround(p2p.getBody1(), st), osc::ToVec3(p2p.getPoint1()));
+        glm::vec3 p2 = TransformPoint(TransformInGround(p2p.getBody2(), st), osc::ToVec3(p2p.getPoint2()));
 
         float radius = 0.005f * fixupScaleFactor;
-        Transform cylinderXform = SimbodyCylinderToSegmentTransform({p1, p2}, radius);
+        osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, radius);
 
         out.emplace_back(
-            App::meshes().getCylinderMesh(),
+            osc::App::meshes().getCylinderMesh(),
             cylinderXform,
             glm::vec4{0.7f, 0.7f, 0.7f, 1.0f},
             &p2p
@@ -108,12 +105,12 @@ namespace
     {
         float radius = fixupScaleFactor * 0.005f;
 
-        Transform xform;
-        xform.position = ToVec3(s.getLocationInGround(st));
+        osc::Transform xform;
+        xform.position = osc::ToVec3(s.getLocationInGround(st));
         xform.scale = {radius, radius, radius};
 
         out.emplace_back(
-            App::meshes().getSphereMesh(),
+            osc::App::meshes().getSphereMesh(),
             xform,
             glm::vec4{1.0f, 0.0f, 0.0f, 1.0f},
             &s
@@ -129,19 +126,19 @@ namespace
                     std::vector<osc::ComponentDecoration>& out,
                     OpenSim::ModelDisplayHints const& mdh,
                     SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                    DecorativeGeometryHandler& producer)
+                    osc::DecorativeGeometryHandler& producer)
     {
         // bodies are drawn normally but *also* draw a center-of-mass sphere if they are
         // currently hovered
         if (&b == hovered && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
         {
             float radius = fixupScaleFactor * 0.005f;
-            Transform t = TransformInGround(b, st);
-            t.position = TransformPoint(t, ToVec3(b.getMassCenter()));
+            osc::Transform t = TransformInGround(b, st);
+            t.position = osc::TransformPoint(t, osc::ToVec3(b.getMassCenter()));
             t.scale = {radius, radius, radius};
 
             out.emplace_back(
-                App::meshes().getSphereMesh(),
+                osc::App::meshes().getSphereMesh(),
                 t,
                 glm::vec4{0.0f, 0.0f, 0.0f, 1.0f},
                 &b
@@ -157,7 +154,7 @@ namespace
                             OpenSim::Component const** currentComponent,
                             OpenSim::ModelDisplayHints const& mdh,
                             SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                            DecorativeGeometryHandler& producer)
+                            osc::DecorativeGeometryHandler& producer)
     {
         // GeometryPath requires custom *selection* logic
         //
@@ -174,22 +171,22 @@ namespace
     }
 
     // used whenever the SimTK backend emits something
-    class OpenSimDecorationConsumer final : public DecorationConsumer {
+    class OpenSimDecorationConsumer final : public osc::DecorationConsumer {
     public:
-        OpenSimDecorationConsumer(std::vector<ComponentDecoration>* out,
+        OpenSimDecorationConsumer(std::vector<osc::ComponentDecoration>* out,
                                   OpenSim::Component const** currentComponent) :
             m_Out{std::move(out)},
             m_CurrentComponent{std::move(currentComponent)}
         {
         }
 
-        void operator()(std::shared_ptr<Mesh> const& mesh, Transform const& t, glm::vec4 const& color) override
+        void operator()(std::shared_ptr<osc::Mesh> const& mesh, osc::Transform const& t, glm::vec4 const& color) override
         {
             m_Out->emplace_back(mesh, t, color, *m_CurrentComponent);
         }
 
     private:
-        std::vector<ComponentDecoration>* m_Out;
+        std::vector<osc::ComponentDecoration>* m_Out;
         OpenSim::Component const** m_CurrentComponent;
     };
 
@@ -206,9 +203,9 @@ namespace
 
         OpenSimDecorationConsumer consumer{&out, &currentComponent};
 
-        MeshCache& meshCache = App::meshes();
+        osc::MeshCache& meshCache = osc::App::meshes();
 
-        DecorativeGeometryHandler producer{
+        osc::DecorativeGeometryHandler producer{
             meshCache,
             m.getSystem().getMatterSubsystem(),
             st,

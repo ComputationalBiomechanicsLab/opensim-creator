@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <utility>
 
-using namespace osc;
 using std::chrono_literals::operator""s;
 
 // commit support
@@ -28,37 +27,37 @@ namespace
     public:
         using Clock = std::chrono::system_clock;
 
-        explicit UiModelCommit(UiModel model, std::string_view message) :
+        explicit UiModelCommit(osc::UiModel model, std::string_view message) :
             m_Model{std::move(model)},
             m_Message{std::move(message)}
         {
         }
 
-        UiModelCommit(UiModel model, UID parent, std::string_view message) :
+        UiModelCommit(osc::UiModel model, osc::UID parent, std::string_view message) :
             m_MaybeParentID{std::move(parent)},
             m_Model{std::move(model)},
             m_Message{std::move(message)}
         {
         }
 
-        UID getID() const { return m_ID; }
-        bool hasParent() const { return m_MaybeParentID != UID::empty(); }
-        UID getParentID() const { return m_MaybeParentID; }
+        osc::UID getID() const { return m_ID; }
+        bool hasParent() const { return m_MaybeParentID != osc::UID::empty(); }
+        osc::UID getParentID() const { return m_MaybeParentID; }
         Clock::time_point getCommitTime() const { return m_CommitTime; }
-        UiModel const& getUiModel() const { return m_Model; }
+        osc::UiModel const& getUiModel() const { return m_Model; }
 
     private:
         // unique ID for this commit
-        UID m_ID;
+        osc::UID m_ID;
 
         // (maybe) unique ID of the parent commit
-        UID m_MaybeParentID = UID::empty();
+        osc::UID m_MaybeParentID = osc::UID::empty();
 
         // when the commit was created
         Clock::time_point m_CommitTime = Clock::now();
 
         // the model saved in this snapshot
-        UiModel m_Model;
+        osc::UiModel m_Model;
 
         // commit message
         std::string m_Message;
@@ -446,7 +445,7 @@ osc::UndoableUiModel::UndoableUiModel(UndoableUiModel const& src) :
 
 osc::UndoableUiModel::UndoableUiModel(UndoableUiModel&&) noexcept = default;
 
-UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
+osc::UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
 {
     if (&src != this)
     {
@@ -457,7 +456,7 @@ UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
     return *this;
 }
 
-UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
+osc::UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
 
 osc::UndoableUiModel::~UndoableUiModel() noexcept = default;
 
@@ -486,12 +485,12 @@ void osc::UndoableUiModel::setUpToDateWithFilesystem()
     m_Impl->setFilesystemVersionToCurrent();
 }
 
-UiModel const& osc::UndoableUiModel::getUiModel() const
+osc::UiModel const& osc::UndoableUiModel::getUiModel() const
 {
     return m_Impl->getScratch();
 }
 
-UiModel& osc::UndoableUiModel::updUiModel()
+osc::UiModel& osc::UndoableUiModel::updUiModel()
 {
     return m_Impl->updScratch();
 }
