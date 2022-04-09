@@ -911,7 +911,7 @@ static void DrawAABBs(osc::UiModelViewer::Impl& impl, osc::RenderableScene const
     for (auto const& se : rs.getSceneDecorations())
     {
         glm::vec3 halfWidths = Dimensions(se.worldspaceAABB) / 2.0f;
-        glm::vec3 center = Dimensions(se.worldspaceAABB);
+        glm::vec3 center = Midpoint(se.worldspaceAABB);
 
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
         glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -932,7 +932,7 @@ static void DrawBVHRecursive(osc::Mesh& cube,
     osc::BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-    glm::vec3 center = Dimensions(n.bounds);
+    glm::vec3 center = Midpoint(n.bounds);
 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
