@@ -604,6 +604,12 @@ target_link_libraries(testosc PRIVATE
     GTest::gtest_main
 )
 
+if(APPLE)
+    # this is necessary because test discovery (`gtest_discover_tests`) will run the
+    # binary, even when building in install-mode
+    set_target_properties(testosc PROPERTIES INSTALL_RPATH "@executable_path/lib")
+endif()
+
 # osctests: tell CMake (+IDEs) to discover each test case
 #
 # this is how IDEs like Visual Studio integrate their test parser with
