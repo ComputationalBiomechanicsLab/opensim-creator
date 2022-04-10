@@ -432,7 +432,7 @@ if(TRUE)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
     # do not install gtest alongside osc
-    set(INSTALL_GTEST OFF)
+    set(INSTALL_GTEST OFF CACHE BOOL "install gtests")
 
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
