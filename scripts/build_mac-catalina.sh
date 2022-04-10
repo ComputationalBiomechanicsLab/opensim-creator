@@ -144,6 +144,7 @@ if [[ -z ${OSC_SKIP_OSC:+x} ]]; then
     cd osc-build/
     cmake .. \
         -DCMAKE_PREFIX_PATH=${PWD}/../opensim-install \
+        -DCMAKE_INSTALL_PREFIX=${PWD}/../osc-install \
         -DCMAKE_BUILD_TYPE=Release \
         ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
     cmake --build . --target ${OSC_BUILD_TARGET} -- -j${OSC_BUILD_CONCURRENCY}
