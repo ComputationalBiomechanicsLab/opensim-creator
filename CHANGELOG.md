@@ -9,6 +9,7 @@ All notable changes to this project will be documented here. The format is based
   wrapping surfaces
 - Added googletest unit testing support (internal)
 - Fixed incorrect AABB/BVH visualization in 3D model viewers
+- Updated Mac OSX application icon to match other platforms
 
 ## [0.1.4] - 2022/04/07
 
