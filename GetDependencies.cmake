@@ -431,6 +431,9 @@ if(TRUE)
     # copied from googletest README
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
+    # do not install gtest alongside osc
+    set(INSTALL_GTEST OFF)
+
     add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
 
