@@ -83,12 +83,12 @@ endif()
 if(DEFINED ENV{GITHUB_RUN_ID})
 
     # build is running inside GitHub Action CI - use that ID
-    set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
+    set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}" CACHE STRING "build ID")
 else()
 
     # build is probably running on a dev's machine - generate a random ID
     string(RANDOM RANDOM_ID)
-    set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}")
+    set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}" CACHE STRING "build ID")
     unset(RANDOM_ID)
 endif()
 
@@ -591,7 +591,7 @@ set_target_properties(testosc PROPERTIES
 )
 
 # osctests: link to `osccore` to exercise it
-target_link_libraries(testosc PRIVATE
+target_link_libraries(testosc PUBLIC
 
     # set compile options
     osc_configuration
@@ -608,8 +608,10 @@ target_link_libraries(testosc PRIVATE
 #
 # this is how IDEs like Visual Studio integrate their test parser with
 # the test framework
-include(GoogleTest)
-gtest_discover_tests(testosc)
+if(NOT APPLE)  # TODO: fix apple: it's trying to run this shit while installing, where the RPATH is set up in install-mode
+    include(GoogleTest)
+    gtest_discover_tests(testosc)
+endif()
 
 
 # ------------ configure top-level executable target ------------ #
@@ -644,7 +646,7 @@ set_target_properties(osc PROPERTIES
 )
 
 # osc: link to necessary libraries
-target_link_libraries(osc PRIVATE
+target_link_libraries(osc PUBLIC
 
     # so that it uses the standard flags etc.
     osc_configuration
@@ -654,7 +656,7 @@ target_link_libraries(osc PRIVATE
 )
 
 # osc: link options
-target_link_options(osc PRIVATE
+target_link_options(osc PUBLIC
 
     # MSVC (Windows)
     $<$<CXX_COMPILER_ID:MSVC>:
