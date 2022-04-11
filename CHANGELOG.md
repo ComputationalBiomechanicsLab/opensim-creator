@@ -5,15 +5,22 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
+- (this will be populated with changes made in-tree since the last release)
+
+
+## [0.1.5] - 2022/04/11
+
 - Fixed thread race that causes visual glitches when running forward-dynamic simulations on models containing
   wrapping surfaces
-- Added googletest unit testing support (internal)
-- Fixed incorrect AABB/BVH visualization in 3D model viewers
+- Fixed AABB/BVH visualization being broken in 3D model viewer panels
 - Updated Mac OSX application icon to match other platforms
+- Added googletest unit testing support (internal)
+
 
 ## [0.1.4] - 2022/04/07
 
 - Fixed crash when renaming components
+
 
 ## [0.1.3] - 2022/04/05
 
