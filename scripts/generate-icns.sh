@@ -2,8 +2,16 @@
 
 inkscape=/Applications/Inkscape.app/Contents/MacOS/inkscape
 
+mkdir osc.iconset
+cd osc.iconset
+
 for sz in 16 32 128 256 512; do
-    ${inkscape} -w $sz -h $sz ../build_resources/logo.svg --export-filename icon_${sz}x${sz}.png
-    ${inkscape} -w $((2*sz)) -h $((2*sz)) ../build_resources/logo.svg --export-filename icon_${sz}x${sz}@2x.png
+    #${inkscape} -w $sz -h $sz resources/logo.svg --export-filename icon_${sz}x${sz}.png
+    #${inkscape} -w $((2*sz)) -h $((2*sz)) resources/logo.svg --export-filename icon_${sz}x${sz}@2x.png
+
+    convert ../resources/logo.png -resize ${sz}x${sz} icon_${sz}x${sz}.png
+    convert ../resources/logo.png -resize $((2*sz))x$((2*sz)) icon_${sz}x${sz}@2x.png
 done
-iconutil --convert icns --output logo.icns .
+cd -
+iconutil --convert icns --output resources/osc.icns osc.iconset
+rm -rf osc.iconset
