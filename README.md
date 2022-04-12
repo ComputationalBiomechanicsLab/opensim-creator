@@ -20,7 +20,7 @@ to build, integrate, and package.
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
 department at [TU Delft](https://www.tudelft.nl/). It is currently funded by the
-Chan Zuckerberg Initiative's "Essential Open Source Software for
+[Chan Zuckerberg Initiative](https://chanzuckerberg.com/)'s "Essential Open Source Software for
 Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 <table align="center">
