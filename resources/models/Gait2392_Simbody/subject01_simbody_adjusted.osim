@@ -4473,7 +4473,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_r-P3">
-									<location> 0.0610488 0.0207432 0.00138393</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -4596,7 +4596,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_r-P5">
-									<location> 0.0553164 0.0215416 -0.0144324</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -4713,7 +4713,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_r-P4">
-									<location> 0.0548267 0.025002 0.00177934</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -4836,7 +4836,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_r-P5">
-									<location> 0.0592676 0.0193616 0.0163106</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -7972,7 +7972,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_l-P3">
-									<location> 0.0610488 0.0207432 -0.00138393</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>
@@ -8095,7 +8095,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_l-P5">
-									<location> 0.0553164 0.0215416 0.0144324</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>
@@ -8212,7 +8212,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_l-P4">
-									<location> 0.0610488 0.0207432 -0.00138393</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>
@@ -8279,9 +8279,9 @@
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1365</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>0.10082595</optimal_fiber_length>
+					<optimal_fiber_length>0.10137427</optimal_fiber_length>
 					<!--Resting length of the tendon-->
-					<tendon_slack_length>0.15761298</tendon_slack_length>
+					<tendon_slack_length>0.15847012</tendon_slack_length>
 					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
 					<pennation_angle_at_optimal>0.05235988</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
@@ -8335,7 +8335,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_l-P5">
-									<location> 0.0592676 0.0193616 -0.0163106</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>

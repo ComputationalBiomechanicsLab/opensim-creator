@@ -2869,7 +2869,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_r </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_r-P3">
-									<location>       0.06175755       0.02098402       0.00140000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -3019,7 +3019,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_r </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_r-P5">
-									<location>       0.05595861       0.02179166      -0.01460000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -3153,7 +3153,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_r </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_r-P4">
-									<location>       0.05546322       0.02529232       0.00180000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -3303,7 +3303,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_r </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_r-P5">
-									<location>       0.05995571       0.01958640       0.01650000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -7514,7 +7514,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_l </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_l-P3">
-									<location>       0.06175755       0.02098402      -0.00140000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -7664,7 +7664,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_l </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_l-P5">
-									<location>       0.05595861       0.02179166       0.01460000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -7798,7 +7798,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_l </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_l-P4">
-									<location>       0.06175755       0.02098402      -0.00140000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
@@ -7948,7 +7948,7 @@ Holzbaur, KR, WM Murray and SL Delp, 2005. A model of the upper extremity for si
 									<coordinate> knee_angle_l </coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_l-P5">
-									<location>       0.05995571       0.01958640      -0.01650000 </location>
+									<location>       0 0 0 </location>
 									<VisibleObject name="">
 										<geometry_files> </geometry_files>
 										<VisibleProperties name="">
