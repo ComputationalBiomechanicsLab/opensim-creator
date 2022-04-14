@@ -418,6 +418,7 @@ if(TRUE)
         osimAnalyses
         osimTools
         osimLepton
+        osimExampleComponents
         SimTKcommon
         SimTKmath
         SimTKsimbody

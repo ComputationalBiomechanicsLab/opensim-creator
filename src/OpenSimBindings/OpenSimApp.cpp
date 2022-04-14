@@ -7,6 +7,7 @@
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
+#include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
@@ -107,6 +108,7 @@ static bool EnsureOpenSimInitialized(osc::Config const& config, std::filesystem:
         RegisterTypes_osimActuators();
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
+        RegisterTypes_osimExampleComponents();
 
         // globally set OpenSim's geometry search path
         //
