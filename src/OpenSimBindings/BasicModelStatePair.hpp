@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
 #include <memory>
@@ -27,7 +28,7 @@ namespace osc
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.
-    class BasicModelStatePair final {
+    class BasicModelStatePair final : VirtualModelStatePair {
     public:
         BasicModelStatePair();
         BasicModelStatePair(std::string_view osimPath);
@@ -37,11 +38,12 @@ namespace osc
         BasicModelStatePair(BasicModelStatePair&&) noexcept;
         BasicModelStatePair& operator=(BasicModelStatePair const&);
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
-        ~BasicModelStatePair() noexcept;
+        ~BasicModelStatePair() noexcept override;
 
-        OpenSim::Model const& getModel() const;
-        OpenSim::Model& updModel();
-        SimTK::State const& getState() const;
+        OpenSim::Model const& getModel() const override;
+        OpenSim::Model& updModel() override;
+
+        SimTK::State const& getState() const override;
 
         class Impl;
     private:

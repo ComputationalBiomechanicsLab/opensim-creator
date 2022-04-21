@@ -2,6 +2,8 @@
 
 #include "src/Utils/UID.hpp"
 
+#include <optional>
+
 namespace OpenSim
 {
 	class Component;
@@ -16,18 +18,18 @@ namespace SimTK
 namespace osc
 {
 	class VirtualModelStatePair {
-
-		virtual ~VirtualModelStatePair() noexcept = 0;
+	public:
+		virtual ~VirtualModelStatePair() noexcept = default;
 
 		virtual OpenSim::Model const& getModel() const = 0;
 		virtual OpenSim::Model& updModel() = 0;
-		virtual UID getModelVersion() const = 0;
 
 		virtual SimTK::State const& getState() const = 0;
-		virtual SimTK::State& updState() = 0;
-		virtual UID getStateVersion() const = 0;
 
 		// opt-in virtual API (selection/hover/isolation logic)
+
+		virtual std::optional<UID> getModelVersion() const { return std::nullopt; }
+		virtual std::optional<UID> getStateVersion() const { return std::nullopt; }
 
 		virtual OpenSim::Component const* getSelected() const { return nullptr; }
 		virtual OpenSim::Component* updSelected() { return nullptr; }
