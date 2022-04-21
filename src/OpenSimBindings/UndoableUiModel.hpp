@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/OpenSimBindings/VirtualModelStatePair.hpp"
+
 #include <filesystem>
 #include <memory>
 
@@ -22,7 +24,7 @@ namespace osc
 namespace osc
 {
     // A "UI ready" model with undo/redo support
-    class UndoableUiModel final {
+    class UndoableUiModel final : public VirtualModelStatePair {
     public:
 
         // construct a new, blank, UndoableUiModel
@@ -44,7 +46,7 @@ namespace osc
         UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
 
         // destruct an UndoableUiModel
-        ~UndoableUiModel() noexcept;
+        ~UndoableUiModel() noexcept override;
 
         // returns `true` if the model has a known on-disk location
         bool hasFilesystemLocation() const;
@@ -88,18 +90,20 @@ namespace osc
         // read/manipulate underlying OpenSim::Model
         //
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
-        OpenSim::Model const& getModel() const;
-        OpenSim::Model& updModel();
+        OpenSim::Model const& getModel() const override;
+        OpenSim::Model& updModel() override;
         void setModel(std::unique_ptr<OpenSim::Model>);
+        UID getModelVersion() const override;
 
         // gets the `SimTK::State` that's valid against the current model
-        SimTK::State const& getState() const;
+        SimTK::State const& getState() const override;
+        UID getStateVersion() const override;
 
         // read/manipulate fixup scale factor
         //
         // this is the scale factor used to scale visual things in the UI
-        float getFixupScaleFactor() const;
-        void setFixupScaleFactor(float);
+        float getFixupScaleFactor() const override;
+        void setFixupScaleFactor(float) override;
         float getReccommendedScaleFactor() const;
 
         // read/manipulate dirty flags
@@ -109,42 +113,19 @@ namespace osc
         void setDirty(bool);
 
         // read/manipulate current selection (if any)
-        bool hasSelected() const;
-        OpenSim::Component const* getSelected() const;
-        template<typename T>
-        T const* getSelectedAs() const
-        {
-            return dynamic_cast<T const*>(getSelected());
-        }
-        OpenSim::Component* updSelected();
-        template<typename T>
-        T* updSelectedAs()
-        {
-            return dynamic_cast<T*>(updSelected());
-        }
-        void setSelected(OpenSim::Component const* c);
-        bool selectionHasTypeHashCode(size_t v) const;
-        template<typename T>
-        bool selectionIsType() const
-        {
-            return selectionHasTypeHashCode(typeid(T).hash_code());
-        }
-        template<typename T>
-        bool selectionDerivesFrom() const
-        {
-            return getSelectedAs<T>() != nullptr;
-        }
+        OpenSim::Component const* getSelected() const override;
+        OpenSim::Component* updSelected() override;
+        void setSelected(OpenSim::Component const* c) override;
 
         // read/manipulate current hover (if any)
-        bool hasHovered() const;
-        OpenSim::Component const* getHovered() const;
-        OpenSim::Component* updHovered();
-        void setHovered(OpenSim::Component const* c);
+        OpenSim::Component const* getHovered() const override;
+        OpenSim::Component* updHovered() override;
+        void setHovered(OpenSim::Component const* c) override;
 
         // read/manipulate current isolation (the thing that's only being drawn - if any)
-        OpenSim::Component const* getIsolated() const;
-        OpenSim::Component* updIsolated();
-        void setIsolated(OpenSim::Component const* c);
+        OpenSim::Component const* getIsolated() const override;
+        OpenSim::Component* updIsolated() override;
+        void setIsolated(OpenSim::Component const* c) override;
 
         class Impl;
     private:

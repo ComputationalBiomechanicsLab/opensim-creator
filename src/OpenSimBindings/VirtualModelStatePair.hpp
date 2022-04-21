@@ -26,10 +26,24 @@ namespace osc
 
 		virtual SimTK::State const& getState() const = 0;
 
-		// opt-in virtual API (selection/hover/isolation logic)
+		// opt-in virtual API (handy for rendering, UI stuff, etc. but not entirely
+		// required for computational stuff)
 
-		virtual std::optional<UID> getModelVersion() const { return std::nullopt; }
-		virtual std::optional<UID> getStateVersion() const { return std::nullopt; }
+		// used for UI caching
+		virtual UID getModelVersion() const
+		{
+			// assume the version always changes, unless the concrete implementation
+			// provides a way of knowing when it doesn't
+			return UID{};
+		}
+
+		// used for UI caching
+		virtual UID getStateVersion() const
+		{
+			// assume the version always changes, unless the concrete implementation
+			// provides a way of knowing when it doesn't
+			return UID{};
+		}
 
 		virtual OpenSim::Component const* getSelected() const { return nullptr; }
 		virtual OpenSim::Component* updSelected() { return nullptr; }
@@ -42,6 +56,10 @@ namespace osc
 		virtual OpenSim::Component const* getIsolated() const { return nullptr; }
 		virtual OpenSim::Component* updIsolated() { return nullptr; }
 		virtual void setIsolated(OpenSim::Component const*) {}
+
+		// used to scale weird models (e.g. fly leg) in the UI
+		virtual float getFixupScaleFactor() const { return 1.0f; }
+		virtual void setFixupScaleFactor(float) {}
 
 		// concrete helper methods that use the above virutal API
 

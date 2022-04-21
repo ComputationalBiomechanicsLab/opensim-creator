@@ -28,7 +28,7 @@ namespace osc
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.
-    class BasicModelStatePair final : VirtualModelStatePair {
+    class BasicModelStatePair final : public VirtualModelStatePair {
     public:
         BasicModelStatePair();
         BasicModelStatePair(std::string_view osimPath);
