@@ -348,6 +348,10 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/FdSimulation.cpp
+    src/OpenSimBindings/FdSimulation.hpp
+    src/OpenSimBindings/IntegratorMethod.cpp
+    src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/MainEditorState.cpp
@@ -356,22 +360,21 @@ add_library(osccore STATIC
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
     src/OpenSimBindings/OpenSimApp.cpp
     src/OpenSimBindings/OpenSimApp.hpp
-    src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
+    src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OutputExtractor.cpp
     src/OpenSimBindings/OutputExtractor.hpp
     src/OpenSimBindings/ParamBlock.hpp
     src/OpenSimBindings/ParamBlock.cpp
     src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.hpp
-    src/OpenSimBindings/FdSimulation.cpp
-    src/OpenSimBindings/FdSimulation.hpp
-    src/OpenSimBindings/IntegratorMethod.cpp
-    src/OpenSimBindings/IntegratorMethod.hpp
+    src/OpenSimBindings/SimulationClock.hpp
     src/OpenSimBindings/SimulationReport.cpp
     src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/SimulationStatus.cpp
     src/OpenSimBindings/SimulationStatus.hpp
+    src/OpenSimBindings/SimulatorModelStatePair.cpp
+    src/OpenSimBindings/SimulatorModelStatePair.hpp
     src/OpenSimBindings/StateModifications.cpp
     src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
