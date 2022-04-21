@@ -31,17 +31,7 @@ public:
     {
     }
 
-    UndoableUiModel const& getEditedModel() const
-    {
-        return *m_EditedModel;
-    }
-
-    UndoableUiModel& updEditedModel()
-    {
-        return *m_EditedModel;
-    }
-
-    std::shared_ptr<UndoableUiModel> updEditedModelPtr()
+    std::shared_ptr<UndoableUiModel> editedModel()
     {
         return m_EditedModel;
     }
@@ -204,19 +194,9 @@ osc::MainEditorState::MainEditorState(MainEditorState&&) = default;
 osc::MainEditorState& osc::MainEditorState::operator=(MainEditorState&&) = default;
 osc::MainEditorState::~MainEditorState() noexcept = default;
 
-osc::UndoableUiModel const& osc::MainEditorState::getEditedModel() const
+std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::editedModel()
 {
-    return m_Impl->getEditedModel();
-}
-
-osc::UndoableUiModel& osc::MainEditorState::updEditedModel()
-{
-    return m_Impl->updEditedModel();
-}
-
-std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::updEditedModelPtr()
-{
-    return m_Impl->updEditedModelPtr();
+    return m_Impl->editedModel();
 }
 
 bool osc::MainEditorState::hasSimulations() const
@@ -339,8 +319,8 @@ void osc::AutoFocusAllViewers(MainEditorState& st)
 
 void osc::StartSimulatingEditedModel(MainEditorState& st)
 {
-    UndoableUiModel const& uim = st.getEditedModel();
-    BasicModelStatePair modelState{uim.getModel(), uim.getState()};
+    std::shared_ptr<UndoableUiModel> uim = st.editedModel();
+    BasicModelStatePair modelState{uim->getModel(), uim->getState()};
     FdParams params = FromParamBlock(st.getSimulationParams());
 
     st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});

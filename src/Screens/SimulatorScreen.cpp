@@ -306,7 +306,7 @@ static bool SimscreenDraw3DViewer(osc::SimulatorScreen::Impl& impl,
     {
         *guard,
         report,
-        impl.mes->getEditedModel().getFixupScaleFactor(),
+        impl.mes->editedModel()->getFixupScaleFactor(),
         osc::FindComponent(*guard, impl.selected),
         osc::FindComponent(*guard, impl.hovered),
         osc::FindComponent(*guard, impl.isolated)
@@ -984,8 +984,9 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
 
         if (ImGui::MenuItem("edit model"))
         {
-            st.updEditedModel().setModel(std::make_unique<OpenSim::Model>(*sim.getModel()));
-            st.updEditedModel().commit("loaded model from simulator window");
+            std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+            editedModel->setModel(std::make_unique<OpenSim::Model>(*sim.getModel()));
+            editedModel->commit("loaded model from simulator window");
             osc::App::cur().requestTransition<osc::ModelEditorScreen>(impl.mes);
         }
 

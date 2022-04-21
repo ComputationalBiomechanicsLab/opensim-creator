@@ -52,10 +52,8 @@ namespace osc
         MainEditorState& operator=(MainEditorState&&);
         ~MainEditorState() noexcept;
 
-        // edited model
-        UndoableUiModel const& getEditedModel() const;
-        UndoableUiModel& updEditedModel();
-        std::shared_ptr<UndoableUiModel> updEditedModelPtr();
+        // model that the user is editing
+        std::shared_ptr<UndoableUiModel> editedModel();
 
         // active simulations
         bool hasSimulations() const;
