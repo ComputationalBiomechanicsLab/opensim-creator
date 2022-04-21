@@ -463,13 +463,7 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
     {
         {
             OSC_PERF("generate decorations");
-            osc::GenerateModelDecorations(
-                msp.getModel(),
-                msp.getState(),
-                msp.getFixupScaleFactor(),
-                impl.m_Decorations,
-                selected,
-                hovered);
+            osc::GenerateModelDecorations(msp, impl.m_Decorations);
         }
 
         {

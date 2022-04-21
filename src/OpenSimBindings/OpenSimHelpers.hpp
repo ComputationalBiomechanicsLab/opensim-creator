@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/CustomDecorationOptions.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -105,12 +106,9 @@ namespace osc
     bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
 
     // generates decorations for a model + state
-    void GenerateModelDecorations(OpenSim::Model const&,
-                                  SimTK::State const&,
-                                  float fixupScaleFactor,
+    void GenerateModelDecorations(VirtualConstModelStatePair const&,
                                   std::vector<osc::ComponentDecoration>&,
-                                  OpenSim::Component const* selected,
-                                  OpenSim::Component const* hovered);
+                                  CustomDecorationOptions = {});
 
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
 

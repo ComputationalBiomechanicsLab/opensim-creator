@@ -47,14 +47,26 @@ namespace osc
 			return UID{};
 		}
 
-		virtual OpenSim::Component const* getSelected() const { return nullptr; }
+		virtual OpenSim::Component const* getSelected() const
+		{
+			return nullptr;
+		}
 
-		virtual OpenSim::Component const* getHovered() const { return nullptr; }
+		virtual OpenSim::Component const* getHovered() const
+		{
+			return nullptr;
+		}
 
-		virtual OpenSim::Component const* getIsolated() const { return nullptr; }
+		virtual OpenSim::Component const* getIsolated() const
+		{
+			return nullptr;
+		}
 
 		// used to scale weird models (e.g. fly leg) in the UI
-		virtual float getFixupScaleFactor() const { return 1.0f; }
+		virtual float getFixupScaleFactor() const
+		{
+			return 1.0f;
+		}
 
 		// concrete helper methods that use the above virutal API
 
@@ -63,11 +75,14 @@ namespace osc
 			return getSelected() != nullptr;
 		}
 
+		// warning: must be implemented in the cpp file because some compilers
+		// require complete types for `typeid`
+		bool selectionHasTypeID(std::type_info const&) const;
+
 		template<typename T>
 		bool selectionIsType() const
 		{
-			OpenSim::Component const* selected = getSelected();
-			return selected && typeid(*selected) == typeid(T);
+			return selectionHasTypeID(typeid(T));
 		}
 
 		template<typename T>

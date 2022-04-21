@@ -348,6 +348,7 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/CustomDecorationOptions.hpp
     src/OpenSimBindings/FdSimulation.cpp
     src/OpenSimBindings/FdSimulation.hpp
     src/OpenSimBindings/IntegratorMethod.cpp
@@ -358,6 +359,7 @@ add_library(osccore STATIC
     src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
+    src/OpenSimBindings/MuscleDecorationStyle.hpp
     src/OpenSimBindings/OpenSimApp.cpp
     src/OpenSimBindings/OpenSimApp.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
@@ -386,6 +388,7 @@ add_library(osccore STATIC
     src/OpenSimBindings/UiModel.hpp
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
+    src/OpenSimBindings/VirtualConstModelStatePair.cpp
     src/OpenSimBindings/VirtualConstModelStatePair.hpp
     src/OpenSimBindings/VirtualModelStatePair.hpp
     src/OpenSimBindings/VirtualOutputExtractor.hpp

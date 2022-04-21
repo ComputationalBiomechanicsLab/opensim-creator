@@ -150,25 +150,59 @@ namespace
         HandleComponent(b, st, mdh, geomList, producer);
     }
 
+    void HandleSconeMusclePath(osc::CustomDecorationOptions const& opts,
+                              OpenSim::Muscle const& muscle,
+                              SimTK::State const& st,
+                              OpenSim::Component const** currentComponent,
+                              OpenSim::ModelDisplayHints const& mdh,
+                              SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
+                              osc::DecorativeGeometryHandler& producer)
+    {
+        OpenSim::PathPointSet const& pps = muscle.getGeometryPath().getPathPointSet();
+        if (pps.getSize() == 0)
+        {
+            return;  // no points in the path
+        }
+
+        double mLen = muscle.getFiberLength(st);
+        mLen = std::clamp(mLen, 0.0, mLen);
+
+        double tLen = muscle.getTendonLength(st);
+        tLen = std::clamp(tLen, 0.0, tLen);
+
+
+        // add first point
+        pps[0].getLocationInGround(st);
+
+        // TODO: not-generic handling
+        HandleComponent(muscle.getGeometryPath(), st, mdh, geomList, producer);
+    }
+
     // OSC-specific decoration handler for `OpenSim::GeometryPath`
-    void HandleGeometryPath(OpenSim::GeometryPath const& gp,
+    void HandleGeometryPath(osc::CustomDecorationOptions const& opts,
+                            OpenSim::GeometryPath const& gp,
                             SimTK::State const& st,
                             OpenSim::Component const** currentComponent,
                             OpenSim::ModelDisplayHints const& mdh,
                             SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
                             osc::DecorativeGeometryHandler& producer)
     {
-        // GeometryPath requires custom *selection* logic
-        //
-        // if it's owned by a muscle then hittesting should return a muscle
         if (gp.hasOwner())
         {
             if (auto const* musc = dynamic_cast<OpenSim::Muscle const*>(&gp.getOwner()); musc)
             {
+                // owner is a muscle, coerce selection "hit" to the muscle
                 *currentComponent = musc;
+
+                if (opts.getMuscleDecorationStyle() == osc::MuscleDecorationStyle::Scone)
+                {
+                    HandleSconeMusclePath(opts, *musc, st, currentComponent, mdh, geomList, producer);
+                    return;  // don't let it fall through to the generic handler
+                }
             }
         }
 
+        // if it falls through this far, just handle the muscle generically
         HandleComponent(gp, st, mdh, geomList, producer);
     }
 
@@ -192,7 +226,8 @@ namespace
         OpenSim::Component const** m_CurrentComponent;
     };
 
-    void GenerateDecorationEls(OpenSim::Model const& m,
+    void GenerateDecorationEls(osc::CustomDecorationOptions const& opts,
+                               OpenSim::Model const& m,
                                SimTK::State const& st,
                                float fixupScaleFactor,
                                std::vector<osc::ComponentDecoration>& out,
@@ -243,7 +278,7 @@ namespace
             }
             else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
             {
-                HandleGeometryPath(*gp, st, &currentComponent, mdh, geomList, producer);
+                HandleGeometryPath(opts, *gp, st, &currentComponent, mdh, geomList, producer);
             }
             else
             {
@@ -643,18 +678,15 @@ bool osc::TryDeleteComponentFromModel(OpenSim::Model& m, OpenSim::Component& c)
     return false;
 }
 
-void osc::GenerateModelDecorations(OpenSim::Model const& model,
-                                   SimTK::State const& state,
-                                   float fixupScaleFactor,
+void osc::GenerateModelDecorations(VirtualConstModelStatePair const& p,
                                    std::vector<ComponentDecoration>& out,
-                                   OpenSim::Component const* selected,
-                                   OpenSim::Component const* hovered)
+                                   CustomDecorationOptions opts)
 {
     out.clear();
 
     {
         OSC_PERF("scene generation");
-        GenerateDecorationEls(model, state, fixupScaleFactor, out, selected, hovered);
+        GenerateDecorationEls(opts, p.getModel(), p.getState(), p.getFixupScaleFactor(), out, p.getSelected(), p.getHovered());
     }
 
     {
@@ -818,7 +850,7 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
     // AABBs to get an idea of what the "true" scale of the model probably
     // is (without the model containing oversized frames, etc.)
     std::vector<ComponentDecoration> ses;
-    GenerateModelDecorations(p.getModel(), p.getState(), 0.0f, ses, p.getSelected(), p.getHovered());
+    GenerateModelDecorations(p, ses);
 
     if (ses.empty())
     {
