@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Utils/SynchronizedValue.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <optional>

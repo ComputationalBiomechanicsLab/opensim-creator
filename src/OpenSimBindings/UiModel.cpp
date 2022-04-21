@@ -3,7 +3,6 @@
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"

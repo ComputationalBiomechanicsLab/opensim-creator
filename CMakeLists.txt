@@ -366,7 +366,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/OutputExtractor.hpp
     src/OpenSimBindings/ParamBlock.hpp
     src/OpenSimBindings/ParamBlock.cpp
-    src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/SimulationClock.hpp
     src/OpenSimBindings/SimulationReport.cpp

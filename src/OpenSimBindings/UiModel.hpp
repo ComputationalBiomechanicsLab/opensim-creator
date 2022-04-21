@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/Maths/AABB.hpp"
-#include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
@@ -41,7 +41,7 @@ namespace osc
     //
     // this class guarantees that the returned model/state/decorations are up-to-date
     // by internally checking dirty flags
-    class UiModel final : public RenderableScene, public VirtualModelStatePair {
+    class UiModel final : public VirtualModelStatePair {
     public:
         // construct a blank (new) UiModel
         UiModel();
@@ -81,10 +81,10 @@ namespace osc
         bool removeCoordinateEdit(OpenSim::Coordinate const&);
 
         // get a list of renderable scene elements that represent the model in its state
-        nonstd::span<ComponentDecoration const> getSceneDecorations() const override;
+        nonstd::span<ComponentDecoration const> getSceneDecorations() const;
 
         // get a bounding-volume-hierarchy (BVH) for the model's scene decorations
-        BVH const& getSceneBVH() const override;
+        BVH const& getSceneBVH() const;
 
         // get the fixup scale factor used to generate scene decorations
         float getFixupScaleFactor() const override;

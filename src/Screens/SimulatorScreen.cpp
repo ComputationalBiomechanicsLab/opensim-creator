@@ -8,7 +8,6 @@
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
-#include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
@@ -214,7 +213,7 @@ static void DrawSimulationScrubber(osc::SimulatorScreen::Impl& impl, osc::Simula
 
 namespace
 {
-    class RenderableSim final : public osc::RenderableScene {
+    class RenderableSim final {
     public:
         RenderableSim(OpenSim::Model const& model,
                       osc::SimulationReport const& report,
@@ -238,32 +237,32 @@ namespace
             UpdateSceneBVH(m_Decorations, m_SceneBVH);
         }
 
-        nonstd::span<osc::ComponentDecoration const> getSceneDecorations() const override
+        nonstd::span<osc::ComponentDecoration const> getSceneDecorations() const
         {
             return m_Decorations;
         }
 
-        osc::BVH const& getSceneBVH() const override
+        osc::BVH const& getSceneBVH() const
         {
             return m_SceneBVH;
         }
 
-        float getFixupScaleFactor() const override
+        float getFixupScaleFactor() const
         {
             return m_FixupScaleFactor;
         }
 
-        OpenSim::Component const* getSelected() const override
+        OpenSim::Component const* getSelected() const
         {
             return m_Selected;
         }
 
-        OpenSim::Component const* getHovered() const override
+        OpenSim::Component const* getHovered() const
         {
             return m_Hovered;
         }
 
-        OpenSim::Component const* getIsolated() const override
+        OpenSim::Component const* getIsolated() const
         {
             return m_Isolated;
         }
@@ -301,16 +300,7 @@ static bool SimscreenDraw3DViewer(osc::SimulatorScreen::Impl& impl,
         return true;  // it's open, but not shown
     }
 
-    RenderableSim rs
-    {
-        ms.getModel(),
-        ms.getSimulationReport(),
-        impl.mes->editedModel()->getFixupScaleFactor(),
-        ms.getSelected(),
-        ms.getHovered(),
-        ms.getIsolated(),
-    };
-    auto resp = viewer.draw(rs);
+    auto resp = viewer.draw(ms);
     ImGui::End();
 
     if (resp.hovertestResult)
