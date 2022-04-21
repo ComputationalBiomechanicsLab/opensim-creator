@@ -1275,13 +1275,6 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
 {
     Impl& impl = *m_Impl;
 
-    // auto-focus the camera, if the user requested it last frame
-    if (impl.autoFocusCameraNextFrame)
-    {
-        DoAutoFocusCamera(impl);
-        impl.autoFocusCameraNextFrame = false;
-    }
-
     // update camera if necessary
     if (impl.renderHovered)
     {
@@ -1315,7 +1308,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
         {
             if (ctrlDown)
             {
-                DoAutoFocusCamera(impl);
+                impl.autoFocusCameraNextFrame = true;
             }
             else
             {
@@ -1359,6 +1352,16 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
         }
 
         PopulareSceneDrawlist(impl, rs);
+
+        // auto-focus the camera, if the user requested it last frame
+        //
+        // care: indirectly depends on the scene drawlist being up-to-date
+        if (impl.autoFocusCameraNextFrame)
+        {
+            DoAutoFocusCamera(impl);
+            impl.autoFocusCameraNextFrame = false;
+        }
+
         DrawSceneTexture(impl, rs.getFixupScaleFactor());
         DrawInSceneOverlays(impl);
         BlitSceneTexture(impl);
