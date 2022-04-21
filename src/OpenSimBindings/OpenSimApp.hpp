@@ -4,7 +4,7 @@
 
 namespace osc
 {
-	// an App that also initializes OpenSim stuff
+	// an `osc::App` that also initializes OpenSim (logging, registering components, etc.)
 	class OpenSimApp : public App {
 	public:
 		OpenSimApp();

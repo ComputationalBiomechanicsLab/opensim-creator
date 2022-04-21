@@ -21,6 +21,7 @@ namespace osc
 
 namespace osc
 {
+    // abstract representation of a renderable UI scene
     class RenderableScene {
     public:
         virtual ~RenderableScene() noexcept = default;

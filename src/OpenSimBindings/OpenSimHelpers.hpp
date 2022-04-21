@@ -23,6 +23,7 @@ namespace SimTK
     class State;
 }
 
+// OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
     int DistanceFromRoot(OpenSim::Component const&);

@@ -32,6 +32,7 @@ namespace SimTK
 
 namespace osc
 {
+    // flag type that can be used to say what subfields an OpenSim output has
     enum class OutputSubfield {
         None = 0,
         X = 1<<0,
@@ -47,7 +48,7 @@ namespace osc
     // returns applicable OutputSubfield ORed together
     int GetSupportedSubfields(OpenSim::AbstractOutput const&);
 
-    // an output extractor that uses the OpenSim::AbstractOutput API to extract a value
+    // an output extractor that uses the `OpenSim::AbstractOutput` API to extract a value
     // from a component
     class ComponentOutputExtractor final : public VirtualOutputExtractor {
     public:

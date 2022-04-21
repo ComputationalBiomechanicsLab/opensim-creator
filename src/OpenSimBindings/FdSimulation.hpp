@@ -70,7 +70,7 @@ namespace osc
     ParamBlock ToParamBlock(FdParams const&);
     FdParams FromParamBlock(ParamBlock const&);
 
-    // fd simulation that immediately starts running on a background thread
+    // a forward-dynamic simulation that immediately starts running on a background thread
     class FdSimulation final {
     public:
         // immediately starts the simulation upon construction

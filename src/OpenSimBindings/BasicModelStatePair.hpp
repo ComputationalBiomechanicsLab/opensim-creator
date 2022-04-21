@@ -17,16 +17,16 @@ namespace OpenSim
 
 namespace osc
 {
-    // guarantees to be a value type that is constructed with:
+    // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
-    // - model called `finalizeFromProperties`
-    // - model called `finalizeConnections`
-    // - model called `buildSystem`
-    // - (if creating a state) state called `Model::equilibrateMuscles(State&)`
-    // - (if creating a state) state called `Model::realizeAcceleration(State&)`
+    // - `model.finalizeFromProperties`
+    // - `model.finalizeConnections`
+    // - `model.buildSystem`
+    // - (if creating a new state) `model.equilibrateMuscles(State&)`
+    // - (if creating a new state) `model.realizeAcceleration(State&)`
     //
-    // does not maintain these promises throughout its lifetime (callers can
-    // freely mutate both the model and state)
+    // this is a *basic* class that only guarantees the model is *initialized* this way. It
+    // does not guarantee that everything is up-to-date after a caller mutates the model.
     class BasicModelStatePair final {
     public:
         BasicModelStatePair();

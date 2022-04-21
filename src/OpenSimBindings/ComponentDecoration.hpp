@@ -15,6 +15,7 @@ namespace OpenSim
 
 namespace osc
 {
+    // represents a renderable decoration for a component in a model
     struct ComponentDecoration {
         std::shared_ptr<Mesh> mesh;
         Transform transform;

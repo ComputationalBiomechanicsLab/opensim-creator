@@ -20,7 +20,10 @@ namespace OpenSim
 
 namespace osc
 {
-    // which panels should be shown?
+    // a struct representing which panels should be shown in the main UI window
+    //
+    // TODO: this should probably be an associative string-->bool lookup that can
+    //       be saved to the user config, rather than being hard-coded like this
     struct UserPanelPreferences final {
         bool actions = true;
         bool hierarchy = true;

@@ -36,7 +36,7 @@ namespace osc
 
 namespace osc
 {
-    // a "UI-ready" OpenSim::Model with an associated (rendered) state
+    // a "UI-ready" OpenSim::Model + SimTK::State pair
     //
     // this class guarantees that the returned model/state/decorations are up-to-date
     // by internally checking dirty flags
