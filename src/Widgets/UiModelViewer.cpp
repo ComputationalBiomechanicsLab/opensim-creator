@@ -25,6 +25,7 @@
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Utils/Perf.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <glm/mat3x3.hpp>
@@ -460,14 +461,21 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
         isolated != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
         msp.getFixupScaleFactor() != impl.m_LastFixupFactor)
     {
-        osc::GenerateModelDecorations(
-            msp.getModel(),
-            msp.getState(),
-            msp.getFixupScaleFactor(),
-            impl.m_Decorations,
-            selected,
-            hovered);
-        osc::UpdateSceneBVH(impl.m_Decorations, impl.m_SceneBVH);
+        {
+            OSC_PERF("generate decorations");
+            osc::GenerateModelDecorations(
+                msp.getModel(),
+                msp.getState(),
+                msp.getFixupScaleFactor(),
+                impl.m_Decorations,
+                selected,
+                hovered);
+        }
+
+        {
+            OSC_PERF("generate BVH");
+            osc::UpdateSceneBVH(impl.m_Decorations, impl.m_SceneBVH);
+        }
 
         impl.m_LastModelVersion = msp.getModelVersion();
         impl.m_LastStateVersion = msp.getStateVersion();

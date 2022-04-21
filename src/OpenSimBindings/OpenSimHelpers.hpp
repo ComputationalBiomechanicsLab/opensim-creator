@@ -18,6 +18,11 @@ namespace OpenSim
     class Joint;
 }
 
+namespace osc
+{
+    class VirtualConstModelStatePair;
+}
+
 namespace SimTK
 {
     class State;
@@ -132,4 +137,6 @@ namespace osc
 
     // adds a component to an appropriate (if possible - e.g. jointset) location in the model
     void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
+
+    float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
 }

@@ -60,6 +60,7 @@ namespace osc
 
         // get underlying `OpenSim::Model` that the UiModel wraps
         OpenSim::Model const& getModel() const override;
+
         OpenSim::Model& updModel() override;
 
         // update the model without modifying the version
@@ -68,6 +69,7 @@ namespace osc
         // manually modify the version
         void markModelAsModified();
         void setModel(std::unique_ptr<OpenSim::Model>);
+
         UID getModelVersion() const override;
 
         // get associated (default + state modifications) model state
@@ -80,30 +82,13 @@ namespace osc
         // remove a state modification from the model (dirties state)
         bool removeCoordinateEdit(OpenSim::Coordinate const&);
 
-        // get a list of renderable scene elements that represent the model in its state
-        nonstd::span<ComponentDecoration const> getSceneDecorations() const;
-
-        // get a bounding-volume-hierarchy (BVH) for the model's scene decorations
-        BVH const& getSceneBVH() const;
-
         // get the fixup scale factor used to generate scene decorations
         float getFixupScaleFactor() const override;
 
         // set the fixup scale factor used to generate scene decorations (dirties decorations)
         void setFixupScaleFactor(float) override;
 
-        // returns the axis-aligned bounding box (AABB) of the model decorations
-        AABB getSceneAABB() const;
-
-        // returns the 3D worldspace dimensions of the model decorations
-        glm::vec3 getSceneDimensions() const;
-
-        // returns the longest worldspace dimension of the model decorations
-        float getSceneLongestDimension() const;
-
-        // returns what the implementation thinks is a suitable scale factor, given the decoration's dimensions
-        float getRecommendedScaleFactor() const;
-
+        // returns true if the model internally needs to update in order to return a valid model/state
         bool isDirty() const;
 
         // sets dirty flags (advanced)

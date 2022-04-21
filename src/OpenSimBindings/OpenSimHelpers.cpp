@@ -2,8 +2,10 @@
 
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
+#include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -808,4 +810,35 @@ void osc::AddComponentToModel(OpenSim::Model& m, std::unique_ptr<OpenSim::Compon
     {
         m.addComponent(c.release());
     }
+}
+
+float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
+{
+    // generate decorations as if they were empty-sized and union their
+    // AABBs to get an idea of what the "true" scale of the model probably
+    // is (without the model containing oversized frames, etc.)
+    std::vector<ComponentDecoration> ses;
+    GenerateModelDecorations(p.getModel(), p.getState(), 0.0f, ses, p.getSelected(), p.getHovered());
+
+    if (ses.empty())
+    {
+        return 1.0f;
+    }
+
+    AABB aabb = ses[0].worldspaceAABB;
+    for (size_t i = 1; i < ses.size(); ++i)
+    {
+        aabb = Union(aabb, ses[i].worldspaceAABB);
+    }
+
+    float longest = LongestDim(aabb);
+    float rv = 1.0f;
+
+    while (longest < 0.1)
+    {
+        longest *= 10.0f;
+        rv /= 10.0f;
+    }
+
+    return rv;
 }

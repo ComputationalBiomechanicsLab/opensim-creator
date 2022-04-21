@@ -104,7 +104,6 @@ namespace osc
         // this is the scale factor used to scale visual things in the UI
         float getFixupScaleFactor() const override;
         void setFixupScaleFactor(float) override;
-        float getReccommendedScaleFactor() const;
 
         // read/manipulate dirty flags
         //

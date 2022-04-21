@@ -1324,7 +1324,7 @@ private:
 
             if (ImGui::MenuItem("autoscale scale factor"))
             {
-                float sf = editedModel->getReccommendedScaleFactor();
+                float sf = osc::GetRecommendedScaleFactor(*editedModel);
                 editedModel->setFixupScaleFactor(sf);
             }
 

@@ -590,11 +590,6 @@ void osc::UndoableUiModel::setFixupScaleFactor(float v)
     updUiModel().setFixupScaleFactor(v);
 }
 
-float osc::UndoableUiModel::getReccommendedScaleFactor() const
-{
-    return getUiModel().getRecommendedScaleFactor();
-}
-
 void osc::UndoableUiModel::setDirty(bool v)
 {
     updUiModel().setDirty(v);
