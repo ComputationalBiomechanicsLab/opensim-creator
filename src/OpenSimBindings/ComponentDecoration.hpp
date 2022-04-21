@@ -20,7 +20,6 @@ namespace osc
         std::shared_ptr<Mesh> mesh;
         Transform transform;
         glm::vec4 color;
-        AABB worldspaceAABB;
         OpenSim::Component const* component;
 
         ComponentDecoration(std::shared_ptr<Mesh>,
@@ -28,4 +27,6 @@ namespace osc
                             glm::vec4 const& color,
                             OpenSim::Component const*);
     };
+
+    AABB GetWorldspaceAABB(ComponentDecoration const&);
 }

@@ -150,42 +150,234 @@ namespace
         HandleComponent(b, st, mdh, geomList, producer);
     }
 
-    void HandleSconeMusclePath(osc::CustomDecorationOptions const& opts,
-                              OpenSim::Muscle const& muscle,
-                              SimTK::State const& st,
-                              OpenSim::Component const** currentComponent,
-                              OpenSim::ModelDisplayHints const& mdh,
-                              SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                              osc::DecorativeGeometryHandler& producer)
+    std::vector<glm::vec3> GetAllPathPoints(OpenSim::GeometryPath const& gp, SimTK::State const& st)
     {
-        OpenSim::PathPointSet const& pps = muscle.getGeometryPath().getPathPointSet();
-        if (pps.getSize() == 0)
+        std::vector<glm::vec3> rv;
+
+        OpenSim::Array<OpenSim::AbstractPathPoint*> const& pps = gp.getCurrentPath(st);
+
+        for (int i = 0; i < pps.getSize(); ++i)
         {
-            return;  // no points in the path
+            OpenSim::PathWrapPoint const* pwp = dynamic_cast<OpenSim::PathWrapPoint const*>(pps[i]);
+            if (pwp)
+            {
+                osc::Transform body2ground = osc::ToTransform(pwp->getParentFrame().getTransformInGround(st));
+                OpenSim::Array<SimTK::Vec3> const& wrapPath = const_cast<OpenSim::PathWrapPoint*>(pwp)->getWrapPath();
+
+                for (int j = 0; j < wrapPath.getSize(); ++j)
+                {
+                    rv.push_back(body2ground * osc::ToVec3(wrapPath[j]));
+                }
+            }
+            else
+            {
+                rv.push_back(osc::ToVec3(pps[i]->getLocationInGround(st)));
+            }
         }
 
-        double mLen = muscle.getFiberLength(st);
-        mLen = std::clamp(mLen, 0.0, mLen);
+        return rv;
+    }
 
-        double tLen = muscle.getTendonLength(st);
-        tLen = std::clamp(tLen, 0.0, tLen);
+    void HandleSconeMusclePath(osc::CustomDecorationOptions const& opts,
+                               OpenSim::Muscle const& muscle,
+                               SimTK::State const& st,
+                               float fixupScaleFactor,
+                               OpenSim::Component const** currentComponent,
+                               OpenSim::ModelDisplayHints const& mdh,
+                               SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
+                               osc::DecorativeGeometryHandler& producer,
+                               std::vector<osc::ComponentDecoration>& out)
+    {
+        std::vector<glm::vec3> pps = GetAllPathPoints(muscle.getGeometryPath(), st);
+        if (pps.empty())
+        {
+            // edge-case: there are no points in the muscle path
+            return;
+        }
 
+        float const tendonUiRadius = fixupScaleFactor * 0.0025f;
+        glm::vec4 const tendonColor = {1.0f, 1.0f, 1.0f, 1.0f};
+        float const fiberUiRadius = fixupScaleFactor * 0.010f;
+        glm::vec4 const fiberColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
-        // add first point
-        pps[0].getLocationInGround(st);
+        osc::ComponentDecoration fiberSpherePrototype =
+        {
+            osc::App::meshes().getSphereMesh(),
+            osc::Transform{},
+            fiberColor,
+            &muscle
+        };
+        fiberSpherePrototype.transform.scale = {fiberUiRadius, fiberUiRadius, fiberUiRadius};
 
-        // TODO: not-generic handling
-        HandleComponent(muscle.getGeometryPath(), st, mdh, geomList, producer);
+        osc::ComponentDecoration tendonSpherePrototype{fiberSpherePrototype};
+        tendonSpherePrototype.transform.scale = {tendonUiRadius, tendonUiRadius, tendonUiRadius};
+        tendonSpherePrototype.color = tendonColor;
+
+        auto emitTendonSphere = [&](glm::vec3 const& pos)
+        {
+            out.emplace_back(tendonSpherePrototype).transform.position = pos;
+        };
+        auto emitTendonCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        {
+            osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
+
+            out.emplace_back(
+                osc::App::meshes().getCylinderMesh(),
+                cylinderXform,
+                tendonColor,
+                &muscle
+            );
+        };
+        auto emitFiberSphere = [&](glm::vec3 const& pos)
+        {
+            out.emplace_back(fiberSpherePrototype).transform.position = pos;
+        };
+        auto emitFiberCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        {
+            osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
+
+            out.emplace_back(
+                osc::App::meshes().getCylinderMesh(),
+                cylinderXform,
+                fiberColor,
+                &muscle
+            );
+        };
+
+        if (pps.size() == 1)
+        {
+            // edge-case: the muscle is a single point in space: just emit a sphere
+            //
+            // (this really should never happen, but you never know)
+            emitFiberSphere(pps.front());
+            return;
+        }
+
+        // else: the path is >= 2 points, so it's possible to measure a traversal
+        //       length along it
+        out.reserve(out.size() + (2*pps.size() - 1) + 6);
+
+        float tendonLen = static_cast<float>(muscle.getTendonLength(st) * 0.5);
+        tendonLen = std::clamp(tendonLen, 0.0f, tendonLen);
+        float fiberLen = static_cast<float>(muscle.getFiberLength(st));
+        fiberLen = std::clamp(fiberLen, 0.0f, fiberLen);
+        float const fiberEnd = tendonLen + fiberLen;
+
+        size_t i = 1;
+        glm::vec3 prevPos = pps.front();
+        float prevTraversalPos = 0.0f;
+
+        // draw first tendon
+        if (prevTraversalPos < tendonLen)
+        {
+            // emit first tendon sphere
+            emitTendonSphere(prevPos);
+        }
+        while (i < pps.size() && prevTraversalPos < tendonLen)
+        {
+            // emit remaining tendon cylinder + spheres
+
+            glm::vec3 const& pos = pps[i];
+            glm::vec3 prevToPos = pos - prevPos;
+            float prevToPosLen = glm::length(prevToPos);
+            float traversalPos = prevTraversalPos + prevToPosLen;
+            float excess = traversalPos - tendonLen;
+
+            if (excess > 0.0f)
+            {
+                float scaler = (prevToPosLen - excess)/prevToPosLen;
+                glm::vec3 tendonEnd = prevPos + scaler * prevToPos;
+
+                emitTendonCylinder(prevPos, tendonEnd);
+                emitTendonSphere(tendonEnd);
+
+                prevPos = tendonEnd;
+                prevTraversalPos = tendonLen;
+            }
+            else
+            {
+                emitTendonCylinder(prevPos, pos);
+                emitTendonSphere(pos);
+
+                i++;
+                prevPos = pos;
+                prevTraversalPos = traversalPos;
+            }
+        }
+
+        // draw fiber
+        if (i < pps.size() && prevTraversalPos < fiberEnd)
+        {
+            // emit first fiber sphere
+            emitFiberSphere(prevPos);
+        }
+        while (i < pps.size() && prevTraversalPos < fiberEnd)
+        {
+            // emit remaining fiber cylinder + spheres
+
+            glm::vec3 const& pos = pps[i];
+            glm::vec3 prevToPos = pos - prevPos;
+            float prevToPosLen = glm::length(prevToPos);
+            float traversalPos = prevTraversalPos + prevToPosLen;
+            float excess = traversalPos - fiberEnd;
+
+            if (excess > 0.0f)
+            {
+                // emit end point and then exit
+                float scaler = (prevToPosLen - excess)/prevToPosLen;
+                glm::vec3 fiberEndPos = prevPos + scaler * prevToPos;
+
+                emitFiberCylinder(prevPos, fiberEndPos);
+                emitFiberSphere(fiberEndPos);
+
+                prevPos = fiberEndPos;
+                prevTraversalPos = fiberEnd;
+            }
+            else
+            {
+                emitFiberCylinder(prevPos, pos);
+                emitFiberSphere(pos);
+
+                i++;
+                prevPos = pos;
+                prevTraversalPos = traversalPos;
+            }
+        }
+
+        // draw second tendon
+        if (i < pps.size())
+        {
+            // emit first tendon sphere
+            emitTendonSphere(prevPos);
+        }
+        while (i < pps.size())
+        {
+            // emit remaining fiber cylinder + spheres
+
+            glm::vec3 pos = pps[i];
+            glm::vec3 prevToPos = pos - prevPos;
+            float prevToPosLen = glm::length(prevToPos);
+            float traversalPos = prevTraversalPos + prevToPosLen;
+
+            emitTendonCylinder(prevPos, pos);
+            emitTendonSphere(pos);
+
+            i++;
+            prevPos = pos;
+            prevTraversalPos = traversalPos;
+        }
     }
 
     // OSC-specific decoration handler for `OpenSim::GeometryPath`
     void HandleGeometryPath(osc::CustomDecorationOptions const& opts,
                             OpenSim::GeometryPath const& gp,
                             SimTK::State const& st,
+                            float fixupScaleFactor,
                             OpenSim::Component const** currentComponent,
                             OpenSim::ModelDisplayHints const& mdh,
                             SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                            osc::DecorativeGeometryHandler& producer)
+                            osc::DecorativeGeometryHandler& producer,
+                            std::vector<osc::ComponentDecoration>& out)
     {
         if (gp.hasOwner())
         {
@@ -196,7 +388,7 @@ namespace
 
                 if (opts.getMuscleDecorationStyle() == osc::MuscleDecorationStyle::Scone)
                 {
-                    HandleSconeMusclePath(opts, *musc, st, currentComponent, mdh, geomList, producer);
+                    HandleSconeMusclePath(opts, *musc, st, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
                     return;  // don't let it fall through to the generic handler
                 }
             }
@@ -278,7 +470,7 @@ namespace
             }
             else if (auto const* gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
             {
-                HandleGeometryPath(opts, *gp, st, &currentComponent, mdh, geomList, producer);
+                HandleGeometryPath(opts, *gp, st, fixupScaleFactor, &currentComponent, mdh, geomList, producer, out);
             }
             else
             {
@@ -702,7 +894,7 @@ void osc::UpdateSceneBVH(nonstd::span<ComponentDecoration const> sceneEls, BVH& 
 
     for (auto const& el : sceneEls)
     {
-        aabbs.push_back(el.worldspaceAABB);
+        aabbs.push_back(GetWorldspaceAABB(el));
     }
 
     BVH_BuildFromAABBs(bvh, aabbs.data(), aabbs.size());
@@ -857,10 +1049,10 @@ float osc::GetRecommendedScaleFactor(VirtualConstModelStatePair const& p)
         return 1.0f;
     }
 
-    AABB aabb = ses[0].worldspaceAABB;
+    AABB aabb = GetWorldspaceAABB(ses[0]);
     for (size_t i = 1; i < ses.size(); ++i)
     {
-        aabb = Union(aabb, ses[i].worldspaceAABB);
+        aabb = Union(aabb, GetWorldspaceAABB(ses[i]));
     }
 
     float longest = LongestDim(aabb);

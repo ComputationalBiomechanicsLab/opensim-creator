@@ -17,7 +17,11 @@ osc::ComponentDecoration::ComponentDecoration(std::shared_ptr<Mesh> mesh_,
     mesh{std::move(mesh_)},
     transform{transform_},
     color{color_},
-    worldspaceAABB{TransformAABB(mesh->getAABB(), transform_)},
     component{std::move(component_)}
 {
+}
+
+osc::AABB osc::GetWorldspaceAABB(ComponentDecoration const& cd)
+{
+    return TransformAABB(cd.mesh->getAABB(), cd.transform);
 }

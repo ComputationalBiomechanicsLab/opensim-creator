@@ -726,7 +726,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
             // union the rims for scissor testing later
             for (size_t i = pos; i < end; ++i)
             {
-                rimAABB = Union(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
+                rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
             }
 
             gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
@@ -951,8 +951,9 @@ static void DrawAABBs(osc::UiModelViewer::Impl& impl)
 
     for (auto const& se : impl.m_Decorations)
     {
-        glm::vec3 halfWidths = Dimensions(se.worldspaceAABB) / 2.0f;
-        glm::vec3 center = Midpoint(se.worldspaceAABB);
+        osc::AABB worldspaceAABB = GetWorldspaceAABB(se);
+        glm::vec3 halfWidths = Dimensions(worldspaceAABB) / 2.0f;
+        glm::vec3 center = Midpoint(worldspaceAABB);
 
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
         glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
