@@ -42,7 +42,6 @@ namespace osc
         OpenSim::Model const& getModel() const;
         OpenSim::Model& updModel();
         SimTK::State const& getState() const;
-        SimTK::State& updState();
 
         class Impl;
     private:
