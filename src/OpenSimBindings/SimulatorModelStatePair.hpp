@@ -55,7 +55,10 @@ namespace osc
 		float getFixupScaleFactor() const override;
 		void setFixupScaleFactor(float) override;
 
+		std::shared_ptr<Simulation> updSimulation();
 		void setSimulation(std::shared_ptr<Simulation>);
+
+		SimulationReport getSimulationReport() const;
 		void setSimulationReport(SimulationReport);
 
 		class Impl;

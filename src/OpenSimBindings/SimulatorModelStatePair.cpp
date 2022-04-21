@@ -124,6 +124,11 @@ public:
 		m_FixupScaleFactor = v;
 	}
 
+	std::shared_ptr<Simulation> updSimulation()
+	{
+		return m_Simulation;
+	}
+
 	void setSimulation(std::shared_ptr<Simulation> s)
 	{
 		if (s != m_Simulation)
@@ -132,6 +137,12 @@ public:
 			m_ModelVersion = UID{};
 		}
 	}
+
+	SimulationReport getSimulationReport() const
+	{
+		return m_SimulationReport;
+	}
+
 	void setSimulationReport(SimulationReport r)
 	{
 		if (r != m_SimulationReport)
@@ -240,9 +251,19 @@ void osc::SimulatorModelStatePair::setFixupScaleFactor(float v)
 	m_Impl->setFixupScaleFactor(std::move(v));
 }
 
+std::shared_ptr<osc::Simulation> osc::SimulatorModelStatePair::updSimulation()
+{
+	return m_Impl->updSimulation();
+}
+
 void osc::SimulatorModelStatePair::setSimulation(std::shared_ptr<Simulation> sim)
 {
 	m_Impl->setSimulation(std::move(sim));
+}
+
+osc::SimulationReport osc::SimulatorModelStatePair::getSimulationReport() const
+{
+	return m_Impl->getSimulationReport();
 }
 
 void osc::SimulatorModelStatePair::setSimulationReport(SimulationReport report)
