@@ -326,11 +326,6 @@ public:
         }
     }
 
-    bool hasSelected() const
-    {
-        return FindComponent(*m_Model, m_MaybeSelected);
-    }
-
     OpenSim::Component const* getSelected() const
     {
         const_cast<Impl&>(*this).updateIfDirty();
@@ -365,17 +360,6 @@ public:
         {
             m_CurrentDecorationsVersion = UID{};
         }
-    }
-
-    bool selectionHasTypeHashCode(size_t v) const
-    {
-        OpenSim::Component const* selected = getSelected();
-        return selected && typeid(*selected).hash_code() == v;
-    }
-
-    bool hasHovered() const
-    {
-        return FindComponent(*m_Model, m_MaybeHovered);
     }
 
     OpenSim::Component const* getHovered() const
@@ -448,13 +432,6 @@ public:
         {
             m_CurrentDecorationsVersion = UID{};
         }
-    }
-
-    void setSelectedHoveredAndIsolatedFrom(Impl const& other)
-    {
-        m_MaybeSelected = other.m_MaybeSelected;
-        m_MaybeHovered = other.m_MaybeHovered;
-        m_MaybeIsolated = other.m_MaybeIsolated;
     }
 
 private:
@@ -625,11 +602,6 @@ void osc::UiModel::updateIfDirty()
     m_Impl->updateIfDirty();
 }
 
-bool osc::UiModel::hasSelected() const
-{
-    return m_Impl->hasSelected();
-}
-
 OpenSim::Component const* osc::UiModel::getSelected() const
 {
     return m_Impl->getSelected();
@@ -643,16 +615,6 @@ OpenSim::Component* osc::UiModel::updSelected()
 void osc::UiModel::setSelected(OpenSim::Component const* c)
 {
     m_Impl->setSelected(std::move(c));
-}
-
-bool osc::UiModel::selectionHasTypeHashCode(size_t v) const
-{
-    return m_Impl->selectionHasTypeHashCode(std::move(v));
-}
-
-bool osc::UiModel::hasHovered() const
-{
-    return m_Impl->hasHovered();
 }
 
 OpenSim::Component const* osc::UiModel::getHovered() const
@@ -683,9 +645,4 @@ OpenSim::Component* osc::UiModel::updIsolated()
 void osc::UiModel::setIsolated(OpenSim::Component const* c)
 {
     m_Impl->setIsolated(std::move(c));
-}
-
-void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
-{
-    m_Impl->setSelectedHoveredAndIsolatedFrom(*uim.m_Impl);
 }

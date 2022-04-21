@@ -2,6 +2,7 @@
 
 #include "src/Maths/AABB.hpp"
 #include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -40,7 +41,7 @@ namespace osc
     //
     // this class guarantees that the returned model/state/decorations are up-to-date
     // by internally checking dirty flags
-    class UiModel final : public RenderableScene {
+    class UiModel final : public RenderableScene, public VirtualModelStatePair {
     public:
         // construct a blank (new) UiModel
         UiModel();
@@ -58,16 +59,20 @@ namespace osc
         ~UiModel() noexcept override;
 
         // get underlying `OpenSim::Model` that the UiModel wraps
-        OpenSim::Model const& getModel() const;
-        OpenSim::Model& updModel();
-        OpenSim::Model& peekModelADVANCED();  // doesn't modify the version IDs
-        void markModelAsModified();  // manually modify the version IDs
+        OpenSim::Model const& getModel() const override;
+        OpenSim::Model& updModel() override;
+
+        // update the model without modifying the version
+        OpenSim::Model& peekModelADVANCED();
+
+        // manually modify the version
+        void markModelAsModified();
         void setModel(std::unique_ptr<OpenSim::Model>);
-        UID getModelVersion() const;  // changes when the model may have been modified
+        UID getModelVersion() const override;
 
         // get associated (default + state modifications) model state
-        SimTK::State const& getState() const;
-        UID getStateVersion() const;
+        SimTK::State const& getState() const override;
+        UID getStateVersion() const override;
 
         // push a coordinate state modification to the model (dirties state)
         void pushCoordinateEdit(OpenSim::Coordinate const&, CoordinateEdit const&);
@@ -85,7 +90,7 @@ namespace osc
         float getFixupScaleFactor() const override;
 
         // set the fixup scale factor used to generate scene decorations (dirties decorations)
-        void setFixupScaleFactor(float);
+        void setFixupScaleFactor(float) override;
 
         // returns the axis-aligned bounding box (AABB) of the model decorations
         AABB getSceneAABB() const;
@@ -131,68 +136,17 @@ namespace osc
         // appropriately (e.g. by reversing the change)
         void updateIfDirty();
 
-
-        // returns `true` if something is selected within the model
-        bool hasSelected() const;
-
-        // returns a pointer to the currently-selected component, or `nullptr`
         OpenSim::Component const* getSelected() const override;
+        OpenSim::Component* updSelected() override;
+        void setSelected(OpenSim::Component const* c) override;
 
-        // returns a mutable pointer to the currently-selected component, or `nullptr` (dirties model)
-        OpenSim::Component* updSelected();
-
-        // sets the current selection
-        void setSelected(OpenSim::Component const* c);
-
-        // returns `true` if the given
-        bool selectionHasTypeHashCode(size_t v) const;
-
-        // returns `true` if the model has a selection that is of type `T`
-        template<typename T>
-        bool selectionIsType() const
-        {
-            return selectionHasTypeHashCode(typeid(T).hash_code());
-        }
-
-        // returns `true` if the model has a selection that is, or derives from, `T`
-        template<typename T>
-        bool selectionDerivesFrom() const
-        {
-            return dynamic_cast<T const*>(getSelected()) != nullptr;
-        }
-
-        // returns a pointer to the current selection, if any, downcasted as `T` (if possible - otherwise nullptr)
-        template<typename T>
-        T const* getSelectedAs() const
-        {
-            return dynamic_cast<T const*>(getSelected());
-        }
-
-        // returns a pointer to the current selection, if any, downcasted as `T` (if possible - otherwise nullptr)
-        //
-        // dirties model
-        template<typename T>
-        T* updSelectedAs()
-        {
-            return dynamic_cast<T*>(updSelected());
-        }
-
-
-        // returns `true` if something is hovered within the model (e.g. by a mouse)
-        bool hasHovered() const;
         OpenSim::Component const* getHovered() const override;
-        OpenSim::Component* updHovered();
-        void setHovered(OpenSim::Component const* c);
-
+        OpenSim::Component* updHovered() override;
+        void setHovered(OpenSim::Component const* c) override;
 
         OpenSim::Component const* getIsolated() const override;
-        OpenSim::Component* updIsolated();
-        void setIsolated(OpenSim::Component const* c);
-
-
-        // sets selected, hovered, and isolated state from some other model
-        // (i.e. to transfer those pointers accross)
-        void setSelectedHoveredAndIsolatedFrom(UiModel const&);
+        OpenSim::Component* updIsolated() override;
+        void setIsolated(OpenSim::Component const* c) override;
 
         class Impl;
     private:
