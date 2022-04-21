@@ -55,16 +55,13 @@ namespace osc
         // model that the user is editing
         std::shared_ptr<UndoableUiModel> editedModel();
 
-        // active simulations
-        bool hasSimulations() const;
+        // simulations
         int getNumSimulations() const;
-        Simulation const& getSimulation(int) const;
-        Simulation& updSimulation(int);
+        std::shared_ptr<Simulation> updSimulation(int);
         void addSimulation(Simulation);
         void removeSimulation(int);
         int getFocusedSimulationIndex() const;
-        Simulation const* getFocusedSimulation() const;
-        Simulation* updFocusedSimulation();
+        std::shared_ptr<Simulation> updFocusedSimulation();
         void setFocusedSimulation(int);
 
         // simulation params (for making new sims)

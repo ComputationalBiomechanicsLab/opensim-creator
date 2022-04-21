@@ -349,7 +349,7 @@ static bool SimscreenDraw3DViewer(osc::SimulatorScreen::Impl& impl,
 static void SimscreenDrawAll3DViewers(osc::SimulatorScreen::Impl& impl)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (!maybeSim)
     {
@@ -421,7 +421,7 @@ static bool SimscreenDrawMainMenu(osc::SimulatorScreen::Impl& impl)
 static void SimscreenDrawHierarchyTab(osc::SimulatorScreen::Impl& impl)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (!maybeSim)
     {
@@ -887,7 +887,7 @@ static void DrawSimulationStatPlots(osc::SimulatorScreen::Impl& impl,
 static void SimscreenDrawSimulationStats(osc::SimulatorScreen::Impl& impl)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (!maybeSim)
     {
@@ -929,10 +929,10 @@ static void SimscreenDrawSimulationStats(osc::SimulatorScreen::Impl& impl)
 static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int simulationIdx)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation& sim = st.updSimulation(simulationIdx);
+    std::shared_ptr<osc::Simulation> sim = st.updSimulation(simulationIdx);
 
     bool isFocused = simulationIdx == st.getFocusedSimulationIndex();
-    float progress = sim.getProgress();
+    float progress = sim->getProgress();
     ImVec4 baseColor = progress >= 1.0f ? ImVec4{0.0f, 0.7f, 0.0f, 0.5f} : ImVec4{0.7f, 0.7f, 0.0f, 0.5f};
 
     if (isFocused)
@@ -960,11 +960,11 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
 
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
-        ImGui::TextUnformatted(sim.getModel()->getName().c_str());
+        ImGui::TextUnformatted(sim->getModel()->getName().c_str());
         ImGui::Dummy({0.0f, 1.0f});
         ImGui::PushStyleColor(ImGuiCol_Text, OSC_SLIGHTLY_GREYED_RGBA);
-        ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim.getCurTime() - sim.getStartTime()).count()));
-        ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim.getEndTime().time_since_epoch().count()));
+        ImGui::Text("Sim time (sec): %.1f", static_cast<float>((sim->getCurTime() - sim->getStartTime()).count()));
+        ImGui::Text("Sim final time (sec): %.1f", static_cast<float>(sim->getEndTime().time_since_epoch().count()));
         ImGui::Dummy({0.0f, 1.0f});
         ImGui::TextUnformatted("Left-click: Select this simulation");
         ImGui::TextUnformatted("Delete: cancel this simulation");
@@ -985,7 +985,7 @@ static void DrawSimulationProgressBarEtc(osc::SimulatorScreen::Impl& impl, int s
         if (ImGui::MenuItem("edit model"))
         {
             std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
-            editedModel->setModel(std::make_unique<OpenSim::Model>(*sim.getModel()));
+            editedModel->setModel(std::make_unique<OpenSim::Model>(*sim->getModel()));
             editedModel->commit("loaded model from simulator window");
             osc::App::cur().requestTransition<osc::ModelEditorScreen>(impl.mes);
         }
@@ -1018,7 +1018,7 @@ static void SimscreenDrawSimulatorTab(osc::SimulatorScreen::Impl& impl)
         return;
     }
 
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (maybeSim)
     {
@@ -1047,7 +1047,7 @@ static void SimscreenDrawSimulatorTab(osc::SimulatorScreen::Impl& impl)
 static void SimscreenDrawSelectionTab(osc::SimulatorScreen::Impl& impl)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (!maybeSim)
     {
@@ -1099,7 +1099,7 @@ static void SimscreenDrawSelectionTab(osc::SimulatorScreen::Impl& impl)
 static void SimscreenDrawOutputsTab(osc::SimulatorScreen::Impl& impl)
 {
     osc::MainEditorState& st = *impl.mes;
-    osc::Simulation* maybeSim = st.updFocusedSimulation();
+    std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
     if (!maybeSim)
     {
@@ -1165,7 +1165,7 @@ static void SimscreenDraw(osc::SimulatorScreen::Impl& impl)
 
     // edge-case: there are no simulations available, so
     // show a "you need to run something, fool" dialog
-    if (!st.hasSimulations())
+    if (st.getNumSimulations() <= 0)
     {
         if (ImGui::Begin("Warning"))
         {
@@ -1339,7 +1339,7 @@ void osc::SimulatorScreen::tick(float)
     if (m_Impl->m_IsPlayingBack)
     {
         osc::MainEditorState& st = *m_Impl->mes;
-        osc::Simulation* maybeSim = st.updFocusedSimulation();
+        std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
 
         if (maybeSim)
         {
