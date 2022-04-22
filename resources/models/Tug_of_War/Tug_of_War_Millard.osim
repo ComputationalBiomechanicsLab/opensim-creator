@@ -253,15 +253,10 @@
                     <default_activation>1</default_activation> 
                     <!--assumed initial fiber length if none is assigned.--> 
                     <default_fiber_length>0.1</default_fiber_length> 
-                    <!--activation dynamics model with a lower bound-->
-                    <MuscleFirstOrderActivationDynamicModel> 
-                        <!--activation time constant in seconds--> 
-                        <activation_time_constant>0.01</activation_time_constant> 
-                        <!--deactivation time constant in seconds--> 
-                        <deactivation_time_constant>0.04</deactivation_time_constant> 
-                        <!--activation lower bound--> 
-                        <minimum_activation>0.01</minimum_activation> 
-                    </MuscleFirstOrderActivationDynamicModel> 
+                    <!--Activation time constant (in seconds).-->
+                    <activation_time_constant>0.01</activation_time_constant>
+                    <!--Deactivation time constant (in seconds).-->
+                    <deactivation_time_constant>0.04</deactivation_time_constant>
                     <!--active force length curve--> 
                     <ActiveForceLengthCurve> 
                         <!--normalized fiber length which the steep ascending limb starts--> 
@@ -272,7 +267,7 @@
                         <!--slope of the shallow ascending limb--> 
                         <shallow_ascending_slope>0.8616</shallow_ascending_slope> 
                         <!--minimum value of the active force length curve--> 
-                        <minimum_value>0.1</minimum_value> 
+                        <minimum_value>0</minimum_value> 
                     </ActiveForceLengthCurve> 
                     <!--force velocity inverse curve--> 
                     <ForceVelocityInverseCurve> 
@@ -372,15 +367,10 @@
                     <default_activation>1</default_activation> 
                     <!--assumed initial fiber length if none is assigned.--> 
                     <default_fiber_length>0.1</default_fiber_length> 
-                    <!--activation dynamics model with a lower bound-->
-                    <MuscleFirstOrderActivationDynamicModel> 
-                        <!--activation time constant in seconds--> 
-                        <activation_time_constant>0.01</activation_time_constant> 
-                        <!--deactivation time constant in seconds--> 
-                        <deactivation_time_constant>0.04</deactivation_time_constant> 
-                        <!--activation lower bound--> 
-                        <minimum_activation>0.01</minimum_activation> 
-                    </MuscleFirstOrderActivationDynamicModel> 
+                    <!--Activation time constant (in seconds).-->
+                    <activation_time_constant>0.01</activation_time_constant>
+                    <!--Deactivation time constant (in seconds).-->
+                    <deactivation_time_constant>0.04</deactivation_time_constant>
                     <!--active force length curve--> 
                     <ActiveForceLengthCurve> 
                         <!--normalized fiber length which the steep ascending limb starts--> 
@@ -391,7 +381,7 @@
                         <!--slope of the shallow ascending limb--> 
                         <shallow_ascending_slope>0.8616</shallow_ascending_slope> 
                         <!--minimum value of the active force length curve--> 
-                        <minimum_value>0.1</minimum_value> 
+                        <minimum_value>0</minimum_value> 
                     </ActiveForceLengthCurve> 
                     <!--force velocity inverse curve--> 
                     <ForceVelocityInverseCurve> 

@@ -54,7 +54,6 @@ namespace
 
         SimTK::MultibodySystem const& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
         SimTK::State const& getState() const { return m_ModelState.getState(); }
-        SimTK::State& updState() { return m_ModelState.updState(); }
         osc::FdParams const& getParams() const { return m_Params; }
         void emitReport(osc::SimulationReport report) { m_ReportCallback(std::move(report)); }
 

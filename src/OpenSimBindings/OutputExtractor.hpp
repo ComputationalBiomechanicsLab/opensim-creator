@@ -32,8 +32,10 @@ namespace SimTK
 
 namespace osc
 {
-    // concrete reference-counted output value-type that can be compared, hashed,
-    // etc. for easy usage by other parts of osc (e.g. aggregators, plotters)
+    // concrete reference-counted value-type wrapper for an `osc::VirtualOutputExtractor`.
+    //
+    // This is a value-type that can be compared, hashed, etc. for easier usage
+    // by other parts of osc (e.g. aggregators, plotters)
     class OutputExtractor {
     public:
         template<class SpecificOutput>

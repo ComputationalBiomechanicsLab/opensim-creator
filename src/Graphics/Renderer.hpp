@@ -3,7 +3,6 @@
 #include "src/Graphics/Color.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Rect.hpp"
-#include "src/Utils/UID.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -200,17 +199,11 @@ namespace osc::experimental
     std::ostream& operator<<(std::ostream&, ShaderType);
     std::string to_string(ShaderType);
 
-    // globally-stored string storage
-    //
-    // guarantees that the given `propertyName` maps to exactly one UID throughout
-    // a single process's lifetime
-    UID StorePropertyNameToUID(std::string_view propertyName);
-    std::optional<std::string_view> TryLoadPropertyNameFromUID(UID propertyID);
-
     // a handle to a shader
     class Shader final {
     public:
-        explicit Shader(std::string_view);  // throws on compile error
+        Shader(char const* vertexShader,
+               char const* fragmentShader);  // throws on compile error
         Shader(Shader const&);
         Shader(Shader&&) noexcept;
         Shader& operator=(Shader const&);
@@ -218,11 +211,9 @@ namespace osc::experimental
         ~Shader() noexcept;
 
         std::optional<int> findPropertyIndex(std::string_view propertyName) const;
-        std::optional<int> findPropertyIndex(UID propertyNameID) const;
 
         int getPropertyCount() const;
         std::string const& getPropertyName(int propertyIndex) const;
-        UID getPropertyNameID(int propertyIndex) const;
         ShaderType getPropertyType(int propertyIndex) const;
 
         class Impl;
@@ -276,35 +267,24 @@ namespace osc::experimental
         Shader const& getShader() const;
 
         bool hasProperty(std::string_view propertyName) const;
-        bool hasProperty(UID propertyNameID) const;
 
         glm::vec4 const* getColor() const;
         void setColor(glm::vec4 const&);
 
         float const* getFloat(std::string_view propertyName) const;
-        float const* getFloat(UID propertyNameID) const;
         void setFloat(std::string_view propertyName, float);
-        void setFloat(UID propertyNameID, float);
 
         int const* getInt(std::string_view propertyName) const;
-        int const* getInt(UID propertyNameID) const;
         void setInt(std::string_view propertyName, int);
-        void setInt(UID propertyNameID, int);
 
         Texture2D const* getTexture(std::string_view propertyName) const;
-        Texture2D const* getTexture(UID propertyNameID) const;
         void setTexture(std::string_view propertyName, Texture2D const&);
-        void setTexture(UID propertyNameID, Texture2D const&);
 
         glm::vec4 const* getVector(std::string_view propertyName) const;
-        glm::vec4 const* getVector(UID propertyNameID) const;
         void setVector(std::string_view propertyName, glm::vec4 const&);
-        void setVector(UID propertyNameID, glm::vec4 const&);
 
         glm::mat4 const* getMatrix(std::string_view propertyName) const;
-        glm::mat4 const* getMatrix(UID propertyNameID) const;
         void setMatrix(std::string_view propertyName, glm::mat4 const&);
-        void setMatrix(UID propertyNameID, glm::mat4 const&);
 
         class Impl;
     private:
@@ -362,35 +342,24 @@ namespace osc::experimental
         bool isEmpty() const;
 
         bool hasProperty(std::string_view propertyName) const;
-        bool hasProperty(UID propertyNameID) const;
 
         glm::vec4 const* getColor() const;
         void setColor(glm::vec4 const&);
 
         float const* getFloat(std::string_view propertyName) const;
-        float const* getFloat(UID propertyNameID) const;
         void setFloat(std::string_view propertyName, float);
-        void setFloat(UID propertyNameID, float);
 
         int const* getInt(std::string_view propertyName) const;
-        int const* getInt(UID propertyNameID) const;
         void setInt(std::string_view propertyName, int);
-        void setInt(UID propertyNameID, int);
 
         Texture2D const* getTexture(std::string_view propertyName) const;
-        Texture2D const* getTexture(UID propertyNameID) const;
         void setTexture(std::string_view propertyName, Texture2D const&);
-        void setTexture(UID propertyNameID, Texture2D const&);
 
         glm::vec4 const* getVector(std::string_view propertyName) const;
-        glm::vec4 const* getVector(UID propertyNameID) const;
         void setVector(std::string_view propertyName, glm::vec4 const&);
-        void setVector(UID propertyNameID, glm::vec4 const&);
 
         glm::mat4 const* getMatrix(std::string_view propertyName) const;
-        glm::mat4 const* getMatrix(UID propertyNameID) const;
         void setMatrix(std::string_view propertyName, glm::mat4 const&);
-        void setMatrix(UID propertyNameID, glm::mat4 const&);
 
         class Impl;
     private:

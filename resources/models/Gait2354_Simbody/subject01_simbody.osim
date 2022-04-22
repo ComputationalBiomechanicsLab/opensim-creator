@@ -3798,7 +3798,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_r-P3">
-									<location> 0.0619552 0.0204802 0.00138393</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -3915,7 +3915,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_r-P4">
-									<location> 0.0558242 0.024869 0.00177934</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<MultiplierFunction>
@@ -5702,7 +5702,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_l-P3">
-									<location> 0.0587343 0.0213391 -0.00138393</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>
@@ -5819,7 +5819,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_l-P4">
-									<location> 0.0523039 0.0252782 -0.00177934</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<MultiplierFunction>

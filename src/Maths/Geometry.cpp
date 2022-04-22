@@ -605,7 +605,14 @@ osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
 
 osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
 {
-    return TransformAABB(aabb, ToMat4(t));
+    auto verts = ToCubeVerts(aabb);
+
+    for (auto& vert : verts)
+    {
+        vert = t * vert;
+    }
+
+    return AABBFromVerts(verts.data(), verts.size());
 }
 
 osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
@@ -981,7 +988,7 @@ glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& wo
 
 glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
 {
-    glm::vec3 rv = localPoint;
+    glm::vec3 rv{localPoint};
     rv *= t.scale;
     rv = t.rotation * rv;
     rv += t.position;

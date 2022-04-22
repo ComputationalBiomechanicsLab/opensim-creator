@@ -33,13 +33,12 @@ namespace osc
     public:
         virtual ~VirtualSimulation() noexcept = default;
 
-        // the reason some methods are non-const is because (e.g.) getting a report
-        // may involve doing some sort of lazy computation with the underlying backend
-
-        // the reason this is synchronized atm is because background threads may need
-        // to potentially internally mutate a model (e.g. by realizing the state against
-        // the model) - this is due to an aliasing bug in OpenSim's GeometryPath wrapping
-        // impl.
+        // the reason why the model is mutex-guarded is because OpenSim has a bunch of
+        // `const-` interfaces that are only "logically const" in a single-threaded
+        // environment.
+        //
+        // this can lead to mayhem if (e.g.) the model is actually being mutated by
+        // multiple threads concurrently
         virtual SynchronizedValueGuard<OpenSim::Model const> getModel() const = 0;
 
         virtual int getNumReports() const = 0;

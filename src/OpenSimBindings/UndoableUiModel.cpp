@@ -565,9 +565,19 @@ void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel)
     updUiModel().setModel(std::move(newModel));
 }
 
+osc::UID osc::UndoableUiModel::getModelVersion() const
+{
+    return getUiModel().getModelVersion();
+}
+
 SimTK::State const& osc::UndoableUiModel::getState() const
 {
     return getUiModel().getState();
+}
+
+osc::UID osc::UndoableUiModel::getStateVersion() const
+{
+    return getUiModel().getStateVersion();
 }
 
 float osc::UndoableUiModel::getFixupScaleFactor() const
@@ -580,19 +590,9 @@ void osc::UndoableUiModel::setFixupScaleFactor(float v)
     updUiModel().setFixupScaleFactor(v);
 }
 
-float osc::UndoableUiModel::getReccommendedScaleFactor() const
-{
-    return getUiModel().getRecommendedScaleFactor();
-}
-
 void osc::UndoableUiModel::setDirty(bool v)
 {
     updUiModel().setDirty(v);
-}
-
-bool osc::UndoableUiModel::hasSelected() const
-{
-    return getUiModel().hasSelected();
 }
 
 OpenSim::Component const* osc::UndoableUiModel::getSelected() const
@@ -608,16 +608,6 @@ OpenSim::Component* osc::UndoableUiModel::updSelected()
 void osc::UndoableUiModel::setSelected(OpenSim::Component const* c)
 {
     updUiModel().setSelected(c);
-}
-
-bool osc::UndoableUiModel::selectionHasTypeHashCode(size_t v) const
-{
-    return getUiModel().selectionHasTypeHashCode(v);
-}
-
-bool osc::UndoableUiModel::hasHovered() const
-{
-    return getUiModel().hasHovered();
 }
 
 OpenSim::Component const* osc::UndoableUiModel::getHovered() const

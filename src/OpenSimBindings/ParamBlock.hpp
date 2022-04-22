@@ -12,6 +12,8 @@ namespace osc
 {
     using ParamValue = std::variant<double, int, IntegratorMethod>;
 
+    // a generic block of parameters - usually used to generically read/write
+    // values into other systems (e.g. simulators)
     class ParamBlock final {
     public:
         ParamBlock();

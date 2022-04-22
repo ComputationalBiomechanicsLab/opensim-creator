@@ -5086,7 +5086,7 @@ namespace
             if (HasOutputModel())
             {
                 auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(UpdOutputModel()));
-                mainEditorState->updEditedModel().setFixupScaleFactor(m_SceneScaleFactor);
+                mainEditorState->editedModel()->setFixupScaleFactor(m_SceneScaleFactor);
                 osc::AutoFocusAllViewers(*mainEditorState);
                 osc::App::cur().requestTransition<osc::ModelEditorScreen>(mainEditorState);
             }

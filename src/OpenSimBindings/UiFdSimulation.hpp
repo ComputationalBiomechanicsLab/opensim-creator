@@ -33,7 +33,8 @@ namespace SimTK
 
 namespace osc
 {
-    // a simulation that represents a live forward-dynamic simulation
+    // an `osc::VirtualSimulation` that represents a live forward-dynamic simulation
+    // that `osc` is running
     class UiFdSimulation final : public VirtualSimulation {
     public:
         UiFdSimulation(BasicModelStatePair, FdParams const&);

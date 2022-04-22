@@ -12,7 +12,7 @@ namespace OpenSim
 
 namespace osc
 {
-    class RenderableScene;
+    class VirtualConstModelStatePair;
 }
 
 namespace osc
@@ -83,7 +83,7 @@ namespace osc
 
         void requestAutoFocus();
 
-        UiModelViewerResponse draw(RenderableScene const&);
+        UiModelViewerResponse draw(VirtualConstModelStatePair const&);
 
         struct Impl;
     private:

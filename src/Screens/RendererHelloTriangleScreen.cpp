@@ -6,10 +6,8 @@
 #include <utility>
 #include <imgui.h>
 
-static constexpr char const g_Shader[] =
+static constexpr char const g_VertexShader[] =
 R"(
-    BEGIN_VERTEX_SHADER
-
     #version 330 core
 
     in vec3 aPos;
@@ -18,11 +16,10 @@ R"(
     {
         gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
     }
+)";
 
-    END_VERTEX_SHADER
-
-    BEGIN_FRAGMENT_SHADER
-
+static constexpr char const g_FragmentShader[] =
+R"(
     #version 330 core
 
     out vec4 FragColor;
@@ -32,8 +29,6 @@ R"(
     {
         FragColor = uColor;
     }
-
-    END_FRAGMENT_SHADER
 )";
 
 
@@ -80,7 +75,7 @@ public:
     }
 
 private:
-    experimental::Shader m_Shader{g_Shader};
+    experimental::Shader m_Shader{g_VertexShader, g_FragmentShader};
 };
 
 osc::RendererHelloTriangleScreen::RendererHelloTriangleScreen() :

@@ -31,7 +31,10 @@ namespace SimTK
 }
 namespace osc
 {
-    // a "value type" that acts as a container for a osc::VirtualSimulation
+    // a concrete value type wrapper for an `osc::VirtualSimulation`
+    //
+    // This is a value-type that can be compared, hashed, etc. for easier usage
+    // by other parts of osc (e.g. aggregators, plotters)
     class Simulation final {
     public:
         template<class ConcreteSimulation>

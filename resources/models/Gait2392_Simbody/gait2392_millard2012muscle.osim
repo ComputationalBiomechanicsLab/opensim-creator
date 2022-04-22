@@ -4469,7 +4469,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_r-P3">
-									<location> 0.0617576 0.020984 0.0014</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<SimmSpline>
@@ -4583,7 +4583,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_r-P5">
-									<location> 0.0559586 0.0217917 -0.0146</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<SimmSpline>
@@ -4691,7 +4691,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_r-P4">
-									<location> 0.0554632 0.0252923 0.0018</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<SimmSpline>
@@ -4805,7 +4805,7 @@
 									<coordinate>knee_angle_r</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_r-P5">
-									<location> 0.0599557 0.0195864 0.0165</location>
+									<location> 0 0 0</location>
 									<body>tibia_r</body>
 									<x_location>
 										<SimmSpline>
@@ -8166,7 +8166,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_l-P3">
-									<location> 0.0617576 0.020984 -0.0014</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<SimmSpline>
@@ -8280,7 +8280,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_med_l-P5">
-									<location> 0.0559586 0.0217917 0.0146</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<SimmSpline>
@@ -8388,7 +8388,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_l-P4">
-									<location> 0.0617576 0.020984 -0.0014</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<SimmSpline>
@@ -8502,7 +8502,7 @@
 									<coordinate>knee_angle_l</coordinate>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_lat_l-P5">
-									<location> 0.0599557 0.0195864 -0.0165</location>
+									<location> 0 0 0</location>
 									<body>tibia_l</body>
 									<x_location>
 										<SimmSpline>

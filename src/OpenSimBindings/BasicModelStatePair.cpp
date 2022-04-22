@@ -94,11 +94,6 @@ public:
         return m_Model->getWorkingState();
     }
 
-    SimTK::State& updState()
-    {
-        return m_Model->updWorkingState();
-    }
-
 private:
     std::unique_ptr<OpenSim::Model> m_Model;
 };
@@ -141,9 +136,4 @@ OpenSim::Model& osc::BasicModelStatePair::updModel()
 SimTK::State const& osc::BasicModelStatePair::getState() const
 {
     return m_Impl->getState();
-}
-
-SimTK::State& osc::BasicModelStatePair::updState()
-{
-    return m_Impl->updState();
 }

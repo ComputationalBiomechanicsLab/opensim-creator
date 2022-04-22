@@ -348,30 +348,39 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/CustomDecorationOptions.hpp
+    src/OpenSimBindings/FdSimulation.cpp
+    src/OpenSimBindings/FdSimulation.hpp
+    src/OpenSimBindings/IntegratorMethod.cpp
+    src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/MainEditorState.cpp
     src/OpenSimBindings/MainEditorState.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
+    src/OpenSimBindings/MuscleColoringStyle.cpp
+    src/OpenSimBindings/MuscleColoringStyle.hpp
+    src/OpenSimBindings/MuscleDecorationStyle.cpp
+    src/OpenSimBindings/MuscleDecorationStyle.hpp
+    src/OpenSimBindings/MuscleSizingStyle.cpp
+    src/OpenSimBindings/MuscleSizingStyle.hpp
     src/OpenSimBindings/OpenSimApp.cpp
     src/OpenSimBindings/OpenSimApp.hpp
-    src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp
+    src/OpenSimBindings/OpenSimHelpers.hpp
     src/OpenSimBindings/OutputExtractor.cpp
     src/OpenSimBindings/OutputExtractor.hpp
     src/OpenSimBindings/ParamBlock.hpp
     src/OpenSimBindings/ParamBlock.cpp
-    src/OpenSimBindings/RenderableScene.hpp
     src/OpenSimBindings/Simulation.hpp
-    src/OpenSimBindings/FdSimulation.cpp
-    src/OpenSimBindings/FdSimulation.hpp
-    src/OpenSimBindings/IntegratorMethod.cpp
-    src/OpenSimBindings/IntegratorMethod.hpp
+    src/OpenSimBindings/SimulationClock.hpp
     src/OpenSimBindings/SimulationReport.cpp
     src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/SimulationStatus.cpp
     src/OpenSimBindings/SimulationStatus.hpp
+    src/OpenSimBindings/SimulatorModelStatePair.cpp
+    src/OpenSimBindings/SimulatorModelStatePair.hpp
     src/OpenSimBindings/StateModifications.cpp
     src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
@@ -384,6 +393,9 @@ add_library(osccore STATIC
     src/OpenSimBindings/UiModel.hpp
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
+    src/OpenSimBindings/VirtualConstModelStatePair.cpp
+    src/OpenSimBindings/VirtualConstModelStatePair.hpp
+    src/OpenSimBindings/VirtualModelStatePair.hpp
     src/OpenSimBindings/VirtualOutputExtractor.hpp
     src/OpenSimBindings/VirtualSimulation.hpp
 
