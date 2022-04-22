@@ -9,6 +9,8 @@ All notable changes to this project will be documented here. The format is based
 - Muscle thickness logic can now be changed (e.g. to PCSA-derived) in the 3D viewer's options menu (#190)
 - Muscle decoration style can now be changed (e.g. to SCONE-style) in the 3D viewer's options menu (#188)
   - Support for SCONE-style muscles means that users can now see tendons in the UI (#165)
+- The README docs have been updated and include a link to the tutorial videos, plus clearer install/build instructions (internal)
+- Example models were updated from `opensim-org/opensim-models` (internal)
 
 
 ## [0.1.5] - 2022/04/11
