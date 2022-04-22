@@ -8,7 +8,7 @@ namespace osc
 		OpenSim = 0,
 		Scone,
 		TOTAL,
-		Default = Scone,
+		Default = OpenSim,
 	};
 
 	nonstd::span<MuscleDecorationStyle const> GetAllMuscleDecorationStyles();
