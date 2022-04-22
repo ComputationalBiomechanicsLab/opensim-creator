@@ -15,8 +15,8 @@ static std::array<char const*, static_cast<size_t>(osc::MuscleDecorationStyle::T
 {
     return
     {
-        "OpenSim",
-        "Scone",
+        "OpenSim (lines)",
+        "SCONE (tendons + fibers)",
     };
 }
 

@@ -363,6 +363,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/MuscleColoringStyle.hpp
     src/OpenSimBindings/MuscleDecorationStyle.cpp
     src/OpenSimBindings/MuscleDecorationStyle.hpp
+    src/OpenSimBindings/MuscleSizingStyle.cpp
+    src/OpenSimBindings/MuscleSizingStyle.hpp
     src/OpenSimBindings/OpenSimApp.cpp
     src/OpenSimBindings/OpenSimApp.hpp
     src/OpenSimBindings/OpenSimHelpers.cpp

@@ -5,7 +5,10 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- (this will be populated with changes made in-tree since the last release)
+- Muscle coloring logic can now be changed in the 3D viewer's options menu (#189)
+- Muscle thickness logic can now be changed (e.g. to PCSA-derived) in the 3D viewer's options menu (#190)
+- Muscle decoration style can now be changed (e.g. to SCONE-style) in the 3D viewer's options menu (#188)
+  - Support for SCONE-style muscles means that users can now see tendons in the UI (#165)
 
 
 ## [0.1.5] - 2022/04/11

@@ -219,6 +219,19 @@ namespace
         return zeroColor + factor * (fullColor - zeroColor);
     }
 
+    float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
+    {
+        switch (s) {
+        case osc::MuscleSizingStyle::SconePCSA:
+            return GetSconeStyleAutomaticMuscleRadiusCalc(musc);
+        case osc::MuscleSizingStyle::SconeNonPCSA:
+            return 0.01f * fixupScaleFactor;
+        case osc::MuscleSizingStyle::OpenSim:
+        default:
+            return 0.005f * fixupScaleFactor;
+        }
+    }
+
     void HandleMuscleSconeStyle(osc::CustomDecorationOptions const& opts,
                                 OpenSim::Muscle const& muscle,
                                 SimTK::State const& st,
@@ -227,13 +240,14 @@ namespace
                                 std::vector<osc::ComponentDecoration>& out)
     {
         std::vector<glm::vec3> pps = GetAllPathPoints(muscle.getGeometryPath(), st);
+
         if (pps.empty())
         {
             // edge-case: there are no points in the muscle path
             return;
         }
 
-        float const fiberUiRadius = GetSconeStyleAutomaticMuscleRadiusCalc(muscle); // or fixupScaleFactor * 0.015f;
+        float const fiberUiRadius = GetMuscleSize(muscle, fixupScaleFactor, opts.getMuscleSizingStyle());
         float const tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
         glm::vec4 const fiberColor = GetSconeStyleMuscleColor(muscle, st, opts.getMuscleColoringStyle());
@@ -424,7 +438,7 @@ namespace
             return;
         }
 
-        float const fiberUiRadius = fixupScaleFactor * 0.005f;
+        float const fiberUiRadius = GetMuscleSize(musc, fixupScaleFactor, opts.getMuscleSizingStyle());
         glm::vec4 const fiberColor = GetSconeStyleMuscleColor(musc, st, opts.getMuscleColoringStyle());
 
         auto emitSphere = [&](glm::vec3 const& pos)

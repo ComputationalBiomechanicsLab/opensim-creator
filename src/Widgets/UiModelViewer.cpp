@@ -1071,9 +1071,20 @@ static void DrawOptionsMenuContent(osc::UiModelViewer::Impl& impl)
         nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
         int i = osc::GetIndexOf(s);
 
-        if (ImGui::Combo("muscle style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        if (ImGui::Combo("muscle decoration style", &i, allNames.data(), static_cast<int>(allStyles.size())))
         {
             impl.m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
+        }
+    }
+    {
+        osc::MuscleSizingStyle s = impl.m_DecorationOptions.getMuscleSizingStyle();
+        nonstd::span<osc::MuscleSizingStyle const> allStyles = osc::GetAllMuscleSizingStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleSizingStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle sizing style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
         }
     }
     {
