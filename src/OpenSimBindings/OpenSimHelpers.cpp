@@ -3,6 +3,7 @@
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/Graphics/MeshCache.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/Constants.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
@@ -178,15 +179,52 @@ namespace
         return rv;
     }
 
-    void HandleSconeMusclePath(osc::CustomDecorationOptions const& opts,
-                               OpenSim::Muscle const& muscle,
-                               SimTK::State const& st,
-                               float fixupScaleFactor,
-                               OpenSim::Component const** currentComponent,
-                               OpenSim::ModelDisplayHints const& mdh,
-                               SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
-                               osc::DecorativeGeometryHandler& producer,
-                               std::vector<osc::ComponentDecoration>& out)
+    float GetSconeStyleAutomaticMuscleRadiusCalc(OpenSim::Muscle const& m)
+    {
+        float f = static_cast<float>(m.getMaxIsometricForce());
+        float specificTension = 0.25e6f;  // SCONE magic number?
+        float pcsa = f / specificTension;
+        float widthFactor = 0.25f;
+        return widthFactor * std::sqrt(pcsa / osc::fpi);
+    }
+
+    // returns value between [0.0f, 1.0f]
+    float GetMuscleColorFactor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
+    {
+        switch (s) {
+        case osc::MuscleColoringStyle::Activation:
+            return static_cast<float>(musc.getActivation(st));
+        case osc::MuscleColoringStyle::Excitation:
+            return static_cast<float>(musc.getExcitation(st));
+        case osc::MuscleColoringStyle::Force:
+            return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
+        case osc::MuscleColoringStyle::FiberLength:
+        {
+            float nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
+            float fl = nfl - 1.0f;
+            fl = std::abs(fl);
+            fl = std::min(fl, 1.0f);
+            return fl;
+        }
+        default:
+            return 1.0f;
+        }
+    }
+
+    glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
+    {
+        glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
+        glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
+        float const factor = GetMuscleColorFactor(musc, st, s);
+        return zeroColor + factor * (fullColor - zeroColor);
+    }
+
+    void HandleMuscleSconeStyle(osc::CustomDecorationOptions const& opts,
+                                OpenSim::Muscle const& muscle,
+                                SimTK::State const& st,
+                                float fixupScaleFactor,
+                                OpenSim::ModelDisplayHints const& mdh,
+                                std::vector<osc::ComponentDecoration>& out)
     {
         std::vector<glm::vec3> pps = GetAllPathPoints(muscle.getGeometryPath(), st);
         if (pps.empty())
@@ -195,10 +233,11 @@ namespace
             return;
         }
 
-        float const tendonUiRadius = fixupScaleFactor * 0.0025f;
-        glm::vec4 const tendonColor = {1.0f, 1.0f, 1.0f, 1.0f};
-        float const fiberUiRadius = fixupScaleFactor * 0.010f;
-        glm::vec4 const fiberColor = {1.0f, 0.0f, 0.0f, 1.0f};
+        float const fiberUiRadius = GetSconeStyleAutomaticMuscleRadiusCalc(muscle); // or fixupScaleFactor * 0.015f;
+        float const tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
+
+        glm::vec4 const fiberColor = GetSconeStyleMuscleColor(muscle, st, opts.getMuscleColoringStyle());
+        glm::vec4 const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f, 1.0f};
 
         osc::ComponentDecoration fiberSpherePrototype =
         {
@@ -368,6 +407,68 @@ namespace
         }
     }
 
+    void HandleMuscleOpenSimStyle(osc::CustomDecorationOptions const& opts,
+                                  OpenSim::Muscle const& musc,
+                                  SimTK::State const& st,
+                                  float fixupScaleFactor,
+                                  OpenSim::Component const** currentComponent,
+                                  OpenSim::ModelDisplayHints const& mdh,
+                                  SimTK::Array_<SimTK::DecorativeGeometry>& geomList,
+                                  osc::DecorativeGeometryHandler& producer,
+                                  std::vector<osc::ComponentDecoration>& out)
+    {
+        std::vector<glm::vec3> pps = GetAllPathPoints(musc.getGeometryPath(), st);
+
+        if (pps.empty())
+        {
+            return;
+        }
+
+        float const fiberUiRadius = fixupScaleFactor * 0.005f;
+        glm::vec4 const fiberColor = GetSconeStyleMuscleColor(musc, st, opts.getMuscleColoringStyle());
+
+        auto emitSphere = [&](glm::vec3 const& pos)
+        {
+            osc::Transform t;
+            t.scale *= fiberUiRadius;
+            t.position = pos;
+
+            out.emplace_back(
+                osc::App::meshes().getSphereMesh(),
+                t,
+                fiberColor,
+                &musc
+            );
+        };
+
+        auto emitCylinder = [&](glm::vec3 const& p1, glm::vec3 const& p2)
+        {
+            osc::Transform cylinderXform = osc::SimbodyCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
+
+            out.emplace_back(
+                osc::App::meshes().getCylinderMesh(),
+                cylinderXform,
+                fiberColor,
+                &musc
+            );
+        };
+
+        if (mdh.get_show_path_points())
+        {
+            emitSphere(pps.front());
+        }
+
+        for (std::size_t i = 1; i < pps.size(); ++i)
+        {
+            emitCylinder(pps[i - 1], pps[i]);
+
+            if (mdh.get_show_path_points())
+            {
+                emitSphere(pps[i]);
+            }
+        }
+    }
+
     // OSC-specific decoration handler for `OpenSim::GeometryPath`
     void HandleGeometryPath(osc::CustomDecorationOptions const& opts,
                             OpenSim::GeometryPath const& gp,
@@ -388,14 +489,28 @@ namespace
 
                 if (opts.getMuscleDecorationStyle() == osc::MuscleDecorationStyle::Scone)
                 {
-                    HandleSconeMusclePath(opts, *musc, st, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
+                    HandleMuscleSconeStyle(opts, *musc, st, fixupScaleFactor, mdh, out);
                     return;  // don't let it fall through to the generic handler
                 }
+                else
+                {
+                    HandleMuscleOpenSimStyle(opts, *musc, st, fixupScaleFactor, currentComponent, mdh, geomList, producer, out);
+                    return;
+                }
+            }
+            else
+            {
+                // it's a path in some non-muscular context
+                HandleComponent(gp, st, mdh, geomList, producer);
+                return;
             }
         }
-
-        // if it falls through this far, just handle the muscle generically
-        HandleComponent(gp, st, mdh, geomList, producer);
+        else
+        {
+            // it's a standalone path that's not part of a muscle
+            HandleComponent(gp, st, mdh, geomList, producer);
+            return;
+        }
     }
 
     // used whenever the SimTK backend emits something

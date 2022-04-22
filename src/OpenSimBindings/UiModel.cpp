@@ -206,7 +206,7 @@ public:
 
             {
                 OSC_PERF("realize velocity");
-                m_Model->realizeVelocity(m_Model->updWorkingState());
+                m_Model->realizeDynamics(m_Model->updWorkingState());
             }
 
             m_UpdatedStateVersion = m_CurrentStateVersion;  // reset flag

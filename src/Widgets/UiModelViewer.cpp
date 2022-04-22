@@ -318,15 +318,17 @@ namespace
 struct osc::UiModelViewer::Impl final {
     UiModelViewerFlags flags;
 
-    // used to cache between frames
+    // used to cache geometry between frames
     UID m_LastModelVersion;
     UID m_LastStateVersion;
     OpenSim::ComponentPath m_LastSelection;
     OpenSim::ComponentPath m_LastHover;
     OpenSim::ComponentPath m_LastIsolation;
     float m_LastFixupFactor;
+    osc::CustomDecorationOptions m_LastDecorationOptions;
 
     std::vector<osc::ComponentDecoration> m_Decorations;
+    osc::CustomDecorationOptions m_DecorationOptions;
     osc::BVH m_SceneBVH;
     PolarPerspectiveCamera camera = CreateDefaultCamera();
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
@@ -459,11 +461,12 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
         selected != osc::FindComponent(msp.getModel(), impl.m_LastSelection) ||
         hovered != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
         isolated != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
-        msp.getFixupScaleFactor() != impl.m_LastFixupFactor)
+        msp.getFixupScaleFactor() != impl.m_LastFixupFactor ||
+        impl.m_LastDecorationOptions != impl.m_DecorationOptions)
     {
         {
             OSC_PERF("generate decorations");
-            osc::GenerateModelDecorations(msp, impl.m_Decorations);
+            osc::GenerateModelDecorations(msp, impl.m_Decorations, impl.m_DecorationOptions);
         }
 
         {
@@ -477,6 +480,7 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
         impl.m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
         impl.m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
         impl.m_LastFixupFactor = msp.getFixupScaleFactor();
+        impl.m_LastDecorationOptions = impl.m_DecorationOptions;
     }
 
     nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
@@ -1061,6 +1065,28 @@ static void DrawImGuiOverlays(osc::UiModelViewer::Impl& impl)
 
 static void DrawOptionsMenuContent(osc::UiModelViewer::Impl& impl)
 {
+    {
+        osc::MuscleDecorationStyle s = impl.m_DecorationOptions.getMuscleDecorationStyle();
+        nonstd::span<osc::MuscleDecorationStyle const> allStyles = osc::GetAllMuscleDecorationStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
+        }
+    }
+    {
+        osc::MuscleColoringStyle s = impl.m_DecorationOptions.getMuscleColoringStyle();
+        nonstd::span<osc::MuscleColoringStyle const> allStyles = osc::GetAllMuscleColoringStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleColoringStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle coloring", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
+        }
+    }
     ImGui::Checkbox("wireframe mode", &impl.wireframeMode);
     ImGui::Checkbox("show normals", &impl.drawMeshNormals);
     ImGui::Checkbox("draw rims", &impl.drawRims);
