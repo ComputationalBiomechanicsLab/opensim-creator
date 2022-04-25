@@ -35,6 +35,7 @@
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <imgui.h>
+#include <implot.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
@@ -958,11 +959,13 @@ public:
         App::cur().makeMainEventLoopWaiting();
         App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
         osc::ImGuiInit();
+        ImPlot::CreateContext();
     }
 
     void onUnmount()
     {
         osc::ImGuiShutdown();
+        ImPlot::DestroyContext();
         App::cur().unsetMainWindowSubTitle();
         App::cur().makeMainEventLoopPolling();
     }
@@ -1562,7 +1565,7 @@ private:
         {
             if (!m_MaybeModelMusclePlot)
             {
-                m_MaybeModelMusclePlot.emplace(m_Mes->updEditedModelPtr(), "plot");
+                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "plot");
             }
             m_MaybeModelMusclePlot->draw();
         }

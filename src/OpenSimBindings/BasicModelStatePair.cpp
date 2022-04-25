@@ -30,8 +30,8 @@ static void InitState(OpenSim::Model& m)
         m.equilibrateMuscles(m.updWorkingState());
     }
     {
-        OSC_PERF("realize velocity");
-        m.realizeVelocity(m.updWorkingState());
+        OSC_PERF("realize report");
+        m.realizeReport(m.updWorkingState());
     }
 }
 

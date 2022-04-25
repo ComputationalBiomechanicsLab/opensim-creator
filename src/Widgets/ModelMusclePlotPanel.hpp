@@ -25,6 +25,6 @@ namespace osc
 
 		class Impl;
 	private:
-		std::unique_ptr<Impl> m_Impl;
+		Impl* m_Impl;
 	};
 }
