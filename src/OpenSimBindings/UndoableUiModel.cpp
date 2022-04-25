@@ -269,7 +269,7 @@ public:
     // checks out the current checkout to be active (scratch)
     //
     // effectively, reset the scratch space
-    void checkout()
+    void checkout(bool skipCopyingSelection = false)
     {
         // because this is a "reset", try to maintain useful state from the
         // scratch space - things like reset and scaling state, which the
@@ -280,7 +280,11 @@ public:
         if (c)
         {
             UiModel newScratch = c->getUiModel();
-            newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+            if (!skipCopyingSelection)
+            {
+                // care: skipping this copy can be necessary because getSelected etc. might rethrow
+                newScratch.setSelectedHoveredAndIsolatedFrom(m_Scratch);
+            }
             newScratch.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
             newScratch.updateIfDirty();
 
@@ -541,13 +545,13 @@ void osc::UndoableUiModel::commit(std::string_view message)
         log::error("exception occurred after applying changes to a model:");
         log::error("    %s", ex.what());
         log::error("attempting to rollback to an earlier version of the model");
-        m_Impl->checkout();
+        rollback();
     }
 }
 
 void osc::UndoableUiModel::rollback()
 {
-    m_Impl->checkout();
+    m_Impl->checkout(true);  // care: skip copying selection because a rollback is aggro
 }
 
 OpenSim::Model const& osc::UndoableUiModel::getModel() const
