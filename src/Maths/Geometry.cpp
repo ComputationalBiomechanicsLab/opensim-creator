@@ -605,7 +605,14 @@ osc::AABB osc::TransformAABB(AABB const& aabb, glm::mat4 const& m) noexcept
 
 osc::AABB osc::TransformAABB(AABB const& aabb, Transform const& t) noexcept
 {
-    return TransformAABB(aabb, ToMat4(t));
+    auto verts = ToCubeVerts(aabb);
+
+    for (auto& vert : verts)
+    {
+        vert = t * vert;
+    }
+
+    return AABBFromVerts(verts.data(), verts.size());
 }
 
 osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
@@ -615,8 +622,6 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     // edge-case: no points provided
     if (n == 0)
     {
-        rv.min = {0.0f, 0.0f, 0.0f};
-        rv.max = {0.0f, 0.0f, 0.0f};
         return rv;
     }
 
@@ -624,20 +629,88 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     {
         std::numeric_limits<float>::max(),
         std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max()
+        std::numeric_limits<float>::max(),
     };
 
     rv.max =
     {
         std::numeric_limits<float>::lowest(),
         std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest()
+        std::numeric_limits<float>::lowest(),
     };
 
     // otherwise, compute bounds
     for (size_t i = 0; i < n; ++i)
     {
         glm::vec3 const& pos = vs[i];
+        rv.min = Min(rv.min, pos);
+        rv.max = Max(rv.max, pos);
+    }
+
+    return rv;
+}
+
+osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
+{
+    AABB rv{};
+
+    // edge-case: no points provided
+    if (indices.empty())
+    {
+        return rv;
+    }
+
+    rv.min =
+    {
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+    };
+
+    rv.max =
+    {
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+    };
+
+    for (uint32_t idx : indices)
+    {
+        glm::vec3 const& pos = verts[idx];
+        rv.min = Min(rv.min, pos);
+        rv.max = Max(rv.max, pos);
+    }
+
+    return rv;
+}
+
+osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
+{
+    AABB rv{};
+
+    // edge-case: no points provided
+    if (indices.empty())
+    {
+        return rv;
+    }
+
+    rv.min =
+    {
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+    };
+
+    rv.max =
+    {
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+    };
+
+    for (uint16_t idx : indices)
+    {
+        glm::vec3 const& pos = verts[idx];
         rv.min = Min(rv.min, pos);
         rv.max = Max(rv.max, pos);
     }
@@ -981,7 +1054,7 @@ glm::vec3 osc::InverseTransformDirection(Transform const& t, glm::vec3 const& wo
 
 glm::vec3 osc::TransformPoint(Transform const& t, glm::vec3 const& localPoint) noexcept
 {
-    glm::vec3 rv = localPoint;
+    glm::vec3 rv{localPoint};
     rv *= t.scale;
     rv = t.rotation * rv;
     rv += t.position;

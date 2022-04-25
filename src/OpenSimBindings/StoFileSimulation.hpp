@@ -23,6 +23,8 @@ namespace osc
 
 namespace osc
 {
+	// an `osc::VirtualSimulation` that is directly loaded from an `.sto` file (as
+	// opposed to being an actual simulation ran within `osc`)
 	class StoFileSimulation final : public VirtualSimulation {
 	public:
 		StoFileSimulation(std::unique_ptr<OpenSim::Model>, std::filesystem::path stoFilePath);

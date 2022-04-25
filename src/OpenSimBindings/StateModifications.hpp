@@ -15,7 +15,7 @@ namespace SimTK
 
 namespace osc
 {
-    // user-enacted coordinate edit
+    // a single, user-enacted, model coordinate edit
     //
     // used to modify the default state whenever a new state is generated
     struct CoordinateEdit final {
@@ -27,7 +27,7 @@ namespace osc
         bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;
     };
 
-    // user-enacted state modifications
+    // a collection of user-enacted state modifications
     class StateModifications final {
     public:
         StateModifications();

@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 
+#include "src/Graphics/Gl.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
@@ -19,6 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <sstream>
+#include <unordered_map>
 #include <vector>
 
 #define OSC_THROW_NYI() throw std::runtime_error{"not yet implemented"}
@@ -284,6 +286,16 @@ namespace
 
         return rv;
     }
+
+    static nonstd::span<uint32_t const> AsU32Span(PackedIndex const* pi, size_t n)
+    {
+        return nonstd::span{&pi->u32, n};
+    }
+
+    static nonstd::span<uint16_t const> AsU16Span(PackedIndex const* pi, size_t n)
+    {
+        return nonstd::span{&pi->u16.a, n};
+    }
 }
 
 
@@ -433,7 +445,14 @@ public:
 
     void recalculateBounds()
     {
-        m_AABB = AABBFromVerts(m_Verts.data(), m_Verts.size());
+        if (m_IndexFormat == IndexFormat::UInt16)
+        {
+            m_AABB = AABBFromIndexedVerts(m_Verts, AsU16Span(m_IndicesData.data(), m_NumIndices));
+        }
+        else
+        {
+            m_AABB = AABBFromIndexedVerts(m_Verts, AsU32Span(m_IndicesData.data(), m_NumIndices));
+        }
     }
 
     std::size_t getHash() const
@@ -568,37 +587,287 @@ private:
     // TODO: GPU data
 };
 
+namespace
+{
+    // exact datatype expressed in the shader program itself
+    enum class ShaderTypeInternal {
+        Float = 0,
+        Vec2,
+        Vec3,
+        Vec4,
+        Mat2,
+        Mat3,
+        Mat4,
+        Mat2x3,
+        Mat2x4,
+        Mat3x2,
+        Mat3x4,
+        Mat4x2,
+        Mat4x3,
+        Int,
+        IntVec2,
+        IntVec3,
+        IntVec4,
+        UnsignedInt,
+        UnsignedIntVec2,
+        UnsignedIntVec3,
+        UnsignedIntVec4,
+        Double,
+        DoubleVec2,
+        DoubleVec3,
+        DoubleVec4,
+        DoubleMat2,
+        DoubleMat3,
+        DoubleMat4,
+        DoubleMat2x3,
+        DoubleMat2x4,
+        Bool,
+        Sampler2D,
+        Unknown,
+        TOTAL,
+    };
+
+    // LUT for human-readable form of the above
+    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderTypeInternalStrings =
+    {
+        "Float",
+        "Vec2",
+        "Vec3",
+        "Vec4",
+        "Mat2",
+        "Mat3",
+        "Mat4",
+        "Mat2x3",
+        "Mat2x4",
+        "Mat3x2",
+        "Mat3x4",
+        "Mat4x2",
+        "Mat4x3",
+        "Int",
+        "IntVec2",
+        "IntVec3",
+        "IntVec4",
+        "UnsignedInt",
+        "UnsignedIntVec2",
+        "UnsignedIntVec3",
+        "UnsignedIntVec4",
+        "Double",
+        "DoubleVec2",
+        "DoubleVec3",
+        "DoubleVec4",
+        "DoubleMat2",
+        "DoubleMat3",
+        "DoubleMat4",
+        "DoubleMat2x3",
+        "DoubleMat2x4",
+        "Bool",
+        "Sampler2D",
+        "Unknown",
+    };
+
+    char const* ToString(ShaderTypeInternal st)
+    {
+        return g_ShaderTypeInternalStrings.at(static_cast<size_t>(st));
+    }
+
+    std::ostream& operator<<(std::ostream& o, ShaderTypeInternal st)
+    {
+        return o << ToString(st);
+    }
+
+    // convert a GL shader type to an internal shader type
+    ShaderTypeInternal GLShaderTypeToShaderTypeInternal(GLenum e)
+    {
+        switch (e) {
+        case GL_FLOAT:
+            return ShaderTypeInternal::Float;
+        case GL_FLOAT_VEC2:
+            return ShaderTypeInternal::Vec2;
+        case GL_FLOAT_VEC3:
+            return ShaderTypeInternal::Vec3;
+        case GL_FLOAT_VEC4:
+            return ShaderTypeInternal::Vec4;
+        case GL_FLOAT_MAT2:
+            return ShaderTypeInternal::Mat2;
+        case GL_FLOAT_MAT3:
+            return ShaderTypeInternal::Mat3;
+        case GL_FLOAT_MAT4:
+            return ShaderTypeInternal::Mat4;
+        case GL_FLOAT_MAT2x3:
+            return ShaderTypeInternal::Mat2x3;
+        case GL_FLOAT_MAT2x4:
+            return ShaderTypeInternal::Mat2x4;
+        case GL_FLOAT_MAT3x2:
+            return ShaderTypeInternal::Mat3x2;
+        case GL_FLOAT_MAT3x4:
+            return ShaderTypeInternal::Mat3x4;
+        case GL_FLOAT_MAT4x2:
+            return ShaderTypeInternal::Mat4x2;
+        case GL_FLOAT_MAT4x3:
+            return ShaderTypeInternal::Mat4x3;
+        case GL_INT:
+            return ShaderTypeInternal::Int;
+        case GL_INT_VEC2:
+            return ShaderTypeInternal::IntVec2;
+        case GL_INT_VEC3:
+            return ShaderTypeInternal::IntVec3;
+        case GL_INT_VEC4:
+            return ShaderTypeInternal::IntVec4;
+        case GL_UNSIGNED_INT:
+            return ShaderTypeInternal::UnsignedInt;
+        case GL_UNSIGNED_INT_VEC2:
+            return ShaderTypeInternal::UnsignedIntVec2;
+        case GL_UNSIGNED_INT_VEC3:
+            return ShaderTypeInternal::UnsignedIntVec3;
+        case GL_UNSIGNED_INT_VEC4:
+            return ShaderTypeInternal::UnsignedIntVec4;
+        case GL_DOUBLE:
+            return ShaderTypeInternal::Double;
+        case GL_DOUBLE_VEC2:
+            return ShaderTypeInternal::DoubleVec2;
+        case GL_DOUBLE_VEC3:
+            return ShaderTypeInternal::DoubleVec3;
+        case GL_DOUBLE_VEC4:
+            return ShaderTypeInternal::DoubleVec4;
+        case GL_DOUBLE_MAT2:
+            return ShaderTypeInternal::DoubleMat2;
+        case GL_DOUBLE_MAT3:
+            return ShaderTypeInternal::DoubleMat3;
+        case GL_DOUBLE_MAT4:
+            return ShaderTypeInternal::DoubleMat4;
+        case GL_DOUBLE_MAT2x3:
+            return ShaderTypeInternal::DoubleMat2x3;
+        case GL_DOUBLE_MAT2x4:
+            return ShaderTypeInternal::DoubleMat2x4;
+        case GL_BOOL:
+            return ShaderTypeInternal::Bool;
+        case GL_SAMPLER_2D:
+            return ShaderTypeInternal::Sampler2D;
+        default:
+            return ShaderTypeInternal::Unknown;
+        }
+    }
+
+    // whether the shader element is an attribute or a uniform
+    enum class ShaderQualifier {
+        Attribute = 0,
+        Uniform,
+        TOTAL,
+    };
+
+    // LUT for human-readable form of the above
+    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderQualifierStrings =
+    {
+        "Attribute",
+        "Uniform",
+    };
+
+    char const* ToString(ShaderQualifier sq)
+    {
+        return g_ShaderQualifierStrings.at(static_cast<size_t>(sq));
+    }
+
+    std::ostream& operator<<(std::ostream& o, ShaderQualifier sq)
+    {
+        return o << ToString(sq);
+    }
+
+    struct ShaderElement final {
+        int location;
+        ShaderQualifier qualifier;
+        ShaderTypeInternal type;
+
+        ShaderElement(int location_,
+                      ShaderQualifier qualifier_,
+                      ShaderTypeInternal type_) :
+            location{std::move(location_)},
+            qualifier{std::move(qualifier_)},
+            type{std::move(type_ )}
+        {
+        }
+    };
+
+    std::ostream& operator<<(std::ostream& o, ShaderElement const& se)
+    {
+        return o << "ShaderElement(location = " << se.location
+            << ", qualifier = " << se.qualifier
+            << ", type = " << se.type
+            << ')';
+    }
+
+    std::unordered_map<std::string, ShaderElement> GetShaderElements(gl::Program& p)
+    {
+        constexpr GLsizei maxNameLen = 16;
+
+        GLint numAttrs;
+        glGetProgramiv(p.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
+
+        GLint numUniforms;
+        glGetProgramiv(p.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
+
+        std::unordered_map<std::string, ShaderElement> rv;
+        rv.reserve(numAttrs + numUniforms);
+
+        for (GLint i = 0; i < numAttrs; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveAttrib(p.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
+            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Attribute, GLShaderTypeToShaderTypeInternal(type));
+        }
+
+        for (GLint i = 0; i < numUniforms; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveUniform(p.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
+            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Uniform, GLShaderTypeToShaderTypeInternal(type));
+        }
+
+        return rv;
+    }
+}
 
 class osc::experimental::Shader::Impl final {
 public:
-    explicit Impl(std::string_view)
+    explicit Impl(char const* vertexShader,
+                  char const* fragmentShader) :
+        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))},
+        m_ShaderElements{GetShaderElements(m_Program)}
     {
-        OSC_THROW_NYI();
+        for (auto const& [name, el] : m_ShaderElements)
+        {
+            std::cerr << name << " = " << el << '\n';
+        }
     }
 
-    std::optional<int> findPropertyIndex(std::string_view) const
+    std::optional<int> findPropertyIndex(std::string_view sv) const
     {
-        OSC_THROW_NYI();
-    }
-
-    std::optional<int> findPropertyIndex(UID) const
-    {
-        OSC_THROW_NYI();
+        auto it = m_ShaderElements.find(std::string{sv});
+        if (it != m_ShaderElements.end())
+        {
+            return static_cast<int>(std::distance(m_ShaderElements.begin(), it));
+        }
+        else
+        {
+            return std::nullopt;
+        }
     }
 
     int getPropertyCount() const
     {
-        OSC_THROW_NYI();
+        return static_cast<int>(m_ShaderElements.size());
     }
 
-    std::string const& getPropertyName(int) const
+    std::string const& getPropertyName(int i) const
     {
-        OSC_THROW_NYI();
-    }
-
-    UID getPropertyNameID(int) const
-    {
-        OSC_THROW_NYI();
+        auto it = m_ShaderElements.begin();
+        std::advance(it, i);
+        return it->first;
     }
 
     ShaderType getPropertyType(int) const
@@ -612,8 +881,8 @@ public:
     }
 
 private:
-    // TODO: needs gl::Program
-    // TODO: needs definition of where the attrs are
+    gl::Program m_Program;
+    std::unordered_map<std::string, ShaderElement> m_ShaderElements;
 };
 
 
@@ -638,11 +907,6 @@ public:
         OSC_THROW_NYI();
     }
 
-    bool hasProperty(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     glm::vec4 const* getColor() const
     {
         OSC_THROW_NYI();
@@ -658,17 +922,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    float const* getFloat(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setFloat(std::string_view, float)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setFloat(UID, float)
     {
         OSC_THROW_NYI();
     }
@@ -678,17 +932,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    int const* getInt(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setInt(std::string_view, int)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setInt(UID, int)
     {
         OSC_THROW_NYI();
     }
@@ -698,17 +942,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    Texture2D const* getTexture(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setTexture(std::string_view, Texture2D const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setTexture(UID, Texture2D const&)
     {
         OSC_THROW_NYI();
     }
@@ -718,17 +952,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    glm::vec4 const* getVector(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setVector(std::string_view, glm::vec4 const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setVector(UID, glm::vec4 const&)
     {
         OSC_THROW_NYI();
     }
@@ -738,17 +962,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    glm::mat4 const* getMatrix(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setMatrix(std::string_view, glm::mat4 const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setMatrix(UID, glm::mat4 const&)
     {
         OSC_THROW_NYI();
     }
@@ -785,11 +999,6 @@ public:
         OSC_THROW_NYI();
     }
 
-    bool hasProperty(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     glm::vec4 const* getColor() const
     {
         OSC_THROW_NYI();
@@ -805,17 +1014,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    float const* getFloat(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setFloat(std::string_view, float)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setFloat(UID, float)
     {
         OSC_THROW_NYI();
     }
@@ -825,17 +1024,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    int const* getInt(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setInt(std::string_view, int)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setInt(UID, int)
     {
         OSC_THROW_NYI();
     }
@@ -845,17 +1034,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    Texture2D const* getTexture(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setTexture(std::string_view, Texture2D const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setTexture(UID, Texture2D const&)
     {
         OSC_THROW_NYI();
     }
@@ -865,17 +1044,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    glm::vec4 const* getVector(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setVector(std::string_view, glm::vec4 const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setVector(UID, glm::vec4 const&)
     {
         OSC_THROW_NYI();
     }
@@ -885,17 +1054,7 @@ public:
         OSC_THROW_NYI();
     }
 
-    glm::mat4 const* getMatrix(UID) const
-    {
-        OSC_THROW_NYI();
-    }
-
     void setMatrix(std::string_view, glm::mat4 const&)
-    {
-        OSC_THROW_NYI();
-    }
-
-    void setMatrix(UID, glm::mat4 const&)
     {
         OSC_THROW_NYI();
     }
@@ -1415,23 +1574,10 @@ std::string osc::experimental::to_string(ShaderType st)
 }
 
 
-// Shader IDs
-
-osc::UID osc::experimental::StorePropertyNameToUID(std::string_view)
-{
-    OSC_THROW_NYI();
-}
-
-std::optional<std::string_view> osc::experimental::TryLoadPropertyNameFromUID(UID)
-{
-    OSC_THROW_NYI();
-}
-
-
 // Shader
 
-osc::experimental::Shader::Shader(std::string_view src) :
-    m_Impl{std::make_shared<Impl>(std::move(src))}
+osc::experimental::Shader::Shader(char const* vertexShader, char const* fragmentShader) :
+    m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
 {
 }
 
@@ -1446,11 +1592,6 @@ std::optional<int> osc::experimental::Shader::findPropertyIndex(std::string_view
     return m_Impl->findPropertyIndex(std::move(propertyName));
 }
 
-std::optional<int> osc::experimental::Shader::findPropertyIndex(UID propertyNameID) const
-{
-    return m_Impl->findPropertyIndex(std::move(propertyNameID));
-}
-
 int osc::experimental::Shader::getPropertyCount() const
 {
     return m_Impl->getPropertyCount();
@@ -1459,11 +1600,6 @@ int osc::experimental::Shader::getPropertyCount() const
 std::string const& osc::experimental::Shader::getPropertyName(int propertyIndex) const
 {
     return m_Impl->getPropertyName(std::move(propertyIndex));
-}
-
-osc::UID osc::experimental::Shader::getPropertyNameID(int propertyIndex) const
-{
-    return m_Impl->getPropertyNameID(std::move(propertyIndex));
 }
 
 osc::experimental::ShaderType osc::experimental::Shader::getPropertyType(int propertyIndex) const
@@ -1545,11 +1681,6 @@ bool osc::experimental::Material::hasProperty(std::string_view propertyName) con
     return m_Impl->hasProperty(std::move(propertyName));
 }
 
-bool osc::experimental::Material::hasProperty(UID propertyNameID) const
-{
-    return m_Impl->hasProperty(std::move(propertyNameID));
-}
-
 glm::vec4 const* osc::experimental::Material::getColor() const
 {
     return m_Impl->getVector("Color");
@@ -1566,31 +1697,15 @@ float const* osc::experimental::Material::getFloat(std::string_view propertyName
     return m_Impl->getFloat(std::move(propertyName));
 }
 
-float const* osc::experimental::Material::getFloat(UID propertyNameID) const
-{
-    return m_Impl->getFloat(std::move(propertyNameID));
-}
-
 void osc::experimental::Material::setFloat(std::string_view propertyName, float v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloat(std::move(propertyName), std::move(v));
 }
 
-void osc::experimental::Material::setFloat(UID propertyNameID, float v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setFloat(std::move(propertyNameID), std::move(v));
-}
-
 int const* osc::experimental::Material::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
-}
-
-int const* osc::experimental::Material::getInt(UID propertyNameID) const
-{
-    return m_Impl->getInt(std::move(propertyNameID));
 }
 
 void osc::experimental::Material::setInt(std::string_view propertyName, int v)
@@ -1599,20 +1714,9 @@ void osc::experimental::Material::setInt(std::string_view propertyName, int v)
     m_Impl->setInt(std::move(propertyName), std::move(v));
 }
 
-void osc::experimental::Material::setInt(UID propertyNameID, int v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setInt(std::move(propertyNameID), std::move(v));
-}
-
 osc::experimental::Texture2D const* osc::experimental::Material::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
-}
-
-osc::experimental::Texture2D const* osc::experimental::Material::getTexture(UID propertyNameID) const
-{
-    return m_Impl->getTexture(std::move(propertyNameID));
 }
 
 void osc::experimental::Material::setTexture(std::string_view propertyName, Texture2D const& t)
@@ -1621,20 +1725,9 @@ void osc::experimental::Material::setTexture(std::string_view propertyName, Text
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
-void osc::experimental::Material::setTexture(UID propertyNameID, Texture2D const& t)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setTexture(std::move(propertyNameID), std::move(t));
-}
-
 glm::vec4 const* osc::experimental::Material::getVector(std::string_view propertyName) const
 {
     return m_Impl->getVector(std::move(propertyName));
-}
-
-glm::vec4 const* osc::experimental::Material::getVector(UID propertyNameID) const
-{
-    return m_Impl->getVector(std::move(propertyNameID));
 }
 
 void osc::experimental::Material::setVector(std::string_view propertyName, glm::vec4 const& v)
@@ -1643,32 +1736,15 @@ void osc::experimental::Material::setVector(std::string_view propertyName, glm::
     m_Impl->setVector(std::move(propertyName), v);
 }
 
-void osc::experimental::Material::setVector(UID propertyNameID, glm::vec4 const& v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setVector(std::move(propertyNameID), v);
-}
-
 glm::mat4 const* osc::experimental::Material::getMatrix(std::string_view propertyName) const
 {
     return m_Impl->getMatrix(std::move(propertyName));
-}
-
-glm::mat4 const* osc::experimental::Material::getMatrix(UID propertyNameID) const
-{
-    return m_Impl->getMatrix(std::move(propertyNameID));
 }
 
 void osc::experimental::Material::setMatrix(std::string_view propertyName, glm::mat4 const& m)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setMatrix(std::move(propertyName), m);
-}
-
-void osc::experimental::Material::setMatrix(UID propertyNameID, glm::mat4 const& m)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setMatrix(std::move(propertyNameID), m);
 }
 
 bool osc::experimental::operator==(Material const& a, Material const& b)
@@ -1750,11 +1826,6 @@ bool osc::experimental::MaterialPropertyBlock::hasProperty(std::string_view prop
     return m_Impl->hasProperty(std::move(propertyName));
 }
 
-bool osc::experimental::MaterialPropertyBlock::hasProperty(UID propertyNameID) const
-{
-    return m_Impl->hasProperty(std::move(propertyNameID));
-}
-
 glm::vec4 const* osc::experimental::MaterialPropertyBlock::getColor() const
 {
     return m_Impl->getVector("Color");
@@ -1771,31 +1842,15 @@ float const* osc::experimental::MaterialPropertyBlock::getFloat(std::string_view
     return m_Impl->getFloat(std::move(propertyName));
 }
 
-float const* osc::experimental::MaterialPropertyBlock::getFloat(UID propertyNameID) const
-{
-    return m_Impl->getFloat(std::move(propertyNameID));
-}
-
 void osc::experimental::MaterialPropertyBlock::setFloat(std::string_view propertyName, float v)
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setFloat(std::move(propertyName), std::move(v));
 }
 
-void osc::experimental::MaterialPropertyBlock::setFloat(UID propertyNameID, float v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setFloat(std::move(propertyNameID), std::move(v));
-}
-
 int const* osc::experimental::MaterialPropertyBlock::getInt(std::string_view propertyName) const
 {
     return m_Impl->getInt(std::move(propertyName));
-}
-
-int const* osc::experimental::MaterialPropertyBlock::getInt(UID propertyNameID) const
-{
-    return m_Impl->getInt(std::move(propertyNameID));
 }
 
 void osc::experimental::MaterialPropertyBlock::setInt(std::string_view propertyName, int v)
@@ -1804,20 +1859,9 @@ void osc::experimental::MaterialPropertyBlock::setInt(std::string_view propertyN
     m_Impl->setInt(std::move(propertyName), std::move(v));
 }
 
-void osc::experimental::MaterialPropertyBlock::setInt(UID propertyNameID, int v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setInt(std::move(propertyNameID), std::move(v));
-}
-
 osc::experimental::Texture2D const* osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
 {
     return m_Impl->getTexture(std::move(propertyName));
-}
-
-osc::experimental::Texture2D const* osc::experimental::MaterialPropertyBlock::getTexture(UID propertyNameID) const
-{
-    return m_Impl->getTexture(std::move(propertyNameID));
 }
 
 void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D const& t)
@@ -1826,20 +1870,9 @@ void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view prope
     m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
-void osc::experimental::MaterialPropertyBlock::setTexture(UID propertyNameID, Texture2D const& t)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setTexture(std::move(propertyNameID), std::move(t));
-}
-
 glm::vec4 const* osc::experimental::MaterialPropertyBlock::getVector(std::string_view propertyName) const
 {
     return m_Impl->getVector(std::move(propertyName));
-}
-
-glm::vec4 const* osc::experimental::MaterialPropertyBlock::getVector(UID propertyNameID) const
-{
-    return m_Impl->getVector(std::move(propertyNameID));
 }
 
 void osc::experimental::MaterialPropertyBlock::setVector(std::string_view propertyName, glm::vec4 const& v)
@@ -1848,20 +1881,9 @@ void osc::experimental::MaterialPropertyBlock::setVector(std::string_view proper
     m_Impl->setVector(propertyName, v);
 }
 
-void osc::experimental::MaterialPropertyBlock::setVector(UID propertyNameID, glm::vec4 const& v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setVector(std::move(propertyNameID), v);
-}
-
 glm::mat4 const* osc::experimental::MaterialPropertyBlock::getMatrix(std::string_view propertyName) const
 {
     return m_Impl->getMatrix(std::move(propertyName));
-}
-
-glm::mat4 const* osc::experimental::MaterialPropertyBlock::getMatrix(UID propertyNameID) const
-{
-    return m_Impl->getMatrix(std::move(propertyNameID));
 }
 
 void osc::experimental::MaterialPropertyBlock::setMatrix(std::string_view propertyName, glm::mat4 const& v)
@@ -1870,11 +1892,6 @@ void osc::experimental::MaterialPropertyBlock::setMatrix(std::string_view proper
     m_Impl->setMatrix(std::move(propertyName), v);
 }
 
-void osc::experimental::MaterialPropertyBlock::setMatrix(UID propertyNameID, glm::mat4 const& v)
-{
-    DoCopyOnWrite(m_Impl);
-    m_Impl->setMatrix(std::move(propertyNameID), v);
-}
 
 bool osc::experimental::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {

@@ -77,7 +77,14 @@ endif()
 
 # DEPENDENCY: OpenGL
 #     transitively used by GLEW to load the OpenGL API
-find_package(OpenGL REQUIRED)
+if(TRUE)
+    # use an older OpenGL linking strategy
+    #
+    # (this seems to be necessary on some systems: need to investigate why)
+    cmake_policy(SET CMP0072 OLD)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+    find_package(OpenGL REQUIRED)
+endif()
 
 # DEPENDENCY: GLEW
 #     used to bootstrap the OpenGL API, load extensions, etc.
@@ -411,10 +418,24 @@ if(TRUE)
         osimAnalyses
         osimTools
         osimLepton
+        osimExampleComponents
         SimTKcommon
         SimTKmath
         SimTKsimbody
     )
+endif()
+
+# DEPENDENCY: googletest
+if(TRUE)
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    #
+    # copied from googletest README
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    # do not install gtest alongside osc
+    set(INSTALL_GTEST OFF CACHE BOOL "install gtests")
+
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 endif()
 
 # `osc::all-deps`: all libraries osc should link to

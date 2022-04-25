@@ -23,16 +23,14 @@
 #include <algorithm>
 #include <vector>
 
-using namespace osc;
-
-static InstancedDrawlist makeDrawlist(int rows, int cols)
+static osc::InstancedDrawlist makeDrawlist(int rows, int cols)
 {
-    InstanceableMeshdata cube = uploadMeshdataForInstancing(GenCube());
+    osc::InstanceableMeshdata cube = osc::uploadMeshdataForInstancing(osc::GenCube());
 
     std::vector<glm::mat4x3> modelMtxs;
     std::vector<glm::mat3x3> normalMtxs;
-    std::vector<Rgba32> colors;
-    std::vector<InstanceableMeshdata> meshes;
+    std::vector<osc::Rgba32> colors;
+    std::vector<osc::InstanceableMeshdata> meshes;
     std::vector<unsigned char> rims;
 
     // add a scaled cube instance that indexes the cube meshdata
@@ -53,7 +51,7 @@ static InstancedDrawlist makeDrawlist(int rows, int cols)
             glm::mat4 translate = glm::translate(glm::mat4{1.0f}, {x, y, 0.0f});
             glm::mat4 scale = glm::scale(glm::mat4{1.0f}, glm::vec3{w, h, d});
             glm::mat4 xform = translate * scale;
-            glm::mat4 normalMtx = ToNormalMatrix(xform);
+            glm::mat4 normalMtx = osc::ToNormalMatrix(xform);
 
             modelMtxs.push_back(xform);
             normalMtxs.push_back(normalMtx);
@@ -63,7 +61,7 @@ static InstancedDrawlist makeDrawlist(int rows, int cols)
         }
     }
 
-    DrawlistCompilerInput inp{};
+    osc::DrawlistCompilerInput inp{};
     inp.ninstances = modelMtxs.size();
     inp.modelMtxs = modelMtxs.data();
     inp.normalMtxs = normalMtxs.data();
@@ -71,7 +69,7 @@ static InstancedDrawlist makeDrawlist(int rows, int cols)
     inp.meshes = meshes.data();
     inp.rimIntensities = rims.data();
 
-    InstancedDrawlist rv;
+    osc::InstancedDrawlist rv;
     uploadInputsToDrawlist(inp, rv);
     return rv;
 }

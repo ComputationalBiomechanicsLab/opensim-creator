@@ -3,7 +3,6 @@
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/RenderableScene.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
@@ -16,8 +15,6 @@
 
 #include <memory>
 #include <vector>
-
-using namespace osc;
 
 static std::unique_ptr<OpenSim::Model> makeNewModel()
 {
@@ -42,8 +39,6 @@ public:
     Impl(std::unique_ptr<OpenSim::Model> _model) :
         m_StateModifications{},
         m_Model{std::move(_model)},
-        m_Decorations{},
-        m_SceneBVH{},
         m_FixupScaleFactor{1.0f},
         m_MaybeSelected{},
         m_MaybeHovered{},
@@ -51,17 +46,13 @@ public:
         m_UpdatedModelVersion{},
         m_CurrentModelVersion{},
         m_UpdatedStateVersion{},
-        m_CurrentStateVersion{},
-        m_UpdatedDecorationsVersion{},
-        m_CurrentDecorationsVersion{}
+        m_CurrentStateVersion{}
     {
     }
 
     Impl(Impl const& other) :
         m_StateModifications{other.m_StateModifications},
         m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
-        m_Decorations{},
-        m_SceneBVH{},
         m_FixupScaleFactor{other.m_FixupScaleFactor},
         m_MaybeSelected{other.m_MaybeSelected},
         m_MaybeHovered{other.m_MaybeHovered},
@@ -69,9 +60,7 @@ public:
         m_UpdatedModelVersion{},
         m_CurrentModelVersion{other.m_CurrentModelVersion},
         m_UpdatedStateVersion{},
-        m_CurrentStateVersion{other.m_CurrentStateVersion},
-        m_UpdatedDecorationsVersion{},
-        m_CurrentDecorationsVersion{other.m_CurrentDecorationsVersion}
+        m_CurrentStateVersion{other.m_CurrentStateVersion}
     {
     }
 
@@ -150,18 +139,6 @@ public:
         }
     }
 
-    nonstd::span<ComponentDecoration const> getSceneDecorations() const
-    {
-        const_cast<Impl&>(*this).updateIfDirty();
-        return m_Decorations;
-    }
-
-    BVH const& getSceneBVH() const
-    {
-        const_cast<Impl&>(*this).updateIfDirty();
-        return m_SceneBVH;
-    }
-
     float getFixupScaleFactor() const
     {
         return m_FixupScaleFactor;
@@ -170,68 +147,12 @@ public:
     void setFixupScaleFactor(float sf)
     {
         m_FixupScaleFactor = sf;
-        m_CurrentDecorationsVersion = UID{};
-    }
-
-    AABB getSceneAABB() const
-    {
-        auto const& bvh = getSceneBVH();
-        if (!bvh.nodes.empty())
-        {
-            return bvh.nodes[0].bounds;
-        }
-        else
-        {
-            return AABB{};
-        }
-    }
-
-    glm::vec3 getSceneDimensions() const
-    {
-        return Dimensions(getSceneAABB());
-    }
-
-    float getSceneLongestDimension() const
-    {
-        return LongestDim(getSceneAABB());
-    }
-
-    float getRecommendedScaleFactor() const
-    {
-        // generate decorations as if they were empty-sized and union their
-        // AABBs to get an idea of what the "true" scale of the model probably
-        // is (without the model containing oversized frames, etc.)
-        std::vector<ComponentDecoration> ses;
-        GenerateModelDecorations(getModel(), getState(), 0.0f, ses, getSelected(), getHovered());
-
-        if (ses.empty())
-        {
-            return 1.0f;
-        }
-
-        AABB aabb = ses[0].worldspaceAABB;
-        for (size_t i = 1; i < ses.size(); ++i)
-        {
-            aabb = Union(aabb, ses[i].worldspaceAABB);
-        }
-
-        float longest = LongestDim(aabb);
-        float rv = 1.0f;
-
-        while (longest < 0.1)
-        {
-            longest *= 10.0f;
-            rv /= 10.0f;
-        }
-
-        return rv;
     }
 
     bool isDirty() const
     {
         return m_CurrentModelVersion != m_UpdatedModelVersion ||
-               m_CurrentStateVersion != m_UpdatedStateVersion ||
-               m_CurrentDecorationsVersion != m_UpdatedDecorationsVersion;
+               m_CurrentStateVersion != m_UpdatedStateVersion;
     }
 
     void setDirty(bool v)
@@ -240,13 +161,11 @@ public:
         {
             m_CurrentModelVersion = UID{};
             m_CurrentStateVersion = UID{};
-            m_CurrentDecorationsVersion = UID{};
         }
         else
         {
             m_UpdatedModelVersion = m_CurrentModelVersion;
             m_UpdatedStateVersion = m_CurrentStateVersion;
-            m_UpdatedDecorationsVersion = m_CurrentDecorationsVersion;
         }
     }
 
@@ -254,22 +173,10 @@ public:
     {
         if (m_CurrentModelVersion != m_UpdatedModelVersion)
         {
-            // a model update always induces a state + decorations update also
+            // a model update always induces a state update also
             if (m_CurrentStateVersion == m_UpdatedStateVersion)
             {
                 m_CurrentStateVersion = UID{};
-            }
-            if (m_CurrentDecorationsVersion == m_UpdatedDecorationsVersion)
-            {
-                m_CurrentDecorationsVersion = UID{};
-            }
-        }
-        else if (m_CurrentStateVersion != m_UpdatedStateVersion)
-        {
-            // a state update always induces a decorations update also
-            if (m_CurrentDecorationsVersion == m_UpdatedDecorationsVersion)
-            {
-                m_CurrentDecorationsVersion = UID{};
             }
         }
 
@@ -299,38 +206,11 @@ public:
 
             {
                 OSC_PERF("realize velocity");
-                m_Model->realizeVelocity(m_Model->updWorkingState());
+                m_Model->realizeDynamics(m_Model->updWorkingState());
             }
 
             m_UpdatedStateVersion = m_CurrentStateVersion;  // reset flag
         }
-
-        if (m_CurrentDecorationsVersion != m_UpdatedDecorationsVersion)
-        {
-            OSC_PERF("decoration update");
-
-            {
-                OSC_PERF("generate decorations");
-                GenerateModelDecorations(*m_Model,
-                                         m_Model->updWorkingState(),
-                                         m_FixupScaleFactor,
-                                         m_Decorations,
-                                         FindComponent(*m_Model, m_MaybeSelected),
-                                         FindComponent(*m_Model, m_MaybeHovered));
-            }
-
-            {
-                OSC_PERF("generate BVH");
-                UpdateSceneBVH(m_Decorations, m_SceneBVH);
-            }
-
-            m_UpdatedDecorationsVersion = m_CurrentDecorationsVersion;
-        }
-    }
-
-    bool hasSelected() const
-    {
-        return FindComponent(*m_Model, m_MaybeSelected);
     }
 
     OpenSim::Component const* getSelected() const
@@ -352,8 +232,6 @@ public:
 
     void setSelected(OpenSim::Component const* c)
     {
-        auto oldSelection = m_MaybeSelected;
-
         if (c)
         {
             m_MaybeSelected = c->getAbsolutePath();
@@ -362,22 +240,6 @@ public:
         {
             m_MaybeSelected = {};
         }
-
-        if (m_MaybeSelected != oldSelection)
-        {
-            m_CurrentDecorationsVersion = UID{};
-        }
-    }
-
-    bool selectionHasTypeHashCode(size_t v) const
-    {
-        OpenSim::Component const* selected = getSelected();
-        return selected && typeid(*selected).hash_code() == v;
-    }
-
-    bool hasHovered() const
-    {
-        return FindComponent(*m_Model, m_MaybeHovered);
     }
 
     OpenSim::Component const* getHovered() const
@@ -399,8 +261,6 @@ public:
 
     void setHovered(OpenSim::Component const* c)
     {
-        auto oldHovered = m_MaybeHovered;
-
         if (c)
         {
             m_MaybeHovered = c->getAbsolutePath();
@@ -408,11 +268,6 @@ public:
         else
         {
             m_MaybeHovered = {};
-        }
-
-        if (m_MaybeHovered != oldHovered)
-        {
-            m_CurrentDecorationsVersion = UID{};
         }
     }
 
@@ -435,8 +290,6 @@ public:
 
     void setIsolated(OpenSim::Component const* c)
     {
-        auto oldIsolated = m_MaybeIsolated;
-
         if (c)
         {
             m_MaybeIsolated = c->getAbsolutePath();
@@ -445,18 +298,6 @@ public:
         {
             m_MaybeIsolated = {};
         }
-
-        if (m_MaybeIsolated != oldIsolated)
-        {
-            m_CurrentDecorationsVersion = UID{};
-        }
-    }
-
-    void setSelectedHoveredAndIsolatedFrom(Impl const& other)
-    {
-        m_MaybeSelected = other.m_MaybeSelected;
-        m_MaybeHovered = other.m_MaybeHovered;
-        m_MaybeIsolated = other.m_MaybeIsolated;
     }
 
 private:
@@ -465,12 +306,6 @@ private:
 
     // the model, finalized from its properties
     std::unique_ptr<OpenSim::Model> m_Model;
-
-    // decorations, generated from model's display properties etc.
-    std::vector<ComponentDecoration> m_Decorations;
-
-    // scene-level BVH of decoration AABBs
-    BVH m_SceneBVH;
 
     // fixup scale factor of the model
     //
@@ -493,8 +328,6 @@ private:
     UID m_CurrentModelVersion;
     UID m_UpdatedStateVersion;
     UID m_CurrentStateVersion;
-    UID m_UpdatedDecorationsVersion;
-    UID m_CurrentDecorationsVersion;
 };
 
 osc::UiModel::UiModel() :
@@ -518,7 +351,7 @@ osc::UiModel::UiModel(UiModel const& other) :
 }
 
 osc::UiModel::UiModel(UiModel&&) noexcept = default;
-UiModel& osc::UiModel::operator=(UiModel const& other) = default;
+osc::UiModel& osc::UiModel::operator=(UiModel const& other) = default;
 osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
 osc::UiModel::~UiModel() noexcept = default;
 
@@ -557,7 +390,7 @@ SimTK::State const& osc::UiModel::getState() const
     return m_Impl->getState();
 }
 
-UID osc::UiModel::getStateVersion() const
+osc::UID osc::UiModel::getStateVersion() const
 {
     return m_Impl->getStateVersion();
 }
@@ -572,16 +405,6 @@ bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
     return m_Impl->removeCoordinateEdit(c);
 }
 
-nonstd::span<ComponentDecoration const> osc::UiModel::getSceneDecorations() const
-{
-    return m_Impl->getSceneDecorations();
-}
-
-osc::BVH const& osc::UiModel::getSceneBVH() const
-{
-    return m_Impl->getSceneBVH();
-}
-
 float osc::UiModel::getFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
@@ -590,26 +413,6 @@ float osc::UiModel::getFixupScaleFactor() const
 void osc::UiModel::setFixupScaleFactor(float sf)
 {
     m_Impl->setFixupScaleFactor(std::move(sf));
-}
-
-AABB osc::UiModel::getSceneAABB() const
-{
-    return m_Impl->getSceneAABB();
-}
-
-glm::vec3 osc::UiModel::getSceneDimensions() const
-{
-    return m_Impl->getSceneDimensions();
-}
-
-float osc::UiModel::getSceneLongestDimension() const
-{
-    return m_Impl->getSceneLongestDimension();
-}
-
-float osc::UiModel::getRecommendedScaleFactor() const
-{
-    return m_Impl->getRecommendedScaleFactor();
 }
 
 bool osc::UiModel::isDirty() const
@@ -627,11 +430,6 @@ void osc::UiModel::updateIfDirty()
     m_Impl->updateIfDirty();
 }
 
-bool osc::UiModel::hasSelected() const
-{
-    return m_Impl->hasSelected();
-}
-
 OpenSim::Component const* osc::UiModel::getSelected() const
 {
     return m_Impl->getSelected();
@@ -645,16 +443,6 @@ OpenSim::Component* osc::UiModel::updSelected()
 void osc::UiModel::setSelected(OpenSim::Component const* c)
 {
     m_Impl->setSelected(std::move(c));
-}
-
-bool osc::UiModel::selectionHasTypeHashCode(size_t v) const
-{
-    return m_Impl->selectionHasTypeHashCode(std::move(v));
-}
-
-bool osc::UiModel::hasHovered() const
-{
-    return m_Impl->hasHovered();
 }
 
 OpenSim::Component const* osc::UiModel::getHovered() const
@@ -685,9 +473,4 @@ OpenSim::Component* osc::UiModel::updIsolated()
 void osc::UiModel::setIsolated(OpenSim::Component const* c)
 {
     m_Impl->setIsolated(std::move(c));
-}
-
-void osc::UiModel::setSelectedHoveredAndIsolatedFrom(UiModel const& uim)
-{
-    m_Impl->setSelectedHoveredAndIsolatedFrom(*uim.m_Impl);
 }

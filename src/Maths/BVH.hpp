@@ -3,9 +3,11 @@
 #include "src/Maths/AABB.hpp"
 
 #include <glm/vec3.hpp>
+#include <nonstd/span.hpp>
 
 #include <vector>
 #include <cstddef>
+#include <cstdint>
 
 namespace osc
 {
@@ -42,23 +44,15 @@ namespace osc
     //
     // these are BVHes where prim.id refers to the first index of a triangle
 
-    // convenience form of BVH_BuildFromTriangles
-    BVH BVH_CreateFromTriangles(glm::vec3 const*, size_t nverts);
-
     // prim.id will refer to the index of the first vertex in the triangle
-    void BVH_BuildFromTriangles(BVH&, glm::vec3 const*, size_t nverts);
-
-    // appends all collisions the ray encounters to the outparam
-    //
-    // assumes prim.id in the BVH is an offset into the (supplied) triangle verts
-    //
-    // returns true if at least one collision was found and appended to the output
-    bool BVH_GetRayTriangleCollisions(BVH const&, glm::vec3 const*, size_t n, Line const&, std::vector<BVHCollision>* appendTo);
+    void BVH_BuildFromIndexedTriangles(BVH&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
+    void BVH_BuildFromIndexedTriangles(BVH&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
 
     // populates `out` with the closest collision along the ray - if there is a collision
     //
     // returns `true` if there was a collision; otherwise, `false` and `out` if left untouched
-    bool BVH_GetClosestRayTriangleCollision(BVH const&, glm::vec3 const*, size_t nverts, Line const&, BVHCollision* out);
+    bool BVH_GetClosestRayIndexedTriangleCollision(BVH const&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const&, BVHCollision* out);
+    bool BVH_GetClosestRayIndexedTriangleCollision(BVH const&, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const&, BVHCollision* out);
 
 
     // AABB BVHes

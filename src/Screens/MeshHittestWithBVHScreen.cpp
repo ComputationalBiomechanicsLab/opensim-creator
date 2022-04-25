@@ -140,10 +140,11 @@ void osc::MeshHittestWithBVHScreen::tick(float)
         if (impl.useBVH)
         {
             BVHCollision res;
-            if (BVH_GetClosestRayTriangleCollision(impl.mesh.getTriangleBVH(),
-                                                   impl.mesh.getVerts().data(),
-                                                   impl.mesh.getVerts().size(),
-                                                   cameraRayWorldspace, &res))
+            if (BVH_GetClosestRayIndexedTriangleCollision(impl.mesh.getTriangleBVH(),
+                                                          impl.mesh.getVerts(),
+                                                          impl.mesh.getIndices(),
+                                                          cameraRayWorldspace,
+                                                          &res))
             {
                 glm::vec3 const* v = impl.mesh.getVerts().data() + res.primId;
                 impl.isMousedOver = true;

@@ -125,7 +125,7 @@ static void actionCheckToSaveChangesAndThen(osc::MainMenuFileTab& mmft,
     {
         action();
     }
-    else if (mes && mes->getEditedModel().isUpToDateWithFilesystem())
+    else if (mes && mes->editedModel()->isUpToDateWithFilesystem())
     {
         action();
     }
@@ -161,7 +161,7 @@ void osc::actionNewModel(std::shared_ptr<MainEditorState> st)
 {
     if (st)
     {
-        st->updEditedModel() = UndoableUiModel{};
+        st->editedModel() = std::make_shared<UndoableUiModel>();
         App::cur().requestTransition<ModelEditorScreen>(st);
     }
     else
@@ -177,18 +177,18 @@ void osc::actionOpenModel(std::shared_ptr<MainEditorState> mes)
 
 bool osc::actionSaveModel(std::shared_ptr<MainEditorState> mes)
 {
-    UndoableUiModel& uim = mes->updEditedModel();
-    std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(uim.getModel());
+    std::shared_ptr<UndoableUiModel> uim = mes->editedModel();
+    std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(uim->getModel());
 
-    if (maybeUserSaveLoc && trySaveModel(uim.getModel(), *maybeUserSaveLoc))
+    if (maybeUserSaveLoc && trySaveModel(uim->getModel(), *maybeUserSaveLoc))
     {
-        std::string oldPath = uim.getModel().getInputFileName();
-        uim.updModel().setInputFileName(*maybeUserSaveLoc);
-        uim.setFilesystemPath(*maybeUserSaveLoc);
-        uim.setUpToDateWithFilesystem();
+        std::string oldPath = uim->getModel().getInputFileName();
+        uim->updModel().setInputFileName(*maybeUserSaveLoc);
+        uim->setFilesystemPath(*maybeUserSaveLoc);
+        uim->setUpToDateWithFilesystem();
         if (*maybeUserSaveLoc != oldPath)
         {
-            uim.commit("set model path");
+            uim->commit("set model path");
         }
         osc::App::cur().addRecentFile(*maybeUserSaveLoc);
         return true;
@@ -238,7 +238,7 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
 
         if (mes && mod && io.KeyAlt && ImGui::IsKeyPressed(SDL_SCANCODE_S))
         {
-            actionSaveCurrentModelAs(mes->updEditedModel());
+            actionSaveCurrentModelAs(*mes->editedModel());
         }
 
         if (mes && mod && ImGui::IsKeyPressed(SDL_SCANCODE_W))
@@ -333,7 +333,7 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
             try
             {
                 std::unique_ptr<OpenSim::Model> cpy =
-                    std::make_unique<OpenSim::Model>(mes->getEditedModel().getModel());
+                    std::make_unique<OpenSim::Model>(mes->editedModel()->getModel());
                 cpy->buildSystem();
                 cpy->initializeState();
                 mes->addSimulation(Simulation{osc::StoFileSimulation{std::move(cpy), p}});
@@ -358,7 +358,7 @@ void osc::MainMenuFileTab::draw(std::shared_ptr<MainEditorState> mes)
     {
         if (mes)
         {
-            actionSaveCurrentModelAs(mes->updEditedModel());
+            actionSaveCurrentModelAs(*mes->editedModel());
         }
     }
 

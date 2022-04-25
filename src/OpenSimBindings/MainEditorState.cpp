@@ -31,24 +31,9 @@ public:
     {
     }
 
-    UndoableUiModel const& getEditedModel() const
-    {
-        return *m_EditedModel;
-    }
-
-    UndoableUiModel& updEditedModel()
-    {
-        return *m_EditedModel;
-    }
-
-    std::shared_ptr<UndoableUiModel> updEditedModelPtr()
+    std::shared_ptr<UndoableUiModel> editedModel()
     {
         return m_EditedModel;
-    }
-
-    bool hasSimulations() const
-    {
-        return !m_Simulations.empty();
     }
 
     int getNumSimulations() const
@@ -56,19 +41,14 @@ public:
         return static_cast<int>(m_Simulations.size());
     }
 
-    Simulation const& getSimulation(int idx) const
-    {
-        return m_Simulations.at(idx);
-    }
-
-    Simulation& updSimulation(int idx)
+    std::shared_ptr<Simulation> updSimulation(int idx)
     {
         return m_Simulations.at(idx);
     }
 
     void addSimulation(Simulation s)
     {
-        m_Simulations.push_back(std::move(s));
+        m_Simulations.push_back(std::make_shared<Simulation>(std::move(s)));
     }
 
     void removeSimulation(int idx)
@@ -82,12 +62,7 @@ public:
         return m_FocusedSimulation;
     }
 
-    Simulation const* getFocusedSimulation() const
-    {
-        return const_cast<Impl&>(*this).updFocusedSimulation();
-    }
-
-    Simulation* updFocusedSimulation()
+    std::shared_ptr<Simulation> updFocusedSimulation()
     {
         if (!(0 <= m_FocusedSimulation && m_FocusedSimulation < static_cast<int>(m_Simulations.size())))
         {
@@ -98,13 +73,13 @@ public:
             }
             else
             {
-                return &m_Simulations.back();
+                return m_Simulations.back();
             }
         }
         else
         {
             // in bounds
-            return &m_Simulations.at(m_FocusedSimulation);
+            return m_Simulations.at(m_FocusedSimulation);
         }
     }
 
@@ -177,7 +152,7 @@ public:
 
 private:
     std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
-    std::vector<Simulation> m_Simulations;
+    std::vector<std::shared_ptr<Simulation>> m_Simulations;
     int m_FocusedSimulation = -1;
     std::vector<OutputExtractor> m_UserOutputExtractors;
     ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
@@ -204,24 +179,9 @@ osc::MainEditorState::MainEditorState(MainEditorState&&) = default;
 osc::MainEditorState& osc::MainEditorState::operator=(MainEditorState&&) = default;
 osc::MainEditorState::~MainEditorState() noexcept = default;
 
-osc::UndoableUiModel const& osc::MainEditorState::getEditedModel() const
+std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::editedModel()
 {
-    return m_Impl->getEditedModel();
-}
-
-osc::UndoableUiModel& osc::MainEditorState::updEditedModel()
-{
-    return m_Impl->updEditedModel();
-}
-
-std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::updEditedModelPtr()
-{
-    return m_Impl->updEditedModelPtr();
-}
-
-bool osc::MainEditorState::hasSimulations() const
-{
-    return m_Impl->hasSimulations();
+    return m_Impl->editedModel();
 }
 
 int osc::MainEditorState::getNumSimulations() const
@@ -229,12 +189,7 @@ int osc::MainEditorState::getNumSimulations() const
     return m_Impl->getNumSimulations();
 }
 
-osc::Simulation const& osc::MainEditorState::getSimulation(int idx) const
-{
-    return m_Impl->getSimulation(std::move(idx));
-}
-
-osc::Simulation& osc::MainEditorState::updSimulation(int idx)
+std::shared_ptr<osc::Simulation> osc::MainEditorState::updSimulation(int idx)
 {
     return m_Impl->updSimulation(std::move(idx));
 }
@@ -254,12 +209,7 @@ int osc::MainEditorState::getFocusedSimulationIndex() const
     return m_Impl->getFocusedSimulationIndex();
 }
 
-osc::Simulation const* osc::MainEditorState::getFocusedSimulation() const
-{
-    return m_Impl->getFocusedSimulation();
-}
-
-osc::Simulation* osc::MainEditorState::updFocusedSimulation()
+std::shared_ptr<osc::Simulation> osc::MainEditorState::updFocusedSimulation()
 {
     return m_Impl->updFocusedSimulation();
 }
@@ -339,8 +289,8 @@ void osc::AutoFocusAllViewers(MainEditorState& st)
 
 void osc::StartSimulatingEditedModel(MainEditorState& st)
 {
-    UndoableUiModel const& uim = st.getEditedModel();
-    BasicModelStatePair modelState{uim.getModel(), uim.getState()};
+    std::shared_ptr<UndoableUiModel> uim = st.editedModel();
+    BasicModelStatePair modelState{uim->getModel(), uim->getState()};
     FdParams params = FromParamBlock(st.getSimulationParams());
 
     st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});

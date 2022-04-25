@@ -19,7 +19,6 @@
 #include <string>
 #include <utility>
 
-using namespace osc;
 
 // the function that loads the OpenSim model
 static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
@@ -28,7 +27,7 @@ static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
     return std::make_unique<osc::UndoableUiModel>(std::move(model));
 }
 
-struct LoadingScreen::Impl final {
+struct osc::LoadingScreen::Impl final {
 
     // filesystem path to the osim being loaded
     std::filesystem::path path;
@@ -163,8 +162,8 @@ void osc::LoadingScreen::tick(float dt)
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            impl.mes->updEditedModel() = std::move(*result);
-            impl.mes->updEditedModel().setUpToDateWithFilesystem();
+            *impl.mes->editedModel() = std::move(*result);
+            impl.mes->editedModel()->setUpToDateWithFilesystem();
             App::cur().requestTransition<ModelEditorScreen>(impl.mes);
             AutoFocusAllViewers(*impl.mes);
         }
@@ -174,7 +173,7 @@ void osc::LoadingScreen::tick(float dt)
             //
             // transitiong into "fresh" editor
             auto mes = std::make_shared<MainEditorState>(std::move(*result));
-            mes->updEditedModel().setUpToDateWithFilesystem();
+            mes->editedModel()->setUpToDateWithFilesystem();
             App::cur().requestTransition<ModelEditorScreen>(mes);
             AutoFocusAllViewers(*mes);
         }

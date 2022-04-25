@@ -14,28 +14,23 @@
 #include <nonstd/span.hpp>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <mutex>
+#include <algorithm>
+#include <iterator>
 #include <optional>
+#include <mutex>
 #include <memory>
 #include <vector>
 
 // helper function for creating a simulator that's hooked up to the reports vector
 static osc::FdSimulation MakeSimulation(
         osc::BasicModelStatePair p,
-        osc::SynchronizedValue<osc::BasicModelStatePair>& uiModelState,
         osc::FdParams const& params,
-        osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reports)
+        osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reportQueue)
 {
     auto callback = [&](osc::SimulationReport r)
     {
-        {
-            auto modelGuard = uiModelState.lock();
-            modelGuard->getModel().realizeReport(r.updStateHACK());
-        }
-        {
-            auto reportsGuard = reports.lock();
-            reportsGuard->push_back(std::move(r));
-        }
+        auto reportsGuard = reportQueue.lock();
+        reportsGuard->push_back(std::move(r));
         osc::App::cur().requestRedraw();
     };
     return osc::FdSimulation{std::move(p), params, std::move(callback)};
@@ -58,7 +53,7 @@ public:
 
     Impl(BasicModelStatePair p, FdParams const& params) :
         m_ModelState{std::move(p)},
-        m_Simulation{MakeSimulation(*m_ModelState.lock(), m_ModelState, params, m_Reports)},
+        m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
         m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
     {
@@ -72,17 +67,20 @@ public:
 
     int getNumReports() const
     {
-        return static_cast<int>(m_Reports.lock()->size());
+        popReportsHACK();
+        return static_cast<int>(m_Reports.size());
     }
 
     SimulationReport getSimulationReport(int reportIndex) const
     {
-        return m_Reports.lock()->at(reportIndex);
+        popReportsHACK();
+        return m_Reports.at(reportIndex);
     }
 
     std::vector<SimulationReport> getAllSimulationReports() const
     {
-        return *m_Reports.lock();
+        popReportsHACK();
+        return m_Reports;
     }
 
     SimulationStatus getStatus() const
@@ -92,11 +90,11 @@ public:
 
     SimulationClock::time_point getCurTime() const
     {
-        auto guard = m_Reports.lock();
+        popReportsHACK();
 
-        if (!guard->empty())
+        if (!m_Reports.empty())
         {
-            return SimulationClock::start() + SimulationClock::duration{guard->back().getState().getTime()};
+            return SimulationClock::start() + SimulationClock::duration{m_Reports.back().getState().getTime()};
         }
         else
         {
@@ -143,8 +141,47 @@ public:
     }
 
 private:
-    SynchronizedValue<BasicModelStatePair> m_ModelState;  // HACK: state has to be re-realized by UI thread
-    SynchronizedValue<std::vector<SimulationReport>> m_Reports;
+    // MUST be done from the UI thread
+    //
+    // the reason this insane hack is necessary is because the background thread
+    // requires access to the UI thread's copy of the model in order to perform
+    // the realization step
+    void popReportsHACK() const
+    {
+        auto& reports = const_cast<std::vector<SimulationReport>&>(m_Reports);
+
+        std::size_t nReportsBefore = reports.size();
+
+        // pop them onto the local reports queue
+        {
+            auto guard = const_cast<SynchronizedValue<std::vector<SimulationReport>>&>(m_ReportQueue).lock();
+
+            reports.reserve(reports.size() + guard->size());
+            std::copy(std::make_move_iterator(guard->begin()),
+                      std::make_move_iterator(guard->end()),
+                      std::back_inserter(reports));
+            guard->clear();
+        }
+
+        std::size_t nReportsAfter = reports.size();
+        std::size_t nAdded = nReportsAfter-nReportsBefore;
+
+        if (nAdded <= 0)
+        {
+            return;
+        }
+
+        // ensure all reports are realized on the UI model
+        auto modelLock = m_ModelState.lock();
+        for (auto it = reports.begin() + nReportsBefore; it != reports.end(); ++it)
+        {
+            modelLock->getModel().realizeReport(it->updStateHACK());
+        }
+    }
+
+    SynchronizedValue<BasicModelStatePair> m_ModelState;
+    SynchronizedValue<std::vector<SimulationReport>> m_ReportQueue;
+    std::vector<SimulationReport> m_Reports;
     FdSimulation m_Simulation;
     ParamBlock m_ParamsAsParamBlock;
     std::vector<OutputExtractor> m_SimulatorOutputExtractors;

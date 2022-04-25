@@ -41,7 +41,6 @@ struct osc::Mesh::Impl final {
     int numIndices;
     std::unique_ptr<PackedIndex[]> indicesData;
     AABB aabb;
-    Sphere boundingSphere;
     BVH triangleBVH;
     bool gpuBuffersOutOfDate;
 
@@ -59,7 +58,6 @@ struct osc::Mesh::Impl final {
         numIndices{0},
         indicesData{nullptr},
         aabb{},
-        boundingSphere{},
         triangleBVH{},
         gpuBuffersOutOfDate{false}
     {
@@ -154,6 +152,18 @@ static std::unique_ptr<PackedIndex[]> copyU16IndicesToU16(nonstd::span<uint16_t 
     return rv;
 }
 
+static nonstd::span<uint32_t const> AsU32Span(PackedIndex const* pi, size_t n)
+{
+    return nonstd::span{&pi->u32, n};
+}
+
+static nonstd::span<uint16_t const> AsU16Span(PackedIndex const* pi, size_t n)
+{
+    return nonstd::span{&pi->u16.a, n};
+}
+
+#include <random>
+
 osc::Mesh::Mesh(MeshData cpuMesh) :
     m_Impl{new Impl{}}
 {
@@ -174,13 +184,7 @@ osc::Mesh::Mesh(MeshData cpuMesh) :
         m_Impl->indicesData = repackU32IndicesToU16(cpuMesh.indices);
     }
 
-    m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    m_Impl->boundingSphere = BoundingSphereOf(m_Impl->verts.data(), m_Impl->verts.size());
-
-    if (m_Impl->topography == MeshTopography::Triangles)
-    {
-        BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
-    }
+    this->recalculateBounds();
 
     m_Impl->gpuBuffersOutOfDate = true;
 }
@@ -316,7 +320,8 @@ void osc::Mesh::setIndexFormat(IndexFormat newFormat)
     m_Impl->gpuBuffersOutOfDate = true;
 }
 
-int osc::Mesh::getNumIndices() const {
+int osc::Mesh::getNumIndices() const
+{
     return m_Impl->numIndices;
 }
 
@@ -395,11 +400,6 @@ osc::AABB osc::Mesh::getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const
     return TransformAABB(m_Impl->aabb, modelMatrix);
 }
 
-osc::Sphere const& osc::Mesh::getBoundingSphere() const
-{
-    return m_Impl->boundingSphere;
-}
-
 osc::BVH const& osc::Mesh::getTriangleBVH() const
 {
     return m_Impl->triangleBVH;
@@ -413,11 +413,28 @@ osc::RayCollision osc::Mesh::getClosestRayTriangleCollisionModelspace(Line const
     }
 
     BVHCollision coll;
-    bool collided = BVH_GetClosestRayTriangleCollision(m_Impl->triangleBVH,
-                                                       m_Impl->verts.data(),
-                                                       m_Impl->verts.size(),
-                                                       ray,
-                                                       &coll);
+    bool collided;
+
+    if (m_Impl->indexFormat == IndexFormat::UInt16)
+    {
+        auto indices = AsU16Span(m_Impl->indicesData.get(), m_Impl->numIndices);
+        collided = BVH_GetClosestRayIndexedTriangleCollision(
+            m_Impl->triangleBVH,
+            m_Impl->verts,
+            indices,
+            ray,
+            &coll);
+    }
+    else
+    {
+        auto indices = AsU32Span(m_Impl->indicesData.get(), m_Impl->numIndices);
+        collided = BVH_GetClosestRayIndexedTriangleCollision(
+            m_Impl->triangleBVH,
+            m_Impl->verts,
+            indices,
+            ray,
+            &coll);
+    }
 
     if (collided)
     {
@@ -459,7 +476,6 @@ void osc::Mesh::clear()
     m_Impl->numIndices = 0;
     m_Impl->indicesData.reset();
     m_Impl->aabb = {};
-    m_Impl->boundingSphere = {};
     m_Impl->triangleBVH.clear();
     m_Impl->gpuBuffersOutOfDate = true;
     m_Impl->maybeVBO = std::nullopt;
@@ -468,16 +484,31 @@ void osc::Mesh::clear()
 
 void osc::Mesh::recalculateBounds()
 {
-    m_Impl->aabb = AABBFromVerts(m_Impl->verts.data(), m_Impl->verts.size());
-    m_Impl->boundingSphere = BoundingSphereOf(m_Impl->verts.data(), m_Impl->verts.size());
-
-    if (m_Impl->topography == MeshTopography::Triangles)
+    if (m_Impl->indexFormat == IndexFormat::UInt16)
     {
-        BVH_BuildFromTriangles(m_Impl->triangleBVH, m_Impl->verts.data(), m_Impl->verts.size());
+        auto indices = AsU16Span(m_Impl->indicesData.get(), m_Impl->numIndices);
+        m_Impl->aabb = AABBFromIndexedVerts(m_Impl->verts, indices);
+        if (m_Impl->topography == MeshTopography::Triangles)
+        {
+            BVH_BuildFromIndexedTriangles(m_Impl->triangleBVH, m_Impl->verts, indices);
+        }
+        else
+        {
+            m_Impl->triangleBVH.clear();
+        }
     }
     else
     {
-        m_Impl->triangleBVH.clear();
+        auto indices = AsU32Span(m_Impl->indicesData.get(), m_Impl->numIndices);
+        m_Impl->aabb = AABBFromIndexedVerts(m_Impl->verts, indices);
+        if (m_Impl->topography == MeshTopography::Triangles)
+        {
+            BVH_BuildFromIndexedTriangles(m_Impl->triangleBVH, m_Impl->verts, indices);
+        }
+        else
+        {
+            m_Impl->triangleBVH.clear();
+        }
     }
 }
 

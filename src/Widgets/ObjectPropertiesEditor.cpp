@@ -20,8 +20,6 @@
 #include <string>
 #include <unordered_map>
 
-using namespace osc;
-
 // returns the first value that changed between the first `n` elements of `old` and `newer`
 template<typename Coll1, typename Coll2>
 static float diff(Coll1 const& old, Coll2 const& newer, size_t n)
@@ -95,7 +93,7 @@ static std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(T val
 static bool ItemValueShouldBeSaved()
 {
     return ImGui::IsItemDeactivatedAfterEdit() ||
-            (ImGui::IsItemEdited() && IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
+            (ImGui::IsItemEdited() && osc::IsAnyKeyPressed({SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB}));
 }
 
 using UpdateFn = std::function<void(OpenSim::AbstractProperty&)>;
@@ -120,7 +118,7 @@ static void DrawIthStringEditor(
 
     bool edited = false;
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-    if (InputString("##stringeditor", curValue, 128))
+    if (osc::InputString("##stringeditor", curValue, 128))
     {
         edited = true;
     }
@@ -319,7 +317,7 @@ namespace
             double conversionCoefficient = 1.0;
 
             // HACK: provide auto-converters for angular quantities
-            if (IsEqualCaseInsensitive(prop.getName(), "orientation"))
+            if (osc::IsEqualCaseInsensitive(prop.getName(), "orientation"))
             {
                 if (m_OrientationValsAreInRadians)
                 {
@@ -327,7 +325,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    DrawTooltipIfItemHovered("Radians", "This quantity is edited in radians (click to switch to degrees)");
+                    osc::DrawTooltipIfItemHovered("Radians", "This quantity is edited in radians (click to switch to degrees)");
                 }
                 else
                 {
@@ -335,7 +333,7 @@ namespace
                     {
                         m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                     }
-                    DrawTooltipIfItemHovered("Degrees", "This quantity is edited in degrees (click to switch to radians)");
+                    osc::DrawTooltipIfItemHovered("Degrees", "This quantity is edited in degrees (click to switch to radians)");
                 }
                 ImGui::SameLine();
 
@@ -497,7 +495,7 @@ namespace
 
     bool CanBeEdited(OpenSim::AbstractProperty const& p)
     {
-        return ContainsKey(GetPropertyEditorLookup(), typeid(p).hash_code());
+        return osc::ContainsKey(GetPropertyEditorLookup(), typeid(p).hash_code());
     }
 
     std::unique_ptr<PropertyEditor> CreatePropertyEditorFor(OpenSim::AbstractProperty const& p)
@@ -685,12 +683,12 @@ osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectProper
 
 osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
 
-std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
+std::optional<osc::ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(OpenSim::Object const& obj)
 {
     return m_Impl->draw(obj);
 }
 
-std::optional<ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
+std::optional<osc::ObjectPropertiesEditor::Response> osc::ObjectPropertiesEditor::draw(
         OpenSim::Object const& obj,
         nonstd::span<int const> indices)
 {

@@ -17,6 +17,7 @@
 #include <glm/mat4x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <nonstd/span.hpp>
 
 #include <array>
 #include <cstdint>
@@ -149,8 +150,12 @@ namespace osc
     AABB TransformAABB(AABB const&, glm::mat4 const&) noexcept;
     AABB TransformAABB(AABB const&, Transform const&) noexcept;
 
-    // computes an AABB from points in space
+    // computes an AABB of free-floating points in space
     AABB AABBFromVerts(glm::vec3 const*, size_t n) noexcept;
+
+    // computes an AABB of indexed verticies (e.g. as used in mesh data)
+    AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices);
+    AABB AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices);
 
     // returns an xform that maps a path segment to another path segment
     glm::mat4 SegmentToSegmentMat4(Segment const&, Segment const&) noexcept;

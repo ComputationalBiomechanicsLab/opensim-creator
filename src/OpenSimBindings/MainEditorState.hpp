@@ -20,7 +20,10 @@ namespace OpenSim
 
 namespace osc
 {
-    // which panels should be shown?
+    // a struct representing which panels should be shown in the main UI window
+    //
+    // TODO: this should probably be an associative string-->bool lookup that can
+    //       be saved to the user config, rather than being hard-coded like this
     struct UserPanelPreferences final {
         bool actions = true;
         bool hierarchy = true;
@@ -50,21 +53,16 @@ namespace osc
         MainEditorState& operator=(MainEditorState&&);
         ~MainEditorState() noexcept;
 
-        // edited model
-        UndoableUiModel const& getEditedModel() const;
-        UndoableUiModel& updEditedModel();
-        std::shared_ptr<UndoableUiModel> updEditedModelPtr();
+        // model that the user is editing
+        std::shared_ptr<UndoableUiModel> editedModel();
 
-        // active simulations
-        bool hasSimulations() const;
+        // simulations
         int getNumSimulations() const;
-        Simulation const& getSimulation(int) const;
-        Simulation& updSimulation(int);
+        std::shared_ptr<Simulation> updSimulation(int);
         void addSimulation(Simulation);
         void removeSimulation(int);
         int getFocusedSimulationIndex() const;
-        Simulation const* getFocusedSimulation() const;
-        Simulation* updFocusedSimulation();
+        std::shared_ptr<Simulation> updFocusedSimulation();
         void setFocusedSimulation(int);
 
         // simulation params (for making new sims)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
+#include "src/OpenSimBindings/CustomDecorationOptions.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -18,11 +19,17 @@ namespace OpenSim
     class Joint;
 }
 
+namespace osc
+{
+    class VirtualConstModelStatePair;
+}
+
 namespace SimTK
 {
     class State;
 }
 
+// OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
     int DistanceFromRoot(OpenSim::Component const&);
@@ -99,12 +106,9 @@ namespace osc
     bool TryDeleteComponentFromModel(OpenSim::Model&, OpenSim::Component&);
 
     // generates decorations for a model + state
-    void GenerateModelDecorations(OpenSim::Model const&,
-                                  SimTK::State const&,
-                                  float fixupScaleFactor,
+    void GenerateModelDecorations(VirtualConstModelStatePair const&,
                                   std::vector<osc::ComponentDecoration>&,
-                                  OpenSim::Component const* selected,
-                                  OpenSim::Component const* hovered);
+                                  CustomDecorationOptions = {});
 
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
 
@@ -131,4 +135,6 @@ namespace osc
 
     // adds a component to an appropriate (if possible - e.g. jointset) location in the model
     void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
+
+    float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
 }

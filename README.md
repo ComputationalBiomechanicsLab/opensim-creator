@@ -1,24 +1,26 @@
+![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)
+
 # OpenSim Creator <img src="resources/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
 > A thin UI for building OpenSim models
 
-📥 Download the latest release [here](../../releases/latest)
+[📥 Download the latest release here](../../releases/latest), [▶️ Watch Introduction Videos Here](https://www.youtube.com/playlist?list=PLOPlDtRLhp8c2SWLCQKKd-l4__UainOYk)
 
 ![screenshot](docs/source/_static/screenshot.png)
 
-OpenSim Creator (`osc`) is a standalone UI for building
-[OpenSim](https://github.com/opensim-org/opensim-core) models. It is
-designed as a proof-of-concept GUI with the intent that some of its
-features may be merged into the official [OpenSim GUI](https://github.com/opensim-org/opensim-gui).
+OpenSim Creator (`osc`) is a standalone UI for building and editing
+[OpenSim](https://github.com/opensim-org/opensim-core) models. It is available
+as a freestanding all-in-one [installer](../../releases/latest) for Windows, Mac, and Linux.
 
-Architectrually, `osc` mostly uses C/C++ that is directly integrated
-against the [OpenSim core API](https://github.com/opensim-org/opensim-core) and otherwise only
-uses lightweight open-source libraries (e.g. SDL2, GLEW, and ImGui) that can be built from source
-on all target platforms. This makes `osc` fairly easy to build, integrate, and package.
+Architectrually, `osc` is a C++ codebase that is directly integrated against
+the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It otherwise only
+uses lightweight open-source libraries that can easily be built from source (e.g. SDL2,
+OpenGL, ImGui) to implement the UI on all target platforms. This makes `osc` fairly easy
+to build, integrate, and package.
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
-department at [TU Delft](https://www.tudelft.nl/). It is funded by the
-Chan Zuckerberg Initiative's "Essential Open Source Software for
+department at [TU Delft](https://www.tudelft.nl/). It is currently funded by the
+[Chan Zuckerberg Initiative](https://chanzuckerberg.com/)'s "Essential Open Source Software for
 Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 <table align="center">
@@ -59,22 +61,32 @@ from source using GitHub Actions, so if you want a bleeding-edge--but unreleased
 of OpenSim Creator check [⚡ the actions page](../../actions) (downloading a CI build
 requires being logged into GitHub; otherwise, you won't see download links).
 
-The release process builds installers that work slightly differently on each platform:
+### Windows
 
-- **Windows Installation**: Download a release, unzip it (if necessary), run the `.exe`
-  self installer, follow the usual `next`, `next`, `finish` wizard. Run `OpenSimCreator` by typing
-  `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`
+- Download a `exe` [release](../../releases)
+- Run the `.exe` installer, continue past any security warnings
+- Follow the familiar `next`, `next`, `finish` wizard
+- Run `OpenSimCreator` by typing `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`.
 
-- **Mac Installation**: Download a release, unzip it (if necessary). Double click the `dmg`
-  file to mount it, drag `osc` into your `Applications` directory. Browse to the `Applications`
-  directory in `Finder`, right-click the `osc` application, click `open`, continue past any
-  security warnings. After running it the first time, you can boot it as normal (e.g. `Super+Space`,
-  `osc`, `Enter`)
+### Mac
 
-- **Debian/Ubuntu Installation**: Download a release, unzip it (if necessary). Double-click the
-  `.deb` package and install it through your package manager UI. Alternatively, you can install it
-  through the commandline: `apt-get install -yf ./osc-X.X.X_amd64.deb` (or similar). Once installed,
-  the `osc` or `OpenSim Creator` shortcuts should be available from your desktop, or you can browse
+> 🚧 **Warning** 🚧: `osc` may not be boot-able immediately after installing the DMG because our binaries are unsigned. You **must**
+manually open it the first time by browsing to it in `Finder`, right-clicking it, clicking `open`, and going past any
+security warnings. Only the first bootup requires doing this.
+
+- Download a `dmg` [release](../../releases)
+- Double click the `dmg` file to mount it
+- Drag `osc` into your `Applications` directory.
+- Browse to the `Applications` directory in `Finder`
+- Right-click the `osc` application, click `open`, continue past any security warnings to run `osc` for the first time
+- After running it the first time, you can boot it as normal (e.g. `Super+Space`, `osc`, `Enter`)
+
+### Debian/Ubuntu
+
+- Download a `deb` [release](../../releases)
+- Double-click the `.deb` package and install it through your package manager UI.
+- **Alternatively**, you can install it through the command-line: `apt-get install -yf ./osc-X.X.X_amd64.deb` (or similar).
+- Once installed, the `osc` or `OpenSim Creator` shortcuts should be available from your desktop, or you can browse
   to `/opt/osc`
 
 
@@ -96,11 +108,21 @@ a C/C++ compiler, CMake, etc. installed):
 | Ubuntu/Debian | [.sh](scripts/build_debian-buster.sh) | `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator && cd opensim-creator && scripts/build_debian-buster.sh` |
 
 
-## Building Hints for Visual Studio 2022 (/w integrated CMake support)
+### Visual Studio 2020 Dev Environment Setup
 
-Run the buildscript above to get a complete build. Open the `opensim-creator` folder in
-Visual Studio which, if it has in-built CMake support (later versions should), will create
-a CMake project. Right-click the `CMakeLists.txt` file to edit settings or build the project,
-select `osc.exe` as the startup item (this might require a bit of faffing around because
-Visual Studio tries to list every. bloody. project. in the tree, which can number in the
-hundreds), boot the application.
+- Run the `bat` [builscript](scripts/build_windows.bat) (described above) to get a complete build.
+- In Visual Studio 2020, open `opensim-creator` as a folder project
+- Later versions of Visual Studio (i.e. 2017+) should have in-built CMake support that automatically detects that the folder is a CMake project
+- Right-click the `CMakeLists.txt` file to edit settings or build the project
+- Use the `Switch between solutions and available views` button in the `Solution Explorer` hierarchy tab to switch to the `CMake Targets View`
+- Right-click the `osc` CMake target and `Set As Startup Project`, so that pressing `F5` will then build+run `osc.exe`
+- (optional): switch the solution explorer view to a `Folder View` after doing this: the CMake view is crap for developing osc
+- You should now be able to build+run `osc` from `Visual Studio`
+- To run tests, open the `Test Explorer` tab, which should list all of the `googletest` tests in the project
+
+### QtCreator Dev Environment Setup
+
+- Run the appropriate (OS-dependent) buildscript (described above)
+- Open QtCreator and then open the `opensim-creator` source directory as a folder
+- For selecting a "kit", QtCreator *usually* detects that `osc-build` already exists (side-effect of running the buildscript). You *may* need to "import existing kit/build" and then select `osc-build`, though
+- Once QtCreator knows your source dir (`opensim-creator/`) and build/kit (`opensim-creator/osc-build`), it should be good to go

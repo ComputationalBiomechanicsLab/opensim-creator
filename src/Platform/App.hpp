@@ -31,7 +31,7 @@ namespace osc
     //
     // the top-level osc process holds one copy of this class, which maintains all global
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
-    class App final {
+    class App {
     public:
 
         // definition of application's runtime clock

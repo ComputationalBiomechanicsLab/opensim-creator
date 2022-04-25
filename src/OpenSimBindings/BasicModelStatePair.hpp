@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
 #include <memory>
@@ -17,17 +18,17 @@ namespace OpenSim
 
 namespace osc
 {
-    // guarantees to be a value type that is constructed with:
+    // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
-    // - model called `finalizeFromProperties`
-    // - model called `finalizeConnections`
-    // - model called `buildSystem`
-    // - (if creating a state) state called `Model::equilibrateMuscles(State&)`
-    // - (if creating a state) state called `Model::realizeAcceleration(State&)`
+    // - `model.finalizeFromProperties`
+    // - `model.finalizeConnections`
+    // - `model.buildSystem`
+    // - (if creating a new state) `model.equilibrateMuscles(State&)`
+    // - (if creating a new state) `model.realizeAcceleration(State&)`
     //
-    // does not maintain these promises throughout its lifetime (callers can
-    // freely mutate both the model and state)
-    class BasicModelStatePair final {
+    // this is a *basic* class that only guarantees the model is *initialized* this way. It
+    // does not guarantee that everything is up-to-date after a caller mutates the model.
+    class BasicModelStatePair final : public VirtualModelStatePair {
     public:
         BasicModelStatePair();
         BasicModelStatePair(std::string_view osimPath);
@@ -37,12 +38,12 @@ namespace osc
         BasicModelStatePair(BasicModelStatePair&&) noexcept;
         BasicModelStatePair& operator=(BasicModelStatePair const&);
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
-        ~BasicModelStatePair() noexcept;
+        ~BasicModelStatePair() noexcept override;
 
-        OpenSim::Model const& getModel() const;
-        OpenSim::Model& updModel();
-        SimTK::State const& getState() const;
-        SimTK::State& updState();
+        OpenSim::Model const& getModel() const override;
+        OpenSim::Model& updModel() override;
+
+        SimTK::State const& getState() const override;
 
         class Impl;
     private:

@@ -14,7 +14,8 @@
 #include "src/Graphics/ShaderLocationIndex.hpp"
 #include "src/Graphics/Texturing.hpp"
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
-#include "src/OpenSimBindings/RenderableScene.hpp"
+#include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/BVH.hpp"
 #include "src/Maths/Constants.hpp"
@@ -23,6 +24,9 @@
 #include "src/Maths/Rect.hpp"
 #include "src/Maths/PolarPerspectiveCamera.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Log.hpp"
+#include "src/Utils/Perf.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x3.hpp>
@@ -33,6 +37,8 @@
 #include <imgui.h>
 #include <nonstd/span.hpp>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <SDL_events.h>
 #include <IconsFontAwesome5.h>
 
@@ -311,6 +317,19 @@ namespace
 
 struct osc::UiModelViewer::Impl final {
     UiModelViewerFlags flags;
+
+    // used to cache geometry between frames
+    UID m_LastModelVersion;
+    UID m_LastStateVersion;
+    OpenSim::ComponentPath m_LastSelection;
+    OpenSim::ComponentPath m_LastHover;
+    OpenSim::ComponentPath m_LastIsolation;
+    float m_LastFixupFactor;
+    osc::CustomDecorationOptions m_LastDecorationOptions;
+
+    std::vector<osc::ComponentDecoration> m_Decorations;
+    osc::CustomDecorationOptions m_DecorationOptions;
+    osc::BVH m_SceneBVH;
     PolarPerspectiveCamera camera = CreateDefaultCamera();
     glm::vec3 lightDir = {-0.34f, -0.25f, 0.05f};
     glm::vec3 lightCol = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
@@ -365,10 +384,8 @@ bool osc::UiModelViewer::isMousedOver() const
 }
 
 static glm::mat4x3 GenerateFloorModelMatrix(osc::UiModelViewer::Impl const& impl,
-                                            osc::RenderableScene const& rs)
+                                            float fixupScaleFactor)
 {
-    float fixupScaleFactor = rs.getFixupScaleFactor();
-
     // rotate from XY (+Z dir) to ZY (+Y dir)
     glm::mat4 rv = glm::rotate(glm::mat4{1.0f}, -osc::fpi2, {1.0f, 0.0f, 0.0f});
 
@@ -433,15 +450,43 @@ static bool IsInclusiveChildOf(OpenSim::Component const* parent, OpenSim::Compon
 }
 
 static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
-                                  osc::RenderableScene const& rs)
+                                  osc::VirtualConstModelStatePair const& msp)
 {
-    std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
-    nonstd::span<osc::ComponentDecoration const> decs = rs.getSceneDecorations();
-    OpenSim::Component const* const selected = rs.getSelected();
-    OpenSim::Component const* const hovered = rs.getHovered();
-    OpenSim::Component const* const isolated = rs.getIsolated();
+    OpenSim::Component const* const selected = msp.getSelected();
+    OpenSim::Component const* const hovered = msp.getHovered();
+    OpenSim::Component const* const isolated = msp.getIsolated();
+
+    if (msp.getModelVersion() != impl.m_LastModelVersion ||
+        msp.getStateVersion() != impl.m_LastStateVersion ||
+        selected != osc::FindComponent(msp.getModel(), impl.m_LastSelection) ||
+        hovered != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
+        isolated != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
+        msp.getFixupScaleFactor() != impl.m_LastFixupFactor ||
+        impl.m_LastDecorationOptions != impl.m_DecorationOptions)
+    {
+        {
+            OSC_PERF("generate decorations");
+            osc::GenerateModelDecorations(msp, impl.m_Decorations, impl.m_DecorationOptions);
+        }
+
+        {
+            OSC_PERF("generate BVH");
+            osc::UpdateSceneBVH(impl.m_Decorations, impl.m_SceneBVH);
+        }
+
+        impl.m_LastModelVersion = msp.getModelVersion();
+        impl.m_LastStateVersion = msp.getStateVersion();
+        impl.m_LastSelection = selected ? selected->getAbsolutePath() : OpenSim::ComponentPath{};
+        impl.m_LastHover = hovered ? hovered->getAbsolutePath() : OpenSim::ComponentPath{};
+        impl.m_LastIsolation = isolated ? isolated->getAbsolutePath() : OpenSim::ComponentPath{};
+        impl.m_LastFixupFactor = msp.getFixupScaleFactor();
+        impl.m_LastDecorationOptions = impl.m_DecorationOptions;
+    }
+
+    nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
 
     // clear it (could've been populated by the last drawcall)
+    std::vector<SceneGPUInstanceData>& buf = impl.drawlistBuffer;
     buf.clear();
     buf.reserve(decs.size());
 
@@ -487,7 +532,7 @@ static void BindToInstanceAttributes(size_t offset)
     gl::EnableVertexAttribArray(rimAttr);
 }
 
-static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& rs)
+static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFactor)
 {
     auto& renderTarg = impl.renderTarg;
 
@@ -537,7 +582,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
         gl::Uniform(instancedShader.uViewPos, viewerPos);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = rs.getSceneDecorations();
+        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
 
         size_t pos = 0;
         size_t ninstances = instances.size();
@@ -581,7 +626,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
             gl::UseProgram(basicShader.program);
             gl::Uniform(basicShader.uProjMat, projMtx);
             gl::Uniform(basicShader.uViewMat, viewMtx);
-            glm::mat4 mtx = GenerateFloorModelMatrix(impl, rs);
+            glm::mat4 mtx = GenerateFloorModelMatrix(impl, fixupScaleFactor);
             gl::Uniform(basicShader.uModelMat, mtx);
             gl::Uniform(basicShader.uNormalMat, osc::ToNormalMatrix(mtx));
             gl::Uniform(basicShader.uLightDir, impl.lightDir);
@@ -614,7 +659,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
         gl::Uniform(normalShader.uViewMat, viewMtx);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = rs.getSceneDecorations();
+        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
 
         for (SceneGPUInstanceData const& inst : instances)
         {
@@ -649,7 +694,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
         gl::Uniform(iscs.uVP, projMtx * viewMtx);
 
         std::vector<SceneGPUInstanceData> const& instances = impl.drawlistBuffer;
-        nonstd::span<osc::ComponentDecoration const> decs = rs.getSceneDecorations();
+        nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
 
         size_t pos = 0;
         size_t ninstances = instances.size();
@@ -685,7 +730,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, osc::RenderableScen
             // union the rims for scissor testing later
             for (size_t i = pos; i < end; ++i)
             {
-                rimAABB = Union(rimAABB, decs[instances[i].decorationIdx].worldspaceAABB);
+                rimAABB = Union(rimAABB, GetWorldspaceAABB(decs[instances[i].decorationIdx]));
             }
 
             gl::Uniform(iscs.uColor, {inst.rimIntensity, 0.0f, 0.0f, 1.0f});
@@ -775,8 +820,8 @@ static void BlitSceneTexture(osc::UiModelViewer::Impl& impl)
 }
 
 static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
-        osc::UiModelViewer::Impl& impl,
-        osc::RenderableScene const& rs)
+    osc::UiModelViewer::Impl& impl,
+    osc::VirtualConstModelStatePair const& msp)
 {
     if (!impl.renderHovered)
     {
@@ -796,7 +841,7 @@ static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
 
     // use scene BVH to intersect that ray with the scene
     impl.sceneHittestResults.clear();
-    BVH_GetRayAABBCollisions(rs.getSceneBVH(), cameraRay, &impl.sceneHittestResults);
+    BVH_GetRayAABBCollisions(impl.m_SceneBVH, cameraRay, &impl.sceneHittestResults);
 
     // go through triangle BVHes to figure out which, if any, triangle is closest intersecting
     int closestIdx = -1;
@@ -804,8 +849,8 @@ static std::pair<OpenSim::Component const*, glm::vec3> HittestDecorations(
     glm::vec3 closestWorldLoc = {0.0f, 0.0f, 0.0f};
 
     // iterate through each scene-level hit and perform a triangle-level hittest
-    nonstd::span<osc::ComponentDecoration const> decs = rs.getSceneDecorations();
-    OpenSim::Component const* const isolated = rs.getIsolated();
+    nonstd::span<osc::ComponentDecoration const> decs = impl.m_Decorations;
+    OpenSim::Component const* const isolated = msp.getIsolated();
 
     for (osc::BVHCollision const& c : impl.sceneHittestResults)
     {
@@ -895,7 +940,7 @@ static void DrawXZFloorLines(osc::UiModelViewer::Impl& impl)
     gl::BindVertexArray();
 }
 
-static void DrawAABBs(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& rs)
+static void DrawAABBs(osc::UiModelViewer::Impl& impl)
 {
     auto& shader = osc::App::shader<osc::SolidColorShader>();
 
@@ -908,10 +953,11 @@ static void DrawAABBs(osc::UiModelViewer::Impl& impl, osc::RenderableScene const
     auto cube = osc::App::meshes().getCubeWireMesh();
     gl::BindVertexArray(cube->GetVertexArray());
 
-    for (auto const& se : rs.getSceneDecorations())
+    for (auto const& se : impl.m_Decorations)
     {
-        glm::vec3 halfWidths = Dimensions(se.worldspaceAABB) / 2.0f;
-        glm::vec3 center = Dimensions(se.worldspaceAABB);
+        osc::AABB worldspaceAABB = GetWorldspaceAABB(se);
+        glm::vec3 halfWidths = Dimensions(worldspaceAABB) / 2.0f;
+        glm::vec3 center = Midpoint(worldspaceAABB);
 
         glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
         glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -932,7 +978,7 @@ static void DrawBVHRecursive(osc::Mesh& cube,
     osc::BVHNode const& n = bvh.nodes[pos];
 
     glm::vec3 halfWidths = Dimensions(n.bounds) / 2.0f;
-    glm::vec3 center = Dimensions(n.bounds);
+    glm::vec3 center = Midpoint(n.bounds);
 
     glm::mat4 scaler = glm::scale(glm::mat4{1.0f}, halfWidths);
     glm::mat4 mover = glm::translate(glm::mat4{1.0f}, center);
@@ -948,11 +994,9 @@ static void DrawBVHRecursive(osc::Mesh& cube,
     }
 }
 
-static void DrawBVH(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& rs)
+static void DrawBVH(osc::UiModelViewer::Impl& impl)
 {
-    osc::BVH const& bvh = rs.getSceneBVH();
-
-    if (bvh.nodes.empty())
+    if (impl.m_SceneBVH.nodes.empty())
     {
         return;
     }
@@ -967,12 +1011,12 @@ static void DrawBVH(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& 
 
     auto cube = osc::App::meshes().getCubeWireMesh();
     gl::BindVertexArray(cube->GetVertexArray());
-    DrawBVHRecursive(*cube, shader.uModel, bvh, 0);
+    DrawBVHRecursive(*cube, shader.uModel, impl.m_SceneBVH, 0);
     gl::BindVertexArray();
 }
 
 // draws overlays that are "in scene" - i.e. they are part of the rendered texture
-static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl, osc::RenderableScene const& rs)
+static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl)
 {
     gl::BindFramebuffer(GL_FRAMEBUFFER, impl.renderTarg.outputFbo);
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -999,12 +1043,12 @@ static void DrawInSceneOverlays(osc::UiModelViewer::Impl& impl, osc::RenderableS
 
     if (impl.flags & osc::UiModelViewerFlags_DrawAABBs)
     {
-        DrawAABBs(impl, rs);
+        DrawAABBs(impl);
     }
 
     if (impl.flags & osc::UiModelViewerFlags_DrawBVH)
     {
-        DrawBVH(impl, rs);
+        DrawBVH(impl);
     }
 
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
@@ -1021,6 +1065,39 @@ static void DrawImGuiOverlays(osc::UiModelViewer::Impl& impl)
 
 static void DrawOptionsMenuContent(osc::UiModelViewer::Impl& impl)
 {
+    {
+        osc::MuscleDecorationStyle s = impl.m_DecorationOptions.getMuscleDecorationStyle();
+        nonstd::span<osc::MuscleDecorationStyle const> allStyles = osc::GetAllMuscleDecorationStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleDecorationStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle decoration style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleDecorationStyle(allStyles[i]);
+        }
+    }
+    {
+        osc::MuscleSizingStyle s = impl.m_DecorationOptions.getMuscleSizingStyle();
+        nonstd::span<osc::MuscleSizingStyle const> allStyles = osc::GetAllMuscleSizingStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleSizingStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle sizing style", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleSizingStyle(allStyles[i]);
+        }
+    }
+    {
+        osc::MuscleColoringStyle s = impl.m_DecorationOptions.getMuscleColoringStyle();
+        nonstd::span<osc::MuscleColoringStyle const> allStyles = osc::GetAllMuscleColoringStyles();
+        nonstd::span<char const* const>  allNames = osc::GetAllMuscleColoringStyleStrings();
+        int i = osc::GetIndexOf(s);
+
+        if (ImGui::Combo("muscle coloring", &i, allNames.data(), static_cast<int>(allStyles.size())))
+        {
+            impl.m_DecorationOptions.setMuscleColoringStyle(allStyles[i]);
+        }
+    }
     ImGui::Checkbox("wireframe mode", &impl.wireframeMode);
     ImGui::Checkbox("show normals", &impl.drawMeshNormals);
     ImGui::Checkbox("draw rims", &impl.drawRims);
@@ -1077,13 +1154,11 @@ static void DoResetCamera(osc::UiModelViewer::Impl& impl)
     impl.camera.phi = osc::fpi4;
 }
 
-static void DoAutoFocusCamera(osc::UiModelViewer::Impl& impl,
-                              osc::RenderableScene const& rs)
+static void DoAutoFocusCamera(osc::UiModelViewer::Impl& impl)
 {
-    auto const& bvh = rs.getSceneBVH();
-    if (!bvh.nodes.empty())
+    if (!impl.m_SceneBVH.nodes.empty())
     {
-        auto const& bvhRoot = bvh.nodes[0].bounds;
+        auto const& bvhRoot = impl.m_SceneBVH.nodes[0].bounds;
         impl.camera.focusPoint = -Midpoint(bvhRoot);
         impl.camera.radius = 2.0f * LongestDim(bvhRoot);
         impl.camera.theta = osc::fpi4;
@@ -1236,16 +1311,9 @@ void osc::UiModelViewer::requestAutoFocus()
     m_Impl->autoFocusCameraNextFrame = true;
 }
 
-osc::UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs)
+osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair const& rs)
 {
     Impl& impl = *m_Impl;
-
-    // auto-focus the camera, if the user requested it last frame
-    if (impl.autoFocusCameraNextFrame)
-    {
-        DoAutoFocusCamera(impl, rs);
-        impl.autoFocusCameraNextFrame = false;
-    }
 
     // update camera if necessary
     if (impl.renderHovered)
@@ -1280,7 +1348,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs)
         {
             if (ctrlDown)
             {
-                DoAutoFocusCamera(impl, rs);
+                impl.autoFocusCameraNextFrame = true;
             }
             else
             {
@@ -1324,8 +1392,18 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(RenderableScene const& rs)
         }
 
         PopulareSceneDrawlist(impl, rs);
-        DrawSceneTexture(impl, rs);
-        DrawInSceneOverlays(impl, rs);
+
+        // auto-focus the camera, if the user requested it last frame
+        //
+        // care: indirectly depends on the scene drawlist being up-to-date
+        if (impl.autoFocusCameraNextFrame)
+        {
+            DoAutoFocusCamera(impl);
+            impl.autoFocusCameraNextFrame = false;
+        }
+
+        DrawSceneTexture(impl, rs.getFixupScaleFactor());
+        DrawInSceneOverlays(impl);
         BlitSceneTexture(impl);
         DrawImGuiOverlays(impl);
 

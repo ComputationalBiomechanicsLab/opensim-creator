@@ -15,11 +15,11 @@ namespace OpenSim
 
 namespace osc
 {
+    // represents a renderable decoration for a component in a model
     struct ComponentDecoration {
         std::shared_ptr<Mesh> mesh;
         Transform transform;
         glm::vec4 color;
-        AABB worldspaceAABB;
         OpenSim::Component const* component;
 
         ComponentDecoration(std::shared_ptr<Mesh>,
@@ -27,4 +27,6 @@ namespace osc
                             glm::vec4 const& color,
                             OpenSim::Component const*);
     };
+
+    AABB GetWorldspaceAABB(ComponentDecoration const&);
 }

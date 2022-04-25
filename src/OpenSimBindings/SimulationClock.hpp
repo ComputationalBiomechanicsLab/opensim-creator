@@ -5,7 +5,8 @@
 
 namespace osc
 {
-    // how time is represented by OpenSim/SimTK (i.e. seconds held in a `double`)
+    // a `std::chrono`-compatible representation of how time is represented in
+    // OpenSim/SimTK (i.e. seconds held in a `double`)
     struct SimulationClock {
         using rep = double;
         using period = std::ratio<1>;

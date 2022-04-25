@@ -73,7 +73,7 @@ namespace osc
     std::ostream& operator<<(std::ostream& o, Transform const&);
 
     // applies the transform to a point vector (equivalent to `transformPoint`)
-    glm::vec3 operator*(Transform const&, glm::vec3 const&);
+    glm::vec3 operator*(Transform const&, glm::vec3 const&) noexcept;
     
     // performs component-wise addition of two transforms
     Transform& operator+=(Transform&, Transform const&) noexcept;

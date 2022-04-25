@@ -5,7 +5,27 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- (entries will be populated here)
+- Muscle coloring logic can now be changed in the 3D viewer's options menu (#189)
+- Muscle thickness logic can now be changed (e.g. to PCSA-derived) in the 3D viewer's options menu (#190)
+- Muscle decoration style can now be changed (e.g. to SCONE-style) in the 3D viewer's options menu (#188)
+  - Support for SCONE-style muscles means that users can now see tendons in the UI (#165)
+- The README docs have been updated and include a link to the tutorial videos, plus clearer install/build instructions (internal)
+- Example models were updated from `opensim-org/opensim-models` (internal)
+
+
+## [0.1.5] - 2022/04/11
+
+- Fixed thread race that causes visual glitches when running forward-dynamic simulations on models containing
+  wrapping surfaces
+- Fixed AABB/BVH visualization being broken in 3D model viewer panels
+- Updated Mac OSX application icon to match other platforms
+- Added googletest unit testing support (internal)
+
+
+## [0.1.4] - 2022/04/07
+
+- Fixed crash when renaming components
+
 
 ## [0.1.3] - 2022/04/05
 

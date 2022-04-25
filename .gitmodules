@@ -4,3 +4,6 @@
 [submodule "third_party/implot"]
 	path = third_party/implot
 	url = https://github.com/epezent/implot.git
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest

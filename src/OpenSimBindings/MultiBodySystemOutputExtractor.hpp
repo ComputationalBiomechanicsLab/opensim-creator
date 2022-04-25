@@ -25,6 +25,10 @@ namespace SimTK
 
 namespace osc
 {
+    // an output extractor that uses a static function to extract a single value from
+    // a SimTK::MultiBodySystem
+    //
+    // handy for extracting simulation stats (e.g. num steps taken etc.)
     class MultiBodySystemOutputExtractor final : public VirtualOutputExtractor {
     public:
         using ExtractorFn = float (*)(SimTK::MultibodySystem const&);

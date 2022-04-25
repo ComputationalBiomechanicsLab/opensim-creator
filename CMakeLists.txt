@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
-project(osc VERSION 0.1.3 LANGUAGES C CXX)
+project(osc VERSION 0.1.5 LANGUAGES C CXX)
+
+enable_testing()
 
 
 # -------------- gather user-facing build config options ---------------- #
@@ -81,12 +83,12 @@ endif()
 if(DEFINED ENV{GITHUB_RUN_ID})
 
     # build is running inside GitHub Action CI - use that ID
-    set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
+    set(OSC_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}" CACHE STRING "build ID")
 else()
 
     # build is probably running on a dev's machine - generate a random ID
     string(RANDOM RANDOM_ID)
-    set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}")
+    set(OSC_BUILD_ID "CUSTOM_${RANDOM_ID}" CACHE STRING "build ID")
     unset(RANDOM_ID)
 endif()
 
@@ -114,11 +116,17 @@ if(OSC_USE_CLANG_TIDY)
     set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 endif()
 
-# use an older OpenGL linking strategy
+# handle OSC_FORCE_UNDEFINE_NDEBUG
 #
-# (this seems to be necessary on some systems: need to investigate why)
-cmake_policy(SET CMP0072 OLD)
-set(OpenGL_GL_PREFERENCE "LEGACY")
+# this unsets the relevant flags globally
+if(OSC_FORCE_UNDEFINE_NDEBUG)
+    # MSVC
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    # others
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
 
 
 # ------------------ configure dependencies -------------------- #
@@ -129,282 +137,31 @@ set(OpenGL_GL_PREFERENCE "LEGACY")
 include(GetDependencies.cmake)
 
 
-# --------------- configure `osc` build target ----------------- #
+# ------------- configure configuration header ----------------- #
 
 # osc_config.hpp:
 #
 #     configuration file that contains configuration-time vals (e.g. version, libs)
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/osc_config.hpp.in" "osc_config.hpp")
 
-# osc
+
+# --------------- configure configuration target --------------- #
+
+# osc_configuration:
 #
-# made from the usual ball of hpp and cpp files
-add_executable(osc
-    ${CMAKE_BINARY_DIR}/osc_config.hpp
-
-    src/Bindings/GlmHelpers.cpp
-    src/Bindings/GlmHelpers.hpp
-    src/Bindings/ImGuiHelpers.cpp
-    src/Bindings/ImGuiHelpers.hpp
-    src/Bindings/SDL2Helpers.hpp
-    src/Bindings/SimTKHelpers.cpp
-    src/Bindings/SimTKHelpers.hpp
-
-    src/Graphics/Shaders/ColormappedPlainTextureShader.cpp
-    src/Graphics/Shaders/ColormappedPlainTextureShader.hpp
-    src/Graphics/Shaders/EdgeDetectionShader.cpp
-    src/Graphics/Shaders/EdgeDetectionShader.hpp
-    src/Graphics/Shaders/GouraudMrtShader.cpp
-    src/Graphics/Shaders/GouraudMrtShader.hpp
-    src/Graphics/Shaders/GouraudShader.cpp
-    src/Graphics/Shaders/GouraudShader.hpp
-    src/Graphics/Shaders/InstancedGouraudColorShader.cpp
-    src/Graphics/Shaders/InstancedGouraudColorShader.hpp
-    src/Graphics/Shaders/InstancedSolidColorShader.cpp
-    src/Graphics/Shaders/InstancedSolidColorShader.hpp
-    src/Graphics/Shaders/NormalsShader.cpp
-    src/Graphics/Shaders/NormalsShader.hpp
-    src/Graphics/Shaders/PlainTextureShader.cpp
-    src/Graphics/Shaders/PlainTextureShader.hpp
-    src/Graphics/Shaders/SkipMSXAABlitterShader.cpp
-    src/Graphics/Shaders/SkipMSXAABlitterShader.hpp
-    src/Graphics/Shaders/SolidColorShader.cpp
-    src/Graphics/Shaders/SolidColorShader.hpp
-
-    src/Graphics/Color.cpp
-    src/Graphics/Color.hpp
-    src/Graphics/Gl.cpp
-    src/Graphics/Gl.hpp
-    src/Graphics/GlGlm.hpp
-    src/Graphics/InstancedRenderer.cpp
-    src/Graphics/InstancedRenderer.hpp
-    src/Graphics/Mesh.cpp
-    src/Graphics/Mesh.hpp
-    src/Graphics/MeshCache.cpp
-    src/Graphics/MeshCache.hpp
-    src/Graphics/MeshData.cpp
-    src/Graphics/MeshData.hpp
-    src/Graphics/MeshGen.cpp
-    src/Graphics/MeshGen.hpp
-    src/Graphics/MeshTopography.hpp
-    src/Graphics/Renderer.cpp
-    src/Graphics/Renderer.hpp
-    src/Graphics/Shader.hpp
-    src/Graphics/ShaderCache.cpp
-    src/Graphics/ShaderCache.hpp
-    src/Graphics/ShaderLocationIndex.hpp
-    src/Graphics/Texturing.cpp
-    src/Graphics/Texturing.hpp
-
-    src/Maths/AABB.cpp
-    src/Maths/AABB.hpp
-    src/Maths/BVH.cpp
-    src/Maths/BVH.hpp
-    src/Maths/Constants.hpp
-    src/Maths/Disc.cpp
-    src/Maths/Disc.hpp
-    src/Maths/EulerPerspectiveCamera.cpp
-    src/Maths/EulerPerspectiveCamera.hpp
-    src/Maths/Geometry.cpp
-    src/Maths/Geometry.hpp
-    src/Maths/Line.cpp
-    src/Maths/Line.hpp
-    src/Maths/Plane.cpp
-    src/Maths/Plane.hpp
-    src/Maths/PolarPerspectiveCamera.cpp
-    src/Maths/PolarPerspectiveCamera.hpp
-    src/Maths/RayCollision.hpp
-    src/Maths/Rect.cpp
-    src/Maths/Rect.hpp
-    src/Maths/Segment.cpp
-    src/Maths/Segment.hpp
-    src/Maths/Sphere.cpp
-    src/Maths/Sphere.hpp
-    src/Maths/Transform.cpp
-    src/Maths/Transform.hpp
-
-    src/OpenSimBindings/BasicModelStatePair.cpp
-    src/OpenSimBindings/BasicModelStatePair.hpp
-    src/OpenSimBindings/ComponentDecoration.cpp
-    src/OpenSimBindings/ComponentDecoration.hpp
-    src/OpenSimBindings/ComponentOutputExtractor.cpp
-    src/OpenSimBindings/ComponentOutputExtractor.hpp
-    src/OpenSimBindings/IntegratorOutputExtractor.cpp
-    src/OpenSimBindings/IntegratorOutputExtractor.hpp
-    src/OpenSimBindings/MainEditorState.cpp
-    src/OpenSimBindings/MainEditorState.hpp
-    src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
-    src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
-    src/OpenSimBindings/OpenSimHelpers.hpp
-    src/OpenSimBindings/OpenSimHelpers.cpp
-    src/OpenSimBindings/OutputExtractor.cpp
-    src/OpenSimBindings/OutputExtractor.hpp
-    src/OpenSimBindings/ParamBlock.hpp
-    src/OpenSimBindings/ParamBlock.cpp
-    src/OpenSimBindings/RenderableScene.hpp
-    src/OpenSimBindings/Simulation.hpp
-    src/OpenSimBindings/FdSimulation.cpp
-    src/OpenSimBindings/FdSimulation.hpp
-    src/OpenSimBindings/IntegratorMethod.cpp
-    src/OpenSimBindings/IntegratorMethod.hpp
-    src/OpenSimBindings/SimulationReport.cpp
-    src/OpenSimBindings/SimulationReport.hpp
-    src/OpenSimBindings/SimulationStatus.cpp
-    src/OpenSimBindings/SimulationStatus.hpp
-    src/OpenSimBindings/StateModifications.cpp
-    src/OpenSimBindings/StateModifications.hpp
-    src/OpenSimBindings/StoFileSimulation.hpp
-    src/OpenSimBindings/StoFileSimulation.cpp
-    src/OpenSimBindings/TypeRegistry.cpp
-    src/OpenSimBindings/TypeRegistry.hpp
-    src/OpenSimBindings/UiFdSimulation.cpp
-    src/OpenSimBindings/UiFdSimulation.hpp
-    src/OpenSimBindings/UiModel.cpp
-    src/OpenSimBindings/UiModel.hpp
-    src/OpenSimBindings/UndoableUiModel.cpp
-    src/OpenSimBindings/UndoableUiModel.hpp
-    src/OpenSimBindings/VirtualOutputExtractor.hpp
-    src/OpenSimBindings/VirtualSimulation.hpp
-
-    src/Platform/App.cpp
-    src/Platform/App.hpp
-    src/Platform/Config.cpp
-    src/Platform/Config.hpp
-    src/Platform/IoPoller.cpp
-    src/Platform/IoPoller.hpp
-    src/Platform/Log.cpp
-    src/Platform/Log.hpp
-    src/Platform/os.cpp
-    src/Platform/os.hpp
-    src/Platform/RecentFile.hpp
-    src/Platform/Screen.hpp
-    src/Platform/Styling.hpp
-
-    src/Screens/CookiecutterScreen.cpp
-    src/Screens/CookiecutterScreen.hpp
-    src/Screens/ErrorScreen.cpp
-    src/Screens/ErrorScreen.hpp
-    src/Screens/ExperimentsScreen.cpp
-    src/Screens/ExperimentsScreen.hpp
-    src/Screens/HelloTriangleScreen.cpp
-    src/Screens/HelloTriangleScreen.hpp
-    src/Screens/HittestScreen.cpp
-    src/Screens/HittestScreen.hpp
-    src/Screens/ImGuiDemoScreen.cpp
-    src/Screens/ImGuiDemoScreen.hpp
-    src/Screens/ImGuizmoDemoScreen.cpp
-    src/Screens/ImGuizmoDemoScreen.hpp
-    src/Screens/InstancedRendererScreen.cpp
-    src/Screens/InstancedRendererScreen.hpp
-    src/Screens/LoadingScreen.cpp
-    src/Screens/LoadingScreen.hpp
-    src/Screens/MathExperimentsScreen.cpp
-    src/Screens/MathExperimentsScreen.hpp
-    src/Screens/MeshHittestScreen.cpp
-    src/Screens/MeshHittestScreen.hpp
-    src/Screens/MeshHittestWithBVHScreen.cpp
-    src/Screens/MeshHittestWithBVHScreen.hpp
-    src/Screens/MeshImporterScreen.cpp
-    src/Screens/MeshImporterScreen.hpp
-    src/Screens/MeshScreen.cpp
-    src/Screens/MeshScreen.hpp
-    src/Screens/ModelEditorScreen.cpp
-    src/Screens/ModelEditorScreen.hpp
-    src/Screens/RendererHelloTriangleScreen.cpp
-    src/Screens/RendererHelloTriangleScreen.hpp
-    src/Screens/SimulatorScreen.cpp
-    src/Screens/SimulatorScreen.hpp
-    src/Screens/SplashScreen.cpp
-    src/Screens/SplashScreen.hpp
-    src/Screens/UiModelViewerScreen.cpp
-    src/Screens/UiModelViewerScreen.hpp
-
-    src/Utils/Algorithms.cpp
-    src/Utils/Algorithms.hpp
-    src/Utils/Assertions.cpp
-    src/Utils/Assertions.hpp
-    src/Utils/CheckedIndex.hpp
-    src/Utils/CircularBuffer.hpp
-    src/Utils/ClonePtr.hpp
-    src/Utils/Cpp20Shims.hpp
-    src/Utils/CStringView.hpp
-    src/Utils/DefaultConstructOnCopy.hpp
-    src/Utils/FileChangePoller.cpp
-    src/Utils/FileChangePoller.hpp
-    src/Utils/FilesystemHelpers.cpp
-    src/Utils/FilesystemHelpers.hpp
-    src/Utils/Macros.hpp
-    src/Utils/MethodTestMacro.hpp
-    src/Utils/Perf.cpp
-    src/Utils/Perf.hpp
-    src/Utils/ScopeGuard.hpp
-    src/Utils/Spsc.hpp
-    src/Utils/SynchronizedValue.hpp
-    src/Utils/UID.cpp
-    src/Utils/UID.hpp
-
-    src/Widgets/AddBodyPopup.cpp
-    src/Widgets/AddBodyPopup.hpp
-    src/Widgets/AddComponentPopup.cpp
-    src/Widgets/AddComponentPopup.hpp
-    src/Widgets/ComponentDetails.cpp
-    src/Widgets/ComponentDetails.hpp
-    src/Widgets/ComponentHierarchy.cpp
-    src/Widgets/ComponentHierarchy.hpp
-    src/Widgets/CoordinateEditor.cpp
-    src/Widgets/CoordinateEditor.hpp
-    src/Widgets/LogViewer.cpp
-    src/Widgets/LogViewer.hpp
-    src/Widgets/MainMenu.cpp
-    src/Widgets/MainMenu.hpp
-    src/Widgets/ModelActionsMenuBar.cpp
-    src/Widgets/ModelActionsMenuBar.hpp
-    src/Widgets/ModelMusclePlotPanel.cpp
-    src/Widgets/ModelMusclePlotPanel.hpp
-    src/Widgets/ObjectPropertiesEditor.cpp
-    src/Widgets/ObjectPropertiesEditor.hpp
-    src/Widgets/ParamBlockEditorPopup.cpp
-    src/Widgets/ParamBlockEditorPopup.hpp
-    src/Widgets/PerfPanel.cpp
-    src/Widgets/PerfPanel.hpp
-    src/Widgets/ReassignSocketPopup.cpp
-    src/Widgets/ReassignSocketPopup.hpp
-    src/Widgets/SaveChangesPopup.cpp
-    src/Widgets/SaveChangesPopup.hpp
-    src/Widgets/Select1PFPopup.cpp
-    src/Widgets/Select1PFPopup.hpp
-    src/Widgets/Select2PFsPopup.cpp
-    src/Widgets/Select2PFsPopup.hpp
-    src/Widgets/SelectComponentPopup.hpp
-    src/Widgets/SelectGeometryPopup.cpp
-    src/Widgets/SelectGeometryPopup.hpp
-    src/Widgets/StandardPopup.cpp
-    src/Widgets/StandardPopup.hpp
-    src/Widgets/UiModelViewer.cpp
-    src/Widgets/UiModelViewer.hpp
-
-    src/osc.cpp
-
-    # Windows: also link a resources file (rc)
-    #
-    # the resources file tells MSVC compiler how to compile non-source resources
-    # into the output exe. Specifically, it's used to embed the application icon
-    # into the `osc` exe
-    $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
-)
+#     an INTERFACE target that sets common options that are used by the real
+#     targets (e.g. use C++17, use these flags, etc.)
+add_library(osc_configuration INTERFACE)
 
 # osc: compile-time includes
-target_include_directories(osc PRIVATE
-
-    # so `#include "osc_config.hpp"` works
-    ${PROJECT_BINARY_DIR}
+target_include_directories(osc_configuration INTERFACE
 
     # so `#include "src/<path>.hpp"` works
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# osc: compile options
-target_compile_options(osc PRIVATE
+# osc_configuration: set general compiler options used by all targets
+target_compile_options(osc_configuration INTERFACE
 
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
@@ -479,30 +236,331 @@ target_compile_options(osc PRIVATE
     >
 )
 
-# osc: compile features
-target_compile_features(osc PUBLIC cxx_std_17)
+# osc_configuration: set general compiler features used by all targets
+target_compile_features(osc_configuration INTERFACE cxx_std_17)
 
-# osc: link libraries
-target_link_libraries(osc PRIVATE
+# osc_configuration: set libraries used by all targets
+target_link_libraries(osc_configuration INTERFACE
 
     # in earlier gcc/clang the <filesystem> implementation must be explicitly linked
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:stdc++fs>
+)
+
+# osc_configuration: handle OSC_FORCE_ASSERTS_ENABLED
+if(OSC_FORCE_ASSERTS_ENABLED)
+    target_compile_definitions(osc_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
+endif()
+
+
+#------------- configure core library target ------------- #
+
+# [lib]osccore:
+#
+#     shared library where all the runtime code is actually hiding. This is what
+#     the main executable, test code, etc. hooks into
+add_library(osccore STATIC
+    ${CMAKE_BINARY_DIR}/osc_config.hpp
+
+    src/Bindings/GlmHelpers.cpp
+    src/Bindings/GlmHelpers.hpp
+    src/Bindings/ImGuiHelpers.cpp
+    src/Bindings/ImGuiHelpers.hpp
+    src/Bindings/SDL2Helpers.hpp
+    src/Bindings/SimTKHelpers.cpp
+    src/Bindings/SimTKHelpers.hpp
+
+    src/Graphics/Shaders/ColormappedPlainTextureShader.cpp
+    src/Graphics/Shaders/ColormappedPlainTextureShader.hpp
+    src/Graphics/Shaders/EdgeDetectionShader.cpp
+    src/Graphics/Shaders/EdgeDetectionShader.hpp
+    src/Graphics/Shaders/GouraudMrtShader.cpp
+    src/Graphics/Shaders/GouraudMrtShader.hpp
+    src/Graphics/Shaders/GouraudShader.cpp
+    src/Graphics/Shaders/GouraudShader.hpp
+    src/Graphics/Shaders/InstancedGouraudColorShader.cpp
+    src/Graphics/Shaders/InstancedGouraudColorShader.hpp
+    src/Graphics/Shaders/InstancedSolidColorShader.cpp
+    src/Graphics/Shaders/InstancedSolidColorShader.hpp
+    src/Graphics/Shaders/NormalsShader.cpp
+    src/Graphics/Shaders/NormalsShader.hpp
+    src/Graphics/Shaders/PlainTextureShader.cpp
+    src/Graphics/Shaders/PlainTextureShader.hpp
+    src/Graphics/Shaders/SkipMSXAABlitterShader.cpp
+    src/Graphics/Shaders/SkipMSXAABlitterShader.hpp
+    src/Graphics/Shaders/SolidColorShader.cpp
+    src/Graphics/Shaders/SolidColorShader.hpp
+
+    src/Graphics/BasicSceneElement.hpp
+    src/Graphics/Color.cpp
+    src/Graphics/Color.hpp
+    src/Graphics/Gl.cpp
+    src/Graphics/Gl.hpp
+    src/Graphics/GlGlm.hpp
+    src/Graphics/InstancedRenderer.cpp
+    src/Graphics/InstancedRenderer.hpp
+    src/Graphics/Mesh.cpp
+    src/Graphics/Mesh.hpp
+    src/Graphics/MeshCache.cpp
+    src/Graphics/MeshCache.hpp
+    src/Graphics/MeshData.cpp
+    src/Graphics/MeshData.hpp
+    src/Graphics/MeshGen.cpp
+    src/Graphics/MeshGen.hpp
+    src/Graphics/MeshTopography.hpp
+    src/Graphics/Renderer.cpp
+    src/Graphics/Renderer.hpp
+    src/Graphics/Shader.hpp
+    src/Graphics/ShaderCache.cpp
+    src/Graphics/ShaderCache.hpp
+    src/Graphics/ShaderLocationIndex.hpp
+    src/Graphics/Texturing.cpp
+    src/Graphics/Texturing.hpp
+
+    src/Maths/AABB.cpp
+    src/Maths/AABB.hpp
+    src/Maths/BVH.cpp
+    src/Maths/BVH.hpp
+    src/Maths/Constants.hpp
+    src/Maths/Disc.cpp
+    src/Maths/Disc.hpp
+    src/Maths/EulerPerspectiveCamera.cpp
+    src/Maths/EulerPerspectiveCamera.hpp
+    src/Maths/Geometry.cpp
+    src/Maths/Geometry.hpp
+    src/Maths/Line.cpp
+    src/Maths/Line.hpp
+    src/Maths/Plane.cpp
+    src/Maths/Plane.hpp
+    src/Maths/PolarPerspectiveCamera.cpp
+    src/Maths/PolarPerspectiveCamera.hpp
+    src/Maths/RayCollision.hpp
+    src/Maths/Rect.cpp
+    src/Maths/Rect.hpp
+    src/Maths/Segment.cpp
+    src/Maths/Segment.hpp
+    src/Maths/Sphere.cpp
+    src/Maths/Sphere.hpp
+    src/Maths/Transform.cpp
+    src/Maths/Transform.hpp
+
+    src/OpenSimBindings/BasicModelStatePair.cpp
+    src/OpenSimBindings/BasicModelStatePair.hpp
+    src/OpenSimBindings/ComponentDecoration.cpp
+    src/OpenSimBindings/ComponentDecoration.hpp
+    src/OpenSimBindings/ComponentOutputExtractor.cpp
+    src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/CustomDecorationOptions.hpp
+    src/OpenSimBindings/FdSimulation.cpp
+    src/OpenSimBindings/FdSimulation.hpp
+    src/OpenSimBindings/IntegratorMethod.cpp
+    src/OpenSimBindings/IntegratorMethod.hpp
+    src/OpenSimBindings/IntegratorOutputExtractor.cpp
+    src/OpenSimBindings/IntegratorOutputExtractor.hpp
+    src/OpenSimBindings/MainEditorState.cpp
+    src/OpenSimBindings/MainEditorState.hpp
+    src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
+    src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
+    src/OpenSimBindings/MuscleColoringStyle.cpp
+    src/OpenSimBindings/MuscleColoringStyle.hpp
+    src/OpenSimBindings/MuscleDecorationStyle.cpp
+    src/OpenSimBindings/MuscleDecorationStyle.hpp
+    src/OpenSimBindings/MuscleSizingStyle.cpp
+    src/OpenSimBindings/MuscleSizingStyle.hpp
+    src/OpenSimBindings/OpenSimApp.cpp
+    src/OpenSimBindings/OpenSimApp.hpp
+    src/OpenSimBindings/OpenSimHelpers.cpp
+    src/OpenSimBindings/OpenSimHelpers.hpp
+    src/OpenSimBindings/OutputExtractor.cpp
+    src/OpenSimBindings/OutputExtractor.hpp
+    src/OpenSimBindings/ParamBlock.hpp
+    src/OpenSimBindings/ParamBlock.cpp
+    src/OpenSimBindings/Simulation.hpp
+    src/OpenSimBindings/SimulationClock.hpp
+    src/OpenSimBindings/SimulationReport.cpp
+    src/OpenSimBindings/SimulationReport.hpp
+    src/OpenSimBindings/SimulationStatus.cpp
+    src/OpenSimBindings/SimulationStatus.hpp
+    src/OpenSimBindings/SimulatorModelStatePair.cpp
+    src/OpenSimBindings/SimulatorModelStatePair.hpp
+    src/OpenSimBindings/StateModifications.cpp
+    src/OpenSimBindings/StateModifications.hpp
+    src/OpenSimBindings/StoFileSimulation.hpp
+    src/OpenSimBindings/StoFileSimulation.cpp
+    src/OpenSimBindings/TypeRegistry.cpp
+    src/OpenSimBindings/TypeRegistry.hpp
+    src/OpenSimBindings/UiFdSimulation.cpp
+    src/OpenSimBindings/UiFdSimulation.hpp
+    src/OpenSimBindings/UiModel.cpp
+    src/OpenSimBindings/UiModel.hpp
+    src/OpenSimBindings/UndoableUiModel.cpp
+    src/OpenSimBindings/UndoableUiModel.hpp
+    src/OpenSimBindings/VirtualConstModelStatePair.cpp
+    src/OpenSimBindings/VirtualConstModelStatePair.hpp
+    src/OpenSimBindings/VirtualModelStatePair.hpp
+    src/OpenSimBindings/VirtualOutputExtractor.hpp
+    src/OpenSimBindings/VirtualSimulation.hpp
+
+    src/Platform/App.cpp
+    src/Platform/App.hpp
+    src/Platform/Config.cpp
+    src/Platform/Config.hpp
+    src/Platform/IoPoller.cpp
+    src/Platform/IoPoller.hpp
+    src/Platform/Log.cpp
+    src/Platform/Log.hpp
+    src/Platform/os.cpp
+    src/Platform/os.hpp
+    src/Platform/RecentFile.hpp
+    src/Platform/Screen.hpp
+    src/Platform/Styling.hpp
+
+    src/Screens/CookiecutterScreen.cpp
+    src/Screens/CookiecutterScreen.hpp
+    src/Screens/ErrorScreen.cpp
+    src/Screens/ErrorScreen.hpp
+    src/Screens/ExperimentsScreen.cpp
+    src/Screens/ExperimentsScreen.hpp
+    src/Screens/HelloTriangleScreen.cpp
+    src/Screens/HelloTriangleScreen.hpp
+    src/Screens/HittestScreen.cpp
+    src/Screens/HittestScreen.hpp
+    src/Screens/ImGuiDemoScreen.cpp
+    src/Screens/ImGuiDemoScreen.hpp
+    src/Screens/ImGuizmoDemoScreen.cpp
+    src/Screens/ImGuizmoDemoScreen.hpp
+    src/Screens/InstancedRendererScreen.cpp
+    src/Screens/InstancedRendererScreen.hpp
+    src/Screens/LoadingScreen.cpp
+    src/Screens/LoadingScreen.hpp
+    src/Screens/MathExperimentsScreen.cpp
+    src/Screens/MathExperimentsScreen.hpp
+    src/Screens/MeshGenTestScreen.cpp
+    src/Screens/MeshGenTestScreen.hpp
+    src/Screens/MeshHittestScreen.cpp
+    src/Screens/MeshHittestScreen.hpp
+    src/Screens/MeshHittestWithBVHScreen.cpp
+    src/Screens/MeshHittestWithBVHScreen.hpp
+    src/Screens/MeshImporterScreen.cpp
+    src/Screens/MeshImporterScreen.hpp
+    src/Screens/MeshScreen.cpp
+    src/Screens/MeshScreen.hpp
+    src/Screens/ModelEditorScreen.cpp
+    src/Screens/ModelEditorScreen.hpp
+    src/Screens/RendererHelloTriangleScreen.cpp
+    src/Screens/RendererHelloTriangleScreen.hpp
+    src/Screens/SimulatorScreen.cpp
+    src/Screens/SimulatorScreen.hpp
+    src/Screens/SplashScreen.cpp
+    src/Screens/SplashScreen.hpp
+    src/Screens/UiModelViewerScreen.cpp
+    src/Screens/UiModelViewerScreen.hpp
+
+    src/Utils/Algorithms.cpp
+    src/Utils/Algorithms.hpp
+    src/Utils/Assertions.cpp
+    src/Utils/Assertions.hpp
+    src/Utils/CheckedIndex.hpp
+    src/Utils/CircularBuffer.hpp
+    src/Utils/ClonePtr.hpp
+    src/Utils/Cpp20Shims.hpp
+    src/Utils/CStringView.hpp
+    src/Utils/Dag.hpp
+    src/Utils/DedupedString.cpp
+    src/Utils/DedupedString.hpp
+    src/Utils/DefaultConstructOnCopy.hpp
+    src/Utils/FileChangePoller.cpp
+    src/Utils/FileChangePoller.hpp
+    src/Utils/FilesystemHelpers.cpp
+    src/Utils/FilesystemHelpers.hpp
+    src/Utils/Macros.hpp
+    src/Utils/MethodTestMacro.hpp
+    src/Utils/Perf.cpp
+    src/Utils/Perf.hpp
+    src/Utils/ScopeGuard.hpp
+    src/Utils/Spsc.hpp
+    src/Utils/SynchronizedValue.hpp
+    src/Utils/UID.cpp
+    src/Utils/UID.hpp
+
+    src/Widgets/AddBodyPopup.cpp
+    src/Widgets/AddBodyPopup.hpp
+    src/Widgets/AddComponentPopup.cpp
+    src/Widgets/AddComponentPopup.hpp
+    src/Widgets/BasicSceneViewer.cpp
+    src/Widgets/BasicSceneViewer.hpp
+    src/Widgets/ComponentDetails.cpp
+    src/Widgets/ComponentDetails.hpp
+    src/Widgets/ComponentHierarchy.cpp
+    src/Widgets/ComponentHierarchy.hpp
+    src/Widgets/CoordinateEditor.cpp
+    src/Widgets/CoordinateEditor.hpp
+    src/Widgets/LogViewer.cpp
+    src/Widgets/LogViewer.hpp
+    src/Widgets/MainMenu.cpp
+    src/Widgets/MainMenu.hpp
+    src/Widgets/ModelActionsMenuBar.cpp
+    src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelMusclePlotPanel.cpp
+    src/Widgets/ModelMusclePlotPanel.hpp
+    src/Widgets/ObjectPropertiesEditor.cpp
+    src/Widgets/ObjectPropertiesEditor.hpp
+    src/Widgets/ParamBlockEditorPopup.cpp
+    src/Widgets/ParamBlockEditorPopup.hpp
+    src/Widgets/PerfPanel.cpp
+    src/Widgets/PerfPanel.hpp
+    src/Widgets/ReassignSocketPopup.cpp
+    src/Widgets/ReassignSocketPopup.hpp
+    src/Widgets/SaveChangesPopup.cpp
+    src/Widgets/SaveChangesPopup.hpp
+    src/Widgets/Select1PFPopup.cpp
+    src/Widgets/Select1PFPopup.hpp
+    src/Widgets/Select2PFsPopup.cpp
+    src/Widgets/Select2PFsPopup.hpp
+    src/Widgets/SelectComponentPopup.hpp
+    src/Widgets/SelectGeometryPopup.cpp
+    src/Widgets/SelectGeometryPopup.hpp
+    src/Widgets/StandardPopup.cpp
+    src/Widgets/StandardPopup.hpp
+    src/Widgets/UiModelViewer.cpp
+    src/Widgets/UiModelViewer.hpp
+)
+
+# osccore: target properties
+set_target_properties(osccore PROPERTIES
+
+    # disable compiler-specific language extensions
+    CXX_EXTENSIONS OFF
+
+    # strictly require the requested C++ standard (e.g. C++17)
+    CXX_STANDARD_REQUIRED YES
+
+    # export compile commands, so clang-tidy works correctly
+    EXPORT_COMPILE_COMMANDS ON
+)
+
+
+# osccore: compile-time includes
+target_include_directories(osccore PUBLIC
+
+    # so `#include "osc_config.hpp"` works
+    ${PROJECT_BINARY_DIR}
+)
+
+# osccore: use all the stuff set by `osc_configuration`
+target_link_libraries(osccore PUBLIC
+
+    # so that it uses the standard flags etc.
+    osc_configuration
 
     # see: GetDependencies.cmake
     osc-all-deps
 )
 
-# osc: link options
-target_link_options(osc PUBLIC
+# osccore: link options
+target_link_options(osccore PUBLIC
 
     # MSVC (Windows)
     $<$<CXX_COMPILER_ID:MSVC>:
-
-        # open as a desktop app, not CLI
-        /SUBSYSTEM:windows
-
-        # as above, call into `main`
-        /ENTRY:mainCRTStartup
 
         # ignore error from ImGui, which uses locally-defined symbols
         /ignore:4217
@@ -526,42 +584,72 @@ target_link_options(osc PUBLIC
     >
 )
 
-# osc: handle OSC_FORCE_ASSERTS_ENABLED
-if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(osc PRIVATE -DOSC_FORCE_ASSERTS_ENABLED=1)
+
+# ------------ configure test suite target ------------------ #
+
+# osctests: main exe that links to `osccore` and exercises APIs etc.
+add_executable(testosc
+
+    tests/TestOsc.cpp
+    tests/TestDedupedString.cpp
+    tests/TestRenderer.cpp
+    tests/TestRendererHelloTriangleScreen.cpp
+)
+
+# osctests: target properties
+set_target_properties(testosc PROPERTIES
+
+    # disable compiler-specific language extensions
+    CXX_EXTENSIONS OFF
+
+    # strictly require the requested C++ standard (e.g. C++17)
+    CXX_STANDARD_REQUIRED YES
+
+    # export compile commands, so clang-tidy works correctly
+    EXPORT_COMPILE_COMMANDS ON
+)
+
+# osctests: link to `osccore` to exercise it
+target_link_libraries(testosc PUBLIC
+
+    # set compile options
+    osc_configuration
+
+    # link to the to-be-tested library
+    osccore
+
+    # link to testing library
+    GTest::gtest
+    GTest::gtest_main
+)
+
+# osctests: tell CMake (+IDEs) to discover each test case
+#
+# this is how IDEs like Visual Studio integrate their test parser with
+# the test framework
+if(NOT APPLE)  # TODO: fix apple: it's trying to run this shit while installing, where the RPATH is set up in install-mode
+    include(GoogleTest)
+    gtest_discover_tests(testosc)
 endif()
 
-# osc: handle OSC_FORCE_UNDEFINE_NDEBUG
-if(OSC_FORCE_UNDEFINE_NDEBUG)
-    # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
 
-# osc: handle LINUX RPATH
-#
-# - at installation time, Linux install dir is:
-#
-#     bin/
-#     lib/*.so
-if(LINUX)
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
-endif()
+# ------------ configure top-level executable target ------------ #
 
-# osc: handle APPLE @executable_path
+# osc:
 #
-# - at installation time, Apple install dir is something like:
-#
-#    lib/*.dylib
-#    resources/*
-#    osc (exe)
-#    osc.toml
-if(APPLE)
-    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
-endif()
+#     executable frontend to the `osccore` library
+add_executable(osc
+
+    # the CLI frontend
+    src/osc.cpp
+
+    # Windows: also link a resources file (rc)
+    #
+    # the resources file tells MSVC compiler how to compile non-source resources
+    # into the output exe. Specifically, it's used to embed the application icon
+    # into the `osc` exe
+    $<$<CXX_COMPILER_ID:MSVC>:build_resources/resources.rc>
+)
 
 # osc: target properties
 set_target_properties(osc PROPERTIES
@@ -575,6 +663,45 @@ set_target_properties(osc PROPERTIES
     # export compile commands, so clang-tidy works correctly
     EXPORT_COMPILE_COMMANDS ON
 )
+
+# osc: link to necessary libraries
+target_link_libraries(osc PUBLIC
+
+    # so that it uses the standard flags etc.
+    osc_configuration
+
+    # so that it can boot into the main osc codebase
+    osccore
+)
+
+# osc: link options
+target_link_options(osc PUBLIC
+
+    # MSVC (Windows)
+    $<$<CXX_COMPILER_ID:MSVC>:
+
+        # open as a desktop app, not CLI
+        /SUBSYSTEM:windows
+
+        # as above, call into `main`
+        /ENTRY:mainCRTStartup
+    >
+)
+
+# osc: handle installed library lookup locations
+#
+# - Windows: skip: just copy the DLLs into the same dir as the EXE at install time
+# - Linux: setup RPATH with this presumed install dir layout:
+#     bin/
+#     lib/*.so
+# - Mac: setup @executable_path with this presumed install dir layout:
+#     lib/*.dylib
+#     osc (exe)
+if(LINUX)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+elseif(APPLE)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "@executable_path/lib")
+endif()
 
 
 # --------------- configure documentation target ------------------ #
@@ -636,7 +763,7 @@ endif()
 #       resources from the (copied) resource directory
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osc.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
 
-# (on Windows): copy runtime DLLs into the `osc.exe` build dir
+# (on Windows): copy runtime DLLs into the `osccore` build dir
 #
 #     - this is so that devs can run `osc.exe` from an IDE without having to
 #       copy libraries around manually etc.
@@ -648,9 +775,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/build_resources/DEV_osc.toml.in" "${
 if (WIN32)
     foreach(LIB_FILE_TO_COPY ${OSC_LIB_FILES_TO_COPY})
         add_custom_command(
-            TARGET osc
+            TARGET osccore
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_FILE_TO_COPY}" "$<TARGET_FILE_DIR:osc>"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LIB_FILE_TO_COPY}" "$<TARGET_FILE_DIR:osccore>"
         )
     endforeach()
 endif()
@@ -710,7 +837,6 @@ if (WIN32)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSimCreator")
     set(CPACK_GENERATOR NSIS)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/logo.ico")
-    #set(CPACK_NSIS_UNINSTALL_NAME "UninstallOpenSimCreator")
 
     # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     #

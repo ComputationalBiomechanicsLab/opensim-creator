@@ -7,6 +7,7 @@
 #include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/InstancedRendererScreen.hpp"
 #include "src/Screens/MathExperimentsScreen.hpp"
+#include "src/Screens/MeshGenTestScreen.hpp"
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
 #include "src/Screens/MeshImporterScreen.hpp"
@@ -39,6 +40,7 @@ struct osc::ExperimentsScreen::Impl final {
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> },
+        { "Mesh Generation Tests", transition<MeshGenTestScreen> },
     };
 };
 
