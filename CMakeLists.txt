@@ -290,6 +290,7 @@ add_library(osccore STATIC
     src/Graphics/Shaders/SolidColorShader.cpp
     src/Graphics/Shaders/SolidColorShader.hpp
 
+    src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/Gl.cpp
@@ -433,6 +434,8 @@ add_library(osccore STATIC
     src/Screens/LoadingScreen.hpp
     src/Screens/MathExperimentsScreen.cpp
     src/Screens/MathExperimentsScreen.hpp
+    src/Screens/MeshGenTestScreen.cpp
+    src/Screens/MeshGenTestScreen.hpp
     src/Screens/MeshHittestScreen.cpp
     src/Screens/MeshHittestScreen.hpp
     src/Screens/MeshHittestWithBVHScreen.cpp
@@ -483,6 +486,8 @@ add_library(osccore STATIC
     src/Widgets/AddBodyPopup.hpp
     src/Widgets/AddComponentPopup.cpp
     src/Widgets/AddComponentPopup.hpp
+    src/Widgets/BasicSceneViewer.cpp
+    src/Widgets/BasicSceneViewer.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
     src/Widgets/ComponentHierarchy.cpp

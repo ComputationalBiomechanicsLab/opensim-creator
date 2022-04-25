@@ -68,7 +68,7 @@ public:
                 }
                 ImGui::SameLine();
             }
-            ImGui::SetCursorPos(pos);            
+            ImGui::SetCursorPos(pos);
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
             m_Viewer.setDimensions(contentRegion);
