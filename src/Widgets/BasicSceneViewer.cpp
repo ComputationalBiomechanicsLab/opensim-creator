@@ -28,50 +28,50 @@ namespace
 			m_Dimensions{std::move(dims_)},
 			m_Samples{std::move(samples_)},
 			m_SceneRBO{[this]()
-				{
-					gl::RenderBuffer rv;
-					gl::BindRenderBuffer(rv);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_RGBA, m_Dimensions.x, m_Dimensions.y);
-					return rv;
-		}()},
+			{
+				gl::RenderBuffer rv;
+				gl::BindRenderBuffer(rv);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_RGBA, m_Dimensions.x, m_Dimensions.y);
+				return rv;
+			}()},
 			m_Depth24StencilRBO{[this]()
-				{
-					gl::RenderBuffer rv;
-					gl::BindRenderBuffer(rv);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_DEPTH24_STENCIL8, m_Dimensions.x, m_Dimensions.y);
-					return rv;
-		}()},
+			{
+				gl::RenderBuffer rv;
+				gl::BindRenderBuffer(rv);
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_DEPTH24_STENCIL8, m_Dimensions.x, m_Dimensions.y);
+				return rv;
+			}()},
 			m_FrameBuffer{[this]()
-				{
-					gl::FrameBuffer rv;
-					gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-					gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneRBO);
-					gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_Depth24StencilRBO);
-					gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-					return rv;
-		}()},
+			{
+				gl::FrameBuffer rv;
+				gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
+				gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneRBO);
+				gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_Depth24StencilRBO);
+				gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+				return rv;
+			}()},
 			m_SceneTexture{[this]()
-				{
-					gl::Texture2D rv;
-					gl::BindTexture(rv);
-					gl::TexImage2D(rv.type, 0, GL_RGBA, m_Dimensions.x, m_Dimensions.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					return rv;
-		}()},
+			{
+				gl::Texture2D rv;
+				gl::BindTexture(rv);
+				gl::TexImage2D(rv.type, 0, GL_RGBA, m_Dimensions.x, m_Dimensions.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+				gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+				gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				return rv;
+			}()},
 			m_SceneFrameBuffer{[this]()
-				{
-					gl::FrameBuffer rv;
-					gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-					gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneTexture, 0);
-					gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-					return rv;
-		}()}
-		{
-		}
+			{
+				gl::FrameBuffer rv;
+				gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
+				gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneTexture, 0);
+				gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+				return rv;
+			}()}
+			{
+			}
 
 		void setDimsAndSamples(glm::ivec2 newDims, int newSamples)
 		{
@@ -130,7 +130,8 @@ namespace
 
 class osc::BasicSceneViewer::Impl final {
 public:
-	explicit Impl()
+	explicit Impl(BasicSceneViewerFlags flags) :
+		m_Flags{std::move(flags)}
 	{
 		m_Camera.radius = 5.0f;
 	}
@@ -143,6 +144,11 @@ public:
 	void setSamples(int samples)
 	{
 		m_RequestedSamples = std::move(samples);
+	}
+
+	PolarPerspectiveCamera& updCamera()
+	{
+		return m_Camera;
 	}
 
 	void draw(nonstd::span<BasicSceneElement const> els)
@@ -159,7 +165,7 @@ public:
 			return;
 		}
 
-		if (m_IsHovered)
+		if (m_Flags & BasicSceneViewerFlags_UpdateCameraFromImGuiInput && m_IsHovered)
 		{
 			osc::UpdatePolarCameraFromImGuiUserInput(m_RequestedDimensions, m_Camera);
 		}
@@ -224,6 +230,8 @@ public:
 		// emit the texture to ImGui
 		osc::DrawTextureAsImGuiImage(bufs.updSceneTexture(), bufs.getDimensionsf());
 		m_IsHovered = ImGui::IsItemHovered();
+		m_IsLeftClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+		m_IsRightClicked = ImGui::IsItemHovered() && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
 	}
 
 	bool isHovered() const
@@ -231,18 +239,30 @@ public:
 		return m_IsHovered;
 	}
 
-private:
+	bool isLeftClicked() const
+	{
+		return m_IsLeftClicked;
+	}
 
+	bool isRightClicked() const
+	{
+		return m_IsRightClicked;
+	}
+
+private:
+	BasicSceneViewerFlags m_Flags = BasicSceneViewerFlags_Default;
 	glm::ivec2 m_RequestedDimensions = {0, 0};
 	int m_RequestedSamples = 1;
 	PolarPerspectiveCamera m_Camera;
 	GouraudShader& m_Shader = osc::App::shader<GouraudShader>();
 	std::optional<RenderBuffers> m_MaybeRenderBuffers;
 	bool m_IsHovered = false;
+	bool m_IsLeftClicked = false;
+	bool m_IsRightClicked = false;
 };
 
-osc::BasicSceneViewer::BasicSceneViewer() :
-	m_Impl{new Impl{}}
+osc::BasicSceneViewer::BasicSceneViewer(BasicSceneViewerFlags flags) :
+	m_Impl{new Impl{std::move(flags)}}
 {
 }
 
@@ -271,6 +291,11 @@ void osc::BasicSceneViewer::setSamples(int samples)
 	m_Impl->setSamples(std::move(samples));
 }
 
+osc::PolarPerspectiveCamera& osc::BasicSceneViewer::updCamera()
+{
+	return m_Impl->updCamera();
+}
+
 void osc::BasicSceneViewer::draw(nonstd::span<BasicSceneElement const> els)
 {
 	m_Impl->draw(std::move(els));
@@ -279,4 +304,14 @@ void osc::BasicSceneViewer::draw(nonstd::span<BasicSceneElement const> els)
 bool osc::BasicSceneViewer::isHovered() const
 {
 	return m_Impl->isHovered();
+}
+
+bool osc::BasicSceneViewer::isLeftClicked() const
+{
+	return m_Impl->isLeftClicked();
+}
+
+bool osc::BasicSceneViewer::isRightClicked() const
+{
+	return m_Impl->isRightClicked();
 }
