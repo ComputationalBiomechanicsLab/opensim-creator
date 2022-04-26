@@ -12,6 +12,7 @@ All notable changes to this project will be documented here. The format is based
 - The README docs have been updated and include a link to the tutorial videos, plus clearer install/build instructions (internal)
 - Example models were updated from `opensim-org/opensim-models` (internal)
 - Fixed a bug that prevented model rollbacks from working correctly
+- Added (rudamentary) ability to plot muscle moment arms while editing a model (related: #191)
 
 
 ## [0.1.5] - 2022/04/11
