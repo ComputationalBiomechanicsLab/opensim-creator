@@ -20,7 +20,7 @@ set -xeuo pipefail
 OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch identifier from opensim-core
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.2}
+OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.3}
 
 # base build type: used if one of the below isn't overridden
 OSC_BASE_BUILD_TYPE=${OSC_BASE_BUILD_TYPE:-RelWithDebInfo}
