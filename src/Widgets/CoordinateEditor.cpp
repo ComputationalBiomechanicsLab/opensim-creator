@@ -23,31 +23,6 @@ static bool IsNameLexographicallyLessThan(OpenSim::Coordinate const* c1,
     return c1->getName() < c2->getName();
 }
 
-static float ConvertToDisplayFormat(OpenSim::Coordinate const& c, double v)
-{
-    float rv = static_cast<float>(v);
-
-    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
-    {
-        rv = glm::degrees(rv);
-    }
-
-    return rv;
-}
-
-static double ConvertToStorageFormat(OpenSim::Coordinate const& c, float v)
-{
-    double rv = static_cast<double>(v);
-
-    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
-    {
-        rv = glm::radians(rv);
-    }
-
-    return rv;
-}
-
-
 class osc::CoordinateEditor::Impl final {
 public:
     Impl(std::shared_ptr<UndoableUiModel> uum) :
@@ -228,12 +203,12 @@ public:
 
             ImGui::SameLine();
 
-            float v = ConvertToDisplayFormat(*c, c->getValue(m_Uum->getState()));
+            float v = ConvertCoordValueToDisplayValue(*c, c->getValue(m_Uum->getState()));
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::SliderFloat("##coordinatevalueeditor", &v, ConvertToDisplayFormat(*c, c->getRangeMin()), ConvertToDisplayFormat(*c, c->getRangeMax())))
+            if (ImGui::SliderFloat("##coordinatevalueeditor", &v, ConvertCoordValueToDisplayValue(*c, c->getRangeMin()), ConvertCoordValueToDisplayValue(*c, c->getRangeMax())))
             {
                 m_Uum->updUiModel().pushCoordinateEdit(*c, CoordinateEdit{
-                    ConvertToStorageFormat(*c, v),
+                    ConvertCoordDisplayValueToStorageValue(*c, v),
                     c->getSpeedValue(m_Uum->getState()),
                     c->getLocked(m_Uum->getState())
                 });
@@ -264,12 +239,12 @@ public:
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 
-            float speed = ConvertToDisplayFormat(*c, c->getSpeedValue(m_Uum->getState()));
+            float speed = ConvertCoordValueToDisplayValue(*c, c->getSpeedValue(m_Uum->getState()));
             if (InputMetersFloat("##coordinatespeededitor", &speed))
             {
                 m_Uum->updUiModel().pushCoordinateEdit(*c, CoordinateEdit{
                     c->getValue(m_Uum->getState()),
-                    ConvertToStorageFormat(*c, speed),
+                    ConvertCoordDisplayValueToStorageValue(*c, speed),
                     c->getLocked(m_Uum->getState())
                 });
                 stateWasModified = true;

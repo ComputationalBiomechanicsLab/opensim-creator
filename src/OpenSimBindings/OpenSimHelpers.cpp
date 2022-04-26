@@ -10,6 +10,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/Perf.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -691,6 +692,42 @@ void osc::GetCoordinatesInModel(OpenSim::Model const& m,
     for (int i = 0; i < len; ++i)
     {
         out.push_back(&s[i]);
+    }
+}
+
+float osc::ConvertCoordValueToDisplayValue(OpenSim::Coordinate const& c, double v)
+{
+    float rv = static_cast<float>(v);
+
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::degrees(rv);
+    }
+
+    return rv;
+}
+
+double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c, float v)
+{
+    double rv = static_cast<double>(v);
+
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::radians(rv);
+    }
+
+    return rv;
+}
+
+osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const& c)
+{
+    switch (c.getMotionType()) {
+    case OpenSim::Coordinate::MotionType::Translational:
+        return "m";
+    case OpenSim::Coordinate::MotionType::Rotational:
+        return "deg";
+    default:
+        return "";
     }
 }
 
