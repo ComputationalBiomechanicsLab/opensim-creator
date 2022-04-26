@@ -1,41 +1,36 @@
 #pragma once
 
-#include "src/Graphics/BasicSceneElement.hpp"
+#include "src/Graphics/BasicRenderer.hpp"
 
 #include <glm/vec2.hpp>
 #include <nonstd/span.hpp>
 
+#include <memory>
+
 namespace osc
 {
-    class PolarPerspectiveCamera;
+    struct BasicSceneElement;
 }
 
 namespace osc
 {
-    using BasicSceneViewerFlags = int;
-    enum BasicSceneViewerFlags_ {
-        BasicSceneViewerFlags_None = 0,
-
-        // update the camera when the user clicks+drags etc. over the scene image
-        BasicSceneViewerFlags_UpdateCameraFromImGuiInput = 1<<0,
-
-        BasicSceneViewerFlags_Default = BasicSceneViewerFlags_UpdateCameraFromImGuiInput,
-    };
-
+    // pumps scenes into a `osc::BasicRenderer` and emits the output as an `ImGui::Image()`
     class BasicSceneViewer final {
     public:
-        explicit BasicSceneViewer(BasicSceneViewerFlags = BasicSceneViewerFlags_Default);
+        BasicSceneViewer();
+        explicit BasicSceneViewer(std::unique_ptr<BasicRenderer>);
         BasicSceneViewer(BasicSceneViewer const&) = delete;
         BasicSceneViewer(BasicSceneViewer&&) noexcept;
         BasicSceneViewer& operator=(BasicSceneViewer const&) = delete;
         BasicSceneViewer& operator=(BasicSceneViewer&&) noexcept;
         ~BasicSceneViewer() noexcept;
 
-        void setDimensions(glm::ivec2 dimensions);
+        glm::ivec2 getDimensions() const;
+        void setDimensions(glm::ivec2);
+        int getSamples() const;
         void setSamples(int samples);
-        PolarPerspectiveCamera& updCamera();
 
-        void draw(nonstd::span<BasicSceneElement const>);
+        void draw(BasicRenderer::Params const&, nonstd::span<BasicSceneElement const>);
 
         bool isHovered() const;
         bool isLeftClicked() const;

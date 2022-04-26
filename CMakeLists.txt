@@ -290,6 +290,7 @@ add_library(osccore STATIC
     src/Graphics/Shaders/SolidColorShader.cpp
     src/Graphics/Shaders/SolidColorShader.hpp
 
+    src/Graphics/BasicRenderer.hpp
     src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
@@ -309,6 +310,8 @@ add_library(osccore STATIC
     src/Graphics/MeshTopography.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
+    src/Graphics/SceneRenderer.cpp
+    src/Graphics/SceneRenderer.hpp
     src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
