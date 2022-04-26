@@ -8090,7 +8090,7 @@ namespace
 //
 // this effectively just feeds the underlying state machine pattern established by
 // the `ModelWizardState` class
-struct osc::MeshImporterScreen::Impl final {
+class osc::MeshImporterScreen::Impl final {
 public:
     Impl() :
         m_SharedData{std::make_shared<SharedData>()},
@@ -8171,7 +8171,7 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 // HACK: save this screen's state globally, so that users can "go back" to the screen if the
 //       model import fails
@@ -8197,6 +8197,17 @@ osc::MeshImporterScreen::MeshImporterScreen() :
 osc::MeshImporterScreen::MeshImporterScreen(std::vector<std::filesystem::path> paths) :
     m_Impl{GetModelWizardScreenGLOBAL(paths)}
 {
+}
+
+osc::MeshImporterScreen::MeshImporterScreen(MeshImporterScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::MeshImporterScreen& osc::MeshImporterScreen::operator=(MeshImporterScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
 }
 
 osc::MeshImporterScreen::~MeshImporterScreen() noexcept

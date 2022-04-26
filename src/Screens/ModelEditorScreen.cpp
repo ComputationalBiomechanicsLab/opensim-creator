@@ -1648,14 +1648,28 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::ModelEditorScreen::ModelEditorScreen(std::shared_ptr<MainEditorState> st) :
-    m_Impl{new Impl {std::move(st)}}
+    m_Impl{new Impl{std::move(st)}}
 {
 }
 
-osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
+osc::ModelEditorScreen::ModelEditorScreen(ModelEditorScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ModelEditorScreen& osc::ModelEditorScreen::operator=(ModelEditorScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ModelEditorScreen::~ModelEditorScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::ModelEditorScreen::onMount()
 {

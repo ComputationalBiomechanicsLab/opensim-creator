@@ -59,189 +59,227 @@ static void drawBVHRecursive(osc::BVH const& bvh, osc::SolidColorShader& shader,
     }
 }
 
-struct osc::MeshHittestWithBVHScreen::Impl final {
-    SolidColorShader shader;
+class osc::MeshHittestWithBVHScreen::Impl final {
+public:
 
-    Mesh mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
+    void onMount()
+    {
+        osc::ImGuiInit();
+        App::cur().disableVsync();
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
+    void onUnmount()
+    {
+        osc::ImGuiShutdown();
+    }
+
+    void onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (osc::ImGuiOnEvent(e))
+        {
+            return;
+        }
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            App::cur().requestTransition<ExperimentsScreen>();
+            return;
+        }
+    }
+
+    void tick(float dt)
+    {
+        UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), m_Camera);
+
+        m_Camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
+
+        // handle hittest
+        auto raycastStart = std::chrono::high_resolution_clock::now();
+        {
+            Line cameraRayWorldspace = m_Camera.unprojectTopLeftPosToWorldRay(ImGui::GetMousePos(), App::cur().dims());
+            // camera ray in worldspace == camera ray in model space because the model matrix is an identity matrix
+
+            m_IsMousedOver = false;
+
+            if (m_UseBVH)
+            {
+                BVHCollision res;
+                if (BVH_GetClosestRayIndexedTriangleCollision(m_Mesh.getTriangleBVH(),
+                    m_Mesh.getVerts(),
+                    m_Mesh.getIndices(),
+                    cameraRayWorldspace,
+                    &res))
+                {
+                    glm::vec3 const* v = m_Mesh.getVerts().data() + res.primId;
+                    m_IsMousedOver = true;
+                    m_Tris[0] = v[0];
+                    m_Tris[1] = v[1];
+                    m_Tris[2] = v[2];
+                    m_TriangleVBO.assign(m_Tris, 3);
+                }
+            }
+            else
+            {
+                nonstd::span<glm::vec3 const> verts = m_Mesh.getVerts();
+                for (size_t i = 0; i < verts.size(); i += 3)
+                {
+                    glm::vec3 tri[3] = {verts[i], verts[i+1], verts[i+2]};
+                    RayCollision res = GetRayCollisionTriangle(cameraRayWorldspace, tri);
+                    if (res.hit)
+                    {
+                        m_IsMousedOver = true;
+
+                        // draw triangle for hit
+                        m_Tris[0] = tri[0];
+                        m_Tris[1] = tri[1];
+                        m_Tris[2] = tri[2];
+                        m_TriangleVBO.assign(m_Tris, 3);
+                        break;
+                    }
+                }
+            }
+
+        }
+        auto raycastEnd = std::chrono::high_resolution_clock::now();
+        auto raycastDt = raycastEnd - raycastStart;
+        m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
+    }
+
+    void draw()
+    {
+        auto dims = App::cur().idims();
+        gl::Viewport(0, 0, dims.x, dims.y);
+
+        osc::ImGuiNewFrame();
+
+        gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // printout stats
+        {
+            ImGui::Begin("controls");
+            ImGui::Text("raycast duration = %lld micros", m_RaycastDuration.count());
+            ImGui::Checkbox("use BVH", &m_UseBVH);
+            ImGui::End();
+        }
+
+        gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gl::UseProgram(m_Shader.program);
+        gl::Uniform(m_Shader.uModel, gl::identity);
+        gl::Uniform(m_Shader.uView, m_Camera.getViewMtx());
+        gl::Uniform(m_Shader.uProjection, m_Camera.getProjMtx(App::cur().aspectRatio()));
+        gl::Uniform(m_Shader.uColor, m_IsMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
+
+        // draw scene
+        if (true)
+        {
+            gl::BindVertexArray(m_Mesh.GetVertexArray());
+            m_Mesh.Draw();
+            gl::BindVertexArray();
+        }
+
+        // draw hittest triangle debug
+        if (m_IsMousedOver)
+        {
+            gl::Disable(GL_DEPTH_TEST);
+
+            // draw triangle
+            gl::Uniform(m_Shader.uModel, gl::identity);
+            gl::Uniform(m_Shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+            gl::BindVertexArray(m_TriangleVAO);
+            gl::DrawElements(GL_TRIANGLES, m_TriangleEBO.sizei(), gl::indexType(m_TriangleEBO), nullptr);
+            gl::BindVertexArray();
+
+            gl::Enable(GL_DEPTH_TEST);
+        }
+
+        // draw BVH
+        if (m_UseBVH && !m_Mesh.getTriangleBVH().nodes.empty())
+        {
+            // uModel is set by the recursive call
+            gl::Uniform(m_Shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
+            gl::BindVertexArray(m_CubeVAO);
+            drawBVHRecursive(m_Mesh.getTriangleBVH(), m_Shader, 0);
+            gl::BindVertexArray();
+        }
+
+        osc::ImGuiRender();
+    }
+
+private:
+    SolidColorShader m_Shader;
+
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resource("geometry/hat_ribs.vtp"));
 
     // triangle (debug)
-    glm::vec3 tris[3];
-    gl::ArrayBuffer<glm::vec3> triangleVBO;
-    gl::ElementArrayBuffer<uint32_t> triangleEBO = {0, 1, 2};
-    gl::VertexArray triangleVAO = makeVAO(shader, triangleVBO, triangleEBO);
+    glm::vec3 m_Tris[3];
+    gl::ArrayBuffer<glm::vec3> m_TriangleVBO;
+    gl::ElementArrayBuffer<uint32_t> m_TriangleEBO = {0, 1, 2};
+    gl::VertexArray m_TriangleVAO = makeVAO(m_Shader, m_TriangleVBO, m_TriangleEBO);
 
     // AABB wireframe
-    MeshData cubeWireframe = GenCubeLines();
-    gl::ArrayBuffer<glm::vec3> cubeWireframeVBO{cubeWireframe.verts};
-    gl::ElementArrayBuffer<uint32_t> cubeWireframeEBO{cubeWireframe.indices};
-    gl::VertexArray cubeVAO = makeVAO(shader, cubeWireframeVBO, cubeWireframeEBO);
+    MeshData m_CubeWireFrame = GenCubeLines();
+    gl::ArrayBuffer<glm::vec3> m_CubeWireFrameVBO{m_CubeWireFrame.verts};
+    gl::ElementArrayBuffer<uint32_t> m_CubeWireFrameEBO{m_CubeWireFrame.indices};
+    gl::VertexArray m_CubeVAO = makeVAO(m_Shader, m_CubeWireFrameVBO, m_CubeWireFrameEBO);
 
-    std::chrono::microseconds raycastDuration{0};
-    PolarPerspectiveCamera camera;
-    bool isMousedOver = false;
-    bool useBVH = true;
+    std::chrono::microseconds m_RaycastDuration{0};
+    PolarPerspectiveCamera m_Camera;
+    bool m_IsMousedOver = false;
+    bool m_UseBVH = true;
 };
 
-// public Impl
+
+// public Impl (PIMPL)
 
 osc::MeshHittestWithBVHScreen::MeshHittestWithBVHScreen() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::MeshHittestWithBVHScreen::~MeshHittestWithBVHScreen() noexcept = default;
+osc::MeshHittestWithBVHScreen::MeshHittestWithBVHScreen(MeshHittestWithBVHScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::MeshHittestWithBVHScreen& osc::MeshHittestWithBVHScreen::operator=(MeshHittestWithBVHScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::MeshHittestWithBVHScreen::~MeshHittestWithBVHScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::MeshHittestWithBVHScreen::onMount()
 {
-    osc::ImGuiInit();
-    App::cur().disableVsync();
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    m_Impl->onMount();
 }
 
 void osc::MeshHittestWithBVHScreen::onUnmount()
 {
-    osc::ImGuiShutdown();
+    m_Impl->onUnmount();
 }
 
 void osc::MeshHittestWithBVHScreen::onEvent(SDL_Event const& e)
 {
-    if (e.type == SDL_QUIT)
-    {
-        App::cur().requestQuit();
-        return;
-    }
-    else if (osc::ImGuiOnEvent(e))
-    {
-        return;
-    }
-    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-    {
-        App::cur().requestTransition<ExperimentsScreen>();
-        return;
-    }
+    m_Impl->onEvent(e);
 }
 
-void osc::MeshHittestWithBVHScreen::tick(float)
+void osc::MeshHittestWithBVHScreen::tick(float dt)
 {
-    Impl& impl = *m_Impl;
-
-    UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
-
-    impl.camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
-
-    // handle hittest
-    auto raycastStart = std::chrono::high_resolution_clock::now();
-    {
-        Line cameraRayWorldspace = impl.camera.unprojectTopLeftPosToWorldRay(ImGui::GetMousePos(), App::cur().dims());
-        // camera ray in worldspace == camera ray in model space because the model matrix is an identity matrix
-
-        impl.isMousedOver = false;
-
-        if (impl.useBVH)
-        {
-            BVHCollision res;
-            if (BVH_GetClosestRayIndexedTriangleCollision(impl.mesh.getTriangleBVH(),
-                                                          impl.mesh.getVerts(),
-                                                          impl.mesh.getIndices(),
-                                                          cameraRayWorldspace,
-                                                          &res))
-            {
-                glm::vec3 const* v = impl.mesh.getVerts().data() + res.primId;
-                impl.isMousedOver = true;
-                impl.tris[0] = v[0];
-                impl.tris[1] = v[1];
-                impl.tris[2] = v[2];
-                impl.triangleVBO.assign(impl.tris, 3);
-            }
-        }
-        else
-        {
-            nonstd::span<glm::vec3 const> verts = impl.mesh.getVerts();
-            for (size_t i = 0; i < verts.size(); i += 3)
-            {
-                glm::vec3 tri[3] = {verts[i], verts[i+1], verts[i+2]};
-                RayCollision res = GetRayCollisionTriangle(cameraRayWorldspace, tri);
-                if (res.hit)
-                {
-                    impl.isMousedOver = true;
-
-                    // draw triangle for hit
-                    impl.tris[0] = tri[0];
-                    impl.tris[1] = tri[1];
-                    impl.tris[2] = tri[2];
-                    impl.triangleVBO.assign(impl.tris, 3);
-                    break;
-                }
-            }
-        }
-
-    }
-    auto raycastEnd = std::chrono::high_resolution_clock::now();
-    auto raycastDt = raycastEnd - raycastStart;
-    impl.raycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
+    m_Impl->tick(std::move(dt));
 }
 
 void osc::MeshHittestWithBVHScreen::draw()
 {
-    auto dims = App::cur().idims();
-    gl::Viewport(0, 0, dims.x, dims.y);
-
-    osc::ImGuiNewFrame();
-
-    Impl& impl = *m_Impl;
-    SolidColorShader& shader = impl.shader;
-
-    gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // printout stats
-    {
-        ImGui::Begin("controls");
-        ImGui::Text("raycast duration = %lld micros", impl.raycastDuration.count());
-        ImGui::Checkbox("use BVH", &impl.useBVH);
-        ImGui::End();
-    }
-
-    gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    gl::UseProgram(shader.program);
-    gl::Uniform(shader.uModel, gl::identity);
-    gl::Uniform(shader.uView, impl.camera.getViewMtx());
-    gl::Uniform(shader.uProjection, impl.camera.getProjMtx(App::cur().aspectRatio()));
-    gl::Uniform(shader.uColor, impl.isMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
-
-    // draw scene
-    if (true)
-    {
-        gl::BindVertexArray(impl.mesh.GetVertexArray());
-        impl.mesh.Draw();
-        gl::BindVertexArray();
-    }
-
-    // draw hittest triangle debug
-    if (impl.isMousedOver)
-    {
-        gl::Disable(GL_DEPTH_TEST);
-
-        // draw triangle
-        gl::Uniform(shader.uModel, gl::identity);
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-        gl::BindVertexArray(impl.triangleVAO);
-        gl::DrawElements(GL_TRIANGLES, impl.triangleEBO.sizei(), gl::indexType(impl.triangleEBO), nullptr);
-        gl::BindVertexArray();
-
-        gl::Enable(GL_DEPTH_TEST);
-    }
-
-    // draw BVH
-    if (impl.useBVH && !impl.mesh.getTriangleBVH().nodes.empty())
-    {
-        // uModel is set by the recursive call
-        gl::Uniform(shader.uColor, {0.0f, 0.0f, 0.0f, 1.0f});
-        gl::BindVertexArray(impl.cubeVAO);
-        drawBVHRecursive(impl.mesh.getTriangleBVH(), impl.shader, 0);
-        gl::BindVertexArray();
-    }
-
-    osc::ImGuiRender();
+    m_Impl->draw();
 }

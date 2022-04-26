@@ -2,6 +2,8 @@
 
 #include "src/Platform/Screen.hpp"
 
+#include <SDL_events.h>
+
 namespace osc
 {
     // shows the official ImGui demo
