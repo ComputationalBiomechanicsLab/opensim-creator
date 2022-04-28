@@ -8,10 +8,64 @@
 
 #include <string>
 
-struct osc::UiModelViewerScreen::Impl final {
-    std::string modelPath = App::resource("models/RajagopalModel/Rajagopal2015.osim").string();
-    UiModel uim{modelPath};
-    UiModelViewer viewer;
+class osc::UiModelViewerScreen::Impl final {
+public:
+    void onMount()
+    {
+        App::cur().enableDebugMode();
+        App::cur().disableVsync();
+        osc::ImGuiInit();
+    }
+
+    void onUnmount()
+    {
+        osc::ImGuiShutdown();
+    }
+
+    void onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (osc::ImGuiOnEvent(e))
+        {
+            return;  // ImGui handled this particular event
+        }
+    }
+
+    void tick(float)
+    {
+    }
+
+    void draw()
+    {
+        osc::ImGuiNewFrame();
+        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+
+        ImGui::Begin("cookiecutter panel");
+        ImGui::Text("%.2f", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Begin("viewer", nullptr, ImGuiWindowFlags_MenuBar);
+        auto resp = m_ModelViewer.draw(m_UiModel);
+        if (resp.hovertestResult)
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("hello");
+            ImGui::EndTooltip();
+        }
+        m_UiModel.setHovered(resp.hovertestResult);
+        ImGui::End();
+
+        osc::ImGuiRender();
+    }
+
+private:
+    std::string m_ModelPath = App::resource("models/RajagopalModel/Rajagopal2015.osim").string();
+    UiModel m_UiModel{m_ModelPath};
+    UiModelViewer m_ModelViewer;
 };
 
 // public API
@@ -21,73 +75,43 @@ osc::UiModelViewerScreen::UiModelViewerScreen() :
 {
 }
 
-osc::UiModelViewerScreen::~UiModelViewerScreen() noexcept = default;
+osc::UiModelViewerScreen::UiModelViewerScreen(UiModelViewerScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::UiModelViewerScreen& osc::UiModelViewerScreen::operator=(UiModelViewerScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::UiModelViewerScreen::~UiModelViewerScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::UiModelViewerScreen::onMount()
 {
-    // called when app receives the screen, but before it starts pumping events
-    // into it, ticking it, drawing it, etc.
-
-    App::cur().enableDebugMode();
-    App::cur().disableVsync();
-
-    osc::ImGuiInit();  // boot up ImGui support
+    m_Impl->onMount();
 }
 
 void osc::UiModelViewerScreen::onUnmount()
 {
-    // called when the app is going to stop pumping events/ticks/draws into this
-    // screen (e.g. because the app is quitting, or transitioning to some other screen)
-
-    osc::ImGuiShutdown();  // shutdown ImGui support
+    m_Impl->onUnmount();
 }
 
 void osc::UiModelViewerScreen::onEvent(SDL_Event const& e)
 {
-    if (e.type == SDL_QUIT)
-    {
-        App::cur().requestQuit();
-        return;
-    }
-    else if (osc::ImGuiOnEvent(e))
-    {
-        return;  // ImGui handled this particular event
-    }
+    m_Impl->onEvent(e);
 }
 
-void osc::UiModelViewerScreen::tick(float)
+void osc::UiModelViewerScreen::tick(float dt)
 {
-    // called once per frame, before drawing, with a timedelta from the last call
-    // to `tick`
-
-    // use this if you need to regularly update something (e.g. an animation, or
-    // file polling)
+    m_Impl->tick(std::move(dt));
 }
 
 void osc::UiModelViewerScreen::draw()
 {
-    // called once per frame. Code in here should use drawing primitives, OpenGL, ImGui,
-    // etc. to draw things into the screen. The application does not clear the screen
-    // buffer between frames (it's assumed that your code does this when it needs to)
-
-    osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
-
-    App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});  // set app window bg color
-
-    ImGui::Begin("cookiecutter panel");
-    ImGui::Text("%.2f", ImGui::GetIO().Framerate);
-    ImGui::End();
-
-    ImGui::Begin("viewer", nullptr, ImGuiWindowFlags_MenuBar);
-    auto resp = m_Impl->viewer.draw(m_Impl->uim);
-    if (resp.hovertestResult)
-    {
-        ImGui::BeginTooltip();
-        ImGui::Text("hello");
-        ImGui::EndTooltip();
-    }
-    m_Impl->uim.setHovered(resp.hovertestResult);
-    ImGui::End();
-
-    osc::ImGuiRender();  // tell ImGui to render any ImGui widgets since calling ImGuiNewFrame();
+    m_Impl->draw();
 }

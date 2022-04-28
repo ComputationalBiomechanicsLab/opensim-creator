@@ -149,6 +149,35 @@ static bool BVH_GetRayTriangleCollisionsRecursive(
     }
 }
 
+// make this public if we ever need multi-collisions
+static bool BVH_GetRayTriangleCollisions(
+    osc::BVH const& bvh,
+    glm::vec3 const* vs,
+    size_t n,
+    osc::Line const& ray,
+    std::vector<osc::BVHCollision>* appendTo)
+{
+    OSC_ASSERT(appendTo != nullptr);
+    OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
+
+    if (bvh.nodes.empty())
+    {
+        return false;
+    }
+
+    if (bvh.prims.empty())
+    {
+        return false;
+    }
+
+    if (n == 0)
+    {
+        return false;
+    }
+
+    return BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, 0, *appendTo);
+}
+
 // returns true if something hit (recursively)
 //
 // populates outparam with all AABB hits in depth-first order
@@ -183,10 +212,11 @@ static bool BVH_GetRayAABBCollisionsRecursive(
     return lhs || rhs;
 }
 
-static bool BVH_GetClosestRayTriangleCollisionRecursive(
+template<typename TIndex>
+static bool BVH_GetClosestRayIndexedTriangleCollisionRecursive(
         osc::BVH const& bvh,
-        glm::vec3 const* verts,
-        size_t nverts,
+        nonstd::span<glm::vec3 const> verts,
+        nonstd::span<TIndex const> indices,
         osc::Line const& ray,
         float& closest,
         int nodeidx,
@@ -214,7 +244,14 @@ static bool BVH_GetClosestRayTriangleCollisionRecursive(
         {
             osc::BVHPrim const& p = bvh.prims[i];
 
-            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, verts + p.id);
+            glm::vec3 triangleVerts[] =
+            {
+                verts[indices[p.id]],
+                verts[indices[p.id + 1]],
+                verts[indices[p.id + 2]],
+            };
+
+            osc::RayCollision rayrtri = osc::GetRayCollisionTriangle(ray, triangleVerts);
 
             if (rayrtri.hit && rayrtri.distance < closest)
             {
@@ -229,10 +266,58 @@ static bool BVH_GetClosestRayTriangleCollisionRecursive(
     }
 
     // else: internal node: recurse
-    bool lhs = BVH_GetClosestRayTriangleCollisionRecursive(bvh, verts, nverts, ray, closest, nodeidx+1, out);
-    bool rhs = BVH_GetClosestRayTriangleCollisionRecursive(bvh, verts, nverts, ray, closest, nodeidx+node.nlhs+1, out);
+    bool lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+1, out);
+    bool rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, nodeidx+node.nlhs+1, out);
     return lhs || rhs;
 }
+
+template<typename TIndex>
+static void BuildFromIndexedTriangles(osc::BVH& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<TIndex const> indices)
+{
+    // clear out any old data
+    bvh.clear();
+
+    // build up the prim list for each triangle
+    OSC_ASSERT_ALWAYS(indices.size() % 3 == 0);
+    for (size_t i = 0; i < indices.size(); i += 3)
+    {
+        glm::vec3 triangleVerts[3] =
+        {
+            verts[indices[i]],
+            verts[indices[i+1]],
+            verts[indices[i+2]],
+        };
+        osc::BVHPrim& prim = bvh.prims.emplace_back();
+        prim.bounds = osc::AABBFromVerts(triangleVerts, 3);
+        prim.id = static_cast<int>(i);
+    }
+
+    // recursively build the tree
+    BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+}
+
+template<typename TIndex>
+static bool GetClosestRayIndexedTriangleCollision(
+    osc::BVH const& bvh,
+    nonstd::span<glm::vec3 const> verts,
+    nonstd::span<TIndex const> indices,
+    osc::Line const& ray,
+    osc::BVHCollision* out)
+{
+    OSC_ASSERT(out != nullptr);
+    OSC_ASSERT(indices.size()/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
+
+    if (bvh.nodes.empty() || bvh.prims.empty() || indices.empty())
+    {
+        return false;
+    }
+
+    float closest = std::numeric_limits<float>::max();
+    return BVH_GetClosestRayIndexedTriangleCollisionRecursive(bvh, verts, indices, ray, closest, 0, out);
+}
+
+
+// public API
 
 void osc::BVH::clear()
 {
@@ -240,29 +325,24 @@ void osc::BVH::clear()
     prims.clear();
 }
 
-osc::BVH osc::BVH_CreateFromTriangles(glm::vec3 const* vs, size_t n)
+void osc::BVH_BuildFromIndexedTriangles(BVH& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
 {
-    BVH rv;
-    BVH_BuildFromTriangles(rv, vs, n);
-    return rv;
+    BuildFromIndexedTriangles<uint16_t>(bvh, verts, indices);
 }
 
-void osc::BVH_BuildFromTriangles(BVH& bvh, glm::vec3 const* vs, size_t n)
+void osc::BVH_BuildFromIndexedTriangles(BVH& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
 {
-    // clear out any old data
-    bvh.clear();
+    BuildFromIndexedTriangles<uint32_t>(bvh, verts, indices);
+}
 
-    // build up the prim list for each triangle
-    OSC_ASSERT(n % 3 == 0);
-    for (size_t i = 0; i < n; i += 3)
-    {
-        BVHPrim& prim = bvh.prims.emplace_back();
-        prim.bounds = AABBFromVerts(vs + i, 3);
-        prim.id = static_cast<int>(i);
-    }
+bool osc::BVH_GetClosestRayIndexedTriangleCollision(BVH const& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices, Line const& line, BVHCollision* out)
+{
+    return GetClosestRayIndexedTriangleCollision<uint16_t>(bvh, verts, indices, line, out);
+}
 
-    // recursively build the tree
-    BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
+bool osc::BVH_GetClosestRayIndexedTriangleCollision(BVH const& bvh, nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices, Line const& line, BVHCollision* out)
+{
+    return GetClosestRayIndexedTriangleCollision<uint32_t>(bvh, verts, indices, line, out);
 }
 
 void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
@@ -281,34 +361,6 @@ void osc::BVH_BuildFromAABBs(BVH& bvh, AABB const* aabbs, size_t n)
 
     // recursively build the tree
     BVH_RecursiveBuild(bvh, 0, static_cast<int>(bvh.prims.size()));
-}
-
-bool osc::BVH_GetRayTriangleCollisions(
-        BVH const& bvh,
-        glm::vec3 const* vs,
-        size_t n,
-        Line const& ray,
-        std::vector<BVHCollision>* appendTo)
-{
-    OSC_ASSERT(appendTo != nullptr);
-    OSC_ASSERT(n/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
-
-    if (bvh.nodes.empty())
-    {
-        return false;
-    }
-
-    if (bvh.prims.empty())
-    {
-        return false;
-    }
-
-    if (n == 0)
-    {
-        return false;
-    }
-
-    return BVH_GetRayTriangleCollisionsRecursive(bvh, vs, n, ray, 0, *appendTo);
 }
 
 bool osc::BVH_GetRayAABBCollisions(
@@ -330,33 +382,4 @@ bool osc::BVH_GetRayAABBCollisions(
     }
 
     return BVH_GetRayAABBCollisionsRecursive(bvh, ray, 0, *appendTo);
-}
-
-bool osc::BVH_GetClosestRayTriangleCollision(
-        BVH const& bvh,
-        glm::vec3 const* verts,
-        size_t nverts,
-        Line const& ray,
-        BVHCollision* out)
-{
-    OSC_ASSERT(out != nullptr);
-    OSC_ASSERT(nverts/3 == bvh.prims.size() && "not enough primitives in this BVH - did you build it against the supplied verts?");
-
-    if (bvh.nodes.empty())
-    {
-        return false;
-    }
-
-    if (bvh.prims.empty())
-    {
-        return false;
-    }
-
-    if (nverts == 0)
-    {
-        return false;
-    }
-
-    float closest = std::numeric_limits<float>::max();
-    return BVH_GetClosestRayTriangleCollisionRecursive(bvh, verts, nverts, ray, closest, 0, out);
 }

@@ -19,7 +19,10 @@ namespace osc
     class ModelEditorScreen final : public Screen {
     public:
         ModelEditorScreen(std::shared_ptr<MainEditorState>);
-
+        ModelEditorScreen(ModelEditorScreen const&) = delete;
+        ModelEditorScreen(ModelEditorScreen&&) noexcept;
+        ModelEditorScreen& operator=(ModelEditorScreen const&) = delete;
+        ModelEditorScreen& operator=(ModelEditorScreen&&) noexcept;
         ~ModelEditorScreen() noexcept override;
 
         void onMount() override;
@@ -30,6 +33,6 @@ namespace osc
 
         class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

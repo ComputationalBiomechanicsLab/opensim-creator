@@ -35,6 +35,7 @@ namespace osc
         bool simulationStats = false;
         bool coordinateEditor = true;
         bool perfPanel = false;
+        bool momentArmPanel = false;
     };
 
     // top-level UI state

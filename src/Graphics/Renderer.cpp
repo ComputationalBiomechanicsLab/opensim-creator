@@ -286,6 +286,16 @@ namespace
 
         return rv;
     }
+
+    static nonstd::span<uint32_t const> AsU32Span(PackedIndex const* pi, size_t n)
+    {
+        return nonstd::span{&pi->u32, n};
+    }
+
+    static nonstd::span<uint16_t const> AsU16Span(PackedIndex const* pi, size_t n)
+    {
+        return nonstd::span{&pi->u16.a, n};
+    }
 }
 
 
@@ -435,7 +445,14 @@ public:
 
     void recalculateBounds()
     {
-        m_AABB = AABBFromVerts(m_Verts.data(), m_Verts.size());
+        if (m_IndexFormat == IndexFormat::UInt16)
+        {
+            m_AABB = AABBFromIndexedVerts(m_Verts, AsU16Span(m_IndicesData.data(), m_NumIndices));
+        }
+        else
+        {
+            m_AABB = AABBFromIndexedVerts(m_Verts, AsU32Span(m_IndicesData.data(), m_NumIndices));
+        }
     }
 
     std::size_t getHash() const

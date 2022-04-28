@@ -4,14 +4,16 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace osc
 {
     // basic screen for personal math experiments
     class MathExperimentsScreen final : public Screen {
     public:
         MathExperimentsScreen();
+        MathExperimentsScreen(MathExperimentsScreen const&) = delete;
+        MathExperimentsScreen(MathExperimentsScreen&&) noexcept;
+        MathExperimentsScreen& operator=(MathExperimentsScreen const&) = delete;
+        MathExperimentsScreen& operator=(MathExperimentsScreen&&) noexcept;
         ~MathExperimentsScreen() noexcept override;
 
         void onMount() override;
@@ -20,8 +22,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

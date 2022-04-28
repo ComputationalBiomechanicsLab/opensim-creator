@@ -27,206 +27,239 @@ static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
     return std::make_unique<osc::UndoableUiModel>(std::move(model));
 }
 
-struct osc::LoadingScreen::Impl final {
+class osc::LoadingScreen::Impl final {
+public:
+
+    explicit Impl(std::filesystem::path osimPath) :
+        Impl{std::make_shared<osc::MainEditorState>(), std::move(osimPath)}
+    {
+    }
+
+    Impl(std::shared_ptr<MainEditorState> state, std::filesystem::path osimPath) :
+
+        // save the path being loaded
+        m_OsimPath{std::move(osimPath)},
+
+        // immediately start loading the model file on a background thread
+        m_LoadingResult{std::async(std::launch::async, loadOpenSimModel, m_OsimPath.string())},
+
+        // save the editor state (if any): it will be forwarded after loading the model
+        m_MainEditorState{std::move(state)}
+    {
+        if (!m_MainEditorState)
+        {
+            m_MainEditorState = std::make_shared<MainEditorState>();
+        }
+
+        OSC_ASSERT(m_MainEditorState);
+    }
+
+    void onMount()
+    {
+        osc::ImGuiInit();
+    }
+
+    void onUnmount()
+    {
+        osc::ImGuiShutdown();
+    }
+
+    void onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (osc::ImGuiOnEvent(e))
+        {
+            return;
+        }
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            App::cur().requestTransition<SplashScreen>();
+            return;
+        }
+    }
+
+    void tick(float dt)
+    {
+        // tick the progress bar up a little bit
+        m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;
+
+        // if there's an error, then the result came through (it's an error)
+        // and this screen should just continuously show the error until the
+        // user decides to transition back
+        if (!m_LoadingErrorMsg.empty())
+        {
+            return;
+        }
+
+        // otherwise, poll for the result and catch any exceptions that bubble
+        // up from the background thread
+        std::unique_ptr<UndoableUiModel> result = nullptr;
+        try
+        {
+            if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+            {
+                result = m_LoadingResult.get();
+            }
+        }
+        catch (std::exception const& ex)
+        {
+            m_LoadingErrorMsg = ex.what();
+            return;
+        }
+        catch (...)
+        {
+            m_LoadingErrorMsg = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
+            return;
+        }
+
+        // if there was a result (a newly-loaded model), handle it
+        if (result)
+        {
+            // add newly-loaded model to the "Recent Files" list
+            App::cur().addRecentFile(m_OsimPath);
+
+            // there is an existing editor state
+            //
+            // recycle it so that users can keep their running sims, local edits, etc.
+            *m_MainEditorState->editedModel() = std::move(*result);
+            m_MainEditorState->editedModel()->setUpToDateWithFilesystem();
+            App::cur().requestTransition<ModelEditorScreen>(m_MainEditorState);
+            AutoFocusAllViewers(*m_MainEditorState);
+        }
+    }
+
+    void draw()
+    {
+        osc::ImGuiNewFrame();
+
+        constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
+
+        App::cur().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
+
+        glm::vec2 window_dims = App::cur().dims();
+
+        // center the menu
+        {
+            glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
+            ImGui::SetNextWindowPos(menu_pos);
+            ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
+        }
+
+        if (m_LoadingErrorMsg.empty())
+        {
+            if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            {
+                ImGui::Text("loading: %s", m_OsimPath.string().c_str());
+                ImGui::ProgressBar(m_LoadingProgress);
+            }
+            ImGui::End();
+        }
+        else
+        {
+            if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            {
+                ImGui::TextWrapped("An error occurred while loading the file:");
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+                ImGui::TextWrapped("%s", m_LoadingErrorMsg.c_str());
+                ImGui::Dummy(ImVec2{0.0f, 5.0f});
+
+                if (ImGui::Button("back to splash screen (ESC)"))
+                {
+                    App::cur().requestTransition<SplashScreen>();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("try again"))
+                {
+                    App::cur().requestTransition<LoadingScreen>(m_MainEditorState, m_OsimPath);
+                }
+            }
+            ImGui::End();
+        }
+        osc::ImGuiRender();
+    }
+
+private:
+
 
     // filesystem path to the osim being loaded
-    std::filesystem::path path;
+    std::filesystem::path m_OsimPath;
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<osc::UndoableUiModel>> result;
+    std::future<std::unique_ptr<osc::UndoableUiModel>> m_LoadingResult;
 
     // if not empty, any error encountered by the loading thread
-    std::string error;
+    std::string m_LoadingErrorMsg;
 
     // a main state that should be recycled by this screen when
     // transitioning into the editor
-    std::shared_ptr<MainEditorState> mes;
+    std::shared_ptr<MainEditorState> m_MainEditorState;
 
     // a fake progress indicator that never quite reaches 100 %
     //
     // this might seem evil, but its main purpose is to ensure the
     // user that *something* is happening - even if that "something"
     // is "the background thread is deadlocked" ;)
-    float progress;
-
-    Impl(std::filesystem::path _path, std::shared_ptr<MainEditorState> _mes) :
-
-        // save the path being loaded
-        path{std::move(_path)},
-
-        // immediately start loading the model file on a background thread
-        result{std::async(std::launch::async, loadOpenSimModel, path.string())},
-
-        // error is blank until the UI thread encounters an error polling `result`
-        error{},
-
-        // save the editor state (if any): it will be forwarded after loading the model
-        mes{std::move(_mes)},
-
-        progress{0.0f}
-    {
-        if (!mes)
-        {
-            mes = std::make_shared<MainEditorState>();
-        }
-
-        OSC_ASSERT(mes);
-    }
+    float m_LoadingProgress = 0.0f;
 };
 
-// public API
 
-osc::LoadingScreen::LoadingScreen(
-        std::shared_ptr<MainEditorState> _st,
-        std::filesystem::path _path) :
+// public API (PIMPL)
 
-    m_Impl{new Impl{std::move(_path), std::move(_st)}}
+osc::LoadingScreen::LoadingScreen(std::filesystem::path osimPath) :
+    m_Impl{new Impl{std::move(osimPath)}}
 {
 }
 
-osc::LoadingScreen::~LoadingScreen() noexcept = default;
+osc::LoadingScreen::LoadingScreen(
+        std::shared_ptr<MainEditorState> state,
+        std::filesystem::path osimPath) :
+
+    m_Impl{new Impl{std::move(state), std::move(osimPath)}}
+{
+}
+
+osc::LoadingScreen::LoadingScreen(LoadingScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::LoadingScreen& osc::LoadingScreen::operator=(LoadingScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::LoadingScreen::~LoadingScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::LoadingScreen::onMount()
 {
-    osc::ImGuiInit();
+    m_Impl->onMount();
 }
 
 void osc::LoadingScreen::onUnmount()
 {
-    osc::ImGuiShutdown();
+    m_Impl->onUnmount();
 }
 
 void osc::LoadingScreen::onEvent(SDL_Event const& e)
 {
-    if (e.type == SDL_QUIT)
-    {
-        App::cur().requestQuit();
-        return;
-    }
-    else if (osc::ImGuiOnEvent(e))
-    {
-        return;
-    }
-    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-    {
-        App::cur().requestTransition<SplashScreen>();
-        return;
-    }
+    m_Impl->onEvent(e);
 }
 
 void osc::LoadingScreen::tick(float dt)
 {
-    Impl& impl = *m_Impl;
-
-    // tick the progress bar up a little bit
-    impl.progress += (dt * (1.0f - impl.progress))/2.0f;
-
-    // if there's an error, then the result came through (it's an error)
-    // and this screen should just continuously show the error until the
-    // user decides to transition back
-    if (!impl.error.empty())
-    {
-        return;
-    }
-
-    // otherwise, poll for the result and catch any exceptions that bubble
-    // up from the background thread
-    std::unique_ptr<UndoableUiModel> result = nullptr;
-    try
-    {
-        if (impl.result.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
-        {
-            result = impl.result.get();
-        }
-    }
-    catch (std::exception const& ex)
-    {
-        impl.error = ex.what();
-        return;
-    }
-    catch (...)
-    {
-        impl.error = "an unknown exception (does not inherit from std::exception) occurred when loading the file";
-        return;
-    }
-
-    // if there was a result (a newly-loaded model), handle it
-    if (result)
-    {
-        // add newly-loaded model to the "Recent Files" list
-        App::cur().addRecentFile(impl.path);
-
-        if (impl.mes)
-        {
-            // there is an existing editor state
-            //
-            // recycle it so that users can keep their running sims, local edits, etc.
-            *impl.mes->editedModel() = std::move(*result);
-            impl.mes->editedModel()->setUpToDateWithFilesystem();
-            App::cur().requestTransition<ModelEditorScreen>(impl.mes);
-            AutoFocusAllViewers(*impl.mes);
-        }
-        else
-        {
-            // there is no existing editor state
-            //
-            // transitiong into "fresh" editor
-            auto mes = std::make_shared<MainEditorState>(std::move(*result));
-            mes->editedModel()->setUpToDateWithFilesystem();
-            App::cur().requestTransition<ModelEditorScreen>(mes);
-            AutoFocusAllViewers(*mes);
-        }
-    }
+    m_Impl->tick(std::move(dt));
 }
 
 void osc::LoadingScreen::draw()
 {
-    osc::ImGuiNewFrame();
-
-    Impl& impl = *m_Impl;
-    constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
-
-    App::cur().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
-
-    glm::vec2 window_dims = App::cur().dims();
-
-    // center the menu
-    {
-        glm::vec2 menu_pos = (window_dims - menu_dims) / 2.0f;
-        ImGui::SetNextWindowPos(menu_pos);
-        ImGui::SetNextWindowSize(ImVec2(menu_dims.x, -1));
-    }
-
-    if (impl.error.empty())
-    {
-        if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
-        {
-            ImGui::Text("loading: %s", impl.path.string().c_str());
-            ImGui::ProgressBar(impl.progress);
-        }
-        ImGui::End();
-    }
-    else
-    {
-        if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
-        {
-            ImGui::TextWrapped("An error occurred while loading the file:");
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-            ImGui::TextWrapped("%s", impl.error.c_str());
-            ImGui::Dummy(ImVec2{0.0f, 5.0f});
-
-            if (ImGui::Button("back to splash screen (ESC)"))
-            {
-                App::cur().requestTransition<SplashScreen>();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("try again"))
-            {
-                App::cur().requestTransition<LoadingScreen>(impl.mes, impl.path);
-            }
-        }
-        ImGui::End();
-    }
-    osc::ImGuiRender();
+    m_Impl->draw();
 }

@@ -37,9 +37,28 @@ namespace osc
         constexpr operator std::string_view () const noexcept { return std::string_view{m_Data, m_Size}; }
 
     private:
+        friend bool operator<(CStringView const&, CStringView const&);
+        friend bool operator==(CStringView const&, CStringView const&);
+        friend bool operator!=(CStringView const&, CStringView const&);
+
         char const* m_Data;
         std::size_t m_Size;
     };
+
+    inline bool operator<(CStringView const& a, CStringView const& b)
+    {
+        return static_cast<std::string_view>(a) < static_cast<std::string_view>(b);
+    }
+
+    inline bool operator==(CStringView const& a, CStringView const& b)
+    {
+        return static_cast<std::string_view>(a) == static_cast<std::string_view>(b);
+    }
+
+    inline bool operator!=(CStringView const& a, CStringView const& b)
+    {
+        return static_cast<std::string_view>(a) != static_cast<std::string_view>(b);
+    }
 
     inline std::string to_string(CStringView const& sv)
     {

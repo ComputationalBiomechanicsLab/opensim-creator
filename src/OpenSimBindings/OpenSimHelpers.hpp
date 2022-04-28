@@ -2,6 +2,7 @@
 
 #include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/CustomDecorationOptions.hpp"
+#include "src/Utils/CStringView.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -53,6 +54,11 @@ namespace osc
     }
 
     void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
+
+    // convert between user-facing and backend-facing coordinate values
+    float ConvertCoordValueToDisplayValue(OpenSim::Coordinate const&, double v);
+    double ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const&, float v);
+    CStringView GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&);
 
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
     std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);

@@ -622,8 +622,6 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     // edge-case: no points provided
     if (n == 0)
     {
-        rv.min = {0.0f, 0.0f, 0.0f};
-        rv.max = {0.0f, 0.0f, 0.0f};
         return rv;
     }
 
@@ -631,20 +629,88 @@ osc::AABB osc::AABBFromVerts(glm::vec3 const* vs, size_t n) noexcept
     {
         std::numeric_limits<float>::max(),
         std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max()
+        std::numeric_limits<float>::max(),
     };
 
     rv.max =
     {
         std::numeric_limits<float>::lowest(),
         std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest()
+        std::numeric_limits<float>::lowest(),
     };
 
     // otherwise, compute bounds
     for (size_t i = 0; i < n; ++i)
     {
         glm::vec3 const& pos = vs[i];
+        rv.min = Min(rv.min, pos);
+        rv.max = Max(rv.max, pos);
+    }
+
+    return rv;
+}
+
+osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint32_t const> indices)
+{
+    AABB rv{};
+
+    // edge-case: no points provided
+    if (indices.empty())
+    {
+        return rv;
+    }
+
+    rv.min =
+    {
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+    };
+
+    rv.max =
+    {
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+    };
+
+    for (uint32_t idx : indices)
+    {
+        glm::vec3 const& pos = verts[idx];
+        rv.min = Min(rv.min, pos);
+        rv.max = Max(rv.max, pos);
+    }
+
+    return rv;
+}
+
+osc::AABB osc::AABBFromIndexedVerts(nonstd::span<glm::vec3 const> verts, nonstd::span<uint16_t const> indices)
+{
+    AABB rv{};
+
+    // edge-case: no points provided
+    if (indices.empty())
+    {
+        return rv;
+    }
+
+    rv.min =
+    {
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::max(),
+    };
+
+    rv.max =
+    {
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::lowest(),
+    };
+
+    for (uint16_t idx : indices)
+    {
+        glm::vec3 const& pos = verts[idx];
         rv.min = Min(rv.min, pos);
         rv.max = Max(rv.max, pos);
     }

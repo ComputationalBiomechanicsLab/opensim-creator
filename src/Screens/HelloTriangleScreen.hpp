@@ -12,14 +12,18 @@ namespace osc
     class HelloTriangleScreen final : public Screen {
     public:
         HelloTriangleScreen();
+        HelloTriangleScreen(HelloTriangleScreen const&) = delete;
+        HelloTriangleScreen(HelloTriangleScreen&&) noexcept;
+        HelloTriangleScreen& operator=(HelloTriangleScreen const&) = delete;
+        HelloTriangleScreen& operator=(HelloTriangleScreen&&) noexcept;
         ~HelloTriangleScreen() noexcept override;
 
         void onEvent(SDL_Event const&) override;
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

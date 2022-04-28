@@ -18,7 +18,7 @@ set -xeuo pipefail
 OSC_OPENSIM_REPO=${OSC_OPENSIM_REPO:-https://github.com/opensim-org/opensim-core}
 
 # can be any branch/tag identifier from opensim
-OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.2}
+OSC_OPENSIM_REPO_BRANCH=${OSC_OPENSIM_REPO_BRANCH:-4.3}
 
 # maximum number of build jobs to run concurrently
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.physicalcpu)}

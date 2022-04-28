@@ -62,8 +62,6 @@ namespace osc
         AABB getWorldspaceAABB(Transform const& localToWorldXform) const;
         AABB getWorldspaceAABB(glm::mat4x3 const& modelMatrix) const;
 
-        Sphere const& getBoundingSphere() const;
-
         BVH const& getTriangleBVH() const;
 
         // returns !hit if the line doesn't intersect it *or* the topography is not triangular

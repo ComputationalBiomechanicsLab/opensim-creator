@@ -2,7 +2,7 @@
 
 #include "src/Platform/Screen.hpp"
 
-#include <memory>
+#include <SDL_events.h>
 
 namespace osc
 {
@@ -10,6 +10,10 @@ namespace osc
     class InstancedRendererScreen final : public Screen {
     public:
         InstancedRendererScreen();
+        InstancedRendererScreen(InstancedRendererScreen const&) = delete;
+        InstancedRendererScreen(InstancedRendererScreen&&) noexcept;
+        InstancedRendererScreen& operator=(InstancedRendererScreen const&) = delete;
+        InstancedRendererScreen& operator=(InstancedRendererScreen&&) noexcept;
         ~InstancedRendererScreen() noexcept override;
 
         void onMount() override;
@@ -18,8 +22,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

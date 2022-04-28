@@ -4,14 +4,16 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace osc
 {
     // screen that shows a UiModelViewer widget in isolation
     class UiModelViewerScreen final : public Screen {
     public:
         UiModelViewerScreen();
+        UiModelViewerScreen(UiModelViewerScreen const&) = delete;
+        UiModelViewerScreen(UiModelViewerScreen&&) noexcept;
+        UiModelViewerScreen& operator=(UiModelViewerScreen const&) = delete;
+        UiModelViewerScreen& operator=(UiModelViewerScreen&&) noexcept;
         ~UiModelViewerScreen() noexcept override;
 
         void onMount() override;
@@ -20,8 +22,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

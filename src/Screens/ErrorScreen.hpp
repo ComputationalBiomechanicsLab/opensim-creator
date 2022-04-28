@@ -2,17 +2,22 @@
 
 #include "src/Platform/Screen.hpp"
 
+#include <SDL_events.h>
+
 #include <stdexcept>
-#include <memory>
 
 namespace osc
 {
     // A plain screen for showing an error message + log to the user
     class ErrorScreen final : public Screen {
     public:
-        // create an error screen that shows an exception message
-        ErrorScreen(std::exception const&);
 
+        // create an error screen that shows an exception message
+        explicit ErrorScreen(std::exception const&);
+        ErrorScreen(ErrorScreen const&) = delete;
+        ErrorScreen(ErrorScreen&&) noexcept;
+        ErrorScreen& operator=(ErrorScreen const&) = delete;
+        ErrorScreen& operator=(ErrorScreen&&) noexcept;
         ~ErrorScreen() noexcept override;
 
         void onMount() override;
@@ -20,8 +25,8 @@ namespace osc
         void onEvent(SDL_Event const&) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

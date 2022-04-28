@@ -290,6 +290,8 @@ add_library(osccore STATIC
     src/Graphics/Shaders/SolidColorShader.cpp
     src/Graphics/Shaders/SolidColorShader.hpp
 
+    src/Graphics/BasicRenderer.hpp
+    src/Graphics/BasicSceneElement.hpp
     src/Graphics/Color.cpp
     src/Graphics/Color.hpp
     src/Graphics/Gl.cpp
@@ -308,6 +310,8 @@ add_library(osccore STATIC
     src/Graphics/MeshTopography.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
+    src/Graphics/SceneRenderer.cpp
+    src/Graphics/SceneRenderer.hpp
     src/Graphics/Shader.hpp
     src/Graphics/ShaderCache.cpp
     src/Graphics/ShaderCache.hpp
@@ -427,12 +431,16 @@ add_library(osccore STATIC
     src/Screens/ImGuiDemoScreen.hpp
     src/Screens/ImGuizmoDemoScreen.cpp
     src/Screens/ImGuizmoDemoScreen.hpp
+    src/Screens/ImPlotDemoScreen.cpp
+    src/Screens/ImPlotDemoScreen.hpp
     src/Screens/InstancedRendererScreen.cpp
     src/Screens/InstancedRendererScreen.hpp
     src/Screens/LoadingScreen.cpp
     src/Screens/LoadingScreen.hpp
     src/Screens/MathExperimentsScreen.cpp
     src/Screens/MathExperimentsScreen.hpp
+    src/Screens/MeshGenTestScreen.cpp
+    src/Screens/MeshGenTestScreen.hpp
     src/Screens/MeshHittestScreen.cpp
     src/Screens/MeshHittestScreen.hpp
     src/Screens/MeshHittestWithBVHScreen.cpp
@@ -483,6 +491,8 @@ add_library(osccore STATIC
     src/Widgets/AddBodyPopup.hpp
     src/Widgets/AddComponentPopup.cpp
     src/Widgets/AddComponentPopup.hpp
+    src/Widgets/BasicSceneViewer.cpp
+    src/Widgets/BasicSceneViewer.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
     src/Widgets/ComponentHierarchy.cpp
@@ -495,6 +505,8 @@ add_library(osccore STATIC
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuBar.cpp
     src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelMusclePlotPanel.cpp
+    src/Widgets/ModelMusclePlotPanel.hpp
     src/Widgets/ObjectPropertiesEditor.cpp
     src/Widgets/ObjectPropertiesEditor.hpp
     src/Widgets/ParamBlockEditorPopup.cpp

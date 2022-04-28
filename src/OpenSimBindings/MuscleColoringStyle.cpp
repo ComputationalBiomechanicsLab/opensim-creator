@@ -6,6 +6,7 @@ static std::array<osc::MuscleColoringStyle, static_cast<size_t>(osc::MuscleColor
 {
     return
     {
+        osc::MuscleColoringStyle::OpenSim,
         osc::MuscleColoringStyle::Activation,
         osc::MuscleColoringStyle::Excitation,
         osc::MuscleColoringStyle::Force,
@@ -17,6 +18,7 @@ static std::array<char const*, static_cast<size_t>(osc::MuscleColoringStyle::TOT
 {
     return
     {
+        "OpenSim",
         "Activation",
         "Excitation",
         "Force",

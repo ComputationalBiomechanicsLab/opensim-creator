@@ -45,7 +45,7 @@ namespace osc
 			return dynamic_cast<T*>(updSelected());
 		}
 
-		void setSelectedHoveredAndIsolatedFrom(VirtualModelStatePair const& other)
+		virtual void setSelectedHoveredAndIsolatedFrom(VirtualModelStatePair const& other)
 		{
 			setSelected(other.getSelected());
 			setHovered(other.getHovered());

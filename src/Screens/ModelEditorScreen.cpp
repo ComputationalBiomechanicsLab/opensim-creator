@@ -22,6 +22,7 @@
 #include "src/Widgets/ComponentHierarchy.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
@@ -34,6 +35,7 @@
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <imgui.h>
+#include <implot.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
@@ -957,11 +959,13 @@ public:
         App::cur().makeMainEventLoopWaiting();
         App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
         osc::ImGuiInit();
+        ImPlot::CreateContext();
     }
 
     void onUnmount()
     {
         osc::ImGuiShutdown();
+        ImPlot::DestroyContext();
         App::cur().unsetMainWindowSubTitle();
         App::cur().makeMainEventLoopPolling();
     }
@@ -1556,6 +1560,16 @@ private:
             osc::ParamBlockEditorPopup{}.draw("simulation parameters", m_Mes->updSimulationParams());
         }
 
+        // draw model muscle plot panel (if applicable)
+        if (m_Mes->getUserPanelPrefs().momentArmPanel)
+        {
+            if (!m_MaybeModelMusclePlot)
+            {
+                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "plot");
+            }
+            m_MaybeModelMusclePlot->draw();
+        }
+
         if (m_MaybeSaveChangesPopup)
         {
             m_MaybeSaveChangesPopup->draw();
@@ -1619,6 +1633,7 @@ private:
     CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
     std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+    std::optional<ModelMusclePlotPanel> m_MaybeModelMusclePlot;
 
     // state that is reset at the start of each frame
     struct {
@@ -1633,14 +1648,28 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::ModelEditorScreen::ModelEditorScreen(std::shared_ptr<MainEditorState> st) :
-    m_Impl{new Impl {std::move(st)}}
+    m_Impl{new Impl{std::move(st)}}
 {
 }
 
-osc::ModelEditorScreen::~ModelEditorScreen() noexcept = default;
+osc::ModelEditorScreen::ModelEditorScreen(ModelEditorScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ModelEditorScreen& osc::ModelEditorScreen::operator=(ModelEditorScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ModelEditorScreen::~ModelEditorScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::ModelEditorScreen::onMount()
 {

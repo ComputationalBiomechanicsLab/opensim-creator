@@ -2,7 +2,8 @@
 
 #include "src/Platform/Screen.hpp"
 
-#include <memory>
+#include <SDL_events.h>
+
 #include <vector>
 #include <filesystem>
 
@@ -25,6 +26,10 @@ namespace osc
         // shows the blank scene, but immediately starts importing the provided mesh files
         MeshImporterScreen(std::vector<std::filesystem::path>);
 
+        MeshImporterScreen(MeshImporterScreen const&) = delete;
+        MeshImporterScreen(MeshImporterScreen&&) noexcept;
+        MeshImporterScreen& operator=(MeshImporterScreen const&) = delete;
+        MeshImporterScreen& operator=(MeshImporterScreen&&) noexcept;
         ~MeshImporterScreen() noexcept override;
 
         void onMount() override;
@@ -33,7 +38,7 @@ namespace osc
         void draw() override;
         void tick(float) override;
 
-        struct Impl;
+        class Impl;
     private:
         Impl* m_Impl;
     };

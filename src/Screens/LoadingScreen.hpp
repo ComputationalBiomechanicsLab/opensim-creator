@@ -1,12 +1,15 @@
 #pragma once
 
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/Platform/Screen.hpp"
 
 #include <SDL_events.h>
 
 #include <filesystem>
-#include <memory>
+
+namespace osc
+{
+    class MainEditorState;
+}
 
 namespace osc
 {
@@ -15,7 +18,15 @@ namespace osc
     public:
         // load the supplied path (assumed to be an .osim) and then transition
         // to the editor screen
+        explicit LoadingScreen(std::filesystem::path);
+        
+        // as above, but recycle a previous editor state (to maintain sims, etc.)
         LoadingScreen(std::shared_ptr<MainEditorState>, std::filesystem::path);
+
+        LoadingScreen(LoadingScreen const&) = delete;
+        LoadingScreen(LoadingScreen&&) noexcept;
+        LoadingScreen& operator=(LoadingScreen const&) = delete;
+        LoadingScreen& operator=(LoadingScreen&&) noexcept;
         ~LoadingScreen() noexcept override;
 
         void onMount() override;
@@ -24,8 +35,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

@@ -74,186 +74,227 @@ static osc::InstancedDrawlist makeDrawlist(int rows, int cols)
     return rv;
 }
 
-struct osc::InstancedRendererScreen::Impl final {
-    InstancedRenderer renderer;
+class osc::InstancedRendererScreen::Impl final {
+public:
 
-    int rows = 512;
-    int cols = 512;
-    InstancedDrawlist drawlist = makeDrawlist(rows, cols);
-    InstancedRendererParams params;
+    void onMount()
+    {
+        App::cur().disableVsync();
+        App::cur().enableDebugMode();
+        osc::ImGuiInit();
+    }
 
-    ColormappedPlainTextureShader cpt;
+    void onUnmount()
+    {
+        osc::ImGuiShutdown();
+    }
 
-    MeshData quadMesh = GenTexturedQuad();
-    gl::ArrayBuffer<glm::vec3> quadPositions{quadMesh.verts};
-    gl::ArrayBuffer<glm::vec2> quadTexCoords{quadMesh.texcoords};
-    gl::VertexArray quadVAO = [this]()
+    void onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_QUIT)
+        {
+            App::cur().requestQuit();
+            return;
+        }
+        else if (osc::ImGuiOnEvent(e))
+        {
+            return;
+        }
+        else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
+        {
+            App::cur().requestTransition<ExperimentsScreen>();
+            return;
+        }
+    }
+
+    void tick(float)
+    {
+        // connect input state to an euler (first-person-shooter style)
+        // camera
+
+        auto& io = ImGui::GetIO();
+
+        float speed = 0.1f;
+        float sensitivity = 0.01f;
+
+        if (io.KeysDown[SDL_SCANCODE_W])
+        {
+            m_Camera.pos += speed * m_Camera.getFront() * io.DeltaTime;
+        }
+
+        if (io.KeysDown[SDL_SCANCODE_S])
+        {
+            m_Camera.pos -= speed * m_Camera.getFront() * io.DeltaTime;
+        }
+
+        if (io.KeysDown[SDL_SCANCODE_A])
+        {
+            m_Camera.pos -= speed * m_Camera.getRight() * io.DeltaTime;
+        }
+
+        if (io.KeysDown[SDL_SCANCODE_D])
+        {
+            m_Camera.pos += speed * m_Camera.getRight() * io.DeltaTime;
+        }
+
+        if (io.KeysDown[SDL_SCANCODE_SPACE])
+        {
+            m_Camera.pos += speed * m_Camera.getUp() * io.DeltaTime;
+        }
+
+        if (io.KeyCtrl)
+        {
+            m_Camera.pos -= speed * m_Camera.getUp() * io.DeltaTime;
+        }
+
+        m_Camera.yaw += sensitivity * io.MouseDelta.x;
+        m_Camera.pitch  -= sensitivity * io.MouseDelta.y;
+        m_Camera.pitch = std::clamp(m_Camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
+    }
+
+    void draw()
+    {
+        osc::ImGuiNewFrame();
+
+        {
+            ImGui::Begin("frame");
+            ImGui::Text("%.1f", ImGui::GetIO().Framerate);
+            int rows = m_Rows;
+            int cols = m_Cols;
+            if (ImGui::InputInt("rows", &rows, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                if (rows > 0 && rows != m_Rows)
+                {
+                    m_Rows = rows;
+                    m_Drawlist = makeDrawlist(m_Rows, m_Cols);
+                }
+            }
+            if (ImGui::InputInt("cols", &cols, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                if (cols > 0 && cols != m_Cols)
+                {
+                    m_Cols = cols;
+                    m_Drawlist = makeDrawlist(m_Rows, m_Cols);
+                }
+            }
+            ImGui::Checkbox("rims", &m_DrawRims);
+            ImGui::End();
+        }
+
+        // ensure renderer output matches window
+        m_Renderer.setDims(App::cur().idims());
+        m_Renderer.setMsxaaSamples(App::cur().getMSXAASamplesRecommended());
+
+        gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        float aspectRatio = App::cur().dims().x / App::cur().dims().y;
+        m_Camera.znear = 0.01f;
+        m_Camera.zfar = 1.0f;
+        m_Params.viewMtx = m_Camera.getViewMtx();
+        m_Params.projMtx = m_Camera.getProjMtx(aspectRatio);
+        if (m_DrawRims)
+        {
+            m_Params.flags |= InstancedRendererFlags_DrawRims;
+        }
+        else
+        {
+            m_Params.flags &= ~InstancedRendererFlags_DrawRims;
+        }
+
+        m_Renderer.render(m_Params, m_Drawlist);
+
+        gl::Texture2D& tex = m_Renderer.getOutputTexture();
+        gl::UseProgram(m_Shader.program);
+        gl::Uniform(m_Shader.uMVP, gl::identity);
+        gl::ActiveTexture(GL_TEXTURE0);
+        gl::BindTexture(tex);
+        gl::Uniform(m_Shader.uSamplerAlbedo, gl::textureIndex<GL_TEXTURE0>());
+        gl::Uniform(m_Shader.uSamplerMultiplier, gl::identity);
+        gl::BindVertexArray(m_QuadVAO);
+        gl::DrawArrays(GL_TRIANGLES, 0, m_QuadPositions.sizei());
+        gl::BindVertexArray();
+
+        osc::ImGuiRender();
+    }
+
+private:
+    InstancedRenderer m_Renderer;
+
+    int m_Rows = 512;
+    int m_Cols = 512;
+    InstancedDrawlist m_Drawlist = makeDrawlist(m_Rows, m_Cols);
+    InstancedRendererParams m_Params;
+
+    ColormappedPlainTextureShader m_Shader;
+
+    MeshData m_QuadMesh = GenTexturedQuad();
+    gl::ArrayBuffer<glm::vec3> m_QuadPositions{m_QuadMesh.verts};
+    gl::ArrayBuffer<glm::vec2> m_QuadTexCoords{m_QuadMesh.texcoords};
+    gl::VertexArray m_QuadVAO = [this]()
     {
         gl::VertexArray rv;
         gl::BindVertexArray(rv);
-        gl::BindBuffer(quadPositions);
-        gl::VertexAttribPointer(cpt.aPos, false, sizeof(glm::vec3), 0);
-        gl::EnableVertexAttribArray(cpt.aPos);
-        gl::BindBuffer(quadTexCoords);
-        gl::VertexAttribPointer(cpt.aTexCoord, false, sizeof(glm::vec2), 0);
-        gl::EnableVertexAttribArray(cpt.aTexCoord);
+        gl::BindBuffer(m_QuadPositions);
+        gl::VertexAttribPointer(m_Shader.aPos, false, sizeof(glm::vec3), 0);
+        gl::EnableVertexAttribArray(m_Shader.aPos);
+        gl::BindBuffer(m_QuadTexCoords);
+        gl::VertexAttribPointer(m_Shader.aTexCoord, false, sizeof(glm::vec2), 0);
+        gl::EnableVertexAttribArray(m_Shader.aTexCoord);
         gl::BindVertexArray();
         return rv;
     }();
 
-    EulerPerspectiveCamera camera;
+    EulerPerspectiveCamera m_Camera;
 
-    bool drawRims = true;
+    bool m_DrawRims = true;
 };
+
+
+// public API (PIMPL)
 
 osc::InstancedRendererScreen::InstancedRendererScreen() :
     m_Impl{new Impl{}}
 {
-    App::cur().disableVsync();
-    App::cur().enableDebugMode();
 }
 
-osc::InstancedRendererScreen::~InstancedRendererScreen() noexcept = default;
+osc::InstancedRendererScreen::InstancedRendererScreen(InstancedRendererScreen&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::InstancedRendererScreen& osc::InstancedRendererScreen::operator=(InstancedRendererScreen&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::InstancedRendererScreen::~InstancedRendererScreen() noexcept
+{
+    delete m_Impl;
+}
 
 void osc::InstancedRendererScreen::onMount()
 {
-    osc::ImGuiInit();
+    m_Impl->onMount();
 }
 
 void osc::InstancedRendererScreen::onUnmount()
 {
-    osc::ImGuiShutdown();
+    m_Impl->onUnmount();
 }
 
 void osc::InstancedRendererScreen::onEvent(SDL_Event const& e)
 {
-    if (e.type == SDL_QUIT)
-    {
-        App::cur().requestQuit();
-        return;
-    }
-    else if (osc::ImGuiOnEvent(e))
-    {
-        return;
-    }
-    else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-    {
-        App::cur().requestTransition<ExperimentsScreen>();
-        return;
-    }
+    m_Impl->onEvent(e);
 }
 
-void osc::InstancedRendererScreen::tick(float)
+void osc::InstancedRendererScreen::tick(float dt)
 {
-    // connect input state to an euler (first-person-shooter style)
-    // camera
-
-    auto& camera = m_Impl->camera;
-    auto& io = ImGui::GetIO();
-
-    float speed = 0.1f;
-    float sensitivity = 0.01f;
-
-    if (io.KeysDown[SDL_SCANCODE_W])
-    {
-        camera.pos += speed * camera.getFront() * io.DeltaTime;
-    }
-
-    if (io.KeysDown[SDL_SCANCODE_S])
-    {
-        camera.pos -= speed * camera.getFront() * io.DeltaTime;
-    }
-
-    if (io.KeysDown[SDL_SCANCODE_A])
-    {
-        camera.pos -= speed * camera.getRight() * io.DeltaTime;
-    }
-
-    if (io.KeysDown[SDL_SCANCODE_D])
-    {
-        camera.pos += speed * camera.getRight() * io.DeltaTime;
-    }
-
-    if (io.KeysDown[SDL_SCANCODE_SPACE])
-    {
-        camera.pos += speed * camera.getUp() * io.DeltaTime;
-    }
-
-    if (io.KeyCtrl)
-    {
-        camera.pos -= speed * camera.getUp() * io.DeltaTime;
-    }
-
-    camera.yaw += sensitivity * io.MouseDelta.x;
-    camera.pitch  -= sensitivity * io.MouseDelta.y;
-    camera.pitch = std::clamp(camera.pitch, -fpi2 + 0.5f, fpi2 - 0.5f);
+    m_Impl->tick(std::move(dt));
 }
 
 void osc::InstancedRendererScreen::draw()
 {
-    osc::ImGuiNewFrame();
-
-    {
-        ImGui::Begin("frame");
-        ImGui::Text("%.1f", ImGui::GetIO().Framerate);
-        int rows = m_Impl->rows;
-        int cols = m_Impl->cols;
-        if (ImGui::InputInt("rows", &rows, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-        {
-            if (rows > 0 && rows != m_Impl->rows)
-            {
-                m_Impl->rows = rows;
-                m_Impl->drawlist = makeDrawlist(m_Impl->rows, m_Impl->cols);
-            }
-        }
-        if (ImGui::InputInt("cols", &cols, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-        {
-            if (cols > 0 && cols != m_Impl->cols)
-            {
-                m_Impl->cols = cols;
-                m_Impl->drawlist = makeDrawlist(m_Impl->cols, m_Impl->cols);
-            }
-        }
-        ImGui::Checkbox("rims", &m_Impl->drawRims);
-        ImGui::End();
-    }
-
-    Impl& impl = *m_Impl;
-    InstancedRenderer& renderer = impl.renderer;
-
-    // ensure renderer output matches window
-    renderer.setDims(App::cur().idims());
-    renderer.setMsxaaSamples(App::cur().getMSXAASamplesRecommended());
-
-    gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    float aspectRatio = App::cur().dims().x / App::cur().dims().y;
-    impl.camera.znear = 0.01f;
-    impl.camera.zfar = 1.0f;
-    impl.params.viewMtx = impl.camera.getViewMtx();
-    impl.params.projMtx = impl.camera.getProjMtx(aspectRatio);
-    if (impl.drawRims)
-    {
-        impl.params.flags |= InstancedRendererFlags_DrawRims;
-    }
-    else
-    {
-        impl.params.flags &= ~InstancedRendererFlags_DrawRims;
-    }
-
-    renderer.render(impl.params, impl.drawlist);
-
-    gl::Texture2D& tex = renderer.getOutputTexture();
-    gl::UseProgram(impl.cpt.program);
-    gl::Uniform(impl.cpt.uMVP, gl::identity);
-    gl::ActiveTexture(GL_TEXTURE0);
-    gl::BindTexture(tex);
-    gl::Uniform(impl.cpt.uSamplerAlbedo, gl::textureIndex<GL_TEXTURE0>());
-    gl::Uniform(impl.cpt.uSamplerMultiplier, gl::identity);
-    gl::BindVertexArray(impl.quadVAO);
-    gl::DrawArrays(GL_TRIANGLES, 0, impl.quadPositions.sizei());
-    gl::BindVertexArray();
-
-    osc::ImGuiRender();
+    m_Impl->draw();
 }

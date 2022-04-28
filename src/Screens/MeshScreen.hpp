@@ -4,14 +4,16 @@
 
 #include <SDL_events.h>
 
-#include <memory>
-
 namespace osc
 {
     // screen that displays a mesh (to confirm the `Mesh` abstraction works)
     class MeshScreen final : public Screen {
     public:
         MeshScreen();
+        MeshScreen(MeshScreen const&) = delete;
+        MeshScreen(MeshScreen&&) noexcept;
+        MeshScreen& operator=(MeshScreen const&) = delete;
+        MeshScreen& operator=(MeshScreen&&) noexcept;
         ~MeshScreen() noexcept override;
 
         void onMount() override;
@@ -20,8 +22,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

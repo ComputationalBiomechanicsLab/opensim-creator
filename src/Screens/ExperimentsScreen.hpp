@@ -2,7 +2,7 @@
 
 #include "src/Platform/Screen.hpp"
 
-#include <memory>
+#include <SDL_events.h>
 
 namespace osc
 {
@@ -13,6 +13,10 @@ namespace osc
     class ExperimentsScreen final : public Screen {
     public:
         ExperimentsScreen();
+        ExperimentsScreen(ExperimentsScreen const&) = delete;
+        ExperimentsScreen(ExperimentsScreen&&) noexcept;
+        ExperimentsScreen& operator=(ExperimentsScreen const&) = delete;
+        ExperimentsScreen& operator=(ExperimentsScreen&&) noexcept;
         ~ExperimentsScreen() noexcept override;
 
         void onMount() override;
@@ -20,8 +24,8 @@ namespace osc
         void onEvent(SDL_Event const&) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

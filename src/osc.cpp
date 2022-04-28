@@ -1,4 +1,3 @@
-#include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/OpenSimApp.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Screens/LoadingScreen.hpp"
@@ -66,8 +65,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            auto mes = std::make_shared<osc::MainEditorState>();
-            app.show<osc::LoadingScreen>(mes, argv[0]);
+            app.show<osc::LoadingScreen>(argv[0]);
         }
 
         osc::log::info("exited main application event loop: shutting down application");

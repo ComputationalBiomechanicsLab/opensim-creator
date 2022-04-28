@@ -10,6 +10,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/Perf.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -213,10 +214,21 @@ namespace
 
     glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
     {
-        glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
-        glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
-        float const factor = GetMuscleColorFactor(musc, st, s);
-        return zeroColor + factor * (fullColor - zeroColor);
+        if (s == osc::MuscleColoringStyle::OpenSim)
+        {
+            // use the same color that OpenSim emits (which is usually just activation-based, but might
+            // change in the future)
+            SimTK::Vec3 c = musc.getGeometryPath().getColor(st);
+            return glm::vec4{osc::ToVec3(c), 1.0f};
+        }
+        else
+        {
+            // compute the color from the chosen color option
+            glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
+            glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
+            float const factor = GetMuscleColorFactor(musc, st, s);
+            return zeroColor + factor * (fullColor - zeroColor);
+        }
     }
 
     float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
@@ -691,6 +703,42 @@ void osc::GetCoordinatesInModel(OpenSim::Model const& m,
     for (int i = 0; i < len; ++i)
     {
         out.push_back(&s[i]);
+    }
+}
+
+float osc::ConvertCoordValueToDisplayValue(OpenSim::Coordinate const& c, double v)
+{
+    float rv = static_cast<float>(v);
+
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::degrees(rv);
+    }
+
+    return rv;
+}
+
+double osc::ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const& c, float v)
+{
+    double rv = static_cast<double>(v);
+
+    if (c.getMotionType() == OpenSim::Coordinate::MotionType::Rotational)
+    {
+        rv = glm::radians(rv);
+    }
+
+    return rv;
+}
+
+osc::CStringView osc::GetCoordDisplayValueUnitsString(OpenSim::Coordinate const& c)
+{
+    switch (c.getMotionType()) {
+    case OpenSim::Coordinate::MotionType::Translational:
+        return "m";
+    case OpenSim::Coordinate::MotionType::Rotational:
+        return "deg";
+    default:
+        return "";
     }
 }
 

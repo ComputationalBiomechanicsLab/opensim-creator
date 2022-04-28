@@ -17,6 +17,10 @@ namespace osc
     class SimulatorScreen final : public Screen {
     public:
         SimulatorScreen(std::shared_ptr<MainEditorState>);
+        SimulatorScreen(SimulatorScreen const&) = delete;
+        SimulatorScreen(SimulatorScreen&&) noexcept;
+        SimulatorScreen& operator=(SimulatorScreen const&) = delete;
+        SimulatorScreen& operator=(SimulatorScreen&&) noexcept;
         ~SimulatorScreen() noexcept override;
 
         void onMount() override;
@@ -25,8 +29,8 @@ namespace osc
         void tick(float) override;
         void draw() override;
 
-        struct Impl;
+        class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }
