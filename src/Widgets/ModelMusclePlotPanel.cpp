@@ -240,22 +240,13 @@ public:
 	{
 		bool isOpen = m_IsOpen;
 
-		int stylesPushed = 0;
-		if (m_IsShowingPlot)
-		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-			++stylesPushed;
-		}
-
 		if (ImGui::Begin(m_PanelName.c_str(), &isOpen))
 		{
-			ImGui::PopStyleVar(stylesPushed);
 			drawPanelContent();
 			m_IsOpen = isOpen;
 		}
 		else
 		{
-			ImGui::PopStyleVar(stylesPushed);
 			m_IsOpen = isOpen;
 		}
 		ImGui::End();
@@ -337,9 +328,9 @@ private:
 			return;
 		}
 
-		drawPlotDataTypeSelector();
-
-		if (m_Uim->getModelVersion() != m_LastPlotModelVersion || m_ChosenMuscleOutput != m_ActiveMuscleOutput)
+		if (m_Uim->getModelVersion() != m_LastPlotModelVersion ||
+			m_ChosenMuscleOutput != m_ActiveMuscleOutput ||
+			m_NumPlotPointsRequested != m_NumPlotPointsPlotted)
 		{
 			recomputePlotData(coord);
 		}
@@ -356,12 +347,22 @@ private:
 		std::string xAxisLabel = computePlotXAxisTitle(*coord);
 		std::string yAxisLabel = computePlotYAxisTitle();
 
-		if (ImPlot::BeginPlot(title.c_str(), availSize))
+		if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
 		{
-			ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str());
+			ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), m_XAxisFlags, m_YAxisFlags);
 			ImPlot::PlotLine(m_MuscleComponentPath.getComponentName().c_str(), m_XValues.data(), m_YValues.data(), static_cast<int>(m_XValues.size()));
 			ImPlot::EndPlot();
 		}
+		if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
+		{
+			drawPlotDataTypeSelector();
+			if (ImGui::InputInt("num data points", &m_NumPlotPointsEdited, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				m_NumPlotPointsRequested = m_NumPlotPointsEdited;
+			}
+			ImGui::EndPopup();
+		}
+
 	}
 
 	void drawPlotDataTypeSelector()
@@ -401,10 +402,11 @@ private:
 		SimTK::State stateCopy = m_Uim->getState();
 		model.realizeReport(stateCopy);
 
-		int numSteps = 50;
-
-		if (numSteps <= 0)
+		if (m_NumPlotPointsRequested <= 0)
 		{
+			m_LastPlotModelVersion = m_Uim->getModelVersion();
+			m_ActiveMuscleOutput = m_ChosenMuscleOutput;
+			m_NumPlotPointsPlotted = m_NumPlotPointsRequested;
 			return;
 		}
 
@@ -415,18 +417,18 @@ private:
 
 		double start = coord->getRangeMin();
 		double end = coord->getRangeMax();
-		double step = (end - start) / numSteps;
+		double step = (end - start) / m_NumPlotPointsRequested;
 
 		m_XBegin = static_cast<float>(start);
 		m_XEnd = static_cast<float>(end);
 		m_XValues.clear();
-		m_XValues.reserve(numSteps);
+		m_XValues.reserve(m_NumPlotPointsRequested);
 		m_YValues.clear();
-		m_YValues.reserve(numSteps);
+		m_YValues.reserve(m_NumPlotPointsRequested);
 		m_YMin = std::numeric_limits<float>::max();
 		m_YMax = std::numeric_limits<float>::min();
 
-		for (int i = 0; i < numSteps; ++i)
+		for (int i = 0; i < m_NumPlotPointsRequested; ++i)
 		{
 			double xVal = start + (i * step);
 			coord->setValue(stateCopy, xVal);
@@ -443,6 +445,7 @@ private:
 
 		m_LastPlotModelVersion = m_Uim->getModelVersion();
 		m_ActiveMuscleOutput = m_ChosenMuscleOutput;
+		m_NumPlotPointsPlotted = m_NumPlotPointsRequested;
 	}
 
 	std::string computePlotTitle(OpenSim::Coordinate const& c)
@@ -484,6 +487,11 @@ private:
 	std::shared_ptr<UndoableUiModel> m_Uim;
 	std::string m_PanelName;
 	bool m_IsOpen = true;
+	ImPlotAxisFlags m_XAxisFlags = ImPlotAxisFlags_AutoFit;
+	ImPlotAxisFlags m_YAxisFlags = ImPlotAxisFlags_AutoFit;
+	int m_NumPlotPointsRequested = 180;
+	int m_NumPlotPointsEdited = m_NumPlotPointsRequested;
+	int m_NumPlotPointsPlotted = m_NumPlotPointsPlotted;
 
 	// data type
 	MuscleOutput m_ChosenMuscleOutput = GetDefaultMuscleOutput();
