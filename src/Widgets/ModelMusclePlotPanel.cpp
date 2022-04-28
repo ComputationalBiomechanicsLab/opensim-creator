@@ -179,11 +179,16 @@ static double GetMusclePower(SimTK::State const& st, OpenSim::Muscle const& musc
 	return muscle.getTendonPower(st);
 }
 
+static MuscleOutput GetDefaultMuscleOutput()
+{
+	return MuscleOutput{"Moment Arm", "Unitless", GetMomentArm};
+}
+
 static std::vector<MuscleOutput> InitMuscleOutputs()
 {
 	std::vector<MuscleOutput> rv =
 	{{
-		{"Moment Arm", "Unitless", GetMomentArm},
+		GetDefaultMuscleOutput(),
 		{"Tendon Length", "m", GetTendonLength},
 		{"Fiber Length", "m", GetFiberLength},
 		{"Pennation Angle", "deg", GetPennationAngle},
@@ -481,7 +486,7 @@ private:
 	bool m_IsOpen = true;
 
 	// data type
-	MuscleOutput m_ChosenMuscleOutput = GetMuscleOutputs().at(0);
+	MuscleOutput m_ChosenMuscleOutput = GetDefaultMuscleOutput();
 	MuscleOutput m_ActiveMuscleOutput = m_ChosenMuscleOutput;
 
 	// muscle picking state
