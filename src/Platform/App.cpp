@@ -46,7 +46,7 @@ static bool EnsureBacktraceHandlerEnabled()
 // returns a resource from the config-provided `resources/` dir
 static std::filesystem::path GetResource(osc::Config const& c, std::string_view p)
 {
-    return c.resourceDir / p;
+    return c.getResourceDir() / p;
 }
 
 
@@ -1082,7 +1082,7 @@ private:
     GLint m_MaxMSXAASamples = GetOpenGLMaxMSXAASamples(m_OpenGLContext);
 
     // how many samples the implementation should actually use
-    GLint m_CurrentMSXAASamples = std::min(m_MaxMSXAASamples, m_ApplicationConfig->numMSXAASamples);
+    GLint m_CurrentMSXAASamples = std::min(m_MaxMSXAASamples, m_ApplicationConfig->getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -1393,7 +1393,7 @@ void osc::ImGuiInit()
     // configure ImGui from OSC's (toml) configuration
     {
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        if (App::config().useMultiViewport)
+        if (App::config().isMultiViewportEnabled())
         {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         }

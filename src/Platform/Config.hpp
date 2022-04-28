@@ -5,21 +5,33 @@
 
 namespace osc
 {
-    struct Config {
-
+    class Config final {
+    public:
         // try to load the config from disk (default location)
         static std::unique_ptr<Config> load();
 
-        // full path to the runtime `resources/` dir
-        std::filesystem::path resourceDir;
+        class Impl;
+    public:
+        explicit Config(Impl*);  // you should use Config::load
+        Config(Config const&) = delete;
+        Config(Config&&) noexcept;
+        Config& operator=(Config const&) = delete;
+        Config& operator=(Config&&) noexcept;
+        ~Config() noexcept;
 
-        // full path to the runtime `html/` dir for the documentation
-        std::filesystem::path htmlDocsDir;
+        // get the full path to the runtime `resources/` dir
+        std::filesystem::path const& getResourceDir() const;
 
-        // true if the implementation should allow multiple viewports
-        bool useMultiViewport;
+        // get the full path to the runtime `html/` dir for the documentation
+        std::filesystem::path const& getHTMLDocsDir() const;
 
-        // number of MSXAA samples 3D viewports should use
-        static constexpr int numMSXAASamples = 4;
+        // returns true if the implementation should allow multiple viewports
+        bool isMultiViewportEnabled() const;
+
+        // get number of MSXAA samples 3D viewports should use
+        int getNumMSXAASamples() const;
+
+    private:
+        Impl* m_Impl;
     };
 }

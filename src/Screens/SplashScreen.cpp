@@ -212,7 +212,7 @@ public:
             // `docs` button
             if (ImGui::Button(ICON_FA_BOOK " Open Documentation"))
             {
-                OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
+                OpenPathInOSDefaultApplication(App::config().getHTMLDocsDir() / "index.html");
             }
 
             ImGui::Dummy(ImVec2{0.0f, 10.0f});

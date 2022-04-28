@@ -579,7 +579,7 @@ void osc::MainMenuAboutTab::draw() {
         ImGui::NextColumn();
         ImGui::PushID(id++);
         if (ImGui::Button(ICON_FA_LINK " open")) {
-            OpenPathInOSDefaultApplication(App::config().htmlDocsDir / "index.html");
+            OpenPathInOSDefaultApplication(App::config().getHTMLDocsDir() / "index.html");
         }
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();

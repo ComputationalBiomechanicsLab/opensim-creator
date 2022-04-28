@@ -16,6 +16,7 @@
 #include <string>
 #include <string_view>
 #include <optional>
+#include <utility>
 
 namespace fs = std::filesystem;
 
@@ -57,7 +58,15 @@ static std::optional<std::filesystem::path> TryGetConfigLocation()
     }
 }
 
-static void TryUpdateConfigFromConfigFile(osc::Config& cfg)
+class osc::Config::Impl final {
+public:
+    std::filesystem::path resourceDir;
+    std::filesystem::path htmlDocsDir;
+    bool useMultiViewport;
+    static constexpr int numMSXAASamples = 4;
+};
+
+static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
 {
     std::optional<std::filesystem::path> maybeConfigPath = TryGetConfigLocation();
 
@@ -115,11 +124,13 @@ static void TryUpdateConfigFromConfigFile(osc::Config& cfg)
     }
 }
 
+
 // public API
 
+// try to load the config from disk (default location)
 std::unique_ptr<osc::Config> osc::Config::load()
 {
-    auto rv = std::make_unique<Config>();
+    auto rv = std::make_unique<Config::Impl>();
 
     // set defaults (in case underlying file can't be found)
     rv->resourceDir = OSC_DEFAULT_RESOURCE_DIR;
@@ -127,5 +138,46 @@ std::unique_ptr<osc::Config> osc::Config::load()
 
     TryUpdateConfigFromConfigFile(*rv);
 
-    return rv;
+    return std::make_unique<Config>(rv.release());
+}
+
+osc::Config::Config(Impl* impl) :
+    m_Impl{std::move(impl)}
+{
+}
+
+osc::Config::Config(Config&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::Config& osc::Config::operator=(Config&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::Config::~Config() noexcept
+{
+    delete m_Impl;
+}
+
+std::filesystem::path const& osc::Config::getResourceDir() const
+{
+    return m_Impl->resourceDir;
+}
+
+std::filesystem::path const& osc::Config::getHTMLDocsDir() const
+{
+    return m_Impl->htmlDocsDir;
+}
+
+bool osc::Config::isMultiViewportEnabled() const
+{
+    return m_Impl->useMultiViewport;
+}
+
+int osc::Config::getNumMSXAASamples() const
+{
+    return m_Impl->numMSXAASamples;
 }

@@ -20,7 +20,7 @@
 
 namespace osc
 {
-    struct Config;
+    class Config;
     class ShaderCache;
     class MeshCache;
 }
