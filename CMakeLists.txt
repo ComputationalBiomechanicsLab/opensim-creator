@@ -431,6 +431,8 @@ add_library(osccore STATIC
     src/Screens/ImGuiDemoScreen.hpp
     src/Screens/ImGuizmoDemoScreen.cpp
     src/Screens/ImGuizmoDemoScreen.hpp
+    src/Screens/ImPlotDemoScreen.cpp
+    src/Screens/ImPlotDemoScreen.hpp
     src/Screens/InstancedRendererScreen.cpp
     src/Screens/InstancedRendererScreen.hpp
     src/Screens/LoadingScreen.cpp

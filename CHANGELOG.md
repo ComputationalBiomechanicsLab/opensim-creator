@@ -15,6 +15,7 @@ All notable changes to this project will be documented here. The format is based
 - Added (rudamentary) ability to plot muscle moment arms while editing a model (related: #191)
 - Updated underlying OpenSim library version v4.3 (#192)
 - Added "OpenSim" muscle coloring option, which uses `GeometryPath::getColor` (#193)
+- Added ImPlot demo screen to the experimental screens section (#194)
 
 
 ## [0.1.5] - 2022/04/11

@@ -4,6 +4,7 @@
 #include "src/Screens/HelloTriangleScreen.hpp"
 #include "src/Screens/HittestScreen.hpp"
 #include "src/Screens/ImGuizmoDemoScreen.hpp"
+#include "src/Screens/ImPlotDemoScreen.hpp"
 #include "src/Screens/ImGuiDemoScreen.hpp"
 #include "src/Screens/InstancedRendererScreen.hpp"
 #include "src/Screens/MathExperimentsScreen.hpp"
@@ -100,6 +101,7 @@ private:
         { "OpenSim mesh importer wizard", transition<MeshImporterScreen> },
         { "Instanced rendering", transition<InstancedRendererScreen> },
         { "ImGuizmo", transition<ImGuizmoDemoScreen> },
+        { "ImPlot", transition<ImPlotDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> },
         { "Mesh Generation Tests", transition<MeshGenTestScreen> },
     };
