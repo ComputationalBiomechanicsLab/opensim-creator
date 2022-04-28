@@ -8043,7 +8043,7 @@ namespace
             // draw log panel (if enabled)
             if (m_Shared->m_PanelStates[SharedData::PanelIndex_Log])
             {
-                if (ImGui::Begin("log", &m_Shared->m_PanelStates[SharedData::PanelIndex_Log], ImGuiWindowFlags_MenuBar))
+                if (ImGui::Begin("Log", &m_Shared->m_PanelStates[SharedData::PanelIndex_Log], ImGuiWindowFlags_MenuBar))
                 {
                     m_Shared->m_Logviewer.draw();
                 }

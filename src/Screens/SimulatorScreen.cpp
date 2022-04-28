@@ -414,7 +414,7 @@ private:
         osc::Config const& config = osc::App::get().getConfig();
 
         // draw simulations panel
-        if (bool simsPanelOldState = config.getIsPanelEnabled("simulations"))
+        if (bool simsPanelOldState = config.getIsPanelEnabled("Simulations"))
         {
             bool simsPanelState = simsPanelOldState;
             if (ImGui::Begin("Simulations", &simsPanelState))
@@ -426,12 +426,12 @@ private:
 
             if (simsPanelState != simsPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("simulations", simsPanelState);
+                App::upd().updConfig().setIsPanelEnabled("Simulations", simsPanelState);
             }
         }
 
         // draw hierarchy panel
-        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("hierarchy"))
+        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("Hierarchy"))
         {
             bool hierarchyPanelState = hierarchyPanelOldState;
             if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
@@ -443,15 +443,15 @@ private:
 
             if (hierarchyPanelState != hierarchyPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("hierarchy", hierarchyPanelState);
+                App::upd().updConfig().setIsPanelEnabled("Hierarchy", hierarchyPanelState);
             }
         }
 
         // draw selection details panel
-        if (bool selectionDetailsOldState = config.getIsPanelEnabled("selectionDetails"))
+        if (bool selectionDetailsOldState = config.getIsPanelEnabled("Selection Details"))
         {
             bool selectionDetailsState = selectionDetailsOldState;
-            if (ImGui::Begin("Selection", &selectionDetailsState))
+            if (ImGui::Begin("Selection Details", &selectionDetailsState))
             {
                 OSC_PERF("draw selection panel");
                 drawSelectionTab();
@@ -460,11 +460,11 @@ private:
 
             if (selectionDetailsState != selectionDetailsOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("selectionDetails", selectionDetailsState);
+                App::upd().updConfig().setIsPanelEnabled("Selection Details", selectionDetailsState);
             }
         }
 
-        if (bool outputsPanelOldState = config.getIsPanelEnabled("outputs"))
+        if (bool outputsPanelOldState = config.getIsPanelEnabled("Outputs"))
         {
             bool outputsPanelState = outputsPanelOldState;
             if (ImGui::Begin("Outputs", &outputsPanelState))
@@ -476,12 +476,12 @@ private:
 
             if (outputsPanelState != outputsPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("outputs", outputsPanelState);
+                App::upd().updConfig().setIsPanelEnabled("Outputs", outputsPanelState);
             }
         }
 
         // simulation details
-        if (bool simulationStatsOldState = config.getIsPanelEnabled("simulationStats"))
+        if (bool simulationStatsOldState = config.getIsPanelEnabled("Simulation Details"))
         {
             bool simulationStatsState = simulationStatsOldState;
             if (ImGui::Begin("Simulation Details", &simulationStatsState))
@@ -493,11 +493,11 @@ private:
 
             if (simulationStatsState != simulationStatsOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("simulationStats", simulationStatsState);
+                App::upd().updConfig().setIsPanelEnabled("Simulation Details", simulationStatsState);
             }
         }
 
-        if (bool logOldState = config.getIsPanelEnabled("log"))
+        if (bool logOldState = config.getIsPanelEnabled("Log"))
         {
             bool logState = logOldState;
             if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
@@ -509,11 +509,11 @@ private:
 
             if (logState != logOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("log", logState);
+                App::upd().updConfig().setIsPanelEnabled("Log", logState);
             }
         }
 
-        if (bool perfPanelOldState = config.getIsPanelEnabled("perf"))
+        if (bool perfPanelOldState = config.getIsPanelEnabled("Performance"))
         {
             OSC_PERF("draw perf panel");
             m_PerfPanel.open();
@@ -521,7 +521,7 @@ private:
 
             if (state != perfPanelOldState)
             {
-                App::upd().updConfig().setIsPanelEnabled("perf", state);
+                App::upd().updConfig().setIsPanelEnabled("Performance", state);
             }
         }
     }
@@ -1066,13 +1066,13 @@ private:
     {
         static std::vector<std::string> const g_EditorScreenPanels =
         {
-            "hierarchy",
-            "log",
-            "outputs",
-            "selectionDetails",
-            "simulations",
-            "simulationStats",
-            "perf",
+            "Hierarchy",
+            "Log",
+            "Outputs",
+            "Selection Details",
+            "Simulations",
+            "Simulation Details",
+            "Performance",
         };
 
         // draw "window" tab
@@ -1324,7 +1324,7 @@ private:
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
-    PerfPanel m_PerfPanel{"Perf"};
+    PerfPanel m_PerfPanel{"Performance"};
 
     // scrubber/playback state
     bool m_IsPlayingBack = true;

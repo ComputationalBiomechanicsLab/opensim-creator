@@ -63,17 +63,17 @@ static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
 {
     return
     {
-        {"actions", true},
-        {"hierarchy", true},
-        {"log", true},
-        {"outputs", true},
-        {"propertyEditor", true},
-        {"selectionDetails", true},
-        {"simulations", true},
-        {"simulationStats", false},
-        {"coordinateEditor", true},
-        {"perf", false},
-        {"momentArmPanel", false},
+        {"Actions", true},
+        {"Hierarchy", true},
+        {"Log", true},
+        {"Outputs", true},
+        {"Property Editor", true},
+        {"Selection Details", true},
+        {"Simulations", true},
+        {"Simulation Details", false},
+        {"Coordinate Editor", true},
+        {"Performance", false},
+        {"Muscle Plot", false},
     };
 }
 

@@ -1423,12 +1423,12 @@ private:
     {
         static std::vector<std::string> const g_EditorScreenPanels =
         {
-            "actions",
-            "hierarchy",
-            "propertyEditor",
-            "log",
-            "coordinateEditor",
-            "momentArmPanel",
+            "Actions",
+            "Hierarchy",
+            "Property Editor",
+            "Log",
+            "Coordinate Editor",
+            "Muscle Plot",
         };
 
         // draw "window" tab
@@ -1528,7 +1528,7 @@ private:
         // contains top-level actions (e.g. "add body")
         osc::Config const& config = osc::App::get().getConfig();
 
-        if (bool actionsPanelOldState = config.getIsPanelEnabled("actions"))
+        if (bool actionsPanelOldState = config.getIsPanelEnabled("Actions"))
         {
             bool actionsPanelNewState = actionsPanelOldState;
             if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
@@ -1539,12 +1539,12 @@ private:
 
             if (actionsPanelNewState != actionsPanelOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("actions", actionsPanelNewState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Actions", actionsPanelNewState);
             }
         }
 
         // draw hierarchy viewer
-        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("hierarchy"))
+        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("Hierarchy"))
         {
             bool hierarchyPanelState = hierarchyPanelOldState;
             if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
@@ -1569,15 +1569,15 @@ private:
 
             if (hierarchyPanelState != hierarchyPanelOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("hierarchy", hierarchyPanelState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Hierarchy", hierarchyPanelState);
             }
         }
 
         // draw property editor
-        if (bool propertyEditorOldState = config.getIsPanelEnabled("propertyEditor"))
+        if (bool propertyEditorOldState = config.getIsPanelEnabled("Property Editor"))
         {
             bool propertyEditorState = propertyEditorOldState;
-            if (ImGui::Begin("Edit Props", &propertyEditorState))
+            if (ImGui::Begin("Property Editor", &propertyEditorState))
             {
                 drawSelectionEditor();
             }
@@ -1585,12 +1585,12 @@ private:
 
             if (propertyEditorState != propertyEditorOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("propertyEditor", propertyEditorState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Property Editor", propertyEditorState);
             }
         }
 
         // draw application log
-        if (bool logOldState = config.getIsPanelEnabled("log"))
+        if (bool logOldState = config.getIsPanelEnabled("Log"))
         {
             bool logState = logOldState;
             if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
@@ -1601,12 +1601,12 @@ private:
 
             if (logState != logOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("log", logState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Log", logState);
             }
         }
 
         // draw coordinate editor
-        if (bool coordEdOldState = config.getIsPanelEnabled("coordinateEditor"))
+        if (bool coordEdOldState = config.getIsPanelEnabled("Coordinate Editor"))
         {
             bool coordEdState = coordEdOldState;
             if (ImGui::Begin("Coordinate Editor", &coordEdState))
@@ -1616,16 +1616,16 @@ private:
 
             if (coordEdState != coordEdOldState)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("coordinateEditor", coordEdState);
+                osc::App::upd().updConfig().setIsPanelEnabled("Coordinate Editor", coordEdState);
             }
         }
 
         // draw model muscle plot panel (if applicable)
-        if (bool momentArmOldState = config.getIsPanelEnabled("momentArmPanel"))
+        if (bool momentArmOldState = config.getIsPanelEnabled("Muscle Plot"))
         {
             if (!m_MaybeModelMusclePlot)
             {
-                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "plot");
+                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "Muscle Plot");
             }
             m_MaybeModelMusclePlot->draw();
         }
