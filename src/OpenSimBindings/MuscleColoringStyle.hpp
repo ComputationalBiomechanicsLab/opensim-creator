@@ -5,12 +5,13 @@
 namespace osc
 {
 	enum class MuscleColoringStyle {
-		Activation = 0,
+		OpenSim,
+		Activation,
 		Excitation,
 		Force,
 		FiberLength,
 		TOTAL,
-		Default = Activation,
+		Default = OpenSim,
 	};
 
 	nonstd::span<MuscleColoringStyle const> GetAllMuscleColoringStyles();

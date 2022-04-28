@@ -214,10 +214,21 @@ namespace
 
     glm::vec4 GetSconeStyleMuscleColor(OpenSim::Muscle const& musc, SimTK::State const& st, osc::MuscleColoringStyle s)
     {
-        glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
-        glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
-        float const factor = GetMuscleColorFactor(musc, st, s);
-        return zeroColor + factor * (fullColor - zeroColor);
+        if (s == osc::MuscleColoringStyle::OpenSim)
+        {
+            // use the same color that OpenSim emits (which is usually just activation-based, but might
+            // change in the future)
+            SimTK::Vec3 c = musc.getGeometryPath().getColor(st);
+            return glm::vec4{osc::ToVec3(c), 1.0f};
+        }
+        else
+        {
+            // compute the color from the chosen color option
+            glm::vec4 const zeroColor = {50.0f/255.0f, 50.0f/255.0f, 166.0f/255.0f, 1.0f};
+            glm::vec4 const fullColor = {255.0f/255.0f, 25.0f/255.0f, 25.0f/255.0f, 1.0f};
+            float const factor = GetMuscleColorFactor(musc, st, s);
+            return zeroColor + factor * (fullColor - zeroColor);
+        }
     }
 
     float GetMuscleSize(OpenSim::Muscle const& musc, float fixupScaleFactor, osc::MuscleSizingStyle s)
