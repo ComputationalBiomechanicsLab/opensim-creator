@@ -32,7 +32,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -43,7 +43,7 @@ public:
 
     void tick(float)
     {
-        UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), m_Camera);
+        UpdatePolarCameraFromImGuiUserInput(App::get().dims(), m_Camera);
     }
 
     void draw()
@@ -62,7 +62,7 @@ public:
         gl::Uniform(m_Shader.uModelMat, gl::identity);
         gl::Uniform(m_Shader.uNormalMat, glm::mat3x3{1.0f});
         gl::Uniform(m_Shader.uViewMat, m_Camera.getViewMtx());
-        gl::Uniform(m_Shader.uProjMat, m_Camera.getProjMtx(App::cur().aspectRatio()));
+        gl::Uniform(m_Shader.uProjMat, m_Camera.getProjMtx(App::get().aspectRatio()));
         gl::Uniform(m_Shader.uIsTextured, true);
         gl::ActiveTexture(GL_TEXTURE0);
         gl::Uniform(m_Shader.uSampler0, gl::textureIndex<GL_TEXTURE0>());
@@ -78,7 +78,7 @@ public:
         ImGui::Begin("cookiecutter panel");
 
         {
-            Line const& ray = m_Camera.unprojectTopLeftPosToWorldRay(App::cur().getMouseState().pos, App::cur().dims());
+            Line const& ray = m_Camera.unprojectTopLeftPosToWorldRay(App::get().getMouseState().pos, App::get().dims());
             if (m_Mesh.getClosestRayTriangleCollisionModelspace(ray))
             {
                 ImGui::Text("hit");

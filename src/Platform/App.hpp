@@ -59,14 +59,17 @@ namespace osc
         };
 
         // returns the currently-active application global
-        static App& cur()
+        static App& upd()
         {
             OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
             return *g_Current;
         }
 
-        // returns the currently-active configuration global
-        static Config const& config();
+        static App const& get()
+        {
+            OSC_ASSERT(g_Current && "App is not initialized: have you constructed a (singleton) instance of App?");
+            return *g_Current;
+        }
 
         // returns the global shader cache
         static ShaderCache& shaders();
@@ -125,6 +128,10 @@ namespace osc
         {
             requestTransition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
+
+        // returns `true` if a screen transition is pending and will probably happen at
+        // the next point in the application loop (e.g. after event polling, drawing)
+        bool isTransitionRequested() const;
 
         // request that the app quits
         //
@@ -259,6 +266,7 @@ namespace osc
 
         // returns the current application configuration
         Config const& getConfig() const;
+        Config& updConfig();
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path getResource(std::string_view) const;

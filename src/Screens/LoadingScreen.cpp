@@ -68,7 +68,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -77,7 +77,7 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<SplashScreen>();
+            App::upd().requestTransition<SplashScreen>();
             return;
         }
     }
@@ -120,14 +120,14 @@ public:
         if (result)
         {
             // add newly-loaded model to the "Recent Files" list
-            App::cur().addRecentFile(m_OsimPath);
+            App::upd().addRecentFile(m_OsimPath);
 
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
             *m_MainEditorState->editedModel() = std::move(*result);
             m_MainEditorState->editedModel()->setUpToDateWithFilesystem();
-            App::cur().requestTransition<ModelEditorScreen>(m_MainEditorState);
+            App::upd().requestTransition<ModelEditorScreen>(m_MainEditorState);
             AutoFocusAllViewers(*m_MainEditorState);
         }
     }
@@ -138,9 +138,9 @@ public:
 
         constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
 
-        App::cur().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
+        App::upd().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
 
-        glm::vec2 window_dims = App::cur().dims();
+        glm::vec2 window_dims = App::get().dims();
 
         // center the menu
         {
@@ -169,12 +169,12 @@ public:
 
                 if (ImGui::Button("back to splash screen (ESC)"))
                 {
-                    App::cur().requestTransition<SplashScreen>();
+                    App::upd().requestTransition<SplashScreen>();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("try again"))
                 {
-                    App::cur().requestTransition<LoadingScreen>(m_MainEditorState, m_OsimPath);
+                    App::upd().requestTransition<LoadingScreen>(m_MainEditorState, m_OsimPath);
                 }
             }
             ImGui::End();

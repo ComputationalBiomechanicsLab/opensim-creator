@@ -69,20 +69,20 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
-        App::cur().makeMainEventLoopWaiting();
+        App::upd().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
         osc::ImGuiShutdown();
-        App::cur().makeMainEventLoopPolling();
+        App::upd().makeMainEventLoopPolling();
     }
 
     void onEvent(SDL_Event const& e)
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -91,7 +91,7 @@ public:
         }
         else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
         {
-            App::cur().requestTransition<LoadingScreen>(maybeMainEditorState, e.drop.file);
+            App::upd().requestTransition<LoadingScreen>(maybeMainEditorState, e.drop.file);
             return;
         }
     }
@@ -104,7 +104,7 @@ public:
     {
         constexpr glm::vec2 menuDims = {700.0f, 500.0f};
 
-        App& app = App::cur();
+        App const& app = App::get();
 
         glm::vec2 windowDims = app.dims();
         gl::Viewport(0, 0, app.idims().x, app.idims().y);
@@ -181,7 +181,7 @@ public:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_MAGIC " Import Meshes"))
                 {
-                    App::cur().requestTransition<MeshImporterScreen>();
+                    App::upd().requestTransition<MeshImporterScreen>();
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -212,7 +212,7 @@ public:
             // `docs` button
             if (ImGui::Button(ICON_FA_BOOK " Open Documentation"))
             {
-                OpenPathInOSDefaultApplication(App::config().getHTMLDocsDir() / "index.html");
+                OpenPathInOSDefaultApplication(app.getConfig().getHTMLDocsDir() / "index.html");
             }
 
             ImGui::Dummy(ImVec2{0.0f, 10.0f});
@@ -236,7 +236,7 @@ public:
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str()))
                     {
-                        app.requestTransition<osc::LoadingScreen>(maybeMainEditorState, rf.path);
+                        App::upd().requestTransition<osc::LoadingScreen>(maybeMainEditorState, rf.path);
                     }
                     ImGui::PopID();
                 }
@@ -263,7 +263,7 @@ public:
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str()))
                     {
-                        app.requestTransition<LoadingScreen>(maybeMainEditorState, ex);
+                        App::upd().requestTransition<LoadingScreen>(maybeMainEditorState, ex);
                     }
                     ImGui::PopID();
                 }

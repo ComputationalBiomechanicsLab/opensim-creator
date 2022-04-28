@@ -465,7 +465,7 @@ namespace
         glm::mat4 viewMat = camera.getViewMtx();
         glm::vec3 viewPos = camera.getPos();
 
-        auto samples = osc::App::cur().getMSXAASamplesRecommended();
+        auto samples = osc::App::upd().getMSXAASamplesRecommended();
 
         gl::RenderBuffer sceneRBO = MultisampledRenderBuffer(samples, GL_RGB, dims);
         gl::RenderBuffer sceneDepth24Stencil8RBO = MultisampledRenderBuffer(samples, GL_DEPTH24_STENCIL8, dims);
@@ -483,7 +483,7 @@ namespace
         // draw the scene to the scene FBO
         if (true)
         {
-            auto& shader = osc::App::cur().getShaderCache().getShader<osc::GouraudShader>();
+            auto& shader = osc::App::upd().getShaderCache().getShader<osc::GouraudShader>();
 
             gl::UseProgram(shader.program);
             gl::Uniform(shader.uProjMat, projMat);
@@ -536,7 +536,7 @@ namespace
             gl::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             gl::Clear(GL_COLOR_BUFFER_BIT);
 
-            auto& scs = osc::App::cur().getShaderCache().getShader<osc::SolidColorShader>();
+            auto& scs = osc::App::upd().getShaderCache().getShader<osc::SolidColorShader>();
             gl::UseProgram(scs.program);
             gl::Uniform(scs.uProjection, projMat);
             gl::Uniform(scs.uView, viewMat);
@@ -559,7 +559,7 @@ namespace
 
 
             gl::BindFramebuffer(GL_FRAMEBUFFER, outputFBO);
-            auto& eds = osc::App::cur().getShaderCache().getShader<osc::EdgeDetectionShader>();
+            auto& eds = osc::App::upd().getShaderCache().getShader<osc::EdgeDetectionShader>();
             gl::UseProgram(eds.program);
             gl::Uniform(eds.uMVP, gl::identity);
             gl::ActiveTexture(GL_TEXTURE0);
@@ -638,7 +638,7 @@ namespace
                 return MeshLoadErrorResponse{msg.PreferredAttachmentPoint, path, ex.what()};
             }
         }
-        osc::App::cur().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
+        osc::App::upd().requestRedraw();  // TODO: HACK: try to make the UI thread redraw around the time this is sent
         return MeshLoadOKResponse{msg.PreferredAttachmentPoint, std::move(loadedMeshes)};
     }
 
@@ -3897,7 +3897,7 @@ namespace
 
         void CloseEditorForced()
         {
-            osc::App::cur().requestTransition<osc::SplashScreen>();
+            osc::App::upd().requestTransition<osc::SplashScreen>();
         }
 
         void CloseEditor()
@@ -3933,7 +3933,7 @@ namespace
 
         void QuitEditorForced()
         {
-            osc::App::cur().requestQuit();
+            osc::App::upd().requestQuit();
         }
 
         void QuitEditor()
@@ -4717,7 +4717,7 @@ namespace
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = osc::App::cur().meshes().getBrickMesh();
+                originCube.mesh = osc::App::upd().meshes().getBrickMesh();
                 originCube.modelMatrix = mmtx;
                 originCube.normalMatrix = osc::ToNormalMatrix(mmtx);
                 originCube.color = glm::vec4{coreColor, alpha};
@@ -4742,7 +4742,7 @@ namespace
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = osc::App::cur().meshes().getConeMesh();
+                legCube.mesh = osc::App::upd().meshes().getConeMesh();
                 legCube.modelMatrix = segXform;
                 legCube.normalMatrix = osc::ToNormalMatrix(segXform);
                 legCube.color = color;
@@ -5088,7 +5088,7 @@ namespace
                 auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(UpdOutputModel()));
                 mainEditorState->editedModel()->setFixupScaleFactor(m_SceneScaleFactor);
                 osc::AutoFocusAllViewers(*mainEditorState);
-                osc::App::cur().requestTransition<osc::ModelEditorScreen>(mainEditorState);
+                osc::App::upd().requestTransition<osc::ModelEditorScreen>(mainEditorState);
             }
 
             m_ModelGraphSnapshots.GarbageCollect();
@@ -5843,7 +5843,7 @@ namespace
             if (m_AnimationFraction < 1.0f)
             {
                 m_AnimationFraction = std::clamp(m_AnimationFraction + 0.5f*dt, 0.0f, 1.0f);
-                osc::App::cur().requestRedraw();
+                osc::App::upd().requestRedraw();
             }
         }
 
@@ -5904,7 +5904,7 @@ namespace
         void requestPop(Layer*) override
         {
             m_Maybe3DViewerModal.reset();
-            osc::App::cur().requestRedraw();
+            osc::App::upd().requestRedraw();
         }
 
         // try to select *only* what is currently hovered
@@ -7212,7 +7212,7 @@ namespace
                 {
                     m_MaybeOpenedContextMenu = Hover{id, {}};
                     ImGui::OpenPopup("##maincontextmenu");
-                    osc::App::cur().requestRedraw();
+                    osc::App::upd().requestRedraw();
                 }
             }
 
@@ -7683,7 +7683,7 @@ namespace
             if (wasUsingLastFrame && !isUsingThisFrame)
             {
                 m_Shared->CommitCurrentModelGraph("manipulated selection");
-                osc::App::cur().requestRedraw();
+                osc::App::upd().requestRedraw();
             }
 
             // if no manipulation happened this frame, exit early
@@ -8107,14 +8107,16 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
-        App::cur().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
-        App::cur().makeMainEventLoopWaiting();
+        App& app = App::upd();
+        app.setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
+        app.makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
-        App::cur().makeMainEventLoopPolling();
-        App::cur().unsetMainWindowSubTitle();
+        App& app = App::upd();
+        app.makeMainEventLoopPolling();
+        app.unsetMainWindowSubTitle();
         osc::ImGuiShutdown();
     }
 
@@ -8135,7 +8137,7 @@ public:
     void tick(float dt)
     {
         m_MainState.tick(dt);
-        App::cur().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
+        App::upd().setMainWindowSubTitle(m_SharedData->GetRecommendedTitle());
     }
 
     void draw()
@@ -8159,7 +8161,7 @@ public:
         // request another draw (e.g. because the state changed during this draw)
         if (m_ShouldRequestRedraw)
         {
-            App::cur().requestRedraw();
+            App::upd().requestRedraw();
             m_ShouldRequestRedraw = false;
         }
     }

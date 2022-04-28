@@ -119,16 +119,6 @@ public:
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
-    UserPanelPreferences const& getUserPanelPrefs() const
-    {
-        return m_PanelPreferences;
-    }
-
-    UserPanelPreferences& updUserPanelPrefs()
-    {
-        return m_PanelPreferences;
-    }
-
     int getNumViewers() const
     {
         return static_cast<int>(m_ModelViewers.size());
@@ -156,8 +146,11 @@ private:
     int m_FocusedSimulation = -1;
     std::vector<OutputExtractor> m_UserOutputExtractors;
     ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
-    std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
-    UserPanelPreferences m_PanelPreferences;
+    std::vector<UiModelViewer> m_ModelViewers = []()
+    {
+        std::vector<UiModelViewer> rv(1);
+        return rv;
+    }();
 };
 
 osc::MainEditorState::MainEditorState() :
@@ -247,16 +240,6 @@ void osc::MainEditorState::addUserOutputExtractor(OutputExtractor output)
 void osc::MainEditorState::removeUserOutputExtractor(int idx)
 {
     m_Impl->removeUserOutputExtractor(std::move(idx));
-}
-
-osc::UserPanelPreferences const& osc::MainEditorState::getUserPanelPrefs() const
-{
-    return m_Impl->getUserPanelPrefs();
-}
-
-osc::UserPanelPreferences& osc::MainEditorState::updUserPanelPrefs()
-{
-    return m_Impl->updUserPanelPrefs();
 }
 
 int osc::MainEditorState::getNumViewers() const

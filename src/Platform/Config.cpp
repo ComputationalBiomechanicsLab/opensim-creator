@@ -16,6 +16,7 @@
 #include <string>
 #include <string_view>
 #include <optional>
+#include <unordered_map>
 #include <utility>
 
 namespace fs = std::filesystem;
@@ -58,12 +59,31 @@ static std::optional<std::filesystem::path> TryGetConfigLocation()
     }
 }
 
+static std::unordered_map<std::string, bool> MakeDefaultPanelStates()
+{
+    return
+    {
+        {"actions", true},
+        {"hierarchy", true},
+        {"log", true},
+        {"outputs", true},
+        {"propertyEditor", true},
+        {"selectionDetails", true},
+        {"simulations", true},
+        {"simulationStats", false},
+        {"coordinateEditor", true},
+        {"perf", false},
+        {"momentArmPanel", false},
+    };
+}
+
 class osc::Config::Impl final {
 public:
     std::filesystem::path resourceDir;
     std::filesystem::path htmlDocsDir;
     bool useMultiViewport;
     static constexpr int numMSXAASamples = 4;
+    std::unordered_map<std::string, bool> m_PanelsEnabledState = MakeDefaultPanelStates();
 };
 
 static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
@@ -124,7 +144,6 @@ static void TryUpdateConfigFromConfigFile(osc::Config::Impl& cfg)
     }
 }
 
-
 // public API
 
 // try to load the config from disk (default location)
@@ -180,4 +199,14 @@ bool osc::Config::isMultiViewportEnabled() const
 int osc::Config::getNumMSXAASamples() const
 {
     return m_Impl->numMSXAASamples;
+}
+
+bool osc::Config::getIsPanelEnabled(std::string const& panelName) const
+{
+    return m_Impl->m_PanelsEnabledState.try_emplace(panelName, true).first->second;
+}
+
+void osc::Config::setIsPanelEnabled(std::string const& panelName, bool v)
+{
+    m_Impl->m_PanelsEnabledState[panelName] = v;
 }

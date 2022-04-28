@@ -9,8 +9,8 @@
 
 osc::IoPoller::IoPoller() :
     DisplaySize{-1.0f, -1.0f},
-    Ticks{App::cur().getTicks()},
-    TickFrequency{App::cur().getTickFrequency()},
+    Ticks{App::get().getTicks()},
+    TickFrequency{App::get().getTickFrequency()},
     DeltaTime{0.0f},
     MousePos{0.0f, 0.0f},
     MousePosPrevious{0.0f, 0.0f},
@@ -45,25 +45,27 @@ void osc::IoPoller::onEvent(SDL_Event const& e)
     else if (e.type == SDL_KEYUP || e.type == SDL_KEYDOWN)
     {
         KeysDown[e.key.keysym.scancode] = e.type == SDL_KEYDOWN;
-        KeyShift = App::cur().isShiftPressed();
-        KeyCtrl = App::cur().isCtrlPressed();
-        KeyAlt = App::cur().isAltPressed();
+        App const& app = App::get();
+        KeyShift = app.isShiftPressed();
+        KeyCtrl = app.isCtrlPressed();
+        KeyAlt = app.isAltPressed();
     }
 }
 
 // update the `IoPoller`: should be called once per frame
 void osc::IoPoller::onUpdate()
 {
-    DisplaySize = App::cur().dims();
+    App const& app = App::get();
+    DisplaySize = app.dims();
 
     // Ticks, (IO ctor: TickFrequency), DeltaTime
-    auto curTicks = App::cur().getTicks();
+    auto curTicks = app.getTicks();
     double dTicks = static_cast<double>(curTicks - Ticks);
     DeltaTime = static_cast<float>(dTicks/static_cast<double>(TickFrequency));
     Ticks = curTicks;
 
     // MousePos, MousePosPrevious, MousePosDelta, MousePressed
-    auto mouseState = App::cur().getMouseState();
+    auto mouseState = app.getMouseState();
     MousePressed[0] = _mousePressedEvents[0] || mouseState.LeftDown;
     MousePressed[1] = _mousePressedEvents[1] || mouseState.RightDown;
     MousePressed[2] = _mousePressedEvents[2] || mouseState.MiddleDown;
@@ -77,9 +79,9 @@ void osc::IoPoller::onUpdate()
     // set. However, to ensure that Delta == Cur-Prev, we need to create
     // a "fake"  *prev* that behaves "as if" the mouse moved from some
     // location to the warp location
-    if (WantMousePosWarpTo && App::cur().isWindowFocused())
+    if (WantMousePosWarpTo && app.isWindowFocused())
     {
-        App::cur().warpMouseInWindow(MousePosWarpTo);
+        App::upd().warpMouseInWindow(MousePosWarpTo);
         MousePos = MousePosWarpTo;
         MousePosPrevious = MousePosWarpTo - MouseDelta;
         WantMousePosWarpTo = false;

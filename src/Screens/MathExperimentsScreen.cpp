@@ -26,7 +26,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -43,7 +43,7 @@ public:
     {
         osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
-        App::cur().clearScreen({1.0f, 1.0f, 1.0f, 1.0f});  // set app window bg color
+        App::upd().clearScreen({1.0f, 1.0f, 1.0f, 1.0f});  // set app window bg color
 
         glm::vec2 screenCenter = ImGui::GetMainViewport()->GetCenter();
         glm::vec2 mousePos = ImGui::GetIO().MousePos;

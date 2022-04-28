@@ -11,6 +11,7 @@
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
@@ -956,8 +957,9 @@ public:
 
     void onMount()
     {
-        App::cur().makeMainEventLoopWaiting();
-        App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
+        App& app = App::upd();
+        app.makeMainEventLoopWaiting();
+        app.setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
         osc::ImGuiInit();
         ImPlot::CreateContext();
     }
@@ -966,8 +968,9 @@ public:
     {
         osc::ImGuiShutdown();
         ImPlot::DestroyContext();
-        App::cur().unsetMainWindowSubTitle();
-        App::cur().makeMainEventLoopPolling();
+        App& app = App::upd();
+        app.unsetMainWindowSubTitle();
+        app.makeMainEventLoopPolling();
     }
 
     void tick()
@@ -977,12 +980,12 @@ public:
             onBackingFileChanged();
         }
 
-        App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
+        App::upd().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
     }
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         drawGUARDED();
@@ -997,7 +1000,7 @@ public:
         }
         else if (osc::ImGuiOnEvent(e))
         {
-            m_ResetPerFrame.shouldRequestRedraw = true;
+            App::upd().requestRedraw();
         }
         else if (e.type == SDL_KEYDOWN)
         {
@@ -1023,7 +1026,7 @@ private:
                 cpy->buildSystem();
                 cpy->initializeState();
                 m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
             }
             catch (std::exception const& ex)
             {
@@ -1036,7 +1039,7 @@ private:
     {
         if (m_Mes->editedModel()->isUpToDateWithFilesystem())
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
         }
         else
         {
@@ -1045,7 +1048,7 @@ private:
             {
                 if (actionSaveModel(m_Mes))
                 {
-                    App::cur().requestQuit();
+                    App::upd().requestQuit();
                     return true;
                 }
                 else
@@ -1055,7 +1058,7 @@ private:
             };
             cfg.onUserClickedDontSave = []()
             {
-                App::cur().requestQuit();
+                App::upd().requestQuit();
                 return true;
             };
             m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
@@ -1084,13 +1087,13 @@ private:
                 return true;
             case SDLK_r:  // Ctrl+R: start a new simulation from focused model
                 ActionStartSimulationFromEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 return true;
             case SDLK_a:  // Ctrl+A: clear selection
                 ActionClearSelectionFromEditedModel(*m_Mes);
                 return true;
             case SDLK_e:  // Ctrl+E: show simulation screen
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
                 return true;
             }
 
@@ -1394,13 +1397,12 @@ private:
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
                 StartSimulatingEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_ResetPerFrame.editSimParamsRequested = true;
+                m_ParamBlockEditorPopup.open();
             }
 
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
@@ -1417,6 +1419,56 @@ private:
         }
     }
 
+    void drawMainMenuWindowTab()
+    {
+        static std::vector<std::string> const g_EditorScreenPanels =
+        {
+            "actions",
+            "hierarchy",
+            "propertyEditor",
+            "log",
+            "coordinateEditor",
+            "momentArmPanel",
+        };
+
+        // draw "window" tab
+        if (ImGui::BeginMenu("Window"))
+        {
+            Config const& cfg = App::get().getConfig();
+            for (std::string const& panel : g_EditorScreenPanels)
+            {
+                bool currentVal = cfg.getIsPanelEnabled(panel);
+                if (ImGui::MenuItem(panel.c_str(), nullptr, &currentVal))
+                {
+                    App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
+                }
+            }
+
+            ImGui::Separator();
+
+            // active viewers (can be disabled)
+            for (int i = 0; i < m_Mes->getNumViewers(); ++i)
+            {
+                char buf[64];
+                std::snprintf(buf, sizeof(buf), "viewer%i", i);
+
+                bool enabled = true;
+                if (ImGui::MenuItem(buf, nullptr, &enabled))
+                {
+                    m_Mes->removeViewer(i);
+                    --i;
+                }
+            }
+
+            if (ImGui::MenuItem("add viewer"))
+            {
+                m_Mes->addViewer();
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
     void drawMainMenu()
     {
         if (ImGui::BeginMainMenuBar())
@@ -1424,15 +1476,14 @@ private:
             m_MainMenuFileTab.draw(m_Mes);
             drawMainMenuEditTab();
             drawMainMenuSimulateTab();
-            m_MainMenuWindowTab.draw(*m_Mes);
+            drawMainMenuWindowTab();
             m_MainMenuAboutTab.draw();
 
             ImGui::Dummy({2.0f, 0.0f});
             if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
             {
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 ImGui::EndMainMenuBar();
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
                 return;
             }
 
@@ -1441,17 +1492,16 @@ private:
             if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
             {
                 StartSimulatingEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 ImGui::PopStyleColor();
                 ImGui::EndMainMenuBar();
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
                 return;
             }
             ImGui::PopStyleColor();
 
             if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_ResetPerFrame.editSimParamsRequested = true;
+                m_ParamBlockEditorPopup.open();
             }
 
             ImGui::EndMainMenuBar();
@@ -1460,47 +1510,44 @@ private:
 
     void drawUNGUARDED()
     {
-        if (m_ResetPerFrame.shouldRequestRedraw)
-        {
-            osc::App::cur().requestRedraw();
-        }
-
-        m_ResetPerFrame = {};
-
-        // draw main menu
-        {
-            drawMainMenu();
-        }
+        drawMainMenu();
 
         // check for early exit request
         //
         // (the main menu may have requested a screen transition)
-        if (m_ResetPerFrame.subpanelRequestedEarlyExit)
+        if (App::get().isTransitionRequested())
         {
             return;
         }
 
         // draw 3D viewers (if any)
-        {
-            Draw3DViewers(*m_Mes);
-        }
+        Draw3DViewers(*m_Mes);
 
         // draw editor actions panel
         //
         // contains top-level actions (e.g. "add body")
-        if (m_Mes->getUserPanelPrefs().actions)
+        osc::Config const& config = osc::App::get().getConfig();
+
+        if (bool actionsPanelOldState = config.getIsPanelEnabled("actions"))
         {
-            if (ImGui::Begin("Actions", &m_Mes->updUserPanelPrefs().actions, ImGuiWindowFlags_MenuBar))
+            bool actionsPanelNewState = actionsPanelOldState;
+            if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
             {
                 m_ModelActionsMenuBar.draw();
             }
             ImGui::End();
+
+            if (actionsPanelNewState != actionsPanelOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("actions", actionsPanelNewState);
+            }
         }
 
         // draw hierarchy viewer
-        if (m_Mes->getUserPanelPrefs().hierarchy)
+        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("hierarchy"))
         {
-            if (ImGui::Begin("Hierarchy", &m_Mes->updUserPanelPrefs().hierarchy))
+            bool hierarchyPanelState = hierarchyPanelOldState;
+            if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
             {
                 std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
 
@@ -1519,55 +1566,75 @@ private:
                 }
             }
             ImGui::End();
+
+            if (hierarchyPanelState != hierarchyPanelOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("hierarchy", hierarchyPanelState);
+            }
         }
 
         // draw property editor
-        if (m_Mes->getUserPanelPrefs().propertyEditor)
+        if (bool propertyEditorOldState = config.getIsPanelEnabled("propertyEditor"))
         {
-            if (ImGui::Begin("Edit Props", &m_Mes->updUserPanelPrefs().propertyEditor))
+            bool propertyEditorState = propertyEditorOldState;
+            if (ImGui::Begin("Edit Props", &propertyEditorState))
             {
                 drawSelectionEditor();
             }
             ImGui::End();
+
+            if (propertyEditorState != propertyEditorOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("propertyEditor", propertyEditorState);
+            }
         }
 
         // draw application log
-        if (m_Mes->getUserPanelPrefs().log)
+        if (bool logOldState = config.getIsPanelEnabled("log"))
         {
-            if (ImGui::Begin("Log", &m_Mes->updUserPanelPrefs().log, ImGuiWindowFlags_MenuBar))
+            bool logState = logOldState;
+            if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
             {
                 m_LogViewer.draw();
             }
             ImGui::End();
+
+            if (logState != logOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("log", logState);
+            }
         }
 
         // draw coordinate editor
-        if (m_Mes->getUserPanelPrefs().coordinateEditor)
+        if (bool coordEdOldState = config.getIsPanelEnabled("coordinateEditor"))
         {
-            if (ImGui::Begin("Coordinate Editor", &m_Mes->updUserPanelPrefs().coordinateEditor))
+            bool coordEdState = coordEdOldState;
+            if (ImGui::Begin("Coordinate Editor", &coordEdState))
             {
                 m_CoordEditor.draw();
             }
-        }
 
-        // draw sim params editor popup (if applicable)
-        {
-            if (m_ResetPerFrame.editSimParamsRequested)
+            if (coordEdState != coordEdOldState)
             {
-                ImGui::OpenPopup("simulation parameters");
+                osc::App::upd().updConfig().setIsPanelEnabled("coordinateEditor", coordEdState);
             }
-
-            osc::ParamBlockEditorPopup{}.draw("simulation parameters", m_Mes->updSimulationParams());
         }
 
         // draw model muscle plot panel (if applicable)
-        if (m_Mes->getUserPanelPrefs().momentArmPanel)
+        if (bool momentArmOldState = config.getIsPanelEnabled("momentArmPanel"))
         {
             if (!m_MaybeModelMusclePlot)
             {
                 m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "plot");
             }
             m_MaybeModelMusclePlot->draw();
+        }
+
+        // draw any currently-open popups
+
+        if (m_ParamBlockEditorPopup.isOpen())
+        {
+            m_ParamBlockEditorPopup.draw(m_Mes->updSimulationParams());
         }
 
         if (m_MaybeSaveChangesPopup)
@@ -1591,7 +1658,7 @@ private:
 
             if (m_ExceptionThrownLastFrame)
             {
-                App::cur().requestTransition<ErrorScreen>(ex);
+                App::upd().requestTransition<ErrorScreen>(ex);
             }
             else
             {
@@ -1603,7 +1670,7 @@ private:
                 }
                 catch (std::exception const& ex2)
                 {
-                    App::cur().requestTransition<ErrorScreen>(ex2);
+                    App::upd().requestTransition<ErrorScreen>(ex2);
                 }
             }
 
@@ -1622,7 +1689,6 @@ private:
 
     // UI widgets/popups
     MainMenuFileTab m_MainMenuFileTab;
-    MainMenuWindowTab m_MainMenuWindowTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ObjectPropertiesEditor m_ObjectPropsEditor;
     ReassignSocketPopup m_ReassignSocketPopup;
@@ -1632,15 +1698,9 @@ private:
     ModelActionsMenuBar m_ModelActionsMenuBar{m_Mes->editedModel()};
     CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
+    ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
     std::optional<ModelMusclePlotPanel> m_MaybeModelMusclePlot;
-
-    // state that is reset at the start of each frame
-    struct {
-        bool editSimParamsRequested = false;
-        bool subpanelRequestedEarlyExit = false;
-        bool shouldRequestRedraw = false;
-    } m_ResetPerFrame;
 
     // flag that's set+reset each frame to prevent continual
     // throwing

@@ -48,7 +48,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (ImGuiOnEvent(e))
@@ -63,7 +63,7 @@ public:
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
         ImGuiNewFrame();
         if (ImGui::Begin("panel"))

@@ -15,6 +15,7 @@
 #include "src/OpenSimBindings/SimulatorModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Config.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
@@ -289,21 +290,21 @@ public:
     {
         osc::ImGuiInit();
         ImPlot::CreateContext();
-        App::cur().makeMainEventLoopWaiting();
+        App::upd().makeMainEventLoopWaiting();
     }
 
     void onUnmount()
     {
         osc::ImGuiShutdown();
         ImPlot::DestroyContext();
-        App::cur().makeMainEventLoopPolling();
+        App::upd().makeMainEventLoopPolling();
     }
 
     void onEvent(SDL_Event const& e)
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -330,7 +331,7 @@ public:
                 auto playbackPos = getPlaybackPositionInSimTime(sim);
                 if (playbackPos < sim.getEndTime())
                 {
-                    osc::App::cur().requestRedraw();
+                    osc::App::upd().requestRedraw();
                 }
                 else
                 {
@@ -343,7 +344,7 @@ public:
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         drawContent();
@@ -360,18 +361,21 @@ private:
             return;
         }
 
-        osc::MainEditorState& st = *m_MainEditorState;
+        {
+            OSC_PERF("draw simulator panels");
+            drawAll3DViewers();
+        }
 
         // edge-case: there are no simulations available, so
         // show a "you need to run something, fool" dialog
-        if (st.getNumSimulations() <= 0)
+        if (m_MainEditorState->getNumSimulations() <= 0)
         {
             if (ImGui::Begin("Warning"))
             {
                 ImGui::TextUnformatted("No simulations are currently running");
                 if (ImGui::Button("Run new simulation"))
                 {
-                    StartSimulatingEditedModel(st);
+                    StartSimulatingEditedModel(*m_MainEditorState);
                     m_IsPlayingBack = true;
                     m_PlaybackStartSimtime = osc::SimulationClock::start();
                     m_PlaybackStartWallTime = std::chrono::system_clock::now();
@@ -383,7 +387,7 @@ private:
 
         // ensure m_ShownModelState is populated, if possible
         {
-            std::shared_ptr<osc::Simulation> maybeSim = st.updFocusedSimulation();
+            std::shared_ptr<osc::Simulation> maybeSim = m_MainEditorState->updFocusedSimulation();
             if (maybeSim)
             {
                 std::optional<osc::SimulationReport> maybeReport = TrySelectReportBasedOnScrubbing(*maybeSim);
@@ -407,83 +411,118 @@ private:
             }
         }
 
-        // draw simulations tab
-        if (st.getUserPanelPrefs().simulations)
+        osc::Config const& config = osc::App::get().getConfig();
+
+        // draw simulations panel
+        if (bool simsPanelOldState = config.getIsPanelEnabled("simulations"))
         {
-            if (ImGui::Begin("Simulations", &st.updUserPanelPrefs().simulations))
+            bool simsPanelState = simsPanelOldState;
+            if (ImGui::Begin("Simulations", &simsPanelState))
             {
                 OSC_PERF("draw simulations panel");
                 drawSimulatorTab();
             }
             ImGui::End();
+
+            if (simsPanelState != simsPanelOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("simulations", simsPanelState);
+            }
         }
 
-        // draw 3D viewers
+        // draw hierarchy panel
+        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("hierarchy"))
         {
-            OSC_PERF("draw simulator panels");
-            drawAll3DViewers();
-        }
-
-
-        // draw hierarchy tab
-        if (st.getUserPanelPrefs().hierarchy)
-        {
-            if (ImGui::Begin("Hierarchy", &st.updUserPanelPrefs().hierarchy))
+            bool hierarchyPanelState = hierarchyPanelOldState;
+            if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
             {
                 OSC_PERF("draw hierarchy panel");
                 drawHierarchyTab();
             }
             ImGui::End();
+
+            if (hierarchyPanelState != hierarchyPanelOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("hierarchy", hierarchyPanelState);
+            }
         }
 
-        // draw selection tab
-        if (st.getUserPanelPrefs().selectionDetails)
+        // draw selection details panel
+        if (bool selectionDetailsOldState = config.getIsPanelEnabled("selectionDetails"))
         {
-            if (ImGui::Begin("Selection", &st.updUserPanelPrefs().selectionDetails))
+            bool selectionDetailsState = selectionDetailsOldState;
+            if (ImGui::Begin("Selection", &selectionDetailsState))
             {
                 OSC_PERF("draw selection panel");
                 drawSelectionTab();
             }
             ImGui::End();
+
+            if (selectionDetailsState != selectionDetailsOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("selectionDetails", selectionDetailsState);
+            }
         }
 
-        // outputs
-        if (st.getUserPanelPrefs().outputs)
+        if (bool outputsPanelOldState = config.getIsPanelEnabled("outputs"))
         {
-            if (ImGui::Begin("Outputs", &st.updUserPanelPrefs().outputs))
+            bool outputsPanelState = outputsPanelOldState;
+            if (ImGui::Begin("Outputs", &outputsPanelState))
             {
                 OSC_PERF("draw outputs panel");
                 drawOutputsTab();
             }
             ImGui::End();
+
+            if (outputsPanelState != outputsPanelOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("outputs", outputsPanelState);
+            }
         }
 
-        // simulation stats
-        if (st.getUserPanelPrefs().simulationStats)
+        // simulation details
+        if (bool simulationStatsOldState = config.getIsPanelEnabled("simulationStats"))
         {
-            if (ImGui::Begin("Simulation Details", &st.updUserPanelPrefs().simulationStats))
+            bool simulationStatsState = simulationStatsOldState;
+            if (ImGui::Begin("Simulation Details", &simulationStatsState))
             {
                 OSC_PERF("draw simulation details panel");
                 drawSimulationStats();
             }
             ImGui::End();
+
+            if (simulationStatsState != simulationStatsOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("simulationStats", simulationStatsState);
+            }
         }
 
-        if (st.getUserPanelPrefs().log)
+        if (bool logOldState = config.getIsPanelEnabled("log"))
         {
-            if (ImGui::Begin("Log", &st.updUserPanelPrefs().log, ImGuiWindowFlags_MenuBar))
+            bool logState = logOldState;
+            if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
             {
                 OSC_PERF("draw log panel");
                 m_LogViewerWidget.draw();
             }
             ImGui::End();
+
+            if (logState != logOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("log", logState);
+            }
         }
 
-        if (st.getUserPanelPrefs().perfPanel)
+        if (bool perfPanelOldState = config.getIsPanelEnabled("perf"))
         {
             OSC_PERF("draw perf panel");
             m_PerfPanel.open();
-            st.updUserPanelPrefs().perfPanel = m_PerfPanel.draw();
+            bool state = m_PerfPanel.draw();
+
+            if (state != perfPanelOldState)
+            {
+                App::upd().updConfig().setIsPanelEnabled("perf", state);
+            }
         }
     }
 
@@ -680,7 +719,7 @@ private:
                 std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
                 editedModel->setModel(std::make_unique<OpenSim::Model>(*sim->getModel()));
                 editedModel->commit("loaded model from simulator window");
-                osc::App::cur().requestTransition<osc::ModelEditorScreen>(m_MainEditorState);
+                osc::App::upd().requestTransition<osc::ModelEditorScreen>(m_MainEditorState);
             }
 
             if (ImGui::IsItemHovered())
@@ -1023,13 +1062,64 @@ private:
         }
     }
 
+    void drawMainMenuWindowTab()
+    {
+        static std::vector<std::string> const g_EditorScreenPanels =
+        {
+            "hierarchy",
+            "log",
+            "outputs",
+            "selectionDetails",
+            "simulations",
+            "simulationStats",
+            "perf",
+        };
+
+        // draw "window" tab
+        if (ImGui::BeginMenu("Window"))
+        {
+            Config const& cfg = App::get().getConfig();
+            for (std::string const& panel : g_EditorScreenPanels)
+            {
+                bool currentVal = cfg.getIsPanelEnabled(panel);
+                if (ImGui::MenuItem(panel.c_str(), nullptr, &currentVal))
+                {
+                    App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
+                }
+            }
+
+            ImGui::Separator();
+
+            // active viewers (can be disabled)
+            for (int i = 0; i < m_MainEditorState->getNumViewers(); ++i)
+            {
+                char buf[64];
+                std::snprintf(buf, sizeof(buf), "viewer%i", i);
+
+                bool enabled = true;
+                if (ImGui::MenuItem(buf, nullptr, &enabled))
+                {
+                    m_MainEditorState->removeViewer(i);
+                    --i;
+                }
+            }
+
+            if (ImGui::MenuItem("add viewer"))
+            {
+                m_MainEditorState->addViewer();
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
     bool drawMainMenu()
     {
         // draw main menu
         if (ImGui::BeginMainMenuBar())
         {
             m_MainMenuFileTab.draw(m_MainEditorState);
-            m_MainMenuWindowTab.draw(*m_MainEditorState);
+            drawMainMenuWindowTab();
             m_MainMenuAboutTab.draw();
 
             ImGui::Dummy({5.0f, 0.0f});
@@ -1037,7 +1127,7 @@ private:
             if (ImGui::Button(ICON_FA_CUBE " Switch to editor (Ctrl+E)"))
             {
                 // request the transition then exit this drawcall ASAP
-                osc::App::cur().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
+                osc::App::upd().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
                 ImGui::EndMainMenuBar();
                 return true;
             }
@@ -1077,13 +1167,13 @@ private:
             if (resp.isLeftClicked && resp.hovertestResult != ms.getSelected())
             {
                 ms.setSelected(resp.hovertestResult);
-                osc::App::cur().requestRedraw();
+                osc::App::upd().requestRedraw();
             }
 
             if (resp.isMousedOver && resp.hovertestResult != ms.getHovered())
             {
                 ms.setHovered(resp.hovertestResult);
-                osc::App::cur().requestRedraw();
+                osc::App::upd().requestRedraw();
             }
         }
         else
@@ -1214,7 +1304,7 @@ private:
             switch (e.keysym.sym) {
             case SDLK_e:
                 // Ctrl + e
-                osc::App::cur().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
+                osc::App::upd().requestTransition<osc::ModelEditorScreen>(std::move(m_MainEditorState));
                 return true;
             }
         }
@@ -1232,7 +1322,6 @@ private:
     // UI widgets
     LogViewer m_LogViewerWidget;
     MainMenuFileTab m_MainMenuFileTab;
-    MainMenuWindowTab m_MainMenuWindowTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Perf"};

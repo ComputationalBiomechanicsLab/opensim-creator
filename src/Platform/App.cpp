@@ -525,6 +525,11 @@ public:
         m_NextScreen = std::move(s);
     }
 
+    bool isTransitionRequested() const
+    {
+        return m_NextScreen != nullptr;
+    }
+
     void requestQuit()
     {
         m_QuitRequested = true;
@@ -827,6 +832,11 @@ public:
         return *m_ApplicationConfig;
     }
 
+    Config& updConfig()
+    {
+        return *m_ApplicationConfig;
+    }
+
     std::filesystem::path getResource(std::string_view p) const
     {
         return ::GetResource(*m_ApplicationConfig, p);
@@ -1109,24 +1119,19 @@ private:
 
 osc::App* osc::App::g_Current = nullptr;
 
-osc::Config const& osc::App::config()
-{
-    return cur().getConfig();
-}
-
 osc::ShaderCache& osc::App::shaders()
 {
-    return cur().getShaderCache();
+    return upd().getShaderCache();
 }
 
 osc::MeshCache& osc::App::meshes()
 {
-    return cur().getMeshCache();
+    return upd().getMeshCache();
 }
 
 std::filesystem::path osc::App::resource(std::string_view s)
 {
-    return cur().getResource(s);
+    return upd().getResource(s);
 }
 
 osc::App::App() : m_Impl{new Impl{}}
@@ -1151,6 +1156,11 @@ void osc::App::show(std::unique_ptr<Screen> s)
 void osc::App::requestTransition(std::unique_ptr<Screen> s)
 {
     m_Impl->requestTransition(std::move(s));
+}
+
+bool osc::App::isTransitionRequested() const
+{
+    return m_Impl->isTransitionRequested();
 }
 
 void osc::App::requestQuit()
@@ -1353,6 +1363,11 @@ osc::Config const& osc::App::getConfig() const
     return m_Impl->getConfig();
 }
 
+osc::Config& osc::App::updConfig()
+{
+    return m_Impl->updConfig();
+}
+
 std::filesystem::path osc::App::getResource(std::string_view p) const
 {
     return m_Impl->getResource(std::move(p));
@@ -1393,7 +1408,7 @@ void osc::ImGuiInit()
     // configure ImGui from OSC's (toml) configuration
     {
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        if (App::config().isMultiViewportEnabled())
+        if (App::get().getConfig().isMultiViewportEnabled())
         {
             io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         }
@@ -1433,7 +1448,7 @@ void osc::ImGuiInit()
     }
 
     // init ImGui for SDL2 /w OpenGL
-    App::Impl& impl = *App::cur().m_Impl;
+    App::Impl& impl = *App::upd().m_Impl;
     ImGui_ImplSDL2_InitForOpenGL(impl.updWindow(), impl.updGLContext());
 
     // init ImGui for OpenGL
@@ -1473,7 +1488,7 @@ bool osc::ImGuiOnEvent(SDL_Event const& e)
 void osc::ImGuiNewFrame()
 {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(App::cur().m_Impl->updWindow());
+    ImGui_ImplSDL2_NewFrame(App::upd().m_Impl->updWindow());
     ImGui::NewFrame();
 }
 

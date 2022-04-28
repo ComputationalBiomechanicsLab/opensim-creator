@@ -543,7 +543,7 @@ static void DrawSceneTexture(osc::UiModelViewer::Impl& impl, float fixupScaleFac
         {
             glm::ivec2 dims{static_cast<int>(contentRegion.x), static_cast<int>(contentRegion.y)};
             renderTarg.setDims(dims);
-            renderTarg.setSamples(osc::App::cur().getMSXAASamplesRecommended());
+            renderTarg.setSamples(osc::App::get().getMSXAASamplesRecommended());
         }
     }
 
@@ -1360,7 +1360,7 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
             // solidworks keybind
             impl.autoFocusCameraNextFrame = true;
         }
-        UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), impl.camera);
+        UpdatePolarCameraFromImGuiUserInput(App::get().dims(), impl.camera);
     }
 
     // draw main menu

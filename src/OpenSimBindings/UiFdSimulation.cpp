@@ -31,7 +31,7 @@ static osc::FdSimulation MakeSimulation(
     {
         auto reportsGuard = reportQueue.lock();
         reportsGuard->push_back(std::move(r));
-        osc::App::cur().requestRedraw();
+        osc::App::upd().requestRedraw();
     };
     return osc::FdSimulation{std::move(p), params, std::move(callback)};
 }

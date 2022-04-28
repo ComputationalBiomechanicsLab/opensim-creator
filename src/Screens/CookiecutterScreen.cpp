@@ -30,7 +30,7 @@ public:
 
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -56,7 +56,7 @@ public:
 
         osc::ImGuiNewFrame();  // tell ImGui you're about to start drawing a new frame
 
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});  // set app window bg color
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});  // set app window bg color
 
         ImGui::Begin("cookiecutter panel");
         ImGui::Text("hello world");

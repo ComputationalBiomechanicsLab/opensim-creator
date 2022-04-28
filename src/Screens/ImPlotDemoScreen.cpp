@@ -25,7 +25,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -41,7 +41,7 @@ public:
     void draw()
     {
         osc::ImGuiNewFrame();
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
         ImPlot::ShowDemoWindow();
 

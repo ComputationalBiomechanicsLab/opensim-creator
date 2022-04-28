@@ -12,8 +12,9 @@ class osc::UiModelViewerScreen::Impl final {
 public:
     void onMount()
     {
-        App::cur().enableDebugMode();
-        App::cur().disableVsync();
+        App& app = App::upd();
+        app.enableDebugMode();
+        app.disableVsync();
         osc::ImGuiInit();
     }
 
@@ -26,7 +27,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -42,7 +43,7 @@ public:
     void draw()
     {
         osc::ImGuiNewFrame();
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
         ImGui::Begin("cookiecutter panel");
         ImGui::Text("%.2f", ImGui::GetIO().Framerate);

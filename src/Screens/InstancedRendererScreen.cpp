@@ -79,8 +79,9 @@ public:
 
     void onMount()
     {
-        App::cur().disableVsync();
-        App::cur().enableDebugMode();
+        App& app = App::upd();
+        app.disableVsync();
+        app.enableDebugMode();
         osc::ImGuiInit();
     }
 
@@ -93,7 +94,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -102,7 +103,7 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<ExperimentsScreen>();
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
@@ -182,13 +183,14 @@ public:
         }
 
         // ensure renderer output matches window
-        m_Renderer.setDims(App::cur().idims());
-        m_Renderer.setMsxaaSamples(App::cur().getMSXAASamplesRecommended());
+        App const& app = App::get();
+        m_Renderer.setDims(app.idims());
+        m_Renderer.setMsxaaSamples(app.getMSXAASamplesRecommended());
 
         gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float aspectRatio = App::cur().dims().x / App::cur().dims().y;
+        float aspectRatio = app.dims().x / app.dims().y;
         m_Camera.znear = 0.01f;
         m_Camera.zfar = 1.0f;
         m_Params.viewMtx = m_Camera.getViewMtx();

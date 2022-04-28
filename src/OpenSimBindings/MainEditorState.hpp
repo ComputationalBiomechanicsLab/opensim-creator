@@ -20,24 +20,6 @@ namespace OpenSim
 
 namespace osc
 {
-    // a struct representing which panels should be shown in the main UI window
-    //
-    // TODO: this should probably be an associative string-->bool lookup that can
-    //       be saved to the user config, rather than being hard-coded like this
-    struct UserPanelPreferences final {
-        bool actions = true;
-        bool hierarchy = true;
-        bool log = true;
-        bool outputs = true;
-        bool propertyEditor = true;
-        bool selectionDetails = true;
-        bool simulations = true;
-        bool simulationStats = false;
-        bool coordinateEditor = true;
-        bool perfPanel = false;
-        bool momentArmPanel = false;
-    };
-
     // top-level UI state
     //
     // this is the main state that gets shared between the top-level editor
@@ -74,10 +56,6 @@ namespace osc
         OutputExtractor const& getUserOutputExtractor(int) const;
         void addUserOutputExtractor(OutputExtractor);
         void removeUserOutputExtractor(int);
-
-        // active ImGui panels
-        UserPanelPreferences const& getUserPanelPrefs() const;
-        UserPanelPreferences& updUserPanelPrefs();
 
         int getNumViewers() const;
         UiModelViewer& updViewer(int);

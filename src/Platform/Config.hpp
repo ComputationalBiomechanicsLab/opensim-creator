@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <string>
 
 namespace osc
 {
@@ -30,6 +31,10 @@ namespace osc
 
         // get number of MSXAA samples 3D viewports should use
         int getNumMSXAASamples() const;
+
+        // get if a given UI panel is enabled or not
+        bool getIsPanelEnabled(std::string const& panelName) const;
+        void setIsPanelEnabled(std::string const& panelName, bool v);
 
     private:
         Impl* m_Impl;
