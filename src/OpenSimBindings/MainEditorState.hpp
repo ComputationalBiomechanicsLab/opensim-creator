@@ -11,6 +11,7 @@
 namespace osc
 {
     class UiModelViewer;
+    class ModelMusclePlotPanel;
 }
 
 namespace OpenSim
@@ -61,6 +62,12 @@ namespace osc
         UiModelViewer& updViewer(int);
         UiModelViewer& addViewer();
         void removeViewer(int);
+
+        int getNumMusclePlots() const;
+        ModelMusclePlotPanel const& getMusclePlot(int) const;
+        ModelMusclePlotPanel& updMusclePlot(int);
+        ModelMusclePlotPanel& addMusclePlot();
+        void removeMusclePlot(int);
 
         class Impl;
     private:

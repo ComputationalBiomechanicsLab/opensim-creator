@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace osc
@@ -19,6 +20,8 @@ namespace osc
 		ModelMusclePlotPanel& operator=(ModelMusclePlotPanel&&) noexcept;
 		~ModelMusclePlotPanel() noexcept;
 
+		std::string const& getName() const;
+		bool isOpen() const;
 		void open();
 		void close();
 		void draw();

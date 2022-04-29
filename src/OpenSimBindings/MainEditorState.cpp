@@ -8,6 +8,7 @@
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -140,6 +141,32 @@ public:
         m_ModelViewers.erase(m_ModelViewers.begin() + idx);
     }
 
+    int getNumMusclePlots() const
+    {
+        return static_cast<int>(m_ModelMusclePlots.size());
+    }
+
+    ModelMusclePlotPanel const& getMusclePlot(int idx) const
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& updMusclePlot(int idx)
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& addMusclePlot()
+    {
+        return m_ModelMusclePlots.emplace_back(m_EditedModel, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+    }
+
+    void removeMusclePlot(int idx)
+    {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelMusclePlots.size()));
+        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + idx);
+    }
+
 private:
     std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
     std::vector<std::shared_ptr<Simulation>> m_Simulations;
@@ -151,6 +178,8 @@ private:
         std::vector<UiModelViewer> rv(1);
         return rv;
     }();
+    int m_LatestMusclePlot = 1;
+    std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
 };
 
 osc::MainEditorState::MainEditorState() :
@@ -260,6 +289,31 @@ osc::UiModelViewer& osc::MainEditorState::addViewer()
 void osc::MainEditorState::removeViewer(int idx)
 {
     m_Impl->removeViewer(std::move(idx));
+}
+
+int osc::MainEditorState::getNumMusclePlots() const
+{
+    return m_Impl->getNumMusclePlots();
+}
+
+osc::ModelMusclePlotPanel const& osc::MainEditorState::getMusclePlot(int idx) const
+{
+    return m_Impl->getMusclePlot(std::move(idx));
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::updMusclePlot(int idx)
+{
+    return m_Impl->updMusclePlot(std::move(idx));
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::addMusclePlot()
+{
+    return m_Impl->addMusclePlot();
+}
+
+void osc::MainEditorState::removeMusclePlot(int idx)
+{
+    m_Impl->removeMusclePlot(std::move(idx));
 }
 
 void osc::AutoFocusAllViewers(MainEditorState& st)

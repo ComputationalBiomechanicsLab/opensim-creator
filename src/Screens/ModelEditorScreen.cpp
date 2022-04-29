@@ -1428,7 +1428,6 @@ private:
             "Property Editor",
             "Log",
             "Coordinate Editor",
-            "Muscle Plot",
         };
 
         // draw "window" tab
@@ -1446,7 +1445,7 @@ private:
 
             ImGui::Separator();
 
-            // active viewers (can be disabled)
+            // active 3D viewers (can be disabled)
             for (int i = 0; i < m_Mes->getNumViewers(); ++i)
             {
                 char buf[64];
@@ -1463,6 +1462,26 @@ private:
             if (ImGui::MenuItem("add viewer"))
             {
                 m_Mes->addViewer();
+            }
+
+            ImGui::Separator();
+
+            // active muscle plots
+            for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
+            {
+                ModelMusclePlotPanel const& plot = m_Mes->getMusclePlot(i);
+
+                bool enabled = true;
+                if (!plot.isOpen() || ImGui::MenuItem(plot.getName().c_str(), nullptr, &enabled))
+                {
+                    m_Mes->removeMusclePlot(i);
+                    --i;
+                }
+            }
+
+            if (ImGui::MenuItem("add muscle plot"))
+            {
+                m_Mes->addMusclePlot();
             }
 
             ImGui::EndMenu();
@@ -1604,14 +1623,10 @@ private:
             }
         }
 
-        // draw model muscle plot panel (if applicable)
-        if (bool momentArmOldState = config.getIsPanelEnabled("Muscle Plot"))
+        // draw model muscle plots (if applicable)
+        for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
         {
-            if (!m_MaybeModelMusclePlot)
-            {
-                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "Muscle Plot");
-            }
-            m_MaybeModelMusclePlot->draw();
+            m_Mes->updMusclePlot(i).draw();
         }
 
         // draw any currently-open popups
@@ -1684,7 +1699,6 @@ private:
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
     ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
-    std::optional<ModelMusclePlotPanel> m_MaybeModelMusclePlot;
 
     // flag that's set+reset each frame to prevent continual
     // throwing

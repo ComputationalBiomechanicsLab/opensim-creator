@@ -228,28 +228,43 @@ public:
 	{
 	}
 
+	std::string const& getName() const
+	{
+		return m_PanelName;
+	}
+
+	bool isOpen() const
+	{
+		return m_IsOpen;
+	}
+
 	void open()
 	{
+		m_IsOpen = true;
 	}
 
 	void close()
 	{
+		m_IsOpen = false;
 	}
 
 	void draw()
 	{
-		bool isOpen = m_IsOpen;
+		if (m_IsOpen)
+		{
+			bool isOpen = m_IsOpen;
+			if (ImGui::Begin(m_PanelName.c_str(), &isOpen))
+			{
+				drawPanelContent();
+				m_IsOpen = isOpen;
+			}
+			ImGui::End();
 
-		if (ImGui::Begin(m_PanelName.c_str(), &isOpen))
-		{
-			drawPanelContent();
-			m_IsOpen = isOpen;
+			if (isOpen != m_IsOpen)
+			{
+				m_IsOpen = isOpen;
+			}
 		}
-		else
-		{
-			m_IsOpen = isOpen;
-		}
-		ImGui::End();
 	}
 
 private:
@@ -322,10 +337,16 @@ private:
 	{
 		OpenSim::Model const& model = m_Uim->getModel();
 		OpenSim::Coordinate const* coord = FindComponent<OpenSim::Coordinate>(model, m_CoordinateComponentPath);
+		OpenSim::Muscle const* muscle = FindComponent<OpenSim::Muscle>(model, m_MuscleComponentPath);
 
-		if (!coord)
+		if (!coord || !muscle)
 		{
+			m_IsChoosingMuscle = true;
+			m_MuscleComponentPath = {};
+			m_CoordinateComponentPath = {};
+			m_LastPlotModelVersion.reset();
 			return;
+
 		}
 
 		if (m_Uim->getModelVersion() != m_LastPlotModelVersion ||
@@ -539,6 +560,16 @@ osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotP
 osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept
 {
 	delete m_Impl;
+}
+
+std::string const& osc::ModelMusclePlotPanel::getName() const
+{
+	return m_Impl->getName();
+}
+
+bool osc::ModelMusclePlotPanel::isOpen() const
+{
+	return m_Impl->isOpen();
 }
 
 void osc::ModelMusclePlotPanel::open()
