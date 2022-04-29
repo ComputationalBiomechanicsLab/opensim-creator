@@ -397,7 +397,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/UiModel.hpp
     src/OpenSimBindings/UndoableUiModel.cpp
     src/OpenSimBindings/UndoableUiModel.hpp
-    src/OpenSimBindings/VirtualConstModelStatePair.cpp
     src/OpenSimBindings/VirtualConstModelStatePair.hpp
     src/OpenSimBindings/VirtualModelStatePair.hpp
     src/OpenSimBindings/VirtualOutputExtractor.hpp

@@ -27,6 +27,7 @@ namespace osc
 			std::shared_ptr<Simulation>,
 			SimulationReport,
 			float fixupScaleFactor);
+
 		SimulatorModelStatePair(SimulatorModelStatePair const&) = delete;
 		SimulatorModelStatePair(SimulatorModelStatePair&&) noexcept;
 		SimulatorModelStatePair& operator=(SimulatorModelStatePair const&) = delete;

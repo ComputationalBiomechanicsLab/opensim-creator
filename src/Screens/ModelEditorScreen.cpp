@@ -1137,7 +1137,7 @@ private:
     {
         std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
 
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
             return;
@@ -1193,23 +1193,23 @@ private:
 
         ImGui::Columns();
 
-        if (editedModel->selectionIsType<OpenSim::Model>())
+        if (editedModel->getSelectedAs<OpenSim::Model>())
         {
             DrawModelContextualActions(*editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::PhysicalFrame>())
+        else if (editedModel->getSelectedAs<OpenSim::PhysicalFrame>())
         {
             DrawPhysicalFrameContextualActions(m_AttachGeomPopup, *editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::Joint>())
+        else if (editedModel->getSelectedAs<OpenSim::Joint>())
         {
             DrawJointContextualActions(*editedModel);
         }
-        else if (editedModel->selectionIsType<OpenSim::HuntCrossleyForce>())
+        else if (editedModel->getSelectedAs<OpenSim::HuntCrossleyForce>())
         {
             DrawHCFContextualActions(*editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::PathActuator>())
+        else if (editedModel->getSelectedAs<OpenSim::PathActuator>())
         {
             DrawPathActuatorContextualParams(*editedModel);
         }
@@ -1219,7 +1219,7 @@ private:
     {
         std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
 
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             ImGui::TextUnformatted("(nothing selected)");
             return;
@@ -1243,7 +1243,7 @@ private:
         drawContextualActions();
 
         // a contextual action may have changed this
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             return;
         }
