@@ -1,12 +1,16 @@
-#include "ComponentHierarchy.hpp"
+#include "ModelHierarchyPanel.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
+#include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Widgets/NamedPanel.hpp"
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
@@ -16,6 +20,7 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <utility>
 
 namespace {
     size_t const g_FrameGeometryHash = typeid(OpenSim::FrameGeometry).hash_code();
@@ -121,65 +126,110 @@ namespace {
     }
 }
 
-static bool isSearchHit(std::string searchStr, ComponentPath const& cp) {
-    for (auto const& c : cp) {
-        if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr)) {
+static bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
+{
+    for (auto const& c : cp)
+    {
+        if (osc::ContainsSubstringCaseInsensitive(c->getName(), searchStr))
+        {
             return true;
         }
     }
     return false;
 }
 
-class osc::ComponentHierarchy::Impl final {
+class osc::ModelHierarchyPanel::Impl final : public NamedPanel {
 public:
-    osc::ComponentHierarchy::Response draw(
-        OpenSim::Component const* root,
-        OpenSim::Component const* selection,
-        OpenSim::Component const* hover)
+    Impl(std::string_view panelName) :NamedPanel{std::move(panelName)}
+    {
+    }
+
+    bool isOpen() const
+    {
+        return static_cast<NamedPanel const&>(*this).isOpen();
+    }
+
+    void open()
+    {
+        return static_cast<NamedPanel&>(*this).open();
+    }
+
+    void close()
+    {
+        return static_cast<NamedPanel&>(*this).close();
+    }
+
+    osc::ModelHierarchyPanel::Response draw(VirtualConstModelStatePair const& modelState)
+    {
+        m_Response = Response{};
+        m_ModelState = &modelState;
+        static_cast<NamedPanel&>(*this).draw();
+        m_ModelState = nullptr;
+        return m_Response;
+    }
+
+    void implDraw() override
     {
         ImGui::Dummy({0.0f, 3.0f});
+
+        // draw filter stuff
+
         ImGui::TextUnformatted(ICON_FA_EYE);
-        if (ImGui::BeginPopupContextItem("##filterpopup")) {
-            ImGui::Checkbox("frames", &showFrames);
+        if (ImGui::BeginPopupContextItem("##filterpopup"))
+        {
+            ImGui::Checkbox("frames", &m_ShowFrames);
             ImGui::EndPopup();
         }
         ImGui::SameLine();
-        if (search[0] != '\0') {
-            if (ImGui::Button("X")) {
-                search[0] = '\0';
+
+        if (!m_CurrentSearch.empty())
+        {
+            if (ImGui::Button("X"))
+            {
+                m_CurrentSearch.clear();
             }
-            if (ImGui::IsItemHovered()) {
+            if (ImGui::IsItemHovered())
+            {
                 ImGui::BeginTooltip();
                 ImGui::Text("Clear the search string");
                 ImGui::EndTooltip();
             }
-        } else {
+        }
+        else
+        {
             ImGui::TextUnformatted(ICON_FA_SEARCH);
         }
+
+        // draw search bar
+
         ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
-        ImGui::InputText("##hirarchtsearchbar", search, sizeof(search));
+        osc::InputString("##hirarchtsearchbar", m_CurrentSearch, 256);
         ImGui::Dummy({0.0f, 3.0f});
         ImGui::Separator();
         ImGui::Dummy({0.0f, 3.0f});
 
+        // draw content
+
         ImGui::BeginChild("##componenthierarchyvieweritems");
 
-        Response response;
-
-        if (!root) {
-            return response;
-        }
+        OpenSim::Component const* root = &m_ModelState->getModel();
+        OpenSim::Component const* selection = m_ModelState->getSelected();
+        OpenSim::Component const* hover = m_ModelState->getHovered();
 
         ComponentPath selectionPath;
-        if (selection) {
+        if (selection)
+        {
             computeComponentPath(root, selection, selectionPath);
         }
 
         ComponentPath hoverPath;
-        if (hover) {
+        if (hover)
+        {
             computeComponentPath(root, hover, hoverPath);
         }
+
+        Response response;
 
         // init iterators: this alg. is single-pass with a 1-token lookahead
         auto const lst = root->getComponentList();
@@ -197,11 +247,12 @@ public:
 
         int imguiTreeDepth = 0;
         int imguiId = 0;
-        bool hasSearch = std::strlen(search) > 0;
+        bool hasSearch = !m_CurrentSearch.empty();
 
         float unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
 
-        while (lookahead) {
+        while (lookahead)
+        {
             // important: ensure all nodes have a unique ID: regardess of filtering
             ++imguiId;
 
@@ -215,13 +266,14 @@ public:
             // update lookahead (+ path) by stepping to the next component in the component tree
             lookahead = nullptr;
             lookaheadPath.clear();
-            while (it != end) {
+            while (it != end)
+            {
                 OpenSim::Component const& c = *it++;
 
                 bool shouldRender = true;
 
                 auto hc = typeid(c).hash_code();
-                if (!showFrames && hc == g_FrameGeometryHash)
+                if (!m_ShowFrames && hc == g_FrameGeometryHash)
                 {
                     shouldRender = false;
                 }
@@ -234,7 +286,6 @@ public:
                     shouldRender = false;
                 }
 
-
                 if (shouldRender)
                 {
                     lookahead = &c;
@@ -244,15 +295,17 @@ public:
             }
             OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
-            bool searchHit = hasSearch && isSearchHit(search, currentPath);
+            bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
-            if (imguiTreeDepth < currentPath.sizei() - 1) {
+            if (imguiTreeDepth < currentPath.sizei() - 1)
+            {
                 continue;
             }
 
             // pop tree nodes down to the current depth
-            while (imguiTreeDepth >= currentPath.sizei()) {
+            while (imguiTreeDepth >= currentPath.sizei())
+            {
                 ImGui::Indent(unindentPerLevel);
                 ImGui::TreePop();
                 --imguiTreeDepth;
@@ -265,35 +318,45 @@ public:
 
             // handle coloring
             int styles = 0;
-            if (cur == selection) {
+            if (cur == selection)
+            {
                 ImGui::PushStyleColor(ImGuiCol_Text, OSC_SELECTED_COMPONENT_RGBA);
                 ++styles;
-            } else if (cur == hover) {
+            }
+            else if (cur == hover)
+            {
                 ImGui::PushStyleColor(ImGuiCol_Text, OSC_HOVERED_COMPONENT_RGBA);
                 ++styles;
-            } else if (!hasSearch || searchHit) {
+            }
+            else if (!hasSearch || searchHit)
+            {
                 // display as normal
-            } else {
+            }
+            else
+            {
                 ImGui::PushStyleColor(ImGuiCol_Text, OSC_GREYED_RGBA);
                 ++styles;
             }
 
             // auto-open in these cases
-            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
+            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur))
+            {
                 ImGui::SetNextItemOpen(true);
             }
 
             ImGui::PushID(imguiId);
-            if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags)) {
+            if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags))
+            {
                 ImGui::Unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
             ImGui::PopID();
             ImGui::PopStyleColor(styles);
 
-            if (ImGui::IsItemHovered()) {
-                response.type = HoverChanged;
-                response.ptr = cur;
+            if (ImGui::IsItemHovered())
+            {
+                m_Response.type = ModelHierarchyPanel::ResponseType::HoverChanged;
+                m_Response.ptr = cur;
 
                 ImGui::BeginTooltip();
                 ImGui::PushTextWrapPos(ImGui::GetFontSize() + 400.0f);
@@ -302,9 +365,10 @@ public:
                 ImGui::EndTooltip();
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left))) {
-                response.type = SelectionChanged;
-                response.ptr = cur;
+            if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || (!isInternalNode && ImGui::IsItemClicked(ImGuiMouseButton_Left)))
+            {
+                m_Response.type = ModelHierarchyPanel::ResponseType::SelectionChanged;
+                m_Response.ptr = cur;
             }
         }
 
@@ -316,30 +380,55 @@ public:
         }
 
         ImGui::EndChild();
-
-        return response;
     }
 
 private:
-    char search[256]{};
-    bool showFrames = false;
+    std::string m_CurrentSearch;
+    bool m_ShowFrames = false;
+    VirtualConstModelStatePair const* m_ModelState = nullptr;
+    ModelHierarchyPanel::Response m_Response;
 };
 
 
-// public API
+// public API (PIMPL)
 
-osc::ComponentHierarchy::ComponentHierarchy() :
-    m_Impl{std::make_unique<Impl>()}
+osc::ModelHierarchyPanel::ModelHierarchyPanel(std::string_view panelName) :
+    m_Impl{new Impl{std::move(panelName)}}
 {
 }
-osc::ComponentHierarchy::ComponentHierarchy(ComponentHierarchy&&) noexcept = default;
-osc::ComponentHierarchy& osc::ComponentHierarchy::operator=(ComponentHierarchy&&) noexcept = default;
-osc::ComponentHierarchy::~ComponentHierarchy() noexcept = default;
 
-osc::ComponentHierarchy::Response osc::ComponentHierarchy::draw(
-    OpenSim::Component const* root,
-    OpenSim::Component const* selection,
-    OpenSim::Component const* hover)
+osc::ModelHierarchyPanel::ModelHierarchyPanel(ModelHierarchyPanel&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
 {
-    return m_Impl->draw(root, selection, hover);
+}
+
+osc::ModelHierarchyPanel& osc::ModelHierarchyPanel::operator=(ModelHierarchyPanel&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ModelHierarchyPanel::~ModelHierarchyPanel() noexcept
+{
+    delete m_Impl;
+}
+
+bool osc::ModelHierarchyPanel::isOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::ModelHierarchyPanel::open()
+{
+    m_Impl->open();
+}
+
+void osc::ModelHierarchyPanel::close()
+{
+    m_Impl->close();
+}
+
+osc::ModelHierarchyPanel::Response osc::ModelHierarchyPanel::draw(VirtualConstModelStatePair const& modelState)
+{
+    return m_Impl->draw(modelState);
 }

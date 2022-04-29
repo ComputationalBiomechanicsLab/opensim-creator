@@ -24,7 +24,7 @@
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
-#include "src/Widgets/ComponentHierarchy.hpp"
+#include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/PerfPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
@@ -431,19 +431,24 @@ private:
         }
 
         // draw hierarchy panel
-        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("Hierarchy"))
         {
-            bool hierarchyPanelState = hierarchyPanelOldState;
-            if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
+            if (!m_ShownModelState)
             {
-                OSC_PERF("draw hierarchy panel");
-                drawHierarchyTab();
+                ImGui::TextDisabled("(no simulation selected)");
+                return;
             }
-            ImGui::End();
 
-            if (hierarchyPanelState != hierarchyPanelOldState)
+            osc::SimulatorModelStatePair& ms = *m_ShownModelState;
+
+            auto resp = m_ModelHierarchyPanel.draw(ms);
+
+            if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
             {
-                App::upd().updConfig().setIsPanelEnabled("Hierarchy", hierarchyPanelState);
+                ms.setSelected(resp.ptr);
+            }
+            else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
+            {
+                ms.setHovered(resp.ptr);
             }
         }
 
@@ -984,30 +989,6 @@ private:
         }
     }
 
-    void drawHierarchyTab()
-    {
-        if (!m_ShownModelState)
-        {
-            ImGui::TextDisabled("(no simulation selected)");
-            return;
-        }
-
-        osc::SimulatorModelStatePair& ms = *m_ShownModelState;
-
-        auto resp = osc::ComponentHierarchy{}.draw(&ms.getModel(),
-            ms.getSelected(),
-            ms.getHovered());
-
-        if (resp.type == osc::ComponentHierarchy::SelectionChanged)
-        {
-            ms.setSelected(resp.ptr);
-        }
-        else if (resp.type == osc::ComponentHierarchy::HoverChanged)
-        {
-            ms.setHovered(resp.ptr);
-        }
-    }
-
 
     // draw timescrubber slider
     void DrawSimulationScrubber(osc::Simulation& sim)
@@ -1325,6 +1306,7 @@ private:
     MainMenuAboutTab m_MainMenuAboutTab;
     ComponentDetails m_ComponentDetailsWidget;
     PerfPanel m_PerfPanel{"Performance"};
+    ModelHierarchyPanel m_ModelHierarchyPanel{"Hierarchy"};
 
     // scrubber/playback state
     bool m_IsPlayingBack = true;

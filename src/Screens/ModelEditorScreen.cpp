@@ -20,9 +20,9 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
-#include "src/Widgets/ComponentHierarchy.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -1544,32 +1544,16 @@ private:
         }
 
         // draw hierarchy viewer
-        if (bool hierarchyPanelOldState = config.getIsPanelEnabled("Hierarchy"))
         {
-            bool hierarchyPanelState = hierarchyPanelOldState;
-            if (ImGui::Begin("Hierarchy", &hierarchyPanelState))
+            auto resp = m_ComponentHierarchyPanel.draw(*m_Mes->editedModel());
+
+            if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
             {
-                std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
-
-                auto resp = m_ComponentHierarchy.draw(
-                    &editedModel->getModel().getRoot(),
-                    editedModel->getSelected(),
-                    editedModel->getHovered());
-
-                if (resp.type == osc::ComponentHierarchy::SelectionChanged)
-                {
-                    editedModel->setSelected(resp.ptr);
-                }
-                else if (resp.type == osc::ComponentHierarchy::HoverChanged)
-                {
-                    editedModel->setHovered(resp.ptr);
-                }
+                m_Mes->editedModel()->setSelected(resp.ptr);
             }
-            ImGui::End();
-
-            if (hierarchyPanelState != hierarchyPanelOldState)
+            else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
             {
-                osc::App::upd().updConfig().setIsPanelEnabled("Hierarchy", hierarchyPanelState);
+                m_Mes->editedModel()->setHovered(resp.ptr);
             }
         }
 
@@ -1694,7 +1678,7 @@ private:
     ReassignSocketPopup m_ReassignSocketPopup;
     Select2PFsPopup m_Select2PFsPopup;
     LogViewer m_LogViewer;
-    ComponentHierarchy m_ComponentHierarchy;
+    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
     ModelActionsMenuBar m_ModelActionsMenuBar{m_Mes->editedModel()};
     CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};

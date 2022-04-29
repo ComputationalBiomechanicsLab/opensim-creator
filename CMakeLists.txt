@@ -495,8 +495,6 @@ add_library(osccore STATIC
     src/Widgets/BasicSceneViewer.hpp
     src/Widgets/ComponentDetails.cpp
     src/Widgets/ComponentDetails.hpp
-    src/Widgets/ComponentHierarchy.cpp
-    src/Widgets/ComponentHierarchy.hpp
     src/Widgets/CoordinateEditor.cpp
     src/Widgets/CoordinateEditor.hpp
     src/Widgets/LogViewer.cpp
@@ -505,6 +503,8 @@ add_library(osccore STATIC
     src/Widgets/MainMenu.hpp
     src/Widgets/ModelActionsMenuBar.cpp
     src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelHierarchyPanel.cpp
+    src/Widgets/ModelHierarchyPanel.hpp
     src/Widgets/ModelMusclePlotPanel.cpp
     src/Widgets/ModelMusclePlotPanel.hpp
     src/Widgets/NamedPanel.cpp
