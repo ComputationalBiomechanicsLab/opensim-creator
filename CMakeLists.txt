@@ -507,6 +507,8 @@ add_library(osccore STATIC
     src/Widgets/ModelActionsMenuBar.hpp
     src/Widgets/ModelMusclePlotPanel.cpp
     src/Widgets/ModelMusclePlotPanel.hpp
+    src/Widgets/NamedPanel.cpp
+    src/Widgets/NamedPanel.hpp
     src/Widgets/ObjectPropertiesEditor.cpp
     src/Widgets/ObjectPropertiesEditor.hpp
     src/Widgets/ParamBlockEditorPopup.cpp
