@@ -354,9 +354,15 @@ add_library(osccore STATIC
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
     src/OpenSimBindings/ComponentOutputExtractor.hpp
+    src/OpenSimBindings/CoordinateEdit.cpp
+    src/OpenSimBindings/CoordinateEdit.hpp
     src/OpenSimBindings/CustomDecorationOptions.hpp
-    src/OpenSimBindings/FdSimulation.cpp
-    src/OpenSimBindings/FdSimulation.hpp
+    src/OpenSimBindings/ForwardDynamicSimulation.cpp
+    src/OpenSimBindings/ForwardDynamicSimulation.hpp
+    src/OpenSimBindings/ForwardDynamicSimulator.cpp
+    src/OpenSimBindings/ForwardDynamicSimulator.hpp
+    src/OpenSimBindings/ForwardDynamicSimulatorParams.cpp
+    src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp
     src/OpenSimBindings/IntegratorMethod.cpp
     src/OpenSimBindings/IntegratorMethod.hpp
     src/OpenSimBindings/IntegratorOutputExtractor.cpp
@@ -381,24 +387,22 @@ add_library(osccore STATIC
     src/OpenSimBindings/ParamBlock.cpp
     src/OpenSimBindings/Simulation.hpp
     src/OpenSimBindings/SimulationClock.hpp
+    src/OpenSimBindings/SimulationModelStatePair.cpp
+    src/OpenSimBindings/SimulationModelStatePair.hpp
     src/OpenSimBindings/SimulationReport.cpp
     src/OpenSimBindings/SimulationReport.hpp
     src/OpenSimBindings/SimulationStatus.cpp
     src/OpenSimBindings/SimulationStatus.hpp
-    src/OpenSimBindings/SimulatorModelStatePair.cpp
-    src/OpenSimBindings/SimulatorModelStatePair.hpp
     src/OpenSimBindings/StateModifications.cpp
     src/OpenSimBindings/StateModifications.hpp
     src/OpenSimBindings/StoFileSimulation.hpp
     src/OpenSimBindings/StoFileSimulation.cpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
-    src/OpenSimBindings/UiFdSimulation.cpp
-    src/OpenSimBindings/UiFdSimulation.hpp
     src/OpenSimBindings/UiModel.cpp
     src/OpenSimBindings/UiModel.hpp
-    src/OpenSimBindings/UndoableUiModel.cpp
-    src/OpenSimBindings/UndoableUiModel.hpp
+    src/OpenSimBindings/UndoableModelStatePair.cpp
+    src/OpenSimBindings/UndoableModelStatePair.hpp
     src/OpenSimBindings/VirtualConstModelStatePair.hpp
     src/OpenSimBindings/VirtualModelStatePair.hpp
     src/OpenSimBindings/VirtualOutputExtractor.hpp
