@@ -345,11 +345,13 @@ private:
 			m_MuscleComponentPath = {};
 			m_CoordinateComponentPath = {};
 			m_LastPlotModelVersion.reset();
+			m_LastPlotStateVersion.reset();
 			return;
 
 		}
 
 		if (m_Uim->getModelVersion() != m_LastPlotModelVersion ||
+			m_Uim->getStateVersion() != m_LastPlotStateVersion ||
 			m_ChosenMuscleOutput != m_ActiveMuscleOutput ||
 			m_NumPlotPointsRequested != m_NumPlotPointsPlotted)
 		{
@@ -426,6 +428,7 @@ private:
 		if (m_NumPlotPointsRequested <= 0)
 		{
 			m_LastPlotModelVersion = m_Uim->getModelVersion();
+			m_LastPlotStateVersion = m_Uim->getStateVersion();
 			m_ActiveMuscleOutput = m_ChosenMuscleOutput;
 			m_NumPlotPointsPlotted = m_NumPlotPointsRequested;
 			return;
@@ -465,6 +468,7 @@ private:
 		}
 
 		m_LastPlotModelVersion = m_Uim->getModelVersion();
+		m_LastPlotStateVersion = m_Uim->getStateVersion();
 		m_ActiveMuscleOutput = m_ChosenMuscleOutput;
 		m_NumPlotPointsPlotted = m_NumPlotPointsRequested;
 	}
@@ -529,6 +533,7 @@ private:
 	// plot state
 	bool m_IsShowingPlot = false;
 	UID m_LastPlotModelVersion;
+	UID m_LastPlotStateVersion;
 	float m_XBegin = -1.0f;
 	float m_XEnd = -1.0f;
 	std::vector<float> m_XValues;
