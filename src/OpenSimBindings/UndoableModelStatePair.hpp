@@ -18,7 +18,7 @@ namespace SimTK
 
 namespace osc
 {
-    class UiModel;
+    class AutoFinalizingModelStatePair;
 }
 
 namespace osc
@@ -73,8 +73,8 @@ namespace osc
         // get/update current UiModel
         //
         // note: mutating anything may trigger an undo/redo save if `isDirty` returns `true`
-        UiModel const& getUiModel() const;
-        UiModel& updUiModel();
+        AutoFinalizingModelStatePair const& getUiModel() const;
+        AutoFinalizingModelStatePair& updUiModel();
 
         // manipulate undo/redo state
         bool canUndo() const;

@@ -33,24 +33,24 @@ namespace osc
     // a model + state pair that automatically updates (e.g. finalizeFromProperties etc.)
     // whenever the model is edited, guaranteeing that any getters/updater member functions
     // return an up-to-date model/state
-    class UiModel final : public VirtualModelStatePair {
+    class AutoFinalizingModelStatePair final : public VirtualModelStatePair {
     public:
         // construct a blank (new) UiModel
-        UiModel();
+        AutoFinalizingModelStatePair();
 
-        // construct a UiModel by loading an osim file
-        explicit UiModel(std::string const& osim);
+        // construct a AutoFinalizingModelStatePair by loading an osim file
+        explicit AutoFinalizingModelStatePair(std::string const& osim);
 
-        // construct a UiModel from an in-memory OpenSim::Model
-        explicit UiModel(std::unique_ptr<OpenSim::Model>);
+        // construct a AutoFinalizingModelStatePair from an in-memory OpenSim::Model
+        explicit AutoFinalizingModelStatePair(std::unique_ptr<OpenSim::Model>);
 
-        UiModel(UiModel const&);
-        UiModel(UiModel&&) noexcept;
-        UiModel& operator=(UiModel const&);
-        UiModel& operator=(UiModel&&) noexcept;
-        ~UiModel() noexcept override;
+        AutoFinalizingModelStatePair(AutoFinalizingModelStatePair const&);
+        AutoFinalizingModelStatePair(AutoFinalizingModelStatePair&&) noexcept;
+        AutoFinalizingModelStatePair& operator=(AutoFinalizingModelStatePair const&);
+        AutoFinalizingModelStatePair& operator=(AutoFinalizingModelStatePair&&) noexcept;
+        ~AutoFinalizingModelStatePair() noexcept override;
 
-        // get underlying `OpenSim::Model` that the UiModel wraps
+        // get underlying `OpenSim::Model` that the AutoFinalizingModelStatePair wraps
         OpenSim::Model const& getModel() const override;
 
         OpenSim::Model& updModel() override;

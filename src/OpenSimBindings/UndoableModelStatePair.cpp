@@ -1,7 +1,7 @@
 #include "UndoableModelStatePair.hpp"
 
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Perf.hpp"
@@ -27,13 +27,13 @@ namespace
     public:
         using Clock = std::chrono::system_clock;
 
-        explicit UiModelCommit(osc::UiModel model, std::string_view message) :
+        explicit UiModelCommit(osc::AutoFinalizingModelStatePair model, std::string_view message) :
             m_Model{std::move(model)},
             m_Message{std::move(message)}
         {
         }
 
-        UiModelCommit(osc::UiModel model, osc::UID parent, std::string_view message) :
+        UiModelCommit(osc::AutoFinalizingModelStatePair model, osc::UID parent, std::string_view message) :
             m_MaybeParentID{std::move(parent)},
             m_Model{std::move(model)},
             m_Message{std::move(message)}
@@ -44,7 +44,7 @@ namespace
         bool hasParent() const { return m_MaybeParentID != osc::UID::empty(); }
         osc::UID getParentID() const { return m_MaybeParentID; }
         Clock::time_point getCommitTime() const { return m_CommitTime; }
-        osc::UiModel const& getUiModel() const { return m_Model; }
+        osc::AutoFinalizingModelStatePair const& getUiModel() const { return m_Model; }
 
     private:
         // unique ID for this commit
@@ -57,7 +57,7 @@ namespace
         Clock::time_point m_CommitTime = Clock::now();
 
         // the model saved in this snapshot
-        osc::UiModel m_Model;
+        osc::AutoFinalizingModelStatePair m_Model;
 
         // commit message
         std::string m_Message;
@@ -279,7 +279,7 @@ public:
 
         if (c)
         {
-            UiModel newScratch = c->getUiModel();
+            AutoFinalizingModelStatePair newScratch = c->getUiModel();
             if (!skipCopyingSelection)
             {
                 // care: skipping this copy can be necessary because getSelected etc. might rethrow
@@ -322,7 +322,7 @@ public:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        UiModel newModel = parent->getUiModel();
+        AutoFinalizingModelStatePair newModel = parent->getUiModel();
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();
@@ -364,7 +364,7 @@ public:
         //
         // - user's selection state should be "sticky" between undo/redo
         // - user's scene scale factor should be "sticky" between undo/redo
-        UiModel newModel = c->getUiModel();
+        AutoFinalizingModelStatePair newModel = c->getUiModel();
         newModel.setSelectedHoveredAndIsolatedFrom(m_Scratch);
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();
@@ -373,12 +373,12 @@ public:
         m_CurrentHead = c->getID();
     }
 
-    UiModel& updScratch()
+    AutoFinalizingModelStatePair& updScratch()
     {
         return m_Scratch;
     }
 
-    UiModel const& getScratch()
+    AutoFinalizingModelStatePair const& getScratch()
     {
         return m_Scratch;
     }
@@ -405,7 +405,7 @@ public:
 
 private:
     // mutable staging area that calling code can mutate
-    UiModel m_Scratch;
+    AutoFinalizingModelStatePair m_Scratch;
 
     // where scratch will commit to (i.e. the parent of the scratch area)
     UID m_CurrentHead = UID::empty();
@@ -489,12 +489,12 @@ void osc::UndoableModelStatePair::setUpToDateWithFilesystem()
     m_Impl->setFilesystemVersionToCurrent();
 }
 
-osc::UiModel const& osc::UndoableModelStatePair::getUiModel() const
+osc::AutoFinalizingModelStatePair const& osc::UndoableModelStatePair::getUiModel() const
 {
     return m_Impl->getScratch();
 }
 
-osc::UiModel& osc::UndoableModelStatePair::updUiModel()
+osc::AutoFinalizingModelStatePair& osc::UndoableModelStatePair::updUiModel()
 {
     return m_Impl->updScratch();
 }
@@ -531,7 +531,7 @@ void osc::UndoableModelStatePair::doRedo()
 
 void osc::UndoableModelStatePair::commit(std::string_view message)
 {
-    UiModel& scratch = m_Impl->updScratch();
+    AutoFinalizingModelStatePair& scratch = m_Impl->updScratch();
 
     // ensure the scratch space is clean
     try

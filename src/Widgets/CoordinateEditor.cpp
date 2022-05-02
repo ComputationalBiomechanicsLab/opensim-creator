@@ -1,9 +1,9 @@
 #include "CoordinateEditor.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"

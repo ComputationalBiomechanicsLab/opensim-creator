@@ -1,12 +1,12 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/Platform/App.hpp"

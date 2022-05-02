@@ -1,6 +1,6 @@
 #include "UiModelViewerScreen.hpp"
 
-#include "src/OpenSimBindings/UiModel.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
@@ -65,7 +65,7 @@ public:
 
 private:
     std::string m_ModelPath = App::resource("models/RajagopalModel/Rajagopal2015.osim").string();
-    UiModel m_UiModel{m_ModelPath};
+    AutoFinalizingModelStatePair m_UiModel{m_ModelPath};
     UiModelViewer m_ModelViewer;
 };
 
