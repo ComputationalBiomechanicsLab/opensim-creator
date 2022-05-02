@@ -346,6 +346,8 @@ add_library(osccore STATIC
     src/Maths/Transform.cpp
     src/Maths/Transform.hpp
 
+    src/OpenSimBindings/AutoFinalizingModelStatePair.cpp
+    src/OpenSimBindings/AutoFinalizingModelStatePair.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
     src/OpenSimBindings/ComponentAnnotations.cpp
@@ -399,8 +401,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/StoFileSimulation.cpp
     src/OpenSimBindings/TypeRegistry.cpp
     src/OpenSimBindings/TypeRegistry.hpp
-    src/OpenSimBindings/UiModel.cpp
-    src/OpenSimBindings/UiModel.hpp
     src/OpenSimBindings/UndoableModelStatePair.cpp
     src/OpenSimBindings/UndoableModelStatePair.hpp
     src/OpenSimBindings/VirtualConstModelStatePair.hpp
