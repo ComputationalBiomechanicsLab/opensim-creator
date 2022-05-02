@@ -10,14 +10,14 @@ namespace OpenSim
 
 namespace osc
 {
-    class UndoableUiModel;
+    class UndoableModelStatePair;
 }
 
 namespace osc
 {
     class AddComponentPopup final {
     public:
-        AddComponentPopup(std::shared_ptr<UndoableUiModel>,
+        AddComponentPopup(std::shared_ptr<UndoableModelStatePair>,
                           std::unique_ptr<OpenSim::Component> prototype,
                           std::string_view popupName);
         AddComponentPopup(AddComponentPopup const&) = delete;

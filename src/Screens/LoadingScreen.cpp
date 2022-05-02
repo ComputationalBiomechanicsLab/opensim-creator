@@ -1,7 +1,7 @@
 #include "LoadingScreen.hpp"
 
 #include "src/OpenSimBindings/MainEditorState.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
@@ -21,10 +21,10 @@
 
 
 // the function that loads the OpenSim model
-static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
+static std::unique_ptr<osc::UndoableModelStatePair> loadOpenSimModel(std::string path)
 {
     auto model = std::make_unique<OpenSim::Model>(path);
-    return std::make_unique<osc::UndoableUiModel>(std::move(model));
+    return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }
 
 class osc::LoadingScreen::Impl final {
@@ -97,7 +97,7 @@ public:
 
         // otherwise, poll for the result and catch any exceptions that bubble
         // up from the background thread
-        std::unique_ptr<UndoableUiModel> result = nullptr;
+        std::unique_ptr<UndoableModelStatePair> result = nullptr;
         try
         {
             if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
@@ -190,7 +190,7 @@ private:
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<osc::UndoableUiModel>> m_LoadingResult;
+    std::future<std::unique_ptr<osc::UndoableModelStatePair>> m_LoadingResult;
 
     // if not empty, any error encountered by the loading thread
     std::string m_LoadingErrorMsg;

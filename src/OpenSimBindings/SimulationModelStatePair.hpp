@@ -21,18 +21,18 @@ namespace SimTK
 namespace osc
 {
 	// a readonly model+state pair from a particular step from a simulator
-	class SimulatorModelStatePair : public VirtualModelStatePair {
+	class SimulationModelStatePair : public VirtualModelStatePair {
 	public:
-		SimulatorModelStatePair(
+		SimulationModelStatePair(
 			std::shared_ptr<Simulation>,
 			SimulationReport,
 			float fixupScaleFactor);
 
-		SimulatorModelStatePair(SimulatorModelStatePair const&) = delete;
-		SimulatorModelStatePair(SimulatorModelStatePair&&) noexcept;
-		SimulatorModelStatePair& operator=(SimulatorModelStatePair const&) = delete;
-		SimulatorModelStatePair& operator=(SimulatorModelStatePair&&) noexcept;
-		~SimulatorModelStatePair() noexcept;
+		SimulationModelStatePair(SimulationModelStatePair const&) = delete;
+		SimulationModelStatePair(SimulationModelStatePair&&) noexcept;
+		SimulationModelStatePair& operator=(SimulationModelStatePair const&) = delete;
+		SimulationModelStatePair& operator=(SimulationModelStatePair&&) noexcept;
+		~SimulationModelStatePair() noexcept;
 
 		OpenSim::Model const& getModel() const override;
 		OpenSim::Model& updModel() override;  // throws

@@ -2,7 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/ObjectPropertiesEditor.hpp"
 #include "src/Widgets/StandardPopup.hpp"
@@ -48,7 +48,7 @@ struct PathPoint final {
 
 class osc::AddComponentPopup::Impl : public osc::StandardPopup {
 public:
-    Impl(std::shared_ptr<UndoableUiModel> uum,
+    Impl(std::shared_ptr<UndoableModelStatePair> uum,
          std::unique_ptr<OpenSim::Component> prototype,
          std::string_view popupName) :
 
@@ -430,7 +430,7 @@ private:
 
 private:
     // the model that the component should be added to
-    std::shared_ptr<UndoableUiModel> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Uum;
 
     // a prototypical version of the component being added
     std::unique_ptr<OpenSim::Component> m_Proto;
@@ -459,7 +459,7 @@ private:
 
 // public API
 
-osc::AddComponentPopup::AddComponentPopup(std::shared_ptr<UndoableUiModel> uum,
+osc::AddComponentPopup::AddComponentPopup(std::shared_ptr<UndoableModelStatePair> uum,
     std::unique_ptr<OpenSim::Component> prototype,
     std::string_view popupName) :
 

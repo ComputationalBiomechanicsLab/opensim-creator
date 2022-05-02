@@ -4,7 +4,7 @@
 #include "src/OpenSimBindings/StateModifications.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Styling.hpp"
 #include "src/Utils/Algorithms.hpp"
 
@@ -25,7 +25,7 @@ static bool IsNameLexographicallyLessThan(OpenSim::Coordinate const* c1,
 
 class osc::CoordinateEditor::Impl final {
 public:
-    Impl(std::shared_ptr<UndoableUiModel> uum) :
+    Impl(std::shared_ptr<UndoableModelStatePair> uum) :
         m_Uum{std::move(uum)}
     {
     }
@@ -289,7 +289,7 @@ private:
         }
     }
 
-    std::shared_ptr<UndoableUiModel> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Uum;
     std::string m_Filter;
     static constexpr inline int m_FilterMaxLen = 64;
     bool m_SortByName = false;
@@ -299,7 +299,7 @@ private:
     std::vector<OpenSim::Coordinate const*> m_CoordScratch;
 };
 
-osc::CoordinateEditor::CoordinateEditor(std::shared_ptr<UndoableUiModel> uum) :
+osc::CoordinateEditor::CoordinateEditor(std::shared_ptr<UndoableModelStatePair> uum) :
     m_Impl{std::make_unique<Impl>(std::move(uum))}
 {
 }

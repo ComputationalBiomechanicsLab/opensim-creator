@@ -1,11 +1,12 @@
-#include "UiFdSimulation.hpp"
+#include "ForwardDynamicSimulation.hpp"
 
 #include "src/OpenSimBindings/BasicModelStatePair.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulator.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
-#include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/UID.hpp"
@@ -22,9 +23,9 @@
 #include <vector>
 
 // helper function for creating a simulator that's hooked up to the reports vector
-static osc::FdSimulation MakeSimulation(
+static osc::ForwardDynamicSimulator MakeSimulation(
         osc::BasicModelStatePair p,
-        osc::FdParams const& params,
+        osc::ForwardDynamicSimulatorParams const& params,
         osc::SynchronizedValue<std::vector<osc::SimulationReport>>& reportQueue)
 {
     auto callback = [&](osc::SimulationReport r)
@@ -33,7 +34,7 @@ static osc::FdSimulation MakeSimulation(
         reportsGuard->push_back(std::move(r));
         osc::App::upd().requestRedraw();
     };
-    return osc::FdSimulation{std::move(p), params, std::move(callback)};
+    return osc::ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
 }
 
 static std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
@@ -48,10 +49,10 @@ static std::vector<osc::OutputExtractor> GetFdSimulatorOutputExtractorsAsVector(
     return rv;
 }
 
-class osc::UiFdSimulation::Impl final {
+class osc::ForwardDynamicSimulation::Impl final {
 public:
 
-    Impl(BasicModelStatePair p, FdParams const& params) :
+    Impl(BasicModelStatePair p, ForwardDynamicSimulatorParams const& params) :
         m_ModelState{std::move(p)},
         m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
@@ -182,7 +183,7 @@ private:
     SynchronizedValue<BasicModelStatePair> m_ModelState;
     SynchronizedValue<std::vector<SimulationReport>> m_ReportQueue;
     std::vector<SimulationReport> m_Reports;
-    FdSimulation m_Simulation;
+    ForwardDynamicSimulator m_Simulation;
     ParamBlock m_ParamsAsParamBlock;
     std::vector<OutputExtractor> m_SimulatorOutputExtractors;
 };
@@ -190,75 +191,75 @@ private:
 
 // public API
 
-osc::UiFdSimulation::UiFdSimulation(BasicModelStatePair ms,FdParams const& params) :
+osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, ForwardDynamicSimulatorParams const& params) :
     m_Impl{std::make_unique<Impl>(std::move(ms), params)}
 {
 }
-osc::UiFdSimulation::UiFdSimulation(UiFdSimulation&&) noexcept = default;
-osc::UiFdSimulation& osc::UiFdSimulation::operator=(UiFdSimulation&&) noexcept = default;
-osc::UiFdSimulation::~UiFdSimulation() noexcept = default;
+osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;
+osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
+osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;
 
-osc::SynchronizedValueGuard<OpenSim::Model const> osc::UiFdSimulation::getModel() const
+osc::SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::getModel() const
 {
     return m_Impl->getModel();
 }
 
-int osc::UiFdSimulation::getNumReports() const
+int osc::ForwardDynamicSimulation::getNumReports() const
 {
     return m_Impl->getNumReports();
 }
 
-osc::SimulationReport osc::UiFdSimulation::getSimulationReport(int reportIndex) const
+osc::SimulationReport osc::ForwardDynamicSimulation::getSimulationReport(int reportIndex) const
 {
     return m_Impl->getSimulationReport(std::move(reportIndex));
 }
 
-std::vector<osc::SimulationReport> osc::UiFdSimulation::getAllSimulationReports() const
+std::vector<osc::SimulationReport> osc::ForwardDynamicSimulation::getAllSimulationReports() const
 {
     return m_Impl->getAllSimulationReports();
 }
 
-osc::SimulationStatus osc::UiFdSimulation::getStatus() const
+osc::SimulationStatus osc::ForwardDynamicSimulation::getStatus() const
 {
     return m_Impl->getStatus();
 }
 
-osc::SimulationClock::time_point osc::UiFdSimulation::getCurTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getCurTime() const
 {
     return m_Impl->getCurTime();
 }
 
-osc::SimulationClock::time_point osc::UiFdSimulation::getStartTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getStartTime() const
 {
     return m_Impl->getStartTime();
 }
 
-osc::SimulationClock::time_point osc::UiFdSimulation::getEndTime() const
+osc::SimulationClock::time_point osc::ForwardDynamicSimulation::getEndTime() const
 {
     return m_Impl->getEndTime();
 }
 
-float osc::UiFdSimulation::getProgress() const
+float osc::ForwardDynamicSimulation::getProgress() const
 {
     return m_Impl->getProgress();
 }
 
-osc::ParamBlock const& osc::UiFdSimulation::getParams() const
+osc::ParamBlock const& osc::ForwardDynamicSimulation::getParams() const
 {
     return m_Impl->getParams();
 }
 
-nonstd::span<osc::OutputExtractor const> osc::UiFdSimulation::getOutputExtractors() const
+nonstd::span<osc::OutputExtractor const> osc::ForwardDynamicSimulation::getOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }
 
-void osc::UiFdSimulation::requestStop()
+void osc::ForwardDynamicSimulation::requestStop()
 {
     return m_Impl->requestStop();
 }
 
-void osc::UiFdSimulation::stop()
+void osc::ForwardDynamicSimulation::stop()
 {
     return m_Impl->stop();
 }

@@ -3,7 +3,7 @@
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
@@ -98,7 +98,7 @@ static void transitionToLoadingScreen(std::shared_ptr<osc::MainEditorState> st, 
     osc::App::upd().requestTransition<osc::LoadingScreen>(st, p);
 }
 
-static void actionSaveCurrentModelAs(osc::UndoableUiModel& uim)
+static void actionSaveCurrentModelAs(osc::UndoableModelStatePair& uim)
 {
     auto maybePath = promptSaveOneFile();
 
@@ -161,7 +161,7 @@ void osc::actionNewModel(std::shared_ptr<MainEditorState> st)
 {
     if (st)
     {
-        st->editedModel() = std::make_shared<UndoableUiModel>();
+        st->editedModel() = std::make_shared<UndoableModelStatePair>();
         App::upd().requestTransition<ModelEditorScreen>(st);
     }
     else
@@ -177,7 +177,7 @@ void osc::actionOpenModel(std::shared_ptr<MainEditorState> mes)
 
 bool osc::actionSaveModel(std::shared_ptr<MainEditorState> mes)
 {
-    std::shared_ptr<UndoableUiModel> uim = mes->editedModel();
+    std::shared_ptr<UndoableModelStatePair> uim = mes->editedModel();
     std::optional<std::string> maybeUserSaveLoc = tryGetModelSaveLocation(uim->getModel());
 
     if (maybeUserSaveLoc && trySaveModel(uim->getModel(), *maybeUserSaveLoc))

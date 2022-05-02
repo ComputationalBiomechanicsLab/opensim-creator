@@ -2,7 +2,6 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
-#include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
@@ -104,7 +103,7 @@ static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
 // try to delete an undoable-model's current selection
 //
 // "try", because some things are difficult to delete from OpenSim models
-static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
+static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableModelStatePair& uim)
 {
     if (OpenSim::Component* selected = uim.updSelected())
     {
@@ -121,7 +120,7 @@ static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
 }
 
 // draw an editor for top-level selected Component members (e.g. name)
-static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
+static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& st)
 {
     OpenSim::Component const* selection = st.getSelected();
 
@@ -158,7 +157,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
 }
 
 // draw UI element that lets user change a model joint's type
-static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
+static void DrawSelectionJointTypeSwitcher(osc::UndoableModelStatePair& st)
 {
     OpenSim::Joint const* selection = st.getSelectedAs<OpenSim::Joint>();
 
@@ -231,7 +230,7 @@ static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
 // try to undo currently edited model to earlier state
 static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     if (editedModel->canUndo())
     {
         editedModel->doUndo();
@@ -241,7 +240,7 @@ static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
 // try to redo currently edited model to later state
 static void ActionRedoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     if (editedModel->canRedo())
     {
         editedModel->doRedo();
@@ -258,7 +257,7 @@ static void ActionDisableAllWrappingSurfaces(osc::MainEditorState& mes)
 // enable all wrapping surfaces in the current model
 static void ActionEnableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     osc::ActivateAllWrapObjectsIn(editedModel->updModel());
     editedModel->commit("enabled all wrapping surfaces");
 }
@@ -276,7 +275,7 @@ static void ActionClearSelectionFromEditedModel(osc::MainEditorState& mes)
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
 static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachGeomPopup,
-                                               osc::UndoableUiModel& uim)
+                                               osc::UndoableModelStatePair& uim)
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
@@ -335,7 +334,7 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
 
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawJointContextualActions(osc::UndoableUiModel& uim)
+static void DrawJointContextualActions(osc::UndoableModelStatePair& uim)
 {
     OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
 
@@ -411,7 +410,7 @@ static void DrawJointContextualActions(osc::UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
+static void DrawHCFContextualActions(osc::UndoableModelStatePair& uim)
 {
     OpenSim::HuntCrossleyForce const* hcf = uim.getSelectedAs<OpenSim::HuntCrossleyForce>();
 
@@ -489,7 +488,7 @@ static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected path actuator
-static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
+static void DrawPathActuatorContextualParams(osc::UndoableModelStatePair& uim)
 {
     OpenSim::PathActuator const* pa = uim.getSelectedAs<OpenSim::PathActuator>();
 
@@ -538,7 +537,7 @@ static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
     ImGui::Columns();
 }
 
-static void DrawModelContextualActions(osc::UndoableUiModel& uum)
+static void DrawModelContextualActions(osc::UndoableModelStatePair& uum)
 {
     OpenSim::Model const* m = uum.getSelectedAs<OpenSim::Model>();
 
@@ -563,7 +562,7 @@ static void DrawModelContextualActions(osc::UndoableUiModel& uum)
 
 // draw socket editor for current selection
 static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
-                             osc::UndoableUiModel& uim)
+                             osc::UndoableModelStatePair& uim)
 {
     OpenSim::Component const* selected = uim.getSelected();
 
@@ -649,7 +648,7 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
 // draw breadcrumbs for current selection
 //
 // eg: Model > Joint > PhysicalFrame
-static void DrawSelectionBreadcrumbs(osc::UndoableUiModel& uim)
+static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
 {
     OpenSim::Component const* selection = uim.getSelected();
 
@@ -704,7 +703,7 @@ static void DrawSelectOwnerMenu(osc::MainEditorState& st,
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
 
         OpenSim::Component const* c = &selected;
         editedModel->setHovered(nullptr);
@@ -858,7 +857,7 @@ static bool Draw3DViewer(osc::MainEditorState& st,
         return true;
     }
 
-    std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
 
     auto resp = viewer.draw(editedModel->getUiModel());
     ImGui::End();
@@ -924,7 +923,7 @@ static void Draw3DViewers(osc::MainEditorState& st)
     }
 }
 
-static std::string GetDocumentName(osc::UndoableUiModel const& uim)
+static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
 {
     if (uim.hasFilesystemLocation())
     {
@@ -936,7 +935,7 @@ static std::string GetDocumentName(osc::UndoableUiModel const& uim)
     }
 }
 
-static std::string GetRecommendedTitle(osc::UndoableUiModel const& uim)
+static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
 {
     std::string s = GetDocumentName(uim);
     if (!uim.isUpToDateWithFilesystem())
@@ -1115,7 +1114,7 @@ private:
     {
         try
         {
-            std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+            std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
             osc::log::info("file change detected: loading updated file");
             auto p = std::make_unique<OpenSim::Model>(editedModel->getModel().getInputFileName());
@@ -1135,7 +1134,7 @@ private:
     // draw contextual actions for selection
     void drawContextualActions()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
         if (!editedModel->getSelected())
         {
@@ -1217,7 +1216,7 @@ private:
 
     void drawSelectionEditor()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
         if (!editedModel->getSelected())
         {
@@ -1290,7 +1289,7 @@ private:
 
     void drawMainMenuEditTab()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
         if (ImGui::BeginMenu("Edit"))
         {

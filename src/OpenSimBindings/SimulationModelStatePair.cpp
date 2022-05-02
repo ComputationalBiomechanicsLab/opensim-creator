@@ -1,4 +1,4 @@
-#include "SimulatorModelStatePair.hpp"
+#include "SimulationModelStatePair.hpp"
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
@@ -12,7 +12,7 @@
 #include <memory>
 #include <utility>
 
-class osc::SimulatorModelStatePair::Impl final {
+class osc::SimulationModelStatePair::Impl final {
 public:
 	Impl(std::shared_ptr<Simulation> simulation,
 		 SimulationReport simulationReport,
@@ -163,110 +163,110 @@ private:
 	float m_FixupScaleFactor;
 };
 
-osc::SimulatorModelStatePair::SimulatorModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report, float fixupScaleFactor) :
+osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report, float fixupScaleFactor) :
 	m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report), std::move(fixupScaleFactor))}
 {
 }
-osc::SimulatorModelStatePair::SimulatorModelStatePair(SimulatorModelStatePair&&) noexcept = default;
-osc::SimulatorModelStatePair& osc::SimulatorModelStatePair::operator=(SimulatorModelStatePair&&) noexcept = default;
-osc::SimulatorModelStatePair::~SimulatorModelStatePair() noexcept = default;
+osc::SimulationModelStatePair::SimulationModelStatePair(SimulationModelStatePair&&) noexcept = default;
+osc::SimulationModelStatePair& osc::SimulationModelStatePair::operator=(SimulationModelStatePair&&) noexcept = default;
+osc::SimulationModelStatePair::~SimulationModelStatePair() noexcept = default;
 
-OpenSim::Model const& osc::SimulatorModelStatePair::getModel() const
+OpenSim::Model const& osc::SimulationModelStatePair::getModel() const
 {
 	return m_Impl->getModel();
 }
 
-OpenSim::Model& osc::SimulatorModelStatePair::updModel()
+OpenSim::Model& osc::SimulationModelStatePair::updModel()
 {
 	return m_Impl->updModel();
 }
 
-osc::UID osc::SimulatorModelStatePair::getModelVersion() const
+osc::UID osc::SimulationModelStatePair::getModelVersion() const
 {
 	return m_Impl->getModelVersion();
 }
 
-SimTK::State const& osc::SimulatorModelStatePair::getState() const
+SimTK::State const& osc::SimulationModelStatePair::getState() const
 {
 	return m_Impl->getState();
 }
 
-osc::UID osc::SimulatorModelStatePair::getStateVersion() const
+osc::UID osc::SimulationModelStatePair::getStateVersion() const
 {
 	return m_Impl->getStateVersion();
 }
 
-OpenSim::Component const* osc::SimulatorModelStatePair::getSelected() const
+OpenSim::Component const* osc::SimulationModelStatePair::getSelected() const
 {
 	return m_Impl->getSelected();
 }
 
-OpenSim::Component* osc::SimulatorModelStatePair::updSelected()
+OpenSim::Component* osc::SimulationModelStatePair::updSelected()
 {
 	return m_Impl->updSelected();
 }
 
-void osc::SimulatorModelStatePair::setSelected(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::setSelected(OpenSim::Component const* c)
 {
 	m_Impl->setSelected(std::move(c));
 }
 
-OpenSim::Component const* osc::SimulatorModelStatePair::getHovered() const
+OpenSim::Component const* osc::SimulationModelStatePair::getHovered() const
 {
 	return m_Impl->getHovered();
 }
 
-OpenSim::Component* osc::SimulatorModelStatePair::updHovered()
+OpenSim::Component* osc::SimulationModelStatePair::updHovered()
 {
 	return m_Impl->updHovered();
 }
 
-void osc::SimulatorModelStatePair::setHovered(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::setHovered(OpenSim::Component const* c)
 {
 	m_Impl->setHovered(std::move(c));
 }
 
-OpenSim::Component const* osc::SimulatorModelStatePair::getIsolated() const
+OpenSim::Component const* osc::SimulationModelStatePair::getIsolated() const
 {
 	return m_Impl->getIsolated();
 }
 
-OpenSim::Component* osc::SimulatorModelStatePair::updIsolated()
+OpenSim::Component* osc::SimulationModelStatePair::updIsolated()
 {
 	return m_Impl->updIsolated();
 }
 
-void osc::SimulatorModelStatePair::setIsolated(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::setIsolated(OpenSim::Component const* c)
 {
 	m_Impl->setIsolated(std::move(c));
 }
 
-float osc::SimulatorModelStatePair::getFixupScaleFactor() const
+float osc::SimulationModelStatePair::getFixupScaleFactor() const
 {
 	return m_Impl->getFixupScaleFactor();
 }
 
-void osc::SimulatorModelStatePair::setFixupScaleFactor(float v)
+void osc::SimulationModelStatePair::setFixupScaleFactor(float v)
 {
 	m_Impl->setFixupScaleFactor(std::move(v));
 }
 
-std::shared_ptr<osc::Simulation> osc::SimulatorModelStatePair::updSimulation()
+std::shared_ptr<osc::Simulation> osc::SimulationModelStatePair::updSimulation()
 {
 	return m_Impl->updSimulation();
 }
 
-void osc::SimulatorModelStatePair::setSimulation(std::shared_ptr<Simulation> sim)
+void osc::SimulationModelStatePair::setSimulation(std::shared_ptr<Simulation> sim)
 {
 	m_Impl->setSimulation(std::move(sim));
 }
 
-osc::SimulationReport osc::SimulatorModelStatePair::getSimulationReport() const
+osc::SimulationReport osc::SimulationModelStatePair::getSimulationReport() const
 {
 	return m_Impl->getSimulationReport();
 }
 
-void osc::SimulatorModelStatePair::setSimulationReport(SimulationReport report)
+void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
 {
 	m_Impl->setSimulationReport(std::move(report));
 }

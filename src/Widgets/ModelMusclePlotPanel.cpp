@@ -1,7 +1,7 @@
 #include "ModelMusclePlotPanel.hpp"
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
@@ -222,7 +222,7 @@ static std::vector<MuscleOutput> const& GetMuscleOutputs()
 
 class osc::ModelMusclePlotPanel::Impl final {
 public:
-	Impl(std::shared_ptr<UndoableUiModel> uim, std::string_view panelName) :
+	Impl(std::shared_ptr<UndoableModelStatePair> uim, std::string_view panelName) :
 		m_Uim{std::move(uim)},
 		m_PanelName{std::move(panelName)}
 	{
@@ -505,7 +505,7 @@ private:
 	}
 
 	// overall panel state
-	std::shared_ptr<UndoableUiModel> m_Uim;
+	std::shared_ptr<UndoableModelStatePair> m_Uim;
 	std::string m_PanelName;
 	bool m_IsOpen = true;
 	ImPlotAxisFlags m_XAxisFlags = ImPlotAxisFlags_AutoFit;
@@ -540,7 +540,7 @@ private:
 
 // public API
 
-osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableUiModel> uim,
+osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableModelStatePair> uim,
 	                                            std::string_view panelName) :
 	m_Impl{new Impl{std::move(uim), std::move(panelName)}}
 {

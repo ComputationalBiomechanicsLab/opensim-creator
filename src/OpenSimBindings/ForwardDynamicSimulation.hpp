@@ -20,7 +20,7 @@ namespace OpenSim
 
 namespace osc
 {
-    struct FdParams;
+    struct ForwardDynamicSimulatorParams;
     class ParamBlock;
     class OutputExtractor;
     class SimulationReport;
@@ -35,14 +35,14 @@ namespace osc
 {
     // an `osc::VirtualSimulation` that represents a live forward-dynamic simulation
     // that `osc` is running
-    class UiFdSimulation final : public VirtualSimulation {
+    class ForwardDynamicSimulation final : public VirtualSimulation {
     public:
-        UiFdSimulation(BasicModelStatePair, FdParams const&);
-        UiFdSimulation(UiFdSimulation const&) = delete;
-        UiFdSimulation(UiFdSimulation&&) noexcept;
-        UiFdSimulation& operator=(UiFdSimulation const&) = delete;
-        UiFdSimulation& operator=(UiFdSimulation&&) noexcept;
-        ~UiFdSimulation() noexcept;
+        ForwardDynamicSimulation(BasicModelStatePair, ForwardDynamicSimulatorParams const&);
+        ForwardDynamicSimulation(ForwardDynamicSimulation const&) = delete;
+        ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept;
+        ForwardDynamicSimulation& operator=(ForwardDynamicSimulation const&) = delete;
+        ForwardDynamicSimulation& operator=(ForwardDynamicSimulation&&) noexcept;
+        ~ForwardDynamicSimulation() noexcept;
 
         SynchronizedValueGuard<OpenSim::Model const> getModel() const override;
 

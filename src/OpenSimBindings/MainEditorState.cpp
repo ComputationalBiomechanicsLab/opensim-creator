@@ -2,9 +2,9 @@
 
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
-#include "src/OpenSimBindings/FdSimulation.hpp"
-#include "src/OpenSimBindings/UiFdSimulation.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -23,16 +23,16 @@ public:
     Impl() = default;
 
     Impl(std::unique_ptr<OpenSim::Model> model) :
-        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(model))}
+        m_EditedModel{std::make_shared<UndoableModelStatePair>(std::move(model))}
     {
     }
 
-    Impl(UndoableUiModel um) :
-        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(um))}
+    Impl(UndoableModelStatePair um) :
+        m_EditedModel{std::make_shared<UndoableModelStatePair>(std::move(um))}
     {
     }
 
-    std::shared_ptr<UndoableUiModel> editedModel()
+    std::shared_ptr<UndoableModelStatePair> editedModel()
     {
         return m_EditedModel;
     }
@@ -168,11 +168,11 @@ public:
     }
 
 private:
-    std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
+    std::shared_ptr<UndoableModelStatePair> m_EditedModel = std::make_shared<UndoableModelStatePair>();
     std::vector<std::shared_ptr<Simulation>> m_Simulations;
     int m_FocusedSimulation = -1;
     std::vector<OutputExtractor> m_UserOutputExtractors;
-    ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
+    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
     std::vector<UiModelViewer> m_ModelViewers = []()
     {
         std::vector<UiModelViewer> rv(1);
@@ -192,7 +192,7 @@ osc::MainEditorState::MainEditorState(std::unique_ptr<OpenSim::Model> model) :
 {
 }
 
-osc::MainEditorState::MainEditorState(UndoableUiModel um) :
+osc::MainEditorState::MainEditorState(UndoableModelStatePair um) :
     m_Impl{std::make_unique<Impl>(std::move(um))}
 {
 }
@@ -201,7 +201,7 @@ osc::MainEditorState::MainEditorState(MainEditorState&&) = default;
 osc::MainEditorState& osc::MainEditorState::operator=(MainEditorState&&) = default;
 osc::MainEditorState::~MainEditorState() noexcept = default;
 
-std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::editedModel()
+std::shared_ptr<osc::UndoableModelStatePair> osc::MainEditorState::editedModel()
 {
     return m_Impl->editedModel();
 }
@@ -326,11 +326,11 @@ void osc::AutoFocusAllViewers(MainEditorState& st)
 
 void osc::StartSimulatingEditedModel(MainEditorState& st)
 {
-    std::shared_ptr<UndoableUiModel> uim = st.editedModel();
+    std::shared_ptr<UndoableModelStatePair> uim = st.editedModel();
     BasicModelStatePair modelState{uim->getModel(), uim->getState()};
-    FdParams params = FromParamBlock(st.getSimulationParams());
+    ForwardDynamicSimulatorParams params = FromParamBlock(st.getSimulationParams());
 
-    st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});
+    st.addSimulation(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
     st.setFocusedSimulation(st.getNumSimulations()-1);
 }
 

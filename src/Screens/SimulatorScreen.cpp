@@ -10,9 +10,9 @@
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/SimulationClock.hpp"
+#include "src/OpenSimBindings/SimulationModelStatePair.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
 #include "src/OpenSimBindings/VirtualOutputExtractor.hpp"
-#include "src/OpenSimBindings/SimulatorModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
@@ -402,7 +402,7 @@ private:
                     }
                     else
                     {
-                        m_ShownModelState = std::make_unique<osc::SimulatorModelStatePair>(
+                        m_ShownModelState = std::make_unique<osc::SimulationModelStatePair>(
                             maybeSim,
                             *maybeReport,
                             sf);
@@ -438,7 +438,7 @@ private:
                 return;
             }
 
-            osc::SimulatorModelStatePair& ms = *m_ShownModelState;
+            osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
             auto resp = m_ModelHierarchyPanel.draw(ms);
 
@@ -594,7 +594,7 @@ private:
             return;
         }
 
-        osc::SimulatorModelStatePair& ms = *m_ShownModelState;
+        osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
         OpenSim::Component const* selected = ms.getSelected();
 
@@ -721,7 +721,7 @@ private:
 
             if (ImGui::MenuItem("edit model"))
             {
-                std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+                std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
                 editedModel->setModel(std::make_unique<OpenSim::Model>(*sim->getModel()));
                 editedModel->commit("loaded model from simulator window");
                 osc::App::upd().requestTransition<osc::ModelEditorScreen>(m_MainEditorState);
@@ -1120,7 +1120,7 @@ private:
     }
 
     // draw a 3D model viewer
-    bool SimscreenDraw3DViewer(osc::SimulatorModelStatePair& ms, osc::UiModelViewer& viewer, char const* name)
+    bool SimscreenDraw3DViewer(osc::SimulationModelStatePair& ms, osc::UiModelViewer& viewer, char const* name)
     {
         bool isOpen = true;
 
@@ -1185,7 +1185,7 @@ private:
             return;
         }
 
-        osc::SimulatorModelStatePair& ms = *m_ShownModelState;
+        osc::SimulationModelStatePair& ms = *m_ShownModelState;
 
         osc::MainEditorState& st = *m_MainEditorState;
         for (int i = 0; i < st.getNumViewers(); ++i)
@@ -1298,7 +1298,7 @@ private:
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //
     // if possible (i.e. there's a simulation report available), will be set each frame
-    std::unique_ptr<SimulatorModelStatePair> m_ShownModelState;
+    std::unique_ptr<SimulationModelStatePair> m_ShownModelState;
 
     // UI widgets
     LogViewer m_LogViewerWidget;

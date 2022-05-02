@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/OpenSimBindings/CoordinateEdit.hpp"
+
 #include <memory>
 
 namespace OpenSim
@@ -15,18 +17,6 @@ namespace SimTK
 
 namespace osc
 {
-    // a single, user-enacted, model coordinate edit
-    //
-    // used to modify the default state whenever a new state is generated
-    struct CoordinateEdit final {
-        double value;
-        double speed;
-        bool locked;
-
-        // returns `true` if it modified the state
-        bool applyToState(OpenSim::Coordinate const&, SimTK::State&) const;
-    };
-
     // a collection of user-enacted state modifications
     class StateModifications final {
     public:

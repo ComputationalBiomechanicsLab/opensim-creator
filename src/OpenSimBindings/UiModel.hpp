@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Maths/AABB.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
@@ -18,7 +16,6 @@ namespace OpenSim
     class Component;
     class Coordinate;
     class Model;
-    class Joint;
 }
 
 namespace SimTK
@@ -28,19 +25,14 @@ namespace SimTK
 
 namespace osc
 {
-    struct BVH;
-    class StateModifications;
     struct CoordinateEdit;
-    struct FdParams;
-    struct UiSimulation;
 }
 
 namespace osc
 {
-    // a "UI-ready" OpenSim::Model + SimTK::State pair
-    //
-    // this class guarantees that the returned model/state/decorations are up-to-date
-    // by internally checking dirty flags
+    // a model + state pair that automatically updates (e.g. finalizeFromProperties etc.)
+    // whenever the model is edited, guaranteeing that any getters/updater member functions
+    // return an up-to-date model/state
     class UiModel final : public VirtualModelStatePair {
     public:
         // construct a blank (new) UiModel

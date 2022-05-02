@@ -4,7 +4,7 @@
 #include "src/Bindings/SimTKHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Widgets/SelectComponentPopup.hpp"
 #include "src/Widgets/SelectGeometryPopup.hpp"
@@ -24,7 +24,7 @@
 
 class osc::AddBodyPopup::Impl : public osc::StandardPopup {
 public:
-    Impl(std::shared_ptr<UndoableUiModel> uum, std::string_view popupName) :
+    Impl(std::shared_ptr<UndoableModelStatePair> uum, std::string_view popupName) :
         StandardPopup{std::move(popupName)},
         m_Uum{std::move(uum)}
     {
@@ -281,7 +281,7 @@ private:
     }
 
     // the model that the body will be added to
-    std::shared_ptr<UndoableUiModel> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Uum;
 
     // set when the body is added
     bool m_BodyAddedLastDrawcall = false;
@@ -325,7 +325,7 @@ private:
 
 // public API
 
-osc::AddBodyPopup::AddBodyPopup(std::shared_ptr<UndoableUiModel> uum,
+osc::AddBodyPopup::AddBodyPopup(std::shared_ptr<UndoableModelStatePair> uum,
                                 std::string_view popupName) :
     m_Impl{std::make_unique<Impl>(std::move(uum), std::move(popupName))}
 {

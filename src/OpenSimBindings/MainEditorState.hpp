@@ -2,7 +2,7 @@
 
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 
 #include <memory>
@@ -29,7 +29,7 @@ namespace osc
     public:
         MainEditorState();
         MainEditorState(std::unique_ptr<OpenSim::Model>);
-        MainEditorState(UndoableUiModel);
+        MainEditorState(UndoableModelStatePair);
         MainEditorState(MainEditorState const&) = delete;
         MainEditorState(MainEditorState&&);
         MainEditorState& operator=(MainEditorState const&) = delete;
@@ -37,7 +37,7 @@ namespace osc
         ~MainEditorState() noexcept;
 
         // model that the user is editing
-        std::shared_ptr<UndoableUiModel> editedModel();
+        std::shared_ptr<UndoableModelStatePair> editedModel();
 
         // simulations
         int getNumSimulations() const;

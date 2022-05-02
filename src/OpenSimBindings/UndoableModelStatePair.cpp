@@ -1,4 +1,4 @@
-#include "UndoableUiModel.hpp"
+#include "UndoableModelStatePair.hpp"
 
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UiModel.hpp"
@@ -64,7 +64,7 @@ namespace
     };
 }
 
-class osc::UndoableUiModel::Impl final {
+class osc::UndoableModelStatePair::Impl final {
 public:
 
     Impl()
@@ -432,24 +432,24 @@ private:
 
 // public API
 
-osc::UndoableUiModel::UndoableUiModel() :
+osc::UndoableModelStatePair::UndoableModelStatePair() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::UndoableUiModel::UndoableUiModel(std::unique_ptr<OpenSim::Model> model) :
+osc::UndoableModelStatePair::UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model) :
     m_Impl{new Impl{std::move(model)}}
 {
 }
 
-osc::UndoableUiModel::UndoableUiModel(UndoableUiModel const& src) :
+osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair const& src) :
     m_Impl{new Impl{*src.m_Impl}}
 {
 }
 
-osc::UndoableUiModel::UndoableUiModel(UndoableUiModel&&) noexcept = default;
+osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair&&) noexcept = default;
 
-osc::UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src)
+osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair const& src)
 {
     if (&src != this)
     {
@@ -460,51 +460,51 @@ osc::UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel const& src
     return *this;
 }
 
-osc::UndoableUiModel& osc::UndoableUiModel::operator=(UndoableUiModel&&) noexcept = default;
+osc::UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&&) noexcept = default;
 
-osc::UndoableUiModel::~UndoableUiModel() noexcept = default;
+osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept = default;
 
-bool osc::UndoableUiModel::hasFilesystemLocation() const
+bool osc::UndoableModelStatePair::hasFilesystemLocation() const
 {
     return !m_Impl->getFilesystemLocation().empty();
 }
 
-std::filesystem::path const& osc::UndoableUiModel::getFilesystemPath() const
+std::filesystem::path const& osc::UndoableModelStatePair::getFilesystemPath() const
 {
     return m_Impl->getFilesystemLocation();
 }
 
-void osc::UndoableUiModel::setFilesystemPath(std::filesystem::path const& p)
+void osc::UndoableModelStatePair::setFilesystemPath(std::filesystem::path const& p)
 {
     m_Impl->setFilesystemLocation(p);
 }
 
-bool osc::UndoableUiModel::isUpToDateWithFilesystem() const
+bool osc::UndoableModelStatePair::isUpToDateWithFilesystem() const
 {
     return m_Impl->getCheckoutID() == m_Impl->getFilesystemVersion();
 }
 
-void osc::UndoableUiModel::setUpToDateWithFilesystem()
+void osc::UndoableModelStatePair::setUpToDateWithFilesystem()
 {
     m_Impl->setFilesystemVersionToCurrent();
 }
 
-osc::UiModel const& osc::UndoableUiModel::getUiModel() const
+osc::UiModel const& osc::UndoableModelStatePair::getUiModel() const
 {
     return m_Impl->getScratch();
 }
 
-osc::UiModel& osc::UndoableUiModel::updUiModel()
+osc::UiModel& osc::UndoableModelStatePair::updUiModel()
 {
     return m_Impl->updScratch();
 }
 
-bool osc::UndoableUiModel::canUndo() const
+bool osc::UndoableModelStatePair::canUndo() const
 {
     return m_Impl->canUndo();
 }
 
-void osc::UndoableUiModel::doUndo()
+void osc::UndoableModelStatePair::doUndo()
 {
     if (!m_Impl->canUndo())
     {
@@ -514,12 +514,12 @@ void osc::UndoableUiModel::doUndo()
     m_Impl->undo();
 }
 
-bool osc::UndoableUiModel::canRedo() const
+bool osc::UndoableModelStatePair::canRedo() const
 {
     return m_Impl->canRedo();
 }
 
-void osc::UndoableUiModel::doRedo()
+void osc::UndoableModelStatePair::doRedo()
 {
     if (!canRedo())
     {
@@ -529,7 +529,7 @@ void osc::UndoableUiModel::doRedo()
     m_Impl->redo();
 }
 
-void osc::UndoableUiModel::commit(std::string_view message)
+void osc::UndoableModelStatePair::commit(std::string_view message)
 {
     UiModel& scratch = m_Impl->updScratch();
 
@@ -549,97 +549,97 @@ void osc::UndoableUiModel::commit(std::string_view message)
     }
 }
 
-void osc::UndoableUiModel::rollback()
+void osc::UndoableModelStatePair::rollback()
 {
     m_Impl->checkout(true);  // care: skip copying selection because a rollback is aggro
 }
 
-OpenSim::Model const& osc::UndoableUiModel::getModel() const
+OpenSim::Model const& osc::UndoableModelStatePair::getModel() const
 {
     return m_Impl->getScratch().getModel();
 }
 
-OpenSim::Model& osc::UndoableUiModel::updModel()
+OpenSim::Model& osc::UndoableModelStatePair::updModel()
 {
     return m_Impl->updScratch().updModel();
 }
 
-void osc::UndoableUiModel::setModel(std::unique_ptr<OpenSim::Model> newModel)
+void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newModel)
 {
     updUiModel().setModel(std::move(newModel));
 }
 
-osc::UID osc::UndoableUiModel::getModelVersion() const
+osc::UID osc::UndoableModelStatePair::getModelVersion() const
 {
     return getUiModel().getModelVersion();
 }
 
-SimTK::State const& osc::UndoableUiModel::getState() const
+SimTK::State const& osc::UndoableModelStatePair::getState() const
 {
     return getUiModel().getState();
 }
 
-osc::UID osc::UndoableUiModel::getStateVersion() const
+osc::UID osc::UndoableModelStatePair::getStateVersion() const
 {
     return getUiModel().getStateVersion();
 }
 
-float osc::UndoableUiModel::getFixupScaleFactor() const
+float osc::UndoableModelStatePair::getFixupScaleFactor() const
 {
     return getUiModel().getFixupScaleFactor();
 }
 
-void osc::UndoableUiModel::setFixupScaleFactor(float v)
+void osc::UndoableModelStatePair::setFixupScaleFactor(float v)
 {
     updUiModel().setFixupScaleFactor(v);
 }
 
-void osc::UndoableUiModel::setDirty(bool v)
+void osc::UndoableModelStatePair::setDirty(bool v)
 {
     updUiModel().setDirty(v);
 }
 
-OpenSim::Component const* osc::UndoableUiModel::getSelected() const
+OpenSim::Component const* osc::UndoableModelStatePair::getSelected() const
 {
     return getUiModel().getSelected();
 }
 
-OpenSim::Component* osc::UndoableUiModel::updSelected()
+OpenSim::Component* osc::UndoableModelStatePair::updSelected()
 {
     return updUiModel().updSelected();
 }
 
-void osc::UndoableUiModel::setSelected(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::setSelected(OpenSim::Component const* c)
 {
     updUiModel().setSelected(c);
 }
 
-OpenSim::Component const* osc::UndoableUiModel::getHovered() const
+OpenSim::Component const* osc::UndoableModelStatePair::getHovered() const
 {
     return getUiModel().getHovered();
 }
 
-OpenSim::Component* osc::UndoableUiModel::updHovered()
+OpenSim::Component* osc::UndoableModelStatePair::updHovered()
 {
     return updUiModel().updHovered();
 }
 
-void osc::UndoableUiModel::setHovered(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::setHovered(OpenSim::Component const* c)
 {
     updUiModel().setHovered(c);
 }
 
-OpenSim::Component const* osc::UndoableUiModel::getIsolated() const
+OpenSim::Component const* osc::UndoableModelStatePair::getIsolated() const
 {
     return getUiModel().getIsolated();
 }
 
-OpenSim::Component* osc::UndoableUiModel::updIsolated()
+OpenSim::Component* osc::UndoableModelStatePair::updIsolated()
 {
     return updUiModel().updIsolated();
 }
 
-void osc::UndoableUiModel::setIsolated(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::setIsolated(OpenSim::Component const* c)
 {
     updUiModel().setIsolated(c);
 }
