@@ -638,6 +638,46 @@ namespace
     }
 }
 
+static OpenSim::ComponentPath const& GetEmptyComponentPath()
+{
+    static OpenSim::ComponentPath p;
+    return p;
+}
+
+static bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
+{
+    for (std::string const& socketName : c.getSocketNames())
+    {
+        OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
+        if (sock.isConnected() && &sock.getConnecteeAsObject() == &other)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
+{
+    std::vector<OpenSim::Component*> rv;
+
+    if (IsConnectedViaSocketTo(root, other))
+    {
+        rv.push_back(&root);
+    }
+
+    for (OpenSim::Component& c : root.updComponentList())
+    {
+        if (IsConnectedViaSocketTo(c, other))
+        {
+            rv.push_back(&c);
+        }
+    }
+
+    return rv;
+}
+
+
 
 // public API
 
@@ -655,10 +695,9 @@ int osc::DistanceFromRoot(OpenSim::Component const& c)
     return dist;
 }
 
-OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
+bool osc::IsEmpty(OpenSim::ComponentPath const& cp)
 {
-    static OpenSim::ComponentPath p;
-    return p;
+    return cp == GetEmptyComponentPath();
 }
 
 std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component const& c)
@@ -755,83 +794,9 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Componen
     return rv;
 }
 
-std::vector<OpenSim::AbstractSocket const*> osc::GetSocketsWithTypeName(OpenSim::Component& c, std::string_view typeName)
-{
-    std::vector<OpenSim::AbstractSocket const*> rv;
-
-    for (std::string const& name : c.getSocketNames())
-    {
-        OpenSim::AbstractSocket const& sock = c.getSocket(name);
-        if (sock.getConnecteeTypeName() == typeName)
-        {
-            rv.push_back(&sock);
-        }
-    }
-
-    return rv;
-}
-
-std::vector<OpenSim::AbstractSocket const*> osc::GetPhysicalFrameSockets(OpenSim::Component& c)
-{
-    return GetSocketsWithTypeName(c, "PhysicalFrame");
-}
-
-bool osc::IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
-{
-    for (std::string const& socketName : c.getSocketNames())
-    {
-        OpenSim::AbstractSocket const& sock = c.getSocket(socketName);
-        if (sock.isConnected() && &sock.getConnecteeAsObject() == &other)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool osc::IsAnyComponentConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
-{
-    if (IsConnectedViaSocketTo(root, other))
-    {
-        return true;
-    }
-
-    for (OpenSim::Component& c : root.updComponentList())
-    {
-        if (IsConnectedViaSocketTo(c, other))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-std::vector<OpenSim::Component*> osc::GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other)
-{
-    std::vector<OpenSim::Component*> rv;
-
-    if (IsConnectedViaSocketTo(root, other))
-    {
-        rv.push_back(&root);
-    }
-
-    for (OpenSim::Component& c : root.updComponentList())
-    {
-        if (IsConnectedViaSocketTo(c, other))
-        {
-            rv.push_back(&c);
-        }
-    }
-
-    return rv;
-}
-
 OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSim::ComponentPath const& cp)
 {
-    static OpenSim::ComponentPath const g_EmptyPath;
-
-    if (cp == g_EmptyPath)
+    if (IsEmpty(cp))
     {
         return nullptr;
     }
@@ -849,6 +814,11 @@ OpenSim::Component const* osc::FindComponent(OpenSim::Component const& c, OpenSi
 OpenSim::Component* osc::FindComponentMut(OpenSim::Component& c, OpenSim::ComponentPath const& cp)
 {
     return const_cast<OpenSim::Component*>(FindComponent(c, cp));
+}
+
+bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
+{
+    return FindComponent(root, cp);
 }
 
 OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& c, std::string const& outputName)
@@ -871,11 +841,6 @@ OpenSim::AbstractOutput const* osc::FindOutput(OpenSim::Component const& root,
 {
     OpenSim::Component const* c = FindComponent(root, path);
     return c ? FindOutput(*c, outputName) : nullptr;
-}
-
-bool osc::ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
-{
-    return FindComponent(root, cp);
 }
 
 bool osc::HasInputFileName(OpenSim::Model const& m)
@@ -1088,8 +1053,10 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
     {
         OpenSim::PhysicalFrame const& srcParent = src.getParentFrame();
         bool parentAssigned = false;
-        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
-            if (&src.get_frames(i) == &srcParent) {
+        for (int i = 0; i < src.getProperty_frames().size(); ++i)
+        {
+            if (&src.get_frames(i) == &srcParent)
+            {
                 // the source's parent is also owned by the source, so we need to
                 // ensure the destination refers to its own (cloned, above) copy
                 dest.connectSocket_parent_frame(dest.get_frames(i));
@@ -1097,7 +1064,8 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
                 break;
             }
         }
-        if (!parentAssigned) {
+        if (!parentAssigned)
+        {
             // the source's parent is a reference to some frame that the source
             // doesn't, itself, own, so the destination should just also refer
             // to the same (not-owned) frame
@@ -1109,8 +1077,10 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
     {
         OpenSim::PhysicalFrame const& srcChild = src.getChildFrame();
         bool childAssigned = false;
-        for (int i = 0; i < src.getProperty_frames().size(); ++i) {
-            if (&src.get_frames(i) == &srcChild) {
+        for (int i = 0; i < src.getProperty_frames().size(); ++i)
+        {
+            if (&src.get_frames(i) == &srcChild)
+            {
                 // the source's child is also owned by the source, so we need to
                 // ensure the destination refers to its own (cloned, above) copy
                 dest.connectSocket_child_frame(dest.get_frames(i));
@@ -1118,7 +1088,8 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
                 break;
             }
         }
-        if (!childAssigned) {
+        if (!childAssigned)
+        {
             // the source's child is a reference to some frame that the source
             // doesn't, itself, own, so the destination should just also refer
             // to the same (not-owned) frame
@@ -1130,8 +1101,10 @@ void osc::CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& d
 bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
 {
     bool rv = false;
-    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-        for (int i = 0; i < wos.getSize(); ++i) {
+    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>())
+    {
+        for (int i = 0; i < wos.getSize(); ++i)
+        {
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(false);
             wo.upd_Appearance().set_visible(false);
@@ -1144,28 +1117,16 @@ bool osc::DeactivateAllWrapObjectsIn(OpenSim::Model& m)
 bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
 {
     bool rv = false;
-    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>()) {
-        for (int i = 0; i < wos.getSize(); ++i) {
+    for (OpenSim::WrapObjectSet& wos : m.updComponentList<OpenSim::WrapObjectSet>())
+    {
+        for (int i = 0; i < wos.getSize(); ++i)
+        {
             OpenSim::WrapObject& wo = wos[i];
             wo.set_active(true);
             wo.upd_Appearance().set_visible(true);
             rv = rv || true;
         }
     }
-    return rv;
-}
-
-void osc::InitalizeModel(OpenSim::Model& m)
-{
-    m.buildSystem();
-    m.initializeState();
-}
-
-std::unique_ptr<OpenSim::Model> osc::CreateInitializedModelCopy(OpenSim::Model const& m)
-{
-    auto rv = std::make_unique<OpenSim::Model>(m);
-    rv->buildSystem();
-    rv->initializeState();
     return rv;
 }
 

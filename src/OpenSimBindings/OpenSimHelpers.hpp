@@ -33,12 +33,16 @@ namespace SimTK
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    // returns the distance between the given `Component` and the component that is at the root of the component tree
     int DistanceFromRoot(OpenSim::Component const&);
 
-    OpenSim::ComponentPath const& GetEmptyComponentPath();
+    // returns `true` if the given `ComponentPath` is an empty path
+    bool IsEmpty(OpenSim::ComponentPath const&);
 
+    // returns all components between the root (element 0) and the given component (element n-1) inclusive
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
+    // returns the first ancestor of `c` for which the given predicate returns `true`
     OpenSim::Component const* FindFirstAncestorInclusive(OpenSim::Component const*, bool(*pred)(OpenSim::Component const*));
 
     // returns the first ancestor of `c` that has type `T`
@@ -53,19 +57,20 @@ namespace osc
         return static_cast<T const*>(rv);
     }
 
+    // fills the given vector with all user-editable coordinates in the model
     void GetCoordinatesInModel(OpenSim::Model const&, std::vector<OpenSim::Coordinate const*>&);
 
-    // convert between user-facing and backend-facing coordinate values
+    // returns the user-facing display value (i.e. degrees) for a coordinate
     float ConvertCoordValueToDisplayValue(OpenSim::Coordinate const&, double v);
+
+    // returns the storage-facing value (i.e. radians) for a coordinate
     double ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const&, float v);
+
+    // returns a user-facing string that describes a coordinate's units
     CStringView GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&);
 
+    // returns all sockets that are directly attached to the given component
     std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component&);
-    std::vector<OpenSim::AbstractSocket const*> GetSocketsWithTypeName(OpenSim::Component& c, std::string_view);
-    std::vector<OpenSim::AbstractSocket const*> GetPhysicalFrameSockets(OpenSim::Component& c);
-    bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other);
-    bool IsAnyComponentConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other);
-    std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(OpenSim::Component& root, OpenSim::Component const& other);
 
     // returns a pointer if the given path resolves a component relative to root
     OpenSim::Component const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
@@ -80,17 +85,21 @@ namespace osc
     // returns a mutable pointer if the given path resolves a component relative to root
     OpenSim::Component* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const&);
 
+    // return non-nullptr if the given path resolves a component of type T relative to root
     template<typename T>
     T* FindComponentMut(OpenSim::Component& root, OpenSim::ComponentPath const& cp)
     {
         return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
 
-    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const&, std::string const& outputName);
-    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const& root, OpenSim::ComponentPath const&, std::string const& outputName);
-
     // returns true if the path resolves to a component within root
     bool ContainsComponent(OpenSim::Component const& root, OpenSim::ComponentPath const&);
+
+    // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
+    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const&, std::string const& outputName);
+
+    // returns non-nullptr if an `AbstractOutput` with the given name is attached to a component located at the given path relative to the root
+    OpenSim::AbstractOutput const* FindOutput(OpenSim::Component const& root, OpenSim::ComponentPath const&, std::string const& outputName);
 
     // returns true if the given model has an input file name (not empty, or "Unassigned")
     bool HasInputFileName(OpenSim::Model const&);
@@ -116,6 +125,7 @@ namespace osc
                                   std::vector<osc::ComponentDecoration>&,
                                   CustomDecorationOptions = {});
 
+    // updates the given BVH with the given component decorations
     void UpdateSceneBVH(nonstd::span<ComponentDecoration const>, BVH&);
 
     // copy common joint properties from a `src` to `dest`
@@ -133,14 +143,9 @@ namespace osc
     // returns `true` if any modification was made to the model
     bool ActivateAllWrapObjectsIn(OpenSim::Model&);
 
-    // initialize a model (finalized from properties, connected, system built, etc.)
-    void InitalizeModel(OpenSim::Model&);
-
-    // returns a model copy that is finalized from properties, connected, system built, etc.
-    std::unique_ptr<OpenSim::Model> CreateInitializedModelCopy(OpenSim::Model const&);
-
     // adds a component to an appropriate (if possible - e.g. jointset) location in the model
     void AddComponentToModel(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
 
+    // returns the recommended scale factor for the given model+state pair
     float GetRecommendedScaleFactor(VirtualConstModelStatePair const&);
 }

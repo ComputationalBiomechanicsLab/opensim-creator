@@ -115,7 +115,7 @@ private:
             {
                 auto const& pp = m_PathPoints[i];
 
-                if (pp.actualFrame == GetEmptyComponentPath())
+                if (IsEmpty(pp.actualFrame))
                 {
                     return nullptr;  // invalid path slipped through
                 }
