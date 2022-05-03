@@ -1,5 +1,8 @@
 #include "ModelMusclePlotPanel.hpp"
 
+#include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
+#include "src/OpenSimBindings/CoordinateEdit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/Log.hpp"
@@ -370,11 +373,32 @@ private:
 		std::string xAxisLabel = computePlotXAxisTitle(*coord);
 		std::string yAxisLabel = computePlotYAxisTitle();
 
+		double currentX = ConvertCoordValueToDisplayValue(*coord, coord->getValue(m_Uim->getState()));
+
+		bool isHovered = false;
+		ImPlotPoint p = {};
 		if (ImPlot::BeginPlot(title.c_str(), availSize, ImPlotFlags_AntiAliased | ImPlotFlags_NoTitle | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoChild | ImPlotFlags_NoFrame))
 		{
 			ImPlot::SetupAxes(xAxisLabel.c_str(), yAxisLabel.c_str(), m_XAxisFlags, m_YAxisFlags);
 			ImPlot::PlotLine(m_MuscleComponentPath.getComponentName().c_str(), m_XValues.data(), m_YValues.data(), static_cast<int>(m_XValues.size()));
+			ImPlot::TagX(currentX, { 1.0f, 1.0f, 1.0f, 1.0f });
+			isHovered = ImPlot::IsPlotHovered();
+			p = ImPlot::GetPlotMousePos();
+			if (isHovered)
+			{
+				ImPlot::TagX(p.x, { 1.0f, 1.0f, 1.0f, 0.6f });
+			}
 			ImPlot::EndPlot();
+		}
+		if (isHovered && ImGui::IsItemClicked(ImGuiMouseButton_Left))
+		{
+			CoordinateEdit edit
+			{
+				ConvertCoordDisplayValueToStorageValue(*coord, static_cast<float>(p.x)),
+				coord->getSpeedValue(m_Uim->getState()),
+				coord->getLocked(m_Uim->getState())
+			};
+			m_Uim->updUiModel().pushCoordinateEdit(*coord, edit);
 		}
 		if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
 		{
@@ -385,7 +409,6 @@ private:
 			}
 			ImGui::EndPopup();
 		}
-
 	}
 
 	void drawPlotDataTypeSelector()
