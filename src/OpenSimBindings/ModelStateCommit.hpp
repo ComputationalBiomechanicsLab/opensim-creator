@@ -43,6 +43,7 @@ namespace osc
 		std::chrono::system_clock::time_point getCommitTime() const;
 
 		OpenSim::Model const& getModel() const override;
+		AutoFinalizingModelStatePair const& getUiModel() const;  // TODO: shouldn't be necessary
 		SimTK::State const& getState() const override;
 		UID getModelVersion() const override;
 		UID getStateVersion() const override;

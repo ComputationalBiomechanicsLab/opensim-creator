@@ -51,6 +51,11 @@ public:
 		return m_ModelState.getModel();
 	}
 
+	AutoFinalizingModelStatePair const& getUiModel() const
+	{
+		return m_ModelState;
+	}
+
 	SimTK::State const& getState() const
 	{
 		return m_ModelState.getState();
@@ -135,6 +140,11 @@ std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() con
 OpenSim::Model const& osc::ModelStateCommit::getModel() const
 {
 	return m_Impl->getModel();
+}
+
+osc::AutoFinalizingModelStatePair const& osc::ModelStateCommit::getUiModel() const
+{
+	return m_Impl->getUiModel();
 }
 
 SimTK::State const& osc::ModelStateCommit::getState() const

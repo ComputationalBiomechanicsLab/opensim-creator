@@ -1,6 +1,7 @@
 #include "UndoableModelStatePair.hpp"
 
 #include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
+#include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
@@ -14,55 +15,6 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-
-using std::chrono_literals::operator""s;
-
-// commit support
-//
-// a datastructure that holds commit-level information about a UiModel
-namespace
-{
-    // a single "commit" of the model graph for undo/redo storage
-    class UiModelCommit final {
-    public:
-        using Clock = std::chrono::system_clock;
-
-        explicit UiModelCommit(osc::AutoFinalizingModelStatePair model, std::string_view message) :
-            m_Model{std::move(model)},
-            m_Message{std::move(message)}
-        {
-        }
-
-        UiModelCommit(osc::AutoFinalizingModelStatePair model, osc::UID parent, std::string_view message) :
-            m_MaybeParentID{std::move(parent)},
-            m_Model{std::move(model)},
-            m_Message{std::move(message)}
-        {
-        }
-
-        osc::UID getID() const { return m_ID; }
-        bool hasParent() const { return m_MaybeParentID != osc::UID::empty(); }
-        osc::UID getParentID() const { return m_MaybeParentID; }
-        Clock::time_point getCommitTime() const { return m_CommitTime; }
-        osc::AutoFinalizingModelStatePair const& getUiModel() const { return m_Model; }
-
-    private:
-        // unique ID for this commit
-        osc::UID m_ID;
-
-        // (maybe) unique ID of the parent commit
-        osc::UID m_MaybeParentID = osc::UID::empty();
-
-        // when the commit was created
-        Clock::time_point m_CommitTime = Clock::now();
-
-        // the model saved in this snapshot
-        osc::AutoFinalizingModelStatePair m_Model;
-
-        // commit message
-        std::string m_Message;
-    };
-}
 
 class osc::UndoableModelStatePair::Impl final {
 public:
@@ -119,7 +71,7 @@ public:
 
     bool canUndo() const
     {
-        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
         return c ? hasCommit(c->getParentID()) : false;
     }
 
@@ -263,7 +215,7 @@ private:
 
     UID doCommit(std::string_view message)
     {
-        auto commit = UiModelCommit{m_Scratch, m_CurrentHead, std::move(message)};
+        auto commit = ModelStateCommit{m_Scratch, std::move(message), m_CurrentHead};
         UID commitID = commit.getID();
 
         m_Commits.try_emplace(commitID, std::move(commit));
@@ -274,13 +226,13 @@ private:
     }
 
     // try to lookup a commit by its ID
-    UiModelCommit const* tryGetCommitByID(UID id) const
+    ModelStateCommit const* tryGetCommitByID(UID id) const
     {
         auto it = m_Commits.find(id);
         return it != m_Commits.end() ? &it->second : nullptr;
     }
 
-    UiModelCommit const& getHeadCommit() const
+    ModelStateCommit const& getHeadCommit() const
     {
         OSC_ASSERT(m_CurrentHead != UID::empty());
         OSC_ASSERT(hasCommit(m_CurrentHead));
@@ -291,7 +243,7 @@ private:
     // try to lookup the *parent* of a given commit, or return an empty (senteniel) ID
     UID tryGetParentIDOrEmpty(UID id) const
     {
-        UiModelCommit const* commit = tryGetCommitByID(id);
+        ModelStateCommit const* commit = tryGetCommitByID(id);
         return commit ? commit->getParentID() : UID::empty();
     }
 
@@ -328,14 +280,14 @@ private:
     // (e.g. n==0 returns `a`, n==1 returns `a`'s parent, n==2 returns `a`'s grandparent)
     //
     // returns `nullptr` if there are insufficient ancestors. `n` must be >= 0
-    UiModelCommit const* nthAncestor(UID a, int n) const
+    ModelStateCommit const* nthAncestor(UID a, int n) const
     {
         if (n < 0)
         {
             return nullptr;
         }
 
-        UiModelCommit const* c = tryGetCommitByID(a);
+        ModelStateCommit const* c = tryGetCommitByID(a);
 
         if (!c || n == 0)
         {
@@ -357,14 +309,14 @@ private:
     // returns the UID that is the nth ancestor from `a`, or empty if there are insufficient ancestors
     UID nthAncestorID(UID a, int n) const
     {
-        UiModelCommit const* c = nthAncestor(a, n);
+        ModelStateCommit const* c = nthAncestor(a, n);
         return c ? c->getID() : UID::empty();
     }
 
     // returns `true` if `maybeAncestor` is an ancestor of `id`
     bool isAncestor(UID maybeAncestor, UID id)
     {
-        UiModelCommit const* c = tryGetCommitByID(id);
+        ModelStateCommit const* c = tryGetCommitByID(id);
 
         while (c && c->getID() != maybeAncestor)
         {
@@ -453,7 +405,7 @@ private:
         // scratch space - things like reset and scaling state, which the
         // user might expect to be maintained even if a crash happened
 
-        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
 
         if (c)
         {
@@ -477,14 +429,14 @@ private:
     // effectively, checks out HEAD~1
     void undo()
     {
-        UiModelCommit const* c = tryGetCommitByID(m_CurrentHead);
+        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
 
         if (!c)
         {
             return;
         }
 
-        UiModelCommit const* parent = tryGetCommitByID(c->getParentID());
+        ModelStateCommit const* parent = tryGetCommitByID(c->getParentID());
 
         if (!parent)
         {
@@ -520,7 +472,7 @@ private:
             return;
         }
 
-        UiModelCommit const* c = nthAncestor(m_BranchHead, dist - 1);
+        ModelStateCommit const* c = nthAncestor(m_BranchHead, dist - 1);
 
         if (!c)
         {
@@ -587,7 +539,7 @@ private:
     static constexpr int m_MaxRedo = 32;
 
     // underlying storage for immutable commits
-    std::unordered_map<UID, UiModelCommit> m_Commits;
+    std::unordered_map<UID, ModelStateCommit> m_Commits;
 
     // (maybe) the location of the model on-disk
     std::filesystem::path m_MaybeFilesystemLocation;
