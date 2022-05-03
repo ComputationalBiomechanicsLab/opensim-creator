@@ -822,6 +822,23 @@ static void DrawRequestOutputsMenu(osc::MainEditorState& st,
     }
 }
 
+static void DrawAddMusclePlotMenu(osc::MainEditorState& st,
+                                  OpenSim::Muscle const& m)
+{
+    if (ImGui::BeginMenu("Add Muscle Plot vs:"))
+    {
+        for (OpenSim::Coordinate const& c : st.editedModel()->getModel().getComponentList<OpenSim::Coordinate>())
+        {
+            if (ImGui::MenuItem(c.getName().c_str()))
+            {
+                st.addMusclePlot(c, m);
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+}
+
 // draw right-click context menu for the 3D viewer
 static void Draw3DViewerContextMenu(osc::MainEditorState& st,
                                     OpenSim::Component const& selected)
@@ -832,6 +849,10 @@ static void Draw3DViewerContextMenu(osc::MainEditorState& st,
 
     DrawSelectOwnerMenu(st, selected);
     DrawRequestOutputsMenu(st, selected);
+    if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(&selected))
+    {
+        DrawAddMusclePlotMenu(st, *m);
+    }
 }
 
 // draw a single 3D model viewer

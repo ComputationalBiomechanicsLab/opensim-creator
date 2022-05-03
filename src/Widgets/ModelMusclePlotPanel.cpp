@@ -231,6 +231,20 @@ public:
 	{
 	}
 
+	Impl(std::shared_ptr<UndoableModelStatePair> uim,
+         std::string_view panelName,
+		 OpenSim::ComponentPath const& coordPath,
+		 OpenSim::ComponentPath const& musclePath) :
+		m_Uim{std::move(uim)},
+		m_PanelName{std::move(panelName)},
+		m_IsChoosingMuscle{false},
+		m_MuscleComponentPath{musclePath},
+		m_IsChoosingCoordinate{false},
+		m_CoordinateComponentPath{coordPath},
+		m_IsShowingPlot{true}
+	{
+	}
+
 	std::string const& getName() const
 	{
 		return m_PanelName;
@@ -566,11 +580,19 @@ private:
 };
 
 
-// public API
+// public API (PIMPL)
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableModelStatePair> uim,
 	                                            std::string_view panelName) :
 	m_Impl{new Impl{std::move(uim), std::move(panelName)}}
+{
+}
+
+osc::ModelMusclePlotPanel::ModelMusclePlotPanel(std::shared_ptr<UndoableModelStatePair> uim,
+                                                std::string_view panelName,
+                                                OpenSim::ComponentPath const& coordPath,
+                                                OpenSim::ComponentPath const& musclePath) :
+	m_Impl{new Impl{std::move(uim), std::move(panelName), coordPath, musclePath}}
 {
 }
 

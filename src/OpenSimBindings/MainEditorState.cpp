@@ -161,6 +161,11 @@ public:
         return m_ModelMusclePlots.emplace_back(m_EditedModel, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
     }
 
+    ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+    {
+        return m_ModelMusclePlots.emplace_back(m_EditedModel, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+    }
+
     void removeMusclePlot(int idx)
     {
         OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelMusclePlots.size()));
@@ -309,6 +314,11 @@ osc::ModelMusclePlotPanel& osc::MainEditorState::updMusclePlot(int idx)
 osc::ModelMusclePlotPanel& osc::MainEditorState::addMusclePlot()
 {
     return m_Impl->addMusclePlot();
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+{
+    return m_Impl->addMusclePlot(coord, muscle);
 }
 
 void osc::MainEditorState::removeMusclePlot(int idx)

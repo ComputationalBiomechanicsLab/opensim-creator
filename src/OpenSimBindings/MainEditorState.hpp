@@ -16,7 +16,9 @@ namespace osc
 
 namespace OpenSim
 {
+    class Coordinate;
     class Model;
+    class Muscle;
 }
 
 namespace osc
@@ -67,6 +69,7 @@ namespace osc
         ModelMusclePlotPanel const& getMusclePlot(int) const;
         ModelMusclePlotPanel& updMusclePlot(int);
         ModelMusclePlotPanel& addMusclePlot();
+        ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&);
         void removeMusclePlot(int);
 
         class Impl;
