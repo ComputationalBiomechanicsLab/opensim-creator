@@ -205,7 +205,7 @@ public:
             }
 
             {
-                OSC_PERF("realize velocity");
+                OSC_PERF("realize state");
                 m_Model->realizeDynamics(m_Model->updWorkingState());
             }
 
