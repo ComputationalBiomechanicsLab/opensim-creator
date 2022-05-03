@@ -371,6 +371,8 @@ add_library(osccore STATIC
     src/OpenSimBindings/IntegratorOutputExtractor.hpp
     src/OpenSimBindings/MainEditorState.cpp
     src/OpenSimBindings/MainEditorState.hpp
+    src/OpenSimBindings/ModelStateCommit.cpp
+    src/OpenSimBindings/ModelStateCommit.hpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.cpp
     src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp
     src/OpenSimBindings/MuscleColoringStyle.cpp
