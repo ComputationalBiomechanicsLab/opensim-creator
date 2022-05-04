@@ -10,6 +10,7 @@
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/Cpp20Shims.hpp"
 #include "src/Utils/UID.hpp"
 
 #include <imgui.h>
@@ -18,6 +19,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 
+#include <atomic>
 #include <memory>
 #include <string_view>
 #include <sstream>
@@ -358,51 +360,78 @@ namespace
 		std::vector<float> m_YValues;
 	};
 
-	std::unique_ptr<Plot> ComputePlotSynchronously(PlotParameters const& params)
+	class SharedState final {
+	public:
+		float getProgress() const { return m_Progress; }
+		void setProgress(float v) { m_Progress = v; }
+
+	private:
+		std::atomic<float> m_Progress = 0.0f;
+	};
+
+	std::unique_ptr<Plot> ComputePlotSynchronously(osc::stop_token stopToken,
+		                                           std::unique_ptr<PlotParameters> params,
+		                                           std::shared_ptr<SharedState> shared)
 	{
-		if (params.getNumRequestedDataPoints() <= 0)
+		if (params->getNumRequestedDataPoints() <= 0)
 		{
-			return std::make_unique<Plot>(params);  // empty plot
+			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
 		// locally copy the model to ensure computation doesn't potentially alter
 		// the model commit (and because it's required for muscle equilibration)
-		OpenSim::Model model = params.getCommit().getModel();
+		OpenSim::Model model = params->getCommit().getModel();
 		model.buildSystem();
 		model.initializeState();
 
+		if (stopToken.stop_requested())
+		{
+			return std::make_unique<Plot>(*params);  // empty plot
+		}
+
 		// locally copy the state
-		SimTK::State stateCopy = params.getCommit().getState();
+		SimTK::State stateCopy = params->getCommit().getState();
 		model.realizeReport(stateCopy);
+
+		if (stopToken.stop_requested())
+		{
+			return std::make_unique<Plot>(*params);  // empty plot
+		}
 
 		// lookup relevant elements in the copies
 
-		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(model, params.getMusclePath());
+		OpenSim::Muscle const* maybeMuscle = osc::FindComponent<OpenSim::Muscle>(model, params->getMusclePath());
 		if (!maybeMuscle)
 		{
-			return std::make_unique<Plot>(params);  // empty plot
+			return std::make_unique<Plot>(*params);  // empty plot
 		}
 		OpenSim::Muscle const& muscle = *maybeMuscle;
 
-		OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(model, params.getCoordinatePath());
+		OpenSim::Coordinate const* maybeCoord = osc::FindComponent<OpenSim::Coordinate>(model, params->getCoordinatePath());
 		if (!maybeCoord)
 		{
-			return std::make_unique<Plot>(params);  // empty plot
+			return std::make_unique<Plot>(*params);  // empty plot
 		}
 		OpenSim::Coordinate const& coord = *maybeCoord;
 
-		int nPoints = params.getNumRequestedDataPoints();
+		int nPoints = params->getNumRequestedDataPoints();
 		double start = coord.getRangeMin();
 		double end = coord.getRangeMax();
-		double step = (end - start) / (nPoints == 1 ? 1 : nPoints - 1);
+		double step = (end - start) / std::max(1, nPoints-1);
 		std::vector<float> xValues;
 		xValues.reserve(nPoints);
 		std::vector<float> yValues;
 		yValues.reserve(nPoints);
 
+		shared->setProgress(0.0f);
 		coord.setLocked(stateCopy, false);
 		for (int i = 0; i < nPoints; ++i)
 		{
+			if (stopToken.stop_requested())
+			{
+				return std::make_unique<Plot>(*params);  // empty plot
+			}
+
 			double xVal = start + (i * step);
 
 			coord.setValue(stateCopy, xVal);
@@ -410,14 +439,16 @@ namespace
 			model.equilibrateMuscles(stateCopy);
 			model.realizeReport(stateCopy);
 
-			double yVald = params.getMuscleOutput()(stateCopy, muscle, coord);
+			double yVald = params->getMuscleOutput()(stateCopy, muscle, coord);
 			float yVal = static_cast<float>(yVald);
 
 			xValues.push_back(osc::ConvertCoordValueToDisplayValue(coord, xVal));
 			yValues.push_back(yVal);
+
+			shared->setProgress(static_cast<float>(i+1) / static_cast<float>(nPoints));
 		}
 
-		return std::make_unique<Plot>(params, std::move(xValues), std::move(yValues));
+		return std::make_unique<Plot>(*params, std::move(xValues), std::move(yValues));
 	}
 }
 
@@ -590,7 +621,7 @@ namespace
 
 		void appendYAxisName(std::stringstream& ss)
 		{
-			ss << m_Plot->getParameters().getMusclePath().getComponentName();
+			ss << m_Plot->getParameters().getMuscleOutput().getName();
 		}
 
 		void appendXAxisName(OpenSim::Coordinate const& c, std::stringstream& ss)
@@ -627,7 +658,10 @@ namespace
 		std::unique_ptr<MusclePlotState> draw() override
 		{
 			ImGui::Text("loading");
-			return CreateShowPlotState(shared, ComputePlotSynchronously(shared->PlotParams));
+			osc::stop_source stopSource;
+			std::unique_ptr<PlotParameters> params = std::make_unique<PlotParameters>(shared->PlotParams);
+			std::shared_ptr<SharedState> sharedState = std::make_shared<SharedState>();
+			return CreateShowPlotState(shared, ComputePlotSynchronously(stopSource.get_token(), std::move(params), sharedState));
 		}
 	};
 
