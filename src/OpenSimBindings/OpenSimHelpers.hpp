@@ -36,6 +36,9 @@ namespace osc
     // returns the distance between the given `Component` and the component that is at the root of the component tree
     int DistanceFromRoot(OpenSim::Component const&);
 
+    // returns a global instance of an empty component path
+    OpenSim::ComponentPath const& GetEmptyComponentPath();
+
     // returns `true` if the given `ComponentPath` is an empty path
     bool IsEmpty(OpenSim::ComponentPath const&);
 

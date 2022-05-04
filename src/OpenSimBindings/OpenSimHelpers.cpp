@@ -671,12 +671,6 @@ static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(Ope
     return rv;
 }
 
-static OpenSim::ComponentPath const& GetEmptyComponentPath()
-{
-    static OpenSim::ComponentPath p;
-    return p;
-}
-
 
 // public API
 
@@ -692,6 +686,12 @@ int osc::DistanceFromRoot(OpenSim::Component const& c)
     }
 
     return dist;
+}
+
+OpenSim::ComponentPath const& osc::GetEmptyComponentPath()
+{
+    static OpenSim::ComponentPath p;
+    return p;
 }
 
 bool osc::IsEmpty(OpenSim::ComponentPath const& cp)

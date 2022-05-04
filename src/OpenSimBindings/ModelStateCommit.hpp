@@ -54,6 +54,13 @@ namespace osc
 
 		class Impl;
 	private:
+		friend bool operator==(ModelStateCommit const& a, ModelStateCommit const& b);
+
 		std::shared_ptr<Impl> m_Impl;
 	};
+
+	inline bool operator==(ModelStateCommit const& a, ModelStateCommit const& b)
+	{
+		return a.m_Impl == b.m_Impl;
+	}
 }

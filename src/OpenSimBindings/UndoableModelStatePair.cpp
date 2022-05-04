@@ -69,6 +69,11 @@ public:
         return updScratch();
     }
 
+    ModelStateCommit const& getLatestCommit() const
+    {
+        return getHeadCommit();
+    }
+
     bool canUndo() const
     {
         ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
@@ -626,6 +631,11 @@ osc::AutoFinalizingModelStatePair const& osc::UndoableModelStatePair::getUiModel
 osc::AutoFinalizingModelStatePair& osc::UndoableModelStatePair::updUiModel()
 {
     return m_Impl->updUiModel();
+}
+
+osc::ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
+{
+    return m_Impl->getLatestCommit();
 }
 
 bool osc::UndoableModelStatePair::canUndo() const

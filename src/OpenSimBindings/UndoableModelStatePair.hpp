@@ -19,6 +19,7 @@ namespace SimTK
 namespace osc
 {
     class AutoFinalizingModelStatePair;
+    class ModelStateCommit;
 }
 
 namespace osc
@@ -75,6 +76,10 @@ namespace osc
         // note: mutating anything may trigger an undo/redo save if `isDirty` returns `true`
         AutoFinalizingModelStatePair const& getUiModel() const;
         AutoFinalizingModelStatePair& updUiModel();
+
+        // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
+        // the safer undo/redo buffer)
+        ModelStateCommit const& getLatestCommit() const;
 
         // manipulate undo/redo state
         bool canUndo() const;
