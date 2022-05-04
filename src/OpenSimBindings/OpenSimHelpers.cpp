@@ -638,12 +638,6 @@ namespace
     }
 }
 
-static OpenSim::ComponentPath const& GetEmptyComponentPath()
-{
-    static OpenSim::ComponentPath p;
-    return p;
-}
-
 static bool IsConnectedViaSocketTo(OpenSim::Component& c, OpenSim::Component const& other)
 {
     for (std::string const& socketName : c.getSocketNames())
@@ -677,6 +671,11 @@ static std::vector<OpenSim::Component*> GetAnyComponentsConnectedViaSocketTo(Ope
     return rv;
 }
 
+static OpenSim::ComponentPath const& GetEmptyComponentPath()
+{
+    static OpenSim::ComponentPath p;
+    return p;
+}
 
 
 // public API
@@ -698,6 +697,11 @@ int osc::DistanceFromRoot(OpenSim::Component const& c)
 bool osc::IsEmpty(OpenSim::ComponentPath const& cp)
 {
     return cp == GetEmptyComponentPath();
+}
+
+void osc::Clear(OpenSim::ComponentPath& cp)
+{
+    cp = GetEmptyComponentPath();
 }
 
 std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component const& c)

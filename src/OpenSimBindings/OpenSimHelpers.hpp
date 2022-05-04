@@ -39,6 +39,9 @@ namespace osc
     // returns `true` if the given `ComponentPath` is an empty path
     bool IsEmpty(OpenSim::ComponentPath const&);
 
+    // clears the given component path
+    void Clear(OpenSim::ComponentPath&);
+
     // returns all components between the root (element 0) and the given component (element n-1) inclusive
     std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
 
