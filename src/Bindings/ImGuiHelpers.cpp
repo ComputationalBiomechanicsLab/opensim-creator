@@ -270,8 +270,6 @@ bool osc::InputString(const char* label, std::string& s, std::size_t maxLen, ImG
     return rv;
 }
 
-// public API
-
 bool osc::DrawF3Editor(char const* lockID, char const* editorID, float* v, bool* isLocked)
 {
     bool changed = false;

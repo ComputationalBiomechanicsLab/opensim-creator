@@ -42,7 +42,7 @@ namespace osc
 
     // converters: from SimTK types to osc
     glm::vec3 ToVec3(SimTK::Vec3 const&);
-    glm::vec4 ToVec4(SimTK::Vec3 const&, float = 1.0f);
+    glm::vec4 ToVec4(SimTK::Vec3 const&, float w = 1.0f);
     glm::mat4x3 ToMat4x3(SimTK::Transform const&);
     glm::mat4x4 ToMat4x4(SimTK::Transform const&);
     glm::quat ToQuat(SimTK::Rotation const&);
