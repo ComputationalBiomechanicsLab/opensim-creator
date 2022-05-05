@@ -457,14 +457,8 @@ private:
         newModel.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         newModel.updateIfDirty();
 
-        OSC_ASSERT(newModel.getModelVersion() == parent->getUiModel().getModelVersion());
-        OSC_ASSERT(newModel.getStateVersion() == parent->getUiModel().getStateVersion());
-
         m_Scratch = std::move(newModel);
         m_CurrentHead = parent->getID();
-
-        OSC_ASSERT(m_Scratch.getModelVersion() == getHeadCommit().getUiModel().getModelVersion());
-        OSC_ASSERT(m_Scratch.getStateVersion() == getHeadCommit().getUiModel().getStateVersion());
     }
 
     // performs a redo, if possible

@@ -14,6 +14,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 static std::unique_ptr<OpenSim::Model> makeNewModel()
@@ -58,9 +59,9 @@ public:
         m_MaybeHovered{other.m_MaybeHovered},
         m_MaybeIsolated{other.m_MaybeIsolated},
         m_UpdatedModelVersion{},
-        m_CurrentModelVersion{other.m_CurrentModelVersion},
+        m_CurrentModelVersion{},
         m_UpdatedStateVersion{},
-        m_CurrentStateVersion{other.m_CurrentStateVersion}
+        m_CurrentStateVersion{}
     {
     }
 
@@ -171,6 +172,8 @@ public:
 
     void updateIfDirty()
     {
+        auto guard = std::scoped_lock{m_UpdateLock};
+
         if (m_CurrentModelVersion != m_UpdatedModelVersion)
         {
             // a model update always induces a state update also
@@ -301,6 +304,9 @@ public:
     }
 
 private:
+    // a hack to ensure that updates are at least threadsafe-ish
+    std::mutex m_UpdateLock;
+
     // user-enacted state modifications (e.g. coordinate edits)
     StateModifications m_StateModifications;
 

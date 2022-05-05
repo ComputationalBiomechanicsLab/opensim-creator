@@ -45,6 +45,7 @@ namespace osc
 		OpenSim::Model const& getModel() const override;
 		AutoFinalizingModelStatePair const& getUiModel() const;  // TODO: shouldn't be necessary
 		SimTK::State const& getState() const override;
+
 		UID getModelVersion() const override;
 		UID getStateVersion() const override;
 		OpenSim::Component const* getSelected() const override;
