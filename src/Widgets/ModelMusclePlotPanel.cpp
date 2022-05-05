@@ -20,6 +20,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 
 #include <atomic>
+#include <future>
 #include <memory>
 #include <string_view>
 #include <sstream>
@@ -360,7 +361,7 @@ namespace
 		std::vector<float> m_YValues;
 	};
 
-	class SharedState final {
+	class ThreadsafeSharedState final {
 	public:
 		float getProgress() const { return m_Progress; }
 		void setProgress(float v) { m_Progress = v; }
@@ -371,7 +372,7 @@ namespace
 
 	std::unique_ptr<Plot> ComputePlotSynchronously(osc::stop_token stopToken,
 		                                           std::unique_ptr<PlotParameters> params,
-		                                           std::shared_ptr<SharedState> shared)
+		                                           std::shared_ptr<ThreadsafeSharedState> shared)
 	{
 		if (params->getNumRequestedDataPoints() <= 0)
 		{
@@ -651,18 +652,31 @@ namespace
 
 	class LoadDataState final : public MusclePlotState {
 	public:
-		explicit LoadDataState(SharedStateData* shared_) : MusclePlotState{std::move(shared_)}
+		explicit LoadDataState(SharedStateData* shared_) :
+			MusclePlotState{std::move(shared_)},
+			m_LoadingResult{std::async(std::launch::async, ComputePlotSynchronously, m_StopSource.get_token(), std::make_unique<PlotParameters>(shared->PlotParams), m_SharedState)}
 		{
 		}
 
 		std::unique_ptr<MusclePlotState> draw() override
 		{
-			ImGui::Text("loading");
-			osc::stop_source stopSource;
-			std::unique_ptr<PlotParameters> params = std::make_unique<PlotParameters>(shared->PlotParams);
-			std::shared_ptr<SharedState> sharedState = std::make_shared<SharedState>();
-			return CreateShowPlotState(shared, ComputePlotSynchronously(stopSource.get_token(), std::move(params), sharedState));
+			ImGui::Text("computing plot");
+			ImGui::ProgressBar(m_SharedState->getProgress());
+
+			if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+			{
+				return CreateShowPlotState(shared, m_LoadingResult.get());
+			}
+			else
+			{
+				return nullptr;
+			}
 		}
+
+	private:
+		osc::stop_source m_StopSource;
+		std::shared_ptr<ThreadsafeSharedState> m_SharedState = std::make_shared<ThreadsafeSharedState>();
+		std::future<std::unique_ptr<Plot>> m_LoadingResult;
 	};
 
 	// state in which a user is being prompted to select a coordinate in the model
