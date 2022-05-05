@@ -460,10 +460,12 @@ static void PopulareSceneDrawlist(osc::UiModelViewer::Impl& impl,
         msp.getStateVersion() != impl.m_LastStateVersion ||
         selected != osc::FindComponent(msp.getModel(), impl.m_LastSelection) ||
         hovered != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
-        isolated != osc::FindComponent(msp.getModel(), impl.m_LastHover) ||
+        isolated != osc::FindComponent(msp.getModel(), impl.m_LastIsolation) ||
         msp.getFixupScaleFactor() != impl.m_LastFixupFactor ||
         impl.m_LastDecorationOptions != impl.m_DecorationOptions)
     {
+        impl.m_Decorations.clear();
+
         {
             OSC_PERF("generate decorations");
             osc::GenerateModelDecorations(msp, impl.m_Decorations, impl.m_DecorationOptions);
@@ -1382,6 +1384,8 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
     // dragging when the user drags their mouse over the scene
     if (ImGui::BeginChild("##child", {0.0f, 0.0f}, false, ImGuiWindowFlags_NoMove))
     {
+        PopulareSceneDrawlist(impl, rs);
+
         // only do the hit test if the user isn't currently dragging their mouse around
         std::pair<OpenSim::Component const*, glm::vec3> htResult{nullptr, {0.0f, 0.0f, 0.0f}};
         if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
@@ -1390,8 +1394,6 @@ osc::UiModelViewerResponse osc::UiModelViewer::draw(VirtualConstModelStatePair c
         {
             htResult = HittestDecorations(impl, rs);
         }
-
-        PopulareSceneDrawlist(impl, rs);
 
         // auto-focus the camera, if the user requested it last frame
         //
