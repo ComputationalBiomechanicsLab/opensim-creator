@@ -14,14 +14,14 @@
 class osc::ModelStateCommit::Impl final {
 public:
 	Impl(AutoFinalizingModelStatePair const& msp, std::string_view message) :
-		m_ModelState{std::move(msp)},
+		m_ModelState{msp},
 		m_CommitMessage{std::move(message)}
 	{
 	}
 
 	Impl(AutoFinalizingModelStatePair const& msp, std::string_view message, UID parent) :
 		m_MaybeParentID{std::move(parent)},
-		m_ModelState{std::move(msp)},
+		m_ModelState{msp},
 		m_CommitMessage{std::move(message)}
 	{
 	}
