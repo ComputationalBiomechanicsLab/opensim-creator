@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <random>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -126,6 +127,52 @@ static constexpr std::array<osc::experimental::ShaderType, 7> g_ExpectedProperty
 };
 
 static_assert(g_ExpectedPropertyNames.size() == g_ExpectedPropertyTypes.size());
+
+static std::default_random_engine& GetRngEngine()
+{
+    static std::default_random_engine e{};  // deterministic, because test failures due to RNG can suck
+    return e;
+}
+
+static float GenerateFloat()
+{
+    return static_cast<float>(std::uniform_real_distribution{}(GetRngEngine()));
+}
+
+static int GenerateInt()
+{
+    return std::uniform_int_distribution{}(GetRngEngine());
+}
+
+static bool GenerateBool()
+{
+    return GenerateInt();
+}
+
+static glm::vec3 GenerateVec3()
+{
+    return glm::vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
+}
+
+static glm::vec4 GenerateVec4()
+{
+    return glm::vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+}
+
+static glm::mat3x3 GenerateMat3x3()
+{
+    return glm::mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
+}
+
+static glm::mat4x4 GenerateMat4x4()
+{
+    return glm::mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
+}
+
+static glm::mat4x3 GenerateMat4x3()
+{
+    return glm::mat4x3{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
+}
 
 TEST(ShaderTypeTest, CanStreamShaderType)
 {
@@ -308,4 +355,307 @@ TEST_F(ShaderTest, CanHashShader)
 
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
     std::hash<osc::experimental::Shader>{}(s); // should compile and run fine
+}
+
+// helper for material tests
+static osc::experimental::Material CreateMaterial()
+{
+    osc::experimental::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
+    return osc::experimental::Material{shader};
+}
+
+TEST_F(ShaderTest, CanConstructMaterial)
+{
+    CreateMaterial();  // should compile and run fine
+}
+
+TEST_F(ShaderTest, CanCopyConstructMaterial)
+{
+    osc::experimental::Material material = CreateMaterial();
+    osc::experimental::Material copy{material};
+}
+
+TEST_F(ShaderTest, CanMoveConstructMaterial)
+{
+    osc::experimental::Material material = CreateMaterial();
+    osc::experimental::Material copy{std::move(material)};
+}
+
+TEST_F(ShaderTest, CanCopyAssignMaterial)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 = m2;
+}
+
+TEST_F(ShaderTest, CanMoveAssignMaterial)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 = std::move(m2);
+}
+
+TEST_F(ShaderTest, CopyConstructedMaterialComparesEqualWithCopiedFromMaterial)
+{
+    osc::experimental::Material material = CreateMaterial();
+    osc::experimental::Material copy{material};
+
+    ASSERT_EQ(material, copy);
+}
+
+TEST_F(ShaderTest, CopyAssignedMaterialComparesEqualWithCopiedFromMaterial)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    ASSERT_NE(m1, m2);
+
+    m1 = m2;
+
+    ASSERT_EQ(m1, m2);
+}
+
+TEST_F(ShaderTest, GetShaderReturnsShaderSuppliedInCtor)
+{
+    osc::experimental::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
+    osc::experimental::Material material{shader};
+
+    ASSERT_EQ(material.getShader(), shader);
+}
+
+TEST_F(ShaderTest, GetFloatOnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getFloat("someKey"));
+}
+
+TEST_F(ShaderTest, GetVec3OnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getVec3("someKey"));
+}
+
+TEST_F(ShaderTest, GetVec4OnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getVec4("someKey"));
+}
+
+TEST_F(ShaderTest, GetMat3OnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getMat3("someKey"));
+}
+
+TEST_F(ShaderTest, GetMat4OnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getMat4("someKey"));
+}
+
+TEST_F(ShaderTest, GetMat4x3OnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getMat4x3("someKey"));
+}
+
+TEST_F(ShaderTest, GetIntOnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getInt("someKey"));
+}
+
+TEST_F(ShaderTest, GetBoolOnNewMaterialReturnsEmptyOptional)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    ASSERT_FALSE(mat.getBool("someKey"));
+}
+
+TEST_F(ShaderTest, SetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    float value = GenerateFloat();
+
+    mat.setFloat(key, value);
+
+    ASSERT_EQ(*mat.getFloat(key), value);
+}
+
+TEST_F(ShaderTest, SetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    glm::vec3 value = GenerateVec3();
+
+    mat.setVec3(key, value);
+
+    ASSERT_EQ(*mat.getVec3(key), value);
+}
+
+TEST_F(ShaderTest, SetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    glm::vec4 value = GenerateVec4();
+
+    mat.setVec4(key, value);
+
+    ASSERT_EQ(*mat.getVec4(key), value);
+}
+
+TEST_F(ShaderTest, SetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    glm::mat3 value = GenerateMat3x3();
+
+    mat.setMat3(key, value);
+
+    ASSERT_EQ(*mat.getMat3(key), value);
+}
+
+TEST_F(ShaderTest, SetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    glm::mat4 value = GenerateMat4x4();
+
+    mat.setMat4(key, value);
+
+    ASSERT_EQ(*mat.getMat4(key), value);
+}
+
+TEST_F(ShaderTest, SetMat4x3OnMaterialCausesGetMat4x3ToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    glm::mat4x3 value = GenerateMat4x3();
+
+    mat.setMat4x3(key, value);
+
+    ASSERT_EQ(*mat.getMat4x3(key), value);
+}
+
+TEST_F(ShaderTest, SetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    int value = GenerateInt();
+
+    mat.setInt(key, value);
+
+    ASSERT_EQ(*mat.getInt(key), value);
+}
+
+TEST_F(ShaderTest, SetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    bool value = GenerateBool();
+
+    mat.setBool(key, value);
+
+    ASSERT_EQ(*mat.getBool(key), value);
+}
+
+TEST_F(ShaderTest, CanCompareEquals)
+{
+    osc::experimental::Material mat = CreateMaterial();
+    osc::experimental::Material copy{mat};
+
+    ASSERT_EQ(mat, copy);
+}
+
+TEST_F(ShaderTest, CanCompareNotEquals)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    ASSERT_NE(m1, m2);
+}
+
+TEST_F(ShaderTest, CanCompareLessThan)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 < m2;  // should compile and not throw, but no guarantees about ordering
+}
+
+TEST_F(ShaderTest, CanCompareLessThanOrEqualsTo)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 <= m2;  // should compile and not throw, but no guarantees about ordering
+}
+
+TEST_F(ShaderTest, CanCompareGreaterThan)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 > m2;  // should compile and not throw, but no guarantees about ordering
+}
+
+TEST_F(ShaderTest, CanCompareGreaterThanOrEqualsTo)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    osc::experimental::Material m2 = CreateMaterial();
+
+    m1 >= m2;  // should compile and not throw, but no guarantees about ordering
+}
+
+TEST_F(ShaderTest, CanPrintToStringStream)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+
+    std::stringstream ss;
+    ss << m1;
+}
+
+// TODO: test print contains relevant strings etc.
+
+TEST_F(ShaderTest, CanConvertToString)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    std::string s = osc::experimental::to_string(m1);
+}
+
+TEST_F(ShaderTest, CanHash)
+{
+    osc::experimental::Material m1 = CreateMaterial();
+    std::hash<osc::experimental::Material>{}(m1);
+}
+
+// TODO: compound tests: ensure copy on write works etc
+
+TEST_F(ShaderTest, SetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
+{
+    // compound test: when the caller sets a Vec3 then calling getInt with the same key should return empty
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    float floatValue = GenerateFloat();
+    glm::vec3 vecValue = GenerateVec3();
+
+    mat.setFloat(key, floatValue);
+
+    ASSERT_TRUE(mat.getFloat(key));
+
+    mat.setVec3(key, vecValue);
+
+    ASSERT_TRUE(mat.getVec3(key));
+    ASSERT_FALSE(mat.getFloat(key));
 }
