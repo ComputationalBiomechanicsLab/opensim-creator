@@ -310,7 +310,11 @@ TEST_F(ShaderTest, IteratingOverPropertyIndicesForNameReturnsValidPropertyName)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
-    std::unordered_set<std::string> allPropNames(g_ExpectedPropertyNames.begin(), g_ExpectedPropertyNames.end());
+    std::unordered_set<std::string> allPropNames;
+    for (auto const& sv : g_ExpectedPropertyNames)
+    {
+        allPropNames.insert(std::string{sv});
+    }
     std::unordered_set<std::string> returnedPropNames;
 
     for (int i = 0, len = s.getPropertyCount(); i < len; ++i)
