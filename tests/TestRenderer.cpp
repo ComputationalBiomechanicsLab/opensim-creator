@@ -15,6 +15,10 @@ class ShaderTest : public ::testing::Test {
     osc::App m_App;
 };
 
+class TextureTest : public ::testing::Test {
+    osc::App m_App;
+};
+
 static constexpr char const g_VertexShaderSrc[] =
 R"(
     #version 330 core
@@ -973,13 +977,13 @@ TEST(MaterialPropertyBlockTest, CanHash)
 
 // TODO: compound test: set a float but read a vec, etc.
 
-TEST(Texture, CanConstructFromPixels)
+TEST_F(TextureTest, CanConstructFromPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     osc::experimental::Texture2D t{2, 2, pixels};
 }
 
-TEST(Texture, ThrowsIfDimensionsDontMatchNumberOfPixels)
+TEST_F(TextureTest, ThrowsIfDimensionsDontMatchNumberOfPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     ASSERT_ANY_THROW({ osc::experimental::Texture2D t(1, 2, pixels); });
@@ -991,19 +995,19 @@ static osc::experimental::Texture2D GenerateTexture()
     return osc::experimental::Texture2D{2, 2, pixels};
 }
 
-TEST(Texture, CanCopyConstruct)
+TEST_F(TextureTest, CanCopyConstruct)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     osc::experimental::Texture2D copy{t};
 }
 
-TEST(Texture, CanMoveConstruct)
+TEST_F(TextureTest, CanMoveConstruct)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     osc::experimental::Texture2D copy{std::move(t)};
 }
 
-TEST(Texture, CanCopyAssign)
+TEST_F(TextureTest, CanCopyAssign)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1011,7 +1015,7 @@ TEST(Texture, CanCopyAssign)
     t1 = t2;
 }
 
-TEST(Texture, CanMoveAssign)
+TEST_F(TextureTest, CanMoveAssign)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1019,7 +1023,7 @@ TEST(Texture, CanMoveAssign)
     t1 = std::move(t2);
 }
 
-TEST(Texture, GetWidthReturnsSuppliedWidth)
+TEST_F(TextureTest, GetWidthReturnsSuppliedWidth)
 {
     int width = 2;
     int height = 6;
@@ -1030,7 +1034,7 @@ TEST(Texture, GetWidthReturnsSuppliedWidth)
     ASSERT_EQ(t.getWidth(), width);
 }
 
-TEST(Texture, GetHeightReturnsSuppliedHeight)
+TEST_F(TextureTest, GetHeightReturnsSuppliedHeight)
 {
     int width = 2;
     int height = 6;
@@ -1041,7 +1045,7 @@ TEST(Texture, GetHeightReturnsSuppliedHeight)
     ASSERT_EQ(t.getHeight(), height);
 }
 
-TEST(Texture, GetAspectRatioReturnsExpectedRatio)
+TEST_F(TextureTest, GetAspectRatioReturnsExpectedRatio)
 {
     int width = 16;
     int height = 37;
@@ -1054,13 +1058,13 @@ TEST(Texture, GetAspectRatioReturnsExpectedRatio)
     ASSERT_FLOAT_EQ(t.getAspectRatio(), expected);
 }
 
-TEST(Texture, GetWrapModeReturnsRepeatedByDefault)
+TEST_F(TextureTest, GetWrapModeReturnsRepeatedByDefault)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     ASSERT_EQ(t.getWrapMode(), osc::experimental::TextureWrapMode::Repeat);
 }
 
-TEST(Texture, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
+TEST_F(TextureTest, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1073,7 +1077,7 @@ TEST(Texture, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
     ASSERT_EQ(t.getWrapMode(), wm);
 }
 
-TEST(Texture, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
+TEST_F(TextureTest, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1087,8 +1091,218 @@ TEST(Texture, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
     ASSERT_EQ(t.getWrapModeU(), wm);
 }
 
-// TODO wrapmode U, V, W
+TEST_F(TextureTest, SetWrapModeUCausesGetWrapModeUToReturnValue)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
 
-// TODO filtermode
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Mirror;
 
-// TODO equals testing, ensure setting it does what's expected etc. no aliasing allowed
+    ASSERT_NE(t.getWrapModeU(), wm);
+
+    t.setWrapModeU(wm);
+
+    ASSERT_EQ(t.getWrapModeU(), wm);
+}
+
+TEST_F(TextureTest, SetWrapModeVCausesGetWrapModeVToReturnValue)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Mirror;
+
+    ASSERT_NE(t.getWrapModeV(), wm);
+
+    t.setWrapModeV(wm);
+
+    ASSERT_EQ(t.getWrapModeV(), wm);
+}
+
+TEST_F(TextureTest, SetWrapModeWCausesGetWrapModeWToReturnValue)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Mirror;
+
+    ASSERT_NE(t.getWrapModeW(), wm);
+
+    t.setWrapModeW(wm);
+
+    ASSERT_EQ(t.getWrapModeW(), wm);
+}
+
+TEST_F(TextureTest, SetFilterModeCausesGetFilterModeToReturnValue)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureFilterMode tfm = osc::experimental::TextureFilterMode::Linear;
+
+    ASSERT_NE(t.getFilterMode(), tfm);
+
+    t.setFilterMode(tfm);
+
+    ASSERT_EQ(t.getFilterMode(), tfm);
+}
+
+TEST_F(TextureTest, CanBeComparedForEquality)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 == t2;  // just ensure it compiles + runs
+}
+
+TEST_F(TextureTest, CopyConstructingComparesEqual)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+    osc::experimental::Texture2D tcopy{t};
+
+    ASSERT_EQ(t, tcopy);
+}
+
+TEST_F(TextureTest, CopyAssignmentMakesEqualityReturnTrue)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 = t2;
+
+    ASSERT_EQ(t1, t2);
+}
+
+TEST_F(TextureTest, CanBeComparedForNotEquals)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 != t2;
+}
+
+TEST_F(TextureTest, ChangingWrapModeMakesCopyUnequal)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2{t1};
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Clamp;
+
+    ASSERT_EQ(t1, t2);
+    ASSERT_NE(t2.getWrapMode(), wm);
+
+    t2.setWrapMode(wm);
+
+    ASSERT_NE(t1, t2);
+}
+
+TEST_F(TextureTest, ChangingWrapModeUMakesCopyUnequal)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2{t1};
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Clamp;
+
+    ASSERT_EQ(t1, t2);
+    ASSERT_NE(t2.getWrapModeU(), wm);
+
+    t2.setWrapModeU(wm);
+
+    ASSERT_NE(t1, t2);
+}
+
+TEST_F(TextureTest, ChangingWrapModeVMakesCopyUnequal)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2{t1};
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Clamp;
+
+    ASSERT_EQ(t1, t2);
+    ASSERT_NE(t2.getWrapModeV(), wm);
+
+    t2.setWrapModeV(wm);
+
+    ASSERT_NE(t1, t2);
+}
+
+TEST_F(TextureTest, ChangingWrapModeWMakesCopyUnequal)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2{t1};
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Clamp;
+
+    ASSERT_EQ(t1, t2);
+    ASSERT_NE(t2.getWrapModeW(), wm);
+
+    t2.setWrapModeW(wm);
+
+    ASSERT_NE(t1, t2);
+}
+
+TEST_F(TextureTest, ChangingFilterModeMakesCopyUnequal)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2{t1};
+    osc::experimental::TextureFilterMode fm = osc::experimental::TextureFilterMode::Linear;
+
+    ASSERT_EQ(t1, t2);
+    ASSERT_NE(t2.getFilterMode(), fm);
+
+    t2.setFilterMode(fm);
+
+    ASSERT_NE(t1, t2);
+}
+
+TEST_F(TextureTest, CanBeComparedLessThan)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 < t2;  // just ensure it compiles + runs
+}
+
+TEST_F(TextureTest, CanBeComparedLessThanOrEqualTo)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 <= t2;
+}
+
+TEST_F(TextureTest, CanBeComparedGreaterThan)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 > t2;
+}
+
+TEST_F(TextureTest, CanBeComparedGreaterThanOrEqualTo)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 >= t2;
+}
+
+TEST_F(TextureTest, CanBeWrittenToOutputStream)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    std::stringstream ss;
+    ss << t;
+
+    ASSERT_FALSE(ss.str().empty());
+}
+
+TEST_F(TextureTest, CaneBeConvertedToString)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    std::string s = osc::experimental::to_string(t);
+
+    ASSERT_FALSE(s.empty());
+}
+
+TEST_F(TextureTest, CanBeHashed)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    std::hash<osc::experimental::Texture2D>{}(t);
+}
+
+// TODO ensure texture debug string contains useful information etc.
