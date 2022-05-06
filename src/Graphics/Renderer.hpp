@@ -1,24 +1,82 @@
 #pragma once
 
-#include "src/Graphics/Color.hpp"
-#include "src/Maths/AABB.hpp"
-#include "src/Maths/Rect.hpp"
-
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-#include <nonstd/span.hpp>
-
-#include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
-#include <vector>
+
+namespace osc::experimental
+{
+    // data type of a material-assignable property parsed from the shader code
+    enum class ShaderType {
+        Float = 0,
+        Vec3,
+        Vec4,
+        Mat3,
+        Mat4,
+        Mat4x3,
+        Int,
+        Bool,
+        Sampler2D,
+        Unknown,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, ShaderType);
+    std::string to_string(ShaderType);
+
+    // a handle to a shader
+    class Shader final {
+    public:
+        Shader(char const* vertexShader, char const* fragmentShader);  // throws on compile error
+        Shader(Shader const&);
+        Shader(Shader&&) noexcept;
+        Shader& operator=(Shader const&);
+        Shader& operator=(Shader&&) noexcept;
+        ~Shader() noexcept;
+
+        std::optional<int> findPropertyIndex(std::string const& propertyName) const;
+
+        int getPropertyCount() const;
+        std::string const& getPropertyName(int propertyIndex) const;
+        ShaderType getPropertyType(int propertyIndex) const;
+
+        class Impl;
+    private:
+        friend class GraphicsBackend;
+        friend struct std::hash<Shader>;
+        friend bool operator==(Shader const&, Shader const&);
+        friend bool operator!=(Shader const&, Shader const&);
+        friend bool operator<(Shader const&, Shader const&);
+        friend bool operator<=(Shader const&, Shader const&);
+        friend bool operator>(Shader const&, Shader const&);
+        friend bool operator>=(Shader const&, Shader const&);
+        friend std::ostream& operator<<(std::ostream&, Shader const&);
+        friend std::string to_string(Shader const&);
+
+        std::shared_ptr<Impl> m_Impl;
+    };
+
+    bool operator==(Shader const&, Shader const&);
+    bool operator!=(Shader const&, Shader const&);
+    bool operator<(Shader const&, Shader const&);
+    bool operator<=(Shader const&, Shader const&);
+    bool operator>(Shader const&, Shader const&);
+    bool operator>=(Shader const&, Shader const&);
+    std::ostream& operator<<(std::ostream&, Shader const&);
+    std::string to_string(Shader const&);
+}
+
+namespace std
+{
+    template<>
+    struct hash<osc::experimental::Shader> {
+        std::size_t operator()(osc::experimental::Shader const&) const;
+    };
+}
+
+/*
 
 namespace osc::experimental
 {
@@ -40,8 +98,6 @@ namespace osc::experimental
         Mesh& operator=(Mesh const&);
         Mesh& operator=(Mesh&&) noexcept;
         ~Mesh() noexcept;
-
-        std::int64_t getVersion() const;  // TODO: increment on each mutation
 
         MeshTopography getTopography() const;
         void setTopography(MeshTopography);
@@ -132,8 +188,6 @@ namespace osc::experimental
         Texture2D& operator=(Texture2D&&) noexcept;
         ~Texture2D() noexcept;
 
-        std::int64_t getVersion() const;  // TODO: increment on each mutation
-
         int getWidth() const;
         int getHeight() const;
         float getAspectRatio() const;
@@ -186,72 +240,6 @@ namespace std
 
 namespace osc::experimental
 {
-    // data type of a property in a shader (e.g. vec3)
-    enum class ShaderType {
-        Float = 0,
-        Int,
-        Matrix,
-        Texture,
-        Vector,
-        TOTAL,
-    };
-
-    std::ostream& operator<<(std::ostream&, ShaderType);
-    std::string to_string(ShaderType);
-
-    // a handle to a shader
-    class Shader final {
-    public:
-        Shader(char const* vertexShader,
-               char const* fragmentShader);  // throws on compile error
-        Shader(Shader const&);
-        Shader(Shader&&) noexcept;
-        Shader& operator=(Shader const&);
-        Shader& operator=(Shader&&) noexcept;
-        ~Shader() noexcept;
-
-        std::optional<int> findPropertyIndex(std::string_view propertyName) const;
-
-        int getPropertyCount() const;
-        std::string const& getPropertyName(int propertyIndex) const;
-        ShaderType getPropertyType(int propertyIndex) const;
-
-        class Impl;
-    private:
-        friend class GraphicsBackend;
-        friend struct std::hash<Shader>;
-        friend bool operator==(Shader const&, Shader const&);
-        friend bool operator!=(Shader const&, Shader const&);
-        friend bool operator<(Shader const&, Shader const&);
-        friend bool operator<=(Shader const&, Shader const&);
-        friend bool operator>(Shader const&, Shader const&);
-        friend bool operator>=(Shader const&, Shader const&);
-        friend std::ostream& operator<<(std::ostream&, Shader const&);
-        friend std::string to_string(Shader const&);
-
-        std::shared_ptr<Impl> m_Impl;
-    };
-
-    bool operator==(Shader const&, Shader const&);
-    bool operator!=(Shader const&, Shader const&);
-    bool operator<(Shader const&, Shader const&);
-    bool operator<=(Shader const&, Shader const&);
-    bool operator>(Shader const&, Shader const&);
-    bool operator>=(Shader const&, Shader const&);
-    std::ostream& operator<<(std::ostream&, Shader const&);
-    std::string to_string(Shader const&);
-}
-
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Shader> {
-        std::size_t operator()(osc::experimental::Shader const&) const;
-    };
-}
-
-namespace osc::experimental
-{
     // a material is a shader + the shader's property values (state)
     class Material final {
     public:
@@ -262,14 +250,12 @@ namespace osc::experimental
         Material& operator=(Material&&) noexcept;
         ~Material() noexcept;
 
-        std::int64_t getVersion() const;  // TODO: increment on each mutation
-
         Shader const& getShader() const;
 
         bool hasProperty(std::string_view propertyName) const;
 
-        glm::vec4 const* getColor() const;
-        void setColor(glm::vec4 const&);
+        std::optional<float> getFloat(std::string_view propertyName) const;
+        void setFloat(std::string_view propertyName, float);
 
         float const* getFloat(std::string_view propertyName) const;
         void setFloat(std::string_view propertyName, float);
@@ -513,3 +499,4 @@ namespace osc::experimental::Graphics
                   Camera&,
                   std::optional<MaterialPropertyBlock> = std::nullopt);
 }
+*/

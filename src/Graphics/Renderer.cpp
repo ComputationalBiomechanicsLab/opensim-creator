@@ -1,29 +1,310 @@
 #include "Renderer.hpp"
 
 #include "src/Graphics/Gl.hpp"
-#include "src/Maths/Geometry.hpp"
-#include "src/Utils/Algorithms.hpp"
+#include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
-#include "src/Utils/DefaultConstructOnCopy.hpp"
-#include "src/Utils/Assertions.hpp"
 
-#include <nonstd/span.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-#include <algorithm>
 #include <array>
-#include <cstddef>
-#include <cstdint>
 #include <iostream>
-#include <memory>
-#include <mutex>
+#include <stdexcept>
 #include <sstream>
-#include <unordered_map>
-#include <vector>
+#include <string>
+#include <utility>
 
 #define OSC_THROW_NYI() throw std::runtime_error{"not yet implemented"}
+
+// shader stuff
+namespace
+{
+    using namespace osc::experimental;
+
+    // LUT for human-readable form of the above
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)> const g_ShaderTypeInternalStrings =
+    {
+        "Float",
+        "Vec3",
+        "Vec4",
+        "Mat3",
+        "Mat4",
+        "Mat4x3",
+        "Int",
+        "Bool",
+        "Sampler2D",
+        "Unknown",
+    };
+
+    // convert a GL shader type to an internal shader type
+    ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    {
+        switch (e) {
+        case GL_FLOAT:
+            return ShaderType::Float;
+        case GL_FLOAT_VEC3:
+            return ShaderType::Vec3;
+        case GL_FLOAT_VEC4:
+            return ShaderType::Vec4;
+        case GL_FLOAT_MAT3:
+            return ShaderType::Mat3;
+        case GL_FLOAT_MAT4:
+            return ShaderType::Mat4;
+        case GL_FLOAT_MAT4x3:
+            return ShaderType::Mat4x3;
+        case GL_INT:
+            return ShaderType::Int;
+        case GL_BOOL:
+            return ShaderType::Bool;
+        case GL_SAMPLER_2D:
+            return ShaderType::Sampler2D;
+        case GL_INT_VEC2:
+        case GL_INT_VEC3:
+        case GL_INT_VEC4:
+        case GL_UNSIGNED_INT:
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_UNSIGNED_INT_VEC4:
+        case GL_DOUBLE:
+        case GL_DOUBLE_VEC2:
+        case GL_DOUBLE_VEC3:
+        case GL_DOUBLE_VEC4:
+        case GL_DOUBLE_MAT2:
+        case GL_DOUBLE_MAT3:
+        case GL_DOUBLE_MAT4:
+        case GL_DOUBLE_MAT2x3:
+        case GL_DOUBLE_MAT2x4:
+        case GL_FLOAT_MAT2x3:
+        case GL_FLOAT_MAT2x4:
+        case GL_FLOAT_MAT3x2:
+        case GL_FLOAT_MAT3x4:
+        case GL_FLOAT_MAT4x2:
+        case GL_FLOAT_MAT2:
+        case GL_FLOAT_VEC2:
+        default:
+            return ShaderType::Unknown;
+        }
+    }
+
+    // parsed-out description of a shader "element" (uniform/attribute)
+    struct ShaderElement final {
+        ShaderElement(int location_, ShaderType type_) :
+            location{std::move(location_)},
+            type{std::move(type_)}
+        {
+        }
+
+        int location;
+        ShaderType type;
+    };
+}
+
+class osc::experimental::Shader::Impl final {
+public:
+    explicit Impl(char const* vertexShader, char const* fragmentShader) :
+        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))}
+    {
+        constexpr GLsizei maxNameLen = 16;
+
+        GLint numAttrs;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
+
+        GLint numUniforms;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
+
+        m_Attributes.reserve(numAttrs);
+        for (GLint i = 0; i < numAttrs; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
+            m_Attributes.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+        }
+
+        m_Uniforms.reserve(numUniforms);
+        for (GLint i = 0; i < numUniforms; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
+            m_Uniforms.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+        }
+    }
+
+    std::optional<int> findPropertyIndex(std::string const& propertyName) const
+    {
+        auto it = m_Uniforms.find(propertyName);
+        if (it != m_Uniforms.end())
+        {
+            return static_cast<int>(std::distance(m_Uniforms.begin(), it));
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    int getPropertyCount() const
+    {
+        return static_cast<int>(m_Uniforms.size());
+    }
+
+    std::string const& getPropertyName(int i) const
+    {
+        auto it = m_Uniforms.begin();
+        std::advance(it, i);
+        return it->first;
+    }
+
+    ShaderType getPropertyType(int i) const
+    {
+        auto it = m_Uniforms.begin();
+        std::advance(it, i);
+        return it->second.type;
+    }
+
+    // non-PIMPL APIs
+
+    std::size_t getHash() const
+    {
+        return std::hash<osc::UID>{}(m_UID);
+    }
+
+    std::unordered_map<std::string, ShaderElement> const& getUniforms() const
+    {
+        return m_Uniforms;
+    }
+
+    std::unordered_map<std::string, ShaderElement> const& getAttributes() const
+    {
+        return m_Attributes;
+    }
+
+private:
+    UID m_UID;
+    gl::Program m_Program;
+    std::unordered_map<std::string, ShaderElement> m_Uniforms;
+    std::unordered_map<std::string, ShaderElement> m_Attributes;
+};
+
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderType)
+{
+    return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
+}
+
+std::string osc::experimental::to_string(ShaderType shaderType)
+{
+    return std::string{g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType))};
+}
+
+osc::experimental::Shader::Shader(char const* vertexShader, char const* fragmentShader) :
+    m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
+{
+}
+
+osc::experimental::Shader::Shader(osc::experimental::Shader const&) = default;
+osc::experimental::Shader::Shader(osc::experimental::Shader&&) noexcept = default;
+osc::experimental:: Shader& osc::experimental::Shader::operator=(osc::experimental::Shader const&) = default;
+osc::experimental::Shader& osc::experimental::Shader::operator=(osc::experimental::Shader&&) noexcept = default;
+osc::experimental::Shader::~Shader() noexcept = default;
+
+std::optional<int> osc::experimental::Shader::findPropertyIndex(std::string const& propertyName) const
+{
+    return m_Impl->findPropertyIndex(propertyName);
+}
+
+int osc::experimental::Shader::getPropertyCount() const
+{
+    return m_Impl->getPropertyCount();
+}
+
+std::string const& osc::experimental::Shader::getPropertyName(int propertyIndex) const
+{
+    return m_Impl->getPropertyName(std::move(propertyIndex));
+}
+
+osc::experimental::ShaderType osc::experimental::Shader::getPropertyType(int propertyIndex) const
+{
+    return m_Impl->getPropertyType(std::move(propertyIndex));
+}
+
+bool osc::experimental::operator==(Shader const& a, Shader const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Shader const& a, Shader const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Shader const& a, Shader const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shader)
+{
+    o << "Shader(\n";
+    {
+        o << "  uniforms = [";
+
+        char const* delim = "\n    ";
+        for (auto const& [name, data] : shader.m_Impl->getUniforms())
+        {
+            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+        }
+
+        o << "\n  ],\n";
+    }
+
+    {
+        o << "  attributes = [";
+
+        char const* delim = "\n    ";
+        for (auto const& [name, data] : shader.m_Impl->getAttributes())
+        {
+            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+        }
+
+        o << "\n  ]\n";
+    }
+
+    o << ')';
+
+    return o;
+}
+
+std::string osc::experimental::to_string(Shader const& shader)
+{
+    std::stringstream ss;
+    ss << shader;
+    return std::move(ss).str();
+}
+
+std::size_t std::hash<osc::experimental::Shader>::operator()(osc::experimental::Shader const& shader) const
+{
+    return shader.m_Impl->getHash();
+}
+
+/*
 
 
 // 3D implementation notes
@@ -585,304 +866,6 @@ private:
     DefaultConstructOnCopy<bool> m_GpuBuffersUpToDate = false;
 
     // TODO: GPU data
-};
-
-namespace
-{
-    // exact datatype expressed in the shader program itself
-    enum class ShaderTypeInternal {
-        Float = 0,
-        Vec2,
-        Vec3,
-        Vec4,
-        Mat2,
-        Mat3,
-        Mat4,
-        Mat2x3,
-        Mat2x4,
-        Mat3x2,
-        Mat3x4,
-        Mat4x2,
-        Mat4x3,
-        Int,
-        IntVec2,
-        IntVec3,
-        IntVec4,
-        UnsignedInt,
-        UnsignedIntVec2,
-        UnsignedIntVec3,
-        UnsignedIntVec4,
-        Double,
-        DoubleVec2,
-        DoubleVec3,
-        DoubleVec4,
-        DoubleMat2,
-        DoubleMat3,
-        DoubleMat4,
-        DoubleMat2x3,
-        DoubleMat2x4,
-        Bool,
-        Sampler2D,
-        Unknown,
-        TOTAL,
-    };
-
-    // LUT for human-readable form of the above
-    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderTypeInternalStrings =
-    {
-        "Float",
-        "Vec2",
-        "Vec3",
-        "Vec4",
-        "Mat2",
-        "Mat3",
-        "Mat4",
-        "Mat2x3",
-        "Mat2x4",
-        "Mat3x2",
-        "Mat3x4",
-        "Mat4x2",
-        "Mat4x3",
-        "Int",
-        "IntVec2",
-        "IntVec3",
-        "IntVec4",
-        "UnsignedInt",
-        "UnsignedIntVec2",
-        "UnsignedIntVec3",
-        "UnsignedIntVec4",
-        "Double",
-        "DoubleVec2",
-        "DoubleVec3",
-        "DoubleVec4",
-        "DoubleMat2",
-        "DoubleMat3",
-        "DoubleMat4",
-        "DoubleMat2x3",
-        "DoubleMat2x4",
-        "Bool",
-        "Sampler2D",
-        "Unknown",
-    };
-
-    char const* ToString(ShaderTypeInternal st)
-    {
-        return g_ShaderTypeInternalStrings.at(static_cast<size_t>(st));
-    }
-
-    std::ostream& operator<<(std::ostream& o, ShaderTypeInternal st)
-    {
-        return o << ToString(st);
-    }
-
-    // convert a GL shader type to an internal shader type
-    ShaderTypeInternal GLShaderTypeToShaderTypeInternal(GLenum e)
-    {
-        switch (e) {
-        case GL_FLOAT:
-            return ShaderTypeInternal::Float;
-        case GL_FLOAT_VEC2:
-            return ShaderTypeInternal::Vec2;
-        case GL_FLOAT_VEC3:
-            return ShaderTypeInternal::Vec3;
-        case GL_FLOAT_VEC4:
-            return ShaderTypeInternal::Vec4;
-        case GL_FLOAT_MAT2:
-            return ShaderTypeInternal::Mat2;
-        case GL_FLOAT_MAT3:
-            return ShaderTypeInternal::Mat3;
-        case GL_FLOAT_MAT4:
-            return ShaderTypeInternal::Mat4;
-        case GL_FLOAT_MAT2x3:
-            return ShaderTypeInternal::Mat2x3;
-        case GL_FLOAT_MAT2x4:
-            return ShaderTypeInternal::Mat2x4;
-        case GL_FLOAT_MAT3x2:
-            return ShaderTypeInternal::Mat3x2;
-        case GL_FLOAT_MAT3x4:
-            return ShaderTypeInternal::Mat3x4;
-        case GL_FLOAT_MAT4x2:
-            return ShaderTypeInternal::Mat4x2;
-        case GL_FLOAT_MAT4x3:
-            return ShaderTypeInternal::Mat4x3;
-        case GL_INT:
-            return ShaderTypeInternal::Int;
-        case GL_INT_VEC2:
-            return ShaderTypeInternal::IntVec2;
-        case GL_INT_VEC3:
-            return ShaderTypeInternal::IntVec3;
-        case GL_INT_VEC4:
-            return ShaderTypeInternal::IntVec4;
-        case GL_UNSIGNED_INT:
-            return ShaderTypeInternal::UnsignedInt;
-        case GL_UNSIGNED_INT_VEC2:
-            return ShaderTypeInternal::UnsignedIntVec2;
-        case GL_UNSIGNED_INT_VEC3:
-            return ShaderTypeInternal::UnsignedIntVec3;
-        case GL_UNSIGNED_INT_VEC4:
-            return ShaderTypeInternal::UnsignedIntVec4;
-        case GL_DOUBLE:
-            return ShaderTypeInternal::Double;
-        case GL_DOUBLE_VEC2:
-            return ShaderTypeInternal::DoubleVec2;
-        case GL_DOUBLE_VEC3:
-            return ShaderTypeInternal::DoubleVec3;
-        case GL_DOUBLE_VEC4:
-            return ShaderTypeInternal::DoubleVec4;
-        case GL_DOUBLE_MAT2:
-            return ShaderTypeInternal::DoubleMat2;
-        case GL_DOUBLE_MAT3:
-            return ShaderTypeInternal::DoubleMat3;
-        case GL_DOUBLE_MAT4:
-            return ShaderTypeInternal::DoubleMat4;
-        case GL_DOUBLE_MAT2x3:
-            return ShaderTypeInternal::DoubleMat2x3;
-        case GL_DOUBLE_MAT2x4:
-            return ShaderTypeInternal::DoubleMat2x4;
-        case GL_BOOL:
-            return ShaderTypeInternal::Bool;
-        case GL_SAMPLER_2D:
-            return ShaderTypeInternal::Sampler2D;
-        default:
-            return ShaderTypeInternal::Unknown;
-        }
-    }
-
-    // whether the shader element is an attribute or a uniform
-    enum class ShaderQualifier {
-        Attribute = 0,
-        Uniform,
-        TOTAL,
-    };
-
-    // LUT for human-readable form of the above
-    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderQualifierStrings =
-    {
-        "Attribute",
-        "Uniform",
-    };
-
-    char const* ToString(ShaderQualifier sq)
-    {
-        return g_ShaderQualifierStrings.at(static_cast<size_t>(sq));
-    }
-
-    std::ostream& operator<<(std::ostream& o, ShaderQualifier sq)
-    {
-        return o << ToString(sq);
-    }
-
-    struct ShaderElement final {
-        int location;
-        ShaderQualifier qualifier;
-        ShaderTypeInternal type;
-
-        ShaderElement(int location_,
-                      ShaderQualifier qualifier_,
-                      ShaderTypeInternal type_) :
-            location{std::move(location_)},
-            qualifier{std::move(qualifier_)},
-            type{std::move(type_ )}
-        {
-        }
-    };
-
-    std::ostream& operator<<(std::ostream& o, ShaderElement const& se)
-    {
-        return o << "ShaderElement(location = " << se.location
-            << ", qualifier = " << se.qualifier
-            << ", type = " << se.type
-            << ')';
-    }
-
-    std::unordered_map<std::string, ShaderElement> GetShaderElements(gl::Program& p)
-    {
-        constexpr GLsizei maxNameLen = 16;
-
-        GLint numAttrs;
-        glGetProgramiv(p.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
-
-        GLint numUniforms;
-        glGetProgramiv(p.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
-
-        std::unordered_map<std::string, ShaderElement> rv;
-        rv.reserve(numAttrs + numUniforms);
-
-        for (GLint i = 0; i < numAttrs; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveAttrib(p.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
-            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Attribute, GLShaderTypeToShaderTypeInternal(type));
-        }
-
-        for (GLint i = 0; i < numUniforms; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveUniform(p.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
-            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Uniform, GLShaderTypeToShaderTypeInternal(type));
-        }
-
-        return rv;
-    }
-}
-
-class osc::experimental::Shader::Impl final {
-public:
-    explicit Impl(char const* vertexShader,
-                  char const* fragmentShader) :
-        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))},
-        m_ShaderElements{GetShaderElements(m_Program)}
-    {
-        for (auto const& [name, el] : m_ShaderElements)
-        {
-            std::cerr << name << " = " << el << '\n';
-        }
-    }
-
-    std::optional<int> findPropertyIndex(std::string_view sv) const
-    {
-        auto it = m_ShaderElements.find(std::string{sv});
-        if (it != m_ShaderElements.end())
-        {
-            return static_cast<int>(std::distance(m_ShaderElements.begin(), it));
-        }
-        else
-        {
-            return std::nullopt;
-        }
-    }
-
-    int getPropertyCount() const
-    {
-        return static_cast<int>(m_ShaderElements.size());
-    }
-
-    std::string const& getPropertyName(int i) const
-    {
-        auto it = m_ShaderElements.begin();
-        std::advance(it, i);
-        return it->first;
-    }
-
-    ShaderType getPropertyType(int) const
-    {
-        OSC_THROW_NYI();
-    }
-
-    std::size_t getHash() const
-    {
-        OSC_THROW_NYI();
-    }
-
-private:
-    gl::Program m_Program;
-    std::unordered_map<std::string, ShaderElement> m_ShaderElements;
 };
 
 
@@ -2192,3 +2175,5 @@ void osc::experimental::Graphics::DrawMesh(Mesh,
     // - deal with any batch flushing etc.
     OSC_THROW_NYI();
 }
+
+*/
