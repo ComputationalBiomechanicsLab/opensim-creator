@@ -381,23 +381,17 @@ namespace
 
 		// locally copy the model to ensure computation doesn't potentially alter
 		// the model commit (and because it's required for muscle equilibration)
-		OpenSim::Model model = params->getCommit().getModel();
-		model.buildSystem();
-		model.initializeState();
+		osc::BasicModelStatePair p = params->getCommit().extractModelStateThreadsafe();
 
 		if (stopToken.stop_requested())
 		{
 			return std::make_unique<Plot>(*params);  // empty plot
 		}
 
-		// locally copy the state
-		SimTK::State stateCopy = params->getCommit().getState();
-		model.realizeReport(stateCopy);
+		OpenSim::Model& model = p.updModel();
+		SimTK::State state = p.getState();
 
-		if (stopToken.stop_requested())
-		{
-			return std::make_unique<Plot>(*params);  // empty plot
-		}
+		model.realizeReport(state);
 
 		// lookup relevant elements in the copies
 
@@ -425,7 +419,7 @@ namespace
 		yValues.reserve(nPoints);
 
 		shared->setProgress(0.0f);
-		coord.setLocked(stateCopy, false);
+		coord.setLocked(state, false);
 		for (int i = 0; i < nPoints; ++i)
 		{
 			if (stopToken.stop_requested())
@@ -435,12 +429,12 @@ namespace
 
 			double xVal = start + (i * step);
 
-			coord.setValue(stateCopy, xVal);
-			model.assemble(stateCopy);
-			model.equilibrateMuscles(stateCopy);
-			model.realizeReport(stateCopy);
+			coord.setValue(state, xVal);
+			model.assemble(state);
+			model.equilibrateMuscles(state);
+			model.realizeReport(state);
 
-			double yVald = params->getMuscleOutput()(stateCopy, muscle, coord);
+			double yVald = params->getMuscleOutput()(state, muscle, coord);
 			float yVal = static_cast<float>(yVald);
 
 			xValues.push_back(osc::ConvertCoordValueToDisplayValue(coord, xVal));

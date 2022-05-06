@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/OpenSimBindings/BasicModelStatePair.hpp"
 #include "src/OpenSimBindings/VirtualConstModelStatePair.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -45,6 +46,8 @@ namespace osc
 		OpenSim::Model const& getModel() const override;
 		AutoFinalizingModelStatePair const& getUiModel() const;  // TODO: shouldn't be necessary
 		SimTK::State const& getState() const override;
+
+		BasicModelStatePair extractModelStateThreadsafe() const;  // HACK: necessary because copy-construction isn't necessarily threadsafe in OpenSim
 
 		UID getModelVersion() const override;
 		UID getStateVersion() const override;

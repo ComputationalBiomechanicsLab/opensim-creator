@@ -8,6 +8,7 @@
 
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 
@@ -48,50 +49,73 @@ public:
 
 	OpenSim::Model const& getModel() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getModel();
 	}
 
 	AutoFinalizingModelStatePair const& getUiModel() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState;
 	}
 
 	SimTK::State const& getState() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getState();
+	}
+
+	BasicModelStatePair extractModelStateThreadsafe() const
+	{
+		std::scoped_lock guard{m_AccessMutex};
+		return BasicModelStatePair{m_ModelState.getModel(), m_ModelState.getState()};
 	}
 
 	UID getModelVersion() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getModelVersion();
 	}
 
 	UID getStateVersion() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getStateVersion();
 	}
 
 	OpenSim::Component const* getSelected() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getSelected();
 	}
 
 	OpenSim::Component const* getHovered() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getHovered();
 	}
 
 	OpenSim::Component const* getIsolated() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getIsolated();
 	}
 
 	float getFixupScaleFactor() const
 	{
+		std::scoped_lock guard{m_AccessMutex};
 		return m_ModelState.getFixupScaleFactor();
 	}
 
 private:
+	// HACK: this isn't entirely adequate, because we leak non-mutex-guarded references to the
+	// model+state via `getModel` and `getState`, but this might be "good enough" to ensure that
+	// multiple threads using one particular commit and only using the copying API don't nuke eachover
+	//
+	// (it is not good enough if parts of the UI plan on using a model outside of the mutex guard by
+	//  leaking out references, though)
+	mutable std::mutex m_AccessMutex;
+
 	UID m_ID;
 	UID m_MaybeParentID = UID::empty();
 	std::chrono::system_clock::time_point m_CommitTime = std::chrono::system_clock::now();
@@ -150,6 +174,11 @@ osc::AutoFinalizingModelStatePair const& osc::ModelStateCommit::getUiModel() con
 SimTK::State const& osc::ModelStateCommit::getState() const
 {
 	return m_Impl->getState();
+}
+
+osc::BasicModelStatePair osc::ModelStateCommit::extractModelStateThreadsafe() const
+{
+	return m_Impl->extractModelStateThreadsafe();
 }
 
 osc::UID osc::ModelStateCommit::getModelVersion() const
