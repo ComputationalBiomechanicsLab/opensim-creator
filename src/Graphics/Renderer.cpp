@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #define OSC_THROW_NYI() throw std::runtime_error{"not yet implemented"}
 
@@ -34,13 +35,270 @@ static std::string StreamToString(T const& v)
     return std::move(ss).str();
 }
 
+
+//////////////////////////////////
+//
+// texture stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)> const g_TextureWrapModeStrings =
+    {
+        "Repeat",
+        "Clamp",
+        "Mirror",
+    };
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureFilterMode::TOTAL)> const g_TextureFilterModeStrings =
+    {
+        "Nearest",
+        "Linear",
+        "Mipmap",
+    };
+}
+
+class osc::experimental::Texture2D::Impl final {
+public:
+    Impl(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
+        m_Width{std::move(width)},
+        m_Height{ std::move(height) },
+        m_Pixels(pixelsRowByRow.data(), pixelsRowByRow.data() + pixelsRowByRow.size())
+    {
+    }
+
+    int getWidth() const
+    {
+        return m_Width;
+    }
+
+    int getHeight() const
+    {
+        return m_Height;
+    }
+
+    float getAspectRatio() const
+    {
+        return static_cast<float>(m_Width) / static_cast<float>(m_Height);
+    }
+
+    TextureWrapMode getWrapMode() const
+    {
+        return getWrapModeU();
+    }
+
+    void setWrapMode(TextureWrapMode twm)
+    {
+        setWrapModeU(std::move(twm));
+    }
+
+    TextureWrapMode getWrapModeU() const
+    {
+        return m_WrapModeU;
+    }
+
+    void setWrapModeU(TextureWrapMode twm)
+    {
+        m_WrapModeU = std::move(twm);
+    }
+
+    TextureWrapMode getWrapModeV() const
+    {
+        return m_WrapModeV;
+    }
+
+    void setWrapModeV(TextureWrapMode twm)
+    {
+        m_WrapModeV = std::move(twm);
+    }
+
+    TextureWrapMode getWrapModeW() const
+    {
+        return m_WrapModeW;
+    }
+
+    void setWrapModeW(TextureWrapMode twm)
+    {
+        m_WrapModeW = std::move(twm);
+    }
+
+    TextureFilterMode getFilterMode() const
+    {
+        return m_FilterMode;
+    }
+
+    void setFilterMode(TextureFilterMode tfm)
+    {
+        m_FilterMode = std::move(tfm);
+    }
+
+    std::size_t getHash() const
+    {
+        return std::hash<UID>{}(m_UID);
+    }
+
+private:
+    UID m_UID;
+    int m_Width;
+    int m_Height;
+    TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
+    TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
+    std::vector<Rgba32> m_Pixels;
+};
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm)
+{
+    return o << g_TextureWrapModeStrings.at(static_cast<int>(twm));
+}
+
+std::string osc::experimental::to_string(TextureWrapMode twm)
+{
+    return StreamToString(twm);
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode twm)
+{
+    return o << g_TextureFilterModeStrings.at(static_cast<int>(twm));
+}
+
+std::string osc::experimental::to_string(TextureFilterMode twm)
+{
+    return StreamToString(twm);
+}
+
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
+    m_Impl{new Impl{std::move(width), std::move(height), std::move(pixelsRowByRow)}}
+{
+}
+
+osc::experimental::Texture2D::Texture2D(Texture2D const&) = default;
+osc::experimental::Texture2D::Texture2D(Texture2D&&) noexcept = default;
+osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D const&) = default;
+osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D&&) noexcept = default;
+osc::experimental::Texture2D::~Texture2D() noexcept = default;
+
+int osc::experimental::Texture2D::getWidth() const
+{
+    return m_Impl->getWidth();
+}
+
+int osc::experimental::Texture2D::getHeight() const
+{
+    return m_Impl->getHeight();
+}
+
+float osc::experimental::Texture2D::getAspectRatio() const
+{
+    return m_Impl->getAspectRatio();
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapMode() const
+{
+    return m_Impl->getWrapMode();
+}
+
+void osc::experimental::Texture2D::setWrapMode(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapMode(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeU() const
+{
+    return m_Impl->getWrapModeU();
+}
+
+void osc::experimental::Texture2D::setWrapModeU(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeU(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeV() const
+{
+    return m_Impl->getWrapModeV();
+}
+
+void osc::experimental::Texture2D::setWrapModeV(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeV(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeW() const
+{
+    return m_Impl->getWrapModeW();
+}
+
+void osc::experimental::Texture2D::setWrapModeW(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeW(std::move(twm));
+}
+
+osc::experimental::TextureFilterMode osc::experimental::Texture2D::getFilterMode() const
+{
+    return m_Impl->getFilterMode();
+}
+
+void osc::experimental::Texture2D::setFilterMode(TextureFilterMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setFilterMode(std::move(twm));
+}
+
+bool osc::experimental::operator==(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const& t)
+{
+    return o << "Texture2D";
+}
+
+std::string osc::experimental::to_string(Texture2D const& t)
+{
+    return StreamToString(t);
+}
+
+
 //////////////////////////////////
 //
 // shader stuff
 //
 //////////////////////////////////
 
-// shader stuff
 namespace
 {
     using namespace osc::experimental;

@@ -1,10 +1,13 @@
 #pragma once
 
+#include "src/Graphics/Color.hpp"
+
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/mat4x3.hpp>
+#include <nonstd/span.hpp>
 
 #include <cstddef>
 #include <functional>
@@ -12,6 +15,93 @@
 #include <memory>
 #include <optional>
 #include <string>
+
+
+// 2D texture
+//
+// representation of an "image" that can be sampled by shaders
+namespace osc::experimental
+{
+    enum class TextureWrapMode {
+        Repeat = 0,
+        Clamp,
+        Mirror,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, TextureWrapMode);
+    std::string to_string(TextureWrapMode);
+
+    enum class TextureFilterMode {
+        Nearest = 0,
+        Linear,
+        Mipmap,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, TextureFilterMode);
+    std::string to_string(TextureFilterMode);
+
+    // a handle to a 2D texture that can be rendered by the graphics backend
+    class Texture2D final {
+    public:
+        // RGBA32, SRGB
+        Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow);
+        Texture2D(Texture2D const&);
+        Texture2D(Texture2D&&) noexcept;
+        Texture2D& operator=(Texture2D const&);
+        Texture2D& operator=(Texture2D&&) noexcept;
+        ~Texture2D() noexcept;
+
+        int getWidth() const;
+        int getHeight() const;
+        float getAspectRatio() const;
+
+        TextureWrapMode getWrapMode() const;  // same as getWrapModeU
+        void setWrapMode(TextureWrapMode);
+        TextureWrapMode getWrapModeU() const;
+        void setWrapModeU(TextureWrapMode);
+        TextureWrapMode getWrapModeV() const;
+        void setWrapModeV(TextureWrapMode);
+        TextureWrapMode getWrapModeW() const;
+        void setWrapModeW(TextureWrapMode);
+
+        TextureFilterMode getFilterMode() const;
+        void setFilterMode(TextureFilterMode);
+
+        class Impl;
+    private:
+        friend class GraphicsBackend;
+        friend struct std::hash<Texture2D>;
+        friend bool operator==(Texture2D const&, Texture2D const&);
+        friend bool operator!=(Texture2D const&, Texture2D const&);
+        friend bool operator<(Texture2D const&, Texture2D const&);
+        friend bool operator<=(Texture2D const&, Texture2D const&);
+        friend bool operator>(Texture2D const&, Texture2D const&);
+        friend bool operator>=(Texture2D const&, Texture2D const&);
+        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
+        friend std::string to_string(Texture2D const&);
+
+        std::shared_ptr<Impl> m_Impl;
+    };
+
+    bool operator==(Texture2D const&, Texture2D const&);
+    bool operator!=(Texture2D const&, Texture2D const&);
+    bool operator<(Texture2D const&, Texture2D const&);
+    bool operator<=(Texture2D const&, Texture2D const&);
+    bool operator>(Texture2D const&, Texture2D const&);
+    bool operator>=(Texture2D const&, Texture2D const&);
+    std::ostream& operator<<(std::ostream&, Texture2D const&);
+    std::string to_string(Texture2D const&);
+}
+
+namespace std
+{
+    template<>
+    struct hash<osc::experimental::Texture2D> {
+        std::size_t operator()(osc::experimental::Texture2D const&) const;
+    };
+}
 
 // shader
 //
@@ -315,90 +405,6 @@ namespace std
     template<>
     struct hash<osc::experimental::Mesh> {
         std::size_t operator()(osc::experimental::Mesh const&) const;
-    };
-}
-
-namespace osc::experimental
-{
-    enum class TextureWrapMode {
-        Repeat = 0,
-        Clamp,
-        Mirror,
-        TOTAL,
-    };
-
-    std::ostream& operator<<(std::ostream&, TextureWrapMode);
-    std::string to_string(TextureWrapMode);
-
-    enum class TextureFilterMode {
-        Nearest = 0,
-        Linear,
-        Mipmap,
-        TOTAL,
-    };
-
-    std::ostream& operator<<(std::ostream&, TextureFilterMode);
-    std::string to_string(TextureFilterMode);
-
-    // a handle to a 2D texture that can be rendered by the graphics backend
-    class Texture2D final {
-    public:
-        // RGBA32, SRGB
-        Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow);
-        Texture2D(int width, int height, nonstd::span<glm::vec4 const> pixelsRowByRow);
-        Texture2D(Texture2D const&);
-        Texture2D(Texture2D&&) noexcept;
-        Texture2D& operator=(Texture2D const&);
-        Texture2D& operator=(Texture2D&&) noexcept;
-        ~Texture2D() noexcept;
-
-        int getWidth() const;
-        int getHeight() const;
-        float getAspectRatio() const;
-
-        TextureWrapMode getWrapMode() const;  // same as getWrapModeU
-        void setWrapMode(TextureWrapMode);
-        TextureWrapMode getWrapModeU() const;
-        void setWrapModeU(TextureWrapMode);
-        TextureWrapMode getWrapModeV() const;
-        void setWrapModeV(TextureWrapMode);
-        TextureWrapMode getWrapModeW() const;
-        void setWrapModeW(TextureWrapMode);
-
-        TextureFilterMode getFilterMode() const;
-        void setFilterMode(TextureFilterMode);
-
-        class Impl;
-    private:
-        friend class GraphicsBackend;
-        friend struct std::hash<Texture2D>;
-        friend bool operator==(Texture2D const&, Texture2D const&);
-        friend bool operator!=(Texture2D const&, Texture2D const&);
-        friend bool operator<(Texture2D const&, Texture2D const&);
-        friend bool operator<=(Texture2D const&, Texture2D const&);
-        friend bool operator>(Texture2D const&, Texture2D const&);
-        friend bool operator>=(Texture2D const&, Texture2D const&);
-        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
-        friend std::string to_string(Texture2D const&);
-
-        std::shared_ptr<Impl> m_Impl;
-    };
-
-    bool operator==(Texture2D const&, Texture2D const&);
-    bool operator!=(Texture2D const&, Texture2D const&);
-    bool operator<(Texture2D const&, Texture2D const&);
-    bool operator<=(Texture2D const&, Texture2D const&);
-    bool operator>(Texture2D const&, Texture2D const&);
-    bool operator>=(Texture2D const&, Texture2D const&);
-    std::ostream& operator<<(std::ostream&, Texture2D const&);
-    std::string to_string(Texture2D const&);
-}
-
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Texture2D> {
-        std::size_t operator()(osc::experimental::Texture2D const&) const;
     };
 }
 
