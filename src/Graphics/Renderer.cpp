@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 
 #include "src/Graphics/Gl.hpp"
+#include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
@@ -57,7 +58,6 @@ namespace
     {
         "Nearest",
         "Linear",
-        "Mipmap",
     };
 }
 
@@ -68,6 +68,7 @@ public:
         m_Height{ std::move(height) },
         m_Pixels(pixelsRowByRow.data(), pixelsRowByRow.data() + pixelsRowByRow.size())
     {
+        OSC_ASSERT(width* height == pixelsRowByRow.size());
     }
 
     int getWidth() const
@@ -290,6 +291,11 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const& t)
 std::string osc::experimental::to_string(Texture2D const& t)
 {
     return StreamToString(t);
+}
+
+std::size_t std::hash<osc::experimental::Texture2D>::operator()(osc::experimental::Texture2D const& t) const
+{
+    return t.m_Impl->getHash();
 }
 
 

@@ -968,3 +968,123 @@ TEST(MaterialPropertyBlockTest, CanHash)
 // TODO: ensure printout mentions variables etc.
 
 // TODO: compound test: set a float but read a vec, etc.
+
+TEST(Texture, CanConstructFromPixels)
+{
+    std::vector<osc::Rgba32> pixels(4);
+    osc::experimental::Texture2D t{2, 2, pixels};
+}
+
+TEST(Texture, ThrowsIfDimensionsDontMatchNumberOfPixels)
+{
+    std::vector<osc::Rgba32> pixels(4);
+    ASSERT_ANY_THROW({ osc::experimental::Texture2D t(1, 2, pixels); });
+}
+
+static osc::experimental::Texture2D GenerateTexture()
+{
+    std::vector<osc::Rgba32> pixels(4);
+    return osc::experimental::Texture2D{2, 2, pixels};
+}
+
+TEST(Texture, CanCopyConstruct)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+    osc::experimental::Texture2D copy{t};
+}
+
+TEST(Texture, CanMoveConstruct)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+    osc::experimental::Texture2D copy{std::move(t)};
+}
+
+TEST(Texture, CanCopyAssign)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 = t2;
+}
+
+TEST(Texture, CanMoveAssign)
+{
+    osc::experimental::Texture2D t1 = GenerateTexture();
+    osc::experimental::Texture2D t2 = GenerateTexture();
+
+    t1 = std::move(t2);
+}
+
+TEST(Texture, GetWidthReturnsSuppliedWidth)
+{
+    int width = 2;
+    int height = 6;
+    std::vector<osc::Rgba32> pixels(width*height);
+
+    osc::experimental::Texture2D t{width, height, pixels};
+
+    ASSERT_EQ(t.getWidth(), width);
+}
+
+TEST(Texture, GetHeightReturnsSuppliedHeight)
+{
+    int width = 2;
+    int height = 6;
+    std::vector<osc::Rgba32> pixels(width*height);
+
+    osc::experimental::Texture2D t{width, height, pixels};
+
+    ASSERT_EQ(t.getHeight(), height);
+}
+
+TEST(Texture, GetAspectRatioReturnsExpectedRatio)
+{
+    int width = 16;
+    int height = 37;
+    std::vector<osc::Rgba32> pixels(width*height);
+
+    osc::experimental::Texture2D t{width, height, pixels};
+
+    float expected = static_cast<float>(width) / static_cast<float>(height);
+
+    ASSERT_FLOAT_EQ(t.getAspectRatio(), expected);
+}
+
+TEST(Texture, GetWrapModeReturnsRepeatedByDefault)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+    ASSERT_EQ(t.getWrapMode(), osc::experimental::TextureWrapMode::Repeat);
+}
+
+TEST(Texture, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Mirror;
+
+    ASSERT_NE(t.getWrapMode(), wm);
+
+    t.setWrapMode(wm);
+
+    ASSERT_EQ(t.getWrapMode(), wm);
+}
+
+TEST(Texture, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
+{
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    osc::experimental::TextureWrapMode wm = osc::experimental::TextureWrapMode::Mirror;
+
+    ASSERT_NE(t.getWrapMode(), wm);
+    ASSERT_NE(t.getWrapModeU(), wm);
+
+    t.setWrapMode(wm);
+
+    ASSERT_EQ(t.getWrapModeU(), wm);
+}
+
+// TODO wrapmode U, V, W
+
+// TODO filtermode
+
+// TODO equals testing, ensure setting it does what's expected etc. no aliasing allowed

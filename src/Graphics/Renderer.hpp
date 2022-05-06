@@ -35,7 +35,6 @@ namespace osc::experimental
     enum class TextureFilterMode {
         Nearest = 0,
         Linear,
-        Mipmap,
         TOTAL,
     };
 
@@ -405,74 +404,6 @@ namespace std
     template<>
     struct hash<osc::experimental::Mesh> {
         std::size_t operator()(osc::experimental::Mesh const&) const;
-    };
-}
-
-namespace osc::experimental
-{
-    // a material is a shader + the shader's property values (state)
-    class Material final {
-    public:
-        explicit Material(Shader);
-        Material(Material const&);
-        Material(Material&&) noexcept;
-        Material& operator=(Material const&);
-        Material& operator=(Material&&) noexcept;
-        ~Material() noexcept;
-
-        Shader const& getShader() const;
-
-        bool hasProperty(std::string_view propertyName) const;
-
-        std::optional<float> getFloat(std::string_view propertyName) const;
-        void setFloat(std::string_view propertyName, float);
-
-        float const* getFloat(std::string_view propertyName) const;
-        void setFloat(std::string_view propertyName, float);
-
-        int const* getInt(std::string_view propertyName) const;
-        void setInt(std::string_view propertyName, int);
-
-        Texture2D const* getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view propertyName, Texture2D const&);
-
-        glm::vec4 const* getVector(std::string_view propertyName) const;
-        void setVector(std::string_view propertyName, glm::vec4 const&);
-
-        glm::mat4 const* getMatrix(std::string_view propertyName) const;
-        void setMatrix(std::string_view propertyName, glm::mat4 const&);
-
-        class Impl;
-    private:
-        friend class GraphicsBackend;
-        friend struct std::hash<Material>;
-        friend bool operator==(Material const&, Material const&);
-        friend bool operator!=(Material const&, Material const&);
-        friend bool operator<(Material const&, Material const&);
-        friend bool operator<=(Material const&, Material const&);
-        friend bool operator>(Material const&, Material const&);
-        friend bool operator>=(Material const&, Material const&);
-        friend std::ostream& operator<<(std::ostream&, Material const&);
-        friend std::string to_string(Material const&);
-
-        std::shared_ptr<Impl> m_Impl;
-    };
-
-    bool operator==(Material const&, Material const&);
-    bool operator!=(Material const&, Material const&);
-    bool operator<(Material const&, Material const&);
-    bool operator<=(Material const&, Material const&);
-    bool operator>(Material const&, Material const&);
-    bool operator>=(Material const&, Material const&);
-    std::ostream& operator<<(std::ostream&, Material const&);
-    std::string to_string(Material const&);
-}
-
-namespace std
-{
-    template<>
-    struct hash<osc::experimental::Material> {
-        std::size_t operator()(osc::experimental::Material const&) const;
     };
 }
 
