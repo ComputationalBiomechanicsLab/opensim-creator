@@ -6,17 +6,25 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <string>
 #include <unordered_set>
 
-class ShaderTest : public ::testing::Test {
-    osc::App m_App;
-};
+static std::unique_ptr<osc::App> g_App;
 
-class TextureTest : public ::testing::Test {
-    osc::App m_App;
+class Renderer : public ::testing::Test {
+protected:
+    static void SetUpTestSuite()
+    {
+        g_App = std::make_unique<osc::App>();
+    }
+
+    static void TearDownTestSuite()
+    {
+        g_App.reset();
+    }
 };
 
 static constexpr char const g_VertexShaderSrc[] =
@@ -178,7 +186,23 @@ static glm::mat4x3 GenerateMat4x3()
     return glm::mat4x3{GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
 }
 
-TEST(ShaderTypeTest, CanStreamShaderType)
+static osc::experimental::Texture2D GenerateTexture()
+{
+    std::vector<osc::Rgba32> pixels(4);
+    return osc::experimental::Texture2D{2, 2, pixels};
+}
+
+// helper for material tests
+static osc::experimental::Material CreateMaterial()
+{
+    osc::experimental::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
+    return osc::experimental::Material{shader};
+}
+
+
+// TESTS
+
+TEST_F(Renderer, CanStreamShaderType)
 {
     std::stringstream ss;
     ss << osc::experimental::ShaderType::Bool;
@@ -186,13 +210,13 @@ TEST(ShaderTypeTest, CanStreamShaderType)
     ASSERT_EQ(ss.str(), "Bool");
 }
 
-TEST(ShaderTypeTest, CanConvertShaderTypeToString)
+TEST_F(Renderer, CanConvertShaderTypeToString)
 {
     std::string s = osc::experimental::to_string(osc::experimental::ShaderType::Bool);
     ASSERT_EQ(s, "Bool");
 }
 
-TEST(ShaderTypeTest, CanIterateAndStringStreamAllShaderTypes)
+TEST_F(Renderer, CanIterateAndStringStreamAllShaderTypes)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::ShaderType::TOTAL); ++i)
     {
@@ -202,7 +226,7 @@ TEST(ShaderTypeTest, CanIterateAndStringStreamAllShaderTypes)
     }
 }
 
-TEST(ShaderTypeTest, CanIterateAndConvertAllShaderTypesToString)
+TEST_F(Renderer, CanIterateAndConvertAllShaderTypesToString)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::ShaderType::TOTAL); ++i)
     {
@@ -211,24 +235,24 @@ TEST(ShaderTypeTest, CanIterateAndConvertAllShaderTypesToString)
     }
 }
 
-TEST_F(ShaderTest, CanConstructFromVertexShaderAndFragmentShader)
+TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 }
 
-TEST_F(ShaderTest, CanCopyConstructShader)
+TEST_F(Renderer, ShaderCanBeCopyConstructed)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader copy{s};
 }
 
-TEST_F(ShaderTest, CanMoveConstructShader)
+TEST_F(Renderer, ShaderCanBeMoveConstructed)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader copy{std::move(s)};
 }
 
-TEST_F(ShaderTest, CanCopyAssignShader)
+TEST_F(Renderer, ShaderCanBeCopyAssigned)
 {
     osc::experimental::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
@@ -236,7 +260,7 @@ TEST_F(ShaderTest, CanCopyAssignShader)
     s1 = s2;
 }
 
-TEST_F(ShaderTest, CanMoveAssignShader)
+TEST_F(Renderer, ShaderCanBeMoveAssigned)
 {
     osc::experimental::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
@@ -244,7 +268,7 @@ TEST_F(ShaderTest, CanMoveAssignShader)
     s1 = std::move(s2);
 }
 
-TEST_F(ShaderTest, CopyConstructedShaderIsEqualToOriginal)
+TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader copy{s};
@@ -252,7 +276,7 @@ TEST_F(ShaderTest, CopyConstructedShaderIsEqualToOriginal)
     ASSERT_EQ(s, copy);
 }
 
-TEST_F(ShaderTest, TwoDifferentShadersAreNotEqual)
+TEST_F(Renderer, ShadersThatDifferCompareNotEqual)
 {
     osc::experimental::Shader s1{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Shader s2{g_VertexShaderSrc, g_FragmentShaderSrc};
@@ -260,7 +284,7 @@ TEST_F(ShaderTest, TwoDifferentShadersAreNotEqual)
     ASSERT_NE(s1, s2);
 }
 
-TEST_F(ShaderTest, CanPrintShaderDetailsToAStringStream)
+TEST_F(Renderer, ShaderCanBeWrittenToOutputStream)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -270,7 +294,7 @@ TEST_F(ShaderTest, CanPrintShaderDetailsToAStringStream)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST_F(ShaderTest, CanWriteShaderAsStdString)
+TEST_F(Renderer, ShaderCanBeConvertedToString)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -279,7 +303,7 @@ TEST_F(ShaderTest, CanWriteShaderAsStdString)
     ASSERT_FALSE(str.empty());
 }
 
-TEST_F(ShaderTest, StringRepresentationContainsExpectedInfo)
+TEST_F(Renderer, ShaderStringContainsExpectedInfo)
 {
     // this test is flakey, but is just ensuring that the string printout has enough information
     // to help debugging etc.
@@ -294,7 +318,7 @@ TEST_F(ShaderTest, StringRepresentationContainsExpectedInfo)
     }
 }
 
-TEST_F(ShaderTest, FindPropertyIndexCanFindAllExpectedProperties)
+TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -303,14 +327,14 @@ TEST_F(ShaderTest, FindPropertyIndexCanFindAllExpectedProperties)
         ASSERT_TRUE(s.findPropertyIndex(std::string{propName}));
     }
 }
-TEST_F(ShaderTest, CompiledShaderHasExpectedNumberOfProperties)
+TEST_F(Renderer, ShaderHasExpectedNumberOfProperties)
 {
     // (effectively, number of properties == number of uniforms)
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
     ASSERT_EQ(s.getPropertyCount(), g_ExpectedPropertyNames.size());
 }
 
-TEST_F(ShaderTest, IteratingOverPropertyIndicesForNameReturnsValidPropertyName)
+TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyName)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -329,7 +353,7 @@ TEST_F(ShaderTest, IteratingOverPropertyIndicesForNameReturnsValidPropertyName)
     ASSERT_EQ(allPropNames, returnedPropNames);
 }
 
-TEST_F(ShaderTest, GetPropertyNameReturnsGivenPropertyName)
+TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -341,7 +365,7 @@ TEST_F(ShaderTest, GetPropertyNameReturnsGivenPropertyName)
     }
 }
 
-TEST_F(ShaderTest, GetPropertyTypeReturnsExpectedType)
+TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
     osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
 
@@ -357,7 +381,7 @@ TEST_F(ShaderTest, GetPropertyTypeReturnsExpectedType)
     }
 }
 
-TEST_F(ShaderTest, CanHashShader)
+TEST_F(Renderer, ShaderCanBeHashed)
 {
     // e.g. for storage in a set
 
@@ -365,31 +389,24 @@ TEST_F(ShaderTest, CanHashShader)
     std::hash<osc::experimental::Shader>{}(s); // should compile and run fine
 }
 
-// helper for material tests
-static osc::experimental::Material CreateMaterial()
-{
-    osc::experimental::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
-    return osc::experimental::Material{shader};
-}
-
-TEST_F(ShaderTest, CanConstructMaterial)
+TEST_F(Renderer, MaterialCanBeConstructed)
 {
     CreateMaterial();  // should compile and run fine
 }
 
-TEST_F(ShaderTest, CanCopyConstructMaterial)
+TEST_F(Renderer, MaterialCanBeCopyConstructed)
 {
     osc::experimental::Material material = CreateMaterial();
     osc::experimental::Material copy{material};
 }
 
-TEST_F(ShaderTest, CanMoveConstructMaterial)
+TEST_F(Renderer, MaterialCanBeMoveConstructed)
 {
     osc::experimental::Material material = CreateMaterial();
     osc::experimental::Material copy{std::move(material)};
 }
 
-TEST_F(ShaderTest, CanCopyAssignMaterial)
+TEST_F(Renderer, MaterialCanBeCopyAssigned)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -397,7 +414,7 @@ TEST_F(ShaderTest, CanCopyAssignMaterial)
     m1 = m2;
 }
 
-TEST_F(ShaderTest, CanMoveAssignMaterial)
+TEST_F(Renderer, MaterialCanBeMoveAssigned)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -405,7 +422,7 @@ TEST_F(ShaderTest, CanMoveAssignMaterial)
     m1 = std::move(m2);
 }
 
-TEST_F(ShaderTest, CopyConstructedMaterialComparesEqualWithCopiedFromMaterial)
+TEST_F(Renderer, MaterialThatIsCopyConstructedEqualsSourceMaterial)
 {
     osc::experimental::Material material = CreateMaterial();
     osc::experimental::Material copy{material};
@@ -413,7 +430,7 @@ TEST_F(ShaderTest, CopyConstructedMaterialComparesEqualWithCopiedFromMaterial)
     ASSERT_EQ(material, copy);
 }
 
-TEST_F(ShaderTest, CopyAssignedMaterialComparesEqualWithCopiedFromMaterial)
+TEST_F(Renderer, MaterialThatIsCopyAssignedEqualsSourceMaterial)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -425,7 +442,7 @@ TEST_F(ShaderTest, CopyAssignedMaterialComparesEqualWithCopiedFromMaterial)
     ASSERT_EQ(m1, m2);
 }
 
-TEST_F(ShaderTest, GetShaderReturnsShaderSuppliedInCtor)
+TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
 {
     osc::experimental::Shader shader{g_VertexShaderSrc, g_FragmentShaderSrc};
     osc::experimental::Material material{shader};
@@ -433,55 +450,55 @@ TEST_F(ShaderTest, GetShaderReturnsShaderSuppliedInCtor)
     ASSERT_EQ(material.getShader(), shader);
 }
 
-TEST_F(ShaderTest, GetFloatOnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getFloat("someKey"));
 }
 
-TEST_F(ShaderTest, GetVec3OnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getVec3("someKey"));
 }
 
-TEST_F(ShaderTest, GetVec4OnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getVec4("someKey"));
 }
 
-TEST_F(ShaderTest, GetMat3OnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getMat3("someKey"));
 }
 
-TEST_F(ShaderTest, GetMat4OnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getMat4("someKey"));
 }
 
-TEST_F(ShaderTest, GetMat4x3OnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetMat4x3OnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getMat4x3("someKey"));
 }
 
-TEST_F(ShaderTest, GetIntOnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getInt("someKey"));
 }
 
-TEST_F(ShaderTest, GetBoolOnNewMaterialReturnsEmptyOptional)
+TEST_F(Renderer, MaterialGetBoolOnNewMaterialReturnsEmptyOptional)
 {
     osc::experimental::Material mat = CreateMaterial();
     ASSERT_FALSE(mat.getBool("someKey"));
 }
 
-TEST_F(ShaderTest, SetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -493,7 +510,7 @@ TEST_F(ShaderTest, SetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getFloat(key), value);
 }
 
-TEST_F(ShaderTest, SetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -505,7 +522,7 @@ TEST_F(ShaderTest, SetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getVec3(key), value);
 }
 
-TEST_F(ShaderTest, SetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -517,7 +534,7 @@ TEST_F(ShaderTest, SetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getVec4(key), value);
 }
 
-TEST_F(ShaderTest, SetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -529,7 +546,7 @@ TEST_F(ShaderTest, SetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getMat3(key), value);
 }
 
-TEST_F(ShaderTest, SetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -541,7 +558,7 @@ TEST_F(ShaderTest, SetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getMat4(key), value);
 }
 
-TEST_F(ShaderTest, SetMat4x3OnMaterialCausesGetMat4x3ToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetMat4x3OnMaterialCausesGetMat4x3ToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -553,7 +570,7 @@ TEST_F(ShaderTest, SetMat4x3OnMaterialCausesGetMat4x3ToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getMat4x3(key), value);
 }
 
-TEST_F(ShaderTest, SetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -565,7 +582,7 @@ TEST_F(ShaderTest, SetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getInt(key), value);
 }
 
-TEST_F(ShaderTest, SetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
+TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
 {
     osc::experimental::Material mat = CreateMaterial();
 
@@ -577,7 +594,21 @@ TEST_F(ShaderTest, SetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
     ASSERT_EQ(*mat.getBool(key), value);
 }
 
-TEST_F(ShaderTest, CanCompareEquals)
+TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    ASSERT_FALSE(mat.getTexture(key));
+
+    mat.setTexture(key, t);
+
+    ASSERT_TRUE(mat.getTexture(key));
+}
+
+TEST_F(Renderer, MaterialCanCompareEquals)
 {
     osc::experimental::Material mat = CreateMaterial();
     osc::experimental::Material copy{mat};
@@ -585,7 +616,7 @@ TEST_F(ShaderTest, CanCompareEquals)
     ASSERT_EQ(mat, copy);
 }
 
-TEST_F(ShaderTest, CanCompareNotEquals)
+TEST_F(Renderer, MaterialCanCompareNotEquals)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -593,7 +624,7 @@ TEST_F(ShaderTest, CanCompareNotEquals)
     ASSERT_NE(m1, m2);
 }
 
-TEST_F(ShaderTest, CanCompareLessThan)
+TEST_F(Renderer, MaterialCanCompareLessThan)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -601,7 +632,7 @@ TEST_F(ShaderTest, CanCompareLessThan)
     m1 < m2;  // should compile and not throw, but no guarantees about ordering
 }
 
-TEST_F(ShaderTest, CanCompareLessThanOrEqualsTo)
+TEST_F(Renderer, MaterialCanCompareLessThanOrEqualsTo)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -609,7 +640,7 @@ TEST_F(ShaderTest, CanCompareLessThanOrEqualsTo)
     m1 <= m2;  // should compile and not throw, but no guarantees about ordering
 }
 
-TEST_F(ShaderTest, CanCompareGreaterThan)
+TEST_F(Renderer, MaterialCanCompareGreaterThan)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -617,7 +648,7 @@ TEST_F(ShaderTest, CanCompareGreaterThan)
     m1 > m2;  // should compile and not throw, but no guarantees about ordering
 }
 
-TEST_F(ShaderTest, CanCompareGreaterThanOrEqualsTo)
+TEST_F(Renderer, MaterialCanCompareGreaterThanOrEqualsTo)
 {
     osc::experimental::Material m1 = CreateMaterial();
     osc::experimental::Material m2 = CreateMaterial();
@@ -625,7 +656,7 @@ TEST_F(ShaderTest, CanCompareGreaterThanOrEqualsTo)
     m1 >= m2;  // should compile and not throw, but no guarantees about ordering
 }
 
-TEST_F(ShaderTest, CanPrintToStringStream)
+TEST_F(Renderer, MaterialCanPrintToStringStream)
 {
     osc::experimental::Material m1 = CreateMaterial();
 
@@ -635,13 +666,13 @@ TEST_F(ShaderTest, CanPrintToStringStream)
 
 // TODO: test print contains relevant strings etc.
 
-TEST_F(ShaderTest, CanConvertToString)
+TEST_F(Renderer, MaterialCanConvertToString)
 {
     osc::experimental::Material m1 = CreateMaterial();
     std::string s = osc::experimental::to_string(m1);
 }
 
-TEST_F(ShaderTest, CanHash)
+TEST_F(Renderer, MaterialCanHash)
 {
     osc::experimental::Material m1 = CreateMaterial();
     std::hash<osc::experimental::Material>{}(m1);
@@ -649,7 +680,7 @@ TEST_F(ShaderTest, CanHash)
 
 // TODO: compound tests: ensure copy on write works etc
 
-TEST_F(ShaderTest, SetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
+TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 {
     // compound test: when the caller sets a Vec3 then calling getInt with the same key should return empty
     osc::experimental::Material mat = CreateMaterial();
@@ -667,25 +698,24 @@ TEST_F(ShaderTest, SetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     ASSERT_TRUE(mat.getVec3(key));
     ASSERT_FALSE(mat.getFloat(key));
 }
-
-TEST(MaterialPropertyBlockTest, CanDefaultConstruct)
+TEST_F(Renderer, MaterialPropertyBlockCanDefaultConstruct)
 {
     osc::experimental::MaterialPropertyBlock mpb;
 }
 
-TEST(MaterialPropertyBlockTest, CanCopyConstruct)
+TEST_F(Renderer, MaterialPropertyBlockCanCopyConstruct)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     osc::experimental::MaterialPropertyBlock copy{mpb};
 }
 
-TEST(MaterialPropertyBlockTest, CanMoveConstruct)
+TEST_F(Renderer, MaterialPropertyBlockCanMoveConstruct)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     osc::experimental::MaterialPropertyBlock copy{std::move(mpb)};
 }
 
-TEST(MaterialPropertyBlockTest, CanCopyAssign)
+TEST_F(Renderer, MaterialPropertyBlockCanCopyAssign)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -693,7 +723,7 @@ TEST(MaterialPropertyBlockTest, CanCopyAssign)
     m1 = m2;
 }
 
-TEST(MaterialPropertyBlockTest, CanMoveAssign)
+TEST_F(Renderer, MaterialPropertyBlockCanMoveAssign)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -701,14 +731,14 @@ TEST(MaterialPropertyBlockTest, CanMoveAssign)
     m1 = std::move(m2);
 }
 
-TEST(MaterialPropertyBlocKTest, DefaultConstructedIsEmpty)
+TEST_F(Renderer, MaterialPropertyBlock)
 {
     osc::experimental::MaterialPropertyBlock mpb;
 
     ASSERT_TRUE(mpb.isEmpty());
 }
 
-TEST(MaterialPropertyBlockTest, CanClearDefaultConstructed)
+TEST_F(Renderer, MaterialPropertyBlockCanClearDefaultConstructed)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     mpb.clear();
@@ -716,7 +746,7 @@ TEST(MaterialPropertyBlockTest, CanClearDefaultConstructed)
     ASSERT_TRUE(mpb.isEmpty());
 }
 
-TEST(MaterialPropertyBlockTest, ClearClearsProperties)
+TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
 {
     osc::experimental::MaterialPropertyBlock mpb;
 
@@ -729,55 +759,55 @@ TEST(MaterialPropertyBlockTest, ClearClearsProperties)
     ASSERT_TRUE(mpb.isEmpty());
 }
 
-TEST(MaterialPropertyBlockTest, GetFloatReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getFloat("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetVec3ReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetVec3ReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getVec3("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetVec4ReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetVec4ReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getVec4("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetMat3ReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetMat3ReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getMat3("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetMat4ReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetMat4ReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getMat4("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetMat4x3ReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetMat4x3ReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getMat4x3("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetIntReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetIntReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getInt("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, GetBoolReturnsEmptyOnDefaultConstructedInstance)
+TEST_F(Renderer, MaterialPropertyBlockGetBoolReturnsEmptyOnDefaultConstructedInstance)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.getBool("someKey"));
 }
 
-TEST(MaterialPropertyBlockTest, SetFloatCausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -790,7 +820,7 @@ TEST(MaterialPropertyBlockTest, SetFloatCausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getFloat(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetVec3CausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -803,7 +833,7 @@ TEST(MaterialPropertyBlockTest, SetVec3CausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getVec3(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetVec4CausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -816,7 +846,7 @@ TEST(MaterialPropertyBlockTest, SetVec4CausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getVec4(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetMat3CausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -829,7 +859,7 @@ TEST(MaterialPropertyBlockTest, SetMat3CausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getMat3(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetMat4x3CausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetMat4x3CausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -842,7 +872,7 @@ TEST(MaterialPropertyBlockTest, SetMat4x3CausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getMat4x3(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetIntCausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -855,7 +885,7 @@ TEST(MaterialPropertyBlockTest, SetIntCausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getInt(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, SetBoolCausesGetterToReturnSetValue)
+TEST_F(Renderer, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
 {
     osc::experimental::MaterialPropertyBlock mpb;
     std::string key = "someKey";
@@ -868,7 +898,21 @@ TEST(MaterialPropertyBlockTest, SetBoolCausesGetterToReturnSetValue)
     ASSERT_EQ(mpb.getBool(key), value);
 }
 
-TEST(MaterialPropertyBlockTest, CanCompareEquals)
+TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
+{
+    osc::experimental::Material mat = CreateMaterial();
+
+    std::string key = "someKey";
+    osc::experimental::Texture2D t = GenerateTexture();
+
+    ASSERT_FALSE(mat.getTexture(key));
+
+    mat.setTexture(key, t);
+
+    ASSERT_TRUE(mat.getTexture(key));
+}
+
+TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -876,7 +920,7 @@ TEST(MaterialPropertyBlockTest, CanCompareEquals)
     m1 == m2;
 }
 
-TEST(MaterialPropertyBlockTest, CopyConstructionComparesEqual)
+TEST_F(Renderer, MaterialPropertyBlockCopyConstructionComparesEqual)
 {
     osc::experimental::MaterialPropertyBlock m;
     osc::experimental::MaterialPropertyBlock copy{m};
@@ -884,7 +928,7 @@ TEST(MaterialPropertyBlockTest, CopyConstructionComparesEqual)
     ASSERT_EQ(m, copy);
 }
 
-TEST(MaterialPropertyBlockTest, CopyAssignmentComparesEqual)
+TEST_F(Renderer, MaterialPropertyBlockCopyAssignmentComparesEqual)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -898,7 +942,7 @@ TEST(MaterialPropertyBlockTest, CopyAssignmentComparesEqual)
     ASSERT_EQ(m1, m2);
 }
 
-TEST(MaterialPropertyBlockTest, DifferentMaterialBlocksCompareNotEqual)
+TEST_F(Renderer, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -908,7 +952,7 @@ TEST(MaterialPropertyBlockTest, DifferentMaterialBlocksCompareNotEqual)
     ASSERT_NE(m1, m2);
 }
 
-TEST(MaterialPropertyBlockTest, CanCompareLessThan)
+TEST_F(Renderer, MaterialPropertyBlockCanCompareLessThan)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -916,7 +960,7 @@ TEST(MaterialPropertyBlockTest, CanCompareLessThan)
     m1 < m2;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlockTest, CanCompareLessThanOrEqualTo)
+TEST_F(Renderer, MaterialPropertyBlockCanCompareLessThanOrEqualTo)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -924,7 +968,7 @@ TEST(MaterialPropertyBlockTest, CanCompareLessThanOrEqualTo)
     m1 <= m2;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlockTest, CanCompareGreaterThan)
+TEST_F(Renderer, MaterialPropertyBlockCanCompareGreaterThan)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -932,7 +976,7 @@ TEST(MaterialPropertyBlockTest, CanCompareGreaterThan)
     m1 > m2;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlockTest, CanCompareGreaterThanOrEqualTo)
+TEST_F(Renderer, MaterialPropertyBlockCanCompareGreaterThanOrEqualTo)
 {
     osc::experimental::MaterialPropertyBlock m1;
     osc::experimental::MaterialPropertyBlock m2;
@@ -940,7 +984,7 @@ TEST(MaterialPropertyBlockTest, CanCompareGreaterThanOrEqualTo)
     m1 >= m2;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlockTest, CanPrintToOutputStream)
+TEST_F(Renderer, MaterialPropertyBlockCanPrintToOutputStream)
 {
     osc::experimental::MaterialPropertyBlock m1;
     std::stringstream ss;
@@ -948,7 +992,7 @@ TEST(MaterialPropertyBlockTest, CanPrintToOutputStream)
     ss << m1;  // just ensure this compiles and runs
 }
 
-TEST(MaterialPropertyBlckTest, PrintingToOutputStreamMentionsMaterialPropertyBlock)
+TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialPropertyBlock)
 {
     osc::experimental::MaterialPropertyBlock m1;
     std::stringstream ss;
@@ -958,14 +1002,14 @@ TEST(MaterialPropertyBlckTest, PrintingToOutputStreamMentionsMaterialPropertyBlo
     ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
 }
 
-TEST(MaterialPropertyBlockTest, CanConvertToString)
+TEST_F(Renderer, MaterialPropertyBlockCanConvertToString)
 {
     osc::experimental::MaterialPropertyBlock m;
 
     std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
 }
 
-TEST(MaterialPropertyBlockTest, CanHash)
+TEST_F(Renderer, MaterialPropertyBlockCanHash)
 {
     osc::experimental::MaterialPropertyBlock m;
     std::hash<osc::experimental::MaterialPropertyBlock>{}(m);
@@ -977,37 +1021,31 @@ TEST(MaterialPropertyBlockTest, CanHash)
 
 // TODO: compound test: set a float but read a vec, etc.
 
-TEST_F(TextureTest, CanConstructFromPixels)
+TEST_F(Renderer, TextureCanConstructFromPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     osc::experimental::Texture2D t{2, 2, pixels};
 }
 
-TEST_F(TextureTest, ThrowsIfDimensionsDontMatchNumberOfPixels)
+TEST_F(Renderer, TextureThrowsIfDimensionsDontMatchNumberOfPixels)
 {
     std::vector<osc::Rgba32> pixels(4);
     ASSERT_ANY_THROW({ osc::experimental::Texture2D t(1, 2, pixels); });
 }
 
-static osc::experimental::Texture2D GenerateTexture()
-{
-    std::vector<osc::Rgba32> pixels(4);
-    return osc::experimental::Texture2D{2, 2, pixels};
-}
-
-TEST_F(TextureTest, CanCopyConstruct)
+TEST_F(Renderer, TextureCanCopyConstruct)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     osc::experimental::Texture2D copy{t};
 }
 
-TEST_F(TextureTest, CanMoveConstruct)
+TEST_F(Renderer, TextureCanMoveConstruct)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     osc::experimental::Texture2D copy{std::move(t)};
 }
 
-TEST_F(TextureTest, CanCopyAssign)
+TEST_F(Renderer, TextureCanCopyAssign)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1015,7 +1053,7 @@ TEST_F(TextureTest, CanCopyAssign)
     t1 = t2;
 }
 
-TEST_F(TextureTest, CanMoveAssign)
+TEST_F(Renderer, TextureCanMoveAssign)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1023,7 +1061,7 @@ TEST_F(TextureTest, CanMoveAssign)
     t1 = std::move(t2);
 }
 
-TEST_F(TextureTest, GetWidthReturnsSuppliedWidth)
+TEST_F(Renderer, TextureGetWidthReturnsSuppliedWidth)
 {
     int width = 2;
     int height = 6;
@@ -1034,7 +1072,7 @@ TEST_F(TextureTest, GetWidthReturnsSuppliedWidth)
     ASSERT_EQ(t.getWidth(), width);
 }
 
-TEST_F(TextureTest, GetHeightReturnsSuppliedHeight)
+TEST_F(Renderer, TextureGetHeightReturnsSuppliedHeight)
 {
     int width = 2;
     int height = 6;
@@ -1045,7 +1083,7 @@ TEST_F(TextureTest, GetHeightReturnsSuppliedHeight)
     ASSERT_EQ(t.getHeight(), height);
 }
 
-TEST_F(TextureTest, GetAspectRatioReturnsExpectedRatio)
+TEST_F(Renderer, TextureGetAspectRatioReturnsExpectedRatio)
 {
     int width = 16;
     int height = 37;
@@ -1058,13 +1096,13 @@ TEST_F(TextureTest, GetAspectRatioReturnsExpectedRatio)
     ASSERT_FLOAT_EQ(t.getAspectRatio(), expected);
 }
 
-TEST_F(TextureTest, GetWrapModeReturnsRepeatedByDefault)
+TEST_F(Renderer, TextureGetWrapModeReturnsRepeatedByDefault)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     ASSERT_EQ(t.getWrapMode(), osc::experimental::TextureWrapMode::Repeat);
 }
 
-TEST_F(TextureTest, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
+TEST_F(Renderer, TextureSetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1077,7 +1115,7 @@ TEST_F(TextureTest, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
     ASSERT_EQ(t.getWrapMode(), wm);
 }
 
-TEST_F(TextureTest, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
+TEST_F(Renderer, TextureSetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1091,7 +1129,7 @@ TEST_F(TextureTest, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
     ASSERT_EQ(t.getWrapModeU(), wm);
 }
 
-TEST_F(TextureTest, SetWrapModeUCausesGetWrapModeUToReturnValue)
+TEST_F(Renderer, TextureSetWrapModeUCausesGetWrapModeUToReturnValue)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1104,7 +1142,7 @@ TEST_F(TextureTest, SetWrapModeUCausesGetWrapModeUToReturnValue)
     ASSERT_EQ(t.getWrapModeU(), wm);
 }
 
-TEST_F(TextureTest, SetWrapModeVCausesGetWrapModeVToReturnValue)
+TEST_F(Renderer, TextureSetWrapModeVCausesGetWrapModeVToReturnValue)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1117,7 +1155,7 @@ TEST_F(TextureTest, SetWrapModeVCausesGetWrapModeVToReturnValue)
     ASSERT_EQ(t.getWrapModeV(), wm);
 }
 
-TEST_F(TextureTest, SetWrapModeWCausesGetWrapModeWToReturnValue)
+TEST_F(Renderer, TextureSetWrapModeWCausesGetWrapModeWToReturnValue)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1130,7 +1168,7 @@ TEST_F(TextureTest, SetWrapModeWCausesGetWrapModeWToReturnValue)
     ASSERT_EQ(t.getWrapModeW(), wm);
 }
 
-TEST_F(TextureTest, SetFilterModeCausesGetFilterModeToReturnValue)
+TEST_F(Renderer, TextureSetFilterModeCausesGetFilterModeToReturnValue)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1143,7 +1181,7 @@ TEST_F(TextureTest, SetFilterModeCausesGetFilterModeToReturnValue)
     ASSERT_EQ(t.getFilterMode(), tfm);
 }
 
-TEST_F(TextureTest, CanBeComparedForEquality)
+TEST_F(Renderer, TextureCanBeComparedForEquality)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1151,7 +1189,7 @@ TEST_F(TextureTest, CanBeComparedForEquality)
     t1 == t2;  // just ensure it compiles + runs
 }
 
-TEST_F(TextureTest, CopyConstructingComparesEqual)
+TEST_F(Renderer, TextureCopyConstructingComparesEqual)
 {
     osc::experimental::Texture2D t = GenerateTexture();
     osc::experimental::Texture2D tcopy{t};
@@ -1159,7 +1197,7 @@ TEST_F(TextureTest, CopyConstructingComparesEqual)
     ASSERT_EQ(t, tcopy);
 }
 
-TEST_F(TextureTest, CopyAssignmentMakesEqualityReturnTrue)
+TEST_F(Renderer, TextureCopyAssignmentMakesEqualityReturnTrue)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1169,7 +1207,7 @@ TEST_F(TextureTest, CopyAssignmentMakesEqualityReturnTrue)
     ASSERT_EQ(t1, t2);
 }
 
-TEST_F(TextureTest, CanBeComparedForNotEquals)
+TEST_F(Renderer, TextureCanBeComparedForNotEquals)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1177,7 +1215,7 @@ TEST_F(TextureTest, CanBeComparedForNotEquals)
     t1 != t2;
 }
 
-TEST_F(TextureTest, ChangingWrapModeMakesCopyUnequal)
+TEST_F(Renderer, TextureChangingWrapModeMakesCopyUnequal)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2{t1};
@@ -1191,7 +1229,7 @@ TEST_F(TextureTest, ChangingWrapModeMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(TextureTest, ChangingWrapModeUMakesCopyUnequal)
+TEST_F(Renderer, TextureChangingWrapModeUMakesCopyUnequal)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2{t1};
@@ -1205,7 +1243,7 @@ TEST_F(TextureTest, ChangingWrapModeUMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(TextureTest, ChangingWrapModeVMakesCopyUnequal)
+TEST_F(Renderer, TextureChangingWrapModeVMakesCopyUnequal)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2{t1};
@@ -1219,7 +1257,7 @@ TEST_F(TextureTest, ChangingWrapModeVMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(TextureTest, ChangingWrapModeWMakesCopyUnequal)
+TEST_F(Renderer, TextureChangingWrapModeWMakesCopyUnequal)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2{t1};
@@ -1233,7 +1271,7 @@ TEST_F(TextureTest, ChangingWrapModeWMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(TextureTest, ChangingFilterModeMakesCopyUnequal)
+TEST_F(Renderer, TextureChangingFilterModeMakesCopyUnequal)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2{t1};
@@ -1247,7 +1285,7 @@ TEST_F(TextureTest, ChangingFilterModeMakesCopyUnequal)
     ASSERT_NE(t1, t2);
 }
 
-TEST_F(TextureTest, CanBeComparedLessThan)
+TEST_F(Renderer, TextureCanBeComparedLessThan)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1255,7 +1293,7 @@ TEST_F(TextureTest, CanBeComparedLessThan)
     t1 < t2;  // just ensure it compiles + runs
 }
 
-TEST_F(TextureTest, CanBeComparedLessThanOrEqualTo)
+TEST_F(Renderer, TextureCanBeComparedLessThanOrEqualTo)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1263,7 +1301,7 @@ TEST_F(TextureTest, CanBeComparedLessThanOrEqualTo)
     t1 <= t2;
 }
 
-TEST_F(TextureTest, CanBeComparedGreaterThan)
+TEST_F(Renderer, TextureCanBeComparedGreaterThan)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1271,7 +1309,7 @@ TEST_F(TextureTest, CanBeComparedGreaterThan)
     t1 > t2;
 }
 
-TEST_F(TextureTest, CanBeComparedGreaterThanOrEqualTo)
+TEST_F(Renderer, TextureCanBeComparedGreaterThanOrEqualTo)
 {
     osc::experimental::Texture2D t1 = GenerateTexture();
     osc::experimental::Texture2D t2 = GenerateTexture();
@@ -1279,7 +1317,7 @@ TEST_F(TextureTest, CanBeComparedGreaterThanOrEqualTo)
     t1 >= t2;
 }
 
-TEST_F(TextureTest, CanBeWrittenToOutputStream)
+TEST_F(Renderer, TextureCanBeWrittenToOutputStream)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1289,7 +1327,7 @@ TEST_F(TextureTest, CanBeWrittenToOutputStream)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST_F(TextureTest, CaneBeConvertedToString)
+TEST_F(Renderer, TextureCaneBeConvertedToString)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 
@@ -1298,7 +1336,7 @@ TEST_F(TextureTest, CaneBeConvertedToString)
     ASSERT_FALSE(s.empty());
 }
 
-TEST_F(TextureTest, CanBeHashed)
+TEST_F(Renderer, TextureCanBeHashed)
 {
     osc::experimental::Texture2D t = GenerateTexture();
 

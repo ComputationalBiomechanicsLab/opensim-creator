@@ -215,7 +215,8 @@ namespace osc::experimental
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        // TODO: get/set texture
+        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view, Texture2D);
 
         class Impl;
     private:
@@ -293,7 +294,8 @@ namespace osc::experimental
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        // TODO: get/set texture
+        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
+        void setTexture(std::string_view, Texture2D);
 
         class Impl;
     private:

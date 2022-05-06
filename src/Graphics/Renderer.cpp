@@ -692,6 +692,16 @@ public:
         setValue(std::move(propertyName), value);
     }
 
+    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    {
+        return getValue<Texture2D>(std::move(propertyName));
+    }
+
+    void setTexture(std::string_view propertyName, Texture2D t)
+    {
+        setValue(std::move(propertyName), std::move(t));
+    }
+
     // non-PIMPL APIs
 
     std::size_t getHash() const
@@ -724,7 +734,7 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool>;
+    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
 
     UID m_UID;
     osc::experimental::Shader m_Shader;
@@ -833,6 +843,16 @@ void osc::experimental::Material::setBool(std::string_view propertyName, bool va
 {
     DoCopyOnWrite(m_Impl);
     m_Impl->setBool(std::move(propertyName), std::move(value));
+}
+
+std::optional<Texture2D> osc::experimental::Material::getTexture(std::string_view propertyName) const
+{
+    return m_Impl->getTexture(std::move(propertyName));
+}
+
+void osc::experimental::Material::setTexture(std::string_view propertyName, Texture2D t)
+{
+    m_Impl->setTexture(std::move(propertyName), std::move(t));
 }
 
 bool osc::experimental::operator==(Material const& a, Material const& b)
