@@ -564,7 +564,7 @@ namespace
 				}
 				ImPlot::EndPlot();
 			}
-			if (isHovered && ImGui::IsItemClicked(ImGuiMouseButton_Left))
+			if (isHovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
 				osc::CoordinateEdit edit
 				{
@@ -573,6 +573,10 @@ namespace
 					coord.getLocked(shared->Uim->getState())
 				};
 				shared->Uim->updUiModel().pushCoordinateEdit(coord, edit);
+			}
+			if (isHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				shared->Uim->commit("edited coordinate");
 			}
 			if (ImGui::BeginPopupContextItem((title + "_contextmenu").c_str()))
 			{
