@@ -6,6 +6,7 @@
 #include "src/OpenSimBindings/ModelStateCommit.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/Algorithms.hpp"
@@ -364,7 +365,12 @@ namespace
 	class ThreadsafeSharedState final {
 	public:
 		float getProgress() const { return m_Progress; }
-		void setProgress(float v) { m_Progress = v; }
+		void setProgress(float v)
+		{
+			m_Progress = v;
+			// HACK: the UI needs to redraw a progress upate
+			osc::App::upd().requestRedraw();
+		}
 
 	private:
 		std::atomic<float> m_Progress = 0.0f;
