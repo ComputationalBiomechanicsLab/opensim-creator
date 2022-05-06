@@ -6,6 +6,10 @@
 #include <optional>
 #include <string>
 
+
+// shader
+//
+// encapsulates a shader program that has been compiled + initialized by the backend
 namespace osc::experimental
 {
     // data type of a material-assignable property parsed from the shader code
