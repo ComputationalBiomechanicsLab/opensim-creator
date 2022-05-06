@@ -126,7 +126,7 @@ namespace osc::experimental
         std::optional<bool> getBool(std::string_view propertyName) const;
         void setBool(std::string_view propertyName, bool);
 
-        // TODO: set texture
+        // TODO: get/set texture
 
         class Impl;
     private:
@@ -159,6 +159,84 @@ namespace std
     template<>
     struct hash<osc::experimental::Material> {
         std::size_t operator()(osc::experimental::Material const&) const;
+    };
+}
+
+// material property block
+//
+// enables callers to apply per-instance properties to a drawcall (that might be using
+// the same material)
+namespace osc::experimental
+{
+    class MaterialPropertyBlock final {
+    public:
+        MaterialPropertyBlock();
+        MaterialPropertyBlock(MaterialPropertyBlock const&);
+        MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept;
+        MaterialPropertyBlock& operator=(MaterialPropertyBlock const&);
+        MaterialPropertyBlock& operator=(MaterialPropertyBlock&&) noexcept;
+        ~MaterialPropertyBlock() noexcept;
+
+        void clear();
+        bool isEmpty() const;
+
+        std::optional<float> getFloat(std::string_view propertyName) const;
+        void setFloat(std::string_view propertyName, float);
+
+        std::optional<glm::vec3> getVec3(std::string_view propertyName) const;
+        void setVec3(std::string_view propertyName, glm::vec3);
+
+        std::optional<glm::vec4> getVec4(std::string_view propertyName) const;
+        void setVec4(std::string_view propertyName, glm::vec4);
+
+        std::optional<glm::mat3> getMat3(std::string_view propertyName) const;
+        void setMat3(std::string_view propertyName, glm::mat3 const&);
+
+        std::optional<glm::mat4> getMat4(std::string_view propertyName) const;
+        void setMat4(std::string_view propertyName, glm::mat4 const&);
+
+        std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const;
+        void setMat4x3(std::string_view propertyName, glm::mat4x3 const&);
+
+        std::optional<int> getInt(std::string_view propertyName) const;
+        void setInt(std::string_view, int);
+
+        std::optional<bool> getBool(std::string_view propertyName) const;
+        void setBool(std::string_view propertyName, bool);
+
+        // TODO: get/set texture
+
+        class Impl;
+    private:
+        friend class GraphicsBackend;
+        friend struct std::hash<MaterialPropertyBlock>;
+        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator<=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator>(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend bool operator>=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+        friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
+        friend std::string to_string(MaterialPropertyBlock const&);
+
+        std::shared_ptr<Impl> m_Impl;
+    };
+
+    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    bool operator!=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    bool operator<(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    bool operator<=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    bool operator>(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    bool operator>=(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
+    std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
+    std::string to_string(MaterialPropertyBlock const&);
+}
+
+namespace std
+{
+    template<>
+    struct hash<osc::experimental::MaterialPropertyBlock> {
+        std::size_t operator()(osc::experimental::MaterialPropertyBlock const&) const;
     };
 }
 
