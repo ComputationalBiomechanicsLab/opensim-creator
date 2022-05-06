@@ -903,6 +903,11 @@ std::string osc::experimental::to_string(MaterialPropertyBlock const& material)
     return StreamToString(material);
 }
 
+std::size_t std::hash<osc::experimental::MaterialPropertyBlock>::operator()(osc::experimental::MaterialPropertyBlock const& mpb) const
+{
+    return mpb.m_Impl->getHash();
+}
+
 /*
 
 

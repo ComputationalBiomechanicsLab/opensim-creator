@@ -659,3 +659,312 @@ TEST_F(ShaderTest, SetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     ASSERT_TRUE(mat.getVec3(key));
     ASSERT_FALSE(mat.getFloat(key));
 }
+
+TEST(MaterialPropertyBlockTest, CanDefaultConstruct)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+}
+
+TEST(MaterialPropertyBlockTest, CanCopyConstruct)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    osc::experimental::MaterialPropertyBlock copy{mpb};
+}
+
+TEST(MaterialPropertyBlockTest, CanMoveConstruct)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    osc::experimental::MaterialPropertyBlock copy{std::move(mpb)};
+}
+
+TEST(MaterialPropertyBlockTest, CanCopyAssign)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 = m2;
+}
+
+TEST(MaterialPropertyBlockTest, CanMoveAssign)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 = std::move(m2);
+}
+
+TEST(MaterialPropertyBlocKTest, DefaultConstructedIsEmpty)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+
+    ASSERT_TRUE(mpb.isEmpty());
+}
+
+TEST(MaterialPropertyBlockTest, CanClearDefaultConstructed)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    mpb.clear();
+
+    ASSERT_TRUE(mpb.isEmpty());
+}
+
+TEST(MaterialPropertyBlockTest, ClearClearsProperties)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+
+    mpb.setFloat("someKey", GenerateFloat());
+
+    ASSERT_FALSE(mpb.isEmpty());
+
+    mpb.clear();
+
+    ASSERT_TRUE(mpb.isEmpty());
+}
+
+TEST(MaterialPropertyBlockTest, GetFloatReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getFloat("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetVec3ReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getVec3("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetVec4ReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getVec4("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetMat3ReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getMat3("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetMat4ReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getMat4("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetMat4x3ReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getMat4x3("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetIntReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getInt("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, GetBoolReturnsEmptyOnDefaultConstructedInstance)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.getBool("someKey"));
+}
+
+TEST(MaterialPropertyBlockTest, SetFloatCausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    float value = GenerateFloat();
+
+    ASSERT_FALSE(mpb.getFloat(key));
+
+    mpb.setFloat(key, value);
+    ASSERT_TRUE(mpb.getFloat(key));
+    ASSERT_EQ(mpb.getFloat(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetVec3CausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    glm::vec3 value = GenerateVec3();
+
+    ASSERT_FALSE(mpb.getVec3(key));
+
+    mpb.setVec3(key, value);
+    ASSERT_TRUE(mpb.getVec3(key));
+    ASSERT_EQ(mpb.getVec3(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetVec4CausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    glm::vec4 value = GenerateVec4();
+
+    ASSERT_FALSE(mpb.getVec4(key));
+
+    mpb.setVec4(key, value);
+    ASSERT_TRUE(mpb.getVec4(key));
+    ASSERT_EQ(mpb.getVec4(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetMat3CausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    glm::mat3 value = GenerateMat3x3();
+
+    ASSERT_FALSE(mpb.getVec4(key));
+
+    mpb.setMat3(key, value);
+    ASSERT_TRUE(mpb.getMat3(key));
+    ASSERT_EQ(mpb.getMat3(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetMat4x3CausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    glm::mat4x3 value = GenerateMat4x3();
+
+    ASSERT_FALSE(mpb.getMat4x3(key));
+
+    mpb.setMat4x3(key, value);
+    ASSERT_TRUE(mpb.getMat4x3(key));
+    ASSERT_EQ(mpb.getMat4x3(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetIntCausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    int value = GenerateInt();
+
+    ASSERT_FALSE(mpb.getInt(key));
+
+    mpb.setInt(key, value);
+    ASSERT_TRUE(mpb.getInt(key));
+    ASSERT_EQ(mpb.getInt(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, SetBoolCausesGetterToReturnSetValue)
+{
+    osc::experimental::MaterialPropertyBlock mpb;
+    std::string key = "someKey";
+    bool value = GenerateBool();
+
+    ASSERT_FALSE(mpb.getBool(key));
+
+    mpb.setBool(key, value);
+    ASSERT_TRUE(mpb.getBool(key));
+    ASSERT_EQ(mpb.getBool(key), value);
+}
+
+TEST(MaterialPropertyBlockTest, CanCompareEquals)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 == m2;
+}
+
+TEST(MaterialPropertyBlockTest, CopyConstructionComparesEqual)
+{
+    osc::experimental::MaterialPropertyBlock m;
+    osc::experimental::MaterialPropertyBlock copy{m};
+
+    ASSERT_EQ(m, copy);
+}
+
+TEST(MaterialPropertyBlockTest, CopyAssignmentComparesEqual)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1.setFloat("someKey", GenerateFloat());
+
+    ASSERT_NE(m1, m2);
+
+    m1 = m2;
+
+    ASSERT_EQ(m1, m2);
+}
+
+TEST(MaterialPropertyBlockTest, DifferentMaterialBlocksCompareNotEqual)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1.setFloat("someKey", GenerateFloat());
+
+    ASSERT_NE(m1, m2);
+}
+
+TEST(MaterialPropertyBlockTest, CanCompareLessThan)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 < m2;  // just ensure this compiles and runs
+}
+
+TEST(MaterialPropertyBlockTest, CanCompareLessThanOrEqualTo)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 <= m2;  // just ensure this compiles and runs
+}
+
+TEST(MaterialPropertyBlockTest, CanCompareGreaterThan)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 > m2;  // just ensure this compiles and runs
+}
+
+TEST(MaterialPropertyBlockTest, CanCompareGreaterThanOrEqualTo)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    osc::experimental::MaterialPropertyBlock m2;
+
+    m1 >= m2;  // just ensure this compiles and runs
+}
+
+TEST(MaterialPropertyBlockTest, CanPrintToOutputStream)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    std::stringstream ss;
+
+    ss << m1;  // just ensure this compiles and runs
+}
+
+TEST(MaterialPropertyBlckTest, PrintingToOutputStreamMentionsMaterialPropertyBlock)
+{
+    osc::experimental::MaterialPropertyBlock m1;
+    std::stringstream ss;
+
+    ss << m1;
+
+    ASSERT_TRUE(osc::ContainsSubstring(ss.str(), "MaterialPropertyBlock"));
+}
+
+TEST(MaterialPropertyBlockTest, CanConvertToString)
+{
+    osc::experimental::MaterialPropertyBlock m;
+
+    std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
+}
+
+TEST(MaterialPropertyBlockTest, CanHash)
+{
+    osc::experimental::MaterialPropertyBlock m;
+    std::hash<osc::experimental::MaterialPropertyBlock>{}(m);
+}
+
+// TOOD: ensure string contains relevant stuff etc
+
+// TODO: ensure printout mentions variables etc.
+
+// TODO: compound test: set a float but read a vec, etc.
