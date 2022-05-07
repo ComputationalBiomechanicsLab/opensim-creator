@@ -1,7 +1,9 @@
 #pragma once
 
 #include "src/Graphics/Color.hpp"
+#include "src/Maths/AABB.hpp"
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat3x3.hpp>
@@ -10,11 +12,13 @@
 #include <nonstd/span.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <iosfwd>
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 
 // 2D texture
@@ -331,8 +335,6 @@ namespace std
     };
 }
 
-/*
-
 namespace osc::experimental
 {
     enum class MeshTopography {
@@ -347,7 +349,6 @@ namespace osc::experimental
     class Mesh final {
     public:
         Mesh();
-        Mesh(MeshTopography, nonstd::span<glm::vec3 const> verts);
         Mesh(Mesh const&);
         Mesh(Mesh&&) noexcept;
         Mesh& operator=(Mesh const&);
@@ -408,6 +409,20 @@ namespace std
         std::size_t operator()(osc::experimental::Mesh const&) const;
     };
 }
+
+namespace osc::experimental
+{
+    enum class CameraProjection {
+        Perspective = 0,
+        Orthographic,
+        TOTAL,
+    };
+
+    std::ostream& operator<<(std::ostream&, CameraProjection);
+    std::string to_string(CameraProjection);
+}
+
+/*
 
 namespace osc::experimental
 {

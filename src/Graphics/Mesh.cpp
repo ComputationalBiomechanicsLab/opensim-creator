@@ -162,8 +162,6 @@ static nonstd::span<uint16_t const> AsU16Span(PackedIndex const* pi, size_t n)
     return nonstd::span{&pi->u16.a, n};
 }
 
-#include <random>
-
 osc::Mesh::Mesh(MeshData cpuMesh) :
     m_Impl{new Impl{}}
 {

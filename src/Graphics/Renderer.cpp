@@ -1,10 +1,12 @@
 #include "Renderer.hpp"
 
 #include "src/Graphics/Gl.hpp"
+#include "src/Maths/Geometry.hpp"
 #include "src/Utils/Assertions.hpp"
 #include "src/Utils/CStringView.hpp"
 #include "src/Utils/UID.hpp"
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <stdexcept>
@@ -173,7 +175,7 @@ std::string osc::experimental::to_string(TextureFilterMode twm)
 }
 
 osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
-    m_Impl{new Impl{std::move(width), std::move(height), std::move(pixelsRowByRow)}}
+    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixelsRowByRow))}
 {
 }
 
@@ -742,7 +744,7 @@ private:
 };
 
 osc::experimental::Material::Material(osc::experimental::Shader shader) :
-    m_Impl{new Impl{std::move(shader)}}
+    m_Impl{std::make_shared<Impl>(std::move(shader))}
 {
 }
 
@@ -999,6 +1001,16 @@ public:
         setValue(std::move(propertyName), value);
     }
 
+    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    {
+        return getValue<Texture2D>(std::move(propertyName));
+    }
+
+    void setTexture(std::string_view propertyName, Texture2D t)
+    {
+        setValue(std::move(propertyName), std::move(t));
+    }
+
     // non-PIMPL APIs
 
     std::size_t getHash() const
@@ -1031,14 +1043,14 @@ private:
         m_Values[std::string{propertyName}] = v;
     }
 
-    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool>;
+    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
 
     UID m_UID;
     std::unordered_map<std::string, Value> m_Values;
 };
 
 osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock() :
-    m_Impl{new Impl{}}
+    m_Impl{std::make_shared<Impl>()}
 {
 }
 
@@ -1147,6 +1159,16 @@ void osc::experimental::MaterialPropertyBlock::setBool(std::string_view property
     m_Impl->setBool(std::move(propertyName), std::move(value));
 }
 
+std::optional<Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
+{
+    return m_Impl->getTexture(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
+{
+    m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
 bool osc::experimental::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
 {
     return a.m_Impl == b.m_Impl;
@@ -1190,6 +1212,383 @@ std::string osc::experimental::to_string(MaterialPropertyBlock const& material)
 std::size_t std::hash<osc::experimental::MaterialPropertyBlock>::operator()(osc::experimental::MaterialPropertyBlock const& mpb) const
 {
     return mpb.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// mesh stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    static constexpr std::array<osc::CStringView, 2> g_MeshTopographyStrings =
+    {
+        "Triangles",
+        "Lines",
+    };
+
+    union PackedIndex {
+        uint32_t u32;
+        struct U16Pack { uint16_t a; uint16_t b; } u16;
+    };
+
+    static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
+    static_assert(alignof(PackedIndex) == alignof(uint32_t));
+
+    enum class IndexFormat {
+        UInt16,
+        UInt32,
+    };
+}
+
+class osc::experimental::Mesh::Impl final {
+public:
+    MeshTopography getTopography() const
+    {
+        return m_Topography;
+    }
+
+    void setTopography(MeshTopography t)
+    {
+        m_Topography = std::move(t);
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec3 const> getVerts() const
+    {
+        return m_Vertices;
+    }
+
+    void setVerts(nonstd::span<glm::vec3 const> verts)
+    {
+        m_Vertices.clear();
+        m_Vertices.reserve(verts.size());
+        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec3 const> getNormals() const
+    {
+        return m_Normals;
+    }
+
+    void setNormals(nonstd::span<glm::vec3 const> normals)
+    {
+        m_Normals.clear();
+        m_Normals.reserve(normals.size());
+        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
+
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec2 const> getTexCoords() const
+    {
+        return m_TexCoords;
+    }
+
+    void setTexCoords(nonstd::span<glm::vec2 const> coords)
+    {
+        m_TexCoords.clear();
+        m_TexCoords.reserve(coords.size());
+        std::copy(coords.begin(), coords.end(), std::back_insert_iterator{m_TexCoords});
+
+        m_Version = {};
+    }
+
+    int getNumIndices() const
+    {
+        return m_NumIndices;
+    }
+
+    std::vector<std::uint32_t> getIndices() const
+    {
+        std::vector<std::uint32_t> rv;
+
+        if (m_NumIndices <= 0)
+        {
+            return rv;
+        }
+
+        rv.reserve(m_NumIndices);
+
+        if (m_IndicesAre32Bit)
+        {
+            nonstd::span<uint32_t const> data(&m_IndicesData.front().u32, m_NumIndices);
+            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+        }
+        else
+        {
+            nonstd::span<std::uint16_t const> data(&m_IndicesData.front().u16.a, m_NumIndices);
+            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+        }
+
+        return rv;
+    }
+
+    void setIndices(nonstd::span<std::uint16_t const> vs)
+    {
+        m_IndicesAre32Bit = false;
+        m_NumIndices = static_cast<int>(vs.size());
+        m_IndicesData.resize((vs.size()+1)/2);
+        std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    void setIndices(nonstd::span<std::uint32_t const> vs)
+    {
+        auto isGreaterThanU16Max = [](uint32_t v) { return v > std::numeric_limits<uint16_t>::max(); };
+
+        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
+        {
+            m_IndicesAre32Bit = true;
+            m_NumIndices = static_cast<int>(vs.size());
+            m_IndicesData.resize(vs.size());
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
+        }
+        else
+        {
+            m_IndicesAre32Bit = false;
+            m_NumIndices = static_cast<int>(vs.size());
+            m_IndicesData.resize((vs.size()+1)/2);
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
+        }
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    AABB const& getBounds() const
+    {
+        return m_AABB;
+    }
+
+    void clear()
+    {
+        m_Version = {};
+        m_Topography = MeshTopography::Triangles;
+        m_Vertices.clear();
+        m_Normals.clear();
+        m_TexCoords.clear();
+        m_IndicesAre32Bit = false;
+        m_NumIndices = 0;
+        m_IndicesData.clear();
+        m_AABB = {};
+    }
+
+    std::size_t getHash() const
+    {
+        return m_UID;
+    }
+
+private:
+    void recalculateBounds()
+    {
+        if (m_NumIndices == 0)
+        {
+            m_AABB = {};
+        }
+        else if (m_IndicesAre32Bit)
+        {
+            nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
+            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+        }
+        else
+        {
+            nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
+            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+        }
+    }
+
+    UID m_UID;
+    UID m_Version;
+    MeshTopography m_Topography = MeshTopography::Triangles;
+    std::vector<glm::vec3> m_Vertices;
+    std::vector<glm::vec3> m_Normals;
+    std::vector<glm::vec2> m_TexCoords;
+
+    bool m_IndicesAre32Bit = false;
+    int m_NumIndices = 0;
+    std::vector<PackedIndex> m_IndicesData;
+
+    AABB m_AABB;
+};
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography mt)
+{
+    return o << g_MeshTopographyStrings.at(static_cast<int>(mt));
+}
+
+std::string osc::experimental::to_string(MeshTopography mt)
+{
+    return StreamToString(std::move(mt));
+}
+
+osc::experimental::Mesh::Mesh() :
+    m_Impl{std::make_shared<Impl>()}
+{
+}
+
+osc::experimental::Mesh::Mesh(Mesh const&) = default;
+osc::experimental::Mesh::Mesh(Mesh&&) noexcept = default;
+osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh const&) = default;
+osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh&&) noexcept = default;
+osc::experimental::Mesh::~Mesh() noexcept = default;
+
+osc::experimental::MeshTopography osc::experimental::Mesh::getTopography() const
+{
+    return m_Impl->getTopography();
+}
+
+void osc::experimental::Mesh::setTopography(MeshTopography topography)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTopography(std::move(topography));
+}
+
+nonstd::span<glm::vec3 const> osc::experimental::Mesh::getVerts() const
+{
+    return m_Impl->getVerts();
+}
+
+void osc::experimental::Mesh::setVerts(nonstd::span<glm::vec3 const> verts)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVerts(std::move(verts));
+}
+
+nonstd::span<glm::vec3 const> osc::experimental::Mesh::getNormals() const
+{
+    return m_Impl->getNormals();
+}
+
+void osc::experimental::Mesh::setNormals(nonstd::span<glm::vec3 const> verts)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setNormals(std::move(verts));
+}
+
+nonstd::span<glm::vec2 const> osc::experimental::Mesh::getTexCoords() const
+{
+    return m_Impl->getTexCoords();
+}
+
+void osc::experimental::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTexCoords(coords);
+}
+
+int osc::experimental::Mesh::getNumIndices() const
+{
+    return m_Impl->getNumIndices();
+}
+
+std::vector<std::uint32_t> osc::experimental::Mesh::getIndices() const
+{
+    return m_Impl->getIndices();
+}
+
+void osc::experimental::Mesh::setIndices(nonstd::span<std::uint16_t const> indices)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setIndices(std::move(indices));
+}
+
+void osc::experimental::Mesh::setIndices(nonstd::span<std::uint32_t const> indices)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setIndices(std::move(indices));
+}
+
+osc::AABB const& osc::experimental::Mesh::getBounds() const
+{
+    return m_Impl->getBounds();
+}
+
+void osc::experimental::Mesh::clear()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->clear();
+}
+
+bool osc::experimental::operator==(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const& mesh)
+{
+    return o << "Mesh()";
+}
+
+std::string osc::experimental::to_string(Mesh const& mesh)
+{
+    return StreamToString(mesh);
+}
+
+std::size_t std::hash<osc::experimental::Mesh>::operator()(osc::experimental::Mesh const& mesh) const
+{
+    return mesh.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// camera stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    // LUT for human-readable form of the above
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)> const g_CameraProjectionStrings =
+    {
+        "Perspective",
+        "Orthographic",
+    };
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection cp)
+{
+    return o << g_CameraProjectionStrings.at(static_cast<int>(cp));
+}
+
+std::string osc::experimental::to_string(CameraProjection cp)
+{
+    return StreamToString(std::move(cp));
 }
 
 /*
