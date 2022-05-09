@@ -65,7 +65,7 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
-        App::cur().disableVsync();
+        App::upd().disableVsync();
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
@@ -78,7 +78,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -87,21 +87,22 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<ExperimentsScreen>();
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
 
     void tick(float dt)
     {
-        UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), m_Camera);
+        App const& app = App::get();
+        UpdatePolarCameraFromImGuiUserInput(app.dims(), m_Camera);
 
         m_Camera.radius *= 1.0f - ImGui::GetIO().MouseWheel/10.0f;
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
         {
-            Line cameraRayWorldspace = m_Camera.unprojectTopLeftPosToWorldRay(ImGui::GetMousePos(), App::cur().dims());
+            Line cameraRayWorldspace = m_Camera.unprojectTopLeftPosToWorldRay(ImGui::GetMousePos(), app.dims());
             // camera ray in worldspace == camera ray in model space because the model matrix is an identity matrix
 
             m_IsMousedOver = false;
@@ -152,7 +153,8 @@ public:
 
     void draw()
     {
-        auto dims = App::cur().idims();
+        App const& app = App::get();
+        auto dims = app.idims();
         gl::Viewport(0, 0, dims.x, dims.y);
 
         osc::ImGuiNewFrame();
@@ -173,7 +175,7 @@ public:
         gl::UseProgram(m_Shader.program);
         gl::Uniform(m_Shader.uModel, gl::identity);
         gl::Uniform(m_Shader.uView, m_Camera.getViewMtx());
-        gl::Uniform(m_Shader.uProjection, m_Camera.getProjMtx(App::cur().aspectRatio()));
+        gl::Uniform(m_Shader.uProjection, m_Camera.getProjMtx(app.aspectRatio()));
         gl::Uniform(m_Shader.uColor, m_IsMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
 
         // draw scene

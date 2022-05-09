@@ -61,12 +61,12 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<ExperimentsScreen>();
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
@@ -83,7 +83,7 @@ public:
 
     void draw()
     {
-        gl::Viewport(0, 0, App::cur().idims().x, App::cur().idims().y);
+        gl::Viewport(0, 0, App::get().idims().x, App::get().idims().y);
         gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

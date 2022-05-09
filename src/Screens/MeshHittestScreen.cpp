@@ -84,7 +84,7 @@ public:
     void onMount()
     {
         osc::ImGuiInit();
-        App::cur().disableVsync();
+        App::upd().disableVsync();
         gl::Disable(GL_CULL_FACE);
     }
 
@@ -97,7 +97,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -106,20 +106,21 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<ExperimentsScreen>();
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
 
     void tick(float dt)
     {
-        UpdatePolarCameraFromImGuiUserInput(App::cur().dims(), m_Camera);
+        App const& app = App::get();
+        UpdatePolarCameraFromImGuiUserInput(app.dims(), m_Camera);
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
         {
 
-            m_Ray = m_Camera.unprojectTopLeftPosToWorldRay(ImGui::GetIO().MousePos, App::cur().dims());
+            m_Ray = m_Camera.unprojectTopLeftPosToWorldRay(ImGui::GetIO().MousePos, app.dims());
 
             m_IsMousedOver = false;
             nonstd::span<glm::vec3 const> tris = m_Mesh.getVerts();
@@ -169,13 +170,14 @@ public:
             ImGui::End();
         }
 
-        gl::Viewport(0, 0, App::cur().idims().x, App::cur().idims().y);
+        App const& app = App::get();
+        gl::Viewport(0, 0, app.idims().x, app.idims().y);
         gl::ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         gl::UseProgram(m_Shader.prog);
         gl::Uniform(m_Shader.uModel, gl::identity);
         gl::Uniform(m_Shader.uView, m_Camera.getViewMtx());
-        gl::Uniform(m_Shader.uProjection, m_Camera.getProjMtx(App::cur().aspectRatio()));
+        gl::Uniform(m_Shader.uProjection, m_Camera.getProjMtx(app.aspectRatio()));
         gl::Uniform(m_Shader.uColor, m_IsMousedOver ? glm::vec4{0.0f, 1.0f, 0.0f, 1.0f} : glm::vec4{1.0f, 0.0f, 0.0f, 1.0f});
         if (true)
         {

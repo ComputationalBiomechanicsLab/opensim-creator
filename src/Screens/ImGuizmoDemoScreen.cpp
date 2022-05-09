@@ -28,7 +28,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
         }
         else if (osc::ImGuiOnEvent(e))
         {
@@ -36,7 +36,7 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<ExperimentsScreen>();
+            App::upd().requestTransition<ExperimentsScreen>();
             return;
         }
     }
@@ -45,10 +45,10 @@ public:
     {
         osc::ImGuiNewFrame();
 
-        osc::App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        osc::App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
         glm::mat4 view = m_SceneCamera.getViewMtx();
-        glm::vec2 dims = App::cur().dims();
+        glm::vec2 dims = App::get().dims();
         glm::mat4 projection = m_SceneCamera.getProjMtx(dims.x/dims.y);
 
         ImGuizmo::BeginFrame();

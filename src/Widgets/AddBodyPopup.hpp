@@ -5,14 +5,14 @@
 
 namespace osc
 {
-    class UndoableUiModel;
+    class UndoableModelStatePair;
 }
 
 namespace osc
 {
     class AddBodyPopup final {
     public:
-        AddBodyPopup(std::shared_ptr<UndoableUiModel>, std::string_view popupName);
+        AddBodyPopup(std::shared_ptr<UndoableModelStatePair>, std::string_view popupName);
         AddBodyPopup(AddBodyPopup const&) = delete;
         AddBodyPopup(AddBodyPopup&&) noexcept;
         AddBodyPopup& operator=(AddBodyPopup const&) = delete;

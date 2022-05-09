@@ -126,6 +126,6 @@ static bool EnsureOpenSimInitialized(osc::Config const& config, std::filesystem:
 
 osc::OpenSimApp::OpenSimApp() :
     App{},
-    m_Initialized{EnsureOpenSimInitialized(config(), resource("geometry"))}
+    m_Initialized{EnsureOpenSimInitialized(getConfig(), resource("geometry"))}
 {
 }

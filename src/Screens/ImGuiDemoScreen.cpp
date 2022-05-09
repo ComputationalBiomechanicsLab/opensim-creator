@@ -20,7 +20,7 @@ void osc::ImGuiDemoScreen::onEvent(SDL_Event const& e)
 {
     if (e.type == SDL_QUIT)
     {
-        App::cur().requestQuit();
+        App::upd().requestQuit();
         return;
     }
     else if (osc::ImGuiOnEvent(e))
@@ -29,7 +29,7 @@ void osc::ImGuiDemoScreen::onEvent(SDL_Event const& e)
     }
     else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
     {
-        App::cur().requestTransition<ExperimentsScreen>();
+        App::upd().requestTransition<ExperimentsScreen>();
         return;
     }
 }
@@ -38,7 +38,7 @@ void osc::ImGuiDemoScreen::draw()
 {
     osc::ImGuiNewFrame();
 
-    osc::App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+    osc::App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
 
     ImGui::ShowDemoWindow();
 

@@ -1,10 +1,11 @@
-#include "FdSimulation.hpp"
+#include "ForwardDynamicSimulator.hpp"
 
-#include "src/OpenSimBindings/SimulationReport.hpp"
-#include "src/OpenSimBindings/IntegratorMethod.hpp"
-#include "src/OpenSimBindings/SimulationStatus.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/IntegratorOutputExtractor.hpp"
+#include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp"
+#include "src/OpenSimBindings/SimulationReport.hpp"
+#include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/Cpp20Shims.hpp"
@@ -23,28 +24,13 @@
 #include <variant>
 #include <vector>
 
-static constexpr char const* g_FinalTimeTitle = "Final Time (sec)";
-static constexpr char const* g_FinalTimeDesc = "The final time, in seconds, that the forward dynamic simulation should integrate up to";
-static constexpr char const* g_IntegratorMethodUsedTitle = "Integrator Method";
-static constexpr char const* g_IntegratorMethodUsedDesc = "The integrator that the forward dynamic simulator should use. OpenSim's default integrator is a good choice if you aren't familiar with the other integrators. Changing the integrator can have a large impact on the performance and accuracy of the simulation.";
-static constexpr char const* g_ReportingIntervalTitle = "Reporting Interval (sec)";
-static constexpr char const* g_ReportingIntervalDesc = "How often the simulator should emit a simulation report. This affects how many datapoints are collected for the animation, output values, etc.";
-static constexpr char const* g_IntegratorStepLimitTitle = "Integrator Step Limit";
-static constexpr char const* g_IntegratorStepLimitDesc = "The maximum number of *internal* steps that can be taken within a single call to the integrator's stepTo/stepBy function. This is mostly an internal engine concern, but can occasionally affect how often reports are emitted";
-static constexpr char const* g_IntegratorMinimumStepSizeTitle = "Minimum Step Size (sec)";
-static constexpr char const* g_IntegratorMinimumStepSizeDesc = "The minimum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-corrected integrators that change their step size dynamically as the simulation runs.";
-static constexpr char const* g_IntegratorMaximumStepSizeTitle = "Maximum step size (sec)";
-static constexpr char const* g_IntegratorMaximumStepSizeDesc = "The maximum step size, in seconds, that the integrator must take during the simulation. Note: this is mostly only relevant for error-correct integrators that change their step size dynamically as the simulation runs";
-static constexpr char const* g_IntegratorAccuracyTitle = "Accuracy";
-static constexpr char const* g_IntegratorAccuracyDesc = "Target accuracy for the integrator. Mostly only relevant for error-controlled integrators that change their step size by comparing this accuracy value to measured integration error";
-
 namespace
 {
     // exclusively owned input data
     class SimulatorThreadInput final {
     public:
         SimulatorThreadInput(osc::BasicModelStatePair modelState,
-                             osc::FdParams const& params,
+                             osc::ForwardDynamicSimulatorParams const& params,
                              std::function<void(osc::SimulationReport)> reportCallback) :
             m_ModelState{std::move(modelState)},
             m_Params{params},
@@ -54,12 +40,12 @@ namespace
 
         SimTK::MultibodySystem const& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
         SimTK::State const& getState() const { return m_ModelState.getState(); }
-        osc::FdParams const& getParams() const { return m_Params; }
+        osc::ForwardDynamicSimulatorParams const& getParams() const { return m_Params; }
         void emitReport(osc::SimulationReport report) { m_ReportCallback(std::move(report)); }
 
     private:
         osc::BasicModelStatePair m_ModelState;
-        osc::FdParams m_Params;
+        osc::ForwardDynamicSimulatorParams m_Params;
         std::function<void(osc::SimulationReport)> m_ReportCallback;
     };
 
@@ -106,7 +92,7 @@ static std::vector<osc::OutputExtractor> const& GetSimulatorOutputExtractors()
 
 static std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorThreadInput const& input)
 {
-    osc::FdParams const& params = input.getParams();
+    osc::ForwardDynamicSimulatorParams const& params = input.getParams();
 
     // create + init an integrator
     auto integ = CreateIntegrator(input.getMultiBodySystem(), params.IntegratorMethodUsed);
@@ -129,7 +115,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
                                                        SimulatorThreadInput& input,
                                                        SharedState& shared)
 {
-    osc::FdParams const& params = input.getParams();
+    osc::ForwardDynamicSimulatorParams const& params = input.getParams();
 
     // create + init an integrator
     std::unique_ptr<SimTK::Integrator> integ = CreateInitializedIntegrator(input);
@@ -232,57 +218,10 @@ static int FdSimulationMain(osc::stop_token stopToken,
     return 0;
 }
 
-osc::ParamBlock osc::ToParamBlock(FdParams const& p)
-{
-    ParamBlock rv;
-    rv.pushParam(g_FinalTimeTitle, g_FinalTimeDesc, (p.FinalTime - SimulationClock::start()).count());
-    rv.pushParam(g_IntegratorMethodUsedTitle, g_IntegratorMethodUsedDesc, p.IntegratorMethodUsed);
-    rv.pushParam(g_ReportingIntervalTitle, g_ReportingIntervalDesc, p.ReportingInterval.count());
-    rv.pushParam(g_IntegratorStepLimitTitle, g_IntegratorStepLimitDesc, p.IntegratorStepLimit);
-    rv.pushParam(g_IntegratorMinimumStepSizeTitle, g_IntegratorMinimumStepSizeDesc, p.IntegratorMinimumStepSize.count());
-    rv.pushParam(g_IntegratorMaximumStepSizeTitle, g_IntegratorMaximumStepSizeDesc, p.IntegratorMaximumStepSize.count());
-    rv.pushParam(g_IntegratorAccuracyTitle, g_IntegratorAccuracyDesc, p.IntegratorAccuracy);
-    return rv;
-}
-
-osc::FdParams osc::FromParamBlock(ParamBlock const& b)
-{
-    FdParams rv;
-    if (auto finalTime = b.findValue(g_FinalTimeTitle); finalTime && std::holds_alternative<double>(*finalTime))
-    {
-        rv.FinalTime = SimulationClock::start() + SimulationClock::duration{std::get<double>(*finalTime)};
-    }
-    if (auto integMethod = b.findValue(g_IntegratorMethodUsedTitle); integMethod && std::holds_alternative<IntegratorMethod>(*integMethod))
-    {
-        rv.IntegratorMethodUsed = std::get<IntegratorMethod>(*integMethod);
-    }
-    if (auto repInterv = b.findValue(g_ReportingIntervalTitle); repInterv && std::holds_alternative<double>(*repInterv))
-    {
-        rv.ReportingInterval = SimulationClock::duration{std::get<double>(*repInterv)};
-    }
-    if (auto stepLim = b.findValue(g_IntegratorStepLimitTitle); stepLim && std::holds_alternative<int>(*stepLim))
-    {
-        rv.IntegratorStepLimit = std::get<int>(*stepLim);
-    }
-    if (auto minStep = b.findValue(g_IntegratorMinimumStepSizeTitle); minStep && std::holds_alternative<double>(*minStep))
-    {
-        rv.IntegratorMinimumStepSize = SimulationClock::duration{std::get<double>(*minStep)};
-    }
-    if (auto maxStep = b.findValue(g_IntegratorMaximumStepSizeTitle); maxStep && std::holds_alternative<double>(*maxStep))
-    {
-        rv.IntegratorMaximumStepSize = SimulationClock::duration{std::get<double>(*maxStep)};
-    }
-    if (auto acc = b.findValue(g_IntegratorAccuracyTitle); acc && std::holds_alternative<double>(*acc))
-    {
-        rv.IntegratorAccuracy = std::get<double>(*acc);
-    }
-    return rv;
-}
-
-class osc::FdSimulation::Impl final {
+class osc::ForwardDynamicSimulator::Impl final {
 public:
     Impl(BasicModelStatePair modelState,
-         FdParams const& params,
+        ForwardDynamicSimulatorParams const& params,
          std::function<void(SimulationReport)> reportCallback) :
 
         m_SimulationParams{params},
@@ -314,13 +253,13 @@ public:
         m_SimulatorThread.join();
     }
 
-    FdParams const& params() const
+    ForwardDynamicSimulatorParams const& params() const
     {
         return m_SimulationParams;
     }
 
 private:
-    FdParams m_SimulationParams;
+    ForwardDynamicSimulatorParams m_SimulationParams;
     std::shared_ptr<SharedState> m_Shared;
     jthread m_SimulatorThread;
 };
@@ -339,33 +278,33 @@ osc::OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
     return GetSimulatorOutputExtractors().at(static_cast<size_t>(idx));
 }
 
-osc::FdSimulation::FdSimulation(BasicModelStatePair msp,
-                                FdParams const& params,
+osc::ForwardDynamicSimulator::ForwardDynamicSimulator(BasicModelStatePair msp,
+                                ForwardDynamicSimulatorParams const& params,
                                 std::function<void(SimulationReport)> reportCallback) :
     m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(reportCallback))}
 {
 }
 
-osc::FdSimulation::FdSimulation(FdSimulation&&) noexcept = default;
-osc::FdSimulation& osc::FdSimulation::operator=(FdSimulation&&) noexcept = default;
-osc::FdSimulation::~FdSimulation() noexcept = default;
+osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept = default;
+osc::ForwardDynamicSimulator& osc::ForwardDynamicSimulator::operator=(ForwardDynamicSimulator&&) noexcept = default;
+osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept = default;
 
-osc::SimulationStatus osc::FdSimulation::getStatus() const
+osc::SimulationStatus osc::ForwardDynamicSimulator::getStatus() const
 {
     return m_Impl->getStatus();
 }
 
-void osc::FdSimulation::requestStop()
+void osc::ForwardDynamicSimulator::requestStop()
 {
     return m_Impl->requestStop();
 }
 
-void osc::FdSimulation::stop()
+void osc::ForwardDynamicSimulator::stop()
 {
     return m_Impl->stop();
 }
 
-osc::FdParams const& osc::FdSimulation::params() const
+osc::ForwardDynamicSimulatorParams const& osc::ForwardDynamicSimulator::params() const
 {
     return m_Impl->params();
 }

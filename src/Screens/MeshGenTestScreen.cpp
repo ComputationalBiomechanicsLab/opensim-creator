@@ -55,7 +55,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
         }
 
         ImGuiOnEvent(e);
@@ -66,11 +66,11 @@ public:
     void draw()
     {
         osc::ImGuiNewFrame();
-        App::cur().clearScreen({});
+        App::upd().clearScreen({});
 
         if (m_Viewer.isHovered())
         {
-            osc::UpdatePolarCameraFromImGuiUserInput(osc::App::cur().dims(), m_Camera);
+            osc::UpdatePolarCameraFromImGuiUserInput(osc::App::get().dims(), m_Camera);
         }
 
         if (ImGui::Begin("viewer"))
@@ -88,7 +88,7 @@ public:
 
             glm::vec2 contentRegion = ImGui::GetContentRegionAvail();
             m_Viewer.setDimensions(contentRegion);
-            m_Viewer.setSamples(osc::App::cur().getMSXAASamplesRecommended());
+            m_Viewer.setSamples(osc::App::get().getMSXAASamplesRecommended());
 
             {
                 glm::vec3 p = glm::normalize(-m_Camera.focusPoint - m_Camera.getPos());

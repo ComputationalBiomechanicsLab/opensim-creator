@@ -2,28 +2,1596 @@
 
 #include "src/Graphics/Gl.hpp"
 #include "src/Maths/Geometry.hpp"
-#include "src/Utils/Algorithms.hpp"
-#include "src/Utils/UID.hpp"
-#include "src/Utils/DefaultConstructOnCopy.hpp"
 #include "src/Utils/Assertions.hpp"
-
-#include <nonstd/span.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
-#include <cstdint>
 #include <iostream>
-#include <memory>
-#include <mutex>
+#include <stdexcept>
 #include <sstream>
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #define OSC_THROW_NYI() throw std::runtime_error{"not yet implemented"}
+
+template<typename T>
+static void DoCopyOnWrite(std::shared_ptr<T>& p)
+{
+    if (p.use_count() == 1)
+    {
+        return;  // sole owner: no need to copy
+    }
+
+    p = std::make_shared<T>(*p);
+}
+
+template<typename T>
+static std::string StreamToString(T const& v)
+{
+    std::stringstream ss;
+    ss << v;
+    return std::move(ss).str();
+}
+
+
+//////////////////////////////////
+//
+// texture stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureWrapMode::TOTAL)> const g_TextureWrapModeStrings =
+    {
+        "Repeat",
+        "Clamp",
+        "Mirror",
+    };
+
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(TextureFilterMode::TOTAL)> const g_TextureFilterModeStrings =
+    {
+        "Nearest",
+        "Linear",
+    };
+}
+
+class osc::experimental::Texture2D::Impl final {
+public:
+    Impl(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
+        m_Width{std::move(width)},
+        m_Height{ std::move(height) },
+        m_Pixels(pixelsRowByRow.data(), pixelsRowByRow.data() + pixelsRowByRow.size())
+    {
+        OSC_ASSERT(width* height == pixelsRowByRow.size());
+    }
+
+    int getWidth() const
+    {
+        return m_Width;
+    }
+
+    int getHeight() const
+    {
+        return m_Height;
+    }
+
+    float getAspectRatio() const
+    {
+        return static_cast<float>(m_Width) / static_cast<float>(m_Height);
+    }
+
+    TextureWrapMode getWrapMode() const
+    {
+        return getWrapModeU();
+    }
+
+    void setWrapMode(TextureWrapMode twm)
+    {
+        setWrapModeU(std::move(twm));
+    }
+
+    TextureWrapMode getWrapModeU() const
+    {
+        return m_WrapModeU;
+    }
+
+    void setWrapModeU(TextureWrapMode twm)
+    {
+        m_WrapModeU = std::move(twm);
+    }
+
+    TextureWrapMode getWrapModeV() const
+    {
+        return m_WrapModeV;
+    }
+
+    void setWrapModeV(TextureWrapMode twm)
+    {
+        m_WrapModeV = std::move(twm);
+    }
+
+    TextureWrapMode getWrapModeW() const
+    {
+        return m_WrapModeW;
+    }
+
+    void setWrapModeW(TextureWrapMode twm)
+    {
+        m_WrapModeW = std::move(twm);
+    }
+
+    TextureFilterMode getFilterMode() const
+    {
+        return m_FilterMode;
+    }
+
+    void setFilterMode(TextureFilterMode tfm)
+    {
+        m_FilterMode = std::move(tfm);
+    }
+
+    std::size_t getHash() const
+    {
+        return std::hash<UID>{}(m_UID);
+    }
+
+private:
+    UID m_UID;
+    int m_Width;
+    int m_Height;
+    TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
+    TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
+    TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
+    std::vector<Rgba32> m_Pixels;
+};
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm)
+{
+    return o << g_TextureWrapModeStrings.at(static_cast<int>(twm));
+}
+
+std::string osc::experimental::to_string(TextureWrapMode twm)
+{
+    return StreamToString(twm);
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, TextureFilterMode twm)
+{
+    return o << g_TextureFilterModeStrings.at(static_cast<int>(twm));
+}
+
+std::string osc::experimental::to_string(TextureFilterMode twm)
+{
+    return StreamToString(twm);
+}
+
+osc::experimental::Texture2D::Texture2D(int width, int height, nonstd::span<Rgba32 const> pixelsRowByRow) :
+    m_Impl{std::make_shared<Impl>(std::move(width), std::move(height), std::move(pixelsRowByRow))}
+{
+}
+
+osc::experimental::Texture2D::Texture2D(Texture2D const&) = default;
+osc::experimental::Texture2D::Texture2D(Texture2D&&) noexcept = default;
+osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D const&) = default;
+osc::experimental::Texture2D& osc::experimental::Texture2D::operator=(Texture2D&&) noexcept = default;
+osc::experimental::Texture2D::~Texture2D() noexcept = default;
+
+int osc::experimental::Texture2D::getWidth() const
+{
+    return m_Impl->getWidth();
+}
+
+int osc::experimental::Texture2D::getHeight() const
+{
+    return m_Impl->getHeight();
+}
+
+float osc::experimental::Texture2D::getAspectRatio() const
+{
+    return m_Impl->getAspectRatio();
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapMode() const
+{
+    return m_Impl->getWrapMode();
+}
+
+void osc::experimental::Texture2D::setWrapMode(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapMode(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeU() const
+{
+    return m_Impl->getWrapModeU();
+}
+
+void osc::experimental::Texture2D::setWrapModeU(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeU(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeV() const
+{
+    return m_Impl->getWrapModeV();
+}
+
+void osc::experimental::Texture2D::setWrapModeV(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeV(std::move(twm));
+}
+
+osc::experimental::TextureWrapMode osc::experimental::Texture2D::getWrapModeW() const
+{
+    return m_Impl->getWrapModeW();
+}
+
+void osc::experimental::Texture2D::setWrapModeW(TextureWrapMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setWrapModeW(std::move(twm));
+}
+
+osc::experimental::TextureFilterMode osc::experimental::Texture2D::getFilterMode() const
+{
+    return m_Impl->getFilterMode();
+}
+
+void osc::experimental::Texture2D::setFilterMode(TextureFilterMode twm)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setFilterMode(std::move(twm));
+}
+
+bool osc::experimental::operator==(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Texture2D const& a, Texture2D const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const& t)
+{
+    return o << "Texture2D";
+}
+
+std::string osc::experimental::to_string(Texture2D const& t)
+{
+    return StreamToString(t);
+}
+
+std::size_t std::hash<osc::experimental::Texture2D>::operator()(osc::experimental::Texture2D const& t) const
+{
+    return t.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// shader stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    // LUT for human-readable form of the above
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(ShaderType::TOTAL)> const g_ShaderTypeInternalStrings =
+    {
+        "Float",
+        "Vec3",
+        "Vec4",
+        "Mat3",
+        "Mat4",
+        "Mat4x3",
+        "Int",
+        "Bool",
+        "Sampler2D",
+        "Unknown",
+    };
+
+    // convert a GL shader type to an internal shader type
+    ShaderType GLShaderTypeToShaderTypeInternal(GLenum e)
+    {
+        switch (e) {
+        case GL_FLOAT:
+            return ShaderType::Float;
+        case GL_FLOAT_VEC3:
+            return ShaderType::Vec3;
+        case GL_FLOAT_VEC4:
+            return ShaderType::Vec4;
+        case GL_FLOAT_MAT3:
+            return ShaderType::Mat3;
+        case GL_FLOAT_MAT4:
+            return ShaderType::Mat4;
+        case GL_FLOAT_MAT4x3:
+            return ShaderType::Mat4x3;
+        case GL_INT:
+            return ShaderType::Int;
+        case GL_BOOL:
+            return ShaderType::Bool;
+        case GL_SAMPLER_2D:
+            return ShaderType::Sampler2D;
+        case GL_INT_VEC2:
+        case GL_INT_VEC3:
+        case GL_INT_VEC4:
+        case GL_UNSIGNED_INT:
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_UNSIGNED_INT_VEC4:
+        case GL_DOUBLE:
+        case GL_DOUBLE_VEC2:
+        case GL_DOUBLE_VEC3:
+        case GL_DOUBLE_VEC4:
+        case GL_DOUBLE_MAT2:
+        case GL_DOUBLE_MAT3:
+        case GL_DOUBLE_MAT4:
+        case GL_DOUBLE_MAT2x3:
+        case GL_DOUBLE_MAT2x4:
+        case GL_FLOAT_MAT2x3:
+        case GL_FLOAT_MAT2x4:
+        case GL_FLOAT_MAT3x2:
+        case GL_FLOAT_MAT3x4:
+        case GL_FLOAT_MAT4x2:
+        case GL_FLOAT_MAT2:
+        case GL_FLOAT_VEC2:
+        default:
+            return ShaderType::Unknown;
+        }
+    }
+
+    // parsed-out description of a shader "element" (uniform/attribute)
+    struct ShaderElement final {
+        ShaderElement(int location_, ShaderType type_) :
+            location{std::move(location_)},
+            type{std::move(type_)}
+        {
+        }
+
+        int location;
+        ShaderType type;
+    };
+}
+
+class osc::experimental::Shader::Impl final {
+public:
+    explicit Impl(char const* vertexShader, char const* fragmentShader) :
+        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))}
+    {
+        constexpr GLsizei maxNameLen = 16;
+
+        GLint numAttrs;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
+
+        GLint numUniforms;
+        glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
+
+        m_Attributes.reserve(numAttrs);
+        for (GLint i = 0; i < numAttrs; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveAttrib(m_Program.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
+            m_Attributes.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+        }
+
+        m_Uniforms.reserve(numUniforms);
+        for (GLint i = 0; i < numUniforms; i++)
+        {
+            GLint size; // size of the variable
+            GLenum type; // type of the variable (float, vec3 or mat4, etc)
+            GLchar name[maxNameLen]; // variable name in GLSL
+            GLsizei length; // name length
+            glGetActiveUniform(m_Program.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
+            m_Uniforms.try_emplace(name, static_cast<int>(i), GLShaderTypeToShaderTypeInternal(type));
+        }
+    }
+
+    std::optional<int> findPropertyIndex(std::string const& propertyName) const
+    {
+        auto it = m_Uniforms.find(propertyName);
+        if (it != m_Uniforms.end())
+        {
+            return static_cast<int>(std::distance(m_Uniforms.begin(), it));
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
+    int getPropertyCount() const
+    {
+        return static_cast<int>(m_Uniforms.size());
+    }
+
+    std::string const& getPropertyName(int i) const
+    {
+        auto it = m_Uniforms.begin();
+        std::advance(it, i);
+        return it->first;
+    }
+
+    ShaderType getPropertyType(int i) const
+    {
+        auto it = m_Uniforms.begin();
+        std::advance(it, i);
+        return it->second.type;
+    }
+
+    // non-PIMPL APIs
+
+    std::size_t getHash() const
+    {
+        return std::hash<osc::UID>{}(m_UID);
+    }
+
+    std::unordered_map<std::string, ShaderElement> const& getUniforms() const
+    {
+        return m_Uniforms;
+    }
+
+    std::unordered_map<std::string, ShaderElement> const& getAttributes() const
+    {
+        return m_Attributes;
+    }
+
+private:
+    UID m_UID;
+    gl::Program m_Program;
+    std::unordered_map<std::string, ShaderElement> m_Uniforms;
+    std::unordered_map<std::string, ShaderElement> m_Attributes;
+};
+
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, ShaderType shaderType)
+{
+    return o << g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType));
+}
+
+std::string osc::experimental::to_string(ShaderType shaderType)
+{
+    return std::string{g_ShaderTypeInternalStrings.at(static_cast<int>(shaderType))};
+}
+
+osc::experimental::Shader::Shader(char const* vertexShader, char const* fragmentShader) :
+    m_Impl{std::make_shared<Impl>(std::move(vertexShader), std::move(fragmentShader))}
+{
+}
+
+osc::experimental::Shader::Shader(osc::experimental::Shader const&) = default;
+osc::experimental::Shader::Shader(osc::experimental::Shader&&) noexcept = default;
+osc::experimental:: Shader& osc::experimental::Shader::operator=(osc::experimental::Shader const&) = default;
+osc::experimental::Shader& osc::experimental::Shader::operator=(osc::experimental::Shader&&) noexcept = default;
+osc::experimental::Shader::~Shader() noexcept = default;
+
+std::optional<int> osc::experimental::Shader::findPropertyIndex(std::string const& propertyName) const
+{
+    return m_Impl->findPropertyIndex(propertyName);
+}
+
+int osc::experimental::Shader::getPropertyCount() const
+{
+    return m_Impl->getPropertyCount();
+}
+
+std::string const& osc::experimental::Shader::getPropertyName(int propertyIndex) const
+{
+    return m_Impl->getPropertyName(std::move(propertyIndex));
+}
+
+osc::experimental::ShaderType osc::experimental::Shader::getPropertyType(int propertyIndex) const
+{
+    return m_Impl->getPropertyType(std::move(propertyIndex));
+}
+
+bool osc::experimental::operator==(Shader const& a, Shader const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Shader const& a, Shader const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Shader const& a, Shader const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Shader const& a, Shader const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Shader const& shader)
+{
+    o << "Shader(\n";
+    {
+        o << "  uniforms = [";
+
+        char const* delim = "\n    ";
+        for (auto const& [name, data] : shader.m_Impl->getUniforms())
+        {
+            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+        }
+
+        o << "\n  ],\n";
+    }
+
+    {
+        o << "  attributes = [";
+
+        char const* delim = "\n    ";
+        for (auto const& [name, data] : shader.m_Impl->getAttributes())
+        {
+            o << delim << "{name = " << name << ", location = " << data.location << ", type = " << data.type << '}';
+        }
+
+        o << "\n  ]\n";
+    }
+
+    o << ')';
+
+    return o;
+}
+
+std::string osc::experimental::to_string(Shader const& shader)
+{
+    std::stringstream ss;
+    ss << shader;
+    return std::move(ss).str();
+}
+
+std::size_t std::hash<osc::experimental::Shader>::operator()(osc::experimental::Shader const& shader) const
+{
+    return shader.m_Impl->getHash();
+}
+
+//////////////////////////////////
+//
+// material stuff
+//
+//////////////////////////////////
+
+class osc::experimental::Material::Impl final {
+public:
+    Impl(osc::experimental::Shader shader) : m_Shader{std::move(shader)}
+    {
+    }
+
+    Shader const& getShader() const
+    {
+        return m_Shader;
+    }
+
+    std::optional<float> getFloat(std::string_view propertyName) const
+    {
+        return getValue<float>(std::move(propertyName));
+    }
+
+    void setFloat(std::string_view propertyName, float value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::vec3> getVec3(std::string_view propertyName) const
+    {
+        return getValue<glm::vec3>(std::move(propertyName));
+    }
+
+    void setVec3(std::string_view propertyName, glm::vec3 value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::vec4> getVec4(std::string_view propertyName) const
+    {
+        return getValue<glm::vec4>(std::move(propertyName));
+    }
+
+    void setVec4(std::string_view propertyName, glm::vec4 value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat3> getMat3(std::string_view propertyName) const
+    {
+        return getValue<glm::mat3>(std::move(propertyName));
+    }
+
+    void setMat3(std::string_view propertyName, glm::mat3 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat4> getMat4(std::string_view propertyName) const
+    {
+        return getValue<glm::mat4>(std::move(propertyName));
+    }
+
+    void setMat4(std::string_view propertyName, glm::mat4 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const
+    {
+        return getValue<glm::mat4x3>(std::move(propertyName));
+    }
+
+    void setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<int> getInt(std::string_view propertyName) const
+    {
+        return getValue<int>(std::move(propertyName));
+    }
+
+    void setInt(std::string_view propertyName, int value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<bool> getBool(std::string_view propertyName) const
+    {
+        return getValue<bool>(std::move(propertyName));
+    }
+
+    void setBool(std::string_view propertyName, bool value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    {
+        return getValue<Texture2D>(std::move(propertyName));
+    }
+
+    void setTexture(std::string_view propertyName, Texture2D t)
+    {
+        setValue(std::move(propertyName), std::move(t));
+    }
+
+    // non-PIMPL APIs
+
+    std::size_t getHash() const
+    {
+        return std::hash<osc::UID>{}(m_UID);
+    }
+
+private:
+    template<typename T>
+    std::optional<T> getValue(std::string_view propertyName) const
+    {
+        auto it = m_Values.find(std::string{std::move(propertyName)});
+
+        if (it == m_Values.end())
+        {
+            return std::nullopt;
+        }
+
+        if (!std::holds_alternative<T>(it->second))
+        {
+            return std::nullopt;
+        }
+
+        return std::get<T>(it->second);
+    }
+
+    template<typename T>
+    void setValue(std::string_view propertyName, T const& v)
+    {
+        m_Values[std::string{propertyName}] = v;
+    }
+
+    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
+
+    UID m_UID;
+    osc::experimental::Shader m_Shader;
+    std::unordered_map<std::string, Value> m_Values;
+};
+
+osc::experimental::Material::Material(osc::experimental::Shader shader) :
+    m_Impl{std::make_shared<Impl>(std::move(shader))}
+{
+}
+
+osc::experimental::Material::Material(Material const&) = default;
+osc::experimental::Material::Material(Material&&) noexcept = default;
+osc::experimental::Material& osc::experimental::Material::operator=(Material const&) = default;
+osc::experimental::Material& osc::experimental::Material::operator=(Material&&) noexcept = default;
+osc::experimental::Material::~Material() noexcept = default;
+
+osc::experimental::Shader const& osc::experimental::Material::getShader() const
+{
+    return m_Impl->getShader();
+}
+
+std::optional<float> osc::experimental::Material::getFloat(std::string_view propertyName) const
+{
+    return m_Impl->getFloat(std::move(propertyName));
+}
+
+void osc::experimental::Material::setFloat(std::string_view propertyName, float value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setFloat(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::vec3> osc::experimental::Material::getVec3(std::string_view propertyName) const
+{
+    return m_Impl->getVec3(std::move(propertyName));
+}
+
+void osc::experimental::Material::setVec3(std::string_view propertyName, glm::vec3 value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec3(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::vec4> osc::experimental::Material::getVec4(std::string_view propertyName) const
+{
+    return m_Impl->getVec4(std::move(propertyName));
+}
+
+void osc::experimental::Material::setVec4(std::string_view propertyName, glm::vec4 value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec4(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::mat3> osc::experimental::Material::getMat3(std::string_view propertyName) const
+{
+    return m_Impl->getMat3(std::move(propertyName));
+}
+
+void osc::experimental::Material::setMat3(std::string_view propertyName, glm::mat3 const& mat)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat3(std::move(propertyName), mat);
+}
+
+std::optional<glm::mat4> osc::experimental::Material::getMat4(std::string_view propertyName) const
+{
+    return m_Impl->getMat4(std::move(propertyName));
+}
+
+void osc::experimental::Material::setMat4(std::string_view propertyName, glm::mat4 const& mat)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat4(std::move(propertyName), mat);
+}
+
+std::optional<glm::mat4x3> osc::experimental::Material::getMat4x3(std::string_view propertyName) const
+{
+    return m_Impl->getMat4x3(std::move(propertyName));
+}
+
+void osc::experimental::Material::setMat4x3(std::string_view propertyName, glm::mat4x3 const& mat)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat4x3(std::move(propertyName), mat);
+}
+
+std::optional<int> osc::experimental::Material::getInt(std::string_view propertyName) const
+{
+    return m_Impl->getInt(std::move(propertyName));
+}
+
+void osc::experimental::Material::setInt(std::string_view propertyName, int value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setInt(std::move(propertyName), std::move(value));
+}
+
+std::optional<bool> osc::experimental::Material::getBool(std::string_view propertyName) const
+{
+    return m_Impl->getBool(std::move(propertyName));
+}
+
+void osc::experimental::Material::setBool(std::string_view propertyName, bool value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setBool(std::move(propertyName), std::move(value));
+}
+
+std::optional<Texture2D> osc::experimental::Material::getTexture(std::string_view propertyName) const
+{
+    return m_Impl->getTexture(std::move(propertyName));
+}
+
+void osc::experimental::Material::setTexture(std::string_view propertyName, Texture2D t)
+{
+    m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
+bool osc::experimental::operator==(Material const& a, Material const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Material const& a, Material const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Material const& a, Material const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Material const& a, Material const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Material const& a, Material const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Material const& a, Material const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Material const& material)
+{
+    return o << "Material()";
+}
+
+std::string osc::experimental::to_string(Material const& material)
+{
+    return StreamToString(material);
+}
+
+std::size_t std::hash<osc::experimental::Material>::operator()(osc::experimental::Material const& material) const
+{
+    return material.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// material property block stuff
+//
+//////////////////////////////////
+
+class osc::experimental::MaterialPropertyBlock::Impl final {
+public:
+    void clear()
+    {
+        m_Values.clear();
+    }
+
+    bool isEmpty() const
+    {
+        return m_Values.empty();
+    }
+
+    std::optional<float> getFloat(std::string_view propertyName) const
+    {
+        return getValue<float>(std::move(propertyName));
+    }
+
+    void setFloat(std::string_view propertyName, float value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::vec3> getVec3(std::string_view propertyName) const
+    {
+        return getValue<glm::vec3>(std::move(propertyName));
+    }
+
+    void setVec3(std::string_view propertyName, glm::vec3 value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::vec4> getVec4(std::string_view propertyName) const
+    {
+        return getValue<glm::vec4>(std::move(propertyName));
+    }
+
+    void setVec4(std::string_view propertyName, glm::vec4 value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat3> getMat3(std::string_view propertyName) const
+    {
+        return getValue<glm::mat3>(std::move(propertyName));
+    }
+
+    void setMat3(std::string_view propertyName, glm::mat3 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat4> getMat4(std::string_view propertyName) const
+    {
+        return getValue<glm::mat4>(std::move(propertyName));
+    }
+
+    void setMat4(std::string_view propertyName, glm::mat4 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<glm::mat4x3> getMat4x3(std::string_view propertyName) const
+    {
+        return getValue<glm::mat4x3>(std::move(propertyName));
+    }
+
+    void setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<int> getInt(std::string_view propertyName) const
+    {
+        return getValue<int>(std::move(propertyName));
+    }
+
+    void setInt(std::string_view propertyName, int value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<bool> getBool(std::string_view propertyName) const
+    {
+        return getValue<bool>(std::move(propertyName));
+    }
+
+    void setBool(std::string_view propertyName, bool value)
+    {
+        setValue(std::move(propertyName), value);
+    }
+
+    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    {
+        return getValue<Texture2D>(std::move(propertyName));
+    }
+
+    void setTexture(std::string_view propertyName, Texture2D t)
+    {
+        setValue(std::move(propertyName), std::move(t));
+    }
+
+    // non-PIMPL APIs
+
+    std::size_t getHash() const
+    {
+        return std::hash<osc::UID>{}(m_UID);
+    }
+
+private:
+    template<typename T>
+    std::optional<T> getValue(std::string_view propertyName) const
+    {
+        auto it = m_Values.find(std::string{std::move(propertyName)});
+
+        if (it == m_Values.end())
+        {
+            return std::nullopt;
+        }
+
+        if (!std::holds_alternative<T>(it->second))
+        {
+            return std::nullopt;
+        }
+
+        return std::get<T>(it->second);
+    }
+
+    template<typename T>
+    void setValue(std::string_view propertyName, T const& v)
+    {
+        m_Values[std::string{propertyName}] = v;
+    }
+
+    using Value = std::variant<float, glm::vec3, glm::vec4, glm::mat3, glm::mat4, glm::mat4x3, int, bool, Texture2D>;
+
+    UID m_UID;
+    std::unordered_map<std::string, Value> m_Values;
+};
+
+osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock() :
+    m_Impl{std::make_shared<Impl>()}
+{
+}
+
+osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock const&) = default;
+osc::experimental::MaterialPropertyBlock::MaterialPropertyBlock(MaterialPropertyBlock&&) noexcept = default;
+osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlock::operator=(MaterialPropertyBlock const&) = default;
+osc::experimental::MaterialPropertyBlock& osc::experimental::MaterialPropertyBlock::operator=(MaterialPropertyBlock&&) noexcept = default;
+osc::experimental::MaterialPropertyBlock::~MaterialPropertyBlock() noexcept = default;
+
+void osc::experimental::MaterialPropertyBlock::clear()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->clear();
+}
+
+bool osc::experimental::MaterialPropertyBlock::isEmpty() const
+{
+    return m_Impl->isEmpty();
+}
+
+std::optional<float> osc::experimental::MaterialPropertyBlock::getFloat(std::string_view propertyName) const
+{
+    return m_Impl->getFloat(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setFloat(std::string_view propertyName, float value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setFloat(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::vec3> osc::experimental::MaterialPropertyBlock::getVec3(std::string_view propertyName) const
+{
+    return m_Impl->getVec3(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setVec3(std::string_view propertyName, glm::vec3 value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec3(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::vec4> osc::experimental::MaterialPropertyBlock::getVec4(std::string_view propertyName) const
+{
+    return m_Impl->getVec4(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setVec4(std::string_view propertyName, glm::vec4 value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVec4(std::move(propertyName), std::move(value));
+}
+
+std::optional<glm::mat3> osc::experimental::MaterialPropertyBlock::getMat3(std::string_view propertyName) const
+{
+    return m_Impl->getMat3(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setMat3(std::string_view propertyName, glm::mat3 const& value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat3(std::move(propertyName), value);
+}
+
+std::optional<glm::mat4> osc::experimental::MaterialPropertyBlock::getMat4(std::string_view propertyName) const
+{
+    return m_Impl->getMat4(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setMat4(std::string_view propertyName, glm::mat4 const& value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat4(std::move(propertyName), value);
+}
+
+std::optional<glm::mat4x3> osc::experimental::MaterialPropertyBlock::getMat4x3(std::string_view propertyName) const
+{
+    return m_Impl->getMat4x3(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setMat4x3(std::string_view propertyName, glm::mat4x3 const& value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setMat4x3(std::move(propertyName), value);
+}
+
+std::optional<int> osc::experimental::MaterialPropertyBlock::getInt(std::string_view propertyName) const
+{
+    return m_Impl->getInt(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setInt(std::string_view propertyName, int value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setInt(std::move(propertyName), std::move(value));
+}
+
+std::optional<bool> osc::experimental::MaterialPropertyBlock::getBool(std::string_view propertyName) const
+{
+    return m_Impl->getBool(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setBool(std::string_view propertyName, bool value)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setBool(std::move(propertyName), std::move(value));
+}
+
+std::optional<Texture2D> osc::experimental::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
+{
+    return m_Impl->getTexture(std::move(propertyName));
+}
+
+void osc::experimental::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
+{
+    m_Impl->setTexture(std::move(propertyName), std::move(t));
+}
+
+bool osc::experimental::operator==(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(MaterialPropertyBlock const& a, MaterialPropertyBlock const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, MaterialPropertyBlock const&)
+{
+    return o << "MaterialPropertyBlock()";
+}
+
+std::string osc::experimental::to_string(MaterialPropertyBlock const& material)
+{
+    return StreamToString(material);
+}
+
+std::size_t std::hash<osc::experimental::MaterialPropertyBlock>::operator()(osc::experimental::MaterialPropertyBlock const& mpb) const
+{
+    return mpb.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// mesh stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    static constexpr std::array<osc::CStringView, 2> g_MeshTopographyStrings =
+    {
+        "Triangles",
+        "Lines",
+    };
+
+    union PackedIndex {
+        uint32_t u32;
+        struct U16Pack { uint16_t a; uint16_t b; } u16;
+    };
+
+    static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
+    static_assert(alignof(PackedIndex) == alignof(uint32_t));
+
+    enum class IndexFormat {
+        UInt16,
+        UInt32,
+    };
+}
+
+class osc::experimental::Mesh::Impl final {
+public:
+    MeshTopography getTopography() const
+    {
+        return m_Topography;
+    }
+
+    void setTopography(MeshTopography t)
+    {
+        m_Topography = std::move(t);
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec3 const> getVerts() const
+    {
+        return m_Vertices;
+    }
+
+    void setVerts(nonstd::span<glm::vec3 const> verts)
+    {
+        m_Vertices.clear();
+        m_Vertices.reserve(verts.size());
+        std::copy(verts.begin(), verts.end(), std::back_insert_iterator{m_Vertices});
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec3 const> getNormals() const
+    {
+        return m_Normals;
+    }
+
+    void setNormals(nonstd::span<glm::vec3 const> normals)
+    {
+        m_Normals.clear();
+        m_Normals.reserve(normals.size());
+        std::copy(normals.begin(), normals.end(), std::back_insert_iterator{m_Normals});
+
+        m_Version = {};
+    }
+
+    nonstd::span<glm::vec2 const> getTexCoords() const
+    {
+        return m_TexCoords;
+    }
+
+    void setTexCoords(nonstd::span<glm::vec2 const> coords)
+    {
+        m_TexCoords.clear();
+        m_TexCoords.reserve(coords.size());
+        std::copy(coords.begin(), coords.end(), std::back_insert_iterator{m_TexCoords});
+
+        m_Version = {};
+    }
+
+    int getNumIndices() const
+    {
+        return m_NumIndices;
+    }
+
+    std::vector<std::uint32_t> getIndices() const
+    {
+        std::vector<std::uint32_t> rv;
+
+        if (m_NumIndices <= 0)
+        {
+            return rv;
+        }
+
+        rv.reserve(m_NumIndices);
+
+        if (m_IndicesAre32Bit)
+        {
+            nonstd::span<uint32_t const> data(&m_IndicesData.front().u32, m_NumIndices);
+            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+        }
+        else
+        {
+            nonstd::span<std::uint16_t const> data(&m_IndicesData.front().u16.a, m_NumIndices);
+            std::copy(data.begin(), data.end(), std::back_insert_iterator{rv});
+        }
+
+        return rv;
+    }
+
+    void setIndices(nonstd::span<std::uint16_t const> vs)
+    {
+        m_IndicesAre32Bit = false;
+        m_NumIndices = static_cast<int>(vs.size());
+        m_IndicesData.resize((vs.size()+1)/2);
+        std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    void setIndices(nonstd::span<std::uint32_t const> vs)
+    {
+        auto isGreaterThanU16Max = [](uint32_t v) { return v > std::numeric_limits<uint16_t>::max(); };
+
+        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
+        {
+            m_IndicesAre32Bit = true;
+            m_NumIndices = static_cast<int>(vs.size());
+            m_IndicesData.resize(vs.size());
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
+        }
+        else
+        {
+            m_IndicesAre32Bit = false;
+            m_NumIndices = static_cast<int>(vs.size());
+            m_IndicesData.resize((vs.size()+1)/2);
+            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u16.a);
+        }
+
+        recalculateBounds();
+        m_Version = {};
+    }
+
+    AABB const& getBounds() const
+    {
+        return m_AABB;
+    }
+
+    void clear()
+    {
+        m_Version = {};
+        m_Topography = MeshTopography::Triangles;
+        m_Vertices.clear();
+        m_Normals.clear();
+        m_TexCoords.clear();
+        m_IndicesAre32Bit = false;
+        m_NumIndices = 0;
+        m_IndicesData.clear();
+        m_AABB = {};
+    }
+
+    std::size_t getHash() const
+    {
+        return m_UID;
+    }
+
+private:
+    void recalculateBounds()
+    {
+        if (m_NumIndices == 0)
+        {
+            m_AABB = {};
+        }
+        else if (m_IndicesAre32Bit)
+        {
+            nonstd::span<uint32_t const> indices(&m_IndicesData.front().u32, m_NumIndices);
+            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+        }
+        else
+        {
+            nonstd::span<uint16_t const> indices(&m_IndicesData.front().u16.a, m_NumIndices);
+            m_AABB = osc::AABBFromIndexedVerts(m_Vertices, indices);
+        }
+    }
+
+    UID m_UID;
+    UID m_Version;
+    MeshTopography m_Topography = MeshTopography::Triangles;
+    std::vector<glm::vec3> m_Vertices;
+    std::vector<glm::vec3> m_Normals;
+    std::vector<glm::vec2> m_TexCoords;
+
+    bool m_IndicesAre32Bit = false;
+    int m_NumIndices = 0;
+    std::vector<PackedIndex> m_IndicesData;
+
+    AABB m_AABB;
+};
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, MeshTopography mt)
+{
+    return o << g_MeshTopographyStrings.at(static_cast<int>(mt));
+}
+
+std::string osc::experimental::to_string(MeshTopography mt)
+{
+    return StreamToString(std::move(mt));
+}
+
+osc::experimental::Mesh::Mesh() :
+    m_Impl{std::make_shared<Impl>()}
+{
+}
+
+osc::experimental::Mesh::Mesh(Mesh const&) = default;
+osc::experimental::Mesh::Mesh(Mesh&&) noexcept = default;
+osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh const&) = default;
+osc::experimental::Mesh& osc::experimental::Mesh::operator=(Mesh&&) noexcept = default;
+osc::experimental::Mesh::~Mesh() noexcept = default;
+
+osc::experimental::MeshTopography osc::experimental::Mesh::getTopography() const
+{
+    return m_Impl->getTopography();
+}
+
+void osc::experimental::Mesh::setTopography(MeshTopography topography)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTopography(std::move(topography));
+}
+
+nonstd::span<glm::vec3 const> osc::experimental::Mesh::getVerts() const
+{
+    return m_Impl->getVerts();
+}
+
+void osc::experimental::Mesh::setVerts(nonstd::span<glm::vec3 const> verts)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setVerts(std::move(verts));
+}
+
+nonstd::span<glm::vec3 const> osc::experimental::Mesh::getNormals() const
+{
+    return m_Impl->getNormals();
+}
+
+void osc::experimental::Mesh::setNormals(nonstd::span<glm::vec3 const> verts)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setNormals(std::move(verts));
+}
+
+nonstd::span<glm::vec2 const> osc::experimental::Mesh::getTexCoords() const
+{
+    return m_Impl->getTexCoords();
+}
+
+void osc::experimental::Mesh::setTexCoords(nonstd::span<glm::vec2 const> coords)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setTexCoords(coords);
+}
+
+int osc::experimental::Mesh::getNumIndices() const
+{
+    return m_Impl->getNumIndices();
+}
+
+std::vector<std::uint32_t> osc::experimental::Mesh::getIndices() const
+{
+    return m_Impl->getIndices();
+}
+
+void osc::experimental::Mesh::setIndices(nonstd::span<std::uint16_t const> indices)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setIndices(std::move(indices));
+}
+
+void osc::experimental::Mesh::setIndices(nonstd::span<std::uint32_t const> indices)
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->setIndices(std::move(indices));
+}
+
+osc::AABB const& osc::experimental::Mesh::getBounds() const
+{
+    return m_Impl->getBounds();
+}
+
+void osc::experimental::Mesh::clear()
+{
+    DoCopyOnWrite(m_Impl);
+    m_Impl->clear();
+}
+
+bool osc::experimental::operator==(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl == b.m_Impl;
+}
+
+bool osc::experimental::operator!=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl != b.m_Impl;
+}
+
+bool osc::experimental::operator<(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl < b.m_Impl;
+}
+
+bool osc::experimental::operator<=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl <= b.m_Impl;
+}
+
+bool osc::experimental::operator>(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl > b.m_Impl;
+}
+
+bool osc::experimental::operator>=(Mesh const& a, Mesh const& b)
+{
+    return a.m_Impl >= b.m_Impl;
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const& mesh)
+{
+    return o << "Mesh()";
+}
+
+std::string osc::experimental::to_string(Mesh const& mesh)
+{
+    return StreamToString(mesh);
+}
+
+std::size_t std::hash<osc::experimental::Mesh>::operator()(osc::experimental::Mesh const& mesh) const
+{
+    return mesh.m_Impl->getHash();
+}
+
+
+//////////////////////////////////
+//
+// camera stuff
+//
+//////////////////////////////////
+
+namespace
+{
+    using namespace osc::experimental;
+
+    // LUT for human-readable form of the above
+    static constexpr std::array<osc::CStringView, static_cast<std::size_t>(CameraProjection::TOTAL)> const g_CameraProjectionStrings =
+    {
+        "Perspective",
+        "Orthographic",
+    };
+}
+
+std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection cp)
+{
+    return o << g_CameraProjectionStrings.at(static_cast<int>(cp));
+}
+
+std::string osc::experimental::to_string(CameraProjection cp)
+{
+    return StreamToString(std::move(cp));
+}
+
+/*
 
 
 // 3D implementation notes
@@ -585,304 +2153,6 @@ private:
     DefaultConstructOnCopy<bool> m_GpuBuffersUpToDate = false;
 
     // TODO: GPU data
-};
-
-namespace
-{
-    // exact datatype expressed in the shader program itself
-    enum class ShaderTypeInternal {
-        Float = 0,
-        Vec2,
-        Vec3,
-        Vec4,
-        Mat2,
-        Mat3,
-        Mat4,
-        Mat2x3,
-        Mat2x4,
-        Mat3x2,
-        Mat3x4,
-        Mat4x2,
-        Mat4x3,
-        Int,
-        IntVec2,
-        IntVec3,
-        IntVec4,
-        UnsignedInt,
-        UnsignedIntVec2,
-        UnsignedIntVec3,
-        UnsignedIntVec4,
-        Double,
-        DoubleVec2,
-        DoubleVec3,
-        DoubleVec4,
-        DoubleMat2,
-        DoubleMat3,
-        DoubleMat4,
-        DoubleMat2x3,
-        DoubleMat2x4,
-        Bool,
-        Sampler2D,
-        Unknown,
-        TOTAL,
-    };
-
-    // LUT for human-readable form of the above
-    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderTypeInternalStrings =
-    {
-        "Float",
-        "Vec2",
-        "Vec3",
-        "Vec4",
-        "Mat2",
-        "Mat3",
-        "Mat4",
-        "Mat2x3",
-        "Mat2x4",
-        "Mat3x2",
-        "Mat3x4",
-        "Mat4x2",
-        "Mat4x3",
-        "Int",
-        "IntVec2",
-        "IntVec3",
-        "IntVec4",
-        "UnsignedInt",
-        "UnsignedIntVec2",
-        "UnsignedIntVec3",
-        "UnsignedIntVec4",
-        "Double",
-        "DoubleVec2",
-        "DoubleVec3",
-        "DoubleVec4",
-        "DoubleMat2",
-        "DoubleMat3",
-        "DoubleMat4",
-        "DoubleMat2x3",
-        "DoubleMat2x4",
-        "Bool",
-        "Sampler2D",
-        "Unknown",
-    };
-
-    char const* ToString(ShaderTypeInternal st)
-    {
-        return g_ShaderTypeInternalStrings.at(static_cast<size_t>(st));
-    }
-
-    std::ostream& operator<<(std::ostream& o, ShaderTypeInternal st)
-    {
-        return o << ToString(st);
-    }
-
-    // convert a GL shader type to an internal shader type
-    ShaderTypeInternal GLShaderTypeToShaderTypeInternal(GLenum e)
-    {
-        switch (e) {
-        case GL_FLOAT:
-            return ShaderTypeInternal::Float;
-        case GL_FLOAT_VEC2:
-            return ShaderTypeInternal::Vec2;
-        case GL_FLOAT_VEC3:
-            return ShaderTypeInternal::Vec3;
-        case GL_FLOAT_VEC4:
-            return ShaderTypeInternal::Vec4;
-        case GL_FLOAT_MAT2:
-            return ShaderTypeInternal::Mat2;
-        case GL_FLOAT_MAT3:
-            return ShaderTypeInternal::Mat3;
-        case GL_FLOAT_MAT4:
-            return ShaderTypeInternal::Mat4;
-        case GL_FLOAT_MAT2x3:
-            return ShaderTypeInternal::Mat2x3;
-        case GL_FLOAT_MAT2x4:
-            return ShaderTypeInternal::Mat2x4;
-        case GL_FLOAT_MAT3x2:
-            return ShaderTypeInternal::Mat3x2;
-        case GL_FLOAT_MAT3x4:
-            return ShaderTypeInternal::Mat3x4;
-        case GL_FLOAT_MAT4x2:
-            return ShaderTypeInternal::Mat4x2;
-        case GL_FLOAT_MAT4x3:
-            return ShaderTypeInternal::Mat4x3;
-        case GL_INT:
-            return ShaderTypeInternal::Int;
-        case GL_INT_VEC2:
-            return ShaderTypeInternal::IntVec2;
-        case GL_INT_VEC3:
-            return ShaderTypeInternal::IntVec3;
-        case GL_INT_VEC4:
-            return ShaderTypeInternal::IntVec4;
-        case GL_UNSIGNED_INT:
-            return ShaderTypeInternal::UnsignedInt;
-        case GL_UNSIGNED_INT_VEC2:
-            return ShaderTypeInternal::UnsignedIntVec2;
-        case GL_UNSIGNED_INT_VEC3:
-            return ShaderTypeInternal::UnsignedIntVec3;
-        case GL_UNSIGNED_INT_VEC4:
-            return ShaderTypeInternal::UnsignedIntVec4;
-        case GL_DOUBLE:
-            return ShaderTypeInternal::Double;
-        case GL_DOUBLE_VEC2:
-            return ShaderTypeInternal::DoubleVec2;
-        case GL_DOUBLE_VEC3:
-            return ShaderTypeInternal::DoubleVec3;
-        case GL_DOUBLE_VEC4:
-            return ShaderTypeInternal::DoubleVec4;
-        case GL_DOUBLE_MAT2:
-            return ShaderTypeInternal::DoubleMat2;
-        case GL_DOUBLE_MAT3:
-            return ShaderTypeInternal::DoubleMat3;
-        case GL_DOUBLE_MAT4:
-            return ShaderTypeInternal::DoubleMat4;
-        case GL_DOUBLE_MAT2x3:
-            return ShaderTypeInternal::DoubleMat2x3;
-        case GL_DOUBLE_MAT2x4:
-            return ShaderTypeInternal::DoubleMat2x4;
-        case GL_BOOL:
-            return ShaderTypeInternal::Bool;
-        case GL_SAMPLER_2D:
-            return ShaderTypeInternal::Sampler2D;
-        default:
-            return ShaderTypeInternal::Unknown;
-        }
-    }
-
-    // whether the shader element is an attribute or a uniform
-    enum class ShaderQualifier {
-        Attribute = 0,
-        Uniform,
-        TOTAL,
-    };
-
-    // LUT for human-readable form of the above
-    constexpr std::array<char const*, static_cast<std::size_t>(ShaderTypeInternal::TOTAL)> const g_ShaderQualifierStrings =
-    {
-        "Attribute",
-        "Uniform",
-    };
-
-    char const* ToString(ShaderQualifier sq)
-    {
-        return g_ShaderQualifierStrings.at(static_cast<size_t>(sq));
-    }
-
-    std::ostream& operator<<(std::ostream& o, ShaderQualifier sq)
-    {
-        return o << ToString(sq);
-    }
-
-    struct ShaderElement final {
-        int location;
-        ShaderQualifier qualifier;
-        ShaderTypeInternal type;
-
-        ShaderElement(int location_,
-                      ShaderQualifier qualifier_,
-                      ShaderTypeInternal type_) :
-            location{std::move(location_)},
-            qualifier{std::move(qualifier_)},
-            type{std::move(type_ )}
-        {
-        }
-    };
-
-    std::ostream& operator<<(std::ostream& o, ShaderElement const& se)
-    {
-        return o << "ShaderElement(location = " << se.location
-            << ", qualifier = " << se.qualifier
-            << ", type = " << se.type
-            << ')';
-    }
-
-    std::unordered_map<std::string, ShaderElement> GetShaderElements(gl::Program& p)
-    {
-        constexpr GLsizei maxNameLen = 16;
-
-        GLint numAttrs;
-        glGetProgramiv(p.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
-
-        GLint numUniforms;
-        glGetProgramiv(p.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
-
-        std::unordered_map<std::string, ShaderElement> rv;
-        rv.reserve(numAttrs + numUniforms);
-
-        for (GLint i = 0; i < numAttrs; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveAttrib(p.get() , (GLuint)i, maxNameLen, &length, &size, &type, name);
-            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Attribute, GLShaderTypeToShaderTypeInternal(type));
-        }
-
-        for (GLint i = 0; i < numUniforms; i++)
-        {
-            GLint size; // size of the variable
-            GLenum type; // type of the variable (float, vec3 or mat4, etc)
-            GLchar name[maxNameLen]; // variable name in GLSL
-            GLsizei length; // name length
-            glGetActiveUniform(p.get(), (GLuint)i, maxNameLen, &length, &size, &type, name);
-            rv.try_emplace(name, static_cast<int>(i), ShaderQualifier::Uniform, GLShaderTypeToShaderTypeInternal(type));
-        }
-
-        return rv;
-    }
-}
-
-class osc::experimental::Shader::Impl final {
-public:
-    explicit Impl(char const* vertexShader,
-                  char const* fragmentShader) :
-        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader), gl::CompileFromSource<gl::FragmentShader>(fragmentShader))},
-        m_ShaderElements{GetShaderElements(m_Program)}
-    {
-        for (auto const& [name, el] : m_ShaderElements)
-        {
-            std::cerr << name << " = " << el << '\n';
-        }
-    }
-
-    std::optional<int> findPropertyIndex(std::string_view sv) const
-    {
-        auto it = m_ShaderElements.find(std::string{sv});
-        if (it != m_ShaderElements.end())
-        {
-            return static_cast<int>(std::distance(m_ShaderElements.begin(), it));
-        }
-        else
-        {
-            return std::nullopt;
-        }
-    }
-
-    int getPropertyCount() const
-    {
-        return static_cast<int>(m_ShaderElements.size());
-    }
-
-    std::string const& getPropertyName(int i) const
-    {
-        auto it = m_ShaderElements.begin();
-        std::advance(it, i);
-        return it->first;
-    }
-
-    ShaderType getPropertyType(int) const
-    {
-        OSC_THROW_NYI();
-    }
-
-    std::size_t getHash() const
-    {
-        OSC_THROW_NYI();
-    }
-
-private:
-    gl::Program m_Program;
-    std::unordered_map<std::string, ShaderElement> m_ShaderElements;
 };
 
 
@@ -2192,3 +3462,5 @@ void osc::experimental::Graphics::DrawMesh(Mesh,
     // - deal with any batch flushing etc.
     OSC_THROW_NYI();
 }
+
+*/

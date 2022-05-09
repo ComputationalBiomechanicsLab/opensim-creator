@@ -70,36 +70,10 @@ namespace osc
 
 		// concrete helper methods that use the above virutal API
 
-		bool hasSelected() const
-		{
-			return getSelected() != nullptr;
-		}
-
-		// warning: must be implemented in the cpp file because some compilers
-		// require complete types for `typeid`
-		bool selectionHasTypeID(std::type_info const&) const;
-
-		template<typename T>
-		bool selectionIsType() const
-		{
-			return selectionHasTypeID(typeid(T));
-		}
-
-		template<typename T>
-		bool selectionDerivesFrom() const
-		{
-			return getSelectedAs<T>() != nullptr;
-		}
-
 		template<typename T>
 		T const* getSelectedAs() const
 		{
 			return dynamic_cast<T const*>(getSelected());
-		}
-
-		bool hasHovered() const
-		{
-			return getHovered() != nullptr;
 		}
 	};
 }

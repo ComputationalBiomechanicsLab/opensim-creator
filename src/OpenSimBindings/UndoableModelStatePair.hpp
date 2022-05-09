@@ -18,35 +18,37 @@ namespace SimTK
 
 namespace osc
 {
-    class UiModel;
+    class AutoFinalizingModelStatePair;
+    class ModelStateCommit;
 }
 
 namespace osc
 {
-    // A "UI ready" model with undo/redo support
-    class UndoableUiModel final : public VirtualModelStatePair {
+    // a model + state pair that automatically updates (e.g. finalizeFromProperties etc.), much
+    // like `osc::UiModel`, but it can *also* can be snapshotted with .commit()
+    class UndoableModelStatePair final : public VirtualModelStatePair {
     public:
 
         // construct a new, blank, UndoableUiModel
-        UndoableUiModel();
+        UndoableModelStatePair();
 
         // construct a new UndoableUiModel from an existing in-memory OpenSim model
-        explicit UndoableUiModel(std::unique_ptr<OpenSim::Model> model);
+        explicit UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model);
 
         // copy-construct a new UndoableUiModel
-        UndoableUiModel(UndoableUiModel const&);
+        UndoableModelStatePair(UndoableModelStatePair const&);
 
         // move an UndoableUiModel in memory
-        UndoableUiModel(UndoableUiModel&&) noexcept;
+        UndoableModelStatePair(UndoableModelStatePair&&) noexcept;
 
         // copy-assign some other UndoableUiModel over this one
-        UndoableUiModel& operator=(UndoableUiModel const&);
+        UndoableModelStatePair& operator=(UndoableModelStatePair const&);
 
         // move-assign some other UndoableUiModel over this one
-        UndoableUiModel& operator=(UndoableUiModel&&) noexcept;
+        UndoableModelStatePair& operator=(UndoableModelStatePair&&) noexcept;
 
         // destruct an UndoableUiModel
-        ~UndoableUiModel() noexcept override;
+        ~UndoableModelStatePair() noexcept override;
 
         // returns `true` if the model has a known on-disk location
         bool hasFilesystemLocation() const;
@@ -72,8 +74,12 @@ namespace osc
         // get/update current UiModel
         //
         // note: mutating anything may trigger an undo/redo save if `isDirty` returns `true`
-        UiModel const& getUiModel() const;
-        UiModel& updUiModel();
+        AutoFinalizingModelStatePair const& getUiModel() const;
+        AutoFinalizingModelStatePair& updUiModel();
+
+        // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
+        // the safer undo/redo buffer)
+        ModelStateCommit const& getLatestCommit() const;
 
         // manipulate undo/redo state
         bool canUndo() const;
@@ -128,6 +134,6 @@ namespace osc
 
         class Impl;
     private:
-        std::unique_ptr<Impl> m_Impl;
+        Impl* m_Impl;
     };
 }

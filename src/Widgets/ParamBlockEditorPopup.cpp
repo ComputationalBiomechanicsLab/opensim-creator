@@ -4,8 +4,11 @@
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/IntegratorMethod.hpp"
 #include "osc_config.hpp"
+#include "src/Widgets/StandardPopup.hpp"
 
 #include <imgui.h>
+
+#include <utility>
 
 template<class... Ts>
 struct Overloaded : Ts... { using Ts::operator()...; };
@@ -67,50 +70,121 @@ static bool DrawEditor(osc::ParamBlock& b, int idx)
     return rv;
 }
 
-bool osc::ParamBlockEditorPopup::draw(char const* popupName, ParamBlock& b)
-{
-    // center the modal
+class osc::ParamBlockEditorPopup::Impl final : protected StandardPopup {
+public:
+    Impl(std::string_view popupName) :
+        StandardPopup{std::move(popupName), 512.0f, 0.0f, ImGuiWindowFlags_AlwaysAutoResize}
     {
-        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-        ImGui::SetNextWindowSize(ImVec2(512, 0));
     }
 
-    // try to show modal
-    if (!ImGui::BeginPopupModal(popupName, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    bool isOpen() const
     {
-        // modal not showing
-        return false;
+        return static_cast<StandardPopup const&>(*this).isOpen();
     }
 
-    bool edited = false;
-
-    ImGui::Columns(2);
-    for (int i = 0, len = b.size(); i < len; ++i)
+    void open()
     {
-        ImGui::PushID(i);
+        static_cast<StandardPopup&>(*this).open();
+    }
 
-        ImGui::TextUnformatted(b.getName(i).c_str());
-        ImGui::SameLine();
-        DrawHelpMarker(b.getName(i).c_str(), b.getDescription(i).c_str());
-        ImGui::NextColumn();
+    void close()
+    {
+        static_cast<StandardPopup&>(*this).close();
+    }
 
-        if (DrawEditor(b, i))
+    bool draw(ParamBlock& pb)
+    {
+        m_ParamBlock = &pb;
+        if (m_ParamBlock)
         {
-            edited = true;
+            static_cast<StandardPopup&>(*this).draw();
+            return m_WasEdited;
         }
-        ImGui::NextColumn();
-
-        ImGui::PopID();
+        else
+        {
+            return false;
+        }
     }
-    ImGui::Columns();
 
-    ImGui::Dummy({0.0f, 1.0f});
-
-    if (ImGui::Button("save"))
+private:
+    void implDraw() override
     {
-        ImGui::CloseCurrentPopup();
+        if (m_ParamBlock == nullptr)
+        {
+            return;
+        }
+
+        m_WasEdited = false;
+
+        ImGui::Columns(2);
+        for (int i = 0, len = m_ParamBlock->size(); i < len; ++i)
+        {
+            ImGui::PushID(i);
+
+            ImGui::TextUnformatted(m_ParamBlock->getName(i).c_str());
+            ImGui::SameLine();
+            DrawHelpMarker(m_ParamBlock->getName(i).c_str(), m_ParamBlock->getDescription(i).c_str());
+            ImGui::NextColumn();
+
+            if (DrawEditor(*m_ParamBlock, i))
+            {
+                m_WasEdited = true;
+            }
+            ImGui::NextColumn();
+
+            ImGui::PopID();
+        }
+        ImGui::Columns();
+
+        ImGui::Dummy({0.0f, 1.0f});
+
+        if (ImGui::Button("save"))
+        {
+            requestClose();
+        }
     }
 
-    return edited;
+    bool m_WasEdited = false;
+    ParamBlock* m_ParamBlock = nullptr;
+};
+
+osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName) :
+    m_Impl{new Impl{std::move(popupName)}}
+{
+}
+
+osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&& tmp) noexcept :
+    m_Impl{std::exchange(tmp.m_Impl, nullptr)}
+{
+}
+
+osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&& tmp) noexcept
+{
+    std::swap(m_Impl, tmp.m_Impl);
+    return *this;
+}
+
+osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept
+{
+    delete m_Impl;
+}
+
+bool osc::ParamBlockEditorPopup::isOpen() const
+{
+    return m_Impl->isOpen();
+}
+
+void osc::ParamBlockEditorPopup::open()
+{
+    m_Impl->open();
+}
+
+void osc::ParamBlockEditorPopup::close()
+{
+    m_Impl->close();
+}
+
+bool osc::ParamBlockEditorPopup::draw(ParamBlock& pb)
+{
+    return m_Impl->draw(pb);
 }

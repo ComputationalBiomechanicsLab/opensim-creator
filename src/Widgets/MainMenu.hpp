@@ -37,8 +37,4 @@ namespace osc
     struct MainMenuAboutTab final {
         void draw();
     };
-
-    struct MainMenuWindowTab final {
-        void draw(MainEditorState&);
-    };
 }

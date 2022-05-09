@@ -4,14 +4,14 @@
 
 namespace osc
 {
-    class UndoableUiModel;
+    class UndoableModelStatePair;
 }
 
 namespace osc
 {
     struct CoordinateEditor final {
     public:
-        explicit CoordinateEditor(std::shared_ptr<UndoableUiModel>);
+        explicit CoordinateEditor(std::shared_ptr<UndoableModelStatePair>);
         CoordinateEditor(CoordinateEditor const&) = delete;
         CoordinateEditor(CoordinateEditor&&) noexcept;
         CoordinateEditor& operator=(CoordinateEditor const&) = delete;

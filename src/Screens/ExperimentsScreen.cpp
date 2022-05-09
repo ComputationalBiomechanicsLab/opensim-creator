@@ -22,7 +22,7 @@
 template<typename Screen>
 static void transition()
 {
-    osc::App::cur().requestTransition<Screen>();
+    osc::App::upd().requestTransition<Screen>();
 }
 
 using transition_fn = void(*)(void);
@@ -45,7 +45,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -54,17 +54,17 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<SplashScreen>();
+            App::upd().requestTransition<SplashScreen>();
             return;
         }
     }
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
 
-        glm::vec2 dims = App::cur().dims();
+        glm::vec2 dims = App::get().dims();
         glm::vec2 menuDims = {700.0f, 500.0f};
 
         // center the menu

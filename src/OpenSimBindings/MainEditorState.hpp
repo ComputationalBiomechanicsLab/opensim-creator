@@ -2,7 +2,7 @@
 
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 
 #include <memory>
@@ -11,33 +11,18 @@
 namespace osc
 {
     class UiModelViewer;
+    class ModelMusclePlotPanel;
 }
 
 namespace OpenSim
 {
+    class Coordinate;
     class Model;
+    class Muscle;
 }
 
 namespace osc
 {
-    // a struct representing which panels should be shown in the main UI window
-    //
-    // TODO: this should probably be an associative string-->bool lookup that can
-    //       be saved to the user config, rather than being hard-coded like this
-    struct UserPanelPreferences final {
-        bool actions = true;
-        bool hierarchy = true;
-        bool log = true;
-        bool outputs = true;
-        bool propertyEditor = true;
-        bool selectionDetails = true;
-        bool simulations = true;
-        bool simulationStats = false;
-        bool coordinateEditor = true;
-        bool perfPanel = false;
-        bool momentArmPanel = false;
-    };
-
     // top-level UI state
     //
     // this is the main state that gets shared between the top-level editor
@@ -46,7 +31,7 @@ namespace osc
     public:
         MainEditorState();
         MainEditorState(std::unique_ptr<OpenSim::Model>);
-        MainEditorState(UndoableUiModel);
+        MainEditorState(UndoableModelStatePair);
         MainEditorState(MainEditorState const&) = delete;
         MainEditorState(MainEditorState&&);
         MainEditorState& operator=(MainEditorState const&) = delete;
@@ -54,7 +39,7 @@ namespace osc
         ~MainEditorState() noexcept;
 
         // model that the user is editing
-        std::shared_ptr<UndoableUiModel> editedModel();
+        std::shared_ptr<UndoableModelStatePair> editedModel();
 
         // simulations
         int getNumSimulations() const;
@@ -75,14 +60,17 @@ namespace osc
         void addUserOutputExtractor(OutputExtractor);
         void removeUserOutputExtractor(int);
 
-        // active ImGui panels
-        UserPanelPreferences const& getUserPanelPrefs() const;
-        UserPanelPreferences& updUserPanelPrefs();
-
         int getNumViewers() const;
         UiModelViewer& updViewer(int);
         UiModelViewer& addViewer();
         void removeViewer(int);
+
+        int getNumMusclePlots() const;
+        ModelMusclePlotPanel const& getMusclePlot(int) const;
+        ModelMusclePlotPanel& updMusclePlot(int);
+        ModelMusclePlotPanel& addMusclePlot();
+        ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&);
+        void removeMusclePlot(int);
 
         class Impl;
     private:

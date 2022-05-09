@@ -33,7 +33,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -42,14 +42,14 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<SplashScreen>();
+            App::upd().requestTransition<SplashScreen>();
             return;
         }
     }
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
 
         constexpr float width = 800.0f;
@@ -57,7 +57,7 @@ public:
 
         // error message panel
         {
-            glm::vec2 pos{App::cur().dims().x/2.0f, padding};
+            glm::vec2 pos{App::upd().dims().x/2.0f, padding};
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 0.0f});
             ImGui::SetNextWindowSize({width, 0.0f});
 
@@ -71,7 +71,7 @@ public:
 
                 if (ImGui::Button("Return to splash screen (Escape)"))
                 {
-                    App::cur().requestTransition<SplashScreen>();
+                    App::upd().requestTransition<SplashScreen>();
                 }
             }
             ImGui::End();
@@ -79,7 +79,7 @@ public:
 
         // log message panel
         {
-            glm::vec2 dims = App::cur().dims();
+            glm::vec2 dims = App::get().dims();
             glm::vec2 pos{dims.x/2.0f, dims.y - padding};
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 1.0f));
             ImGui::SetNextWindowSize(ImVec2(width, 0.0f));

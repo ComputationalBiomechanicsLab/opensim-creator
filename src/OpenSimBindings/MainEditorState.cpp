@@ -2,12 +2,13 @@
 
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/OpenSimBindings/OutputExtractor.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
-#include "src/OpenSimBindings/FdSimulation.hpp"
-#include "src/OpenSimBindings/UiFdSimulation.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulation.hpp"
+#include "src/OpenSimBindings/ForwardDynamicSimulatorParams.hpp"
 #include "src/OpenSimBindings/ParamBlock.hpp"
 #include "src/OpenSimBindings/Simulation.hpp"
 #include "src/Utils/Assertions.hpp"
+#include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/UiModelViewer.hpp"
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -22,16 +23,16 @@ public:
     Impl() = default;
 
     Impl(std::unique_ptr<OpenSim::Model> model) :
-        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(model))}
+        m_EditedModel{std::make_shared<UndoableModelStatePair>(std::move(model))}
     {
     }
 
-    Impl(UndoableUiModel um) :
-        m_EditedModel{std::make_shared<UndoableUiModel>(std::move(um))}
+    Impl(UndoableModelStatePair um) :
+        m_EditedModel{std::make_shared<UndoableModelStatePair>(std::move(um))}
     {
     }
 
-    std::shared_ptr<UndoableUiModel> editedModel()
+    std::shared_ptr<UndoableModelStatePair> editedModel()
     {
         return m_EditedModel;
     }
@@ -119,16 +120,6 @@ public:
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
-    UserPanelPreferences const& getUserPanelPrefs() const
-    {
-        return m_PanelPreferences;
-    }
-
-    UserPanelPreferences& updUserPanelPrefs()
-    {
-        return m_PanelPreferences;
-    }
-
     int getNumViewers() const
     {
         return static_cast<int>(m_ModelViewers.size());
@@ -150,14 +141,50 @@ public:
         m_ModelViewers.erase(m_ModelViewers.begin() + idx);
     }
 
+    int getNumMusclePlots() const
+    {
+        return static_cast<int>(m_ModelMusclePlots.size());
+    }
+
+    ModelMusclePlotPanel const& getMusclePlot(int idx) const
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& updMusclePlot(int idx)
+    {
+        return m_ModelMusclePlots.at(idx);
+    }
+
+    ModelMusclePlotPanel& addMusclePlot()
+    {
+        return m_ModelMusclePlots.emplace_back(m_EditedModel, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++));
+    }
+
+    ModelMusclePlotPanel& addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+    {
+        return m_ModelMusclePlots.emplace_back(m_EditedModel, std::string{"MusclePlot_"} + std::to_string(m_LatestMusclePlot++), coord.getAbsolutePath(), muscle.getAbsolutePath());
+    }
+
+    void removeMusclePlot(int idx)
+    {
+        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_ModelMusclePlots.size()));
+        m_ModelMusclePlots.erase(m_ModelMusclePlots.begin() + idx);
+    }
+
 private:
-    std::shared_ptr<UndoableUiModel> m_EditedModel = std::make_shared<UndoableUiModel>();
+    std::shared_ptr<UndoableModelStatePair> m_EditedModel = std::make_shared<UndoableModelStatePair>();
     std::vector<std::shared_ptr<Simulation>> m_Simulations;
     int m_FocusedSimulation = -1;
     std::vector<OutputExtractor> m_UserOutputExtractors;
-    ParamBlock m_SimulationParams = ToParamBlock(FdParams{});  // TODO: make generic
-    std::vector<UiModelViewer> m_ModelViewers = []() { std::vector<UiModelViewer> rv; rv.emplace_back(); return rv; }();
-    UserPanelPreferences m_PanelPreferences;
+    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});  // TODO: make generic
+    std::vector<UiModelViewer> m_ModelViewers = []()
+    {
+        std::vector<UiModelViewer> rv(1);
+        return rv;
+    }();
+    int m_LatestMusclePlot = 1;
+    std::vector<ModelMusclePlotPanel> m_ModelMusclePlots;
 };
 
 osc::MainEditorState::MainEditorState() :
@@ -170,7 +197,7 @@ osc::MainEditorState::MainEditorState(std::unique_ptr<OpenSim::Model> model) :
 {
 }
 
-osc::MainEditorState::MainEditorState(UndoableUiModel um) :
+osc::MainEditorState::MainEditorState(UndoableModelStatePair um) :
     m_Impl{std::make_unique<Impl>(std::move(um))}
 {
 }
@@ -179,7 +206,7 @@ osc::MainEditorState::MainEditorState(MainEditorState&&) = default;
 osc::MainEditorState& osc::MainEditorState::operator=(MainEditorState&&) = default;
 osc::MainEditorState::~MainEditorState() noexcept = default;
 
-std::shared_ptr<osc::UndoableUiModel> osc::MainEditorState::editedModel()
+std::shared_ptr<osc::UndoableModelStatePair> osc::MainEditorState::editedModel()
 {
     return m_Impl->editedModel();
 }
@@ -249,16 +276,6 @@ void osc::MainEditorState::removeUserOutputExtractor(int idx)
     m_Impl->removeUserOutputExtractor(std::move(idx));
 }
 
-osc::UserPanelPreferences const& osc::MainEditorState::getUserPanelPrefs() const
-{
-    return m_Impl->getUserPanelPrefs();
-}
-
-osc::UserPanelPreferences& osc::MainEditorState::updUserPanelPrefs()
-{
-    return m_Impl->updUserPanelPrefs();
-}
-
 int osc::MainEditorState::getNumViewers() const
 {
     return m_Impl->getNumViewers();
@@ -279,6 +296,36 @@ void osc::MainEditorState::removeViewer(int idx)
     m_Impl->removeViewer(std::move(idx));
 }
 
+int osc::MainEditorState::getNumMusclePlots() const
+{
+    return m_Impl->getNumMusclePlots();
+}
+
+osc::ModelMusclePlotPanel const& osc::MainEditorState::getMusclePlot(int idx) const
+{
+    return m_Impl->getMusclePlot(std::move(idx));
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::updMusclePlot(int idx)
+{
+    return m_Impl->updMusclePlot(std::move(idx));
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::addMusclePlot()
+{
+    return m_Impl->addMusclePlot();
+}
+
+osc::ModelMusclePlotPanel& osc::MainEditorState::addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+{
+    return m_Impl->addMusclePlot(coord, muscle);
+}
+
+void osc::MainEditorState::removeMusclePlot(int idx)
+{
+    m_Impl->removeMusclePlot(std::move(idx));
+}
+
 void osc::AutoFocusAllViewers(MainEditorState& st)
 {
     for (int i = 0, len = st.getNumViewers(); i < len; ++i)
@@ -289,11 +336,11 @@ void osc::AutoFocusAllViewers(MainEditorState& st)
 
 void osc::StartSimulatingEditedModel(MainEditorState& st)
 {
-    std::shared_ptr<UndoableUiModel> uim = st.editedModel();
+    std::shared_ptr<UndoableModelStatePair> uim = st.editedModel();
     BasicModelStatePair modelState{uim->getModel(), uim->getState()};
-    FdParams params = FromParamBlock(st.getSimulationParams());
+    ForwardDynamicSimulatorParams params = FromParamBlock(st.getSimulationParams());
 
-    st.addSimulation(UiFdSimulation{std::move(modelState), std::move(params)});
+    st.addSimulation(ForwardDynamicSimulation{std::move(modelState), std::move(params)});
     st.setFocusedSimulation(st.getNumSimulations()-1);
 }
 

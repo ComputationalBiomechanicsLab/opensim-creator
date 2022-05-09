@@ -2,7 +2,7 @@
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Widgets/AddBodyPopup.hpp"
 #include "src/Widgets/AddComponentPopup.hpp"
 #include "src/Widgets/Select2PFsPopup.hpp"
@@ -22,7 +22,7 @@
 
 class osc::ModelActionsMenuBar::Impl final {
 public:
-    Impl(std::shared_ptr<UndoableUiModel> uum_) :
+    Impl(std::shared_ptr<UndoableModelStatePair> uum_) :
         m_Uum{uum_},
         m_AddBodyPopup{uum_, "add body"},
         m_Select2PFsPopup{},
@@ -125,13 +125,13 @@ private:
         return editMade;
     }
 
-    std::shared_ptr<UndoableUiModel> m_Uum;
+    std::shared_ptr<UndoableModelStatePair> m_Uum;
     AddBodyPopup m_AddBodyPopup;
     Select2PFsPopup m_Select2PFsPopup;
     std::optional<AddComponentPopup> m_MaybeAddComponentPopup;
 };
 
-osc::ModelActionsMenuBar::ModelActionsMenuBar(std::shared_ptr<UndoableUiModel> m) :
+osc::ModelActionsMenuBar::ModelActionsMenuBar(std::shared_ptr<UndoableModelStatePair> m) :
     m_Impl{std::make_unique<Impl>(std::move(m))}
 {
 }

@@ -4,15 +4,12 @@
 #include "src/OpenSimBindings/SimulationStatus.hpp"
 #include "src/OpenSimBindings/VirtualSimulation.hpp"
 #include "src/OpenSimBindings/SimulationReport.hpp"
-#include "src/Utils/UID.hpp"
 #include "src/Utils/SynchronizedValue.hpp"
 
 #include <nonstd/span.hpp>
 
 #include <memory>
-#include <optional>
 #include <vector>
-#include <string>
 
 namespace osc
 {

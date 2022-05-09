@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/Maths/AABB.hpp"
-#include "src/OpenSimBindings/ComponentDecoration.hpp"
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 #include "src/Utils/UID.hpp"
@@ -18,7 +16,6 @@ namespace OpenSim
     class Component;
     class Coordinate;
     class Model;
-    class Joint;
 }
 
 namespace SimTK
@@ -28,37 +25,32 @@ namespace SimTK
 
 namespace osc
 {
-    struct BVH;
-    class StateModifications;
     struct CoordinateEdit;
-    struct FdParams;
-    struct UiSimulation;
 }
 
 namespace osc
 {
-    // a "UI-ready" OpenSim::Model + SimTK::State pair
-    //
-    // this class guarantees that the returned model/state/decorations are up-to-date
-    // by internally checking dirty flags
-    class UiModel final : public VirtualModelStatePair {
+    // a model + state pair that automatically updates (e.g. finalizeFromProperties etc.)
+    // whenever the model is edited, guaranteeing that any getters/updater member functions
+    // return an up-to-date model/state
+    class AutoFinalizingModelStatePair final : public VirtualModelStatePair {
     public:
         // construct a blank (new) UiModel
-        UiModel();
+        AutoFinalizingModelStatePair();
 
-        // construct a UiModel by loading an osim file
-        explicit UiModel(std::string const& osim);
+        // construct a AutoFinalizingModelStatePair by loading an osim file
+        explicit AutoFinalizingModelStatePair(std::string const& osim);
 
-        // construct a UiModel from an in-memory OpenSim::Model
-        explicit UiModel(std::unique_ptr<OpenSim::Model>);
+        // construct a AutoFinalizingModelStatePair from an in-memory OpenSim::Model
+        explicit AutoFinalizingModelStatePair(std::unique_ptr<OpenSim::Model>);
 
-        UiModel(UiModel const&);
-        UiModel(UiModel&&) noexcept;
-        UiModel& operator=(UiModel const&);
-        UiModel& operator=(UiModel&&) noexcept;
-        ~UiModel() noexcept override;
+        AutoFinalizingModelStatePair(AutoFinalizingModelStatePair const&);
+        AutoFinalizingModelStatePair(AutoFinalizingModelStatePair&&) noexcept;
+        AutoFinalizingModelStatePair& operator=(AutoFinalizingModelStatePair const&);
+        AutoFinalizingModelStatePair& operator=(AutoFinalizingModelStatePair&&) noexcept;
+        ~AutoFinalizingModelStatePair() noexcept override;
 
-        // get underlying `OpenSim::Model` that the UiModel wraps
+        // get underlying `OpenSim::Model` that the AutoFinalizingModelStatePair wraps
         OpenSim::Model const& getModel() const override;
 
         OpenSim::Model& updModel() override;

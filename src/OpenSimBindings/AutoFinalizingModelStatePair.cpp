@@ -1,4 +1,4 @@
-#include "UiModel.hpp"
+#include "AutoFinalizingModelStatePair.hpp"
 
 #include "src/Maths/AABB.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -14,6 +14,7 @@
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 static std::unique_ptr<OpenSim::Model> makeNewModel()
@@ -23,7 +24,7 @@ static std::unique_ptr<OpenSim::Model> makeNewModel()
     return rv;
 }
 
-class osc::UiModel::Impl final {
+class osc::AutoFinalizingModelStatePair::Impl final {
 public:
 
     Impl() :
@@ -58,9 +59,9 @@ public:
         m_MaybeHovered{other.m_MaybeHovered},
         m_MaybeIsolated{other.m_MaybeIsolated},
         m_UpdatedModelVersion{},
-        m_CurrentModelVersion{other.m_CurrentModelVersion},
+        m_CurrentModelVersion{},
         m_UpdatedStateVersion{},
-        m_CurrentStateVersion{other.m_CurrentStateVersion}
+        m_CurrentStateVersion{}
     {
     }
 
@@ -171,6 +172,8 @@ public:
 
     void updateIfDirty()
     {
+        auto guard = std::scoped_lock{m_UpdateLock};
+
         if (m_CurrentModelVersion != m_UpdatedModelVersion)
         {
             // a model update always induces a state update also
@@ -205,7 +208,7 @@ public:
             }
 
             {
-                OSC_PERF("realize velocity");
+                OSC_PERF("realize state");
                 m_Model->realizeDynamics(m_Model->updWorkingState());
             }
 
@@ -301,6 +304,9 @@ public:
     }
 
 private:
+    // a hack to ensure that updates are at least threadsafe-ish
+    std::mutex m_UpdateLock;
+
     // user-enacted state modifications (e.g. coordinate edits)
     StateModifications m_StateModifications;
 
@@ -330,147 +336,147 @@ private:
     UID m_CurrentStateVersion;
 };
 
-osc::UiModel::UiModel() :
+osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair() :
     m_Impl{new Impl{}}
 {
 }
 
-osc::UiModel::UiModel(std::string const& osim) :
+osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair(std::string const& osim) :
     m_Impl{new Impl{osim}}
 {
 }
 
-osc::UiModel::UiModel(std::unique_ptr<OpenSim::Model> _model) :
+osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
     m_Impl{new Impl{std::move(_model)}}
 {
 }
 
-osc::UiModel::UiModel(UiModel const& other) :
+osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair(AutoFinalizingModelStatePair const& other) :
     m_Impl{new Impl{*other.m_Impl}}
 {
 }
 
-osc::UiModel::UiModel(UiModel&&) noexcept = default;
-osc::UiModel& osc::UiModel::operator=(UiModel const& other) = default;
-osc::UiModel& osc::UiModel::operator=(UiModel&&) noexcept = default;
-osc::UiModel::~UiModel() noexcept = default;
+osc::AutoFinalizingModelStatePair::AutoFinalizingModelStatePair(AutoFinalizingModelStatePair&&) noexcept = default;
+osc::AutoFinalizingModelStatePair& osc::AutoFinalizingModelStatePair::operator=(AutoFinalizingModelStatePair const& other) = default;
+osc::AutoFinalizingModelStatePair& osc::AutoFinalizingModelStatePair::operator=(AutoFinalizingModelStatePair&&) noexcept = default;
+osc::AutoFinalizingModelStatePair::~AutoFinalizingModelStatePair() noexcept = default;
 
-OpenSim::Model const& osc::UiModel::getModel() const
+OpenSim::Model const& osc::AutoFinalizingModelStatePair::getModel() const
 {
     return m_Impl->getModel();
 }
 
-OpenSim::Model& osc::UiModel::updModel()
+OpenSim::Model& osc::AutoFinalizingModelStatePair::updModel()
 {
     return m_Impl->updModel();
 }
 
-OpenSim::Model& osc::UiModel::peekModelADVANCED()
+OpenSim::Model& osc::AutoFinalizingModelStatePair::peekModelADVANCED()
 {
     return m_Impl->peekModelADVANCED();
 }
 
-void osc::UiModel::markModelAsModified()
+void osc::AutoFinalizingModelStatePair::markModelAsModified()
 {
     m_Impl->markModelAsModified();
 }
 
-osc::UID osc::UiModel::getModelVersion() const
+osc::UID osc::AutoFinalizingModelStatePair::getModelVersion() const
 {
     return m_Impl->getModelVersion();
 }
 
-void osc::UiModel::setModel(std::unique_ptr<OpenSim::Model> m)
+void osc::AutoFinalizingModelStatePair::setModel(std::unique_ptr<OpenSim::Model> m)
 {
     m_Impl->setModel(std::move(m));
 }
 
-SimTK::State const& osc::UiModel::getState() const
+SimTK::State const& osc::AutoFinalizingModelStatePair::getState() const
 {
     return m_Impl->getState();
 }
 
-osc::UID osc::UiModel::getStateVersion() const
+osc::UID osc::AutoFinalizingModelStatePair::getStateVersion() const
 {
     return m_Impl->getStateVersion();
 }
 
-void osc::UiModel::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
+void osc::AutoFinalizingModelStatePair::pushCoordinateEdit(OpenSim::Coordinate const& c, CoordinateEdit const& ce)
 {
     m_Impl->pushCoordinateEdit(c, ce);
 }
 
-bool osc::UiModel::removeCoordinateEdit(OpenSim::Coordinate const& c)
+bool osc::AutoFinalizingModelStatePair::removeCoordinateEdit(OpenSim::Coordinate const& c)
 {
     return m_Impl->removeCoordinateEdit(c);
 }
 
-float osc::UiModel::getFixupScaleFactor() const
+float osc::AutoFinalizingModelStatePair::getFixupScaleFactor() const
 {
     return m_Impl->getFixupScaleFactor();
 }
 
-void osc::UiModel::setFixupScaleFactor(float sf)
+void osc::AutoFinalizingModelStatePair::setFixupScaleFactor(float sf)
 {
     m_Impl->setFixupScaleFactor(std::move(sf));
 }
 
-bool osc::UiModel::isDirty() const
+bool osc::AutoFinalizingModelStatePair::isDirty() const
 {
     return m_Impl->isDirty();
 }
 
-void osc::UiModel::setDirty(bool v)
+void osc::AutoFinalizingModelStatePair::setDirty(bool v)
 {
     m_Impl->setDirty(std::move(v));
 }
 
-void osc::UiModel::updateIfDirty()
+void osc::AutoFinalizingModelStatePair::updateIfDirty()
 {
     m_Impl->updateIfDirty();
 }
 
-OpenSim::Component const* osc::UiModel::getSelected() const
+OpenSim::Component const* osc::AutoFinalizingModelStatePair::getSelected() const
 {
     return m_Impl->getSelected();
 }
 
-OpenSim::Component* osc::UiModel::updSelected()
+OpenSim::Component* osc::AutoFinalizingModelStatePair::updSelected()
 {
     return m_Impl->updSelected();
 }
 
-void osc::UiModel::setSelected(OpenSim::Component const* c)
+void osc::AutoFinalizingModelStatePair::setSelected(OpenSim::Component const* c)
 {
     m_Impl->setSelected(std::move(c));
 }
 
-OpenSim::Component const* osc::UiModel::getHovered() const
+OpenSim::Component const* osc::AutoFinalizingModelStatePair::getHovered() const
 {
     return m_Impl->getHovered();
 }
 
-OpenSim::Component* osc::UiModel::updHovered()
+OpenSim::Component* osc::AutoFinalizingModelStatePair::updHovered()
 {
     return m_Impl->updHovered();
 }
 
-void osc::UiModel::setHovered(OpenSim::Component const* c)
+void osc::AutoFinalizingModelStatePair::setHovered(OpenSim::Component const* c)
 {
     m_Impl->setHovered(std::move(c));
 }
 
-OpenSim::Component const* osc::UiModel::getIsolated() const
+OpenSim::Component const* osc::AutoFinalizingModelStatePair::getIsolated() const
 {
     return m_Impl->getIsolated();
 }
 
-OpenSim::Component* osc::UiModel::updIsolated()
+OpenSim::Component* osc::AutoFinalizingModelStatePair::updIsolated()
 {
     return m_Impl->updIsolated();
 }
 
-void osc::UiModel::setIsolated(OpenSim::Component const* c)
+void osc::AutoFinalizingModelStatePair::setIsolated(OpenSim::Component const* c)
 {
     m_Impl->setIsolated(std::move(c));
 }

@@ -16,6 +16,10 @@ All notable changes to this project will be documented here. The format is based
 - Updated underlying OpenSim library version v4.3 (#192)
 - Added "OpenSim" muscle coloring option, which uses `GeometryPath::getColor` (#193)
 - Added ImPlot demo screen to the experimental screens section (#194)
+- Added ability to open multiple muscle plots in the editor (related: #191)
+- Added ability to change a coordinate value via a muscle plot by clicking on the muscle plot (#195)
+- Added ability to add a muscle plot by right-clicking a muscle in the editor's 3D viewer (#196)
+- Made muscle plots compute the plot lines in a background thread (#200)
 
 
 ## [0.1.5] - 2022/04/11

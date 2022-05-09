@@ -1,16 +1,16 @@
 #include "ModelEditorScreen.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/ComponentOutputExtractor.hpp"
-#include "src/OpenSimBindings/FdSimulation.hpp"
 #include "src/OpenSimBindings/OpenSimHelpers.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
-#include "src/OpenSimBindings/UiModel.hpp"
 #include "src/Screens/ErrorScreen.hpp"
 #include "src/Screens/SimulatorScreen.hpp"
 #include "src/Platform/App.hpp"
+#include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
@@ -19,9 +19,9 @@
 #include "src/Utils/ScopeGuard.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
-#include "src/Widgets/ComponentHierarchy.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -103,7 +103,7 @@ static void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
 // try to delete an undoable-model's current selection
 //
 // "try", because some things are difficult to delete from OpenSim models
-static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
+static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableModelStatePair& uim)
 {
     if (OpenSim::Component* selected = uim.updSelected())
     {
@@ -120,7 +120,7 @@ static void ActionTryDeleteSelectionFromEditedModel(osc::UndoableUiModel& uim)
 }
 
 // draw an editor for top-level selected Component members (e.g. name)
-static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
+static void DrawTopLevelMembersEditor(osc::UndoableModelStatePair& st)
 {
     OpenSim::Component const* selection = st.getSelected();
 
@@ -157,7 +157,7 @@ static void DrawTopLevelMembersEditor(osc::UndoableUiModel& st)
 }
 
 // draw UI element that lets user change a model joint's type
-static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
+static void DrawSelectionJointTypeSwitcher(osc::UndoableModelStatePair& st)
 {
     OpenSim::Joint const* selection = st.getSelectedAs<OpenSim::Joint>();
 
@@ -230,7 +230,7 @@ static void DrawSelectionJointTypeSwitcher(osc::UndoableUiModel& st)
 // try to undo currently edited model to earlier state
 static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     if (editedModel->canUndo())
     {
         editedModel->doUndo();
@@ -240,7 +240,7 @@ static void ActionUndoCurrentlyEditedModel(osc::MainEditorState& mes)
 // try to redo currently edited model to later state
 static void ActionRedoCurrentlyEditedModel(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     if (editedModel->canRedo())
     {
         editedModel->doRedo();
@@ -257,7 +257,7 @@ static void ActionDisableAllWrappingSurfaces(osc::MainEditorState& mes)
 // enable all wrapping surfaces in the current model
 static void ActionEnableAllWrappingSurfaces(osc::MainEditorState& mes)
 {
-    std::shared_ptr<osc::UndoableUiModel> editedModel = mes.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = mes.editedModel();
     osc::ActivateAllWrapObjectsIn(editedModel->updModel());
     editedModel->commit("enabled all wrapping surfaces");
 }
@@ -275,7 +275,7 @@ static void ActionClearSelectionFromEditedModel(osc::MainEditorState& mes)
 
 // draw contextual actions (buttons, sliders) for a selected physical frame
 static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachGeomPopup,
-                                               osc::UndoableUiModel& uim)
+                                               osc::UndoableModelStatePair& uim)
 {
     OpenSim::PhysicalFrame const* selection = uim.getSelectedAs<OpenSim::PhysicalFrame>();
 
@@ -334,7 +334,7 @@ static void DrawPhysicalFrameContextualActions(osc::SelectGeometryPopup& attachG
 
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawJointContextualActions(osc::UndoableUiModel& uim)
+static void DrawJointContextualActions(osc::UndoableModelStatePair& uim)
 {
     OpenSim::Joint const* selection = uim.getSelectedAs<OpenSim::Joint>();
 
@@ -410,7 +410,7 @@ static void DrawJointContextualActions(osc::UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected joint
-static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
+static void DrawHCFContextualActions(osc::UndoableModelStatePair& uim)
 {
     OpenSim::HuntCrossleyForce const* hcf = uim.getSelectedAs<OpenSim::HuntCrossleyForce>();
 
@@ -488,7 +488,7 @@ static void DrawHCFContextualActions(osc::UndoableUiModel& uim)
 }
 
 // draw contextual actions (buttons, sliders) for a selected path actuator
-static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
+static void DrawPathActuatorContextualParams(osc::UndoableModelStatePair& uim)
 {
     OpenSim::PathActuator const* pa = uim.getSelectedAs<OpenSim::PathActuator>();
 
@@ -537,7 +537,7 @@ static void DrawPathActuatorContextualParams(osc::UndoableUiModel& uim)
     ImGui::Columns();
 }
 
-static void DrawModelContextualActions(osc::UndoableUiModel& uum)
+static void DrawModelContextualActions(osc::UndoableModelStatePair& uum)
 {
     OpenSim::Model const* m = uum.getSelectedAs<OpenSim::Model>();
 
@@ -562,7 +562,7 @@ static void DrawModelContextualActions(osc::UndoableUiModel& uum)
 
 // draw socket editor for current selection
 static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
-                             osc::UndoableUiModel& uim)
+                             osc::UndoableModelStatePair& uim)
 {
     OpenSim::Component const* selected = uim.getSelected();
 
@@ -648,7 +648,7 @@ static void DrawSocketEditor(osc::ReassignSocketPopup& reassignSocketPopup,
 // draw breadcrumbs for current selection
 //
 // eg: Model > Joint > PhysicalFrame
-static void DrawSelectionBreadcrumbs(osc::UndoableUiModel& uim)
+static void DrawSelectionBreadcrumbs(osc::UndoableModelStatePair& uim)
 {
     OpenSim::Component const* selection = uim.getSelected();
 
@@ -703,7 +703,7 @@ static void DrawSelectOwnerMenu(osc::MainEditorState& st,
 {
     if (ImGui::BeginMenu("Select Owner"))
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
 
         OpenSim::Component const* c = &selected;
         editedModel->setHovered(nullptr);
@@ -822,6 +822,23 @@ static void DrawRequestOutputsMenu(osc::MainEditorState& st,
     }
 }
 
+static void DrawAddMusclePlotMenu(osc::MainEditorState& st,
+                                  OpenSim::Muscle const& m)
+{
+    if (ImGui::BeginMenu("Add Muscle Plot vs:"))
+    {
+        for (OpenSim::Coordinate const& c : st.editedModel()->getModel().getComponentList<OpenSim::Coordinate>())
+        {
+            if (ImGui::MenuItem(c.getName().c_str()))
+            {
+                st.addMusclePlot(c, m);
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+}
+
 // draw right-click context menu for the 3D viewer
 static void Draw3DViewerContextMenu(osc::MainEditorState& st,
                                     OpenSim::Component const& selected)
@@ -832,6 +849,10 @@ static void Draw3DViewerContextMenu(osc::MainEditorState& st,
 
     DrawSelectOwnerMenu(st, selected);
     DrawRequestOutputsMenu(st, selected);
+    if (OpenSim::Muscle const* m = dynamic_cast<OpenSim::Muscle const*>(&selected))
+    {
+        DrawAddMusclePlotMenu(st, *m);
+    }
 }
 
 // draw a single 3D model viewer
@@ -857,7 +878,7 @@ static bool Draw3DViewer(osc::MainEditorState& st,
         return true;
     }
 
-    std::shared_ptr<osc::UndoableUiModel> editedModel = st.editedModel();
+    std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
 
     auto resp = viewer.draw(editedModel->getUiModel());
     ImGui::End();
@@ -923,7 +944,7 @@ static void Draw3DViewers(osc::MainEditorState& st)
     }
 }
 
-static std::string GetDocumentName(osc::UndoableUiModel const& uim)
+static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
 {
     if (uim.hasFilesystemLocation())
     {
@@ -935,7 +956,7 @@ static std::string GetDocumentName(osc::UndoableUiModel const& uim)
     }
 }
 
-static std::string GetRecommendedTitle(osc::UndoableUiModel const& uim)
+static std::string GetRecommendedTitle(osc::UndoableModelStatePair const& uim)
 {
     std::string s = GetDocumentName(uim);
     if (!uim.isUpToDateWithFilesystem())
@@ -956,8 +977,9 @@ public:
 
     void onMount()
     {
-        App::cur().makeMainEventLoopWaiting();
-        App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
+        App& app = App::upd();
+        app.makeMainEventLoopWaiting();
+        app.setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
         osc::ImGuiInit();
         ImPlot::CreateContext();
     }
@@ -966,8 +988,9 @@ public:
     {
         osc::ImGuiShutdown();
         ImPlot::DestroyContext();
-        App::cur().unsetMainWindowSubTitle();
-        App::cur().makeMainEventLoopPolling();
+        App& app = App::upd();
+        app.unsetMainWindowSubTitle();
+        app.makeMainEventLoopPolling();
     }
 
     void tick()
@@ -977,12 +1000,12 @@ public:
             onBackingFileChanged();
         }
 
-        App::cur().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
+        App::upd().setMainWindowSubTitle(GetRecommendedTitle(*m_Mes->editedModel()));
     }
 
     void draw()
     {
-        App::cur().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
         osc::ImGuiNewFrame();
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         drawGUARDED();
@@ -997,7 +1020,7 @@ public:
         }
         else if (osc::ImGuiOnEvent(e))
         {
-            m_ResetPerFrame.shouldRequestRedraw = true;
+            App::upd().requestRedraw();
         }
         else if (e.type == SDL_KEYDOWN)
         {
@@ -1023,7 +1046,7 @@ private:
                 cpy->buildSystem();
                 cpy->initializeState();
                 m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
             }
             catch (std::exception const& ex)
             {
@@ -1036,7 +1059,7 @@ private:
     {
         if (m_Mes->editedModel()->isUpToDateWithFilesystem())
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
         }
         else
         {
@@ -1045,7 +1068,7 @@ private:
             {
                 if (actionSaveModel(m_Mes))
                 {
-                    App::cur().requestQuit();
+                    App::upd().requestQuit();
                     return true;
                 }
                 else
@@ -1055,7 +1078,7 @@ private:
             };
             cfg.onUserClickedDontSave = []()
             {
-                App::cur().requestQuit();
+                App::upd().requestQuit();
                 return true;
             };
             m_MaybeSaveChangesPopup = SaveChangesPopup{std::move(cfg)};
@@ -1084,13 +1107,13 @@ private:
                 return true;
             case SDLK_r:  // Ctrl+R: start a new simulation from focused model
                 ActionStartSimulationFromEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 return true;
             case SDLK_a:  // Ctrl+A: clear selection
                 ActionClearSelectionFromEditedModel(*m_Mes);
                 return true;
             case SDLK_e:  // Ctrl+E: show simulation screen
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
                 return true;
             }
 
@@ -1112,7 +1135,7 @@ private:
     {
         try
         {
-            std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+            std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
             osc::log::info("file change detected: loading updated file");
             auto p = std::make_unique<OpenSim::Model>(editedModel->getModel().getInputFileName());
@@ -1132,9 +1155,9 @@ private:
     // draw contextual actions for selection
     void drawContextualActions()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             ImGui::TextUnformatted("cannot draw contextual actions: selection is blank (shouldn't be)");
             return;
@@ -1190,23 +1213,23 @@ private:
 
         ImGui::Columns();
 
-        if (editedModel->selectionIsType<OpenSim::Model>())
+        if (editedModel->getSelectedAs<OpenSim::Model>())
         {
             DrawModelContextualActions(*editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::PhysicalFrame>())
+        else if (editedModel->getSelectedAs<OpenSim::PhysicalFrame>())
         {
             DrawPhysicalFrameContextualActions(m_AttachGeomPopup, *editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::Joint>())
+        else if (editedModel->getSelectedAs<OpenSim::Joint>())
         {
             DrawJointContextualActions(*editedModel);
         }
-        else if (editedModel->selectionIsType<OpenSim::HuntCrossleyForce>())
+        else if (editedModel->getSelectedAs<OpenSim::HuntCrossleyForce>())
         {
             DrawHCFContextualActions(*editedModel);
         }
-        else if (editedModel->selectionDerivesFrom<OpenSim::PathActuator>())
+        else if (editedModel->getSelectedAs<OpenSim::PathActuator>())
         {
             DrawPathActuatorContextualParams(*editedModel);
         }
@@ -1214,9 +1237,9 @@ private:
 
     void drawSelectionEditor()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             ImGui::TextUnformatted("(nothing selected)");
             return;
@@ -1240,7 +1263,7 @@ private:
         drawContextualActions();
 
         // a contextual action may have changed this
-        if (!editedModel->hasSelected())
+        if (!editedModel->getSelected())
         {
             return;
         }
@@ -1287,7 +1310,7 @@ private:
 
     void drawMainMenuEditTab()
     {
-        std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
 
         if (ImGui::BeginMenu("Edit"))
         {
@@ -1394,13 +1417,12 @@ private:
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
                 StartSimulatingEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(m_Mes);
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_ResetPerFrame.editSimParamsRequested = true;
+                m_ParamBlockEditorPopup.open();
             }
 
             if (ImGui::MenuItem("Disable all wrapping surfaces"))
@@ -1417,6 +1439,75 @@ private:
         }
     }
 
+    void drawMainMenuWindowTab()
+    {
+        static std::vector<std::string> const g_EditorScreenPanels =
+        {
+            "Actions",
+            "Hierarchy",
+            "Property Editor",
+            "Log",
+            "Coordinate Editor",
+        };
+
+        // draw "window" tab
+        if (ImGui::BeginMenu("Window"))
+        {
+            Config const& cfg = App::get().getConfig();
+            for (std::string const& panel : g_EditorScreenPanels)
+            {
+                bool currentVal = cfg.getIsPanelEnabled(panel);
+                if (ImGui::MenuItem(panel.c_str(), nullptr, &currentVal))
+                {
+                    App::upd().updConfig().setIsPanelEnabled(panel, currentVal);
+                }
+            }
+
+            ImGui::Separator();
+
+            // active 3D viewers (can be disabled)
+            for (int i = 0; i < m_Mes->getNumViewers(); ++i)
+            {
+                char buf[64];
+                std::snprintf(buf, sizeof(buf), "viewer%i", i);
+
+                bool enabled = true;
+                if (ImGui::MenuItem(buf, nullptr, &enabled))
+                {
+                    m_Mes->removeViewer(i);
+                    --i;
+                }
+            }
+
+            if (ImGui::MenuItem("add viewer"))
+            {
+                m_Mes->addViewer();
+            }
+
+            ImGui::Separator();
+
+            // active muscle plots
+            for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
+            {
+                ModelMusclePlotPanel const& plot = m_Mes->getMusclePlot(i);
+
+                bool enabled = true;
+                if (!plot.isOpen() || ImGui::MenuItem(plot.getName().c_str(), nullptr, &enabled))
+                {
+                    m_Mes->removeMusclePlot(i);
+                    --i;
+                }
+            }
+
+            if (ImGui::MenuItem("add muscle plot"))
+            {
+                m_Mes->addMusclePlot();
+            }
+
+            ImGui::EndMenu();
+        }
+    }
+
     void drawMainMenu()
     {
         if (ImGui::BeginMainMenuBar())
@@ -1424,15 +1515,14 @@ private:
             m_MainMenuFileTab.draw(m_Mes);
             drawMainMenuEditTab();
             drawMainMenuSimulateTab();
-            m_MainMenuWindowTab.draw(*m_Mes);
+            drawMainMenuWindowTab();
             m_MainMenuAboutTab.draw();
 
             ImGui::Dummy({2.0f, 0.0f});
             if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
             {
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 ImGui::EndMainMenuBar();
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
                 return;
             }
 
@@ -1441,17 +1531,16 @@ private:
             if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
             {
                 StartSimulatingEditedModel(*m_Mes);
-                osc::App::cur().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
                 ImGui::PopStyleColor();
                 ImGui::EndMainMenuBar();
-                m_ResetPerFrame.subpanelRequestedEarlyExit = true;
                 return;
             }
             ImGui::PopStyleColor();
 
             if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
             {
-                m_ResetPerFrame.editSimParamsRequested = true;
+                m_ParamBlockEditorPopup.open();
             }
 
             ImGui::EndMainMenuBar();
@@ -1460,114 +1549,111 @@ private:
 
     void drawUNGUARDED()
     {
-        if (m_ResetPerFrame.shouldRequestRedraw)
-        {
-            osc::App::cur().requestRedraw();
-        }
-
-        m_ResetPerFrame = {};
-
-        // draw main menu
-        {
-            drawMainMenu();
-        }
+        drawMainMenu();
 
         // check for early exit request
         //
         // (the main menu may have requested a screen transition)
-        if (m_ResetPerFrame.subpanelRequestedEarlyExit)
+        if (App::get().isTransitionRequested())
         {
             return;
         }
 
         // draw 3D viewers (if any)
-        {
-            Draw3DViewers(*m_Mes);
-        }
+        Draw3DViewers(*m_Mes);
 
         // draw editor actions panel
         //
         // contains top-level actions (e.g. "add body")
-        if (m_Mes->getUserPanelPrefs().actions)
+        osc::Config const& config = osc::App::get().getConfig();
+
+        if (bool actionsPanelOldState = config.getIsPanelEnabled("Actions"))
         {
-            if (ImGui::Begin("Actions", &m_Mes->updUserPanelPrefs().actions, ImGuiWindowFlags_MenuBar))
+            bool actionsPanelNewState = actionsPanelOldState;
+            if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
             {
                 m_ModelActionsMenuBar.draw();
             }
             ImGui::End();
+
+            if (actionsPanelNewState != actionsPanelOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Actions", actionsPanelNewState);
+            }
         }
 
         // draw hierarchy viewer
-        if (m_Mes->getUserPanelPrefs().hierarchy)
         {
-            if (ImGui::Begin("Hierarchy", &m_Mes->updUserPanelPrefs().hierarchy))
+            auto resp = m_ComponentHierarchyPanel.draw(*m_Mes->editedModel());
+
+            if (resp.type == osc::ModelHierarchyPanel::ResponseType::SelectionChanged)
             {
-                std::shared_ptr<osc::UndoableUiModel> editedModel = m_Mes->editedModel();
-
-                auto resp = m_ComponentHierarchy.draw(
-                    &editedModel->getModel().getRoot(),
-                    editedModel->getSelected(),
-                    editedModel->getHovered());
-
-                if (resp.type == osc::ComponentHierarchy::SelectionChanged)
-                {
-                    editedModel->setSelected(resp.ptr);
-                }
-                else if (resp.type == osc::ComponentHierarchy::HoverChanged)
-                {
-                    editedModel->setHovered(resp.ptr);
-                }
+                m_Mes->editedModel()->setSelected(resp.ptr);
             }
-            ImGui::End();
+            else if (resp.type == osc::ModelHierarchyPanel::ResponseType::HoverChanged)
+            {
+                m_Mes->editedModel()->setHovered(resp.ptr);
+            }
         }
 
         // draw property editor
-        if (m_Mes->getUserPanelPrefs().propertyEditor)
+        if (bool propertyEditorOldState = config.getIsPanelEnabled("Property Editor"))
         {
-            if (ImGui::Begin("Edit Props", &m_Mes->updUserPanelPrefs().propertyEditor))
+            bool propertyEditorState = propertyEditorOldState;
+            if (ImGui::Begin("Property Editor", &propertyEditorState))
             {
                 drawSelectionEditor();
             }
             ImGui::End();
+
+            if (propertyEditorState != propertyEditorOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Property Editor", propertyEditorState);
+            }
         }
 
         // draw application log
-        if (m_Mes->getUserPanelPrefs().log)
+        if (bool logOldState = config.getIsPanelEnabled("Log"))
         {
-            if (ImGui::Begin("Log", &m_Mes->updUserPanelPrefs().log, ImGuiWindowFlags_MenuBar))
+            bool logState = logOldState;
+            if (ImGui::Begin("Log", &logState, ImGuiWindowFlags_MenuBar))
             {
                 m_LogViewer.draw();
             }
             ImGui::End();
+
+            if (logState != logOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Log", logState);
+            }
         }
 
         // draw coordinate editor
-        if (m_Mes->getUserPanelPrefs().coordinateEditor)
+        if (bool coordEdOldState = config.getIsPanelEnabled("Coordinate Editor"))
         {
-            if (ImGui::Begin("Coordinate Editor", &m_Mes->updUserPanelPrefs().coordinateEditor))
+            bool coordEdState = coordEdOldState;
+            if (ImGui::Begin("Coordinate Editor", &coordEdState))
             {
                 m_CoordEditor.draw();
             }
+
+            if (coordEdState != coordEdOldState)
+            {
+                osc::App::upd().updConfig().setIsPanelEnabled("Coordinate Editor", coordEdState);
+            }
         }
 
-        // draw sim params editor popup (if applicable)
+        // draw model muscle plots (if applicable)
+        for (int i = 0; i < m_Mes->getNumMusclePlots(); ++i)
         {
-            if (m_ResetPerFrame.editSimParamsRequested)
-            {
-                ImGui::OpenPopup("simulation parameters");
-            }
-
-            osc::ParamBlockEditorPopup{}.draw("simulation parameters", m_Mes->updSimulationParams());
+            m_Mes->updMusclePlot(i).draw();
         }
 
-        // draw model muscle plot panel (if applicable)
-        if (m_Mes->getUserPanelPrefs().momentArmPanel)
+        // draw any currently-open popups
+
+        if (m_ParamBlockEditorPopup.isOpen())
         {
-            if (!m_MaybeModelMusclePlot)
-            {
-                m_MaybeModelMusclePlot.emplace(m_Mes->editedModel(), "plot");
-            }
-            m_MaybeModelMusclePlot->draw();
+            m_ParamBlockEditorPopup.draw(m_Mes->updSimulationParams());
         }
 
         if (m_MaybeSaveChangesPopup)
@@ -1591,7 +1677,7 @@ private:
 
             if (m_ExceptionThrownLastFrame)
             {
-                App::cur().requestTransition<ErrorScreen>(ex);
+                App::upd().requestTransition<ErrorScreen>(ex);
             }
             else
             {
@@ -1603,7 +1689,7 @@ private:
                 }
                 catch (std::exception const& ex2)
                 {
-                    App::cur().requestTransition<ErrorScreen>(ex2);
+                    App::upd().requestTransition<ErrorScreen>(ex2);
                 }
             }
 
@@ -1622,25 +1708,17 @@ private:
 
     // UI widgets/popups
     MainMenuFileTab m_MainMenuFileTab;
-    MainMenuWindowTab m_MainMenuWindowTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     ObjectPropertiesEditor m_ObjectPropsEditor;
     ReassignSocketPopup m_ReassignSocketPopup;
     Select2PFsPopup m_Select2PFsPopup;
     LogViewer m_LogViewer;
-    ComponentHierarchy m_ComponentHierarchy;
+    ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
     ModelActionsMenuBar m_ModelActionsMenuBar{m_Mes->editedModel()};
     CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
+    ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};
     std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
-    std::optional<ModelMusclePlotPanel> m_MaybeModelMusclePlot;
-
-    // state that is reset at the start of each frame
-    struct {
-        bool editSimParamsRequested = false;
-        bool subpanelRequestedEarlyExit = false;
-        bool shouldRequestRedraw = false;
-    } m_ResetPerFrame;
 
     // flag that's set+reset each frame to prevent continual
     // throwing

@@ -1,7 +1,7 @@
 #include "LoadingScreen.hpp"
 
 #include "src/OpenSimBindings/MainEditorState.hpp"
-#include "src/OpenSimBindings/UndoableUiModel.hpp"
+#include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Screens/ModelEditorScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
@@ -21,10 +21,10 @@
 
 
 // the function that loads the OpenSim model
-static std::unique_ptr<osc::UndoableUiModel> loadOpenSimModel(std::string path)
+static std::unique_ptr<osc::UndoableModelStatePair> loadOpenSimModel(std::string path)
 {
     auto model = std::make_unique<OpenSim::Model>(path);
-    return std::make_unique<osc::UndoableUiModel>(std::move(model));
+    return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }
 
 class osc::LoadingScreen::Impl final {
@@ -68,7 +68,7 @@ public:
     {
         if (e.type == SDL_QUIT)
         {
-            App::cur().requestQuit();
+            App::upd().requestQuit();
             return;
         }
         else if (osc::ImGuiOnEvent(e))
@@ -77,7 +77,7 @@ public:
         }
         else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
-            App::cur().requestTransition<SplashScreen>();
+            App::upd().requestTransition<SplashScreen>();
             return;
         }
     }
@@ -97,7 +97,7 @@ public:
 
         // otherwise, poll for the result and catch any exceptions that bubble
         // up from the background thread
-        std::unique_ptr<UndoableUiModel> result = nullptr;
+        std::unique_ptr<UndoableModelStatePair> result = nullptr;
         try
         {
             if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
@@ -120,14 +120,14 @@ public:
         if (result)
         {
             // add newly-loaded model to the "Recent Files" list
-            App::cur().addRecentFile(m_OsimPath);
+            App::upd().addRecentFile(m_OsimPath);
 
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
             *m_MainEditorState->editedModel() = std::move(*result);
             m_MainEditorState->editedModel()->setUpToDateWithFilesystem();
-            App::cur().requestTransition<ModelEditorScreen>(m_MainEditorState);
+            App::upd().requestTransition<ModelEditorScreen>(m_MainEditorState);
             AutoFocusAllViewers(*m_MainEditorState);
         }
     }
@@ -138,9 +138,9 @@ public:
 
         constexpr glm::vec2 menu_dims = {512.0f, 512.0f};
 
-        App::cur().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
+        App::upd().clearScreen({0.99f, 0.98f, 0.96f, 1.0f});
 
-        glm::vec2 window_dims = App::cur().dims();
+        glm::vec2 window_dims = App::get().dims();
 
         // center the menu
         {
@@ -169,12 +169,12 @@ public:
 
                 if (ImGui::Button("back to splash screen (ESC)"))
                 {
-                    App::cur().requestTransition<SplashScreen>();
+                    App::upd().requestTransition<SplashScreen>();
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("try again"))
                 {
-                    App::cur().requestTransition<LoadingScreen>(m_MainEditorState, m_OsimPath);
+                    App::upd().requestTransition<LoadingScreen>(m_MainEditorState, m_OsimPath);
                 }
             }
             ImGui::End();
@@ -190,7 +190,7 @@ private:
 
     // future that lets the UI thread poll the loading thread for
     // the loaded model
-    std::future<std::unique_ptr<osc::UndoableUiModel>> m_LoadingResult;
+    std::future<std::unique_ptr<osc::UndoableModelStatePair>> m_LoadingResult;
 
     // if not empty, any error encountered by the loading thread
     std::string m_LoadingErrorMsg;

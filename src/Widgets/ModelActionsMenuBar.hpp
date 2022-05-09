@@ -4,14 +4,14 @@
 
 namespace osc
 {
-    class UndoableUiModel;
+    class UndoableModelStatePair;
 }
 
 namespace osc
 {
     class ModelActionsMenuBar final {
     public:
-        ModelActionsMenuBar(std::shared_ptr<UndoableUiModel>);
+        ModelActionsMenuBar(std::shared_ptr<UndoableModelStatePair>);
         ModelActionsMenuBar(ModelActionsMenuBar const&) = delete;
         ModelActionsMenuBar(ModelActionsMenuBar&&) noexcept;
         ModelActionsMenuBar& operator=(ModelActionsMenuBar const&) = delete;

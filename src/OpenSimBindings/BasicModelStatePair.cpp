@@ -7,14 +7,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
-
-static std::unique_ptr<OpenSim::Model> makeNewModel()
-{
-    auto rv = std::make_unique<OpenSim::Model>();
-    rv->updDisplayHints().set_show_frames(true);
-    return rv;
-}
-
 static void InitModel(OpenSim::Model& m)
 {
     OSC_PERF("model update");
@@ -22,41 +14,8 @@ static void InitModel(OpenSim::Model& m)
     m.initializeState();
 }
 
-static void InitState(OpenSim::Model& m)
-{
-    OSC_PERF("state update");
-    {
-        OSC_PERF("equilibrate muscles");
-        m.equilibrateMuscles(m.updWorkingState());
-    }
-    {
-        OSC_PERF("realize report");
-        m.realizeReport(m.updWorkingState());
-    }
-}
-
 class osc::BasicModelStatePair::Impl final {
 public:
-    Impl() :
-        m_Model{makeNewModel()}
-    {
-        InitModel(*m_Model);
-        InitState(*m_Model);
-    }
-
-    Impl(std::string_view osimPath) :
-        m_Model{std::make_unique<OpenSim::Model>(std::string{osimPath})}
-    {
-        InitModel(*m_Model);
-        InitState(*m_Model);
-    }
-
-    Impl(std::unique_ptr<OpenSim::Model> model) :
-        m_Model{std::move(model)}
-    {
-        InitModel(*m_Model);
-        InitState(*m_Model);
-    }
 
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
         m_Model(std::make_unique<OpenSim::Model>(m))
@@ -101,18 +60,6 @@ private:
 
 // public API
 
-osc::BasicModelStatePair::BasicModelStatePair() :
-    m_Impl{new Impl{}}
-{
-}
-osc::BasicModelStatePair::BasicModelStatePair(std::string_view osimPath) :
-    m_Impl{new Impl{osimPath}}
-{
-}
-osc::BasicModelStatePair::BasicModelStatePair(std::unique_ptr<OpenSim::Model> p) :
-    m_Impl{new Impl{std::move(p)}}
-{
-}
 osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
     m_Impl{new Impl{model, state}}
 {

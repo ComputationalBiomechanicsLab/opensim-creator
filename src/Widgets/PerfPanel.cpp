@@ -54,17 +54,17 @@ public:
         ImGui::Columns();
 
         {
-            bool waiting = osc::App::cur().isMainLoopWaiting();
+            bool waiting = osc::App::get().isMainLoopWaiting();
             if (ImGui::Checkbox("waiting", &waiting))
             {
-                osc::App::cur().setMainLoopWaiting(waiting);
+                osc::App::upd().setMainLoopWaiting(waiting);
             }
         }
         {
-            bool vsync = osc::App::cur().isVsyncEnabled();
+            bool vsync = osc::App::get().isVsyncEnabled();
             if (ImGui::Checkbox("VSYNC", &vsync))
             {
-                osc::App::cur().setVsync(vsync);
+                osc::App::upd().setVsync(vsync);
             }
         }
         if (ImGui::Button("clear measurements"))
