@@ -2,7 +2,7 @@
 
 # OpenSim Creator <img src="resources/logo.png" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
 
-> A thin UI for building OpenSim models
+> A UI for building OpenSim models
 
 [📥 Download the latest release here](../../releases/latest), [▶️ Watch Introduction Videos Here](https://www.youtube.com/playlist?list=PLOPlDtRLhp8c2SWLCQKKd-l4__UainOYk)
 
@@ -12,7 +12,7 @@ OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It is available
 as a freestanding all-in-one [installer](../../releases/latest) for Windows, Mac, and Linux.
 
-Architectrually, `osc` is a C++ codebase that is directly integrated against
+Architecturally, `osc` is a C++ codebase that is directly integrated against
 the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It otherwise only
 uses lightweight open-source libraries that can easily be built from source (e.g. SDL2,
 OpenGL, ImGui) to implement the UI on all target platforms. This makes `osc` fairly easy
