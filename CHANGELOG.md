@@ -5,21 +5,53 @@ All notable changes to this project will be documented here. The format is based
 
 ## [Unreleased]
 
-- Muscle coloring logic can now be changed in the 3D viewer's options menu (#189)
-- Muscle thickness logic can now be changed (e.g. to PCSA-derived) in the 3D viewer's options menu (#190)
-- Muscle decoration style can now be changed (e.g. to SCONE-style) in the 3D viewer's options menu (#188)
-  - Support for SCONE-style muscles means that users can now see tendons in the UI (#165)
-- The README docs have been updated and include a link to the tutorial videos, plus clearer install/build instructions (internal)
-- Example models were updated from `opensim-org/opensim-models` (internal)
+
+## [0.1.6] - 2022/05/09
+
+New muscle visualization options, experimental support for live muscle plots, and OpenSim 4.3 support:
+
+- Muscle tendons can now be visualized in the 3D viewer (#165):
+
+  - You can try this out by experimenting with the new dropdown menus that were added to the `Options` menu,
+    available in each 3D viewer panel
+  - Muscle decoration style can now be changed (e.g. to SCONE-style) in the 3D viewer's options menu (#188)
+  - Muscle coloring logic can now be changed in the 3D viewer's options menu (#189)
+  - Muscle thickness logic can now be changed (e.g. to PCSA-derived) in the 3D viewer's options menu (#190)
+
+- (EXPERIMENTAL) There is now partial support for plotting muscle parameters (e.g. moment arm, pennation angle)
+  against a particular coordinate (e.g. `knee_angle_r`) in the model editor (see #191):
+
+  - The easiest way to do this is to right-click a muscle `Add Muscle Plot vs` and then select a coordinate (#196)
+  - Alternatively, add a new plot panel via the `Window` menu in the editor's main menu
+  - You can right-click a plot to change what it's plotting
+  - You can left-click a plot to change the coordinate's value (#195)
+  - The plot will auto-update whenever either the model is edited or a state is edited (e.g. by changing a
+    coordinate value). It will also update if the model's backing file changes (e.g. because it is being
+    edited in a third-party editor)
+  - You can have multiple muscle plots open simultaneously (related: #191)
+  - Plot data is computed on a background thread (#200)
+  - See issue #191 on ComputationalBioMechanicsLab/opensim-creator for general progress on this feature
+
+- You can now change how muscles are colored by the backend (#189):
+
+  - Previously, muscles were always colored by the OpenSim backend (i.e. by activation)
+  - You can now also color by activation, excitation, force, or fiber length
+  - See the `Options` menu of a 3D viewer in the model editor for more information
+
+- OpenSim was updated to v4.3 (#192)
 - Fixed a bug that prevented model rollbacks from working correctly
-- Added (rudamentary) ability to plot muscle moment arms while editing a model (related: #191)
-- Updated underlying OpenSim library version v4.3 (#192)
-- Added "OpenSim" muscle coloring option, which uses `GeometryPath::getColor` (#193)
-- Added ImPlot demo screen to the experimental screens section (#194)
-- Added ability to open multiple muscle plots in the editor (related: #191)
-- Added ability to change a coordinate value via a muscle plot by clicking on the muscle plot (#195)
-- Added ability to add a muscle plot by right-clicking a muscle in the editor's 3D viewer (#196)
-- Made muscle plots compute the plot lines in a background thread (#200)
+
+- Internal changes (you should probably stop reading here):
+
+  - The README docs have been updated to include a link to the YouTube tutorial videos
+  - The README docs have been updated with clearer install/build instructions
+  - Added an ImPlot demo screen to the experimental screens section
+  - The new (work in progress) renderer backend has been fleshed out some more
+  - The googletest feature is now actually being used by something (testing the renderer API)
+  - The undo/redo/commit API has been exposed internally, which enables widgets to only draw
+    new contents when the model has been updated (e.g. to recompute data plots)
+  - The commit API is designed to have threadsafe methods, so that background threads can
+    checkout/copy OpenSim models without interrupting the UI thread
 
 
 ## [0.1.5] - 2022/04/11
