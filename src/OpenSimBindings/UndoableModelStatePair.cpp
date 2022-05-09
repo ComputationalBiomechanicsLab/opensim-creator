@@ -528,7 +528,7 @@ private:
     // where scratch will commit to (i.e. the parent of the scratch area)
     UID m_CurrentHead = UID::empty();
 
-    // head of the current branch (i.e. "master") - may be ahead of current branch (undo/redo)
+    // head of the current branch (i.e. "main") - may be ahead of current branch (undo/redo)
     UID m_BranchHead = UID::empty();
 
     // maximum distance between the current commit and the "root" commit (i.e. a commit with no parent)
