@@ -2,6 +2,8 @@
 
 #include "src/Graphics/Color.hpp"
 #include "src/Maths/AABB.hpp"
+#include "src/Maths/Rect.hpp"
+#include "src/Maths/Transform.hpp"
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -420,19 +422,6 @@ namespace osc::experimental
 
     std::ostream& operator<<(std::ostream&, CameraProjection);
     std::string to_string(CameraProjection);
-}
-
-/*
-
-namespace osc::experimental
-{
-    enum class CameraProjection {
-        Perspective,
-        Orthographic,
-    };
-
-    std::ostream& operator<<(std::ostream&, CameraProjection);
-    std::string to_string(CameraProjection);
 
     class Camera final {
     public:
@@ -444,9 +433,7 @@ namespace osc::experimental
         Camera& operator=(Camera&&) noexcept;
         ~Camera() noexcept;
 
-        std::int64_t getVersion() const;  // TODO: increment on each mutation
-
-        glm::vec4 const& getBackgroundColor() const;
+        glm::vec4 getBackgroundColor() const;
         void setBackgroundColor(glm::vec4 const&);
 
         CameraProjection getCameraProjection() const;
@@ -468,15 +455,15 @@ namespace osc::experimental
         float getFarClippingPlane() const;
         void setFarClippingPlane(float);
 
-        Texture2D const* getTexture() const;  // returns nullptr if drawing directly to screen
-        void setTexture(Texture2D const&);
+        std::optional<Texture2D> getTexture() const;  // returns nullptr if drawing directly to screen
+        void setTexture(Texture2D);
         void setTexture();  // resets to drawing to screen
 
         // where on the screen the camera is rendered (in screen-space)
         //
         // returns rect at 0,0 with width and height of texture if drawing
         // to a texture
-        Rect const& getPixelRect() const;
+        Rect getPixelRect() const;
         void setPixelRect(Rect const&);
 
         int getPixelWidth() const;
@@ -487,17 +474,18 @@ namespace osc::experimental
         void setScissorRect(Rect const&);  // rect is in pixel space?
         void setScissorRect();  // resets to having no scissor
 
-        glm::vec3 const& getPosition() const;
+        glm::vec3 getPosition() const;
         void setPosition(glm::vec3 const&);
 
-        glm::vec3 const& getDirection() const;
+        glm::vec3 getDirection() const;
         void setDirection(glm::vec3 const&);
 
-        glm::mat4 const& getCameraToWorldMatrix() const;
+        glm::mat4 getCameraToWorldMatrix() const;
 
         // flushes any rendering commands that were queued against this camera
         //
-        // after this call completes, callers can then use the output texture/screen
+        // after this call completes, the output texture, or screen, should contain
+        // the rendered geometry
         void render();
 
         class Impl;
@@ -536,10 +524,9 @@ namespace std
 
 namespace osc::experimental::Graphics
 {
-    void DrawMesh(Mesh,
-                  glm::vec3 const& pos,
-                  Material,
+    void DrawMesh(Mesh const&,
+                  Transform const&,
+                  Material const&,
                   Camera&,
                   std::optional<MaterialPropertyBlock> = std::nullopt);
 }
-*/
