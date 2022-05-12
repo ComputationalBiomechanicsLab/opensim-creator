@@ -43,6 +43,25 @@ static std::string StreamToString(T const& v)
 
 //////////////////////////////////
 //
+// backend declaration
+//
+//////////////////////////////////
+
+class osc::experimental::GraphicsBackend final {
+public:
+    static void DrawMesh(
+        Mesh const& mesh,
+        Transform const& transform,
+        Material const& material,
+        Camera& camera,
+        std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
+
+    static void FlushRenderQueue(Camera::Impl& camera);
+};
+
+
+//////////////////////////////////
+//
 // texture stuff
 //
 //////////////////////////////////
@@ -146,6 +165,7 @@ public:
     }
 
 private:
+
     UID m_UID;
     int m_Width;
     int m_Height;
@@ -1741,6 +1761,7 @@ public:
 
     void render()
     {
+        GraphicsBackend::FlushRenderQueue(*this);
     }
 
     std::size_t getHash() const
@@ -1778,6 +1799,30 @@ private:
     glm::vec3 m_Position = {};
     glm::vec3 m_Direction = {1.0f, 0.0f, 0.0f};
     glm::mat4 m_CameraToWorldMatrix{1.0f};
+
+    friend class GraphicsBackend;
+
+    // renderer stuff
+    struct RenderObject final {
+        RenderObject(
+            Mesh const& mesh_,
+            Transform const& transform_,
+            Material const& material_,
+            std::optional<MaterialPropertyBlock> maybePropBlock_) :
+
+            mesh{mesh_},
+            transform{transform_},
+            material{material_},
+            maybePropBlock{std::move(maybePropBlock_)}
+        {
+        }
+
+        Mesh mesh;
+        Transform transform;
+        Material material;
+        std::optional<MaterialPropertyBlock> maybePropBlock;
+    };
+    std::vector<RenderObject> m_RenderQueue;
 };
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, CameraProjection cp)
@@ -2014,27 +2059,35 @@ std::size_t std::hash<osc::experimental::Camera>::operator()(Camera const& camer
     return camera.m_Impl->getHash();
 }
 
-class osc::experimental::GraphicsBackend final {
-public:
-    static void DrawMesh(
-        Mesh const& mesh,
-        Transform const& transform,
-        Material const& material,
-        Camera& camera,
-        std::optional<MaterialPropertyBlock> maybePropBlock)
-    {
-        DoCopyOnWrite(camera.m_Impl);
-
-        // push into camera's drawqueue
-    }
-};
-
 void osc::experimental::Graphics::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
     Material const& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> maybePropBlock)
+    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybePropBlock));
+    GraphicsBackend::DrawMesh(mesh, transform, material, camera, std::move(maybeMaterialPropertyBlock));
+}
+
+
+
+/////////////////////////
+//
+// backend implementation
+//
+/////////////////////////
+
+void osc::experimental::GraphicsBackend::DrawMesh(
+    Mesh const& mesh,
+    Transform const& transform,
+    Material const& material,
+    Camera& camera,
+    std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock)
+{
+    DoCopyOnWrite(camera.m_Impl);
+    camera.m_Impl->m_RenderQueue.emplace_back(mesh, transform, material, std::move(maybeMaterialPropertyBlock));
+}
+
+void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
+{
 }
