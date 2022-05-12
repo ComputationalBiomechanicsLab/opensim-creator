@@ -1976,7 +1976,7 @@ bool osc::experimental::operator==(Camera const& a, Camera const& b)
 
 bool osc::experimental::operator!=(Camera const& a, Camera const& b)
 {
-    return a.m_Impl != a.m_Impl;
+    return a.m_Impl != b.m_Impl;
 }
 
 bool osc::experimental::operator<(Camera const& a, Camera const& b)
