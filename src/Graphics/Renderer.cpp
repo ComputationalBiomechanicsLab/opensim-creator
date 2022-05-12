@@ -47,17 +47,21 @@ static std::string StreamToString(T const& v)
 //
 //////////////////////////////////
 
-class osc::experimental::GraphicsBackend final {
-public:
-    static void DrawMesh(
-        Mesh const& mesh,
-        Transform const& transform,
-        Material const& material,
-        Camera& camera,
-        std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
+namespace osc::experimental {
+    class GraphicsBackend final {
+    public:
+        static void DrawMesh(
+            Mesh const& mesh,
+            Transform const& transform,
+            Material const& material,
+            Camera& camera,
+            std::optional<MaterialPropertyBlock> maybeMaterialPropertyBlock);
 
-    static void FlushRenderQueue(Camera::Impl& camera);
-};
+        static void FlushRenderQueue(Camera::Impl& camera);
+    };
+}
+
+
 
 
 //////////////////////////////////
