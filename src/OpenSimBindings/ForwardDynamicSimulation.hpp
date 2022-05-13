@@ -8,7 +8,6 @@
 
 #include <nonstd/span.hpp>
 
-#include <optional>
 #include <memory>
 #include <vector>
 

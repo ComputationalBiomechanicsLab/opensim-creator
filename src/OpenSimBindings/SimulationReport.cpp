@@ -13,10 +13,8 @@
 class osc::SimulationReport::Impl final {
 public:
 
-    Impl(OpenSim::Model const& model, SimTK::State st) :
-        m_State{std::move(st)}
+    Impl(SimTK::State st) : m_State{std::move(st)}
     {
-        model.realizeReport(m_State);
     }
 
     Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
@@ -82,8 +80,8 @@ private:
 
 // public API
 
-osc::SimulationReport::SimulationReport(OpenSim::Model const& m, SimTK::State st) :
-    m_Impl{std::make_shared<Impl>(m, std::move(st))}
+osc::SimulationReport::SimulationReport(SimTK::State st) :
+    m_Impl{std::make_shared<Impl>(std::move(st))}
 {
 }
 osc::SimulationReport::SimulationReport(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :

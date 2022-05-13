@@ -131,8 +131,7 @@ static std::vector<osc::SimulationReport> ExtractReports(
 
 	// swap space for state vals
 	SimTK::Vector stateValsBuf(static_cast<int>(lut.size()), SimTK::NaN);
-	SimTK::State st = model.initSystem();
-	st.updY().setToNaN();
+	model.initSystem();
 
 	std::vector<osc::SimulationReport> rv;
 	rv.reserve(storage.getSize());
@@ -141,6 +140,8 @@ static std::vector<osc::SimulationReport> ExtractReports(
 	{
 		OpenSim::StateVector* sv = storage.getStateVector(row);
 
+		SimTK::State st = model.getWorkingState();
+		st.updY().setToNaN();
 		st.setTime(sv->getTime());
 
 		OpenSim::Array<double> const& cols = sv->getData();
@@ -153,7 +154,8 @@ static std::vector<osc::SimulationReport> ExtractReports(
 		}
 
 		model.setStateVariableValues(st, stateValsBuf);
-		rv.emplace_back(model, st);
+		model.realizeReport(st);
+		rv.emplace_back(std::move(st));
 	}
 
 	return rv;

@@ -37,7 +37,8 @@ namespace osc
 
         virtual OutputType getOutputType() const = 0;
 
-        virtual float getValueFloat(OpenSim::Component const&, SimulationReport const&) const = 0;
+        virtual float getValueFloat(OpenSim::Component const&,
+                                    SimulationReport const&) const = 0;
 
         virtual void getValuesFloat(OpenSim::Component const&,
                                     nonstd::span<SimulationReport const>,

@@ -3,9 +3,6 @@
 #include "src/OpenSimBindings/VirtualModelStatePair.hpp"
 #include "src/Utils/ClonePtr.hpp"
 
-#include <memory>
-#include <string_view>
-
 namespace SimTK
 {
     class State;
