@@ -110,6 +110,40 @@ static osc::SimulationClock::time_point GetSimulationTime(SimTK::Integrator cons
     return osc::SimulationClock::time_point(osc::SimulationClock::duration(integ.getTime()));
 }
 
+static osc::SimulationReport CreateSimulationReport(SimTK::MultibodySystem const& sys,
+                                                    SimTK::Integrator const& integrator)
+{
+    SimTK::State st = integrator.getState();
+    std::unordered_map<osc::UID, float> auxValues;
+
+    // care: state needs to be realized on the simulator thread
+    st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+
+    // populate integrator outputs
+    {
+        int numOutputs = osc::GetNumIntegratorOutputExtractors();
+        auxValues.reserve(auxValues.size() + numOutputs);
+        for (int i = 0; i < numOutputs; ++i)
+        {
+            osc::IntegratorOutputExtractor const& o = osc::GetIntegratorOutputExtractor(i);
+            auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
+        }
+    }
+
+    // populate mbs outputs
+    {
+        int numOutputs = osc::GetNumMultiBodySystemOutputExtractors();
+        auxValues.reserve(auxValues.size() + numOutputs);
+        for (int i = 0; i < numOutputs; ++i)
+        {
+            osc::MultiBodySystemOutputExtractor const& o = osc::GetMultiBodySystemOutputExtractor(i);
+            auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
+        }
+    }
+
+    return osc::SimulationReport{std::move(st), std::move(auxValues)};
+}
+
 // this is the main function that the simulator thread works through (unguarded against exceptions)
 static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken,
                                                        SimulatorThreadInput& input,
@@ -128,7 +162,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     shared.setStatus(osc::SimulationStatus::Running);
 
     // immediately report t = start
-    input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
+    input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
 
     // integrate (t0..tfinal]
     osc::SimulationClock::time_point tStart = GetSimulationTime(*integ);
@@ -160,7 +194,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         else if (timestepRv == SimTK::Integrator::ReachedReportTime)
         {
             // report the step and continue
-            input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
+            input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
             tLastReport = GetSimulationTime(*integ);
             ++step;
             continue;
@@ -173,7 +207,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
             osc::SimulationClock::time_point t = GetSimulationTime(*integ);
             if ((tLastReport + 0.01*stepDur) < t)
             {
-                input.emitReport(osc::SimulationReport{input.getMultiBodySystem(), *integ});
+                input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
                 tLastReport = t;
             }
             break;

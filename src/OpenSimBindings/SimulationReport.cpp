@@ -1,49 +1,21 @@
 #include "SimulationReport.hpp"
 
-#include "src/OpenSimBindings/IntegratorOutputExtractor.hpp"
-#include "src/OpenSimBindings/MultiBodySystemOutputExtractor.hpp"
-
-#include <OpenSim/Simulation/Model/Model.h>
-#include <SimTKsimbody.h>
 #include <SimTKcommon.h>
-#include <simmath/Integrator.h>
 
 #include <unordered_map>
 
 class osc::SimulationReport::Impl final {
 public:
 
-    Impl(SimTK::State&& st) : m_State{std::move(st)}
+    explicit Impl(SimTK::State&& st) :
+        m_State{std::move(st)}
     {
     }
 
-    Impl(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
-        m_State{integrator.getState()}
+    Impl(SimTK::State&& st, std::unordered_map<UID, float> auxiliaryValues) :
+        m_State{std::move(st)},
+        m_AuxiliaryValues{std::move(auxiliaryValues)}
     {
-        // care: state needs to be realized on the simulator thread
-        m_State.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-
-        // populate integrator outputs
-        {
-            int numOutputs = GetNumIntegratorOutputExtractors();
-            m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
-            for (int i = 0; i < numOutputs; ++i)
-            {
-                IntegratorOutputExtractor const& o = GetIntegratorOutputExtractor(i);
-                m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
-            }
-        }
-
-        // populate mbs outputs
-        {
-            int numOutputs = GetNumMultiBodySystemOutputExtractors();
-            m_AuxiliaryValues.reserve(m_AuxiliaryValues.size() + numOutputs);
-            for (int i = 0; i < numOutputs; ++i)
-            {
-                MultiBodySystemOutputExtractor const& o = GetMultiBodySystemOutputExtractor(i);
-                m_AuxiliaryValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
-            }
-        }
     }
 
     std::unique_ptr<Impl> clone() const
@@ -84,8 +56,8 @@ osc::SimulationReport::SimulationReport(SimTK::State&& st) :
     m_Impl{std::make_shared<Impl>(std::move(st))}
 {
 }
-osc::SimulationReport::SimulationReport(SimTK::MultibodySystem const& sys, SimTK::Integrator const& integrator) :
-    m_Impl{std::make_shared<Impl>(sys, integrator)}
+osc::SimulationReport::SimulationReport(SimTK::State&& st, std::unordered_map<UID, float> auxiliaryValues) :
+    m_Impl{std::make_shared<Impl>(std::move(st), std::move(auxiliaryValues))}
 {
 }
 osc::SimulationReport::SimulationReport(SimulationReport const&) = default;

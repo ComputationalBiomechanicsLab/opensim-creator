@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <memory>
+#include <unordered_map>
 
 namespace SimTK
 {
@@ -19,7 +20,7 @@ namespace osc
     class SimulationReport {
     public:
         explicit SimulationReport(SimTK::State&&);
-        SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const&);
+        SimulationReport(SimTK::State&&, std::unordered_map<UID, float> auxiliaryValues);
         SimulationReport(SimulationReport const&);
         SimulationReport(SimulationReport&&) noexcept;
         SimulationReport& operator=(SimulationReport const&);
