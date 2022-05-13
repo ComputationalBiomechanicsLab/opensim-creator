@@ -62,8 +62,6 @@ namespace osc::experimental {
 }
 
 
-
-
 //////////////////////////////////
 //
 // texture stuff
@@ -163,21 +161,14 @@ public:
         m_FilterMode = std::move(tfm);
     }
 
-    std::size_t getHash() const
-    {
-        return std::hash<UID>{}(m_UID);
-    }
-
 private:
-
-    UID m_UID;
     int m_Width;
     int m_Height;
+    std::vector<Rgba32> m_Pixels;
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
-    std::vector<Rgba32> m_Pixels;
 };
 
 std::ostream& osc::experimental::operator<<(std::ostream& o, TextureWrapMode twm)
@@ -319,11 +310,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Texture2D const& t)
 std::string osc::experimental::to_string(Texture2D const& t)
 {
     return StreamToString(t);
-}
-
-std::size_t std::hash<osc::experimental::Texture2D>::operator()(osc::experimental::Texture2D const& t) const
-{
-    return t.m_Impl->getHash();
 }
 
 
@@ -485,11 +471,6 @@ public:
 
     // non-PIMPL APIs
 
-    std::size_t getHash() const
-    {
-        return std::hash<osc::UID>{}(m_UID);
-    }
-
     std::unordered_map<std::string, ShaderElement> const& getUniforms() const
     {
         return m_Uniforms;
@@ -618,11 +599,6 @@ std::string osc::experimental::to_string(Shader const& shader)
     return std::move(ss).str();
 }
 
-std::size_t std::hash<osc::experimental::Shader>::operator()(osc::experimental::Shader const& shader) const
-{
-    return shader.m_Impl->getHash();
-}
-
 //////////////////////////////////
 //
 // material stuff
@@ -728,13 +704,6 @@ public:
     void setTexture(std::string_view propertyName, Texture2D t)
     {
         setValue(std::move(propertyName), std::move(t));
-    }
-
-    // non-PIMPL APIs
-
-    std::size_t getHash() const
-    {
-        return std::hash<osc::UID>{}(m_UID);
     }
 
 private:
@@ -923,11 +892,6 @@ std::string osc::experimental::to_string(Material const& material)
     return StreamToString(material);
 }
 
-std::size_t std::hash<osc::experimental::Material>::operator()(osc::experimental::Material const& material) const
-{
-    return material.m_Impl->getHash();
-}
-
 
 //////////////////////////////////
 //
@@ -1035,13 +999,6 @@ public:
     void setTexture(std::string_view propertyName, Texture2D t)
     {
         setValue(std::move(propertyName), std::move(t));
-    }
-
-    // non-PIMPL APIs
-
-    std::size_t getHash() const
-    {
-        return std::hash<osc::UID>{}(m_UID);
     }
 
 private:
@@ -1235,11 +1192,6 @@ std::string osc::experimental::to_string(MaterialPropertyBlock const& material)
     return StreamToString(material);
 }
 
-std::size_t std::hash<osc::experimental::MaterialPropertyBlock>::operator()(osc::experimental::MaterialPropertyBlock const& mpb) const
-{
-    return mpb.m_Impl->getHash();
-}
-
 
 //////////////////////////////////
 //
@@ -1405,11 +1357,6 @@ public:
         m_NumIndices = 0;
         m_IndicesData.clear();
         m_AABB = {};
-    }
-
-    std::size_t getHash() const
-    {
-        return m_UID;
     }
 
 private:
@@ -1581,11 +1528,6 @@ std::ostream& osc::experimental::operator<<(std::ostream& o, Mesh const& mesh)
 std::string osc::experimental::to_string(Mesh const& mesh)
 {
     return StreamToString(mesh);
-}
-
-std::size_t std::hash<osc::experimental::Mesh>::operator()(osc::experimental::Mesh const& mesh) const
-{
-    return mesh.m_Impl->getHash();
 }
 
 
@@ -1766,11 +1708,6 @@ public:
     void render()
     {
         GraphicsBackend::FlushRenderQueue(*this);
-    }
-
-    std::size_t getHash() const
-    {
-        return std::hash<osc::UID>{}(m_UID);
     }
 
 private:
@@ -2058,11 +1995,6 @@ std::string osc::experimental::to_string(Camera const& camera)
     return StreamToString(camera);
 }
 
-std::size_t std::hash<osc::experimental::Camera>::operator()(Camera const& camera) const
-{
-    return camera.m_Impl->getHash();
-}
-
 void osc::experimental::Graphics::DrawMesh(
     Mesh const& mesh,
     Transform const& transform,
@@ -2094,4 +2026,16 @@ void osc::experimental::GraphicsBackend::DrawMesh(
 
 void osc::experimental::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera)
 {
+    // bind to render target (screen, texture)
+    // clear render target
+    // set any scissor stuff
+    // compute any camera-level stuff (matrix, etc.)
+
+    for (Camera::Impl::RenderObject const& ro : camera.m_RenderQueue)
+    {
+        // ensure mesh is uploaded to GPU
+        // bind to shader program
+        // bind uniforms
+        // draw
+    }
 }

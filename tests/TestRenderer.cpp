@@ -414,14 +414,6 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
     }
 }
 
-TEST_F(Renderer, ShaderCanBeHashed)
-{
-    // e.g. for storage in a set
-
-    osc::experimental::Shader s{g_VertexShaderSrc, g_FragmentShaderSrc};
-    std::hash<osc::experimental::Shader>{}(s); // should compile and run fine
-}
-
 TEST_F(Renderer, MaterialCanBeConstructed)
 {
     GenerateMaterial();  // should compile and run fine
@@ -703,12 +695,6 @@ TEST_F(Renderer, MaterialCanConvertToString)
 {
     osc::experimental::Material m1 = GenerateMaterial();
     std::string s = osc::experimental::to_string(m1);
-}
-
-TEST_F(Renderer, MaterialCanHash)
-{
-    osc::experimental::Material m1 = GenerateMaterial();
-    std::hash<osc::experimental::Material>{}(m1);
 }
 
 // TODO: compound tests: ensure copy on write works etc
@@ -1042,11 +1028,6 @@ TEST_F(Renderer, MaterialPropertyBlockCanConvertToString)
     std::string s = osc::experimental::to_string(m);  // just ensure this compiles + runs
 }
 
-TEST_F(Renderer, MaterialPropertyBlockCanHash)
-{
-    osc::experimental::MaterialPropertyBlock m;
-    std::hash<osc::experimental::MaterialPropertyBlock>{}(m);
-}
 
 // TOOD: ensure string contains relevant stuff etc
 
@@ -1369,12 +1350,6 @@ TEST_F(Renderer, TextureCaneBeConvertedToString)
     ASSERT_FALSE(s.empty());
 }
 
-TEST_F(Renderer, TextureCanBeHashed)
-{
-    osc::experimental::Texture2D t = GenerateTexture();
-
-    std::hash<osc::experimental::Texture2D>{}(t);
-}
 
 // TODO ensure texture debug string contains useful information etc.
 
@@ -1658,13 +1633,6 @@ TEST_F(Renderer, MeshCanBeConvertedToStringForDebugging)
 }
 
 // TODO: ensure output strings are actually useful
-
-TEST_F(Renderer, MeshCanBeHashed)
-{
-    osc::experimental::Mesh m;
-    std::hash<osc::experimental::Mesh>{}(m);
-}
-
 TEST_F(Renderer, CameraProjectionCanBeStreamed)
 {
     for (int i = 0; i < static_cast<int>(osc::experimental::CameraProjection::TOTAL); ++i)
