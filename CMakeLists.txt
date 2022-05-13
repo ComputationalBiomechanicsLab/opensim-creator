@@ -350,8 +350,6 @@ add_library(osccore STATIC
     src/OpenSimBindings/AutoFinalizingModelStatePair.hpp
     src/OpenSimBindings/BasicModelStatePair.cpp
     src/OpenSimBindings/BasicModelStatePair.hpp
-    src/OpenSimBindings/ComponentAnnotations.cpp
-    src/OpenSimBindings/ComponentAnnotations.hpp
     src/OpenSimBindings/ComponentDecoration.cpp
     src/OpenSimBindings/ComponentDecoration.hpp
     src/OpenSimBindings/ComponentOutputExtractor.cpp
