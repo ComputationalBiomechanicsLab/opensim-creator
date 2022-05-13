@@ -6,6 +6,8 @@ All notable changes to this project will be documented here. The format is based
 ## [Unreleased]
 
 - Fixed a multithreading bug where the simulator would occasionally crash with "Device or resource busy" (#201)
+- The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
+  - This is useful for performance debugging
 
 
 ## [0.1.6] - 2022/05/09

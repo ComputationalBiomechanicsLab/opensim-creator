@@ -64,12 +64,76 @@ namespace
     private:
         std::atomic<int> m_Status = static_cast<int>(osc::SimulationStatus::Initializing);
     };
+
+    class AuxiliaryVariableOutputExtractor final : public osc::VirtualOutputExtractor {
+    public:
+        AuxiliaryVariableOutputExtractor(std::string name, std::string description, osc::UID uid) :
+            m_Name{std::move(name)},
+            m_Description{std::move(description)},
+            m_UID{std::move(uid)}
+        {
+        }
+
+        std::string const& getName() const override
+        {
+            return m_Name;
+        }
+
+        std::string const& getDescription() const override
+        {
+            return m_Description;
+        }
+
+        osc::OutputType getOutputType() const override
+        {
+            return osc::OutputType::Float;
+        }
+
+        float getValueFloat(OpenSim::Component const& c, osc::SimulationReport const& report) const override
+        {
+            nonstd::span<osc::SimulationReport const> reports(&report, 1);
+            std::array<float, 1> out;
+            getValuesFloat(c, reports, out);
+            return out.front();
+        }
+
+        void getValuesFloat(OpenSim::Component const&,
+                            nonstd::span<osc::SimulationReport const> reports,
+                            nonstd::span<float> overwriteOut) const
+        {
+            for (size_t i = 0; i < reports.size(); ++i)
+            {
+                overwriteOut[i] = reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f);
+            }
+        }
+
+        std::string getValueString(OpenSim::Component const& c, osc::SimulationReport const& report) const override
+        {
+            return std::to_string(getValueFloat(c, report));
+        }
+
+    private:
+        std::string m_Name;
+        std::string m_Description;
+        osc::UID m_UID;
+    };
+
+    osc::UID const g_WalltimeUID;
+    osc::UID const g_StepDurationUID;
 }
 
 static std::vector<osc::OutputExtractor> CreateSimulatorOutputExtractors()
 {
     std::vector<osc::OutputExtractor> rv;
-    rv.reserve(osc::GetNumIntegratorOutputExtractors() + osc::GetNumMultiBodySystemOutputExtractors());
+    rv.reserve(1 + osc::GetNumIntegratorOutputExtractors() + osc::GetNumMultiBodySystemOutputExtractors());
+
+    {
+        osc::OutputExtractor out{AuxiliaryVariableOutputExtractor{"Wall time", "Total cumulative time spent computing the simulation", g_WalltimeUID}};
+        rv.push_back(out);
+
+        osc::OutputExtractor out2{AuxiliaryVariableOutputExtractor{"Step Wall Time", "How long it took, in wall time, to compute the last integration step", g_StepDurationUID}};
+        rv.push_back(out2);
+    }
 
     for (int i = 0, len = osc::GetNumIntegratorOutputExtractors(); i < len; ++i)
     {
@@ -110,14 +174,23 @@ static osc::SimulationClock::time_point GetSimulationTime(SimTK::Integrator cons
     return osc::SimulationClock::time_point(osc::SimulationClock::duration(integ.getTime()));
 }
 
-static osc::SimulationReport CreateSimulationReport(SimTK::MultibodySystem const& sys,
-                                                    SimTK::Integrator const& integrator)
+static osc::SimulationReport CreateSimulationReport(
+    std::chrono::duration<float> wallTime,
+    std::chrono::duration<float> stepDuration,
+    SimTK::MultibodySystem const& sys,
+    SimTK::Integrator const& integrator)
 {
     SimTK::State st = integrator.getState();
     std::unordered_map<osc::UID, float> auxValues;
 
     // care: state needs to be realized on the simulator thread
     st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+
+    // populate forward dynamic simulator outputs
+    {
+        auxValues.emplace(g_WalltimeUID, wallTime.count());
+        auxValues.emplace(g_StepDurationUID, stepDuration.count());
+    }
 
     // populate integrator outputs
     {
@@ -149,6 +222,8 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
                                                        SimulatorThreadInput& input,
                                                        SharedState& shared)
 {
+    std::chrono::high_resolution_clock::time_point const tSimStart = std::chrono::high_resolution_clock::now();
+
     osc::ForwardDynamicSimulatorParams const& params = input.getParams();
 
     // create + init an integrator
@@ -162,7 +237,10 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     shared.setStatus(osc::SimulationStatus::Running);
 
     // immediately report t = start
-    input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
+    {
+        std::chrono::duration<float> wallDur = std::chrono::high_resolution_clock::now() - tSimStart;
+        input.emitReport(CreateSimulationReport(wallDur, {}, input.getMultiBodySystem(), *integ));
+    }
 
     // integrate (t0..tfinal]
     osc::SimulationClock::time_point tStart = GetSimulationTime(*integ);
@@ -181,7 +259,9 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         osc::SimulationClock::time_point tNext = tStart + step*stepDur;
 
         // perform an integration step
+        std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
         SimTK::Integrator::SuccessfulStepStatus timestepRv = ts.stepTo(tNext.time_since_epoch().count());
+        std::chrono::high_resolution_clock::time_point tStepEnd = std::chrono::high_resolution_clock::now();
 
         // handle integrator response
         if (integ->isSimulationOver() &&
@@ -194,7 +274,9 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         else if (timestepRv == SimTK::Integrator::ReachedReportTime)
         {
             // report the step and continue
-            input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
+            std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
+            std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
+            input.emitReport(CreateSimulationReport(wallDur, stepDur, input.getMultiBodySystem(), *integ));
             tLastReport = GetSimulationTime(*integ);
             ++step;
             continue;
@@ -207,7 +289,9 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
             osc::SimulationClock::time_point t = GetSimulationTime(*integ);
             if ((tLastReport + 0.01*stepDur) < t)
             {
-                input.emitReport(CreateSimulationReport(input.getMultiBodySystem(), *integ));
+                std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
+                std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
+                input.emitReport(CreateSimulationReport(wallDur, stepDur, input.getMultiBodySystem(), *integ));
                 tLastReport = t;
             }
             break;
