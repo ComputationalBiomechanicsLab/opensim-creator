@@ -207,7 +207,6 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
 
     // data lines
     auto guard = sim.getModel();
-    OpenSim::Model const& m = *guard;
     for (size_t i = 0; i < reports.size(); ++i)
     {
         fout << times.at(i);  // time column
@@ -215,7 +214,7 @@ static std::string TryExportOutputsToCSV(osc::Simulation& sim,
         osc::SimulationReport r = reports[i];
         for (osc::OutputExtractor const& o : outputs)
         {
-            fout << ',' << o.getValueFloat(m, r);
+            fout << ',' << o.getValueFloat(*guard, r);
         }
 
         fout << '\n';
@@ -361,11 +360,6 @@ private:
             return;
         }
 
-        {
-            OSC_PERF("draw simulator panels");
-            drawAll3DViewers();
-        }
-
         // edge-case: there are no simulations available, so
         // show a "you need to run something, fool" dialog
         if (m_MainEditorState->getNumSimulations() <= 0)
@@ -383,6 +377,11 @@ private:
             }
             ImGui::End();
             return;
+        }
+
+        {
+            OSC_PERF("draw simulator panels");
+            drawAll3DViewers();
         }
 
         // ensure m_ShownModelState is populated, if possible
@@ -862,8 +861,7 @@ private:
         else if (outputType == osc::OutputType::String)
         {
             osc::SimulationReport r = TrySelectReportBasedOnScrubbing(sim).value_or(sim.getSimulationReport(nReports-1));
-            auto guard = sim.getModel();
-            ImGui::TextUnformatted(output.getValueString(*guard, r).c_str());
+            ImGui::TextUnformatted(output.getValueString(*sim.getModel(), r).c_str());
         }
     }
 
@@ -884,12 +882,10 @@ private:
 
         std::vector<float> buf;
         {
-            auto guard = sim.getModel();
-            OpenSim::Model const& model = *guard;
             OSC_PERF("collect output data");
             std::vector<osc::SimulationReport> reports = sim.getAllSimulationReports();
             buf.resize(reports.size());
-            output.getValuesFloat(model, reports, buf);
+            output.getValuesFloat(*sim.getModel(), reports, buf);
         }
 
         // draw plot
@@ -1271,8 +1267,7 @@ private:
         // re-realize state, because of the OpenSim pathwrap bug: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/123
         SimTK::State& st = report.updStateHACK();
         st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-        auto guard = sim.getModel();
-        guard->realizeReport(st);
+        sim.getModel()->realizeReport(st);
 
         return maybeReport;
     }
