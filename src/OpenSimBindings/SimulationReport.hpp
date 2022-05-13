@@ -6,11 +6,6 @@
 #include <optional>
 #include <memory>
 
-namespace OpenSim
-{
-    class Model;
-}
-
 namespace SimTK
 {
     class MultibodySystem;
@@ -23,7 +18,7 @@ namespace osc
     // reference-counted, immutable, simulation report
     class SimulationReport {
     public:
-        explicit SimulationReport(SimTK::State);
+        explicit SimulationReport(SimTK::State&&);
         SimulationReport(SimTK::MultibodySystem const&, SimTK::Integrator const&);
         SimulationReport(SimulationReport const&);
         SimulationReport(SimulationReport&&) noexcept;

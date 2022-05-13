@@ -13,7 +13,7 @@
 class osc::SimulationReport::Impl final {
 public:
 
-    Impl(SimTK::State st) : m_State{std::move(st)}
+    Impl(SimTK::State&& st) : m_State{std::move(st)}
     {
     }
 
@@ -80,7 +80,7 @@ private:
 
 // public API
 
-osc::SimulationReport::SimulationReport(SimTK::State st) :
+osc::SimulationReport::SimulationReport(SimTK::State&& st) :
     m_Impl{std::make_shared<Impl>(std::move(st))}
 {
 }
