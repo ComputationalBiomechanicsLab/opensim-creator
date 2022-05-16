@@ -1,6 +1,7 @@
 #include "MainMenu.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
+#include "src/OpenSimBindings/AutoFinalizingModelStatePair.hpp"
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
@@ -161,7 +162,8 @@ void osc::actionNewModel(std::shared_ptr<MainEditorState> st)
 {
     if (st)
     {
-        st->editedModel() = std::make_shared<UndoableModelStatePair>();
+        st->editedModel()->updUiModel() = osc::AutoFinalizingModelStatePair{};
+        osc::AutoFocusAllViewers(*st);
         App::upd().requestTransition<ModelEditorScreen>(st);
     }
     else

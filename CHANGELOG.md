@@ -9,6 +9,7 @@ All notable changes to this project will be documented here. The format is based
 - The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
   - This is useful for performance debugging
 - Simplified the tooltip that's shown when hovering something in the model editor 3D viewer
+- Fixed "New Model" action not creating a new model
 
 
 ## [0.1.6] - 2022/05/09
