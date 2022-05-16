@@ -10,6 +10,8 @@ All notable changes to this project will be documented here. The format is based
   - This is useful for performance debugging
 - Simplified the tooltip that's shown when hovering something in the model editor 3D viewer
 - Fixed "New Model" action not creating a new model
+- Right-clicking a 3D viewer in the model editor now shows "add stuff" context menu (#203)
+
 
 
 ## [0.1.6] - 2022/05/09
