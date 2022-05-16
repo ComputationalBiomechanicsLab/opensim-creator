@@ -838,7 +838,9 @@ static void DrawAddMusclePlotMenu(osc::MainEditorState& st,
 static void Draw3DViewerContextMenu(osc::MainEditorState& st,
                                     OpenSim::Component const& selected)
 {
-    ImGui::TextDisabled("%s (%s)", selected.getName().c_str(), selected.getConcreteClassName().c_str());
+    ImGui::TextUnformatted(selected.getName().c_str());
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", selected.getConcreteClassName().c_str());
     ImGui::Separator();
     ImGui::Dummy({0.0f, 3.0f});
 
@@ -901,17 +903,33 @@ static bool Draw3DViewer(osc::MainEditorState& st,
         char buf[128];
         std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
 
-        if (resp.isMousedOver && resp.hovertestResult && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
         {
-            editedModel->setSelected(resp.hovertestResult);
+            if (resp.hovertestResult)
+            {
+                editedModel->setSelected(resp.hovertestResult);
+            }
+            else
+            {
+                editedModel->setSelected(nullptr);
+            }
             ImGui::OpenPopup(buf);
         }
 
         OpenSim::Component const* selected = editedModel->getSelected();
 
-        if (selected && ImGui::BeginPopup(buf))
+        if (ImGui::BeginPopup(buf))
         {
-            Draw3DViewerContextMenu(st, *selected);
+            if (selected)
+            {
+                // draw context menu for whatever's selected
+                Draw3DViewerContextMenu(st, *selected);
+            }
+            else
+            {
+                // draw context menu that's shown when nothing was right-clicked
+                ImGui::TextDisabled("(nothing clicked)");
+            }
             ImGui::EndPopup();
         }
     }
