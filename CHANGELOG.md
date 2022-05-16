@@ -8,6 +8,7 @@ All notable changes to this project will be documented here. The format is based
 - Fixed a multithreading bug where the simulator would occasionally crash with "Device or resource busy" (#201)
 - The forward dynamic simulator now also reports "Wall Time" and "Step Wall Time" (#202)
   - This is useful for performance debugging
+- Simplified the tooltip that's shown when hovering something in the model editor 3D viewer
 
 
 ## [0.1.6] - 2022/05/09
