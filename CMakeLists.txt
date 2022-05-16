@@ -462,6 +462,8 @@ add_library(osccore STATIC
     src/Screens/SimulatorScreen.hpp
     src/Screens/SplashScreen.cpp
     src/Screens/SplashScreen.hpp
+    src/Screens/TabTestScreen.cpp
+    src/Screens/TabTestScreen.hpp
     src/Screens/UiModelViewerScreen.cpp
     src/Screens/UiModelViewerScreen.hpp
 
