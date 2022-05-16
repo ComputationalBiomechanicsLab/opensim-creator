@@ -1,4 +1,4 @@
-#include "ModelActionsMenuBar.hpp"
+#include "ModelActionsMenuItems.hpp"
 
 #include "src/Bindings/ImGuiHelpers.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
@@ -20,7 +20,7 @@
 #include <sstream>
 #include <utility>
 
-class osc::ModelActionsMenuBar::Impl final {
+class osc::ModelActionsMenuItems::Impl final {
 public:
     Impl(std::shared_ptr<UndoableModelStatePair> uum_) :
         m_Uum{uum_},
@@ -30,16 +30,40 @@ public:
     {
     }
 
-    bool draw()
+    void draw()
     {
-        if (ImGui::BeginMenuBar())
+        // action: add body
         {
-            return renderMenuBarContent();
-            ImGui::EndMenuBar();
+            // draw button
+            if (ImGui::MenuItem(ICON_FA_PLUS " Add Body"))
+            {
+                m_AddBodyPopup.open();
+            }
+
+            // draw tooltip (if hovered)
+            if (ImGui::IsItemHovered())
+            {
+                DrawTooltip(
+                    "Add an OpenSim::Body into the model",
+                    "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
+            }
         }
-        else
+
+        renderButton<OpenSim::Joint>();
+        renderButton<OpenSim::ContactGeometry>();
+        renderButton<OpenSim::Constraint>();
+        renderButton<OpenSim::Force>();
+        renderButton<OpenSim::Controller>();
+        renderButton<OpenSim::Probe>();
+        renderButton<OpenSim::Component>();        
+    }
+
+    void drawAnyOpenPopups()
+    {
+        m_AddBodyPopup.draw();
+        if (m_MaybeAddComponentPopup)
         {
-            return false;
+            m_MaybeAddComponentPopup->draw();
         }
     }
 
@@ -83,63 +107,26 @@ private:
         }
     }
 
-    bool renderMenuBarContent()
-    {
-        bool editMade = false;
-
-        // action: add body
-        {
-            // draw button
-            if (ImGui::MenuItem(ICON_FA_PLUS " Add Body"))
-            {
-                m_AddBodyPopup.open();
-            }
-
-            // draw tooltip (if hovered)
-            if (ImGui::IsItemHovered())
-            {
-                DrawTooltip(
-                    "Add an OpenSim::Body into the model",
-                    "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
-            }
-
-            if (m_AddBodyPopup.draw())
-            {
-                editMade = true;
-            }
-        }
-
-        renderButton<OpenSim::Joint>();
-        renderButton<OpenSim::ContactGeometry>();
-        renderButton<OpenSim::Constraint>();
-        renderButton<OpenSim::Force>();
-        renderButton<OpenSim::Controller>();
-        renderButton<OpenSim::Probe>();
-        renderButton<OpenSim::Component>();
-
-        if (m_MaybeAddComponentPopup)
-        {
-            editMade = m_MaybeAddComponentPopup->draw();
-        }
-
-        return editMade;
-    }
-
     std::shared_ptr<UndoableModelStatePair> m_Uum;
     AddBodyPopup m_AddBodyPopup;
     Select2PFsPopup m_Select2PFsPopup;
     std::optional<AddComponentPopup> m_MaybeAddComponentPopup;
 };
 
-osc::ModelActionsMenuBar::ModelActionsMenuBar(std::shared_ptr<UndoableModelStatePair> m) :
+osc::ModelActionsMenuItems::ModelActionsMenuItems(std::shared_ptr<UndoableModelStatePair> m) :
     m_Impl{std::make_unique<Impl>(std::move(m))}
 {
 }
-osc::ModelActionsMenuBar::ModelActionsMenuBar(ModelActionsMenuBar&&) noexcept = default;
-osc::ModelActionsMenuBar& osc::ModelActionsMenuBar::operator=(ModelActionsMenuBar&&) noexcept = default;
-osc::ModelActionsMenuBar::~ModelActionsMenuBar() noexcept = default;
+osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
+osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
+osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
 
-bool osc::ModelActionsMenuBar::draw()
+void osc::ModelActionsMenuItems::draw()
 {
-    return m_Impl->draw();
+    m_Impl->draw();
+}
+
+void osc::ModelActionsMenuItems::drawAnyOpenPopups()
+{
+    m_Impl->drawAnyOpenPopups();
 }

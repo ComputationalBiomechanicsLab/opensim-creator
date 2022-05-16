@@ -20,7 +20,7 @@
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/MainMenu.hpp"
-#include "src/Widgets/ModelActionsMenuBar.hpp"
+#include "src/Widgets/ModelActionsMenuItems.hpp"
 #include "src/Widgets/ModelHierarchyPanel.hpp"
 #include "src/Widgets/ModelMusclePlotPanel.hpp"
 #include "src/Widgets/ParamBlockEditorPopup.hpp"
@@ -852,111 +852,6 @@ static void Draw3DViewerContextMenu(osc::MainEditorState& st,
     }
 }
 
-// draw a single 3D model viewer
-static bool Draw3DViewer(osc::MainEditorState& st,
-                         osc::UiModelViewer& viewer,
-                         char const* name)
-{
-    bool isOpen = true;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-    bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
-    ImGui::PopStyleVar();
-
-    if (!isOpen)
-    {
-        ImGui::End();
-        return false;
-    }
-
-    if (!shown)
-    {
-        ImGui::End();
-        return true;
-    }
-
-    std::shared_ptr<osc::UndoableModelStatePair> editedModel = st.editedModel();
-
-    auto resp = viewer.draw(editedModel->getUiModel());
-    ImGui::End();
-
-    // update hover
-    if (resp.isMousedOver && resp.hovertestResult != editedModel->getHovered())
-    {
-        editedModel->setHovered(resp.hovertestResult);
-    }
-
-    // if left-clicked, update selection
-    if (resp.isMousedOver && resp.isLeftClicked)
-    {
-        editedModel->setSelected(resp.hovertestResult);
-    }
-
-    // if hovered, draw hover tooltip
-    if (resp.isMousedOver && resp.hovertestResult)
-    {
-        DrawComponentHoverTooltip(*resp.hovertestResult);
-    }
-
-    // if right-clicked, draw context menu
-    {
-        char buf[128];
-        std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
-
-        if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
-        {
-            if (resp.hovertestResult)
-            {
-                editedModel->setSelected(resp.hovertestResult);
-            }
-            else
-            {
-                editedModel->setSelected(nullptr);
-            }
-            ImGui::OpenPopup(buf);
-        }
-
-        OpenSim::Component const* selected = editedModel->getSelected();
-
-        if (ImGui::BeginPopup(buf))
-        {
-            if (selected)
-            {
-                // draw context menu for whatever's selected
-                Draw3DViewerContextMenu(st, *selected);
-            }
-            else
-            {
-                // draw context menu that's shown when nothing was right-clicked
-                ImGui::TextDisabled("(nothing clicked)");
-            }
-            ImGui::EndPopup();
-        }
-    }
-
-    return true;
-}
-
-// draw all user-enabled 3D model viewers
-static void Draw3DViewers(osc::MainEditorState& st)
-{
-    for (int i = 0; i < st.getNumViewers(); ++i)
-    {
-        osc::UiModelViewer& viewer = st.updViewer(i);
-
-        char buf[64];
-        std::snprintf(buf, sizeof(buf), "viewer%i", i);
-
-        bool isOpen = Draw3DViewer(st, viewer, buf);
-
-        if (!isOpen)
-        {
-            st.removeViewer(i);
-            --i;
-        }
-    }
-}
-
 static std::string GetDocumentName(osc::UndoableModelStatePair const& uim)
 {
     if (uim.hasFilesystemLocation())
@@ -1560,6 +1455,110 @@ private:
         }
     }
 
+    // draw a single 3D model viewer
+    bool draw3DViewer(osc::UiModelViewer& viewer, char const* name)
+    {
+        bool isOpen = true;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        bool shown = ImGui::Begin(name, &isOpen, ImGuiWindowFlags_MenuBar);
+        ImGui::PopStyleVar();
+
+        if (!isOpen)
+        {
+            ImGui::End();
+            return false;
+        }
+
+        if (!shown)
+        {
+            ImGui::End();
+            return true;
+        }
+
+        std::shared_ptr<osc::UndoableModelStatePair> editedModel = m_Mes->editedModel();
+
+        auto resp = viewer.draw(editedModel->getUiModel());
+        ImGui::End();
+
+        // update hover
+        if (resp.isMousedOver && resp.hovertestResult != editedModel->getHovered())
+        {
+            editedModel->setHovered(resp.hovertestResult);
+        }
+
+        // if left-clicked, update selection
+        if (resp.isMousedOver && resp.isLeftClicked)
+        {
+            editedModel->setSelected(resp.hovertestResult);
+        }
+
+        // if hovered, draw hover tooltip
+        if (resp.isMousedOver && resp.hovertestResult)
+        {
+            DrawComponentHoverTooltip(*resp.hovertestResult);
+        }
+
+        // if right-clicked, draw context menu
+        {
+            char buf[128];
+            std::snprintf(buf, sizeof(buf), "%s_contextmenu", name);
+
+            if (resp.isMousedOver && osc::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right))
+            {
+                if (resp.hovertestResult)
+                {
+                    editedModel->setSelected(resp.hovertestResult);
+                }
+                else
+                {
+                    editedModel->setSelected(nullptr);
+                }
+                ImGui::OpenPopup(buf);
+            }
+
+            OpenSim::Component const* selected = editedModel->getSelected();
+
+            if (ImGui::BeginPopup(buf))
+            {
+                if (selected)
+                {
+                    // draw context menu for whatever's selected
+                    Draw3DViewerContextMenu(*m_Mes, *selected);
+                }
+                else
+                {
+                    // draw context menu that's shown when nothing was right-clicked
+                    m_ContextMenuActionsMenuBar.draw();
+                }
+                ImGui::EndPopup();
+            }
+            m_ContextMenuActionsMenuBar.drawAnyOpenPopups();
+        }
+
+        return true;
+    }
+
+    // draw all user-enabled 3D model viewers
+    void draw3DViewers()
+    {
+        for (int i = 0; i < m_Mes->getNumViewers(); ++i)
+        {
+            osc::UiModelViewer& viewer = m_Mes->updViewer(i);
+
+            char buf[64];
+            std::snprintf(buf, sizeof(buf), "viewer%i", i);
+
+            bool isOpen = draw3DViewer(viewer, buf);
+
+            if (!isOpen)
+            {
+                m_Mes->removeViewer(i);
+                --i;
+            }
+        }
+    }
+
     void drawUNGUARDED()
     {
         drawMainMenu();
@@ -1573,7 +1572,7 @@ private:
         }
 
         // draw 3D viewers (if any)
-        Draw3DViewers(*m_Mes);
+        draw3DViewers();
 
         // draw editor actions panel
         //
@@ -1585,7 +1584,12 @@ private:
             bool actionsPanelNewState = actionsPanelOldState;
             if (ImGui::Begin("Actions", &actionsPanelNewState, ImGuiWindowFlags_MenuBar))
             {
-                m_ModelActionsMenuBar.draw();
+                if (ImGui::BeginMenuBar())
+                {
+                    m_ModelActionsMenuBar.draw();
+                    m_ModelActionsMenuBar.drawAnyOpenPopups();
+                    ImGui::EndMenuBar();
+                }
             }
             ImGui::End();
 
@@ -1727,7 +1731,8 @@ private:
     Select2PFsPopup m_Select2PFsPopup;
     LogViewer m_LogViewer;
     ModelHierarchyPanel m_ComponentHierarchyPanel{"Hierarchy"};
-    ModelActionsMenuBar m_ModelActionsMenuBar{m_Mes->editedModel()};
+    ModelActionsMenuItems m_ModelActionsMenuBar{m_Mes->editedModel()};
+    ModelActionsMenuItems m_ContextMenuActionsMenuBar{m_Mes->editedModel()};
     CoordinateEditor m_CoordEditor{m_Mes->editedModel()};
     SelectGeometryPopup m_AttachGeomPopup{"select geometry to add"};
     ParamBlockEditorPopup m_ParamBlockEditorPopup{"simulation parameters"};

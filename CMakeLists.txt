@@ -506,8 +506,8 @@ add_library(osccore STATIC
     src/Widgets/LogViewer.hpp
     src/Widgets/MainMenu.cpp
     src/Widgets/MainMenu.hpp
-    src/Widgets/ModelActionsMenuBar.cpp
-    src/Widgets/ModelActionsMenuBar.hpp
+    src/Widgets/ModelActionsMenuItems.cpp
+    src/Widgets/ModelActionsMenuItems.hpp
     src/Widgets/ModelHierarchyPanel.cpp
     src/Widgets/ModelHierarchyPanel.hpp
     src/Widgets/ModelMusclePlotPanel.cpp
