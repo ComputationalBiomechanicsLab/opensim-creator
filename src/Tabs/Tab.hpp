@@ -11,10 +11,6 @@ namespace osc
     class TabHost;
 
     class Tab {
-
-    protected:
-        explicit Tab(TabHost* parent);
-
     public:
         virtual ~Tab() noexcept = default;
 
@@ -25,12 +21,7 @@ namespace osc
         void drawMainMenu();
         void draw();
         osc::CStringView name();
-
-    protected:
-        void addTab(std::unique_ptr<Tab>);
-        void selectTab(Tab*);
-        void closeTab(Tab*);
-        TabHost* updParent() { return m_Parent; }
+        TabHost* parent();
 
     private:
         virtual void implOnMount() {}
@@ -39,8 +30,7 @@ namespace osc
         virtual void implOnTick() {}
         virtual void implDrawMainMenu() {}
         virtual void implOnDraw() = 0;
-        virtual osc::CStringView implName() = 0;
-
-        TabHost* m_Parent;
+        virtual CStringView implName() = 0;
+        virtual TabHost* implParent() = 0;
     };
 }

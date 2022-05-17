@@ -442,6 +442,8 @@ add_library(osccore STATIC
     src/Screens/InstancedRendererScreen.hpp
     src/Screens/LoadingScreen.cpp
     src/Screens/LoadingScreen.hpp
+    src/Screens/MainUIScreen.cpp
+    src/Screens/MainUIScreen.hpp
     src/Screens/MathExperimentsScreen.cpp
     src/Screens/MathExperimentsScreen.hpp
     src/Screens/MeshGenTestScreen.cpp
@@ -467,6 +469,8 @@ add_library(osccore STATIC
     src/Screens/UiModelViewerScreen.cpp
     src/Screens/UiModelViewerScreen.hpp
 
+    src/Tabs/CookiecutterTab.cpp
+    src/Tabs/CookiecutterTab.hpp
     src/Tabs/Tab.cpp
     src/Tabs/Tab.hpp
     src/Tabs/TabHost.cpp

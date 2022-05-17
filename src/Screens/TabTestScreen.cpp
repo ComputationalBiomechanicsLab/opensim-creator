@@ -27,7 +27,7 @@ namespace
     class TabDemo1 final : public osc::Tab {
     public:
         TabDemo1(osc::TabHost* parent, std::string name) :
-            Tab{std::move(parent)},
+            m_Parent{std::move(parent)},
             m_BaseName{std::move(name)}
         {
         }
@@ -46,25 +46,26 @@ namespace
             {
                 std::stringstream ss;
                 ss << i++ << "_tab";
-                auto tab = std::make_unique<TabDemo1>(updParent(), ss.str());
+                auto tab = std::make_unique<TabDemo1>(m_Parent, ss.str());
                 auto* tabPtr = tab.get();
-                addTab(std::move(tab));
-                selectTab(tabPtr);
+
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabPtr);
             }
 
             if (ImGui::Button("add tab type 2"))
             {
                 std::stringstream ss;
                 ss << i++ << "_tab";
-                auto tab = MakeTabType2(updParent(), ss.str());
+                auto tab = MakeTabType2(m_Parent, ss.str());
                 auto* tabPtr = tab.get();
-                addTab(std::move(tab));
-                selectTab(tabPtr);
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabPtr);
             }
 
             if (ImGui::Button("remove me"))
             {
-                closeTab(this);
+                m_Parent->closeTab(this);
             }
 
             ImGui::Text("%s", m_Content.c_str());
@@ -89,6 +90,12 @@ namespace
             return m_BaseName;
         }
 
+        osc::TabHost* implParent() override
+        {
+            return m_Parent;
+        }
+
+        osc::TabHost* m_Parent;
         std::string m_BaseName;
         std::string m_Content = std::to_string(g_ContentNum++);
         osc::LogViewer m_LogViewer;
@@ -98,7 +105,7 @@ namespace
     class TabDemo2 final : public osc::Tab {
     public:
         TabDemo2(osc::TabHost* parent, std::string name) :
-            Tab{std::move(parent)},
+            m_Parent{std::move(parent)},
             m_BaseName{std::move(name)}
         {
         }
@@ -123,6 +130,12 @@ namespace
             return m_BaseName;
         }
 
+        osc::TabHost* implParent() override
+        {
+            return m_Parent;
+        }
+
+        osc::TabHost* m_Parent;
         std::string m_BaseName;
     };
 
