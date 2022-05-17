@@ -467,6 +467,11 @@ add_library(osccore STATIC
     src/Screens/UiModelViewerScreen.cpp
     src/Screens/UiModelViewerScreen.hpp
 
+    src/Tabs/Tab.cpp
+    src/Tabs/Tab.hpp
+    src/Tabs/TabHost.cpp
+    src/Tabs/TabHost.hpp
+
     src/Utils/Algorithms.cpp
     src/Utils/Algorithms.hpp
     src/Utils/Assertions.cpp
@@ -475,8 +480,7 @@ add_library(osccore STATIC
     src/Utils/CircularBuffer.hpp
     src/Utils/ClonePtr.hpp
     src/Utils/Cpp20Shims.hpp
-    src/Utils/CStringView.hpp
-    
+    src/Utils/CStringView.hpp    
     src/Utils/DedupedString.cpp
     src/Utils/DedupedString.hpp
     src/Utils/DefaultConstructOnCopy.hpp

@@ -2,6 +2,8 @@
 
 #include "src/Platform/App.hpp"
 #include "src/Platform/Log.hpp"
+#include "src/Tabs/Tab.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Utils/CStringView.hpp"
 
@@ -15,85 +17,16 @@
 #include <utility>
 #include <vector>
 
-
-// example tab API
-namespace
-{
-    class TabHost;
-
-    class Tab {
-    public:
-        virtual ~Tab() noexcept = default;
-
-        void onMount() { implOnMount(); }
-        void onUnmount() { implOnUnmount(); }
-        bool onEvent(SDL_Event const& e) { return implOnEvent(e); }
-        void tick() { implOnTick(); }
-        void drawMainMenu() { implDrawMainMenu(); }
-        void draw() { implOnDraw(); }
-        osc::CStringView name() { return implName(); }
-
-    protected:
-        explicit Tab(TabHost* parent) : m_Parent{ std::move(parent) }
-        {
-        }
-
-        TabHost* updParent() { return m_Parent; }
-        void addTab(std::unique_ptr<Tab>);
-        void selectTab(Tab*);
-        void closeTab(Tab*);
-
-    private:
-        virtual void implOnMount() {}
-        virtual void implOnUnmount() {}
-        virtual bool implOnEvent(SDL_Event const& e) { return false; }
-        virtual void implOnTick() {}
-        virtual void implDrawMainMenu() {}
-        virtual void implOnDraw() = 0;
-        virtual osc::CStringView implName() = 0;
-
-        TabHost* m_Parent;
-    };
-
-    class TabHost {
-    public:
-        virtual ~TabHost() noexcept = default;
-        void addTab(std::unique_ptr<Tab> tab) { implAddTab(std::move(tab)); }
-        void selectTab(Tab* t) { implSelectTab(std::move(t)); }
-        void closeTab(Tab* t) { implCloseTab(std::move(t)); }
-
-    private:
-        virtual void implAddTab(std::unique_ptr<Tab> tab) = 0;
-        virtual void implSelectTab(Tab*) = 0;
-        virtual void implCloseTab(Tab*) = 0;
-    };
-
-    void Tab::addTab(std::unique_ptr<Tab> tab)
-    {
-        m_Parent->addTab(std::move(tab));
-    }
-
-    void Tab::selectTab(Tab* t)
-    {
-        m_Parent->selectTab(std::move(t));
-    }
-
-    void Tab::closeTab(Tab* t)
-    {
-        m_Parent->closeTab(std::move(t));
-    }
-}
-
 namespace
 {
     static std::atomic<int> g_ContentNum = 1;
 
-    std::unique_ptr<Tab> MakeTabType2(TabHost*, std::string);
+    std::unique_ptr<osc::Tab> MakeTabType2(osc::TabHost*, std::string);
 
     // example tab impl #1
-    class TabDemo1 final : public Tab {
+    class TabDemo1 final : public osc::Tab {
     public:
-        TabDemo1(TabHost* parent, std::string name) :
+        TabDemo1(osc::TabHost* parent, std::string name) :
             Tab{std::move(parent)},
             m_BaseName{std::move(name)}
         {
@@ -162,9 +95,9 @@ namespace
     };
 
     // example impl 2
-    class TabDemo2 final : public Tab {
+    class TabDemo2 final : public osc::Tab {
     public:
-        TabDemo2(TabHost* parent, std::string name) :
+        TabDemo2(osc::TabHost* parent, std::string name) :
             Tab{std::move(parent)},
             m_BaseName{std::move(name)}
         {
@@ -193,7 +126,7 @@ namespace
         std::string m_BaseName;
     };
 
-    std::unique_ptr<Tab> MakeTabType2(TabHost* parent, std::string name)
+    std::unique_ptr<osc::Tab> MakeTabType2(osc::TabHost* parent, std::string name)
     {
         return std::make_unique<TabDemo2>(std::move(parent), std::move(name));
     }
