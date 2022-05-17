@@ -245,7 +245,6 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
     // integrate (t0..tfinal]
     osc::SimulationClock::time_point tStart = GetSimulationTime(*integ);
     osc::SimulationClock::time_point tLastReport = tStart;
-    osc::SimulationClock::duration stepDur = params.ReportingInterval;
     int step = 1;
     while (!integ->isSimulationOver())
     {
@@ -256,7 +255,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
         }
 
         // calculate next reporting time
-        osc::SimulationClock::time_point tNext = tStart + step*stepDur;
+        osc::SimulationClock::time_point tNext = tStart + step*params.ReportingInterval;
 
         // perform an integration step
         std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
@@ -287,7 +286,7 @@ static osc::SimulationStatus FdSimulationMainUnguarded(osc::stop_token stopToken
             // (1 % of step size), then *also* report the simulation end time. Otherwise,
             // assume that there's an adjacent-enough report
             osc::SimulationClock::time_point t = GetSimulationTime(*integ);
-            if ((tLastReport + 0.01*stepDur) < t)
+            if ((tLastReport + 0.01*params.ReportingInterval) < t)
             {
                 std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
                 std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
