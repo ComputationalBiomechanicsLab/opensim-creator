@@ -2,7 +2,6 @@
 #include "src/Platform/Log.hpp"
 #include "src/Screens/LoadingScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
-#include "src/Screens/TabTestScreen.hpp"
 
 #include <iostream>
 
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
 
         if (argc <= 0)
         {
-            app.show<osc::TabTestScreen>();
+            app.show<osc::SplashScreen>();
         }
         else
         {
