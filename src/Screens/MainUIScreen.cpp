@@ -1,7 +1,7 @@
 #include "MainUIScreen.hpp"
 
 #include "src/Platform/App.hpp"
-#include "src./Tabs/SplashTab.hpp"
+#include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
 
