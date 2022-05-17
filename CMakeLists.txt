@@ -308,6 +308,8 @@ add_library(osccore STATIC
     src/Graphics/MeshGen.cpp
     src/Graphics/MeshGen.hpp
     src/Graphics/MeshTopography.hpp
+    src/Graphics/MultisampledRenderBuffers.cpp
+    src/Graphics/MultisampledRenderBuffers.hpp
     src/Graphics/Renderer.cpp
     src/Graphics/Renderer.hpp
     src/Graphics/SceneRenderer.cpp
@@ -471,6 +473,8 @@ add_library(osccore STATIC
 
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
+    src/Tabs/SplashTab.cpp
+    src/Tabs/SplashTab.hpp
     src/Tabs/Tab.cpp
     src/Tabs/Tab.hpp
     src/Tabs/TabHost.cpp

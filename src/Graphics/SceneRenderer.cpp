@@ -3,6 +3,7 @@
 #include "src/Graphics/BasicSceneElement.hpp"
 #include "src/Graphics/Gl.hpp"
 #include "src/Graphics/GlGlm.hpp"
+#include "src/Graphics/MultisampledRenderBuffers.hpp"
 #include "src/Graphics/ShaderCache.hpp"
 #include "src/Graphics/Shaders/GouraudShader.hpp"
 #include "src/Maths/Geometry.hpp"
@@ -14,114 +15,6 @@
 
 #include <optional>
 #include <utility>
-
-namespace
-{
-	class RenderBuffers final {
-	public:
-		RenderBuffers(glm::ivec2 dims_, int samples_) :
-			m_Dimensions{std::move(dims_)},
-			m_Samples{std::move(samples_)},
-			m_SceneRBO{[this]()
-				{
-					gl::RenderBuffer rv;
-					gl::BindRenderBuffer(rv);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_RGBA, m_Dimensions.x, m_Dimensions.y);
-					return rv;
-		}()},
-			m_Depth24StencilRBO{[this]()
-				{
-					gl::RenderBuffer rv;
-					gl::BindRenderBuffer(rv);
-					glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Samples, GL_DEPTH24_STENCIL8, m_Dimensions.x, m_Dimensions.y);
-					return rv;
-		}()},
-			m_FrameBuffer{[this]()
-				{
-					gl::FrameBuffer rv;
-					gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-					gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneRBO);
-					gl::FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_Depth24StencilRBO);
-					gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-					return rv;
-		}()},
-			m_SceneTexture{[this]()
-				{
-					gl::Texture2D rv;
-					gl::BindTexture(rv);
-					gl::TexImage2D(rv.type, 0, GL_RGBA, m_Dimensions.x, m_Dimensions.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-					gl::TexParameteri(rv.type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					gl::TexParameteri(rv.type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					return rv;
-		}()},
-			m_SceneFrameBuffer{[this]()
-				{
-					gl::FrameBuffer rv;
-					gl::BindFramebuffer(GL_FRAMEBUFFER, rv);
-					gl::FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_SceneTexture, 0);
-					gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-					return rv;
-		}()}
-		{
-		}
-
-		void setDimsAndSamples(glm::ivec2 newDims, int newSamples)
-		{
-			if (newDims != m_Dimensions || newSamples != m_Samples)
-			{
-				*this = RenderBuffers{newDims, newSamples};
-			}
-		}
-
-		int getWidth() const
-		{
-			return m_Dimensions.x;
-		}
-
-		int getHeight() const
-		{
-			return m_Dimensions.y;
-		}
-
-		glm::vec2 getDimensionsf() const
-		{
-			return {static_cast<float>(m_Dimensions.x), static_cast<float>(m_Dimensions.y)};
-		}
-
-		float getAspectRatio() const
-		{
-			glm::vec2 dims = getDimensionsf();
-			return dims.x / dims.y;
-		}
-
-		gl::FrameBuffer& updRenderingFBO()
-		{
-			return m_FrameBuffer;
-		}
-
-		gl::FrameBuffer& updSceneFBO()
-		{
-			return m_SceneFrameBuffer;
-		}
-
-		gl::Texture2D& updSceneTexture()
-		{
-			return m_SceneTexture;
-		}
-
-	private:
-		glm::ivec2 m_Dimensions;
-		int m_Samples;
-		gl::RenderBuffer m_SceneRBO;
-		gl::RenderBuffer m_Depth24StencilRBO;
-		gl::FrameBuffer m_FrameBuffer;
-		gl::Texture2D m_SceneTexture;
-		gl::FrameBuffer m_SceneFrameBuffer;
-	};
-}
 
 class osc::SceneRenderer::Impl final {
 public:
@@ -158,7 +51,7 @@ public:
 			m_MaybeRenderBuffers->setDimsAndSamples(m_RequestedDimensions, m_RequestedSamples);
 		}
 
-		RenderBuffers& bufs = *m_MaybeRenderBuffers;
+		MultisampledRenderBuffers& bufs = *m_MaybeRenderBuffers;
 
 		// setup any rendering state vars
 		gl::Viewport(0, 0, bufs.getWidth(), bufs.getHeight());
@@ -207,7 +100,7 @@ private:
 	glm::ivec2 m_RequestedDimensions = {0, 0};
 	int m_RequestedSamples = 1;
 	GouraudShader& m_Shader = osc::App::shader<GouraudShader>();
-	std::optional<RenderBuffers> m_MaybeRenderBuffers;
+	std::optional<MultisampledRenderBuffers> m_MaybeRenderBuffers;
 };
 
 osc::SceneRenderer::SceneRenderer() :

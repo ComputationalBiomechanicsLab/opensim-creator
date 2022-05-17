@@ -336,3 +336,8 @@ void osc::PushID(UID const& id)
 {
     ImGui::PushID(static_cast<int>(id.get()));
 }
+
+ImGuiWindowFlags osc::GetMinimalWindowFlags()
+{
+    return ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
+}

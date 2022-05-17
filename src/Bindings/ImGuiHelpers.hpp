@@ -95,4 +95,7 @@ namespace osc
 
     // push an osc::UID as if it were an ImGui ID (via ImGui::PushID)
     void PushID(UID const&);
+
+    // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
+    ImGuiWindowFlags GetMinimalWindowFlags();
 }

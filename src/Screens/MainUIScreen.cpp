@@ -1,6 +1,7 @@
 #include "MainUIScreen.hpp"
 
 #include "src/Platform/App.hpp"
+#include "src./Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
 
@@ -11,6 +12,12 @@
 
 class osc::MainUIScreen::Impl final : public osc::TabHost {
 public:
+    Impl()
+    {
+        m_Tabs.push_back(std::make_unique<SplashTab>(this));
+        m_RequestedTab = 0;
+    }
+
     void onMount()
     {
         osc::ImGuiInit();
@@ -23,19 +30,25 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
-        if (e.type == SDL_QUIT)
+        if (osc::ImGuiOnEvent(e))
         {
-            App::upd().requestQuit();
             return;
         }
-        else if (osc::ImGuiOnEvent(e))
+        else if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
         {
-            return;
+            if (m_Tabs[m_ActiveTab]->onEvent(e))
+            {
+                return;
+            }
         }
     }
 
     void tick(float dt)
     {
+        for (auto const& tab : m_Tabs)
+        {
+            tab->tick();
+        }
     }
 
     void draw()
@@ -91,11 +104,20 @@ private:
                         bool active = true;
                         if (ImGui::BeginTabItem(m_Tabs[i]->name().c_str(), &active, flags))
                         {
+                            if (i != m_ActiveTab)
+                            {
+                                if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
+                                {
+                                    m_Tabs[m_ActiveTab]->onUnmount();
+                                }
+                                m_ActiveTab = i;
+                                m_Tabs[m_ActiveTab]->onMount();
+                            }
                             m_ActiveTab = i;
                             ImGui::EndTabItem();
                         }
                         ImGui::PopID();
-                        if (!active)
+                        if (!active && i != 0)  // can't close the splash tab
                         {
                             m_Tabs.erase(m_Tabs.begin() + i);
                         }
@@ -137,8 +159,13 @@ private:
     void implCloseTab(Tab* t) override
     {
         auto it = std::stable_partition(m_Tabs.begin(), m_Tabs.end(), [t](auto const& o) { return o.get() != t; });
-        m_DeletedTabs.insert(m_DeletedTabs.end(), std::make_move_iterator(it), std::make_move_iterator(m_Tabs.end()));
-        m_Tabs.erase(it, m_Tabs.end());
+
+        // can't close the splash tab!
+        if (std::distance(m_Tabs.begin(), it) != 0)
+        {
+            m_DeletedTabs.insert(m_DeletedTabs.end(), std::make_move_iterator(it), std::make_move_iterator(m_Tabs.end()));
+            m_Tabs.erase(it, m_Tabs.end());
+        }
     }
 
     std::vector<std::unique_ptr<Tab>> m_Tabs;
