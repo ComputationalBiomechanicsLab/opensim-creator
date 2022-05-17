@@ -12,6 +12,7 @@
 #include "src/Screens/MeshHittestScreen.hpp"
 #include "src/Screens/MeshHittestWithBVHScreen.hpp"
 #include "src/Screens/MeshImporterScreen.hpp"
+#include "src/Screens/TabTestScreen.hpp"
 #include "src/Screens/SplashScreen.hpp"
 
 #include <imgui.h>
@@ -104,6 +105,7 @@ private:
         { "ImPlot", transition<ImPlotDemoScreen> },
         { "ImGui", transition<ImGuiDemoScreen> },
         { "Mesh Generation Tests", transition<MeshGenTestScreen> },
+        { "Tabbed UI", transition<TabTestScreen> }
     };
 };
 
