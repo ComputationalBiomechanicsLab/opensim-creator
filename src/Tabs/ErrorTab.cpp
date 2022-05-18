@@ -19,6 +19,21 @@ public:
 	{
 	}
 
+	UID getID() const
+	{
+		return m_ID;
+	}
+
+	CStringView getName() const
+	{
+		return m_Name;
+	}
+
+	TabHost* parent()
+	{
+		return m_Parent;
+	}
+
 	void onMount()
 	{
 
@@ -82,21 +97,12 @@ public:
 		}
 	}
 
-	CStringView name()
-	{
-		return m_Name;
-	}
-
-	TabHost* parent()
-	{
-		return m_Parent;
-	}
-
 private:
+	UID m_ID;
 	TabHost* m_Parent;
 	std::string m_Name = "Error";
 	std::string m_ErrorMessage;
-	osc::LogViewer m_LogViewer;	
+	osc::LogViewer m_LogViewer;
 };
 
 
@@ -123,6 +129,21 @@ osc::ErrorTab::~ErrorTab() noexcept
 	delete m_Impl;
 }
 
+osc::UID osc::ErrorTab::implGetID() const
+{
+	return m_Impl->getID();
+}
+
+osc::CStringView osc::ErrorTab::implGetName() const
+{
+	return m_Impl->getName();
+}
+
+osc::TabHost* osc::ErrorTab::implParent() const
+{
+	return m_Impl->parent();
+}
+
 void osc::ErrorTab::implOnMount()
 {
 	m_Impl->onMount();
@@ -143,7 +164,7 @@ void osc::ErrorTab::implOnTick()
 	m_Impl->onTick();
 }
 
-void osc::ErrorTab::implDrawMainMenu()
+void osc::ErrorTab::implOnDrawMainMenu()
 {
 	m_Impl->drawMainMenu();
 }
@@ -151,14 +172,4 @@ void osc::ErrorTab::implDrawMainMenu()
 void osc::ErrorTab::implOnDraw()
 {
 	m_Impl->onDraw();
-}
-
-osc::CStringView osc::ErrorTab::implName()
-{
-	return m_Impl->name();
-}
-
-osc::TabHost* osc::ErrorTab::implParent()
-{
-	return m_Impl->parent();
 }

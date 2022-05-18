@@ -33,6 +33,21 @@ namespace
         }
 
     private:
+        osc::UID implGetID() const override
+        {
+            return m_ID;
+        }
+
+        osc::CStringView implGetName() const override
+        {
+            return m_BaseName;
+        }
+
+
+        osc::TabHost* implParent() const override
+        {
+            return m_Parent;
+        }
 
         void implOnDraw() override
         {
@@ -50,7 +65,7 @@ namespace
                 auto* tabPtr = tab.get();
 
                 m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabPtr);
+                m_Parent->selectTab(tabPtr->getID());
             }
 
             if (ImGui::Button("add tab type 2"))
@@ -60,12 +75,12 @@ namespace
                 auto tab = MakeTabType2(m_Parent, ss.str());
                 auto* tabPtr = tab.get();
                 m_Parent->addTab(std::move(tab));
-                m_Parent->selectTab(tabPtr);
+                m_Parent->selectTab(tabPtr->getID());
             }
 
             if (ImGui::Button("remove me"))
             {
-                m_Parent->closeTab(this);
+                m_Parent->closeTab(m_ID);
             }
 
             ImGui::Text("%s", m_Content.c_str());
@@ -77,7 +92,7 @@ namespace
             ImGui::End();
         }
 
-        void implDrawMainMenu() override
+        void implOnDrawMainMenu() override
         {
             if (ImGui::MenuItem("set content"))
             {
@@ -85,16 +100,7 @@ namespace
             }
         }
 
-        osc::CStringView implName() override
-        {
-            return m_BaseName;
-        }
-
-        osc::TabHost* implParent() override
-        {
-            return m_Parent;
-        }
-
+        osc::UID m_ID;
         osc::TabHost* m_Parent;
         std::string m_BaseName;
         std::string m_Content = std::to_string(g_ContentNum++);
@@ -111,6 +117,26 @@ namespace
         }
 
     private:
+        osc::UID implGetID() const override
+        {
+            return m_ID;
+        }
+
+        osc::CStringView implGetName() const override
+        {
+            return m_BaseName;
+        }
+
+        osc::TabHost* implParent() const override
+        {
+            return m_Parent;
+        }
+
+        void implOnDrawMainMenu() override
+        {
+            ImGui::MenuItem("menu2");
+        }
+
         void implOnDraw() override
         {
             std::string windowName = m_BaseName + "_subwindow";
@@ -120,21 +146,7 @@ namespace
             ImGui::End();
         }
 
-        void implDrawMainMenu() override
-        {
-            ImGui::MenuItem("menu2");
-        }
-
-        osc::CStringView implName() override
-        {
-            return m_BaseName;
-        }
-
-        osc::TabHost* implParent() override
-        {
-            return m_Parent;
-        }
-
+        osc::UID m_ID;
         osc::TabHost* m_Parent;
         std::string m_BaseName;
     };
@@ -186,7 +198,7 @@ public:
     {
         for (int i = 0; i < m_Tabs.size(); ++i)
         {
-            m_Tabs[i]->tick();
+            m_Tabs[i]->onTick();
         }
     }
 
@@ -216,7 +228,7 @@ public:
             {
                 if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
                 {
-                    m_Tabs[m_ActiveTab]->drawMainMenu();
+                    m_Tabs[m_ActiveTab]->onDrawMainMenu();
                 }
                 ImGui::EndMenuBar();
             }
@@ -239,7 +251,7 @@ public:
                         }
                         ImGui::PushID(m_Tabs[i].get());
                         bool active = true;
-                        if (ImGui::BeginTabItem(m_Tabs[i]->name().c_str(), &active, flags))
+                        if (ImGui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
                         {
                             m_ActiveTab = i;
                             ImGui::EndTabItem();
@@ -258,12 +270,12 @@ public:
 
         if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
         {
-            m_Tabs[m_ActiveTab]->draw();
+            m_Tabs[m_ActiveTab]->onDraw();
         }
         else if (!m_Tabs.empty())
         {
             m_ActiveTab = 0;
-            m_Tabs[m_ActiveTab]->draw();
+            m_Tabs[m_ActiveTab]->onDraw();
         }
 
         // clear the flagged-to-be-deleted tabs
@@ -276,18 +288,18 @@ private:
         m_Tabs.push_back(std::move(tab));
     }
 
-    void implSelectTab(Tab* t) override
+    void implSelectTab(UID tabID) override
     {
-        auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [t](auto const& o) { return o.get() == t; });
+        auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [tabID](auto const& o) { return o->getID() == tabID; });
         if (it != m_Tabs.end())
         {
             m_RequestedTab = static_cast<int>(std::distance(m_Tabs.begin(), it));
         }
     }
 
-    void implCloseTab(Tab* t) override
+    void implCloseTab(UID tabID)
     {
-        auto it = std::stable_partition(m_Tabs.begin(), m_Tabs.end(), [t](auto const& o) { return o.get() != t; });
+        auto it = std::stable_partition(m_Tabs.begin(), m_Tabs.end(), [tabID](auto const& o) { return o->getID() != tabID; });
         m_DeletedTabs.insert(m_DeletedTabs.end(), std::make_move_iterator(it), std::make_move_iterator(m_Tabs.end()));
         m_Tabs.erase(it, m_Tabs.end());
     }

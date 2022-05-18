@@ -1,10 +1,9 @@
 #pragma once
 
 #include "src/Utils/CStringView.hpp"
+#include "src/Utils/UID.hpp"
 
 #include <SDL_events.h>
-
-#include <memory>
 
 namespace osc
 {
@@ -14,23 +13,25 @@ namespace osc
     public:
         virtual ~Tab() noexcept = default;
 
+        UID getID() const;
+        CStringView getName() const;
+        TabHost* parent() const;
         void onMount();
         void onUnmount();
         bool onEvent(SDL_Event const& e);
-        void tick();
-        void drawMainMenu();
-        void draw();
-        osc::CStringView name();
-        TabHost* parent();
+        void onTick();
+        void onDrawMainMenu();
+        void onDraw();
 
     private:
+        virtual UID implGetID() const = 0;
+        virtual CStringView implGetName() const = 0;
+        virtual TabHost* implParent() const = 0;
         virtual void implOnMount() {}
         virtual void implOnUnmount() {}
-        virtual bool implOnEvent(SDL_Event const& e) { return false; }
+        virtual bool implOnEvent(SDL_Event const&) { return false; }
         virtual void implOnTick() {}
-        virtual void implDrawMainMenu() {}
+        virtual void implOnDrawMainMenu() {}
         virtual void implOnDraw() = 0;
-        virtual CStringView implName() = 0;
-        virtual TabHost* implParent() = 0;
     };
 }

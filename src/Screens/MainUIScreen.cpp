@@ -12,6 +12,7 @@
 #include <imgui_internal.h>
 
 #include <utility>
+#include <unordered_set>
 
 class osc::MainUIScreen::Impl final : public osc::TabHost {
 public:
@@ -48,7 +49,12 @@ public:
         // (don't pump the event into the inactive tabs)
         if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
         {
-            if (m_Tabs[m_ActiveTab]->onEvent(e))
+            bool handled = m_Tabs[m_ActiveTab]->onEvent(e);
+
+            // a `tab` may have requested deletions
+            garbageCollectDeletedTabs();
+
+            if (handled)
             {
                 return;
             }
@@ -60,6 +66,7 @@ public:
         if (e.type == SDL_QUIT)
         {
             App::upd().requestQuit();
+            return;
         }
     }
 
@@ -67,10 +74,13 @@ public:
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
-        for (auto const& tab : m_Tabs)
+        for (int i = 0; i < m_Tabs.size(); ++i)
         {
-            tab->tick();
+            m_Tabs[i]->onTick();
         }
+
+        // clear the flagged-to-be-deleted tabs
+        garbageCollectDeletedTabs();
     }
 
     void draw()
@@ -101,7 +111,7 @@ private:
             {
                 if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
                 {
-                    m_Tabs[m_ActiveTab]->drawMainMenu();
+                    m_Tabs[m_ActiveTab]->onDrawMainMenu();
                 }
                 ImGui::EndMenuBar();
             }
@@ -124,7 +134,7 @@ private:
                         }
                         ImGui::PushID(m_Tabs[i].get());
                         bool active = true;
-                        if (ImGui::BeginTabItem(m_Tabs[i]->name().c_str(), &active, flags))
+                        if (ImGui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
                         {
                             if (i != m_ActiveTab)
                             {
@@ -141,7 +151,7 @@ private:
                         ImGui::PopID();
                         if (!active && i != 0)  // can't close the splash tab
                         {
-                            m_Tabs.erase(m_Tabs.begin() + i);
+                            m_DeletedTabs.insert(m_Tabs[i]->getID());
                         }
                     }
                 }
@@ -150,18 +160,20 @@ private:
             ImGui::End();
         }
 
+        garbageCollectDeletedTabs();
+
         if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
         {
-            m_Tabs[m_ActiveTab]->draw();
+            m_Tabs[m_ActiveTab]->onDraw();
         }
         else if (!m_Tabs.empty())
         {
             m_ActiveTab = 0;
-            m_Tabs[m_ActiveTab]->draw();
+            m_Tabs[m_ActiveTab]->onDraw();
         }
 
         // clear the flagged-to-be-deleted tabs
-        m_DeletedTabs.clear();
+        garbageCollectDeletedTabs();
     }
 
     void implAddTab(std::unique_ptr<Tab> tab) override
@@ -169,29 +181,38 @@ private:
         m_Tabs.push_back(std::move(tab));
     }
 
-    void implSelectTab(Tab* t) override
+    void implSelectTab(UID id) override
     {
-        auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [t](auto const& o) { return o.get() == t; });
+        auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [id](auto const& o) { return o->getID() == id; });
         if (it != m_Tabs.end())
         {
             m_RequestedTab = static_cast<int>(std::distance(m_Tabs.begin(), it));
         }
     }
 
-    void implCloseTab(Tab* t) override
+    void implCloseTab(UID id) override
     {
-        auto it = std::stable_partition(m_Tabs.begin(), m_Tabs.end(), [t](auto const& o) { return o.get() != t; });
+        m_DeletedTabs.insert(id);
+    }
 
-        // can't close the splash tab!
-        if (std::distance(m_Tabs.begin(), it) != 0)
+    void garbageCollectDeletedTabs()
+    {
+        for (UID id : m_DeletedTabs)
         {
-            m_DeletedTabs.insert(m_DeletedTabs.end(), std::make_move_iterator(it), std::make_move_iterator(m_Tabs.end()));
+            auto it = std::remove_if(m_Tabs.begin(), m_Tabs.end(), [id](auto const& o) { return o->getID() == id; });
             m_Tabs.erase(it, m_Tabs.end());
+        }
+        m_DeletedTabs.clear();
+
+        // coerce active tab, if it has become stale due to a deletion
+        if (m_RequestedTab == -1 && !(0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size()))
+        {
+            m_RequestedTab = m_Tabs.empty() ? 0 : static_cast<int>(m_Tabs.size() - 1);
         }
     }
 
     std::vector<std::unique_ptr<Tab>> m_Tabs;
-    std::vector<std::unique_ptr<Tab>> m_DeletedTabs;
+    std::unordered_set<UID> m_DeletedTabs;
     int m_ActiveTab = -1;
     int m_RequestedTab = -1;
 };

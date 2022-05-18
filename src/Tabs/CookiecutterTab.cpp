@@ -11,6 +11,21 @@ public:
 	{
 	}
 
+	UID getID() const
+	{
+		return m_ID;
+	}
+
+	CStringView getName() const
+	{
+		return m_Name;
+	}
+
+	TabHost* parent()
+	{
+		return m_Parent;
+	}
+
 	void onMount()
 	{
 
@@ -31,26 +46,19 @@ public:
 
 	}
 
-	void drawMainMenu()
+	void onDrawMainMenu()
 	{
 
 	}
+
 	void onDraw()
 	{
 
 	}
 
-	CStringView name()
-	{
-		return m_Name;
-	}
-
-	TabHost* parent()
-	{
-		return m_Parent;
-	}
 
 private:
+	UID m_ID;
 	std::string m_Name = "CookiecutterTab";
 	TabHost* m_Parent;
 };
@@ -79,6 +87,21 @@ osc::CookiecutterTab::~CookiecutterTab() noexcept
 	delete m_Impl;
 }
 
+osc::UID osc::CookiecutterTab::implGetID() const
+{
+	return m_Impl->getID();
+}
+
+osc::CStringView osc::CookiecutterTab::implGetName() const
+{
+	return m_Impl->getName();
+}
+
+osc::TabHost* osc::CookiecutterTab::implParent() const
+{
+	return m_Impl->parent();
+}
+
 void osc::CookiecutterTab::implOnMount()
 {
 	m_Impl->onMount();
@@ -99,22 +122,12 @@ void osc::CookiecutterTab::implOnTick()
 	m_Impl->onTick();
 }
 
-void osc::CookiecutterTab::implDrawMainMenu()
+void osc::CookiecutterTab::implOnDrawMainMenu()
 {
-	m_Impl->drawMainMenu();
+	m_Impl->onDrawMainMenu();
 }
 
 void osc::CookiecutterTab::implOnDraw()
 {
 	m_Impl->onDraw();
-}
-
-osc::CStringView osc::CookiecutterTab::implName()
-{
-	return m_Impl->name();
-}
-
-osc::TabHost* osc::CookiecutterTab::implParent()
-{
-	return m_Impl->parent();
 }

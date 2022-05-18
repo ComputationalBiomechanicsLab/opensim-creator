@@ -135,6 +135,21 @@ public:
 	{
 	}
 
+    UID getID() const
+    {
+        return m_ID;
+    }
+
+    CStringView getName() const
+    {
+        return m_Name;
+    }
+
+    TabHost* parent()
+    {
+        return m_Parent;
+    }
+
 	void onMount()
 	{
 		App::upd().makeMainEventLoopWaiting();
@@ -172,16 +187,6 @@ public:
         drawMenu();
         drawTUDLogo();
         drawCZLogo();
-	}
-
-	CStringView name()
-	{
-		return m_Name;
-	}
-
-	TabHost* parent()
-	{
-		return m_Parent;
 	}
 
 private:
@@ -412,6 +417,9 @@ private:
         dl->AddText(pos, color, content);
     }
 
+    // tab unique ID
+    UID m_ID;
+
     // tab name
 	std::string m_Name = "Splash Screen";
 
@@ -464,42 +472,47 @@ osc::SplashTab::~SplashTab() noexcept
 	delete m_Impl;
 }
 
+osc::UID osc::SplashTab::implGetID() const
+{
+    return m_Impl->getID();
+}
+
+osc::CStringView osc::SplashTab::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+osc::TabHost* osc::SplashTab::implParent() const
+{
+    return m_Impl->parent();
+}
+
 void osc::SplashTab::implOnMount()
 {
-	m_Impl->onMount();
+    m_Impl->onMount();
 }
 
 void osc::SplashTab::implOnUnmount()
 {
-	m_Impl->onUnmount();
+    m_Impl->onUnmount();
 }
 
 bool osc::SplashTab::implOnEvent(SDL_Event const& e)
 {
-	return m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
 void osc::SplashTab::implOnTick()
 {
-	m_Impl->onTick();
+    m_Impl->onTick();
 }
 
-void osc::SplashTab::implDrawMainMenu()
+void osc::SplashTab::implOnDrawMainMenu()
 {
-	m_Impl->drawMainMenu();
+    m_Impl->drawMainMenu();
 }
 
 void osc::SplashTab::implOnDraw()
 {
-	m_Impl->onDraw();
-}
-
-osc::CStringView osc::SplashTab::implName()
-{
-	return m_Impl->name();
-}
-
-osc::TabHost* osc::SplashTab::implParent()
-{
-	return m_Impl->parent();
+    m_Impl->onDraw();
 }

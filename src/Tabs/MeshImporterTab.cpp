@@ -1,5 +1,7 @@
 #include "MeshImporterTab.hpp"
 
+#include "src/Tabs/TabHost.hpp"
+
 #include <imgui.h>
 #include <SDL_events.h>
 
@@ -3901,9 +3903,14 @@ namespace
             return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.GetCheckoutID();
         }
 
+        bool IsCloseRequested()
+        {
+            return m_CloseRequested == true;
+        }
+
         void CloseEditorForced()
         {
-            osc::App::upd().requestTransition<osc::SplashScreen>();
+            m_CloseRequested = true;
         }
 
         void CloseEditor()
@@ -5246,6 +5253,9 @@ namespace
 
         // set to true after drawing the ImGui::Image
         bool m_IsRenderHovered = false;
+
+        // true if the implementation wants the host to close the mesh importer UI
+        bool m_CloseRequested = false;
     };
 }
 
@@ -8107,6 +8117,22 @@ public:
     {
     }
 
+    UID getID() const
+    {
+        return m_ID;
+    }
+
+
+    CStringView getName() const
+    {
+        return m_Name;
+    }
+
+    TabHost* parent()
+    {
+        return m_Parent;
+    }
+
     void onMount()
     {
         App::upd().makeMainEventLoopWaiting();
@@ -8138,6 +8164,11 @@ public:
         m_MainState.tick(dt);
 
         m_Name = m_SharedData->GetRecommendedTitle();
+
+        if (m_SharedData->IsCloseRequested())
+        {
+            m_Parent->closeTab(m_ID);
+        }
     }
 
     void drawMainMenu()
@@ -8162,17 +8193,8 @@ public:
         }
     }
 
-    CStringView name()
-    {
-        return m_Name;
-    }
-
-    TabHost* parent()
-    {
-        return m_Parent;
-    }
-
 private:
+    UID m_ID;
     TabHost* m_Parent;
     std::string m_Name = "MeshImporterTab";
     std::shared_ptr<SharedData> m_SharedData;
@@ -8209,42 +8231,47 @@ osc::MeshImporterTab::~MeshImporterTab() noexcept
 	delete m_Impl;
 }
 
+osc::UID osc::MeshImporterTab::implGetID() const
+{
+    return m_Impl->getID();
+}
+
+osc::CStringView osc::MeshImporterTab::implGetName() const
+{
+    return m_Impl->getName();
+}
+
+osc::TabHost* osc::MeshImporterTab::implParent() const
+{
+    return m_Impl->parent();
+}
+
 void osc::MeshImporterTab::implOnMount()
 {
-	m_Impl->onMount();
+    m_Impl->onMount();
 }
 
 void osc::MeshImporterTab::implOnUnmount()
 {
-	m_Impl->onUnmount();
+    m_Impl->onUnmount();
 }
 
 bool osc::MeshImporterTab::implOnEvent(SDL_Event const& e)
 {
-	return m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
 void osc::MeshImporterTab::implOnTick()
 {
-	m_Impl->onTick();
+    m_Impl->onTick();
 }
 
-void osc::MeshImporterTab::implDrawMainMenu()
+void osc::MeshImporterTab::implOnDrawMainMenu()
 {
-	m_Impl->drawMainMenu();
+    m_Impl->drawMainMenu();
 }
 
 void osc::MeshImporterTab::implOnDraw()
 {
-	m_Impl->onDraw();
-}
-
-osc::CStringView osc::MeshImporterTab::implName()
-{
-	return m_Impl->name();
-}
-
-osc::TabHost* osc::MeshImporterTab::implParent()
-{
-	return m_Impl->parent();
+    m_Impl->onDraw();
 }
