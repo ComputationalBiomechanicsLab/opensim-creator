@@ -475,6 +475,8 @@ add_library(osccore STATIC
     src/Tabs/CookiecutterTab.hpp
     src/Tabs/ErrorTab.cpp
     src/Tabs/ErrorTab.hpp
+    src/Tabs/LoadingTab.cpp
+    src/Tabs/LoadingTab.hpp
     src/Tabs/MeshImporterTab.cpp
     src/Tabs/MeshImporterTab.hpp
     src/Tabs/SplashTab.cpp
