@@ -479,6 +479,8 @@ add_library(osccore STATIC
     src/Tabs/LoadingTab.hpp
     src/Tabs/MeshImporterTab.cpp
     src/Tabs/MeshImporterTab.hpp
+    src/Tabs/ModelEditorTab.cpp
+    src/Tabs/ModelEditorTab.hpp
     src/Tabs/SplashTab.cpp
     src/Tabs/SplashTab.hpp
     src/Tabs/Tab.cpp

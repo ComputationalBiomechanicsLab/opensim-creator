@@ -5,10 +5,8 @@
 #include "src/OpenSimBindings/MainEditorState.hpp"
 #include "src/OpenSimBindings/UndoableModelStatePair.hpp"
 #include "src/Platform/App.hpp"
-#include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
 #include "src/Tabs/TabHost.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
 #include "src/Utils/Assertions.hpp"
 
 #include <imgui.h>
@@ -29,8 +27,6 @@
 // the function that loads the OpenSim model
 static std::unique_ptr<osc::UndoableModelStatePair> loadOpenSimModel(std::string path)
 {
-	throw std::runtime_error{"lol"};
-
 	auto model = std::make_unique<OpenSim::Model>(path);
 	return std::make_unique<osc::UndoableModelStatePair>(std::move(model));
 }
@@ -129,7 +125,14 @@ public:
 			// recycle it so that users can keep their running sims, local edits, etc.
 			*m_State->editedModel() = std::move(*result);
 			m_State->editedModel()->setUpToDateWithFilesystem();
-			App::upd().requestTransition<ModelEditorScreen>(m_State);
+
+			auto tab = std::make_unique<ModelEditorTab>(m_Parent, m_State);
+			UID tabID = tab->getID();
+
+			m_Parent->addTab(std::move(tab));
+			m_Parent->selectTab(tabID);
+			m_Parent->closeTab(m_ID);
+
 			AutoFocusAllViewers(*m_State);
 		}
 	}
