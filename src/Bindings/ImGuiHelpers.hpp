@@ -98,4 +98,9 @@ namespace osc
 
     // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
     ImGuiWindowFlags GetMinimalWindowFlags();
+
+    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    //
+    // handy if (e.g.) you want to know the rect of a tab area
+    Rect GetMainViewportWorkspaceScreenRect();
 }

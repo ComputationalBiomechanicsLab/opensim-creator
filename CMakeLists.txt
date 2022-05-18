@@ -473,6 +473,8 @@ add_library(osccore STATIC
 
     src/Tabs/CookiecutterTab.cpp
     src/Tabs/CookiecutterTab.hpp
+    src/Tabs/ErrorTab.cpp
+    src/Tabs/ErrorTab.hpp
     src/Tabs/SplashTab.cpp
     src/Tabs/SplashTab.hpp
     src/Tabs/Tab.cpp

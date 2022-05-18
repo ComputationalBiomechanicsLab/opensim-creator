@@ -341,3 +341,9 @@ ImGuiWindowFlags osc::GetMinimalWindowFlags()
 {
     return ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
 }
+
+osc::Rect osc::GetMainViewportWorkspaceScreenRect()
+{
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    return Rect{viewport->WorkPos, glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}};
+}

@@ -147,12 +147,7 @@ public:
 
 	bool onEvent(SDL_Event const& e)
 	{
-		if (e.type == SDL_QUIT)
-		{
-			App::upd().requestQuit();
-			return true;
-		}
-		else if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
+        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
 		{
 			App::upd().requestTransition<LoadingScreen>(maybeMainEditorState, e.drop.file);
             return true;
@@ -192,8 +187,7 @@ public:
 private:
     Rect getTabScreenRect()
     {
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        return Rect{viewport->WorkPos, glm::vec2{viewport->WorkPos} + glm::vec2{viewport->WorkSize}};
+        return osc::GetMainViewportWorkspaceScreenRect();
     }
 
     Rect getMainMenuRect()

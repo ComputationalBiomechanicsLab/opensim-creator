@@ -1,6 +1,8 @@
 #include "MainUIScreen.hpp"
 
 #include "src/Platform/App.hpp"
+#include "src/Tabs/CookiecutterTab.hpp"
+#include "src/Tabs/ErrorTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
@@ -15,6 +17,8 @@ public:
     Impl()
     {
         m_Tabs.push_back(std::make_unique<SplashTab>(this));
+        m_Tabs.push_back(std::make_unique<ErrorTab>(this, std::runtime_error{ "hi" }));
+        m_Tabs.push_back(std::make_unique<CookiecutterTab>(this));
         m_RequestedTab = 0;
     }
 
@@ -30,21 +34,36 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
+        // try pumping the event into ImGui (top-prio)
         if (osc::ImGuiOnEvent(e))
         {
             return;
         }
-        else if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
+
+        // try pumping the event into the currently-active tab
+        //
+        // (don't pump the event into the inactive tabs)
+        if (0 <= m_ActiveTab && m_ActiveTab < m_Tabs.size())
         {
             if (m_Tabs[m_ActiveTab]->onEvent(e))
             {
                 return;
             }
         }
+
+        // finally, if it's a quit event but neither ImGui nor a tab handled it itself
+        // (e.g. because the tab decided to "handle it" by prompting the user to save
+        // files) then handle the quit event at this higher level
+        if (e.type == SDL_QUIT)
+        {
+            App::upd().requestQuit();
+        }
     }
 
     void tick(float dt)
     {
+        // tick all the tabs, because they may internally be polling something (e.g.
+        // updating something as a simulation runs)
         for (auto const& tab : m_Tabs)
         {
             tab->tick();
@@ -65,7 +84,7 @@ public:
 private:
     void drawTabUI()
     {
-        static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        constexpr ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
         // https://github.com/ocornut/imgui/issues/3518
 

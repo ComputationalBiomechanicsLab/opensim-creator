@@ -1,5 +1,10 @@
 #include "CookiecutterTab.hpp"
 
+#include <SDL_events.h>
+
+#include <string>
+#include <utility>
+
 class osc::CookiecutterTab::Impl final {
 public:
 	Impl(TabHost* parent) : m_Parent{std::move(parent)}
@@ -18,7 +23,7 @@ public:
 
 	bool onEvent(SDL_Event const&)
 	{
-		return true;
+		return false;
 	}
 
 	void onTick()
