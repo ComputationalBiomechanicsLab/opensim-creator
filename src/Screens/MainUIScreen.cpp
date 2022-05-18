@@ -3,6 +3,7 @@
 #include "src/Platform/App.hpp"
 #include "src/Tabs/CookiecutterTab.hpp"
 #include "src/Tabs/ErrorTab.hpp"
+#include "src/Tabs/MeshImporterTab.hpp"
 #include "src/Tabs/SplashTab.hpp"
 #include "src/Tabs/Tab.hpp"
 #include "src/Tabs/TabHost.hpp"
@@ -19,6 +20,8 @@ public:
         m_Tabs.push_back(std::make_unique<SplashTab>(this));
         m_Tabs.push_back(std::make_unique<ErrorTab>(this, std::runtime_error{ "hi" }));
         m_Tabs.push_back(std::make_unique<CookiecutterTab>(this));
+        m_Tabs.push_back(std::make_unique<MeshImporterTab>(this));
+        m_Tabs.push_back(std::make_unique<MeshImporterTab>(this));
         m_RequestedTab = 0;
     }
 
