@@ -19,8 +19,9 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/LoadingScreen.hpp"
-#include "src/Screens/MeshImporterScreen.hpp"
+#include "src/Tabs/LoadingTab.hpp"
+#include "src/Tabs/MeshImporterTab.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Utils/Algorithms.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
@@ -122,7 +123,6 @@ static std::unique_ptr<SizedTexture> GenerateBackgroundImage(glm::vec2 dimension
     gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, bufs.updSceneFBO());
     gl::DrawBuffer(GL_COLOR_ATTACHMENT0);
     gl::BlitFramebuffer(0, 0, bufs.getWidth(), bufs.getHeight(), 0, 0, bufs.getWidth(), bufs.getHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    osc::log::info("%i %i", bufs.getWidth(), bufs.getHeight());
     gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
     // extract texture to output
@@ -164,7 +164,10 @@ public:
 	{
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && CStrEndsWith(e.drop.file, ".osim"))
 		{
-			App::upd().requestTransition<LoadingScreen>(maybeMainEditorState, e.drop.file);
+            auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, e.drop.file);
+            UID tabID = tab->getID();
+            m_Parent->addTab(std::move(tab));
+            m_Parent->selectTab(tabID);
             return true;
 		}
         return false;
@@ -269,7 +272,10 @@ private:
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, OSC_POSITIVE_HOVERED_RGBA);
                 if (ImGui::Button(ICON_FA_MAGIC " Import Meshes"))
                 {
-                    App::upd().requestTransition<MeshImporterScreen>();
+                    auto tab = std::make_unique<MeshImporterTab>(m_Parent);
+                    UID tabID = tab->getID();
+                    m_Parent->addTab(std::move(tab));
+                    m_Parent->selectTab(tabID);
                 }
                 ImGui::PopStyleColor(2);
             }
@@ -324,7 +330,10 @@ private:
                     ImGui::PushID(++id);
                     if (ImGui::Button(rf.path.filename().string().c_str()))
                     {
-                        App::upd().requestTransition<osc::LoadingScreen>(maybeMainEditorState, rf.path);
+                        auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, rf.path);
+                        UID tabID = tab->getID();
+                        m_Parent->addTab(std::move(tab));
+                        m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
                 }
@@ -351,7 +360,10 @@ private:
                     ImGui::PushID(++id);
                     if (ImGui::Button(ex.filename().string().c_str()))
                     {
-                        App::upd().requestTransition<LoadingScreen>(maybeMainEditorState, ex);
+                        auto tab = std::make_unique<LoadingTab>(m_Parent, maybeMainEditorState, ex);
+                        UID tabID = tab->getID();
+                        m_Parent->addTab(std::move(tab));
+                        m_Parent->selectTab(tabID);
                     }
                     ImGui::PopID();
                 }

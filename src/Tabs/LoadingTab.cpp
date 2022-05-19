@@ -222,7 +222,6 @@ private:
 
 // public API
 
-
 osc::LoadingTab::LoadingTab(TabHost* parent, std::filesystem::path path) :
 	m_Impl{new Impl{std::move(parent), std::move(path)}}
 {

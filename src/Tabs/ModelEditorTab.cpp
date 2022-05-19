@@ -20,7 +20,6 @@
 #include "src/OpenSimBindings/StoFileSimulation.hpp"
 #include "src/OpenSimBindings/TypeRegistry.hpp"
 #include "src/Screens/ErrorScreen.hpp"
-#include "src/Screens/SimulatorScreen.hpp"
 #include "src/Platform/App.hpp"
 #include "src/Platform/Config.hpp"
 #include "src/Platform/Log.hpp"
@@ -29,6 +28,8 @@
 #include "src/Utils/Algorithms.hpp"
 #include "src/Utils/FileChangePoller.hpp"
 #include "src/Utils/ScopeGuard.hpp"
+#include "src/Tabs/SimulatorTab.hpp"
+#include "src/Tabs/TabHost.hpp"
 #include "src/Widgets/CoordinateEditor.hpp"
 #include "src/Widgets/ComponentDetails.hpp"
 #include "src/Widgets/MainMenu.hpp"
@@ -956,6 +957,42 @@ public:
 
 	void onDrawMainMenu()
 	{
+        m_MainMenuFileTab.draw(m_Mes);
+        drawMainMenuEditTab();
+        drawMainMenuSimulateTab();
+        drawMainMenuWindowTab();
+        m_MainMenuAboutTab.draw();
+
+        ImGui::Dummy({2.0f, 0.0f});
+        if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
+        {
+            auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+            UID tabID = tab->getID();
+            m_Parent->addTab(std::move(tab));
+            m_Parent->selectTab(tabID);
+            return;
+        }
+
+        // "switch to simulator" menu button
+        ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
+        if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
+        {
+            StartSimulatingEditedModel(*m_Mes);
+
+            auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+            UID tabID = tab->getID();
+            m_Parent->addTab(std::move(tab));
+            m_Parent->selectTab(tabID);
+
+            ImGui::PopStyleColor();
+            return;
+        }
+        ImGui::PopStyleColor();
+
+        if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
+        {
+            m_ParamBlockEditorPopup.open();
+        }
 	}
 
 	void onDraw()
@@ -979,7 +1016,11 @@ private:
                 cpy->buildSystem();
                 cpy->initializeState();
                 m_Mes->addSimulation(Simulation{StoFileSimulation{std::move(cpy), p}});
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
+
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+                UID tabID = tab->getID();
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabID);
 
                 return true;
             }
@@ -1042,16 +1083,28 @@ private:
             case SDLK_z:  // Ctrl+Z: undo focused model
                 ActionUndoCurrentlyEditedModel(*m_Mes);
                 return true;
-            case SDLK_r:  // Ctrl+R: start a new simulation from focused model
+            case SDLK_r:
+            {
+                // Ctrl+R: start a new simulation from focused model
                 ActionStartSimulationFromEditedModel(*m_Mes);
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+                UID tabID = tab->getID();
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabID);
                 return true;
+            }                
             case SDLK_a:  // Ctrl+A: clear selection
                 ActionClearSelectionFromEditedModel(*m_Mes);
                 return true;
-            case SDLK_e:  // Ctrl+E: show simulation screen
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(std::move(m_Mes));
+            case SDLK_e:
+            {
+                // Ctrl+E: show simulation screen
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+                UID tabID = tab->getID();
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabID);
                 return true;
+            }
             }
 
             return false;
@@ -1354,7 +1407,10 @@ private:
             if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
                 StartSimulatingEditedModel(*m_Mes);
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
+                auto tab = std::make_unique<SimulatorTab>(m_Parent, m_Mes);
+                UID tabID = tab->getID();
+                m_Parent->addTab(std::move(tab));
+                m_Parent->selectTab(tabID);
             }
 
             if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
@@ -1442,45 +1498,6 @@ private:
             }
 
             ImGui::EndMenu();
-        }
-    }
-
-    void drawMainMenu()
-    {
-        if (ImGui::BeginMainMenuBar())
-        {
-            m_MainMenuFileTab.draw(m_Mes);
-            drawMainMenuEditTab();
-            drawMainMenuSimulateTab();
-            drawMainMenuWindowTab();
-            m_MainMenuAboutTab.draw();
-
-            ImGui::Dummy({2.0f, 0.0f});
-            if (ImGui::Button(ICON_FA_LIST_ALT " Switch to simulator (Ctrl+E)"))
-            {
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
-                ImGui::EndMainMenuBar();
-                return;
-            }
-
-            // "switch to simulator" menu button
-            ImGui::PushStyleColor(ImGuiCol_Button, OSC_POSITIVE_RGBA);
-            if (ImGui::Button(ICON_FA_PLAY " Simulate (Ctrl+R)"))
-            {
-                StartSimulatingEditedModel(*m_Mes);
-                osc::App::upd().requestTransition<osc::SimulatorScreen>(m_Mes);
-                ImGui::PopStyleColor();
-                ImGui::EndMainMenuBar();
-                return;
-            }
-            ImGui::PopStyleColor();
-
-            if (ImGui::Button(ICON_FA_EDIT " Edit simulation settings"))
-            {
-                m_ParamBlockEditorPopup.open();
-            }
-
-            ImGui::EndMainMenuBar();
         }
     }
 
@@ -1590,8 +1607,6 @@ private:
 
     void drawUNGUARDED()
     {
-        drawMainMenu();
-
         // check for early exit request
         //
         // (the main menu may have requested a screen transition)

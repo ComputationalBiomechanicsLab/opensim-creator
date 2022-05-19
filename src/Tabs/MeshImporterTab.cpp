@@ -1,6 +1,7 @@
 #include "MeshImporterTab.hpp"
 
 #include "src/Tabs/TabHost.hpp"
+#include "src/Tabs/ModelEditorTab.hpp"
 
 #include <imgui.h>
 #include <SDL_events.h>
@@ -32,9 +33,6 @@
 #include "src/Platform/Log.hpp"
 #include "src/Platform/os.hpp"
 #include "src/Platform/Styling.hpp"
-#include "src/Screens/ModelEditorScreen.hpp"
-#include "src/Screens/SplashScreen.hpp"
-#include "src/Screens/ExperimentsScreen.hpp"
 #include "src/Widgets/MainMenu.hpp"
 #include "src/Widgets/LogViewer.hpp"
 #include "src/Widgets/SaveChangesPopup.hpp"
@@ -5098,15 +5096,6 @@ namespace
             // pop any background-loaded meshes
             PopMeshLoader();
 
-            // if some screen generated an OpenSim::Model, transition to the main editor
-            if (HasOutputModel())
-            {
-                auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(UpdOutputModel()));
-                mainEditorState->editedModel()->setFixupScaleFactor(m_SceneScaleFactor);
-                osc::AutoFocusAllViewers(*mainEditorState);
-                osc::App::upd().requestTransition<osc::ModelEditorScreen>(mainEditorState);
-            }
-
             m_ModelGraphSnapshots.GarbageCollect();
         }
 
@@ -8162,6 +8151,20 @@ public:
     {
         float dt = osc::App::get().getDeltaSinceLastFrame().count();
         m_MainState.tick(dt);
+
+        // if some screen generated an OpenSim::Model, transition to the main editor
+        if (m_SharedData->HasOutputModel())
+        {
+            auto mainEditorState = std::make_shared<osc::MainEditorState>(std::move(m_SharedData->UpdOutputModel()));
+            mainEditorState->editedModel()->setFixupScaleFactor(m_SharedData->GetSceneScaleFactor());
+            osc::AutoFocusAllViewers(*mainEditorState);
+
+            auto tab = std::make_unique<ModelEditorTab>(m_Parent, mainEditorState);
+            UID tabID = tab->getID();
+
+            m_Parent->addTab(std::move(tab));
+            m_Parent->selectTab(tabID);
+        }
 
         m_Name = m_SharedData->GetRecommendedTitle();
 
