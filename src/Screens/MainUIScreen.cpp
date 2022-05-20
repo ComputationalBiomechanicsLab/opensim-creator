@@ -149,9 +149,9 @@ private:
                         {
                             if (m_Tabs[i]->getID() != m_ActiveTab)
                             {
-                                if (Tab* active = getActiveTab())
+                                if (Tab* activeTab = getActiveTab())
                                 {
-                                    active->onUnmount();
+                                    activeTab->onUnmount();
                                 }
                                 m_Tabs[i]->onMount();
                             }
