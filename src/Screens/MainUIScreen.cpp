@@ -75,7 +75,7 @@ public:
 
             if (handled)
             {
-                bool m_ShouldRequestRedraw = true;
+                m_ShouldRequestRedraw = true;
                 return;
             }
         }
